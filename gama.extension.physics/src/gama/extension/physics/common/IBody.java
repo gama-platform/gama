@@ -1,21 +1,20 @@
 /*******************************************************************************************************
  *
- * IBody.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * IBody.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.extension.physics.common;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IPoint ;
-import gama.core.metamodel.shape.IShape;
-import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.species.ISpecies;
+import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.species.ISpecies;
 
 /**
  * The Interface IBody.
@@ -75,7 +74,7 @@ public interface IBody<WorldType, BodyType, ShapeType, VectorType> extends IPhys
 	 */
 	default boolean noContactNotificationWanted(final IAgent agent) {
 		ISpecies species = agent.getSpecies();
-		SpeciesDescription desc = species.getDescription();
+		ISpeciesDescription desc = species.getDescription();
 		return desc.getAction(CONTACT_ADDED).isBuiltIn() && desc.getAction(CONTACT_REMOVED).isBuiltIn();
 	}
 
@@ -134,7 +133,7 @@ public interface IBody<WorldType, BodyType, ShapeType, VectorType> extends IPhys
 	 *            the v
 	 * @return the angular velocity
 	 */
-	IPoint  getAngularVelocity(IPoint v);
+	IPoint getAngularVelocity(IPoint v);
 
 	/**
 	 * Gets the linear velocity.
@@ -143,7 +142,7 @@ public interface IBody<WorldType, BodyType, ShapeType, VectorType> extends IPhys
 	 *            the v
 	 * @return the linear velocity
 	 */
-	IPoint  getLinearVelocity(IPoint v);
+	IPoint getLinearVelocity(IPoint v);
 
 	/**
 	 * Gets the aabb.

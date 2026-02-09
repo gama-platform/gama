@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * CSVModel.java, in gama.ui.shared.viewers, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * CSVModel.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,12 +20,12 @@ import java.util.List;
 
 import org.eclipse.core.resources.IFile;
 
-import gama.core.runtime.GAMA;
-import gama.core.util.file.IGamaFileMetaData;
+import gama.api.GAMA;
+import gama.api.data.csv.AbstractCSVManipulator;
+import gama.api.data.csv.CsvReader;
+import gama.api.data.csv.CsvWriter;
+import gama.api.utils.files.IGamaFileMetaData;
 import gama.core.util.file.GamaCSVFile.CSVInfo;
-import gama.core.util.file.csv.AbstractCSVManipulator;
-import gama.core.util.file.csv.CsvReader;
-import gama.core.util.file.csv.CsvWriter;
 import gama.dev.DEBUG;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -391,12 +391,12 @@ public class CSVModel implements IRowChangesListener {
 	 */
 	public CSVInfo getInfo() {
 		if (currentInfo == null) {
-			final IGamaFileMetaData metaData = GAMA.getGui().getMetaDataProvider().getMetaData(file, false, true);
+			final IGamaFileMetaData metaData = GAMA.getMetadataProvider().getMetaData(file, false, true);
 			if (metaData instanceof CSVInfo) {
 				currentInfo = (CSVInfo) metaData;
 			} else {
-				GAMA.getGui().getMetaDataProvider().storeMetaData(file, null, true);
-				currentInfo = (CSVInfo) GAMA.getGui().getMetaDataProvider().getMetaData(file, false, true);
+				GAMA.getMetadataProvider().storeMetaData(file, null, true);
+				currentInfo = (CSVInfo) GAMA.getMetadataProvider().getMetaData(file, false, true);
 			}
 		}
 		return currentInfo;

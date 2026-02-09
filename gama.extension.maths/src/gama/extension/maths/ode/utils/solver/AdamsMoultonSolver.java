@@ -12,8 +12,8 @@ package gama.extension.maths.ode.utils.solver;
 
 import org.apache.commons.math3.ode.nonstiff.AdamsMoultonIntegrator;
 
-import gama.core.util.list.IList;
-import gama.core.util.map.IMap;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
 
 /**
  * The Class AdamsMoultonSolver.

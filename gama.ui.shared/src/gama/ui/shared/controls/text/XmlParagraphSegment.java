@@ -16,7 +16,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.ui.internal.forms.widgets.Locator;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
-import gama.core.util.GamaFont;
+import gama.api.data.objects.IFont;
 import gama.ui.shared.resources.GamaFonts;
 
 /**
@@ -25,7 +25,7 @@ import gama.ui.shared.resources.GamaFonts;
 public abstract class XmlParagraphSegment implements IXmlFontUser {
 
 	/** The font. */
-	GamaFont font;
+	IFont font;
 
 	/**
 	 * Instantiates a new xml paragraph segment.
@@ -33,7 +33,7 @@ public abstract class XmlParagraphSegment implements IXmlFontUser {
 	 * @param fontToUse
 	 *            the font to use
 	 */
-	public XmlParagraphSegment(final GamaFont fontToUse) {
+	public XmlParagraphSegment(final IFont fontToUse) {
 		this.font = fontToUse;
 	}
 

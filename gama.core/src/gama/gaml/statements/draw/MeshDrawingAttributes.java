@@ -12,23 +12,50 @@ package gama.gaml.statements.draw;
 
 import java.awt.Color;
 
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.IPoint ;
+import gama.api.data.objects.IColor;
+import gama.api.data.objects.IField;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IPoint;
+import gama.api.ui.layers.IMeshColorProvider;
+import gama.api.ui.layers.IMeshSmoothProvider;
+import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.layers.MeshLayerData;
-import gama.core.util.GamaColor;
-import gama.core.util.IColor;
-import gama.core.util.list.IList;
-import gama.core.util.matrix.GamaField;
-import gama.core.util.matrix.IField;
-import gama.gaml.operators.Colors.GamaGradient;
-import gama.gaml.operators.Colors.GamaPalette;
-import gama.gaml.operators.Colors.GamaScale;
+import gama.core.util.color.GamaGradient;
+import gama.core.util.color.GamaPalette;
+import gama.core.util.color.GamaScale;
 
 /**
  * The Class MeshDrawingAttributes.
  */
 public class MeshDrawingAttributes extends AssetDrawingAttributes {
+
+	/**
+	 * For. If smooth is not asked for, we return the null implementation. If we have a complete field (i.e. no "no
+	 * data" cells) we opt for the super-fast gaussian blur. If not we go back to the slow, but robust, 3x3 convolution
+	 *
+	 * @param smooth
+	 *            the smooth
+	 * @param noData
+	 *            the no data
+	 * @return the i mesh smooth provider
+	 */
+	static IMeshSmoothProvider SMOOTH_METHOD_FOR(final int smooth, final double noData) {
+		return smooth == 0 ? NULL : noData == IField.NO_NO_DATA ? FAST : SLOW;
+	}
+
+	/** The fast. */
+	static final IMeshSmoothProvider FAST = new GaussianBlurMeshSmoothProvider();
+
+	/** The slow. */
+	static final IMeshSmoothProvider SLOW = new ConvolutionBasedMeshSmoothProvider();
+
+	/** The default. */
+	final static IMeshColorProvider DEFAULT =
+			new ColorBasedMeshColorProvider(GamaPreferences.Displays.CORE_COLOR.getValue());
+
+	/** The grayscale. */
+	final static IMeshColorProvider GRAYSCALE = new GrayscaleMeshColorProvider();
 
 	/** The smooth provider. */
 	public IMeshSmoothProvider smoothProvider;
@@ -40,7 +67,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	public String speciesName;
 
 	/** The dimensions. */
-	IPoint  dimensions;
+	IPoint dimensions;
 
 	/** The scale. */
 	Double scale;
@@ -67,7 +94,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	public MeshDrawingAttributes(final String name, final boolean isImage) {
 		super(null, isImage);
 		speciesName = name;
-		smoothProvider = IMeshSmoothProvider.NULL;
+		smoothProvider = NULL;
 	}
 
 	/**
@@ -96,13 +123,13 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	@SuppressWarnings ("unchecked")
 	public static IMeshColorProvider computeColors(final Object colors, final boolean isGrayscale) {
 		return switch (colors) {
-			case GamaColor gc -> new ColorBasedMeshColorProvider(gc);
+			case IColor gc -> new ColorBasedMeshColorProvider(gc);
 			case GamaPalette gp -> new PaletteBasedMeshColorProvider(gp);
 			case GamaScale gs -> new ScaleBasedMeshColorProvider(gs);
 			case GamaGradient gg -> new GradientBasedMeshColorProvider(gg);
-			case IList list -> list.get(0) instanceof GamaField ? new BandsBasedMeshColorProvider(list)
+			case IList list -> list.get(0) instanceof IField ? new BandsBasedMeshColorProvider(list)
 					: new ListBasedMeshColorProvider((IList<Color>) colors);
-			case null, default -> isGrayscale ? IMeshColorProvider.GRAYSCALE : IMeshColorProvider.DEFAULT;
+			case null, default -> isGrayscale ? GRAYSCALE : DEFAULT;
 		};
 	}
 
@@ -113,6 +140,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 *
 	 * @return the color provider
 	 */
+	@Override
 	public IMeshColorProvider getColorProvider() {
 		if (isSet(Flag.Selected)) return new ColorBasedMeshColorProvider(SELECTED_COLOR);
 		if (highlight != null) return new ColorBasedMeshColorProvider(highlight);
@@ -137,7 +165,8 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 *
 	 * @return the XY dimension
 	 */
-	public IPoint  getXYDimension() { return dimensions; }
+	@Override
+	public IPoint getXYDimension() { return dimensions; }
 
 	/**
 	 * Sets the XY dimension.
@@ -145,7 +174,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 * @param dim
 	 *            the new XY dimension
 	 */
-	public void setXYDimension(final IPoint  dim) { dimensions = dim; }
+	public void setXYDimension(final IPoint dim) { dimensions = dim; }
 
 	/**
 	 * Sets the cell size.
@@ -175,6 +204,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 *
 	 * @return
 	 */
+	@Override
 	public Double getScale() {
 		if (scale == null) {
 			Scaling3D size = getSize();
@@ -189,27 +219,6 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 * @return
 	 */
 	public double getZFactor() { return getSize().getZ(); }
-
-	/**
-	 * Checks if is triangulated.
-	 *
-	 * @return true, if is triangulated
-	 */
-	public boolean isTriangulated() { return isSet(Flag.Triangulated); }
-
-	/**
-	 * Checks if is grayscaled.
-	 *
-	 * @return true, if is grayscaled
-	 */
-	public boolean isGrayscaled() { return isSet(Flag.Grayscaled); }
-
-	/**
-	 * Checks if is with text.
-	 *
-	 * @return true, if is with text
-	 */
-	public boolean isWithText() { return isSet(Flag.WithText); }
 
 	/**
 	 * Sets the grayscaled.
@@ -250,7 +259,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 */
 	public void setSmooth(final int smooth) {
 		this.smooth = smooth;
-		smoothProvider = IMeshSmoothProvider.FOR(smooth, noData);
+		smoothProvider = SMOOTH_METHOD_FOR(smooth, noData);
 	}
 
 	/**
@@ -258,6 +267,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 *
 	 * @return the smooth
 	 */
+	@Override
 	public int getSmooth() { return smooth; }
 
 	/**
@@ -268,7 +278,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 */
 	public void setNoData(final double noData) {
 		this.noData = noData;
-		smoothProvider = IMeshSmoothProvider.FOR(smooth, noData);
+		smoothProvider = SMOOTH_METHOD_FOR(smooth, noData);
 	}
 
 	/**
@@ -276,6 +286,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 *
 	 * @return the no data value
 	 */
+	@Override
 	public double getNoDataValue() { return noData; }
 
 	/**
@@ -291,13 +302,15 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 	 *
 	 * @return the above
 	 */
-	public double getAbove() { return above; }
+	@Override
+	public Double getAbove() { return above; }
 
 	/**
 	 * Gets the smooth provider.
 	 *
 	 * @return the smooth provider
 	 */
+	@Override
 	public IMeshSmoothProvider getSmoothProvider() { return smoothProvider; }
 
 }

@@ -31,34 +31,35 @@ import org.geotools.data.PrjFileReader;
 
 import com.google.common.io.Files;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IFieldMatrixProvider;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.topology.projection.IProjection;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.GamaFile;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
+import gama.api.GAMA;
+import gama.api.data.factories.GamaEnvelopeFactory;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IField;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMatrix;
+import gama.api.data.objects.IPoint;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.Facets;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.topology.IProjection;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.IFieldMatrixProvider;
+import gama.api.utils.IImageProvider;
+import gama.api.utils.files.GamaFile;
+import gama.api.utils.files.IGamaFile;
+import gama.core.topology.gis.GamaCRS;
 import gama.core.util.file.GamaGridFile;
-import gama.core.util.file.IGamaFile;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
 import gama.core.util.matrix.GamaIntMatrix;
-import gama.core.util.matrix.IField;
-import gama.core.util.matrix.IMatrix;
 import gama.gaml.operators.spatial.SpatialProjections;
-import gama.gaml.statements.Facets;
-import gama.gaml.types.GamaMatrixType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class GamaImageFile.
@@ -206,7 +207,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 	@Override
 	public IList<String> getAttributes(final IScope scope) {
 		// No attributes
-		return GamaListFactory.EMPTY_LIST;
+		return GamaListFactory.getEmptyList();
 	}
 
 	@Override
@@ -334,7 +335,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 			g.dispose();
 			// image = resultingImage;
 		}
-		final IMatrix matrix = new GamaIntMatrix(xSize, ySize);
+		final IMatrix matrix = GamaMatrixFactory.createIntMatrix(xSize, ySize);
 		for (int i = 0; i < xSize; i++) {
 			for (int j = 0; j < ySize; j++) { matrix.set(scope, i, j, resultingImage.getRGB(i, j)); }
 		}
@@ -361,7 +362,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 			if (str != null && !"P2".equals(str))
 				throw new UnsupportedEncodingException("File is not in PGM ascii format");
 			str = in.readLine();
-			if (str == null) return GamaMatrixType.with(scope, 0, preferredSize, Types.INT);
+			if (str == null) return GamaMatrixFactory.createWithValue(scope, 0, preferredSize, Types.INT);
 			tok = new StringTokenizer(str);
 			final int xSize = Integer.parseInt(tok.nextToken());
 			final int ySize = Integer.parseInt(tok.nextToken());
@@ -376,7 +377,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 			// in.close();
 			str = buf.toString();
 			tok = new StringTokenizer(str);
-			final IMatrix matrix = new GamaIntMatrix(xSize, ySize);
+			final IMatrix matrix = GamaMatrixFactory.createIntMatrix(xSize, ySize);
 			for (int j = 0; j < ySize; j++) {
 				for (int i = 0; i < xSize; i++) {
 					final Integer val = Integer.valueOf(tok.nextToken());
@@ -473,16 +474,10 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 				IPoint maxCorner = GamaPointFactory.create(e.getMaxX(), e.getMaxY());
 				if (geodataFile != null) {
 					IProjection pr;
-					try {
-						pr = scope.getSimulation().getProjectionFactory().forSavingWith(scope,
-								file.gis.getTargetCRS(scope));
-						minCorner =
-								GamaShapeFactory.createFrom(pr.transform(minCorner.getInnerGeometry())).getLocation();
-						maxCorner =
-								GamaShapeFactory.createFrom(pr.transform(maxCorner.getInnerGeometry())).getLocation();
-					} catch (final FactoryException e1) {
-						e1.printStackTrace();
-					}
+					pr = scope.getSimulation().getProjectionFactory().forSavingWith(scope,
+							file.gis.getTargetCRS(scope));
+					minCorner = GamaShapeFactory.createFrom(pr.transform(minCorner.getInnerGeometry())).getLocation();
+					maxCorner = GamaShapeFactory.createFrom(pr.transform(maxCorner.getInnerGeometry())).getLocation();
 
 				}
 				isGeoreferenced = true;
@@ -516,7 +511,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 					try (PrjFileReader pfr = new PrjFileReader(rdc)) {
 						if (pfr.getCoordinateReferenceSystem() != null) {
 							IProjection gis = scope.getSimulation().getProjectionFactory().forSavingWith(scope,
-									pfr.getCoordinateReferenceSystem());
+									new GamaCRS(pfr.getCoordinateReferenceSystem()));
 							if (gis != null) {
 								minCorner = GamaShapeFactory.createFrom(gis.transform(minCorner.getInnerGeometry()))
 										.getLocation();
@@ -609,4 +604,5 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 	public boolean hasGeoDataAvailable(final IScope scope) {
 		return getGeoDataFile(scope) != null;
 	}
+
 }

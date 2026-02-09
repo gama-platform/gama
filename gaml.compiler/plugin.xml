@@ -11,4 +11,11 @@
   <extension
         point="gaml.extension">
   </extension>
+  <extension
+        point="gama.metadata">
+     <implementation
+           class="gaml.compiler.gaml.resource.GamlFileInfo"
+           content_type="gama.gaml.file.type">
+     </implementation>
+  </extension>
 </plugin>

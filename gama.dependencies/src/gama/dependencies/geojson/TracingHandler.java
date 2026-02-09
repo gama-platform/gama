@@ -3,7 +3,7 @@
  * TracingHandler.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -73,7 +73,7 @@ public class TracingHandler implements InvocationHandler {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	void startJSON() throws ParseException, IOException {}
+	void startJSON() {}
 
 	/**
 	 * End JSON.
@@ -83,7 +83,7 @@ public class TracingHandler implements InvocationHandler {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	void endJSON() throws ParseException, IOException {}
+	void endJSON() {}
 
 	/**
 	 * Start object.
@@ -94,7 +94,7 @@ public class TracingHandler implements InvocationHandler {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	boolean startObject() throws ParseException, IOException {
+	boolean startObject() {
 		// indent();
 		System.out.println("{");
 		indent++;
@@ -110,7 +110,7 @@ public class TracingHandler implements InvocationHandler {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	boolean endObject() throws ParseException, IOException {
+	boolean endObject() {
 		indent--;
 		indent();
 		System.out.print("}");
@@ -128,7 +128,7 @@ public class TracingHandler implements InvocationHandler {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	boolean startObjectEntry(final String key) throws ParseException, IOException {
+	boolean startObjectEntry(final String key) {
 		indent();
 		System.out.print(key + ": ");
 		return true;
@@ -143,7 +143,7 @@ public class TracingHandler implements InvocationHandler {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	boolean endObjectEntry() throws ParseException, IOException {
+	boolean endObjectEntry() {
 		System.out.println(",");
 		return true;
 	}
@@ -157,7 +157,7 @@ public class TracingHandler implements InvocationHandler {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	boolean startArray() throws ParseException, IOException {
+	boolean startArray() {
 		// indent();
 		System.out.print("[");
 		return true;
@@ -172,7 +172,7 @@ public class TracingHandler implements InvocationHandler {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	boolean endArray() throws ParseException, IOException {
+	boolean endArray() {
 		// indent();
 		System.out.print("]");
 		return true;
@@ -189,7 +189,7 @@ public class TracingHandler implements InvocationHandler {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	boolean primitive(final Object value) throws ParseException, IOException {
+	boolean primitive(final Object value) {
 		System.out.print(value);
 		return true;
 	}

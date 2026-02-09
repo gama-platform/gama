@@ -3,7 +3,7 @@
  * SpatialProjections.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,21 +17,22 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.Geometry;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IPoint ;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.projection.IProjection;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.topology.ICoordinateReferenceSystem;
+import gama.api.kernel.topology.IProjection;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.files.IGamaFile;
 import gama.core.util.file.GamaGisFile;
-import gama.core.util.file.IGamaFile;
 
 /**
  * The Class Projections.
@@ -65,10 +66,10 @@ public class SpatialProjections {
 	public static String crsFromFile(final IScope scope, final IGamaFile gisFile) {
 		if (!(gisFile instanceof GamaGisFile))
 			throw GamaRuntimeException.error("Impossible to compute the CRS for this type of file", scope);
-		final CoordinateReferenceSystem crs = ((GamaGisFile) gisFile).getGis(scope).getInitialCRS(scope);
-		if (crs == null) return null;
+		final ICoordinateReferenceSystem crs = ((GamaGisFile) gisFile).getGis(scope).getInitialCRS(scope);
+		if (crs == null || crs.isNull()) return null;
 		try {
-			return CRS.lookupIdentifier(crs, true);
+			return CRS.lookupIdentifier(crs.getCRS(), true);
 		} catch (final FactoryException | NullPointerException e) {
 			return null;
 		}
@@ -100,7 +101,7 @@ public class SpatialProjections {
 		final IProjection gis = scope.getSimulation().getProjectionFactory().getWorld();
 		if (gis == null) return g.copy(scope);
 		final IShape s = GamaShapeFactory.createFrom(gis.inverseTransform(g.getInnerGeometry()));
-		if (g instanceof IPoint ) return s.getLocation();
+		if (g instanceof IPoint) return s.getLocation();
 		return s;
 	}
 
@@ -130,7 +131,7 @@ public class SpatialProjections {
 		final IProjection gis = scope.getSimulation().getProjectionFactory().getWorld();
 		if (gis == null) return g.copy(scope);
 		final IShape s = GamaShapeFactory.createFrom(gis.transform(g.getInnerGeometry()));
-		if (g instanceof IPoint ) return s.getLocation();
+		if (g instanceof IPoint) return s.getLocation();
 		return s;
 	}
 
@@ -161,12 +162,12 @@ public class SpatialProjections {
 		IProjection gis;
 		try {
 			gis = scope.getSimulation().getProjectionFactory().forSavingWith(scope, code);
-		} catch (final FactoryException e) {
+		} catch (final Exception e) {
 			throw GamaRuntimeException.error(THE_CODE + code + " does not correspond to a known EPSG code", scope);
 		}
 		if (gis == null) return g.copy(scope);
 		final IShape s = GamaShapeFactory.createFrom(gis.transform(g.getInnerGeometry()));
-		if (g instanceof IPoint ) return s.getLocation();
+		if (g instanceof IPoint) return s.getLocation();
 		return s;
 	}
 
@@ -198,12 +199,12 @@ public class SpatialProjections {
 		IProjection gis;
 		try {
 			gis = scope.getSimulation().getProjectionFactory().forSavingWith(scope, code);
-		} catch (final FactoryException e) {
+		} catch (final Exception e) {
 			throw GamaRuntimeException.error(THE_CODE + code + " does not correspond to a known EPSG code", scope);
 		}
 		if (gis == null) return g.copy(scope);
 		final IShape s = GamaShapeFactory.createFrom(gis.inverseTransform(g.getInnerGeometry()));
-		if (g instanceof IPoint ) return s.getLocation();
+		if (g instanceof IPoint) return s.getLocation();
 		return s;
 	}
 
@@ -261,7 +262,7 @@ public class SpatialProjections {
 		}
 		if (targetGeometry == null) return null;
 		final IShape s = GamaShapeFactory.createFrom(targetGeometry);
-		if (g instanceof IPoint ) return s.getLocation();
+		if (g instanceof IPoint) return s.getLocation();
 		return s;
 	}
 }

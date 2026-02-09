@@ -18,26 +18,24 @@ import java.awt.image.DataBufferInt;
 import java.awt.image.PixelGrabber;
 import java.awt.image.WritableRaster;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IAsset;
-import gama.core.common.interfaces.IFieldMatrixProvider;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.topology.grid.GamaSpatialMatrix;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.IJSon;
-import gama.core.util.file.json.IJsonValue;
-import gama.core.util.list.IList;
-import gama.core.util.matrix.GamaField;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.api.constants.IKeyword;
+import gama.api.data.json.IJson;
+import gama.api.data.json.IJsonValue;
+import gama.api.data.objects.IField;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IValue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.IFieldMatrixProvider;
+import gama.api.utils.IImageProvider;
+import gama.core.topology.grid.GamaSpatialMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
-import gama.core.util.matrix.IField;
-import gama.gaml.interfaces.IValue;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Class GamaImage. A simple wrapper on a BufferedImage of type TYPE_INT_ARGB
@@ -58,7 +56,7 @@ import gama.gaml.types.Types;
 				name = IKeyword.WIDTH,
 				type = IType.INT,
 				doc = { @doc ("Returns the width (in pixels) of this image") }) })
-public class GamaImage extends BufferedImage implements IImageProvider, IAsset, IFieldMatrixProvider, IValue {
+public class GamaImage extends BufferedImage implements IImageProvider, IFieldMatrixProvider, IValue {
 
 	/** The id. */
 	String id;
@@ -178,9 +176,9 @@ public class GamaImage extends BufferedImage implements IImageProvider, IAsset, 
 	 *            the f
 	 * @return the gama image
 	 */
-	public static GamaImage from(final IScope scope, final GamaField field) {
-		final int cols = field.numCols;
-		final int rows = field.numRows;
+	public static GamaImage from(final IScope scope, final IField field) {
+		final int cols = field.getCols(scope);
+		final int rows = field.getRows(scope);
 		final GamaImage image = new GamaImage(cols, rows, TYPE_INT_RGB, "field" + System.currentTimeMillis());
 		if (field.getBandsNumber(scope) > 1) {
 			IList<? extends IField> bands = field.getBands(scope);
@@ -375,7 +373,7 @@ public class GamaImage extends BufferedImage implements IImageProvider, IAsset, 
 	}
 
 	@Override
-	public IJsonValue serializeToJson(final IJSon json) {
+	public IJsonValue serializeToJson(final IJson json) {
 		return json.typedObject(getGamlType(), "width", getWidth(), "height", getHeight(), "type", getType(), "pixels",
 				ImageOperators.matrix(null, this));
 	}

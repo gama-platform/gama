@@ -49,7 +49,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import gama.core.util.GamaFont;
+import gama.api.data.objects.IFont;
 import gama.dev.DEBUG;
 import gama.ui.shared.resources.GamaFonts;
 
@@ -106,12 +106,12 @@ public class XmlTextModel implements IXmlFontUser {
 	private HyperlinkSettings hyperlinkSettings;
 
 	/** The regular font. */
-	public GamaFont font;
+	public IFont font;
 
 	/**
 	 * Instantiates a new xml text model.
 	 */
-	public XmlTextModel(final GamaFont font) {
+	public XmlTextModel(final IFont font) {
 		this.font = font;
 		reset();
 	}

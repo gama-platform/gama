@@ -12,15 +12,15 @@ package gama.core.outputs.layers.charts;
 
 import java.util.HashMap;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
-import gama.gaml.compilation.GAML;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.objects.IColor;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
 import gama.gaml.operators.Random;
-import gama.gaml.types.Types;
 
 /**
  * The Class ChartDataSourceUnique.
@@ -34,7 +34,7 @@ public class ChartDataSourceUnique extends ChartDataSource {
 	public boolean cloneMe(final IScope scope, final int chartCycle, final ChartDataSource source) {
 		final boolean res = super.cloneMe(scope, chartCycle, source);
 		final IColor col =
-				GamaColorFactory.get(Random.opRnd(scope, 255), Random.opRnd(scope, 255), Random.opRnd(scope, 255), 255);
+				GamaColorFactory.createWithRGBA(Random.opRnd(scope, 255), Random.opRnd(scope, 255), Random.opRnd(scope, 255), 255);
 		final IExpression ncol = GAML.getExpressionFactory().createConst(col, Types.COLOR);
 		this.colorexp = ncol;
 		final String previousname = ((ChartDataSourceUnique) source).legend;

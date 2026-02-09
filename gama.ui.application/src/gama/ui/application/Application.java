@@ -3,7 +3,7 @@
  * Application.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -31,13 +31,14 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.ide.application.DelayedEventsProcessor;
 
-import gama.core.kernel.root.SystemInfo;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.runtime.IWorkspaceManager;
+import gama.api.runtime.SystemInfo;
+import gama.api.utils.files.BufferingUtils;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
-import gama.dev.FLAGS;
+import gama.ui.application.server.GamaGuiWebSocketServer;
 import gama.ui.application.workbench.ApplicationWorkbenchAdvisor;
-import gama.workspace.manager.WorkspaceHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
 
 /** This class controls all aspects of the application's execution */
@@ -97,7 +98,6 @@ public class Application implements IApplication {
 
 	@Override
 	public Object start(final IApplicationContext context) throws Exception {
-		FLAGS.load();
 		GAMA.setRegularGui(new TempSWTGui());
 		setDefaultUncaughtExceptionHandler((t, e) -> {
 			if (e instanceof OutOfMemoryError) {
@@ -111,16 +111,17 @@ public class Application implements IApplication {
 
 		});
 		final Display display = configureDisplay();
-		Object check = Display.getCurrent().syncCall(WorkspaceHelper::checkWorkspace);
+		Object check = Display.getCurrent().syncCall(() -> GAMA.getWorkspaceManager().checkWorkspace());
 		if (!EXIT_OK.equals(check)) {
 			try {
 				createProcessor(display);
-				if (getInternalPreferenceStore().getBoolean(WorkspaceHelper.CLEAR_WORKSPACE)) {
+				if (getInternalPreferenceStore().getBoolean(IWorkspaceManager.CLEAR_WORKSPACE)) {
 					setProperty(CLEAR_PERSISTED_STATE, "true");
-					WorkspaceHelper.clearWorkspace(false);
+					GAMA.getWorkspaceManager().clearWorkspace(false);
 				}
 				try {
-					GAMA.startGuiServer();
+
+					GamaGuiWebSocketServer.startGuiServer();
 					final int returnCode = Workbench.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
 					if (returnCode == RETURN_RESTART) return EXIT_RESTART;
 				} catch (Exception t) {
@@ -130,7 +131,7 @@ public class Application implements IApplication {
 				if (display != null) { display.dispose(); }
 				final Location instanceLoc = Platform.getInstanceLocation();
 				if (instanceLoc != null) { instanceLoc.release(); }
-				GAMA.getBufferingController().flushAllBuffers();
+				BufferingUtils.getInstance().flushAllBuffers();
 			}
 		}
 		return EXIT_OK;
@@ -168,7 +169,7 @@ public class Application implements IApplication {
 
 	@Override
 	public void stop() {
-		GAMA.getBufferingController().flushAllBuffers();
+		BufferingUtils.getInstance().flushAllBuffers();
 		final IWorkbench workbench = getWorkbench();
 		if (workbench == null) return;
 		final Display display = workbench.getDisplay();

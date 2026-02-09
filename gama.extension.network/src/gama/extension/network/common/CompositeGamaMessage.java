@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.extension.network.common;
 
-import gama.core.messaging.GamaMessage;
-import gama.core.runtime.IScope;
+import gama.api.runtime.scope.IScope;
+import gama.core.util.messaging.GamaMessage;
 import gama.extension.serialize.binary.BinarySerialisation;
 
 /**

@@ -13,13 +13,13 @@ package gama.gaml.statements.create;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.runtime.IScope;
-import gama.core.util.map.GamaMapFactory;
-import gama.gaml.interfaces.ICreateDelegate;
-import gama.gaml.statements.CreateStatement;
-import gama.gaml.statements.IArguments;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.additions.delegates.ICreateDelegate;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.Arguments;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
 
 /**
  * Class CreateFromDatabaseDelegate.
@@ -35,7 +35,7 @@ public class CreateFromNullDelegate implements ICreateDelegate {
 	/**
 	 * Method acceptSource()
 	 *
-	 * @see gama.gaml.interfaces.ICreateDelegate#acceptSource(IScope, java.lang.Object)
+	 * @see gama.api.additions.delegates.ICreateDelegate#acceptSource(IScope, java.lang.Object)
 	 */
 	@Override
 	public boolean acceptSource(final IScope scope, final Object source) {
@@ -47,12 +47,12 @@ public class CreateFromNullDelegate implements ICreateDelegate {
 	 *
 	 * @author Alexis Drogoul
 	 * @since 04-09-2012
-	 * @see gama.gaml.interfaces.ICreateDelegate#createFrom(gama.core.runtime.IScope, java.util.List, int,
+	 * @see gama.api.additions.delegates.ICreateDelegate#createFrom(gama.api.runtime.scope.IScope, java.util.List, int,
 	 *      java.lang.Object)
 	 */
 	@Override
 	public boolean createFrom(final IScope scope, final List<Map<String, Object>> inits, final Integer max,
-			final Object input, final IArguments init, final CreateStatement statement) {
+			final Object input, final Arguments init, final IStatement.Create statement) {
 		Map<String, Object> nullMap = null;
 		if (init == null) { nullMap = GamaMapFactory.create(); }
 		final int num = max == null ? 1 : max;
@@ -68,7 +68,7 @@ public class CreateFromNullDelegate implements ICreateDelegate {
 	/**
 	 * Method fromFacetType()
 	 *
-	 * @see gama.gaml.interfaces.ICreateDelegate#fromFacetType()
+	 * @see gama.api.additions.delegates.ICreateDelegate#fromFacetType()
 	 */
 	@Override
 	public IType<?> fromFacetType() {

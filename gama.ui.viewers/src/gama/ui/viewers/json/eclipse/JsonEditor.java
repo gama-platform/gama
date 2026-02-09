@@ -3,7 +3,7 @@
  * JsonEditor.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -59,6 +59,7 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import com.fasterxml.jackson.core.JsonLocation;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
+import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.viewers.json.document.JSONFormatSupport;
 import gama.ui.viewers.json.document.JSONFormatSupport.FormatterResult;
 import gama.ui.viewers.json.eclipse.document.JsonFileDocumentProvider;
@@ -315,7 +316,7 @@ public class JsonEditor extends TextEditor implements StatusMessageSupport {
 			StyledText textWidget = sourceViewer.getTextWidget();
 			if (textWidget == null) return;
 
-			EclipseUtil.getSafeDisplay().syncExec(() -> {
+			WorkbenchHelper.run(() -> {
 				bgColor = ColorUtil.convertToHexColor(textWidget.getBackground());
 				fgColor = ColorUtil.convertToHexColor(textWidget.getForeground());
 			});
@@ -670,7 +671,7 @@ public class JsonEditor extends TextEditor implements StatusMessageSupport {
 		 */
 		String message = "Auto format done - was necessary because one liners in eclipse would be extreme slow!";
 		setStatusLineMessage(message);
-		EclipseUtil.getSafeDisplay().asyncExec(() -> {
+		WorkbenchHelper.asyncRun(() -> {
 			JsonEditorUtil.addInfoMarker(this, 0, message);
 			markAsDirty();
 		});

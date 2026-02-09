@@ -12,14 +12,14 @@ package gama.ui.display.opengl.scene.layers;
 
 import java.util.List;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.data.objects.IColor;
+import gama.api.data.objects.IShape;
+import gama.api.kernel.agent.IAgent;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
-import gama.gaml.types.GamaGeometryType;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.AbstractObject;
 import gama.ui.display.opengl.scene.geometry.GeometryObject;
@@ -30,7 +30,7 @@ import gama.ui.display.opengl.scene.geometry.GeometryObject;
 public class FrameLayerObject extends StaticLayerObject.World {
 
 	/** The Constant FRAME. */
-	private static final IColor FRAME = GamaColorFactory.get(150, 150, 150, 255);
+	private static final IColor FRAME = GamaColorFactory.createWithRGBA(150, 150, 150, 255);
 
 	/**
 	 * Instantiates a new frame layer object.
@@ -46,7 +46,7 @@ public class FrameLayerObject extends StaticLayerObject.World {
 	public void fillWithObjects(final List<AbstractObject<?, ?>> list) {
 		final double w = renderer.getData().getEnvWidth();
 		final double h = renderer.getData().getEnvHeight();
-		final IShape g = GamaGeometryType.buildRectangle(w, h, GamaPointFactory.create(w / 2, h / 2));
+		final IShape g = GamaShapeFactory.buildRectangle(w, h, GamaPointFactory.create(w / 2, h / 2));
 		final DrawingAttributes drawingAttr = new ShapeDrawingAttributes(g, (IAgent) null, null, FRAME);
 		// drawingAttr.setLighting(false);
 		final GeometryObject geomObj = new GeometryObject(g.getInnerGeometry(), drawingAttr);

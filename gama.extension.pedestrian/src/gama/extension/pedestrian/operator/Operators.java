@@ -10,16 +10,16 @@
  ********************************************************************************************************/
 package gama.extension.pedestrian.operator;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.util.IContainer;
-import gama.core.util.list.IList;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IShape;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class Operators.

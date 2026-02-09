@@ -10,12 +10,13 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.annotations.precompiler.*;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.core.common.interfaces.IKeyword;
-import gama.gaml.descriptions.IDescription;
+import gama.annotations.doc;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.support.*;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.constants.IKeyword;
+import gama.api.gaml.statements.AbstractStatementSequence;
 
 /**
  * Written by drogoul Modified on 8 févr. 2010

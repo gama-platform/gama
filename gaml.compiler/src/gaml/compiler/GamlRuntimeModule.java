@@ -25,8 +25,8 @@ import org.eclipse.xtext.validation.IResourceValidator;
 
 import com.google.inject.Binder;
 
+import gama.api.gaml.expressions.IExpressionCompiler;
 import gama.dev.DEBUG;
-import gama.gaml.expressions.IExpressionCompiler;
 import gaml.compiler.gaml.expression.GamlExpressionCompiler;
 import gaml.compiler.gaml.linking.GamlLinkingErrorMessageProvider;
 import gaml.compiler.gaml.linking.GamlLinkingService;

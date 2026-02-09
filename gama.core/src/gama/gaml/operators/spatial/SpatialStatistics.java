@@ -3,7 +3,7 @@
  * SpatialStatistics.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,34 +17,35 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.Reason;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.filter.IAgentFilter;
-import gama.core.metamodel.topology.filter.In;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.Collector;
-import gama.core.util.IContainer;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.annotations.support.Reason;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IMatrix;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.IAgentFilter;
+import gama.api.utils.collections.Collector;
+import gama.core.topology.filter.In;
 import gama.core.util.matrix.GamaMatrix;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.operators.Cast;
 import gama.gaml.operators.Containers;
-import gama.gaml.types.Types;
 
 /**
  * The Class SpatialStatistics.
@@ -334,7 +335,7 @@ public class SpatialStatistics {
 			double sumNull = 0;
 			int nbNull = 0;
 			for (final Object obj : points.keySet()) {
-				final IPoint pt = Cast.asPoint(scope, obj);
+				final IPoint pt = GamaPointFactory.toPoint(scope, obj);
 				final double dist = scope.getTopology().distanceBetween(scope, geom, pt);
 				if (dist == 0) {
 					nbNull++;

@@ -1,23 +1,24 @@
 /*******************************************************************************************************
  *
- * GamaLogger.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation platform
- * (v.2025-03).
+ * GamaLogger.java, in gama.dev, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.dev.logging;
 
+import static org.slf4j.helpers.MessageFormatter.basicArrayFormat;
+
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.event.Level;
 import org.slf4j.helpers.LegacyAbstractLogger;
-import org.slf4j.helpers.MessageFormatter;
-import org.slf4j.spi.LocationAwareLogger;
 
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
+import gama.dev.FLAGS;
 
 /**
  * <p>
@@ -26,11 +27,8 @@ import gama.dev.DEBUG;
  */
 public class GamaLogger extends LegacyAbstractLogger {
 
-	/** The Constant START_TIME. */
-	private static final long START_TIME = System.currentTimeMillis();
-
 	/**
-	 * Protected access allows only {@link GamaLoggerFactory} and also derived classes to instantiate SimpleLogger
+	 * Protected access allows only {@link GamaLoggerFactory} and also derived classes to instantiate GamaLogger
 	 * instances.
 	 */
 	protected GamaLogger(final String name) {
@@ -39,23 +37,23 @@ public class GamaLogger extends LegacyAbstractLogger {
 
 	/** Are {@code trace} messages currently enabled? */
 	@Override
-	public boolean isTraceEnabled() { return true; }
+	public boolean isTraceEnabled() { return FLAGS.ENABLE_LEGACY_LOGGING; }
 
 	/** Are {@code debug} messages currently enabled? */
 	@Override
-	public boolean isDebugEnabled() { return true; }
+	public boolean isDebugEnabled() { return FLAGS.ENABLE_LEGACY_LOGGING; }
 
 	/** Are {@code info} messages currently enabled? */
 	@Override
-	public boolean isInfoEnabled() { return true; }
+	public boolean isInfoEnabled() { return FLAGS.ENABLE_LEGACY_LOGGING; }
 
 	/** Are {@code warn} messages currently enabled? */
 	@Override
-	public boolean isWarnEnabled() { return true; }
+	public boolean isWarnEnabled() { return FLAGS.ENABLE_LEGACY_LOGGING; }
 
 	/** Are {@code error} messages currently enabled? */
 	@Override
-	public boolean isErrorEnabled() { return true; }
+	public boolean isErrorEnabled() { return FLAGS.ENABLE_LEGACY_LOGGING; }
 
 	/**
 	 * GamaLogger's implementation
@@ -64,26 +62,8 @@ public class GamaLogger extends LegacyAbstractLogger {
 	@Override
 	protected void handleNormalizedLoggingCall(final Level level, final Marker marker, final String messagePattern,
 			final Object[] arguments, final Throwable throwable) {
-		StringBuilder buf = new StringBuilder(32);
-		buf.append('[');
-		buf.append(Thread.currentThread().getName());
-		buf.append(" - ");
-		buf.append(System.currentTimeMillis() - START_TIME);
-		buf.append("] ");
-		if (marker != null) {
-			buf.append(' ');
-			buf.append(marker.getName()).append(' ');
-		}
-		String formattedMessage = MessageFormatter.basicArrayFormat(messagePattern, arguments);
-		// Append the message
-		buf.append(formattedMessage);
-		if (throwable != null) {
-			DEBUG.ERR(buf, throwable);
-		} else if (level.toInt() == LocationAwareLogger.ERROR_INT) {
-			DEBUG.ERR(buf);
-		} else {
-			DEBUG.OUT(buf, true);
-		}
+		DEBUG.BANNER(BANNER_CATEGORY.SLF4J, basicArrayFormat(messagePattern, arguments), "issued by", getName());
+		if (throwable != null) { throwable.printStackTrace(); }
 	}
 
 	@Override

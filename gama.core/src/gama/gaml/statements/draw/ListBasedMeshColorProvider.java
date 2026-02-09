@@ -13,6 +13,8 @@ package gama.gaml.statements.draw;
 import java.awt.Color;
 import java.util.List;
 
+import gama.api.ui.layers.IMeshColorProvider;
+
 /**
  * A simple implementation of the color provider that picks a color using the index of the cell being drawn (in a cyclic
  * manner so as to allow lists of colors with a smaller size than the field).

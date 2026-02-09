@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.extension.physics.common;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IPoint;
+import gama.api.data.objects.IPoint;
+import gama.api.kernel.agent.IAgent;
 import gama.extension.physics.gaml.PhysicalSimulationAgent;
 
 /**

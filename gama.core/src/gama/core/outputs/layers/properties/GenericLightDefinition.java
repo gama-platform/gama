@@ -1,17 +1,18 @@
 /*******************************************************************************************************
  *
- * GenericLightDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GenericLightDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.objects.IColor;
+import gama.api.ui.layers.ILightDefinition;
 
 /**
  * The Class AmbientLightDefinition.
@@ -22,7 +23,7 @@ public class GenericLightDefinition implements ILightDefinition {
 	final String name;
 
 	/** The id. */
-	final int id;
+	int id;
 
 	/** The intensity. */
 	final IColor intensity;
@@ -36,7 +37,7 @@ public class GenericLightDefinition implements ILightDefinition {
 	 *            the id.
 	 */
 	public GenericLightDefinition(final String name, final int id, final int intensity) {
-		this(name, id, GamaColorFactory.get(intensity, intensity, intensity, 255));
+		this(name, id, GamaColorFactory.createWithRGBA(intensity, intensity, intensity, 255));
 	}
 
 	/**
@@ -63,5 +64,8 @@ public class GenericLightDefinition implements ILightDefinition {
 
 	@Override
 	public IColor getIntensity() { return intensity; }
+
+	@Override
+	public void setId(final int index) { id = index; }
 
 }

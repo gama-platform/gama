@@ -20,15 +20,14 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.services.AbstractServiceFactory;
 import org.eclipse.ui.services.IServiceLocator;
 
-import gama.core.common.interfaces.IConsoleListener;
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IGamaView.Console;
-import gama.core.common.interfaces.IGui;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.runtime.GAMA;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
+import gama.api.GAMA;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.objects.IColor;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.ui.IConsoleListener;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IGui;
+import gama.api.ui.IGamaView.Console;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -50,7 +49,7 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 		Map<IColor, StringBuilder> consoleBuffers = new HashMap<>();
 
 		@Override
-		public void informConsole(final String msg, final ITopLevelAgent root, final GamaColor color) {
+		public void informConsole(final String msg, final ITopLevelAgent root, final IColor color) {
 			IGamaView.Console[] console = new IGamaView.Console[1];
 			try {
 				console[0] = (Console) ViewsHelper.findView(IGui.CONSOLE_VIEW_ID, null, true);

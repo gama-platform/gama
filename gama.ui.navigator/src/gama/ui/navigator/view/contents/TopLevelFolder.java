@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * TopLevelFolder.java, in gama.ui.navigator.view, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * TopLevelFolder.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,18 +18,17 @@ import java.net.URL;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.Image;
 
-import gama.gaml.compilation.kernel.GamaBundleLoader;
+import gama.api.GAMA;
+import gama.api.additions.GamaBundleLoader;
+import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
-import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import one.util.streamex.StreamEx;
 
 /**
@@ -92,7 +91,7 @@ public class TopLevelFolder extends VirtualContent<NavigatorRoot> implements IGa
 	 * Initialize children.
 	 */
 	public void initializeChildren() {
-		children = StreamEx.of(ResourcesPlugin.getWorkspace().getRoot().getProjects()).filter(this::privateAccepts)
+		children = StreamEx.of(GAMA.getWorkspaceManager().getRoot().getProjects()).filter(this::privateAccepts)
 				.map(p -> (WrappedProject) getManager().wrap(this, p)).toArray(WrappedProject.class);
 	}
 

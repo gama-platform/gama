@@ -23,7 +23,7 @@
          </property>
          <property
                name="aboutImage"
-               value="icons/window/icon128.svg">
+               value="icons/window/icon128.png">
          </property>
          <property
                name="appName"

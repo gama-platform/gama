@@ -1,19 +1,20 @@
 /*******************************************************************************************************
  *
- * MultiThreadedArduinoReceiver.java, in gama.network, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * MultiThreadedArduinoReceiver.java, in gama.extension.network, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.extension.network.serial;
 
-import gama.core.messaging.GamaMailbox;
-import gama.core.messaging.GamaMessage;
-import gama.core.messaging.MessagingSkill;
-import gama.core.metamodel.agent.IAgent;
+import gama.api.data.factories.GamaMessageFactory;
+import gama.api.data.objects.IMessage;
+import gama.api.kernel.agent.IAgent;
+import gama.core.util.messaging.GamaMailbox;
+import gama.core.util.messaging.MessagingSkill;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 
@@ -67,8 +68,8 @@ public class MultiThreadedArduinoReceiver extends Thread {
 
 				final String sentence = arduino.serialRead(1);
 
-				@SuppressWarnings ("unchecked") GamaMailbox<GamaMessage> mailbox =
-						(GamaMailbox<GamaMessage>) myAgent.getAttribute(MessagingSkill.MAILBOX_ATTRIBUTE);
+				@SuppressWarnings ("unchecked") GamaMailbox<IMessage> mailbox =
+						(GamaMailbox<IMessage>) myAgent.getAttribute(MessagingSkill.MAILBOX_ATTRIBUTE);
 				if (mailbox == null) {
 					mailbox = new GamaMailbox<>();
 					myAgent.setAttribute(MessagingSkill.MAILBOX_ATTRIBUTE, mailbox);
@@ -82,7 +83,7 @@ public class MultiThreadedArduinoReceiver extends Thread {
 
 				// DEBUG.LOG("sentence = " + sentence);
 
-				GamaMessage msg = new GamaMessage(myAgent.getScope(), "Arduino", myAgent.getName(), sentence);
+				IMessage msg = GamaMessageFactory.create(myAgent.getScope(), "Arduino", myAgent.getName(), sentence);
 
 				// final NetworkMessage msg = MessageFactory.buildNetworkMessage("Arduino", sentence);
 				mailbox.add(msg);

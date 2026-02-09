@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * ASCSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * ASCSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,16 +18,16 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-import gama.core.metamodel.topology.grid.GridPopulation;
-import gama.core.metamodel.topology.projection.ProjectionFactory;
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
+import gama.api.utils.files.SaveOptions;
+import gama.core.topology.gis.ProjectionFactory;
+import gama.core.topology.grid.GridPopulation;
 import gama.core.util.matrix.GamaField;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
 import gama.gaml.operators.Comparison;
-import gama.gaml.operators.Strings;
-import gama.gaml.species.ISpecies;
 
 /**
  * The Class ASCSaver.
@@ -55,10 +55,11 @@ public class ASCSaver extends AbstractSaver {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions) throws IOException {
-		try (FileWriter fileWriter = new FileWriter(file, StandardCharsets.UTF_8, false)){
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
+			throws IOException {
+		try (FileWriter fileWriter = new FileWriter(file, StandardCharsets.UTF_8, false)) {
 			save(scope, item, fileWriter);
-		}finally {
+		} finally {
 			ProjectionFactory.saveTargetCRSAsPRJFile(scope, file.getAbsolutePath());
 		}
 	}
@@ -123,32 +124,32 @@ public class ASCSaver extends AbstractSaver {
 		final GridPopulation gp = (GridPopulation) species.getPopulation(scope);
 		final int nbCols = gp.getNbCols();
 		final int nbRows = gp.getNbRows();
-		headerBuilder.append("ncols         ").append(nbCols).append(Strings.LN);
-		headerBuilder.append("nrows         ").append(nbRows).append(Strings.LN);
+		headerBuilder.append("ncols         ").append(nbCols).append(StringUtils.LN);
+		headerBuilder.append("nrows         ").append(nbRows).append(StringUtils.LN);
 
 		final boolean nullProjection = scope.getSimulation().getProjectionFactory().getWorld() == null;
 		headerBuilder.append("xllcorner     ")
 				.append(nullProjection ? "0"
 						: scope.getSimulation().getProjectionFactory().getWorld().getProjectedEnvelope().getMinX())
-				.append(Strings.LN);
+				.append(StringUtils.LN);
 		headerBuilder.append("yllcorner     ")
 				.append(nullProjection ? "0"
 						: scope.getSimulation().getProjectionFactory().getWorld().getProjectedEnvelope().getMinY())
-				.append(Strings.LN);
+				.append(StringUtils.LN);
 		final double dx = scope.getSimulation().getEnvelope().getWidth() / nbCols;
 		final double dy = scope.getSimulation().getEnvelope().getHeight() / nbRows;
 		if (Comparison.equal(dx, dy)) {
-			headerBuilder.append("cellsize      ").append(dx).append(Strings.LN);
+			headerBuilder.append("cellsize      ").append(dx).append(StringUtils.LN);
 		} else {
-			headerBuilder.append("dx            ").append(dx).append(Strings.LN);
-			headerBuilder.append("dy            ").append(dy).append(Strings.LN);
+			headerBuilder.append("dx            ").append(dx).append(StringUtils.LN);
+			headerBuilder.append("dy            ").append(dy).append(StringUtils.LN);
 		}
 		fw.write(headerBuilder.toString());
 
 		for (int i = 0; i < nbRows; i++) {
 			StringBuilder val = new StringBuilder();
 			for (int j = 0; j < nbCols; j++) { val.append(gp.getGridValue(j, i)).append(" "); }
-			fw.write(val.append(Strings.LN).toString());
+			fw.write(val.append(StringUtils.LN).toString());
 		}
 
 	}
@@ -172,31 +173,31 @@ public class ASCSaver extends AbstractSaver {
 		StringBuilder theHeader = new StringBuilder();
 		final int nbCols = field.numCols;
 		final int nbRows = field.numRows;
-		theHeader.append("ncols         ").append(nbCols).append(Strings.LN);
-		theHeader.append("nrows         ").append(nbRows).append(Strings.LN);
+		theHeader.append("ncols         ").append(nbCols).append(StringUtils.LN);
+		theHeader.append("nrows         ").append(nbRows).append(StringUtils.LN);
 		final boolean nullProjection = scope.getSimulation().getProjectionFactory().getWorld() == null;
 		theHeader.append("xllcorner     ")
 				.append(nullProjection ? "0"
 						: scope.getSimulation().getProjectionFactory().getWorld().getProjectedEnvelope().getMinX())
-				.append(Strings.LN);
+				.append(StringUtils.LN);
 		theHeader.append("yllcorner     ")
 				.append(nullProjection ? "0"
 						: scope.getSimulation().getProjectionFactory().getWorld().getProjectedEnvelope().getMinY())
-				.append(Strings.LN);
+				.append(StringUtils.LN);
 		final double dx = scope.getSimulation().getEnvelope().getWidth() / nbCols;
 		final double dy = scope.getSimulation().getEnvelope().getHeight() / nbRows;
 		if (Comparison.equal(dx, dy)) {
-			theHeader.append("cellsize      ").append(dx).append(Strings.LN);
+			theHeader.append("cellsize      ").append(dx).append(StringUtils.LN);
 		} else {
-			theHeader.append("dx            ").append(dx).append(Strings.LN);
-			theHeader.append("dy            ").append(dy).append(Strings.LN);
+			theHeader.append("dx            ").append(dx).append(StringUtils.LN);
+			theHeader.append("dy            ").append(dy).append(StringUtils.LN);
 		}
 		fw.write(theHeader.toString());
 
 		for (int i = 0; i < nbRows; i++) {
 			StringBuilder val = new StringBuilder();
 			for (int j = 0; j < nbCols; j++) { val.append(field.get(scope, j, i)).append(" "); }
-			fw.write(val.append(Strings.LN).toString());
+			fw.write(val.append(StringUtils.LN).toString());
 		}
 
 	}

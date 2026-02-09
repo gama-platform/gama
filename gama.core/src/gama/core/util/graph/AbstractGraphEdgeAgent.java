@@ -1,27 +1,28 @@
 /*******************************************************************************************************
  *
- * AbstractGraphEdgeAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * AbstractGraphEdgeAgent.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.util.graph;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.species;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.GamlAgent;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
+import gama.annotations.doc;
+import gama.annotations.species;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IGraphAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.runtime.scope.IScope;
+import gama.core.agent.GamlAgent;
 
 // FIXME: Add all the necessary variables and actions ?
 /**
@@ -40,7 +41,7 @@ import gama.gaml.types.IType;
 				type = IType.AGENT,
 				doc = @doc ("The target agent of this edge")) })
 @doc ("A species that represents an edge of a graph made of agents. The source and the target of the edge should be agents")
-public class AbstractGraphEdgeAgent extends GamlAgent {
+public class AbstractGraphEdgeAgent extends GamlAgent implements IGraphAgent {
 
 	/**
 	 * Instantiates a new abstract graph edge agent.
@@ -62,7 +63,7 @@ public class AbstractGraphEdgeAgent extends GamlAgent {
 		final IAgent s = (IAgent) getAttribute(IKeyword.SOURCE);
 		final IAgent t = (IAgent) getAttribute(IKeyword.TARGET);
 		if (s == null || t == null) return null;
-		setGeometry(GamaGeometryType.buildLine(s.getLocation(scope), t.getLocation(scope)));
+		setGeometry(GamaShapeFactory.buildLine(s.getLocation(scope), t.getLocation(scope)));
 		return super._step_(scope);
 	}
 

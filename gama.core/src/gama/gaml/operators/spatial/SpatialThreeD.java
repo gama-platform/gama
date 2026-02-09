@@ -3,7 +3,7 @@
  * SpatialThreeD.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,17 +14,17 @@ import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.CoordinateSequenceFilter;
 import org.locationtech.jts.geom.Geometry;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class ThreeD.
@@ -62,6 +62,7 @@ public class SpatialThreeD {
 		if (g == null) return geom;
 		if (index < 0 || index > g.getNumPoints() - 1)
 			throw GamaRuntimeException.warning("Trying to modify a point outside the bounds of the geometry", scope);
+
 		g.apply(new CoordinateSequenceFilter() {
 
 			boolean done = false;

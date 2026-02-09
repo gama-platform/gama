@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GraphSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GraphSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,14 +16,14 @@ import java.util.Set;
 
 import org.jgrapht.nio.GraphExporter;
 
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.graph.writer.GraphExporters;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.data.factories.GamaGraphFactory;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.files.SaveOptions;
+import gama.core.util.graph.GraphExporters;
 
 /**
  * The Class GraphSaver.
@@ -46,9 +46,10 @@ public class GraphSaver extends AbstractSaver {
 	@SuppressWarnings ("unchecked")
 	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions) {
 		GraphExporter<?, ?> exp = GraphExporters.getGraphWriter(saveOptions.type);
-		final var g = Cast.asGraph(scope, item);
+		final var g = GamaGraphFactory.createFrom(scope, item, null, false);
 		if (g != null) {
-			if (exp == null) throw GamaRuntimeException.error("Format is not recognized ('" + saveOptions.type + "')", scope);
+			if (exp == null)
+				throw GamaRuntimeException.error("Format is not recognized ('" + saveOptions.type + "')", scope);
 			exp.exportGraph(g, file.getAbsoluteFile());
 		}
 	}

@@ -1,0 +1,74 @@
+/*******************************************************************************************************
+ *
+ * GraphEvent.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.api.utils.collections;
+
+import gama.api.runtime.scope.IScope;
+
+/**
+ * The Class GraphEvent.
+ */
+@SuppressWarnings ({ "rawtypes" })
+public record GraphEvent(IScope scope, Object sender, Object edge, Object vertex, GraphEventType eventType) {
+
+	/**
+	 * The Enum GraphEventType.
+	 */
+	public enum GraphEventType {
+
+		/**
+		 * The graph was flushed
+		 */
+		GRAPH_CLEARED,
+
+		/**
+		 * The properties of a graph changed (for instance, attributes). Will not be thrown for a edge or node changed,
+		 * as another event will already be thrown.
+		 */
+		GRAPH_CHANGED,
+
+		/**
+		 * a novel vertex was created
+		 */
+		VERTEX_ADDED,
+
+		/**
+		 * A vertex was removed
+		 */
+		VERTEX_REMOVED,
+
+		/**
+		 * A vertex changed (may be its attributes, for instance)
+		 */
+		VERTEX_CHANGED,
+
+		/**
+		 * An edge was added
+		 */
+		EDGE_ADDED,
+
+		/**
+		 * An edge was removed
+		 */
+		EDGE_REMOVED,
+
+		/**
+		 * An edge changed (may be its attributes ?)
+		 */
+		EDGE_CHANGED;
+
+	}
+
+	@Override
+	public String toString() {
+		return new StringBuffer().append("graph event ").append(eventType).append(", edge=").append(edge)
+				.append(", vertex=").append(vertex).append(", sender=").append(sender).toString();
+	}
+
+}

@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gaml.compiler.ui.highlight;
 
-import static gama.core.common.preferences.GamaPreferences.create;
+import static gama.api.utils.prefs.GamaPreferences.create;
 import static gama.ui.shared.resources.GamaColors.toGamaColor;
 import static java.util.Map.entry;
 
@@ -23,10 +23,10 @@ import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfiguration;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfigurationAcceptor;
 import org.eclipse.xtext.ui.editor.utils.TextStyle;
 
-import gama.core.common.preferences.GamaPreferences.Theme;
+import gama.api.data.objects.IColor;
+import gama.api.gaml.types.IType;
+import gama.api.utils.prefs.GamaPreferences.Theme;
 import gama.core.util.GamaFont;
-import gama.core.util.IColor;
-import gama.gaml.types.IType;
 
 /**
  * The class IGamlHighlightingConfiguration.

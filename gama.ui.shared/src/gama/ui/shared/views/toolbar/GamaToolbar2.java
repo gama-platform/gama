@@ -3,7 +3,7 @@
  * GamaToolbar2.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.ToolItem;
 
 import com.google.common.base.Strings;
 
-import gama.core.runtime.PlatformHelper;
+import gama.api.runtime.SystemInfo;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
 import gama.ui.application.workbench.ThemeHelper;
@@ -239,7 +239,7 @@ public class GamaToolbar2 extends Composite {
 	public ToolItem status(final String image, final String s, final Selector l, final GamaUIColor color) {
 		wipe(SWT.LEFT, true);
 		Image im = image == null ? null : GamaIcon.named(image).image();
-		if (PlatformHelper.isWindows()) { left.space(1, 24); }
+		if (SystemInfo.isWindows()) { left.space(1, 24); }
 		status = button(color, s, im, l, 24, SWT.LEFT);
 		requestLayout();
 		return status;
@@ -265,7 +265,7 @@ public class GamaToolbar2 extends Composite {
 	 *            the text
 	 */
 	public void updateStatusText(final String text) {
-		if (status == null) { return; }
+		if (status == null) return;
 		FlatButton button = (FlatButton) status.getControl();
 		button.setTextWithoutRecomputingSize(text);
 	}
@@ -283,7 +283,7 @@ public class GamaToolbar2 extends Composite {
 	 */
 	public ToolItem tooltip(final String s, final GamaUIColor rgb, final int side /* SWT.LEFT or SWT.RIGHT */) {
 		Color color = rgb == null ? getBackground() : rgb.color();
-		if (s == null) { return null; }
+		if (s == null) return null;
 		hasTooltip = true;
 		final var tb = getToolbar(side);
 		wipe(side, false);
@@ -660,8 +660,8 @@ public class GamaToolbar2 extends Composite {
 	 */
 	private void checkSelectionIcon(final ToolItem button) {
 		String image = (String) button.getData();
-		if (image == null) { return; }
-		if (PlatformHelper.isMac() && GamaColors.isDark(getBackground()) && !ThemeHelper.isDark()) {
+		if (image == null) return;
+		if (SystemInfo.isMac() && GamaColors.isDark(getBackground()) && !ThemeHelper.isDark()) {
 			if (button.getSelection()) {
 				button.setImage(GamaIcon.named(image).checked());
 			} else {

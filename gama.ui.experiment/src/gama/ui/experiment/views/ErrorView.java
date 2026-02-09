@@ -26,13 +26,13 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.interfaces.IRuntimeExceptionHandler;
-import gama.core.common.interfaces.ItemList;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.IRuntimeExceptionHandler;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IGui;
+import gama.api.ui.IItemList;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.shared.controls.ParameterExpandItem;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -183,8 +183,8 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 		final StringBuilder sb = new StringBuilder(300);
 		final String a = obj.getAgentSummary();
 		if (a != null) { sb.append(a).append(" at "); }
-		sb.append("cycle ").append(obj.getCycle()).append(ItemList.SEPARATION_CODE)
-				.append(obj.isWarning() ? ItemList.WARNING_CODE : ItemList.ERROR_CODE).append(obj.getMessage());
+		sb.append("cycle ").append(obj.getCycle()).append(IItemList.SEPARATION_CODE)
+				.append(obj.isWarning() ? IItemList.WARNING_CODE : IItemList.ERROR_CODE).append(obj.getMessage());
 		return sb.toString();
 	}
 
@@ -228,7 +228,7 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 	/**
 	 * Method handleMenu()
 	 *
-	 * @see gama.core.common.interfaces.ItemList#handleMenu(java.lang.Object)
+	 * @see gama.api.ui.IItemList#handleMenu(java.lang.Object)
 	 */
 	@Override
 	public Map<String, Runnable> handleMenu(final GamaRuntimeException item, final int x, final int y) {

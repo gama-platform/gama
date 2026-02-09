@@ -3,7 +3,7 @@
  * LayeredDisplayDecorator.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -37,17 +37,17 @@ import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.outputs.LayeredDisplayData.Changes;
-import gama.core.outputs.LayeredDisplayData.DisplayDataListener;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IExperimentStateListener;
-import gama.core.runtime.PlatformHelper;
+import gama.api.GAMA;
+import gama.api.kernel.simulation.IExperimentStateListener;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.runtime.SystemInfo;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IDisplayData.Changes;
+import gama.api.ui.displays.IDisplayData.DisplayDataListener;
+import gama.api.utils.IDisposable;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.dev.STRINGS;
-import gama.gaml.interfaces.IDisposable;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.experiment.controls.SimulationSpeedContributionItem;
 import gama.ui.shared.bindings.GamaKeyBindings;
@@ -397,12 +397,12 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 					}
 					// Seems necessary in addition to the IPartListener
 					WorkbenchHelper.run(() -> {
-						if (PlatformHelper.isMac() && overlay != null) { overlay.hide(); }
+						if (SystemInfo.isMac() && overlay != null) { overlay.hide(); }
 						view.hideCanvas();
 					});
 				} else {
 					// Issue #2639
-					if (PlatformHelper.isMac() && !view.isOpenGL()) {
+					if (SystemInfo.isMac() && !view.isOpenGL()) {
 						final IDisplaySurface ds = view.getDisplaySurface();
 						if (ds != null) { ds.updateDisplay(true); }
 					}
@@ -413,7 +413,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 					// Necessary in addition to the IPartListener as there is no way to distinguish between the wrong
 					// "hidden" event and the good one when there are no tabs.
 					WorkbenchHelper.asyncRun(() -> {
-						if (PlatformHelper.isMac() && overlay != null) { overlay.display(); }
+						if (SystemInfo.isMac() && overlay != null) { overlay.display(); }
 						// view.showCanvas();
 					});
 				}
@@ -458,7 +458,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		if (fullScreenShell == null || fullScreenShell.isDisposed()) return;
 		DEBUG.OUT("Destroying full screen shell");
 		// Solves an issue in macOS where the development version of GAMA would not close the fullScreenShell.
-		if (PlatformHelper.isMac()) {
+		if (SystemInfo.isMac()) {
 			fullScreenShell.setSize(1, 1);
 			fullScreenShell.setVisible(false);
 		}
@@ -640,6 +640,14 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 
 	}
 
+	/**
+	 * Changed.
+	 *
+	 * @param changes
+	 *            the changes
+	 * @param value
+	 *            the value
+	 */
 	@Override
 	public void changed(final Changes changes, final Object value) {
 		switch (changes) {
@@ -663,7 +671,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 * @date 26 oct. 2023
 	 */
 	@Override
-	public void updateStateTo(final IExperimentPlan experiment, final State state) {
+	public void updateStateTo(final IExperimentSpecies experiment, final State state) {
 		if (!isFullScreen() || toolbar == null || !toolbar.isVisible()) return;
 
 		if (IExperimentStateListener.State.PAUSED.name().equals(state.name())) {

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlResourceIndexer.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlResourceIndexer.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,15 +20,15 @@ import java.util.Set;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
 import com.google.inject.Singleton;
 
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
+import gama.api.GAMA;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.objects.IMap;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.GamlPackage;
@@ -50,7 +50,7 @@ public class GamlResourceIndexer {
 
 	static {
 		DEBUG.OFF();
-		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		final IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
 		workspace.addResourceChangeListener(event -> {
 			if (event.getBuildKind() == IncrementalProjectBuilder.CLEAN_BUILD) { eraseIndex(); }
 		}, IResourceChangeEvent.PRE_BUILD);

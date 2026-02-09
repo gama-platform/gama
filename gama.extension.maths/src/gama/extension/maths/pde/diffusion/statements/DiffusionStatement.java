@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * DiffusionStatement.java, in gaml.extensions.maths, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * DiffusionStatement.java, in gama.extension.maths, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,36 +12,38 @@ package gama.extension.maths.pde.diffusion.statements;
 
 import java.util.Arrays;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.topology.grid.FieldDiffuser;
-import gama.core.metamodel.topology.grid.IDiffusionTarget;
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.SimulationLocal;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.IList;
-import gama.core.util.matrix.IMatrix;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.constants.IGamlIssue;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMatrix;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.statements.AbstractStatement;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.IDiffusionTarget;
+import gama.api.utils.SimulationLocal;
+import gama.core.topology.grid.FieldDiffuser;
 import gama.extension.maths.pde.diffusion.statements.DiffusionStatement.DiffusionValidator;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.operators.Cast;
-import gama.gaml.species.ISpecies;
-import gama.gaml.statements.AbstractStatement;
-import gama.gaml.types.IType;
 
 /**
  * The Class DiffusionStatement.
@@ -110,13 +112,14 @@ import gama.gaml.types.IType;
 						name = IKeyword.AVOID_MASK,
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("if true, the value will not be diffused in the masked cells, but will "
-								+ "be restitute to the neighboring cells, multiplied by the proportion value (no signal lost)."
-								+ " If false, the value will be diffused in the masked cells, but masked cells "
-								+ "won't diffuse the value afterward (lost of signal). (default value : false)")) },
+						doc = @doc ("""
+								if true, the value will not be diffused in the masked cells, but will \
+								be restitute to the neighboring cells, multiplied by the proportion value (no signal lost).\
+								 If false, the value will be diffused in the masked cells, but masked cells \
+								won't diffuse the value afterward (lost of signal). (default value : false)""")) },
 		omissible = IKeyword.VAR)
 @symbol (
-		name = { IKeyword.DIFFUSE},
+		name = { IKeyword.DIFFUSE },
 		kind = ISymbolKind.SINGLE_STATEMENT,
 		with_sequence = false,
 		concept = { IConcept.MATH, IConcept.DIFFUSION })
@@ -148,11 +151,11 @@ public class DiffusionStatement extends AbstractStatement {
 	/**
 	 * The Class DiffusionValidator.
 	 */
-	public static class DiffusionValidator implements IDescriptionValidator<StatementDescription> {
+	public static class DiffusionValidator implements IDescriptionValidator<IStatementDescription> {
 
 		@Override
-		public void validate(final StatementDescription desc) {
-//			final String kw = desc.getKeyword();
+		public void validate(final IStatementDescription desc) {
+			// final String kw = desc.getKeyword();
 			IExpression spec = desc.getFacetExpr(IKeyword.ON);
 			if (spec.getGamlType().isAgentType() && spec.getGamlType().getSpecies().isGrid()) {
 				desc.error("Diffusions can only be executed on grid species", IGamlIssue.GENERAL);
@@ -259,10 +262,10 @@ public class DiffusionStatement extends AbstractStatement {
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		DiffusionData data = dataSupplier.get(scope);
 
-		final IMatrix<?> rawMask = Cast.asMatrix(scope, getFacetValue(scope, IKeyword.MASK));
+		final IMatrix<?> rawMask = GamaMatrixFactory.createFrom(scope, getFacetValue(scope, IKeyword.MASK));
 
 		double[][] diffusionMatrix =
-				translateMatrix(scope, Cast.asMatrix(scope, getFacetValue(scope, IKeyword.MATRIX)));
+				translateMatrix(scope, GamaMatrixFactory.createFrom(scope, getFacetValue(scope, IKeyword.MATRIX)));
 
 		final double[][] mask = computeMask(scope, rawMask);
 
@@ -374,7 +377,7 @@ public class DiffusionStatement extends AbstractStatement {
 			if (!(obj instanceof IDiffusionTarget)) {
 				// the diffusion is applied just to a certain part of the grid.
 				// Search the mask.
-				final IList<IAgent> ags = Cast.asList(scope, obj);
+				final IList<IAgent> ags = GamaListFactory.toList(scope, obj);
 				if (!ags.isEmpty()) {
 					final ISpecies sp = ags.get(0).getSpecies();
 					if (!sp.isGrid())

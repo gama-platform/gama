@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * PathComputer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * PathComputer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -36,20 +36,24 @@ import org.jgrapht.util.SupplierUtil;
 
 import com.google.common.collect.ImmutableList;
 
-import gama.core.metamodel.topology.graph.AStar;
-import gama.core.metamodel.topology.graph.FloydWarshallShortestPathsGAMA;
-import gama.core.metamodel.topology.graph.NBAStarPathfinder;
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.GamaExecutorService;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.objects.IGraph;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IMatrix;
+import gama.api.data.objects.IPath;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.topology.IPathComputer;
+import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.scope.IScope;
+import gama.core.topology.graph.AStar;
+import gama.core.topology.graph.FloydWarshallShortestPathsGAMA;
+import gama.core.topology.graph.NBAStarPathfinder;
 import gama.core.util.matrix.GamaIntMatrix;
-import gama.core.util.matrix.GamaMatrix;
-import gama.core.util.path.IPath;
-import gama.gaml.types.Types;
 
 /**
  * The Class PathComputer.
@@ -61,7 +65,7 @@ import gama.gaml.types.Types;
  *            the element type
  * @date 30 oct. 2023
  */
-public class PathComputer<V, E> {
+public class PathComputer<V, E> implements IPathComputer<V, E> {
 
 	/**
 	 *
@@ -81,53 +85,6 @@ public class PathComputer<V, E> {
 	 */
 	PathComputer(final GamaGraph<V, E> gamaGraph) {
 		graph = gamaGraph;
-	}
-
-	/**
-	 * The Enum shortestPathAlgorithm.
-	 */
-	public enum ShortestPathAlgorithmEnum {
-
-		/** The Floyd warshall. */
-		FloydWarshall,
-
-		/** The Bellmann ford. */
-		BellmannFord,
-
-		/** The Dijkstra. */
-		Dijkstra,
-
-		/** The A star. */
-		AStar,
-
-		/** The NBA star. */
-		NBAStar,
-
-		/** The NBA star approx. */
-		NBAStarApprox,
-
-		/** The Delta stepping. */
-		DeltaStepping,
-
-		/** The CH bidirectional dijkstra. */
-		CHBidirectionalDijkstra,
-
-		/** The Bidirectional dijkstra. */
-		BidirectionalDijkstra,
-
-		/** The Transit node routing. */
-		TransitNodeRouting;
-	}
-
-	/**
-	 * The Enum kShortestPathAlgorithm.
-	 */
-	public enum KShortestPathAlgorithmEnum {
-
-		/** The Yen. */
-		Yen,
-		/** The Bhandari. */
-		Bhandari;
 	}
 
 	/** The version. */
@@ -169,6 +126,7 @@ public class PathComputer<V, E> {
 	 *
 	 * @return the shortest path computed
 	 */
+	@Override
 	public Map<Pair<V, V>, IList<IList<E>>> getShortestPathComputed() { return shortestPathComputed; }
 
 	/**
@@ -180,6 +138,7 @@ public class PathComputer<V, E> {
 	 *            the t
 	 * @return the shortest path
 	 */
+	@Override
 	public IList<E> getShortestPath(final V s, final V t) {
 		final Pair<V, V> vp = new Pair<>(s, t);
 		final IList<IList<E>> ppc = shortestPathComputed.get(vp);
@@ -194,12 +153,14 @@ public class PathComputer<V, E> {
 	 *            the scope
 	 * @return the gama int matrix
 	 */
+	@Override
 	public GamaIntMatrix saveShortestPaths(final IScope scope) {
 		final IMap<V, Integer> indexVertices = GamaMapFactory.create(graph.getGamlType().getKeyType(), Types.INT);
 		final IList<V> vertices = graph.getVertices();
 
 		for (int i = 0; i < graph.vertexMap.size(); i++) { indexVertices.put(vertices.get(i), i); }
-		final GamaIntMatrix matrix = new GamaIntMatrix(vertices.size(), vertices.size());
+		final GamaIntMatrix matrix =
+				(GamaIntMatrix) GamaMatrixFactory.create(vertices.size(), vertices.size(), IType.INT);
 		for (int i = 0; i < vertices.size(); i++) {
 			for (int j = 0; j < vertices.size(); j++) { matrix.set(scope, j, i, i); }
 		}
@@ -298,6 +259,7 @@ public class PathComputer<V, E> {
 	 *            the t
 	 * @return the i list
 	 */
+	@Override
 	public IList savePaths(final int M[], final IList vertices, final int nbvertices, final Object v1, final int i,
 			final int t) {
 		IList edgesVertices = GamaListFactory.create(graph.getGamlType().getContentType());
@@ -344,6 +306,7 @@ public class PathComputer<V, E> {
 	 *            the t
 	 * @return the shortest path from matrix
 	 */
+	@Override
 	public IList<E> getShortestPathFromMatrix(final V s, final V t) {
 		final IList<V> vertices = graph.getVertices();
 		final IList<E> edges = GamaListFactory.create(graph.getGamlType().getContentType());
@@ -378,6 +341,7 @@ public class PathComputer<V, E> {
 	 * @return true, if is save computed shortest paths
 	 * @date 30 oct. 2023
 	 */
+	@Override
 	public boolean isSaveComputedShortestPaths() { return saveComputedShortestPaths; }
 
 	/**
@@ -388,29 +352,9 @@ public class PathComputer<V, E> {
 	 *            the new save computed shortest paths
 	 * @date 30 oct. 2023
 	 */
+	@Override
 	public void setSaveComputedShortestPaths(final boolean saveComputedShortestPaths) {
 		this.saveComputedShortestPaths = saveComputedShortestPaths;
-	}
-
-	/**
-	 * Gets the floyd warshall shortest paths.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the floyd warshall shortest paths
-	 * @date 30 oct. 2023
-	 */
-	public FloydWarshallShortestPathsGAMA<V, E> getFloydWarshallShortestPaths() { return optimizer; }
-
-	/**
-	 * Sets the floyd warshall shortest paths.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param optimizer
-	 *            the optimizer
-	 * @date 30 oct. 2023
-	 */
-	public void setFloydWarshallShortestPaths(final FloydWarshallShortestPathsGAMA<V, E> optimizer) {
-		this.optimizer = optimizer;
 	}
 
 	/**
@@ -421,7 +365,8 @@ public class PathComputer<V, E> {
 	 * @param matrix
 	 *            the matrix
 	 */
-	public void loadShortestPaths(final IScope scope, final GamaMatrix matrix) {
+	@Override
+	public void loadShortestPaths(final IScope scope, final IMatrix matrix) {
 		shortestPathMatrix = GamaIntMatrix.from(scope, matrix);
 
 	}
@@ -439,6 +384,7 @@ public class PathComputer<V, E> {
 	 * @return the i path
 	 * @date 30 oct. 2023
 	 */
+	@Override
 	public IPath<V, E, IGraph<V, E>> computeShortestPathBetween(final IScope scope, final V source, final V target) {
 		return graph.pathFromEdges(scope, source, target, computeBestRouteBetween(scope, source, target));
 	}
@@ -456,6 +402,7 @@ public class PathComputer<V, E> {
 	 *            the target
 	 * @return the shortest path
 	 */
+	@Override
 	public IList<E> getShortestPath(final IScope scope, final ShortestPathAlgorithm<V, E> algo, final V source,
 			final V target) {
 		final GraphPath ph = algo.getPath(source, target);
@@ -478,6 +425,7 @@ public class PathComputer<V, E> {
 	 * @return the i list
 	 * @date 30 oct. 2023
 	 */
+	@Override
 	public IList<E> computeBestRouteBetween(final IScope scope, final V source, final V target) {
 		if (source.equals(target)) return GamaListFactory.create(graph.getGamlType().getContentType());
 		if (shortestPathMatrix != null) {
@@ -495,39 +443,56 @@ public class PathComputer<V, E> {
 		if (saveComputedShortestPaths) { sp = shortestPathComputed.get(new Pair<>(source, target)); }
 		IList<E> spl = null;
 		if (sp == null || sp.isEmpty() || sp.get(0).isEmpty()) {
-			if (pathFindingAlgo == ShortestPathAlgorithmEnum.NBAStar) {
-				final NBAStarPathfinder<V, E> p = new NBAStarPathfinder<>(graph, false);
-				spl = p.search(source, target);
-			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.NBAStarApprox) {
-				final NBAStarPathfinder<V, E> p = new NBAStarPathfinder<>(graph, true);
-				spl = p.search(source, target);
-			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.AStar) {
-				final AStar<V, E> astarAlgo = new AStar<>(graph, source, target);
-				spl = astarAlgo.compute();
-			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.Dijkstra) {
-				spl = getShortestPath(scope, new DijkstraShortestPath<>(graph), source, target);
-			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.BellmannFord) {
-				spl = getShortestPath(scope, new BellmanFordShortestPath<>(graph), source, target);
-			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.DeltaStepping) {
-				ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
-						.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());
-				spl = getShortestPath(scope, new DeltaSteppingShortestPath<>(graph, executor), source, target);
-			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.TransitNodeRouting) {
-				if (transitNodeRouting == null) {
+			switch (pathFindingAlgo) {
+				case NBAStar: {
+					final NBAStarPathfinder<V, E> p = new NBAStarPathfinder<>(graph, false);
+					spl = p.search(source, target);
+					break;
+				}
+				case NBAStarApprox: {
+					final NBAStarPathfinder<V, E> p = new NBAStarPathfinder<>(graph, true);
+					spl = p.search(source, target);
+					break;
+				}
+				case AStar: {
+					final AStar<V, E> astarAlgo = new AStar<>(graph, source, target);
+					spl = astarAlgo.compute();
+					break;
+				}
+				case Dijkstra:
+					spl = getShortestPath(scope, new DijkstraShortestPath<>(graph), source, target);
+					break;
+				case BellmannFord:
+					spl = getShortestPath(scope, new BellmanFordShortestPath<>(graph), source, target);
+					break;
+				case DeltaStepping: {
 					ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
 							.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());
-					transitNodeRouting = new TransitNodeRoutingShortestPath<>(graph, executor);
+					spl = getShortestPath(scope, new DeltaSteppingShortestPath<>(graph, executor), source, target);
+					break;
 				}
-				spl = getShortestPath(scope, transitNodeRouting, source, target);
-			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.CHBidirectionalDijkstra) {
-				if (contractionHierarchyBD == null) {
-					ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
-							.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());
-					contractionHierarchyBD = new ContractionHierarchyBidirectionalDijkstra<>(graph, executor);
-				}
-				spl = getShortestPath(scope, contractionHierarchyBD, source, target);
-			} else if (pathFindingAlgo == ShortestPathAlgorithmEnum.BidirectionalDijkstra) {
-				spl = getShortestPath(scope, new BidirectionalDijkstraShortestPath<>(graph), source, target);
+				case TransitNodeRouting:
+					if (transitNodeRouting == null) {
+						ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
+								.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());
+						transitNodeRouting = new TransitNodeRoutingShortestPath<>(graph, executor);
+					}
+					spl = getShortestPath(scope, transitNodeRouting, source, target);
+					break;
+				case CHBidirectionalDijkstra:
+					if (contractionHierarchyBD == null) {
+						ThreadPoolExecutor executor = (ThreadPoolExecutor) Executors
+								.newFixedThreadPool(GamaExecutorService.THREADS_NUMBER.getValue());
+						contractionHierarchyBD = new ContractionHierarchyBidirectionalDijkstra<>(graph, executor);
+					}
+					spl = getShortestPath(scope, contractionHierarchyBD, source, target);
+					break;
+				case BidirectionalDijkstra:
+					spl = getShortestPath(scope, new BidirectionalDijkstraShortestPath<>(graph), source, target);
+					break;
+				case null:
+				default:
+					break;
 			}
 
 			if (saveComputedShortestPaths) { saveShortestPaths(spl, source, target); }
@@ -586,6 +551,7 @@ public class PathComputer<V, E> {
 	 * @return the i list
 	 * @date 30 oct. 2023
 	 */
+	@Override
 	public IList<IPath<V, E, IGraph<V, E>>> computeKShortestPathsBetween(final IScope scope, final V source,
 			final V target, final int k) {
 		if (!graph.directed && ONLY_FOR_DIRECTED_GRAPH.contains(kPathFindingAlgo)) throw GamaRuntimeException.error(
@@ -618,6 +584,7 @@ public class PathComputer<V, E> {
 	 *            the use linked graph
 	 * @return the i list
 	 */
+	@Override
 	@SuppressWarnings ("unchecked")
 	public IList<IList<E>> geKtShortestPath(final IScope scope, final KShortestPathAlgorithm algo, final V source,
 			final V target, final int k, final boolean useLinkedGraph) {
@@ -657,6 +624,7 @@ public class PathComputer<V, E> {
 	 * @return the i list
 	 * @date 30 oct. 2023
 	 */
+	@Override
 	public IList<IList<E>> computeKBestRoutesBetween(final IScope scope, final V source, final V target, final int k) {
 		final Pair<V, V> pp = new Pair<>(source, target);
 		final IList<IList<E>> sps = shortestPathComputed.get(pp);
@@ -711,6 +679,7 @@ public class PathComputer<V, E> {
 	 *            the new shortest path algorithm
 	 * @date 30 oct. 2023
 	 */
+	@Override
 	public void setShortestPathAlgorithm(final String s) { pathFindingAlgo = ShortestPathAlgorithmEnum.valueOf(s); }
 
 	/**
@@ -721,6 +690,7 @@ public class PathComputer<V, E> {
 	 *            the new k shortest path algorithm
 	 * @date 30 oct. 2023
 	 */
+	@Override
 	public void setKShortestPathAlgorithm(final String s) { kPathFindingAlgo = KShortestPathAlgorithmEnum.valueOf(s); }
 
 	/**
@@ -730,6 +700,7 @@ public class PathComputer<V, E> {
 	 * @return the version
 	 * @date 30 oct. 2023
 	 */
+	@Override
 	public int getVersion() { return version; }
 
 	/**
@@ -740,11 +711,12 @@ public class PathComputer<V, E> {
 	 *            the new version
 	 * @date 30 oct. 2023
 	 */
+	@Override
 	public void setVersion(final int version) {
 		this.version = version;
-		//shortestPathComputed.clear();
+		// shortestPathComputed.clear();
 		shortestPathComputed = new ConcurrentHashMap<>();
-		
+
 	}
 
 	/**
@@ -753,9 +725,10 @@ public class PathComputer<V, E> {
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 30 oct. 2023
 	 */
+	@Override
 	public void incVersion() {
 		version++;
-		//shortestPathComputed.clear();
+		// shortestPathComputed.clear();
 		shortestPathComputed = new ConcurrentHashMap<>();
 		contractionHierarchyBD = null;
 		transitNodeRouting = null;
@@ -766,6 +739,7 @@ public class PathComputer<V, E> {
 	/**
 	 * Re init path finder.
 	 */
+	@Override
 	public void reInitPathFinder() {
 		optimizer = null;
 	}

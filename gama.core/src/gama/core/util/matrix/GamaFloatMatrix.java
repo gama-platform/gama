@@ -21,19 +21,20 @@ import org.locationtech.jts.index.quadtree.IntervalSize;
 
 import com.google.common.primitives.Doubles;
 
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.util.random.IRandom;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.GamaMatrixType;
-import gama.gaml.types.IContainerType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMatrix;
+import gama.api.data.objects.IPoint;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IContainerType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.IImageProvider;
+import gama.api.utils.random.IRandom;
 import one.util.streamex.DoubleStreamEx;
 import one.util.streamex.StreamEx;
 
@@ -93,7 +94,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	 * @param mat
 	 *            the mat
 	 */
-	public GamaFloatMatrix(final double[] mat) {
+	GamaFloatMatrix(final double[] mat) {
 		super(1, mat.length, Types.FLOAT);
 		setMatrix(mat);
 	}
@@ -104,7 +105,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	 * @param p
 	 *            the p
 	 */
-	public GamaFloatMatrix(final IPoint p) {
+	GamaFloatMatrix(final IPoint p) {
 		this((int) p.getX(), (int) p.getY());
 	}
 
@@ -116,7 +117,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	 * @param rows
 	 *            the rows
 	 */
-	public GamaFloatMatrix(final int cols, final int rows) {
+	GamaFloatMatrix(final int cols, final int rows) {
 		super(cols, rows, Types.FLOAT);
 		setMatrix(new double[cols * rows]);
 	}
@@ -131,7 +132,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	 * @param objects
 	 *            the objects
 	 */
-	public GamaFloatMatrix(final int cols, final int rows, final double[] objects) {
+	GamaFloatMatrix(final int cols, final int rows, final double[] objects) {
 		this(cols, rows);
 
 		java.lang.System.arraycopy(objects, 0, getMatrix(), 0, Math.min(objects.length, rows * cols));
@@ -147,7 +148,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	 * @param objects
 	 *            the objects
 	 */
-	public GamaFloatMatrix(final int cols, final int rows, final int[] objects) {
+	GamaFloatMatrix(final int cols, final int rows, final int[] objects) {
 		this(cols, rows);
 		for (int i = 0, n = Math.min(objects.length, rows * cols); i < n; i++) { matrix[i] = objects[i]; }
 	}
@@ -164,7 +165,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	 * @param objects
 	 *            the objects
 	 */
-	public GamaFloatMatrix(final IScope scope, final int cols, final int rows, final Object[] objects) {
+	GamaFloatMatrix(final IScope scope, final int cols, final int rows, final Object[] objects) {
 		this(cols, rows);
 		for (int i = 0, n = Math.min(objects.length, rows * cols); i < n; i++) {
 			matrix[i] = Cast.asFloat(scope, objects[i]);
@@ -183,8 +184,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public GamaFloatMatrix(final IScope scope, final List objects, final IPoint preferredSize)
-			throws GamaRuntimeException {
+	GamaFloatMatrix(final IScope scope, final List objects, final IPoint preferredSize) throws GamaRuntimeException {
 		super(scope, objects, preferredSize, Types.FLOAT);
 		setMatrix(new double[numRows * numCols]);
 		if (preferredSize != null) {
@@ -212,7 +212,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	 * @param mat
 	 *            the mat
 	 */
-	public GamaFloatMatrix(final IScope scope, final Object[] mat) {
+	GamaFloatMatrix(final IScope scope, final Object[] mat) {
 		this(1, mat.length);
 		for (int i = 0; i < mat.length; i++) { getMatrix()[i] = Cast.asFloat(scope, mat[i]); }
 	}
@@ -292,7 +292,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	@Override
 	protected IMatrix _matrixValue(final IScope scope, final IPoint preferredSize, final IType type,
 			final boolean copy) {
-		return GamaMatrixType.from(scope, this, type, preferredSize, copy);
+		return GamaMatrixFactory.createFromMatrix(scope, this, type, preferredSize, copy);
 	}
 
 	@Override
@@ -323,11 +323,11 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 		return Arrays.equals(this.getMatrix(), mat.getMatrix());
 	}
 
-	// Removed to improve performances
-	// @Override
-	// public int hashCode() {
-	// return Arrays.hashCode(getMatrix());
-	// }
+	// TODO Remove to improve performances if necessary
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(getMatrix());
+	}
 
 	@Override
 	public void _putAll(final IScope scope, final Object o) throws GamaRuntimeException {

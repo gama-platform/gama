@@ -34,36 +34,36 @@ import javax.swing.JPanel;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Monitor;
 
-import gama.annotations.precompiler.GamlAnnotations.display;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ILayer;
-import gama.core.common.interfaces.ILayerManager;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.outputs.LayeredDisplayData;
-import gama.core.outputs.LayeredDisplayData.Changes;
+import gama.annotations.display;
+import gama.annotations.doc;
+import gama.api.GAMA;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaEnvelopeFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IColor;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.GeneralSynchronizer;
+import gama.api.runtime.SystemInfo;
+import gama.api.ui.displays.IDisplayData;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.displays.IDisplayData.Changes;
+import gama.api.ui.layers.IEventLayerListener;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ILayerManager;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.outputs.display.AWTDisplayGraphics;
 import gama.core.outputs.display.LayerManager;
-import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.outputs.layers.OverlayLayer;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.PlatformHelper;
-import gama.core.runtime.concurrent.GeneralSynchronizer;
-import gama.core.util.IColor;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.extension.image.GamaImage;
 import gama.extension.image.ImageHelper;
+import gama.extension.image.display.AWTDisplayGraphics;
 import gama.ui.experiment.views.displays.DisplaySurfaceMenu;
 import gama.ui.shared.utils.DPIHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -604,7 +604,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	protected void setDisplayWidth(final int displayWidth) { viewPort.width = displayWidth /*- 2*/; }
 
 	@Override
-	public LayeredDisplayData getData() { return output.getData(); }
+	public IDisplayData getData() { return output.getData(); }
 
 	@Override
 	public double getDisplayHeight() { return viewPort.height; }
@@ -856,7 +856,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	@Override
 	public Font computeFont(final Font f) {
 		if (f == null) return null;
-		if (monitor != null && PlatformHelper.isWindows() && DPIHelper.isHiDPI(monitor))
+		if (monitor != null && SystemInfo.isWindows() && DPIHelper.isHiDPI(monitor))
 			return f.deriveFont(DPIHelper.autoScaleUp(monitor, f.getSize()));
 		return f;
 

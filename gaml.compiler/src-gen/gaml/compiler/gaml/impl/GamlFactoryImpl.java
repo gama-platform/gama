@@ -45,7 +45,7 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   }
 
   /**
-   * Creates an instance of the factory.
+   * Creates an INSTANCE of the factory.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated

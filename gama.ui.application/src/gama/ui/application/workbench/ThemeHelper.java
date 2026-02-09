@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gama.ui.application.workbench;
 
-import static gama.core.common.preferences.GamaPreferences.create;
-import static gama.core.common.preferences.GamaPreferences.Theme.NAME;
-import static gama.core.common.preferences.GamaPreferences.Theme.UI;
+import static gama.api.utils.prefs.GamaPreferences.create;
+import static gama.api.utils.prefs.GamaPreferences.Theme.NAME;
+import static gama.api.utils.prefs.GamaPreferences.Theme.UI;
 import static org.eclipse.swt.widgets.Display.isSystemDarkTheme;
 
 import java.io.IOException;
@@ -48,10 +48,10 @@ import org.w3c.css.sac.CSSParseException;
 
 import com.google.common.collect.Iterables;
 
-import gama.core.common.preferences.Pref;
-import gama.core.util.GamaColorFactory;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.gaml.types.IType;
+import gama.api.utils.prefs.Pref;
 import gama.dev.DEBUG;
-import gama.gaml.types.IType;
 
 /**
  * The Class ThemeHelper.

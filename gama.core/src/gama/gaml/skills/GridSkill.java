@@ -9,23 +9,23 @@
  ********************************************************************************************************/
 package gama.gaml.skills;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.topology.grid.IGrid;
-import gama.core.metamodel.topology.grid.IGridAgent;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
-import gama.core.util.IColor;
-import gama.core.util.list.IList;
-import gama.gaml.types.IType;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.annotations.skill;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ITypeProvider;
+import gama.api.constants.IKeyword;
+import gama.api.data.objects.IColor;
+import gama.api.data.objects.IList;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IGridAgent;
+import gama.api.kernel.skill.Skill;
+import gama.api.kernel.topology.IGrid;
+import gama.api.runtime.scope.IScope;
 
 /**
  * Written by drogoul Modified on 24 juin 2010
@@ -212,7 +212,7 @@ public class GridSkill extends Skill {
 	 *            the color
 	 */
 	@setter ("color")
-	public void setColor(final IAgent agent, final GamaColor color) {
+	public void setColor(final IAgent agent, final IColor color) {
 		((IGridAgent) agent).setColor(color);
 	}
 

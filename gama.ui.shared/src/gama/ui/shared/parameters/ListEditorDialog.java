@@ -26,11 +26,11 @@ import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import gama.core.common.util.StringUtils;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.gaml.compilation.GAML;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.objects.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.utils.StringUtils;
 
 /**
  * The ListParameterDialog supply a window to help user to modify the list in the visual way.

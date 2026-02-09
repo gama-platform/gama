@@ -18,16 +18,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.messaging.GamaMessage;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.IList;
+import gama.api.data.objects.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.core.util.messaging.GamaMessage;
 import gama.extension.network.common.Connector;
 import gama.extension.network.common.ConnectorMessage;
 import gama.extension.network.common.GamaNetworkException;
 import gama.extension.network.common.socket.SocketService;
-import gama.gaml.operators.Cast;
 
 /**
  * The Class UDPConnector.

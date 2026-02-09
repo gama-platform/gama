@@ -14,39 +14,37 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.util.List;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ItemList;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.util.FileUtils;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.experiment.parameters.IExperimentDisplayable;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
-import gama.core.util.file.csv.CsvWriter;
-import gama.core.util.list.GamaListFactory;
-import gama.gaml.compilation.GAML;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.factories.DescriptionFactory;
-import gama.gaml.interfaces.IValue;
-import gama.gaml.operators.Cast;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.GAMA;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.constants.IKeyword;
+import gama.api.data.csv.CsvWriter;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.objects.IColor;
+import gama.api.data.objects.IValue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IExperimentDisplayable;
+import gama.api.ui.IGui;
+import gama.api.ui.IItemList;
+import gama.api.utils.files.FileUtils;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.core.util.color.GamaColor;
 import gama.gaml.operators.Files;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class MonitorOutput.
@@ -162,8 +160,8 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 	 *            the expr
 	 */
 	public MonitorOutput(final IScope scope, final String name, final String expr) {
-		super(DescriptionFactory.create(IKeyword.MONITOR, IKeyword.VALUE, expr == null ? "" : expr, IKeyword.NAME,
-				name == null ? expr : name));
+		super(GAML.getDescriptionFactory().create(IKeyword.MONITOR, IKeyword.VALUE, expr == null ? "" : expr,
+				IKeyword.NAME, name == null ? expr : name));
 		shouldBeInitialized = true;
 		setScope(scope.copy("in monitor '" + name + "'"));
 		setNewExpressionText(expr);
@@ -211,13 +209,13 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 					lastValue = getValue().value(getScope());
 					if (history != null) { history.add(lastValue); }
 				} catch (final GamaRuntimeException e) {
-					lastValue = ItemList.ERROR_CODE + e.getMessage();
+					lastValue = IItemList.ERROR_CODE + e.getMessage();
 				}
 			} else {
 				lastValue = null;
 			}
 			if (constantColor == null && colorExpression != null) {
-				color = Cast.asColor(scope, colorExpression.value(scope));
+				color = GamaColorFactory.createFrom(scope, colorExpression.value(scope));
 			}
 		} finally {
 			scope.setCurrentSymbol(null);

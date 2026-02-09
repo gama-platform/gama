@@ -13,13 +13,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Objects;
 
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IContainerType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.objects.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IContainerType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
 import one.util.streamex.StreamEx;
 
 /**

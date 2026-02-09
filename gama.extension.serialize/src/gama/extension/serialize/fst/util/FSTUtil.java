@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * FSTUtil.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation platform
- * (v.1.9.3).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,8 +20,6 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 
-import sun.misc.Unsafe;
-
 /**
  * Created with IntelliJ IDEA. User: ruedi Date: 29.11.12 Time: 20:38 To change this template use File | Settings | File
  * Templates.
@@ -33,80 +31,6 @@ public class FSTUtil {
 
 	/** The no fields. */
 	static ObjectStreamField[] NO_FIELDS = {};
-
-	/** The un flagged unsafe. */
-	public static Unsafe unFlaggedUnsafe = FSTUtil.getUnsafe();
-
-	static {
-		if (unFlaggedUnsafe != null) {
-			refoff = unFlaggedUnsafe.arrayBaseOffset(Object[].class);
-			bufoff = unFlaggedUnsafe.arrayBaseOffset(byte[].class);
-			intoff = unFlaggedUnsafe.arrayBaseOffset(int[].class);
-			longoff = unFlaggedUnsafe.arrayBaseOffset(long[].class);
-			longscal = unFlaggedUnsafe.arrayIndexScale(long[].class);
-			intscal = unFlaggedUnsafe.arrayIndexScale(int[].class);
-			chscal = unFlaggedUnsafe.arrayIndexScale(char[].class);
-			refscal = unFlaggedUnsafe.arrayIndexScale(Object[].class);
-			choff = unFlaggedUnsafe.arrayBaseOffset(char[].class);
-			doubleoff = unFlaggedUnsafe.arrayBaseOffset(double[].class);
-			doublescal = unFlaggedUnsafe.arrayIndexScale(double[].class);
-			floatoff = unFlaggedUnsafe.arrayBaseOffset(float[].class);
-			floatscal = unFlaggedUnsafe.arrayIndexScale(float[].class);
-		} else {
-			refscal = 0;
-			refoff = 0;
-			longoff = 0;
-			longscal = 0;
-			bufoff = 0;
-			intoff = 0;
-			intscal = 0;
-			choff = 0;
-			chscal = 0;
-			doublescal = 0;
-			doubleoff = 0;
-			floatscal = 0;
-			floatoff = 0;
-		}
-	}
-
-	/** The Constant refoff. */
-	public final static long refoff;
-
-	/** The Constant refscal. */
-	public final static long refscal;
-
-	/** The Constant bufoff. */
-	public final static long bufoff;
-
-	/** The Constant choff. */
-	public final static long choff;
-
-	/** The Constant intoff. */
-	public final static long intoff;
-
-	/** The Constant longoff. */
-	public final static long longoff;
-
-	/** The Constant doubleoff. */
-	public final static long doubleoff;
-
-	/** The Constant floatoff. */
-	public final static long floatoff;
-
-	/** The Constant intscal. */
-	public final static long intscal;
-
-	/** The Constant longscal. */
-	public final static long longscal;
-
-	/** The Constant chscal. */
-	public final static long chscal;
-
-	/** The Constant floatscal. */
-	public final static long floatscal;
-
-	/** The Constant doublescal. */
-	public final static long doublescal;
 
 	/**
 	 * Clear.
@@ -320,23 +244,6 @@ public class FSTUtil {
 		Class<?> componentType = c.getComponentType();
 		if (componentType == null) return c.isPrimitive();
 		return isPrimitiveArray(c.getComponentType());
-	}
-
-	/**
-	 * Gets the unsafe.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the unsafe
-	 * @date 1 nov. 2023
-	 */
-	public static Unsafe getUnsafe() {
-		try {
-			if (unFlaggedUnsafe != null) return unFlaggedUnsafe;
-			Field f = Unsafe.class.getDeclaredField("theUnsafe");
-			f.setAccessible(true);
-			return (Unsafe) f.get(null);
-		} catch (Exception e) { /* ... */ }
-		return null;
 	}
 
 	/**

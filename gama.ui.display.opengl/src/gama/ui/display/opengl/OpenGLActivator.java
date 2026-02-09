@@ -3,7 +3,7 @@
  * OpenGLActivator.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,7 +17,6 @@ import java.net.URL;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 
 import com.jogamp.common.util.JarUtil;
@@ -29,8 +28,9 @@ import com.jogamp.opengl.GLDrawableFactory;
 import com.jogamp.opengl.GLOffscreenAutoDrawable;
 import com.jogamp.opengl.GLProfile;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.root.SystemInfo;
+import gama.api.runtime.SystemInfo;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.dependencies.GamaBundleActivator;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
@@ -38,11 +38,18 @@ import gama.dev.THREADS;
 /**
  * The Class OpenGLActivator.
  */
-public class OpenGLActivator extends AbstractUIPlugin {
+public class OpenGLActivator extends GamaBundleActivator {
 
+	/**
+	 * Start.
+	 *
+	 * @param context
+	 *            the context
+	 * @throws Exception
+	 *             the exception
+	 */
 	@Override
-	public void start(final BundleContext context) throws Exception {
-		super.start(context);
+	public void initialize(final BundleContext context) {
 
 		// // Necessary to load the native libraries correctly (see
 		// //

@@ -9,7 +9,7 @@
  ********************************************************************************************************/
 package gama.core.util.file;
 
-import static gama.core.metamodel.topology.projection.ProjectionFactory.getTargetCRSOrDefault;
+import static gama.core.topology.gis.ProjectionFactory.getTargetCRSOrDefault;
 import static org.geotools.util.factory.Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM;
 
 import java.io.File;
@@ -29,7 +29,6 @@ import org.geotools.api.data.DataSourceException;
 import org.geotools.api.geometry.Position;
 import org.geotools.api.parameter.GeneralParameterValue;
 import org.geotools.api.referencing.FactoryException;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.crs.ProjectedCRS;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
@@ -45,32 +44,33 @@ import org.geotools.geometry.GeneralBounds;
 import org.geotools.geometry.Position2D;
 import org.geotools.util.factory.Hints;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IFieldMatrixProvider;
-import gama.core.common.interfaces.IStatusMessage;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.GamaShape;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
+import gama.api.GAMA;
+import gama.api.data.factories.GamaEnvelopeFactory;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IField;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMatrix;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.Facets;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.topology.ICoordinateReferenceSystem;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IStatusMessage;
+import gama.api.utils.IFieldMatrixProvider;
+import gama.core.topology.gis.GamaCRS;
 import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.GamaFloatMatrix;
-import gama.core.util.matrix.IField;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.statements.Facets;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class GamaGridFile.
@@ -243,7 +243,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	@Override
 	public IList<String> getAttributes(final IScope scope) {
 		// No attributes
-		return GamaListFactory.EMPTY_LIST;
+		return GamaListFactory.getEmptyList();
 	}
 
 	/**
@@ -372,7 +372,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
 						if (yCorner != null && dY != null) { ascInfo[3] = yCorner + nbRows * dY; }
 
-						ascData = new GamaFloatMatrix(nbCols, nbRows);
+						ascData = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(nbCols, nbRows);
 						if (noData != null) { this.noData = noDataD; }
 						double xC = xCorner == null ? 0 : xCorner;
 						double yC = yCorner == null ? 0 : yCorner;
@@ -450,7 +450,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		final double width = scope.getSimulation().getEnvelope().getWidth();
 		final double height = scope.getSimulation().getEnvelope().getHeight();
 
-		Envelope2DArchived refEnvelope = new Envelope2DArchived(getTargetCRSOrDefault(scope), x, y, width, height);
+		Envelope2DArchived refEnvelope =
+				new Envelope2DArchived(getTargetCRSOrDefault(scope).getCRS(), x, y, width, height);
 
 		coverage = new GridCoverageFactory().create("data", imagePixelData, refEnvelope);
 
@@ -493,12 +494,12 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		AbstractGridCoverage2DReader store = null;
 		try {
 			// Necessary to compute it here, because it needs to be passed to the Hints
-			final CoordinateReferenceSystem crs = getExistingCRS(scope);
+			final ICoordinateReferenceSystem crs = getExistingCRS(scope);
 			if (isTiff(scope)) {
-				store = crs == null ? new GeoTiffReader(getFile(scope))
+				store = crs == null || crs.isNull() ? new GeoTiffReader(getFile(scope))
 						: new GeoTiffReader(getFile(scope), new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, crs));
 				noData = ((GeoTiffReader) store).getMetadata().getNoData();
-			} else if (crs == null) {
+			} else if (crs == null || crs.isNull()) {
 				store = new ArcGridReader(fis);
 			} else {
 				store = new ArcGridReader(fis, new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, crs));
@@ -574,7 +575,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			shapes.add(GamaPointFactory.create(maxX, maxY));
 			shapes.add(GamaPointFactory.create(originX, maxY));
 			shapes.add(shapes.get(0));
-			geom = GamaGeometryType.buildPolygon(shapes);
+			geom = GamaShapeFactory.buildPolygon(shapes);
 			if (!readAll) return;
 
 			final double cmx = cellWidth / 2;
@@ -628,7 +629,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				for (int i = 0, n = numRows * numCols; i < n; i++) {
 					setBuffer(GamaListFactory.<IShape> create(Types.GEOMETRY));
 					final IPoint p = GamaPointFactory.create(records.x[i], records.y[i]);
-					GamaShape rect = (GamaShape) GamaGeometryType.buildRectangle(cellWidth, cellHeight, p);
+					IShape rect = GamaShapeFactory.buildRectangle(cellWidth, cellHeight, p);
 					if (gis == null) {
 						rect = GamaShapeFactory.createFrom(rect.getInnerGeometry());
 					} else {
@@ -697,7 +698,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	}
 
 	@Override
-	protected CoordinateReferenceSystem getOwnCRS(final IScope scope) {
+	protected ICoordinateReferenceSystem getOwnCRS(final IScope scope) {
 		final File source = getFile(scope);
 		final String sourceAsString = source.getAbsolutePath();
 		final int index = sourceAsString.lastIndexOf('.');
@@ -716,7 +717,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			try (FileInputStream fip = new FileInputStream(prjFile);
 					final FileChannel channel = fip.getChannel();
 					PrjFileReader projReader = new PrjFileReader(channel);) {
-				return projReader.getCoordinateReferenceSystem();
+				return new GamaCRS(projReader.getCoordinateReferenceSystem());
 			} catch (final IOException | FactoryException e) {
 				// warn about the error but proceed, it is not fatal
 				// we have at least the default crs to use
@@ -726,7 +727,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		if (isTiff(scope)) {
 			try {
 				final GeoTiffReader store = new GeoTiffReader(getFile(scope));
-				return store.getCoordinateReferenceSystem();
+				return new GamaCRS(store.getCoordinateReferenceSystem());
 			} catch (final DataSourceException e) {
 				GAMA.reportError(scope,
 						GamaRuntimeException.warning(
@@ -854,7 +855,13 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	protected IMatrix _matrixValue(final IScope scope, final IType contentsType, final IPoint preferredSize,
 			final boolean copy) throws GamaRuntimeException {
 		getContents(scope);
-		return new GamaField(scope, this);
+		return getField(scope);
+	}
+
+	@Override
+	public void save(final IScope scope, final Facets parameters) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

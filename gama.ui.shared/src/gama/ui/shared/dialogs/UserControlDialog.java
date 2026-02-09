@@ -29,13 +29,13 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.gaml.architecture.user.UserInputStatement;
+import gama.api.GAMA;
+import gama.api.gaml.statements.IStatement;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
 import gama.gaml.architecture.user.UserPanelStatement;
-import gama.gaml.statements.IStatement;
 import gama.gaml.statements.UserCommandStatement;
+import gama.gaml.statements.UserInputStatement;
 import gama.ui.shared.interfaces.IParameterEditor;
 import gama.ui.shared.parameters.AbstractEditor;
 import gama.ui.shared.parameters.AgentAttributesEditorsList;
@@ -163,13 +163,13 @@ public class UserControlDialog extends AbstractDetailsDialog {
 		final Composite above = (Composite) super.createDialogArea(parent);
 		final EditorsGroup composite = new EditorsGroup(above);
 		for (final IStatement c : userCommands) {
-			if (c instanceof UserCommandStatement) {
-				final List<UserInputStatement> inputs = ((UserCommandStatement) c).getInputs();
+			if (c instanceof UserCommandStatement ucs) {
+				final List<UserInputStatement> inputs = ucs.getInputs();
 				final int nbLines = inputs.size() > 1 ? inputs.size() : 1;
 				final int nbCol = inputs.size() > 0 ? 1 : 3;
 				final Button b = new Button(composite, SWT.PUSH);
 				b.setText(c.getName());
-				b.setEnabled(((UserCommandStatement) c).isEnabled(scope));
+				b.setEnabled(ucs.isEnabled(scope));
 				final GridData gd = new GridData(SWT.LEFT, SWT.TOP, true, true, nbCol, nbLines);
 				b.setLayoutData(gd);
 				b.addSelectionListener(new SelectionAdapter() {
@@ -182,7 +182,6 @@ public class UserControlDialog extends AbstractDetailsDialog {
 
 				});
 				for (final UserInputStatement i : inputs) {
-
 					scope.addVarWithValue(i.getTempVarName(), i.value(scope));
 					EditorFactory.create(scope, composite, i, newValue -> {
 						i.setValue(scope, newValue);

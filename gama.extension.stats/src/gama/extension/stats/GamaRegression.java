@@ -13,21 +13,21 @@ package gama.extension.stats;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.commons.math3.stat.regression.RegressionResults;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.IJSon;
-import gama.core.util.file.json.IJsonValue;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.json.IJson;
+import gama.api.data.json.IJsonValue;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IValue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
 import gama.core.util.matrix.GamaMatrix;
-import gama.gaml.interfaces.IValue;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class GamaRegression.
@@ -196,7 +196,7 @@ public class GamaRegression implements IValue {
 	}
 
 	@Override
-	public IJsonValue serializeToJson(final IJSon json) {
+	public IJsonValue serializeToJson(final IJson json) {
 		return json.typedObject(getGamlType(), "nb_features", nbFeatures, "parameters", json.array(param), "RSquare",
 				rsquare, "residuals", json.array(error));
 	}

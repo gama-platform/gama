@@ -22,9 +22,9 @@ import org.osgi.framework.Bundle;
 import com.google.common.collect.Multimap;
 import com.google.inject.Injector;
 
+import gama.api.additions.GamaBundleLoader;
+import gama.api.compilation.GamlCompilationError;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.IGamlCompilationError;
-import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.headless.runtime.HeadlessApplication;
 import gaml.compiler.gaml.validation.GamlModelBuilder;
 
@@ -33,7 +33,7 @@ import gaml.compiler.gaml.validation.GamlModelBuilder;
  */
 public class ModelLibraryValidator extends AbstractModelLibraryRunner {
 
-	/** The instance. */
+	/** The INSTANCE. */
 	private static ModelLibraryValidator instance;
 
 	/**
@@ -117,11 +117,11 @@ public class ModelLibraryValidator extends AbstractModelLibraryRunner {
 	 */
 	private void validate(final GamlModelBuilder builder, final int[] countOfModelsValidated, final int[] returnCode,
 			final URL pathToModel) {
-		final List<IGamlCompilationError> errors = new ArrayList<>();
+		final List<GamlCompilationError> errors = new ArrayList<>();
 		// log("Compiling " + pathToModel.getFile());
 		builder.compile(pathToModel, errors);
 		countOfModelsValidated[0]++;
-		errors.stream().filter(IGamlCompilationError::isError).forEach(e -> {
+		errors.stream().filter(GamlCompilationError::isError).forEach(e -> {
 			// log("Error in " + e.getURI().lastSegment() + ": " + e);
 			DEBUG.ERR("Error in " + e.getURI() + ":\n " + e.toString() + " \n " + e.getSource().toString() + "\n");
 			returnCode[0]++;
@@ -129,9 +129,9 @@ public class ModelLibraryValidator extends AbstractModelLibraryRunner {
 	}
 
 	/**
-	 * Gets the single instance of ModelLibraryValidator.
+	 * Gets the single INSTANCE of ModelLibraryValidator.
 	 *
-	 * @return single instance of ModelLibraryValidator
+	 * @return single INSTANCE of ModelLibraryValidator
 	 */
 	public static ModelLibraryValidator getInstance() {
 		if (instance == null) { instance = new ModelLibraryValidator(); }

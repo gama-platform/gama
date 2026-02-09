@@ -1,0 +1,60 @@
+/*******************************************************************************************************
+ *
+ * GamaGisGeometry.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.core.geometry;
+
+import org.geotools.api.feature.Feature;
+import org.geotools.api.feature.Property;
+import org.geotools.api.feature.type.GeometryType;
+import org.locationtech.jts.geom.Geometry;
+
+/**
+ *
+ * The class GamaGisGeometry. A subclass of GamaGeometry that maintains a link with the underlying GIS feature
+ * attributes
+ *
+ * @author drogoul
+ * @since 30 nov. 2011
+ *
+ */
+public class GamaGisGeometry extends GamaShape {
+
+	/**
+	 * Instantiates a new gama gis geometry.
+	 *
+	 * @param g
+	 *            the g
+	 * @param feature
+	 *            the feature
+	 */
+	public GamaGisGeometry(final Geometry g, final Feature feature) {
+		super(g);
+		if (feature != null) {
+			// We filter out the geometries (already loaded before)
+			for (final Property p : feature.getProperties()) {
+				if (!(p.getType() instanceof GeometryType)) {
+					final String type = p.getDescriptor().getType().getBinding().getSimpleName();
+					if ("String".equals(type)) {
+						String val = (String) p.getValue();
+						if (val != null && (val.startsWith("'") && val.endsWith("'")
+								|| val.startsWith("\"") && val.endsWith("\""))) {
+							val = val.substring(1, val.length() - 1);
+						}
+						setAttribute(p.getName().getLocalPart(), val);
+
+					} else {
+						setAttribute(p.getName().getLocalPart(), p.getValue());
+					}
+				}
+			}
+		}
+	}
+
+}

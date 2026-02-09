@@ -17,13 +17,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
 import gama.dev.DEBUG;
 import gama.extension.pedestrian.skills.PedestrianRoadSkill;
 import gama.gaml.operators.spatial.SpatialCreation;
@@ -31,7 +32,6 @@ import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.operators.spatial.SpatialPunctal;
 import gama.gaml.operators.spatial.SpatialQueries;
 import gama.gaml.operators.spatial.SpatialTransformations;
-import gama.gaml.types.Types;
 
 /**
  * The Class PedestrianNetwork.

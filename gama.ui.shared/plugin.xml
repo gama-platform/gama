@@ -212,14 +212,12 @@
             locationURI="menu:file?after=open.ext">
          <command
                commandId="gama.ui.switchWorkspace"
-               disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.switch_disabled.svg"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.switch.svg"
                label="Switch Workspace..."
                style="push">
          </command>
          <command
                commandId="gama.ui.restart"
-               disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.restart_disabled.svg"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.restart.svg"
                label="Restart GAMA"
                style="push">
@@ -230,7 +228,6 @@
             locationURI="menu:support?after=group.about.ext">
          <command
                commandId="gama.application.command.web"
-               disabledIcon="icons_svg/light/generic/menu.help_disabled.svg"
                icon="icons_svg/light/generic/menu.help.svg"
                label="Documentation..."
                style="push"
@@ -278,7 +275,6 @@
          </separator>
          <command
                commandId="org.eclipse.ui.window.preferences"
-               disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.open.preferences_disabled.svg"
                icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/menu.open.preferences.svg"
                label="Preferences"
                style="push">
@@ -294,7 +290,6 @@
          </command>
          <command
                commandId="org.eclipse.ui.help.aboutAction"
-               disabledIcon="icons_svg/light/generic/menu.about_disabled.svg"
                icon="icons_svg/light/generic/menu.about.svg"
                label="About GAMA..."
                style="push">
@@ -381,13 +376,13 @@
       <serviceFactory
             factoryClass="gama.ui.shared.factories.StatusDisplayerFactory">
          <service
-               serviceClass="gama.core.common.interfaces.IStatusDisplayer">
+               serviceClass="gama.api.ui.IStatusDisplayer">
          </service>
       </serviceFactory>
       <serviceFactory
             factoryClass="gama.ui.shared.factories.DialogFactory">
          <service
-               serviceClass="gama.core.common.interfaces.IDialogFactory">
+               serviceClass="gama.api.ui.IDialogFactory">
          </service>
       </serviceFactory>
    </extension>

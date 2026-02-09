@@ -3,7 +3,7 @@
  * GISFileViewer.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -29,8 +29,8 @@ import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.renderer.lite.StreamingRenderer;
 
-import gama.core.metamodel.shape.IShape;
-import gama.gaml.operators.Strings;
+import gama.api.data.objects.IShape;
+import gama.api.utils.StringUtils;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaIcons;
@@ -224,7 +224,7 @@ public abstract class GISFileViewer extends EditorPart implements IToolbarDecora
 		try (FileWriter fw = new FileWriter(fcsv, false)) {
 			fw.write("id");
 			for (final String att : attributes) { fw.write(";" + att); }
-			fw.write(Strings.LN);
+			fw.write(StringUtils.LN);
 			if (geoms != null) {
 				int cpt = 0;
 				for (final IShape obj : geoms) {
@@ -234,7 +234,7 @@ public abstract class GISFileViewer extends EditorPart implements IToolbarDecora
 						final String val = obj.hasAttribute(v) ? obj.getAttribute(v).toString().replace(';', ',') : "-";
 						fw.write(";" + val);
 					}
-					fw.write(Strings.LN);
+					fw.write(StringUtils.LN);
 				}
 			} else {
 				for (final Object obj : layer.getFeatureSource().getFeatures().toArray()) {
@@ -243,7 +243,7 @@ public abstract class GISFileViewer extends EditorPart implements IToolbarDecora
 					for (final String v : attributes) {
 						fw.write(";" + feature.getAttribute(v).toString().replace(';', ','));
 					}
-					fw.write(Strings.LN);
+					fw.write(StringUtils.LN);
 				}
 			}
 

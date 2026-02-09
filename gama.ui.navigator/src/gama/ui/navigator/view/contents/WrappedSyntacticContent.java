@@ -3,7 +3,7 @@
  * WrappedSyntacticContent.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,9 +17,9 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.jface.resource.ImageDescriptor;
 
-import gama.core.runtime.GAMA;
-import gama.gaml.compilation.ast.ISyntacticElement;
-import gama.gaml.interfaces.IGamlLabelProvider;
+import gama.api.GAMA;
+import gama.api.compilation.ast.IGamlLabelProvider;
+import gama.api.compilation.ast.ISyntacticElement;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**

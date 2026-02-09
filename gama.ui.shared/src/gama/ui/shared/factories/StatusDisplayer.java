@@ -15,16 +15,16 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.progress.UIJob;
 
-import gama.core.common.interfaces.IStatusControl;
-import gama.core.common.interfaces.IStatusDisplayer;
-import gama.core.common.interfaces.IStatusMessage;
-import gama.core.common.interfaces.IStatusMessage.StatusType;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IExperimentStateListener;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IColor;
+import gama.api.GAMA;
+import gama.api.data.objects.IColor;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.simulation.IExperimentStateListener;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.ui.IStatusControl;
+import gama.api.ui.IStatusDisplayer;
+import gama.api.ui.IStatusMessage;
+import gama.api.ui.IStatusMessage.StatusType;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.status.StatusMessageFactory;
 
@@ -149,7 +149,7 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	 *            the state
 	 */
 	@Override
-	public void updateStateTo(final IExperimentPlan experiment, final State state) {
+	public void updateStateTo(final IExperimentSpecies experiment, final State state) {
 		updateExperimentStatus();
 	}
 

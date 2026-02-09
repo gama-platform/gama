@@ -17,9 +17,10 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL2ES3;
 import com.jogamp.opengl.util.texture.Texture;
 
-import gama.core.common.geometry.ICoordinates;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
+import gama.api.data.factories.GamaCoordinateSequenceFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.ICoordinates;
+import gama.api.data.objects.IPoint;
 import gama.core.util.file.GamaObjFile;
 import gama.extension.image.GamaImageFile;
 import gama.ui.display.opengl.OpenGL;
@@ -117,7 +118,7 @@ public class ObjFileDrawer {
 				final double[] ordinates = file.setOfVertex.get(tempfaces[w] - 1);
 				for (int k = 0; k < 3; k++) { arrayOfVertices[w * 3 + k] = ordinates[k]; }
 			}
-			final ICoordinates coords = ICoordinates.ofLength(tempfaces.length + 1);
+			final ICoordinates coords = GamaCoordinateSequenceFactory.ofLength(tempfaces.length + 1);
 			coords.setTo(arrayOfVertices);
 			coords.completeRing();
 

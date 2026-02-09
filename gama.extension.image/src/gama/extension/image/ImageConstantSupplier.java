@@ -15,8 +15,8 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
-import gama.gaml.constants.IConstantAcceptor;
-import gama.gaml.constants.IConstantsSupplier;
+import gama.api.additions.IConstantAcceptor;
+import gama.api.additions.delegates.IConstantsSupplier;
 
 /**
  * The Class ImageConstantSupplier.

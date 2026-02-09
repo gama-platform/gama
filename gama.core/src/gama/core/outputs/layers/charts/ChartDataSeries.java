@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ChartDataSeries.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,12 +13,14 @@ package gama.core.outputs.layers.charts;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.util.IColor;
-import gama.core.util.list.IList;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.objects.IColor;
+import gama.api.data.objects.IList;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class ChartDataSeries.
@@ -370,7 +372,7 @@ public class ChartDataSeries {
 		if (!uselist) return o;
 
 		if (o instanceof IList) {
-			final IList ol = Cast.asList(scope, o);
+			final IList ol = GamaListFactory.toList(scope, o);
 			if (ol.size() < listvalue) return null;
 			return ol.get(listvalue);
 
@@ -420,19 +422,19 @@ public class ChartDataSeries {
 			final Object o = getlistvalue(scope, barvalues, IKeyword.COLOR, listvalue);
 			if (o != null) {
 				if (o instanceof IList) {
-					final IList ol = Cast.asList(scope, o);
-					if (ol.size() == 1) { this.setMycolor(Cast.asColor(scope, ol.get(0))); }
+					final IList ol = GamaListFactory.toList(scope, o);
+					if (ol.size() == 1) { this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(0))); }
 					if (ol.size() == 2) {
-						this.setMycolor(Cast.asColor(scope, ol.get(1)));
-						this.setMyMincolor(Cast.asColor(scope, ol.get(0)));
+						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(1)));
+						this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
 					}
 					if (ol.size() > 2) {
-						this.setMyMincolor(Cast.asColor(scope, ol.get(0)));
-						this.setMyMedcolor(Cast.asColor(scope, ol.get(1)));
-						this.setMycolor(Cast.asColor(scope, ol.get(2)));
+						this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
+						this.setMyMedcolor(GamaColorFactory.createFrom(scope, ol.get(1)));
+						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(2)));
 					}
 				} else {
-					final IColor col = Cast.asColor(scope, o);
+					final IColor col = GamaColorFactory.createFrom(scope, o);
 					this.setMycolor(col);
 
 				}
@@ -485,19 +487,19 @@ public class ChartDataSeries {
 			final Object o = getlistvalue(scope, barvalues, IKeyword.COLOR, listvalue);
 			if (o != null) {
 				if (o instanceof IList) {
-					final IList ol = Cast.asList(scope, o);
-					if (ol.size() == 1) { this.setMycolor(Cast.asColor(scope, ol.get(0))); }
+					final IList ol = GamaListFactory.toList(scope, o);
+					if (ol.size() == 1) { this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(0))); }
 					if (ol.size() == 2) {
-						this.setMycolor(Cast.asColor(scope, ol.get(1)));
-						this.setMyMincolor(Cast.asColor(scope, ol.get(0)));
+						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(1)));
+						this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
 					}
 					if (ol.size() > 2) {
-						this.setMyMincolor(Cast.asColor(scope, ol.get(0)));
-						this.setMyMedcolor(Cast.asColor(scope, ol.get(1)));
-						this.setMycolor(Cast.asColor(scope, ol.get(2)));
+						this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
+						this.setMyMedcolor(GamaColorFactory.createFrom(scope, ol.get(1)));
+						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(2)));
 					}
 				} else {
-					final IColor col = Cast.asColor(scope, o);
+					final IColor col = GamaColorFactory.createFrom(scope, o);
 					this.setMycolor(col);
 
 				}
@@ -534,19 +536,19 @@ public class ChartDataSeries {
 		// final Object o = getlistvalue(scope, barvalues, IKeyword.COLOR, listvalue);
 		// if (o != null) {
 		// if (o instanceof IList) {
-		// final IList ol = Cast.asList(scope, o);
-		// if (ol.size() == 1) { this.setMycolor(Cast.asColor(scope, ol.get(0))); }
+		// final IList ol = GamaListFactory.createFrom(scope, o);
+		// if (ol.size() == 1) { this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(0))); }
 		// if (ol.size() == 2) {
-		// this.setMycolor(Cast.asColor(scope, ol.get(1)));
-		// this.setMyMincolor(Cast.asColor(scope, ol.get(0)));
+		// this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(1)));
+		// this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
 		// }
 		// if (ol.size() > 2) {
-		// this.setMyMincolor(Cast.asColor(scope, ol.get(0)));
-		// this.setMyMedcolor(Cast.asColor(scope, ol.get(1)));
-		// this.setMycolor(Cast.asColor(scope, ol.get(2)));
+		// this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
+		// this.setMyMedcolor(GamaColorFactory.createFrom(scope, ol.get(1)));
+		// this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(2)));
 		// }
 		// } else {
-		// final GamaColor col = Cast.asColor(scope, o);
+		// final GamaColor col = GamaColorFactory.createFrom(scope, o);
 		// this.setMycolor(col);
 		//
 		// }
@@ -566,7 +568,7 @@ public class ChartDataSeries {
 			final Object o = getlistvalue(scope, barvalues, ChartDataStatement.YERR_VALUES, listvalue);
 			if (o != null) {
 				if (o instanceof IList) {
-					final IList ol = Cast.asList(scope, o);
+					final IList ol = GamaListFactory.toList(scope, o);
 					if (ol.size() > 1) {
 						this.yerrvaluesmin.add(Cast.asFloat(scope, ol.get(0)));
 						this.yerrvaluesmax.add(Cast.asFloat(scope, ol.get(1)));
@@ -587,7 +589,7 @@ public class ChartDataSeries {
 			final Object o = getlistvalue(scope, barvalues, ChartDataStatement.XERR_VALUES, listvalue);
 			if (o != null) {
 				if (o instanceof IList) {
-					final IList ol = Cast.asList(scope, o);
+					final IList ol = GamaListFactory.toList(scope, o);
 					if (ol.size() > 1) {
 						this.xerrvaluesmin.add(Cast.asFloat(scope, ol.get(0)));
 						this.xerrvaluesmax.add(Cast.asFloat(scope, ol.get(1)));
@@ -659,19 +661,19 @@ public class ChartDataSeries {
 			final Object o = getlistvalue(scope, barvalues, IKeyword.COLOR, listvalue);
 			if (o != null) {
 				if (o instanceof IList) {
-					final IList ol = Cast.asList(scope, o);
-					if (ol.size() == 1) { this.setMycolor(Cast.asColor(scope, ol.get(0))); }
+					final IList ol = GamaListFactory.toList(scope, o);
+					if (ol.size() == 1) { this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(0))); }
 					if (ol.size() == 2) {
-						this.setMycolor(Cast.asColor(scope, ol.get(1)));
-						this.setMyMincolor(Cast.asColor(scope, ol.get(0)));
+						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(1)));
+						this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
 					}
 					if (ol.size() > 2) {
-						this.setMyMincolor(Cast.asColor(scope, ol.get(0)));
-						this.setMyMedcolor(Cast.asColor(scope, ol.get(1)));
-						this.setMycolor(Cast.asColor(scope, ol.get(2)));
+						this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
+						this.setMyMedcolor(GamaColorFactory.createFrom(scope, ol.get(1)));
+						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(2)));
 					}
 				} else {
-					final IColor col = Cast.asColor(scope, o);
+					final IColor col = GamaColorFactory.createFrom(scope, o);
 					this.setMycolor(col);
 
 				}
@@ -690,7 +692,7 @@ public class ChartDataSeries {
 			final Object o = getlistvalue(scope, barvalues, ChartDataStatement.YERR_VALUES, listvalue);
 			if (o != null) {
 				if (o instanceof IList) {
-					final IList ol = Cast.asList(scope, o);
+					final IList ol = GamaListFactory.toList(scope, o);
 					if (ol.size() > 1) {
 						this.yerrvaluesmin.add(Cast.asFloat(scope, ol.get(0)));
 						this.yerrvaluesmax.add(Cast.asFloat(scope, ol.get(1)));

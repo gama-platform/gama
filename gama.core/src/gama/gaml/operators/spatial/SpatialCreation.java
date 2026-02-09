@@ -15,34 +15,32 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.gaml.compilation.annotations.depends_on;
-import gama.gaml.operators.Cast;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.api.annotations.depends_on;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaEnvelopeFactory;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GeometryUtils;
 import gama.gaml.operators.Maths;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class Creation.
@@ -90,7 +88,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (radius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCircle(radius, location);
+		return GamaShapeFactory.buildCircle(radius, location);
 	}
 
 	/**
@@ -132,7 +130,7 @@ public class SpatialCreation {
 	public static IShape circle(final IScope scope, final Double radius, final IPoint position) {
 		IPoint location = position;
 		if (radius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCircle(radius, location);
+		return GamaShapeFactory.buildCircle(radius, location);
 	}
 
 	/**
@@ -179,7 +177,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (xRadius <= 0 && yRadius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildEllipse(xRadius, yRadius, location);
+		return GamaShapeFactory.buildEllipse(xRadius, yRadius, location);
 	}
 
 	/**
@@ -226,7 +224,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (xRadius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildSquircle(xRadius, power, location);
+		return GamaShapeFactory.buildSquircle(xRadius, power, location);
 	}
 
 	/**
@@ -331,7 +329,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (xRadius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildArc(xRadius * 2, heading, amplitude, filled, location);
+		return GamaShapeFactory.buildArc(xRadius * 2, heading, amplitude, filled, location);
 	}
 
 	/**
@@ -387,7 +385,7 @@ public class SpatialCreation {
 			double z = pt1.getZ() + t * (pt2.getZ() - pt1.getZ());
 			pts[iPt++] = new Coordinate(x, y, z);
 		}
-		IShape shape = GamaShapeFactory.createFrom(GeometryUtils.GEOMETRY_FACTORY.createLineString(pts));
+		IShape shape = GamaShapeFactory.createFrom(GeometryUtils.getGeometryFactory().createLineString(pts));
 		shape = SpatialTransformations.rotated_by(scope, shape, SpatialRelations.towards(scope, pt2, pt1));
 		return SpatialTransformations.translated_by(scope, shape, pt1.minus(shape.getPoints().firstValue(scope)));
 	}
@@ -434,7 +432,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (xRadius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCross(xRadius, width, location);
+		return GamaShapeFactory.buildCross(xRadius, width, location);
 	}
 
 	/**
@@ -474,7 +472,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (xRadius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCross(xRadius, null, location);
+		return GamaShapeFactory.buildCross(xRadius, null, location);
 	}
 
 	/**
@@ -521,7 +519,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (radius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCylinder(radius, depth, location);
+		return GamaShapeFactory.buildCylinder(radius, depth, location);
 	}
 
 	/**
@@ -564,7 +562,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (radius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildSphere(radius, location);
+		return GamaShapeFactory.buildSphere(radius, location);
 	}
 
 	/**
@@ -606,7 +604,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (size <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildTeapot(size, location);
+		return GamaShapeFactory.buildTeapot(size, location);
 	}
 
 	/**
@@ -751,7 +749,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (radius <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCone3D(radius, height, location);
+		return GamaShapeFactory.buildCone3D(radius, height, location);
 	}
 
 	/**
@@ -798,7 +796,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (side_size <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildSquare(side_size, location);
+		return GamaShapeFactory.buildSquare(side_size, location);
 	}
 
 	/**
@@ -841,7 +839,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (side_size <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildCube(side_size, location);
+		return GamaShapeFactory.buildCube(side_size, location);
 	}
 
 	/**
@@ -879,7 +877,7 @@ public class SpatialCreation {
 		IPoint location;
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
-		return GamaGeometryType.buildRectangle(p.getX(), p.getY(), location);
+		return GamaShapeFactory.buildRectangle(p.getX(), p.getY(), location);
 	}
 
 	/**
@@ -926,7 +924,7 @@ public class SpatialCreation {
 		IPoint location;
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
-		return GamaGeometryType.buildRectangle(x, y, location);
+		return GamaShapeFactory.buildRectangle(x, y, location);
 	}
 
 	/**
@@ -969,7 +967,7 @@ public class SpatialCreation {
 				GamaPointFactory.create(Math.min(upperLeftCorner.getX(), lowerRightCorner.getX()),
 						Math.min(upperLeftCorner.getY(), lowerRightCorner.getY()));
 		location = GamaPointFactory.create(realTopLeftCorner.getX() + width / 2, realTopLeftCorner.getY() + height / 2);
-		return GamaGeometryType.buildRectangle(width, height, location);
+		return GamaShapeFactory.buildRectangle(width, height, location);
 	}
 
 	/**
@@ -1013,7 +1011,7 @@ public class SpatialCreation {
 		IPoint location;
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
-		return GamaGeometryType.buildBox(p.getX(), p.getY(), p.getZ(), location);
+		return GamaShapeFactory.buildBox(p.getX(), p.getY(), p.getZ(), location);
 	}
 
 	/**
@@ -1063,7 +1061,7 @@ public class SpatialCreation {
 		IPoint location;
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
-		return GamaGeometryType.buildBox(x, y, z, location);
+		return GamaShapeFactory.buildBox(x, y, z, location);
 	}
 
 	/**
@@ -1105,7 +1103,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (side_size <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildTriangle(side_size, location);
+		return GamaShapeFactory.buildTriangle(side_size, location);
 	}
 
 	/**
@@ -1151,7 +1149,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (base <= 0 || height <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildTriangle(base, height, location);
+		return GamaShapeFactory.buildTriangle(base, height, location);
 	}
 
 	/**
@@ -1194,7 +1192,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (side_size <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildPyramid(side_size, location);
+		return GamaShapeFactory.buildPyramid(side_size, location);
 	}
 
 	/**
@@ -1237,7 +1235,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (size <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildHexagon(size, location);
+		return GamaShapeFactory.buildHexagon(size, location);
 	}
 
 	/**
@@ -1277,7 +1275,7 @@ public class SpatialCreation {
 		final Double width = size.getX();
 		final Double height = size.getY();
 		if (width <= 0 || height <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildHexagon(width, height, location);
+		return GamaShapeFactory.buildHexagon(width, height, location);
 	}
 
 	/**
@@ -1321,7 +1319,7 @@ public class SpatialCreation {
 		final IAgent a = scope.getAgent();
 		location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		if (width == null || height == null || width <= 0 || height <= 0) return GamaShapeFactory.createFrom(location);
-		return GamaGeometryType.buildHexagon(width, height, location);
+		return GamaShapeFactory.buildHexagon(width, height, location);
 	}
 
 	/**
@@ -1378,10 +1376,10 @@ public class SpatialCreation {
 		final IList<IShape> shapes = GamaListFactory.create(scope, Types.GEOMETRY, points);
 		final int size = shapes.length(scope);
 		final IShape first = shapes.firstValue(scope);
-		if (size == 1) return GamaGeometryType.createPoint(first);
-		if (size == 2) return GamaGeometryType.buildLine(first, shapes.lastValue(scope));
+		if (size == 1) return GamaShapeFactory.buildPoint(first);
+		if (size == 2) return GamaShapeFactory.buildLine(first, shapes.lastValue(scope));
 		if (!first.equals(shapes.lastValue(scope))) { shapes.add(first); }
-		return GamaGeometryType.buildPolygon(shapes);
+		return GamaShapeFactory.buildPolygon(shapes);
 	}
 
 	/**
@@ -1434,11 +1432,11 @@ public class SpatialCreation {
 		final IList<IShape> shapes = GamaListFactory.create(scope, Types.POINT, points);
 		final int size = shapes.length(scope);
 		final IShape first = shapes.firstValue(scope);
-		if (size == 1) return GamaGeometryType.createPoint(first);
+		if (size == 1) return GamaShapeFactory.buildPoint(first);
 		final IShape last = shapes.lastValue(scope);
-		if (size == 2) return GamaGeometryType.buildLine(first, last);
+		if (size == 2) return GamaShapeFactory.buildLine(first, last);
 		if (!first.equals(last)) { shapes.add(first); }
-		return GamaGeometryType.buildPolyhedron(shapes, depth);
+		return GamaShapeFactory.buildPolyhedron(shapes, depth);
 	}
 
 	/**
@@ -1489,7 +1487,7 @@ public class SpatialCreation {
 	@no_test
 	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2) {
 		if (p0 == null || p1 == null || p2 == null) return null;
-		return GamaGeometryType.buildPolyline(quadraticBezierCurve(p0, p1, p2, 10));
+		return GamaShapeFactory.buildPolyline(quadraticBezierCurve(p0, p1, p2, 10));
 	}
 
 	/**
@@ -1542,7 +1540,7 @@ public class SpatialCreation {
 	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2,
 			final int nbPoints) {
 		if (p0 == null || p1 == null || p2 == null || nbPoints < 2) return null;
-		return GamaGeometryType.buildPolyline(quadraticBezierCurve(p0, p1, p2, nbPoints));
+		return GamaShapeFactory.buildPolyline(quadraticBezierCurve(p0, p1, p2, nbPoints));
 	}
 
 	/**
@@ -1595,7 +1593,7 @@ public class SpatialCreation {
 	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2,
 			final IPoint p3) {
 		if (p0 == null || p1 == null || p2 == null || p3 == null) return null;
-		return GamaGeometryType.buildPolyline(cubicBezierCurve(p0, p1, p2, p3, 10));
+		return GamaShapeFactory.buildPolyline(cubicBezierCurve(p0, p1, p2, p3, 10));
 	}
 
 	/**
@@ -1994,7 +1992,7 @@ public class SpatialCreation {
 	public static IShape bezierCurve(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2,
 			final IPoint p3, final int nbPoints) {
 		if (p0 == null || p1 == null || p2 == null || p3 == null || nbPoints < 2) return null;
-		return GamaGeometryType.buildPolyline(cubicBezierCurve(p0, p1, p2, p3, nbPoints));
+		return GamaShapeFactory.buildPolyline(cubicBezierCurve(p0, p1, p2, p3, nbPoints));
 	}
 
 	/**
@@ -2138,9 +2136,9 @@ public class SpatialCreation {
 		final IList<IShape> shapes = points.listValue(scope, Types.NO_TYPE, false);
 		final int size = shapes.length(scope);
 		final IShape first = shapes.firstValue(scope);
-		if (size == 1) return GamaGeometryType.createPoint(first);
-		if (size == 2) return GamaGeometryType.buildLine(first, points.lastValue(scope));
-		return GamaGeometryType.buildPolyline(shapes);
+		if (size == 1) return GamaShapeFactory.buildPoint(first);
+		if (size == 2) return GamaShapeFactory.buildLine(first, points.lastValue(scope));
+		return GamaShapeFactory.buildPolyline(shapes);
 	}
 
 	/**
@@ -2187,7 +2185,7 @@ public class SpatialCreation {
 		final IShape first = shapes.firstValue(scope);
 		if (size == 1) return first.copy(scope);
 
-		return GamaGeometryType.buildMultiGeometry(shapes);
+		return GamaShapeFactory.buildMultiGeometry(shapes);
 	}
 
 	/**
@@ -2233,9 +2231,9 @@ public class SpatialCreation {
 		final IList<IShape> shapes = points.listValue(scope, Types.NO_TYPE, false);
 		final int size = shapes.length(scope);
 		final IShape first = shapes.firstValue(scope);
-		if (size == 1) return GamaGeometryType.createPoint(first);
-		if (size == 2) return GamaGeometryType.buildLineCylinder(first, points.lastValue(scope), radius);
-		return GamaGeometryType.buildPolylineCylinder(shapes, radius);
+		if (size == 1) return GamaShapeFactory.buildPoint(first);
+		if (size == 2) return GamaShapeFactory.buildLineCylinder(first, points.lastValue(scope), radius);
+		return GamaShapeFactory.buildPolylineCylinder(shapes, radius);
 	}
 
 	/**
@@ -2283,9 +2281,9 @@ public class SpatialCreation {
 		final IList<IShape> shapes = points.listValue(scope, Types.NO_TYPE, false);
 		final int size = shapes.length(scope);
 		final IShape first = shapes.firstValue(scope);
-		if (size == 1) return GamaGeometryType.createPoint(first);
-		if (size == 2) return GamaGeometryType.buildPlan(first, shapes.lastValue(scope), depth);
-		return GamaGeometryType.buildPolyplan(shapes, depth);
+		if (size == 1) return GamaShapeFactory.buildPoint(first);
+		if (size == 2) return GamaShapeFactory.buildPlan(first, shapes.lastValue(scope), depth);
+		return GamaShapeFactory.buildPolyplan(shapes, depth);
 	}
 
 	/**
@@ -2335,10 +2333,10 @@ public class SpatialCreation {
 			throws GamaRuntimeException {
 		if (source == null) {
 			if (target == null) return GamaPointFactory.create(0, 0);
-			return GamaGeometryType.createPoint(target.getLocation());
+			return GamaShapeFactory.buildPoint(target.getLocation());
 		}
-		if (target == null) return GamaGeometryType.createPoint(source.getLocation());
-		return GamaGeometryType.buildLink(scope, source, target);
+		if (target == null) return GamaShapeFactory.buildPoint(source.getLocation());
+		return GamaShapeFactory.buildLink(scope, source, target);
 	}
 
 	/**
@@ -2385,7 +2383,7 @@ public class SpatialCreation {
 	@no_test
 	public static IShape around(final IScope scope, final Double width, final Object toBeCastedIntoGeometry)
 			throws GamaRuntimeException {
-		final IShape g = Cast.asGeometry(scope, toBeCastedIntoGeometry, false);
+		final IShape g = GamaShapeFactory.createFrom(scope, toBeCastedIntoGeometry, false);
 		if (g == null) return circle(scope, width);
 		return SpatialOperators.minus(scope, SpatialTransformations.enlarged_by(scope, g, width), g);
 	}
@@ -2395,10 +2393,10 @@ public class SpatialCreation {
 	 *
 	 * @doc(value =
 	 * "A rectangular 3D geometry that represents the rectangle that surrounds the geometries or the surface described by the arguments. More general than geometry(arguments).envelope, as it allows to pass int, double, point, image files, shape files, asc files, or any list combining these arguments, in which case the envelope will be correctly expanded. If an envelope cannot be determined from the arguments, a default one of dimensions (0,100, 0, 100, 0, 100) is returned"
-	 * ) public static IShape envelope(final IScope scope, final Object obj) { Envelope3D env = new
-	 * Envelope3D(GeometryUtils.computeEnvelopeFrom(scope, obj)); if ( env.isNull() ) { env = new Envelope3D(0, 100, 0,
-	 * 100, 0, 100); } final IShape shape = GamaGeometryType.buildBox(env.getWidth(), env.getHeight(), env.getDepth(),
-	 * GamaPointFactory.create(env.centre())); return shape; }
+	 * ) public static IShape envelope(final IScope scope, final Object obj) { GamaEnvelope env = new
+	 * GamaEnvelope(GeometryUtils.computeEnvelopeFrom(scope, obj)); if ( env.isNull() ) { env = new GamaEnvelope(0, 100,
+	 * 0, 100, 0, 100); } final IShape shape = GamaGeometryType.buildBox(env.getWidth(), env.getHeight(),
+	 * env.getDepth(), GamaPointFactory.create(env.centre())); return shape; }
 	 */
 
 	/**
@@ -2448,10 +2446,10 @@ public class SpatialCreation {
 
 	)
 	public static IShape envelope(final IScope scope, final Object obj) {
-		IEnvelope env = GamaEnvelopeFactory.of(GeometryUtils.computeEnvelopeFrom(scope, obj));
+		IEnvelope env = GamaEnvelopeFactory.of(GamaEnvelopeFactory.computeEnvelopeFrom(scope, obj));
 		try {
 			if (env.isNull()) { env = GamaEnvelopeFactory.of(0, 100, 0, 100, 0, 100); }
-			return GamaGeometryType.buildBox(env.getWidth(), env.getHeight(), env.getDepth(), env.center());
+			return GamaShapeFactory.buildBox(env.getWidth(), env.getHeight(), env.getDepth(), env.center());
 		} finally {
 			env.dispose();
 		}

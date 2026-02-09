@@ -1,8 +1,17 @@
+/*******************************************************************************************************
+ *
+ * ImportedResources.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gaml.compiler.gaml.resource;
 
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.transform;
-import static gama.gaml.compilation.GAML.getModelFactory;
 import static java.util.Collections.singleton;
 
 import java.util.Map;
@@ -13,9 +22,10 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-import gama.gaml.compilation.ast.ISyntacticElement;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.descriptions.ValidationContext;
+import gama.api.compilation.ast.ISyntacticElement;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.validation.IValidationContext;
+import gaml.compiler.gaml.factories.ModelFactory;
 
 /**
  * The Class ImportedResources.
@@ -83,13 +93,13 @@ public class ImportedResources {
 	 *
 	 * @return the map
 	 */
-	public Map<String, ModelDescription> computeMicroModels(final String project, final String model,
-			final ValidationContext context) {
+	public Map<String, IModelDescription> computeMicroModels(final String project, final String model,
+			final IValidationContext context) {
 		if (micromodels == null) return null;
-		Map<String, ModelDescription> result = Maps.newHashMap();
+		Map<String, IModelDescription> result = Maps.newHashMap();
 
 		for (final String aliasName : micromodels.keySet()) {
-			final ModelDescription mic = getModelFactory().createModelDescription(project, model,
+			final IModelDescription mic = ModelFactory.getInstance().createModelDescription(project, model,
 					transform(micromodels.get(aliasName), GamlResource.TO_SYNTACTIC_CONTENTS), context, null);
 			mic.setAlias(aliasName);
 			result.put(aliasName, mic);

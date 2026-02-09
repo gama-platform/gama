@@ -14,13 +14,13 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.gaml.descriptions.ModelDescription;
+import gama.api.constants.IKeyword;
 import gaml.compiler.gaml.ArgumentPair;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.speciesOrGridDisplayStatement;
+import gaml.compiler.gaml.descriptions.ModelDescription;
 import gaml.compiler.gaml.util.GamlSwitch;
 
 /**

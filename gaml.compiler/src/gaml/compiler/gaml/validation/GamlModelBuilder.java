@@ -23,16 +23,14 @@ import org.eclipse.xtext.resource.SynchronizedXtextResourceSet;
 import com.google.common.collect.Iterables;
 import com.google.inject.Injector;
 
-import gama.annotations.precompiler.GamlProperties;
-import gama.core.kernel.model.IModel;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.validation.IGamlModelBuilder;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaCompilationFailedException;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.utils.GamlProperties;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GamaCompilationFailedException;
-import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.compilation.IGamlCompilationError;
-import gama.gaml.compilation.IGamlCompilationError.GamlCompilationErrorType;
-import gama.gaml.compilation.IGamlModelBuilder;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.interfaces.IGamlIssue;
 import gaml.compiler.gaml.resource.GamlResource;
 import one.util.streamex.StreamEx;
 
@@ -45,15 +43,15 @@ import one.util.streamex.StreamEx;
  */
 public class GamlModelBuilder implements IGamlModelBuilder {
 
-	/** The default instance. */
-	private static GamlModelBuilder defaultInstance = new GamlModelBuilder();
+	/** The default INSTANCE. */
+	private static GamlModelBuilder INSTANCE = new GamlModelBuilder();
 
 	/**
-	 * Gets the default instance.
+	 * Gets the default INSTANCE.
 	 *
-	 * @return the default instance
+	 * @return the default INSTANCE
 	 */
-	public static GamlModelBuilder getDefaultInstance() { return defaultInstance; }
+	public static GamlModelBuilder getInstance() { return INSTANCE; }
 
 	/** The build resource set. */
 	private final ResourceSet buildResourceSet;
@@ -84,7 +82,7 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @return the i model
 	 */
 	@Override
-	public IModel compile(final URL url, final List<IGamlCompilationError> errors) {
+	public IModelSpecies compile(final URL url, final List<GamlCompilationError> errors) {
 		try {
 			final java.net.URI uri = new java.net.URI(url.getProtocol(), url.getPath(), null).normalize();
 			final URI resolvedURI = URI.createURI(uri.toString());
@@ -104,7 +102,7 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @param errors
 	 *            a list that will be filled with compilation errors / warnings (can be null)
 	 * @param metaProperties
-	 *            an instance of GamlProperties that will be filled with the sylmbolic names of bundles required to run
+	 *            an INSTANCE of GamlProperties that will be filled with the sylmbolic names of bundles required to run
 	 *            the model (can be null) and other informations (skills, operators, statements, ...).
 	 * @return the compiled model or null if errors occur
 	 * @throws IOException
@@ -114,14 +112,14 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @date 15 oct. 2023
 	 */
 	@Override
-	public synchronized IModel compile(final File myFile, final List<IGamlCompilationError> errors,
+	public synchronized IModelSpecies compile(final File myFile, final List<GamlCompilationError> errors,
 			final GamlProperties metaProperties) throws IOException, GamaCompilationFailedException {
 		if (myFile == null) throw new IOException("Model file is null");
 		final String fileName = myFile.getAbsolutePath();
 		if (!myFile.exists()) throw new IOException("Model file does not exist: " + fileName);
 		DEBUG.LOG(fileName + " model is being compiled...");
 
-		final IModel model = GamlModelBuilder.getDefaultInstance().compile(URI.createFileURI(fileName), errors);
+		final IModelSpecies model = compile(URI.createFileURI(fileName), errors);
 		if (model == null) {
 			DEBUG.LOG("Model didn't compile because of the following compilation errors: \n"
 					+ (errors == null ? "" : StreamEx.of(errors).joining("\n")));
@@ -141,11 +139,11 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 * @return the i model
 	 */
 	@Override
-	public IModel compile(final URI uri, final List<IGamlCompilationError> errors) {
+	public IModelSpecies compile(final URI uri, final List<GamlCompilationError> errors) {
 		// We build the description and fill the errors list
-		final ModelDescription model = buildModelDescription(uri, errors);
+		final IModelDescription model = buildModelDescription(uri, errors);
 		// And compile it before returning it, unless it is null.
-		return model == null ? null : (IModel) model.compile();
+		return model == null ? null : (IModelSpecies) model.compile();
 	}
 
 	/**
@@ -157,7 +155,7 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 	 *            the errors
 	 * @return the model description
 	 */
-	private ModelDescription buildModelDescription(final URI uri, final List<IGamlCompilationError> errors) {
+	private IModelDescription buildModelDescription(final URI uri, final List<GamlCompilationError> errors) {
 		try {
 			final GamlResource r = (GamlResource) buildResourceSet.getResource(uri, true);
 			// Syntactic errors detected, we cannot build the resource
@@ -166,12 +164,12 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 					final String err_ =
 							r.getErrors() != null && r.getErrors().size() > 0 ? r.getErrors().get(0).toString() : "";
 					errors.add(new GamlCompilationError("Syntax errors: " + err_, IGamlIssue.GENERAL,
-							r.getContents().get(0), GamlCompilationErrorType.Error));
+							r.getContents().get(0), GamlCompilationError.Type.Error));
 				}
 				return null;
 			}
 			// We build the description
-			final ModelDescription model = r.buildCompleteDescription();
+			final IModelDescription model = r.buildCompleteDescription();
 			if (model != null) { model.validate(); }
 			if (errors != null) { Iterables.addAll(errors, r.getValidationContext()); }
 			if (r.getValidationContext().hasErrors()) return null;

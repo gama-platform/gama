@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.workspace.status;
 
-import gama.core.common.interfaces.IStatusMessage;
-import gama.core.common.interfaces.IStatusMessage.StatusType;
+import gama.api.ui.IStatusMessage;
+import gama.api.ui.IStatusMessage.StatusType;
 
 /**
  *

@@ -3,7 +3,7 @@
  * EditorSearchControls.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -41,7 +41,7 @@ import org.eclipse.ui.swt.IFocusService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import gama.core.runtime.PlatformHelper;
+import gama.api.runtime.SystemInfo;
 import gama.ui.shared.bindings.GamaKeyBindings;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;
@@ -93,7 +93,7 @@ public class EditorSearchControls {
 		logger = LoggerFactory.getLogger(EditorSearchControls.class);
 		Composite parent = toolbar;
 		Color c = parent.getBackground();
-		if (PlatformHelper.isWindows()) {
+		if (SystemInfo.isWindows()) {
 			parent = new Composite(toolbar, SWT.NONE);
 			final GridData data = new GridData(SWT.FILL, SWT.FILL, true, true);
 			data.heightHint = 24;

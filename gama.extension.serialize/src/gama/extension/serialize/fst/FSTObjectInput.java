@@ -3,7 +3,7 @@
  * FSTObjectInput.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,7 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
-import gama.core.metamodel.agent.IAgent;
+import gama.api.kernel.agent.IAgent;
 import gama.dev.DEBUG;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
 import gama.extension.serialize.fst.coders.Unknown;
@@ -307,19 +307,19 @@ public class FSTObjectInput implements ObjectInput {
 	 * Inits the registries.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param conf
+	 * @param conf1
 	 *            the conf
 	 * @date 29 sept. 2023
 	 */
-	protected void initRegistries(final FSTConfiguration conf) {
-		ignoreAnnotations = conf.getCLInfoRegistry().isIgnoreAnnotations();
-		clInfoRegistry = conf.getCLInfoRegistry();
+	protected void initRegistries(final FSTConfiguration conf1) {
+		ignoreAnnotations = conf1.getCLInfoRegistry().isIgnoreAnnotations();
+		clInfoRegistry = conf1.getCLInfoRegistry();
 
-		objects = (FSTObjectRegistry) conf.getCachedObject(FSTObjectRegistry.class);
+		objects = (FSTObjectRegistry) conf1.getCachedObject(FSTObjectRegistry.class);
 		if (objects == null) {
-			objects = new FSTObjectRegistry(conf);
+			objects = new FSTObjectRegistry(conf1);
 		} else {
-			objects.clearForRead(conf);
+			objects.clearForRead(conf1);
 		}
 	}
 
@@ -410,7 +410,7 @@ public class FSTObjectInput implements ObjectInput {
 	 *             the invalid object exception
 	 * @date 29 sept. 2023
 	 */
-	protected void processValidation() throws InvalidObjectException {
+	protected void processValidation() {
 		if (callbacks == null) return;
 		Collections.sort(callbacks, (o1, o2) -> o2.prio - o1.prio);
 		for (CallbackEntry callbackEntry : callbacks) {
@@ -883,7 +883,7 @@ public class FSTObjectInput implements ObjectInput {
 		} catch (InvocationTargetException e) {
 			FSTUtil.<RuntimeException> rethrow(e);
 		}
-		newObj = rep;// FIXME: support this in call
+		newObj = rep;//
 		return newObj;
 	}
 
@@ -1379,12 +1379,8 @@ public class FSTObjectInput implements ObjectInput {
 	 * @date 29 sept. 2023
 	 */
 	protected void resetAndClearRefs() {
-		try {
-			reset();
-			objects.clearForRead(conf);
-		} catch (IOException e) {
-			FSTUtil.<RuntimeException> rethrow(e);
-		}
+		reset();
+		objects.clearForRead(conf);
 	}
 
 	/**
@@ -1395,7 +1391,7 @@ public class FSTObjectInput implements ObjectInput {
 	 *             Signals that an I/O exception has occurred.
 	 * @date 29 sept. 2023
 	 */
-	public void reset() throws IOException {
+	public void reset() {
 		getCodec().reset();
 	}
 
@@ -1409,7 +1405,7 @@ public class FSTObjectInput implements ObjectInput {
 	 *             Signals that an I/O exception has occurred.
 	 * @date 29 sept. 2023
 	 */
-	public void resetForReuse(final InputStream in) throws IOException {
+	public void resetForReuse(final InputStream in) {
 		if (closed) throw new RuntimeException("can't reuse closed stream");
 		getCodec().reset();
 		getCodec().setInputStream(in);
@@ -1431,7 +1427,7 @@ public class FSTObjectInput implements ObjectInput {
 	 *             Signals that an I/O exception has occurred.
 	 * @date 29 sept. 2023
 	 */
-	public void resetForReuseCopyArray(final byte bytes[], final int off, final int len) throws IOException {
+	public void resetForReuseCopyArray(final byte bytes[], final int off, final int len) {
 		if (closed) throw new RuntimeException("can't reuse closed stream");
 		getCodec().reset();
 		objects.clearForRead(conf);
@@ -1449,7 +1445,7 @@ public class FSTObjectInput implements ObjectInput {
 	 *             Signals that an I/O exception has occurred.
 	 * @date 29 sept. 2023
 	 */
-	public void resetForReuseUseArray(final byte bytes[]) throws IOException {
+	public void resetForReuseUseArray(final byte bytes[]) {
 		resetForReuseUseArray(bytes, bytes.length);
 	}
 
@@ -1465,7 +1461,7 @@ public class FSTObjectInput implements ObjectInput {
 	 *             Signals that an I/O exception has occurred.
 	 * @date 29 sept. 2023
 	 */
-	public void resetForReuseUseArray(final byte bytes[], final int len) throws IOException {
+	public void resetForReuseUseArray(final byte bytes[], final int len) {
 		if (closed) throw new RuntimeException("can't reuse closed stream");
 		objects.clearForRead(conf);
 		getCodec().resetWith(bytes, len);
@@ -1496,8 +1492,8 @@ public class FSTObjectInput implements ObjectInput {
 		getCodec().close();
 	}
 
-	////////////////////////////////////////////////////// epic compatibility hack
-	////////////////////////////////////////////////////// /////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////// epic compatibility
+	/// hack /////////////////////////////////////////////////////////
 
 	/** The fake wrapper. */
 	protected MyObjectStream fakeWrapper; // some jdk classes hash for ObjectStream, so provide the same instance always
@@ -1580,8 +1576,7 @@ public class FSTObjectInput implements ObjectInput {
 						}
 					} else {
 						FSTObjectInput.this.readObjectFields(referencee, clInfo,
-								clInfo.getCompInfo().get(cl).getFieldArray(), toRead, 0, 0); // FIXME: only fields of
-																								// current class
+								clInfo.getCompInfo().get(cl).getFieldArray(), toRead, 0, 0);
 					}
 				} catch (Exception e) {
 					throw new IOException(e);

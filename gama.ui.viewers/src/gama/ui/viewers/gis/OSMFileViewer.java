@@ -46,9 +46,9 @@ import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.renderer.lite.StreamingRenderer;
 
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.GAMA;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.core.util.file.GamaOsmFile;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;

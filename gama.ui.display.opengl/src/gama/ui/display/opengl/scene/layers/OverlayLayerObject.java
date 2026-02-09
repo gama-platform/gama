@@ -15,16 +15,16 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL2ES3;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ILayer;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.layers.ILayer;
 import gama.core.outputs.layers.OverlayLayerData;
-import gama.core.runtime.IScope;
 import gama.dev.DEBUG;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 
@@ -77,7 +77,7 @@ public class OverlayLayerObject extends LayerObject {
 		final IScope scope = renderer.getSurface().getScope();
 		final IExpression expr = layer.getDefinition().getFacet(IKeyword.SIZE);
 		OverlayLayerData d = (OverlayLayerData) layer.getData();
-		if (expr != null) { size = Cast.asPoint(scope, expr.value(scope)); }
+		if (expr != null) { size = GamaPointFactory.toPoint(scope, expr.value(scope)); }
 		double sx = size.getX();
 		double sy = size.getY();
 		if (sx <= 1) {

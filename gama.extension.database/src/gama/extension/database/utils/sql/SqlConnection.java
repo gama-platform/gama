@@ -20,20 +20,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.geotools.api.referencing.FactoryException;
 import org.locationtech.jts.geom.Geometry;
 
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.topology.projection.IProjection;
-import gama.core.metamodel.topology.projection.Projection;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
+import gama.api.data.factories.GamaEnvelopeFactory;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.topology.IProjection;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.core.topology.gis.Projection;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Cast;
 
 /**
  * The Class SqlConnection.
@@ -155,7 +154,7 @@ public abstract class SqlConnection implements AutoCloseable {
 		if (crs != null) {
 			try {
 				return scope.getSimulation().getProjectionFactory().forSavingWith(scope, crs);
-			} catch (final FactoryException e) {
+			} catch (final Exception e) {
 
 				throw GamaRuntimeException.error("No factory found for decoding the EPSG " + crs
 						+ " code. GAMA may be unable to save any GIS data", scope);
@@ -167,7 +166,7 @@ public abstract class SqlConnection implements AutoCloseable {
 			try {
 				return scope.getSimulation().getProjectionFactory().forSavingWith(scope, Cast.asInt(scope, srid),
 						longitudeFirst);
-			} catch (final FactoryException e) {
+			} catch (final Exception e) {
 
 				throw GamaRuntimeException.error("No factory found for decoding the EPSG " + srid
 						+ " code. GAMA may be unable to save any GIS data", scope);
@@ -177,7 +176,7 @@ public abstract class SqlConnection implements AutoCloseable {
 		try {
 			return scope.getSimulation().getProjectionFactory().forSavingWith(scope,
 					GamaPreferences.External.LIB_OUTPUT_CRS.getValue());
-		} catch (final FactoryException e) {
+		} catch (final Exception e) {
 
 			throw GamaRuntimeException.error(
 					"No factory found for decoding the EPSG " + GamaPreferences.External.LIB_OUTPUT_CRS.getValue()
@@ -499,7 +498,7 @@ public abstract class SqlConnection implements AutoCloseable {
 
 		// ResultSet rs;
 		IList<? super IList<? super IList>> result =
-				GamaListFactory.create(gama.gaml.types.Types.LIST.of(gama.gaml.types.Types.LIST));
+				GamaListFactory.create(gama.api.gaml.types.Types.LIST.of(gama.api.gaml.types.Types.LIST));
 		// IList<? extends IList<? super IList>> result = new
 		// IList();
 

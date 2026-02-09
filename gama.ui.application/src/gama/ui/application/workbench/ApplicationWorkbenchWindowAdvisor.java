@@ -27,7 +27,7 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchWindowAdvisor;
 
-import gama.core.kernel.root.SystemInfo;
+import gama.api.runtime.SystemInfo;
 import gama.dev.DEBUG;
 
 /**

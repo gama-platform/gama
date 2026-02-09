@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.navigator.view.contents;
 
-import gama.gaml.compilation.ast.ISyntacticElement;
+import gama.api.compilation.ast.ISyntacticElement;
 
 /**
  * The Class WrappedModelContent.

@@ -216,7 +216,7 @@
          id="gama.ui.viewers.json.eclipse.preferences.JsonEditorEditorSyntaxColorPreferencePage"
          class="gama.ui.viewers.json.eclipse.preferences.JsonEditorSyntaxColorPreferencePage"
          name="Syntax coloring"
-         category="jsoneditor.commands.category">
+         category="gama.ui.viewers.json.eclipse.preferences.JsonEditorEditorPreferencePage">
       </page>
     </extension>
     <extension

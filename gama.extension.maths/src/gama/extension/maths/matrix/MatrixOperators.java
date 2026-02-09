@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * MatrixOperators.java, in gaml.extensions.maths, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * MatrixOperators.java, in gama.extension.maths, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,27 +16,28 @@ import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMatrix;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
 import gama.core.util.matrix.GamaFloatMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.GamaObjectMatrix;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class MatrixOperators.
@@ -324,7 +325,8 @@ public class MatrixOperators {
 	 * @return the gama int matrix
 	 */
 	public static GamaIntMatrix toGamaIntMatrix(final RealMatrix m) {
-		GamaIntMatrix result = new GamaIntMatrix(m.getColumnDimension(), m.getRowDimension());
+		GamaIntMatrix result =
+				(GamaIntMatrix) GamaMatrixFactory.createIntMatrix(m.getColumnDimension(), m.getRowDimension());
 		updateMatrix(result, m);
 		return result;
 	}
@@ -337,7 +339,8 @@ public class MatrixOperators {
 	 * @return the gama float matrix
 	 */
 	public static GamaFloatMatrix toGamaFloatMatrix(final RealMatrix m) {
-		GamaFloatMatrix result = new GamaFloatMatrix(m.getColumnDimension(), m.getRowDimension());
+		GamaFloatMatrix result =
+				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(m.getColumnDimension(), m.getRowDimension());
 		updateMatrix(result, m);
 		return result;
 	}

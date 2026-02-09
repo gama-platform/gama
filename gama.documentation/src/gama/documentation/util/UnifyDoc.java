@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * UnifyDoc.java, in gama.documentation, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * UnifyDoc.java, in gama.documentation, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.documentation.util;
 
@@ -23,11 +22,10 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
-import gama.annotations.precompiler.IConstantCategory;
-import gama.annotations.precompiler.constants.ColorCSS;
-import gama.annotations.precompiler.doc.utils.Constants;
-import gama.annotations.precompiler.doc.utils.TypeConverter;
-import gama.annotations.precompiler.doc.utils.XMLElements;
+import gama.annotations.constants.ColorCSS;
+import gama.annotations.constants.XMLElements;
+import gama.annotations.support.IConstantCategory;
+import gama.annotations.support.IOperatorCategory;
 
 /**
  * The Class UnifyDoc.
@@ -42,19 +40,21 @@ public class UnifyDoc {
 			XMLElements.TYPES, XMLElements.FILES };
 	// among tebEltXML, categories do not need to have an additional projectName
 	// attribute
-//	private static String[] tabCategoriesEltXML = { XMLElements.OPERATORS_CATEGORIES, XMLElements.CONSTANTS_CATEGORIES,
-//			XMLElements.INSIDE_STAT_KINDS, XMLElements.INSIDE_STAT_SYMBOLS, XMLElements.STATEMENT_KINDS,
-//			XMLElements.CONCEPT_LIST };
+	// private static String[] tabCategoriesEltXML = { XMLElements.OPERATORS_CATEGORIES,
+	// XMLElements.CONSTANTS_CATEGORIES,
+	// XMLElements.INSIDE_STAT_KINDS, XMLElements.INSIDE_STAT_SYMBOLS, XMLElements.STATEMENT_KINDS,
+	// XMLElements.CONCEPT_LIST };
 
 	/**
 	 * Unify.
 	 *
-	 * @param local the local
+	 * @param local
+	 *            the local
 	 */
-	public static void unify(boolean local) {
+	public static void unify(final boolean local) {
 		try {
 
-			WorkspaceManager ws = new WorkspaceManager(".",local);
+			WorkspaceManager ws = new WorkspaceManager(".", local);
 			HashMap<String, File> hmFiles = ws.getProductDocFiles();
 
 			Document doc = mergeFiles(hmFiles);
@@ -71,13 +71,14 @@ public class UnifyDoc {
 	/**
 	 * Unify all projects.
 	 *
-	 * @param local the local
+	 * @param local
+	 *            the local
 	 */
-	public static void unifyAllProjects(boolean local) {
+	public static void unifyAllProjects(final boolean local) {
 		try {
 
 			WorkspaceManager ws = new WorkspaceManager(".", local);
-	 		HashMap<String, File> hmFiles = local ? ws.getAllDocFilesLocal() : ws.getAllDocFiles();			
+			HashMap<String, File> hmFiles = local ? ws.getAllDocFilesLocal() : ws.getAllDocFiles();
 
 			Document doc = mergeFiles(hmFiles);
 
@@ -93,19 +94,17 @@ public class UnifyDoc {
 	/**
 	 * Merge files.
 	 *
-	 * @param hmFilesPackages the hm files packages
+	 * @param hmFilesPackages
+	 *            the hm files packages
 	 * @return the document
 	 */
 	private static Document mergeFiles(final HashMap<String, File> hmFilesPackages) {
 		try {
 
 			SAXBuilder builder = new SAXBuilder();
-			Document doc = null;
+			Document doc = new Document(new Element(XMLElements.DOC));
 
-			doc = new Document(new Element(XMLElements.DOC));
-			for (String elt : tabEltXML) {
-				doc.getRootElement().addContent(new Element(elt));
-			}
+			for (String elt : tabEltXML) { doc.getRootElement().addContent(new Element(elt)); }
 
 			for (Entry<String, File> fileDoc : hmFilesPackages.entrySet()) {
 				Document docTemp = builder.build(fileDoc.getValue());
@@ -118,9 +117,9 @@ public class UnifyDoc {
 						for (Element e : docTemp.getRootElement().getChild(catXML).getChildren()) {
 							// Do not add the projectName for every kinds of
 							// categories
-					//		if (!Arrays.asList(tabCategoriesEltXML).contains(catXML)) {
-								e.setAttribute("projectName", fileDoc.getKey());
-					//		}
+							// if (!Arrays.asList(tabCategoriesEltXML).contains(catXML)) {
+							e.setAttribute("projectName", fileDoc.getKey());
+							// }
 
 							// Test whether the element is already in the merged
 							// doc
@@ -137,27 +136,25 @@ public class UnifyDoc {
 								found = found || equals;
 							}
 							// Add if it is not already in the merged doc
-							if (!found) {
-								doc.getRootElement().getChild(catXML).addContent(e.clone());
-							}
+							if (!found) { doc.getRootElement().getChild(catXML).addContent(e.clone()); }
 						}
 					}
 				}
 			}
 
 			// Add an element for the generated types
-			doc.getRootElement().getChild(XMLElements.OPERATORS_CATEGORIES).addContent(new Element(XMLElements.CATEGORY)
-					.setAttribute(XMLElements.ATT_CAT_ID, new TypeConverter().getProperCategory("Types")));
+			doc.getRootElement().getChild(XMLElements.OPERATORS_CATEGORIES).addContent(
+					new Element(XMLElements.CATEGORY).setAttribute(XMLElements.ATT_CAT_ID, IOperatorCategory.TYPE));
 
 			// Add the colors constant category
 			doc.getRootElement().getChild(XMLElements.CONSTANTS_CATEGORIES).addContent(new Element(XMLElements.CATEGORY)
-					.setAttribute(XMLElements.ATT_CAT_ID, IConstantCategory.COLOR_CSS));	
-			
+					.setAttribute(XMLElements.ATT_CAT_ID, IConstantCategory.COLOR_CSS));
+
 			// Add the color in constants
 			Element constantsElt = doc.getRootElement().getChild(XMLElements.CONSTANTS);
 			final Object[] colorTab = ColorCSS.array;
 			for (int i = 0; i < colorTab.length; i += 2) {
-				constantsElt.addContent(createColorConstantElement(colorTab,i));				
+				constantsElt.addContent(createColorConstantElement(colorTab, i));
 			}
 
 			return doc;
@@ -166,8 +163,17 @@ public class UnifyDoc {
 		}
 		return null;
 	}
-	
-	private static Element createColorConstantElement(Object[] colorTab, int i) {
+
+	/**
+	 * Creates the color constant element.
+	 *
+	 * @param colorTab
+	 *            the color tab
+	 * @param i
+	 *            the i
+	 * @return the element
+	 */
+	private static Element createColorConstantElement(final Object[] colorTab, final int i) {
 		final Element constantElt = new Element(XMLElements.CONSTANT);
 		constantElt.setAttribute(XMLElements.ATT_CST_NAME, IConstantCategory.PREFIX_CONSTANT + colorTab[i]);
 		constantElt.setAttribute(XMLElements.ATT_CST_VALUE,
@@ -176,24 +182,26 @@ public class UnifyDoc {
 
 		// Category
 		final Element categoriesElt = new Element(XMLElements.CATEGORIES);
-		final Element colorCatElt = new Element(XMLElements.CATEGORY).setAttribute(XMLElements.ATT_CAT_ID, IConstantCategory.COLOR_CSS);
+		final Element colorCatElt =
+				new Element(XMLElements.CATEGORY).setAttribute(XMLElements.ATT_CAT_ID, IConstantCategory.COLOR_CSS);
 		categoriesElt.addContent(colorCatElt);
 		constantElt.addContent(categoriesElt);
-		
+
 		// Concept
 		final Element conceptsElt = new Element(XMLElements.CONCEPTS);
-		final Element conceptElt = new Element(XMLElements.CONCEPT).setAttribute(XMLElements.ATT_CAT_ID, IConstantCategory.COLOR_CSS);
+		final Element conceptElt =
+				new Element(XMLElements.CONCEPT).setAttribute(XMLElements.ATT_CAT_ID, IConstantCategory.COLOR_CSS);
 		conceptsElt.addContent(conceptElt);
-		constantElt.addContent(conceptsElt);					
-		
+		constantElt.addContent(conceptsElt);
+
 		return constantElt;
 	}
 
-	
 	/**
 	 * The main method.
 	 *
-	 * @param args the arguments
+	 * @param args
+	 *            the arguments
 	 */
 	public static void main(final String[] args) {
 		try {

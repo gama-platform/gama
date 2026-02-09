@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * SystemOfEquationsStatement.java, in gaml.extensions.maths, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * SystemOfEquationsStatement.java, in gama.extension.maths, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,37 +23,38 @@ import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 
 import com.google.common.collect.Lists;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IExecutionResult;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.Collector;
-import gama.core.util.GamaPair;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IVarExpression;
-import gama.gaml.expressions.operators.UnaryOperator;
-import gama.gaml.expressions.variables.AgentVariableExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.species.GamlSpecies;
-import gama.gaml.statements.AbstractStatementSequence;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.GAMA;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.factories.GamaPairFactory;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IPair;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IVarExpression;
+import gama.api.gaml.species.GamlSpecies;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IExecutionResult;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.collections.Collector;
+import gaml.compiler.gaml.expression.AgentVariableExpression;
+import gaml.compiler.gaml.expression.UnaryOperator;
 
 /**
  * The class SystemOfEquationsStatement. This class represents a system of equations (SingleEquationStatement) that
@@ -181,10 +182,10 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 	public static final String ___variables_diff = "___variables_diff";
 
 	/** The equations. */
-	private final IMap<Integer, GamaPair<IAgent, SingleEquationStatement>> equations = GamaMapFactory.create();
+	private final IMap<Integer, IPair<IAgent, SingleEquationStatement>> equations = GamaMapFactory.create();
 
 	/** The variables diff. */
-	private final IMap<Integer, GamaPair<IAgent, IExpression>> variables_diff = GamaMapFactory.create();
+	private final IMap<Integer, IPair<IAgent, IExpression>> variables_diff = GamaMapFactory.create();
 
 	/** The variable time. */
 	public IExpression variable_time = null;
@@ -211,7 +212,7 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 	/**
 	 * This method separates regular statements and equations.
 	 *
-	 * @see gama.gaml.statements.AbstractStatementSequence#setChildren(java.util.List)
+	 * @see gama.api.gaml.statements.AbstractStatementSequence#setChildren(java.util.List)
 	 */
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> commands) {
@@ -253,10 +254,9 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 					for (int i = 0; i < s2.getVars().size(); i++) {
 						final IExpression v = s2.getVar(i);
 						if (s2.getOrder() > 0) {
-							final GamaPair p1 =
-									new GamaPair<IAgent, SingleEquationStatement>(null, s2, Types.AGENT, Types.NO_TYPE);
+							final IPair p1 = GamaPairFactory.createWith(null, s2, Types.AGENT, Types.NO_TYPE);
 							equations.put(equations.size(), p1);
-							final GamaPair p2 = new GamaPair<IAgent, IExpression>(null, v, Types.AGENT, Types.NO_TYPE);
+							final IPair p2 = GamaPairFactory.createWith(null, v, Types.AGENT, Types.NO_TYPE);
 							variables_diff.put(variables_diff.size(), p2);
 						}
 					}
@@ -288,11 +288,11 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 		// ArrayList<SingleEquationStatement>(equations.values());
 		// final List<IExpression> variableValues = new
 		// ArrayList<IExpression>(variables_diff.values());
-		final IMap<Integer, GamaPair<IAgent, SingleEquationStatement>> myEQ = getEquations(currentScope.getAgent());
-		final IMap<Integer, GamaPair<IAgent, IExpression>> myVar = getVariableDiff(scope.getAgent());
+		final IMap<Integer, IPair<IAgent, SingleEquationStatement>> myEQ = getEquations(currentScope.getAgent());
+		final IMap<Integer, IPair<IAgent, IExpression>> myVar = getVariableDiff(scope.getAgent());
 		for (int i = 0, n = myEQ.size(); i < n; i++) {
 
-			final GamaPair<IAgent, SingleEquationStatement> s = myEQ.get(i);
+			final IPair<IAgent, SingleEquationStatement> s = myEQ.get(i);
 			if (s.getValue().getOrder() == 0) { continue; }
 
 			final IAgent remoteAgent = s.getKey();// getEquationAgents(scope).get(i);
@@ -318,7 +318,7 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 		}
 
 		for (int i = 0, n = myEQ.size(); i < n; i++) {
-			final GamaPair<IAgent, SingleEquationStatement> s = myEQ.get(i);
+			final IPair<IAgent, SingleEquationStatement> s = myEQ.get(i);
 			if (s.getValue().getOrder() == 0) {
 				final IExpression tmp = ((UnaryOperator) s.getValue().getFunction()).arg(0);
 				final Object v = s.getValue().getExpression().value(currentScope);
@@ -346,7 +346,7 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 		 * Variables in GAMA, which is use by GAMA modeler
 		 */
 
-		final IMap<Integer, GamaPair<IAgent, SingleEquationStatement>> myEQ = getEquations(currentScope.getAgent());
+		final IMap<Integer, IPair<IAgent, SingleEquationStatement>> myEQ = getEquations(currentScope.getAgent());
 		assignValue(currentScope, time, y);
 
 		/*
@@ -378,8 +378,8 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 	@Override
 	public int getDimension() {
 		int count = 0;
-		final IMap<Integer, GamaPair<IAgent, SingleEquationStatement>> myEQ = getEquations(currentScope.getAgent());
-		for (final GamaPair<IAgent, SingleEquationStatement> s : myEQ.values()) {
+		final IMap<Integer, IPair<IAgent, SingleEquationStatement>> myEQ = getEquations(currentScope.getAgent());
+		for (final IPair<IAgent, SingleEquationStatement> s : myEQ.values()) {
 			if (s.getValue().getOrder() > 0) { count++; }
 		}
 
@@ -418,10 +418,10 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 	 *            the agt
 	 * @return the equations
 	 */
-	public IMap<Integer, GamaPair<IAgent, SingleEquationStatement>> getEquations(final IAgent agt) {
+	public IMap<Integer, IPair<IAgent, SingleEquationStatement>> getEquations(final IAgent agt) {
 		if (agt == null) return GamaMapFactory.create();
-		IMap<Integer, GamaPair<IAgent, SingleEquationStatement>> result =
-				(IMap<Integer, GamaPair<IAgent, SingleEquationStatement>>) agt.getAttribute(___equations);
+		IMap<Integer, IPair<IAgent, SingleEquationStatement>> result =
+				(IMap<Integer, IPair<IAgent, SingleEquationStatement>>) agt.getAttribute(___equations);
 		if (result == null) {
 			result = GamaMapFactory.create();
 			agt.setAttribute(___equations, result);
@@ -437,7 +437,7 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 	 * @param eqs
 	 *            the eqs
 	 */
-	public void setEquations(final IAgent agt, final IMap<Integer, GamaPair<IAgent, SingleEquationStatement>> eqs) {
+	public void setEquations(final IAgent agt, final IMap<Integer, IPair<IAgent, SingleEquationStatement>> eqs) {
 		if (agt == null) return;
 		agt.setAttribute(___equations, eqs);
 	}
@@ -449,10 +449,10 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 	 *            the agt
 	 * @return the variable diff
 	 */
-	public IMap<Integer, GamaPair<IAgent, IExpression>> getVariableDiff(final IAgent agt) {
+	public IMap<Integer, IPair<IAgent, IExpression>> getVariableDiff(final IAgent agt) {
 		if (agt == null) return GamaMapFactory.create();
-		IMap<Integer, GamaPair<IAgent, IExpression>> result =
-				(IMap<Integer, GamaPair<IAgent, IExpression>>) agt.getAttribute(___variables_diff);
+		IMap<Integer, IPair<IAgent, IExpression>> result =
+				(IMap<Integer, IPair<IAgent, IExpression>>) agt.getAttribute(___variables_diff);
 		if (result == null) {
 			result = GamaMapFactory.create();
 			currentScope.getAgent().setAttribute(___variables_diff, result);
@@ -468,7 +468,7 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 	 * @param var
 	 *            the var
 	 */
-	public void setVariableDiff(final IAgent agt, final IMap<Integer, GamaPair<IAgent, IExpression>> var) {
+	public void setVariableDiff(final IAgent agt, final IMap<Integer, IPair<IAgent, IExpression>> var) {
 		if (agt == null) return;
 		agt.setAttribute(___variables_diff, var);
 	}
@@ -603,10 +603,10 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 	 *            the remote agent
 	 */
 	private void addEquationsOf(final IAgent remoteAgent) {
-		final IMap<Integer, GamaPair<IAgent, SingleEquationStatement>> myEQ = getEquations(currentScope.getAgent());
-		final IMap<Integer, GamaPair<IAgent, IExpression>> myVar = getVariableDiff(currentScope.getAgent());
+		final IMap<Integer, IPair<IAgent, SingleEquationStatement>> myEQ = getEquations(currentScope.getAgent());
+		final IMap<Integer, IPair<IAgent, IExpression>> myVar = getVariableDiff(currentScope.getAgent());
 		// if (remoteAgent.equals(currentScope.getAgent())) {
-		for (final GamaPair<IAgent, SingleEquationStatement> e : myEQ.values()) {
+		for (final IPair<IAgent, SingleEquationStatement> e : myEQ.values()) {
 			if (e.getKey().equals(remoteAgent)) return;
 		}
 		// if (OWN_DEBUG)
@@ -619,47 +619,47 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 					getEquationAgents(currentScope).put(getEquationAgents(currentScope).size(), remoteAgent);
 				}
 			}
-			for (final GamaPair<IAgent, SingleEquationStatement> s : ses.equations.values()) {
+			for (final IPair<IAgent, SingleEquationStatement> s : ses.equations.values()) {
 				// final String name = remoteAgent.getName() + s.getKey();
 				final SingleEquationStatement eq = s.getValue();
 				// if (OWN_DEBUG)
 				// DEBUG.LOG("eq " + eq);
-				final GamaPair p1 = new GamaPair<>(remoteAgent, eq, Types.AGENT, Types.NO_TYPE);
+				final IPair p1 = GamaPairFactory.createWith(remoteAgent, eq, Types.AGENT, Types.NO_TYPE);
 				myEQ.put(myEQ.size(), p1);
 			}
-			for (final GamaPair<IAgent, IExpression> s : ses.variables_diff.values()) {
+			for (final IPair<IAgent, IExpression> s : ses.variables_diff.values()) {
 				// final String name = remoteAgent.getName() + s.getKey();
 				final IExpression v = s.getValue();
 				// if (OWN_DEBUG)
 				// DEBUG.LOG("v " + v);
-				final GamaPair p1 = new GamaPair<>(remoteAgent, v, Types.AGENT, Types.NO_TYPE);
+				final IPair p1 = GamaPairFactory.createWith(remoteAgent, v, Types.AGENT, Types.NO_TYPE);
 				myVar.put(myVar.size(), p1);
 			}
 		}
 
 		// }else {
 		// if (OWN_DEBUG) DEBUG.LOG("addEquationsOf "+remoteAgent);
-		// GamaMap<Integer, GamaPair<IAgent, SingleEquationStatement>> eqs = getEquations(remoteAgent);
-		// GamaMap<Integer, GamaPair<IAgent, IExpression>> sesVar = getVariableDiff(remoteAgent);
+		// GamaMap<Integer, IPair<IAgent, SingleEquationStatement>> eqs = getEquations(remoteAgent);
+		// GamaMap<Integer, IPair<IAgent, IExpression>> sesVar = getVariableDiff(remoteAgent);
 		// if (eqs != null) {
 		// for (int i = 0, n = eqs.size(); i < n; i++) {
 		// getEquationAgents(currentScope).put(getEquationAgents(currentScope).size(), remoteAgent);
 		// }
-		// for (final GamaPair<IAgent, SingleEquationStatement> s : eqs.values()) {
+		// for (final IPair<IAgent, SingleEquationStatement> s : eqs.values()) {
 		// // final String name = remoteAgent.getName() + s.getKey();
 		//// if(s.getKey()!=null) {
 		// final SingleEquationStatement eq = s.getValue();
 		// if (OWN_DEBUG) DEBUG.LOG("eq "+eq);
-		// GamaPair p1 = new GamaPair<IAgent, SingleEquationStatement>(remoteAgent, eq, Types.AGENT,
+		// IPair p1 = new IPair<IAgent, SingleEquationStatement>(remoteAgent, eq, Types.AGENT,
 		// Types.NO_TYPE);
 		// myEQ.put(myEQ.size(), p1);
 		//// }
 		// }
-		// for (final GamaPair<IAgent, IExpression> s : sesVar.values()) {
+		// for (final IPair<IAgent, IExpression> s : sesVar.values()) {
 		// // final String name = remoteAgent.getName() + s.getKey();
 		// final IExpression v = s.getValue();
 		// DEBUG.LOG("v "+v);
-		// GamaPair p1 = new GamaPair<IAgent, IExpression>(remoteAgent, v, Types.AGENT, Types.NO_TYPE);
+		// IPair p1 = new IPair<IAgent, IExpression>(remoteAgent, v, Types.AGENT, Types.NO_TYPE);
 		// myVar.put(myVar.size(), p1);
 		// }
 		// }
@@ -677,24 +677,24 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 	 *            the remote agent
 	 */
 	private void removeEquationsOf(final IAgent remoteAgent) {
-		final IMap<Integer, GamaPair<IAgent, SingleEquationStatement>> myEQ = getEquations(currentScope.getAgent());
-		final IMap<Integer, GamaPair<IAgent, IExpression>> myVar = getVariableDiff(currentScope.getAgent());
+		final IMap<Integer, IPair<IAgent, SingleEquationStatement>> myEQ = getEquations(currentScope.getAgent());
+		final IMap<Integer, IPair<IAgent, IExpression>> myVar = getVariableDiff(currentScope.getAgent());
 
 		// final SystemOfEquationsStatement ses =
 		// remoteAgent.getSpecies().getStatement(SystemOfEquationsStatement.class,
 		// getName());
 
 		// DEBUG.LOG("removeEquationsOf " + remoteAgent);
-		// GamaMap<Integer, GamaPair<IAgent, SingleEquationStatement>> ses = getEquations(remoteAgent);
-		// GamaMap<Integer, GamaPair<IAgent, IExpression>> sesVar = getVariableDiff(remoteAgent);
+		// GamaMap<Integer, IPair<IAgent, SingleEquationStatement>> ses = getEquations(remoteAgent);
+		// GamaMap<Integer, IPair<IAgent, IExpression>> sesVar = getVariableDiff(remoteAgent);
 		if (myEQ != null) {
 			// final int n = equations.size();
-			// for (final GamaPair<IAgent, SingleEquationStatement> e : myEQ.values()) {
+			// for (final IPair<IAgent, SingleEquationStatement> e : myEQ.values()) {
 			// if (e.getKey().equals(remoteAgent)) {
 			// // myVar.values().remove(remoteAgent);
 			// // for (final IExpression eV : e.getValue().getVars()) {
 			// // DEBUG.OUT(eV);
-			// // GamaPair p1 = new GamaPair<IAgent, IExpression>(remoteAgent, eV, Types.AGENT, Types.NO_TYPE);
+			// // IPair p1 = new IPair<IAgent, IExpression>(remoteAgent, eV, Types.AGENT, Types.NO_TYPE);
 			// // myVar.values().remove(p1);
 			// // }
 			// }

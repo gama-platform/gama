@@ -22,42 +22,42 @@ import org.apache.commons.collections4.OrderedBidiMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.annotations.precompiler.GamlAnnotations.action;
-import gama.annotations.precompiler.GamlAnnotations.arg;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.graph.GamaSpatialGraph;
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.GamaExecutorService;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.annotations.action;
+import gama.annotations.arg;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.annotations.skill;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.support.IConcept;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaPathFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IPath;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.Arguments;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.scope.IScope;
+import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.util.graph.GamaGraph;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.path.IPath;
-import gama.core.util.path.PathFactory;
 import gama.dev.DEBUG;
 import gama.extension.traffic.driving.carfollowing.MOBIL;
 import gama.extension.traffic.driving.carfollowing.Utils;
-import gama.gaml.descriptions.ConstantExpressionDescription;
 import gama.gaml.operators.Random;
 import gama.gaml.operators.spatial.SpatialQueries;
 import gama.gaml.skills.MovingSkill;
-import gama.gaml.species.ISpecies;
-import gama.gaml.statements.Arguments;
-import gama.gaml.statements.IStatement;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class DrivingSkill.
@@ -1502,7 +1502,7 @@ public class DrivingSkill extends MovingSkill {
 		// additional conditions to cross the intersection, defined by the user
 		IStatement.WithArgs actionTNR = context.getAction("test_next_road");
 		Arguments argsTNR = new Arguments();
-		argsTNR.put("new_road", ConstantExpressionDescription.createNoCache(newRoad));
+		argsTNR.put("new_road", GAML.getExpressionDescriptionFactory().createConstantNoCache(newRoad));
 		actionTNR.setRuntimeArgs(scope, argsTNR);
 		if (!(Boolean) actionTNR.executeOn(scope)) return false;
 
@@ -1672,7 +1672,7 @@ public class DrivingSkill extends MovingSkill {
 						graph.getPathComputer().computeBestRouteBetween(scope, nodes.get(i), nodes.get(i + 1));
 				edges.addAll(interEdges);
 			}
-			path = PathFactory.newInstance(graph, source, target, edges);
+			path = GamaPathFactory.createFrom(graph, source, target, edges);
 		} else
 			throw GamaRuntimeException.error("one of `nodes` or `target` must be non nil", scope);
 
@@ -2019,7 +2019,7 @@ public class DrivingSkill extends MovingSkill {
 				// Choose a lane on the new road
 				IStatement.WithArgs actionCL = context.getAction(ACT_CHOOSE_LANE);
 				Arguments argsCL = new Arguments();
-				argsCL.put("new_road", ConstantExpressionDescription.createNoCache(newRoad));
+				argsCL.put("new_road", GAML.getExpressionDescriptionFactory().createConstantNoCache(newRoad));
 				actionCL.setRuntimeArgs(scope, argsCL);
 				int lowestLane = (int) actionCL.executeOn(scope);
 				laneAndAccPair = MOBIL.chooseLane(scope, vehicle, newRoad, lowestLane);
@@ -2045,8 +2045,9 @@ public class DrivingSkill extends MovingSkill {
 
 				// external factor that affects remaining time when entering a
 				// new road
-				argsEF.put("remaining_time", ConstantExpressionDescription.createNoCache(remainingTime));
-				argsEF.put("new_road", ConstantExpressionDescription.createNoCache(newRoad));
+				argsEF.put("remaining_time",
+						GAML.getExpressionDescriptionFactory().createConstantNoCache(remainingTime));
+				argsEF.put("new_road", GAML.getExpressionDescriptionFactory().createConstantNoCache(newRoad));
 				actionImpactEF.setRuntimeArgs(scope, argsEF);
 				remainingTime = (Double) actionImpactEF.executeOn(scope);
 				if (remainingTime <= 0.0) return false;
@@ -2307,7 +2308,7 @@ public class DrivingSkill extends MovingSkill {
 		if (target == null) throw GamaRuntimeException
 				.create(new IllegalArgumentException("target parameter in goto_drive can not be null"), scope);
 
-		if (finalTarget != null && !finalTarget.equals(target.getLocation())) {
+		if (finalTarget != null && !finalTarget.getLocation().equals(target.getLocation())) {
 			// agent changed course, we have to recompute path
 
 			// check if there is a given path to follow

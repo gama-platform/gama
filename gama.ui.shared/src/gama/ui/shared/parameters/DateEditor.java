@@ -22,12 +22,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
 
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.util.IDate;
-import gama.gaml.types.GamaDateType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.data.factories.GamaDateFactory;
+import gama.api.data.objects.IDate;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
 import gama.ui.shared.interfaces.EditorListener;
 
 /**
@@ -77,7 +77,7 @@ public class DateEditor extends AbstractEditor<IDate> {
 
 	@Override
 	public void widgetSelected(final SelectionEvent e) {
-		modifyAndDisplayValue(GamaDateType.fromTemporal(LocalDateTime.of(date.getYear(), date.getMonth() + 1,
+		modifyAndDisplayValue(GamaDateFactory.createFromTemporal(LocalDateTime.of(date.getYear(), date.getMonth() + 1,
 				date.getDay(), time.getHours(), time.getMinutes(), time.getSeconds())));
 	}
 

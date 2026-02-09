@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.extension.stats;
 
-import static gama.gaml.operators.Cast.asFloat;
+import static gama.api.gaml.types.Cast.asFloat;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,28 +19,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.topology.filter.IAgentFilter;
-import gama.core.metamodel.topology.filter.In;
-import gama.core.runtime.IScope;
-import gama.core.util.IAddressableContainer;
-import gama.core.util.IContainer;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IPoint;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.IAgentFilter;
+import gama.core.topology.filter.In;
 import gama.core.util.matrix.GamaMatrix;
-import gama.gaml.operators.Cast;
 import gama.gaml.operators.Containers;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 //
 //
@@ -305,7 +304,7 @@ public class MapComparison {
 					isExecutable = false) })
 	@no_test
 	public static double fuzzyKappa(final IScope scope,
-			final IAddressableContainer<Integer, IAgent, Integer, IAgent> agents, final IList<Object> vals1,
+			final IContainer.Addressable<Integer, IAgent, Integer, IAgent> agents, final IList<Object> vals1,
 			final IList<Object> vals2, final IList<Double> similarities, final IList<Object> categories,
 			final GamaMatrix<Double> fuzzycategories, final Double distance) {
 		return fuzzyKappa(scope, agents, vals1, vals2, similarities, categories, fuzzycategories, distance, null);
@@ -346,7 +345,7 @@ public class MapComparison {
 					isExecutable = false) })
 	@no_test
 	public static double fuzzyKappa(final IScope scope,
-			final IAddressableContainer<Integer, IAgent, Integer, IAgent> agents, final IList<Object> vals1,
+			final IContainer.Addressable<Integer, IAgent, Integer, IAgent> agents, final IList<Object> vals1,
 			final IList<Object> vals2, final IList<Double> similarities, final IList<Object> categories,
 			final GamaMatrix<Double> fuzzycategories, final Double distance, final IList<Object> weights) {
 		if (agents == null) return 1;
@@ -413,7 +412,7 @@ public class MapComparison {
 					isExecutable = false) })
 	@no_test
 	public static double fuzzyKappaSimulation(final IScope scope,
-			final IAddressableContainer<Integer, IAgent, Integer, IAgent> agents, final IList<Object> valsInit,
+			final IContainer.Addressable<Integer, IAgent, Integer, IAgent> agents, final IList<Object> valsInit,
 			final IList<Object> valsObs, final IList<Object> valsSim, final IList<Double> similarities,
 			final IList<Object> categories, final GamaMatrix<Double> fuzzytransitions, final Double distance) {
 		return fuzzyKappaSimulation(scope, agents, valsInit, valsObs, valsSim, similarities, categories,
@@ -458,7 +457,7 @@ public class MapComparison {
 					isExecutable = false) })
 	@no_test
 	public static double fuzzyKappaSimulation(final IScope scope,
-			final IAddressableContainer<Integer, IAgent, Integer, IAgent> agents, final IList<Object> valsInit,
+			final IContainer.Addressable<Integer, IAgent, Integer, IAgent> agents, final IList<Object> valsInit,
 			final IList<Object> valsObs, final IList<Object> valsSim, final IList<Double> similarities,
 			final IList<Object> categories, final GamaMatrix<Double> fuzzytransitions, final Double distance,
 			final IList<Object> weights) {
@@ -562,7 +561,7 @@ public class MapComparison {
 	private static double computePo(final IScope scope, final IAgentFilter filter,
 			final Map<Object, Integer> categoriesId, final GamaMatrix<Double> fuzzytransitions, final Double distance,
 			final IList<Object> valsInit, final IList<Object> valsObs, final IList<Object> valsSim,
-			final IAddressableContainer<Integer, IAgent, Integer, IAgent> agents, final int nbCat, final int nb,
+			final IContainer.Addressable<Integer, IAgent, Integer, IAgent> agents, final int nbCat, final int nb,
 			final IList<Double> similarities, final IList<Object> weights) {
 		final Map<IAgent, Integer> agsId = GamaMapFactory.create();
 		for (int i = 0; i < agents.length(scope); i++) { agsId.put(agents.get(scope, i), i); }
@@ -630,7 +629,7 @@ public class MapComparison {
 			final Map<Object, Integer> categoriesId, final Map<IAgent, Integer> agsId, final int valObsId,
 			final int valSimId, final int valInitId, final GamaMatrix<Double> fuzzytransitions, final Double distance,
 			final IAgent agent, final IList<Object> valsInit, final IList<Object> valsObs, final IList<Object> valsSim,
-			final IContainer.Addressable<Integer, IAgent> agents, final int nbCat) {
+			final IContainer.ToGet<Integer, IAgent> agents, final int nbCat) {
 		double xa = 0.0;
 		double xs = 0.0;
 		final double[] XaXs = new double[2];
@@ -888,7 +887,7 @@ public class MapComparison {
 	 */
 	private static double computeSimilarity(final IScope scope, final IAgentFilter filter, final Double distance,
 			final IList<Object> vals1, final IList<Object> vals2,
-			final IAddressableContainer<Integer, IAgent, Integer, IAgent> agents, final int nbCat, final int nb,
+			final IContainer.Addressable<Integer, IAgent, Integer, IAgent> agents, final int nbCat, final int nb,
 			final double[][] crispVector1, final double[][] crispVector2, final boolean[] sim,
 			final double[][] fuzzyVector1, final double[][] fuzzyVector2, final IList<Double> similarities,
 			final IList<Object> weights) {
@@ -1036,7 +1035,7 @@ public class MapComparison {
 	 */
 	private static int buildRings(final IScope scope, final IAgentFilter filter, final Double distance,
 			final List<Double> rings, final Map<Double, Integer> ringsPn,
-			final IAddressableContainer<Integer, IAgent, Integer, IAgent> agents) {
+			final IContainer.Addressable<Integer, IAgent, Integer, IAgent> agents) {
 
 		final IList<IPoint> locs = GamaListFactory.create(Types.POINT);
 		for (final IAgent ag : agents.iterable(scope)) { locs.add(ag.getLocation()); }

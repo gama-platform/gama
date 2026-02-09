@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlLinkingService.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlLinkingService.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,11 +28,11 @@ import org.eclipse.xtext.scoping.IScope;
 
 import com.google.inject.Inject;
 
-import gama.core.runtime.IExecutionContext;
+import gama.api.runtime.IExecutionContext;
 import gaml.compiler.gaml.EGaml;
-import gaml.compiler.gaml.resource.GamlResource;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
+import gaml.compiler.gaml.resource.GamlResource;
 
 /**
  * The class GamlLinkingService.

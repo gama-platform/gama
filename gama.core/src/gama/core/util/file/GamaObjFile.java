@@ -15,23 +15,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.util.FileUtils;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaPair;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.api.data.factories.GamaEnvelopeFactory;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IPair;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.files.FileUtils;
 import gama.dev.DEBUG;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Class GamaObjFile.
@@ -109,7 +109,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 					isExecutable = false) })
 
 	public GamaObjFile(final IScope scope, final String pathName) throws GamaRuntimeException {
-		this(scope, pathName, (GamaPair<Double, IPoint>) null);
+		this(scope, pathName, (IPair<Double, IPoint>) null);
 	}
 
 	/**
@@ -131,7 +131,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 					value = "file f <- obj_file(\"file.obj\", 90.0::{-1,0,0});",
 					isExecutable = false) })
 
-	public GamaObjFile(final IScope scope, final String pathName, final GamaPair<Double, IPoint> initRotation)
+	public GamaObjFile(final IScope scope, final String pathName, final IPair<Double, IPoint> initRotation)
 			throws GamaRuntimeException {
 		this(scope, pathName, pathName.replace(".obj", ".mtl"), initRotation);
 	}
@@ -175,7 +175,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 					isExecutable = false) })
 
 	public GamaObjFile(final IScope scope, final String pathName, final String mtlPath,
-			final GamaPair<Double, IPoint> initRotation) {
+			final IPair<Double, IPoint> initRotation) {
 		super(scope, pathName, initRotation);
 		if (mtlPath != null) {
 			this.mtlPath = FileUtils.constructAbsoluteFilePath(scope, mtlPath, false);
@@ -350,7 +350,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	/**
 	 * Method fillBuffer(). Fills the buffer with the polygons built from the .obj vertices + faces
 	 *
-	 * @see gama.core.util.file.GamaFile#fillBuffer(gama.core.runtime.IScope)
+	 * @see gama.api.utils.files.GamaFile#fillBuffer(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {
@@ -365,7 +365,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 			final IList<IShape> face = GamaListFactory.<IShape> create(Types.POINT);
 			for (final int vertex : vertexRefs) {
 				face.add(vertices.get(vertex - 1));
-				getBuffer().add(GamaGeometryType.buildPolygon(face));
+				getBuffer().add(GamaShapeFactory.buildPolygon(face));
 			}
 		}
 		envelope = GamaEnvelopeFactory.of(leftpoint, rightpoint, bottompoint, toppoint, nearpoint, farpoint);

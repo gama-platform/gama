@@ -34,15 +34,15 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.dialogs.WorkbenchPreferenceDialog;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.preferences.Pref;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IPoint;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.Pref;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.controls.ParameterExpandBar;
@@ -381,7 +381,7 @@ public class GamaPreferencesView {
 		buttonExportToGaml.setToolTipText("Export preferences to a model that can be run to restore or share them...");
 		buttonExportToGaml.setSelectionListener(e -> {
 			final var fd = new FileDialog(shell, SWT.SAVE);
-			fd.setFileName("Preferences.gaml");
+			fd.setFileName("__PREFS__.gaml");
 			fd.setFilterExtensions("*.gaml");
 			fd.setOverwrite(false);
 			final var path = fd.open();

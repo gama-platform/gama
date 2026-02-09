@@ -10,12 +10,14 @@
  ********************************************************************************************************/
 package gama.core.util.file;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.IList;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.files.GamaFile;
+import gama.api.utils.files.IGamaFile;
+import gama.api.utils.geometry.AxisAngle;
 
 /**
  * Class GamaGeometryFile. An abstract class that supports loading and saving geometries in specific subclasses. The
@@ -25,7 +27,7 @@ import gama.core.util.list.IList;
  * @since 30 déc. 2013
  *
  */
-public abstract class GamaGeometryFile extends GamaFile<IList<IShape>, IShape> implements IGamaFile.Drawable {
+public abstract class GamaGeometryFile extends GamaFile<IList<IShape>, IShape> implements IGamaFile.WithGeometry {
 
 	/** The geometry. */
 	protected IShape geometry;
@@ -61,7 +63,7 @@ public abstract class GamaGeometryFile extends GamaFile<IList<IShape>, IShape> i
 	/**
 	 * Method computeEnvelope()
 	 *
-	 * @see gama.core.util.file.IGamaFile#computeEnvelope(gama.core.runtime.IScope)
+	 * @see gama.api.utils.files.IGamaFile#computeEnvelope(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IEnvelope computeEnvelope(final IScope scope) {

@@ -18,8 +18,8 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 
+import gama.api.ui.layers.IDrawingAttributes;
 import gama.dev.DEBUG;
-import gama.gaml.statements.draw.DrawingAttributes;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 
@@ -119,7 +119,7 @@ public class PickingHelper extends AbstractRendererHelper {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void tryPick(final DrawingAttributes attributes) {
+	public void tryPick(final IDrawingAttributes attributes) {
 		// DEBUG.OUT("Entering tryPick");
 		try {
 			attributes.markSelected(pickedIndex);

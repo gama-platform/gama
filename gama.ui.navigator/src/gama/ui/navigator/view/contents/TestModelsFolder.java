@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.navigator.view.contents;
 
-import gama.gaml.statements.test.CompoundSummary;
+import gama.api.utils.tests.CompoundSummary;
 import gama.workspace.nature.GamaNatures;
 
 /**

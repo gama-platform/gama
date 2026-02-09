@@ -3,7 +3,7 @@
  * AbstractOutputManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -31,20 +31,23 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
+import gama.api.GAMA;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.objects.IMap;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.symbols.Symbol;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IOutput;
+import gama.api.ui.IOutputManager;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.Symbol;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.Types;
+import gama.gaml.statements.LayoutStatement;
 
 /**
  * Class AbstractOutputManager.
@@ -406,7 +409,7 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	}
 
 	@Override
-	public Collection<MonitorOutput> getMonitors() {
+	public Collection<IOutput> getMonitors() {
 		return Lists.newArrayList(Iterables.filter(outputs.values(), MonitorOutput.class));
 	}
 

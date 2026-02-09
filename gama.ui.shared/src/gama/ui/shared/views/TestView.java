@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.ui.shared.views;
 
-import static gama.core.common.preferences.GamaPreferences.Runtime.FAILED_TESTS;
-import static gama.core.common.preferences.GamaPreferences.Runtime.TESTS_SORTED;
+import static gama.api.utils.prefs.GamaPreferences.Runtime.FAILED_TESTS;
+import static gama.api.utils.prefs.GamaPreferences.Runtime.TESTS_SORTED;
 import static gama.ui.shared.resources.IGamaIcons.TEST_FILTER;
 import static gama.ui.shared.resources.IGamaIcons.TEST_SORT;
 
@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
@@ -36,18 +35,18 @@ import org.eclipse.ui.PartInitException;
 
 import com.google.common.primitives.Ints;
 
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.interfaces.IStatusMessage;
-import gama.core.common.interfaces.ItemList;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.util.FileUtils;
-import gama.core.runtime.GAMA;
-import gama.core.util.IColor;
-import gama.gaml.statements.test.AbstractSummary;
-import gama.gaml.statements.test.CompoundSummary;
-import gama.gaml.statements.test.TestExperimentSummary;
-import gama.gaml.statements.test.TestState;
+import gama.api.GAMA;
+import gama.api.data.objects.IColor;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IGui;
+import gama.api.ui.IItemList;
+import gama.api.ui.IStatusMessage;
+import gama.api.utils.files.FileUtils;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.tests.AbstractSummary;
+import gama.api.utils.tests.CompoundSummary;
+import gama.api.utils.tests.TestExperimentSummary;
+import gama.api.utils.tests.TestState;
 import gama.ui.shared.controls.ParameterExpandItem;
 import gama.ui.shared.controls.StatusIconProvider;
 import gama.ui.shared.menus.GamaMenu;
@@ -273,8 +272,8 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	 */
 	public void saveTests() {
 		final DirectoryDialog dialog = new DirectoryDialog(WorkbenchHelper.getShell(), SWT.NULL);
-		dialog.setFilterPath(GAMA.getModel() == null
-				? ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString() : GAMA.getModel().getFilePath());
+		dialog.setFilterPath(GAMA.getModel() == null ? GAMA.getWorkspaceManager().getWorkspaceLocation()
+				: GAMA.getModel().getFilePath());
 		dialog.setMessage("Choose a folder for saving the tests");
 		final String path = dialog.open();
 		if (path == null) return;
@@ -309,7 +308,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	public String getItemDisplayName(final AbstractSummary<?> obj, final String previousName) {
 		final StringBuilder sb = new StringBuilder(300);
 		final String name = obj.getTitle();
-		sb.append(obj.getState()).append(ItemList.SEPARATION_CODE).append(name).append(' ');
+		sb.append(obj.getState()).append(IItemList.SEPARATION_CODE).append(name).append(' ');
 		return sb.toString();
 	}
 
@@ -349,7 +348,7 @@ public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements
 	/**
 	 * Method handleMenu()
 	 *
-	 * @see gama.core.common.interfaces.ItemList#handleMenu(java.lang.Object)
+	 * @see gama.api.ui.IItemList#handleMenu(java.lang.Object)
 	 */
 	@Override
 	public Map<String, Runnable> handleMenu(final AbstractSummary<?> item, final int x, final int y) {

@@ -3,7 +3,7 @@
  * FeatureTypeHandler.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,7 +26,6 @@ import org.geotools.feature.simple.SimpleFeatureTypeBuilder;
 import org.json.simple.parser.ParseException;
 
 import gama.dependencies.geojson.DelegatingHandler;
-import gama.dependencies.geojson.IContentHandler;
 
 /**
  * Obtains a complete feature type from GeoJSON by parsing beyond first feature and finding attributes that did not
@@ -36,8 +35,7 @@ import gama.dependencies.geojson.IContentHandler;
  * If null values are encoded, parsing will stop when all data types are found. In the worst case, all features will be
  * parsed. If null values are not encoded, all features will be parsed anyway.
  */
-public class FeatureTypeHandler extends DelegatingHandler<SimpleFeatureType>
-		implements IContentHandler<SimpleFeatureType> {
+public class FeatureTypeHandler extends DelegatingHandler<SimpleFeatureType> {
 
 	/** The feature type. */
 	SimpleFeatureType featureType;

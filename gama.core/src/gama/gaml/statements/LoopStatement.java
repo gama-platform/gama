@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * LoopStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2025-03).
+ * LoopStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -12,35 +11,37 @@ package gama.gaml.statements;
 
 import java.util.EnumSet;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.FlowStatus;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.gaml.compilation.Assert;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SymbolSerializer;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.operators.Cast;
-import gama.gaml.statements.IStatement.Breakable;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.serializer;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.compilation.validation.Assert;
+import gama.api.constants.IGamlIssue;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.objects.IContainer;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement.Breakable;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.FlowStatus;
+import gama.api.runtime.scope.IScope;
 import gama.gaml.statements.LoopStatement.LoopSerializer;
 import gama.gaml.statements.LoopStatement.LoopValidator;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 // A group of commands that can be executed repeatedly.
 
@@ -229,7 +230,7 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
 		public void validate(final IDescription description) {
@@ -375,12 +376,12 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	/**
 	 * The Class LoopSerializer.
 	 */
-	public static class LoopSerializer extends SymbolSerializer {
+	public static class LoopSerializer implements ISymbolSerializer {
 
 		@Override
-		protected String serializeFacetValue(final IDescription s, final String key, final boolean includingBuiltIn) {
+		public String serializeFacetValue(final IDescription s, final String key, final boolean includingBuiltIn) {
 			if (NAME.equals(key) && (s.hasFacet(TIMES) || s.hasFacet(WHILE))) return null;
-			return super.serializeFacetValue(s, key, includingBuiltIn);
+			return ISymbolSerializer.super.serializeFacetValue(s, key, includingBuiltIn);
 		}
 
 	}
@@ -702,7 +703,8 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
 			final Object obj = overExpression.value(scope);
-			final Iterable list = !(obj instanceof IContainer c) ? Cast.asList(scope, obj) : c.iterable(scope);
+			final Iterable list =
+					!(obj instanceof IContainer c) ? GamaListFactory.toList(scope, obj) : c.iterable(scope);
 			for (final Object each : list) { if (BREAK_STATUSES.contains(loopBody(scope, each, result))) { break; } }
 			return result[0];
 		}

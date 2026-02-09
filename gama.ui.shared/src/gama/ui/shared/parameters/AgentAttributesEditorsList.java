@@ -17,13 +17,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import gama.core.common.interfaces.IClock;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ItemList;
-import gama.core.kernel.experiment.parameters.IExperimentDisplayable;
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.util.IColor;
+import gama.api.constants.IKeyword;
+import gama.api.data.objects.IColor;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.IClock;
+import gama.api.ui.IExperimentDisplayable;
+import gama.api.ui.IItemList;
 import gama.ui.shared.interfaces.IParameterEditor;
 
 /**
@@ -35,7 +35,7 @@ public class AgentAttributesEditorsList extends EditorsList<IAgent> {
 	private static final String DEAD_MARKER = " dead at step ";
 
 	/** The Constant AGENT_MARKER. */
-	private static final String AGENT_MARKER = "Agent" + ItemList.SEPARATION_CODE;
+	private static final String AGENT_MARKER = "Agent" + IItemList.SEPARATION_CODE;
 
 	/** The Constant HIDDEN. */
 	private static final Set<String> HIDDEN =
@@ -47,7 +47,7 @@ public class AgentAttributesEditorsList extends EditorsList<IAgent> {
 		if (ag.dead() && !name.contains(DEAD_MARKER)) {
 			IClock clock = ag.getScope().getClock();
 			final long cycle = clock == null ? 0 : clock.getCycle();
-			return AGENT_MARKER + ItemList.ERROR_CODE + name.substring(name.indexOf(ItemList.SEPARATION_CODE) + 1)
+			return AGENT_MARKER + IItemList.ERROR_CODE + name.substring(name.indexOf(IItemList.SEPARATION_CODE) + 1)
 					+ DEAD_MARKER + cycle;
 		}
 		return name;
@@ -103,7 +103,7 @@ public class AgentAttributesEditorsList extends EditorsList<IAgent> {
 	/**
 	 * Method handleMenu()
 	 *
-	 * @see gama.core.common.interfaces.ItemList#handleMenu(java.lang.Object, int, int)
+	 * @see gama.api.ui.IItemList#handleMenu(java.lang.Object, int, int)
 	 */
 	@Override
 	public Map<String, Runnable> handleMenu(final IAgent data, final int x, final int y) {

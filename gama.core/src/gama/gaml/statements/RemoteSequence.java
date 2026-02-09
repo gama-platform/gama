@@ -1,26 +1,29 @@
 /*******************************************************************************************************
  *
- * RemoteSequence.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * RemoteSequence.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IExecutionResult;
-import gama.core.runtime.FlowStatus;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.FlowStatus;
+import gama.api.runtime.scope.IExecutionResult;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class RemoteSequence.
  */
-public class RemoteSequence extends AbstractStatementSequence {
+public class RemoteSequence extends AbstractStatementSequence implements IStatement.Remote {
 
 	/** The myself. */
 	// AD: adding ThreadLocal for multi-threaded simulations

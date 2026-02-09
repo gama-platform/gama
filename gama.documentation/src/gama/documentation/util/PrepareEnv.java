@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * PrepareEnv.java, in gama.documentation, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * PrepareEnv.java, in gama.documentation, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.documentation.util;
 
@@ -16,15 +16,13 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 
-import gama.annotations.precompiler.doc.utils.Constants;
-
 /**
  * The Class PrepareEnv.
  */
 public class PrepareEnv {
 
 	/**
-	 * 
+	 *
 	 * @param pluginFolder
 	 *            the plugin folder in which tests will be created
 	 */
@@ -35,9 +33,7 @@ public class PrepareEnv {
 		final File projectFile = new File(Constants.PROJECT_FILE);
 
 		if (testsFolder.exists()) {
-			if (testsGenFolder.exists()) {
-				deleteDirectory(testsGenFolder);
-			}
+			if (testsGenFolder.exists()) { deleteDirectory(testsGenFolder); }
 		} else {
 			testsFolder.mkdir();
 		}
@@ -58,21 +54,18 @@ public class PrepareEnv {
 	/**
 	 * Prepare documentation.
 	 *
-	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
 	 */
-	public static void prepareDocumentation() throws IOException {
+	public static void prepareDocumentation() {
 		// - Deletes every generated folders
 		// - Creates every folders when they do not exist
 
 		final File genFolder = new File(Constants.GEN_FOLDER);
 		final File testFolder = new File(Constants.TEST_FOLDER);
 
-		if (genFolder.exists()) {
-			deleteDirectory(genFolder);
-		}
-		if (testFolder.exists()) {
-			deleteDirectory(testFolder);
-		}
+		if (genFolder.exists()) { deleteDirectory(genFolder); }
+		if (testFolder.exists()) { deleteDirectory(testFolder); }
 
 		genFolder.mkdir();
 		new File(Constants.JAVA2XML_FOLDER).mkdirs();
@@ -80,23 +73,24 @@ public class PrepareEnv {
 		new File(Constants.TEST_FOLDER).mkdirs();
 		new File(Constants.PRISM_GEN_FOLDER).mkdir();
 		new File(Constants.LATEX_STYLE_GEN_FOLDER).mkdir();
-		
+
 	}
 
 	/**
 	 * Delete directory.
 	 *
-	 * @param path the path
+	 * @param path
+	 *            the path
 	 * @return true, if successful
 	 */
 	static public boolean deleteDirectory(final File path) {
 		if (path.exists()) {
 			final File[] files = path.listFiles();
-			for (int i = 0; i < files.length; i++) {
-				if (files[i].isDirectory()) {
-					deleteDirectory(files[i]);
+			for (File file : files) {
+				if (file.isDirectory()) {
+					deleteDirectory(file);
 				} else {
-					files[i].delete();
+					file.delete();
 				}
 			}
 		}

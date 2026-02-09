@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.extension.network.common;
 
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class GamaNetworkException.

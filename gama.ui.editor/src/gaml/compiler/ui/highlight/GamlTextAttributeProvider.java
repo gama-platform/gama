@@ -38,6 +38,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
+import gama.api.data.objects.IFont;
 import gama.core.util.GamaFont;
 import gama.ui.application.workbench.ThemeHelper;
 
@@ -70,7 +71,7 @@ public class GamlTextAttributeProvider implements ITextAttributeProvider, IHighl
 	 *            the ts
 	 * @return the font
 	 */
-	public static GamaFont getFont(final TextStyle ts) {
+	public static IFont getFont(final TextStyle ts) {
 		final var fds = ts.getFontData();
 		// if (fds == null)
 		// return getDefaultFont();

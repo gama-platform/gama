@@ -3,7 +3,7 @@
  * GamlHoverDocumentationProvider.java, in gama.ui.editor, is part of the source code of the GAMA modeling and
  * simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,27 +16,26 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.inject.Inject;
 
-import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
-import gama.core.common.interfaces.IDocManager;
-import gama.core.common.interfaces.IExperimentAgentCreator.ExperimentAgentDescription;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.FileUtils;
-import gama.core.runtime.GAMA;
-import gama.core.util.file.IGamaFileMetaData;
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.kernel.GamaMetaModel;
-import gama.gaml.compilation.kernel.GamaSkillRegistry;
-import gama.gaml.descriptions.SkillDescription;
-import gama.gaml.descriptions.SymbolProto;
-import gama.gaml.expressions.units.UnitConstantExpression;
-import gama.gaml.factories.DescriptionFactory;
-import gama.gaml.interfaces.GamlConstantDocumentation;
-import gama.gaml.interfaces.IGamlDocumentation;
-import gama.gaml.interfaces.IGamlDescription;
-import gama.gaml.operators.Strings;
+import gama.api.GAMA;
+import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.GamaAdditionRegistry;
+import gama.api.additions.registries.GamaSkillRegistry;
+import gama.api.compilation.descriptions.IExperimentDescription;
+import gama.api.compilation.descriptions.IGamlDescription;
+import gama.api.compilation.descriptions.ISkillDescription;
+import gama.api.compilation.documentation.GamlConstantDocumentation;
+import gama.api.compilation.documentation.IDocManager;
+import gama.api.compilation.documentation.IGamlDocumentation;
+import gama.api.compilation.prototypes.IArtefactProto;
+import gama.api.constants.IKeyword;
+import gama.api.gaml.GAML;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.simulation.IExperimentAgentCreator.ExperimentAgentDescription;
+import gama.api.ui.displays.IDisplayCreator;
+import gama.api.utils.StringUtils;
+import gama.api.utils.files.FileUtils;
+import gama.api.utils.files.IGamaFileMetaData;
 import gama.gaml.statements.DoStatement;
-import gama.gaml.types.Types;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.ArgumentPair;
 import gaml.compiler.gaml.Array;
@@ -155,26 +154,26 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 			IFile file;
 			if (FileUtils.isFileExistingInWorkspace(iu)) {
 				file = FileUtils.getWorkspaceFile(iu);
-				final IGamaFileMetaData data = GAMA.getGui().getMetaDataProvider().getMetaData(file, false, true);
+				final IGamaFileMetaData data = GAMA.getMetadataProvider().getMetaData(file, false, true);
 				if (data == null) {
 					final String ext = file.getFileExtension();
 					doc = "This " + ext + " file has no metadata associated with it";
 				} else {
 					String s = data.getDocumentation().toString();
-					if (s != null) { doc = s.replace(Strings.LN, "<br/>"); }
+					if (s != null) { doc = s.replace(StringUtils.LN, "<br/>"); }
 				}
 			} else { // absolute file
 				file = FileUtils.createLinkToExternalFile(string.getOp(), string.eResource().getURI());
 				if (file == null) {
 					doc = "This file is outside the workspace and cannot be found.";
 				} else {
-					final IGamaFileMetaData data = GAMA.getGui().getMetaDataProvider().getMetaData(file, false, true);
+					final IGamaFileMetaData data = GAMA.getMetadataProvider().getMetaData(file, false, true);
 					if (data == null) {
 						final String ext = file.getFileExtension();
 						doc = "This external " + ext + " file has no metadata associated with it";
 					} else {
 						String s = data.getDocumentation().toString();
-						if (s != null) { doc = s.replace(Strings.LN, "<br/>"); }
+						if (s != null) { doc = s.replace(StringUtils.LN, "<br/>"); }
 					}
 				}
 			}
@@ -194,7 +193,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		final Statement s = EGaml.getInstance().getSurroundingStatement(type);
 		String name = EGaml.getInstance().getKeyOf(type);
 		if (s instanceof S_Display) {
-			DisplayDescription dc = IGui.DISPLAYS.get(name);
+			IDisplayCreator dc = GamaAdditionRegistry.getDisplay(name);
 			if (dc != null) return dc;
 			return new IGamlDescription() {
 
@@ -210,7 +209,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		}
 		if (s instanceof S_Experiment) {
 			ExperimentAgentDescription ead =
-					(ExperimentAgentDescription) GamaMetaModel.INSTANCE.getExperimentCreator(name);
+					(ExperimentAgentDescription) IExperimentDescription.getExperimentCreator(name);
 			if (ead != null) return ead;
 			return new IGamlDescription() {
 
@@ -276,7 +275,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				key = IKeyword.GRID_LAYER;
 			}
 		} else if (cont instanceof S_Definition sd && IKeyword.METHOD.equals(key)) { key = sd.getName(); }
-		final SymbolProto p = DescriptionFactory.getProto(key, null);
+		final IArtefactProto.Symbol p = ArtefactProtoRegistry.getProto(key, null);
 		if (p != null) return p.getPossibleFacets().get(facetName);
 		return null;
 	}
@@ -342,7 +341,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				&& array.eContainer() instanceof Facet facet && facet.getKey().startsWith(IKeyword.SKILLS)) {
 			VarDefinition vd = var.getRef();
 			String name = vd.getName();
-			SkillDescription skill = GamaSkillRegistry.INSTANCE.get(name);
+			ISkillDescription skill = GamaSkillRegistry.INSTANCE.get(name);
 			if (skill != null) return skill;
 		}
 		// case of style: in chart
@@ -366,7 +365,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 	public IGamlDescription caseUnitName(final UnitName un) {
 		final UnitFakeDefinition fake = un.getRef();
 		if (fake != null) {
-			final UnitConstantExpression unit = GAML.UNITS.get(fake.getName());
+			final IGamlDescription unit = GAML.UNITS.get(fake.getName());
 			if (unit != null) return unit;
 		}
 		return null;
@@ -399,7 +398,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		String name = EGaml.getInstance().getKeyOf(type);
 		// Can happen with statements that "look like" var declarations and which are not treated specially in the
 		// grammar
-		if (DescriptionFactory.isStatementProto(name)) return DescriptionFactory.getStatementProto(name);
+		if (ArtefactProtoRegistry.isStatementProto(name)) return ArtefactProtoRegistry.getStatementProto(name);
 		if (Types.hasType(name)) return Types.get(name);
 		return null;
 	}

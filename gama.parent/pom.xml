@@ -123,7 +123,9 @@
 			Core modules
 		-->
 		<module>../gama.dependencies</module>
+		<module>../gama.api</module>
 		<module>../gama.core</module>
+		<module>../gama.workspace</module>
 		<module>../gaml.compiler</module>
 
 		<!--

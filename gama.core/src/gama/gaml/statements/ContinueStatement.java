@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * ContinueStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * ContinueStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -10,23 +10,23 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.descriptions.StatementWithChildrenDescription;
-import gama.gaml.descriptions.SymbolProto;
-import gama.gaml.descriptions.SymbolSerializer;
-import gama.gaml.interfaces.IGamlIssue;
+import gama.annotations.doc;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.annotations.serializer;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.constants.IGamlIssue;
+import gama.api.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.statements.AbstractStatement;
+import gama.api.runtime.scope.IScope;
 import gama.gaml.statements.ContinueStatement.ContinueSerializer;
 import gama.gaml.statements.ContinueStatement.ContinueValidator;
 
@@ -54,10 +54,10 @@ public class ContinueStatement extends AbstractStatement {
 	/**
 	 * The Class BreakSerializer.
 	 */
-	public static class ContinueSerializer extends SymbolSerializer {
+	public static class ContinueSerializer implements ISymbolSerializer {
 
 		@Override
-		protected void serialize(final IDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
+		public void serialize(final IDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
 			sb.append(CONTINUE).append(";");
 		}
 	}
@@ -65,21 +65,22 @@ public class ContinueStatement extends AbstractStatement {
 	/**
 	 * The Class BreakValidator.
 	 */
-	public static class ContinueValidator implements IDescriptionValidator<StatementDescription> {
+	public static class ContinueValidator implements IDescriptionValidator<IStatementDescription> {
 
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
-		public void validate(final StatementDescription description) {
+		public void validate(final IStatementDescription description) {
 			IDescription superDesc = description.getEnclosingDescription();
-			while (superDesc instanceof StatementWithChildrenDescription) {
-				if (((StatementWithChildrenDescription) superDesc).isContinuable()) return;
+			while (superDesc instanceof IStatementDescription isd) {
+				if (isd.isContinuable()) return;
 				superDesc = superDesc.getEnclosingDescription();
 			}
-			description.error("'continue' must be used in the context of " + SymbolProto.CONTINUABLE_STATEMENTS,
+			description.error(
+					"'continue' must be used in the context of " + ArtefactProtoRegistry.CONTINUABLE_STATEMENTS,
 					IGamlIssue.WRONG_CONTEXT);
 		}
 	}
@@ -92,7 +93,7 @@ public class ContinueStatement extends AbstractStatement {
 	}
 
 	/**
-	 * @see gama.gaml.commands.AbstractCommand#privateExecuteIn(gama.core.runtime.IScope)
+	 * @see gama.gaml.commands.AbstractCommand#privateExecuteIn(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {

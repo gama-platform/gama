@@ -13,27 +13,28 @@ import java.util.List;
 
 import org.eclipse.core.runtime.ISafeRunnable;
 
-import gama.core.common.interfaces.ISafeConsumer;
-import gama.core.common.util.random.IRandom;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
+import gama.api.GAMA;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IField;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IMatrix;
+import gama.api.data.objects.IPoint;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IContainerType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.ISafeConsumer;
+import gama.api.utils.StringUtils;
+import gama.api.utils.random.IRandom;
 import gama.dev.FLAGS;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.operators.Strings;
-import gama.gaml.types.GamaPointType;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IContainerType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Written by drogoul Modified on 18 nov. 2008
@@ -81,7 +82,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 * @return the gama point
 	 */
 	protected IPoint buildIndex(final IScope scope, final Object object) {
-		return GamaPointType.staticCast(scope, object, false);
+		return GamaPointFactory.toPoint(scope, object, false);
 	}
 
 	@Override
@@ -276,7 +277,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	@Override
 	public final String stringValue(final IScope scope) throws GamaRuntimeException {
 		final StringBuilder sb = new StringBuilder(numRows * numCols * 5);
-		rowByRow(scope, v -> sb.append(Cast.asString(scope, v)), () -> sb.append(';'), () -> sb.append(Strings.LN));
+		rowByRow(scope, v -> sb.append(Cast.asString(scope, v)), () -> sb.append(';'), () -> sb.append(StringUtils.LN));
 		return sb.toString();
 	}
 

@@ -15,7 +15,7 @@ import org.eclipse.xtext.ui.editor.autoedit.CompoundMultiLineTerminalsEditStrate
 import org.eclipse.xtext.ui.editor.autoedit.DefaultAutoEditStrategyProvider;
 import org.eclipse.xtext.ui.editor.model.TerminalsTokenTypeToPartitionMapper;
 
-import gama.core.common.preferences.GamaPreferences;
+import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * The class GamaAutoEditStrategyProvider.

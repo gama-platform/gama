@@ -25,7 +25,7 @@ import org.eclipse.ui.internal.forms.widgets.IHyperlinkSegment;
 import org.eclipse.ui.internal.forms.widgets.Locator;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
-import gama.core.util.GamaFont;
+import gama.api.data.objects.IFont;
 import gama.ui.shared.resources.GamaFonts;
 
 /**
@@ -43,7 +43,7 @@ public class XmlParagraph implements IXmlFontUser {
 	private boolean addVerticalSpace = true;
 
 	/** The font. */
-	private final GamaFont font;
+	private final IFont font;
 
 	/**
 	 * Instantiates a new xml paragraph.
@@ -51,7 +51,7 @@ public class XmlParagraph implements IXmlFontUser {
 	 * @param addVerticalSpace
 	 *            the add vertical space
 	 */
-	public XmlParagraph(final boolean addVerticalSpace, final GamaFont font) {
+	public XmlParagraph(final boolean addVerticalSpace, final IFont font) {
 		this.font = font;
 		this.addVerticalSpace = addVerticalSpace;
 	}

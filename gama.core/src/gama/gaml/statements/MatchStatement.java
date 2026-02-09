@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * MatchStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * MatchStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,25 +13,27 @@ package gama.gaml.statements;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.IPoint ;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IPoint;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
 
 /**
  * IfPrototype.
@@ -207,14 +210,13 @@ public class MatchStatement extends AbstractStatementSequence {
 		public boolean matches(final IScope scope, final Object switchValue) throws GamaRuntimeException {
 			final Object val = getValue(scope);
 			if (val instanceof IContainer) return ((IContainer) val).contains(scope, switchValue);
-			return Cast.asList(scope, val).contains(switchValue);
+			return GamaListFactory.toList(scope, val).contains(switchValue);
 		}
 
 		@Override
 		public void acceptValue() {
 			super.acceptValue();
-			if (constantValue != null && !(constantValue instanceof IContainer)
-					&& !(constantValue instanceof IPoint )) {
+			if (constantValue != null && !(constantValue instanceof IContainer) && !(constantValue instanceof IPoint)) {
 				constantValue = Types.LIST.cast(null, constantValue, null, false);
 			}
 		}
@@ -262,9 +264,9 @@ public class MatchStatement extends AbstractStatementSequence {
 			if (!(switchValue instanceof Number)) throw GamaRuntimeException
 					.error("Can only match if a number is in an interval. " + switchValue + " is not a number", scope);
 			Object val = value.value(scope);
-			if (!(val instanceof IPoint )) { val = Cast.asPoint(scope, val); }
-			final double min = ((IPoint ) val).getX();
-			final double max = ((IPoint ) val).getY();
+			if (!(val instanceof IPoint)) { val = GamaPointFactory.toPoint(scope, val); }
+			final double min = ((IPoint) val).getX();
+			final double max = ((IPoint) val).getY();
 			final double in = ((Number) switchValue).doubleValue();
 			return in >= min && in <= max;
 		}
@@ -275,7 +277,7 @@ public class MatchStatement extends AbstractStatementSequence {
 		@Override
 		public void acceptValue() {
 			super.acceptValue();
-			if (constantValue != null && !(constantValue instanceof IPoint )) {
+			if (constantValue != null && !(constantValue instanceof IPoint)) {
 				constantValue = Types.POINT.cast(null, constantValue, null, false);
 			}
 

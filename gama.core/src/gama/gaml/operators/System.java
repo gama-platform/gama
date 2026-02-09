@@ -2,7 +2,7 @@
  *
  * System.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,33 +24,34 @@ import javax.sound.sampled.Clip;
 
 import org.eclipse.core.runtime.Platform;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.FileUtils;
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.kernel.experiment.parameters.InputParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaFont;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
-import gama.gaml.descriptions.ActionDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IValue;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.compilation.descriptions.IActionDescription;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.objects.IFont;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IValue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
+import gama.api.utils.files.FileUtils;
+import gama.core.experiment.parameters.InputParameter;
+import gama.core.util.color.GamaColor;
 
 /**
  * Written by drogoul Modified on 10 d�c. 2010
@@ -386,7 +387,7 @@ public class System {
 			try (BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()))) {
 				final int returnValue = p.waitFor();
 				String line = "";
-				while ((line = reader.readLine()) != null) { output.append(line + Strings.LN); }
+				while ((line = reader.readLine()) != null) { output.append(line + StringUtils.LN); }
 
 				if (returnValue != 0)
 					throw GamaRuntimeException.error("Error in console command." + output.toString(), scope);
@@ -603,7 +604,7 @@ public class System {
 							isExecutable = false) })
 	@no_test
 	public static IMap<String, Object> userInputDialog(final IScope scope, final String title, final IList parameters,
-			final GamaFont font) {
+			final IFont font) {
 		parameters.removeIf(p -> !(p instanceof IParameter));
 		return GamaMapFactory.createWithoutCasting(Types.STRING, Types.NO_TYPE,
 				scope.getGui().openUserInputDialog(scope, title, parameters, font, null, true));
@@ -637,7 +638,7 @@ public class System {
 							isExecutable = false) })
 	@no_test
 	public static IMap<String, Object> userInputDialog(final IScope scope, final String title, final IList parameters,
-			final GamaFont font, final GamaColor color) {
+			final IFont font, final GamaColor color) {
 		return userInputDialog(scope, title, parameters, font, color, true);
 	}
 
@@ -673,7 +674,7 @@ public class System {
 							isExecutable = false) })
 	@no_test
 	public static IMap<String, Object> userInputDialog(final IScope scope, final String title, final IList parameters,
-			final GamaFont font, final GamaColor color, final Boolean showTitle) {
+			final IFont font, final GamaColor color, final Boolean showTitle) {
 		parameters.removeIf(p -> !(p instanceof IParameter));
 		return GamaMapFactory.createWithoutCasting(Types.STRING, Types.NO_TYPE,
 				scope.getGui().openUserInputDialog(scope, title, parameters, font, color, showTitle));
@@ -705,7 +706,7 @@ public class System {
 	@no_test
 
 	public static IMap<String, IMap<String, Object>> openWizard(final IScope scope, final String title,
-			final ActionDescription finish, final IList<IMap<String, Object>> pages) {
+			final IActionDescription finish, final IList<IMap<String, Object>> pages) {
 		return scope.getGui().openWizard(scope, title, finish, pages);
 	}
 
@@ -785,7 +786,7 @@ public class System {
 					isExecutable = false) })
 	@no_test
 	public static IMap<String, Object> wizardPage(final String title, final String description, final IList parameters,
-			final GamaFont font) {
+			final IFont font) {
 		IMap<String, Object> results = GamaMapFactory.create();
 		results.put(IKeyword.TITLE, title);
 		results.put(IKeyword.DESCRIPTION, description);

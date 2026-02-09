@@ -10,7 +10,8 @@
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
-import gama.gaml.operators.Colors.GamaPalette;
+import gama.api.ui.layers.IMeshColorProvider;
+import gama.core.util.color.GamaPalette;
 
 /**
  * The Class PaletteBasedMeshColorProvider.

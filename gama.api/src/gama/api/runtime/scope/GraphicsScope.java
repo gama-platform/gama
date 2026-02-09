@@ -1,0 +1,68 @@
+/*******************************************************************************************************
+ *
+ * GraphicsScope.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.api.runtime.scope;
+
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.random.IRandom;
+
+/**
+ * The Class GraphicsScope.
+ */
+public class GraphicsScope extends ExecutionScope implements IGraphicsScope {
+
+	/** The graphics. */
+	private IGraphics graphics;
+
+	/**
+	 * Instantiates a new graphics scope.
+	 *
+	 * @param scope
+	 *            the scope
+	 */
+	public GraphicsScope(final IScope scope, final String name) {
+		super(scope.getRoot(), name);
+	}
+
+	@Override
+	public IRandom getRandom() {
+		if (graphics != null) return graphics.getRandom();
+		return super.getRandom();
+	}
+
+	/**
+	 * Method setGraphics()
+	 *
+	 * @see gama.api.runtime.scope.IScope#setGraphics(gama.api.ui.displays.IGraphics)
+	 */
+	@Override
+	public void setGraphics(final IGraphics val) { graphics = val; }
+
+	/**
+	 * Method getGraphics()
+	 *
+	 * @see gama.api.runtime.scope.IScope#getGraphics()
+	 */
+	@Override
+	public IGraphics getGraphics() { return graphics; }
+
+	@Override
+	public IGraphicsScope copy(final String additionalName) {
+		return super.copyForGraphics(additionalName);
+	}
+
+	@Override
+	public boolean reportErrors() {
+		return super.reportErrors() && GamaPreferences.Runtime.ERRORS_IN_DISPLAYS.getValue();
+	}
+
+}

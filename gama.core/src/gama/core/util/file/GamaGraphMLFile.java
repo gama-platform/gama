@@ -16,17 +16,17 @@ import org.jgrapht.graph.DirectedMultigraph;
 import org.jgrapht.nio.GraphImporter;
 import org.jgrapht.nio.graphml.GraphMLImporter;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.annotations.doc;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
 import gama.core.util.graph.GamaGraph;
-import gama.core.util.graph.loader.GamaGraphMLEdgeImporter;
-import gama.core.util.graph.loader.GamaGraphMLNodeImporter;
-import gama.core.util.graph.loader.GraphImporters;
-import gama.gaml.species.ISpecies;
-import gama.gaml.types.IType;
+import gama.core.util.graph.GamaGraphMLEdgeImporter;
+import gama.core.util.graph.GamaGraphMLNodeImporter;
+import gama.core.util.graph.GraphImporters;
 
 /**
  * The Class GamaGraphMLFile.

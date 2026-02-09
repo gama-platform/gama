@@ -10,13 +10,13 @@
  ********************************************************************************************************/
 package gama.ui.experiment.commands;
 
-import static gama.core.common.interfaces.IKeyword.LAYOUT;
-import static gama.core.util.tree.GamaTree.withRoot;
-import static gama.gaml.constants.GamlCoreConstants.horizontal;
-import static gama.gaml.constants.GamlCoreConstants.none;
-import static gama.gaml.constants.GamlCoreConstants.split;
-import static gama.gaml.constants.GamlCoreConstants.stack;
-import static gama.gaml.constants.GamlCoreConstants.vertical;
+import static gama.api.constants.IKeyword.LAYOUT;
+import static gama.api.gaml.constants.GamlCoreConstants.horizontal;
+import static gama.api.gaml.constants.GamlCoreConstants.none;
+import static gama.api.gaml.constants.GamlCoreConstants.split;
+import static gama.api.gaml.constants.GamlCoreConstants.stack;
+import static gama.api.gaml.constants.GamlCoreConstants.vertical;
+import static gama.api.utils.collections.GamaTree.withRoot;
 import static gama.gaml.operators.Displays.HORIZONTAL;
 import static gama.gaml.operators.Displays.STACK;
 import static gama.gaml.operators.Displays.VERTICAL;
@@ -37,10 +37,10 @@ import org.eclipse.e4.ui.model.application.ui.advanced.MPlaceholder;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartSashContainer;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
 
-import gama.core.common.interfaces.IGamaView.Display;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.util.tree.GamaNode;
-import gama.core.util.tree.GamaTree;
+import gama.api.ui.IGamaView.Display;
+import gama.api.utils.collections.GamaNode;
+import gama.api.utils.collections.GamaTree;
+import gama.api.utils.prefs.GamaPreferences;
 import one.util.streamex.IntStreamEx;
 
 /**

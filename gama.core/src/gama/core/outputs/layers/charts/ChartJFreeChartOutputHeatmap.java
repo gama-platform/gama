@@ -45,11 +45,12 @@ import org.jfree.data.xy.MatrixSeries;
 import org.jfree.data.xy.MatrixSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.util.IColor;
-import gama.gaml.expressions.IExpression;
+import gama.api.constants.IKeyword;
+import gama.api.data.objects.IColor;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.displays.IChartDataSource;
+import gama.api.ui.displays.IDisplaySurface;
 
 /**
  * The Class ChartJFreeChartOutputHeatmap.
@@ -86,22 +87,22 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 	}
 
 	@Override
-	public void setDefaultPropertiesFromType(final IScope scope, final ChartDataSource source, final int type_val) {
+	public void setDefaultPropertiesFromType(final IScope scope, final IChartDataSource source, final int type_val) {
 
 		switch (type_val) {
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N:
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_12: {
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N:
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_12: {
 				source.setCumulative(scope, false);
 				source.setCumulativeY(scope, true);
 				source.setUseSize(scope, true);
 				break;
 			}
-			case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N:
-			case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
-			case ChartDataSource.DATA_TYPE_LIST_POINT:
-			case ChartDataSource.DATA_TYPE_MATRIX_DOUBLE:
-			case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3:
+			case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N:
+			case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
+			case IChartDataSource.DATA_TYPE_LIST_POINT:
+			case IChartDataSource.DATA_TYPE_MATRIX_DOUBLE:
+			case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3:
 			default: {
 				source.setCumulative(scope, false);
 				source.setUseSize(scope, true);

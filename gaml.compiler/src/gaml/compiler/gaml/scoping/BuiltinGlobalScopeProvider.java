@@ -3,13 +3,16 @@
  * BuiltinGlobalScopeProvider.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 // (c) Vincent Simonet, 2011
 package gaml.compiler.gaml.scoping;
+
+import static com.google.common.collect.Iterables.addAll;
+import static gama.api.gaml.types.Types.getBuiltInSpecies;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -34,17 +37,24 @@ import org.eclipse.xtext.scoping.impl.SelectableBasedScope;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.SetMultimap;
 import com.google.inject.Singleton;
 
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
+import gama.api.additions.GamaBundleLoader;
+import gama.api.additions.registries.GamaSkillRegistry;
+import gama.api.compilation.descriptions.IActionDescription;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescription.DescriptionVisitor;
+import gama.api.compilation.descriptions.ISkillDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
+import gama.api.compilation.factories.IExpressionFactory;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.objects.IMap;
+import gama.api.gaml.GAML;
+import gama.api.gaml.types.Types;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.kernel.GamaBundleLoader;
-import gama.gaml.compilation.kernel.GamaSkillRegistry;
-import gama.gaml.expressions.IExpressionFactory;
-import gama.gaml.types.Types;
 import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
@@ -193,14 +203,15 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 					GamaBundleLoader.ERROR("Error when bulding unit artefact " + t, ex);
 				}
 			});
-			GAML.getAllFields().forEach(t -> {
+			GAML.FIELDS.values().forEach(t -> {
 				try {
 					add(t.getName(), eVar);
 				} catch (Exception ex) {
 					GamaBundleLoader.ERROR("Error when bulding field artefact " + t, ex);
 				}
 			});
-			GAML.getAllVars().forEach(t -> {
+
+			getAllVars().forEach(t -> {
 				try {
 					add(t.getName(), eVar);
 				} catch (Exception ex) {
@@ -214,7 +225,7 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 					GamaBundleLoader.ERROR("Error when bulding skill artefact " + t, ex);
 				}
 			});
-			GAML.getAllActions().forEach(t -> {
+			getAllActions().forEach(t -> {
 				try {
 					add(t.getName(), eAction, eVar);
 				} catch (Exception ex) {
@@ -229,6 +240,59 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 				}
 			});
 		});
+	}
+
+	/**
+	 * Gets the all actions.
+	 *
+	 * @return the all actions
+	 */
+	public static Collection<IDescription> getAllActions() {
+		SetMultimap<String, IDescription> result = MultimapBuilder.hashKeys().linkedHashSetValues().build();
+
+		final DescriptionVisitor<IDescription> visitor = desc -> {
+			result.put(desc.getName(), desc);
+			return true;
+		};
+
+		for (final ITypeDescription s : getBuiltInSpecies().values()) { s.visitOwnActions(visitor); }
+		GamaSkillRegistry.INSTANCE.visitSkills(desc -> {
+			((ISkillDescription) desc).visitOwnActions(visitor);
+			return true;
+		});
+		return result.values();
+	}
+
+	/**
+	 * Gets the all vars.
+	 *
+	 * @return the all vars
+	 */
+	private static Collection<IDescription> getAllVars() {
+		final HashSet<IDescription> result = new HashSet<>();
+
+		final DescriptionVisitor<IDescription> varVisitor = desc -> {
+			result.add(desc);
+			return true;
+		};
+
+		final DescriptionVisitor<IDescription> actionVisitor = desc -> {
+			addAll(result, ((IActionDescription) desc).getFormalArgs());
+			return true;
+		};
+
+		for (final ITypeDescription desc : Types.getBuiltInSpecies().values()) {
+			desc.visitOwnAttributes(varVisitor);
+			desc.visitOwnActions(actionVisitor);
+
+		}
+		GamaSkillRegistry.INSTANCE.visitSkills(desc -> {
+			((ITypeDescription) desc).visitOwnAttributes(varVisitor);
+			((ITypeDescription) desc).visitOwnActions(actionVisitor);
+			return true;
+		});
+
+		return result;
 	}
 
 	/**

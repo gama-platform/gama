@@ -31,7 +31,7 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
   protected static GamlPackage modelPackage;
 
   /**
-   * Creates an instance of the adapter factory.
+   * Creates an INSTANCE of the adapter factory.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -47,7 +47,7 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
   /**
    * Returns whether this factory is applicable for the type of the object.
    * <!-- begin-user-doc -->
-   * This implementation returns <code>true</code> if the object is either the model's package or is an instance object of the model.
+   * This implementation returns <code>true</code> if the object is either the model's package or is an INSTANCE object of the model.
    * <!-- end-user-doc -->
    * @return whether this factory is applicable for the type of the object.
    * @generated

@@ -11,8 +11,11 @@
 package gama.workspace.metadata;
 
 import static gama.dev.DEBUG.TIMER_WITH_EXCEPTIONS;
+import static org.eclipse.core.runtime.Path.fromOSString;
 
-import java.net.MalformedURLException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,10 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
+import java.util.function.Function;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -44,36 +44,118 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.emf.common.util.URI;
 
-import com.github.weisj.jsvg.SVGDocument;
-import com.github.weisj.jsvg.parser.SVGLoader;
-
-import gama.core.common.GamlFileExtension;
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IStatusMessage;
-import gama.core.runtime.GAMA;
-import gama.core.util.file.IFileMetaDataProvider;
-import gama.core.util.file.IGamaFileMetaData;
-import gama.core.util.file.json.IJsonValue;
-import gama.core.util.file.json.Json;
+import gama.api.GAMA;
+import gama.api.constants.GamlFileExtension;
+import gama.api.ui.IStatusMessage;
+import gama.api.utils.files.AbstractFileMetaData;
+import gama.api.utils.files.CompressionUtils;
+import gama.api.utils.files.FileUtils;
+import gama.api.utils.files.IFileMetadataProvider;
+import gama.api.utils.files.IGamaFileMetaData;
+import gama.api.utils.files.IGamlFileInfo;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
-import gama.gaml.compilation.GAML;
-import gama.gaml.interfaces.IGamlFileInfo;
-import gama.gaml.operators.Strings;
+import gama.workspace.manager.WorkspaceManager;
 
 /**
- * Class FileMetaDataProvider.
- *
+ * FileMetaDataProvider is responsible for managing metadata for files and projects in the GAMA workspace.
+ * It provides caching mechanisms, serialization/deserialization of metadata, and efficient retrieval
+ * of file information through both session properties (runtime) and persistent properties (disk storage).
+ * 
+ * <p>The provider supports various file types including shapefiles, GAML files, images, and generic files.
+ * Metadata is compressed when stored to disk to save space and decompressed when loaded.</p>
+ * 
+ * <p>Key features:</p>
+ * <ul>
+ * <li>Asynchronous metadata processing using a thread pool executor</li>
+ * <li>Two-level caching (session and persistent properties)</li>
+ * <li>Automatic compression/decompression of persistent metadata</li>
+ * <li>Thread-safe operations with proper synchronization</li>
+ * <li>Graceful degradation for corrupted or outdated metadata</li>
+ * </ul>
+ * 
  * @author drogoul
  * @since 11 févr. 2015
- *
+ * @version 2.0 - Improved thread safety and compression handling
  */
-public class FileMetaDataProvider implements IFileMetaDataProvider {
+public class FileMetaDataProvider implements IFileMetadataProvider {
+
+	/** The metadata builders. */
+	Map<String, Function<IFile, IGamaFileMetaData>> metadataBuilders = new HashMap<>();
+
+	/** The metadata retrievers. */
+	Map<String, Function<String, IGamaFileMetaData>> metadataDecoders = new HashMap<>();
+
+	/**
+	 * Register metadata class.
+	 *
+	 * @param contentType
+	 *            the content type
+	 * @param clazz
+	 *            the clazz
+	 */
+	@Override
+	public void registerMetadataClass(String contentType, Class<? extends IGamaFileMetaData> clazz) {
+		Constructor<? extends IGamaFileMetaData> iFileConstructor;
+		try {
+			iFileConstructor = clazz.getDeclaredConstructor(IFile.class);
+		} catch (NoSuchMethodException e) {
+			return;
+		}
+		Function<IFile, IGamaFileMetaData> builder = file -> {
+			try {
+				return iFileConstructor.newInstance(file);
+			} catch (Exception e) {
+				return null;
+			}
+		};
+		registerMetadataBuilder(contentType, builder); 
+		Constructor<? extends IGamaFileMetaData> propertiesConstructor;
+		try {
+			propertiesConstructor = clazz.getDeclaredConstructor(String.class);
+		} catch (NoSuchMethodException e) {
+			return;
+		}
+		Function<String, IGamaFileMetaData> retriever = properties -> {
+			try {
+				return propertiesConstructor.newInstance(properties);
+			} catch (Exception e) {
+				return null; 
+			}
+		};
+		registerMetadataDecoder(contentType, retriever);
+	}
+
+	/**
+	 * Register metadata builder.
+	 *
+	 * @param contentType
+	 *            the content type
+	 * @param builder
+	 *            the builder
+	 */
+	public void registerMetadataBuilder(final String contentType, final Function<IFile, IGamaFileMetaData> builder) {
+		metadataBuilders.put(contentType, builder);
+	}
+
+	/**
+	 * Register metadata retriever.
+	 *
+	 * @param contentType
+	 *            the content type
+	 * @param retriever
+	 *            the retriever
+	 */
+	public void registerMetadataDecoder(final String contentType, final Function<String, IGamaFileMetaData> retriever) {
+		metadataDecoders.put(contentType, retriever);
+	}
 
 	/** The processing. */
-	private static volatile Set<Object> processing = Collections.<Object> synchronizedSet(new HashSet<>());
+	private static volatile Set<Object> processing = Collections.synchronizedSet(new HashSet<>());
+
+	/** The metadata retrieval lock for preventing concurrent access. */
+	private final Object metadataLock = new Object();
 
 	/**
 	 * Adapt the specific object to the specified classes, supporting the IAdaptable interface as well.
@@ -100,38 +182,8 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	/** The Constant CHANGE_KEY. */
 	public static final QualifiedName CHANGE_KEY = new QualifiedName("gama.ui.application", "changed");
 
-	/** The Constant CSV_CT_ID. */
-	public static final String CSV_CT_ID = "gama.csv.file.type";
-
-	/** The Constant IMAGE_CT_ID. */
-	public static final String IMAGE_CT_ID = "gama.images.file.type";
-
-	/** The Constant GAML_CT_ID. */
-	public static final String GAML_CT_ID = "gama.gaml.file.type";
-
-	/** The Constant SHAPEFILE_CT_ID. */
-	public static final String SHAPEFILE_CT_ID = "gama.shapefile.type";
-
-	/** The Constant OSM_CT_ID. */
-	public static final String OSM_CT_ID = "gama.osm.file.type";
-
-	/** The Constant SHAPEFILE_SUPPORT_CT_ID. */
-	public static final String SHAPEFILE_SUPPORT_CT_ID = "gama.shapefile.support.type";
-
-	/** The Constant GSIM_CT_ID. */
-	public static final String GSIM_CT_ID = "gama.gsim.file.type";
-
-	/** The Constant SVG_CT_ID. */
-	public static final String SVG_CT_ID = "gama.svg.file.type";
-
-	/** The Constant JSON_CT_ID. */
-	public static final String JSON_CT_ID = "gama.json.file.type";
-
-	/** The Constant GML_CT_ID. */
-	public static final String GML_CT_ID = "gama.gml.file.type";
-
-	/** The Constant instance. */
-	private final static FileMetaDataProvider instance = new FileMetaDataProvider();
+	/** The Constant INSTANCE. */
+	private static FileMetaDataProvider INSTANCE;
 
 	/** The Constant OSMExt. */
 	public static final ArrayList<String> OSMExt = new ArrayList<>() {
@@ -164,57 +216,66 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 		}
 	};
 
-	/** The Constant CLASSES. */
-	public static final Map<String, Class<? extends GamaFileMetaData>> CLASSES = new HashMap<>() {
-
-		{
-			put(CSV_CT_ID, CSVInfo.class);
-			put(IMAGE_CT_ID, ImageInfo.class);
-			put(GAML_CT_ID, GamlFileInfo.class);
-			put(SHAPEFILE_CT_ID, ShapeInfo.class);
-			put(OSM_CT_ID, OSMInfo.class);
-			put(SHAPEFILE_SUPPORT_CT_ID, GenericFileInfo.class);
-			put(SVG_CT_ID, SVGInfo.class);
-			put(JSON_CT_ID, JSONInfo.class);
-			put(GML_CT_ID, GMLInfo.class);
-			put("project", ProjectInfo.class);
-			// BEN put(GSIM_CT_ID, SavedSimulationInfo.class);
-		}
-	};
-
 	/** The executor. */
-	ExecutorService executor = Executors.newCachedThreadPool();
+	ExecutorService executor = Executors.newFixedThreadPool(
+		Math.max(1, Runtime.getRuntime().availableProcessors() / 2),
+		r -> {
+			Thread t = new Thread(r, "MetadataProvider-" + System.nanoTime());
+			t.setDaemon(true);
+			t.setPriority(Thread.NORM_PRIORITY - 1);
+			return t;
+		}
+	);
 
 	/** The started. */
 	volatile boolean started;
 
 	/**
-	 * Instantiates a new file meta data provider.
+	 * Instantiates a new file meta data provider with default metadata decoders and builders.
 	 */
 	private FileMetaDataProvider() {
-		ResourcesPlugin.getWorkspace().getSynchronizer().add(CACHE_KEY);
+		registerMetadataDecoder("project", (Function<String, IGamaFileMetaData>) ProjectInfo::new);
+		registerMetadataBuilder(SHAPEFILE_SUPPORT_CT_ID, f -> this.createShapeFileSupportMetaData(f));
+		registerMetadataDecoder(SHAPEFILE_SUPPORT_CT_ID, GenericFileInfo::new);
 	}
 
 	/**
-	 * Gets the meta data.
+	 * Shutdown the metadata provider and clean up resources.
+	 * This method should be called when the workspace is being closed.
+	 */
+	public void shutdown() {
+		if (executor != null && !executor.isShutdown()) {
+			executor.shutdown();
+			try {
+				if (!executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) {
+					executor.shutdownNow();
+				}
+			} catch (InterruptedException e) {
+				executor.shutdownNow();
+				Thread.currentThread().interrupt();
+			}
+		}
+		processing.clear();
+		metadataBuilders.clear();
+		metadataDecoders.clear();
+		started = false;
+	}
+
+	/**
+	 * Gets the meta data for a project.
 	 *
-	 * @param project
-	 *            the project
-	 * @param includeOutdated
-	 *            the include outdated
-	 * @return the meta data
+	 * @param project the project
+	 * @param includeOutdated whether to include outdated metadata
+	 * @return the metadata or null if not available
 	 */
 	private IGamaFileMetaData getMetaData(final IProject project, final boolean includeOutdated) {
 		if (!project.isAccessible()) return null;
-		final String ct = "project";
-		final Class<? extends GamaFileMetaData> infoClass = CLASSES.get(ct);
-		if (infoClass == null) return null;
-		final IGamaFileMetaData data = readMetadata(project, infoClass, includeOutdated);
+		final IGamaFileMetaData data = readMetadata("project", project, includeOutdated);
 		if (data == null) {
 			try {
 				storeMetaData(project, new ProjectInfo(project), false);
 			} catch (final CoreException e) {
-				e.printStackTrace();
+				DEBUG.ERR("Error creating project metadata for " + project.getName() + ": " + e.getMessage());
 				return null;
 			}
 		}
@@ -222,143 +283,184 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	}
 
 	/**
-	 * Method getMetaData()
+	 * Gets the meta data for a given element. Handles various types including files, URIs, and projects.
+	 * Uses a caching mechanism with session and persistent properties.
 	 *
-	 * @see gama.gui.navigator.IFileMetaDataProvider#getMetaData(org.eclipse.core.resources.IFile)
+	 * @param element the element to get metadata for
+	 * @param includeOutdated whether to include outdated metadata in results  
+	 * @param immediately whether to process metadata immediately or asynchronously
+	 * @return the metadata or null if not available
 	 */
 	@Override
 	public IGamaFileMetaData getMetaData(final Object element, final boolean includeOutdated,
 			final boolean immediately) {
 		startup();
-		if (processing.contains(element)) {
-			while (processing.contains(element)) { THREADS.WAIT(100); }
-			return getMetaData(element, includeOutdated, immediately);
-
+		
+		if (element == null) {
+			return null;
+		}
+		
+		// Wait for processing with timeout to avoid infinite blocking
+		int waitCount = 0;
+		while (processing.contains(element) && waitCount < 50) {
+			THREADS.WAIT(100);
+			waitCount++;
 		}
 
 		try {
-			if (element instanceof IProject) return getMetaData((IProject) element, includeOutdated);
-			IFile file = adaptTo(element, IFile.class, IFile.class);
-
-			if (file == null) {
-				if (element instanceof java.io.File) {
-					final IPath p = Path.fromOSString(((java.io.File) element).getAbsolutePath());
-					file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(p);
+			switch (element) {
+				case java.io.File f -> {
+					return getMetaData(
+							GAMA.getWorkspaceManager().getRoot().getFileForLocation(fromOSString(f.getAbsolutePath())),
+							includeOutdated, immediately);
 				}
-				if (file == null || !file.exists()) return null;
-			} else if (!file.isAccessible()) return null;
+				case URI u -> {
+					return getMetaData(FileUtils.getWorkspaceFile(u), includeOutdated, immediately);
+				}
+				case IProject p -> {
+					return getMetaData(p, includeOutdated);
+				}
+				default -> {
+				}
+			}
+			
+			final IFile file = adaptTo(element, IFile.class, IFile.class);
+			if (file == null || !file.isAccessible()) return null;
+			
 			final String ct = getContentTypeId(file);
-			final Class<? extends GamaFileMetaData> infoClass = CLASSES.get(ct);
-			if (infoClass == null) return null;
-			final IGamaFileMetaData[] data = { readMetadata(file, infoClass, includeOutdated) };
+			if (ct == null) return null;
+			
+			final IGamaFileMetaData[] data = { readMetadata(ct, file, includeOutdated) };
+			
 			if (data[0] == null) {
-				processing.add(element);
-				final IFile theFile = file;
-				final Runnable create = () -> {
-					try {
-						switch (ct) {
-							case SHAPEFILE_CT_ID:
-								data[0] = createShapeFileMetaData(theFile);
-								break;
-							case OSM_CT_ID:
-								data[0] = createOSMMetaData(theFile);
-								break;
-							case IMAGE_CT_ID:
-								data[0] = createImageFileMetaData(theFile);
-								break;
-							case CSV_CT_ID:
-								data[0] = createCSVFileMetaData(theFile);
-								break;
-							case GAML_CT_ID:
-								data[0] = createGamlFileMetaData(theFile);
-								break;
-							case SHAPEFILE_SUPPORT_CT_ID:
-								data[0] = createShapeFileSupportMetaData(theFile);
-								break;
-							case SVG_CT_ID:
-								data[0] = createSVGFileMetaData(theFile);
-								break;
-							case JSON_CT_ID:
-								data[0] = createJSONFileMetaData(theFile);
-								break;
-							case GML_CT_ID:
-								data[0] = createGMLFileMetaData(theFile);
-								break;
-						}
-						// Last chance: we generate a generic info
-						if (data[0] == null) { data[0] = createGenericFileMetaData(theFile); }
+				synchronized (metadataLock) {
+					// Double-check pattern to avoid race conditions
+					data[0] = readMetadata(ct, file, includeOutdated);
+					if (data[0] == null) {
+						processing.add(element);
+						
+						final Runnable create = () -> {
+							try {
+								Function<IFile, IGamaFileMetaData> metadata = metadataBuilders.get(ct);
+								if (data[0] == null && metadata != null) { 
+									data[0] = metadata.apply(file); 
+								}
+								if (data[0] == null) { 
+									data[0] = createGenericFileMetaData(file); 
+								}
+								storeMetaData(file, data[0], immediately);
+								try {
+									file.refreshLocal(IResource.DEPTH_ZERO, null);
+								} catch (final CoreException e) {
+									DEBUG.ERR("Error refreshing file " + file.getName() + ": " + e.getMessage());
+								}
+							} catch (Exception e) {
+								DEBUG.ERR("Error in processing " + file.getName() + ": " + e.getMessage());
+							} finally {
+								processing.remove(element);
+							}
+						};
 
-						// System.out
-						// .println("Storing the metadata just created (or
-						// recreated) while reading it for " + theFile);
-						storeMetaData(theFile, data[0], immediately);
-						try {
-
-							theFile.refreshLocal(IResource.DEPTH_ZERO, null);
-						} catch (final CoreException e) {
-							e.printStackTrace();
+						if (immediately) {
+							create.run();
+						} else {
+							executor.submit(create);
 						}
-						// GAMA.getGui().updateDecorator("gama.ui.application.decorator");
-					} catch (Exception e) {
-						DEBUG.LOG("Error in processing " + theFile.getName());
-					} finally {
-						processing.remove(element);
 					}
-
-				};
-
-				if (immediately) {
-					create.run();
-
-				} else {
-					executor.submit(create);
 				}
-
 			}
 			return data[0];
-		} finally {
-
+		} catch (Exception e) {
+			DEBUG.ERR("Error in getMetaData for " + element + ": " + e.getMessage());
+			processing.remove(element);
+			return null;
 		}
 	}
 
 	/**
-	 * Read metadata.
+	 * Read metadata from either session properties (runtime) or persistent properties (startup).
+	 * Handles both compressed and uncompressed data formats for backward compatibility.
 	 *
-	 * @param <T>
-	 *            the generic type
-	 * @param file
-	 *            the file
-	 * @param clazz
-	 *            the clazz
-	 * @param includeOutdated
-	 *            the include outdated
-	 * @return the t
+	 * @param contentType the content type identifier for metadata decoding
+	 * @param file the resource file containing the metadata
+	 * @param includeOutdated whether to include outdated metadata in results
+	 * @return the decoded metadata or null if not available or invalid
 	 */
-	private <T extends IGamaFileMetaData> T readMetadata(final IResource file, final Class<T> clazz,
-			final boolean includeOutdated) {
-		T result = null;
+	private IGamaFileMetaData readMetadata(String contentType, final IResource file, final boolean includeOutdated) {
+		if (file == null || !file.isAccessible() || contentType == null) {
+			return null;
+		}
+		
+		IGamaFileMetaData result = null;
 		final long modificationStamp = file.getModificationStamp();
+		
 		try {
-			final String s = (String) file.getSessionProperty(CACHE_KEY);
-			if (s != null) {
-				// s = GZIP.decompress(s);
-				result = GamaFileMetaData.from(s, modificationStamp, clazz, includeOutdated);
+			// First try to get from session properties (runtime cache)
+			String metadataString = (String) file.getSessionProperty(CACHE_KEY);
+			
+			// If not in session, try persistent properties (saved to disk)
+			if (metadataString == null) {
+				String persistentData = file.getPersistentProperty(CACHE_KEY);
+				if (persistentData != null) {
+					try {
+						// Try to decompress - the persistent data is compressed
+						metadataString = CompressionUtils.unzip(persistentData);
+						// Cache it in session for faster access
+						file.setSessionProperty(CACHE_KEY, metadataString);
+					} catch (Exception e) {
+						// Fallback: treat as uncompressed (backward compatibility)
+						metadataString = persistentData;
+						DEBUG.LOG("Fallback to uncompressed metadata for " + file.getName());
+					}
+				}
 			}
-			if (!clazz.isInstance(result)) return null;
-		} catch (final Exception ignore) {
-			DEBUG.ERR("Error loading metadata for " + file.getName() + " : " + ignore.getMessage());
+			
+			if (metadataString != null) {
+				final Function<String, IGamaFileMetaData> decoder = metadataDecoders.get(contentType);
+				if (decoder != null) {
+					try {
+						result = decoder.apply(metadataString);
+						if (result != null) {
+							final boolean hasFailed = result.hasFailed();
+							// Return null if metadata is outdated and we don't want outdated data
+							if (!hasFailed && !includeOutdated && result.getModificationStamp() != modificationStamp) {
+								return null;
+							}
+						}
+					} catch (final Exception e) {
+						DEBUG.ERR("Error decoding metadata " + metadataString + " : " + e.getClass().getSimpleName() + ":" + e.getMessage());
+						if (e instanceof InvocationTargetException && e.getCause() != null) {
+							e.getCause().printStackTrace();
+						}
+						// Clear corrupted cache
+						try {
+							file.setSessionProperty(CACHE_KEY, null);
+						} catch (CoreException ce) {
+							// Ignore cleanup errors
+						}
+					}
+				}
+			}
+		} catch (final Exception e) {
+			DEBUG.ERR("Error loading metadata for " + file.getName() + " : " + e.getMessage());
 		}
 		return result;
 	}
 
+	/**
+	 * Stores metadata for the given resource. The metadata is stored in session properties
+	 * for immediate access and will be persisted to disk during workspace save operations.
+	 *
+	 * @param file the resource to store metadata for
+	 * @param data the metadata to store, or null to clear existing metadata
+	 * @param immediately whether to store synchronously or asynchronously
+	 */
 	@Override
 	public void storeMetaData(final IResource file, final IGamaFileMetaData data, final boolean immediately) {
 		startup();
 		if (!file.isAccessible()) return;
 		try {
-			// DEBUG.LOG("Writing back metadata to " + file);
-			if (ResourcesPlugin.getWorkspace().isTreeLocked()) // DEBUG.LOG("Canceled: Resources are locked");
-				return;
+			if (GAMA.getWorkspaceManager().getWorkspace().isTreeLocked()) return;
 
 			if (data != null) { data.setModificationStamp(file.getModificationStamp()); }
 
@@ -367,114 +469,18 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 					file.setSessionProperty(CACHE_KEY, data == null ? null : data.toPropertyString());
 					file.setSessionProperty(CHANGE_KEY, true);
 				} catch (final Exception e) {
-					e.printStackTrace();
+					DEBUG.ERR("Error setting session properties for " + file.getName() + ": " + e.getMessage());
 				}
-				// DEBUG.LOG("Success: sync info written");
 			};
-			// WorkspaceModifyOperation
 			if (!immediately) {
 				executor.submit(runnable);
 			} else {
 				runnable.run();
 			}
 
-		} catch (final Exception ignore) {
-			DEBUG.ERR("Error storing metadata for " + file.getName() + " : " + ignore.getMessage());
-			ignore.printStackTrace();
-
+		} catch (final Exception e) {
+			DEBUG.ERR("Error storing metadata for " + file.getName() + " : " + e.getMessage());
 		}
-	}
-
-	/**
-	 * @param file
-	 */
-	private IGamlFileInfo createGamlFileMetaData(final IFile file) {
-		return GAML.getInfo(URI.createPlatformResourceURI(file.getFullPath().toOSString(), true),
-				file.getModificationStamp());
-	}
-
-	/**
-	 * Creates the CSV file meta data.
-	 *
-	 * @param file
-	 *            the file
-	 * @return the gama CSV file. CSV info
-	 */
-	private CSVInfo createCSVFileMetaData(final IFile file) {
-		return new CSVInfo(file.getLocation().toOSString(), file.getModificationStamp(), null);
-	}
-
-	/**
-	 * Creates the image file meta data.
-	 *
-	 * @param file
-	 *            the file
-	 * @return the image info
-	 */
-	private ImageInfo createImageFileMetaData(final IFile file) {
-		String type = "Unknown Format";
-		int width = -1, height = -1;
-		try (ImageInputStream iis = ImageIO.createImageInputStream(file.getLocationURI().toURL().openStream())) {
-			// DEBUG.LOG("Reading image metadata for " + file.getName());
-			if (iis == null) return new ImageInfo(file.getModificationStamp(), type, width, height);
-			final var readers = ImageIO.getImageReaders(iis);
-			if (readers.hasNext()) {
-				ImageReader reader;
-				try {
-					reader = readers.next();
-				} catch (Exception e) {
-					DEBUG.ERR("Error reading image metadata for " + file.getName() + ": " + e.getMessage());
-					reader = null;
-				}
-				if (reader != null) {
-					try {
-						reader.setInput(iis);
-						width = reader.getWidth(0);
-						height = reader.getHeight(0);
-						type = reader.getFormatName();
-					} catch (Exception e) {
-						DEBUG.ERR("Error reading image metadata for " + file.getName() + ": " + e.getMessage());
-					} finally {
-						reader.dispose();
-					}
-				}
-			}
-		} catch (final Exception e) {}
-		return new ImageInfo(file.getModificationStamp(), type, width, height);
-
-	}
-
-	/**
-	 * @param file
-	 * @return
-	 */
-	private ShapeInfo createShapeFileMetaData(final IFile file) {
-		ShapeInfo info = null;
-		try {
-			info = new ShapeInfo(GAMA.getRuntimeScope(), file.getLocationURI().toURL(), file.getModificationStamp());
-		} catch (final MalformedURLException e) {
-			e.printStackTrace();
-		}
-		return info;
-
-	}
-
-	/**
-	 * Creates the OSM meta data.
-	 *
-	 * @param file
-	 *            the file
-	 * @return the gama osm file. OSM info
-	 */
-	private OSMInfo createOSMMetaData(final IFile file) {
-		OSMInfo info = null;
-		try {
-			info = new OSMInfo(file.getLocationURI().toURL(), file.getModificationStamp());
-		} catch (final MalformedURLException e) {
-			e.printStackTrace();
-		}
-		return info;
-
 	}
 
 	/**
@@ -489,7 +495,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 		if (r == null) return null;
 		final String ext = file.getFileExtension();
 		final String type = longNames.containsKey(ext) ? longNames.get(ext) : "Data";
-		return new GenericFileInfo(file.getModificationStamp(), "" + type + " for '" + r.getName() + "'");
+		return new GenericFileInfo(file, "" + type + " for '" + r.getName() + "'");
 	}
 
 	/**
@@ -501,188 +507,9 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	 */
 	private GenericFileInfo createGenericFileMetaData(final IFile file) {
 		String ext = file.getFileExtension();
-		if (ext == null) return new GenericFileInfo(file.getModificationStamp(), "Generic file");
+		if (ext == null) return new GenericFileInfo(file, "Generic file");
 		ext = ext.toUpperCase();
-		return new GenericFileInfo(file.getModificationStamp(), "Generic " + ext + " file");
-	}
-
-	/**
-	 * Creates the SVG file meta data.
-	 *
-	 * @param file
-	 *            the file
-	 * @return the SVG info
-	 */
-	private SVGInfo createSVGFileMetaData(final IFile file) {
-		float width = 0;
-		float height = 0;
-		int groups = 0;
-		try {
-			SVGLoader loader = new SVGLoader();
-			SVGDocument doc = loader.load(file.getLocationURI().toURL());
-			if (doc != null) {
-				width = doc.size().width;
-				height = doc.size().height;
-			}
-			try (var is = file.getContents()) {
-				String content = new String(is.readAllBytes());
-				groups = content.split("<g").length - 1;
-			}
-		} catch (Exception e) {
-			DEBUG.ERR("Error reading SVG metadata for " + file.getName() + ": " + e.getMessage());
-		}
-		return new SVGInfo(file.getModificationStamp(), width, height, groups);
-	}
-
-	/**
-	 * Creates the JSON file meta data.
-	 *
-	 * @param file
-	 *            the file
-	 * @return the JSON info
-	 */
-	private JSONInfo createJSONFileMetaData(final IFile file) {
-		int itemCount = 0;
-		boolean isGeoJson = false;
-		String type = "Unknown";
-		String crs = null;
-		double width = 0;
-		double height = 0;
-		try (var reader = new java.io.InputStreamReader(file.getContents())) {
-			IJsonValue value = Json.getNew().parse(reader);
-			if (value.isArray()) {
-				type = "Array";
-				itemCount = value.asArray().size();
-			} else if (value.isObject()) {
-				type = "Object";
-				itemCount = value.asObject().size();
-				if (value.asObject().get("type") != null) {
-					String t = value.asObject().get("type").asString();
-					if ("FeatureCollection".equals(t) || "Feature".equals(t) || "GeometryCollection".equals(t)) {
-						isGeoJson = true;
-						IEnvelope env = GamaEnvelopeFactory.of(0, 0, 0, 0, 0, 0);
-						switch (t) {
-							case "FeatureCollection": {
-								IJsonValue features = value.asObject().get("features");
-								if (features != null && features.isArray()) {
-									itemCount = features.asArray().size();
-									for (IJsonValue v : features.asArray()) {
-										if (v.isObject()) {
-											IJsonValue geom = v.asObject().get("geometry");
-											if (geom != null && geom.isObject()) { computeEnvelope(geom, env); }
-										}
-									}
-								}
-								break;
-							}
-							case "Feature": {
-								IJsonValue geom = value.asObject().get("geometry");
-								if (geom != null && geom.isObject()) { computeEnvelope(geom, env); }
-								break;
-							}
-							case "GeometryCollection": {
-								IJsonValue geometries = value.asObject().get("geometries");
-								if (geometries != null && geometries.isArray()) {
-									for (IJsonValue v : geometries.asArray()) {
-										if (v.isObject()) { computeEnvelope(v, env); }
-									}
-								}
-								break;
-							}
-							case null:
-							default:
-								break;
-						}
-						width = env.getWidth();
-						height = env.getHeight();
-						IJsonValue crsVal = value.asObject().get("crs");
-						if (crsVal != null && crsVal.isObject()) {
-							IJsonValue props = crsVal.asObject().get("properties");
-							if (props != null && props.isObject()) {
-								IJsonValue name = props.asObject().get("name");
-								if (name != null && name.isString()) { crs = name.asString(); }
-							}
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			DEBUG.ERR("Error reading JSON metadata for " + file.getName() + ": " + e.getMessage());
-		}
-		return new JSONInfo(file.getModificationStamp(), itemCount, isGeoJson, type, crs, width, height);
-	}
-
-	/**
-	 * Compute envelope.
-	 *
-	 * @param geom
-	 *            the geom
-	 * @param env
-	 *            the env
-	 */
-	private void computeEnvelope(final IJsonValue geom, final IEnvelope env) {
-		IJsonValue coords = geom.asObject().get("coordinates");
-		if (coords == null) return;
-		String type = geom.asObject().get("type").asString();
-		switch (type) {
-			case "Point":
-				expandEnvelope(coords, env);
-				break;
-			case "LineString":
-			case "MultiPoint":
-				for (IJsonValue v : coords.asArray()) { expandEnvelope(v, env); }
-				break;
-			case "Polygon":
-			case "MultiLineString":
-				for (IJsonValue v : coords.asArray()) { for (IJsonValue v2 : v.asArray()) { expandEnvelope(v2, env); } }
-				break;
-			case "MultiPolygon":
-				for (IJsonValue v : coords.asArray()) {
-					for (IJsonValue v2 : v.asArray()) {
-						for (IJsonValue v3 : v2.asArray()) { expandEnvelope(v3, env); }
-					}
-				}
-				break;
-			case null:
-			default:
-				break;
-		}
-	}
-
-	/**
-	 * Expand envelope.
-	 *
-	 * @param coord
-	 *            the coord
-	 * @param env
-	 *            the env
-	 */
-	private void expandEnvelope(final IJsonValue coord, final IEnvelope env) {
-		if (coord.isArray() && coord.asArray().size() >= 2) {
-			double x = coord.asArray().get(0).asDouble();
-			double y = coord.asArray().get(1).asDouble();
-			if (env.getWidth() == 0 && env.getHeight() == 0 && env.getMinX() == 0 && env.getMinY() == 0) {
-				env.init(x, x, y, y, 0, 0);
-			} else {
-				env.expandToInclude(x, y, 0);
-			}
-		}
-	}
-
-	/**
-	 * Creates the GML file meta data.
-	 *
-	 * @param file
-	 *            the file
-	 * @return the GML info
-	 */
-	private GMLInfo createGMLFileMetaData(final IFile file) {
-		try (var is = file.getContents()) {
-			return new GMLInfo(file.getModificationStamp(), is);
-		} catch (Exception e) {
-			DEBUG.ERR("Error reading GML metadata for " + file.getName() + ": " + e.getMessage());
-			return new GMLInfo(file.getModificationStamp(), null);
-		}
+		return new GenericFileInfo(file, "Generic " + ext + " file");
 	}
 
 	/**
@@ -746,35 +573,58 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 	}
 
 	/**
-	 * Gets the single instance of FileMetaDataProvider.
+	 * Gets the single INSTANCE of FileMetaDataProvider.
 	 *
-	 * @return single instance of FileMetaDataProvider
+	 * @return single INSTANCE of FileMetaDataProvider
 	 */
-	public static FileMetaDataProvider getInstance() { return instance; }
+	public static FileMetaDataProvider getInstance() {
+		if (INSTANCE == null) { INSTANCE = new FileMetaDataProvider(); }
+		return INSTANCE;
+	}
 
 	/**
-	 * Startup.
+	 * Initialize the metadata provider by setting up workspace synchronization,
+	 * loading cached metadata from persistent properties, and registering save participants.
+	 * This method is thread-safe and idempotent.
 	 */
 	private void startup() {
 		if (started) return;
-		started = true;
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Retrieving workspace metadata", "done in", () -> {
-			try {
-				workspace.getRoot().accept(resource -> {
-					if (resource.isAccessible()) {
-						String toRead = resource.getPersistentProperty(CACHE_KEY);
-						if (toRead != null) { resource.setSessionProperty(CACHE_KEY, Strings.unzip(null, toRead)); }
-					}
-					return true;
-				});
-			} catch (final CoreException e) {}
-		});
+		synchronized (this) {
+			if (started) return; // Double-check pattern
+			
+			IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
+			workspace.getSynchronizer().add(CACHE_KEY);
+			started = true;
+			
+			DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Retrieving workspace metadata", "done in", () -> {
+				try {
+					workspace.getRoot().accept(resource -> {
+						if (resource.isAccessible()) {
+							String toRead = resource.getPersistentProperty(CACHE_KEY);
+							if (toRead != null) {
+								try {
+									// Decompress the persistent data
+									String decompressed = CompressionUtils.unzip(toRead);
+									resource.setSessionProperty(CACHE_KEY, decompressed);
+								} catch (Exception e) {
+									// Handle legacy uncompressed data
+									DEBUG.LOG("Using legacy uncompressed metadata for " + resource.getName());
+									resource.setSessionProperty(CACHE_KEY, toRead);
+								}
+							}
+						}
+						return true;
+					});
+				} catch (final CoreException e) {
+					DEBUG.ERR("Error loading persistent metadata during startup: " + e.getMessage());
+				}
+			});
 
-		try {
-			workspace.addSaveParticipant("gama.ui.shared.modeling", getSaveParticipant());
-		} catch (final CoreException e) {
-			e.printStackTrace();
+			try {
+				workspace.addSaveParticipant("gama.ui.shared.modeling", getSaveParticipant());
+			} catch (final CoreException e) {
+				DEBUG.ERR("Error registering save participant: " + e.getMessage());
+			}
 		}
 	}
 
@@ -791,14 +641,14 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 				if (context.getKind() != ISaveContext.FULL_SAVE) return;
 
 				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAMA, "workspace metadata ", "saved in", () -> {
-					ResourcesPlugin.getWorkspace().getRoot().accept(resource -> {
+					GAMA.getWorkspaceManager().getRoot().accept(resource -> {
 						String toSave = null;
 						try {
 
 							if (resource.isAccessible()) {
 								toSave = (String) resource.getSessionProperty(CACHE_KEY);
 								if (toSave != null) {
-									resource.setPersistentProperty(CACHE_KEY, Strings.zip(null, toSave));
+									resource.setPersistentProperty(CACHE_KEY, CompressionUtils.zip(toSave));
 								}
 							}
 							return true;
@@ -866,7 +716,7 @@ public class FileMetaDataProvider implements IFileMetaDataProvider {
 		try {
 			GAMA.getGui().getStatus().informStatus("Refreshing metadata of files in workspace",
 					IStatusMessage.COMPILE_ICON);
-			ResourcesPlugin.getWorkspace().getRoot().accept(resource -> {
+			GAMA.getWorkspaceManager().getRoot().accept(resource -> {
 				if (resource.isAccessible()) {
 					storeMetaData(resource, null, true);
 					getMetaData(resource, false, true);

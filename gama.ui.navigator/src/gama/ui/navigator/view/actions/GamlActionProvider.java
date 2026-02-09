@@ -18,10 +18,10 @@ import org.eclipse.ui.actions.SelectionListenerAction;
 import org.eclipse.ui.navigator.CommonActionProvider;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.util.FileUtils;
-import gama.core.runtime.GAMA;
-import gama.core.util.file.IGamaFile;
+import gama.api.GAMA;
+import gama.api.utils.files.FileUtils;
+import gama.api.utils.files.IGamaFile;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.gaml.operators.Files;
 import gama.ui.navigator.view.contents.WrappedExperimentContent;
 import gama.ui.navigator.view.contents.WrappedSyntacticContent;

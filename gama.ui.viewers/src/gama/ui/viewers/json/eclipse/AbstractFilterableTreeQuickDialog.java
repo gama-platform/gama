@@ -3,7 +3,7 @@
  * AbstractFilterableTreeQuickDialog.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and
  * simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -40,6 +40,7 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.progress.UIJob;
 
+import gama.dev.DEBUG;
 import gama.ui.viewers.json.FilterPatternMatcher;
 import gama.ui.viewers.json.eclipse.outline.FallbackOutlineContentProvider;
 
@@ -92,7 +93,7 @@ public abstract class AbstractFilterableTreeQuickDialog<T> extends AbstractQuick
 
 	/**
 	 * Creates a quick outline dialog containing a filterable tree
-	 * 
+	 *
 	 * @param adaptable
 	 *            adaptable which can be used by child class implementations
 	 * @param parent
@@ -105,8 +106,8 @@ public abstract class AbstractFilterableTreeQuickDialog<T> extends AbstractQuick
 	 * @param infoText
 	 *            additional information to show at the bottom of dialogs
 	 */
-	public AbstractFilterableTreeQuickDialog(final IAdaptable adaptable, final Shell parent, final String title, final int minWidth,
-			final int minHeight, final String infoText) {
+	public AbstractFilterableTreeQuickDialog(final IAdaptable adaptable, final Shell parent, final String title,
+			final int minWidth, final int minHeight, final String infoText) {
 		super(parent, PopupDialog.INFOPOPUPRESIZE_SHELLSTYLE, GRAB_FOCUS, PERSIST_SIZE, PERSIST_BOUNDS, DO_SHOW_DIALOG,
 				SHOW_PERSIST_ACTIONS, title, infoText);
 		this.minWidth = minWidth;
@@ -157,8 +158,8 @@ public abstract class AbstractFilterableTreeQuickDialog<T> extends AbstractQuick
 
 	/**
 	 * Open selection
-	 * 
-	 * 
+	 *
+	 *
 	 * @param filterText
 	 *            the filter as text or <code>null</code> if not filtered
 	 * @param selected
@@ -168,7 +169,7 @@ public abstract class AbstractFilterableTreeQuickDialog<T> extends AbstractQuick
 
 	/**
 	 * Set input to show
-	 * 
+	 *
 	 * @param input
 	 */
 	public final void setInput(final Object input) { this.input = input; }
@@ -323,7 +324,7 @@ public abstract class AbstractFilterableTreeQuickDialog<T> extends AbstractQuick
 	 * Rebuild filter text pattern.
 	 */
 	private void rebuildFilterTextPattern() {
-		if ((text == null) || text.isDisposed()) return;
+		if (text == null || text.isDisposed()) return;
 		String filterText = text.getText();
 		if (filterText == null) {
 			if (currentUsedFilterText == null) /* same as before */
@@ -380,11 +381,10 @@ public abstract class AbstractFilterableTreeQuickDialog<T> extends AbstractQuick
 		@Override
 		public void keyReleased(final KeyEvent e) {
 			String filterText = text.getText();
-			if ((filterText != null) && filterText.equals(currentUsedFilterText)) /*
-																					 * same text, occurs when only
-																					 * cursor keys used etc. avoid
-																					 * flickering
-																					 */
+			if (filterText != null && filterText.equals(currentUsedFilterText)) /*
+																				 * same text, occurs when only cursor
+																				 * keys used etc. avoid flickering
+																				 */
 				return;
 			synchronized (monitor) {
 				if (dirty) return;
@@ -407,7 +407,7 @@ public abstract class AbstractFilterableTreeQuickDialog<T> extends AbstractQuick
 							selectFirstMaching();
 						}
 					} catch (RuntimeException e) {
-						EclipseUtil.logError("quick dialog failure", e);
+						DEBUG.ERR("quick dialog failure", e);
 					}
 					dirty = false;
 					return Status.OK_STATUS;
@@ -431,7 +431,7 @@ public abstract class AbstractFilterableTreeQuickDialog<T> extends AbstractQuick
 		 * @return true, if successful
 		 */
 		private boolean selectfirstMatching(final Object[] elements) {
-			if ((treeViewer == null) || (textFilter == null) || (elements == null)) return false;
+			if (treeViewer == null || textFilter == null || elements == null) return false;
 			for (Object element : elements) {
 				if (Boolean.TRUE.equals(textFilter.isMatchingOrNull(element))) {
 					StructuredSelection selection = new StructuredSelection(element);

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * SocialLink.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * SocialLink.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,18 +12,18 @@ package gama.extension.bdi;
 
 import java.util.Objects;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.IJSon;
-import gama.core.util.file.json.IJsonValue;
-import gama.gaml.interfaces.IValue;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.api.data.json.IJson;
+import gama.api.data.json.IJsonValue;
+import gama.api.data.objects.IValue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class SocialLink.
@@ -89,7 +89,7 @@ public class SocialLink implements IValue {
 	private boolean hasTrust = false;
 
 	@Override
-	public IJsonValue serializeToJson(final IJSon json) {
+	public IJsonValue serializeToJson(final IJson json) {
 		return json.typedObject(getGamlType(), "agent", agent, "liking", liking, "dominance", dominance, "solidarity",
 				solidarity).add("trust", trust).add("familiarity", familiarity);
 	}
@@ -147,35 +147,45 @@ public class SocialLink implements IValue {
 	 *
 	 * @return the no liking
 	 */
-	public boolean hasLiking() { return hasLiking; }
+	public boolean hasLiking() {
+		return hasLiking;
+	}
 
 	/**
 	 * Gets the no dominance.
 	 *
 	 * @return the no dominance
 	 */
-	public boolean hasDominance() { return hasDominance; }
+	public boolean hasDominance() {
+		return hasDominance;
+	}
 
 	/**
 	 * Gets the no solidarity.
 	 *
 	 * @return the no solidarity
 	 */
-	public boolean hasSolidarity() { return hasSolidarity; }
+	public boolean hasSolidarity() {
+		return hasSolidarity;
+	}
 
 	/**
 	 * Gets the no familiarity.
 	 *
 	 * @return the no familiarity
 	 */
-	public boolean hasFamiliarity() { return hasFamiliarity; }
+	public boolean hasFamiliarity() {
+		return hasFamiliarity;
+	}
 
 	/**
 	 * Gets the no trust.
 	 *
 	 * @return the no trust
 	 */
-	public boolean hasTrust() { return hasTrust; }
+	public boolean hasTrust() {
+		return hasTrust;
+	}
 
 	/**
 	 * Sets the agent.
@@ -368,14 +378,10 @@ public class SocialLink implements IValue {
 		if (this == obj) return true;
 		if (obj == null || getClass() != obj.getClass()) return false;
 		final SocialLink other = (SocialLink) obj;
-		if (agent != null) {
-			return agent.equals(other.getAgent());
-		}
-		else {
-			// Here we know that agent is null
-			// so equalsInAgent will return true only if other.getAgent() is null too
-			return agent == other.getAgent(); 			
-		}
+		if (agent != null) return agent.equals(other.getAgent());
+		// Here we know that agent is null
+		// so equalsInAgent will return true only if other.getAgent() is null too
+		return agent == other.getAgent();
 	}
 
 }

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlSyntaxErrorMessageProvider.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * GamlSyntaxErrorMessageProvider.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,7 +19,7 @@ import org.eclipse.xtext.nodemodel.SyntaxErrorMessage;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.parser.antlr.SyntaxErrorMessageProvider;
 
-import gama.core.common.interfaces.IKeyword;
+import gama.api.constants.IKeyword;
 import gaml.compiler.gaml.EGaml;
 
 /**
@@ -55,16 +55,11 @@ public class GamlSyntaxErrorMessageProvider extends SyntaxErrorMessageProvider {
 							msg.append("Symbol '").append(text).append("' seems to be incomplete or misplaced");
 						} else {
 							switch (token) {
-								case IKeyword.ENVIRONMENT:
-									msg.append(
-											"'environment' cannot be declared anymore.Its bounds should be declared in the global section as the value of the 'shape' attribute (since GAMA 1.7)");
-									break;
-								case IKeyword.ENTITIES:
-									msg.append(
-											"'entities' cannot be declared anymore. The species it contains should be declared in the model or in the global section (since GAMA 1.6)");
-									break;
-								default:
-									msg.append("Unexpected symbol '").append(token).append("'");
+								case IKeyword.ENVIRONMENT -> msg.append(
+										"'environment' cannot be declared anymore.Its bounds should be declared in the global section as the value of the 'shape' attribute (since GAMA 1.7)");
+								case IKeyword.ENTITIES -> msg.append(
+										"'entities' cannot be declared anymore. The species it contains should be declared in the model or in the global section (since GAMA 1.6)");
+								default -> msg.append("Unexpected symbol '").append(token).append("'");
 							}
 
 						}
@@ -90,24 +85,13 @@ public class GamlSyntaxErrorMessageProvider extends SyntaxErrorMessageProvider {
 	private void process1CharToken(final StringBuilder msg, final String token) {
 		final char c = token.charAt(0);
 		switch (c) {
-			case ';':
-				msg.append("Unexpected line termination character ' ").append(token).append(" '");
-				break;
-			case '{':
-			case '}':
-				msg.append("Block definition does not begin or end correctly");
-				break;
-			case '[':
-			case ']':
-				msg.append("List definition does not begin or end correctly");
-				break;
-			case '(':
-			case ')':
-				msg.append("Parenthesized expression do not begin or end correctly");
-				break;
-			default:
-				msg.append("Unwanted or misplaced character ' ").append(token).append(" '");
+			case ';' -> msg.append("Unexpected line termination character ' ").append(token).append(" '");
+			case '{', '}' -> msg.append("Block definition does not begin or end correctly");
+			case '[', ']' -> msg.append("List definition does not begin or end correctly");
+			case '(', ')' -> msg.append("Parenthesized expression do not begin or end correctly");
+			default -> msg.append("Unwanted or misplaced character ' ").append(token).append(" '");
 		}
+
 	}
 
 	/**

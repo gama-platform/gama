@@ -1,63 +1,64 @@
 /*******************************************************************************************************
  *
  * DrawStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
-import static gama.core.common.interfaces.IKeyword.ANCHOR;
-import static gama.core.common.interfaces.IKeyword.ASPECT;
-import static gama.core.common.interfaces.IKeyword.AT;
-import static gama.core.common.interfaces.IKeyword.BORDER;
-import static gama.core.common.interfaces.IKeyword.COLOR;
-import static gama.core.common.interfaces.IKeyword.DEPTH;
-import static gama.core.common.interfaces.IKeyword.DRAW;
-import static gama.core.common.interfaces.IKeyword.FONT;
-import static gama.core.common.interfaces.IKeyword.PERSPECTIVE;
-import static gama.core.common.interfaces.IKeyword.ROTATE;
-import static gama.core.common.interfaces.IKeyword.SIZE;
-import static gama.core.common.interfaces.IKeyword.TEXTURE;
+import static gama.api.constants.IKeyword.ANCHOR;
+import static gama.api.constants.IKeyword.ASPECT;
+import static gama.api.constants.IKeyword.AT;
+import static gama.api.constants.IKeyword.BORDER;
+import static gama.api.constants.IKeyword.COLOR;
+import static gama.api.constants.IKeyword.DEPTH;
+import static gama.api.constants.IKeyword.DRAW;
+import static gama.api.constants.IKeyword.FONT;
+import static gama.api.constants.IKeyword.PERSPECTIVE;
+import static gama.api.constants.IKeyword.ROTATE;
+import static gama.api.constants.IKeyword.SIZE;
+import static gama.api.constants.IKeyword.TEXTURE;
 
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.WeakHashMap;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.additions.delegates.IDrawDelegate;
+import gama.api.additions.registries.GamaAdditionRegistry;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.constants.IGamlIssue;
+import gama.api.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.displays.DrawingData;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IDrawDelegate;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.statements.AbstractStatementSequence;
 import gama.gaml.statements.draw.DrawStatement.DrawValidator;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 // A command that is used to draw shapes, figures, text on the display
 
@@ -135,9 +136,10 @@ import gama.gaml.types.Types;
 						name = "precision",
 						type = IType.FLOAT,
 						optional = true,
-						doc = @doc ("(only if the display type is opengl and only for text drawing) controls the accuracy with which curves are rendered in glyphs. Between 0 and 1, the default is 0.1. "
-								+ "Smaller values will output much more faithful curves but can be considerably slower, "
-								+ "so it is better if they concern text that does not change and can be drawn inside layers marked as 'refresh: false'")),
+						doc = @doc ("""
+								(only if the display type is opengl and only for text drawing) controls the accuracy with which curves are rendered in glyphs. Between 0 and 1, the default is 0.1. \
+								Smaller values will output much more faithful curves but can be considerably slower, \
+								so it is better if they concern text that does not change and can be drawn inside layers marked as 'refresh: false'""")),
 				@facet (
 						name = DrawStatement.BEGIN_ARROW,
 						type = { IType.INT, IType.FLOAT },
@@ -166,8 +168,7 @@ import gama.gaml.types.Types;
 						optional = true,
 						doc = @doc (
 								value = "The line width to use for drawing this object. In OpenGL displays, this attribute is considered as optional and not implemented by all gaphic card vendors. "
-										+ "The default value is set by the preference found in Displays>OpenGL Rendering Properties (which, when inspected, also provides the maximal possible value on the local graphics configuration)")), 
-				},
+										+ "The default value is set by the preference found in Displays>OpenGL Rendering Properties (which, when inspected, also provides the maximal possible value on the local graphics configuration)")), },
 
 		omissible = IKeyword.GEOMETRY)
 @inside (
@@ -221,20 +222,22 @@ import gama.gaml.types.Types;
 										value = "}",
 										isExecutable = false) }) })
 @validator (DrawValidator.class)
-public class DrawStatement extends AbstractStatementSequence {
+public class DrawStatement extends AbstractStatementSequence implements IStatement.Draw {
+	/** The Constant INTERNAL_DELEGATE. */
+	private static final String INTERNAL_DELEGATE = "delegate";
 
 	/**
 	 * The Class DrawValidator.
 	 */
-	public static class DrawValidator implements IDescriptionValidator<StatementDescription> {
+	public static class DrawValidator implements IDescriptionValidator<IStatementDescription> {
 
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
-		public void validate(final StatementDescription description) {
+		public void validate(final IStatementDescription description) {
 
 			final IExpressionDescription geom = description.getFacet(GEOMETRY);
 			if (geom != null) {
@@ -262,7 +265,7 @@ public class DrawStatement extends AbstractStatementSequence {
 					}
 				}
 				IDrawDelegate executer = null;
-				for (Entry<IType, IDrawDelegate> entry : DELEGATES.entrySet()) {
+				for (Entry<IType, IDrawDelegate> entry : GamaAdditionRegistry.getDrawDelegates().entrySet()) {
 					if (entry.getKey().isAssignableFrom(type)) {
 						executer = entry.getValue();
 						break;
@@ -273,7 +276,8 @@ public class DrawStatement extends AbstractStatementSequence {
 					return;
 				}
 				executer.validate(description, exp);
-				description.setFacet("delegate", GAML.getExpressionFactory().createConst(executer, Types.NO_TYPE));
+				description.setFacet(INTERNAL_DELEGATE,
+						GAML.getExpressionFactory().createConst(executer, Types.NO_TYPE));
 			}
 
 		}
@@ -301,19 +305,8 @@ public class DrawStatement extends AbstractStatementSequence {
 	/** The Constant BEGIN_ARROW. */
 	public static final String BEGIN_ARROW = "begin_arrow";
 
-	/** The Constant DELEGATES. */
-	private static final Map<IType, IDrawDelegate> DELEGATES = new HashMap<>();
-
 	/** The delegate. */
 	private IDrawDelegate delegate;
-
-	/**
-	 * @param createExecutableExtension
-	 */
-	public static void addDelegate(final IDrawDelegate delegate) {
-		final IType t = delegate.typeDrawn();
-		if (t != null) { DELEGATES.put(t, delegate); }
-	}
 
 	/** The data. */
 	private final WeakHashMap<IGraphics, DrawingData> data = new WeakHashMap<>();
@@ -359,7 +352,7 @@ public class DrawStatement extends AbstractStatementSequence {
 		final IGraphics g = scope.getGraphics();
 		if (scope.interrupted() || g == null || scope.getAgent() == null) return null;
 		try {
-			if (delegate == null) { delegate = (IDrawDelegate) getFacet("delegate").value(scope); }
+			if (delegate == null) { delegate = (IDrawDelegate) getFacet(INTERNAL_DELEGATE).value(scope); }
 			DrawingData d = data.get(g);
 			if (d == null) {
 				d = new DrawingData(this);

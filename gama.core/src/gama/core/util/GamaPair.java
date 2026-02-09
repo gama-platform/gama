@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaPair.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GamaPair.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,56 +11,39 @@ package gama.core.util;
 
 import static java.util.Objects.hash;
 
-import java.util.Map;
 import java.util.Objects;
 
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.util.StringUtils;
-import gama.core.metamodel.shape.IPoint ;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.IJSon;
-import gama.core.util.file.json.IJsonValue;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.GamaMatrixType;
-import gama.gaml.types.IContainerType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.getter;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.json.IJson;
+import gama.api.data.json.IJsonValue;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IMatrix;
+import gama.api.data.objects.IPair;
+import gama.api.data.objects.IPoint;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IContainerType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
 
 /**
- * The Class GamaPair.
+ * The Class IPair.
  */
-@vars ({ @variable (
-		name = GamaPair.KEY,
-		type = ITypeProvider.KEY_TYPE_AT_INDEX + 1,
-		doc = { @doc ("Returns the key of this pair (can be nil)") }),
-		@variable (
-				name = GamaPair.VALUE,
-				type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
-				doc = { @doc ("Returns the value of this pair (can be nil)") }) })
+
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class GamaPair<K, V>
-		implements IContainer<Integer, Object>, IContainer.Addressable<Integer, Object>, Map.Entry<K, V> {
+public class GamaPair<K, V> implements IPair<K, V> {
 
 	// TODO Makes it inherit from Map.Entry<K,V> in order to tighten the link
 	// between it and GamaMap
-	// (have the entrySet() of GamaMap built from GamaPairs)
+	// (have the entrySet() of GamaMap built from IPairs)
 	// FIXME: This has still to be implemented
-
-	/** The Constant KEY. */
-	public static final String KEY = "key";
-
-	/** The Constant VALUE. */
-	public static final String VALUE = "value";
 
 	/** The type. */
 	private final IContainerType type;
@@ -83,7 +66,7 @@ public class GamaPair<K, V>
 	 * @param contentsType
 	 *            the contents type
 	 */
-	public GamaPair(final K k, final V v, final IType keyType, final IType contentsType) {
+	GamaPair(final K k, final V v, final IType keyType, final IType contentsType) {
 		key = k;
 		value = v;
 		type = Types.PAIR.of(keyType, contentsType);
@@ -103,7 +86,7 @@ public class GamaPair<K, V>
 	 * @param contentsType
 	 *            the contents type
 	 */
-	public GamaPair(final IScope scope, final K k, final V v, final IType keyType, final IType contentsType) {
+	GamaPair(final IScope scope, final K k, final V v, final IType keyType, final IType contentsType) {
 		key = (K) keyType.cast(scope, k, null, false);
 		value = (V) contentsType.cast(scope, v, null, false);
 		type = Types.PAIR.of(keyType, contentsType);
@@ -129,7 +112,7 @@ public class GamaPair<K, V>
 	@Override
 	public boolean equals(final Object a) {
 		if (a == null) return false;
-		if (a instanceof GamaPair) return equals((GamaPair) a);
+		if (a instanceof IPair) return equals(a);
 		return false;
 	}
 
@@ -146,6 +129,7 @@ public class GamaPair<K, V>
 	 * @return the k
 	 */
 	// FIXME: To be removed
+	@Override
 	public K first() {
 		return key;
 	}
@@ -160,6 +144,7 @@ public class GamaPair<K, V>
 	 * @return the v
 	 */
 	// FIXME: To be removed
+	@Override
 	public V last() {
 		return value;
 	}
@@ -180,7 +165,7 @@ public class GamaPair<K, V>
 	}
 
 	@Override
-	public GamaPair<K, V> copy(final IScope scope) {
+	public IPair<K, V> copy(final IScope scope) {
 		return new GamaPair(key, value, type.getKeyType(), type.getContentType());
 	}
 
@@ -193,7 +178,7 @@ public class GamaPair<K, V>
 	/**
 	 * Method get()
 	 *
-	 * @see gama.core.util.IContainer#get(gama.core.runtime.IScope, java.lang.Object)
+	 * @see gama.api.data.objects.IContainer#get(gama.api.runtime.scope.IScope, java.lang.Object)
 	 */
 	@Override
 	public Object get(final IScope scope, final Integer index) throws GamaRuntimeException {
@@ -203,7 +188,7 @@ public class GamaPair<K, V>
 	/**
 	 * Method getFromIndicesList()
 	 *
-	 * @see gama.core.util.IContainer#getFromIndicesList(gama.core.runtime.IScope, gama.core.util.list.IList)
+	 * @see gama.api.data.objects.IContainer#getFromIndicesList(gama.api.runtime.scope.IScope, gama.api.data.objects.IList)
 	 */
 	@Override
 	public Object getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
@@ -213,7 +198,7 @@ public class GamaPair<K, V>
 	/**
 	 * Method contains()
 	 *
-	 * @see gama.core.util.IContainer#contains(gama.core.runtime.IScope, java.lang.Object)
+	 * @see gama.api.data.objects.IContainer#contains(gama.api.runtime.scope.IScope, java.lang.Object)
 	 */
 	@Override
 	public boolean contains(final IScope scope, final Object o) throws GamaRuntimeException {
@@ -223,7 +208,7 @@ public class GamaPair<K, V>
 	/**
 	 * Method firstValue()
 	 *
-	 * @see gama.core.util.IContainer#firstValue(gama.core.runtime.IScope)
+	 * @see gama.api.data.objects.IContainer#firstValue(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public Object firstValue(final IScope scope) throws GamaRuntimeException {
@@ -233,7 +218,7 @@ public class GamaPair<K, V>
 	/**
 	 * Method lastValue()
 	 *
-	 * @see gama.core.util.IContainer#lastValue(gama.core.runtime.IScope)
+	 * @see gama.api.data.objects.IContainer#lastValue(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public Object lastValue(final IScope scope) throws GamaRuntimeException {
@@ -243,7 +228,7 @@ public class GamaPair<K, V>
 	/**
 	 * Method length()
 	 *
-	 * @see gama.core.util.IContainer#length(gama.core.runtime.IScope)
+	 * @see gama.api.data.objects.IContainer#length(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public int length(final IScope scope) {
@@ -253,7 +238,7 @@ public class GamaPair<K, V>
 	/**
 	 * Method isEmpty()
 	 *
-	 * @see gama.core.util.IContainer#isEmpty(gama.core.runtime.IScope)
+	 * @see gama.api.data.objects.IContainer#isEmpty(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public boolean isEmpty(final IScope scope) {
@@ -263,7 +248,7 @@ public class GamaPair<K, V>
 	/**
 	 * Method reverse()
 	 *
-	 * @see gama.core.util.IContainer#reverse(gama.core.runtime.IScope)
+	 * @see gama.api.data.objects.IContainer#reverse(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IContainer reverse(final IScope scope) throws GamaRuntimeException {
@@ -273,7 +258,7 @@ public class GamaPair<K, V>
 	/**
 	 * Method anyValue()
 	 *
-	 * @see gama.core.util.IContainer#anyValue(gama.core.runtime.IScope)
+	 * @see gama.api.data.objects.IContainer#anyValue(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public Object anyValue(final IScope scope) {
@@ -284,7 +269,7 @@ public class GamaPair<K, V>
 	/**
 	 * Method listValue()
 	 *
-	 * @see gama.core.util.IContainer#listValue(gama.core.runtime.IScope, gama.gaml.types.IType)
+	 * @see gama.api.data.objects.IContainer#listValue(gama.api.runtime.scope.IScope, gama.api.gaml.types.IType)
 	 */
 	@Override
 	public IList listValue(final IScope scope, final IType contentType, final boolean copy) {
@@ -295,28 +280,29 @@ public class GamaPair<K, V>
 	/**
 	 * Method matrixValue()
 	 *
-	 * @see gama.core.util.IContainer#matrixValue(gama.core.runtime.IScope, gama.gaml.types.IType)
+	 * @see gama.api.data.objects.IContainer#matrixValue(gama.api.runtime.scope.IScope, gama.api.gaml.types.IType)
 	 */
 	@Override
 	public IMatrix matrixValue(final IScope scope, final IType contentType, final boolean copy) {
-		return GamaMatrixType.from(scope, listValue(scope, contentType, copy), contentType, null);
+		return GamaMatrixFactory.createFrom(scope, listValue(scope, contentType, copy), contentType, null);
 	}
 
 	/**
 	 * Method matrixValue()
 	 *
-	 * @see gama.core.util.IContainer#matrixValue(gama.core.runtime.IScope, gama.gaml.types.IType,
+	 * @see gama.api.data.objects.IContainer#matrixValue(gama.api.runtime.scope.IScope, gama.api.gaml.types.IType,
 	 *      gama.core.metamodel.shape.GamaPoint)
 	 */
 	@Override
-	public IMatrix matrixValue(final IScope scope, final IType contentType, final IPoint  size, final boolean copy) {
-		return GamaMatrixType.from(scope, listValue(scope, contentType, copy), contentType, size);
+	public IMatrix matrixValue(final IScope scope, final IType contentType, final IPoint size, final boolean copy) {
+		return GamaMatrixFactory.createFrom(scope, listValue(scope, contentType, copy), contentType, size);
 	}
 
 	/**
 	 * Method mapValue()
 	 *
-	 * @see gama.core.util.IContainer#mapValue(gama.core.runtime.IScope, gama.gaml.types.IType, gama.gaml.types.IType)
+	 * @see gama.api.data.objects.IContainer#mapValue(gama.api.runtime.scope.IScope, gama.api.gaml.types.IType,
+	 *      gama.api.gaml.types.IType)
 	 */
 	@Override
 	public IMap mapValue(final IScope scope, final IType keyType, final IType contentType, final boolean copy) {
@@ -328,7 +314,7 @@ public class GamaPair<K, V>
 	/**
 	 * Method iterable()
 	 *
-	 * @see gama.core.util.IContainer#iterable(gama.core.runtime.IScope)
+	 * @see gama.api.data.objects.IContainer#iterable(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public java.lang.Iterable iterable(final IScope scope) {
@@ -341,8 +327,17 @@ public class GamaPair<K, V>
 	}
 
 	@Override
-	public IJsonValue serializeToJson(final IJSon json) {
+	public IJsonValue serializeToJson(final IJson json) {
 		return json.typedObject(getGamlType(), "key", key, "value", value);
 	}
+
+	/**
+	 * Sets the key.
+	 *
+	 * @param key
+	 *            the new key
+	 */
+	@Override
+	public void setKey(final Object key) { this.key = (K) key; }
 
 }

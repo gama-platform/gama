@@ -2,7 +2,7 @@
  *
  * GamaPairList.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,12 +11,12 @@ package gama.core.util.list;
 
 import java.util.Map;
 
-import gama.core.util.map.IMap;
-import gama.core.util.map.IMap.IPairList;
-import gama.gaml.types.Types;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IMap.IPairList;
+import gama.api.gaml.types.Types;
 
 /**
- * The Class GamaPairList.
+ * The Class IPairList.
  *
  * @param <K>
  *            the key type

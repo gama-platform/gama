@@ -9,21 +9,23 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
-import gama.core.util.file.IGamaFile;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IPoint;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.exceptions.GamaRuntimeFileException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaFileType;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayerData;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.IImageProvider;
+import gama.api.utils.files.IGamaFile;
+import gama.api.utils.geometry.Scaling3D;
 import gama.gaml.statements.draw.AssetDrawingAttributes;
-import gama.gaml.types.GamaFileType;
 
 /**
  * Written by drogoul Modified on 9 nov. 2009

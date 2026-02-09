@@ -24,16 +24,16 @@ import javax.imageio.ImageIO;
 
 import org.jfree.chart.JFreeChart;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.ISnapshotMaker;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.util.FileUtils;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.outputs.layers.charts.ChartLayer;
-import gama.core.outputs.layers.charts.ChartOutput;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.GAMA;
+import gama.api.data.objects.IPoint;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.displays.IChart;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ISnapshotMaker;
+import gama.api.utils.files.FileUtils;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Files;
 
@@ -176,11 +176,11 @@ public class SnapshotMaker implements ISnapshotMaker {
 	 *            the height
 	 * @return the gama image
 	 */
-	private GamaImage takeSnapshotOfChart(final ChartLayer chart, final int width, final int height) {
+	private GamaImage takeSnapshotOfChart(final ILayer.Chart chart, final int width, final int height) {
 		if (chart == null) return null;
-		ChartOutput co = chart.getChart();
+		IChart co = chart.getChart();
 		if (co == null) return null;
-		DEBUG.OUT("Chart is rendered on " + width + " " + height);
+		// DEBUG.OUT("Chart is rendered on " + width + " " + height);
 		GamaImage im = GamaImage.ofDimensions(width, height, true);
 		JFreeChart jfc = co.getJFChart();
 		Graphics2D g2 = im.createGraphics();

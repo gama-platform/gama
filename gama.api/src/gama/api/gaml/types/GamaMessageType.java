@@ -1,0 +1,59 @@
+/*******************************************************************************************************
+ *
+ * GamaMessageType.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.api.gaml.types;
+
+import gama.annotations.doc;
+import gama.annotations.type;
+import gama.annotations.support.ISymbolKind;
+import gama.api.data.factories.GamaMessageFactory;
+import gama.api.data.objects.IMessage;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+
+/**
+ * The Class GamaMessageType.
+ */
+@type (
+		name = GamaMessageType.MESSAGE_STR,
+		id = IType.MESSAGE,
+		wraps = { IMessage.class },
+		kind = ISymbolKind.Variable.REGULAR,
+		doc = @doc ("Represents the messages exchanged between agents"))
+public class GamaMessageType extends GamaType<IMessage> {
+
+	/** The Constant MESSAGE_STR. */
+	public static final String MESSAGE_STR = "message";
+
+	/**
+	 * Instantiates a new gama message type.
+	 */
+	public GamaMessageType() {}
+
+	@Override
+	public IMessage getDefault() { return null; }
+
+	@Override
+	protected boolean acceptNullInstances() {
+		return true;
+	}
+
+	@Override
+	@doc ("Returns a message built from the argument. If the argument is already a message returns it, otherwise returns a message with the current agent as the sender and the argument as the contents ")
+	public IMessage cast(final IScope scope, final Object obj, final Object param, final boolean copy)
+			throws GamaRuntimeException {
+		return GamaMessageFactory.create(scope, scope.getAgent(), obj); // return staticCast(scope, obj, param);
+	}
+
+	@Override
+	public boolean canCastToConst() {
+		return false;
+	}
+}

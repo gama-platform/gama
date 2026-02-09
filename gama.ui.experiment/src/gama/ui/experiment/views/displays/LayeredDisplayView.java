@@ -3,7 +3,7 @@
  * LayeredDisplayView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,20 +26,20 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.ILayerManager;
-import gama.core.common.interfaces.IStatusMessage;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.outputs.IOutput;
+import gama.api.GAMA;
+import gama.api.data.objects.IPoint;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.GeneralSynchronizer;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IOutput;
+import gama.api.ui.IStatusMessage;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.layers.ILayerManager;
+import gama.api.utils.IDisposable;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.GeneralSynchronizer;
 import gama.dev.DEBUG;
-import gama.gaml.interfaces.IDisposable;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -277,7 +277,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		if (disposed) return;
 		final LayeredDisplayOutput output = getOutput();
 		if (output != null) {
-			output.getData().listeners.clear();
+			output.getData().getListeners().clear();
 			final IDisplaySurface s = output.getSurface();
 			if (isOpenGL() && s != null) {
 				s.dispose();

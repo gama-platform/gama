@@ -35,24 +35,24 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.internal.console.IOConsoleViewer;
 
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.util.StringUtils;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.root.PlatformAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IExecutionContext;
-import gama.core.runtime.IScope;
+import gama.api.GAMA;
+import gama.api.compilation.descriptions.IVarDescriptionProvider;
+import gama.api.compilation.documentation.GamlIdiomsProvider;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IVarExpression;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.PlatformAgent;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.IExecutionContext;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IGamaView;
+import gama.api.utils.StringUtils;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.GamlIdiomsProvider;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.descriptions.IVarDescriptionProvider;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IVarExpression;
 import gama.gaml.operators.Strings;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IType;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaIcon;
@@ -159,7 +159,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 
 			@Override
 			public void documentChanged(final DocumentEvent event) {
-				if (Strings.LN.equals(event.getText())) {
+				if (StringUtils.LN.equals(event.getText())) {
 					var textEntered = "";
 					try {
 						textEntered = reader.readLine();
@@ -210,7 +210,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 	private void showPrompt() {
 
 		new Thread(() -> {
-			append(Strings.LN + PROMPT, false, false);
+			append(StringUtils.LN + PROMPT, false, false);
 			THREADS.WAIT(200);
 			WorkbenchHelper.run(() -> {
 				if (viewer != null && viewer.getTextWidget() != null && !viewer.getTextWidget().isDisposed()) {

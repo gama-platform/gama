@@ -40,7 +40,7 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.internal.ide.IIDEHelpContextIds;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 import gama.ui.navigator.view.contents.LinkedFile;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.metadata.FileMetaDataProvider;

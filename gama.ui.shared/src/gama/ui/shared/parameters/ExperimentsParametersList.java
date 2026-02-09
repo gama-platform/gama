@@ -18,18 +18,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.experiment.parameters.ICategory;
-import gama.core.kernel.experiment.parameters.IExperimentDisplayable;
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.kernel.experiment.parameters.TextStatement;
-import gama.core.outputs.IOutputManager;
+import gama.api.data.objects.IColor;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IExperimentDisplayable;
+import gama.api.ui.IOutputManager;
+import gama.api.utils.ICategory;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.core.experiment.parameters.TextStatement;
 import gama.core.outputs.MonitorOutput;
-import gama.core.runtime.IScope;
-import gama.core.util.IColor;
-import gama.gaml.operators.Cast;
 import gama.gaml.statements.UserCommandStatement;
 import gama.ui.shared.interfaces.EditorListener.Command;
 import gama.ui.shared.interfaces.IParameterEditor;
@@ -66,7 +66,9 @@ public class ExperimentsParametersList extends EditorsList<String> {
 		final List<IExperimentDisplayable> paramsAndCommands = new ArrayList<>(exp.getDisplayables());
 		if (agent.isSimulation() && GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()) {
 			IOutputManager som = agent.getOutputManager();
-			if (som != null) { paramsAndCommands.addAll(som.getMonitors()); }
+			if (som != null) {
+				paramsAndCommands.addAll((Collection<? extends IExperimentDisplayable>) som.getMonitors());
+			}
 		}
 		Collections.sort(paramsAndCommands);
 		add(exp, paramsAndCommands);
@@ -323,7 +325,7 @@ public class ExperimentsParametersList extends EditorsList<String> {
 	/**
 	 * Method handleMenu()
 	 *
-	 * @see gama.core.common.interfaces.ItemList#handleMenu(java.lang.Object, int, int)
+	 * @see gama.api.ui.IItemList#handleMenu(java.lang.Object, int, int)
 	 */
 	@Override
 	public Map<String, Runnable> handleMenu(final String data, final int x, final int y) {

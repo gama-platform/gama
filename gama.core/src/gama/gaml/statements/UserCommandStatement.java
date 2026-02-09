@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * UserCommandStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * UserCommandStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -15,36 +15,39 @@ import java.util.List;
 
 import com.google.common.collect.FluentIterable;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.ExperimentPlan;
-import gama.core.kernel.experiment.parameters.IExperimentDisplayable;
-import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.kernel.simulation.SimulationPopulation;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IColor;
-import gama.gaml.architecture.user.UserInputStatement;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.ValidNameValidator;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.ExperimentDescription;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.operators.Cast;
-import gama.gaml.species.ISpecies;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.validation.ValidNameValidator;
+import gama.api.constants.IGamlIssue;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.objects.IColor;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.Arguments;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IExperimentDisplayable;
 import gama.gaml.statements.UserCommandStatement.UserCommandValidator;
-import gama.gaml.types.IType;
 
 /**
  * Written by drogoul Modified on 7 févr. 2010
@@ -136,8 +139,8 @@ public class UserCommandStatement extends AbstractStatementSequence
 				// we emit an error, or we are in an experiment, in which case
 				// we try to see if the simulations can run it. In that case we
 				// emit a warning (see Issue #1595)
-				if (enclosing instanceof ExperimentDescription) {
-					final ModelDescription model = enclosing.getModelDescription();
+				if (enclosing instanceof IExperimentDescription) {
+					final IModelDescription model = enclosing.getModelDescription();
 					if (model.hasAction(action, false)) {
 						description.warning("Action " + action
 								+ " should be defined in the experiment, not in global. To maintain the compatibility with GAMA 1.6.1, the command will execute it on all the simulations managed by this experiment",
@@ -147,7 +150,8 @@ public class UserCommandStatement extends AbstractStatementSequence
 								IGamlIssue.UNKNOWN_ACTION, ACTION);
 					}
 				} else {
-					final String enclosingName = enclosing instanceof ModelDescription ? "global" : enclosing.getName();
+					final String enclosingName =
+							enclosing instanceof IModelDescription ? "global" : enclosing.getName();
 					description.error("Action " + action + " does not exist in " + enclosingName,
 							IGamlIssue.UNKNOWN_ACTION, ACTION);
 				}
@@ -156,10 +160,10 @@ public class UserCommandStatement extends AbstractStatementSequence
 	}
 
 	/** The args. */
-	IArguments args;
+	Arguments args;
 
 	/** The runtime args. */
-	IArguments runtimeArgs;
+	Arguments runtimeArgs;
 
 	/** The action name. */
 	final String actionName;
@@ -195,13 +199,11 @@ public class UserCommandStatement extends AbstractStatementSequence
 	public List<UserInputStatement> getInputs() { return inputs; }
 
 	@Override
-	public void setFormalArgs(final IArguments args) { this.args = args; }
+	public void setFormalArgs(final Arguments args) { this.args = args; }
 
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {
-		for (final ISymbol c : children) {
-			if (c instanceof UserInputStatement) { inputs.add((UserInputStatement) c); }
-		}
+		for (final ISymbol c : children) { if (c instanceof UserInputStatement ip) { inputs.add(ip); } }
 		super.setChildren(FluentIterable.from(children).filter(each -> !inputs.contains(each)));
 	}
 
@@ -212,7 +214,7 @@ public class UserCommandStatement extends AbstractStatementSequence
 			if (actionName == null) {
 				if (runtimeArgs != null) { scope.stackArguments(runtimeArgs); }
 				// AD 2/1/16 : Addition of this to address Issue #1339
-				for (final UserInputStatement s : inputs) { if (!scope.execute(s).passed()) return null; }
+				for (final IStatement s : inputs) { if (!scope.execute(s).passed()) return null; }
 				final Object result = super.privateExecuteIn(scope);
 				runtimeArgs = null;
 				return result;
@@ -222,9 +224,9 @@ public class UserCommandStatement extends AbstractStatementSequence
 			boolean isWorkaroundForIssue1595 = false;
 			if (executer == null) {
 				// See Issue #1595
-				if (!(context instanceof ExperimentPlan))
+				if (!(context instanceof IExperimentSpecies))
 					throw GamaRuntimeException.error("Unknown action: " + actionName, scope);
-				context = ((ExperimentPlan) context).getModel();
+				context = ((IExperimentSpecies) context).getModel();
 				executer = context.getAction(actionName);
 				isWorkaroundForIssue1595 = true;
 			}
@@ -235,14 +237,14 @@ public class UserCommandStatement extends AbstractStatementSequence
 				runtimeArgs = null;
 				return result;
 			}
-			final SimulationPopulation simulations = scope.getExperiment().getSimulationPopulation();
+			final IPopulation<ISimulationAgent> simulations = scope.getExperiment().getSimulationPopulation();
 			for (final ISimulationAgent sim : simulations.iterable(scope)) { scope.execute(executer, sim, tempArgs); }
 		}
 		return null;
 	}
 
 	@Override
-	public void setRuntimeArgs(final IScope scope, final IArguments args) {
+	public void setRuntimeArgs(final IScope scope, final Arguments args) {
 		this.runtimeArgs = args;
 	}
 
@@ -268,7 +270,7 @@ public class UserCommandStatement extends AbstractStatementSequence
 	public IColor getColor(final IScope scope) {
 		final IExpression exp = getFacet(IKeyword.COLOR);
 		if (exp == null) return null;
-		return Cast.asColor(scope, exp.value(scope));
+		return GamaColorFactory.createFrom(scope, exp.value(scope));
 	}
 
 	/**

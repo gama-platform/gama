@@ -50,7 +50,7 @@ public interface GamlPackage extends EPackage
   String eNS_PREFIX = "gaml";
 
   /**
-   * The singleton instance of the package.
+   * The singleton INSTANCE of the package.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated

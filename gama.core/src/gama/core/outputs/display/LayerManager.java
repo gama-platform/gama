@@ -2,7 +2,7 @@
  *
  * LayerManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,11 +16,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.ILayer;
-import gama.core.common.interfaces.ILayerManager;
-import gama.core.metamodel.shape.IShape;
+import gama.api.GAMA;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ILayerManager;
+import gama.api.ui.layers.ILayerStatement;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.layers.AbstractLayerStatement;
 import gama.core.outputs.layers.AgentLayer;
@@ -28,9 +32,8 @@ import gama.core.outputs.layers.EventLayer;
 import gama.core.outputs.layers.EventLayerStatement;
 import gama.core.outputs.layers.GisLayer;
 import gama.core.outputs.layers.GraphicLayer;
-import gama.core.outputs.layers.HexagonalGridLayer;
 import gama.core.outputs.layers.GridLayer;
-import gama.core.outputs.layers.ILayerStatement;
+import gama.core.outputs.layers.HexagonalGridLayer;
 import gama.core.outputs.layers.ImageLayer;
 import gama.core.outputs.layers.KeyboardEventLayerDelegate;
 import gama.core.outputs.layers.MeshLayer;
@@ -38,9 +41,6 @@ import gama.core.outputs.layers.MouseEventLayerDelegate;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.outputs.layers.SpeciesLayer;
 import gama.core.outputs.layers.charts.ChartLayer;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
 
 /**
  * Written by drogoul Modified on 23 janv. 2011
@@ -131,7 +131,7 @@ public class LayerManager implements ILayerManager {
 	/**
 	 * Method focusOn()
 	 *
-	 * @see gama.core.common.interfaces.ILayerManager#focusOn(gama.core.metamodel.shape.IShape)
+	 * @see gama.api.ui.layers.ILayerManager#focusOn(gama.api.data.objects.IShape)
 	 */
 	@Override
 	public Rectangle2D focusOn(final IShape geometry, final IDisplaySurface s) {
@@ -216,7 +216,7 @@ public class LayerManager implements ILayerManager {
 	/**
 	 * Allows the layers to do some cleansing when the output of the display changes
 	 *
-	 * @see gama.core.common.interfaces.ILayerManager#outputChanged()
+	 * @see gama.api.ui.layers.ILayerManager#outputChanged()
 	 */
 	@Override
 	public void outputChanged() {
@@ -282,7 +282,7 @@ public class LayerManager implements ILayerManager {
 	}
 
 	@Override
-	public ChartLayer getOnlyChart() {
+	public ILayer.Chart getOnlyChart() {
 		ChartLayer result = null;
 		for (final ILayer i : layers) {
 			if (i instanceof ChartLayer cl) {

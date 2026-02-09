@@ -12,7 +12,7 @@ package gama.ui.shared.controls;
 
 import org.eclipse.swt.graphics.Image;
 
-import gama.core.common.interfaces.IStatusMessage;
+import gama.api.ui.IStatusMessage;
 import gama.ui.shared.resources.GamaIcon;
 
 /**

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * FSTClazzInfo.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
- * platform.
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -74,8 +74,6 @@ public final class FSTClazzInfo {
 		} else if (!o1.isConditional() && o2.isConditional() || o1.isPrimitive() && !o2.isPrimitive()) {
 			res = -1;
 		} else if (!o1.isPrimitive() && o2.isPrimitive()) { res = 1; }
-		// if (res == 0) // 64 bit / 32 bit issues
-		// res = (int) (o1.getMemOffset() - o2.getMemOffset());
 		if (res == 0) { res = o1.getType().getSimpleName().compareTo(o2.getType().getSimpleName()); }
 		if (res == 0) { res = o1.getName().compareTo(o2.getName()); }
 		if (res == 0)
@@ -331,7 +329,7 @@ public final class FSTClazzInfo {
 	 * @date 30 sept. 2023
 	 */
 	public Object newInstance(final boolean doesRequireInit) {
-		return instantiator.newInstance(clazz, cons, doesRequireInit || requiresInit, conf.isForceSerializable());
+		return instantiator.newInstance(clazz, cons, doesRequireInit || requiresInit);
 	}
 
 	/**
@@ -512,8 +510,7 @@ public final class FSTClazzInfo {
 
 		// compatibility info sort order
 		Comparator<FSTFieldInfo> infocomp = (o1, o2) -> {
-			int res = 0;
-			res = o1.getType().getSimpleName().compareTo(o2.getType().getSimpleName());
+			int res = o1.getType().getSimpleName().compareTo(o2.getType().getSimpleName());
 			if (res == 0) { res = o1.getType().getName().compareTo(o2.getType().getName()); }
 			if (res == 0) {
 				Class declaringClass = o1.getType().getDeclaringClass();
@@ -831,16 +828,6 @@ public final class FSTClazzInfo {
 				isArr = field.getType().isArray();
 				type = fi.getType();
 				primitive = type.isPrimitive();
-				if (FSTUtil.unFlaggedUnsafe != null) {
-					fi.setAccessible(true);
-					if (!Modifier.isStatic(fi.getModifiers())) {
-						try {
-							memOffset = (int) FSTUtil.unFlaggedUnsafe.objectFieldOffset(fi);
-						} catch (Throwable th) {
-							// throw FSTUtil.rethrow(th);
-						}
-					}
-				}
 			}
 			if (isArray()) {
 				String clName = field.getType().getName();
@@ -1225,7 +1212,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public int getByteValue(final Object obj) throws IllegalAccessException {
-			if (memOffset >= 0) return FSTUtil.unFlaggedUnsafe.getByte(obj, memOffset);
 			return field.getByte(obj);
 		}
 
@@ -1241,7 +1227,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public int getCharValue(final Object obj) throws IllegalAccessException {
-			if (memOffset >= 0) return FSTUtil.unFlaggedUnsafe.getChar(obj, memOffset);
 			return field.getChar(obj);
 		}
 
@@ -1257,38 +1242,7 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public int getShortValue(final Object obj) throws IllegalAccessException {
-			if (memOffset >= 0) return FSTUtil.unFlaggedUnsafe.getShort(obj, memOffset);
 			return field.getShort(obj);
-		}
-
-		/**
-		 * Gets the int value unsafe.
-		 *
-		 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-		 * @param obj
-		 *            the obj
-		 * @return the int value unsafe
-		 * @throws IllegalAccessException
-		 *             the illegal access exception
-		 * @date 30 sept. 2023
-		 */
-		public int getIntValueUnsafe(final Object obj) throws IllegalAccessException {
-			return FSTUtil.unFlaggedUnsafe.getInt(obj, memOffset);
-		}
-
-		/**
-		 * Gets the long value unsafe.
-		 *
-		 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-		 * @param obj
-		 *            the obj
-		 * @return the long value unsafe
-		 * @throws IllegalAccessException
-		 *             the illegal access exception
-		 * @date 30 sept. 2023
-		 */
-		public long getLongValueUnsafe(final Object obj) throws IllegalAccessException {
-			return FSTUtil.unFlaggedUnsafe.getLong(obj, memOffset);
 		}
 
 		/**
@@ -1303,7 +1257,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public boolean getBooleanValue(final Object obj) throws IllegalAccessException {
-			if (memOffset >= 0) return FSTUtil.unFlaggedUnsafe.getBoolean(obj, memOffset);
 			return field.getBoolean(obj);
 		}
 
@@ -1315,7 +1268,6 @@ public final class FSTClazzInfo {
 		 * @throws IllegalAccessException
 		 */
 		public Object getObjectValue(final Object obj) throws IllegalAccessException {
-			if (memOffset >= 0) return FSTUtil.unFlaggedUnsafe.getObject(obj, memOffset);
 			return field.get(obj);
 		}
 
@@ -1331,7 +1283,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public float getFloatValue(final Object obj) throws IllegalAccessException {
-			if (memOffset >= 0) return FSTUtil.unFlaggedUnsafe.getFloat(obj, memOffset);
 			return field.getFloat(obj);
 		}
 
@@ -1348,10 +1299,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public void setCharValue(final Object newObj, final char c) throws IllegalAccessException {
-			if (memOffset >= 0) {
-				FSTUtil.unFlaggedUnsafe.putChar(newObj, memOffset, c);
-				return;
-			}
 			field.setChar(newObj, c);
 		}
 
@@ -1368,10 +1315,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public void setShortValue(final Object newObj, final short i1) throws IllegalAccessException {
-			if (memOffset >= 0) {
-				FSTUtil.unFlaggedUnsafe.putShort(newObj, memOffset, i1);
-				return;
-			}
 			field.setShort(newObj, i1);
 		}
 
@@ -1388,10 +1331,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public void setObjectValue(final Object target, final Object value) throws IllegalAccessException {
-			if (memOffset >= 0) {
-				FSTUtil.unFlaggedUnsafe.putObject(target, memOffset, value);
-				return;
-			}
 			field.set(target, value);
 		}
 
@@ -1408,10 +1347,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public void setFloatValue(final Object newObj, final float l) throws IllegalAccessException {
-			if (memOffset >= 0) {
-				FSTUtil.unFlaggedUnsafe.putFloat(newObj, memOffset, l);
-				return;
-			}
 			field.setFloat(newObj, l);
 		}
 
@@ -1428,10 +1363,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public void setDoubleValue(final Object newObj, final double l) throws IllegalAccessException {
-			if (memOffset >= 0) {
-				FSTUtil.unFlaggedUnsafe.putDouble(newObj, memOffset, l);
-				return;
-			}
 			field.setDouble(newObj, l);
 		}
 
@@ -1448,10 +1379,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public void setLongValue(final Object newObj, final long i1) throws IllegalAccessException {
-			if (memOffset >= 0) {
-				FSTUtil.unFlaggedUnsafe.putLong(newObj, memOffset, i1);
-				return;
-			}
 			field.setLong(newObj, i1);
 		}
 
@@ -1467,7 +1394,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public long getLongValue(final Object obj) throws IllegalAccessException {
-			if (memOffset >= 0) return FSTUtil.unFlaggedUnsafe.getLong(obj, memOffset);
 			return field.getLong(obj);
 		}
 
@@ -1483,7 +1409,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public double getDoubleValue(final Object obj) throws IllegalAccessException {
-			if (memOffset >= 0) return FSTUtil.unFlaggedUnsafe.getDouble(obj, memOffset);
 			return field.getDouble(obj);
 		}
 
@@ -1500,10 +1425,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public void setIntValue(final Object newObj, final int i1) throws IllegalAccessException {
-			if (memOffset >= 0) {
-				FSTUtil.unFlaggedUnsafe.putInt(newObj, memOffset, i1);
-				return;
-			}
 			field.setInt(newObj, i1);
 		}
 
@@ -1519,7 +1440,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public int getIntValue(final Object obj) throws IllegalAccessException {
-			if (memOffset >= 0) return FSTUtil.unFlaggedUnsafe.getInt(obj, memOffset);
 			return field.getInt(obj);
 		}
 
@@ -1536,10 +1456,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public void setBooleanValue(final Object newObj, final boolean i1) throws IllegalAccessException {
-			if (memOffset >= 0) {
-				FSTUtil.unFlaggedUnsafe.putBoolean(newObj, memOffset, i1);
-				return;
-			}
 			field.setBoolean(newObj, i1);
 		}
 
@@ -1556,10 +1472,6 @@ public final class FSTClazzInfo {
 		 * @date 30 sept. 2023
 		 */
 		public void setByteValue(final Object newObj, final byte b) throws IllegalAccessException {
-			if (memOffset >= 0) {
-				FSTUtil.unFlaggedUnsafe.putByte(newObj, memOffset, b);
-				return;
-			}
 			field.setByte(newObj, b);
 		}
 

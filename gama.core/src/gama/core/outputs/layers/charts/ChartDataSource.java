@@ -3,7 +3,7 @@
  * ChartDataSource.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,67 +14,26 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.IPoint ;
-import gama.core.runtime.IScope;
-import gama.core.util.list.IList;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMatrix;
+import gama.api.data.objects.IPoint;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.displays.IChartDataSource;
 import gama.core.util.matrix.GamaMatrix;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.compilation.GAML;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.Types;
 
 /**
  * The Class ChartDataSource.
  */
 @SuppressWarnings ({ "rawtypes" })
-public class ChartDataSource {
-
-	/** The Constant DATA_TYPE_NULL. */
-	public static final int DATA_TYPE_NULL = 0;
-
-	/** The Constant DATA_TYPE_DOUBLE. */
-	public static final int DATA_TYPE_DOUBLE = 1;
-
-	/** The Constant DATA_TYPE_LIST_DOUBLE_12. */
-	public static final int DATA_TYPE_LIST_DOUBLE_12 = 2;
-
-	/** The Constant DATA_TYPE_LIST_DOUBLE_3. */
-	public static final int DATA_TYPE_LIST_DOUBLE_3 = 3;
-
-	/** The Constant DATA_TYPE_LIST_DOUBLE_N. */
-	public static final int DATA_TYPE_LIST_DOUBLE_N = 4;
-
-	/** The Constant DATA_TYPE_LIST_LIST_DOUBLE_12. */
-	public static final int DATA_TYPE_LIST_LIST_DOUBLE_12 = 5;
-
-	/** The Constant DATA_TYPE_LIST_LIST_DOUBLE_3. */
-	public static final int DATA_TYPE_LIST_LIST_DOUBLE_3 = 6;
-
-	/** The Constant DATA_TYPE_LIST_LIST_DOUBLE_N. */
-	public static final int DATA_TYPE_LIST_LIST_DOUBLE_N = 7;
-
-	/** The Constant DATA_TYPE_LIST_LIST_LIST_DOUBLE. */
-	public static final int DATA_TYPE_LIST_LIST_LIST_DOUBLE = 8;
-
-	/** The Constant DATA_TYPE_POINT. */
-	public static final int DATA_TYPE_POINT = 9;
-
-	/** The Constant DATA_TYPE_LIST_POINT. */
-	public static final int DATA_TYPE_LIST_POINT = 10;
-
-	/** The Constant DATA_TYPE_LIST_LIST_POINT. */
-	public static final int DATA_TYPE_LIST_LIST_POINT = 11;
-
-	/** The Constant DATA_TYPE_MATRIX_DOUBLE. */
-	public static final int DATA_TYPE_MATRIX_DOUBLE = 12;
-
-	/** The Constant DATA_TYPE_MATRIX_POINT. */
-	public static final int DATA_TYPE_MATRIX_POINT = 13;
-
-	/** The Constant DATA_TYPE_MATRIX_LIST_DOUBLE. */
-	public static final int DATA_TYPE_MATRIX_LIST_DOUBLE = 14;
+public class ChartDataSource implements IChartDataSource {
 
 	/** The value. */
 	IExpression value;
@@ -489,40 +448,40 @@ public class ChartDataSource {
 	 */
 	public int get_data_type(final IScope scope, final Object o) {
 		// final int type = this.DATA_TYPE_NULL;
-		if (o == null) return ChartDataSource.DATA_TYPE_NULL;
-		if (o instanceof IPoint ) return ChartDataSource.DATA_TYPE_POINT;
+		if (o == null) return IChartDataSource.DATA_TYPE_NULL;
+		if (o instanceof IPoint) return IChartDataSource.DATA_TYPE_POINT;
 		if (o instanceof GamaMatrix) {
-			final IMatrix l1value = Cast.asMatrix(scope, o);
-			if (l1value.length(scope) == 0) return ChartDataSource.DATA_TYPE_MATRIX_DOUBLE;
+			final IMatrix l1value = GamaMatrixFactory.createFrom(scope, o);
+			if (l1value.length(scope) == 0) return IChartDataSource.DATA_TYPE_MATRIX_DOUBLE;
 			final Object o2 = l1value.get(scope, 0, 0);
-			if (o2 instanceof IPoint ) return ChartDataSource.DATA_TYPE_MATRIX_POINT;
-			if (o2 instanceof IList) return ChartDataSource.DATA_TYPE_MATRIX_LIST_DOUBLE;
-			return ChartDataSource.DATA_TYPE_MATRIX_DOUBLE;
+			if (o2 instanceof IPoint) return IChartDataSource.DATA_TYPE_MATRIX_POINT;
+			if (o2 instanceof IList) return IChartDataSource.DATA_TYPE_MATRIX_LIST_DOUBLE;
+			return IChartDataSource.DATA_TYPE_MATRIX_DOUBLE;
 		}
 		if (o instanceof IList) {
 
-			final IList l1value = Cast.asList(scope, o);
-			if (l1value.length(scope) == 0) return ChartDataSource.DATA_TYPE_LIST_DOUBLE_N;
+			final IList l1value = GamaListFactory.toList(scope, o);
+			if (l1value.length(scope) == 0) return IChartDataSource.DATA_TYPE_LIST_DOUBLE_N;
 			final Object o2 = l1value.get(0);
-			if (o2 instanceof IPoint ) return ChartDataSource.DATA_TYPE_LIST_POINT;
+			if (o2 instanceof IPoint) return IChartDataSource.DATA_TYPE_LIST_POINT;
 			if (o2 instanceof IList) {
-				final IList l2value = Cast.asList(scope, o2);
-				if (l2value.length(scope) == 0) return ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N;
+				final IList l2value = GamaListFactory.toList(scope, o2);
+				if (l2value.length(scope) == 0) return IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N;
 				final Object o3 = l2value.get(0);
-				if (o3 instanceof IList) return ChartDataSource.DATA_TYPE_LIST_LIST_LIST_DOUBLE;
-				if (o3 instanceof IPoint ) return ChartDataSource.DATA_TYPE_LIST_LIST_POINT;
+				if (o3 instanceof IList) return IChartDataSource.DATA_TYPE_LIST_LIST_LIST_DOUBLE;
+				if (o3 instanceof IPoint) return IChartDataSource.DATA_TYPE_LIST_LIST_POINT;
 				if (l2value.length(scope) == 1 || l2value.length(scope) == 2)
-					return ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12;
-				if (l2value.length(scope) == 3) return ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3;
-				if (l2value.length(scope) > 3) return ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N;
+					return IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12;
+				if (l2value.length(scope) == 3) return IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3;
+				if (l2value.length(scope) > 3) return IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N;
 			}
 
 			if (l1value.length(scope) == 1 || l1value.length(scope) == 2)
-				return ChartDataSource.DATA_TYPE_LIST_DOUBLE_12;
-			if (l1value.length(scope) == 3) return ChartDataSource.DATA_TYPE_LIST_DOUBLE_3;
-			if (l1value.length(scope) > 3) return ChartDataSource.DATA_TYPE_LIST_DOUBLE_N;
+				return IChartDataSource.DATA_TYPE_LIST_DOUBLE_12;
+			if (l1value.length(scope) == 3) return IChartDataSource.DATA_TYPE_LIST_DOUBLE_3;
+			if (l1value.length(scope) > 3) return IChartDataSource.DATA_TYPE_LIST_DOUBLE_N;
 		}
-		return ChartDataSource.DATA_TYPE_DOUBLE;
+		return IChartDataSource.DATA_TYPE_DOUBLE;
 	}
 
 	// void updateseriewithvalue(final IScope scope, final ChartDataSeries myserie, final IExpression expr,
@@ -564,17 +523,17 @@ public class ChartDataSource {
 					// new cumulative Y value
 
 					switch (type_val) {
-						case ChartDataSource.DATA_TYPE_POINT: {
-							final IPoint  pvalue = Cast.asPoint(scope, newValue);
+						case IChartDataSource.DATA_TYPE_POINT: {
+							final IPoint pvalue = GamaPointFactory.toPoint(scope, newValue);
 							myserie.addxysvalue(scope,
 									getDataset().getXSeriesValues().get(getDataset().getCommonXIndex()), pvalue.getX(),
 									pvalue.getY(), chartCycle, barvalues, listvalue);
 							break;
 						}
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
-							final IList lvalue = Cast.asList(scope, newValue);
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
+							final IList lvalue = GamaListFactory.toList(scope, newValue);
 							if (lvalue.length(scope) == 0) {
 								myserie.initColor(scope, barvalues, listvalue);
 							} else if (lvalue.length(scope) == 1) {
@@ -590,11 +549,11 @@ public class ChartDataSource {
 							break;
 
 						}
-						case ChartDataSource.DATA_TYPE_NULL: {
+						case IChartDataSource.DATA_TYPE_NULL: {
 							// last value?
 							break;
 						}
-						case ChartDataSource.DATA_TYPE_DOUBLE:
+						case IChartDataSource.DATA_TYPE_DOUBLE:
 						default: {
 							final Double dvalue = Cast.asFloat(scope, newValue);
 							myserie.addxyvalue(scope,
@@ -610,17 +569,17 @@ public class ChartDataSource {
 					// new non cumulative y value
 					// serie in the order of the dataset
 					switch (type_val) {
-						case ChartDataSource.DATA_TYPE_POINT: {
-							final IPoint  pvalue = Cast.asPoint(scope, newValue);
+						case IChartDataSource.DATA_TYPE_POINT: {
+							final IPoint pvalue = GamaPointFactory.toPoint(scope, newValue);
 							myserie.addxysvalue(scope, getDataset().getXSeriesValues().get(0), pvalue.getX(),
 									pvalue.getY(), chartCycle, barvalues, listvalue);
 
 							break;
 						}
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
-							final IList l1value = Cast.asList(scope, newValue);
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
+							final IList l1value = GamaListFactory.toList(scope, newValue);
 							if (l1value.isEmpty()) {
 								myserie.initColor(scope, barvalues, listvalue);
 							} else {
@@ -636,17 +595,17 @@ public class ChartDataSource {
 							break;
 
 						}
-						case ChartDataSource.DATA_TYPE_LIST_LIST_POINT:
-						case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
-						case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3:
-						case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N: {
-							final IList l1value = Cast.asList(scope, newValue);
+						case IChartDataSource.DATA_TYPE_LIST_LIST_POINT:
+						case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
+						case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3:
+						case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N: {
+							final IList l1value = GamaListFactory.toList(scope, newValue);
 							if (l1value.isEmpty()) {
 								myserie.initColor(scope, barvalues, listvalue);
 							} else {
 								for (int n1 = 0; n1 < l1value.size(); n1++) {
 									final Object o2 = l1value.get(n1);
-									final IList lvalue = Cast.asList(scope, o2);
+									final IList lvalue = GamaListFactory.toList(scope, o2);
 									if (lvalue.length(scope) == 1) {
 										myserie.addxyvalue(scope, getDataset().getXSeriesValues().get(n1),
 												Cast.asFloat(scope, lvalue.get(0)), chartCycle, barvalues, listvalue);
@@ -663,11 +622,11 @@ public class ChartDataSource {
 							break;
 
 						}
-						case ChartDataSource.DATA_TYPE_NULL: {
+						case IChartDataSource.DATA_TYPE_NULL: {
 							// last value?
 							break;
 						}
-						case ChartDataSource.DATA_TYPE_DOUBLE:
+						case IChartDataSource.DATA_TYPE_DOUBLE:
 						default: {
 							final Double dvalue = Cast.asFloat(scope, newValue);
 							myserie.addxyvalue(
@@ -691,17 +650,17 @@ public class ChartDataSource {
 					// new cumulative XY value
 
 					switch (type_val) {
-						case ChartDataSource.DATA_TYPE_POINT: {
-							final IPoint  pvalue = Cast.asPoint(scope, newValue);
+						case IChartDataSource.DATA_TYPE_POINT: {
+							final IPoint pvalue = GamaPointFactory.toPoint(scope, newValue);
 							myserie.addxysvalue(scope, pvalue.getX(), pvalue.getY(), pvalue.getZ(), chartCycle,
 									barvalues, listvalue);
 
 							break;
 						}
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
-							final IList lvalue = Cast.asList(scope, newValue);
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
+							final IList lvalue = GamaListFactory.toList(scope, newValue);
 							if (lvalue.length(scope) < 2) {
 
 							}
@@ -717,11 +676,11 @@ public class ChartDataSource {
 							break;
 
 						}
-						case ChartDataSource.DATA_TYPE_NULL: {
+						case IChartDataSource.DATA_TYPE_NULL: {
 							// last value?
 							break;
 						}
-						case ChartDataSource.DATA_TYPE_DOUBLE:
+						case IChartDataSource.DATA_TYPE_DOUBLE:
 						default: {
 							final Double dvalue = Cast.asFloat(scope, newValue);
 							myserie.addxyvalue(scope,
@@ -736,17 +695,17 @@ public class ChartDataSource {
 				} else {
 					// new XY values
 					switch (type_val) {
-						case ChartDataSource.DATA_TYPE_POINT: {
-							final IPoint  pvalue = Cast.asPoint(scope, newValue);
+						case IChartDataSource.DATA_TYPE_POINT: {
+							final IPoint pvalue = GamaPointFactory.toPoint(scope, newValue);
 							myserie.addxysvalue(scope, pvalue.getX(), pvalue.getY(), pvalue.getZ(), chartCycle,
 									barvalues, listvalue);
 
 							break;
 						}
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
-							final IList lvalue = Cast.asList(scope, newValue);
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
+							final IList lvalue = GamaListFactory.toList(scope, newValue);
 							if (lvalue.length(scope) < 2) {
 
 							}
@@ -762,13 +721,13 @@ public class ChartDataSource {
 							break;
 
 						}
-						case ChartDataSource.DATA_TYPE_LIST_POINT:
-						case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
-						case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3:
-						case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N: {
-							final IList l1value = Cast.asList(scope, newValue);
+						case IChartDataSource.DATA_TYPE_LIST_POINT:
+						case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
+						case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3:
+						case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N: {
+							final IList l1value = GamaListFactory.toList(scope, newValue);
 							for (final Object o2 : l1value) {
-								final IList lvalue = Cast.asList(scope, o2);
+								final IList lvalue = GamaListFactory.toList(scope, o2);
 								if (lvalue.length(scope) < 2) {
 
 								}
@@ -786,11 +745,11 @@ public class ChartDataSource {
 							break;
 
 						}
-						case ChartDataSource.DATA_TYPE_NULL: {
+						case IChartDataSource.DATA_TYPE_NULL: {
 							// last value?
 							break;
 						}
-						case ChartDataSource.DATA_TYPE_DOUBLE:
+						case IChartDataSource.DATA_TYPE_DOUBLE:
 						default: {
 							final Double dvalue = Cast.asFloat(scope, newValue);
 							myserie.addxyvalue(scope,
@@ -814,16 +773,16 @@ public class ChartDataSource {
 					// category is the last of the dataset
 
 					switch (type_val) {
-						case ChartDataSource.DATA_TYPE_POINT: {
-							final IPoint  pvalue = Cast.asPoint(scope, newValue);
+						case IChartDataSource.DATA_TYPE_POINT: {
+							final IPoint pvalue = GamaPointFactory.toPoint(scope, newValue);
 							myserie.addcysvalue(scope, getDataset().getLastCategories(scope), pvalue.getX(),
 									pvalue.getY(), chartCycle, barvalues, listvalue);
 							break;
 						}
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
-							final IList lvalue = Cast.asList(scope, newValue);
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
+							final IList lvalue = GamaListFactory.toList(scope, newValue);
 							if (lvalue.length(scope) == 0) {
 
 							}
@@ -846,11 +805,11 @@ public class ChartDataSource {
 							break;
 
 						}
-						case ChartDataSource.DATA_TYPE_NULL: {
+						case IChartDataSource.DATA_TYPE_NULL: {
 							// last value?
 							break;
 						}
-						case ChartDataSource.DATA_TYPE_DOUBLE:
+						case IChartDataSource.DATA_TYPE_DOUBLE:
 						default: {
 							final Double dvalue = Cast.asFloat(scope, newValue);
 							myserie.addcyvalue(scope, getDataset().getLastCategories(scope), dvalue, chartCycle,
@@ -865,17 +824,17 @@ public class ChartDataSource {
 					// new non cumulative category value
 					// category in the order of the dataset
 					switch (type_val) {
-						case ChartDataSource.DATA_TYPE_POINT: {
-							final IPoint  pvalue = Cast.asPoint(scope, newValue);
+						case IChartDataSource.DATA_TYPE_POINT: {
+							final IPoint pvalue = GamaPointFactory.toPoint(scope, newValue);
 							myserie.addcysvalue(scope, getDataset().getCategories(scope, 0), pvalue.getX(),
 									pvalue.getY(), chartCycle, barvalues, listvalue);
 
 							break;
 						}
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
-						case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
-							final IList l1value = Cast.asList(scope, newValue);
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
+						case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
+							final IList l1value = GamaListFactory.toList(scope, newValue);
 							for (int n1 = 0; n1 < l1value.size(); n1++) {
 								final Object o2 = l1value.get(n1);
 								myserie.addcyvalue(scope, getDataset().getCategories(scope, n1),
@@ -884,14 +843,14 @@ public class ChartDataSource {
 							break;
 
 						}
-						case ChartDataSource.DATA_TYPE_LIST_LIST_POINT:
-						case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
-						case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3:
-						case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N: {
-							final IList l1value = Cast.asList(scope, newValue);
+						case IChartDataSource.DATA_TYPE_LIST_LIST_POINT:
+						case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
+						case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3:
+						case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N: {
+							final IList l1value = GamaListFactory.toList(scope, newValue);
 							for (int n1 = 0; n1 < l1value.size(); n1++) {
 								final Object o2 = l1value.get(n1);
-								final IList lvalue = Cast.asList(scope, o2);
+								final IList lvalue = GamaListFactory.toList(scope, o2);
 								if (lvalue.length(scope) == 1) {
 									myserie.addcyvalue(scope, getDataset().getCategories(scope, n1),
 											Cast.asFloat(scope, lvalue.get(0)), chartCycle, barvalues, listvalue);
@@ -915,11 +874,11 @@ public class ChartDataSource {
 							break;
 
 						}
-						case ChartDataSource.DATA_TYPE_NULL: {
+						case IChartDataSource.DATA_TYPE_NULL: {
 							// last value?
 							break;
 						}
-						case ChartDataSource.DATA_TYPE_DOUBLE:
+						case IChartDataSource.DATA_TYPE_DOUBLE:
 						default: {
 							final Double dvalue = Cast.asFloat(scope, newValue);
 							myserie.addcyvalue(scope, getDataset().getCategories(scope, 0), dvalue, chartCycle,
@@ -940,17 +899,17 @@ public class ChartDataSource {
 			// serie in the order of the dataset
 
 			switch (type_val) {
-				case ChartDataSource.DATA_TYPE_POINT: {
-					final IPoint  pvalue = Cast.asPoint(scope, newValue);
+				case IChartDataSource.DATA_TYPE_POINT: {
+					final IPoint pvalue = GamaPointFactory.toPoint(scope, newValue);
 					myserie.addxysvalue(scope, getDataset().getXSeriesValues().get(0),
 							getDataset().getYSeriesValues().get(0), pvalue.getX(), chartCycle, barvalues, listvalue);
 
 					break;
 				}
-				case ChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
-				case ChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
-				case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
-					final IList l1value = Cast.asList(scope, newValue);
+				case IChartDataSource.DATA_TYPE_LIST_DOUBLE_12:
+				case IChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
+				case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N: {
+					final IList l1value = GamaListFactory.toList(scope, newValue);
 					for (int n1 = 0; n1 < l1value.size(); n1++) {
 						final Object o2 = l1value.get(n1);
 						while (n1 >= getDataset().getXSeriesValues().size()) {
@@ -963,14 +922,14 @@ public class ChartDataSource {
 					break;
 
 				}
-				case ChartDataSource.DATA_TYPE_LIST_LIST_POINT:
-				case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
-				case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3:
-				case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N: {
-					final IList l1value = Cast.asList(scope, newValue);
+				case IChartDataSource.DATA_TYPE_LIST_LIST_POINT:
+				case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
+				case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3:
+				case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N: {
+					final IList l1value = GamaListFactory.toList(scope, newValue);
 					for (int n1 = 0; n1 < l1value.size(); n1++) {
 						final Object o2 = l1value.get(n1);
-						final IList lvalue = Cast.asList(scope, o2);
+						final IList lvalue = GamaListFactory.toList(scope, o2);
 						while (n1 >= getDataset().getXSeriesValues().size()) {
 							getDataset().updateXValues(scope, chartCycle, l1value.size());
 						}
@@ -988,11 +947,11 @@ public class ChartDataSource {
 					break;
 
 				}
-				case ChartDataSource.DATA_TYPE_NULL: {
+				case IChartDataSource.DATA_TYPE_NULL: {
 					// last value?
 					break;
 				}
-				case ChartDataSource.DATA_TYPE_DOUBLE:
+				case IChartDataSource.DATA_TYPE_DOUBLE:
 				default: {
 					final Double dvalue = Cast.asFloat(scope, newValue);
 					myserie.addxysvalue(scope, getDataset().getXSeriesValues().get(0),

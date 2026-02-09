@@ -22,22 +22,22 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
+import gama.api.constants.IKeyword;
+import gama.api.exceptions.GamaCompilationFailedException;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.runtime.scope.IScope;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.COUNTER;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GamaCompilationFailedException;
-import gama.gaml.compilation.IGamlCompilationError;
-import gama.gaml.descriptions.ExperimentDescription;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.expressions.IExpressionFactory;
-import gama.gaml.operators.Cast;
 import gama.headless.common.Display2D;
 import gama.headless.common.Globals;
 import gama.headless.core.GamaHeadlessException;
@@ -266,8 +266,8 @@ public class ExperimentJob implements IExperimentJob {
 	 */
 	public void load() throws IOException, GamaCompilationFailedException {
 		System.setProperty("user.dir", this.sourcePath);
-		final List<IGamlCompilationError> errors = new ArrayList<>();
-		final IModel mdl = GamlModelBuilder.getDefaultInstance().compile(new File(this.sourcePath), errors, null);
+		final List<GamlCompilationError> errors = new ArrayList<>();
+		final IModelSpecies mdl = GamlModelBuilder.getInstance().compile(new File(this.sourcePath), errors, null);
 		this.modelName = mdl.getName();
 		this.simulator = new RichExperiment(mdl);
 	}
@@ -301,7 +301,7 @@ public class ExperimentJob implements IExperimentJob {
 				if (step % affDelay == 0) { DEBUG.LOG(".", false); }
 				if (simulator.isInterrupted()) { break; }
 				final ISimulationAgent sim = simulator.getSimulation();
-				final ExperimentAgent exp = simulator.getExperimentPlan().getAgent();
+				final IExperimentAgent exp = simulator.getExperimentPlan().getAgent();
 				final IScope scope = sim == null ? exp.getScope() : sim.getScope();
 				if (Cast.asBool(scope, exp.getStopCondition().value(scope))) { break; }
 				doStep();
@@ -498,8 +498,8 @@ public class ExperimentJob implements IExperimentJob {
 	 *            the model
 	 * @return the experiment job
 	 */
-	public static ExperimentJob loadAndBuildJob(final ExperimentDescription expD, final String path,
-			final IModel model) {
+	public static ExperimentJob loadAndBuildJob(final IExperimentDescription expD, final String path,
+			final IModelSpecies model) {
 		final String expName = expD.getName();
 		final IExpressionDescription seedDescription = expD.getFacet(IKeyword.SEED);
 		double mseed = 0.0;
@@ -514,7 +514,7 @@ public class ExperimentJob implements IExperimentJob {
 
 			final Iterable<IDescription> displays = d.getChildrenWithKeyword(IKeyword.DISPLAY);
 			for (final IDescription disp : displays) {
-				if (disp.getFacetExpr(IKeyword.VIRTUAL) != IExpressionFactory.TRUE_EXPR) {
+				if (disp.getFacetExpr(IKeyword.VIRTUAL) != GAML.getExpressionFactory().getTrue()) {
 					expJob.addOutput(Output.loadAndBuildOutput(disp));
 				}
 			}

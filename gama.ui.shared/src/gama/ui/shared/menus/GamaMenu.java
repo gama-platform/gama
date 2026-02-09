@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-import gama.core.common.preferences.Pref;
+import gama.api.utils.prefs.Pref;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.views.toolbar.Selector;
 

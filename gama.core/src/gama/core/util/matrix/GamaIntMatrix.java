@@ -18,19 +18,20 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.primitives.Ints;
 
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.util.random.IRandom;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.GamaMatrixType;
-import gama.gaml.types.IContainerType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMatrix;
+import gama.api.data.objects.IPoint;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IContainerType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.IImageProvider;
+import gama.api.utils.random.IRandom;
 import one.util.streamex.IntStreamEx;
 import one.util.streamex.StreamEx;
 
@@ -91,7 +92,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param p
 	 *            the p
 	 */
-	public GamaIntMatrix(final IPoint p) {
+	GamaIntMatrix(final IPoint p) {
 		this((int) p.getX(), (int) p.getY());
 	}
 
@@ -111,7 +112,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param rows
 	 *            the rows
 	 */
-	public GamaIntMatrix(final int cols, final int rows) {
+	GamaIntMatrix(final int cols, final int rows) {
 		super(cols, rows, Types.INT);
 		matrix = new int[cols * rows];
 	}
@@ -133,7 +134,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param objects
 	 *            the objects
 	 */
-	public GamaIntMatrix(final int cols, final int rows, final double[] objects) {
+	GamaIntMatrix(final int cols, final int rows, final double[] objects) {
 		this(cols, rows);
 		for (int i = 0, n = Math.min(objects.length, rows * cols); i < n; i++) { matrix[i] = (int) objects[i]; }
 	}
@@ -148,7 +149,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param objects
 	 *            the objects
 	 */
-	public GamaIntMatrix(final int cols, final int rows, final int[] objects) {
+	GamaIntMatrix(final int cols, final int rows, final int[] objects) {
 		this(cols, rows);
 		java.lang.System.arraycopy(objects, 0, matrix, 0, Math.min(objects.length, rows * cols));
 	}
@@ -165,7 +166,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param objects
 	 *            the objects
 	 */
-	public GamaIntMatrix(final IScope scope, final int cols, final int rows, final Object[] objects) {
+	GamaIntMatrix(final IScope scope, final int cols, final int rows, final Object[] objects) {
 		this(cols, rows);
 		for (int i = 0, n = Math.min(objects.length, rows * cols); i < n; i++) {
 			matrix[i] = Cast.asInt(scope, objects[i]);
@@ -180,7 +181,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param mat
 	 *            the mat
 	 */
-	public GamaIntMatrix(final IScope scope, final int[] mat) {
+	GamaIntMatrix(final IScope scope, final int[] mat) {
 		super(1, mat.length, Types.INT);
 		matrix = mat;
 	}
@@ -195,7 +196,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param preferredSize
 	 *            the preferred size
 	 */
-	public GamaIntMatrix(final IScope scope, final List objects, final IPoint preferredSize) {
+	GamaIntMatrix(final IScope scope, final List objects, final IPoint preferredSize) {
 		super(scope, objects, preferredSize, Types.INT);
 		matrix = new int[numRows * numCols];
 		if (preferredSize != null) {
@@ -221,7 +222,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @param mat
 	 *            the mat
 	 */
-	public GamaIntMatrix(final IScope scope, final Object[] mat) {
+	GamaIntMatrix(final IScope scope, final Object[] mat) {
 		this(1, mat.length);
 		for (int i = 0; i < mat.length; i++) { matrix[i] = Cast.asInt(scope, mat[i]); }
 	}
@@ -305,7 +306,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	@Override
 	protected IMatrix _matrixValue(final IScope scope, final IPoint preferredSize, final IType type,
 			final boolean copy) {
-		return GamaMatrixType.from(scope, this, type, preferredSize, copy);
+		return GamaMatrixFactory.createFromMatrix(scope, this, type, preferredSize, copy);
 	}
 
 	@Override
@@ -332,12 +333,12 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 		return Arrays.equals(this.matrix, mat.matrix);
 	}
 
-	// Removed to improve performances
+	// TODO Remove to improve performances if necessary
 	//
-	// @Override
-	// public int hashCode() {
-	// return Arrays.hashCode(matrix);
-	// }
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(matrix);
+	}
 
 	/**
 	 * Fill with.

@@ -29,7 +29,7 @@ public interface IGamaIcons {
 	/** The dark path. */
 	String DARK_PATH = "dark";
 
-	/** The Constant COLORS. */
+	/** The Constant NAME_REGISTRY. */
 	String COLOR_PATH = "colors/";
 
 	/** The icons fragment. */

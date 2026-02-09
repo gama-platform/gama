@@ -15,8 +15,8 @@ import java.util.List;
 
 import org.apache.commons.math3.ode.nonstiff.LutherIntegrator;
 
-import gama.core.util.list.IList;
-import gama.core.util.map.IMap;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
 
 /**
  * The Class LutherSolver.

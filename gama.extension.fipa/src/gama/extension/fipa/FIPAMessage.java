@@ -10,14 +10,14 @@
  ********************************************************************************************************/
 package gama.extension.fipa;
 
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.core.common.util.StringUtils;
-import gama.core.messaging.GamaMessage;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.IList;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.api.data.objects.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
+import gama.core.util.messaging.GamaMessage;
 
 /**
  * The Class MessageProxy.

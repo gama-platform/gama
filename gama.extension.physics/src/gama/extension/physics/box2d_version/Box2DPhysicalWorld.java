@@ -15,8 +15,8 @@ import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.World;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IPoint;
+import gama.api.data.objects.IPoint;
+import gama.api.kernel.agent.IAgent;
 import gama.extension.physics.common.AbstractPhysicalWorld;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IShapeConverter;

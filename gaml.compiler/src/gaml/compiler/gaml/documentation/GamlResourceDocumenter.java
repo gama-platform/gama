@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamlResourceDocumenter.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
- * platform (v.2024-06).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,11 +19,11 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
-import gama.core.common.interfaces.IDocManager;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IGamlDescription;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.documentation.IDocManager;
 import gama.dev.DEBUG;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.interfaces.IGamlDescription;
 import gaml.compiler.gaml.resource.GamlResourceServices;
 
 /**
@@ -126,10 +126,9 @@ public class GamlResourceDocumenter implements IDocManager {
 
 	// To be called once the validation has been done
 	@Override
-	public void doDocument(final URI res, final ModelDescription desc,
+	public void doDocument(final URI res, final IModelDescription desc,
 			final Map<EObject, IGamlDescription> additionalExpressions) {
-		GamlResourceDocumentationTask task;
-		task = getTaskFor(res);
+		GamlResourceDocumentationTask task = getTaskFor(res);
 		task.incrementGeneration();
 		int generation = getCurrentDocGenerationFor(res);
 		task.add(() -> {

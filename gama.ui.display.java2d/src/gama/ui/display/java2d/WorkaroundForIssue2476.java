@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * WorkaroundForIssue2476.java, in gama.ui.display.java2d, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * WorkaroundForIssue2476.java, in gama.ui.display.java2d, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,8 +15,9 @@ import java.awt.event.MouseMotionListener;
 
 import org.eclipse.swt.SWT;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.runtime.SystemInfo;
+import gama.api.ui.displays.IDisplaySurface;
 import gama.dev.DEBUG;
 
 /**
@@ -55,7 +56,7 @@ public class WorkaroundForIssue2476 {
 	 */
 	public static void installOn(final Container applet, final IDisplaySurface surface) {
 		// Install only on Linux
-		if (!gama.core.runtime.PlatformHelper.isLinux()) return;
+		if (!SystemInfo.isLinux()) return;
 		applet.addMouseWheelListener(e -> {
 			if (e.getPreciseWheelRotation() > 0) {
 				surface.zoomOut();

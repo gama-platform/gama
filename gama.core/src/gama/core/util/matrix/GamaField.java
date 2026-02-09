@@ -9,38 +9,39 @@
  ********************************************************************************************************/
 package gama.core.util.matrix;
 
-import static gama.gaml.types.GamaGeometryType.buildRectangle;
-
 import java.util.Arrays;
 
 import com.google.common.collect.Iterables;
 import com.google.common.primitives.Doubles;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IFieldMatrixProvider;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.gaml.operators.Cast;
+import gama.annotations.doc;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaEnvelopeFactory;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IField;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMatrix;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IContainerType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.layers.IMeshColorProvider;
+import gama.api.utils.IFieldMatrixProvider;
+import gama.api.utils.geometry.GeometryUtils;
 import gama.gaml.operators.Colors;
-import gama.gaml.statements.draw.IMeshColorProvider;
 import gama.gaml.statements.draw.MeshDrawingAttributes;
-import gama.gaml.types.GamaFieldType;
-import gama.gaml.types.IContainerType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 import one.util.streamex.DoubleStreamEx;
 import one.util.streamex.StreamEx;
 
@@ -107,8 +108,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	 * @param noDataValue
 	 *            the no data value
 	 */
-	public GamaField(final IScope scope, final int cols, final int rows, final double[] objects,
-			final double noDataValue) {
+	GamaField(final IScope scope, final int cols, final int rows, final double[] objects, final double noDataValue) {
 		super(objects); // no copy
 		this.noDataValue = noDataValue;
 		numCols = cols;
@@ -278,7 +278,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		// Necessary to add the z ? Verify the translations
 		double x = cellDimensions.getX();
 		double y = cellDimensions.getY();
-		return buildRectangle(x, y,
+		return GamaShapeFactory.buildRectangle(x, y,
 				GamaPointFactory.create(columns * x + x / 2, rows * y + y / 2, get(scope, columns, rows)));
 	}
 
@@ -652,7 +652,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		// if (bands.size() == 1) return this;
 		IMeshColorProvider provider =
 				computer instanceof IMeshColorProvider msp ? msp : MeshDrawingAttributes.computeColors(computer, true);
-		GamaField result = (GamaField) GamaFieldType.buildField(scope, this.numCols, this.numRows);
+		GamaField result = (GamaField) GamaMatrixFactory.createFieldWithSize(scope, this.numCols, this.numRows);
 		int index;
 		double[] minMax = this.getMinMax();
 		double[] rgb = new double[4];

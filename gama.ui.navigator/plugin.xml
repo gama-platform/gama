@@ -786,11 +786,6 @@
    <extension
          point="org.eclipse.ui.services">
       <serviceFactory
-            factoryClass="gama.ui.navigator.view.MetaDataServiceFactory">
-         <service
-               serviceClass="gama.core.util.file.IFileMetaDataProvider"></service>
-      </serviceFactory>
-      <serviceFactory
             factoryClass="gama.ui.navigator.commands.RefreshServiceFactory">
          <service
                serviceClass="gama.ui.shared.interfaces.IRefreshHandler">

@@ -3,14 +3,14 @@
  * RefreshAction.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.navigator.view.actions;
 
-import static gama.core.common.interfaces.IGui.NAVIGATOR_VIEW_ID;
+import static gama.api.ui.IGui.NAVIGATOR_VIEW_ID;
 import static gama.ui.navigator.view.contents.ResourceManager.getInstance;
 import static gama.ui.shared.utils.WorkbenchHelper.runInUI;
 import static org.eclipse.core.resources.IResource.DEPTH_INFINITE;
@@ -28,7 +28,6 @@ import org.eclipse.core.filesystem.IFileInfo;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -44,7 +43,7 @@ import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.eclipse.ui.internal.ide.dialogs.IDEResourceInfoUtils;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 import gama.ui.navigator.view.GamaNavigator;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -139,7 +138,7 @@ public class RefreshAction extends WorkspaceAction {
 	protected List<? extends IResource> getSelectedResources() {
 		final List<IResource> resources1 = new ArrayList<>();
 		for (final IResource r : super.getSelectedResources()) { if (r.isAccessible()) { resources1.add(r); } }
-		if (resources1.isEmpty()) { resources1.add(ResourcesPlugin.getWorkspace().getRoot()); }
+		if (resources1.isEmpty()) { resources1.add(GAMA.getWorkspaceManager().getRoot()); }
 		return resources1;
 	}
 

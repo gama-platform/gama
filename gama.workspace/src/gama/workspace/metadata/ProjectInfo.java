@@ -1,19 +1,27 @@
-/**
- * 
- */
+/*******************************************************************************************************
+ *
+ * ProjectInfo.java, in gama.workspace, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.workspace.metadata;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
 
-import gama.gaml.interfaces.GamlConstantDocumentation;
-import gama.gaml.interfaces.IGamlDocumentation;
+import gama.api.compilation.documentation.GamlConstantDocumentation;
+import gama.api.compilation.documentation.IGamlDocumentation;
+import gama.api.utils.files.AbstractFileMetaData;
 
 /**
  * The Class ProjectInfo.
  */
-public class ProjectInfo extends GamaFileMetaData {
+public class ProjectInfo extends AbstractFileMetaData {
 
 	/** The comment. */
 	final String comment;
@@ -27,7 +35,7 @@ public class ProjectInfo extends GamaFileMetaData {
 	 *             the core exception
 	 */
 	public ProjectInfo(final IProject project) throws CoreException {
-		super(project.getModificationStamp());
+		super(project);
 		final IProjectDescription desc = project.getDescription();
 		comment = desc.getComment();
 	}

@@ -10,11 +10,11 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene.resources;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.util.IColor;
+import gama.api.data.objects.IColor;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IPoint;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.Scaling3D;
 import gama.core.util.file.GamaGeometryFile;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;

@@ -12,9 +12,9 @@ package gama.documentation;
 
 import java.io.File;
 
-import gama.annotations.precompiler.doc.utils.Constants;
 import gama.documentation.transform.XmlToWiki;
 import gama.documentation.transform.XmlTransform;
+import gama.documentation.util.Constants;
 import gama.documentation.util.GamaStyleGeneration;
 import gama.documentation.util.PrepareEnv;
 import gama.documentation.util.UnifyDoc;

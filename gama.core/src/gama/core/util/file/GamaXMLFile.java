@@ -21,20 +21,21 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.files.GamaFile;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
 
 /**
  * Class GamaXMLFile. TODO: Everything ! What kind of buffer should be returned from here ? The current implementation
@@ -95,7 +96,7 @@ public class GamaXMLFile extends GamaFile<IMap<String, String>, String> {
 	/**
 	 * Method computeEnvelope()
 	 *
-	 * @see gama.core.util.file.IGamaFile#computeEnvelope(gama.core.runtime.IScope)
+	 * @see gama.api.utils.files.IGamaFile#computeEnvelope(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IEnvelope computeEnvelope(final IScope scope) {
@@ -105,7 +106,7 @@ public class GamaXMLFile extends GamaFile<IMap<String, String>, String> {
 	/**
 	 * Method fillBuffer()
 	 *
-	 * @see gama.core.util.file.GamaFile#fillBuffer(gama.core.runtime.IScope)
+	 * @see gama.api.utils.files.GamaFile#fillBuffer(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {

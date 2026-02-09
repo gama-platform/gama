@@ -202,7 +202,6 @@
         locationURI="menu:file?before=save.ext">
      <command
            commandId="ummisco.command.clean.build"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/validation/compile.all_disabled.svg"
            icon="platform:/plugin/gama.ui.shared/icons_svg/light/validation/compile.all.svg"
            label="Clean and Validate All"
            style="push"> 
@@ -215,7 +214,6 @@
         locationURI="popup:#TextEditorContext?after=group.edit">
      <command
            commandId="org.eclipse.xtext.ui.editor.FindReferences"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/find.references_disabled.svg"
            icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/find.references.svg">
         <visibleWhen
               checkEnabled="false">
@@ -226,7 +224,6 @@
      </command>
      <command
            commandId="org.eclipse.xtext.ui.editor.hyperlinking.OpenDeclaration"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/open.declaration_disabled.svg"
            icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/open.declaration.svg"
            id="xtext.ui.openDeclaration"
            style="push">
@@ -239,7 +236,6 @@
      </command>
      <command
            commandId="org.eclipse.ui.edit.text.contentAssist.proposals"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/content.assist_disabled.svg"
            icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/content.assist.svg"
            style="push">
         <visibleWhen
@@ -255,7 +251,6 @@
      </separator>
      <command
            commandId="org.eclipse.xtext.ui.ToggleCommentAction"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/toggle.comment_disabled.svg"
            icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/toggle.comment.svg"
            label="Toggle Comments"
            style="push">
@@ -268,7 +263,6 @@
      </command>
      <command
            commandId="org.eclipse.xtext.ui.FormatAction"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/command.format_disabled.svg"
            icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/command.format.svg"
            style="push">
         <visibleWhen
@@ -280,7 +274,6 @@
      </command>
      <command
            commandId="org.eclipse.xtext.ui.refactoring.RenameElement"
-           disabledIcon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/file.rename_disabled.svg"
            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/file.rename.svg"
            style="push">
         <visibleWhen
@@ -830,12 +823,12 @@
        <serviceFactory
              factoryClass="gaml.compiler.ui.utils.ModelsManager">
           <service
-                serviceClass="gama.core.common.interfaces.IModelsManager"></service>
+                serviceClass="gama.api.compilation.IModelsManager"></service>
        </serviceFactory>
        <serviceFactory
              factoryClass="gaml.compiler.ui.outline.LabelProviderFactory">
           <service
-                serviceClass="gama.gaml.interfaces.IGamlLabelProvider">
+                serviceClass="gama.api.compilation.ast.IGamlLabelProvider">
           </service>
        </serviceFactory>
     </extension>

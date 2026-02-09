@@ -2,7 +2,7 @@
  *
  * EGaml.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,12 +18,11 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.util.map.GamaMapFactory;
+import gama.api.compilation.ast.ISyntacticFactory;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaMapFactory;
 import gama.dev.COUNTER;
-import gama.gaml.compilation.IGamlEcoreUtils;
-import gama.gaml.compilation.ast.SyntacticFactory;
-import gama.gaml.descriptions.ModelDescription;
 import gaml.compiler.gaml.impl.ActionArgumentsImpl;
 import gaml.compiler.gaml.impl.BlockImpl;
 import gaml.compiler.gaml.impl.ExpressionListImpl;
@@ -43,19 +42,25 @@ import gaml.compiler.gaml.util.GamlSwitch;
  * @since 2012
  *
  */
-public class EGaml implements IGamlEcoreUtils {
+public class EGaml {
 
-	/** The Constant instance. */
+	/** The Constant INSTANCE. */
 	private static final EGaml instance = new EGaml();
 
 	/**
-	 * Gets the single instance of EGaml.
+	 * Gets the single INSTANCE of EGaml.
 	 *
-	 * @return single instance of EGaml
+	 * @return single INSTANCE of EGaml
 	 */
 	public static EGaml getInstance() { return instance; }
 
-	@Override
+	/**
+	 * Gets the name of.
+	 *
+	 * @param o
+	 *            the o
+	 * @return the name of
+	 */
 	public String getNameOf(final EObject o) {
 		if (o instanceof S_Reflex) {
 			String s = ((S_Reflex) o).getName();
@@ -75,7 +80,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 *            the o
 	 * @return the exprs of
 	 */
-	@Override
+
 	public List<Expression> getExprsOf(final EObject o) {
 		if (o instanceof ExpressionListImpl eli && eli.eIsSet(GamlPackage.EXPRESSION_LIST__EXPRS))
 			return eli.getExprs();
@@ -89,7 +94,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 *            the args
 	 * @return the args of
 	 */
-	@Override
+
 	public List<ArgumentDefinition> getArgsOf(final EObject args) {
 		if (args == null) return Collections.EMPTY_LIST;
 		if (args instanceof ActionArgumentsImpl
@@ -105,7 +110,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 *            the s
 	 * @return the facets of
 	 */
-	@Override
+
 	public List<Facet> getFacetsOf(final EObject s) {
 		if (s instanceof StatementImpl) {
 			if (((StatementImpl) s).eIsSet(GamlPackage.STATEMENT__FACETS)) return ((StatementImpl) s).getFacets();
@@ -122,7 +127,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 *            the s
 	 * @return the facets map of
 	 */
-	@Override
+
 	public Map<String, Facet> getFacetsMapOf(final EObject s) {
 		final List<? extends EObject> list = getFacetsOf(s);
 		if (list.isEmpty()) return Collections.EMPTY_MAP;
@@ -138,7 +143,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 *            the s
 	 * @return the facets map of
 	 */
-	@Override
+
 	public boolean hasFacet(final EObject s, final String facet) {
 		final List<? extends EObject> list = getFacetsOf(s);
 		if (list.isEmpty()) return false;
@@ -157,7 +162,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 * @param s
 	 * @return
 	 */
-	@Override
+
 	public Expression getExpressionAtKey(final EObject s, final String name) {
 		if (s == null || name == null) return null;
 		if ("value".equals(name) && s instanceof S_DirectAssignment) return ((S_DirectAssignment) s).getValue();
@@ -174,7 +179,13 @@ public class EGaml implements IGamlEcoreUtils {
 		return null;
 	}
 
-	@Override
+	/**
+	 * Gets the expr of.
+	 *
+	 * @param s
+	 *            the s
+	 * @return the expr of
+	 */
 	public Expression getExprOf(final EObject s) {
 		if (s instanceof Expression) return (Expression) s;
 		if (s instanceof Statement) return ((Statement) s).getExpr();
@@ -184,30 +195,25 @@ public class EGaml implements IGamlEcoreUtils {
 	/** The children switch. */
 	private final GamlSwitch<Boolean> childrenSwitch = new GamlSwitch<>() {
 
-		@Override
 		public Boolean caseModel(final Model object) {
 			return ((ModelImpl) object).eIsSet(GamlPackage.MODEL__BLOCK);
 		}
 
-		@Override
 		public Boolean caseS_Action(final S_Action object) {
 			if (((S_ActionImpl) object).eIsSet(GamlPackage.SACTION__ARGS)) return true;
 			return caseStatement(object);
 		}
 
-		@Override
 		public Boolean caseBlock(final Block object) {
 			return ((BlockImpl) object).eIsSet(GamlPackage.BLOCK__STATEMENTS);
 		}
 
-		@Override
 		public Boolean caseStatement(final Statement object) {
 			return ((StatementImpl) object).eIsSet(GamlPackage.STATEMENT__BLOCK) || hasFacet(object, IKeyword.VIRTUAL)
 			// && ((StatementImpl) object).getBlock().getFunction() == null
 			;
 		}
 
-		@Override
 		public Boolean caseHeadlessExperiment(final HeadlessExperiment object) {
 			return ((HeadlessExperimentImpl) object).eIsSet(GamlPackage.HEADLESS_EXPERIMENT__BLOCK)
 			// && object.getBlock().getFunction() == null
@@ -218,17 +224,14 @@ public class EGaml implements IGamlEcoreUtils {
 			return true;
 		}
 
-		@Override
 		public Boolean caseS_Equations(final S_Equations object) {
 			return ((S_EquationsImpl) object).eIsSet(GamlPackage.SEQUATIONS__EQUATIONS);
 		}
 
-		@Override
 		public Boolean caseS_If(final S_If object) {
 			return caseStatement(object) || ((S_IfImpl) object).eIsSet(GamlPackage.SIF__ELSE);
 		}
 
-		@Override
 		public Boolean defaultCase(final EObject object) {
 			return false;
 		}
@@ -242,7 +245,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 *            the obj
 	 * @return true, if successful
 	 */
-	@Override
+
 	public boolean hasChildren(final EObject obj) {
 		return childrenSwitch.doSwitch(obj);
 	}
@@ -254,7 +257,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 *            the block
 	 * @return the statements of
 	 */
-	@Override
+
 	public List<Statement> getStatementsOf(final EObject block) {
 
 		if (block instanceof BlockImpl) {
@@ -270,7 +273,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 *            the stm
 	 * @return the equations of
 	 */
-	@Override
+
 	public List<S_Assignment> getEquationsOf(final EObject stm) {
 		if (stm instanceof S_EquationsImpl && ((S_EquationsImpl) stm).eIsSet(GamlPackage.SEQUATIONS__EQUATIONS))
 			return ((S_EquationsImpl) stm).getEquations();
@@ -284,7 +287,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 *            the f
 	 * @return the key of
 	 */
-	@Override
+
 	public String getKeyOf(final EObject f) {
 		if (f == null) return null;
 		return getKeyOf(f, f.eClass());
@@ -299,7 +302,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 *            the clazz
 	 * @return the key of
 	 */
-	@Override
+
 	public String getKeyOf(final EObject object, final EClass clazz) {
 		final int id = clazz.getClassifierID();
 		return switch (id) {
@@ -360,7 +363,7 @@ public class EGaml implements IGamlEcoreUtils {
 		if (s.contains("<")) {
 			s = s.split("<")[0];
 			// Special case for the 'species<xxx>' case
-			if ("species".equals(s)) { s = SyntacticFactory.SPECIES_VAR; }
+			if ("species".equals(s)) { s = ISyntacticFactory.SPECIES_VAR; }
 		}
 		return s;
 	}
@@ -401,7 +404,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 *            the o
 	 * @return the name of ref
 	 */
-	@Override
+
 	public String getNameOfRef(final EObject o) {
 		return getNameOfRef(o, o.eClass().getClassifierID());
 	}
@@ -430,7 +433,7 @@ public class EGaml implements IGamlEcoreUtils {
 				VarDefinition ref = ((VariableRef) o).getRef();
 				if (ref != null) {
 					if (ref instanceof ModelImpl) {
-						result = ref.getName() + ModelDescription.MODEL_SUFFIX;
+						result = ref.getName() + IModelDescription.MODEL_SUFFIX;
 					} else {
 						result = ref.getName();
 					}
@@ -481,7 +484,6 @@ public class EGaml implements IGamlEcoreUtils {
 	 * @return the string
 	 */
 
-	@Override
 	public String toString(final EObject expr) {
 		if (expr == null) return null;
 		if (expr instanceof Statement) return getNameOf(expr);
@@ -565,24 +567,26 @@ public class EGaml implements IGamlEcoreUtils {
 		final List<? extends EObject> args = getExprsOf(expr.getRight());
 		final String opName = getKeyOf(expr.getLeft());
 		switch (args.size()) {
-			case 1:
+			case 1 -> {
 				serializer.append(opName).append("(");
 				serialize(serializer, (Expression) args.get(0));
 				serializer.append(")");
-				break;
-			case 2:
+			}
+			case 2 -> {
 				serializer.append("(");
 				serialize(serializer, (Expression) args.get(0));
 				serializer.append(")").append(opName).append("(");
 				serialize(serializer, (Expression) args.get(1));
 				serializer.append(")");
-				break;
-			default:
+			}
+			default -> {
 				serializer.append(opName);
 				serializer.append("(");
 				array(serializer, args, true);
 				serializer.append(")");
+			}
 		}
+
 	}
 
 	/**
@@ -618,7 +622,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 *            the o
 	 * @return the statement
 	 */
-	@Override
+
 	public Statement getStatement(final EObject o) {
 		if (o instanceof Statement) return (Statement) o;
 		if (o instanceof TypeRef && o.eContainer() instanceof S_Definition
@@ -636,7 +640,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 * @return the surrounding statement
 	 * @date 2 janv. 2024
 	 */
-	@Override
+
 	public Statement getSurroundingStatement(final EObject o) {
 		if (o == null) return null;
 		if (o instanceof Statement) return (Statement) o;
@@ -650,7 +654,7 @@ public class EGaml implements IGamlEcoreUtils {
 	 *            the e
 	 * @return true, if is batch
 	 */
-	@Override
+
 	public boolean isBatch(final EObject e) {
 		if (e instanceof StatementImpl) {
 			if (!((StatementImpl) e).eIsSet(GamlPackage.STATEMENT__FACETS)) return false;
@@ -688,7 +692,13 @@ public class EGaml implements IGamlEcoreUtils {
 		return stub;
 	}
 
-	@Override
+	/**
+	 * Checks for imports.
+	 *
+	 * @param statement
+	 *            the statement
+	 * @return true, if successful
+	 */
 	public boolean hasImports(final EObject statement) {
 		return statement instanceof ModelImpl m && !m.getImports().isEmpty();
 	}

@@ -1,47 +1,46 @@
 /*******************************************************************************************************
  *
- * WriteStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * WriteStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.util.StringUtils;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.BufferingController;
-import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.operators.Cast;
-import gama.gaml.operators.Strings;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.operator;
+import gama.annotations.symbol;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.constants.IGamlIssue;
+import gama.api.constants.IKeyword;
+import gama.api.data.objects.IColor;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatement;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
+import gama.api.utils.files.BufferingUtils;
+import gama.api.utils.files.BufferingUtils.BufferingStrategies;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.gaml.statements.WriteStatement.WriteValidator;
-import gama.gaml.types.IType;
 
 /**
  * Written by drogoul Modified on 6 févr. 2010
@@ -58,65 +57,70 @@ import gama.gaml.types.IType;
 @inside (
 		kinds = { ISymbolKind.BEHAVIOR, ISymbolKind.SEQUENCE_STATEMENT, ISymbolKind.LAYER })
 @facets (
-		value = { 
-			@facet (
+		value = { @facet (
 				name = IKeyword.COLOR,
 				type = IType.COLOR,
 				optional = true,
 				doc = @doc ("The color with wich the message will be displayed. Note that different simulations will have different (default) colors to use for this purpose if this facet is not specified")),
-			@facet (
-					name = IKeyword.END,
-					type = IType.STRING,
-					optional = true,
-					doc = @doc ("The string to be appened at the end of the message. By default it's a new line character: '\\n' or '\\r\\n' depending on the operating system." )
-					),
-			@facet (
-					name = IKeyword.BUFFERING,
-					type = { IType.STRING},
-					optional = true,
-					doc = @doc (
-							value = "Allows to specify a buffering strategy to write in the console. Accepted values are `" + BufferingController.PER_CYCLE_BUFFERING +"` and `" + BufferingController.PER_SIMULATION_BUFFERING + "`, `" + BufferingController.NO_BUFFERING + "`. "
-									+ "In the case of `"+ BufferingController.PER_CYCLE_BUFFERING +"` or `"+ BufferingController.PER_SIMULATION_BUFFERING +"`, all the write operations in the simulation which used these values would be "
-									+ "executed all at once at the end of the cycle or simulation while keeping the initial order. In case of '" + BufferingController.PER_AGENT
-									+ "' all operations will be released when the agent is killed (or the simulation ends). Those strategies can be used to optimise a "
-									+ "simulation's execution time on models that extensively write in files. "
-									+ "The `" + BufferingController.NO_BUFFERING + "` (which is the system's default) will directly write into the file.")
-					),
-			@facet (
-				name = IKeyword.MESSAGE,
-				type = IType.NONE,
-				optional = false,
-				doc = @doc ("the message to display. Modelers can add some formatting characters to the message (carriage returns, tabs, or Unicode characters), which will be used accordingly in the console.")), },
-		
+				@facet (
+						name = IKeyword.END,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("The string to be appened at the end of the message. By default it's a new line character: '\\n' or '\\r\\n' depending on the operating system.")),
+				@facet (
+						name = IKeyword.BUFFERING,
+						type = { IType.STRING },
+						optional = true,
+						doc = @doc (
+								value = "Allows to specify a buffering strategy to write in the console. Accepted values are `"
+										+ BufferingUtils.PER_CYCLE_BUFFERING + "` and `"
+										+ BufferingUtils.PER_SIMULATION_BUFFERING + "`, `"
+										+ BufferingUtils.NO_BUFFERING + "`. " + "In the case of `"
+										+ BufferingUtils.PER_CYCLE_BUFFERING + "` or `"
+										+ BufferingUtils.PER_SIMULATION_BUFFERING
+										+ "`, all the write operations in the simulation which used these values would be "
+										+ "executed all at once at the end of the cycle or simulation while keeping the initial order. In case of '"
+										+ BufferingUtils.PER_AGENT
+										+ "' all operations will be released when the agent is killed (or the simulation ends). Those strategies can be used to optimise a "
+										+ "simulation's execution time on models that extensively write in files. "
+										+ "The `" + BufferingUtils.NO_BUFFERING
+										+ "` (which is the system's default) will directly write into the file.")),
+				@facet (
+						name = IKeyword.MESSAGE,
+						type = IType.NONE,
+						optional = false,
+						doc = @doc ("the message to display. Modelers can add some formatting characters to the message (carriage returns, tabs, or Unicode characters), which will be used accordingly in the console.")), },
+
 		omissible = IKeyword.MESSAGE)
 @doc (
 		value = "The statement makes the agent output an arbitrary message in the console.",
 		usages = { @usage (
 				value = "Outputting a message",
 				examples = { @example ("write \"This is a message from \" + self;") }) })
-@validator(WriteValidator.class)
+@validator (WriteValidator.class)
 public class WriteStatement extends AbstractStatement {
 
-	
-	public static class WriteValidator implements IDescriptionValidator<StatementDescription> {
+	/**
+	 * The Class WriteValidator.
+	 */
+	public static class WriteValidator implements IDescriptionValidator<IStatementDescription> {
 
 		@Override
-		public void validate(StatementDescription description) {
-			final StatementDescription desc = description;
+		public void validate(final IStatementDescription desc) {
 			final IExpression bufferingStrategy = desc.getFacetExpr(IKeyword.BUFFERING);
-			
 
-			if (bufferingStrategy != null && ! BufferingController.BUFFERING_STRATEGIES.contains(bufferingStrategy.literalValue())) {
-				desc.error("The value for buffering must be '" + BufferingController.NO_BUFFERING + "', '" 
-							+ BufferingController.PER_CYCLE_BUFFERING + "', '" 
-							+ BufferingController.PER_AGENT + "'" 
-							+ "' or '" + BufferingController.PER_SIMULATION_BUFFERING +"'.", 
+			if (bufferingStrategy != null
+					&& !BufferingUtils.BUFFERING_STRATEGIES.contains(bufferingStrategy.literalValue())) {
+				desc.error(
+						"The value for buffering must be '" + BufferingUtils.NO_BUFFERING + "', '"
+								+ BufferingUtils.PER_CYCLE_BUFFERING + "', '" + BufferingUtils.PER_AGENT + "'"
+								+ "' or '" + BufferingUtils.PER_SIMULATION_BUFFERING + "'.",
 						IGamlIssue.WRONG_TYPE);
 			}
 		}
-		
+
 	}
-	
+
 	static {
 		// DEBUG.OFF();
 	}
@@ -132,11 +136,13 @@ public class WriteStatement extends AbstractStatement {
 
 	/** The color. */
 	final IExpression color;
-	
+
+	/** The buffering strategy. */
 	final IExpression bufferingStrategy;
 
+	/** The end. */
 	final IExpression end;
-	
+
 	/**
 	 * Instantiates a new write statement.
 	 *
@@ -158,26 +164,25 @@ public class WriteStatement extends AbstractStatement {
 		if (agent != null && !agent.dead()) {
 			mes = Cast.asString(scope, message.value(scope));
 			if (mes == null) { mes = "nil"; }
-			GamaColor rgb = null;
-			if (color != null) { 
-				rgb = (GamaColor) color.value(scope); 
+			IColor rgb = null;
+			if (color != null) { rgb = (IColor) color.value(scope); }
+			BufferingStrategies strategy = BufferingUtils.stringToBufferingStrategies(scope,
+					(String) GamaPreferences.get(GamaPreferences.PREF_WRITE_BUFFERING_STRATEGY).value(scope));
+			if (bufferingStrategy != null) {
+				strategy = BufferingUtils.stringToBufferingStrategies(scope,
+						Cast.asString(scope, bufferingStrategy.value(scope)));
 			}
-			BufferingStrategies strategy = BufferingController.stringToBufferingStrategies(scope, (String)GamaPreferences.get(GamaPreferences.PREF_WRITE_BUFFERING_STRATEGY).value(scope));
-			if (bufferingStrategy != null) { 
-				strategy = BufferingController.stringToBufferingStrategies(scope, Cast.asString(scope,bufferingStrategy.value(scope)));
-			}
-			
+
 			var messageToSend = new StringBuilder(mes);
 			if (end != null) {
 				messageToSend.append(Cast.asString(scope, end));
+			} else {
+				messageToSend.append(StringUtils.LN);
 			}
-			else {
-				messageToSend.append(Strings.LN);
-			}
-			
+
 			// DEBUG.OUT(
 			// "" + getName() + " asking to write and passing " + scope.getRoot() + " as the corresponding agent");
-			GAMA.getBufferingController().askWriteConsole(scope, messageToSend, rgb, strategy);
+			BufferingUtils.getInstance().askWriteConsole(scope, messageToSend, rgb, strategy);
 		}
 		return mes;
 	}

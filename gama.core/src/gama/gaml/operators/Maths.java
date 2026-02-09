@@ -2,26 +2,27 @@
  *
  * Maths.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.matrix.IMatrix;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.GAMA;
+import gama.api.constants.IKeyword;
+import gama.api.data.objects.IMatrix;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.MathUtils;
 
 /**
  * The Class GamaMath.
@@ -517,7 +518,7 @@ public class Maths {
 			category = { IOperatorCategory.ARITHMETIC },
 			concept = {})
 	@doc (
-			value = "the cosinus of the operand.",
+			value = "the cosinus of the operand in decimal degrees.",
 			examples = { @example (
 					value = "cos (0)",
 					equals = "1.0"),
@@ -758,7 +759,6 @@ public class Maths {
 					GamaRuntimeException.warning("The ln operator cannot accept negative or null inputs", scope),
 					false);
 		}
-		// return Double.MAX_VALUE; // A compromise...
 		return Math.log(x);
 	}
 
@@ -787,7 +787,6 @@ public class Maths {
 					GamaRuntimeException.warning("The ln operator cannot accept negative or null inputs", scope),
 					false);
 		}
-		// return Double.MAX_VALUE; // A compromise...
 		return Math.log(x);
 	}
 
@@ -819,7 +818,6 @@ public class Maths {
 					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
 					false);
 		}
-		// return Double.MAX_VALUE; // A compromise...
 		return Math.log10(x.doubleValue());
 	}
 
@@ -848,7 +846,6 @@ public class Maths {
 					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
 					false);
 		}
-		// return Double.MAX_VALUE; // A compromise...
 		return Math.log10(x);
 	}
 
@@ -879,7 +876,6 @@ public class Maths {
 					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
 					false);
 		}
-		// return Double.MAX_VALUE; // A compromise...
 		return Math.log(x) / Math.log(b);
 	}
 
@@ -910,7 +906,6 @@ public class Maths {
 					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
 					false);
 		}
-		// return Double.MAX_VALUE; // A compromise...
 		return Math.log(x) / Math.log(b);
 	}
 
@@ -941,7 +936,6 @@ public class Maths {
 					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
 					false);
 		}
-		// return Double.MAX_VALUE; // A compromise...
 		return Math.log(x) / Math.log(b);
 	}
 
@@ -972,7 +966,6 @@ public class Maths {
 					GamaRuntimeException.warning("The log operator cannot accept negative or null inputs", scope),
 					false);
 		}
-		// return Double.MAX_VALUE; // A compromise...
 		return Math.log(x) / Math.log(b);
 	}
 
@@ -1765,8 +1758,7 @@ public class Maths {
 							equals = "123.00") },
 			see = "round")
 	public static double round(final Double v, final Integer precision) {
-		final long t = TENS[precision]; // contains powers of ten.
-		return (double) (long) (v > 0 ? v * t + 0.5 : v * t - 0.5) / t;
+		return MathUtils.round(v, precision);
 	}
 
 	/**
@@ -1996,13 +1988,6 @@ public class Maths {
 	public static final double toDeg = 180d / Math.PI;
 	/** Constant field toRad. */
 	public static final double toRad = Math.PI / 180d;
-
-	/** The Constant TENS. */
-	public static final long[] TENS = new long[100];
-
-	static {
-		for (int i = 0; i < TENS.length; i++) { TENS[i] = (long) Math.pow(10, i); }
-	}
 
 	/**
 	 * Atan 2.

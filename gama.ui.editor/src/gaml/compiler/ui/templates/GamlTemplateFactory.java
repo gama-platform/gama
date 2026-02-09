@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlTemplateFactory.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlTemplateFactory.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,7 +13,6 @@ package gaml.compiler.ui.templates;
 import java.util.Collections;
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jface.text.templates.Template;
 // import org.eclipse.text.templates.TemplatePersistenceData;
 import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
@@ -21,19 +20,18 @@ import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.kernel.GamaSkillRegistry;
-import gama.gaml.descriptions.AbstractProto;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.OperatorProto;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.descriptions.TypeDescription;
-import gama.gaml.interfaces.INamed;
-import gama.gaml.operators.Strings;
-import gama.gaml.types.Types;
+import gama.annotations.example;
+import gama.annotations.usage;
+import gama.annotations.support.ISymbolKind;
+import gama.api.additions.registries.GamaSkillRegistry;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
+import gama.api.compilation.prototypes.IArtefactProto;
+import gama.api.gaml.GAML;
+import gama.api.gaml.types.Types;
+import gama.api.utils.INamed;
+import gama.api.utils.StringUtils;
+import gaml.compiler.gaml.descriptions.StatementDescription;
 
 /**
  * The class GamlTemplateFactory.
@@ -69,7 +67,7 @@ public class GamlTemplateFactory {
 	 *            the sp
 	 * @return the template persistence data
 	 */
-	public static TemplatePersistenceData from(final usage u, final AbstractProto sp) {
+	public static TemplatePersistenceData from(final usage u, final IArtefactProto sp) {
 		boolean isExample = false;
 		String name = u.name();
 		boolean emptyName = name.isEmpty();
@@ -82,14 +80,14 @@ public class GamlTemplateFactory {
 				}
 				if (!e.isPattern()) { isExample = true; }
 				// if ( e.isPattern() ) {
-				pattern += Strings.LN + e.value();
+				pattern += StringUtils.LN + e.value();
 				// }
 			}
 		}
 		if (pattern.isEmpty()) return null;
-		pattern += Strings.LN;
+		pattern += StringUtils.LN;
 		String[] path = u.path();
-		if (path.length == 0) { path = new String[] { StringUtils.capitalize(sp.getName()) }; }
+		if (path.length == 0) { path = new String[] { org.apache.commons.lang3.StringUtils.capitalize(sp.getName()) }; }
 		String menuPath = "";
 		for (final String p : path) { menuPath += p + "."; }
 		String menu = u.menu();
@@ -98,7 +96,7 @@ public class GamlTemplateFactory {
 		if (usage.NULL.equals(desc)) {
 			// Trying to build something that makes sense..
 			desc = menu + " " + name;
-			desc += Strings.LN;
+			desc += StringUtils.LN;
 			final String doc = sp.getDocumentation().toString();
 			int index = doc.indexOf(". ");
 			if (index == -1) { index = doc.length(); }
@@ -112,13 +110,13 @@ public class GamlTemplateFactory {
 	}
 
 	/** The begin comment. */
-	static String beginComment = "/**" + Strings.LN;
+	static String beginComment = "/**" + StringUtils.LN;
 
 	/** The end comment. */
-	static String endComment = "*/" + Strings.LN;
+	static String endComment = "*/" + StringUtils.LN;
 
 	/** The comment line. */
-	static String commentLine = Strings.LN + "* " + Strings.TAB + Strings.TAB;
+	static String commentLine = StringUtils.LN + "* " + StringUtils.TAB + StringUtils.TAB;
 
 	/** The inherited attributes. */
 	static String inheritedAttributes = "* Inherited attributes:";
@@ -138,10 +136,10 @@ public class GamlTemplateFactory {
 	 */
 	private static String body(final String body) {
 		final StringBuilder sb = new StringBuilder(200);
-		sb.append(" {").append(Strings.LN);
+		sb.append(" {").append(StringUtils.LN);
 		sb.append(body);
-		sb.append(Strings.LN).append("${cursor}");
-		sb.append(Strings.LN).append("}").append(Strings.LN);
+		sb.append(StringUtils.LN).append("${cursor}");
+		sb.append(StringUtils.LN).append("}").append(StringUtils.LN);
 		return sb.toString();
 	}
 
@@ -161,7 +159,7 @@ public class GamlTemplateFactory {
 			Collections.sort(named, INamed.COMPARATOR);
 			sb.append(title);
 			for (final INamed sd : named) { sb.append(commentLine).append(sd.serializeToGaml(true)); }
-			sb.append(Strings.LN);
+			sb.append(StringUtils.LN);
 		}
 	}
 
@@ -223,7 +221,7 @@ public class GamlTemplateFactory {
 	 *            the species
 	 * @return the template
 	 */
-	public static Template speciesWithParent(final TypeDescription species) {
+	public static Template speciesWithParent(final ITypeDescription species) {
 		final String name = species.getName();
 		final StringBuilder comment = new StringBuilder(200);
 		comment.append(beginComment);
@@ -254,14 +252,14 @@ public class GamlTemplateFactory {
 		if (length > 0) { sb.setLength(length - 2); }
 		sb.append(")");
 		return new Template("A call to action " + name, "A call to action " + name + " will all its arguments",
-				getContextId(), "do " + name + sb.toString() + ";" + Strings.LN, true);
+				getContextId(), "do " + name + sb.toString() + ";" + StringUtils.LN, true);
 	}
 
 	/**
 	 * @param proto
 	 * @return
 	 */
-	public static Template from(final OperatorProto proto) {
+	public static Template from(final IArtefactProto.Operator proto) {
 		String description = proto.getMainDoc();
 		if (description == null) { description = "Template for using operator " + proto.getName(); }
 		return new Template("Operator " + proto.getName(), description, getContextId(), proto.getPattern(true), true);

@@ -3,15 +3,15 @@
  * GamlEditor.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gaml.compiler.ui.editor;
 
-import static gama.core.common.preferences.GamaPreferences.Modeling.EDITOR_COLLAPSE_BUTTONS;
-import static gama.core.common.preferences.GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU;
+import static gama.api.utils.prefs.GamaPreferences.Modeling.EDITOR_COLLAPSE_BUTTONS;
+import static gama.api.utils.prefs.GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU;
 import static gama.ui.shared.resources.IGamaIcons.MARKER_ERROR;
 import static gama.ui.shared.resources.IGamaIcons.SMALL_DROPDOWN;
 import static gaml.compiler.ui.editor.GamlEditorState.NO_EXP_DEFINED;
@@ -126,18 +126,18 @@ import org.eclipse.xtext.validation.Issue;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-import gama.annotations.precompiler.GamlProperties;
-import gama.core.common.GamlFileExtension;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IModelsManager;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
+import gama.api.compilation.IModelsManager;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.validation.IValidationContext;
+import gama.api.constants.GamlFileExtension;
+import gama.api.constants.IKeyword;
+import gama.api.utils.GamlProperties;
+import gama.api.utils.StringUtils;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.dev.DEBUG;
 import gama.dev.FLAGS;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.descriptions.ValidationContext;
-import gama.gaml.operators.Strings;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;
@@ -746,8 +746,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	@Override
-	public void validationEnded(final ModelDescription model, final Iterable<? extends IDescription> newExperiments,
-			final ValidationContext status) {
+	public void validationEnded(final IModelDescription model, final Iterable<? extends IDescription> newExperiments,
+			final IValidationContext status) {
 
 		getInternalSourceViewer().updateCodeMinings();
 
@@ -768,7 +768,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 							new ReplaceEdit(offset, length, newLine).apply(document);
 						}
 					} else {
-						new InsertEdit(0, Strings.LN + newLine + Strings.LN + Strings.LN).apply(getDocument());
+						new InsertEdit(0, StringUtils.LN + newLine + StringUtils.LN + StringUtils.LN)
+								.apply(getDocument());
 					}
 				} catch (BadLocationException e) {}
 			});
@@ -1144,7 +1145,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	/** The to remove. */
-	Set<String> toRemove = Set.of("revert", "save", "Preferences.ContextAction", "QuickAssist", "Open W&ith",
+	Set<String> toRemove = Set.of("revert", "save", "__PREFS__.ContextAction", "QuickAssist", "Open W&ith",
 			"Sho&w In	⌥⌘W", "group.open");
 
 	@Override

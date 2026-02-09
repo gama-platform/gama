@@ -1,27 +1,28 @@
 /*******************************************************************************************************
  *
- * CameraDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * CameraDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.GraphicsScope;
-import gama.core.runtime.IScope;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.Types;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IPoint;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.GraphicsScope;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * The Class CameraDefinition. Holds and updates the position, target and lens of a camera from the GAML definition in
  * the "camera" statement.
  */
-public class CameraDefinition extends AbstractDefinition implements ICameraDefinition {
+public class CameraDefinition extends AbstractCameraDefinition {
 
 	static {
 		// DEBUG.OFF();
@@ -102,7 +103,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 			double max = Math.max(w, h) * coeff;
 			location = computeLocation(pos, target, w, h, max);
 		} else {
-			location = Cast.asPoint(scope, temp);
+			location = GamaPointFactory.toPoint(scope, temp);
 			// The location should be a point now and we negate it as well
 			location = location.yNegated();
 		}

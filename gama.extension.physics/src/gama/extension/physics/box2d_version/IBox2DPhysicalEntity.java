@@ -12,8 +12,7 @@ package gama.extension.physics.box2d_version;
 
 import org.jbox2d.common.Vec2;
 
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IPoint ;
+import gama.api.data.objects.IPoint;
 import gama.extension.physics.common.IPhysicalEntity;
 import gama.extension.physics.common.VectorUtils;
 

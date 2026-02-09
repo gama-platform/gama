@@ -18,8 +18,8 @@ import java.util.regex.PatternSyntaxException;
 import org.eclipse.ui.internal.quickaccess.CamelUtil;
 import org.eclipse.ui.quickaccess.QuickAccessElement;
 
-import gama.gaml.compilation.GamlIdiomsProvider;
-import gama.gaml.interfaces.IGamlDescription;
+import gama.api.compilation.descriptions.IGamlDescription;
+import gama.api.compilation.documentation.GamlIdiomsProvider;
 
 /**
  * QuickAccessMatch contains the logic to check whether a given {@link QuickAccessElement} matches a input user request.

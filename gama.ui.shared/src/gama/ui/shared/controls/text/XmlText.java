@@ -56,7 +56,7 @@ import org.eclipse.ui.internal.forms.widgets.IHyperlinkSegment;
 import org.eclipse.ui.internal.forms.widgets.Locator;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
-import gama.core.util.GamaFont;
+import gama.api.data.objects.IFont;
 import gama.ui.shared.resources.GamaFonts;
 
 /**
@@ -305,7 +305,7 @@ public class XmlText extends Canvas implements IXmlFontUser {
 	 * @param style
 	 *            the widget style
 	 */
-	public XmlText(final Composite parent, final int style, final GamaFont font) {
+	public XmlText(final Composite parent, final int style, final IFont font) {
 		super(parent, SWT.NO_BACKGROUND | SWT.WRAP | style);
 		setLayout(new XmlTextLayout());
 		model = new XmlTextModel(font == null ? GamaFonts.getFont(getFont()) : font);

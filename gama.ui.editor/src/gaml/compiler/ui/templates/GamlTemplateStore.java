@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlTemplateStore.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlTemplateStore.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,13 +27,12 @@ import com.google.inject.ProvidedBy;
 import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.gaml.compilation.GAML;
-import gama.gaml.descriptions.OperatorProto;
-import gama.gaml.descriptions.SymbolProto;
-import gama.gaml.factories.DescriptionFactory;
+import gama.annotations.usage;
+import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.compilation.prototypes.IArtefactProto;
+import gama.api.gaml.GAML;
+import gama.api.gaml.types.Signature;
 import gama.gaml.operators.Strings;
-import gama.gaml.types.Signature;
 import gaml.compiler.ui.templates.GamlTemplateStore.GamlTemplateStoreProvider;
 
 /**
@@ -51,7 +50,7 @@ public class GamlTemplateStore extends XtextTemplateStore {
 	 */
 	public static class GamlTemplateStoreProvider implements Provider<GamlTemplateStore> {
 
-		/** The instance. */
+		/** The INSTANCE. */
 		static GamlTemplateStore instance;
 
 		/** The context type registry. */
@@ -78,9 +77,9 @@ public class GamlTemplateStore extends XtextTemplateStore {
 		}
 
 		/**
-		 * Gets the single instance of GamlTemplateStoreProvider.
+		 * Gets the single INSTANCE of GamlTemplateStoreProvider.
 		 *
-		 * @return single instance of GamlTemplateStoreProvider
+		 * @return single INSTANCE of GamlTemplateStoreProvider
 		 */
 		public static GamlTemplateStore getInstance() { return instance; }
 
@@ -118,12 +117,10 @@ public class GamlTemplateStore extends XtextTemplateStore {
 			index = Integer.decode(last);
 			strings = Arrays.copyOf(strings, strings.length - 1);
 			int i = 0;
-			for (final String s : strings) { 
+			for (final String s : strings) {
 				newIdBuilder.append(s);
 				i++;
-				if (i < strings.length) {
-					newIdBuilder.append("."); 
-				}
+				if (i < strings.length) { newIdBuilder.append("."); }
 			}
 			newId = newIdBuilder.toString();
 			if (indexes.containsKey(newId)) { index = indexes.get(newId); }
@@ -197,9 +194,9 @@ public class GamlTemplateStore extends XtextTemplateStore {
 	@Override
 	protected void loadContributedTemplates() throws IOException {
 		super.loadContributedTemplates();
-		Iterable<String> protos = DescriptionFactory.getProtoNames();
+		Iterable<String> protos = ArtefactProtoRegistry.getProtoNames();
 		for (final String keyword : protos) {
-			final SymbolProto sp = DescriptionFactory.getProto(keyword, null);
+			final IArtefactProto.Symbol sp = ArtefactProtoRegistry.getProto(keyword, null);
 			// List<template> templates = sp.getTemplates();
 			for (final usage u : sp.getUsages()) {
 				final TemplatePersistenceData data = GamlTemplateFactory.from(u, sp);
@@ -208,8 +205,8 @@ public class GamlTemplateStore extends XtextTemplateStore {
 		}
 		protos = GAML.OPERATORS.keySet();
 		for (final String keyword : protos) {
-			final Map<Signature, OperatorProto> map = GAML.OPERATORS.get(keyword);
-			for (final OperatorProto p : map.values()) {
+			final Map<Signature, IArtefactProto.Operator> map = GAML.OPERATORS.get(keyword);
+			for (final IArtefactProto.Operator p : map.values()) {
 				for (final usage u : p.getUsages()) {
 					final TemplatePersistenceData data = GamlTemplateFactory.from(u, p);
 					if (data != null) { internalAdd(data); }

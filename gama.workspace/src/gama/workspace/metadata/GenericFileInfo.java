@@ -1,15 +1,25 @@
-/**
- * 
- */
+/*******************************************************************************************************
+ *
+ * GenericFileInfo.java, in gama.workspace, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.workspace.metadata;
 
-import gama.gaml.interfaces.GamlConstantDocumentation;
-import gama.gaml.interfaces.IGamlDocumentation;
+import org.eclipse.core.resources.IFile;
+
+import gama.api.compilation.documentation.GamlConstantDocumentation;
+import gama.api.compilation.documentation.IGamlDocumentation;
+import gama.api.utils.files.AbstractFileMetaData;
 
 /**
  * The Class GenericFileInfo.
  */
-public class GenericFileInfo extends GamaFileMetaData {
+public class GenericFileInfo extends AbstractFileMetaData {
 
 	/** The suffix. */
 	final String suffix;
@@ -22,8 +32,8 @@ public class GenericFileInfo extends GamaFileMetaData {
 	 * @param suffix
 	 *            the suffix
 	 */
-	public GenericFileInfo(final long stamp, final String suffix) {
-		super(stamp);
+	public GenericFileInfo(final IFile file, final String suffix) {
+		super(file);
 		this.suffix = suffix;
 	}
 

@@ -15,8 +15,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.common.interfaces.ItemList;
-import gama.core.common.preferences.GamaPreferences;
+import gama.api.ui.IItemList;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.shared.interfaces.IParameterEditor;
 
 /**
@@ -25,7 +25,7 @@ import gama.ui.shared.interfaces.IParameterEditor;
  * @param <T>
  *            the generic type
  */
-public abstract class EditorsList<T> implements ItemList<T> {
+public abstract class EditorsList<T> implements IItemList<T> {
 
 	/** The categories. */
 	/* Map to associate a category to each parameter */

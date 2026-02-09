@@ -18,12 +18,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
+import gama.api.data.objects.IContainer;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.species.ISpecies;
 import gama.core.outputs.ValuedDisplayOutputFactory;
-import gama.core.util.IContainer;
-import gama.gaml.species.ISpecies;
 import gama.ui.shared.interfaces.EditorListener;
 
 /**

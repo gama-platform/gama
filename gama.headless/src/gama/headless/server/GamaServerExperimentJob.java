@@ -23,14 +23,14 @@ import javax.imageio.ImageIO;
 
 import org.java_websocket.WebSocket;
 
-import gama.core.kernel.experiment.ExperimentPlan;
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.kernel.model.IModel;
-import gama.core.util.list.IList;
-import gama.core.util.map.IMap;
-import gama.gaml.compilation.GamaCompilationFailedException;
-import gama.gaml.compilation.IGamlCompilationError;
-import gama.gaml.types.Types;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.exceptions.GamaCompilationFailedException;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.species.IModelSpecies;
+import gama.core.experiment.ExperimentSpecies;
 import gama.headless.core.GamaHeadlessException;
 import gama.headless.core.RichExperiment;
 import gama.headless.core.RichOutput;
@@ -102,8 +102,8 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	@Override
 	public void load() throws IOException, GamaCompilationFailedException {
 		System.setProperty("user.dir", this.sourcePath);
-		final List<IGamlCompilationError> errors = new ArrayList<>();
-		final IModel mdl = GamlModelBuilder.getDefaultInstance().compile(new File(this.sourcePath), errors, null);
+		final List<GamlCompilationError> errors = new ArrayList<>();
+		final IModelSpecies mdl = GamlModelBuilder.getInstance().compile(new File(this.sourcePath), errors, null);
 		this.modelName = mdl.getName();
 		this.simulator = new RichExperiment(mdl);
 	}
@@ -141,7 +141,7 @@ public class GamaServerExperimentJob extends ExperimentJob {
 	public void initParam(final IList p) {
 		IList params = p;
 		if (params != null) {
-			final ExperimentPlan curExperiment = (ExperimentPlan) simulator.getExperimentPlan();
+			final ExperimentSpecies curExperiment = (ExperimentSpecies) simulator.getExperimentPlan();
 			for (var param : params.listValue(null, Types.MAP, false)) {
 				IMap<String, Object> m = (IMap<String, Object>) param;
 				String type = m.get("type").toString();

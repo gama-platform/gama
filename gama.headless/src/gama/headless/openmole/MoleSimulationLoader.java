@@ -14,10 +14,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import gama.annotations.precompiler.GamlProperties;
-import gama.core.kernel.model.IModel;
-import gama.gaml.compilation.GamaCompilationFailedException;
-import gama.gaml.compilation.IGamlCompilationError;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.exceptions.GamaCompilationFailedException;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.utils.GamlProperties;
 import gama.headless.core.GamaHeadlessException;
 import gaml.compiler.gaml.validation.GamlModelBuilder;
 
@@ -39,7 +39,7 @@ public abstract class MoleSimulationLoader {
 	 * @throws GamaHeadlessException
 	 *             the gama headless exception
 	 */
-	public static IModel loadModel(final File modelPath, final List<IGamlCompilationError> errors)
+	public static IModelSpecies loadModel(final File modelPath, final List<GamlCompilationError> errors)
 			throws IOException, GamaCompilationFailedException {
 		return loadModel(modelPath, errors, null);
 	}
@@ -59,9 +59,9 @@ public abstract class MoleSimulationLoader {
 	 * @throws GamaHeadlessException
 	 *             the gama headless exception
 	 */
-	public static IModel loadModel(final File modelPath, final List<IGamlCompilationError> errors,
+	public static IModelSpecies loadModel(final File modelPath, final List<GamlCompilationError> errors,
 			final GamlProperties metadata) throws IOException, GamaCompilationFailedException {
-		return GamlModelBuilder.getDefaultInstance().compile(modelPath, errors, metadata);
+		return GamlModelBuilder.getInstance().compile(modelPath, errors, metadata);
 	}
 
 	/**
@@ -71,7 +71,7 @@ public abstract class MoleSimulationLoader {
 	 *            the model
 	 * @return the i mole experiment
 	 */
-	public static IMoleExperiment newExperiment(final IModel model) {
+	public static IMoleExperiment newExperiment(final IModelSpecies model) {
 		return new MoleExperiment(model);
 	}
 

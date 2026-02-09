@@ -35,12 +35,12 @@ import com.bulletphysics.collision.shapes.UniformScalingShape;
 import com.bulletphysics.dom.HeightfieldTerrainShape;
 import com.bulletphysics.util.ObjectArrayList;
 
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.util.matrix.IField;
+import gama.api.data.objects.IField;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GeometryUtils;
 import gama.extension.physics.common.IShapeConverter;
 
 /**

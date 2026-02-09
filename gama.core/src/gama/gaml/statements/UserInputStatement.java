@@ -1,0 +1,266 @@
+/*******************************************************************************************************
+ *
+ * UserInputStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.gaml.statements;
+
+import java.util.List;
+
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.constants.IKeyword;
+import gama.api.data.objects.IColor;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractPlaceHolderStatement;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+
+/**
+ * Written by drogoul Modified on 7 févr. 2010
+ *
+ * @todo Description
+ *
+ */
+@symbol (
+		name = { IKeyword.USER_INPUT },
+		kind = ISymbolKind.SINGLE_STATEMENT,
+		with_sequence = false,
+		concept = { IConcept.GUI })
+@inside (
+		symbols = IKeyword.USER_COMMAND)
+@facets (
+		value = { @facet (
+				name = IKeyword.NAME,
+				type = IType.LABEL,
+				optional = true,
+				doc = @doc ("the displayed name")),
+				@facet (
+						name = IKeyword.TYPE,
+						type = IType.TYPE_ID,
+						optional = true,
+						doc = @doc ("the variable type")),
+				@facet (
+						name = IKeyword.INIT,
+						type = IType.NONE,
+						optional = false,
+						doc = @doc ("the init value")),
+				@facet (
+						name = IKeyword.MIN,
+						type = IType.FLOAT,
+						optional = true,
+						doc = @doc ("the minimum value")),
+				@facet (
+						name = "slider",
+						type = IType.BOOL,
+						optional = true,
+						doc = @doc ("Whether to display a slider or not when applicable")),
+				@facet (
+						name = IKeyword.MAX,
+						type = IType.FLOAT,
+						optional = true,
+						doc = @doc ("the maximum value")),
+				@facet (
+						name = IKeyword.RETURNS,
+						type = IType.NEW_TEMP_ID,
+						optional = false,
+						doc = @doc ("a new local variable containing the value given by the user")),
+				@facet (
+						name = IKeyword.AMONG,
+						type = IType.LIST,
+						of = IType.STRING,
+						optional = true,
+						doc = @doc ("the set of acceptable values, only for string inputs")) },
+		omissible = IKeyword.NAME)
+@doc (
+		value = "It allows to let the user define the value of a variable.",
+		usages = { @usage (
+				value = "",
+				examples = { @example (
+						value = "user_panel \"Advanced Control\" {",
+						isExecutable = false),
+						@example (
+								value = "	user_input \"Location\" returns: loc type: point <- {0,0};",
+								isExecutable = false),
+						@example (
+								value = "	create cells number: 10 with: [location::loc];",
+								isExecutable = false),
+						@example (
+								value = "}",
+								isExecutable = false) }) },
+		see = { IKeyword.USER_COMMAND, IKeyword.USER_INIT, IKeyword.USER_PANEL })
+@SuppressWarnings ({ "rawtypes" })
+public class UserInputStatement extends AbstractPlaceHolderStatement implements IParameter {
+
+	// int order;
+	/** The is valued. */
+	// static int index;
+	boolean isValued;
+
+	/** The current value. */
+	Object initialValue, currentValue;
+
+	/** The slider. */
+	IExpression min, max, among, init, slider;
+
+	/** The temp var. */
+	String tempVar;
+
+	/**
+	 * Instantiates a new user input statement.
+	 *
+	 * @param desc
+	 *            the desc
+	 */
+	public UserInputStatement(final IDescription desc) {
+		super(desc);
+		// order = index++;
+		init = getFacet(IKeyword.INIT);
+		min = getFacet(IKeyword.MIN);
+		max = getFacet(IKeyword.MAX);
+		among = getFacet(IKeyword.AMONG);
+		slider = getFacet("slider");
+		tempVar = getLiteral(IKeyword.RETURNS);
+	}
+
+	@Override
+	public String getTitle() { return description.getName(); }
+
+	@Override
+	public String getCategory() { return null; }
+
+	@Override
+	public String getUnitLabel(final IScope scope) {
+		return null;
+	}
+
+	@Override
+	public void setValue(final IScope scope, final Object value) {
+		currentValue = value;
+	}
+
+	@Override
+	public Object value(final IScope scope) throws GamaRuntimeException {
+		if (!isValued) {
+			if (init != null) { currentValue = initialValue = init.value(scope); }
+			isValued = true;
+		}
+		return currentValue;
+	}
+
+	@Override
+	public IType getType() {
+		final IType type = description.getGamlType();
+		if (type != Types.NO_TYPE) return type;
+		if (init == null) return Types.NO_TYPE;
+		return init.getGamlType();
+	}
+
+	@Override
+	public Object getInitialValue(final IScope scope) {
+		return initialValue;
+	}
+
+	@Override
+	public Comparable getMinValue(final IScope scope) {
+		return min == null ? null : (Comparable) min.value(scope);
+	}
+
+	@Override
+	public Comparable getMaxValue(final IScope scope) {
+		return max == null ? null : (Comparable) max.value(scope);
+	}
+
+	@Override
+	protected Object privateExecuteIn(final IScope scope) {
+		scope.addVarWithValue(tempVar, currentValue);
+		return currentValue;
+	}
+
+	/**
+	 * Gets the temp var name.
+	 *
+	 * @return the temp var name
+	 */
+	public String getTempVarName() { return tempVar; }
+
+	@Override
+	public List getAmongValue(final IScope scope) {
+		return among == null ? null : (List) among.value(scope);
+	}
+
+	@Override
+	public boolean isEditable() { return true; }
+
+	@Override
+	public Comparable getStepValue(final IScope scope) {
+		return null;
+	}
+
+	/**
+	 * Method setUnitLabel()
+	 *
+	 * @see gama.api.gaml.symbols.IParameter#setUnitLabel(java.lang.String)
+	 */
+	@Override
+	public void setUnitLabel(final String label) {}
+
+	/**
+	 * Method isDefined()
+	 *
+	 * @see gama.api.gaml.symbols.IParameter#isDefined()
+	 */
+	@Override
+	public boolean isDefined() { return true; }
+
+	/**
+	 * Method setDefined()
+	 *
+	 * @see gama.api.gaml.symbols.IParameter#setDefined(boolean)
+	 */
+	@Override
+	public void setDefined(final boolean b) {}
+
+	@Override
+	public boolean acceptsSlider(final IScope scope) {
+		if (slider == null) return true;
+		return Cast.asBool(scope, slider.value(scope));
+	}
+
+	@Override
+	public List<IColor> getColors(final IScope scope) {
+		return null;
+	}
+
+	@Override
+	public IColor getColor(final IScope scope) {
+		return null;
+	}
+
+	@Override
+	public boolean isDefinedInExperiment() {
+		// False by default ?
+		return false;
+	}
+
+	@Override
+	public void setValueNoCheckNoNotification(final Object value) { currentValue = value; }
+
+}

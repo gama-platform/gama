@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 
-import gama.core.kernel.experiment.parameters.IParameter;
+import gama.api.gaml.symbols.IParameter;
 import gama.ui.shared.resources.IGamaColors;
 
 /**

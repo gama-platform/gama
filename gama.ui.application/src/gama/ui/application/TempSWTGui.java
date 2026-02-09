@@ -3,12 +3,14 @@
  * TempSWTGui.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.application;
+
+import java.util.Map;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -16,9 +18,17 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 
-import gama.core.common.interfaces.IConsoleListener;
-import gama.core.common.interfaces.IDialogFactory;
-import gama.core.common.interfaces.IGui;
+import gama.api.compilation.descriptions.IActionDescription;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IPoint;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IConsoleListener;
+import gama.api.ui.IDialogFactory;
+import gama.api.ui.IGui;
+import gama.api.utils.server.ISocketCommand;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.PickWorkspaceDialog;
 
@@ -102,5 +112,20 @@ public class TempSWTGui implements IGui {
 			}
 		};
 	}
+
+	@Override
+	public IMap<String, IMap<String, Object>> openWizard(final IScope scope, final String title,
+			final IActionDescription finish, final IList<IMap<String, Object>> pages) {
+		return GamaMapFactory.EMPTY;
+	}
+
+	@Override
+	public IPoint getMouseLocationInModel() { return GamaPointFactory.getNullPoint(); }
+
+	@Override
+	public IPoint getMouseLocationInDisplay() { return GamaPointFactory.getNullPoint(); }
+
+	@Override
+	public Map<String, ISocketCommand> getServerCommands() { return GamaMapFactory.EMPTY; }
 
 }

@@ -9,33 +9,34 @@
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.random.IRandom;
-import gama.core.common.util.random.RandomUtils;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.IMap;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.GAMA;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IField;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IMatrix;
+import gama.api.data.objects.IPoint;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.random.IRandom;
+import gama.api.utils.random.RandomUtils;
 import gama.core.util.matrix.GamaField;
-import gama.core.util.matrix.IField;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.types.GamaFieldType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 import one.util.streamex.IntStreamEx;
 
 /**
@@ -265,7 +266,7 @@ public class Random {
 		 */
 		// double internalRange = bound / 2;
 		double tmpResult = 0;
-		// final GaussianGenerator gen = RANDOM(scope).createGaussian(mean,
+		// final GaussianGenerator gen = __RANDOM__(scope).createGaussian(mean,
 		// range / 2);
 		// 'do while' does the truncature
 
@@ -896,33 +897,7 @@ public class Random {
 			see = { "rnd" })
 	@test ("seed <- 1.0; rnd_choice([0.2,0.5,0.3]) = 2")
 	public static Integer opRndChoice(final IScope scope, final IList distribution) {
-		final IList<Double> normalizedDistribution = GamaListFactory.create(Types.FLOAT);
-		double sumElt = 0.0;
-		Double minVal = 0.0;
-		for (final Object eltDistrib : distribution) {
-			final Double elt = Cast.asFloat(scope, eltDistrib);
-			if (elt < 0.0) { minVal = Math.max(minVal, Math.abs(elt)); }
-			// throw GamaRuntimeException.create(new RuntimeException("Distribution elements should be positive."),
-			// scope);
-			normalizedDistribution.add(elt);
-			sumElt = sumElt + elt;
-		}
-		int nb = normalizedDistribution.size();
-		if (minVal > 0) { sumElt += minVal * nb; }
-		if (sumElt == 0.0) throw GamaRuntimeException
-				.create(new RuntimeException("Distribution elements should not be all equal to 0"), scope);
-		for (int i = 0; i < nb; i++) {
-			normalizedDistribution.set(i, (normalizedDistribution.get(i) + minVal) / sumElt);
-		}
-
-		double randomValue = RANDOM(scope).between(0., 1.);
-
-		for (int i = 0; i < distribution.size(); i++) {
-			randomValue = randomValue - normalizedDistribution.get(i);
-			if (randomValue <= 0) return i;
-		}
-
-		return -1;
+		return RANDOM(scope).choiceIn(distribution);
 	}
 
 	/**
@@ -948,34 +923,8 @@ public class Random {
 					test = false) },
 			see = { "rnd" })
 	@test ("seed <- 1.0; rnd_choice([\"toto\"::0.2,\"tata\"::0.5,\"tonton\"::0.3]) = \"tonton\"")
-	public static <T> T opRndCoice(final IScope scope, final IMap<T, ?> distribution) {
-		final IList<T> key = distribution.getKeys();
-		final IList<Double> normalizedDistribution = GamaListFactory.create(Types.FLOAT);
-		double sumElt = 0.0;
-
-		for (final T k : key) {
-			Object eltDistrib = distribution.get(k);
-			final Double elt = Cast.asFloat(scope, eltDistrib);
-			if (elt < 0.0) throw GamaRuntimeException
-					.create(new RuntimeException("Distribution elements should be positive."), scope);
-			normalizedDistribution.add(elt);
-			sumElt = sumElt + elt;
-		}
-		if (sumElt == 0.0) throw GamaRuntimeException
-				.create(new RuntimeException("Distribution elements should not be all equal to 0"), scope);
-
-		for (int i = 0; i < normalizedDistribution.size(); i++) {
-			normalizedDistribution.set(i, normalizedDistribution.get(i) / sumElt);
-		}
-
-		double randomValue = RANDOM(scope).between(0., 1.);
-
-		for (int i = 0; i < distribution.size(); i++) {
-			randomValue = randomValue - normalizedDistribution.get(i);
-			if (randomValue <= 0) return key.get(i);
-		}
-
-		throw GamaRuntimeException.create(new RuntimeException("Malformed distribution"), scope);
+	public static <T> T opRndCoice(final IScope scope, final IMap<T, Double> distribution) {
+		return RANDOM(scope).choiceIn(distribution);
 	}
 
 	/**
@@ -1143,7 +1092,7 @@ public class Random {
 		double scale = scattering <= 0 ? 0.0001 : scattering >= 1 ? 0.01 : scattering / 100d;
 		// details between 0 (1 octave) and 1 (10 octaves)
 		int octaves = details < 0.1 ? 1 : details >= 1 ? 10 : (int) (details * 10);
-		GamaField result = (GamaField) GamaFieldType.buildField(scope, width, height);
+		GamaField result = (GamaField) GamaMatrixFactory.createFieldWithSize(scope, width, height);
 		double[] totalNoise = result.getMatrix();
 		double layerWeight = 1d;
 		double weightSum = 0d;

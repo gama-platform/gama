@@ -1,0 +1,284 @@
+/*******************************************************************************************************
+ *
+ * SobolExploration.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.core.experiment.batch.exploration;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaDateFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.symbols.IParameter.Batch;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.files.FileUtils;
+import gama.core.experiment.parameters.ParametersSet;
+
+/**
+ *
+ *
+ * @author kevinchapuis
+ *
+ */
+@symbol (
+		name = IKeyword.SOBOL,
+		kind = ISymbolKind.BATCH_METHOD,
+		with_sequence = false,
+		concept = { IConcept.BATCH, IConcept.ALGORITHM })
+@inside (
+		kinds = { ISymbolKind.EXPERIMENT })
+@facets (
+		value = { @facet (
+				name = IKeyword.NAME,
+				type = IType.ID,
+				optional = false,
+				internal = true,
+				doc = @doc ("The name of the method. For internal use only")),
+				@facet (
+						name = SobolExploration.SAMPLE_SIZE,
+						type = IType.ID,
+						optional = false,
+						doc = @doc ("The size of the sample for the sobol sequence")),
+				@facet (
+						name = IKeyword.BATCH_VAR_OUTPUTS,
+						type = IType.LIST,
+						of = IType.STRING,
+						optional = false,
+						doc = @doc ("The list of output variables to analyse through sobol indexes")),
+				@facet (
+						name = IKeyword.BATCH_OUTPUT,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("The path to the file where the automatic batch report will be written")),
+				@facet (
+						name = IKeyword.BATCH_REPORT,
+						type = IType.STRING,
+						optional = false,
+						doc = @doc ("The path to the file where the Sobol report will be written")),
+				@facet (
+						name = IKeyword.PATH,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("The path to the saltelli sample csv file. If the file doesn't exist automatic Saltelli sampling will be performed and saved in the corresponding location")) },
+		omissible = IKeyword.NAME)
+@doc (
+		value = "This algorithm runs a Sobol exploration - it has been built upon the moea framework at https://github.com/MOEAFramework/MOEAFramework - disabled the repeat facet of the experiment",
+		usages = { @usage (
+				value = "For example: ",
+				examples = { @example (
+						value = "method sobol sample_size:100 outputs:['my_var'] report:'../path/to/report/file.txt'; ",
+						isExecutable = false) }) })
+public class SobolExploration extends AExplorationAlgorithm {
+
+	/** The Constant SAMPLE_SIZE. */
+	protected static final String SAMPLE_SIZE = "sample";
+
+	/** map containing the output of sobol methode */
+	private Sobol sobol_analysis;
+
+	/** The parameters. */
+	private List<Batch> parameters;
+
+	/** The outputs */
+	private IList<String> outputs;
+
+	/** The current parameters space. */
+	/* The parameter space defined by the Sobol sequence (Satteli sampling method) */
+	private List<ParametersSet> solutions;
+
+	/** The res outputs. */
+	/* All the outputs for each simulation */
+	protected IMap<ParametersSet, Map<String, List<Object>>> res_outputs;
+
+	/** The sample. */
+	private int _sample;
+
+	/**
+	 * Instantiates a new sobol exploration.
+	 *
+	 * @param desc
+	 *            the desc
+	 */
+	public SobolExploration(final IDescription desc) {
+		super(desc);
+	}
+
+	@Override
+	public void setChildren(final Iterable<? extends ISymbol> children) {}
+
+	@Override
+	public void explore(final IScope scope) {
+		List<ParametersSet> solutions =
+				this.solutions == null ? buildParameterSets(scope, new ArrayList<>(), 0) : this.solutions;
+		if (solutions.size() != _sample) throw GamaRuntimeException
+				.error("Saltelli sample should be " + _sample + " but is " + solutions.size(), scope);
+
+		/* Disable repetitions / repeat argument */
+		currentExperiment.setSeeds(new Double[1]);
+		// TODO : why doesnt it take into account the value of 'keep_simulations:' ?
+		currentExperiment.setKeepSimulations(false);
+		res_outputs = currentExperiment.runSimulationsAndReturnResults(solutions);
+		Map<String, List<Object>> rebuilt_output = rebuildOutput(res_outputs);
+
+		sobol_analysis.setOutputs(rebuilt_output);
+		sobol_analysis.evaluate();
+
+		/* Save the simulation values in the provided .csv file (input and corresponding output) */
+		if (hasFacet(IKeyword.BATCH_OUTPUT)) { saveRawResults(scope, res_outputs); }
+
+		/* Save the Sobol analysis report in a .txt file */
+		String path_to = Cast.asString(scope, getFacet(IKeyword.BATCH_REPORT).value(scope));
+		final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path_to, false));
+		final File parent = f.getParentFile();
+		if (!parent.exists()) { parent.mkdirs(); }
+		if (f.exists()) { f.delete(); }
+		sobol_analysis.saveResult(f);
+	}
+
+	@SuppressWarnings ("unchecked")
+	@Override
+	public List<ParametersSet> buildParameterSets(final IScope scope, final List<ParametersSet> sets, final int index) {
+		int sample = Cast.asInt(scope, getFacet(SAMPLE_SIZE).value(scope));
+		// Do not trust getExplorableParameter of the BatchAgent
+		// Needs a step to explore a parameter, also for any sampling methods only min/max is required
+		List<Batch> params = new ArrayList<>(currentExperiment.getParametersToExplore());
+		parameters = parameters == null ? params : parameters;
+		/* times 2 the number of parameters for the bootstraping (Saltelli 2002) and +2 because of sample A & B */
+		_sample = sample * (2 * parameters.size() + 2);
+
+		// Retrieve the list of parameters from the batch experiment
+		LinkedHashMap<String, List<Object>> problem = new LinkedHashMap<>();
+		for (int j = 0; j < parameters.size(); j++) {
+			List<Object> var_info = new ArrayList<>();
+
+			switch (parameters.get(j).getType().id()) {
+				case IType.INT, IType.FLOAT:
+					var_info.add(parameters.get(j).getMinValue(scope));
+					var_info.add(parameters.get(j).getMaxValue(scope));
+					break;
+				case IType.BOOL:
+					var_info.add(false);
+					var_info.add(true);
+					break;
+				case IType.DATE:
+					var_info.add(GamaDateFactory.toDate(scope, parameters.get(j).getMinValue(scope)));
+					var_info.add(GamaDateFactory.toDate(scope, parameters.get(j).getMaxValue(scope)));
+					break;
+				case IType.POINT:
+					var_info.add(GamaPointFactory.toPoint(scope, parameters.get(j).getMinValue(scope)));
+					var_info.add(GamaPointFactory.toPoint(scope, parameters.get(j).getMaxValue(scope)));
+					break;
+				case IType.STRING:
+					if (parameters.get(j).getAmongValue(scope).isEmpty()) throw GamaRuntimeException
+							.error("Trying to force a string variable in sampling without among facets", scope);
+					var_info.addAll(parameters.get(j).getAmongValue(scope));
+					break;
+				default:
+					throw GamaRuntimeException.error("Trying to add a variable of unknown type "
+							+ parameters.get(j).getType().id() + " to a parameter set", scope);
+			}
+
+			problem.put(parameters.get(j).getName(), var_info);
+		}
+
+		// Get the output variables of the sobol batch experiment
+		outputs = getLitteralOutputs();
+
+		// Build a sobol object
+		sobol_analysis = new Sobol(problem, outputs, sample, scope);
+
+		// Path to saltelli sample
+		if (hasFacet(IKeyword.PATH)) {
+			String path = Cast.asString(scope, getFacet(IKeyword.PATH).value(scope));
+			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
+
+			// Use the saltelli sequence provided...
+			if (f.exists()) {
+				// DEBUG.OUT("Sample used : " + path);
+				sobol_analysis.setSaltelliSamplingFromCsv(f);
+			}
+			// ... or build the saltelli sequence automatically and save it into a file
+			else {
+				// DEBUG.OUT("Automatic sampling used");
+				sobol_analysis.setRandomSaltelliSampling();
+				sobol_analysis.saveSaltelliSample(f);
+			}
+		} else {
+			// No path provided use random saltelli sampling and nothing is saved
+			sobol_analysis.setRandomSaltelliSampling();
+		}
+
+		// Add the points to explore to the solutions set
+		Map<String, List<Object>> sample2 = sobol_analysis.getParametersValues();
+
+		for (int i = 0; i < _sample; i++) {
+			ParametersSet origi = new ParametersSet();
+
+			for (Batch param : parameters) { origi.put(param.getName(), sample2.get(param.getName()).get(i)); }
+
+			sets.add(origi);
+		}
+
+		this.solutions = sets;
+
+		return sets;
+	}
+
+	@Override
+	public void addParametersTo(final List<Batch> exp, final IExperimentAgent.Batch agent) {
+		super.addParametersTo(exp, agent);
+	}
+
+	/**
+	 * Convert the output of Gaml so it can be read by the Sobol class
+	 *
+	 * @param res_outputs
+	 *            : output of simulation
+	 * @return A map with <br>
+	 *         - K the name of the output <br>
+	 *         - V the value of the output
+	 */
+	private Map<String, List<Object>> rebuildOutput(final IMap<ParametersSet, Map<String, List<Object>>> res_outputs) {
+		Map<String, List<Object>> rebuilt_output = new HashMap<>();
+		for (String output : outputs) { rebuilt_output.put(output, new ArrayList<>()); }
+
+		for (ParametersSet sol : solutions) {
+			for (String output : outputs) {
+				try {
+					rebuilt_output.get(output).add(res_outputs.get(sol).get(output).get(0));
+				} catch (NullPointerException e) {
+					return rebuilt_output;
+				}
+			}
+		}
+		return rebuilt_output;
+	}
+}

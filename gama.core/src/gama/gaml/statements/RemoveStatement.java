@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * RemoveStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * RemoveStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -10,28 +10,29 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.core.util.graph.IGraph;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.SymbolSerializer;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.statements.AbstractContainerStatement.ContainerValidator;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.serializer;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.constants.IKeyword;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IGraph;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractContainerStatement;
+import gama.api.gaml.statements.AbstractContainerStatement.ContainerValidator;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
 import gama.gaml.statements.RemoveStatement.RemoveSerializer;
-import gama.gaml.types.IType;
 
 /**
  * Written by drogoul Modified on 6 févr. 2010
@@ -211,10 +212,10 @@ public class RemoveStatement extends AbstractContainerStatement {
 	/**
 	 * The Class RemoveSerializer.
 	 */
-	public static class RemoveSerializer extends SymbolSerializer {
+	public static class RemoveSerializer implements ISymbolSerializer {
 
 		@Override
-		protected void serialize(final IDescription cd, final StringBuilder sb, final boolean includingBuiltIn) {
+		public void serialize(final IDescription cd, final StringBuilder sb, final boolean includingBuiltIn) {
 			final IExpression item = cd.getFacetExpr(ITEM);
 			final IExpression list = cd.getFacetExpr(TO);
 			final IExpression allFacet = cd.getFacetExpr(ALL);

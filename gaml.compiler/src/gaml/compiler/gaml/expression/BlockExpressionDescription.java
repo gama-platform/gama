@@ -1,23 +1,23 @@
 /*******************************************************************************************************
  *
- * BlockExpressionDescription.java, in gaml.compiler.gaml, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * BlockExpressionDescription.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gaml.compiler.gaml.expression;
 
-import gama.gaml.compilation.ast.ISyntacticElement;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.types.DenotedActionExpression;
-import gama.gaml.factories.DescriptionFactory;
+import gama.api.compilation.ast.ISyntacticElement;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gaml.compiler.gaml.descriptions.EcoreBasedExpressionDescription;
 
 /**
  * The Class BlockExpressionDescription.
@@ -30,7 +30,8 @@ public class BlockExpressionDescription extends EcoreBasedExpressionDescription 
 	/**
 	 * Instantiates a new block expression description.
 	 *
-	 * @param element the element
+	 * @param element
+	 *            the element
 	 */
 	public BlockExpressionDescription(final ISyntacticElement element) {
 		super(element.getElement());
@@ -39,14 +40,15 @@ public class BlockExpressionDescription extends EcoreBasedExpressionDescription 
 
 	@Override
 	public IExpression compile(final IDescription context) {
-		final SpeciesDescription sd = context.getSpeciesContext();
+		final ISpeciesDescription sd = context.getSpeciesContext();
 		// if (sd.isExperiment())
 		// sd = sd.getModelDescription();
-		final StatementDescription action = (StatementDescription) DescriptionFactory.create(element, sd, null);
+		final IStatementDescription action =
+				(IStatementDescription) GAML.getDescriptionFactory().create(element, sd, null);
 		if (action != null) {
 			sd.addChild(action);
 			action.validate();
-			//			final String name = action.getName();
+			// final String name = action.getName();
 			expression = new DenotedActionExpression(action);
 		}
 		return expression;

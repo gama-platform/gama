@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.geotools.data.mysql.MySQLDataStoreFactory;
 
-import gama.core.runtime.IScope;
+import gama.api.runtime.scope.IScope;
 import gama.extension.database.utils.sql.ISqlConnector;
 import gama.extension.database.utils.sql.SqlConnection;
 

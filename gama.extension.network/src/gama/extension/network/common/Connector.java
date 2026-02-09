@@ -17,9 +17,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.messaging.GamaMessage;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.core.util.messaging.GamaMessage;
 import gama.extension.network.skills.INetworkSkill;
 import gama.extension.serialize.binary.BinarySerialisation;
 
@@ -41,7 +41,7 @@ public abstract class Connector implements IConnector {
 	private final static int PUSH_RECEIVED_MESSAGE_THREAD_SAFE_ACTION = 8;
 
 	/** The connection parameter. */
-	// connector Configuration data
+	// connector ConfigurationPreferenceStore data
 	protected Map<String, String> connectionParameter;
 
 	/** The box follower. */

@@ -14,9 +14,10 @@ import java.util.List;
 
 import com.google.common.collect.ForwardingList;
 
-import gama.gaml.types.IContainerType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.data.objects.IList;
+import gama.api.gaml.types.IContainerType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 
 /**
  * The Class GamaListWrapper.

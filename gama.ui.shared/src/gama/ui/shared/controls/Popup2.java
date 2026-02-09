@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TypedListener;
 import org.eclipse.swt.widgets.Widget;
 
-import gama.gaml.compilation.GamlIdiomsProvider;
+import gama.api.compilation.documentation.GamlIdiomsProvider;
 import gama.ui.shared.controls.IPopupProvider.PopupText;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.utils.WorkbenchHelper;

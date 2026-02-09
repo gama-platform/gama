@@ -29,9 +29,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import gama.annotations.precompiler.doc.utils.Constants;
-import gama.annotations.precompiler.doc.utils.XMLUtils;
-
 /**
  * The Class GamaStyleGeneration.
  */

@@ -11,21 +11,22 @@ package gama.core.util.path;
 
 import org.jgrapht.GraphPath;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.ITopology;
-import gama.core.metamodel.topology.graph.GamaSpatialGraph;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.IJSon;
-import gama.core.util.file.json.IJsonValue;
-import gama.core.util.graph.IGraph;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.IMap;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.json.IJson;
+import gama.api.data.json.IJsonValue;
+import gama.api.data.objects.IGraph;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IPath;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.topology.ITopology;
+import gama.api.runtime.scope.IScope;
+import gama.core.topology.graph.GamaSpatialGraph;
 
 // If build from a list of points, creates the corresponding geometry
 // If build from a spatial graph, creates a geometry from the edges
@@ -44,7 +45,7 @@ import gama.gaml.types.Types;
 public class GamaPath<V, E, G extends IGraph<V, E>> implements Comparable, GraphPath<V, E>, IPath<V, E, G> {
 
 	@Override
-	public IJsonValue serializeToJson(final IJSon json) {
+	public IJsonValue serializeToJson(final IJson json) {
 		return json.typedObject(getGamlType(), "source", source, "target", target, "edges", json.array(edges), "weight",
 				weight).add("graph", graph).add("graphVersion", graphVersion);
 	}
@@ -234,7 +235,7 @@ public class GamaPath<V, E, G extends IGraph<V, E>> implements Comparable, Graph
 
 	@Override
 	public IList<V> getVertexList() {
-		if (graph == null) return GamaListFactory.EMPTY_LIST;
+		if (graph == null) return GamaListFactory.getEmptyList();
 		return GamaListFactory.<V> wrap(getGamlType().getKeyType(), GraphPath.super.getVertexList());
 	}
 

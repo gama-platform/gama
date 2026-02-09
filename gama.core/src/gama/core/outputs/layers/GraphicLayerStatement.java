@@ -1,34 +1,34 @@
 /*******************************************************************************************************
  *
  * GraphicLayerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IOutput;
 import gama.dev.COUNTER;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.factories.DescriptionFactory;
 import gama.gaml.statements.AspectStatement;
-import gama.gaml.types.IType;
 
 /**
  * The Class GraphicLayerStatement.
@@ -137,8 +137,8 @@ public class GraphicLayerStatement extends AbstractLayerStatement {
 	 */
 	public GraphicLayerStatement(final IDescription desc) throws GamaRuntimeException {
 		super(desc);
-		final IDescription d =
-				DescriptionFactory.create(IKeyword.ASPECT, desc, IKeyword.NAME, "graphic_aspect" + COUNTER.COUNT());
+		final IDescription d = GAML.getDescriptionFactory().create(IKeyword.ASPECT, desc, IKeyword.NAME,
+				"graphic_aspect" + COUNTER.COUNT());
 		aspect = new AspectStatement(d);
 	}
 
@@ -155,7 +155,7 @@ public class GraphicLayerStatement extends AbstractLayerStatement {
 	public AspectStatement getAspect() { return aspect; }
 
 	@Override
-	public LayerType getType(final LayeredDisplayOutput output) {
+	public LayerType getType(final IOutput output) {
 		return LayerType.GRAPHICS;
 	}
 

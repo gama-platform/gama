@@ -12,18 +12,18 @@ package gama.extension.bdi;
 
 import java.util.Objects;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.IJSon;
-import gama.core.util.file.json.IJsonValue;
-import gama.gaml.interfaces.IValue;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.api.constants.IKeyword;
+import gama.api.data.json.IJson;
+import gama.api.data.json.IJsonValue;
+import gama.api.data.objects.IValue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class Norm.
@@ -57,7 +57,7 @@ import gama.gaml.types.Types;
 public class Norm implements IValue {
 
 	@Override
-	public IJsonValue serializeToJson(final IJSon json) {
+	public IJsonValue serializeToJson(final IJson json) {
 		return json.typedObject(getGamlType(), "name", getName());
 	}
 
@@ -154,7 +154,7 @@ public class Norm implements IValue {
 	 */
 	@getter (SimpleBdiArchitecture.INSTANTANEOUS)
 	public boolean getInstantaneous(final IScope scope) {
-		return normStatement._instantaneous == null ? false : gama.gaml.operators.Cast.asBool(scope, normStatement._instantaneous.value(scope)); 
+		return normStatement._instantaneous == null ? false : gama.api.gaml.types.Cast.asBool(scope, normStatement._instantaneous.value(scope)); 
 	}
 
 	/**

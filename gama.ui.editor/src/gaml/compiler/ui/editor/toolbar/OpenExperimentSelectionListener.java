@@ -13,10 +13,10 @@ package gaml.compiler.ui.editor.toolbar;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.swt.events.SelectionEvent;
 
-import gama.core.common.interfaces.IModelsManager;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.GAMA;
+import gama.api.compilation.IModelsManager;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.Selector;
 import gaml.compiler.ui.editor.GamlEditor;

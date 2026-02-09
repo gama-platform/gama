@@ -18,7 +18,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
@@ -34,24 +33,23 @@ import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 
-import gama.core.common.GamlFileExtension;
-import gama.core.common.interfaces.IModelsManager;
-import gama.core.common.util.FileUtils;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.experiment.TestAgent;
-import gama.core.kernel.experiment.parameters.ParametersSet;
-import gama.core.kernel.model.IModel;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.IFileMetaDataProvider;
+import gama.api.GAMA;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.compilation.IModelsManager;
+import gama.api.constants.GamlFileExtension;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.utils.files.IFileMetadataProvider;
+import gama.api.utils.files.IGamlFileInfo;
+import gama.api.utils.tests.TestExperimentSummary;
+import gama.core.experiment.TestAgent;
+import gama.core.experiment.parameters.ParametersSet;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.IGamlCompilationError;
-import gama.gaml.interfaces.IGamlFileInfo;
-import gama.gaml.statements.test.TestExperimentSummary;
 import gama.ui.editor.internal.EditorActivator;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
 import gama.ui.shared.utils.WorkbenchHelper;
-import gama.workspace.metadata.GamlFileInfo;
+import gaml.compiler.gaml.resource.GamlFileInfo;
 import gaml.compiler.gaml.validation.GamlModelBuilder;
 
 /**
@@ -78,7 +76,7 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 		} else if (eObject instanceof EObject) {
 			editModelInternal(EcoreUtil.getURI((EObject) eObject));
 		} else if (eObject instanceof String) {
-			final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+			final IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
 			final IFile file = workspace.getRoot().getFile(new Path((String) eObject));
 			editModelInternal(file);
 		} else if (eObject instanceof IFile file) {
@@ -104,14 +102,14 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 	@Override
 	public List<TestExperimentSummary> runHeadlessTests(final Object object) {
 		// final StringBuilder sb = new StringBuilder();
-		final IModel model = findModel(object);
+		final IModelSpecies model = findModel(object);
 		if (model == null) return null;
 		final List<String> testExpNames = model.getDescription().getExperimentNames().stream()
 				.filter(e -> model.getExperiment(e).isTest()).toList();
 		if (testExpNames.isEmpty()) return null;
 		final List<TestExperimentSummary> result = new ArrayList<>();
 		for (final String expName : testExpNames) {
-			final IExperimentPlan exp = GAMA.addHeadlessExperiment(model, expName, new ParametersSet(), null);
+			final IExperimentSpecies exp = GAMA.addHeadlessExperiment(model, expName, new ParametersSet(), null);
 			if (exp != null) {
 				exp.setHeadless(true);
 				final TestAgent agent = (TestAgent) exp.getAgent();
@@ -128,8 +126,8 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 	 * @param object
 	 * @return
 	 */
-	private IModel findModel(final Object object) {
-		if (object instanceof IModel) return (IModel) object;
+	private IModelSpecies findModel(final Object object) {
+		if (object instanceof IModelSpecies) return (IModelSpecies) object;
 		if (object instanceof WrappedGamaFile) return findModel(((WrappedGamaFile) object).getResource());
 		switch (object) {
 			case IFile file -> {
@@ -147,8 +145,8 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 				return findModel(uri);
 			}
 			case URI uri -> {
-				final List<IGamlCompilationError> errors = new ArrayList<>();
-				final IModel model = GamlModelBuilder.getDefaultInstance().compile(uri, errors);
+				final List<GamlCompilationError> errors = new ArrayList<>();
+				final IModelSpecies model = GamlModelBuilder.getInstance().compile(uri, errors);
 				if (model == null) {
 					GAMA.getGui().getDialogFactory().error("File " + uri.lastSegment() + " cannot be built because of "
 							+ errors.size() + " compilation errors");
@@ -156,9 +154,9 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 				return model;
 			}
 			case IXtextDocument doc -> {
-				IModel model = null;
+				IModelSpecies model = null;
 				try {
-					model = doc.readOnly(state -> GamlModelBuilder.getDefaultInstance().compile(state.getURI(), null));
+					model = doc.readOnly(state -> GamlModelBuilder.getInstance().compile(state.getURI(), null));
 				} catch (final GamaRuntimeException ex) {
 					GAMA.getGui().getDialogFactory().error(
 							"Experiment cannot be instantiated because of the following error: " + ex.getMessage());
@@ -173,7 +171,7 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 
 	@Override
 	public void runModel(final Object object, final String exp) {
-		final IModel model = findModel(object);
+		final IModelSpecies model = findModel(object);
 		if (model == null) return;
 		GAMA.runGuiExperiment(exp, model);
 	}
@@ -188,7 +186,7 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 	public List<IGamlFileInfo> getAllModels() {
 		List<IGamlFileInfo> infos = new ArrayList<>();
 		try {
-			processContainer(FileUtils.ROOT, infos);
+			processContainer(GAMA.getWorkspaceManager().getRoot(), infos);
 		} catch (CoreException e) {}
 		return infos;
 	}
@@ -203,7 +201,7 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 	 */
 	static void processContainer(final IContainer container, final List<IGamlFileInfo> list) throws CoreException {
 		IResource[] members = container.members();
-		IFileMetaDataProvider provider = GAMA.getGui().getMetaDataProvider();
+		IFileMetadataProvider provider = GAMA.getMetadataProvider();
 		for (IResource member : members) {
 			if (member instanceof IContainer) {
 				processContainer((IContainer) member, list);

@@ -13,7 +13,7 @@ package gama.ui.experiment.factories;
 import org.eclipse.ui.services.AbstractServiceFactory;
 import org.eclipse.ui.services.IServiceLocator;
 
-import gama.core.common.interfaces.IRuntimeExceptionHandler;
+import gama.api.runtime.IRuntimeExceptionHandler;
 import gama.ui.experiment.commands.RuntimeExceptionHandler;
 
 /**

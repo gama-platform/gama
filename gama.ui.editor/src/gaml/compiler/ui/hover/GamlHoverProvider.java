@@ -46,7 +46,7 @@ import org.eclipse.xtext.util.Tuples;
 import com.google.common.base.Strings;
 import com.google.inject.Inject;
 
-import gama.gaml.interfaces.IGamlDescription;
+import gama.api.compilation.descriptions.IGamlDescription;
 import gama.ui.shared.utils.WebHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gaml.compiler.gaml.ActionRef;

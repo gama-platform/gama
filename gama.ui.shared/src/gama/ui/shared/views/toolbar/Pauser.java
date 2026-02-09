@@ -12,7 +12,7 @@ package gama.ui.shared.views.toolbar;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.ToolItem;
 
-import gama.core.outputs.IOutput;
+import gama.api.ui.IOutput;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView.StateListener;

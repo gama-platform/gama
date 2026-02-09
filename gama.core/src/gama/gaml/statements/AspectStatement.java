@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * AspectStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * AspectStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -11,35 +11,25 @@
 package gama.gaml.statements;
 
 import java.awt.geom.Rectangle2D;
-import java.util.HashMap;
-import java.util.Map;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.operators.Cast;
-import gama.gaml.statements.draw.DrawingAttributes;
-import gama.gaml.statements.draw.ShapeDrawingAttributes;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
 
 /**
  * The Class AspectStatement.
@@ -91,74 +81,6 @@ public class AspectStatement extends AbstractStatementSequence {
 
 	/** The is highlight aspect. */
 	boolean isHighlightAspect;
-
-	/** The Constant SHAPES. */
-	static final Map<String, Integer> SHAPES = new HashMap<>() {
-
-		{
-			put("circle", 1);
-			put("square", 2);
-			put("triangle", 3);
-			put("sphere", 4);
-			put("cube", 5);
-			put("point", 6);
-		}
-	};
-
-	/** The border color. */
-	public static final IColor borderColor = GamaColorFactory.BLACK;
-
-	/** The default aspect. */
-	public static final IExecutable DEFAULT_ASPECT = sc -> {
-		if (!sc.isGraphics()) return null;
-		IGraphicsScope scope = (IGraphicsScope) sc;
-		final IAgent agent = scope.getAgent();
-		if (agent != null && !agent.dead()) {
-			final IGraphics g = scope.getGraphics();
-			if (g == null) return null;
-			try {
-				if (agent == scope.getGui().getHighlightedAgent()) { g.beginHighlight(); }
-				final boolean hasColor = agent.getSpecies().hasVar(IKeyword.COLOR);
-				IColor color;
-				if (hasColor) {
-					final Object value = agent.getDirectVarValue(scope, IKeyword.COLOR);
-					color = Cast.asColor(scope, value);
-				} else {
-					color = GamaColorFactory.get(GamaPreferences.Displays.CORE_COLOR.getValue().getRGB());
-				}
-				final String defaultShape = GamaPreferences.Displays.CORE_SHAPE.getValue();
-				final Integer index = SHAPES.get(defaultShape);
-				IShape ag;
-
-				if (index != null) {
-					final Double defaultSize = GamaPreferences.Displays.CORE_SIZE.getValue();
-					final IPoint point = agent.getLocation();
-
-					ag = switch (SHAPES.get(defaultShape)) {
-						case 1 -> GamaGeometryType.buildCircle(defaultSize, point);
-						case 2 -> GamaGeometryType.buildSquare(defaultSize, point);
-						case 3 -> GamaGeometryType.buildTriangle(defaultSize, point);
-						case 4 -> GamaGeometryType.buildSphere(defaultSize, point);
-						case 5 -> GamaGeometryType.buildCube(defaultSize, point);
-						case 6 -> GamaGeometryType.createPoint(point);
-						default -> agent.getGeometry();
-					};
-				} else {
-					ag = agent.getGeometry();
-				}
-
-				final IShape ag2 = ag.copy(scope);
-				final DrawingAttributes attributes = new ShapeDrawingAttributes(ag2, agent, color, borderColor);
-				return g.drawShape(ag2.getInnerGeometry(), attributes);
-			} catch (final GamaRuntimeException e) {
-				// cf. Issue 1052: exceptions are not thrown, just displayed
-				e.printStackTrace();
-			} finally {
-				g.endHighlight();
-			}
-		}
-		return null;
-	};
 
 	/**
 	 * Instantiates a new aspect statement.

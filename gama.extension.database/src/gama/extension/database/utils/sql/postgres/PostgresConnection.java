@@ -27,11 +27,11 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-import gama.core.metamodel.topology.projection.IProjection;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.objects.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.topology.IProjection;
+import gama.api.runtime.scope.IScope;
 import gama.dev.DEBUG;
 import gama.extension.database.utils.sql.SqlConnection;
 import gama.extension.database.utils.sql.SqlUtils;
@@ -117,7 +117,7 @@ public class PostgresConnection extends SqlConnection {
 	protected IList<IList<Object>> resultSet2GamaList(final ResultSetMetaData rsmd, final ResultSet rs) {
 		// convert Geometry in SQL to Geometry type in GeoTool
 
-		final IList<IList<Object>> repRequest = GamaListFactory.create(gama.gaml.types.Types.LIST);
+		final IList<IList<Object>> repRequest = GamaListFactory.create(gama.api.gaml.types.Types.LIST);
 		try {
 			final List<Integer> geoColumn = getGeometryColumns(rsmd);
 			final int nbCol = rsmd.getColumnCount();

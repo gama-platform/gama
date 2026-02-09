@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaFont.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GamaFont.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,23 +11,21 @@ package gama.core.util;
 
 import java.awt.Font;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.IJSon;
-import gama.core.util.file.json.IJsonValue;
-import gama.gaml.interfaces.IValue;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.api.constants.IKeyword;
+import gama.api.data.json.IJson;
+import gama.api.data.json.IJsonValue;
+import gama.api.data.objects.IFont;
+import gama.api.data.objects.IValue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
 
 /**
  * Class GamaFont. A simple wrapper on an AWT Font
@@ -36,19 +34,7 @@ import gama.gaml.types.Types;
  * @since 22 mars 2015
  *
  */
-@vars ({ @variable (
-		name = IKeyword.NAME,
-		type = IType.STRING,
-		doc = { @doc ("Returns the name of this font") }),
-		@variable (
-				name = IKeyword.SIZE,
-				type = IType.INT,
-				doc = { @doc ("Returns the size (in points) of this font") }),
-		@variable (
-				name = IKeyword.STYLE,
-				type = IType.INT,
-				doc = { @doc ("Returns the style of this font (0 for plain, 1 for bold, 2 for italic, 3 for bold+italic)") }) })
-public class GamaFont extends Font implements IValue {
+public class GamaFont extends Font implements IFont {
 
 	/**
 	 * @param name
@@ -70,21 +56,20 @@ public class GamaFont extends Font implements IValue {
 	}
 
 	@Override
-	@getter (IKeyword.NAME)
 	public String getName() { return name; }
 
 	@Override
-	@getter (IKeyword.SIZE)
+
 	public int getSize() { return size; }
 
 	@Override
-	@getter (IKeyword.STYLE)
+
 	public int getStyle() { return style; }
 
 	/**
 	 * Method serialize()
 	 *
-	 * @see gama.gaml.interfaces.IGamlable#serializeToGaml(boolean)
+	 * @see gama.api.utils.IGamlable#serializeToGaml(boolean)
 	 */
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
@@ -102,7 +87,7 @@ public class GamaFont extends Font implements IValue {
 	/**
 	 * Method getType()
 	 *
-	 * @see gama.gaml.interfaces.ITyped#getGamlType()
+	 * @see gama.api.gaml.types.ITyped#getGamlType()
 	 */
 	@Override
 	public IType<?> getGamlType() { return Types.FONT; }
@@ -110,7 +95,7 @@ public class GamaFont extends Font implements IValue {
 	/**
 	 * Method stringValue(). Outputs to a format that is usable by Font.decode(String);
 	 *
-	 * @see gama.gaml.interfaces.IValue#stringValue(gama.core.runtime.IScope)
+	 * @see gama.api.data.objects.IValue#stringValue(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
@@ -131,7 +116,7 @@ public class GamaFont extends Font implements IValue {
 	/**
 	 * Method copy()
 	 *
-	 * @see gama.gaml.interfaces.IValue#copy(gama.core.runtime.IScope)
+	 * @see gama.api.data.objects.IValue#copy(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IValue copy(final IScope scope) throws GamaRuntimeException {
@@ -162,7 +147,7 @@ public class GamaFont extends Font implements IValue {
 					equals = "a bold and italic face of the Helvetica Neue family",
 					test = false))
 	@no_test
-	public static GamaFont font(final String name, final Integer size, final Integer style) {
+	public static IFont font(final String name, final Integer size, final Integer style) {
 		return new GamaFont(name, style, size);
 	}
 
@@ -188,7 +173,7 @@ public class GamaFont extends Font implements IValue {
 					equals = "a bold and italic face of the Helvetica Neue family with a size of 24 points",
 					test = false))
 	@no_test
-	public static GamaFont withSize(final GamaFont font, final Integer size) {
+	public static IFont withSize(final GamaFont font, final Integer size) {
 		return new GamaFont(font.name, font.style, size);
 	}
 
@@ -214,7 +199,7 @@ public class GamaFont extends Font implements IValue {
 					equals = "a plain face of the Helvetica Neue family with a size of 12 points",
 					test = false))
 	@no_test
-	public static GamaFont withStyle(final GamaFont font, final Integer style) {
+	public static IFont withStyle(final GamaFont font, final Integer style) {
 		return new GamaFont(font.name, style, font.size);
 	}
 
@@ -235,7 +220,7 @@ public class GamaFont extends Font implements IValue {
 	@doc (
 			value = "Creates a new font, by specifying its name (either a font face name like 'Lucida Grande Bold' or 'Helvetica', or a logical name like 'Dialog', 'SansSerif', 'Serif', etc.) and a size in points. No style is attached to this font")
 	@no_test
-	public static GamaFont font(final String name, final Integer size) {
+	public static IFont font(final String name, final Integer size) {
 		return new GamaFont(name, Font.PLAIN, size);
 	}
 
@@ -245,8 +230,11 @@ public class GamaFont extends Font implements IValue {
 	}
 
 	@Override
-	public IJsonValue serializeToJson(final IJSon json) {
+	public IJsonValue serializeToJson(final IJson json) {
 		return json.typedObject(getGamlType(), "name", this.name, "style", this.style, "size", this.size);
 	}
+
+	@Override
+	public Font getAwtFont() { return this; }
 
 }

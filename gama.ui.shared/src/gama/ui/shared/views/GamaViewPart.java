@@ -15,7 +15,7 @@ import static com.google.common.collect.Iterables.transform;
 
 import java.util.ArrayList;
 import java.util.List;
-
+import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -28,17 +28,17 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;
 
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IStatusMessage;
-import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.outputs.IOutput;
-import gama.core.outputs.IOutputManager;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
+import gama.api.GAMA;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IOutput;
+import gama.api.ui.IOutputManager;
+import gama.api.ui.IStatusMessage;
+import gama.core.experiment.ExperimentAgent;
 import gama.dev.DEBUG;
 import gama.ui.shared.controls.ITooltipDisplayer;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -183,7 +183,7 @@ public abstract class GamaViewPart extends ViewPart
 		final String id = site.getId() + (s_id == null ? "" : s_id);
 		IOutput out = null;
 
-		final IExperimentPlan experiment = GAMA.getExperiment();
+		final IExperimentSpecies experiment = GAMA.getExperiment();
 
 		if (experiment != null) {
 			for (final IOutputManager manager : concat(

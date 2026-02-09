@@ -3,7 +3,7 @@
  * AbstractNewModelWizard.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,7 +30,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -48,7 +47,7 @@ import org.osgi.framework.Bundle;
 
 import com.google.common.net.UrlEscapers;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 import gama.ui.navigator.view.contents.ResourceManager;
 
 /**
@@ -195,7 +194,7 @@ public abstract class AbstractNewModelWizard extends Wizard implements INewWizar
 		final boolean createDoc = getPage().createDoc();
 
 		monitor.beginTask("Creating " + fileName, 2);
-		final IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		final IWorkspaceRoot root = GAMA.getWorkspaceManager().getRoot();
 		IContainer folder = findContainer(monitor, containerName, root);
 		if (folder == null) return;
 		final IProject project = folder.getProject();

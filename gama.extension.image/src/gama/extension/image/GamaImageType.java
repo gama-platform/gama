@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamaImageType.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaImageType.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,26 +17,26 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.type;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.topology.grid.GamaSpatialMatrix;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.map.IMap;
-import gama.core.util.matrix.GamaField;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.type;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.objects.IField;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IPoint;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.GamaFileType;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
+import gama.core.topology.grid.GamaSpatialMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.extension.image.svg.GamaSVGFile;
-import gama.gaml.operators.Cast;
-import gama.gaml.species.ISpecies;
-import gama.gaml.types.GamaFileType;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IType;
 
 /**
  * Written by drogoul Modified on 1 ao�t 2010
@@ -120,18 +120,38 @@ public class GamaImageType extends GamaType<GamaImage> {
 	 */
 	public static GamaImage staticCast(final IScope scope, final Object obj, final boolean copy)
 			throws GamaRuntimeException {
-		if (obj instanceof GamaImage im) {
-			if (copy) return GamaImage.from(im, im.getAlpha(scope));
-			return im;
+		switch (obj) {
+			case GamaImage im -> {
+				if (copy) return GamaImage.from(im, im.getAlpha(scope));
+				return im;
+			}
+			case GamaIntMatrix mat -> {
+				return GamaImage.from(scope, mat);
+			}
+			case BufferedImage im -> {
+				return GamaImage.from(im, true);
+			}
+			case Image im -> {
+				return ImageHelper.copyToOptimalImage(im);
+			}
+			case GamaSVGFile g -> {
+				return GamaImage.from(g.getImage(scope, true), true, g.getOriginalPath());
+			}
+			case GamaImageFile f -> {
+				return GamaImage.from(f.getImage(scope, true), true, f.getOriginalPath());
+			}
+			case IPoint p -> {
+				return ImageOperators.image((int) p.getX(), (int) p.getY());
+			}
+			case String s -> {
+				return staticCast(scope, GamaFileType.createFile(scope, s, false, null), false);
+			}
+			case IField f -> {
+				return GamaImage.from(scope, f);
+			}
+			case null, default -> {
+			}
 		}
-		if (obj instanceof GamaIntMatrix mat) return GamaImage.from(scope, mat);
-		if (obj instanceof BufferedImage im) return GamaImage.from(im, true);
-		if (obj instanceof Image im) return ImageHelper.copyToOptimalImage(im);
-		if (obj instanceof GamaSVGFile g) return GamaImage.from(g.getImage(scope, true), true, g.getOriginalPath());
-		if (obj instanceof GamaImageFile f) return GamaImage.from(f.getImage(scope, true), true, f.getOriginalPath());
-		if (obj instanceof IPoint p) return ImageOperators.image((int) p.getX(), (int) p.getY());
-		if (obj instanceof String s) return staticCast(scope, GamaFileType.createFile(scope, s, false, null), false);
-		if (obj instanceof GamaField f) return GamaImage.from(scope, f);
 		if (obj instanceof ISpecies s && s.isGrid())
 			return GamaImage.from((GamaSpatialMatrix) s.getPopulation(scope).getTopology().getPlaces());
 		return null;
@@ -173,7 +193,8 @@ public class GamaImageType extends GamaType<GamaImage> {
 
 	@Override
 	public GamaImage deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
-		return GamaImage.from(scope, GamaIntMatrix.from(scope, Cast.asMatrix(scope, map2.get("pixels"))));
+		return GamaImage.from(scope,
+				GamaIntMatrix.from(scope, GamaMatrixFactory.createFrom(scope, map2.get("pixels"))));
 	}
 
 }

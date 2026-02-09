@@ -20,8 +20,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Item;
 
-import gama.core.common.interfaces.ItemList;
-import gama.core.util.IColor;
+import gama.api.data.objects.IColor;
+import gama.api.ui.IItemList;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -172,7 +172,7 @@ public class ParameterExpandItem extends Item {
 
 		if (getText().length() > 0) {
 			String title, other = null;
-			final var i = getText().indexOf(ItemList.SEPARATION_CODE);
+			final var i = getText().indexOf(IItemList.SEPARATION_CODE);
 			if (i != -1) {
 				title = getText().substring(0, i) + ": ";
 				other = getText().substring(i + 1);
@@ -184,9 +184,9 @@ public class ParameterExpandItem extends Item {
 			gc.setForeground(GamaColors.getTextColorForBackground(headerColor).color());
 			gc.drawString(title, drawX, y + (headerHeight - size.y) / 2, true);
 			if (other != null) {
-				final var j = other.indexOf(ItemList.ERROR_CODE);
-				final var k = other.indexOf(ItemList.INFO_CODE);
-				final var l = other.indexOf(ItemList.WARNING_CODE);
+				final var j = other.indexOf(IItemList.ERROR_CODE);
+				final var k = other.indexOf(IItemList.INFO_CODE);
+				final var l = other.indexOf(IItemList.WARNING_CODE);
 				if (j != -1) {
 					other = other.substring(j + 1);
 					gc.setForeground(IGamaColors.ERROR.color());

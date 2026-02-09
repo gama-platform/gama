@@ -23,20 +23,20 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
 
-import gama.core.metamodel.topology.grid.GridPopulation;
-import gama.core.metamodel.topology.projection.IProjection;
-import gama.core.metamodel.topology.projection.ProjectionFactory;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaColorFactory;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.species.ISpecies;
+import gama.api.kernel.topology.IProjection;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.files.SaveOptions;
+import gama.core.topology.gis.ProjectionFactory;
+import gama.core.topology.grid.GridPopulation;
 import gama.core.util.matrix.GamaField;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
 import gama.gaml.operators.Maths;
-import gama.gaml.species.ISpecies;
 import gama.gaml.statements.save.AbstractSaver;
-import gama.gaml.statements.save.SaveOptions;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class ImageSaver.

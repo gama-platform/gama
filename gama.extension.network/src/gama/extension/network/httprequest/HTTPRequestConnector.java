@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * HTTPRequestConnector.java, in gama.network, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * HTTPRequestConnector.java, in gama.extension.network, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,26 +16,26 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.Builder;
+import java.net.http.HttpResponse;
 
-import gama.core.messaging.GamaMailbox;
-import gama.core.messaging.GamaMessage;
-import gama.core.messaging.MessagingSkill;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
+import gama.api.data.factories.GamaMessageFactory;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IMessage;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
 import gama.core.util.list.GamaList;
-import gama.core.util.map.IMap;
+import gama.core.util.messaging.GamaMailbox;
+import gama.core.util.messaging.GamaMessage;
+import gama.core.util.messaging.MessagingSkill;
 import gama.extension.network.common.Connector;
 import gama.extension.network.common.GamaNetworkException;
 import gama.extension.network.common.socket.SocketService;
 import gama.extension.network.httprequest.utils.Utils;
 
-import java.net.http.HttpResponse;
-
 /**
  * The Class HTTPRequestConnector.
  */
 public class HTTPRequestConnector extends Connector {
-
 
 	/** The default host. */
 	public static final String DEFAULT_HOST = "localhost";
@@ -74,29 +74,26 @@ public class HTTPRequestConnector extends Connector {
 
 	@Override
 	protected boolean isAlive(final IAgent agent) throws GamaNetworkException {
-		
+
 		return false;
 	}
 
 	@Override
 	protected void subscribeToGroup(final IAgent agt, final String boxName) throws GamaNetworkException {
-		
 
 	}
 
 	@Override
 	protected void unsubscribeGroup(final IAgent agt, final String boxName) throws GamaNetworkException {
-		
 
 	}
 
 	@Override
 	protected void releaseConnection(final IScope scope) throws GamaNetworkException {
-		
 
 	}
 
-	@SuppressWarnings({ "unchecked" }) 	
+	@SuppressWarnings ({ "unchecked" })
 	@Override
 	public void send(final IAgent sender, final String receiver, final GamaMessage content) {
 		Object cont = content.getContents(sender.getScope());
@@ -110,34 +107,33 @@ public class HTTPRequestConnector extends Connector {
 				e.printStackTrace();
 			}
 			Builder requestBuilder = HttpRequest.newBuilder().uri(uri);
-			// Management of the content. 
+			// Management of the content.
 			// The various cases are the following ones:
 			// - [method] or [method,headers] if method ="GET" or "DELETE"
 			// - [method,body] or [method,body,headers] otherwise ("POST", "PUT")
-			
+
 			IMap<String, String> headers = null;
 			String body = "";
-			
+
 			// Element at 0 is the HTTP Method
 			String method = (String) listContent.get(0);
 
-			if("GET".equals(method) || "DELETE".equals(method)) {
+			if ("GET".equals(method) || "DELETE".equals(method)) {
 				// either no headers or headers at location 1 of the listContent
 				headers = listContent.size() > 1 ? (IMap<String, String>) listContent.get(1) : null;
-				if(listContent.size() > 2) {
-					throw GamaNetworkException.cannotSendMessage(null, ""+uri+". GET/DELETE HTTP method are expecting [method] or [method,headers] only. No body.");
-				}				
-			} else {  // "POST" / "PUT"
-				if(listContent.size() > 1) {
-					body = (String) listContent.get(1);		
-					//	body = Jsoner.serialize(listContent.get(1));					
-				} else {
-					throw GamaNetworkException.cannotSendMessage(null, ""+uri+". POST/PUT HTTP method are expecting a body.");
-				}
+				if (listContent.size() > 2) throw GamaNetworkException.cannotSendMessage(null, "" + uri
+						+ ". GET/DELETE HTTP method are expecting [method] or [method,headers] only. No body.");
+			} else { // "POST" / "PUT"
+				if (listContent.size() <= 1) throw GamaNetworkException.cannotSendMessage(null,
+						"" + uri + ". POST/PUT HTTP method are expecting a body.");
+				body = (String) listContent.get(1);
+				// body = Jsoner.serialize(listContent.get(1));
 				headers = listContent.size() > 2 ? (IMap<String, String>) listContent.get(2) : null;
 			}
-	
-			if (headers != null) { for (String key : headers.keySet()) { requestBuilder.header(key, headers.get(key)); } }
+
+			if (headers != null) {
+				for (String key : headers.keySet()) { requestBuilder.header(key, headers.get(key)); }
+			}
 
 			request = switch (method) {
 				case "GET" -> requestBuilder.GET().build();
@@ -165,14 +161,14 @@ public class HTTPRequestConnector extends Connector {
 			// Manage the response of the request
 			IMap<String, Object> responseMap = Utils.formatResponse(response);
 
-			@SuppressWarnings ("unchecked") GamaMailbox<GamaMessage> mailbox =
-					(GamaMailbox<GamaMessage>) sender.getAttribute(MessagingSkill.MAILBOX_ATTRIBUTE);
+			@SuppressWarnings ("unchecked") GamaMailbox<IMessage> mailbox =
+					(GamaMailbox<IMessage>) sender.getAttribute(MessagingSkill.MAILBOX_ATTRIBUTE);
 			if (mailbox == null) {
 				mailbox = new GamaMailbox<>();
 				sender.setAttribute(MessagingSkill.MAILBOX_ATTRIBUTE, mailbox);
 			}
 
-			GamaMessage msg = new GamaMessage(sender.getScope(), "HTTP", sender.getName(), responseMap);
+			IMessage msg = GamaMessageFactory.create(sender.getScope(), "HTTP", sender.getName(), responseMap);
 
 			mailbox.add(msg);
 

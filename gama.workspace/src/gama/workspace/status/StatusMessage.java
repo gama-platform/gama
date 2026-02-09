@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gama.workspace.status;
 
-import gama.core.common.interfaces.IStatusMessage;
-import gama.core.common.interfaces.IStatusMessage.StatusType;
-import gama.core.util.IColor;
+import gama.api.data.objects.IColor;
+import gama.api.ui.IStatusMessage;
+import gama.api.ui.IStatusMessage.StatusType;
 
 /**
  * The Class StatusMessage.

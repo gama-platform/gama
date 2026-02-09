@@ -3,7 +3,7 @@
  * GamlLabelProvider.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,11 +24,11 @@ import org.eclipse.xtext.ui.label.DefaultEObjectLabelProvider;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.gaml.compilation.ast.ISyntacticElement;
-import gama.gaml.interfaces.IGamlLabelProvider;
+import gama.api.compilation.ast.IGamlLabelProvider;
+import gama.api.compilation.ast.ISyntacticElement;
+import gama.api.constants.IKeyword;
+import gama.api.gaml.types.Types;
 import gama.gaml.operators.Strings;
-import gama.gaml.types.Types;
 import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.Facet;
@@ -345,7 +345,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	}
 
 	/**
-	 * @see gama.gaml.interfaces.IGamlLabelProvider#getText(gama.gaml.compilation.ast.ISyntacticElement)
+	 * @see gama.api.compilation.ast.IGamlLabelProvider#getText(gama.api.compilation.ast.ISyntacticElement)
 	 */
 	@Override
 	public String getText(final ISyntacticElement element) {

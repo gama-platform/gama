@@ -3,7 +3,7 @@
  * InspectDisplayOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,39 +15,36 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.StringUtils;
-import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.simulation.SimulationPopulation;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.agent.IMacroAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.GAMA;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.constants.IKeyword;
+import gama.api.data.objects.IContainer;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IMacroAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IGui;
+import gama.api.utils.StringUtils;
 import gama.dev.COUNTER;
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.SymbolTracer;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.factories.DescriptionFactory;
-import gama.gaml.species.ISpecies;
-import gama.gaml.statements.IStatement;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class AbstractInspectOutput.
@@ -168,7 +165,7 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	 */
 	public static InspectDisplayOutput inspect(final IAgent a, final IExpression attributes) {
 
-		IDescription desc = DescriptionFactory.create(IKeyword.INSPECT, IKeyword.NAME,
+		IDescription desc = GAML.getDescriptionFactory().create(IKeyword.INSPECT, IKeyword.NAME,
 				StringUtils.toGamlString("Inspect: "), IKeyword.TYPE, types.get(INSPECT_AGENT)).validate();
 		desc.setFacet(IKeyword.VALUE, GAML.getExpressionFactory().createConst(a, a.getGamlType()));
 		desc.validate();
@@ -188,9 +185,9 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	 */
 	public static InspectDisplayOutput inspect(final IExperimentAgent a, final IExpression attributes) {
 		// Opens directly an inspector
-		IDescription desc = DescriptionFactory.create(IKeyword.INSPECT, IKeyword.NAME,
+		IDescription desc = GAML.getDescriptionFactory().create(IKeyword.INSPECT, IKeyword.NAME,
 				StringUtils.toGamlString("Inspect: "), IKeyword.TYPE, types.get(INSPECT_TABLE)).validate();
-		final SimulationPopulation sp = a.getSimulationPopulation();
+		final IPopulation sp = a.getSimulationPopulation();
 		desc.setFacet(IKeyword.VALUE, GAML.getExpressionFactory().createConst(sp, sp.getGamlType()));
 		if (attributes != null) { desc.setFacet(IKeyword.ATTRIBUTES, attributes); }
 		InspectDisplayOutput result = new InspectDisplayOutput(desc);
@@ -210,7 +207,7 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	static public InspectDisplayOutput browse(final IMacroAgent rootAgent, final ISpecies species,
 			final IExpression attributes) {
 		// Opens a table inspector on the agents of this species
-		IDescription desc = DescriptionFactory
+		IDescription desc = GAML.getDescriptionFactory()
 				.create(IKeyword.INSPECT, GAML.getExperimentContext(rootAgent), IKeyword.NAME,
 						StringUtils.toGamlString("Browse(" + COUNTER.COUNT() + ")"), IKeyword.VALUE,
 						species == null ? "nil" : species.getName(), IKeyword.TYPE, types.get(INSPECT_TABLE))
@@ -232,9 +229,11 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	static public InspectDisplayOutput browse(final IMacroAgent agent, final Collection<? extends IAgent> agents,
 			final IExpression attributes) {
 		// Opens a table inspector on the agents of this container
-		IDescription desc = DescriptionFactory.create(IKeyword.INSPECT, GAML.getExperimentContext(agent), IKeyword.NAME,
-				StringUtils.toGamlString("Browse(" + COUNTER.COUNT() + ")"), IKeyword.VALUE,
-				StringUtils.toGaml(agents, false), IKeyword.TYPE, types.get(INSPECT_TABLE)).validate();
+		IDescription desc = GAML.getDescriptionFactory()
+				.create(IKeyword.INSPECT, GAML.getExperimentContext(agent), IKeyword.NAME,
+						StringUtils.toGamlString("Browse(" + COUNTER.COUNT() + ")"), IKeyword.VALUE,
+						StringUtils.toGaml(agents, false), IKeyword.TYPE, types.get(INSPECT_TABLE))
+				.validate();
 		if (attributes != null) { desc.setFacet(IKeyword.ATTRIBUTES, attributes); }
 		InspectDisplayOutput result = new InspectDisplayOutput(desc);
 		result.lastValue = agents;
@@ -253,8 +252,10 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	static public InspectDisplayOutput browse(final IMacroAgent agent, final IExpression agents,
 			final IExpression attributes) {
 		// Opens a table inspector on the agents of this container
-		IDescription desc = DescriptionFactory.create(IKeyword.INSPECT, GAML.getExperimentContext(agent), IKeyword.NAME,
-				StringUtils.toGamlString("Browse(" + COUNTER.COUNT() + ")"), IKeyword.TYPE, types.get(INSPECT_TABLE))
+		IDescription desc = GAML.getDescriptionFactory()
+				.create(IKeyword.INSPECT, GAML.getExperimentContext(agent), IKeyword.NAME,
+						StringUtils.toGamlString("Browse(" + COUNTER.COUNT() + ")"), IKeyword.TYPE,
+						types.get(INSPECT_TABLE))
 				.validate();
 		desc.setFacet(IKeyword.VALUE, agents);
 		if (attributes != null) { desc.setFacet(IKeyword.ATTRIBUTES, attributes); }
@@ -357,13 +358,13 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	 *
 	 * @return the species description
 	 */
-	public SpeciesDescription getSpeciesDescription() {
+	public ISpeciesDescription getSpeciesDescription() {
 		final IExpression valueExpr = getValue();
 		if (valueExpr == null) return null;
 		final IType theType = valueExpr.getGamlType().getContentType();
 		if (theType == Types.get(IKeyword.MODEL)) return getScope().getModel().getDescription();
-		final SpeciesDescription sd = theType.getSpecies();
-		if (sd instanceof ModelDescription) return sd;
+		final ISpeciesDescription sd = theType.getSpecies();
+		if (sd instanceof IModelDescription) return sd;
 		if (sd == null) return Types.AGENT.getDenotedSpecies();
 		String speciesName = sd.getName();
 		if (speciesName == null) return Types.AGENT.getDenotedSpecies();
@@ -398,11 +399,6 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 			GAMA.getGui().setSelectedAgent((IAgent) value.value(scope));
 		} else if (theType.isContainer()) { ValuedDisplayOutputFactory.browse(scope.getRoot(), value, attributes); }
 		return value.value(scope);
-	}
-
-	@Override
-	public String getTrace(final IScope scope) {
-		return new SymbolTracer().trace(scope, this);
 	}
 
 }

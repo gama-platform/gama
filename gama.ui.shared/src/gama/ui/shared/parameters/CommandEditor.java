@@ -13,9 +13,9 @@ package gama.ui.shared.parameters;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IColor;
+import gama.api.data.objects.IColor;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
 import gama.gaml.statements.UserCommandStatement;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.EditorListener;
@@ -46,8 +46,8 @@ public class CommandEditor extends AbstractStatementEditor<UserCommandStatement>
 	protected EditorListener.Command getListener() { return (Command) super.getListener(); }
 
 	@Override
-	protected FlatButton createCustomParameterControl(final Composite composite) throws GamaRuntimeException {
-		textBox = FlatButton.button(composite, null, "");
+	protected FlatButton createCustomParameterControl(final Composite composite1) throws GamaRuntimeException {
+		textBox = FlatButton.button(composite1, null, "");
 		textBox.setText(" " + getStatement().getName());
 		textBox.setSelectionListener(getListener());
 		return textBox;

@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.extension.physics.native_version;
 
-import static gama.gaml.types.GamaGeometryType.buildBox;
 import static java.lang.Math.max;
 
 import java.util.logging.Level;
@@ -24,15 +23,17 @@ import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector3f;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaPair;
+import gama.api.data.factories.GamaPairFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.data.objects.IPair;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
 import gama.extension.physics.common.AbstractBodyWrapper;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IShapeConverter;
-import gama.gaml.types.Types;
 
 /**
  * The Class NativeBulletBodyWrapper.
@@ -192,9 +193,9 @@ public class NativeBulletBodyWrapper
 		agent.setLocation(
 				GamaPointFactory.create(vectorTransfer.x, vectorTransfer.y, vectorTransfer.z - aabbTranslation.z));
 		body.getPhysicsRotation(quatTransfer);
-		@SuppressWarnings ("unchecked") var rot = (GamaPair<Double, IPoint>) agent.getAttribute(ROTATION);
+		@SuppressWarnings ("unchecked") var rot = (IPair<Double, IPoint>) agent.getAttribute(ROTATION);
 		if (rot == null) {
-			rot = new GamaPair<>(0d, GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT);
+			rot = GamaPairFactory.createWith(0d, GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT);
 			agent.setAttribute(ROTATION, rot);
 		}
 		float qx = quatTransfer.getX();
@@ -204,8 +205,8 @@ public class NativeBulletBodyWrapper
 		if (mag > EPS) {
 			mag = Math.sqrt(mag);
 			double invMag = 1.0 / mag;
-			rot.value.setLocation(qx * invMag, qy * invMag, qz * invMag);
-			rot.key = Math.toDegrees(2.0 * Math.atan2(mag, quatTransfer.getW()));
+			rot.getValue().setLocation(qx * invMag, qy * invMag, qz * invMag);
+			rot.setKey(Math.toDegrees(2.0 * Math.atan2(mag, quatTransfer.getW())));
 		}
 	}
 
@@ -217,7 +218,7 @@ public class NativeBulletBodyWrapper
 		body.boundingBox(bb);
 		bb.getMax(max);
 		bb.getMin(min);
-		return buildBox(max.x - min.x, max.y - min.y, max.z - min.z,
+		return GamaShapeFactory.buildBox(max.x - min.x, max.y - min.y, max.z - min.z,
 				GamaPointFactory.create(min.x + (max.x - min.x) / 2, min.y + (max.y - min.y) / 2,
 						min.z + (max.z - min.z) / 2 + visualTranslation.z));
 

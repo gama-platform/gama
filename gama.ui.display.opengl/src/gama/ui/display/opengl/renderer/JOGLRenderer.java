@@ -19,29 +19,26 @@ import org.locationtech.jts.geom.Geometry;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 
-import gama.core.common.interfaces.IAsset;
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.interfaces.ILayer;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
+import gama.api.GAMA;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.data.objects.IColor;
+import gama.api.data.objects.IField;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.runtime.GeneralSynchronizer;
+import gama.api.ui.displays.IAsset;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.ILayer;
+import gama.api.utils.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
-import gama.core.outputs.layers.charts.ChartOutput;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.concurrent.GeneralSynchronizer;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
 import gama.core.util.file.GamaGeometryFile;
-import gama.core.util.matrix.IField;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.AssetDrawingAttributes;
 import gama.gaml.statements.draw.DrawingAttributes;
-import gama.gaml.statements.draw.MeshDrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
-import gama.gaml.statements.draw.TextDrawingAttributes;
-import gama.gaml.types.GamaGeometryType;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.helpers.AbstractRendererHelper.Pass;
 import gama.ui.display.opengl.renderer.helpers.CameraHelper;
@@ -194,7 +191,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	/**
 	 * Method endDrawingLayers()
 	 *
-	 * @see gama.core.common.interfaces.IGraphics#endDrawingLayers()
+	 * @see gama.api.ui.displays.IGraphics#endDrawingLayers()
 	 */
 	@Override
 	public void endDrawingLayers() {
@@ -270,7 +267,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 */
 
 	@Override
-	public Rectangle2D drawAsset(final IAsset file, final DrawingAttributes attributes) {
+	public Rectangle2D drawAsset(final IAsset file, final IDrawingAttributes attributes) {
 		if (file == null) return null;
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
@@ -286,8 +283,17 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		return rect;
 	}
 
+	/**
+	 * Draw field.
+	 *
+	 * @param fieldValues
+	 *            the field values
+	 * @param attributes
+	 *            the attributes
+	 * @return the rectangle 2 D
+	 */
 	@Override
-	public Rectangle2D drawField(final IField fieldValues, final MeshDrawingAttributes attributes) {
+	public Rectangle2D drawField(final IField fieldValues, final IDrawingAttributes attributes) {
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
 		final List<?> textures = attributes.getTextures();
@@ -306,7 +312,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 * openGl.
 	 */
 	@Override
-	public Rectangle2D drawShape(final Geometry shape, final DrawingAttributes attributes) {
+	public Rectangle2D drawShape(final Geometry shape, final IDrawingAttributes attributes) {
 		if (shape == null) return null;
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
@@ -315,8 +321,17 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		return rect;
 	}
 
+	/**
+	 * Draw image.
+	 *
+	 * @param img
+	 *            the img
+	 * @param attributes
+	 *            the attributes
+	 * @return the rectangle 2 D
+	 */
 	@Override
-	public Rectangle2D drawImage(final BufferedImage img, final DrawingAttributes attributes) {
+	public Rectangle2D drawImage(final BufferedImage img, final IDrawingAttributes attributes) {
 		if (img == null) return null;
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
@@ -330,16 +345,10 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	}
 
 	@Override
-	public Rectangle2D drawChart(final ChartOutput chart) {
+	public Rectangle2D drawChart(final BufferedImage chart) {
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
-		int x = getLayerWidth();
-		int y = getLayerHeight();
-		// y = x = Math.min(x, y);
-		y = x = (int) (Math.min(x, y) * GamaPreferences.Displays.CHART_QUALITY.getValue());
-		// TODO See if it not possible to generate directly a texture renderer instead
-		final BufferedImage im = chart.getImage(x, y, getSurface().getData().isAntialias());
-		scene.addImage(im, new AssetDrawingAttributes(null, true));
+		scene.addImage(chart, new AssetDrawingAttributes(null, true));
 		return rect;
 	}
 
@@ -349,7 +358,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 * @param attributes
 	 *            the attributes
 	 */
-	protected void tryToHighlight(final DrawingAttributes attributes) {
+	protected void tryToHighlight(final IDrawingAttributes attributes) {
 		if (highlight) { attributes.setHighlighted(data.getHighlightColor()); }
 	}
 
@@ -375,7 +384,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 				stepX = i + 0.5;
 				stepY = j + 0.5;
 				final Geometry g =
-						GamaGeometryType
+						GamaShapeFactory
 								.buildRectangle(cellWidth, cellHeight,
 										GamaPointFactory.create(stepX * cellWidth, stepY * cellHeight))
 								.getInnerGeometry();
@@ -384,8 +393,17 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		}
 	}
 
+	/**
+	 * Draw string.
+	 *
+	 * @param string
+	 *            the string
+	 * @param attributes
+	 *            the attributes
+	 * @return the rectangle 2 D
+	 */
 	@Override
-	public Rectangle2D drawString(final String string, final TextDrawingAttributes attributes) {
+	public Rectangle2D drawString(final String string, final IDrawingAttributes attributes) {
 		if (string == null || string.isEmpty()) return null;
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;

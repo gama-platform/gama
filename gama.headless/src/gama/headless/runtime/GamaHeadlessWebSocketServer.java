@@ -26,15 +26,14 @@ import javax.net.ssl.TrustManagerFactory;
 import org.java_websocket.WebSocket;
 import org.java_websocket.server.SSLParametersWebSocketServerFactory;
 
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.runtime.server.CommandResponse;
-import gama.core.runtime.server.GamaWebSocketServer;
-import gama.core.runtime.server.IGamaServer;
-import gama.core.runtime.server.IServerConfiguration;
-import gama.core.runtime.server.ISocketCommand;
-import gama.core.runtime.server.ISocketCommand.CommandException;
-import gama.core.runtime.server.MessageType;
-import gama.core.util.map.IMap;
+import gama.api.exceptions.CommandException;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.utils.server.CommandResponse;
+import gama.api.utils.server.GamaWebSocketServer;
+import gama.api.utils.server.IGamaServer;
+import gama.api.utils.server.IServerConfiguration;
+import gama.api.utils.server.ISocketCommand;
+import gama.api.utils.server.MessageType;
 
 /**
  * The Class GamaWebSocketServer.
@@ -54,7 +53,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	private final ThreadPoolExecutor executor;
 
 	/** The experiments. Only used in the headless version */
-	private final Map<String, Map<String, IExperimentPlan>> launchedExperiments = new ConcurrentHashMap<>();
+	private final Map<String, Map<String, IExperimentSpecies>> launchedExperiments = new ConcurrentHashMap<>();
 
 	/**
 	 * Start for headless with SSL security on
@@ -212,7 +211,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 		super.onClose(socket, code, reason, remote);
 		String socketId = getSocketId(socket);
 		if (getLaunchedExperiments().get(socketId) != null) {
-			for (IExperimentPlan e : getLaunchedExperiments().get(socketId).values()) {
+			for (IExperimentSpecies e : getLaunchedExperiments().get(socketId).values()) {
 				e.getController().processPause(true);
 				e.getController().close();
 				e.getController().dispose();
@@ -228,7 +227,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @return the all experiments
 	 * @date 15 oct. 2023
 	 */
-	public Map<String, Map<String, IExperimentPlan>> getAllExperiments() { return launchedExperiments; }
+	public Map<String, Map<String, IExperimentSpecies>> getAllExperiments() { return launchedExperiments; }
 
 	/**
 	 * Gets the experiments of.
@@ -239,7 +238,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @return the experiments of
 	 * @date 15 oct. 2023
 	 */
-	public Map<String, IExperimentPlan> getExperimentsOf(final String socket) {
+	public Map<String, IExperimentSpecies> getExperimentsOf(final String socket) {
 		return launchedExperiments.get(socket);
 	}
 
@@ -255,7 +254,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @date 15 oct. 2023
 	 */
 	@Override
-	public IExperimentPlan getExperiment(final String socket, final String expid) {
+	public IExperimentSpecies getExperiment(final String socket, final String expid) {
 		if (launchedExperiments.get(socket) == null) return null;
 		return launchedExperiments.get(socket).get(expid);
 	}
@@ -284,7 +283,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @return the launched experiments
 	 * @date 2 nov. 2023
 	 */
-	public Map<String, Map<String, IExperimentPlan>> getLaunchedExperiments() { return launchedExperiments; }
+	public Map<String, Map<String, IExperimentSpecies>> getLaunchedExperiments() { return launchedExperiments; }
 
 	/**
 	 * Adds the experiment.
@@ -297,7 +296,7 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @date 3 nov. 2023
 	 */
 	@Override
-	public void addExperiment(final String socketId, final String experimentId, final IExperimentPlan plan) {
+	public void addExperiment(final String socketId, final String experimentId, final IExperimentSpecies plan) {
 		launchedExperiments.putIfAbsent(socketId, new ConcurrentHashMap<>());
 		launchedExperiments.get(socketId).put(experimentId, plan);
 	}
@@ -328,14 +327,14 @@ public class GamaHeadlessWebSocketServer extends GamaWebSocketServer {
 	 * @date 5 déc. 2023
 	 */
 	@Override
-	public IExperimentPlan retrieveExperimentPlan(final WebSocket socket, final IMap<String, Object> map)
+	public IExperimentSpecies retrieveExperimentPlan(final WebSocket socket, final Map<String, Object> map)
 			throws CommandException {
 		final String exp_id = map.get(ISocketCommand.EXP_ID) != null ? map.get(ISocketCommand.EXP_ID).toString() : "";
 		final String socket_id = map.get(ISocketCommand.SOCKET_ID) != null
 				? map.get(ISocketCommand.SOCKET_ID).toString() : "" + socket.hashCode();
 		if ("".equals(exp_id)) throw new CommandException(new CommandResponse(MessageType.MalformedRequest,
 				"For " + map.get("type") + ", mandatory parameter is: " + ISocketCommand.EXP_ID, map, false));
-		IExperimentPlan plan = getExperiment(socket_id, exp_id);
+		IExperimentSpecies plan = getExperiment(socket_id, exp_id);
 		if (plan == null || plan.getAgent() == null || plan.getAgent().dead())
 			throw new CommandException(new CommandResponse(MessageType.UnableToExecuteRequest,
 					"Unable to find the experiment or simulation", map, false));

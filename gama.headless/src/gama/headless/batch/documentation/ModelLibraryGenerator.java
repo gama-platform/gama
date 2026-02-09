@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ModelLibraryGenerator.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ModelLibraryGenerator.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,7 +12,6 @@ package gama.headless.batch.documentation;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -37,7 +36,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import gama.headless.common.Globals;
-import gama.headless.core.GamaHeadlessException;
 import gama.headless.runtime.HeadlessApplication;
 
 /**
@@ -51,7 +49,6 @@ public class ModelLibraryGenerator {
 
 	/** The source folder. */
 	static String sourceFolder = "F:/Gama/GamaSource/";
-
 
 	/** The input path to model library. */
 	static String[] inputPathToModelLibrary =
@@ -68,7 +65,6 @@ public class ModelLibraryGenerator {
 
 	/** The input model screenshot. */
 	static String inputModelScreenshot = wikiFolder + "modelScreenshot.xml";
-
 
 	/** The list no screenshot. */
 	static String[] listNoScreenshot =
@@ -102,7 +98,6 @@ public class ModelLibraryGenerator {
 																// if
 																// all
 
-
 	/**
 	 * Update path.
 	 */
@@ -127,16 +122,13 @@ public class ModelLibraryGenerator {
 	 * @throws InterruptedException
 	 */
 	public static void start(final HeadlessApplication headlessApplication, final List<String> args)
-			throws IOException, TransformerException, InterruptedException {
+			throws IOException, InterruptedException {
 
 		/////////////////////////////////////////////////////////////////////////////////////////////////////////
 		// parse all the models of the model library, in order to build "input"
 		///////////////////////////////////////////////////////////////////////////////////////////////////////// files
-		///////////////////////////////////////////////////////////////////////////////////////////////////////// for
-		///////////////////////////////////////////////////////////////////////////////////////////////////////// a
-		///////////////////////////////////////////////////////////////////////////////////////////////////////// headless
-		///////////////////////////////////////////////////////////////////////////////////////////////////////// execution.
-		/////////////////////////////////////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////////////////////////////// for a headless
+		///////////////////////////////////////////////////////////////////////////////////////////////////////// execution. /////////////////////////////////////////////////////////////////////////////////////////////////////////
 		wikiFolder = args.get(args.size() - 2);
 		sourceFolder = args.get(args.size() - 3);
 		Globals.OUTPUT_PATH = args.get(args.size() - 1);
@@ -177,8 +169,7 @@ public class ModelLibraryGenerator {
 
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		// read all the metadatas of the model files, and extract only the GAML
-		/////////////////////////////////////////////////////////////////////////////////////////////////////// keywords
-		/////////////////////////////////////////////////////////////////////////////////////////////////////// "important".
+		/////////////////////////////////////////////////////////////////////////////////////////////////////// keywords "important".
 		// Store those data in the map mainKeywordsMap.
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -189,16 +180,11 @@ public class ModelLibraryGenerator {
 		///////////////////////////////////////////////////////////////////////////////////////////////////////
 		// browse a second time all the models, build the md file, including the
 		/////////////////////////////////////////////////////////////////////////////////////////////////////// screenshots
-		/////////////////////////////////////////////////////////////////////////////////////////////////////// computed
-		/////////////////////////////////////////////////////////////////////////////////////////////////////// from
-		/////////////////////////////////////////////////////////////////////////////////////////////////////// the
+		/////////////////////////////////////////////////////////////////////////////////////////////////////// computed from the
 		// headless execution, informations in the header of each model, and
 		/////////////////////////////////////////////////////////////////////////////////////////////////////// gaml
-		/////////////////////////////////////////////////////////////////////////////////////////////////////// keywords
-		/////////////////////////////////////////////////////////////////////////////////////////////////////// read
-		/////////////////////////////////////////////////////////////////////////////////////////////////////// from
-		/////////////////////////////////////////////////////////////////////////////////////////////////////// mainKeywordsMap.
-		///////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////// keywords read from
+		/////////////////////////////////////////////////////////////////////////////////////////////////////// mainKeywordsMap. ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 		System.out.println("----- Start to write md content -----");
 		writeMdContent(gamlFiles);
@@ -234,8 +220,8 @@ public class ModelLibraryGenerator {
 				if (gamlFilePath.contains(sourceFolder + folderWithoutScreenshot)) {
 					gamlFilesForScreenshot.remove(gamlFile);
 				}
-				if (   "include".compareTo(gamlFilePath.split("/")[gamlFilePath.split("/").length - 2]) == 0
-					|| "includes".compareTo(gamlFilePath.split("/")[gamlFilePath.split("/").length - 2]) == 0) {
+				if ("include".compareTo(gamlFilePath.split("/")[gamlFilePath.split("/").length - 2]) == 0
+						|| "includes".compareTo(gamlFilePath.split("/")[gamlFilePath.split("/").length - 2]) == 0) {
 					gamlFilesForScreenshot.remove(gamlFile);
 				}
 			}
@@ -244,7 +230,7 @@ public class ModelLibraryGenerator {
 		try {
 			// build the xml
 			headlessApplication.buildXMLForModelLibrary(gamlFilesForScreenshot, inputFileForHeadlessExecution);
-		} catch (ParserConfigurationException | TransformerException | IOException | GamaHeadlessException e1) {
+		} catch (ParserConfigurationException | TransformerException | IOException e1) {
 
 			e1.printStackTrace();
 		}
@@ -259,15 +245,13 @@ public class ModelLibraryGenerator {
 	 */
 	public static boolean deleteDirectoryAndItsContent(final File file) {
 
-		File[] flist = null;
-
 		if (file == null) return false;
 
 		if (file.isFile()) return file.delete();
 
 		if (!file.isDirectory()) return false;
 
-		flist = file.listFiles();
+		File[] flist = file.listFiles();
 		if (flist != null && flist.length > 0) {
 			for (final File f : flist) { if (!deleteDirectoryAndItsContent(f)) return false; }
 		}
@@ -624,16 +608,14 @@ public class ModelLibraryGenerator {
 			// extract the header properties
 			final MetadataStructure metaStruct = new MetadataStructure(header);
 
-			if ( ! "".equals(metaStruct.getName())) {
+			if (!"".equals(metaStruct.getName())) {
 				// search if there are some images linked
 				final ArrayList<File> listScreenshot = new ArrayList<>();
 				Utils.getFilesFromFolder(
 						gamlFile.getAbsolutePath().substring(0, gamlFile.getAbsolutePath().length() - 4),
 						listScreenshot);
 
-				// prepare the output file
-				String fileName = "";
-				fileName = gamlFile.getAbsolutePath().replace("\\", "/");
+				String fileName = gamlFile.getAbsolutePath().replace("\\", "/");
 				boolean isAdditionnalPlugin = false;
 				for (final String path : inputPathToModelLibrary) {
 					if (fileName.contains(path)) {
@@ -905,8 +887,7 @@ public class ModelLibraryGenerator {
 	 */
 	private static String getModelCode(final File gamlFile) throws IOException {
 		// write the code
-		String result = "";
-		result = "```\n";
+		StringBuilder result = new StringBuilder("```\n");
 		try (final InputStream fis = Files.newInputStream(gamlFile.toPath());
 				final BufferedReader br = new BufferedReader(new InputStreamReader(fis));) {
 			String line = null;
@@ -914,19 +895,19 @@ public class ModelLibraryGenerator {
 			while ((line = br.readLine()) != null) {
 				if (!inHeader) {
 					// we are in the code
-					result += line + "\n";
+					result.append(line).append("\n");
 				} else if (line.startsWith("*/") || line.startsWith(" */")) {
 					// we are out of the header
 					inHeader = false;
 				} else if (line.startsWith("model")) {
 					// we are in the code
 					inHeader = false;
-					result += line + "\n";
+					result.append(line).append("\n");
 				}
 			}
-			result += "```\n";
+			result.append("```\n");
 		}
-		return result;
+		return result.toString();
 	}
 
 	/**

@@ -14,19 +14,19 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.core.common.util.StringUtils;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.graph.GamaSpatialGraph;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.core.util.graph.GraphEvent;
-import gama.core.util.graph.GraphEvent.GraphEventType;
-import gama.core.util.graph._Edge;
-import gama.core.util.map.IMap;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
+import gama.api.utils.collections.GraphEvent;
+import gama.api.utils.collections._Edge;
+import gama.api.utils.collections.GraphEvent.GraphEventType;
+import gama.core.topology.graph.GamaSpatialGraph;
 
 /**
  * The Class DrivingGraph.

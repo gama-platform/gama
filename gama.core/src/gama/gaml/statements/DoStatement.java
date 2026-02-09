@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * DoStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * DoStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -11,31 +11,34 @@ package gama.gaml.statements;
 
 import java.util.Set;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IExecutionResult;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.descriptions.DoDescription;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.descriptions.StatementSerializer;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.factories.DescriptionFactory;
-import gama.gaml.operators.Strings;
-import gama.gaml.species.ISpecies;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.annotations.serializer;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.serialization.StatementSerializer;
+import gama.api.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.Arguments;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IExecutionResult;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
 import gama.gaml.statements.DoStatement.DoSerializer;
-import gama.gaml.types.IType;
 
 /**
  * Written by drogoul Modified on 7 févr. 2010
@@ -166,7 +169,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 				final boolean includingBuiltIn) {
 			final String name = arg.getName();
 			final IExpressionDescription value = arg.getFacet(VALUE);
-			if (Strings.isGamaNumber(name)) {
+			if (StringUtils.isGamaNumber(name)) {
 				sb.append(value.serializeToGaml(includingBuiltIn));
 			} else {
 				sb.append(name).append(":").append(value.serializeToGaml(includingBuiltIn));
@@ -175,7 +178,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 		}
 
 		@Override
-		protected String serializeFacetValue(final IDescription s, final String key, final boolean includingBuiltIn) {
+		public String serializeFacetValue(final IDescription s, final String key, final boolean includingBuiltIn) {
 			if (!DO_FACETS.contains(key)) return null;
 			return super.serializeFacetValue(s, key, includingBuiltIn);
 		}
@@ -183,7 +186,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	}
 
 	/** The args. */
-	IArguments args;
+	Arguments args;
 
 	/** The target species. */
 	final String targetSpecies;
@@ -192,7 +195,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	final IExpression function, returns;
 
 	/** The Constant DO_FACETS. */
-	public static final Set<String> DO_FACETS = DescriptionFactory.getAllowedFacetsFor(IKeyword.DO, IKeyword.INVOKE);
+	public static final Set<String> DO_FACETS = ArtefactProtoRegistry.getAllowedFacetsFor(IKeyword.DO, IKeyword.INVOKE);
 
 	/**
 	 * Instantiates a new do statement.
@@ -202,8 +205,8 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	 */
 	public DoStatement(final IDescription desc) {
 		super(desc);
-		if (((DoDescription) desc).isSuperInvocation()) {
-			final SpeciesDescription s = desc.getSpeciesContext().getParent();
+		if (((IStatementDescription) desc).isSuperInvocation()) {
+			final ISpeciesDescription s = desc.getSpeciesContext().getParent();
 			targetSpecies = s.getName();
 		} else {
 			targetSpecies = null;
@@ -219,7 +222,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	}
 
 	@Override
-	public void setFormalArgs(final IArguments args) { this.args = args; }
+	public void setFormalArgs(final Arguments args) { this.args = args; }
 
 	/**
 	 * Gets the runtime args.
@@ -265,7 +268,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	}
 
 	@Override
-	public void setRuntimeArgs(final IScope scope, final IArguments args) {}
+	public void setRuntimeArgs(final IScope scope, final Arguments args) {}
 
 	@Override
 	public void dispose() {

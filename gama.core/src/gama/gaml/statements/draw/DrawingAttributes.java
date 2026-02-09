@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * DrawingAttributes.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * DrawingAttributes.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -14,89 +14,52 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IColor;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.gaml.constants.GamlCoreConstants;
+import gama.api.kernel.agent.IAgent;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.IDrawingAttributes.Flag;
+import gama.api.utils.IImageProvider;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.gaml.constants.GamlCoreConstants;
 
 /**
  * The Class DrawingAttributes.
  */
-public class DrawingAttributes {
+public class DrawingAttributes implements IDrawingAttributes {
 
 	static {
 		DEBUG.OFF();
 	}
 
-	/**
-	 * The Enum Flag.
-	 */
-	public enum Flag {
-		/** The Empty. */
-		Empty,
-		/** The Selected. */
-		Selected,
-		/** The Synthetic. */
-		Synthetic,
-		/** The Lighted. */
-		Lighted,
-		/** The Use cache. */
-		UseCache,
-		/** The Grayscaled. */
-		Grayscaled,
-		/** The Triangulated. */
-		Triangulated,
-		/** The With text. */
-		WithText,
-		/** The Perspective. */
-		Perspective
-	}
-
-	/**
-	 * The Enum DrawerType.
-	 */
-	public enum DrawerType {
-		/** The geometry. */
-		GEOMETRY,
-		/** The string. */
-		STRING,
-		/** The mesh. */
-		MESH,
-		/** The resource. */
-		RESOURCE
-	}
+	/** The Constant TEXTURED_COLOR. */
+	protected IColor TEXTURED_COLOR = GamaColorFactory.WHITE;
+	/** The Constant SELECTED_COLOR. */
+	protected IColor SELECTED_COLOR = GamaColorFactory.RED;
 
 	/** The index. */
 	private static int INDEX = 0;
 
-	/** The Constant TEXTURED_COLOR. */
-	public static final IColor TEXTURED_COLOR = GamaColorFactory.WHITE;
-
-	/** The Constant SELECTED_COLOR. */
-	public static final IColor SELECTED_COLOR = GamaColorFactory.RED;
-
 	/** The flags. */
-	EnumSet<Flag> flags = EnumSet.of(Flag.Lighted);
+	protected EnumSet<Flag> flags = EnumSet.of(Flag.Lighted);
 
 	/** The unique index. */
 	private final int uniqueIndex;
 
 	/** The location. */
-	IPoint location;
+	protected IPoint location;
 
 	/** The size. */
-	Scaling3D size;
+	protected Scaling3D size;
 
 	/** The rotation. */
-	AxisAngle rotation;
+	protected AxisAngle rotation;
 
 	/** The line width. */
 	Double depth = null, lineWidth = GamaPreferences.Displays.CORE_LINE_WIDTH.getValue();
@@ -105,10 +68,10 @@ public class DrawingAttributes {
 	public IShape.Type type;
 
 	/** The border. */
-	IColor fill, highlight, border;
+	protected IColor fill, highlight, border;
 
 	/** The textures. */
-	List<?> textures;
+	protected List<?> textures;
 
 	/** The material. */
 	// GamaMaterial material;
@@ -153,6 +116,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the index
 	 */
+	@Override
 	public int getIndex() { return uniqueIndex; }
 
 	/**
@@ -161,6 +125,7 @@ public class DrawingAttributes {
 	 * @param s
 	 *            the new synthetic
 	 */
+	@Override
 	public void setSynthetic(final boolean s) {
 		setFlag(Flag.Synthetic, s);
 	}
@@ -170,6 +135,7 @@ public class DrawingAttributes {
 	 *
 	 * @return true, if is synthetic
 	 */
+	@Override
 	public boolean isSynthetic() { return isSet(Flag.Synthetic); }
 
 	/**
@@ -178,6 +144,7 @@ public class DrawingAttributes {
 	 * @param lighting
 	 *            the new lighting
 	 */
+	@Override
 	public void setLighting(final Boolean lighting) {
 		if (lighting == null) return;
 		setFlag(Flag.Lighted, lighting);
@@ -189,6 +156,7 @@ public class DrawingAttributes {
 	 * @param b
 	 *            the new empty
 	 */
+	@Override
 	public void setEmpty(final Boolean b) {
 		if (b == null || !b) {
 			setFilled();
@@ -202,6 +170,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the agent identifier
 	 */
+	@Override
 	public IAgent getAgentIdentifier() { return null; }
 
 	/**
@@ -209,6 +178,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the species name
 	 */
+	@Override
 	public String getSpeciesName() { return null; }
 
 	/**
@@ -216,6 +186,7 @@ public class DrawingAttributes {
 	 *
 	 * @return
 	 */
+	@Override
 	public Double getAngle() {
 		if (getRotation() == null) return null;
 		return getRotation().angle;
@@ -227,6 +198,7 @@ public class DrawingAttributes {
 	 * @param o
 	 *            the new texture
 	 */
+	@Override
 	public void setTexture(final Object o) {
 		if (o == null) {
 			setTextures(null);
@@ -241,6 +213,7 @@ public class DrawingAttributes {
 	 * @param pickedIndex
 	 *            the picked index
 	 */
+	@Override
 	public void markSelected(final int pickedIndex) {
 		setSelected(pickedIndex == uniqueIndex);
 	}
@@ -250,6 +223,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the anchor
 	 */
+	@Override
 	public IPoint getAnchor() { return GamlCoreConstants.bottom_left; }
 
 	/**
@@ -257,6 +231,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the location
 	 */
+	@Override
 	public IPoint getLocation() { return location; }
 
 	/**
@@ -264,6 +239,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the size
 	 */
+	@Override
 	public Scaling3D getSize() { return size; }
 
 	/**
@@ -271,6 +247,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the depth
 	 */
+	@Override
 	public Double getDepth() { return depth; }
 
 	/**
@@ -279,6 +256,7 @@ public class DrawingAttributes {
 	 * @param d
 	 *            the new line width
 	 */
+	@Override
 	public void setLineWidth(final Double d) {
 		if (d == null) {
 			lineWidth = GamaPreferences.Displays.CORE_LINE_WIDTH.getValue();
@@ -292,6 +270,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the line width
 	 */
+	@Override
 	public Double getLineWidth() { return lineWidth; }
 
 	/**
@@ -299,6 +278,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the type
 	 */
+	@Override
 	public IShape.Type getType() { return type; }
 
 	/**
@@ -306,6 +286,7 @@ public class DrawingAttributes {
 	 *
 	 * @return true, if successful
 	 */
+	@Override
 	public boolean useCache() {
 		return isSet(Flag.UseCache);
 	}
@@ -316,6 +297,7 @@ public class DrawingAttributes {
 	 * @param b
 	 *            the new use cache
 	 */
+	@Override
 	public void setUseCache(final boolean b) {
 		setFlag(Flag.UseCache, b);
 	}
@@ -326,6 +308,7 @@ public class DrawingAttributes {
 	 * @param type
 	 *            the new type
 	 */
+	@Override
 	public void setType(final IShape.Type type) { this.type = type; }
 
 	/**
@@ -333,6 +316,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the rotation
 	 */
+	@Override
 	public AxisAngle getRotation() { return rotation; }
 
 	/**
@@ -341,6 +325,7 @@ public class DrawingAttributes {
 	 * @param loc
 	 *            the new location
 	 */
+	@Override
 	public void setLocation(final IPoint loc) { location = loc; }
 
 	/**
@@ -349,6 +334,7 @@ public class DrawingAttributes {
 	 * @param size
 	 *            the new size
 	 */
+	@Override
 	public void setSize(final Scaling3D size) { this.size = size; }
 
 	/**
@@ -357,6 +343,7 @@ public class DrawingAttributes {
 	 * @param rotation
 	 *            the new rotation
 	 */
+	@Override
 	public void setRotation(final AxisAngle rotation) {
 		if (rotation == null) return;
 		this.rotation = rotation;
@@ -368,6 +355,7 @@ public class DrawingAttributes {
 	 * @param depth
 	 *            the new height
 	 */
+	@Override
 	public void setHeight(final Double depth) {
 		if (depth == null) return;
 		this.depth = depth;
@@ -378,6 +366,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the color
 	 */
+	@Override
 	public IColor getColor() {
 		if (isSelected()) // DEBUG.OUT("Selected agent: " + getAgentIdentifier() + " / index : " + uniqueIndex);
 			return SELECTED_COLOR;
@@ -399,6 +388,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the border
 	 */
+	@Override
 	public IColor getBorder() {
 		if (isSet(Flag.Empty) && border == null) return fill;
 		return border;
@@ -407,6 +397,7 @@ public class DrawingAttributes {
 	/**
 	 * Sets the empty.
 	 */
+	@Override
 	public void setEmpty() {
 		setFlag(Flag.Empty, true);
 	}
@@ -414,6 +405,7 @@ public class DrawingAttributes {
 	/**
 	 * Sets the filled.
 	 */
+	@Override
 	public void setFilled() {
 		setFlag(Flag.Empty, false);
 	}
@@ -424,6 +416,7 @@ public class DrawingAttributes {
 	 * @param color
 	 *            the new fill
 	 */
+	@Override
 	public void setFill(final IColor color) { fill = color; }
 
 	/**
@@ -432,6 +425,7 @@ public class DrawingAttributes {
 	 * @param border
 	 *            the new border
 	 */
+	@Override
 	public void setBorder(final IColor border) { this.border = border; }
 
 	/**
@@ -447,6 +441,7 @@ public class DrawingAttributes {
 	/**
 	 * Sets the no border.
 	 */
+	@Override
 	public void setNoBorder() {
 		border = null;
 	}
@@ -457,6 +452,7 @@ public class DrawingAttributes {
 	 * @param textures
 	 *            the new textures
 	 */
+	@Override
 	public void setTextures(final List<?> textures) { this.textures = textures; }
 
 	/**
@@ -464,6 +460,7 @@ public class DrawingAttributes {
 	 *
 	 * @return the textures
 	 */
+	@Override
 	public List getTextures() { return textures; }
 
 	/**
@@ -471,6 +468,7 @@ public class DrawingAttributes {
 	 *
 	 * @return true, if is empty
 	 */
+	@Override
 	public boolean isEmpty() { return isSet(Flag.Empty); }
 
 	/**
@@ -478,6 +476,7 @@ public class DrawingAttributes {
 	 *
 	 * @return true, if is animated
 	 */
+	@Override
 	public boolean isAnimated() {
 		if (!useCache()) return true;
 		if (textures == null) return false;
@@ -517,6 +516,7 @@ public class DrawingAttributes {
 	 *
 	 * @return true, if is lighting
 	 */
+	@Override
 	public boolean isLighting() { return isSet(Flag.Lighted); }
 
 	/**
@@ -525,6 +525,7 @@ public class DrawingAttributes {
 	 * @param color
 	 *            the new highlighted
 	 */
+	@Override
 	public void setHighlighted(final IColor color) { highlight = color; }
 
 	/**
@@ -532,6 +533,7 @@ public class DrawingAttributes {
 	 *
 	 * @return true, if is selected
 	 */
+	@Override
 	public boolean isSelected() { return isSet(Flag.Selected); }
 
 	/**
@@ -540,6 +542,7 @@ public class DrawingAttributes {
 	 * @param b
 	 *            the new selected
 	 */
+	@Override
 	public void setSelected(final boolean b) {
 		setFlag(Flag.Selected, b);
 	}
@@ -562,6 +565,7 @@ public class DrawingAttributes {
 	 *            the value
 	 * @return true, if is sets the
 	 */
+	@Override
 	public boolean isSet(final Flag value) {
 		return flags.contains(value);
 	}
@@ -574,6 +578,7 @@ public class DrawingAttributes {
 	 * @param b
 	 *            the b
 	 */
+	@Override
 	public void setFlag(final Flag value, final boolean b) {
 		if (b) {
 			flags.add(value);

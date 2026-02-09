@@ -14,27 +14,30 @@ import java.awt.geom.Rectangle2D;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.operation.buffer.BufferParameters;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.geometry.ICoordinates;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
-import gama.core.util.file.IGamaFile;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IDrawDelegate;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.GamaFileType;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.additions.delegates.IDrawDelegate;
+import gama.api.data.factories.GamaCoordinateSequenceFactory;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.data.objects.ICoordinates;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.exceptions.GamaRuntimeFileException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaFileType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.displays.DrawingData;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.utils.IImageProvider;
+import gama.api.utils.files.IGamaFile;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * The Class ShapeExecuter.
@@ -57,12 +60,12 @@ public class ShapeDrawer implements IDrawDelegate {
 	@Override
 	public Rectangle2D executeOn(final IGraphicsScope scope, final DrawingData data, final IExpression... items)
 			throws GamaRuntimeException {
-		final IShape shape = Cast.asGeometry(scope, items[0].value(scope), false);
+		final IShape shape = GamaShapeFactory.createFrom(scope, items[0].value(scope), false);
 		if (shape == null) return null;
-		final DrawingAttributes attributes = computeAttributes(scope, data, shape);
+		final IDrawingAttributes attributes = computeAttributes(scope, data, shape);
 		Geometry gg = shape.getInnerGeometry();
 		if (gg == null) return null;
-		final ICoordinates ic = GeometryUtils.getContourCoordinates(gg);
+		final ICoordinates ic = GamaCoordinateSequenceFactory.pointsOf(gg);
 		ic.ensureClockwiseness();
 
 		// If the graphics is 2D, we pre-translate and pre-rotate the geometry
@@ -79,7 +82,7 @@ public class ShapeDrawer implements IDrawDelegate {
 			GeometryUtils.rotate(gg, center, rot);
 			if (location != null) {
 				if (gg.getNumPoints() == 1) {
-					gg = GeometryUtils.GEOMETRY_FACTORY.createPoint(location.toCoordinate());
+					gg = GeometryUtils.getGeometryFactory().createPoint(location.toCoordinate());
 				} else {
 					GeometryUtils.translate(gg, center, location);
 				}
@@ -128,7 +131,7 @@ public class ShapeDrawer implements IDrawDelegate {
 	 *            the shape
 	 * @return the drawing attributes
 	 */
-	DrawingAttributes computeAttributes(final IScope scope, final DrawingData data, final IShape shape) {
+	IDrawingAttributes computeAttributes(final IScope scope, final DrawingData data, final IShape shape) {
 		Double depth = data.depth.get();
 		if (depth == null) { depth = shape.getDepth(); }
 		return new ShapeDrawingAttributes(Scaling3D.of(data.size.get()), depth, data.rotation.get(), data.getLocation(),
@@ -142,7 +145,7 @@ public class ShapeDrawer implements IDrawDelegate {
 	 * @param attributes
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
-	private void addTextures(final IScope scope, final DrawingAttributes attributes) {
+	private void addTextures(final IScope scope, final IDrawingAttributes attributes) {
 		if (attributes.getTextures() == null) return;
 		attributes.getTextures().replaceAll(s -> {
 			IImageProvider image = null;
@@ -202,22 +205,22 @@ public class ShapeDrawer implements IDrawDelegate {
 		if (endArrow != null) {
 			final double width = Cast.asFloat(scope, endArrow.value(scope));
 			if (width > 0) {
-				end = GamaGeometryType.buildArrow(points[size - 2], points[size - 1], width, width + width / 3, fill)
+				end = GamaShapeFactory.buildArrow(points[size - 2], points[size - 1], width, width + width / 3, fill)
 						.getInnerGeometry();
 			}
 		}
 		if (beginArrow != null) {
 			final double width = Cast.asFloat(scope, beginArrow.value(scope));
 			if (width > 0) {
-				begin = GamaGeometryType.buildArrow(points[1], points[0], width, width + width / 3, fill)
+				begin = GamaShapeFactory.buildArrow(points[1], points[0], width, width + width / 3, fill)
 						.getInnerGeometry();
 			}
 		}
 		if (end == null) {
 			if (begin == null) return g1;
-			return GeometryUtils.GEOMETRY_FACTORY.createCollection(g1, begin);
+			return GeometryUtils.getGeometryFactory().createCollection(g1, begin);
 		}
-		if (begin == null) return GeometryUtils.GEOMETRY_FACTORY.createCollection(g1, end);
+		if (begin == null) return GeometryUtils.getGeometryFactory().createCollection(g1, end);
 		return g1;
 	}
 

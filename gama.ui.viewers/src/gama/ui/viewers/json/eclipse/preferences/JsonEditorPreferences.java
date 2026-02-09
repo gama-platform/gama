@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * JsonEditorPreferences.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and
- * simulation platform (v.2025-03).
+ * JsonEditorPreferences.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -39,8 +39,8 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
 
+import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.viewers.json.eclipse.ColorUtil;
-import gama.ui.viewers.json.eclipse.EclipseUtil;
 import gama.ui.viewers.json.eclipse.JsonEditor;
 import gama.ui.viewers.json.eclipse.JsonEditorActivator;
 
@@ -68,8 +68,7 @@ public class JsonEditorPreferences {
 				String property = event.getProperty();
 				if (property == null) return;
 				ChangeContext context = new ChangeContext();
-				for (JsonEditorSyntaxColorPreferenceConstants c : JsonEditorSyntaxColorPreferenceConstants
-						.values()) {
+				for (JsonEditorSyntaxColorPreferenceConstants c : JsonEditorSyntaxColorPreferenceConstants.values()) {
 					if (property.equals(c.getId())) {
 						context.colorChanged = true;
 						break;
@@ -82,12 +81,12 @@ public class JsonEditorPreferences {
 			private void updateColorsInYamlEditors(final ChangeContext context) {
 				if (!context.hasChanges()) return;
 				/* inform all Yaml editors about color changes */
-				IWorkbenchPage activePage = EclipseUtil.getActivePage();
+				IWorkbenchPage activePage = WorkbenchHelper.getPage();
 				if (activePage == null) return;
 				IEditorReference[] references = activePage.getEditorReferences();
 				for (IEditorReference ref : references) {
 					IEditorPart editor = ref.getEditor(false);
-					if ((editor == null) || !(editor instanceof JsonEditor geditor)) { continue; }
+					if (editor == null || !(editor instanceof JsonEditor geditor)) { continue; }
 					if (context.colorChanged) { geditor.handleColorSettingsChanged(); }
 				}
 			}
@@ -224,7 +223,7 @@ public class JsonEditorPreferences {
 
 	/**
 	 * Returns color as a web color in format "#RRGGBB"
-	 * 
+	 *
 	 * @param identifiable
 	 * @return web color string
 	 */

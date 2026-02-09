@@ -10,22 +10,20 @@
  ********************************************************************************************************/
 package gama.ui.experiment.menus;
 
-import java.io.IOException;
-
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-import gama.core.common.interfaces.ISerialisationConstants;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.parameters.ParametersSet;
-import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.constants.ISerialisationConstants;
+import gama.api.gaml.constants.GamlCoreConstants;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.core.experiment.parameters.ParametersSet;
 import gama.extension.serialize.binary.BinarySerialisation;
-import gama.gaml.constants.GamlCoreConstants;
 import gama.ui.experiment.commands.ArrangeDisplayViews;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -62,13 +60,7 @@ public class SimulationsMenu extends ContributionItem {
 						byte[] bytes = BinarySerialisation.saveToBytes(GAMA.getRuntimeScope(), GAMA.getSimulation());
 						final ISimulationAgent sim =
 								GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
-						GAMA.runAndUpdateAll(() -> {
-							try {
-								BinarySerialisation.restoreFromBytes(sim, bytes);
-							} catch (IOException e1) {
-								e1.printStackTrace();
-							}
-						});
+						GAMA.runAndUpdateAll(() -> { BinarySerialisation.restoreFromBytes(sim, bytes); });
 					});
 
 	/** The kill current simulation. */

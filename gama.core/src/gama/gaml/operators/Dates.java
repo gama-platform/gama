@@ -42,59 +42,44 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.emf.ecore.EObject;
+import org.geotools.filter.ConstantExpression;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.interfaces.IClock;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.preferences.Pref;
-import gama.core.common.util.StringUtils;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaDate;
-import gama.core.util.GamaDateInterval;
-import gama.core.util.IDate;
-import gama.core.util.list.IList;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.GAMA;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.validation.IOperatorValidator;
+import gama.api.constants.IGamlIssue;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaDateFactory;
+import gama.api.data.objects.IDate;
+import gama.api.data.objects.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.constants.GamlCoreUnits;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.simulation.IClock;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.Pref;
+import gama.core.util.date.GamaDateInterval;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.IOperatorValidator;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.ConstantExpression;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.units.TimeUnitConstantExpression;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.types.GamaDateType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class Dates.
  */
 public class Dates {
-
-	/** The Constant ISO_LOCAL_KEY. */
-	public static final String ISO_LOCAL_KEY = "ISO_LOCAL_DATE_TIME";
-
-	/** The Constant ISO_OFFSET_KEY. */
-	public static final String ISO_OFFSET_KEY = "ISO_OFFSET_DATE_TIME";
-
-	/** The Constant ISO_ZONED_KEY. */
-	public static final String ISO_ZONED_KEY = "ISO_ZONED_DATE_TIME";
-
-	/** The Constant ISO_SIMPLE_KEY. */
-	public static final String ISO_SIMPLE_KEY = "ISO_SIMPLE";
-
-	/** The Constant CUSTOM_KEY. */
-	public static final String CUSTOM_KEY = "CUSTOM";
 
 	/** The default value. */
 	public static String DEFAULT_VALUE = "CUSTOM";
@@ -115,10 +100,10 @@ public class Dates {
 	public static final HashMap<String, DateTimeFormatter> FORMATTERS = new HashMap<>() {
 		{
 			put(DEFAULT_KEY, DateTimeFormatter.ofPattern(DEFAULT_FORMAT));
-			put(ISO_SIMPLE_KEY, DateTimeFormatter.ofPattern(ISO_SIMPLE_FORMAT));
-			put(ISO_LOCAL_KEY, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-			put(ISO_OFFSET_KEY, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-			put(ISO_ZONED_KEY, DateTimeFormatter.ISO_ZONED_DATE_TIME);
+			put(GamlCoreUnits.ISO_SIMPLE_KEY, DateTimeFormatter.ofPattern(ISO_SIMPLE_FORMAT));
+			put(GamlCoreUnits.ISO_LOCAL_KEY, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+			put(GamlCoreUnits.ISO_OFFSET_KEY, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+			put(GamlCoreUnits.ISO_ZONED_KEY, DateTimeFormatter.ISO_ZONED_DATE_TIME);
 
 		}
 	};
@@ -129,8 +114,10 @@ public class Dates {
 			DEFAULT_FORMAT, IType.STRING, true).in(GamaPreferences.External.NAME, GamaPreferences.External.DATES)
 			.onChange(e -> {
 				try {
-					FORMATTERS.put(CUSTOM_KEY, getFormatter(StringUtils.toJavaString(e), null));
-					if (CUSTOM_KEY.equals(DEFAULT_VALUE)) { FORMATTERS.put(DEFAULT_KEY, FORMATTERS.get(CUSTOM_KEY)); }
+					FORMATTERS.put(GamlCoreUnits.CUSTOM_KEY, getFormatter(StringUtils.toJavaString(e), null));
+					if (GamlCoreUnits.CUSTOM_KEY.equals(DEFAULT_VALUE)) {
+						FORMATTERS.put(DEFAULT_KEY, FORMATTERS.get(GamlCoreUnits.CUSTOM_KEY));
+					}
 				} catch (
 				/** The ex. */
 				final Exception ex) {
@@ -141,17 +128,19 @@ public class Dates {
 	/** The Constant DATES_DEFAULT_FORMATTER. */
 	public final static Pref<String> DATES_DEFAULT_FORMATTER = GamaPreferences
 			.create("pref_date_default_formatter", "Default date pattern for writing dates (i.e. string(date1))",
-					CUSTOM_KEY, IType.STRING, true)
+					GamlCoreUnits.CUSTOM_KEY, IType.STRING, true)
 			.in(GamaPreferences.External.NAME, GamaPreferences.External.DATES)
-			.among(ISO_LOCAL_KEY, ISO_OFFSET_KEY, ISO_ZONED_KEY, ISO_SIMPLE_KEY, CUSTOM_KEY).onChange(e -> {
+			.among(GamlCoreUnits.ISO_LOCAL_KEY, GamlCoreUnits.ISO_OFFSET_KEY, GamlCoreUnits.ISO_ZONED_KEY,
+					GamlCoreUnits.ISO_SIMPLE_KEY, GamlCoreUnits.CUSTOM_KEY)
+			.onChange(e -> {
 				DEFAULT_VALUE = e;
 				FORMATTERS.put(DEFAULT_KEY, FORMATTERS.get(e));
 			});
 
 	/** The Constant DATES_STARTING_DATE. */
-	public final static Pref<IDate> DATES_STARTING_DATE = GamaPreferences
-			.create("pref_date_starting_date", "Default starting date of models", GamaDateType.EPOCH, IType.DATE, true)
-			.in(GamaPreferences.External.NAME, GamaPreferences.External.DATES);
+	public final static Pref<IDate> DATES_STARTING_DATE =
+			GamaPreferences.create("pref_date_starting_date", "Default starting date of models", GamaDateFactory.EPOCH,
+					IType.DATE, true).in(GamaPreferences.External.NAME, GamaPreferences.External.DATES);
 
 	/** The Constant DATES_TIME_STEP. */
 	public final static Pref<Double> DATES_TIME_STEP =
@@ -159,23 +148,20 @@ public class Dates {
 					.in(GamaPreferences.External.NAME, GamaPreferences.External.DATES).between(1d, null);
 
 	static {
-		FORMATTERS.put(CUSTOM_KEY, DateTimeFormatter.ofPattern(DATES_CUSTOM_FORMATTER.getValue()));
-		FORMATTERS.put(DEFAULT_KEY, FORMATTERS.get(CUSTOM_KEY));
+		FORMATTERS.put(GamlCoreUnits.CUSTOM_KEY, DateTimeFormatter.ofPattern(DATES_CUSTOM_FORMATTER.getValue()));
+		FORMATTERS.put(DEFAULT_KEY, FORMATTERS.get(GamlCoreUnits.CUSTOM_KEY));
 	}
 
 	/** The Constant APPROXIMATE_TEMPORAL_QUERY. */
-	public static final String APPROXIMATE_TEMPORAL_QUERY = IKeyword.INTERNAL_FUNCTION + "_temporal_query";
+	// public static final String APPROXIMATE_TEMPORAL_QUERY = IKeyword.INTERNAL_FUNCTION + "_temporal_query";
 
 	/** The model pattern. */
 	static Pattern model_pattern = Pattern.compile("%[YMNDEhmsz]");
 
 	/**
-	 * Initialize.
+	 * Initialize.Only here to load the class and its preferences
 	 */
-	public static void initialize() {
-		// Only here to load the class and its preferences
-
-	}
+	public static void initialize() {}
 
 	/**
 	 * Approximal query.
@@ -188,20 +174,20 @@ public class Dates {
 	 *            the right
 	 * @return the double
 	 */
-	@operator (
-			value = APPROXIMATE_TEMPORAL_QUERY,
-			doc = @doc ("For internal use only"),
-			internal = true)
-	@no_test
-	public static double approximalQuery(final IScope scope, final IExpression left, final IExpression right) {
-		final Double arg = Cast.asFloat(scope, left.value(scope));
-		if (right instanceof TimeUnitConstantExpression timeUnit) {
-			IDate date = scope.getClock().getCurrentDate();
-			IDate next = date.plus(1l, timeUnit.getName().startsWith("m") ? ChronoUnit.MONTHS : ChronoUnit.YEARS);
-			return arg * date.until(next, ChronoUnit.MILLIS) / 1000d;
-		}
-		return 0d;
-	}
+	// @operator (
+	// value = APPROXIMATE_TEMPORAL_QUERY,
+	// doc = @doc ("For internal use only"),
+	// internal = true)
+	// @no_test
+	// public static double approximalQuery(final IScope scope, final IExpression left, final IExpression right) {
+	// final Double arg = Cast.asFloat(scope, left.value(scope));
+	// if (right instanceof TimeUnitConstantExpression timeUnit) {
+	// IDate date = scope.getClock().getCurrentDate();
+	// IDate next = date.plus(1l, timeUnit.getName().startsWith("m") ? ChronoUnit.MONTHS : ChronoUnit.YEARS);
+	// return arg * date.until(next, ChronoUnit.MILLIS) / 1000d;
+	// }
+	// return 0d;
+	// }
 
 	/**
 	 * Minus date.
@@ -2349,7 +2335,7 @@ public class Dates {
 							test = false)))
 	@no_test
 	public static IDate date(final IScope scope, final String value, final String pattern) {
-		return new GamaDate(scope, value, pattern);
+		return GamaDateFactory.createWith(scope, value, pattern);
 	}
 
 	/**
@@ -2394,7 +2380,7 @@ public class Dates {
 	@test ("date('1999-01-30', 'yyyy-MM-dd', 'en') = date('1999-01-30 00:00:00')")
 	// @test("date('1999-january-30', 'yyyy-MMMM-dd', 'en') = date('1999-01-30 00:00:00')")
 	public static IDate date(final IScope scope, final String value, final String pattern, final String locale) {
-		return new GamaDate(scope, value, pattern, locale);
+		return GamaDateFactory.createWith(scope, value, pattern, locale);
 	}
 
 	/**
@@ -2527,7 +2513,7 @@ public class Dates {
 		 */
 		private String toString(final Duration duration) {
 			this.temporal = duration.addTo(Dates.DATES_STARTING_DATE.getValue())
-					.minus(GamaDateType.DEFAULT_OFFSET_IN_SECONDS.getTotalSeconds(), SECONDS);
+					.minus(GamaDateFactory.DEFAULT_OFFSET_IN_SECONDS.getTotalSeconds(), SECONDS);
 			// if (duration.toDays() == 0l)
 			// temporal = LocalDateTime.(temporal);
 			return toString();

@@ -1,17 +1,18 @@
 /*******************************************************************************************************
  *
- * NetworkMessage.java, in gama.extension.network, is part of the source code of the
- * GAMA modeling and simulation platform (v.2024-06).
+ * NetworkMessage.java, in gama.extension.network, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.network.common;
 
-import gama.core.messaging.GamaMessage;
-import gama.core.runtime.IScope;
+import gama.api.data.factories.GamaMessageFactory;
+import gama.api.data.objects.IMessage;
+import gama.api.runtime.scope.IScope;
 import gama.extension.serialize.binary.BinarySerialisation;
 
 /**
@@ -94,7 +95,7 @@ public class NetworkMessage implements ConnectorMessage {
 	public boolean isPlainMessage() { return isPlainMessage; }
 
 	@Override
-	public GamaMessage getContents(final IScope scope) {
+	public IMessage getContents(final IScope scope) {
 		return isPlainMessage ? getPlainContent(scope) : getCompositeContent(scope);
 	}
 
@@ -105,8 +106,8 @@ public class NetworkMessage implements ConnectorMessage {
 	 *            the scope
 	 * @return the plain content
 	 */
-	public GamaMessage getPlainContent(final IScope scope) {
-		final GamaMessage message = new GamaMessage(scope, from, to, content);
+	public IMessage getPlainContent(final IScope scope) {
+		final IMessage message = GamaMessageFactory.create(scope, from, to, content);
 		message.hasBeenReceived(scope);
 		return message;
 	}
@@ -118,13 +119,13 @@ public class NetworkMessage implements ConnectorMessage {
 	 *            the scope
 	 * @return the composite content
 	 */
-	public GamaMessage getCompositeContent(final IScope scope) {
+	public IMessage getCompositeContent(final IScope scope) {
 		final Object messageContent = BinarySerialisation.createFromString(scope, content);
-		GamaMessage message = null;
-		if (messageContent instanceof CompositeGamaMessage) {
-			message = (GamaMessage) messageContent;
+		IMessage message = null;
+		if (messageContent instanceof CompositeGamaMessage cgm) {
+			message = cgm;
 		} else {
-			message = new GamaMessage(scope, from, to, messageContent);
+			message = GamaMessageFactory.create(scope, from, to, messageContent);
 		}
 		message.hasBeenReceived(scope);
 		return message;

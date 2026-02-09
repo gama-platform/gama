@@ -10,11 +10,11 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IPoint;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.Scaling3D;
 import gama.ui.display.opengl.OpenGL;
 
 /**

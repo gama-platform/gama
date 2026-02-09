@@ -10,50 +10,50 @@
  ********************************************************************************************************/
 package gama.extension.maths.ode.statements;
 
-import static gama.core.common.interfaces.IKeyword.DIF2;
-import static gama.core.common.interfaces.IKeyword.DIFF;
-import static gama.core.common.interfaces.IKeyword.EQUATION;
-import static gama.core.common.interfaces.IKeyword.EQUATION_LEFT;
-import static gama.core.common.interfaces.IKeyword.EQUATION_OP;
-import static gama.core.common.interfaces.IKeyword.EQUATION_RIGHT;
-import static gama.core.common.interfaces.IKeyword.SOLVE;
-import static gama.core.common.interfaces.IKeyword.ZERO;
+import static gama.api.constants.IKeyword.DIF2;
+import static gama.api.constants.IKeyword.DIFF;
+import static gama.api.constants.IKeyword.EQUATION;
+import static gama.api.constants.IKeyword.EQUATION_LEFT;
+import static gama.api.constants.IKeyword.EQUATION_OP;
+import static gama.api.constants.IKeyword.EQUATION_RIGHT;
+import static gama.api.constants.IKeyword.SOLVE;
+import static gama.api.constants.IKeyword.ZERO;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.Reason;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.map.GamaMapFactory;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.annotations.support.Reason;
+import gama.api.annotations.serializer;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.constants.IGamlIssue;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.expressions.IOperator;
+import gama.api.gaml.expressions.IVarExpression;
+import gama.api.gaml.statements.AbstractStatement;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
 import gama.extension.maths.ode.statements.SingleEquationStatement.SIngleEquationSerializer;
 import gama.extension.maths.ode.statements.SingleEquationStatement.SingleEquationValidator;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SymbolSerializer;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IVarExpression;
-import gama.gaml.expressions.operators.AbstractNAryOperator;
-import gama.gaml.expressions.operators.IOperator;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.statements.AbstractStatement;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gaml.compiler.gaml.expression.AbstractNAryOperator;
 
 /**
  *
@@ -129,10 +129,10 @@ public class SingleEquationStatement extends AbstractStatement {
 	/**
 	 * The Class SIngleEquationSerializer.
 	 */
-	public static class SIngleEquationSerializer extends SymbolSerializer {
+	public static class SIngleEquationSerializer implements ISymbolSerializer {
 
 		@Override
-		protected void serialize(final IDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
+		public void serialize(final IDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
 			sb.append(desc.getFacet(EQUATION_LEFT).serializeToGaml(includingBuiltIn)).append(" = ")
 					.append(desc.getFacet(EQUATION_RIGHT).serializeToGaml(includingBuiltIn)).append(";");
 		}
@@ -146,7 +146,7 @@ public class SingleEquationStatement extends AbstractStatement {
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
 		public void validate(final IDescription d) {
@@ -279,7 +279,7 @@ public class SingleEquationStatement extends AbstractStatement {
 	 * SystemOfEquationsStatement, in order not to generate side effects (e.g. the value of a shared variable changing
 	 * between the integrations of two equations)
 	 *
-	 * @see gama.gaml.statements.AbstractStatement#privateExecuteIn(gama.core.runtime.IScope)
+	 * @see gama.api.gaml.statements.AbstractStatement#privateExecuteIn(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	protected Double privateExecuteIn(final IScope scope) throws GamaRuntimeException {

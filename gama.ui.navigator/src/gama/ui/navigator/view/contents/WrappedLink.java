@@ -10,12 +10,12 @@
  ********************************************************************************************************/
 package gama.ui.navigator.view.contents;
 
-import static gama.core.common.util.FileUtils.SEPARATOR;
-import static gama.core.common.util.FileUtils.URL_SEPARATOR_REPLACEMENT;
+import static gama.api.utils.files.FileUtils.SEPARATOR;
+import static gama.api.utils.files.FileUtils.URL_SEPARATOR_REPLACEMENT;
 
 import org.eclipse.core.resources.IFile;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 
 /**
  * The Class WrappedLink.

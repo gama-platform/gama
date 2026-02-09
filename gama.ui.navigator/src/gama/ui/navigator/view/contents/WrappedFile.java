@@ -23,18 +23,18 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 
-import gama.core.util.file.IGamaFileMetaData;
-import gama.gaml.compilation.kernel.GamaBundleLoader;
-import gama.gaml.compilation.kernel.GamaMetaModel;
+import gama.api.additions.GamaBundleLoader;
+import gama.api.kernel.GamaMetaModel;
+import gama.api.utils.files.IGamaFileMetaData;
+import gama.core.util.file.GMLInfo;
+import gama.core.util.file.OSMInfo;
+import gama.core.util.file.ShapeInfo;
 import gama.ui.navigator.view.NavigatorContentProvider;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
 import gama.workspace.metadata.FileMetaDataProvider;
-import gama.workspace.metadata.GMLInfo;
-import gama.workspace.metadata.OSMInfo;
-import gama.workspace.metadata.ShapeInfo;
 
 /**
  * The Class WrappedFile.

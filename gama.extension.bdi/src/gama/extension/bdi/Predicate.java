@@ -14,22 +14,22 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.IJSon;
-import gama.core.util.file.json.IJsonValue;
-import gama.core.util.map.IMap;
-import gama.gaml.interfaces.IValue;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.api.GAMA;
+import gama.api.constants.IKeyword;
+import gama.api.data.json.IJson;
+import gama.api.data.json.IJsonValue;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IValue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class Predicate.
@@ -69,7 +69,7 @@ import gama.gaml.types.Types;
 public class Predicate implements IValue {
 
 	@Override
-	public IJsonValue serializeToJson(final IJSon json) {
+	public IJsonValue serializeToJson(final IJson json) {
 		return json.typedObject(getGamlType(), "name", name, "is_true", is_true, "values", values, "date", date)
 				.add(SimpleBdiArchitecture.SUBINTENTIONS, subintentions)
 				.add(SimpleBdiArchitecture.ON_HOLD_UNTIL, onHoldUntil)
@@ -488,7 +488,7 @@ public class Predicate implements IValue {
 	/**
 	 * Method getType()
 	 *
-	 * @see gama.gaml.interfaces.ITyped#getGamlType()
+	 * @see gama.api.gaml.types.ITyped#getGamlType()
 	 */
 	@Override
 	public IType<?> getGamlType() { return Types.get(PredicateType.id); }

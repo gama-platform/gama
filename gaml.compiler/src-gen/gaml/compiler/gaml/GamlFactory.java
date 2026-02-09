@@ -16,7 +16,7 @@ import org.eclipse.emf.ecore.EFactory;
 public interface GamlFactory extends EFactory
 {
   /**
-   * The singleton instance of the factory.
+   * The singleton INSTANCE of the factory.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated

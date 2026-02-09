@@ -1,24 +1,27 @@
 /*******************************************************************************************************
  *
- * BooleanEditor.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * BooleanEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
+import java.util.List;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.data.objects.IColor;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
 import gama.ui.shared.controls.SwitchButton;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.resources.GamaColors;
@@ -72,7 +75,7 @@ public class BooleanEditor extends AbstractEditor<Boolean> {
 
 	@Override
 	public Control createCustomParameterControl(final Composite comp) {
-		final var colors = getParam().getColors(getScope());
+		final List<IColor> colors = getParam().getColors(getScope());
 		final String[] labels = getParam().getLabels(getScope());
 		var left = IGamaColors.OK.color();
 		var right = IGamaColors.ERROR.color();

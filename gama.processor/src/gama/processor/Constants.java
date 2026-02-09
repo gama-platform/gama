@@ -11,6 +11,7 @@
 package gama.processor;
 
 import java.lang.annotation.Annotation;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -20,27 +21,158 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import gama.annotations.precompiler.GamlAnnotations.action;
-import gama.annotations.precompiler.GamlAnnotations.constant;
-import gama.annotations.precompiler.GamlAnnotations.display;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.experiment;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.GamlAnnotations.listener;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.annotations.precompiler.GamlAnnotations.species;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.tests;
-import gama.annotations.precompiler.GamlAnnotations.type;
-import gama.annotations.precompiler.GamlAnnotations.vars;
+import javax.lang.model.type.TypeMirror;
+
+import gama.annotations.action;
+import gama.annotations.constant;
+import gama.annotations.display;
+import gama.annotations.doc;
+import gama.annotations.experiment;
+import gama.annotations.file;
+import gama.annotations.listener;
+import gama.annotations.operator;
+import gama.annotations.skill;
+import gama.annotations.species;
+import gama.annotations.symbol;
+import gama.annotations.tests;
+import gama.annotations.type;
+import gama.annotations.vars;
 import gama.processor.doc.DocProcessor;
+import gama.processor.elements.ActionProcessor;
+import gama.processor.elements.ConstantProcessor;
+import gama.processor.elements.DisplayProcessor;
+import gama.processor.elements.ExperimentProcessor;
+import gama.processor.elements.FileProcessor;
+import gama.processor.elements.ListenerProcessor;
+import gama.processor.elements.OperatorProcessor;
+import gama.processor.elements.SkillProcessor;
+import gama.processor.elements.SpeciesProcessor;
+import gama.processor.elements.SymbolProcessor;
+import gama.processor.elements.TypeProcessor;
+import gama.processor.elements.VarsProcessor;
 import gama.processor.tests.TestProcessor;
 
 /**
  * The Interface Constants.
  */
 public interface Constants {
+
+	/**
+	 *
+	 */
+	String IVarAndActionSupportClassName = "gama.api.compilation.IVarAndActionSupport";
+
+	/**
+	 *
+	 */
+	String ITypeClassName = "gama.api.gaml.types.IType";
+
+	/**
+	 *
+	 */
+	String IExpressionClassName = "gama.api.gaml.expressions.IExpression";
+
+	/**
+	 *
+	 */
+	String IScopeClassName = "gama.api.runtime.scope.IScope";
+
+	/**
+	 *
+	 */
+	String ISkillClassName = "gama.api.kernel.skill.ISkill";
+
+	/** The Constant PRODUCES_DOC. */
+	boolean PRODUCES_DOC = true;
+
+	/** The Constant CHARSET. */
+	Charset CHARSET = Charset.forName("UTF-8");
+
+	/** The Constant ADDITIONS_PACKAGE_BASE. */
+	String ADDITIONS_PACKAGE_BASE = "gaml.additions";
+
+	/** The Constant ADDITIONS_CLASS_NAME. */
+	String ADDITIONS_CLASS_NAME = "GamlAdditions";
+
+	/** The Constant PRODUCES_WARNING. */
+	boolean PRODUCES_WARNING = true;
+
+	/** The I display surface class name. */
+	String IDisplaySurfaceClassName = "gama.api.ui.displays.IDisplaySurface";
+
+	/** The I experiment agent class name. */
+	String IExperimentAgentClassName = "gama.api.kernel.simulation.IExperimentAgent";
+
+	/** The I gama file class name. */
+	String IGamaFileClassName = "gama.api.utils.files.IGamaFile";
+
+	/** The I agent class name. */
+	String IAgentClassName = "gama.api.kernel.agent.IAgent";
+
+	/** The I symbol class name. */
+	String ISymbolClassName = "gama.api.gaml.symbols.ISymbol";
+
+	/**
+	 * Gets the i skill.
+	 *
+	 * @return the i skill
+	 */
+	default TypeMirror getISkill() { return getType(ISkillClassName); }
+
+	/**
+	 * Gets the i scope.
+	 *
+	 * @return the i scope
+	 */
+	default TypeMirror getIScope() { return getType(IScopeClassName); }
+
+	/**
+	 * Gets the string.
+	 *
+	 * @return the string
+	 */
+	default TypeMirror getString() { return getType("java.lang.String"); }
+
+	/**
+	 * Gets the i expression.
+	 *
+	 * @return the i expression
+	 */
+	default TypeMirror getIExpression() { return getType(IExpressionClassName); }
+
+	/**
+	 * Gets the string.
+	 *
+	 * @return the string
+	 */
+	default TypeMirror getIType() { return getType(ITypeClassName); }
+
+	/**
+	 * Gets the i var and action support.
+	 *
+	 * @return the i var and action support
+	 */
+	default TypeMirror getIVarAndActionSupport() { return getType(IVarAndActionSupportClassName); }
+
+	/**
+	 * Gets the i agent.
+	 *
+	 * @return the i agent
+	 */
+	default TypeMirror getIAgent() { return getType(IAgentClassName); }
+
+	/**
+	 * @param iagentclassname2
+	 * @return
+	 */
+	TypeMirror getType(String classQualifiedName);
+
+	/**
+	 * Gets the i symbol.
+	 *
+	 * @return the i symbol
+	 */
+	default TypeMirror getISymbol() { return getType(ISymbolClassName); }
 
 	/**
 	 * Capitalize first letter.
@@ -134,31 +266,28 @@ public interface Constants {
 			IEXPRESSION = "IExpression", INTEGER = "Integer", DOUBLE = "Double", BOOLEAN = "Boolean";
 
 	/** The explicit imports. */
-	String[] INDIVIDUAL_IMPORTS = { "gama.gaml.operators.Random", "gama.gaml.operators.Maths",
-			"gama.gaml.operators.spatial.SpatialProperties", "gama.gaml.operators.System" };
+	String[] INDIVIDUAL_IMPORTS = {};
 
 	/** The star imports. */
-	Set<String> COLLECTIVE_IMPORTS = Stream
-			.of("gama.gaml.multi_criteria", "gama.core.outputs.layers.charts", "gama.core.outputs.layers",
-					"gama.core.outputs", "gama.core.kernel.batch", "gama.core.kernel.root",
-					"gama.gaml.architecture.weighted_tasks", "gama.gaml.architecture.user",
-					"gama.gaml.architecture.reflex", "gama.gaml.architecture.finite_state_machine", "gama.gaml.species",
-					"gama.core.metamodel.shape", "gama.gaml.expressions", "gama.core.metamodel.topology",
-					"gama.gaml.statements.test", "gama.core.metamodel.population", "gama.core.kernel.simulation",
-					"gama.core.kernel.model", "java.util", "gama.gaml.statements.draw", "gama.gaml.operators.spatial",
-					"gama.core.metamodel.shape", "gama.core.common.interfaces", "gama.gaml.interfaces",
-					"gama.core.runtime", "java.lang", "gama.core.metamodel.agent", "gama.gaml.types",
-					"gama.gaml.compilation", "gama.gaml.factories", "gama.gaml.descriptions", "gama.core.util.tree",
-					"gama.core.util.file", "gama.core.util.matrix", "gama.core.util.graph", "gama.core.util.path",
-					"gama.core.util", "gama.core.runtime.exceptions", "gama.gaml.statements", "gama.gaml.skills",
-					"gama.gaml.variables", "gama.core.kernel.experiment", "gama.gaml.operators",
-					"gama.core.common.interfaces", "gama.core.messaging", "gama.core.metamodel.population")
-			.map(s -> s + ".").collect(Collectors.toSet());
+	Set<String> COLLECTIVE_IMPORTS = Stream.of("java.util", "java.lang", "gama.api", "gama.api.additions",
+			"gama.api.additions.delegates", "gama.api.additions.registries", "gama.api.annotations",
+			"gama.api.compilation", "gama.api.compilation.ast", "gama.api.compilation.descriptions",
+			"gama.api.compilation.documentation", "gama.api.compilation.factories", "gama.api.compilation.prototypes",
+			"gama.api.compilation.serialization", "gama.api.compilation.validation", "gama.api.constants",
+			"gama.api.data.csv", "gama.api.data.factories", "gama.api.data.json", "gama.api.data.objects",
+			"gama.api.exceptions", "gama.api.gaml", "gama.api.gaml.constants", "gama.api.gaml.expressions",
+			"gama.api.gaml.species", "gama.api.gaml.statements", "gama.api.gaml.symbols", "gama.api.gaml.types",
+			"gama.api.gaml.variables", "gama.api.kernel", "gama.api.kernel.agent", "gama.api.kernel.serialization",
+			"gama.api.kernel.simulation", "gama.api.kernel.skill", "gama.api.kernel.species",
+			"gama.api.kernel.topology", "gama.api.runtime", "gama.api.runtime.scope", "gama.api.ui",
+			"gama.api.ui.displays", "gama.api.ui.layers", "gama.api.utils", "gama.api.utils.benchmark",
+			"gama.api.utils.collections", "gama.api.utils.files", "gama.api.utils.geometry", "gama.api.utils.prefs",
+			"gama.api.utils.random", "gama.api.utils.server", "gama.api.utils.tests").map(s -> s + ".")
+			.collect(Collectors.toSet());
 
 	/** The static star imports. */
-	Set<String> STATIC_COLLECTIVE_IMPORTS =
-			Stream.of("gama.gaml.operators.Cast", "gama.core.common.interfaces.IKeyword").map(s -> s + ".")
-					.collect(Collectors.toSet());
+	Set<String> STATIC_COLLECTIVE_IMPORTS = Stream.of("gama.api.gaml.types.Cast", "gama.api.constants.IKeyword")
+			.map(s -> s + ".").collect(Collectors.toSet());
 
 	/** The ss 1. */
 	List<String> ss1 = Arrays.asList("const", "true", "false", "name", "type");
@@ -172,7 +301,7 @@ public interface Constants {
 			put("IAgent", "IA");
 			put("IGamlAgent", "IG");
 			put("IColor", "GC");
-			put("GamaPair", "GP");
+			put("IPair", "GP");
 			put("GamaShape", "GS");
 			put("Object", "O");
 			put("Integer", "I");
@@ -186,9 +315,6 @@ public interface Constants {
 			put("IMatrix", "IM");
 			put("String", "S");
 			put("IPoint", "P");
-			put("MovingSkill", "MSK");
-			put("WorldSkill", "WSK");
-			put("GridSkill", "GSK");
 			put("IGamaFile", "GF");
 			put("IPath", "IP");
 			put("IList", "LI");
@@ -197,9 +323,6 @@ public interface Constants {
 			put("ISpecies", "SP");
 			put("IScope", "SC");
 			put("IDate", "GD");
-			put("SimulationAgent", "SA");
-			put("ExperimentAgent", "EA");
-			put("DeprecatedOperators", "DO");
 			put("PlatformAgent", "PA");
 			put("double", "d");
 			put("int", "i");

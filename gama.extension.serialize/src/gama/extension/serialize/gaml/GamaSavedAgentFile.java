@@ -14,19 +14,19 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ISerialisationConstants;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.GamaFile;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.constants.IKeyword;
+import gama.api.constants.ISerialisationConstants;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.files.GamaFile;
+import gama.annotations.doc;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
 
 /**
  * The Class GamaSavedSimulationFile.

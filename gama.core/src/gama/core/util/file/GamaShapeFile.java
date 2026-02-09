@@ -3,16 +3,16 @@
  * GamaShapeFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.util.file;
 
-import static gama.core.runtime.GAMA.reportError;
-import static gama.core.runtime.exceptions.GamaRuntimeException.create;
-import static gama.core.runtime.exceptions.GamaRuntimeException.warning;
+import static gama.api.GAMA.reportError;
+import static gama.api.exceptions.GamaRuntimeException.create;
+import static gama.api.exceptions.GamaRuntimeException.warning;
 import static org.apache.commons.lang3.StringUtils.splitByWholeSeparatorPreserveAllTokens;
 
 import java.io.IOException;
@@ -37,22 +37,26 @@ import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.util.factory.Hints;
 import org.locationtech.jts.geom.Geometry;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.GamaGeometryFactory;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaGisGeometry;
-import gama.core.metamodel.shape.GamaShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
+import gama.api.GAMA;
+import gama.api.data.factories.GamaCoordinateSequenceFactory;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.objects.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IProgressIndicator;
+import gama.api.utils.files.IFileMetadataProvider;
+import gama.api.utils.files.IGamaFileMetaData;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.core.geometry.GamaGisGeometry;
+import gama.core.geometry.GamaShape;
 import gama.dev.DEBUG;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Written by drogoul Modified on 13 nov. 2011
@@ -420,7 +424,7 @@ public class GamaShapeFile extends GamaGisFile {
 	@Override
 	public IList<String> getAttributes(final IScope scope) {
 		if (attributes == null) {
-			final IFileMetaDataProvider p = scope.getGui().getMetaDataProvider();
+			final IFileMetadataProvider p = GAMA.getMetadataProvider();
 			if (p != null) {
 				final IGamaFileMetaData metaData = p.getMetaData(getFile(scope), false, true);
 				if (metaData != null) { attributes = getAttributesFromPropertiesString(metaData.toPropertyString()); }
@@ -451,7 +455,7 @@ public class GamaShapeFile extends GamaGisFile {
 			return null;
 		}
 		if (fds instanceof ShapefileDataStore store) {
-			store.setGeometryFactory(GeometryUtils.GEOMETRY_FACTORY);
+			store.setGeometryFactory(GeometryUtils.getGeometryFactory());
 			store.setMemoryMapped(GamaPreferences.Experimental.SHAPEFILES_IN_MEMORY.getValue());
 			store.setBufferCachingEnabled(GamaPreferences.Experimental.SHAPEFILES_IN_MEMORY.getValue());
 			store.setCharset(Charset.forName("UTF8"));
@@ -462,7 +466,7 @@ public class GamaShapeFile extends GamaGisFile {
 
 	@Override
 	protected final void readShapes(final IScope scope) {
-		ProgressCounter counter = new ProgressCounter(scope, "Reading " + getName(scope));
+		IProgressIndicator counter = scope.getGui().getProgressIndicator(scope, "Reading " + getName(scope));
 		SimpleFeatureCollection collection = getFeatureCollection(scope);
 		computeEnvelope(scope);
 		int[] indexOfGeometry = { 0 };
@@ -500,7 +504,7 @@ public class GamaShapeFile extends GamaGisFile {
 				getBuffer().clear();
 				indexOfGeometry[0] = 0;
 				ShpFiles shp = new ShpFiles(getFile(scope).toURI().toURL());
-				try (ShapefileReader reader = new ShapefileReader(shp, false, false, GeometryUtils.GEOMETRY_FACTORY)) {
+				try (ShapefileReader reader = new ShapefileReader(shp, false, false, GeometryUtils.getGeometryFactory())) {
 					reader.setFlatGeometry(true);
 					while (reader.hasNext()) {
 						Record record = reader.nextRecord();
@@ -552,8 +556,8 @@ public class GamaShapeFile extends GamaGisFile {
 			// AD See Issue #3094. This constitutes a workaround
 			Query query = new Query();
 			// if (!with3D) { query.setHints(new Hints(Hints.FEATURE_2D, true)); }
-			query.getHints().put(Hints.JTS_COORDINATE_SEQUENCE_FACTORY, GamaGeometryFactory.COORDINATES_FACTORY);
-			query.getHints().put(Hints.JTS_GEOMETRY_FACTORY, GeometryUtils.GEOMETRY_FACTORY);
+			query.getHints().put(Hints.JTS_COORDINATE_SEQUENCE_FACTORY, GamaCoordinateSequenceFactory.getBuilder());
+			query.getHints().put(Hints.JTS_GEOMETRY_FACTORY, GeometryUtils.getGeometryFactory());
 			// AD
 			SimpleFeatureCollection collection = source.getFeatures(query);
 			if (source.getDataStore() != null) { source.getDataStore().dispose(); }

@@ -12,16 +12,16 @@ package gama.ui.display.opengl.scene.geometry;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.shape.IPoint;
-import gama.gaml.statements.draw.DrawingAttributes;
-import gama.gaml.statements.draw.DrawingAttributes.DrawerType;
+import gama.api.data.factories.GamaCoordinateSequenceFactory;
+import gama.api.data.objects.IPoint;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.IDrawingAttributes.DrawerType;
 import gama.ui.display.opengl.scene.AbstractObject;
 
 /**
  * The Class GeometryObject.
  */
-public class GeometryObject extends AbstractObject<Geometry, DrawingAttributes> {
+public class GeometryObject extends AbstractObject<Geometry, IDrawingAttributes> {
 
 	/**
 	 * Instantiates a new geometry object.
@@ -31,7 +31,7 @@ public class GeometryObject extends AbstractObject<Geometry, DrawingAttributes> 
 	 * @param attributes
 	 *            the attributes
 	 */
-	public GeometryObject(final Geometry geometry, final DrawingAttributes attributes) {
+	public GeometryObject(final Geometry geometry, final IDrawingAttributes attributes) {
 		super(geometry, attributes, DrawerType.GEOMETRY);
 	}
 
@@ -41,7 +41,7 @@ public class GeometryObject extends AbstractObject<Geometry, DrawingAttributes> 
 		if (explicitLocation == null) {
 			p.setLocation(0, 0, 0);
 		} else {
-			GeometryUtils.getContourCoordinates(getObject()).getCenter(p);
+			GamaCoordinateSequenceFactory.pointsOf(getObject()).getCenter(p);
 			p.negate();
 			p.add(explicitLocation);
 		}
@@ -51,10 +51,10 @@ public class GeometryObject extends AbstractObject<Geometry, DrawingAttributes> 
 	public void getTranslationForRotationInto(final IPoint p) {
 		final IPoint explicitLocation = getAttributes().getLocation();
 		if (explicitLocation == null) {
-			GeometryUtils.getContourCoordinates(getObject()).getCenter(p);
+			GamaCoordinateSequenceFactory.pointsOf(getObject()).getCenter(p);
 			Double depth = getAttributes().getDepth();
 			if (depth != null) {
-				switch (getAttributes().type) {
+				switch (getAttributes().getType()) {
 					case SPHERE:
 						p.setZ(p.getZ() + depth);
 						break;
@@ -76,7 +76,7 @@ public class GeometryObject extends AbstractObject<Geometry, DrawingAttributes> 
 
 	@Override
 	public void getTranslationForScalingInto(final IPoint p) {
-		GeometryUtils.getContourCoordinates(getObject()).getCenter(p);
+		GamaCoordinateSequenceFactory.pointsOf(getObject()).getCenter(p);
 	}
 
 }

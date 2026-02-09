@@ -9,7 +9,7 @@
  ********************************************************************************************************/
 package gama.core.util.file;
 
-import static gama.core.common.geometry.GeometryUtils.GEOMETRY_FACTORY;
+import static gama.api.utils.geometry.GeometryUtils.getGeometryFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -29,22 +29,27 @@ import org.locationtech.jts.geom.Polygon;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.geometry.ICoordinates;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.metamodel.shape.GamaGisGeometry;
-import gama.core.metamodel.shape.GamaShape;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.projection.IProjection;
-import gama.core.metamodel.topology.projection.ProjectionFactory;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.Collector;
-import gama.core.util.list.GamaListFactory;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.Types;
+import gama.api.GAMA;
+import gama.api.data.factories.GamaCoordinateSequenceFactory;
+import gama.api.data.factories.GamaEnvelopeFactory;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.data.objects.ICoordinates;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IShape;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.topology.ICoordinateReferenceSystem;
+import gama.api.kernel.topology.IProjection;
+import gama.api.kernel.topology.IProjectionFactory;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IProgressIndicator;
+import gama.api.utils.collections.Collector;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.core.geometry.GamaGisGeometry;
+import gama.core.geometry.GamaShape;
+import gama.core.topology.gis.GamaCRS;
+import gama.core.topology.gis.ProjectionFactory;
 
 /**
  * Class GamaGisFile.
@@ -54,10 +59,6 @@ import gama.gaml.types.Types;
  *
  */
 public abstract class GamaGisFile extends GamaGeometryFile {
-
-	/** The Constant ALREADY_PROJECTED_CODE. */
-	// The code to force reading the GIS data as already projected
-	public static final int ALREADY_PROJECTED_CODE = 0;
 
 	/** The zero z. */
 	static CoordinateFilter ZERO_Z = coord -> coord.setZ(0);
@@ -77,7 +78,7 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 	// Faire les tests sur ALREADY_PROJECTED ET LE PASSER AUSSI A GIS UTILS ???
 
 	/** The CRS cache. */
-	static Cache<String, CoordinateReferenceSystem> CRSCache = CacheBuilder.newBuilder().concurrencyLevel(10)
+	static Cache<String, ICoordinateReferenceSystem> CRSCache = CacheBuilder.newBuilder().concurrencyLevel(10)
 			.expireAfterAccess(Duration.of(5, ChronoUnit.MINUTES)).build();
 
 	/**
@@ -85,7 +86,7 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 	 *
 	 * @return
 	 */
-	protected final CoordinateReferenceSystem getExistingCRS(final IScope scope) {
+	protected final ICoordinateReferenceSystem getExistingCRS(final IScope scope) {
 		try {
 			return CRSCache.get(this.getPath(scope), () -> {
 				if (initialCRSCode != null) {
@@ -106,8 +107,8 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 								scope);
 					}
 				}
-				CoordinateReferenceSystem crs = getOwnCRS(scope);
-				if (crs == null && scope != null) {
+				ICoordinateReferenceSystem crs = getOwnCRS(scope);
+				if ((crs == null || crs.isNull()) && scope != null) {
 					crs = scope.getSimulation().getProjectionFactory().getDefaultInitialCRS(scope);
 				}
 				return crs;
@@ -122,13 +123,14 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 	/**
 	 * @return
 	 */
-	protected CoordinateReferenceSystem getOwnCRS(final IScope scope) {
+	protected ICoordinateReferenceSystem getOwnCRS(final IScope scope) {
 		URL url;
 		try {
 			url = getFile(scope).toURI().toURL();
-			CoordinateReferenceSystem crs = getFeatureCollection(scope).getSchema().getCoordinateReferenceSystem();
-			if (crs == null) { crs = ProjectionFactory.manageGoogleCRS(url); }
-			return crs;
+			CoordinateReferenceSystem internalCRS =
+					getFeatureCollection(scope).getSchema().getCoordinateReferenceSystem();
+			if (internalCRS == null) return ProjectionFactory.manageGoogleCRS(url);
+			return new GamaCRS(internalCRS);
 		} catch (MalformedURLException e) {
 			return null;
 		}
@@ -151,7 +153,7 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 	 *            the scope
 	 */
 	protected void readShapes(final IScope scope) {
-		ProgressCounter counter = new ProgressCounter(scope, "Reading " + getName(scope));
+		IProgressIndicator counter = scope.getGui().getProgressIndicator(scope, "Reading " + getName(scope));
 		SimpleFeatureCollection collection = getFeatureCollection(scope);
 		computeEnvelope(scope);
 		try {
@@ -197,8 +199,8 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 	 */
 	protected void computeProjection(final IScope scope, final IEnvelope env) {
 		if (scope == null) return;
-		final CoordinateReferenceSystem crs = getExistingCRS(scope);
-		final ProjectionFactory pf;
+		final ICoordinateReferenceSystem crs = getExistingCRS(scope);
+		final IProjectionFactory pf;
 		if (scope.getSimulation().isMicroSimulation()) {
 			pf = scope.getExperiment().getPopulation().getHost().getSimulation().getProjectionFactory();
 		} else {
@@ -219,8 +221,8 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 		final Polygon gs[] = new Polygon[geom.getNumGeometries()];
 		for (int i = 0; i < geom.getNumGeometries(); i++) {
 			final Polygon p = (Polygon) geom.getGeometryN(i);
-			final ICoordinates coords = GeometryUtils.getContourCoordinates(p);
-			final LinearRing lr = GEOMETRY_FACTORY.createLinearRing(coords.toCoordinateArray());
+			final ICoordinates coords = GamaCoordinateSequenceFactory.pointsOf(p);
+			final LinearRing lr = getGeometryFactory().createLinearRing(coords.toCoordinateArray());
 			try (final Collector.AsList<LinearRing> holes = Collector.getList()) {
 				for (int j = 0; j < p.getNumInteriorRing(); j++) {
 					final LinearRing h = p.getInteriorRingN(j);
@@ -228,10 +230,10 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 				}
 				LinearRing[] stockArr = new LinearRing[holes.size()];
 				stockArr = holes.items().toArray(stockArr);
-				gs[i] = GEOMETRY_FACTORY.createPolygon(lr, stockArr);
+				gs[i] = getGeometryFactory().createPolygon(lr, stockArr);
 			}
 		}
-		return GEOMETRY_FACTORY.createMultiPolygon(gs);
+		return getGeometryFactory().createMultiPolygon(gs);
 	}
 
 	/**
@@ -340,7 +342,7 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 
 	@Override
 	protected IShape buildGeometry(final IScope scope) {
-		return GamaGeometryType.geometriesToGeometry(scope, getBuffer());
+		return GamaShapeFactory.geometriesToGeometry(scope, getBuffer());
 	}
 
 	/**

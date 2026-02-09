@@ -46,9 +46,10 @@ import org.geotools.map.StyleLayer;
 import org.geotools.styling.SLD;
 import org.geotools.styling.StyleBuilder;
 
-import gama.core.metamodel.topology.projection.ProjectionFactory;
-import gama.core.runtime.GAMA;
-import gama.core.util.IColor;
+import gama.api.GAMA;
+import gama.api.data.objects.IColor;
+import gama.core.topology.gis.ProjectionFactory;
+import gama.core.util.file.ShapeInfo;
 import gama.dev.DEBUG;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;
@@ -59,7 +60,6 @@ import gama.ui.shared.views.toolbar.Selector;
 import gama.ui.viewers.gis.geotools.styling.Mode;
 import gama.ui.viewers.gis.geotools.styling.SLDs;
 import gama.ui.viewers.gis.geotools.styling.Utils;
-import gama.workspace.metadata.ShapeInfo;
 
 /**
  * The Class ShapeFileViewer.
@@ -111,7 +111,7 @@ public class ShapeFileViewer extends GISFileViewer {
 	@Override
 	protected void displayInfoString() {
 		String s;
-		final ShapeInfo info = (ShapeInfo) GAMA.getGui().getMetaDataProvider().getMetaData(file, false, true);
+		final ShapeInfo info = (ShapeInfo) GAMA.getMetadataProvider().getMetaData(file, false, true);
 		if (info == null) {
 			s = "Error in reading file information";
 		} else {
@@ -152,7 +152,8 @@ public class ShapeFileViewer extends GISFileViewer {
 						m2.setText("     - lower corner : " + env.getLowerCorner().getOrdinate(0) + " "
 								+ env.getLowerCorner().getOrdinate(1));
 						if (!noCRS) {
-							env = env.transform(new ProjectionFactory().getTargetCRS(GAMA.getRuntimeScope()), true);
+							env = env.transform(new ProjectionFactory().getTargetCRS(GAMA.getRuntimeScope()).getCRS(),
+									true);
 						}
 						m2 = new MenuItem(menu, SWT.NONE);
 						m2.setEnabled(false);

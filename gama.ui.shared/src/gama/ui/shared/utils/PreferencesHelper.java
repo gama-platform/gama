@@ -10,21 +10,21 @@
  ********************************************************************************************************/
 package gama.ui.shared.utils;
 
-import static gama.core.common.preferences.GamaPreferences.create;
-import static gama.core.common.preferences.GamaPreferences.Interface.APPEARANCE;
-import static gama.core.common.preferences.GamaPreferences.Interface.NAME;
-import static gama.core.common.preferences.GamaPreferences.Interface.NAVIGATOR;
+import static gama.api.utils.prefs.GamaPreferences.create;
+import static gama.api.utils.prefs.GamaPreferences.Interface.APPEARANCE;
+import static gama.api.utils.prefs.GamaPreferences.Interface.NAME;
+import static gama.api.utils.prefs.GamaPreferences.Interface.NAVIGATOR;
 
 import org.eclipse.core.runtime.CoreException;
 
-import gama.core.common.interfaces.IGui;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.preferences.Pref;
-import gama.core.common.util.MemoryUtils;
-import gama.core.runtime.GAMA;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
-import gama.gaml.types.IType;
+import gama.api.GAMA;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.objects.IColor;
+import gama.api.gaml.types.IType;
+import gama.api.ui.IGui;
+import gama.api.utils.MemoryUtils;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.Pref;
 import gama.ui.shared.menus.GamaColorMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;

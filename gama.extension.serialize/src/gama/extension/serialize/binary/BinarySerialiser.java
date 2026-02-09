@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * BinarySerialiser.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
- * platform.
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,38 +16,38 @@ import java.util.Map;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.core.common.geometry.GamaCoordinateSequenceFactory;
-import gama.core.common.geometry.GamaGeometryFactory;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.interfaces.ISerialisationConstants;
-import gama.core.metamodel.agent.AgentReference;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.agent.ISerialisedAgent;
-import gama.core.metamodel.agent.SerialisedAgent;
-import gama.core.metamodel.population.ISerialisedPopulation;
-import gama.core.metamodel.population.SerialisedGrid;
-import gama.core.metamodel.population.SerialisedPopulation;
-import gama.core.metamodel.shape.GamaShape;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.shape.IShape.Type;
-import gama.core.metamodel.topology.grid.IGrid;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.constants.ISerialisationConstants;
+import gama.api.data.factories.GamaGeometryFactory;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.data.factories.ICoordinateSequenceFactory;
+import gama.api.data.objects.IFont;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IShape;
+import gama.api.data.objects.IShape.Type;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.serialization.ISerialisedAgent;
+import gama.api.kernel.serialization.ISerialisedPopulation;
+import gama.api.kernel.serialization.SerialisedAgent;
+import gama.api.kernel.serialization.SerialisedGrid;
+import gama.api.kernel.serialization.SerialisedPopulation;
+import gama.api.kernel.species.ISpecies;
+import gama.api.kernel.topology.IGrid;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.AgentReference;
+import gama.api.utils.geometry.GeometryUtils;
 import gama.core.util.GamaFont;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
 import gama.extension.serialize.fst.FSTBasicObjectSerializer;
 import gama.extension.serialize.fst.FSTClazzInfo;
+import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
 import gama.extension.serialize.fst.FSTConfiguration;
 import gama.extension.serialize.fst.FSTObjectInput;
 import gama.extension.serialize.fst.FSTObjectOutput;
-import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
-import gama.gaml.species.ISpecies;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IType;
 
 /**
  * The Class FSTImplementation. Allows to provide common initializations to FST Configurations and do the dirty work.
@@ -149,7 +149,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 	@SuppressWarnings ("rawtypes")
 	protected void registerSerialisers(final FSTConfiguration conf) {
 
-		register(conf, GamaShape.class, new FSTIndividualSerialiser<GamaShape>() {
+		register(conf, IShape.class, new FSTIndividualSerialiser<IShape>() {
 
 			@Override
 			protected boolean shouldRegister() {
@@ -159,7 +159,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 			// TODO The inner attributes of the shape should be saved (ie the ones that do not belong to the var names
 			// of the species
 			@Override
-			public void serialise(final FSTObjectOutput out, final GamaShape toWrite) throws Exception {
+			public void serialise(final FSTObjectOutput out, final IShape toWrite) throws Exception {
 				Double d = toWrite.getDepth();
 				IShape.Type t = toWrite.getGeometricalType();
 				out.writeDouble(d == null ? 0d : d);
@@ -169,10 +169,10 @@ public class BinarySerialiser implements ISerialisationConstants {
 			}
 
 			@Override
-			public GamaShape deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+			public IShape deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
 				double d = in.readDouble();
 				IShape.Type t = IShape.Type.values()[in.readInt()];
-				GamaShape result = GamaShapeFactory.createFrom((Geometry) in.readObject());
+				IShape result = GamaShapeFactory.createFrom((Geometry) in.readObject());
 				// AgentReference agent = (AgentReference) in.readObject();
 				// if (agent != AgentReference.NULL) { result.setAgent(agent.getReferencedAgent(scope)); }
 				if (d > 0d) { result.setDepth(d); }
@@ -248,9 +248,9 @@ public class BinarySerialiser implements ISerialisationConstants {
 			}
 
 			@Override
-			public IScope deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+			public IScope deserialise(final IScope scope1, final FSTObjectInput in) throws Exception {
 				String name = in.readStringUTF();
-				return scope.copy(name);
+				return scope1.copy(name);
 			}
 
 		});
@@ -263,9 +263,9 @@ public class BinarySerialiser implements ISerialisationConstants {
 			}
 
 			@Override
-			public ISpecies deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+			public ISpecies deserialise(final IScope scope1, final FSTObjectInput in) throws Exception {
 				String name = in.readStringUTF();
-				return scope.getModel().getSpecies(name);
+				return scope1.getModel().getSpecies(name);
 			}
 
 		});
@@ -279,7 +279,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 			}
 
 			@Override
-			public AgentReference deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+			public AgentReference deserialise(final IScope scope1, final FSTObjectInput in) throws Exception {
 				return AgentReference.of((String[]) in.readObject(), (Integer[]) in.readObject());
 			}
 		});
@@ -344,21 +344,21 @@ public class BinarySerialiser implements ISerialisationConstants {
 			@Override
 			public GamaGeometryFactory deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
 				in.readStringUTF();
-				return GeometryUtils.GEOMETRY_FACTORY;
+				return GeometryUtils.getGeometryFactory();
 			}
 		});
 
-		register(conf, GamaFont.class, new FSTIndividualSerialiser<GamaFont>() {
+		register(conf, IFont.class, new FSTIndividualSerialiser<IFont>() {
 
 			@Override
-			public void serialise(final FSTObjectOutput out, final GamaFont o) throws Exception {
+			public void serialise(final FSTObjectOutput out, final IFont o) throws Exception {
 				out.writeStringUTF(o.getName());
 				out.writeInt(o.getStyle());
 				out.writeInt(o.getSize());
 			}
 
 			@Override
-			public GamaFont deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+			public IFont deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
 				return new GamaFont(in.readStringUTF(), in.readInt(), in.readInt());
 			}
 		});
@@ -428,22 +428,20 @@ public class BinarySerialiser implements ISerialisationConstants {
 
 		});
 
-		register(conf, GamaCoordinateSequenceFactory.class,
-				new FSTIndividualSerialiser<GamaCoordinateSequenceFactory>() {
+		register(conf, ICoordinateSequenceFactory.class, new FSTIndividualSerialiser<ICoordinateSequenceFactory>() {
 
-					@Override
-					public void serialise(final FSTObjectOutput out, final GamaCoordinateSequenceFactory o)
-							throws Exception {
-						out.writeStringUTF("*GCSF*");
-					}
+			@Override
+			public void serialise(final FSTObjectOutput out, final ICoordinateSequenceFactory o) throws Exception {
+				out.writeStringUTF("*GCSF*");
+			}
 
-					@Override
-					public GamaCoordinateSequenceFactory deserialise(final IScope scope, final FSTObjectInput in)
-							throws Exception {
-						in.readStringUTF();
-						return GeometryUtils.GEOMETRY_FACTORY.getCoordinateSequenceFactory();
-					}
-				});
+			@Override
+			public ICoordinateSequenceFactory deserialise(final IScope scope, final FSTObjectInput in)
+					throws Exception {
+				in.readStringUTF();
+				return GeometryUtils.getGeometryFactory().getCoordinateSequenceFactory();
+			}
+		});
 	}
 
 	/**

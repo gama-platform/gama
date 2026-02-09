@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlResourceServices.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlResourceServices.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,7 +19,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.emf.common.util.URI;
@@ -31,19 +30,20 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 
 import com.google.common.collect.Iterables;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.GAMA;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
+import gama.api.GAMA;
+import gama.api.compilation.ast.ISyntacticElement;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.validation.IValidationContext;
+import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.objects.IMap;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.ast.ISyntacticElement;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.descriptions.ValidationContext;
 import gaml.compiler.gaml.documentation.GamlResourceDocumenter;
 import gaml.compiler.gaml.indexer.GamlResourceIndexer;
 import gaml.compiler.gaml.parsing.GamlSyntacticConverter;
 import gaml.compiler.gaml.validation.IGamlBuilderListener;
+import gaml.compiler.gaml.validation.ValidationContext;
 
 /**
  * The Class GamlResourceServices.
@@ -140,8 +140,8 @@ public class GamlResourceServices {
 	 * @param status
 	 *            the status
 	 */
-	public static void updateState(final URI uri, final ModelDescription model, final boolean newState,
-			final ValidationContext status) {
+	public static void updateState(final URI uri, final IModelDescription model, final boolean newState,
+			final IValidationContext status) {
 		// DEBUG.LOG("Beginning updating the state of editor in
 		// ResourceServices for " + uri.lastSegment());
 		final URI newURI = uri;
@@ -181,7 +181,7 @@ public class GamlResourceServices {
 			final Map.Entry<URI, IGamlBuilderListener> entry = it.next();
 			if (entry.getValue() == listener) {
 				getResourceDocumenter().invalidate(entry.getKey());
-				ValidationContext vc = GamlResourceServices.getValidationContext(entry.getKey());
+				IValidationContext vc = GamlResourceServices.getValidationContext(entry.getKey());
 				if (vc != null) { vc.shouldDocument(false); }
 				it.remove();
 
@@ -197,12 +197,12 @@ public class GamlResourceServices {
 	 *            the r
 	 * @return the validation context
 	 */
-	public static ValidationContext getOrCreateValidationContext(final GamlResource r) {
+	public static IValidationContext getOrCreateValidationContext(final GamlResource r) {
 		final URI newURI = r.getURI();
 		if (!resourceErrors.containsKey(newURI)) {
 			resourceErrors.put(newURI, new ValidationContext(newURI, r.hasErrors(), getResourceDocumenter()));
 		}
-		final ValidationContext result = resourceErrors.get(newURI);
+		final IValidationContext result = resourceErrors.get(newURI);
 		return result;
 	}
 
@@ -215,7 +215,7 @@ public class GamlResourceServices {
 	 * @return the validation context
 	 * @date 30 déc. 2023
 	 */
-	public static ValidationContext getValidationContext(final URI newURI) {
+	public static IValidationContext getValidationContext(final URI newURI) {
 		return resourceErrors.get(newURI);
 	}
 
@@ -264,7 +264,7 @@ public class GamlResourceServices {
 		// Likely in a headless scenario (w/o workspace)
 		if (r.getURI().isFile()) return new Path(r.getURI().toFileString()).toOSString();
 		final IPath path = getPathOf(r);
-		final IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+		final IFile file = GAMA.getWorkspaceManager().getRoot().getFile(path);
 		final IPath fullPath = file.getLocation();
 		return fullPath == null ? "" : fullPath.toOSString();
 	}
@@ -296,7 +296,7 @@ public class GamlResourceServices {
 		// Cf. #2983 -- we are likely in a headless scenario
 		if (!uri.isFile()) {
 			final IPath path = getPathOf(r);
-			final IFile file = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+			final IFile file = GAMA.getWorkspaceManager().getRoot().getFile(path);
 			final IPath fullPath = file.getProject().getLocation();
 			return fullPath == null ? "" : fullPath.toOSString();
 		}
@@ -318,7 +318,7 @@ public class GamlResourceServices {
 		ResourceSet rs = null;
 		GamlResource r = null;
 		if (existing != null) {
-			final ModelDescription desc = existing.getModelDescription();
+			final IModelDescription desc = existing.getModelDescription();
 			if (desc != null) {
 				final EObject e = desc.getUnderlyingElement();
 				if (e != null) {
@@ -373,7 +373,7 @@ public class GamlResourceServices {
 	 */
 	public static ISyntacticElement buildSyntacticContents(final GamlResource r) {
 		// DEBUG.OUT("Building contents for " + r.getURI().lastSegment());
-		return converter.buildSyntacticContents(r.getParseResult().getRootASTElement(), null);
+		return converter.buildSyntacticContents(r.getParseResult().getRootASTElement());
 	}
 
 	/**

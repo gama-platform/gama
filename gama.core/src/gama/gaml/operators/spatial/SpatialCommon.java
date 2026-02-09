@@ -1,16 +1,16 @@
 package gama.gaml.operators.spatial;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.metamodel.topology.ITopology;
-import gama.core.runtime.IScope;
-import gama.gaml.expressions.IExpression;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.kernel.topology.ITopology;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The class SpatialCommon.

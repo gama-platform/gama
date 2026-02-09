@@ -10,9 +10,10 @@
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
-import gama.core.util.IColor;
+import gama.api.data.objects.IColor;
+import gama.api.ui.layers.IMeshColorProvider;
+import gama.core.util.color.GamaGradient;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Colors.GamaGradient;
 
 /**
  * The Class GradientBasedMeshColorProvider.

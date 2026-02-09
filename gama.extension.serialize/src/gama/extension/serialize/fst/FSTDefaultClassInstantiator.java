@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * FSTDefaultClassInstantiator.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
- * simulation platform (v.1.9.3).
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -33,23 +33,8 @@ public class FSTDefaultClassInstantiator implements FSTClassInstantiator {
 	public static ConcurrentHashMap<Class, Constructor> constructorMap = new ConcurrentHashMap<>();
 
 	@Override
-	public Object newInstance(final Class clazz, final Constructor cons, final boolean doesRequireInit,
-			final boolean unsafeAsLastResort) {
+	public Object newInstance(final Class clazz, final Constructor cons, final boolean doesRequireInit) {
 		try {
-			if (!doesRequireInit && FSTUtil.unFlaggedUnsafe != null)
-				return FSTUtil.unFlaggedUnsafe.allocateInstance(clazz);
-			if (cons == null && unsafeAsLastResort) {
-				// best effort. use Unsafe to instantiate.
-				// Warning: if class contains transient fields which have default values assigned ('transient int x =
-				// 3'),
-				// those will not be assigned after deserialization as unsafe instantiation does not execute any default
-				// construction code.
-				// Define a public no-arg constructor to avoid this behaviour (rarely an issue, but there are cases).
-				if (FSTUtil.unFlaggedUnsafe != null) return FSTUtil.unFlaggedUnsafe.allocateInstance(clazz);
-				throw new RuntimeException(
-						"no suitable constructor found and no Unsafe instance avaiable. Can't instantiate "
-								+ clazz.getName());
-			}
 			if (cons == null) return null;
 			return cons.newInstance();
 		} catch (Throwable ignored) {

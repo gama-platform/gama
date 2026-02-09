@@ -2,7 +2,7 @@
  *
  * DEBUG.java, in gama.dev, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,7 +22,79 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
- * A simple and generic debugging/logging class that can be turned on / off on a class basis.
+ * A comprehensive debugging and logging utility class that provides flexible debugging capabilities that can be
+ * enabled/disabled on a per-class basis. This class offers various debugging methods including simple output, timing
+ * utilities, banners, and stack traces.
+ *
+ * <h2>Main Features:</h2>
+ * <ul>
+ * <li><strong>Class-based debugging:</strong> Can be turned on/off for specific classes</li>
+ * <li><strong>Timing utilities:</strong> Measure execution time of code blocks</li>
+ * <li><strong>Formatted output:</strong> Banners, titles, sections with consistent formatting</li>
+ * <li><strong>Stack trace debugging:</strong> Print filtered stack traces</li>
+ * <li><strong>Counter utilities:</strong> Track method call counts</li>
+ * <li><strong>Thread-safe:</strong> Uses concurrent collections for multi-threaded environments</li>
+ * <li><strong>Custom output streams:</strong> Redirect output to custom streams per thread</li>
+ * </ul>
+ *
+ * <h2>Usage Examples:</h2>
+ *
+ * <h3>Basic debugging:</h3>
+ *
+ * <pre>
+ * // Enable debugging for current class
+ * DEBUG.ON();
+ *
+ * // Output debug messages (only shown if debugging is enabled for this class)
+ * DEBUG.OUT("This is a debug message");
+ * DEBUG.OUT("Value: ", 20, someObject);
+ *
+ * // Always output (regardless of class registration)
+ * DEBUG.LOG("Always shown");
+ * DEBUG.ERR("Error message");
+ * </pre>
+ *
+ * <h3>Timing operations:</h3>
+ *
+ * <pre>
+ * // Time a runnable operation
+ * DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Loading data", "completed in", () -> {
+ * 	// Your code here
+ * });
+ *
+ * // Time a supplier operation and get result
+ * String result = DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Processing", "finished in", () -> { return processData(); });
+ * </pre>
+ *
+ * <h3>Formatting utilities:</h3>
+ *
+ * <pre>
+ * DEBUG.SECTION("Important Section"); // Creates a bordered section
+ * DEBUG.TITLE("My Title"); // Creates a padded title
+ * DEBUG.BANNER(BANNER_CATEGORY.GAMA, "Operation", "status", "result");
+ * DEBUG.LINE(); // Outputs a line of dashes
+ * </pre>
+ *
+ * <h3>Stack traces and debugging:</h3>
+ *
+ * <pre>
+ * DEBUG.STACK(); // Print filtered stack trace
+ * DEBUG.RESET(); // Reset counters for current class
+ * </pre>
+ *
+ * <h2>Global Control:</h2> The debugging system can be globally controlled through the FLAGS class constants:
+ * <ul>
+ * <li>{@code FLAGS.ENABLE_DEBUG} - Master switch for debug functionality</li>
+ * <li>{@code FLAGS.ENABLE_LOGGING} - Master switch for logging functionality</li>
+ * <li>{@code DEBUG.FORCE_ON} - Forces debugging on for all classes regardless of registration</li>
+ * </ul>
+ *
+ * <h2>Thread Safety:</h2> This class is thread-safe and uses:
+ * <ul>
+ * <li>ConcurrentHashMap for storing registered classes and counters</li>
+ * <li>ThreadLocal for per-thread log writers</li>
+ * <li>StackWalker for efficient stack inspection</li>
+ * </ul>
  *
  * @author A. Drogoul
  * @since August 2018
@@ -33,7 +105,8 @@ public class DEBUG {
 	public static boolean FORCE_ON;
 
 	/**
-	 * A custom security manager that exposes the getClassContext() information
+	 * A custom security manager that exposes the getClassContext() information for determining the calling class name
+	 * when StackWalker is not sufficient.
 	 */
 	static private class MySecurityManager extends SecurityManager {
 
@@ -89,10 +162,11 @@ public class DEBUG {
 	}
 
 	/**
-	 * The Interface RunnableWithException.
+	 * A functional interface that represents a runnable operation that may throw an exception. This is used by timing
+	 * methods that need to handle checked exceptions from the code being timed.
 	 *
 	 * @param <T>
-	 *            the generic type
+	 *            the type of exception that may be thrown
 	 */
 	public interface RunnableWithException<T extends Throwable> {
 
@@ -106,17 +180,31 @@ public class DEBUG {
 	}
 
 	/**
-	 * Simple timing utility to measure and output the number of ms taken by a runnable. If the class is registered,
-	 * outputs the title provided and the time taken once the runnable is finished, otherwise simply runs the runnable
-	 * (the overhead is minimal compared to simply executing the contents of the runnable).
+	 * Simple timing utility to measure and output the number of milliseconds taken by a runnable operation. If logging
+	 * is enabled, outputs the banner with timing information once the runnable is finished.
 	 *
-	 * Usage: DEBUG.TIMER("Important task", "done in", ()-> importantTask(...)); Output: Important Taks done in 100ms
+	 * <p>
+	 * The method executes the runnable and measures its execution time, then displays the result in a formatted banner.
+	 * If global logging is disabled, simply runs the runnable with minimal overhead.
+	 * </p>
 	 *
-	 * @param title
-	 *            a string that will prefix the number of ms in the output
-	 * @param supplier
-	 *            an object that encapsulates the computation to measure
-	 * @throws Exception
+	 * <h3>Usage example:</h3>
+	 *
+	 * <pre>
+	 * DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Loading data", "completed in", () -> { loadData(); });
+	 * // Output: > GAMA : Loading data _____________ completed in 150ms
+	 * </pre>
+	 *
+	 * @param category
+	 *            the banner category to display
+	 * @param begin
+	 *            the initial description of the operation
+	 * @param end
+	 *            the completion description (e.g., "completed in", "finished in")
+	 * @param runnable
+	 *            the operation to execute and measure
+	 * @param followUpWithResult
+	 *            optional consumers to process the timing result
 	 */
 
 	@SafeVarargs
@@ -185,7 +273,27 @@ public class DEBUG {
 	}
 
 	/**
-	 * Turns DEBUG on for the calling class
+	 * Enables debugging for the calling class. Once enabled, all subsequent calls to DEBUG.OUT() from this class will
+	 * produce output. This method is thread-safe and can be called from multiple threads concurrently.
+	 *
+	 * <p>
+	 * The enabling is based on the fully qualified class name of the calling class. If debugging is globally disabled
+	 * via FLAGS.ENABLE_DEBUG or FLAGS.ENABLE_LOGGING, this method has no effect.
+	 * </p>
+	 *
+	 * <h3>Example usage:</h3>
+	 *
+	 * <pre>
+	 * public class MyClass {
+	 * 	static {
+	 * 		DEBUG.ON(); // Enable debugging for MyClass
+	 * 	}
+	 *
+	 * 	public void myMethod() {
+	 * 		DEBUG.OUT("This will be shown");
+	 * 	}
+	 * }
+	 * </pre>
 	 */
 	public static final void ON() {
 		if (!ENABLE_DEBUG || !ENABLE_LOGGING) return;
@@ -194,10 +302,16 @@ public class DEBUG {
 	}
 
 	/**
-	 * On.
+	 * Enables debugging for a specific class by name. This allows enabling debugging for classes other than the current
+	 * calling class.
+	 *
+	 * <p>
+	 * This method is useful when you want to enable debugging from a different class context or when programmatically
+	 * controlling debug output.
+	 * </p>
 	 *
 	 * @param calling
-	 *            the calling
+	 *            the fully qualified class name to enable debugging for
 	 */
 	public static final void ON(final String calling) {
 		if (!ENABLE_DEBUG || !ENABLE_LOGGING) return;
@@ -205,9 +319,13 @@ public class DEBUG {
 	}
 
 	/**
-	 * Turns DEBUG off for the calling class. This call can be avoided in a static context (not calling ON() will
-	 * prevent the calling class from debugging anyway), but it can be used to disable logging based on some user
-	 * actions, for instance.
+	 * Disables debugging for the calling class. Once disabled, all subsequent calls to DEBUG.OUT() from this class will
+	 * not produce any output.
+	 *
+	 * <p>
+	 * This call can be avoided in a static context (not calling ON() will prevent the calling class from debugging
+	 * anyway), but it can be used to disable logging based on some user actions, for instance.
+	 * </p>
 	 */
 	public static final void OFF() {
 		if (!ENABLE_DEBUG || !ENABLE_LOGGING) return;
@@ -216,10 +334,15 @@ public class DEBUG {
 	}
 
 	/**
-	 * Whether DEBUG is active for the calling class. Returns false if GLOBAL_OFF is true, and true if GLOBAL_ON is
-	 * true.
+	 * Checks whether DEBUG is active for the calling class. This method inspects the calling class and returns true if
+	 * debugging has been enabled for it.
 	 *
-	 * @return whether DEBUG is active for this class
+	 * <p>
+	 * The method returns false if global debugging is disabled through FLAGS.ENABLE_DEBUG or FLAGS.ENABLE_LOGGING, and
+	 * true if FORCE_ON is set to true.
+	 * </p>
+	 *
+	 * @return true if debug output will be shown for the calling class, false otherwise
 	 */
 	public static boolean IS_ON() {
 		if (!ENABLE_DEBUG || !ENABLE_LOGGING) return false;
@@ -227,9 +350,16 @@ public class DEBUG {
 	}
 
 	/**
-	 * Unconditional output to System.err except if GLOBAL_OFF is true
+	 * Outputs an error message unconditionally to System.err. This method will always produce output unless global
+	 * logging is disabled through FLAGS.ENABLE_DEBUG or FLAGS.ENABLE_LOGGING.
 	 *
-	 * @param string
+	 * <p>
+	 * This method is designed for error reporting that should be visible regardless of whether debugging is enabled for
+	 * the calling class.
+	 * </p>
+	 *
+	 * @param s
+	 *            the object to output as an error message
 	 */
 	public static final void ERR(final Object s) {
 		if (!ENABLE_DEBUG || !ENABLE_LOGGING) return;
@@ -237,9 +367,13 @@ public class DEBUG {
 	}
 
 	/**
-	 * Unconditional output to System.err except if GLOBAL_OFF is true. The stack trace is included
+	 * Outputs an error message unconditionally to System.err along with a stack trace. This method will always produce
+	 * output unless global logging is disabled.
 	 *
-	 * @param string
+	 * @param s
+	 *            the error message object to output
+	 * @param t
+	 *            the throwable whose stack trace should be printed
 	 */
 	public static final void ERR(final Object s, final Throwable t) {
 		if (!ENABLE_DEBUG || !ENABLE_LOGGING) return;
@@ -248,41 +382,70 @@ public class DEBUG {
 	}
 
 	/**
-	 * Unconditional output to System.out except if GLOBAL_OFF is true.
+	 * Outputs a message unconditionally to System.out or the registered log writer. This method will always produce
+	 * output unless global logging is disabled through FLAGS.ENABLE_LOGGING.
+	 *
+	 * <p>
+	 * Unlike DEBUG.OUT(), this method does not check if debugging is enabled for the calling class - it always outputs
+	 * the message.
+	 * </p>
 	 *
 	 * @param string
+	 *            the object to output
 	 */
 	public static void LOG(final Object string) {
 		if (ENABLE_LOGGING) { LOG(string, true); }
 	}
 
 	/**
-	 * Banner.
+	 * Outputs a formatted banner line with default category (GAMA). Banners provide a consistent format for displaying
+	 * operation status and results.
+	 *
+	 * <p>
+	 * The output format is: "&gt; CATEGORY: title ________ state result"
+	 * </p>
+	 *
+	 * <h3>Example:</h3>
+	 *
+	 * <pre>
+	 * DEBUG.BANNER("File loading", "completed in", "120ms");
+	 * // Outputs: > GAMA : File loading _________________ completed in 120ms
+	 * </pre>
 	 *
 	 * @param title
-	 *            the title
+	 *            the main description of the operation
 	 * @param state
-	 *            the state
+	 *            the status description (e.g., "completed in", "failed with")
 	 * @param result
-	 *            the result
+	 *            the result or outcome (e.g., "120ms", "success")
 	 */
 	public static void BANNER(final String title, final String state, final String result) {
 		BANNER(BANNER_CATEGORY.GAMA, title, state, result);
 	}
 
 	/**
-	 * Banner.
+	 * Outputs a formatted banner line with a specific category. Banners provide a consistent format for displaying
+	 * operation status and results with category labels.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * <p>
+	 * The output format is: "&gt; CATEGORY: title ________ state result"
+	 * </p>
+	 *
+	 * <h3>Example:</h3>
+	 *
+	 * <pre>
+	 * DEBUG.BANNER(BANNER_CATEGORY.GAMA, "Model initialization", "completed in", "500ms");
+	 * // Outputs: > SIMULATION: Model initialization _______ completed in 500ms
+	 * </pre>
+	 *
 	 * @param category
-	 *            the category
+	 *            the category to display (e.g., GAMA, GAML, etc.)
 	 * @param title
-	 *            the title
+	 *            the main description of the operation
 	 * @param state
-	 *            the state
+	 *            the status description (e.g., "completed in", "failed with")
 	 * @param result
-	 *            the result
-	 * @date 1 janv. 2024
+	 *            the result or outcome (e.g., "120ms", "success")
 	 */
 	public static void BANNER(final BANNER_CATEGORY category, final String title, final String state,
 			final String result) {
@@ -291,13 +454,17 @@ public class DEBUG {
 	}
 
 	/**
-	 * Will always output to System.out or the registered logger for this thread (using print if 'newLine' is false)
-	 * except if GLOBAL_OFF is true. Takes care of arrays so as to output their contents (and not their identity)
+	 * Outputs a message to System.out or the registered logger for this thread, with control over whether to include a
+	 * new line. This method always outputs unless ENABLE_LOGGING is false.
+	 *
+	 * <p>
+	 * This method properly handles arrays by outputting their contents instead of their identity/reference.
+	 * </p>
 	 *
 	 * @param object
 	 *            the message to output
 	 * @param newLine
-	 *            whether to pass a new line after or not
+	 *            whether to add a new line after the output
 	 */
 	public static void LOG(final Object object, final boolean newLine) {
 		if (ENABLE_LOGGING) {
@@ -310,28 +477,40 @@ public class DEBUG {
 	}
 
 	/**
-	 * Register log writer.
+	 * Registers a custom output stream for the current thread. All subsequent LOG() calls from this thread will
+	 * redirect output to the specified writer instead of System.out.
+	 *
+	 * <p>
+	 * This is useful for capturing debug output to files or other custom streams on a per-thread basis. The
+	 * registration is thread-local and does not affect other threads.
+	 * </p>
 	 *
 	 * @param writer
-	 *            the writer
+	 *            the OutputStream to redirect debug output to
 	 */
 	public static void REGISTER_LOG_WRITER(final OutputStream writer) {
 		LOG_WRITERS.set(new PrintStream(writer, true));
 	}
 
 	/**
-	 * Unregister log writer.
+	 * Unregisters any custom log writer for the current thread, reverting back to System.out. This removes the
+	 * thread-local log writer registration.
 	 */
 	public static void UNREGISTER_LOG_WRITER() {
 		LOG_WRITERS.remove();
 	}
 
 	/**
-	 * Checks if is on.
+	 * Checks if debugging is enabled for a specific class name. This method supports partial matching for inner classes
+	 * and anonymous classes.
+	 *
+	 * <p>
+	 * Returns true if FORCE_ON is set, or if the className starts with any registered class name.
+	 * </p>
 	 *
 	 * @param className
-	 *            the class name
-	 * @return true, if successful
+	 *            the fully qualified class name to check
+	 * @return true if debugging is enabled for the class, false otherwise
 	 */
 	static boolean IS_ON(final String className) {
 		// Necessary to loop on the names as the call can emanate from an inner class or
@@ -348,7 +527,16 @@ public class DEBUG {
 	private DEBUG() {}
 
 	/**
-	 * Outputs a debug message to System.out if DEBUG is turned on for this class
+	 * Outputs a debug message to System.out only if debugging is enabled for the calling class. This is the primary
+	 * method for class-specific debug output.
+	 *
+	 * <p>
+	 * The message will only appear if:
+	 * </p>
+	 * <ul>
+	 * <li>Global debugging is enabled (FLAGS.ENABLE_DEBUG and FLAGS.ENABLE_LOGGING)</li>
+	 * <li>The calling class has been registered via DEBUG.ON() or FORCE_ON is true</li>
+	 * </ul>
 	 *
 	 * @param s
 	 *            the message to output
@@ -415,24 +603,26 @@ public class DEBUG {
 	}
 
 	/**
-	 *
-	 * Stack.
+	 * Outputs a filtered stack trace if debugging is enabled for the calling class. This method shows the call stack
+	 * starting from the caller, skipping internal DEBUG class frames.
 	 */
 	public static void STACK() {
-		if (!ENABLE_LOGGING || !DEBUG.IS_ON(DEBUG.findCallingClassName())) return;
-		DEBUG.LOG(STRINGS.PAD("--- Stack trace ", 80, '-'));
-		DEBUG.STACK_WALKER.walk(stream1 -> {
+		if (!ENABLE_LOGGING || !IS_ON(findCallingClassName())) return;
+		LOG(STRINGS.PAD("--- Stack trace ", 80, '-'));
+		STACK_WALKER.walk(stream1 -> {
 			stream1.skip(2).forEach(s -> DEBUG.LOG("> " + s));
 			return null;
 		});
-		DEBUG.LINE();
+		LINE();
 	}
 
 	/**
-	 * Force on.
+	 * Forces debugging on for all classes, regardless of registration status. When called, all DEBUG.OUT() calls will
+	 * produce output regardless of whether a class has been registered with ON().
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @date 15 oct. 2023
+	 * <p>
+	 * This is useful for global debugging sessions or when you want to temporarily enable all debug output.
+	 * </p>
 	 */
 	public static void FORCE_ON() {
 		FORCE_ON = true;

@@ -84,6 +84,8 @@
 --add-exports=java.base/java.math=ALL-UNNAMED
 --add-exports=java.base/java.lang=ALL-UNNAMED
 --add-exports=java.base/sun.nio.ch=ALL-UNNAMED
+--add-exports=java.desktop/com.sun.imageio.plugins.jpeg=ALL-UNNAMED
+--add-exports=java.desktop/com.sun.imageio.plugins.png=ALL-UNNAMED
 --add-opens=java.base/jdk.internal.loader=ALL-UNNAMED
 --add-opens=java.base/java.math=ALL-UNNAMED
 --add-opens=java.base/java.util=ALL-UNNAMED
@@ -103,14 +105,12 @@
 --add-opens=java.base/java.text=ALL-UNNAMED
 --add-opens=java.base/java.lang.ref=ALL-UNNAMED
 --add-opens=java.sql/java.sql=ALL-UNNAMED
---add-opens java.base/java.lang=ALL-UNNAMED
---add-opens java.desktop/javax.imageio.stream=ALL-UNNAMED
---add-opens java.desktop/javax.imageio=ALL-UNNAMED
---add-exports java.desktop/com.sun.imageio.plugins.jpeg=ALL-UNNAMED
---add-exports java.desktop/com.sun.imageio.plugins.png=ALL-UNNAMED
+--add-opens=java.base/java.lang=ALL-UNNAMED
+--add-opens=java.desktop/javax.imageio.stream=ALL-UNNAMED
+--add-opens=java.desktop/javax.imageio=ALL-UNNAMED
 --enable-native-access=ALL-UNNAMED
 --sun-misc-unsafe-memory-access=allow
---add-modules jdk.incubator.vector
+--add-modules=jdk.incubator.vector
 --enable-preview
       </vmArgs>
       <vmArgsLin>-Dswt.enable.autoScale=true
@@ -156,8 +156,8 @@
    </plugins>
 
    <features>
-      <feature id="gama.feature.ui" installMode="root"/>
       <feature id="gama.feature.core" installMode="root"/>
+      <feature id="gama.feature.ui" installMode="root"/>
       <feature id="gama.feature.library" installMode="root"/>
       <feature id="gama.feature.ui.editor" installMode="root"/>
       <feature id="gama.feature.extensions" installMode="root"/>
@@ -168,7 +168,6 @@
    </features>
 
    <configurations>
-      <plugin id="gama.dependencies" autoStart="true" startLevel="3" />
       <plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="1" />
       <plugin id="org.apache.felix.scr" autoStart="true" startLevel="1" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="2" />
@@ -191,6 +190,10 @@
       <repository location="https://updates.gama-platform.org/experimental/SNAPSHOT" name="Experimental" enabled="true" />
       <repository location="https://anb0s.github.io/EasyShell/release/" name="EasyShell" enabled="true" />
       <repository location="https://download.eclipse.org/egit/updates/" name="EGit" enabled="true" />
+      <repository location="https://updates.gama-platform.org/SNAPSHOT" name="" enabled="true" />
+      <repository location="https://updates.gama-platform.org/experimental/SNAPSHOT" name="" enabled="true" />
+      <repository location="https://anb0s.github.io/EasyShell/release/" name="" enabled="true" />
+      <repository location="https://download.eclipse.org/egit/updates/" name="" enabled="true" />
    </repositories>
 
    <preferencesInfo>

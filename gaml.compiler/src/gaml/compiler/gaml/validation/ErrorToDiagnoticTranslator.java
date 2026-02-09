@@ -24,9 +24,9 @@ import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.gaml.compilation.IGamlCompilationError;
-import gama.gaml.descriptions.ValidationContext;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.compilation.validation.IValidationContext;
+import gama.api.constants.IKeyword;
 import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
@@ -60,9 +60,9 @@ public class ErrorToDiagnoticTranslator {
 	 *            the mode
 	 * @return the diagnostic
 	 */
-	public Diagnostic translate(final ValidationContext errors, final GamlResource r, final CheckMode mode) {
+	public Diagnostic translate(final IValidationContext errors, final GamlResource r, final CheckMode mode) {
 		final BasicDiagnostic chain = new BasicDiagnostic();
-		for (final IGamlCompilationError e : errors) {
+		for (final GamlCompilationError e : errors) {
 			final Diagnostic d = translate(e, r, mode);
 			if (d != null) { chain.add(d); }
 		}
@@ -80,7 +80,7 @@ public class ErrorToDiagnoticTranslator {
 	 *            the mode
 	 * @return the diagnostic
 	 */
-	public Diagnostic translate(final IGamlCompilationError e, final GamlResource r, final CheckMode mode) {
+	public Diagnostic translate(final GamlCompilationError e, final GamlResource r, final CheckMode mode) {
 		final URI errorURI = e.getURI();
 		if (!GamlResourceServices.equals(errorURI, r.getURI())) // final String s = URI.decode(errorURI.lastSegment());
 			// final EObject m = r.getContents().get(0);
@@ -163,7 +163,7 @@ public class ErrorToDiagnoticTranslator {
 	 *            the e
 	 * @return the int
 	 */
-	protected int toDiagnosticSeverity(final IGamlCompilationError e) {
+	protected int toDiagnosticSeverity(final GamlCompilationError e) {
 		int diagnosticSeverity = -1;
 		if (e.isError()) {
 			diagnosticSeverity = Diagnostic.ERROR;

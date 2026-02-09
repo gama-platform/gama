@@ -22,14 +22,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-import gama.core.common.geometry.GamaGeometryFactory;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.list.IList;
+import gama.api.data.factories.GamaGeometryFactory;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IShape;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
 import gama.dev.DEBUG;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
 import gama.extension.serialize.fst.util.FSTUtil;
-import gama.gaml.types.IType;
 
 /**
  * Created with IntelliJ IDEA. User: Möller Date: 03.11.12 Time: 12:26 To change this template use File | Settings |

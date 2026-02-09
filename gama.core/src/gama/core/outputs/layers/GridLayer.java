@@ -15,26 +15,26 @@ import java.awt.image.DataBufferInt;
 import java.util.Collections;
 import java.util.Set;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.interfaces.ILayer.IGridLayer;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.util.Collector;
-import gama.core.util.IColor;
-import gama.core.util.list.IList;
-import gama.core.util.matrix.GamaField;
-import gama.core.util.matrix.IField;
+import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.objects.IColor;
+import gama.api.data.objects.IField;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IShape;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.IImageProvider;
+import gama.api.utils.collections.Collector;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.MeshDrawingAttributes;
 
 /**
  * The Class GridLayer.
  */
-public class GridLayer extends AbstractLayer implements IGridLayer {
+public class GridLayer extends AbstractLayer {
 
 	static {
 		DEBUG.OFF();
@@ -100,8 +100,8 @@ public class GridLayer extends AbstractLayer implements IGridLayer {
 		if (gridValueMatrix == null) {
 			dg.drawImage(image, attributes);
 		} else {
-			dg.drawField(new GamaField(scope, (int) data.getDimensions().getX(), (int) data.getDimensions().getY(),
-					gridValueMatrix, IField.NO_NO_DATA), attributes);
+			dg.drawField(GamaMatrixFactory.createField(scope, (int) data.getDimensions().getX(),
+					(int) data.getDimensions().getY(), gridValueMatrix, IField.NO_NO_DATA), attributes);
 		}
 	}
 

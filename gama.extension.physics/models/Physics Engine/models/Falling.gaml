@@ -45,7 +45,7 @@ species ball skills: [dynamic_body] {
 			color <- rnd_color(255);		
 			do update_body;
 		}
-	}
+	} 
 
 	reflex manage_location when: location.z < -20 {
 		do die;
@@ -64,7 +64,7 @@ experiment Display type: gui {
 		display Falling  type: 3d background:rgb(128,128,128) axes:false{
 			camera 'default' location: {177.8131,883.5764,615.7961} target: {250.0,250.0,0.0};
 			graphics World refresh: false{
-				 draw shape color: #white;
+				 draw shape color: #white; 
 			}
 			event #mouse_down {
 				ball target <- ball with_min_of(each distance_to #user_location);

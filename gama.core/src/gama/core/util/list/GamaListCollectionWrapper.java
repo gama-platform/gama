@@ -20,9 +20,11 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ForwardingCollection;
 import com.google.common.collect.Iterables;
 
-import gama.gaml.types.IContainerType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.objects.IList;
+import gama.api.gaml.types.IContainerType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 
 /**
  * A wrapper that tries to wrap a Collection into an IList. Not all operations are meaningful (those with indices in

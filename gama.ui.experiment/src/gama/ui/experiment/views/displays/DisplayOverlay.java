@@ -33,10 +33,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPartSite;
 
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IDisplaySurface;
+import gama.api.GAMA;
+import gama.api.data.objects.IEnvelope;
+import gama.api.ui.displays.IDisplaySurface;
 import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
 import gama.ui.shared.resources.GamaColors;

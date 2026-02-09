@@ -12,10 +12,11 @@ package gama.gaml.statements.draw;
 
 import java.util.List;
 
-import gama.core.runtime.GAMA;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.GAMA;
+import gama.api.data.objects.IField;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.ui.layers.IMeshColorProvider;
 import gama.core.util.matrix.GamaField;
-import gama.core.util.matrix.IField;
 
 /**
  * An implementation of the color provider that picks a color using the index of the cell being drawn in the R, G, and B

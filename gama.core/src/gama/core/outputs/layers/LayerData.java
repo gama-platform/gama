@@ -9,32 +9,33 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import static gama.core.common.interfaces.IKeyword.FADING;
-import static gama.core.common.interfaces.IKeyword.POSITION;
-import static gama.core.common.interfaces.IKeyword.REFRESH;
-import static gama.core.common.interfaces.IKeyword.ROTATE;
-import static gama.core.common.interfaces.IKeyword.SELECTABLE;
-import static gama.core.common.interfaces.IKeyword.SIZE;
-import static gama.core.common.interfaces.IKeyword.TRACE;
-import static gama.core.common.interfaces.IKeyword.TRANSPARENCY;
-import static gama.core.common.interfaces.IKeyword.VISIBLE;
-import static gama.gaml.types.Types.BOOL;
-import static gama.gaml.types.Types.FLOAT;
-import static gama.gaml.types.Types.INT;
-import static gama.gaml.types.Types.POINT;
+import static gama.api.constants.IKeyword.FADING;
+import static gama.api.constants.IKeyword.POSITION;
+import static gama.api.constants.IKeyword.REFRESH;
+import static gama.api.constants.IKeyword.ROTATE;
+import static gama.api.constants.IKeyword.SELECTABLE;
+import static gama.api.constants.IKeyword.SIZE;
+import static gama.api.constants.IKeyword.TRACE;
+import static gama.api.constants.IKeyword.TRANSPARENCY;
+import static gama.api.constants.IKeyword.VISIBLE;
+import static gama.api.gaml.types.Types.BOOL;
+import static gama.api.gaml.types.Types.FLOAT;
+import static gama.api.gaml.types.Types.INT;
+import static gama.api.gaml.types.Types.POINT;
 
 import java.awt.Point;
 
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.units.PixelUnitExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.statements.draw.AttributeHolder;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IPoint;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.layers.ILayerData;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.AttributeHolder;
 
 /**
  * Written by drogoul Modified on 16 nov. 2010
@@ -101,10 +102,10 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	public LayerData(final ILayerStatement def) throws GamaRuntimeException {
 		super(def);
 		final IExpression sizeExp = def.getFacet(SIZE);
-		sizeIsInPixels = sizeExp != null && sizeExp.findAny(PixelUnitExpression.class::isInstance);
+		sizeIsInPixels = sizeExp != null && sizeExp.containsPixels();
 		size = create(SIZE, sizeExp, POINT, GamaPointFactory.create(1, 1, 1));
 		final IExpression posExp = def.getFacet(POSITION);
-		positionIsInPixels = posExp != null && posExp.findAny(PixelUnitExpression.class::isInstance);
+		positionIsInPixels = posExp != null && posExp.containsPixels();
 		position = create(POSITION, posExp, POINT, GamaPointFactory.create());
 		refresh = create(REFRESH, def.getRefreshFacet(), BOOL, true);
 		fading = create(FADING, BOOL, false);
@@ -177,7 +178,7 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	/**
 	 * Method getTrace()
 	 *
-	 * @see gama.core.outputs.layers.ILayerData#getTrace()
+	 * @see gama.api.ui.layers.ILayerData#getTrace()
 	 */
 	@Override
 	public Integer getTrace() { return trace.get(); }
@@ -188,7 +189,7 @@ public class LayerData extends AttributeHolder implements ILayerData {
 	/**
 	 * Method getFading()
 	 *
-	 * @see gama.core.outputs.layers.ILayerData#getFading()
+	 * @see gama.api.ui.layers.ILayerData#getFading()
 	 */
 	@Override
 	public Boolean getFading() { return fading.get(); }

@@ -89,8 +89,8 @@ import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.progress.UIJob;
 import org.osgi.framework.FrameworkUtil;
 
-import gama.gaml.compilation.GamlIdiomsProvider;
-import gama.gaml.interfaces.IGamlDescription;
+import gama.api.compilation.descriptions.IGamlDescription;
+import gama.api.compilation.documentation.GamlIdiomsProvider;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WebHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;

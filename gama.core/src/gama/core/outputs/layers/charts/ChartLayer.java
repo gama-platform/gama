@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * ChartLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * ChartLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -10,13 +10,17 @@
 package gama.core.outputs.layers.charts;
 
 import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.metamodel.shape.IShape;
+import gama.api.data.objects.IShape;
+import gama.api.ui.displays.IChart;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.layers.AbstractLayer;
-import gama.core.outputs.layers.ILayerStatement;
-import gama.core.runtime.IScope.IGraphicsScope;
 
 /**
  * Written by drogoul Modified on 1 avr. 2010
@@ -24,7 +28,7 @@ import gama.core.runtime.IScope.IGraphicsScope;
  * @todo Description
  *
  */
-public class ChartLayer extends AbstractLayer {
+public class ChartLayer extends AbstractLayer implements ILayer.Chart {
 
 	/**
 	 * Instantiates a new chart layer.
@@ -46,14 +50,20 @@ public class ChartLayer extends AbstractLayer {
 	 *
 	 * @return the chart
 	 */
-	public ChartOutput getChart() { return ((ChartLayerStatement) definition).getOutput(); }
+	@Override
+	public IChart getChart() { return ((ChartLayerStatement) definition).getOutput(); }
 
 	@Override
 	public String getType() { return "Chart layer"; }
 
 	@Override
 	public void privateDraw(final IGraphicsScope scope, final IGraphics dg) {
-		dg.drawChart(getChart());
+		IChart chart = getChart();
+		int x = dg.getLayerWidth();
+		int y = dg.getLayerHeight();
+		if (!dg.is2D()) { y = x = (int) (Math.min(x, y) * GamaPreferences.Displays.CHART_QUALITY.getValue()); }
+		final BufferedImage im = chart.getImage(x, y, dg.getSurface().getData().isAntialias());
+		dg.drawChart(im);
 	}
 
 	@Override

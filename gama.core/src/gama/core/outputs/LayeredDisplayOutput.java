@@ -17,47 +17,49 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.google.common.collect.Iterables;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.GamlProperties;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IGamaView.Display;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.additions.registries.GamaAdditionRegistry;
+import gama.api.annotations.serializer;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.constants.IGamlIssue;
+import gama.api.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.symbols.Facets;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IGui;
+import gama.api.ui.IOutput;
+import gama.api.ui.displays.IDisplayCreator;
+import gama.api.ui.displays.IDisplayData;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.GamlProperties;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.LayeredDisplayOutput.DisplaySerializer;
 import gama.core.outputs.LayeredDisplayOutput.DisplayValidator;
 import gama.core.outputs.layers.AbstractLayerStatement;
-import gama.core.outputs.layers.ILayerStatement;
 import gama.core.outputs.layers.properties.CameraStatement;
 import gama.core.outputs.layers.properties.LightStatement;
 import gama.core.outputs.layers.properties.RotationStatement;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.ConstantExpressionDescription;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SymbolSerializer;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IExpressionFactory;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.statements.Facets;
-import gama.gaml.types.IType;
 
 /**
  * The Class LayerDisplayOutput.
@@ -127,13 +129,13 @@ import gama.gaml.types.IType;
 						name = "axes",
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("Allows to enable/disable the drawing of the world shape and the ordinate axes. Default can be configured in Preferences")),
+						doc = @doc ("Allows to enable/disable the drawing of the world shape and the ordinate axes. Default can be configured in __PREFS__")),
 				@facet (
 						name = IKeyword.ORTHOGRAPHIC_PROJECTION,
 						internal = true,
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("Allows to enable/disable the orthographic projection. Default can be configured in Preferences")),
+						doc = @doc ("Allows to enable/disable the orthographic projection. Default can be configured in __PREFS__")),
 
 				/// LIGHT FACETS
 				@facet (
@@ -216,7 +218,7 @@ import gama.gaml.types.IType;
 								@example (
 										value = "}",
 										isExecutable = false) }) })
-public class LayeredDisplayOutput extends AbstractOutput {
+public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Display {
 
 	static {
 		DEBUG.OFF();
@@ -241,28 +243,28 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	private int index;
 
 	/** The data. */
-	private final LayeredDisplayData data = new LayeredDisplayData();
+	private final IDisplayData data = new LayeredDisplayData();
 
 	/**
 	 * The Class DisplaySerializer.
 	 */
-	public static class DisplaySerializer extends SymbolSerializer {
+	public static class DisplaySerializer implements ISymbolSerializer {
 
 		/**
 		 * Method collectPluginsInFacetValue()
 		 *
-		 * @see gama.gaml.descriptions.SymbolSerializer#collectPluginsInFacetValue(gama.gaml.descriptions.SymbolDescription,
+		 * @see gama.api.compilation.serialization.SymbolSerializer#collectPluginsInFacetValue(gama.gaml.descriptions.SymbolDescription,
 		 *      java.lang.String, java.util.Set)
 		 */
 		@Override
-		protected void collectMetaInformationInFacetValue(final IDescription desc, final String key,
+		public void collectMetaInformationInFacetValue(final IDescription desc, final String key,
 				final GamlProperties plugins) {
-			super.collectMetaInformationInFacetValue(desc, key, plugins);
+			ISymbolSerializer.super.collectMetaInformationInFacetValue(desc, key, plugins);
 			if (TYPE.equals(key)) {
 				final IExpressionDescription exp = desc.getFacet(TYPE);
 				if (exp.getExpression() != null) {
 					final String type = exp.getExpression().literalValue();
-					final DisplayDescription dd = gama.core.runtime.GAMA.getGui().getDisplayDescriptionFor(type);
+					final IDisplayCreator dd = gama.api.GAMA.getGui().getDisplayDescriptionFor(type);
 					if (dd != null) { plugins.put(GamlProperties.PLUGINS, dd.getDefiningPlugin()); }
 				}
 			}
@@ -278,7 +280,7 @@ public class LayeredDisplayOutput extends AbstractOutput {
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
 		public void validate(final IDescription d) {
@@ -292,24 +294,26 @@ public class LayeredDisplayOutput extends AbstractOutput {
 			}
 			// Are we in OpenGL world ?
 			IExpressionDescription type = d.getFacet(TYPE);
-			final boolean isOpenGLDefault = !IKeyword._2D.equals(GamaPreferences.Displays.CORE_DISPLAY.getValue());
+			final boolean isOpenGLDefault = !GamaPreferences.Displays.CORE_DISPLAY.getValue();
 			if (type == null) {
-				type = ConstantExpressionDescription.create(isOpenGLDefault ? IKeyword._3D : IKeyword._2D);
+				type = GAML.getExpressionDescriptionFactory()
+						.createConstant(isOpenGLDefault ? IKeyword._3D : IKeyword._2D);
 				d.setFacetExprDescription(TYPE, type);
 			}
 			String cand = "";
 			// Addresses and fixes Issue 833.
 			final String s = type.getExpression().literalValue();
-			if (!IGui.DISPLAYS.containsKey(s) && !gama.core.runtime.GAMA.isInHeadLessMode()) {
+			if (!GamaAdditionRegistry.getDisplays().containsKey(s) && !gama.api.GAMA.isInHeadLessMode()) {
 				// In headless mode, all displays should be accepted
-				cand = IGui.DISPLAYS.keySet().stream().findFirst().get();
+				cand = GamaAdditionRegistry.getDisplays().keySet().stream().findFirst().get();
 
 				d.warning(
-						s + " is not a valid display type. Valid types are:" + IGui.DISPLAYS.keySet()
+						s + " is not a valid display type. Valid types are:"
+								+ GamaAdditionRegistry.getDisplays().keySet()
 								+ ". Gama will fallback to first valid type (" + cand + ")",
 						IGamlIssue.UNKNOWN_KEYWORD, TYPE);
 
-				d.setFacet(TYPE, ConstantExpressionDescription.create(cand));
+				d.setFacet(TYPE, GAML.getExpressionFactory().createConst(cand, Types.STRING));
 			}
 
 			// Addressing problems with charts in OpenGL
@@ -573,7 +577,8 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	 *
 	 * @return the data
 	 */
-	public LayeredDisplayData getData() {
+	@Override
+	public IDisplayData getData() {
 		return data; // .get();
 	}
 
@@ -595,7 +600,7 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	@Override
 	public boolean isAutoSave() {
 		final IExpression e = getFacet(IKeyword.AUTOSAVE);
-		if (e == null || e == IExpressionFactory.FALSE_EXPR) return false;
+		if (e == null || e == GAML.getExpressionFactory().getFalse()) return false;
 		return true;
 	}
 
@@ -616,7 +621,7 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	}
 
 	@Override
-	public IGamaView.Display getView() { return (Display) super.getView(); }
+	public IGamaView.Display getView() { return (IGamaView.Display) super.getView(); }
 
 	/**
 	 * Release view.

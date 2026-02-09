@@ -18,8 +18,8 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ToolItem;
 
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.objects.IColor;
 import gama.ui.shared.menus.GamaColorMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -53,8 +53,8 @@ public class BackgroundChooser {
 					@Override
 					public void widgetSelected(final SelectionEvent e) {
 						final MenuItem i = (MenuItem) e.widget;
-						final String color = i.getText().replace("#", "");
-						final IColor c = GamaColorFactory.COLORS.get(color);
+						final String color1 = i.getText().replace("#", "");
+						final IColor c = GamaColorFactory.get(color1);
 						if (c == null) return;
 						changeColor(c.red(), c.green(), c.blue());
 					}

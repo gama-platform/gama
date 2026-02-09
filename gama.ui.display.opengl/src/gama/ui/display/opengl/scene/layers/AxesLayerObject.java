@@ -10,28 +10,27 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene.layers;
 
-import static gama.core.common.geometry.Rotation3D.MINUS_I;
-import static gama.core.common.geometry.Rotation3D.PLUS_J;
-import static gama.core.common.geometry.Scaling3D.of;
-import static gama.gaml.constants.GamlCoreConstants.bottom_center;
-import static gama.gaml.constants.GamlCoreConstants.left_center;
-import static gama.gaml.constants.GamlCoreConstants.top_center;
-import static gama.gaml.types.GamaGeometryType.buildCone3D;
-import static gama.gaml.types.GamaGeometryType.buildLineCylinder;
+import static gama.api.gaml.constants.GamlCoreConstants.bottom_center;
+import static gama.api.gaml.constants.GamlCoreConstants.left_center;
+import static gama.api.gaml.constants.GamlCoreConstants.top_center;
+import static gama.api.utils.geometry.Rotation3D.MINUS_I;
+import static gama.api.utils.geometry.Rotation3D.PLUS_J;
+import static gama.api.utils.geometry.Scaling3D.of;
 
 import java.util.List;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.GamaShape;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaColorFactory;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.factories.GamaShapeFactory;
+import gama.api.data.objects.IColor;
+import gama.api.data.objects.IFont;
+import gama.api.data.objects.IPoint;
+import gama.api.data.objects.IShape;
+import gama.api.kernel.agent.IAgent;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.core.geometry.GamaShape;
 import gama.core.util.GamaFont;
-import gama.core.util.IColor;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 import gama.gaml.statements.draw.TextDrawingAttributes;
@@ -55,7 +54,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	/** The Constant ROTATIONS. */
 	public final static AxisAngle[] ROTATIONS = { new AxisAngle(PLUS_J, 90), new AxisAngle(MINUS_I, 90), null };
 
-	/** The Constant COLORS. */
+	/** The Constant NAME_REGISTRY. */
 	public final static IColor[] COLORS =
 			{ GamaColorFactory.get("gamared"), GamaColorFactory.get("gamaorange"), GamaColorFactory.get("gamablue") };
 
@@ -66,7 +65,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	protected final static IPoint ORIGIN = GamaPointFactory.create(0, 0, 0);
 
 	/** The Constant AXES_FONT. */
-	protected final static GamaFont AXES_FONT = new GamaFont("Helvetica", 0, 18);
+	protected final static IFont AXES_FONT = new GamaFont("Helvetica", 0, 18);
 
 	/** The arrow. */
 	final GamaShape arrow;
@@ -88,10 +87,12 @@ public class AxesLayerObject extends StaticLayerObject.World {
 		// Addition to fix #2227
 		currentList.scale.setLocation(DEFAULT_SCALE);
 		final double max = renderer.getMaxEnvDim();
-		arrow = (GamaShape) buildCone3D(max / 20, max / 8, ORIGIN);
+		arrow = (GamaShape) GamaShapeFactory.buildCone3D(max / 20, max / 8, ORIGIN);
 		dirs = new IPoint[] { GamaPointFactory.create(max / 2, 0, 0), GamaPointFactory.create(0, max / 2, 0),
 				GamaPointFactory.create(0, 0, max / 2) };
-		for (int i = 0; i < 3; i++) { axes[i] = (GamaShape) buildLineCylinder(ORIGIN, dirs[i], max / 60); }
+		for (int i = 0; i < 3; i++) {
+			axes[i] = (GamaShape) GamaShapeFactory.buildLineCylinder(ORIGIN, dirs[i], max / 60);
+		}
 	}
 
 	@Override
@@ -134,8 +135,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 			text.setPerspective(false);
 			list.add(new StringObject(LABELS[i], text));
 			// build arrows
-			final GamaShape s =
-					GamaShapeFactory.createFrom(arrow).withRotation(ROTATIONS[i]).withLocation(p.times(0.98));
+			final IShape s = GamaShapeFactory.createFrom(arrow).withRotation(ROTATIONS[i]).withLocation(p.times(0.98));
 			addSyntheticObject(list, s, COLORS[i], IShape.Type.CONE);
 		}
 	}

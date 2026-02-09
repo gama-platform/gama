@@ -10,9 +10,8 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.resource;
 
-import static gama.gaml.compilation.GAML.getModelFactory;
-import static gama.gaml.interfaces.IGamlIssue.GENERAL;
-import static gama.gaml.interfaces.IGamlIssue.IMPORT_ERROR;
+import static gama.api.constants.IGamlIssue.GENERAL;
+import static gama.api.constants.IGamlIssue.IMPORT_ERROR;
 import static gaml.compiler.gaml.indexer.GamlResourceIndexer.updateImports;
 import static gaml.compiler.gaml.resource.GamlResourceServices.properlyEncodedURI;
 import static gaml.compiler.gaml.resource.GamlResourceServices.updateState;
@@ -35,14 +34,14 @@ import org.eclipse.xtext.util.concurrent.IUnitOfWork;
 
 import com.google.common.base.Function;
 
-import gama.core.runtime.IExecutionContext;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.compilation.ast.ISyntacticElement;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.validation.IValidationContext;
+import gama.api.gaml.GAML;
+import gama.api.runtime.IExecutionContext;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.compilation.IGamlCompilationError.GamlCompilationErrorType;
-import gama.gaml.compilation.ast.ISyntacticElement;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.descriptions.ValidationContext;
+import gaml.compiler.gaml.factories.ModelFactory;
 import gaml.compiler.gaml.indexer.GamlResourceIndexer;
 
 /**
@@ -71,7 +70,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 *
 	 * @return the validation context
 	 */
-	public ValidationContext getValidationContext() {
+	public IValidationContext getValidationContext() {
 		return GamlResourceServices.getOrCreateValidationContext(this);
 	}
 
@@ -114,7 +113,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 * @param newState
 	 *            the new state
 	 */
-	public void updateWith(final ModelDescription model, final boolean newState) {
+	public void updateWith(final IModelDescription model, final boolean newState) {
 		updateState(getURI(), model, newState, getValidationContext());
 	}
 
@@ -143,16 +142,17 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 *            the resources
 	 * @return the model description
 	 */
-	private ModelDescription buildModelDescription(final ImportedResources resources) {
+	private IModelDescription buildModelDescription(final ImportedResources resources) {
 		GAML.getExpressionFactory().resetParser();
 		final String model = GamlResourceServices.getModelPathOf(this);
 		final String project = GamlResourceServices.getProjectPathOf(this);
-		final ValidationContext context = getValidationContext();
+		final IValidationContext context = getValidationContext();
 		context.shouldDocument(GamlResourceServices.isEdited(this));
-		if (resources == null) return getModelFactory().createModelDescription(project, model,
+		// Creating a new INSTANCE solves sync problem
+		if (resources == null) return ModelFactory.getInstance().createModelDescription(project, model,
 				singleton(getSyntacticContents()), context, null);
 		Iterable<ISyntacticElement> imports = resources.computeDirectImports(getSyntacticContents());
-		return getModelFactory().createModelDescription(project, model, imports, context,
+		return ModelFactory.getInstance().createModelDescription(project, model, imports, context,
 				resources.computeMicroModels(project, model, context));
 	}
 
@@ -167,9 +167,9 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	public void invalidate(final GamlResource r, final String s) {
 		GamlCompilationError error = null;
 		if (GamlResourceServices.equals(r.getURI(), getURI())) {
-			error = new GamlCompilationError(s, GENERAL, r.getContents().get(0), GamlCompilationErrorType.Error);
+			error = new GamlCompilationError(s, GENERAL, r.getContents().get(0), GamlCompilationError.Type.Error);
 		} else {
-			error = new GamlCompilationError(s, GENERAL, r.getURI(), GamlCompilationErrorType.Error);
+			error = new GamlCompilationError(s, GENERAL, r.getURI(), GamlCompilationError.Type.Error);
 		}
 		getValidationContext().add(error);
 		updateWith(null, true);
@@ -180,10 +180,10 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 *
 	 * @return the model description
 	 */
-	public ModelDescription buildCompleteDescription() {
+	public IModelDescription buildCompleteDescription() {
 		final ImportedResources imports = GamlResourceIndexer.validateImportsOf(this);
 		if (hasErrors() || hasSemanticErrors()) return null;
-		final ModelDescription model = buildModelDescription(imports);
+		final IModelDescription model = buildModelDescription(imports);
 		// If, for whatever reason, the description is null, we stop the
 		// semantic validation
 		if (model == null) {
@@ -211,7 +211,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 */
 	public void validate() {
 		// DEBUG.LOG("Resource validating itself");
-		final ModelDescription model = buildCompleteDescription();
+		final IModelDescription model = buildCompleteDescription();
 		if (model == null) {
 			updateWith(null, true);
 			return;

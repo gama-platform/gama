@@ -19,8 +19,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.ecore.xml.type.internal.DataValue.URI;
 import org.eclipse.jface.resource.ImageDescriptor;
 
-import gama.gaml.statements.test.AbstractSummary;
-import gama.gaml.statements.test.CompoundSummary;
+import gama.api.utils.tests.AbstractSummary;
+import gama.api.utils.tests.CompoundSummary;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 

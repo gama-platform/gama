@@ -3,7 +3,7 @@
  * EditorToolbar.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -32,12 +32,12 @@ import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 
-import gama.core.common.interfaces.IGui;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.preferences.Pref;
-import gama.core.runtime.PlatformHelper;
+import gama.api.additions.GamaBundleLoader;
+import gama.api.runtime.SystemInfo;
+import gama.api.ui.IGui;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.Pref;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.ui.shared.bindings.GamaKeyBindings;
 import gama.ui.shared.bindings.GamaKeyBindings.PluggableBinding;
 import gama.ui.shared.menus.GamaMenu;
@@ -66,7 +66,7 @@ public class EditorToolbar {
 		if (command != null) { command.setHandler(null); }
 		command = WorkbenchHelper.getCommand("org.eclipse.ui.edit.text.zoomOut");
 		if (command != null) { command.setHandler(null); }
-		if (PlatformHelper.isMac()) {
+		if (SystemInfo.isMac()) {
 			GamaKeyBindings.plug(new PluggableBinding(SWT.MOD1 | SWT.SHIFT, '=') {
 				// +
 				@Override

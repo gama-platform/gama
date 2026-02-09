@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
-import gama.core.util.IColor;
+import gama.api.data.objects.IColor;
 
 /**
  * The EditorsCategory.

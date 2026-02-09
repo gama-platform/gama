@@ -10,12 +10,12 @@
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
-import static gama.core.runtime.GAMA.getRuntimeScope;
-import static gama.core.runtime.GAMA.reportError;
-import static gama.core.util.list.GamaListFactory.wrap;
+import static gama.api.GAMA.getRuntimeScope;
+import static gama.api.GAMA.reportError;
+import static gama.api.data.factories.GamaListFactory.wrap;
+import static gama.api.gaml.types.Types.NO_TYPE;
 import static gama.gaml.operators.System.enterValue;
 import static gama.gaml.operators.System.userInputDialog;
-import static gama.gaml.types.Types.NO_TYPE;
 import static gama.ui.shared.menus.GamaMenu.action;
 import static gama.ui.shared.menus.GamaMenu.separate;
 
@@ -29,18 +29,18 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 
-import gama.core.kernel.experiment.parameters.InputParameter;
-import gama.core.metamodel.agent.IAgent;
+import gama.api.data.objects.IColor;
+import gama.api.data.objects.IValue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.core.experiment.parameters.InputParameter;
 import gama.core.outputs.MonitorOutput;
 import gama.core.outputs.ValuedDisplayOutputFactory;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
-import gama.core.util.IColor;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IValue;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.core.util.color.GamaColor;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;
