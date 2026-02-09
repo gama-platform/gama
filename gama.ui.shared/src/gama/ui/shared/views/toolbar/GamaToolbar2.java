@@ -32,7 +32,7 @@ import com.google.common.base.Strings;
 
 import gama.api.runtime.SystemInfo;
 import gama.dev.DEBUG;
-import gama.gaml.operators.MathOperators;
+import gama.gaml.operators.Maths;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.resources.GamaColors;
@@ -603,7 +603,7 @@ public class GamaToolbar2 extends Composite {
 		for (final ToolItem t : left.getItems()) { size += t.getWidth(); }
 		// Seems necessary for Windows !
 		int even = Math.round(size);
-		if (!MathOperators.even(even)) { even++; }
+		if (!Maths.even(even)) { even++; }
 		((GridData) left.getLayoutData()).minimumWidth = even + 3;
 		requestLayout();
 	}

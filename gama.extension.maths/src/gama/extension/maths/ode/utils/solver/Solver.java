@@ -29,7 +29,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.dev.DEBUG;
 import gama.extension.maths.ode.statements.SystemOfEquationsStatement;
-import gama.gaml.operators.MathOperators;
+import gama.gaml.operators.Maths;
 
 /**
  * The Class Solver.
@@ -67,7 +67,7 @@ public abstract class Solver {
 					final double time = interpolator.getCurrentTime();
 					final double[] y = interpolator.getInterpolatedState();
 
-					if ((lastT < 0) || (MathOperators.abs(lastT - time) > 10E-12)) {
+					if ((lastT < 0) || (Maths.abs(lastT - time) > 10E-12)) {
 						storeIntegratedValues(time, y, integrated_val);
 					}
 					lastT = time;

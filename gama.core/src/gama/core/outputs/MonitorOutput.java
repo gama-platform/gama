@@ -44,7 +44,7 @@ import gama.api.ui.IItemList;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.color.GamaColor;
-import gama.gaml.operators.FileOperators;
+import gama.gaml.operators.Files;
 
 /**
  * The Class MonitorOutput.
@@ -264,7 +264,7 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 	 */
 	public void saveHistory() {
 		if (getScope() == null || history == null || history.isEmpty()) return;
-		FileOperators.newFolder(getScope(), monitorFolder);
+		Files.newFolder(getScope(), monitorFolder);
 		String file =
 				monitorFolder + "/" + "monitor_" + getName() + "_cycle_" + getScope().getClock().getCycle() + ".csv";
 		file = FileUtils.constructAbsoluteFilePath(getScope(), file, false);

@@ -32,7 +32,7 @@ import gama.api.additions.registries.ArtefactProtoRegistry;
 import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Signature;
-import gama.gaml.operators.StringOperators;
+import gama.gaml.operators.Strings;
 import gaml.compiler.ui.templates.GamlTemplateStore.GamlTemplateStoreProvider;
 
 /**
@@ -113,7 +113,7 @@ public class GamlTemplateStore extends XtextTemplateStore {
 		final String last = strings[strings.length - 1];
 		Integer index;
 		final String newId;
-		if (StringOperators.isGamaNumber(last)) {
+		if (Strings.isGamaNumber(last)) {
 			index = Integer.decode(last);
 			strings = Arrays.copyOf(strings, strings.length - 1);
 			int i = 0;

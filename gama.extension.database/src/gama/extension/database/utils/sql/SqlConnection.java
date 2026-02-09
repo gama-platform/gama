@@ -845,7 +845,7 @@ public abstract class SqlConnection implements AutoCloseable {
 
 			rec_no = st.executeUpdate(getInsertString(scope, conn, table_name, values));
 			// st=null;
-			// SystemOperators.gc();
+			// System.gc();
 			if (DEBUG.IS_ON()) { DEBUG.OUT("SQLConnection.insertBD.rec_no:" + rec_no); }
 
 		} catch (final SQLException e) {

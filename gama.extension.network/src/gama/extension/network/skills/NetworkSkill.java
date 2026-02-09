@@ -124,7 +124,7 @@ public class NetworkSkill extends MessagingSkill {
 	}
 
 	/**
-	 * SystemOperators exec.
+	 * System exec.
 	 *
 	 * @param scope
 	 *            the scope
@@ -144,7 +144,7 @@ public class NetworkSkill extends MessagingSkill {
 		// final IAgent agent = scope.getAgent();
 		final String commandToExecute = (String) scope.getArg("command", IType.STRING);
 
-		return gama.gaml.operators.SystemOperators.console(scope, commandToExecute);
+		return gama.gaml.operators.System.console(scope, commandToExecute);
 
 		// // String res = "";
 		//

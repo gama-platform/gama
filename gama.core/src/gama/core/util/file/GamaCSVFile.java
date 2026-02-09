@@ -617,11 +617,11 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				// Make sure that we do not read more columns than the number of headers
 				userSize.setX(headers.size());
 			}
-			// long t = SystemOperators.currentTimeMillis();
+			// long t = System.currentTimeMillis();
 			setBuffer(createMatrixFrom(scope, reader));
 			// DEBUG.LOG("CSV stats: " + userSize.x * userSize.y + "
 			// cells read in " +
-			// (SystemOperators.currentTimeMillis() - t) + " ms");
+			// (System.currentTimeMillis() - t) + " ms");
 		} catch (final IOException e) {
 			throw GamaRuntimeException.create(e, scope);
 		} finally {

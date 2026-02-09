@@ -42,8 +42,8 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.ISpatialGraph;
 import gama.api.runtime.scope.IScope;
 import gama.core.topology.graph.GraphTopology;
-import gama.gaml.operators.MathOperators;
-import gama.gaml.operators.RandomOperators;
+import gama.gaml.operators.Maths;
+import gama.gaml.operators.Random;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.operators.spatial.SpatialProperties;
@@ -1175,7 +1175,7 @@ public class PedestrianSkill extends MovingSkill {
 		}
 		double realSpeed = 0.0;
 		double proba_detour = getProbaDetour(agent);
-		if (!RandomOperators.opFlip(scope, 1.0 - proba_detour)
+		if (!Random.opFlip(scope, 1.0 - proba_detour)
 				|| location.euclidianDistanceTo(target) <= agent.getLocation().euclidianDistanceTo(target)) {
 			realSpeed = agent.euclidianDistanceTo(location) / scope.getSimulation().getTimeStep(scope);
 			setVelocity(agent, location.copy(scope).minus(getLocation(agent)));
@@ -1241,7 +1241,7 @@ public class PedestrianSkill extends MovingSkill {
 			}
 			double t_xDotitoj = t_.dotProductWith(itoj);
 			t_xDotitoj = Math.max(Math.min(t_xDotitoj, 1.0), -1.0);
-			double teta = Math.abs(MathOperators.acos(t_xDotitoj) * Math.PI / 180);
+			double teta = Math.abs(Maths.acos(t_xDotitoj) * Math.PI / 180);
 			if (teta <= Math.PI) {
 				IPoint f_1 = t_.multiplyBy(Math.exp(-Math.pow(n_prime * B * teta, 2)));
 				IPoint f_2 = n_.multiplyBy(Math.exp(-Math.pow(n * B * teta, 2)));

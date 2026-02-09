@@ -19,7 +19,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
 import gama.core.topology.AbstractTopology;
-import gama.gaml.operators.MathOperators;
+import gama.gaml.operators.Maths;
 
 /**
  * Written by drogoul Modified on 4 juil. 2011
@@ -96,8 +96,8 @@ public class ContinuousTopology extends AbstractTopology {
 		final double dy = y2 - source.getY();
 		// AD 21/03/15: Fixes two long-standing bugs (see Issue 1177) + problems
 		// in MovingSkill.move().
-		final double result = MathOperators.atan2(dy, dx);
-		return MathOperators.checkHeading(result);
+		final double result = Maths.atan2(dy, dx);
+		return Maths.checkHeading(result);
 	}
 
 	@Override

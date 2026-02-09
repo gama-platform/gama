@@ -203,7 +203,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				@Override
 				public IGamlDocumentation getDocumentation() {
 					return new GamlConstantDocumentation(name
-							+ " is not a registered display type. Please visit <a href=\"https://gama-platform.org/wiki/DisplayOperators\"> https://gama-platform.org/wiki/DisplayOperators</a> for more information.");
+							+ " is not a registered display type. Please visit <a href=\"https://gama-platform.org/wiki/Displays\"> https://gama-platform.org/wiki/Displays</a> for more information.");
 				}
 			};
 		}

@@ -21,7 +21,7 @@ import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.gaml.operators.ContainerOperators;
+import gama.gaml.operators.Containers;
 import gama.gaml.operators.spatial.SpatialPunctal;
 
 /**
@@ -178,7 +178,7 @@ public class LayoutForceDirected {
 			if (!bounds.intersects(l)) { loc.put(v, SpatialPunctal._closest_point_to(l, bounds)); }
 
 		}
-		final IPoint center = (IPoint) ContainerOperators.opMean(scope, GamaListFactory.wrap(Types.POINT, loc.values()));
+		final IPoint center = (IPoint) Containers.opMean(scope, GamaListFactory.wrap(Types.POINT, loc.values()));
 		if (center.distance3D(bounds.getCentroid()) > toleranceCenter) {
 			final IPoint d = bounds.getCentroid().minus(center);
 			d.multiplyBy(0.5);

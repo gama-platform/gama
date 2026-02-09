@@ -342,7 +342,7 @@ public class GamaColors {
 	}
 
 	/**
-	 * SystemOperators.
+	 * System.
 	 *
 	 * @param c
 	 *            the c

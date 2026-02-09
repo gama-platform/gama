@@ -171,10 +171,9 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 		if (context.getRoots().size() > 0) {
 			try {
 				begin = System.currentTimeMillis();
-				// Discover plugin-specific packages BEFORE processing to enable simple name usage
-				context.discoverPluginPackages();
-				// Now process all elements with packages already registered
 				processors.forEach((s, p) -> p.process(context));
+				// After processing all elements, discover plugin-specific packages for dynamic imports
+				context.discoverPluginPackages();
 			} catch (final Exception e) {
 				context.emitWarning("An exception occured in the parsing of GAML annotations: ", e);
 				throw e;
@@ -277,12 +276,10 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 	protected void writeImmutableHeader(final StringBuilder sb) {
 		// Use dynamic imports that include plugin-specific packages
 		for (final String element : context.getAllStaticCollectiveImports()) {
-			// Static imports should end with .* and need semicolons
-			sb.append(ln).append("import static ").append(element).append(";");
+			sb.append(ln).append("import static ").append(element).append("*;");
 		}
 		for (final String element : context.getAllCollectiveImports()) {
-			// Regular imports should end with .* and need semicolons  
-			sb.append(ln).append("import ").append(element).append(";");
+			sb.append(ln).append("import ").append(element).append("*;");
 		}
 		for (final String element : INDIVIDUAL_IMPORTS) { sb.append(ln).append("import ").append(element).append(";"); }
 		sb.append(ln).append("@SuppressWarnings({ \"rawtypes\", \"unchecked\", \"unused\" })");

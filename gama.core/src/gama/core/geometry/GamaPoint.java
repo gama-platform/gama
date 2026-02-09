@@ -9,7 +9,7 @@
  ********************************************************************************************************/
 package gama.core.geometry;
 
-import static gama.gaml.operators.MathOperators.round;
+import static gama.gaml.operators.Maths.round;
 import static java.lang.Math.sqrt;
 
 import org.locationtech.jts.geom.Coordinate;

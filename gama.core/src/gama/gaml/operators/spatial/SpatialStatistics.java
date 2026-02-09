@@ -45,7 +45,7 @@ import gama.api.utils.IAgentFilter;
 import gama.api.utils.collections.Collector;
 import gama.core.topology.filter.In;
 import gama.core.util.matrix.GamaMatrix;
-import gama.gaml.operators.ContainerOperators;
+import gama.gaml.operators.Containers;
 
 /**
  * The Class SpatialStatistics.
@@ -391,7 +391,7 @@ public class SpatialStatistics {
 		double I = 0.0;
 		double sumWeights = 0.0;
 		double sumXi = 0;
-		final Double mean = (Double) ContainerOperators.opMean(scope, vals);
+		final Double mean = (Double) Containers.opMean(scope, vals);
 		for (int i = 0; i < N; i++) {
 			final double xi = vals.get(i);
 			final double xiDev = xi - mean;

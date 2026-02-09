@@ -55,7 +55,7 @@ import gama.workspace.metadata.FileMetaDataProvider;
 	private final Shell shell;
 
 	/**
-	 * SystemOperators clipboard
+	 * System clipboard
 	 */
 	private final Clipboard clipboard;
 

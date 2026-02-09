@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * The Interface tests.
  */
-@Retention (RetentionPolicy.RUNTIME)
+@Retention (RetentionPolicy.CLASS)
 public @interface tests {
 	/**
 	 * Value.

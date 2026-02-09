@@ -55,7 +55,7 @@ import gama.core.util.graph.GamaGraph;
 import gama.dev.DEBUG;
 import gama.extension.traffic.driving.carfollowing.MOBIL;
 import gama.extension.traffic.driving.carfollowing.Utils;
-import gama.gaml.operators.RandomOperators;
+import gama.gaml.operators.Random;
 import gama.gaml.operators.spatial.SpatialQueries;
 import gama.gaml.skills.MovingSkill;
 
@@ -1521,7 +1521,7 @@ public class DrivingSkill extends MovingSkill {
 			List<Double> probasRespectStops = getProbasRespectStops(vehicle);
 			for (int i = 0; i < stops.size(); i++) {
 				Boolean stop = stops.get(i).contains(currentRoad);
-				if (stop && (probasRespectStops.size() <= i || RandomOperators.opFlip(scope, probasRespectStops.get(i))))
+				if (stop && (probasRespectStops.size() <= i || Random.opFlip(scope, probasRespectStops.get(i))))
 					return false;
 			}
 
@@ -1543,7 +1543,7 @@ public class DrivingSkill extends MovingSkill {
 			// double probaRespectPriorities =
 			// rescaleProba(getProbaRespectPriorities(vehicle), timeStep);
 			double probaRespectPriorities = getProbaRespectPriorities(vehicle);
-			if (!RandomOperators.opFlip(scope, probaRespectPriorities)) return true;
+			if (!Random.opFlip(scope, probaRespectPriorities)) return true;
 
 			Boolean rightSide = getRightSideDriving(vehicle);
 			List<IAgent> priorityRoads = (List<IAgent>) node.getAttribute(RoadNodeSkill.PRIORITY_ROADS);
@@ -1886,7 +1886,7 @@ public class DrivingSkill extends MovingSkill {
 			Double val = roadProba.get(r);
 			distribution.add(val == null ? 0.0 : val);
 		}
-		return possibleRoads.get(RandomOperators.opRndChoice(scope, distribution));
+		return possibleRoads.get(Random.opRndChoice(scope, distribution));
 	}
 
 	/**
@@ -2033,7 +2033,7 @@ public class DrivingSkill extends MovingSkill {
 					// rescaleProba(getProbaBlockNode(vehicle), timeStep);
 					setSpeed(vehicle, newSpeed);
 					double probaBlock = getProbaBlockNode(vehicle);
-					boolean goingToBlock = RandomOperators.opFlip(scope, probaBlock);
+					boolean goingToBlock = Random.opFlip(scope, probaBlock);
 					IAgent currentRoad = getCurrentRoad(vehicle);
 					if (currentRoad != null && goingToBlock) {
 						blockIntersection(scope, currentRoad, newRoad, currentTarget);

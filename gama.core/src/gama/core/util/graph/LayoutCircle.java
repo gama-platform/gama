@@ -16,7 +16,7 @@ import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IGraph;
 import gama.api.data.objects.IShape;
 import gama.api.runtime.scope.IScope;
-import gama.gaml.operators.MathOperators;
+import gama.gaml.operators.Maths;
 import gama.gaml.operators.spatial.SpatialPunctal;
 
 /**
@@ -62,8 +62,8 @@ public class LayoutCircle {
 		int i = 0;
 		for (final IShape v : orderedNodes) {
 			final double angle = 360 * i++ / (double) graph.vertexSet().size();
-			final double x = MathOperators.cos(angle) * radius + envelopeGeometry.getCentroid().getX();
-			final double y = MathOperators.sin(angle) * radius + envelopeGeometry.getCentroid().getY();
+			final double x = Maths.cos(angle) * radius + envelopeGeometry.getCentroid().getX();
+			final double y = Maths.sin(angle) * radius + envelopeGeometry.getCentroid().getY();
 			v.setLocation(GamaPointFactory.create(x, y));
 		}
 

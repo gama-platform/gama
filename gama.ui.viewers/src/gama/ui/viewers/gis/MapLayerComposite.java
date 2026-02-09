@@ -29,7 +29,7 @@ import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 
 /**
- * DisplayOperators a list of the map layers in an associated and provides controls to set the visibility, selection and style
+ * Displays a list of the map layers in an associated and provides controls to set the visibility, selection and style
  * of each layer.
  * <p>
  * Implementation note: DefaultMapContext stores its list of MapLayer objects in rendering order, ie. the layer at index

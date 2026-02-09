@@ -25,10 +25,10 @@ import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.gaml.operators.ContainerOperators;
-import gama.gaml.operators.GraphOperators;
-import gama.gaml.operators.MathOperators;
-import gama.gaml.operators.RandomOperators;
+import gama.gaml.operators.Containers;
+import gama.gaml.operators.Graphs;
+import gama.gaml.operators.Maths;
+import gama.gaml.operators.Random;
 import gama.gaml.operators.spatial.SpatialQueries;
 import gama.gaml.operators.spatial.SpatialTransformations;
 
@@ -75,7 +75,7 @@ public class LayoutGrid {
 		IMap<IShape, IPoint> locs = GamaMapFactory.create();
 		do {
 			places = SpatialTransformations.toSquares(scope, envelopeGeometry,
-					MathOperators.round(graph.getVertices().size() * coeffSq), false);
+					Maths.round(graph.getVertices().size() * coeffSq), false);
 		} while (places.size() < graph.getVertices().size());
 
 		IShape currentV = null;
@@ -103,9 +103,9 @@ public class LayoutGrid {
 		close.add(currentV);
 
 		while (close.size() < nbV) {
-			IList<IShape> neigh = GraphOperators.predecessorsOf(scope, graph, currentV);
-			neigh.addAll(GraphOperators.successorsOf(scope, graph, currentV));
-			neigh = RandomOperators.opShuffle(scope, neigh);
+			IList<IShape> neigh = Graphs.predecessorsOf(scope, graph, currentV);
+			neigh.addAll(Graphs.successorsOf(scope, graph, currentV));
+			neigh = Random.opShuffle(scope, neigh);
 
 			for (final IShape n : neigh) {
 				if (remaining.contains(n)) {
@@ -142,15 +142,15 @@ public class LayoutGrid {
 				}
 				remaining.remove(nV);
 				open.add(nV);
-				final Set<IShape> neigh2 = new LinkedHashSet<IShape>(GraphOperators.predecessorsOf(scope, graph, nV));
-				neigh2.addAll(GraphOperators.successorsOf(scope, graph, nV));
+				final Set<IShape> neigh2 = new LinkedHashSet<IShape>(Graphs.predecessorsOf(scope, graph, nV));
+				neigh2.addAll(Graphs.successorsOf(scope, graph, nV));
 
 				neigh2.removeAll(close);
 				neigh2.removeAll(open);
 				if (!neigh2.isEmpty()) {
 					final IList<IPoint> pts = GamaListFactory.create(Types.POINT);
 					for (final IShape n : neigh2) { pts.add(locs.get(n)); }
-					final IPoint targetLoc = (IPoint) ContainerOperators.opMean(scope, pts);
+					final IPoint targetLoc = (IPoint) Containers.opMean(scope, pts);
 					center = places.size() > 0 ? SpatialQueries.closest_to(scope, places, targetLoc.getLocation())
 							: locs.get(nV);
 				} else {

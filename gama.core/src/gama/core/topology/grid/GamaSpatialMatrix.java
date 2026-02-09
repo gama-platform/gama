@@ -74,7 +74,7 @@ import gama.core.geometry.GamaProxyGeometry;
 import gama.core.geometry.GamaShape;
 import gama.core.util.file.GamaGridFile;
 import gama.core.util.matrix.GamaMatrix;
-import gama.gaml.operators.MathOperators;
+import gama.gaml.operators.Maths;
 import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.operators.spatial.SpatialProjections;
 import gama.gaml.operators.spatial.SpatialTransformations;
@@ -1684,7 +1684,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	//
 	@Override
 	public Set<IAgent> allAtDistance(final IScope scope, final IShape source, final double dist, final IAgentFilter f) {
-		final double exp = dist * MathOperators.SQRT2;
+		final double exp = dist * Maths.SQRT2;
 		final IEnvelope env = GamaEnvelopeFactory.of(source.getEnvelope());
 		try {
 			env.expandBy(exp);
@@ -1698,7 +1698,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 
 	@Override
 	public IAgent firstAtDistance(final IScope scope, final IShape source, final double dist, final IAgentFilter f) {
-		final double exp = dist * MathOperators.SQRT2;
+		final double exp = dist * Maths.SQRT2;
 		final IEnvelope env = GamaEnvelopeFactory.of(source.getEnvelope());
 		try {
 			env.expandBy(exp);
@@ -1714,7 +1714,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	@Override
 	public Collection<IAgent> firstAtDistance(final IScope scope, final IShape source, final double dist,
 			final IAgentFilter f, final int number, final Collection<IAgent> alreadyChosen) {
-		final double exp = dist * MathOperators.SQRT2;
+		final double exp = dist * Maths.SQRT2;
 		final IEnvelope env = GamaEnvelopeFactory.of(source.getEnvelope());
 		try {
 			env.expandBy(exp);

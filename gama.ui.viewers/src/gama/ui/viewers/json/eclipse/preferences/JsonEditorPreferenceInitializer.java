@@ -85,7 +85,7 @@ public class JsonEditorPreferenceInitializer extends AbstractPreferenceInitializ
 		store.setDefault(P_EDITOR_AUTO_CREATE_END_BRACKETSY.getId(), true);
 
 		/* +++++++++++++++++ */
-		/* + Editor ColorOperators + */
+		/* + Editor Colors + */
 		/* +++++++++++++++++ */
 		preferences.setDefaultColor(COLOR_NORMAL_TEXT, BLACK);
 		preferences.setDefaultColor(COLOR_COMMENT, GREEN_JAVA);

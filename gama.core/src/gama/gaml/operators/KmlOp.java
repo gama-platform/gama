@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * KmlOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * KmlOp.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -24,9 +24,9 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 
 /**
- * The Class KmlOperators.
+ * The Class KmlOp.
  */
-public class KmlOperators {
+public class KmlOp {
 
 	/**
 	 * Adds the shape.
@@ -137,7 +137,7 @@ public class KmlOperators {
 	public static GamaKmlExport addShape(final IScope scope, final GamaKmlExport kml, final IShape shape,
 			final double lineWidth, final IColor lineColor, final IColor fillColor) throws GamaRuntimeException {
 		IDate begin = scope.getClock().getCurrentDate();
-		IDate end = DateOperators.plusDuration(scope, begin, scope.getClock().getStepInSeconds());
+		IDate end = Dates.plusDuration(scope, begin, scope.getClock().getStepInSeconds());
 		return addShape(scope, kml, shape, lineWidth, lineColor, fillColor, begin, end);
 	}
 
@@ -271,7 +271,7 @@ public class KmlOperators {
 	public static GamaKmlExport add3DModel(final IScope scope, final GamaKmlExport kml, final IPoint loc,
 			final double scale, final double orientation, final String file) throws GamaRuntimeException {
 		IDate currentDate = scope.getClock().getCurrentDate();
-		IDate endDate = DateOperators.plusDuration(scope, currentDate, scope.getClock().getStepInSeconds());
+		IDate endDate = Dates.plusDuration(scope, currentDate, scope.getClock().getStepInSeconds());
 		return add3DModel(scope, kml, loc, scale, orientation, file, currentDate, endDate);
 	}
 
@@ -347,7 +347,7 @@ public class KmlOperators {
 	public static GamaKmlExport addIcon(final IScope scope, final GamaKmlExport kml, final IPoint loc,
 			final double scale, final double orientation, final String file) throws GamaRuntimeException {
 		IDate currentDate = scope.getClock().getCurrentDate();
-		IDate endDate = DateOperators.plusDuration(scope, currentDate, scope.getClock().getStepInSeconds());
+		IDate endDate = Dates.plusDuration(scope, currentDate, scope.getClock().getStepInSeconds());
 		return addIcon(scope, kml, loc, scale, orientation, file, currentDate, endDate);
 	}
 }

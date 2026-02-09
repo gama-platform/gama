@@ -65,8 +65,8 @@ import gama.core.topology.grid.GamaSpatialMatrix;
 import gama.core.topology.grid.GridTopology;
 import gama.core.util.path.GamaPath;
 import gama.core.util.path.GamaSpatialPath;
-import gama.gaml.operators.MathOperators;
-import gama.gaml.operators.RandomOperators;
+import gama.gaml.operators.Maths;
+import gama.gaml.operators.Random;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialPunctal;
 import gama.gaml.operators.spatial.SpatialRelations;
@@ -205,7 +205,7 @@ public class MovingSkill extends Skill {
 			h = agent.getScope().getRandom().next() * 360;
 			setHeading(agent, h);
 		}
-		return MathOperators.checkHeading(h);
+		return Maths.checkHeading(h);
 	}
 
 	/**
@@ -1270,7 +1270,7 @@ public class MovingSkill extends Skill {
 								final Double val = (Double) probaEdge.get(r);
 								distribution.add(val == null ? 0.0 : val);
 							}
-							edge = nextRoads.get(RandomOperators.opRndChoice(scope, distribution));
+							edge = nextRoads.get(Random.opRndChoice(scope, distribution));
 						}
 					}
 					index = graph.getEdges().indexOf(edge);

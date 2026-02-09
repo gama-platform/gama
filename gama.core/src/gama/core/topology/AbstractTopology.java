@@ -48,7 +48,7 @@ import gama.api.utils.collections.ICollector;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.core.geometry.GamaShape;
 import gama.core.topology.continuous.RootTopology;
-import gama.gaml.operators.MathOperators;
+import gama.gaml.operators.Maths;
 import gama.gaml.operators.spatial.SpatialPunctal;
 
 /**
@@ -314,7 +314,7 @@ public abstract class AbstractTopology implements ITopology {
 
 		// See if rounding errors of double do not interfere with the
 		// computation.
-		// In which case, the use of MathOperators.approxEquals(value1, value2,
+		// In which case, the use of Maths.approxEquals(value1, value2,
 		// tolerance) could help.
 
 		// if ( envWidth == 0.0 ) {
@@ -345,8 +345,8 @@ public abstract class AbstractTopology implements ITopology {
 	@Override
 	public IPoint getDestination(final IScope scope, final IPoint source, final double direction, final double distance,
 			final boolean nullIfOutside) {
-		final double cos = distance * MathOperators.cos(direction);
-		final double sin = distance * MathOperators.sin(direction);
+		final double cos = distance * Maths.cos(direction);
+		final double sin = distance * Maths.sin(direction);
 		final IPoint result = source.plus(cos, sin, 0);
 		return normalizeLocation(scope, result, nullIfOutside);
 	}
@@ -354,9 +354,9 @@ public abstract class AbstractTopology implements ITopology {
 	@Override
 	public IPoint getDestination3D(final IScope scope, final IPoint source, final double heading, final double pitch,
 			final double distance, final boolean nullIfOutside) throws GamaRuntimeException {
-		final double x = distance * MathOperators.cos(pitch) * MathOperators.cos(heading);
-		final double y = distance * MathOperators.cos(pitch) * MathOperators.sin(heading);
-		final double z = distance * MathOperators.sin(pitch);
+		final double x = distance * Maths.cos(pitch) * Maths.cos(heading);
+		final double y = distance * Maths.cos(pitch) * Maths.sin(heading);
+		final double z = distance * Maths.sin(pitch);
 		return normalizeLocation3D(scope,
 				GamaPointFactory.create(source.getX() + x, source.getY() + y, source.getZ() + z), nullIfOutside);
 	}

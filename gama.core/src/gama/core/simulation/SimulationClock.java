@@ -22,7 +22,7 @@ import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.scope.IScope;
 import gama.dev.THREADS;
-import gama.gaml.operators.DateOperators;
+import gama.gaml.operators.Dates;
 
 /**
  * The class SimulationClock. Implements a clock for simulations.
@@ -55,7 +55,7 @@ public class SimulationClock implements IClock {
 	// AD: kept as an expression to allow temporal expressions to be evaluated
 	// in the context of the starting_date
 	// private IExpression step = new ConstantExpression(1);
-	private double step = DateOperators.DATES_TIME_STEP.getValue();
+	private double step = Dates.DATES_TIME_STEP.getValue();
 
 	/** The duration (in milliseconds) of the last cycle elapsed. */
 	protected long duration = 0;
@@ -341,7 +341,7 @@ public class SimulationClock implements IClock {
 
 			try {
 				IDate d = getCurrentDate();
-				final String date = outputAsDuration ? DateOperators.asDuration(getStartingDate(), d)
+				final String date = outputAsDuration ? Dates.asDuration(getStartingDate(), d)
 						: d.toString("yyyy-MM-dd HH:mm:ss", "en");
 				sb.append("[").append(date).append("]");
 			} catch (final DateTimeException e) {}
@@ -378,7 +378,7 @@ public class SimulationClock implements IClock {
 	 */
 	@Override
 	public IDate getStartingDate() {
-		if (startingDate == null) { setStartingDate(DateOperators.DATES_STARTING_DATE.getValue()); }
+		if (startingDate == null) { setStartingDate(Dates.DATES_STARTING_DATE.getValue()); }
 		return startingDate;
 	}
 

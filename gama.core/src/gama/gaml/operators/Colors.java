@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * ColorOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * Colors.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -54,12 +54,12 @@ import gama.core.util.color.GamaPalette;
 import gama.core.util.color.GamaScale;
 
 /**
- * The Class ColorOperators.
+ * The Class Colors.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 20 août 2023
  */
-public class ColorOperators {
+public class Colors {
 
 	/**
 	 * Adds the.
@@ -271,8 +271,8 @@ public class ColorOperators {
 							equals = "rgb([102,51,13])") }))
 	@test ("rgb([255, 128, 32]) / 2.5 = rgb([102,51,13])")
 	public static IColor divide(final IColor c, final Double i) {
-		return GamaColorFactory.createWithRGBA(MathOperators.round(c.red() / i), MathOperators.round(c.green() / i),
-				MathOperators.round(c.blue() / i), c.alpha());
+		return GamaColorFactory.createWithRGBA(Maths.round(c.red() / i), Maths.round(c.green() / i),
+				Maths.round(c.blue() / i), c.alpha());
 	}
 
 	/**
@@ -591,7 +591,7 @@ public class ColorOperators {
 	}
 
 	/**
-	 * RandomOperators color.
+	 * Random color.
 	 *
 	 * @param scope
 	 *            the scope
@@ -620,7 +620,7 @@ public class ColorOperators {
 	}
 
 	/**
-	 * RandomOperators color.
+	 * Random color.
 	 *
 	 * @param scope
 	 *            the scope
@@ -1110,7 +1110,7 @@ public class ColorOperators {
 	// category = { IOperatorCategory.COLOR },
 	// concept = {})
 	// @doc (
-	// value = "returns a list of n colors chosen in the gradient (map<rgb,float>) provided. ColorOperators are chosen by
+	// value = "returns a list of n colors chosen in the gradient (map<rgb,float>) provided. Colors are chosen by
 	// interpolating the stops of the gradient (the colors and their position between 0 and 1), in the order described
 	// in the gradient")
 	// @no_test

@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * ContainerOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * Containers.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -89,7 +89,7 @@ import one.util.streamex.StreamEx;
  *
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class ContainerOperators {
+public class Containers {
 
 	/**
 	 * Not null.
@@ -3430,7 +3430,7 @@ public class ContainerOperators {
 		return switch (s) {
 			case Number n -> n.doubleValue() / size;
 			case IPoint ip -> ip.dividedBy(size);
-			case IColor ic -> ColorOperators.divide(ic, size);
+			case IColor ic -> Colors.divide(ic, size);
 			case null, default -> Cast.asFloat(scope, s) / size;
 		};
 	}

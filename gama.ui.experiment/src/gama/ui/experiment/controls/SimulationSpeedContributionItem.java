@@ -24,7 +24,7 @@ import gama.api.GAMA;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.gaml.operators.MathOperators;
+import gama.gaml.operators.Maths;
 import gama.ui.shared.controls.IPositionChangeListener;
 import gama.ui.shared.controls.SimpleSlider;
 import gama.ui.shared.interfaces.ISpeedDisplayer;
@@ -201,7 +201,7 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 		GAMA.getExperiment().getAgent().setMinimumDurationExternal(valueFromPosition(position) / 1000);
 		for (final SimpleSlider slider2 : sliders) {
 			slider2.setToolTipText(
-					"Minimum duration of a cycle " + MathOperators.opTruncate(valueFromPosition(position) / 1000, 3) + " s");
+					"Minimum duration of a cycle " + Maths.opTruncate(valueFromPosition(position) / 1000, 3) + " s");
 			if (slider2 == s) { continue; }
 			slider2.updateSlider(position, false);
 		}

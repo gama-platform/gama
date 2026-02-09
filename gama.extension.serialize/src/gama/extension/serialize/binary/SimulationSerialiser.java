@@ -87,9 +87,9 @@ public class SimulationSerialiser implements IExperimentRecorder, ISerialisation
 				SimulationHistoryNode node = history.pop();
 				if (node != null && node.cycle() == sim.getClock().getCycle()) { node = history.pop(); }
 				if (node != null) {
-					// long startTime = SystemOperators.nanoTime();
+					// long startTime = System.nanoTime();
 					processor.restoreAgentFromBytes(sim, node.bytes());
-					// DEBUG.OUT("Deserialised in " + TimeUnit.NANOSECONDS.toMillis(SystemOperators.nanoTime() - startTime) +
+					// DEBUG.OUT("Deserialised in " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) +
 					// "ms");
 				}
 			}

@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * StringOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * Strings.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -43,10 +43,10 @@ import gama.api.utils.files.CompressionUtils;
  */
 
 /**
- * The Class StringOperators.
+ * The Class Strings.
  */
 @SuppressWarnings ({ "rawtypes" })
-public class StringOperators {
+public class Strings {
 
 	/**
 	 * Op plus.

@@ -68,13 +68,13 @@ import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.util.file.GamaGeometryFile;
 import gama.core.util.matrix.GamaField;
-import gama.gaml.operators.MathOperators;
+import gama.gaml.operators.Maths;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 
 /**
  *
  * Simplifies the drawing of circles, rectangles, and so forth. Rectangles are generally faster to draw than circles.
- * The DisplayOperators should take care of layouts while objects that wish to be drawn as a shape need only call the
+ * The Displays should take care of layouts while objects that wish to be drawn as a shape need only call the
  * appropriate method.
  * <p>
  *
@@ -209,7 +209,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		// AD Attempt to provide smoothing but it doesnt work as expected
 		// double[] data = attributes.getSmoothProvider().smooth(flatten.numCols, flatten.numRows, flatten.getMatrix(),
 		// flatten.getNoData(null), attributes.getSmooth());
-		// SystemOperators.arraycopy(data, 0, flatten.getMatrix(), 0, data.length);
+		// System.arraycopy(data, 0, flatten.getMatrix(), 0, data.length);
 		attributes.setSize(null);
 		return drawImage(flatten.getImage(surface.getScope()), attributes);
 
@@ -273,7 +273,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			curHeight = (int) hFromModelUnitsToPixels(attributes.getSize().getY());
 		}
 		if (attributes.getAngle() != null) {
-			imageTransform.rotate(MathOperators.toRad * attributes.getAngle(), curWidth / 2d, curHeight / 2d);
+			imageTransform.rotate(Maths.toRad * attributes.getAngle(), curWidth / 2d, curHeight / 2d);
 		}
 		if (curWidth != img.getWidth() || curHeight != img.getHeight()) {
 			imageTransform.scale((double) curWidth / img.getWidth(), (double) curHeight / img.getHeight());
@@ -354,7 +354,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		curY += (rHeight - descent) * attributes.getAnchor().getY();
 		final AffineTransform saved = currentRenderer.getTransform();
 		if (attributes.getAngle() != null) {
-			currentRenderer.rotate(MathOperators.toRad * attributes.getAngle(), curX + r.getWidth() / 2,
+			currentRenderer.rotate(Maths.toRad * attributes.getAngle(), curX + r.getWidth() / 2,
 					curY + r.getHeight() / 2);
 		}
 

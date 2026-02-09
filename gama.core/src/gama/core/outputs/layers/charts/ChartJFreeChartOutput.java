@@ -43,7 +43,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
 import gama.core.outputs.display.AbstractDisplayGraphics;
-import gama.gaml.operators.ColorOperators;
+import gama.gaml.operators.Colors;
 
 /**
  * The Class ChartJFreeChartOutput.
@@ -265,7 +265,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 						legend.setHorizontalAlignment(HorizontalAlignment.CENTER);
 						legend.setVerticalAlignment(VerticalAlignment.CENTER);
 						// Legend with 50% transparency by default
-						legend.setBackgroundPaint(IColor.toAWTColor(ColorOperators.rgb(scope, backgroundColor, 0.5)));
+						legend.setBackgroundPaint(IColor.toAWTColor(Colors.rgb(scope, backgroundColor, 0.5)));
 						p.addAnnotation(ta);
 						// Remove the default legend
 						chart.removeLegend();

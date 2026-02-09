@@ -72,7 +72,7 @@ import gama.api.utils.StringUtils;
 import gama.api.utils.files.FileUtils;
 import gama.core.outputs.InspectDisplayOutput;
 import gama.dev.DEBUG;
-import gama.gaml.operators.FileOperators;
+import gama.gaml.operators.Files;
 import gama.ui.experiment.menus.AgentsMenu;
 import gama.ui.shared.controls.SwitchButton;
 import gama.ui.shared.menus.GamaMenu;
@@ -834,7 +834,7 @@ public class PopulationInspectView extends GamaViewPart
 	 */
 	public void saveAsCSV() {
 		try {
-			FileOperators.newFolder(getScope(), exportFolder);
+			Files.newFolder(getScope(), exportFolder);
 		} catch (final GamaRuntimeException e1) {
 			e1.addContext("Impossible to create folder " + exportFolder);
 			GAMA.reportError(getScope(), e1, false);

@@ -35,8 +35,8 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.IConcept;
 import gama.gaml.architecture.reflex.ReflexArchitecture;
-import gama.gaml.operators.MathOperators;
-import gama.gaml.operators.RandomOperators;
+import gama.gaml.operators.Maths;
+import gama.gaml.operators.Random;
 
 /**
  * The Class SimpleBdiArchitecture.
@@ -486,9 +486,9 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			final Double agreeableness = (Double) scope.getAgent().getAttribute(AGREEABLENESS);
 			scope.getAgent().setAttribute(CHARISMA, expressivity);
 			scope.getAgent().setAttribute(RECEPTIVITY, 1 - neurotisme);
-			scope.getAgent().setAttribute(PERSISTENCE_COEFFICIENT_PLANS, MathOperators.sqrt(scope, conscience));
-			scope.getAgent().setAttribute(PERSISTENCE_COEFFICIENT_INTENTIONS, MathOperators.sqrt(scope, conscience));
-			scope.getAgent().setAttribute(OBEDIENCE, MathOperators.sqrt(scope, (conscience + agreeableness) * 0.5));
+			scope.getAgent().setAttribute(PERSISTENCE_COEFFICIENT_PLANS, Maths.sqrt(scope, conscience));
+			scope.getAgent().setAttribute(PERSISTENCE_COEFFICIENT_INTENTIONS, Maths.sqrt(scope, conscience));
+			scope.getAgent().setAttribute(OBEDIENCE, Maths.sqrt(scope, (conscience + agreeableness) * 0.5));
 		}
 		if (_sanctionNumber > 0) { scope.getAgent().setAttribute(SANCTION_BASE, _sanctions); }
 		if (_perceptionNumber > 0) {
@@ -571,9 +571,9 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			BDIPlan _persistentTask = (BDIPlan) agent.getAttribute(CURRENT_PLAN);
 			Norm _persistentNorm = (Norm) agent.getAttribute(CURRENT_NORM);
 			// RANDOMLY REMOVE (last)INTENTION
-			Boolean flipResultintention = gama.gaml.operators.RandomOperators.opFlip(scope, persistenceCoefficientintention);
+			Boolean flipResultintention = gama.gaml.operators.Random.opFlip(scope, persistenceCoefficientintention);
 			while (!flipResultintention && intentionBase.size() > 0) {
-				flipResultintention = gama.gaml.operators.RandomOperators.opFlip(scope, persistenceCoefficientintention);
+				flipResultintention = gama.gaml.operators.Random.opFlip(scope, persistenceCoefficientintention);
 				if (intentionBase.size() > 0) {
 					final int toremove = intentionBase.size() - 1;
 					final Predicate previousint = intentionBase.get(toremove).getPredicate();
@@ -606,7 +606,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 
 			_persistentTask = (BDIPlan) agent.getAttribute(CURRENT_PLAN);
 			_persistentNorm = (Norm) agent.getAttribute(CURRENT_NORM);
-			final Boolean flipResult = gama.gaml.operators.RandomOperators.opFlip(scope, persistenceCoefficientPlans);
+			final Boolean flipResult = gama.gaml.operators.Random.opFlip(scope, persistenceCoefficientPlans);
 
 			if (!flipResult) {
 				if (_persistentTask != null) {
@@ -758,12 +758,12 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 			final double priority_list[] = listMentalStatesTest.stream().mapToDouble(s -> s.getStrength()).toArray();
 
 			final IList priorities = GamaListFactory.create(scope, Types.FLOAT, priority_list);
-			final int index_choice = RandomOperators.opRndChoice(scope, priorities);
+			final int index_choice = Random.opRndChoice(scope, priorities);
 			newIntention = listMentalStatesTest.get(index_choice);
 			newIntStrength = listMentalStatesTest.get(index_choice).getStrength();
 			if (listMentalStatesTest.size() > intentionBase.size()) {
 				while (intentionBase.contains(newIntention)) {
-					final int index_choice2 = RandomOperators.opRndChoice(scope, priorities);
+					final int index_choice2 = Random.opRndChoice(scope, priorities);
 					newIntention = listMentalStatesTest.get(index_choice2);
 					newIntStrength = listMentalStatesTest.get(index_choice2).getStrength();
 				}
@@ -936,7 +936,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					priorities.add(1.0);
 				}
 			}
-			final int index_plan = gama.gaml.operators.RandomOperators.opRndChoice(scope, priorities);
+			final int index_plan = gama.gaml.operators.Random.opRndChoice(scope, priorities);
 			resultStatement = temp_plan.get(index_plan);
 		}
 
@@ -1033,7 +1033,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					priorities.add(1.0);
 				}
 			}
-			final int index_plan = RandomOperators.opRndChoice(scope, priorities);
+			final int index_plan = Random.opRndChoice(scope, priorities);
 			resultStatement = temp_norm.get(index_plan);
 		}
 

@@ -16,7 +16,7 @@ import gama.annotations.support.ISymbolKind;
  *
  * @see ISymbolKind
  */
-@Retention (RetentionPolicy.RUNTIME)
+@Retention (RetentionPolicy.CLASS)
 @Target (ElementType.TYPE)
 public @interface symbol {
 

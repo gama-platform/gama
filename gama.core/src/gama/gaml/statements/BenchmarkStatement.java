@@ -86,7 +86,7 @@ import gama.api.utils.prefs.GamaPreferences;
 @inside (
 		kinds = { ISymbolKind.BEHAVIOR, ISymbolKind.SEQUENCE_STATEMENT, ISymbolKind.LAYER })
 @doc (
-		value = "DisplayOperators in the console the duration in ms of the execution of the statements included in the block. It is possible to indicate, with the 'repeat' facet, how many times the sequence should be run")
+		value = "Displays in the console the duration in ms of the execution of the statements included in the block. It is possible to indicate, with the 'repeat' facet, how many times the sequence should be run")
 public class BenchmarkStatement extends AbstractStatementSequence {
 
 	/** The message. */

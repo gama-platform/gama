@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * MathOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * Maths.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -28,7 +28,7 @@ import gama.api.utils.MathUtils;
  * The Class GamaMath.
  */
 @SuppressWarnings ({ "rawtypes" })
-public class MathOperators {
+public class Maths {
 
 	/**
 	 * Pow.
@@ -2176,7 +2176,7 @@ public class MathOperators {
 							value = "signum(0.0)",
 							equals = "0") })
 	public static Integer signum(final Double d) {
-		if (d == null || d.isNaN() || ComparisonOperators.equal(d, 0d)) return 0;
+		if (d == null || d.isNaN() || Comparison.equal(d, 0d)) return 0;
 		if (d < 0) return -1;
 		return 1;
 	}

@@ -23,7 +23,7 @@ import gama.extension.serialize.fst.util.FSTUtil;
 /**
  * Created with IntelliJ IDEA. User: ruedi Date: 11.11.12 Time: 04:09
  *
- * EnumSet Serializer for Cross Platform serialization. Writes full StringOperators instead of ordinals
+ * EnumSet Serializer for Cross Platform serialization. Writes full Strings instead of ordinals
  *
  */
 @SuppressWarnings ("unchecked")

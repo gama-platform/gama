@@ -35,7 +35,7 @@ import gama.api.utils.files.SaveOptions;
 import gama.core.topology.gis.ProjectionFactory;
 import gama.core.topology.grid.GridPopulation;
 import gama.core.util.matrix.GamaField;
-import gama.gaml.operators.MathOperators;
+import gama.gaml.operators.Maths;
 import gama.gaml.statements.save.AbstractSaver;
 
 /**
@@ -169,7 +169,7 @@ public class ImageSaver extends AbstractSaver {
 		for (int row = 0; row < rows; row++) {
 			for (int col = 0; col < cols; col++) {
 				double v = field.get(scope, col, row);
-				int vRef = MathOperators.round((v - minmaxVal[0]) / (minmaxVal[1] - minmaxVal[0]) * 255);
+				int vRef = Maths.round((v - minmaxVal[0]) / (minmaxVal[1] - minmaxVal[0]) * 255);
 				image.setRGB(col, rows - 1 - row, GamaColorFactory.get(vRef, vRef, vRef).getRGB());
 			}
 		}

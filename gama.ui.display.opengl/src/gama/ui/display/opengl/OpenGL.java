@@ -50,7 +50,7 @@ import gama.api.utils.prefs.GamaPreferences;
 import gama.core.geometry.UnboundedCoordinateSequence;
 import gama.core.util.file.GamaGeometryFile;
 import gama.dev.DEBUG;
-import gama.gaml.operators.MathOperators;
+import gama.gaml.operators.Maths;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.renderer.caches.GeometryCache;
 import gama.ui.display.opengl.renderer.caches.GeometryCache.BuiltInGeometry;
@@ -154,7 +154,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	public static float ANISOTROPIC_LEVEL = 0;
 
 	/** The current color. */
-	// ColorOperators
+	// Colors
 	private IColor currentColor;
 
 	/** The current object alpha. */
@@ -757,7 +757,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void rotateBy(final Rotation3D rotation) {
 		final IPoint axis = rotation.getAxis();
-		final double angle = rotation.getAngle() * MathOperators.toDeg;
+		final double angle = rotation.getAngle() * Maths.toDeg;
 		rotateBy(angle, axis.getX(), axis.getY(), axis.getZ());
 	}
 

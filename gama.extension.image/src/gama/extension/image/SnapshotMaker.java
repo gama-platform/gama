@@ -35,7 +35,7 @@ import gama.api.ui.layers.ISnapshotMaker;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.gaml.operators.FileOperators;
+import gama.gaml.operators.Files;
 
 /**
  * The Class SnapshotMaker.
@@ -102,7 +102,7 @@ public class SnapshotMaker implements ISnapshotMaker {
 	 */
 	private String buildPath(final IScope scope, final IDisplaySurface surface) {
 		try {
-			FileOperators.newFolder(scope, IDisplaySurface.SNAPSHOT_FOLDER_NAME);
+			Files.newFolder(scope, IDisplaySurface.SNAPSHOT_FOLDER_NAME);
 		} catch (final GamaRuntimeException e1) {
 			// Intentionnaly passing GAMA.getRuntimeScope() to errors in order to
 			// prevent the exceptions from being masked.
@@ -223,7 +223,7 @@ public class SnapshotMaker implements ISnapshotMaker {
 		}
 		if (image == null) return;
 		try {
-			FileOperators.newFolder(scope, IDisplaySurface.SNAPSHOT_FOLDER_NAME);
+			Files.newFolder(scope, IDisplaySurface.SNAPSHOT_FOLDER_NAME);
 		} catch (final GamaRuntimeException e1) {
 			e1.addContext("Impossible to create folder " + IDisplaySurface.SNAPSHOT_FOLDER_NAME);
 			GAMA.reportError(GAMA.getRuntimeScope(), e1, false);

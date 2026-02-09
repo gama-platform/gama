@@ -18,7 +18,7 @@ import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.color.GamaScale;
 
 /**
- * ColorOperators are chosen in a discrete map where the "weights" of colors correspond to elevations. If z is smaller or larger
+ * Colors are chosen in a discrete map where the "weights" of colors correspond to elevations. If z is smaller or larger
  * than the values in the scale, the default color is returned
  *
  * @author drogoul

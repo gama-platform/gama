@@ -337,7 +337,7 @@ public class Unknown implements Serializable {
 	}
 
 	/**
-	 * FieldOperators.
+	 * Fields.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param fields

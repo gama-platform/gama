@@ -20,7 +20,7 @@ import gama.annotations.support.ISymbolKind;
  * @since 2 juin 2012
  *
  */
-@Retention (RetentionPolicy.RUNTIME)
+@Retention (RetentionPolicy.CLASS)
 @Inherited
 @Target (ElementType.TYPE)
 public @interface type {

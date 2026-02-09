@@ -161,8 +161,8 @@ public class CoreActivator extends GamaBundleActivator {
 	 * <ul>
 	 * <li><strong>Collections:</strong> Lists, Maps, Matrices for data storage</li>
 	 * <li><strong>Geometry:</strong> Points, Shapes, Envelopes, Coordinate sequences, Topologies</li>
-	 * <li><strong>Utilities:</strong> ColorOperators, Fonts, DateOperators, Pairs for common data types</li>
-	 * <li><strong>Graph Structures:</strong> GraphOperators and Paths for network operations</li>
+	 * <li><strong>Utilities:</strong> Colors, Fonts, Dates, Pairs for common data types</li>
+	 * <li><strong>Graph Structures:</strong> Graphs and Paths for network operations</li>
 	 * <li><strong>Communication:</strong> Messages for agent communication</li>
 	 * </ul>
 	 *

@@ -168,7 +168,7 @@ import gama.gaml.statements.draw.DrawStatement.DrawValidator;
 						optional = true,
 						doc = @doc (
 								value = "The line width to use for drawing this object. In OpenGL displays, this attribute is considered as optional and not implemented by all gaphic card vendors. "
-										+ "The default value is set by the preference found in DisplayOperators>OpenGL Rendering Properties (which, when inspected, also provides the maximal possible value on the local graphics configuration)")), },
+										+ "The default value is set by the preference found in Displays>OpenGL Rendering Properties (which, when inspected, also provides the maximal possible value on the local graphics configuration)")), },
 
 		omissible = IKeyword.GEOMETRY)
 @inside (

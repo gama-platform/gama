@@ -97,7 +97,7 @@ public class LayeredDisplayData implements IDisplayData {
 	}
 
 	/**
-	 * ColorOperators
+	 * Colors
 	 */
 	private IColor backgroundColor = GamaPreferences.Displays.CORE_BACKGROUND.getValue();
 	//

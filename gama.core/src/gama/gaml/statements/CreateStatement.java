@@ -468,7 +468,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	private Object getSource(final IScope scope) {
 		Object source = from == null ? null : from.value(scope);
 		// if (source instanceof String) {
-		// source = FileOperators.from(scope, (String) source);
+		// source = Files.from(scope, (String) source);
 		// } else
 		if (source instanceof IShape) { source = GamaListFactory.wrap(Types.GEOMETRY, (IShape) source); }
 		return source;

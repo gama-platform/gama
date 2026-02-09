@@ -90,13 +90,6 @@ public class OperatorProcessor extends ElementProcessor<operator> {
 		final ExecutableElement executableMethod = (ExecutableElement) method;
 		final String declClass = rawNameOf(method.getEnclosingElement().asType());
 
-		// Register the package of the declaring class for dynamic import
-		// This allows generated code to use simple class names instead of fully qualified names
-		String packageName = extractPackageFromClassName(declClass);
-		if (packageName != null) {
-			registerPackageForImport(packageName);
-		}
-
 		// Process method parameters
 		final ParameterInfo paramInfo = processParameters(executableMethod);
 		if (paramInfo == null) return; // Error occurred during processing
@@ -138,15 +131,10 @@ public class OperatorProcessor extends ElementProcessor<operator> {
 		final int start = isStatic ? 0 : 1;
 		final String firstArg = hasScope ? "s" : "";
 		if (isStatic) {
-			// For static calls, extract the class name and track it
-			String staticClassName = extractClass(methodCall, classes[0], true);
-			context.trackClassUsage(staticClassName);
-			sb.append(getClassName(staticClassName)).append('.').append(extractMethod(methodCall, true))
-				.append('(').append(firstArg);
+			sb.append(methodCall).append('(').append(firstArg);
 		} else {
 			final String methodName = extractMethod(methodCall, false);
-			sb.append("((").append(getClassName(classes[0])).append(")o[0]).").append(methodName)
-				.append('(').append(firstArg);
+			sb.append("((").append(classes[0]).append(")o[0]).").append(methodName).append('(').append(firstArg);
 		}
 		if (start < classes.length) {
 			if (hasScope) { sb.append(','); }
@@ -266,11 +254,11 @@ public class OperatorProcessor extends ElementProcessor<operator> {
 	protected static StringBuilder buildMethodCall(final StringBuilder sb, final String[] classes, final String name,
 			final boolean stat, final boolean scope) {
 		final int start = stat ? 0 : 1;
-		sb.append(toClassObjectStatic(extractClass(name, classes[0], stat)));
+		sb.append(toClassObject(extractClass(name, classes[0], stat)));
 		sb.append(".getMethod(").append(toJavaString(extractMethod(name, stat))).append(',');
-		if (scope) { sb.append(toClassObjectStatic(ISCOPE)).append(','); }
+		if (scope) { sb.append(toClassObject(ISCOPE)).append(','); }
 		for (int i = start; i < classes.length; i++) {
-			sb.append(toClassObjectStatic(classes[i]));
+			sb.append(toClassObject(classes[i]));
 			sb.append(',');
 		}
 		sb.setLength(sb.length() - 1);
@@ -295,7 +283,7 @@ public class OperatorProcessor extends ElementProcessor<operator> {
 		sb.append("C(");
 		for (int i = 0; i < segments.length; i++) {
 			if (i > 0) { sb.append(','); }
-			sb.append(toClassObjectStatic(segments[i]));
+			sb.append(toClassObject(segments[i]));
 		}
 		sb.append(")");
 		return sb;
@@ -434,20 +422,4 @@ public class OperatorProcessor extends ElementProcessor<operator> {
 		sb.append(',').append(toBoolean(op.iterator()));
 		sb.append(");");
 	}
-
-	/**
-	 * Extracts the package name from a fully qualified class name.
-	 * 
-	 * @param className the fully qualified class name
-	 * @return the package name, or null if no package can be extracted
-	 */
-	private String extractPackageFromClassName(final String className) {
-		if (className == null) return null;
-		int lastDotIndex = className.lastIndexOf('.');
-		if (lastDotIndex > 0) {
-			return className.substring(0, lastDotIndex);
-		}
-		return null;
-	}
-
 }

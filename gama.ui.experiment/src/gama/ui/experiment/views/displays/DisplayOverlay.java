@@ -38,7 +38,7 @@ import gama.api.data.objects.IEnvelope;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.dev.DEBUG;
-import gama.gaml.operators.MathOperators;
+import gama.gaml.operators.Maths;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -619,9 +619,9 @@ public class DisplayOverlay {
 			final IEnvelope roi = ((IDisplaySurface.OpenGL) surface).getROIDimensions();
 			if (roi != null) {
 				sb.append(" ROI [");
-				sb.append(MathOperators.round(roi.getWidth(), 2));
+				sb.append(Maths.round(roi.getWidth(), 2));
 				sb.append(" x ");
-				sb.append(MathOperators.round(roi.getHeight(), 2));
+				sb.append(Maths.round(roi.getHeight(), 2));
 				sb.append("]");
 			}
 		}

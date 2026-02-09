@@ -40,7 +40,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.gaml.operators.MathOperators;
+import gama.gaml.operators.Maths;
 
 /**
  * The Class Creation.
@@ -649,8 +649,8 @@ public class SpatialCreation {
 	@depends_on (IKeyword.SHAPE)
 	public static IShape cone(final IScope scope, final Integer p1, final Integer p2) {
 		if (p1 == null || p2 == null) return null;
-		final Double min_angle = MathOperators.checkHeading(p1);
-		final Double max_angle = MathOperators.checkHeading(p2);
+		final Double min_angle = Maths.checkHeading(p1);
+		final Double max_angle = Maths.checkHeading(p2);
 		final IAgent a = scope.getAgent();
 		final IPoint origin = a.getLocation() == null ? GamaPointFactory.create(0, 0) : a.getLocation();
 		final double originx = origin.getX();
@@ -660,12 +660,12 @@ public class SpatialCreation {
 		final double worldHeight = scope.getTopology().getHeight();// -
 																	// originy;
 		final double max = Math.max(worldWidth, worldHeight);
-		final double min_point_x = originx + MathOperators.cos(min_angle) * max;
-		final double min_point_y = originy + MathOperators.sin(min_angle) * max;
+		final double min_point_x = originx + Maths.cos(min_angle) * max;
+		final double min_point_y = originy + Maths.sin(min_angle) * max;
 		final IPoint minPoint = GamaPointFactory.create(min_point_x, min_point_y);
 
-		final double max_point_x = originx + MathOperators.cos(max_angle) * max;
-		final double max_point_y = originy + MathOperators.sin(max_angle) * max;
+		final double max_point_x = originx + Maths.cos(max_angle) * max;
+		final double max_point_y = originy + Maths.sin(max_angle) * max;
 		final IPoint maxPoint = GamaPointFactory.create(max_point_x, max_point_y);
 
 		return polygon(scope, GamaListFactory.wrap(Types.POINT, origin, minPoint, maxPoint));
@@ -1800,8 +1800,8 @@ public class SpatialCreation {
 		IPoint p01 = p0.plus(p1.minus(p0).times(proportion));
 		final double val = coefficient * p0.euclidianDistanceTo(p1);
 		final double heading = SpatialRelations.towards(scope, p0, p1);
-		p01 = GamaPointFactory.create(p01.getX() + MathOperators.cos(heading + 90 * (right ? 1.0 : -1.0)) * val,
-				p01.getY() + MathOperators.sin(heading + 90 * (right ? 1.0 : -1.0)) * val, p01.getZ());
+		p01 = GamaPointFactory.create(p01.getX() + Maths.cos(heading + 90 * (right ? 1.0 : -1.0)) * val,
+				p01.getY() + Maths.sin(heading + 90 * (right ? 1.0 : -1.0)) * val, p01.getZ());
 		return bezierCurve(scope, p0, p01, p1, nbPoints);
 	}
 

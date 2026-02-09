@@ -61,7 +61,7 @@ import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
 import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterValidator;
 import gama.core.util.date.GamaDateInterval;
-import gama.gaml.operators.DateOperators;
+import gama.gaml.operators.Dates;
 
 /**
  * The Class ExperimentParameter.
@@ -673,7 +673,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 				}
 				case IType.DATE -> {
 					final double dStep =
-							stepValue == null ? DateOperators.DATES_TIME_STEP.getValue() : Cast.asFloat(scope, stepValue);
+							stepValue == null ? Dates.DATES_TIME_STEP.getValue() : Cast.asFloat(scope, stepValue);
 					final IDate dMin = minValue == null ? GamaDateFactory.createFromTemporal(LocalDateTime.now())
 							.minus(Integer.MAX_VALUE, ChronoUnit.SECONDS) : GamaDateFactory.toDate(scope, minValue);
 					final IDate dMax = maxValue == null ? GamaDateFactory.createFromTemporal(LocalDateTime.now())
@@ -758,7 +758,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 					break;
 				case IType.DATE:
 					final double dStep =
-							stepValue == null ? DateOperators.DATES_TIME_STEP.getValue() : Cast.asFloat(scope, stepValue);
+							stepValue == null ? Dates.DATES_TIME_STEP.getValue() : Cast.asFloat(scope, stepValue);
 					final IDate dMin = minValue == null ? GamaDateFactory.createFromTemporal(LocalDateTime.now())
 							.minus(Integer.MAX_VALUE, ChronoUnit.SECONDS) : GamaDateFactory.toDate(scope, minValue);
 					final IDate dMax = maxValue == null ? GamaDateFactory.createFromTemporal(LocalDateTime.now())

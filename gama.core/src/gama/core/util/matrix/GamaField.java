@@ -40,7 +40,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.layers.IMeshColorProvider;
 import gama.api.utils.IFieldMatrixProvider;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.gaml.operators.ColorOperators;
+import gama.gaml.operators.Colors;
 import gama.gaml.statements.draw.MeshDrawingAttributes;
 import one.util.streamex.DoubleStreamEx;
 import one.util.streamex.StreamEx;
@@ -243,7 +243,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 
 	/**
 	 * We only stream away the values different from noDataValue (should normally allow most of the algorithms in
-	 * ContainerOperators to work)
+	 * Containers to work)
 	 *
 	 */
 	@Override
@@ -660,7 +660,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 			for (int j = 0; j < this.numRows; j++) {
 				index = j * this.numCols + i;
 				double[] color = provider.getColor(index, matrix[index], minMax[0], minMax[1], rgb);
-				result.matrix[index] = ColorOperators
+				result.matrix[index] = Colors
 						.rgb((int) (color[0] * 255), (int) (color[1] * 255), (int) (color[2] * 255), color[3] * 255)
 						.getRGB();
 			}

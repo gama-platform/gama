@@ -32,7 +32,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
 import gama.core.topology.graph.GamaSpatialGraph;
-import gama.gaml.operators.MathOperators;
+import gama.gaml.operators.Maths;
 
 /**
  * MovingSkill3D : This class is intended to define the minimal set of behaviours required from an agent that is able to
@@ -98,7 +98,7 @@ public class MovingSkill3D extends MovingSkill {
 			p = agent.getScope().getRandom().next() * 360;
 			setPitch(agent, p);
 		}
-		return MathOperators.checkHeading(p);
+		return Maths.checkHeading(p);
 	}
 
 	/**
@@ -128,7 +128,7 @@ public class MovingSkill3D extends MovingSkill {
 			r = agent.getScope().getRandom().next() * 360;
 			setRoll(agent, r);
 		}
-		return MathOperators.checkHeading(r);
+		return Maths.checkHeading(r);
 	}
 
 	/**
@@ -313,21 +313,21 @@ public class MovingSkill3D extends MovingSkill {
 		final double dx = diff.getX();
 		final double dy = diff.getY();
 		final double dz = diff.getZ();
-		final int signumX = MathOperators.signum(dx);
-		final int signumY = MathOperators.signum(dy);
+		final int signumX = Maths.signum(dx);
+		final int signumY = Maths.signum(dy);
 		// Heading
 		if (signumX == 0) {
 			setHeading(agent, signumY == 0 ? 0 : signumY > 0 ? 90 : 270);
 		} else {
-			setHeading(agent, Math.atan(dy / dx) * MathOperators.toDeg + (signumX > 0 ? 0 : 180));
+			setHeading(agent, Math.atan(dy / dx) * Maths.toDeg + (signumX > 0 ? 0 : 180));
 		}
 
 		// Pitch
 		if (signumX == 0 && signumY == 0) {
-			final int signumZ = MathOperators.signum(dz);
+			final int signumZ = Maths.signum(dz);
 			setPitch(agent, signumZ == 0 ? 0 : signumZ > 0 ? 90 : 270);
 		} else {
-			setPitch(agent, Math.atan(dz / Math.sqrt(dx * dx + dy * dy)) * MathOperators.toDeg);
+			setPitch(agent, Math.atan(dz / Math.sqrt(dx * dx + dy * dy)) * Maths.toDeg);
 		}
 
 		return null;

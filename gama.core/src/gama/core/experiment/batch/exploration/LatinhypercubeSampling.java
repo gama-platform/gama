@@ -49,7 +49,7 @@ public class LatinhypercubeSampling extends SamplingUtils {
      * Build a sample with values between 0 and 1
      * @param N: number of samples. 
      * @param names : Names of parameters
-     * @param r : RandomOperators object
+     * @param r : Random object
      * @return sample with values between 0 and 1
      */
     private static Map<String,List<Double>> generate(int N, List<String> names,Random r) {
@@ -109,7 +109,7 @@ public class LatinhypercubeSampling extends SamplingUtils {
      * @param N : Number of samples
      * @param inputs : Inputs with shape: Map<String,Map<String,List<Object>>>
      * Example: {Var1={Int,[0,10]},Var2={Double,[0,1]}
-     * @param r : a RandomOperators object
+     * @param r : a Random object
      * @return
      */
     public static List<ParametersSet> latinHypercubeSamples(int N, List<Batch> parameters,Random r,IScope scope){

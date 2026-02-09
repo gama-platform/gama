@@ -16,7 +16,7 @@ package gama.ui.navigator.wizards;
  * available at http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors: IBM Corporation - initial API and implementation Red Hat, Inc - extensive changes to allow importing of
- * Archive FileOperators Philippe Ombredanne (pombredanne@nexb.com) - Bug 101180 [Import/Export] Import Existing Project into
+ * Archive Files Philippe Ombredanne (pombredanne@nexb.com) - Bug 101180 [Import/Export] Import Existing Project into
  * Workspace default widget is back button , should be text field Martin Oberhuber (martin.oberhuber@windriver.com) -
  * Bug 187318[Wizards] "Import Existing Project" loops forever with cyclic symbolic links Remy Chi Jian Suen
  * (remy.suen@gmail.com) - Bug 210568 [Import/Export] Refresh button does not update list of projects Matt Hurne
