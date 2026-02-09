@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * Dates.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * DateOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -77,9 +77,9 @@ import gama.core.util.date.GamaDateInterval;
 import gama.dev.DEBUG;
 
 /**
- * The Class Dates.
+ * The Class DateOperators.
  */
-public class Dates {
+public class DateOperators {
 
 	/** The default value. */
 	public static String DEFAULT_VALUE = "CUSTOM";
@@ -2512,7 +2512,7 @@ public class Dates {
 		 * @return the string
 		 */
 		private String toString(final Duration duration) {
-			this.temporal = duration.addTo(Dates.DATES_STARTING_DATE.getValue())
+			this.temporal = duration.addTo(DateOperators.DATES_STARTING_DATE.getValue())
 					.minus(GamaDateFactory.DEFAULT_OFFSET_IN_SECONDS.getTotalSeconds(), SECONDS);
 			// if (duration.toDays() == 0l)
 			// temporal = LocalDateTime.(temporal);
@@ -2552,7 +2552,7 @@ public class Dates {
 			if (field == HOUR_OF_DAY) return temporal.getLong(HOUR_OF_DAY);
 			if (field == DAY_OF_MONTH) return temporal.getLong(DAY_OF_MONTH) - 1l;
 			if (field == MONTH_OF_YEAR) return temporal.getLong(MONTH_OF_YEAR) - 1;
-			if (field == YEAR) return temporal.getLong(YEAR) - Dates.DATES_STARTING_DATE.getValue().getLong(YEAR);
+			if (field == YEAR) return temporal.getLong(YEAR) - DateOperators.DATES_STARTING_DATE.getValue().getLong(YEAR);
 			return 0;
 		}
 

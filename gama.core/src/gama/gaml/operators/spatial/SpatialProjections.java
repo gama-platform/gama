@@ -56,7 +56,7 @@ public class SpatialProjections {
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.FILE },
 			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.FILE, IConcept.GIS })
 	@doc (
-			value = "the Coordinate Reference System (CRS) of the GIS file",
+			value = "the Coordinate Reference SystemOperators (CRS) of the GIS file",
 			examples = { @example (
 					value = "crs(my_shapefile)",
 					equals = "the crs of the shapefile",
@@ -91,7 +91,7 @@ public class SpatialProjections {
 					IConcept.GIS })
 	@doc (
 			usages = { @usage (
-					value = "returns the geometry corresponding to the transformation of the given geometry by the current CRS (Coordinate Reference System), the one corresponding to the world's agent one",
+					value = "returns the geometry corresponding to the transformation of the given geometry by the current CRS (Coordinate Reference SystemOperators), the one corresponding to the world's agent one",
 					examples = { @example (
 							value = "CRS_transform(shape)",
 							equals = "a geometry corresponding to the agent geometry transformed into the current CRS",
@@ -121,7 +121,7 @@ public class SpatialProjections {
 					IConcept.GIS })
 	@doc (
 			usages = { @usage (
-					value = "returns the geometry corresponding to the transformation of the given geometry to the GAMA CRS (Coordinate Reference System) assuming the given geometry is referenced by the current CRS, the one corresponding to the world's agent one",
+					value = "returns the geometry corresponding to the transformation of the given geometry to the GAMA CRS (Coordinate Reference SystemOperators) assuming the given geometry is referenced by the current CRS, the one corresponding to the world's agent one",
 					examples = { @example (
 							value = "to_GAMA_CRS({121,14})",
 							equals = "a geometry corresponding to the agent geometry transformed into the GAMA CRS",
@@ -152,7 +152,7 @@ public class SpatialProjections {
 			concept = {})
 	@doc (
 			usages = { @usage (
-					value = "returns the geometry corresponding to the transformation of the given geometry to the GAMA CRS (Coordinate Reference System) assuming the given geometry is referenced by given CRS",
+					value = "returns the geometry corresponding to the transformation of the given geometry to the GAMA CRS (Coordinate Reference SystemOperators) assuming the given geometry is referenced by given CRS",
 					examples = { @example (
 							value = "to_GAMA_CRS({121,14}, \"EPSG:4326\")",
 							equals = "a geometry corresponding to the agent geometry transformed into the GAMA CRS",
@@ -189,7 +189,7 @@ public class SpatialProjections {
 					IConcept.GIS })
 	@doc (
 			usages = { @usage (
-					value = "returns the geometry corresponding to the transformation of the given geometry by the left operand CRS (Coordinate Reference System)",
+					value = "returns the geometry corresponding to the transformation of the given geometry by the left operand CRS (Coordinate Reference SystemOperators)",
 					examples = { @example (
 							value = "shape CRS_transform(\"EPSG:4326\")",
 							equals = "a geometry corresponding to the agent geometry transformed into the EPSG:4326 CRS",
@@ -228,7 +228,7 @@ public class SpatialProjections {
 					IConcept.GIS })
 	@doc (
 			usages = { @usage (
-					value = "returns the geometry corresponding to the transformation of the given geometry from the first CRS to the second CRS (Coordinate Reference System)",
+					value = "returns the geometry corresponding to the transformation of the given geometry from the first CRS to the second CRS (Coordinate Reference SystemOperators)",
 					examples = { @example (
 							value = "{8.35,47.22} CRS_transform(\"EPSG:4326\",\"EPSG:4326\")",
 							equals = "{929517.7481238344,5978057.894895313,0.0}",

@@ -8,7 +8,7 @@ import gama.api.data.objects.IList;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.gaml.operators.Maths;
+import gama.gaml.operators.MathOperators;
 
 public class BdiUtils {
 
@@ -793,8 +793,8 @@ public class BdiUtils {
 		moyNegatif = tempNegatif != 0.0 ? moyNegatif / tempNegatif : 0;
 
 		appreciationModif = BdiUtils.clamp(appreciationModif 
-							+ Maths.abs(appreciationModif) * (1 - Maths.abs(appreciationModif)) * social.getSolidarity()
-							+ coefModification * (1 - Maths.abs(appreciationModif)) * (moyPositif - moyNegatif),
+							+ MathOperators.abs(appreciationModif) * (1 - MathOperators.abs(appreciationModif)) * social.getSolidarity()
+							+ coefModification * (1 - MathOperators.abs(appreciationModif)) * (moyPositif - moyNegatif),
 							-1,
 							1);
 		social.setLiking(appreciationModif);
@@ -847,7 +847,7 @@ public class BdiUtils {
 		avgPositive = nbPositive != 0.0 ? avgPositive / nbPositive : 0;
 		avgNegative = nbNegative != 0.0 ? avgNegative / nbNegative : 0;
 
-		dominanceModif = BdiUtils.clamp(dominanceModif + coefModification * Maths.abs(dominanceModif) * (avgPositive - avgNegative), 1, 1);
+		dominanceModif = BdiUtils.clamp(dominanceModif + coefModification * MathOperators.abs(dominanceModif) * (avgPositive - avgNegative), 1, 1);
 		social.setDominance(dominanceModif);
 		GAMA.releaseScope(scopeAgentCause);
 	}

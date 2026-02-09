@@ -83,9 +83,13 @@ public class ExperimentProcessor extends ElementProcessor<experiment> {
 	@Override
 	public void createElement(final StringBuilder sb, final Element e, final experiment exp) {
 		verifyDoc(e, "experiment " + exp.value(), exp);
-		String clazz = e.asType().toString();
+		String clazz = rawNameOf(e.asType());
+		
+		// Register the package of this class for import so we can use simple names
+		registerPackageForImport(extractPackageFromClassName(clazz));
+		
 		sb.append(in).append("_experiment(").append(toJavaString(exp.value())).append(",(p, i)->new ")
-				.append(rawNameOf(e.asType())).append("(p, i),").append(clazz).append(".class);");
+				.append(getClassName(clazz)).append("(p, i),").append(toClassObject(clazz)).append(");");
 	}
 
 	/**
@@ -103,4 +107,20 @@ public class ExperimentProcessor extends ElementProcessor<experiment> {
 				assertClassExtends(true, (TypeElement) e, context.getType(Constants.IExperimentAgentClassName));
 		return result;
 	}
+
+	/**
+	 * Extracts the package name from a fully qualified class name.
+	 * 
+	 * @param className the fully qualified class name
+	 * @return the package name, or null if no package can be extracted
+	 */
+	private String extractPackageFromClassName(final String className) {
+		if (className == null) return null;
+		int lastDotIndex = className.lastIndexOf('.');
+		if (lastDotIndex > 0) {
+			return className.substring(0, lastDotIndex);
+		}
+		return null;
+	}
+
 }

@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * @since 2 juin 2012
  *
  */
-@Retention (RetentionPolicy.CLASS)
+@Retention (RetentionPolicy.RUNTIME)
 @Target ({})
 public @interface variable {
 

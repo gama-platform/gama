@@ -28,7 +28,7 @@ import gama.api.compilation.ast.IGamlLabelProvider;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.types.Types;
-import gama.gaml.operators.Strings;
+import gama.gaml.operators.StringOperators;
 import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.Facet;
@@ -176,7 +176,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 		}
 		String first = "Attribute ";
 		if (type.contains("file")) { type = "file"; }
-		if (Types.get(type) == Types.NO_TYPE) { first = Strings.capitalize(null, type) + " "; }
+		if (Types.get(type) == Types.NO_TYPE) { first = StringOperators.capitalize(null, type) + " "; }
 
 		return first + (name == null ? "" : name) + " (" + type + ") " + (key == null ? "" : "(" + key + ") ");
 

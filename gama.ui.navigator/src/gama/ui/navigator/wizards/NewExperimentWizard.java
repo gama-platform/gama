@@ -16,7 +16,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.ISelection;
 
 import gama.api.GAMA;
-import gama.gaml.operators.Strings;
+import gama.gaml.operators.StringOperators;
 
 /**
  * The Class NewExperimentWizard.
@@ -36,7 +36,7 @@ public class NewExperimentWizard extends AbstractNewModelWizard {
 		final String header = super.getHeader(folder, str, title, author, desc);
 		final String result = pathToModel == null ? header.replace("model:$MODEL$", "")
 				: header.replaceAll("\\$MODEL\\$", "'" + pathToModel + "'");
-		return result.replaceAll("\\$TYPE\\$", Strings.toLowerCase(getPage().getType()));
+		return result.replaceAll("\\$TYPE\\$", StringOperators.toLowerCase(getPage().getType()));
 	}
 
 	@Override

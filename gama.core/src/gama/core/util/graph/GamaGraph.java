@@ -1536,7 +1536,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	 */
 	@Override
 	public boolean containsKey(final IScope scope, final Object o) {
-		return gama.gaml.operators.Graphs.containsVertex(scope, this, o);
+		return gama.gaml.operators.GraphOperators.containsVertex(scope, this, o);
 	}
 
 	/**
@@ -1550,8 +1550,8 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	 */
 	@Override
 	public boolean contains(final IScope scope, final Object o) {
-		if (o instanceof IPair) return gama.gaml.operators.Graphs.containsEdge(scope, this, (IPair) o);
-		return gama.gaml.operators.Graphs.containsEdge(scope, this, o);
+		if (o instanceof IPair) return gama.gaml.operators.GraphOperators.containsEdge(scope, this, (IPair) o);
+		return gama.gaml.operators.GraphOperators.containsEdge(scope, this, o);
 	}
 
 }

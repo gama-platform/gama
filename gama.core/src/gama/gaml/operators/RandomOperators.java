@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * Random.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * RandomOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -46,7 +46,7 @@ import one.util.streamex.IntStreamEx;
  *
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class Random {
+public class RandomOperators {
 
 	/**
 	 * The Class BitString.
@@ -191,7 +191,7 @@ public class Random {
 	}
 
 	/**
-	 * Random.
+	 * RandomOperators.
 	 *
 	 * @param scope
 	 *            the scope
@@ -1105,7 +1105,7 @@ public class Random {
 					double xin = x * scale, yin = y * scale;
 					// Skew the input space to determine which simplex cell we're in
 					double s = (xin + yin) * F2; // Hairy factor for 2D
-					int i = Maths.floor(xin + s), j = Maths.floor(yin + s);
+					int i = MathOperators.floor(xin + s), j = MathOperators.floor(yin + s);
 					double t = (i + j) * G2, X0 = i - t, Y0 = j - t, x0 = xin - X0, y0 = yin - Y0;
 					// For the 2D case, the simplex shape is an equilateral triangle.
 					// Determine which simplex we are in.

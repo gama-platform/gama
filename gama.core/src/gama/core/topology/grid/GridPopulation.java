@@ -669,7 +669,7 @@ public class GridPopulation implements IPopulation.Grid {
 		// + !Arrays.equals(grid.getDisplayData(), matrix.getDisplayData()));
 		// DEBUG.OUT("Are the grid values equal in both grids ? " + Arrays.equals(grid.gridValue,
 		// matrix.getGridValue()));
-		// System.arraycopy(matrix.getDisplayData(), 0, grid.supportImagePixels, 0, grid.supportImagePixels.length);
+		// SystemOperators.arraycopy(matrix.getDisplayData(), 0, grid.supportImagePixels, 0, grid.supportImagePixels.length);
 		// just for debug purposes
 		grid = (GamaSpatialMatrix) matrix;
 		getTopology().setPlaces(matrix);

@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.ui.experiment.commands;
 
-import static gama.gaml.operators.Displays.HORIZONTAL;
-import static gama.gaml.operators.Displays.VERTICAL;
+import static gama.gaml.operators.DisplayOperators.HORIZONTAL;
+import static gama.gaml.operators.DisplayOperators.VERTICAL;
 import static org.eclipse.e4.ui.model.application.ui.basic.MBasicFactory.INSTANCE;
 import static org.eclipse.e4.ui.workbench.modeling.EModelService.IN_ACTIVE_PERSPECTIVE;
 

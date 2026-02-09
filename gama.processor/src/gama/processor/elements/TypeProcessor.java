@@ -26,12 +26,14 @@ import gama.processor.doc.TypeConverter;
 
 /**
  * The TypeProcessor is responsible for processing {@code @type} annotations during the annotation processing phase.
- * 
- * <p>Types in GAMA represent data types that can be used in GAML models - these include primitive types,
- * complex types, and user-defined types. Each type defines how values are stored, manipulated, and converted
- * within the GAMA system. The type processor handles the registration of these types with the GAMA runtime.
- * 
- * <p>This processor handles:
+ *
+ * <p>
+ * Types in GAMA represent data types that can be used in GAML models - these include primitive types, complex types,
+ * and user-defined types. Each type defines how values are stored, manipulated, and converted within the GAMA system.
+ * The type processor handles the registration of these types with the GAMA runtime.
+ *
+ * <p>
+ * This processor handles:
  * <ul>
  * <li><strong>Type Registration:</strong> Registering types with the GAMA type system</li>
  * <li><strong>Type Mapping:</strong> Mapping GAMA types to Java classes</li>
@@ -39,9 +41,10 @@ import gama.processor.doc.TypeConverter;
  * <li><strong>Type Hierarchy:</strong> Establishing type relationships and inheritance</li>
  * <li><strong>Documentation Validation:</strong> Ensuring proper documentation for types and casting operators</li>
  * </ul>
- * 
+ *
  * <h3>Type Definition Structure:</h3>
- * <p>A typical type definition includes:
+ * <p>
+ * A typical type definition includes:
  * <ul>
  * <li>A unique name for the type</li>
  * <li>A numeric ID for efficient type identification</li>
@@ -49,24 +52,29 @@ import gama.processor.doc.TypeConverter;
  * <li>Java classes that this type wraps or represents</li>
  * <li>Casting operations for type conversion</li>
  * </ul>
- * 
+ *
  * <h3>Example usage:</h3>
- * <pre>{@code
- * @type(
- *     name = "point", 
- *     id = IType.POINT, 
- *     kind = TYPE_KIND.DATATYPE,
- *     wraps = {GamaPoint.class, ILocation.class}
- * )
- * public class PointType extends GamaType<ILocation> {
- *     
- *     @operator(value = "point", can_be_const = true)
- *     public static ILocation cast(IScope scope, Object o, IType<?> type, boolean copy) {
- *         // Casting implementation
- *     }
- * }
- * }</pre>
+ *
+ * <pre>
+ * {
+ * 	&#64;code
+ * 	&#64;type (
+ * 			name = "point",
+ * 			id = IType.POINT,
+ * 			kind = TYPE_KIND.DATATYPE,
+ * 			wraps = { GamaPoint.class, ILocation.class })
+ * 	public class PointType extends GamaType<ILocation> {
  * 
+ * 		@operator (
+ * 				value = "point",
+ * 				can_be_const = true)
+ * 		public static ILocation cast(IScope scope, Object o, IType<?> type, boolean copy) {
+ * 			// Casting implementation
+ * 		}
+ * 	}
+ * }
+ * </pre>
+ *
  * @author GAMA Development Team
  * @since 1.0
  * @see type
@@ -77,8 +85,9 @@ public class TypeProcessor extends ElementProcessor<type> {
 
 	/**
 	 * Creates the element code for a type annotation.
-	 * 
-	 * <p>This method generates the runtime registration code for a GAMA type. The process involves:
+	 *
+	 * <p>
+	 * This method generates the runtime registration code for a GAMA type. The process involves:
 	 * <ol>
 	 * <li>Extracting wrapped Java types from the annotation (handling reflection complications)</li>
 	 * <li>Validating type documentation</li>
@@ -86,21 +95,25 @@ public class TypeProcessor extends ElementProcessor<type> {
 	 * <li>Generating type registration code with all metadata</li>
 	 * <li>Registering type mappings for documentation generation</li>
 	 * </ol>
-	 * 
-	 * <p>The method handles the complexity of annotation processing where class references
-	 * in annotations are available only through {@link MirroredTypeException} or 
-	 * {@link MirroredTypesException}.
-	 * 
-	 * <p>Cast methods are automatically discovered and validated. A proper cast method should:
+	 *
+	 * <p>
+	 * The method handles the complexity of annotation processing where class references in annotations are available
+	 * only through {@link MirroredTypeException} or {@link MirroredTypesException}.
+	 *
+	 * <p>
+	 * Cast methods are automatically discovered and validated. A proper cast method should:
 	 * <ul>
 	 * <li>Be named "cast"</li>
 	 * <li>Take exactly 4 parameters (scope, value, type, copy flag)</li>
 	 * <li>Have proper documentation if it's the primary casting operator</li>
 	 * </ul>
-	 * 
-	 * @param sb the StringBuilder to append the generated registration code to
-	 * @param e the class element annotated with @type
-	 * @param t the type annotation containing the type metadata
+	 *
+	 * @param sb
+	 *            the StringBuilder to append the generated registration code to
+	 * @param e
+	 *            the class element annotated with @type
+	 * @param t
+	 *            the type annotation containing the type metadata
 	 */
 	@Override
 	public void createElement(final StringBuilder sb, final Element e, final type t) {
@@ -122,13 +135,18 @@ public class TypeProcessor extends ElementProcessor<type> {
 				if (ee.getParameters().size() == 4) { verifyDoc(m, "the casting operator of " + t.name(), null); }
 			}
 		}
-		
+
 		final String typeName = t.name();
 		final String rawTypeName = rawNameOf(e.asType());
-		
-		sb.append(in).append("_type(").append(toJavaString(typeName)).append(",new ").append(rawTypeName)
+
+		// Register the package of this class for import so we can use simple names
+		registerPackageForImport(extractPackageFromClassName(rawTypeName));
+
+		sb.append(in).append("_type(").append(toJavaString(typeName)).append(",new ").append(getClassName(rawTypeName))
 				.append("(),").append(t.id()).append(',').append(t.kind());
 		types.stream().map(this::rawNameOf).forEach(s -> {
+			// Register packages for wrapped types too
+			registerPackageForImport(extractPackageFromClassName(s));
 			sb.append(',').append(toClassObject(s));
 			TypeConverter.registerType(s, typeName, t.id());
 		});
@@ -138,7 +156,7 @@ public class TypeProcessor extends ElementProcessor<type> {
 
 	/**
 	 * Returns the annotation class that this processor handles.
-	 * 
+	 *
 	 * @return the {@link type} annotation class
 	 */
 	@Override
@@ -146,23 +164,38 @@ public class TypeProcessor extends ElementProcessor<type> {
 
 	/**
 	 * Validates that a type element meets the requirements for type processing.
-	 * 
-	 * <p>This method ensures that the type class properly extends the IType interface,
-	 * which is required for all type implementations in GAMA. The IType interface provides:
+	 *
+	 * <p>
+	 * This method ensures that the type class properly extends the IType interface, which is required for all type
+	 * implementations in GAMA. The IType interface provides:
 	 * <ul>
 	 * <li>Type identity and metadata access</li>
 	 * <li>Value validation and conversion operations</li>
 	 * <li>Casting and coercion behavior</li>
 	 * <li>Integration with the GAMA type system</li>
 	 * </ul>
-	 * 
-	 * @param e the element to validate (should be a class annotated with @type)
+	 *
+	 * @param e
+	 *            the element to validate (should be a class annotated with @type)
 	 * @return {@code true} if the element extends IType, {@code false} otherwise
 	 */
 	@Override
 	protected boolean validateElement(final Element e) {
-		boolean result = assertClassExtends(true, (TypeElement) e, context.getIType());
-		return result;
+		return assertClassExtends(true, (TypeElement) e, context.getIType());
+	}
+
+	/**
+	 * Extracts the package name from a fully qualified class name.
+	 *
+	 * @param className
+	 *            the fully qualified class name
+	 * @return the package name, or null if no package can be extracted
+	 */
+	private String extractPackageFromClassName(final String className) {
+		if (className == null) return null;
+		int lastDotIndex = className.lastIndexOf('.');
+		if (lastDotIndex > 0) return className.substring(0, lastDotIndex);
+		return null;
 	}
 
 }

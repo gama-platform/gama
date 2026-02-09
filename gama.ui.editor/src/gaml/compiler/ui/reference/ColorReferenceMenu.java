@@ -88,7 +88,7 @@ public class ColorReferenceMenu extends GamlReferenceMenu {
 	 * @see gaml.compiler.gaml.ui.reference.GamlReferenceMenu#getTitle()
 	 */
 	@Override
-	protected String getTitle() { return "Colors"; }
+	protected String getTitle() { return "ColorOperators"; }
 
 	/**
 	 * @see gaml.compiler.ui.reference.GamlReferenceMenu#isDynamic()

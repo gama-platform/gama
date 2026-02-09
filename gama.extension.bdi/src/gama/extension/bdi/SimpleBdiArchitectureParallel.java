@@ -26,7 +26,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
-import gama.gaml.operators.Maths;
+import gama.gaml.operators.MathOperators;
 
 /**
  * The Class SimpleBdiArchitectureParallel.
@@ -200,9 +200,9 @@ public class SimpleBdiArchitectureParallel extends SimpleBdiArchitecture {
 			Double agreeableness = (Double) scope.getAgent().getAttribute(AGREEABLENESS);
 			scope.getAgent().setAttribute(CHARISMA, expressivity);
 			scope.getAgent().setAttribute(RECEPTIVITY, 1 - neurotisme);
-			scope.getAgent().setAttribute(PERSISTENCE_COEFFICIENT_PLANS, Maths.sqrt(scope, conscience));
-			scope.getAgent().setAttribute(PERSISTENCE_COEFFICIENT_INTENTIONS, Maths.sqrt(scope, conscience));
-			scope.getAgent().setAttribute(OBEDIENCE, Maths.sqrt(scope, (conscience + agreeableness) * 0.5));
+			scope.getAgent().setAttribute(PERSISTENCE_COEFFICIENT_PLANS, MathOperators.sqrt(scope, conscience));
+			scope.getAgent().setAttribute(PERSISTENCE_COEFFICIENT_INTENTIONS, MathOperators.sqrt(scope, conscience));
+			scope.getAgent().setAttribute(OBEDIENCE, MathOperators.sqrt(scope, (conscience + agreeableness) * 0.5));
 		}
 		// return executePlans(scope);
 		Object result = executePlans(scope);

@@ -35,31 +35,37 @@ import java.lang.annotation.Target;
  * <pre>
  * {@code
  * // Simple action without parameters
- * &#64;action(name = "move_randomly")
+ * &#64;action (
+ * 		name = "move_randomly")
  * public Object moveRandomly(final IScope scope) throws GamaRuntimeException {
- *     // Implementation here
- *     return null;
+ * 	// Implementation here
+ * 	return null;
  * }
  *
  * // Action with parameters and documentation
- * &#64;action(
- *     name = "move_to_target",
- *     args = {
- *         &#64;arg(name = "target", type = IType.POINT, doc = @doc("The target location")),
- *         &#64;arg(name = "speed", type = IType.FLOAT, optional = true, doc = @doc("Movement speed"))
- *     },
- *     doc = @doc(
- *         value = "Moves the agent to the specified target location",
- *         examples = @example("do move_to_target target: {10, 20} speed: 5.0;")
- *     )
- * )
+ * &#64;action (
+ * 		name = "move_to_target",
+ * 		args = { &#64;arg (
+ * 				name = "target",
+ * 				type = IType.POINT,
+ * 				doc = @doc ("The target location")),
+ * 				&#64;arg (
+ * 						name = "speed",
+ * 						type = IType.FLOAT,
+ * 						optional = true,
+ * 						doc = @doc ("Movement speed")) },
+ * 		doc = @doc (
+ * 				value = "Moves the agent to the specified target location",
+ * 				examples = @example ("do move_to_target target: {10, 20} speed: 5.0;")))
  * public Object moveToTarget(final IScope scope) throws GamaRuntimeException {
- *     // Implementation here
- *     return null;
+ * 	// Implementation here
+ * 	return null;
  * }
  *
  * // Virtual (abstract) action for inheritance
- * @action(name = "abstract_behavior", virtual = true)
+ * @action (
+ * 		name = "abstract_behavior",
+ * 		virtual = true)
  * public abstract Object abstractBehavior(final IScope scope) throws GamaRuntimeException;
  * }
  * </pre>
@@ -83,7 +89,7 @@ import java.lang.annotation.Target;
  * @author GAMA Development Team
  * @since GAMA 1.0
  */
-@Retention (RetentionPolicy.CLASS)
+@Retention (RetentionPolicy.RUNTIME)
 @Target (ElementType.METHOD)
 public @interface action {
 

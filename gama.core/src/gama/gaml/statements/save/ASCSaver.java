@@ -27,7 +27,7 @@ import gama.api.utils.files.SaveOptions;
 import gama.core.topology.gis.ProjectionFactory;
 import gama.core.topology.grid.GridPopulation;
 import gama.core.util.matrix.GamaField;
-import gama.gaml.operators.Comparison;
+import gama.gaml.operators.ComparisonOperators;
 
 /**
  * The Class ASCSaver.
@@ -138,7 +138,7 @@ public class ASCSaver extends AbstractSaver {
 				.append(StringUtils.LN);
 		final double dx = scope.getSimulation().getEnvelope().getWidth() / nbCols;
 		final double dy = scope.getSimulation().getEnvelope().getHeight() / nbRows;
-		if (Comparison.equal(dx, dy)) {
+		if (ComparisonOperators.equal(dx, dy)) {
 			headerBuilder.append("cellsize      ").append(dx).append(StringUtils.LN);
 		} else {
 			headerBuilder.append("dx            ").append(dx).append(StringUtils.LN);
@@ -186,7 +186,7 @@ public class ASCSaver extends AbstractSaver {
 				.append(StringUtils.LN);
 		final double dx = scope.getSimulation().getEnvelope().getWidth() / nbCols;
 		final double dy = scope.getSimulation().getEnvelope().getHeight() / nbRows;
-		if (Comparison.equal(dx, dy)) {
+		if (ComparisonOperators.equal(dx, dy)) {
 			theHeader.append("cellsize      ").append(dx).append(StringUtils.LN);
 		} else {
 			theHeader.append("dx            ").append(dx).append(StringUtils.LN);

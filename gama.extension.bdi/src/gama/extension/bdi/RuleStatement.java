@@ -32,7 +32,7 @@ import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
-import gama.gaml.operators.System;
+import gama.gaml.operators.SystemOperators;
 
 /**
  * The Class RuleStatement.
@@ -965,7 +965,7 @@ public class RuleStatement extends AbstractStatement {
     	
         if (allVal) {
         	for (Predicate p : predUncertaintyList) {
-        		var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
+        		var values = (IMap<String, Object>) SystemOperators.opCopy(scope, p.getValues());
         		
         		if (removBel != null) {
         			BdiUtils.removeBelief(scope, prepareToRemove(scope, removBel, "Belief", values));        			
@@ -982,7 +982,7 @@ public class RuleStatement extends AbstractStatement {
         	}
 
             for (Predicate p : predIdealList) {
-            	var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
+            	var values = (IMap<String, Object>) SystemOperators.opCopy(scope, p.getValues());
                 if (removBel != null) {
                 	BdiUtils.removeBelief(scope, prepareToRemove(scope, removBel, "Belief", values));        			
                 }
@@ -998,7 +998,7 @@ public class RuleStatement extends AbstractStatement {
             }
 
             for (Predicate p : predBeliefList) {
-            	var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
+            	var values = (IMap<String, Object>) SystemOperators.opCopy(scope, p.getValues());
                 
             	if (removeDes != null) {
             		BdiUtils.removeDesire(scope, prepareToRemove(scope, removeDes, "Desire", values));                	
@@ -1056,7 +1056,7 @@ public class RuleStatement extends AbstractStatement {
 
         if (allVal) {
             for (Predicate p : predBeliefList) {
-                var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
+                var values = (IMap<String, Object>) SystemOperators.opCopy(scope, p.getValues());
                 if (newDesire != null) {
                 	BdiUtils.addDesire(scope, null, preparePredicateToAdd(scope, newDesireValue, "Desire", values));
                 }
@@ -1068,7 +1068,7 @@ public class RuleStatement extends AbstractStatement {
                 }
             }
             for (Predicate p : predUncertaintyList) {
-                var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
+                var values = (IMap<String, Object>) SystemOperators.opCopy(scope, p.getValues());
                 if (newDesire != null) {
                 	BdiUtils.addDesire(scope, null, preparePredicateToAdd(scope, newDesireValue, "Desire", values));
                 }
@@ -1081,7 +1081,7 @@ public class RuleStatement extends AbstractStatement {
                 }
             }
             for (Predicate p : predIdealList) {
-                var values = (IMap<String, Object>) System.opCopy(scope, p.getValues());
+                var values = (IMap<String, Object>) SystemOperators.opCopy(scope, p.getValues());
                 if (newDesire != null) {
                 	BdiUtils.addDesire(scope, null, preparePredicateToAdd(scope, newDesireValue, "Desire", values));
                 }

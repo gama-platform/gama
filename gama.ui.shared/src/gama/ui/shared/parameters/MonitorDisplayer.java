@@ -14,8 +14,8 @@ import static gama.api.GAMA.getRuntimeScope;
 import static gama.api.GAMA.reportError;
 import static gama.api.data.factories.GamaListFactory.wrap;
 import static gama.api.gaml.types.Types.NO_TYPE;
-import static gama.gaml.operators.System.enterValue;
-import static gama.gaml.operators.System.userInputDialog;
+import static gama.gaml.operators.SystemOperators.enterValue;
+import static gama.gaml.operators.SystemOperators.userInputDialog;
 import static gama.ui.shared.menus.GamaMenu.action;
 import static gama.ui.shared.menus.GamaMenu.separate;
 

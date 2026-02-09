@@ -59,7 +59,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.files.GamaFolderFile;
 import gama.api.utils.files.IGamaFile;
-import gama.gaml.operators.Files;
+import gama.gaml.operators.FileOperators;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -133,7 +133,7 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 						}));
 				if (result == null) return;
 				String path = FileUtils.constructAbsoluteFilePath(getScope(), result.getLocation().toOSString(), true);
-				if (path != null) { file = Files.from(getScope(), path); }
+				if (path != null) { file = FileOperators.from(getScope(), path); }
 			} else {
 				IContainer result = WorkspaceResourceDialog.openFolderSelection(null, "Choose folder",
 						"Choose a folder for parameter '" + param.getTitle() + "'", false,
@@ -151,7 +151,7 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 						}));
 				if (result == null) return;
 				String path = FileUtils.constructAbsoluteFilePath(getScope(), result.getLocation().toOSString(), true);
-				if (path != null) { file = Files.from(getScope(), path); }
+				if (path != null) { file = FileOperators.from(getScope(), path); }
 			}
 		} else if (isFolder) {
 			final DirectoryDialog dialog = new DirectoryDialog(WorkbenchHelper.getDisplay().getActiveShell(), SWT.NULL);
@@ -161,7 +161,7 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 					: GAMA.getModel().getFilePath());
 			dialog.setMessage("Choose a folder for parameter '" + param.getTitle() + "'");
 			final String path = dialog.open();
-			if (path != null) { file = Files.folderFile(getScope(), path, false); }
+			if (path != null) { file = FileOperators.folderFile(getScope(), path, false); }
 		} else {
 			final FileDialog dialog = new FileDialog(WorkbenchHelper.getDisplay().getActiveShell(), SWT.NULL);
 			dialog.setFilterPath(file != null ? file.getPath(getScope())
@@ -175,7 +175,7 @@ public class FileEditor extends AbstractEditor<IGamaFile> {
 				dialog.setFilterExtensions(StreamEx.of(fileExtensions).map(s -> ("*." + s)).toArray(String.class));
 			}
 			final String path = dialog.open();
-			if (path != null) { file = Files.from(getScope(), path); }
+			if (path != null) { file = FileOperators.from(getScope(), path); }
 		}
 		modifyAndDisplayValue(file);
 	}

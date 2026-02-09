@@ -34,7 +34,7 @@ import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.gaml.operators.Dates;
+import gama.gaml.operators.DateOperators;
 
 /**
  * An immutable interval of time between two instants.
@@ -89,7 +89,7 @@ public final class GamaDateInterval implements IList<IDate> {
 	 */
 	private GamaDateInterval(final IDate startInclusive, final IDate endExclusive) {
 		this(startInclusive, endExclusive,
-				Duration.of(Dates.DATES_TIME_STEP.getValue().longValue(), ChronoUnit.SECONDS));
+				Duration.of(DateOperators.DATES_TIME_STEP.getValue().longValue(), ChronoUnit.SECONDS));
 	}
 
 	/**

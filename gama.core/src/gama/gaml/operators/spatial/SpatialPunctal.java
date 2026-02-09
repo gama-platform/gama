@@ -35,7 +35,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.gaml.operators.Maths;
+import gama.gaml.operators.MathOperators;
 
 /**
  * The Class Punctal.
@@ -333,12 +333,12 @@ public class SpatialPunctal {
 		final double Ya = p1.getY() - p0.getY();
 		final double Xb = p2.getX() - p0.getX();
 		final double Yb = p2.getY() - p0.getY();
-		final double Na = Maths.sqrt(scope, Xa * Xa + Ya * Ya);
-		final double Nb = Maths.sqrt(scope, Xb * Xb + Yb * Yb);
-		final double C = Maths.round((Xa * Xb + Ya * Yb) / (Na * Nb), 10);
+		final double Na = MathOperators.sqrt(scope, Xa * Xa + Ya * Ya);
+		final double Nb = MathOperators.sqrt(scope, Xb * Xb + Yb * Yb);
+		final double C = MathOperators.round((Xa * Xb + Ya * Yb) / (Na * Nb), 10);
 		final double S = Xa * Yb - Ya * Xb;
-		final double result = S > 0 ? Maths.acos(C) : -1 * Maths.acos(C);
-		return Maths.checkHeading(result);
+		final double result = S > 0 ? MathOperators.acos(C) : -1 * MathOperators.acos(C);
+		return MathOperators.checkHeading(result);
 	}
 
 }

@@ -29,7 +29,7 @@ import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
-import gama.gaml.operators.Maths;
+import gama.gaml.operators.MathOperators;
 
 /**
  * The Class Distribution.
@@ -665,7 +665,7 @@ public class Distribution {
 
 			distribInts[i] = nba - nbaprec;
 			nbaprec = nba;
-			distribLegend[i] = "[" + Maths.round(preval, scale + 8) + ":" + Maths.round(postval, scale + 8) + "]";
+			distribLegend[i] = "[" + MathOperators.round(preval, scale + 8) + ":" + MathOperators.round(postval, scale + 8) + "]";
 
 		}
 

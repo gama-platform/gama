@@ -20,7 +20,7 @@ import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.utils.geometry.AxisAngle;
-import gama.gaml.operators.Comparison;
+import gama.gaml.operators.ComparisonOperators;
 
 // import org.opengis.geometry.MismatchedDimensionException;
 
@@ -532,8 +532,8 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 	public boolean equals(final Object other) {
 		if (!(other instanceof final GamaEnvelope otherEnvelope)) return false;
 		if (isNull()) return otherEnvelope.isNull();
-		return super.equals(other) && Comparison.equal(minz, otherEnvelope.getMinZ())
-				&& Comparison.equal(maxz, otherEnvelope.getMaxZ());
+		return super.equals(other) && ComparisonOperators.equal(minz, otherEnvelope.getMinZ())
+				&& ComparisonOperators.equal(maxz, otherEnvelope.getMaxZ());
 	}
 
 	/**

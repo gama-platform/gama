@@ -30,7 +30,7 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.SystemInfo;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Maths;
+import gama.gaml.operators.MathOperators;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.camera.IMultiListener;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
@@ -154,8 +154,8 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		if (phi <= 0) {
 			phi = 0.001;
 		} else if (phi >= 180) { phi = 179.999; }
-		final double factorT = theta * Maths.toRad;
-		final double factorP = phi * Maths.toRad;
+		final double factorT = theta * MathOperators.toRad;
+		final double factorP = phi * MathOperators.toRad;
 		final double cosT = Math.cos(factorT);
 		final double sinT = Math.sin(factorT);
 		final double cosP = Math.cos(factorP);
@@ -173,10 +173,10 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		final IPoint p = getPosition();
 		final IPoint t = getTarget();
 
-		theta = Maths.toDeg * Math.atan2(p.getY() - t.getY(), p.getX() - t.getX());
+		theta = MathOperators.toDeg * Math.atan2(p.getY() - t.getY(), p.getX() - t.getX());
 		// See issue on camera_pos
 		if (theta == 0) { theta = -90; }
-		phi = Maths.toDeg * Math.acos((p.getZ() - t.getZ()) / data.getCameraDistance());
+		phi = MathOperators.toDeg * Math.acos((p.getZ() - t.getZ()) / data.getCameraDistance());
 	}
 
 	/**
@@ -189,16 +189,16 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 */
 	private void translateCameraFromScreenPlan(final double xTranslationOnScreen, final double yTranslationOnScreen) {
 
-		final double theta_vect_x = -Math.sin(theta * Maths.toRad);
-		final double theta_vect_y = Math.cos(theta * Maths.toRad);
+		final double theta_vect_x = -Math.sin(theta * MathOperators.toRad);
+		final double theta_vect_y = Math.cos(theta * MathOperators.toRad);
 		final double theta_vect_ratio =
 				xTranslationOnScreen / (theta_vect_x * theta_vect_x + theta_vect_y * theta_vect_y);
 		final double theta_vect_x_norm = theta_vect_x * theta_vect_ratio;
 		final double theta_vect_y_norm = theta_vect_y * theta_vect_ratio;
 
-		final double phi_vect_x = Math.cos(theta * Maths.toRad) * Math.cos(phi * Maths.toRad);
-		final double phi_vect_y = Math.sin(theta * Maths.toRad) * Math.cos(phi * Maths.toRad);
-		final double phi_vect_z = -Math.sin(phi * Maths.toRad);
+		final double phi_vect_x = Math.cos(theta * MathOperators.toRad) * Math.cos(phi * MathOperators.toRad);
+		final double phi_vect_y = Math.sin(theta * MathOperators.toRad) * Math.cos(phi * MathOperators.toRad);
+		final double phi_vect_z = -Math.sin(phi * MathOperators.toRad);
 		final double phi_vect_ratio =
 				yTranslationOnScreen / (phi_vect_x * phi_vect_x + phi_vect_y * phi_vect_y + phi_vect_z * phi_vect_z);
 		final double phi_vect_x_norm = phi_vect_x * phi_vect_ratio;
@@ -350,8 +350,8 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		}
 
 		// Completely recomputes the up-vector
-		double tr = theta * Maths.toRad;
-		double pr = phi * Maths.toRad;
+		double tr = theta * MathOperators.toRad;
+		double pr = phi * MathOperators.toRad;
 		IPoint position = data.getCameraPos();
 		IPoint target = data.getCameraTarget();
 		double cp = Math.cos(pr);

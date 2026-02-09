@@ -63,7 +63,7 @@ import gama.core.experiment.batch.optimization.TabuSearch;
 import gama.core.experiment.batch.optimization.TabuSearchReactive;
 import gama.core.experiment.parameters.ParameterAdapter;
 import gama.core.experiment.parameters.ParametersSet;
-import gama.gaml.operators.Containers;
+import gama.gaml.operators.ContainerOperators;
 import one.util.streamex.IntStreamEx;
 import one.util.streamex.StreamEx;
 
@@ -220,7 +220,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	@SuppressWarnings ("unchecked")
 	public IList<String> getLitteralOutputs() {
 		return StreamEx.of(((IExpression.List) outputsExpression).getElements()).map(IExpression::getName)
-				.toCollection(Containers.listOf(Types.STRING));
+				.toCollection(ContainerOperators.listOf(Types.STRING));
 	}
 
 	/**

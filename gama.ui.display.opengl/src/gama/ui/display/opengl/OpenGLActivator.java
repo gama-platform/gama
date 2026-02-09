@@ -53,7 +53,7 @@ public class OpenGLActivator extends GamaBundleActivator {
 
 		// // Necessary to load the native libraries correctly (see
 		// //
-		// http://forum.jogamp.org/Return-of-the-quot-java-lang-UnsatisfiedLinkError-Can-t-load-library-System-Library-Frameworks-glueg-td4034549.html)
+		// http://forum.jogamp.org/Return-of-the-quot-java-lang-UnsatisfiedLinkError-Can-t-load-library-SystemOperators-Library-Frameworks-glueg-td4034549.html)
 		CompletableFuture.runAsync(() -> {
 			DEBUG.TIMER(BANNER_CATEGORY.OpenGL, "Subsystem preloaded", "in", () -> {
 

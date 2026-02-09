@@ -20,7 +20,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.gaml.operators.Random;
+import gama.gaml.operators.RandomOperators;
 
 /**
  * The Class ChartDataSourceUnique.
@@ -34,7 +34,7 @@ public class ChartDataSourceUnique extends ChartDataSource {
 	public boolean cloneMe(final IScope scope, final int chartCycle, final ChartDataSource source) {
 		final boolean res = super.cloneMe(scope, chartCycle, source);
 		final IColor col =
-				GamaColorFactory.createWithRGBA(Random.opRnd(scope, 255), Random.opRnd(scope, 255), Random.opRnd(scope, 255), 255);
+				GamaColorFactory.createWithRGBA(RandomOperators.opRnd(scope, 255), RandomOperators.opRnd(scope, 255), RandomOperators.opRnd(scope, 255), 255);
 		final IExpression ncol = GAML.getExpressionFactory().createConst(col, Types.COLOR);
 		this.colorexp = ncol;
 		final String previousname = ((ChartDataSourceUnique) source).legend;

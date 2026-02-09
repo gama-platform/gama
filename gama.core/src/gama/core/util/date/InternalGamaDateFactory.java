@@ -20,7 +20,7 @@ import gama.api.data.objects.IDate;
 import gama.api.gaml.constants.GamlCoreUnits;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.gaml.operators.Dates;
+import gama.gaml.operators.DateOperators;
 
 /**
  *
@@ -29,13 +29,13 @@ public class InternalGamaDateFactory implements IDateFactory {
 
 	static {
 		// Only here to load the class and its preferences
-		Dates.initialize();
+		DateOperators.initialize();
 	}
 
 	@Override
 	public IDate createFromISOString(final String s) {
 		try {
-			final TemporalAccessor t = Dates.getFormatter(GamlCoreUnits.ISO_OFFSET_KEY, null).parse(s);
+			final TemporalAccessor t = DateOperators.getFormatter(GamlCoreUnits.ISO_OFFSET_KEY, null).parse(s);
 			if (t instanceof Temporal tmp) return createFromTemporal(tmp);
 		} catch (final DateTimeParseException e) {
 			//

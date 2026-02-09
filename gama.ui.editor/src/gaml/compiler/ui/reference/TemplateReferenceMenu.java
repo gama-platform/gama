@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.PartInitException;
 
 import gama.dev.DEBUG;
-import gama.gaml.operators.Strings;
+import gama.gaml.operators.StringOperators;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -235,7 +235,7 @@ public class TemplateReferenceMenu extends GamlReferenceMenu {
 		void add(final TemplatePersistenceData t, final List<String> path) {
 			if (path.size() == 0) {
 				children.add(new TemplateNode(this, t, 1));
-			} else if (path.size() == 1 && Strings.isGamaNumber(path.get(0))) {
+			} else if (path.size() == 1 && StringOperators.isGamaNumber(path.get(0))) {
 				children.add(new TemplateNode(this, t, Integer.decode(path.get(0))));
 			} else {
 				final String name = path.remove(0);

@@ -268,7 +268,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		ownClock = new SimulationClock(getScope());
 		executer = new ActionExecuter(getScope());
 		projectionFactory = new ProjectionFactory();
-		// Random explicitely created with the seed of the experiment
+		// RandomOperators explicitely created with the seed of the experiment
 		generateRandomGenerator(pop.getHost().getSeed(), pop.getHost().getRng());
 	}
 

@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.extension.stats;
 
-import static gama.gaml.operators.Containers.collect;
+import static gama.gaml.operators.ContainerOperators.collect;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -70,8 +70,8 @@ import gama.core.experiment.batch.exploration.Stochanalysis;
 import gama.core.util.color.GamaColor;
 import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.GamaMatrix;
-import gama.gaml.operators.Containers;
-import gama.gaml.operators.Containers.ComparableValidator;
+import gama.gaml.operators.ContainerOperators;
+import gama.gaml.operators.ContainerOperators.ComparableValidator;
 
 /**
  * Written by drogoul Modified on 15 janv. 2011
@@ -387,7 +387,7 @@ public class Stats {
 
 		// TODO input parameters validation
 
-		final double mean = (Double) Containers.opMean(scope, data);
+		final double mean = (Double) ContainerOperators.opMean(scope, data);
 		final double variance = Stats.opVariance(scope, data);
 
 		return Descriptive.autoCorrelation(toDoubleArrayList(scope, data), lag, mean, variance);
@@ -1496,7 +1496,7 @@ public class Stats {
 	//
 	// // TODO input parameters validation
 	//
-	// final double mean = (Double) Containers.opMean(scope, data);
+	// final double mean = (Double) ContainerOperators.opMean(scope, data);
 	// final double standardDeviation = Stats.opStandardDeviation(scope, data);
 	//
 	// return Descriptive.kurtosis(toDoubleArrayList(scope, data), mean, standardDeviation);
@@ -2484,7 +2484,7 @@ public class Stats {
 	//
 	// // TODO input parameters validation
 	//
-	// final double mean = (Double) Containers.opMean(scope, data);
+	// final double mean = (Double) ContainerOperators.opMean(scope, data);
 	// final double standardDeviation = Stats.opStandardDeviation(scope, data);
 	//
 	// return Descriptive.skew(toDoubleArrayList(scope, data), mean, standardDeviation);
@@ -3051,7 +3051,7 @@ public class Stats {
 	@test ("[1,2] mean_of (each * 10 ) = 15")
 	public static Object opMeanOf(final IScope scope, final String eachName, final IContainer container,
 			final IExpression filter) {
-		return Containers.opMean(scope, collect(scope, eachName, container, filter));
+		return ContainerOperators.opMean(scope, collect(scope, eachName, container, filter));
 	}
 
 	/**
@@ -3098,7 +3098,7 @@ public class Stats {
 	@validator (ComparableValidator.class)
 	public static Object opMinOf(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return Containers.stream(scope, c).map(Containers.with(scope, eachName, filter)).minBy(Function.identity())
+		return ContainerOperators.stream(scope, c).map(ContainerOperators.with(scope, eachName, filter)).minBy(Function.identity())
 				.orElse(null);
 	}
 
@@ -3147,7 +3147,7 @@ public class Stats {
 	@validator (ComparableValidator.class)
 	public static Object opMaxOf(final IScope scope, final String eachName, final IContainer c,
 			final IExpression filter) {
-		return Containers.stream(scope, c).map(Containers.with(scope, eachName, filter)).maxBy(Function.identity())
+		return ContainerOperators.stream(scope, c).map(ContainerOperators.with(scope, eachName, filter)).maxBy(Function.identity())
 				.orElse(null);
 	}
 

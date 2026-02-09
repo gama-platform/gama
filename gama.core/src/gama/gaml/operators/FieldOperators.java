@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * Fields.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * FieldOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -24,7 +24,7 @@ import gama.api.runtime.scope.IScope;
 /**
  *
  */
-public class Fields {
+public class FieldOperators {
 
 	/**
 	 * Builds the shape from field location.

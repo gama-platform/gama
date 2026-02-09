@@ -615,7 +615,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		final List<ExperimentParameter> params = new ArrayList<>();
 		final String cat = getExperimentParametersCategory();
 		ExperimentParameter p = new ExperimentParameter(getScope(), getSpecies().getVar(IKeyword.RNG),
-				"Random number generator", cat, Generators.names(), false);
+				"RandomOperators number generator", cat, Generators.names(), false);
 
 		params.add(p);
 		p = new ExperimentParameter(getScope(), getSpecies().getVar(IKeyword.SEED), "Default random seed", cat,

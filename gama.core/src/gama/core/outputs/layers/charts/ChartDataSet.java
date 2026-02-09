@@ -27,7 +27,7 @@ import gama.api.ui.displays.IChart;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.FileUtils;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Files;
+import gama.gaml.operators.FileOperators;
 
 /**
  * The Class ChartDataSet.
@@ -916,7 +916,7 @@ public class ChartDataSet {
 		if (scope == null) return;
 		if (keepHistory) {
 			try {
-				Files.newFolder(scope, chartFolder);
+				FileOperators.newFolder(scope, chartFolder);
 				String file = chartFolder + "/" + "chart_" + name + ".csv";
 				file = FileUtils.constructAbsoluteFilePath(scope, file, false);
 				try (BufferedWriter bw = new BufferedWriter(new FileWriter(file))) {

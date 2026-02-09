@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * Graphs.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * GraphOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -112,7 +112,7 @@ import one.util.streamex.StreamEx;
  *
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class Graphs {
+public class GraphOperators {
 
 	/**
 	 * The Class IntersectionRelation.
@@ -860,7 +860,7 @@ public class Graphs {
 				final IList edges = GamaListFactory.create(scope, graph.getGamlType().getContentType());
 				for (final Object v : (Set) obj) { edges.addAll(graph.edgesOf(v)); }
 
-				results.add(Containers.remove_duplicates(scope, edges));
+				results.add(ContainerOperators.remove_duplicates(scope, edges));
 
 			} else {
 				results.add(GamaListFactory.create(scope, graph.getGamlType().getKeyType(), (Set) obj));

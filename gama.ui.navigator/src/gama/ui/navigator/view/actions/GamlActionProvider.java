@@ -22,7 +22,7 @@ import gama.api.GAMA;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.files.IGamaFile;
 import gama.api.utils.prefs.GamaPreferences;
-import gama.gaml.operators.Files;
+import gama.gaml.operators.FileOperators;
 import gama.ui.navigator.view.contents.WrappedExperimentContent;
 import gama.ui.navigator.view.contents.WrappedSyntacticContent;
 
@@ -104,7 +104,7 @@ public class GamlActionProvider extends CommonActionProvider {
 						GamaPreferences.Interface.CORE_STARTUP_MODEL.set(false).save();
 					} else {
 						GamaPreferences.Interface.CORE_STARTUP_MODEL.set(true).save();
-						IGamaFile file = Files.from(null, path);
+						IGamaFile file = FileOperators.from(null, path);
 						GamaPreferences.Interface.CORE_DEFAULT_MODEL.setValue(null, file);
 						GamaPreferences.Interface.CORE_DEFAULT_MODEL.save();
 						GamaPreferences.Interface.CORE_DEFAULT_EXPERIMENT.set(selection.getElement().getName()).save();

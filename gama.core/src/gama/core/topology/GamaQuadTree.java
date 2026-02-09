@@ -30,7 +30,7 @@ import gama.api.utils.collections.ICollector;
 import gama.api.utils.geometry.IIntersectable;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Maths;
+import gama.gaml.operators.MathOperators;
 
 /**
  * A QuadTree allows to quickly find an object on a two-dimensional space.
@@ -237,7 +237,7 @@ public class GamaQuadTree implements ISpatialIndex {
 	public Collection<IAgent> allAtDistance(final IScope scope, final IShape source, final double dist,
 			final IAgentFilter f) {
 		// TODO filter result by topology's bounds
-		final double exp = dist * Maths.SQRT2;
+		final double exp = dist * MathOperators.SQRT2;
 		final IEnvelope env = GamaEnvelopeFactory.of(source.getEnvelope());
 		env.expandBy(exp);
 		try {
@@ -253,7 +253,7 @@ public class GamaQuadTree implements ISpatialIndex {
 	@Override
 	public Collection<IAgent> firstAtDistance(final IScope scope, final IShape source, final double dist,
 			final IAgentFilter f, final int number, final Collection<IAgent> alreadyChosen) {
-		final double exp = dist * Maths.SQRT2;
+		final double exp = dist * MathOperators.SQRT2;
 		final IEnvelope env = GamaEnvelopeFactory.of(source.getEnvelope());
 		env.expandBy(exp);
 		try {
@@ -272,7 +272,7 @@ public class GamaQuadTree implements ISpatialIndex {
 	@Override
 	public IAgent firstAtDistance(final IScope scope, final IShape source, final double dist, final IAgentFilter f) {
 		final IEnvelope env = GamaEnvelopeFactory.of(source.getEnvelope());
-		env.expandBy(dist * Maths.SQRT2);
+		env.expandBy(dist * MathOperators.SQRT2);
 		try {
 			final Collection<IAgent> in_square = findIntersects(scope, source, env, f);
 			if (in_square.isEmpty()) return null;

@@ -39,7 +39,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.IAgentFilter;
 import gama.core.topology.filter.In;
 import gama.core.util.matrix.GamaMatrix;
-import gama.gaml.operators.Containers;
+import gama.gaml.operators.ContainerOperators;
 
 //
 //
@@ -720,7 +720,7 @@ public class MapComparison {
 
 		final IList<IPoint> locs = GamaListFactory.create(Types.POINT);
 		for (final IAgent ag : agents.iterable(scope)) { locs.add(ag.getLocation()); }
-		final IPoint centralLoc = (IPoint) Containers.opMean(scope, locs);
+		final IPoint centralLoc = (IPoint) ContainerOperators.opMean(scope, locs);
 		if (filter != null) {
 			final IAgent centralAg = scope.getTopology().getAgentClosestTo(scope, centralLoc, filter);
 			final List<IAgent> neighbors = distance == 0 ? new ArrayList<>()
@@ -1039,7 +1039,7 @@ public class MapComparison {
 
 		final IList<IPoint> locs = GamaListFactory.create(Types.POINT);
 		for (final IAgent ag : agents.iterable(scope)) { locs.add(ag.getLocation()); }
-		final IPoint centralLoc = (IPoint) Containers.opMean(scope, locs);
+		final IPoint centralLoc = (IPoint) ContainerOperators.opMean(scope, locs);
 		final IAgent centralAg = scope.getTopology().getAgentClosestTo(scope, centralLoc, filter);
 		final List<IAgent> neighbors = distance == 0 || filter == null ? new ArrayList<>()
 				: new ArrayList<>(scope.getTopology().getNeighborsOf(scope, centralAg, distance, filter));

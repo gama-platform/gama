@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * System.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * SystemOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -59,7 +59,7 @@ import gama.core.util.color.GamaColor;
  * @todo Description
  *
  */
-public class System {
+public class SystemOperators {
 
 	/**
 	 * Op dead.
@@ -454,8 +454,8 @@ public class System {
 			return null;
 		}
 		if (a.dead()) {
-			// scope.getGui().debug("System.opGetValue");
-			if (!scope.interrupted()) // scope.getGui().debug("System.opGetValue error");
+			// scope.getGui().debug("SystemOperators.opGetValue");
+			if (!scope.interrupted()) // scope.getGui().debug("SystemOperators.opGetValue error");
 				throw GamaRuntimeException
 						.warning("Cannot evaluate " + s.serializeToGaml(false) + " as the target agent is dead", scope);
 			return null;

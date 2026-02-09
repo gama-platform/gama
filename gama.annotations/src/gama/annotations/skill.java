@@ -46,7 +46,7 @@ import java.lang.annotation.Target;
  * 			concept = { IConcept.AGENT_MOVEMENT, IConcept.SKILL },
  * 			doc = @doc ("Provides basic movement capabilities for agents"))
  * 	public class MovingSkill extends Skill {
- * 
+ *
  * 		&#64;action (
  * 				name = "move",
  * 				doc = @doc ("Moves the agent forward"))
@@ -54,7 +54,7 @@ import java.lang.annotation.Target;
  * 			// Movement implementation
  * 			return null;
  * 		}
- * 
+ *
  * 		&#64;action (
  * 				name = "wander",
  * 				doc = @doc ("Random movement behavior"))
@@ -71,7 +71,7 @@ import java.lang.annotation.Target;
  * 			concept = { IConcept.COMMUNICATION },
  * 			doc = @doc ("Enables agents to send and receive messages"))
  * 	public class CommunicationSkill extends Skill {
- * 
+ *
  * 		&#64;action (
  * 				name = "send_message",
  * 				doc = @doc ("Sends a message to another agent"))
@@ -88,7 +88,7 @@ import java.lang.annotation.Target;
  * 			category = { "Predation", "AI" },
  * 			doc = @doc ("Specialized hunting behaviors for predator agents"))
  * 	public class PredatorSkill extends Skill {
- * 
+ *
  * 		@action (
  * 				name = "hunt",
  * 				doc = @doc ("Actively hunts for prey agents"))
@@ -141,7 +141,7 @@ import java.lang.annotation.Target;
  * @author GAMA Development Team
  * @since GAMA 1.0 (June 2, 2012)
  */
-@Retention (RetentionPolicy.CLASS)
+@Retention (RetentionPolicy.RUNTIME)
 @Target (ElementType.TYPE)
 public @interface skill {
 

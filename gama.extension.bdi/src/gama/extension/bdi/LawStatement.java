@@ -31,7 +31,7 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.gaml.operators.System;
+import gama.gaml.operators.SystemOperators;
 
 // Définition des lois pour créer des obligations sur le modèle des rêgles d'inférences avec en supplément un seuil
 // d'obéissance
@@ -260,7 +260,7 @@ public class LawStatement extends AbstractStatement {
 				final Predicate newObl = (Predicate) newObligation.value(scope);
 				if (all != null && Cast.asBool(scope, all.value(scope))) {
 					for (Predicate p : predBeliefList) {
-						addNewObligation(scope, newObl, (IMap<String, Object>) System.opCopy(scope, p.getValues()));
+						addNewObligation(scope, newObl, (IMap<String, Object>) SystemOperators.opCopy(scope, p.getValues()));
 					}
 				} else {
 					addNewObligation(scope, newObl, null);

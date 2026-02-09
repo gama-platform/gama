@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * Logic.java, in gama.core, is part of the source code of the
+ * LogicOperators.java, in gama.core, is part of the source code of the
  * GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
@@ -31,7 +31,7 @@ import gama.api.runtime.scope.IScope;
  * @todo Description
  * 
  */
-public class Logic {
+public class LogicOperators {
 
 	/**
 	 * Xor.

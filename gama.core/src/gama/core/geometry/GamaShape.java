@@ -44,7 +44,7 @@ import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.Scaling3D;
 import gama.core.util.json.IJsonConstants;
 import gama.core.util.json.JsonGeometryObject;
-import gama.gaml.operators.Maths;
+import gama.gaml.operators.MathOperators;
 
 /**
  * Written by drogoul Modified on 25 ao�t 2010
@@ -331,9 +331,9 @@ public class GamaShape implements IShape {
 		final Type shapeType = getGeometricalType();
 		// TODO : should put any specific shape volume calculation here !!!
 		return switch (shapeType) {
-			case SPHERE -> 4 / (double) 3 * Maths.PI * Maths.pow(getWidth() / 2.0, 3);
-			case CONE -> 1 / (double) 3 * Maths.PI * Maths.pow(getWidth() / 2.0, 2) * d;
-			case PYRAMID -> Maths.pow(getWidth(), 2) * d / 3;
+			case SPHERE -> 4 / (double) 3 * MathOperators.PI * MathOperators.pow(getWidth() / 2.0, 3);
+			case CONE -> 1 / (double) 3 * MathOperators.PI * MathOperators.pow(getWidth() / 2.0, 2) * d;
+			case PYRAMID -> MathOperators.pow(getWidth(), 2) * d / 3;
 			case THREED_FILE, NULL -> {
 				final IEnvelope env3D = getEnvelope();
 				yield env3D == null ? GamaEnvelopeFactory.of(this.getGeometry().getInnerGeometry()).getVolume()

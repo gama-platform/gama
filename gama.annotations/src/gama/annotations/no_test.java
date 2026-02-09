@@ -15,7 +15,7 @@ import gama.annotations.support.Reason;
  * @author drogoul
  *
  */
-@Retention (RetentionPolicy.SOURCE)
+@Retention (RetentionPolicy.RUNTIME)
 public @interface no_test {
 
 	/**

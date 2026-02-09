@@ -61,7 +61,7 @@ import java.lang.annotation.Target;
  * 					value = "Predator agent that hunts prey in the ecosystem",
  * 					examples = @example ("create predator number: 10;")))
  * 	public class Predator extends Animal {
- * 
+ *
  * 		&#64;action (
  * 				name = "hunt",
  * 				doc = @doc ("Hunt for nearby prey"))
@@ -82,7 +82,7 @@ import java.lang.annotation.Target;
  * 					examples = { @example ("create vehicle number: 50;"),
  * 							&#64;example ("ask vehicle { do move speed: 10 heading: 90; }") }))
  * 	public class Vehicle extends AbstractAgent {
- * 
+ *
  * 		@variable (
  * 				name = "max_speed",
  * 				type = IType.FLOAT,
@@ -147,7 +147,7 @@ import java.lang.annotation.Target;
  * @author GAMA Development Team
  * @since GAMA 1.0 (June 2, 2012)
  */
-@Retention (RetentionPolicy.CLASS)
+@Retention (RetentionPolicy.RUNTIME)
 @Target (ElementType.TYPE)
 public @interface species {
 

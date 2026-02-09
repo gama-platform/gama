@@ -504,9 +504,90 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 	 *            the s
 	 * @return the string
 	 */
-	protected final static String toClassObject(final String s) {
+	protected final String toClassObject(final String s) {
+		// Check if we have a predefined short form
+		final String result = CLASS_NAMES.get(s);
+		if (result != null) return result;
+		
+		// Track that this class is being used (important for minimal imports)
+		if (context != null) {
+			context.trackClassUsage(s);
+		}
+		
+		// Use context to get the appropriate class name (simple if imported, qualified if not)
+		String className = context != null ? context.getClassNameForGeneration(s) : s;
+		return className + ".class";
+	}
+
+	/**
+	 * Static version of toClassObject for use in static methods.
+	 * This version always uses fully qualified names since it doesn't have access to context.
+	 *
+	 * @param s the class name
+	 * @return the class object string
+	 */
+	protected final static String toClassObjectStatic(final String s) {
 		final String result = CLASS_NAMES.get(s);
 		return result == null ? s + ".class" : result;
+	}
+
+	/**
+	 * Gets the class name for direct use in generated code (without .class suffix).
+	 * Uses simple names when packages are imported.
+	 *
+	 * @param fullyQualifiedName the fully qualified class name
+	 * @return the class name to use in generated code
+	 */
+	protected final String getClassName(final String fullyQualifiedName) {
+		// Track that this class is being used (important for minimal imports)
+		if (context != null) {
+			context.trackClassUsage(fullyQualifiedName);
+		}
+		return context != null ? context.getClassNameForGeneration(fullyQualifiedName) : fullyQualifiedName;
+	}
+
+	/**
+	 * Registers the package of a class for import and returns the appropriate class name to use.
+	 * This is a convenience method that combines package registration with class name generation.
+	 * 
+	 * @param fullyQualifiedClassName the fully qualified class name
+	 * @return the class name to use in generated code (simple name after registering package)
+	 */
+	protected final String registerAndGetClassName(final String fullyQualifiedClassName) {
+		if (fullyQualifiedClassName == null) return null;
+		
+		// Extract and register the package
+		int lastDotIndex = fullyQualifiedClassName.lastIndexOf('.');
+		if (lastDotIndex > 0) {
+			String packageName = fullyQualifiedClassName.substring(0, lastDotIndex);
+			registerPackageForImport(packageName);
+		}
+		
+		return getClassName(fullyQualifiedClassName);
+	}
+
+	/**
+	 * Generates a static method call, using simple syntax when static imports are available.
+	 * 
+	 * @param className the fully qualified class name containing the static method
+	 * @param methodName the static method name
+	 * @param args the method arguments (as a string)
+	 * @return the appropriate method call syntax
+	 */
+	protected final String generateStaticMethodCall(final String className, final String methodName, final String args) {
+		if (context != null) {
+			// Track that we're using this static class
+			context.trackStaticClassUsage(className);
+			
+			// Check if we can use simple syntax due to static imports
+			if (context.canUseStaticMethodDirectly(className, methodName)) {
+				return methodName + "(" + args + ")";
+			}
+		}
+		
+		// Use qualified syntax
+		String simpleClassName = getClassName(className);
+		return simpleClassName + "." + methodName + "(" + args + ")";
 	}
 
 	/**
@@ -623,16 +704,21 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 		if (TypeKind.VOID.equals(t.getKind())) return "void";
 		final String key = t.toString();
 		String cachedName = NAME_CACHE.get(key);
-		if (cachedName != null) return cachedName;
+		if (cachedName != null) {
+			// Track usage even for cached names
+			if (context != null) {
+				context.trackClassUsage(cachedName);
+			}
+			return cachedName;
+		}
 		String type = context.getTypeUtils().erasure(t).toString();
 		// As a workaround for ECJ/javac discrepancies regarding erasure
 		type = CLASS_PARAM.matcher(type).replaceAll("");
-		// Reduction by considering the imports written in the header
-		int lastDot = type.lastIndexOf('.') + 1;
-		String path = type.substring(0, lastDot);
-		if (context.containsImport(path)) { type = type.substring(lastDot); }
-		NAME_CACHE.put(key, type);
-		return type;
+		
+		// Use the new dynamic import system to get the appropriate class name
+		String result = context.getClassNameForGeneration(type);
+		NAME_CACHE.put(key, result);
+		return result;
 	}
 
 	/**

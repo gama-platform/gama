@@ -41,7 +41,7 @@ import gama.api.kernel.skill.Skill;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.extension.traffic.driving.carfollowing.CustomDualTreeBidiMap;
-import gama.gaml.operators.Containers;
+import gama.gaml.operators.ContainerOperators;
 
 /**
  * The Class RoadSkill.
@@ -140,7 +140,7 @@ public class RoadSkill extends Skill {
 	public static IList<IAgent> getAgents(final IAgent agent) {
 		IList<IAgent> res = GamaListFactory.create(Types.AGENT);
 		for (OrderedBidiMap<IAgent, Double> map : getVehicleOrdering(agent)) { res.addAll(map.keySet()); }
-		return Containers.remove_duplicates(GAMA.getRuntimeScope(), res);
+		return ContainerOperators.remove_duplicates(GAMA.getRuntimeScope(), res);
 	}
 
 	/**

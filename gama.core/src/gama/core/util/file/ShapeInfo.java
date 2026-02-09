@@ -202,7 +202,7 @@ public class ShapeInfo extends AbstractFileMetaData {
 		sb.append("Shapefile").append(StringUtils.LN);
 		sb.append(String.valueOf(itemNumber)).append(" objects").append(StringUtils.LN);
 		sb.append("Dimensions: ").append(Math.round(width) + "m x " + Math.round(height) + "m").append(StringUtils.LN);
-		sb.append("Coordinate Reference System: ").append(crs == null || crs.isNull() ? "No CRS" : crs.getCode())
+		sb.append("Coordinate Reference SystemOperators: ").append(crs == null || crs.isNull() ? "No CRS" : crs.getCode())
 				.append(StringUtils.LN);
 		if (!attributes.isEmpty()) {
 			sb.append("Attributes: ").append(StringUtils.LN);

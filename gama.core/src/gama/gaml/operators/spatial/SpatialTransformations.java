@@ -63,8 +63,8 @@ import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.Scaling3D;
 import gama.core.topology.grid.GamaSpatialMatrix;
-import gama.gaml.operators.Containers;
-import gama.gaml.operators.Graphs;
+import gama.gaml.operators.ContainerOperators;
+import gama.gaml.operators.GraphOperators;
 
 /**
  * The Class Transformations.
@@ -919,14 +919,14 @@ public class SpatialTransformations {
 		final List<LineString> network = new ArrayList<>();
 		final IList polys =
 				GeometryUtils.triangulation(scope, geom, toleranceTriangulation, toleranceClip, approxClipping);
-		final IGraph graph = Graphs.spatialLineIntersectionTriangle(scope, polys);
-		final IList<IList> ccs = Graphs.connectedComponentOf(scope, graph);
+		final IGraph graph = GraphOperators.spatialLineIntersectionTriangle(scope, polys);
+		final IList<IList> ccs = GraphOperators.connectedComponentOf(scope, graph);
 		for (final IList cc : ccs) {
 			if (cc.size() > 2) {
 				for (final Object o : cc) {
 					final IShape node = (IShape) o;
 					final Coordinate[] coordsArr = GeometryUtils.extractPoints(node,
-							new LinkedHashSet<IShape>(Graphs.neighborsOf(scope, graph, node)));
+							new LinkedHashSet<IShape>(GraphOperators.neighborsOf(scope, graph, node)));
 					if (coordsArr != null) { network.add(GeometryUtils.getGeometryFactory().createLineString(coordsArr)); }
 				}
 			} else if (cc.size() == 2) {
@@ -1754,7 +1754,7 @@ public class SpatialTransformations {
 			nwGeoms.add(geom.copy(scope));
 		} else if (geom.isLine()) {
 			final IList<Double> translatedRates = GamaListFactory.create(Types.FLOAT);
-			final Double sum = (Double) Containers.sum(scope, rates);
+			final Double sum = (Double) ContainerOperators.sum(scope, rates);
 			double accu = 0;
 			for (int i = 0; i < rates.size() - 1; i++) {
 				accu += rates.get(i);
@@ -1777,7 +1777,7 @@ public class SpatialTransformations {
 			}
 			ArrayList<IShape> listSq =
 					new ArrayList<>(toSquares(scope, geom, dimension).stream().sorted(comp).toList());
-			final Double sum = (Double) Containers.sum(scope, rates);
+			final Double sum = (Double) ContainerOperators.sum(scope, rates);
 			final int totalNumber = listSq.size();
 			for (final Double rate : rates) {
 				final int number = Math.min((int) (rate / sum * totalNumber + 0.5), totalNumber);
@@ -2054,8 +2054,8 @@ public class SpatialTransformations {
 					a -> !a.getInnerGeometry().isValid() || a.getInnerGeometry().isEmpty() || a.getPerimeter() == 0);
 		}
 		if (keepMainGraph) {
-			IGraph graph = Graphs.spatialFromEdges(scope, results);
-			graph = Graphs.reduceToMainconnectedComponentOf(scope, graph);
+			IGraph graph = GraphOperators.spatialFromEdges(scope, results);
+			graph = GraphOperators.reduceToMainconnectedComponentOf(scope, graph);
 			return graph.getEdges();
 		}
 		return results;

@@ -65,12 +65,12 @@ public class SwitchButton extends Canvas {
 	private String text;
 
 	/**
-	 * Colors when the button is selected
+	 * ColorOperators when the button is selected
 	 */
 	private final Color trueBackgroundColor;
 
 	/**
-	 * Colors when the button is not selected
+	 * ColorOperators when the button is not selected
 	 */
 	private final Color falseBackgroundColor;
 

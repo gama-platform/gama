@@ -52,7 +52,7 @@ import gama.api.ui.IGamaView;
 import gama.api.utils.StringUtils;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
-import gama.gaml.operators.Strings;
+import gama.gaml.operators.StringOperators;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaIcon;
