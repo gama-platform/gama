@@ -25,11 +25,13 @@ import static gaml.compiler.ui.highlight.DelegateHighlightingConfiguration.VARIA
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.ide.editor.syntaxcoloring.IHighlightedPositionAcceptor;
 import org.eclipse.xtext.ide.editor.syntaxcoloring.ISemanticHighlightingCalculator;
 import org.eclipse.xtext.nodemodel.ILeafNode;
@@ -84,7 +86,7 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 			final CancelIndicator arg2) {
 		if (resource == null) return;
 		acceptor = arg1;
-		final var root = resource.getAllContents();
+		final Iterator<EObject> root = EcoreUtil.getAllContents(resource, true);
 		while (root.hasNext()) { process(root.next()); }
 		done.clear();
 		highlightTasks(resource);
