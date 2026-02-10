@@ -10,13 +10,20 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.validation;
 
+import static gama.api.compilation.GamlCompilationError.Type.Error;
+import static gama.api.compilation.GamlCompilationError.Type.Info;
+import static gama.api.compilation.GamlCompilationError.Type.Warning;
+import static gama.api.constants.IGamlIssue.LINKING_ERROR;
+import static gama.api.constants.IGamlIssue.SYNTACTIC_ERROR;
+import static org.eclipse.xtext.diagnostics.Severity.INFO;
+import static org.eclipse.xtext.diagnostics.Severity.WARNING;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
-import org.eclipse.xtext.diagnostics.Severity;
 import org.eclipse.xtext.linking.impl.XtextLinkingDiagnostic;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
@@ -25,7 +32,6 @@ import org.eclipse.xtext.validation.EObjectDiagnosticImpl;
 
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.validation.IGamlTextValidator;
-import gama.api.constants.IGamlIssue;
 import gaml.compiler.gaml.resource.GamlResource;
 import gaml.compiler.gaml.resource.GamlResourceServices;
 
@@ -75,23 +81,16 @@ public class GamlTextValidator implements IGamlTextValidator {
 			if (resource.hasErrors()) {
 				for (Resource.Diagnostic d : resource.getErrors()) {
 					GamlCompilationError error = switch (d) {
-						case EObjectDiagnosticImpl ed -> new GamlCompilationError(ed.getMessage(),
-								IGamlIssue.SYNTACTIC_ERROR, ed.getProblematicObject(),
-								Severity.WARNING.equals(ed.getSeverity()) ? GamlCompilationError.Type.Warning
-										: Severity.INFO.equals(ed.getSeverity()) ? GamlCompilationError.Type.Info
-										: GamlCompilationError.Type.Error
-							// Previously:
-							// Severity.WARNING.equals(ed.getSeverity()),Severity.INFO.equals(ed.getSeverity())
-								, ed.getData()); // Previously: //
-													// Severity.WARNING.equals(ed.getSeverity()),Severity.INFO.equals(ed.getSeverity())
-						case XtextLinkingDiagnostic ld -> new GamlCompilationError(ld.getMessage(),
-								IGamlIssue.LINKING_ERROR, ld.getUriToProblem(), GamlCompilationError.Type.Error,
-								ld.getData());
-						case XtextSyntaxDiagnostic sd -> new GamlCompilationError(sd.getMessage(),
-								IGamlIssue.SYNTACTIC_ERROR, sd.getUriToProblem(), GamlCompilationError.Type.Error,
-								sd.getData());
-						case null, default -> new GamlCompilationError(d.getMessage(), IGamlIssue.SYNTACTIC_ERROR,
-								resource.getURI(), GamlCompilationError.Type.Error);
+						case EObjectDiagnosticImpl ed -> new GamlCompilationError(ed.getMessage(), SYNTACTIC_ERROR,
+								ed.getProblematicObject(), WARNING.equals(ed.getSeverity()) ? Warning
+										: INFO.equals(ed.getSeverity()) ? Info : Error,
+								ed.getData());
+						case XtextLinkingDiagnostic ld -> new GamlCompilationError(ld.getMessage(), LINKING_ERROR,
+								ld.getUriToProblem(), Error, ld.getData());
+						case XtextSyntaxDiagnostic sd -> new GamlCompilationError(sd.getMessage(), SYNTACTIC_ERROR,
+								sd.getUriToProblem(), Error, sd.getData());
+						case null, default -> new GamlCompilationError(d.getMessage(), SYNTACTIC_ERROR,
+								resource.getURI(), Error);
 					};
 					errors.add(error);
 				}
