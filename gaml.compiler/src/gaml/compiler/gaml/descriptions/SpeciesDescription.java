@@ -13,6 +13,7 @@ package gaml.compiler.gaml.descriptions;
 import static com.google.common.collect.Iterables.transform;
 
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -508,16 +509,18 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	}
 
 	/**
-	 * Adds the micro species.
+	 * Adds a micro-species to this species.
+	 * 
+	 * <p>Micro-species are species defined within other species, creating a hierarchical
+	 * agent structure. Grids cannot be micro-species except in the model itself.</p>
 	 *
-	 * @param sd
-	 *            the sd
+	 * @param sd the micro-species description to add
 	 */
 	protected void addMicroSpecies(final SpeciesDescription sd) {
 		if (!isModel() && sd.isGrid()) {
 			sd.error("For the moment, grids cannot be defined as micro-species anywhere else than in the model");
 		}
-		getMicroSpecies().put(sd.getName(), sd);
+		getMicroSpeciesMap().put(sd.getName(), sd);
 		// DEBUG.OUT("Adding micro-species " + sd.getName() + " to " + getName());
 		invalidateMinimalAgents();
 	}
@@ -542,9 +545,12 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	}
 
 	/**
-	 * Gets or creates the behaviors map.
+	 * Gets or creates the behaviors map with lazy initialization.
+	 * 
+	 * <p><strong>Memory Optimization:</strong> Map is only created when first behavior is added,
+	 * saving memory for species without behaviors.</p>
 	 *
-	 * @return the behaviors map
+	 * @return the behaviors map, created if necessary
 	 */
 	private IMap<String, StatementDescription> getBehaviorsMap() {
 		if (behaviors == null) { behaviors = GamaMapFactory.create(); }
@@ -552,13 +558,29 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	}
 
 	/**
-	 * Gets or creates the aspects map.
+	 * Gets or creates the aspects map with lazy initialization.
+	 * 
+	 * <p><strong>Memory Optimization:</strong> Map is only created when first aspect is added,
+	 * saving memory for species without visual aspects.</p>
 	 *
-	 * @return the aspects map
+	 * @return the aspects map, created if necessary
 	 */
 	private IMap<String, StatementDescription> getAspectsMap() {
 		if (aspects == null) { aspects = GamaMapFactory.create(); }
 		return aspects;
+	}
+
+	/**
+	 * Gets or creates the micro-species map with lazy initialization.
+	 * 
+	 * <p><strong>Memory Optimization:</strong> Map is only created when first micro-species is added,
+	 * saving memory for species without nested species (most common case).</p>
+	 *
+	 * @return the micro-species map, created if necessary
+	 */
+	private IMap<String, ISpeciesDescription> getMicroSpeciesMap() {
+		if (microSpecies == null) { microSpecies = GamaMapFactory.create(); }
+		return microSpecies;
 	}
 
 	/**
@@ -634,37 +656,61 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 
 	/**
 	 * Gets the behavior names.
+	 * 
+	 * <p><strong>Optimization:</strong> Pre-sizes the LinkedHashSet based on known size
+	 * to avoid rehashing during construction.</p>
 	 *
 	 * @return the behavior names
 	 */
 	public Collection<String> getBehaviorNames() {
-		final Collection<String> ownNames =
-				behaviors == null ? new LinkedHashSet<>() : new LinkedHashSet<>(behaviors.keySet());
+		final int size = behaviors == null ? 0 : behaviors.size();
+		final Collection<String> ownNames = behaviors == null 
+				? new LinkedHashSet<>() 
+				: new LinkedHashSet<>(size + (size / 3) + 1, 0.75f);  // Pre-size for load factor
+		if (behaviors != null) {
+			ownNames.addAll(behaviors.keySet());
+		}
 		if (parent != null && parent != this) { ownNames.addAll(getParent().getBehaviorNames()); }
 		return ownNames;
 	}
 
 	/**
 	 * Gets the aspect names.
+	 * 
+	 * <p><strong>Optimization:</strong> Pre-sizes the LinkedHashSet based on known size
+	 * to avoid rehashing during construction.</p>
 	 *
 	 * @return the aspect names
 	 */
 	public Collection<String> getAspectNames() {
-		final Collection<String> ownNames =
-				aspects == null ? new LinkedHashSet<>() : new LinkedHashSet<>(aspects.keySet());
+		final int size = aspects == null ? 0 : aspects.size();
+		final Collection<String> ownNames = aspects == null 
+				? new LinkedHashSet<>() 
+				: new LinkedHashSet<>(size + (size / 3) + 1, 0.75f);  // Pre-size for load factor
+		if (aspects != null) {
+			ownNames.addAll(aspects.keySet());
+		}
 		if (parent != null && parent != this) { ownNames.addAll(getParent().getAspectNames()); }
 		return ownNames;
-
 	}
 
 	/**
 	 * Gets the aspects.
+	 * 
+	 * <p><strong>Phase 2 Optimization:</strong> Replaced stream operation with direct
+	 * iteration to reduce overhead. Streams create additional objects (Spliterator,
+	 * StreamPipeline) that aren't needed for simple mapping operations.</p>
 	 *
 	 * @return the aspects
 	 */
 	@Override
 	public Iterable<IStatementDescription> getAspects() {
-		return getAspectNames().stream().map(this::getAspect).collect(java.util.stream.Collectors.toList());
+		final Collection<String> aspectNames = getAspectNames();
+		final List<IStatementDescription> result = new ArrayList<>(aspectNames.size());
+		for (final String name : aspectNames) {
+			result.add(getAspect(name));
+		}
+		return result;
 	}
 
 	/**
@@ -805,15 +851,17 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	}
 
 	/**
-	 * Inherit micro species.
+	 * Inherits micro-species from the parent species.
+	 * 
+	 * <p>Only adds micro-species that don't already exist in this species,
+	 * respecting the override semantics.</p>
 	 *
-	 * @param parentSpecies
-	 *            the parent
+	 * @param parentSpecies the parent species to inherit from
 	 */
 	private void inheritMicroSpecies(final SpeciesDescription parentSpecies) {
 		if (parentSpecies.hasMicroSpecies()) {
 			parentSpecies.getMicroSpecies().forEachPair((k, v) -> {
-				getMicroSpecies().putIfAbsent(k, v);
+				getMicroSpeciesMap().putIfAbsent(k, v);
 				return true;
 			});
 		}
@@ -1121,24 +1169,28 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	public boolean isModel() { return false; }
 
 	/**
-	 * Checks for micro species.
+	 * Checks if this species has any micro-species.
+	 * 
+	 * <p><strong>Optimization:</strong> Checks both null and empty to handle lazy initialization.</p>
 	 *
-	 * @return true, if successful
+	 * @return true if micro-species exist, false otherwise
 	 */
 	@Override
 	public boolean hasMicroSpecies() {
-		return microSpecies != null;
+		return microSpecies != null && !microSpecies.isEmpty();
 	}
 
 	/**
-	 * Gets the micro species.
+	 * Gets the micro-species map.
+	 * 
+	 * <p><strong>Optimization:</strong> Returns empty map if microSpecies is null to avoid
+	 * creating the map just for read operations. Only {@link #getMicroSpeciesMap()} creates it.</p>
 	 *
-	 * @return the micro species
+	 * @return the micro-species map, or empty map if none exist
 	 */
 	@Override
 	public IMap<String, ISpeciesDescription> getMicroSpecies() {
-		if (microSpecies == null) { microSpecies = GamaMapFactory.create(); }
-		return microSpecies;
+		return microSpecies == null ? GamaMapFactory.createUnordered() : microSpecies;
 	}
 
 	/**
@@ -1269,11 +1321,21 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	}
 
 	/**
-	 * @return
+	 * Gets all behaviors defined in this species.
+	 * 
+	 * <p><strong>Phase 2 Optimization:</strong> Replaced stream operation with direct
+	 * iteration to reduce overhead in this frequently-called method.</p>
+	 * 
+	 * @return the behaviors
 	 */
 	@Override
 	public Iterable<IStatementDescription> getBehaviors() {
-		return getBehaviorNames().stream().map(this::getBehavior).collect(java.util.stream.Collectors.toList());
+		final Collection<String> behaviorNames = getBehaviorNames();
+		final List<IStatementDescription> result = new ArrayList<>(behaviorNames.size());
+		for (final String name : behaviorNames) {
+			result.add(getBehavior(name));
+		}
+		return result;
 	}
 
 	@Override

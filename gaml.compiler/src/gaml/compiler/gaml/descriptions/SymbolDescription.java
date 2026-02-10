@@ -13,6 +13,7 @@ package gaml.compiler.gaml.descriptions;
 import static gama.api.constants.IKeyword.NO_TYPE_INFERENCE;
 import static gama.api.constants.IKeyword.ORIGIN;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -220,10 +221,15 @@ public abstract class SymbolDescription implements IDescription {
 	 * <p>Provides access to global model context including other species, global variables,
 	 * and model-level configuration. All descriptions in a model share the same model description.</p>
 	 * 
-	 * <p><strong>Memory Optimization:</strong> Consider using WeakReference if memory pressure
-	 * becomes an issue, as this creates potential circular references.</p>
+	 * <p><strong>Phase 2 Optimization:</strong> Uses {@link WeakReference} to prevent circular
+	 * retention. Since model descriptions can hold references to all their children, and children
+	 * hold references back to the model, this creates a circular reference that can prevent
+	 * garbage collection. WeakReference allows the model to be collected when no longer in use.</p>
+	 * 
+	 * <p><strong>Memory Impact:</strong> Reduces retained heap in scenarios where models are
+	 * frequently loaded/unloaded (e.g., batch processing, testing).</p>
 	 */
-	private IModelDescription modelDescription;
+	private WeakReference<IModelDescription> modelDescriptionRef;
 
 	/**
 	 * The origin name of the symbol that created this description.
@@ -915,17 +921,22 @@ public abstract class SymbolDescription implements IDescription {
 		if (hasFacets()) { facets.dispose(); }
 		facets = null;
 		enclosingDescription = null;
-		modelDescription = null;
+		modelDescriptionRef = null;  // Clear WeakReference
 		setType(null);
 	}
 
 	/**
 	 * Gets the model description this symbol belongs to.
+	 * 
+	 * <p><strong>Phase 2 Optimization:</strong> Unwraps the {@link WeakReference} to get
+	 * the actual model description. Returns null if the model has been garbage collected.</p>
 	 *
-	 * @return the model description
+	 * @return the model description, or null if collected or not set
 	 */
 	@Override
-	public IModelDescription getModelDescription() { return modelDescription; }
+	public IModelDescription getModelDescription() { 
+		return modelDescriptionRef == null ? null : modelDescriptionRef.get(); 
+	}
 
 	/**
 	 * Adds multiple child descriptions to this description.
@@ -955,16 +966,21 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * Sets the enclosing description and updates the model description accordingly.
+	 * 
+	 * <p><strong>Phase 2 Optimization:</strong> Wraps the model description in a
+	 * {@link WeakReference} to prevent circular retention issues.</p>
 	 *
-	 * @param desc
-	 *            the new enclosing description
+	 * @param desc the new enclosing description
 	 */
 	@Override
 	public void setEnclosingDescription(final IDescription desc) {
 		enclosingDescription = desc;
 		if (enclosingDescription == null) return;
-		modelDescription = enclosingDescription.getModelDescription();
-		if (modelDescription != null && modelDescription.isBuiltIn() && !this.isBuiltIn()) { modelDescription = null; }
+		IModelDescription md = enclosingDescription.getModelDescription();
+		if (md != null && md.isBuiltIn() && !this.isBuiltIn()) { 
+			md = null; 
+		}
+		modelDescriptionRef = md == null ? null : new WeakReference<>(md);
 	}
 
 	/**
@@ -1149,6 +1165,17 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * Gets the GAML type of this symbol. Computes it if not already set.
+	 * 
+	 * <p><strong>Optimization:</strong> Type is computed once on first access and cached
+	 * in the {@code type} field. Subsequent calls return the cached value immediately.</p>
+	 * 
+	 * <p>Type computation can be expensive as it may involve:
+	 * <ul>
+	 *   <li>Facet compilation and expression evaluation</li>
+	 *   <li>Type inference from multiple facets</li>
+	 *   <li>Generic type parameter resolution</li>
+	 * </ul>
+	 * Caching ensures this expensive operation happens only once per description.</p>
 	 *
 	 * @return the GAML type
 	 */

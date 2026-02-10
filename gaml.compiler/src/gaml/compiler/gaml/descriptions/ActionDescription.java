@@ -14,6 +14,7 @@ import static gama.api.constants.IKeyword.DEFAULT;
 import static gama.api.constants.IKeyword.FALSE;
 import static gama.api.constants.IKeyword.OPTIONAL;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -45,6 +46,12 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 	/** The Constant NULL_ARGS. */
 	public static final Arguments NULL_ARGS = new Arguments();
 
+	/** 
+	 * Cached list of argument names to avoid repeated stream operations.
+	 * <p><strong>Optimization:</strong> Computed once on first access and reused thereafter.</p>
+	 */
+	private List<String> cachedArgNames;
+
 	/**
 	 * Instantiates a new action description.
 	 *
@@ -74,6 +81,7 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 	public ActionDescription copy(final IDescription into) {
 		final ActionDescription desc = new ActionDescription(getKeyword(), into, children, element, getFacetsCopy());
 		desc.setOriginName(getOriginName());
+		// Note: cachedArgNames is intentionally not copied - it will be lazily recomputed if needed
 		return desc;
 	}
 
@@ -89,13 +97,21 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 	protected boolean isSynthetic() { return isSet(Flag.Synthetic); }
 
 	/**
-	 * @return
+	 * Gets the list of argument names for this action.
+	 * 
+	 * <p><strong>Optimization:</strong> The result is cached on first call to avoid repeated
+	 * stream operations. This is safe because formal arguments don't change after construction.</p>
+	 *
+	 * @return the list of argument names
 	 */
 	@Override
-	public List<String> getArgNames() { 
-		return StreamSupport.stream(getFormalArgs().spliterator(), false)
-				.map(TO_NAME)
-				.collect(Collectors.toList());
+	public List<String> getArgNames() {
+		if (cachedArgNames == null) {
+			cachedArgNames = StreamSupport.stream(getFormalArgs().spliterator(), false)
+					.map(TO_NAME)
+					.collect(Collectors.toList());
+		}
+		return cachedArgNames;
 	}
 
 	/**
@@ -114,10 +130,13 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 		final Iterable<IDescription> formalArgs = getFormalArgs();
 		final boolean noArgs = names.isEmpty();
 		if (noArgs) {
-			final List<IDescription> formalArgsWithoutDefault = 
-					StreamSupport.stream(formalArgs.spliterator(), false)
-							.filter(each -> !each.hasFacet(DEFAULT))
-							.toList();
+			// Phase 2 Optimization: Replace stream with direct iteration
+			final List<IDescription> formalArgsWithoutDefault = new ArrayList<>();
+			for (final IDescription each : formalArgs) {
+				if (!each.hasFacet(DEFAULT)) {
+					formalArgsWithoutDefault.add(each);
+				}
+			}
 			if (formalArgsWithoutDefault.isEmpty()) return true;
 		}
 
