@@ -88,8 +88,26 @@ public class GamaDateType extends GamaType<GamaDate> {
 			if (copy) return new GamaDate(scope, (GamaDate) obj);
 			return (GamaDate) obj;
 		}
-		if (obj instanceof IContainer)
-			return new GamaDate(scope, ((IContainer<?, ?>) obj).listValue(scope, Types.INT, false));
+		if (obj instanceof IContainer container) {
+			// Check if this is a list with [dateString, pattern] or [dateString, pattern, locale]
+			final var list = container.listValue(scope, Types.NO_TYPE, false);
+			final int size = list.size();
+			if (size >= 2 && size <= 3) {
+				final Object first = list.get(0);
+				final Object second = list.get(1);
+				// If the second element is a string (pattern), treat as date parsing with pattern
+				if (second instanceof String pattern) {
+					final String dateStr = Cast.asString(scope, first);
+					if (size == 3) {
+						final String locale = Cast.asString(scope, list.get(2));
+						return new GamaDate(scope, dateStr, pattern, locale);
+					}
+					return new GamaDate(scope, dateStr, pattern);
+				}
+			}
+			// Otherwise, treat as [year, month, day, hour, minute, second]
+			return new GamaDate(scope, container.listValue(scope, Types.INT, false));
+		}
 		if (obj instanceof String) return new GamaDate(scope, (String) obj);
 		// If everything fails, we assume it is a duration in seconds since the starting date of the model
 		final Double d = Cast.asFloat(scope, obj);
