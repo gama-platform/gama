@@ -144,8 +144,10 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		 * @return optimized cache key string
 		 */
 		static String forExactOperator(final String op, final IExpression arg) {
+			// Pre-allocate StringBuilder with estimated size for performance
 			final StringBuilder key = new StringBuilder(op.length() + 20);
 			key.append(op).append(SEPARATOR);
+			// Include argument type in key to distinguish between overloaded operators
 			final IType<?> type = arg.getGamlType();
 			key.append(type != null ? type.toString() : NULL_TYPE);
 			return key.toString();
@@ -161,7 +163,9 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		 * @return optimized cache key string
 		 */
 		static String forSignature(final String op, final Signature sig) {
+			// Pre-allocate StringBuilder with estimated size for performance
 			final StringBuilder key = new StringBuilder(op.length() + 30);
+			// Combine operator name and signature for unique key
 			key.append(op).append(SEPARATOR).append(sig.toString());
 			return key.toString();
 		}
@@ -170,15 +174,27 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	/** The singleton instance. */
 	private static final AtomicReference<GamlExpressionFactory> INSTANCE_REF = new AtomicReference<>();
 
-	/** Cache for operator signature matching to improve performance. */
+	/**
+	 * Cache for operator signature matching to improve performance. 
+	 * Stores nested cache: operator name -> (signature -> operator proto).
+	 * Config: max 1000 entries, expires after 30 minutes of no access, tracks statistics.
+	 */
 	private static final Cache<String, Cache<Signature, IArtefactProto.Operator>> operatorCache =
 			CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).recordStats().build();
 
-	/** Cache for exact operator matching results. */
+	/**
+	 * Cache for exact operator matching results (operator name + exact type -> boolean).
+	 * Stores whether an exact operator match exists for a given operator and argument type.
+	 * Config: max 10,000 entries, expires after 1 hour of no access, tracks statistics.
+	 */
 	private static final Cache<String, Boolean> exactOperatorCache =
 			CacheBuilder.newBuilder().maximumSize(10000).expireAfterAccess(1, TimeUnit.HOURS).recordStats().build();
 
-	/** Cache for signature matching results. */
+	/**
+	 * Cache for signature matching results (operator name + signature -> boolean).
+	 * Stores whether an operator can handle a particular signature (with conversions).
+	 * Config: max 10,000 entries, expires after 1 hour of no access, tracks statistics.
+	 */
 	private static final Cache<String, Boolean> signatureMatchCache =
 			CacheBuilder.newBuilder().maximumSize(10000).expireAfterAccess(1, TimeUnit.HOURS).recordStats().build();
 
@@ -189,11 +205,14 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 * @return single instance of GamlExpressionFactory, never null
 	 */
 	public static GamlExpressionFactory getInstance() {
+		// First check without synchronization for performance
 		GamlExpressionFactory instance = INSTANCE_REF.get();
 		if (instance == null) {
+			// Create new instance if none exists
 			instance = new GamlExpressionFactory();
+			// Atomically set if still null (handles race conditions)
 			if (!INSTANCE_REF.compareAndSet(null, instance)) {
-				// Another thread created the instance
+				// Another thread won the race, use their instance
 				instance = INSTANCE_REF.get();
 			}
 		}
@@ -234,18 +253,21 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	public Map<String, Object> getCacheStatistics() {
 		Map<String, Object> stats = new java.util.concurrent.ConcurrentHashMap<>();
 
+		// Collect statistics from the operator cache (nested cache structure)
 		CacheStats operatorStats = operatorCache.stats();
-		stats.put("operatorCache_size", operatorCache.size());
-		stats.put("operatorCache_hitRate", operatorStats.hitRate());
-		stats.put("operatorCache_missRate", operatorStats.missRate());
-		stats.put("operatorCache_evictionCount", operatorStats.evictionCount());
+		stats.put("operatorCache_size", operatorCache.size()); // Current number of cached entries
+		stats.put("operatorCache_hitRate", operatorStats.hitRate()); // % of lookups that found cached value
+		stats.put("operatorCache_missRate", operatorStats.missRate()); // % of lookups that didn't find cached value
+		stats.put("operatorCache_evictionCount", operatorStats.evictionCount()); // Number of evicted entries
 
+		// Collect statistics from the exact operator match cache
 		CacheStats exactOperatorStats = exactOperatorCache.stats();
 		stats.put("exactOperatorCache_size", exactOperatorCache.size());
 		stats.put("exactOperatorCache_hitRate", exactOperatorStats.hitRate());
 		stats.put("exactOperatorCache_missRate", exactOperatorStats.missRate());
 		stats.put("exactOperatorCache_evictionCount", exactOperatorStats.evictionCount());
 
+		// Collect statistics from the signature matching cache
 		CacheStats signatureMatchStats = signatureMatchCache.stats();
 		stats.put("signatureMatchCache_size", signatureMatchCache.size());
 		stats.put("signatureMatchCache_hitRate", signatureMatchStats.hitRate());
@@ -399,38 +421,54 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	public static UnitConstantExpression createSpecialConstant(final Object val, final IType<?> t, final String unit,
 			final String doc, final boolean isTime, final String[] names) {
 
+		// Handle display and rendering-related special constants
 		switch (unit) {
 			case "zoom":
+				// Current zoom level of the display
 				return new ZoomUnitExpression(unit, doc);
 			case "fullscreen":
+				// Whether the display is in fullscreen mode
 				return new FullScreenExpression(unit, doc);
 			case "hidpi":
+				// Whether HiDPI/Retina display is active
 				return new HiDPIExpression(unit, doc);
 			case "pixels":
 			case "px":
+				// Pixel unit for display coordinates
 				return new PixelUnitExpression(unit, doc);
 			case "display_width":
+				// Width of the current display
 				return new DisplayWidthUnitExpression(doc);
 			case "display_height":
+				// Height of the current display
 				return new DisplayHeightUnitExpression(doc);
 			case "now":
+				// Current simulation time
 				return new NowUnitExpression(unit, doc);
 			case "camera_location":
+				// 3D camera position in world coordinates
 				return new CameraPositionUnitExpression(doc);
 			case "camera_target":
+				// 3D camera target point
 				return new CameraTargetUnitExpression(doc);
 			case "camera_orientation":
+				// 3D camera orientation angles
 				return new CameraOrientationUnitExpression(doc);
 			case "user_location":
 			case "user_location_in_world":
+				// Mouse cursor location in world coordinates
 				return new UserLocationUnitExpression(unit, doc);
 			case "user_location_in_display":
+				// Mouse cursor location in display coordinates
 				return new UserLocationInDisplayUnitExpression(doc);
 			case "current_error":
+				// Current error message if any
 				return new CurrentErrorUnitExpression(doc);
 
 		}
+		// Handle time units (ms, s, h, etc.)
 		if (isTime) return new TimeUnitConstantExpression(val, t, unit, doc, names);
+		// Default unit constant
 		return new UnitConstantExpression(val, t, unit, doc, names);
 	}
 
@@ -479,10 +517,15 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 */
 	@Override
 	public IExpression createConst(final Object val, final IType type, final String name) {
+		// Handle species types specially - need species description
 		if (type.getGamlType() == Types.SPECIES) return createSpeciesConstant(type);
+		// Skills are identified by string names
 		if (type == Types.SKILL) return new SkillConstantExpression((String) val, type);
+		// Null values always return the shared nil expression
 		if (val == null) return getNil();
+		// Reuse shared boolean constant expressions for efficiency
 		if (val instanceof Boolean) return (Boolean) val ? getTrue() : getFalse();
+		// Default constant expression for all other types
 		return new ConstantExpression(val, type, name);
 	}
 
@@ -577,15 +620,24 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	@Override
 	public IExpression createVar(final String name, final IType type, final boolean isConst, final int scope,
 			final IDescription definitionDescription) {
+		// Create appropriate variable expression type based on scope level
 		return switch (scope) {
+			// Global variables are model-wide and shared across all agents
 			case IVarExpression.GLOBAL -> GlobalVariableExpression.create(name, type, isConst,
 					definitionDescription.getModelDescription());
+			// Agent variables are instance variables specific to each agent
 			case IVarExpression.AGENT -> new AgentVariableExpression(name, type, isConst, definitionDescription);
+			// Temporary variables exist only during the current execution block
 			case IVarExpression.TEMP -> new TempVariableExpression(name, type, definitionDescription);
+			// 'each' is the iteration variable in loops
 			case IVarExpression.EACH -> new EachExpression(name, type);
+			// 'self' refers to the current agent executing the code
 			case IVarExpression.SELF -> new SelfExpression(type);
+			// 'super' refers to the parent species of the current agent
 			case IVarExpression.SUPER -> new SuperExpression(type);
+			// 'myself' refers to the agent that called this action
 			case IVarExpression.MYSELF -> new MyselfExpression(type, definitionDescription);
+			// Unknown scope - should not happen in well-formed code
 			default -> null;
 		};
 	}
@@ -687,27 +739,29 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 */
 	@Override
 	public boolean hasOperator(final String op, final Signature s) {
-		// If arguments are invalid, we have no match
+		// Early validation - check for invalid parameters
 		if (s == null || s.size() == 0 || op == null || op.isEmpty() || !GAML.OPERATORS.containsKey(op)) return false;
 
-		// Create cache key for this operation
+		// Create cache key for this operation (operator + signature)
 		final String cacheKey = CacheKeyBuilder.forSignature(op, s.simplified());
 
-		// Check cache first
+		// Check cache first to avoid expensive signature matching
 		final Boolean cachedResult = signatureMatchCache.getIfPresent(cacheKey);
-		if (cachedResult != null) return cachedResult;
+		if (cachedResult != null) return cachedResult; // Cache hit - return cached result
 
+		// Cache miss - need to compute the result
 		final Map<Signature, IArtefactProto.Operator> ops = GAML.OPERATORS.get(op);
 		final Signature sig = s.simplified();
 
 		// Does any known operator signature match with the signature of the expressions?
+		// This checks if the signature can be handled (possibly with type conversions)
 		boolean matches = any(ops.keySet(), si -> sig.matchesDesiredSignature(si));
 		if (!matches) {
-			// Check if a varArg is not a possibility
+			// Check if a varArg is not a possibility (wrap args as single list)
 			matches = any(ops.keySet(), si -> Signature.varArgFrom(sig).matchesDesiredSignature(si));
 		}
 
-		// Cache the result
+		// Cache the result for future lookups (Guava handles eviction automatically)
 		signatureMatchCache.put(cacheKey, matches);
 
 		return matches;
@@ -751,21 +805,25 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		// If the signature is not present in the registry, find the best match
 		if (!ops.containsKey(userSignature)) {
 			final Signature originalUserSignature = userSignature;
-			int bestDistance = Integer.MAX_VALUE;
+			int bestDistance = Integer.MAX_VALUE; // Track smallest type conversion distance
 
 			// Browse all the entries of the operators with this name to find best match
+			// The algorithm finds the signature requiring minimal type conversions
 			for (final Map.Entry<Signature, IArtefactProto.Operator> entry : ops.entrySet()) {
 				final Signature formalParametersSignature = entry.getKey();
 
+				// Check if this operator signature can accept the provided arguments
 				if (originalUserSignature.matchesDesiredSignature(formalParametersSignature)) {
+					// Calculate "distance" - measure of how many type conversions are needed
 					final int dist = Signature.distanceBetween(formalParametersSignature, originalUserSignature);
 					if (dist == 0) {
-						// Perfect match found - use it immediately
+						// Perfect match found - use it immediately (no conversions needed)
 						userSignature = formalParametersSignature;
 						bestDistance = 0;
 						break;
 					}
 					if (dist < bestDistance) {
+						// Found a better match (fewer conversions) - remember it
 						bestDistance = dist;
 						userSignature = formalParametersSignature;
 					}
@@ -773,20 +831,25 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			}
 
 			if (bestDistance == Integer.MAX_VALUE) {
-				// Not found - try varArg as last resort
+				// No matching signature found - try varArg as last resort
+				// VarArg allows operators to accept variable number of arguments as a single list
 				final Signature varArg = Signature.varArgFrom(originalUserSignature);
 				for (final Map.Entry<Signature, IArtefactProto.Operator> entry : ops.entrySet()) {
 					final Signature s = entry.getKey();
+					// If varArg signature matches, wrap all args in a list and retry
 					if (varArg.matchesDesiredSignature(s))
 						return createOperator(op, context, eObject, createList(args));
 				}
+				// No match found even with varArg - emit error
 				return emitError(op, context, eObject, args);
 			}
 
 			// Coerce the types if necessary, by wrapping the original expressions in a casting expression
+			// This performs automatic type conversion (e.g., int to float) when needed
 			for (int i = 0; i < args.length; i++) {
 				final IType<?> originalType = originalUserSignature.get(i);
 				final IType<?> newType = userSignature.get(i);
+				// Determine if type coercion is needed and what type to coerce to
 				final IType<?> coercingType = findCoercingType(context, eObject, originalType, newType, args[i]);
 				if (coercingType != null) { args[i] = createAs(context, args[i], createTypeExpression(coercingType)); }
 			}
@@ -796,7 +859,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		// Finally make an instance of the operator and init it with the arguments
 		final IExpression operator = createOperator(proto, context, eObject, args);
 		if (operator != null) {
-			// Verify that it is not deprecated
+			// Verify that it is not deprecated and issue warning if needed
 			final String deprecationMessage = proto.getDeprecated();
 			if (deprecationMessage != null) {
 				context.warning(proto.getName() + " is deprecated: " + deprecationMessage, IGamlIssue.DEPRECATED,
@@ -827,13 +890,17 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 */
 	private IType findCoercingType(final IDescription context, final EObject eObject, final IType originalType,
 			final IType newType, final IExpression argument) {
+		// Allow implicit widening conversion: int -> float (no precision loss)
 		if (originalType == Types.INT && newType == Types.FLOAT) return Types.FLOAT;
+		
+		// Allow narrowing conversion: float -> int (with truncation warning)
 		if (originalType == Types.FLOAT && newType == Types.INT) {
 			// Emits an info when a float is truncated. See Issue 735.
 			context.info("'" + argument.serializeToGaml(false) + "' will be  truncated to int.",
 					IGamlIssue.UNMATCHED_OPERANDS, eObject);
 			return Types.INT;
 		}
+		// No automatic conversion available for these types
 		return null;
 	}
 
@@ -905,29 +972,39 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	@Override
 	public IExpression createOperator(final IArtefactProto artefact, final IDescription context,
 			final EObject currentEObject, final IExpression... exprs) {
+		// Validate that artefact is an operator and passes validation rules
 		if (artefact instanceof OperatorProto proto && proto.getValidator().validate(context, currentEObject, exprs)) {
+			// Choose operator implementation based on number of arguments
 			switch (proto.getSignature().size()) {
 				case 1:
+					// Unary operators (e.g., not, -, abs)
 					if (proto.isVarOrField()) return new TypeFieldExpression(proto, context, exprs[0]);
 					return UnaryOperator.create(proto, context, exprs[0]);
 				case 2:
+					// Binary operators (e.g., +, -, *, /, and, or)
 					if (proto.isVarOrField()) {
+						// Special handling for field/attribute access operators
 						if (exprs[1] instanceof BinaryOperator bo && IKeyword.AS.equals(bo.getName())) {
 							// Case of experiment.simulation and experiment.simulations (see #3621)
+							// Handle type casting on variable access: (expr.var) as Type
 							TypeExpression typeExpr = (TypeExpression) bo.arg(1);
 							IVarExpression var = (IVarExpression) bo.arg(0);
 							return BinaryOperator.create(OperatorProto.AS, context,
 									new BinaryOperator.BinaryVarOperator(proto, context, exprs[0], var), typeExpr);
 
 						}
+						// Regular variable/field access (e.g., agent.attribute)
 						return new BinaryOperator.BinaryVarOperator(proto, context, exprs[0],
 								(IVarExpression) exprs[1]);
 					}
+					// Regular binary operator
 					return BinaryOperator.create(proto, context, exprs);
 				default:
+					// N-ary operators with 3 or more arguments (e.g., between, rnd)
 					return NAryOperator.create(proto, context, exprs);
 			}
 		}
+		// Validation failed or artefact is not an operator
 		return null;
 	}
 
@@ -950,8 +1027,12 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	@Override
 	public IExpression createAction(final String op, final IDescription callerContext, final IActionDescription action,
 			final IExpression call, final Arguments arguments) {
+		// Verify that the provided arguments match the action's expected parameters
 		if (action.verifyArgs(callerContext, arguments))
+			// Create primitive operator for the action call
+			// Special flag for super calls to maintain proper inheritance behavior
 			return new PrimitiveOperator(callerContext, action, call, arguments, call instanceof SuperExpression);
+		// Argument verification failed - return null to signal error
 		return null;
 	}
 
@@ -967,8 +1048,13 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 */
 	@Override
 	public IExpression createTypeExpression(final IType type) {
+		// Try to reuse existing type expression if available (caching at type level)
 		IExpression exp = type.getExpression();
-		if (exp == null) { exp = new TypeExpression(type); }
+		if (exp == null) {
+			// No existing expression - create new one
+			exp = new TypeExpression(type);
+		}
+		// Store expression back in type for future reuse
 		type.setExpression(exp);
 		return exp;
 	}
@@ -989,15 +1075,26 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	@Override
 	public IExpression createTemporaryActionForAgent(final IAgent agent, final String action,
 			final IExecutionContext tempContext) {
+		// Get the species description that defines the agent's type
 		final ISpeciesDescription context = agent.getSpecies().getDescription();
+		
+		// Create a new action description with a temporary name
 		final IActionDescription desc = (IActionDescription) GAML.getDescriptionFactory().create(IKeyword.ACTION,
 				context, Collections.EMPTY_LIST, IKeyword.TYPE, IKeyword.UNKNOWN, IKeyword.NAME, TEMPORARY_ACTION_NAME);
+		
+		// Parse the action code into statements and add them as children
 		final List<IDescription> children = getParser().compileBlock(action, context, tempContext);
 		for (final IDescription child : children) { desc.addChild(child); }
+		
+		// Validate and compile the action
 		desc.validate();
 		context.addChild(desc);
 		final IStatement.Action a = (IStatement.Action) desc.compile();
+		
+		// Register the temporary action with the species so it can be called
 		agent.getSpecies().addTemporaryAction(a);
+		
+		// Return an expression that calls this temporary action
 		return getParser().compile(TEMPORARY_ACTION_NAME + "()", context, null);
 	}
 
@@ -1016,6 +1113,8 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 */
 	@Override
 	public <T> IExpression createExpr(final InScope<T> exp, final IType type) {
+		// Create an anonymous expression that wraps the functional interface
+		// This allows lambda expressions to be used as GAML expressions
 		return new IExpression() {
 
 			@Override
@@ -1023,6 +1122,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 
 			@Override
 			public T value(final IScope scope) throws GamaRuntimeException {
+				// Delegate to the provided functional interface
 				return exp.run(scope);
 			}
 
