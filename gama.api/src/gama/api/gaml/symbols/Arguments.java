@@ -21,27 +21,30 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.BiConsumerWithPruning;
 
 /**
+ * Argument list for GAML statements and expressions, extending Facets with caller context and ordering.
+ * Maintains insertion order of arguments via a key list and associates them with a caller agent for evaluation.
+ *
  * @author drogoul
  */
 public class Arguments extends Facets {
 
-	/** The null. */
+	/** A shared null instance representing no arguments. */
 	public static final Arguments NULL = new Arguments();
 
-	/** The keys. */
-	List<String> keys;
-
-	/** The caller. */
-	/*
-	 * The caller represents the agent in the context of which the arguments need to be evaluated.
-	 */
-	ThreadLocal<IAgent> caller = new ThreadLocal<>();
+	/** Preserves insertion order of argument keys (used by getExpr(int index)). */
+	private List<String> keys;
 
 	/**
-	 * Instantiates a new arguments.
+	 * The caller represents the agent in the context of which the arguments need to be evaluated.
+	 * Uses ThreadLocal to support multi-threaded evaluation contexts.
+	 */
+	private ThreadLocal<IAgent> caller = new ThreadLocal<>();
+
+	/**
+	 * Instantiates a new arguments map from another arguments object.
+	 * Copies all argument mappings and the caller context.
 	 *
-	 * @param args
-	 *            the args
+	 * @param args the source arguments (may be null)
 	 */
 	public Arguments(final Arguments args) {
 		if (args != null) {
@@ -51,28 +54,24 @@ public class Arguments extends Facets {
 	}
 
 	/**
-	 * Instantiates a new arguments.
+	 * Instantiates a new arguments map from a key-value map.
+	 * Values are automatically wrapped in constant expression descriptions.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param myArgs
-	 *            the my args
-	 * @date 26 nov. 2023
+	 * @param myArgs the source map
 	 */
 	public Arguments(final Map<String, Object> myArgs) {
-		myArgs.forEach((k, v) -> put(k, GAML.getExpressionDescriptionFactory().createConstant(v)));
+		this();
+		if (myArgs != null) {
+			myArgs.forEach((k, v) -> put(k, GAML.getExpressionDescriptionFactory().createConstant(v)));
+		}
 	}
 
 	/**
-	 * Instantiates a new arguments.
+	 * Instantiates a new arguments map with a caller context.
+	 * Values from the map are automatically wrapped in constant expression descriptions.
 	 *
-	 * @param caller
-	 *            the caller
-	 * @param args
-	 *            the args
-	 */
-	/*
-	 * A constructor that takes a caller and arguments defined as a map <string, values>. Values are then transformed
-	 * into a constant expression
+	 * @param caller the agent context for evaluation
+	 * @param args the source map
 	 */
 	public Arguments(final IAgent caller, final Map<String, Object> args) {
 		this(args);
@@ -80,10 +79,15 @@ public class Arguments extends Facets {
 	}
 
 	/**
-	 * Instantiates a new arguments.
+	 * Instantiates an empty arguments map.
 	 */
 	public Arguments() {}
 
+	/**
+	 * Creates a deep copy of this arguments map including the caller context.
+	 *
+	 * @return a new arguments map with copied entries and caller reference
+	 */
 	@Override
 	public Arguments cleanCopy() {
 		final Arguments result = new Arguments();
@@ -93,64 +97,76 @@ public class Arguments extends Facets {
 	}
 
 	/**
-	 * Resolve against.
+	 * Resolves all argument expressions against a given scope.
 	 *
-	 * @param scope
-	 *            the scope
-	 * @return the arguments
+	 * @param scope the evaluation scope
+	 * @return a new arguments map with resolved expressions
 	 */
 	public Arguments resolveAgainst(final IScope scope) {
 		final Arguments result = new Arguments();
 		result.setCaller(caller.get());
 		forEach((s, e) -> {
 			final IExpression exp = getExpr(s);
-			if (exp != null) { result.putExpression(s, exp.resolveAgainst(scope)); }
+			if (exp != null) {
+				result.putExpression(s, exp.resolveAgainst(scope));
+			}
 		});
-
 		return result;
 	}
 
+	/**
+	 * Puts an argument and maintains key insertion order.
+	 *
+	 * @param s the argument name
+	 * @param e the expression description
+	 * @return the previous expression, or null if none
+	 */
 	@Override
 	public IExpressionDescription put(final String s, final IExpressionDescription e) {
-		if (keys == null || !keys.contains(s)) {
-			if (keys == null) { keys = new ArrayList<>(); }
+		if (keys == null) {
+			keys = new ArrayList<>();
+		}
+		if (!keys.contains(s)) {
 			keys.add(s);
 		}
 		return super.put(s, e);
 	}
 
 	/**
-	 * Removes the.
+	 * Removes an argument and its key from the ordering list.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param s
-	 *            the s
-	 * @return the i expression description
-	 * @date 27 déc. 2023
+	 * @param s the argument name
+	 * @return the removed expression description
 	 */
 	@Override
 	public IExpressionDescription remove(final String s) {
-		if (keys != null) { keys.remove(s); }
+		if (keys != null) {
+			keys.remove(s);
+		}
 		return super.remove(s);
 	}
 
 	/**
-	 * Sets the caller.
+	 * Sets the caller agent context for argument evaluation.
 	 *
-	 * @param caller
-	 *            the new caller
+	 * @param caller the agent context
 	 */
 	public void setCaller(final IAgent caller) {
 		this.caller.set(caller);
 	}
 
 	/**
-	 * Gets the caller.
+	 * Gets the caller agent context.
 	 *
-	 * @return the caller
+	 * @return the caller, or null if not set
 	 */
-	public IAgent getCaller() { return caller.get(); }
+	public IAgent getCaller() {
+		return caller.get();
+	}
 
+	/**
+	 * Clears all arguments and resets the caller context.
+	 */
 	@Override
 	public void dispose() {
 		super.dispose();
@@ -158,40 +174,44 @@ public class Arguments extends Facets {
 	}
 
 	/**
-	 * Gets the expr.
+	 * Gets the expression for an argument by positional index.
 	 *
-	 * @param index
-	 *            the index
-	 * @return the expr
+	 * @param index the position (0-based)
+	 * @return the expression at that position, or null if out of bounds or key undefined
 	 */
 	public IExpression getExpr(final int index) {
-		if (index > size() || index < 0) return null;
-		String key = keys.get(index);
-		return get(key).getExpression();
+		if (index < 0 || index >= size() || keys == null || index >= keys.size()) {
+			return null;
+		}
+		final String key = keys.get(index);
+		final IExpressionDescription desc = get(key);
+		return desc == null ? null : desc.getExpression();
 	}
 
 	/**
-	 * For each argument.
+	 * Iterates over all arguments with a visitor callback.
 	 *
-	 * @param visitor
-	 *            the visitor
-	 * @return true, if successful
+	 * @param visitor the visitor callback
+	 * @return true if all arguments were processed, false if visitor returned false
 	 */
 	public boolean forEachArgument(final BiConsumerWithPruning<String, IExpressionDescription> visitor) {
 		return forEachFacet(visitor);
 	}
 
 	/**
-	 * Complement with.
+	 * Adds arguments from another Arguments map without replacing existing keys.
 	 *
-	 * @param newFacets
-	 *            the new facets
+	 * @param newFacets the arguments to merge
 	 */
 	public void complementWith(final Arguments newFacets) {
-		newFacets.forEachArgument((s, v) -> {
-			if (!containsKey(s)) { put(s, v); }
-			return true;
-		});
+		if (newFacets != null) {
+			newFacets.forEachArgument((s, v) -> {
+				if (!containsKey(s)) {
+					put(s, v);
+				}
+				return true;
+			});
+		}
 	}
 
 }

@@ -12,7 +12,6 @@ package gama.api.gaml.types;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -25,6 +24,9 @@ import gama.api.runtime.scope.IScope;
 
 /**
  * The Class Signature.
+ * Immutable sequence of parameter types used to match operator/method signatures in GAML.
+ * Provides helpers to build signatures from expressions, Java reflection or plain classes,
+ * to compare desired/actual parameters, and to compute coercion/distance when selecting operators.
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 
@@ -34,24 +36,21 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	static IType[] EMPTY_TYPES = {};
 
 	/**
-	 * Var arg from.
+	 * Builds a var-arg signature by wrapping the common type of {@code sig} elements into a list type.
+	 * Useful when an operator accepts an arbitrary number of homogeneous arguments.
 	 *
-	 * @param sig
-	 *            the sig
-	 * @return the signature
+	 * @param sig signature to convert to var-arg form
+	 * @return a new signature containing a single list type
 	 */
 	public static Signature varArgFrom(final Signature sig) {
 		return new Signature(Types.LIST.of(GamaType.findCommonType(sig.list)));
 	}
 
 	/**
-	 * Creates the simplified.
+	 * Creates a simplified signature from expressions by stripping any parametric information (keeps base GAML types).
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param args
-	 *            the args
-	 * @return the signature
-	 * @date 9 janv. 2024
+	 * @param args expressions to infer types from
+	 * @return a non-parametric signature mirroring {@code args} order
 	 */
 	public static Signature createSimplified(final IExpression... args) {
 		IType[] copy = new IType[args.length];
@@ -60,52 +59,50 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	}
 
 	/**
-	 * Instantiates a new signature.
+	 * Builds a signature from a Java executable (method or constructor), ignoring {@link IScope} parameters
+	 * and inserting the receiver type for instance methods.
 	 *
-	 * @param method
-	 *            the method
+	 * @param method Java executable to analyse
 	 */
 	public Signature(final Executable method) {
 		this(extractTypesFrom(method));
 	}
 
 	/**
-	 * Instantiates a new signature.
+	 * Convenience ctor for unary signatures.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param t
-	 *            the t
-	 * @date 8 nov. 2023
+	 * @param t single type in the signature
 	 */
 	public Signature(final IType t) {
 		this(new IType[] { t });
 	}
 
 	/**
-	 * Extract types from.
+	 * Extracts the sequence of GAML types corresponding to a Java executable parameters.
+	 * Skips {@link IScope}, and prepends the declaring class when the method is non-static.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param method
-	 *            the method
-	 * @return the i type[]
-	 * @date 8 nov. 2023
+	 * @param method Java executable to inspect
+	 * @return ordered array of argument types (may be empty)
 	 */
 	private static IType[] extractTypesFrom(final Executable method) {
 		if (method == null) return EMPTY_TYPES;
-		List<IType<?>> types = new ArrayList();
 		Class[] classes = method.getParameterTypes();
 		boolean isStatic = Modifier.isStatic(method.getModifiers());
 		boolean isConstructor = method instanceof Constructor;
-		if (!isStatic && !isConstructor) { types.add(Types.get(method.getDeclaringClass())); }
-		for (Class c : classes) { if (c != IScope.class) { types.add(Types.get(c)); } }
-		return types.toArray(new IType[types.size()]);
+		int size = classes.length;
+		if (!isStatic && !isConstructor) { size++; }
+		for (Class c : classes) { if (c == IScope.class) { size--; } }
+		IType[] result = new IType[size];
+		int i = 0;
+		if (!isStatic && !isConstructor) { result[i++] = Types.get(method.getDeclaringClass()); }
+		for (Class c : classes) { if (c != IScope.class) { result[i++] = Types.get(c); } }
+		return result;
 	}
 
 	/**
-	 * Instantiates a new signature.
+	 * Builds a signature from type ids.
 	 *
-	 * @param types
-	 *            the types
+	 * @param types array of IType ids
 	 */
 	public Signature(final int[] types) {
 		this(new IType[types.length]);
@@ -113,10 +110,9 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	}
 
 	/**
-	 * Instantiates a new signature.
+	 * Builds a signature from expressions, keeping their declared runtime type (or NO_TYPE when null).
 	 *
-	 * @param objects
-	 *            the objects
+	 * @param objects expressions that provide types
 	 */
 	public Signature(final IExpression... objects) {
 		this(new IType[objects.length]);
@@ -127,10 +123,9 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	}
 
 	/**
-	 * Instantiates a new signature.
+	 * Builds a signature from a list of expressions.
 	 *
-	 * @param objects
-	 *            the objects
+	 * @param objects expressions that provide types
 	 */
 	public Signature(final List<IExpression> objects) {
 		this(new IType[objects.size()]);
@@ -141,10 +136,9 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	}
 
 	/**
-	 * Instantiates a new signature.
+	 * Builds a signature from Java classes by resolving each to its GAML type.
 	 *
-	 * @param classes
-	 *            the classes
+	 * @param classes Java classes to convert
 	 */
 	public Signature(final Class... classes) {
 		this(new IType[classes.length]);
@@ -153,37 +147,38 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	}
 
 	/**
-	 * Simplified.
+	 * Returns a simplified version with every entry replaced by its base GAML type (no parametric details).
 	 *
-	 * @return the signature
+	 * @return this when already simplified, otherwise a new simplified signature
 	 */
 	public Signature simplified() {
 		// returns a signature that does not contain any parametric types
-		final IType[] copy = Arrays.copyOf(list, list.length);
-		for (int i = 0; i < copy.length; i++) { copy[i] = copy[i].getGamlType(); }
+		boolean changed = false;
+		for (IType t : list) {
+			if (t.getGamlType() != t) {
+				changed = true;
+				break;
+			}
+		}
+		if (!changed) return this;
+
+		final IType[] copy = new IType[list.length];
+		for (int i = 0; i < copy.length; i++) { copy[i] = list[i].getGamlType(); }
 		return new Signature(copy);
 	}
 
 	/**
-	 * Matches desired signature.
+	 * Checks assignability of this signature to a desired one (same arity), allowing int/float interchange and NO_TYPE
+	 * as wildcard for non-number types.
 	 *
-	 * @param types
-	 *            the types
-	 * @return true, if successful
-	 */
-
-	/**
-	 * Matches desired signature.
-	 *
-	 * @param types
-	 *            the types
-	 * @return true, if successful
+	 * @param types desired signature
+	 * @return true when each position is compatible
 	 */
 	public boolean matchesDesiredSignature(final Signature types) {
 		if (types.list.length != list.length) return false;
 		for (int i = 0; i < list.length; i++) {
 			final IType localType = list[i];
-			final IType requestedType = types.get(i);
+			final IType requestedType = types.list[i];
 			if (Types.intFloatCase(localType, requestedType) || requestedType.isAssignableFrom(localType)
 					|| !localType.isNumber() && requestedType == Types.NO_TYPE) {
 				continue;
@@ -194,13 +189,10 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	}
 
 	/**
-	 * Matches desired signature.
+	 * Variant of {@link #matchesDesiredSignature(Signature)} accepting raw type array.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param types
-	 *            the types
-	 * @return true, if successful
-	 * @date 12 janv. 2024
+	 * @param types desired types
+	 * @return true when each position is compatible
 	 */
 	public boolean matchesDesiredSignature(final IType... types) {
 		if (types.length != list.length) return false;
@@ -217,11 +209,12 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	}
 
 	/**
-	 * Distance to.
+	 * Computes the summed distance between two signatures (same arity) using {@link IType#distanceTo(IType)}.
+	 * Returns {@link Integer#MAX_VALUE} on arity mismatch.
 	 *
-	 * @param types
-	 *            the types
-	 * @return the int
+	 * @param formalSignature reference signature
+	 * @param passedSignature tested signature
+	 * @return summed distance (0 means identical), or MAX_VALUE if lengths differ
 	 */
 	public static int distanceBetween(final Signature formalSignature, final Signature passedSignature) {
 		IType[] formalTypes = formalSignature.list;
@@ -245,6 +238,7 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	 * @return true, if successful
 	 */
 	public boolean equals(final Signature p) {
+		if (p == this) return true;
 		if (p.list.length != list.length) return false;
 		for (int i = 0; i < list.length; i++) { if (p.list[i] != list[i]) return false; }
 		return true;
@@ -273,24 +267,21 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	}
 
 	/**
-	 * Gets the.
+	 * Returns the type at the given position.
 	 *
-	 * @param i
-	 *            the i
-	 * @return the i type
+	 * @param i index of the argument
+	 * @return type at index
 	 */
 	public IType get(final int i) {
 		return list[i];
 	}
 
 	/**
-	 * Coerce.
+	 * Coerces each type of this signature so it can be used where {@code originalSignature} was expected.
 	 *
-	 * @param originalSignature
-	 *            the original signature
-	 * @param context
-	 *            the context
-	 * @return the i type[]
+	 * @param originalSignature target signature to adapt to
+	 * @param context description context providing resolution hints
+	 * @return array of coerced types (same length as this signature)
 	 */
 	public IType[] coerce(final Signature originalSignature, final IDescription context) {
 		final IType[] result = new IType[list.length];
@@ -299,19 +290,22 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	}
 
 	/**
-	 * @return
+	 * Indicates whether numeric coercion (int/float) might be required between two signatures of same arity.
+	 *
+	 * @param other signature to compare
+	 * @return true if any position mixes int and float
 	 */
-	public boolean isUnary() { return list.length == 1; }
-
-	/**
-	 * @return
-	 */
-	public int size() {
-		return list.length;
+	public boolean mightNeedCoercionWith(final Signature other) {
+		for (int i = 0; i < list.length; i++)
+			if (Types.intFloatCase(list[i], other.list[i])) return true;
+		return false;
 	}
 
 	/**
-	 * @return
+	 * Returns a CSV of types either as patterns (withVariables=true) or serialized names.
+	 *
+	 * @param withVariables whether to include variable placeholders via {@link IType#asPattern()}
+	 * @return comma-separated textual representation
 	 */
 	public String asPattern(final boolean withVariables) {
 		final StringBuilder sb = new StringBuilder();
@@ -323,21 +317,22 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	}
 
 	/**
-	 * Checks for int or float. Assuming both signatures have the same size
+	 * Checks if this signature contains exactly one type.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return true, if successful
-	 * @date 27 déc. 2023
+	 * @return true when the signature contains exactly one type
 	 */
-	public boolean mightNeedCoercionWith(final Signature other) {
-		for (int i = 0; i < list.length; i++)
-			if (Types.intFloatCase(list[i], other.list[i])) return true;
-		return false;
-	}
+	public boolean isUnary() { return list.length == 1; }
 
-	@Override
-	public Iterator<IType> iterator() {
-		return Iterators.forArray(list);
+	/**
+	 * Returns the number of types in this signature.
+	 *
+	 * @return number of parameters in the signature
+	 */
+	public int size() {
+		return list.length;
 	}
+ 
+	@Override
+	public Iterator<IType> iterator() { return Iterators.forArray(list); }
 
 }

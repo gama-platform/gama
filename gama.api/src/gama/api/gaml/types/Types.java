@@ -319,8 +319,8 @@ public class Types {
 	}
 
 	/**
-	 * Initializes the type hierarchy of built-in types. This computes the parent-child relationships between types based
-	 * on their underlying Java classes and sets up the fields for each type.
+	 * Initializes the type hierarchy of built-in types. This computes the parent-child relationships between types
+	 * based on their underlying Java classes and sets up the fields for each type.
 	 */
 	public static void init() {
 		// We build a graph-type multimap structure

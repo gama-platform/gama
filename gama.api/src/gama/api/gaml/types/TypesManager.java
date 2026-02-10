@@ -9,9 +9,6 @@
  ********************************************************************************************************/
 package gama.api.gaml.types;
 
-import java.io.IOException;
-import java.io.StreamTokenizer;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -28,7 +25,8 @@ import gama.api.kernel.agent.IAgent;
 import gama.dev.DEBUG;
 
 /**
- * The Class TypesManager.
+ * Model-scoped registry that hosts GAML types (built-in and species) and parses/aliases type names.
+ * Can delegate lookups to a parent manager while supporting local additions, aliases, and parametric decoding.
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class TypesManager implements ITypesManager {
@@ -45,6 +43,8 @@ public class TypesManager implements ITypesManager {
 
 	/** The types. */
 	private final ConcurrentHashMap<String, IType<?>> types = new ConcurrentHashMap<>();
+
+	/** The unique types. */
 	private final Set<IType<?>> uniqueTypes = ConcurrentHashMap.newKeySet();
 
 	/**
@@ -68,6 +68,12 @@ public class TypesManager implements ITypesManager {
 	 *
 	 * @see gama.gaml.types.ITypesManager#alias(java.lang.String, java.lang.String)
 	 */
+	/**
+	 * Registers an alias for an existing type name.
+	 *
+	 * @param existing canonical type name
+	 * @param alias alternative keyword
+	 */
 	@Override
 	public void alias(final String existingTypeName, final String otherTypeName) {
 		final IType t = types.get(existingTypeName);
@@ -86,6 +92,12 @@ public class TypesManager implements ITypesManager {
 	 *
 	 * @see gama.gaml.types.ITypesManager#addSpeciesType(gama.gaml.descriptions. TypeDescription)
 	 */
+	/**
+	 * Registers a species description as a type and ensures unique naming.
+	 *
+	 * @param species species description to register
+	 * @return resulting species type
+	 */
 	@Override
 	public IType<? extends IAgent> addSpeciesType(final ISpeciesDescription species) {
 		final String name = species.getName();
@@ -101,6 +113,18 @@ public class TypesManager implements ITypesManager {
 
 	}
 
+	/**
+	 * Registers a type into this manager, initializing its metadata and capturing its plugin origin.
+	 *
+	 * @param <Support> Java support class of the type
+	 * @param name keyword used in GAML
+	 * @param originalType type instance to initialize/store
+	 * @param id numeric id (see {@link IType})
+	 * @param varKind variable kind (field/attribute/etc.)
+	 * @param support Java class backing the type
+	 * @param plugin plugin identifier defining the type
+	 * @return initialized type (or NO_TYPE for "unknown")
+	 */
 	@Override
 	public <Support> IType<Support> initType(final String keyword, final IType<Support> originalType, final int id,
 			final int varKind, final Class<Support> support, final String plugin) {
@@ -155,10 +179,9 @@ public class TypesManager implements ITypesManager {
 	}
 
 	/**
-	 * Inits the.
+	 * Initializes built-in species types from a model, sets their parents, and fills the local registry.
 	 *
-	 * @param model
-	 *            the model
+	 * @param model root model description containing species
 	 */
 	/*
 	 * (non-Javadoc)
@@ -189,6 +212,10 @@ public class TypesManager implements ITypesManager {
 	 *
 	 * @see gama.gaml.types.ITypesManager#containsType(java.lang.String)
 	 */
+	/**
+	 * @param name type keyword
+	 * @return true when this manager (or parent) knows a type with that name
+	 */
 	@Override
 	public boolean containsType(final String s) {
 		final IType t = types.get(s);
@@ -202,6 +229,13 @@ public class TypesManager implements ITypesManager {
 		return get(type, Types.NO_TYPE);
 	}
 
+	/**
+	 * Resolves a type by name, optionally falling back to a default when not found.
+	 *
+	 * @param name keyword or id string
+	 * @param defaultValue fallback if absent
+	 * @return resolved type or {@code defaultValue}
+	 */
 	@Override
 	public IType get(final String type, final IType defaultValue) {
 		if (type == null) return defaultValue;
@@ -216,14 +250,23 @@ public class TypesManager implements ITypesManager {
 	 *
 	 * @see gama.gaml.types.ITypesManager#dispose()
 	 */
+	/**
+	 * Clears all locally registered types and aliases.
+	 */
 	@Override
 	public void dispose() {
 		types.clear();
 		uniqueTypes.clear();
 	}
 
+	/**
+	 * Parses a type expression possibly containing parametric parts (e.g., "list<float>" or "map<string,int>").
+	 *
+	 * @param s textual type expression
+	 * @return resolved type or {@link Types#NO_TYPE} on failure
+	 */
 	@Override
-	public IType decodeType(final String s) {
+	public IType<?> decodeType(final String s) {
 		if (s == null || s.isEmpty()) return Types.NO_TYPE;
 		int index = s.indexOf('<');
 		if (index == -1) return get(s);
@@ -237,9 +280,11 @@ public class TypesManager implements ITypesManager {
 		int length = params.length();
 		for (int i = 0; i < length; i++) {
 			char c = params.charAt(i);
-			if (c == '<') depth++;
-			else if (c == '>') depth--;
-			else if (c == ',' && depth == 0) {
+			if (c == '<') {
+				depth++;
+			} else if (c == '>') {
+				depth--;
+			} else if (c == ',' && depth == 0) {
 				args.add(params.substring(start, i).trim());
 				start = i + 1;
 			}
@@ -250,43 +295,6 @@ public class TypesManager implements ITypesManager {
 		if (args.size() == 1) return ((IContainerType) base).of(key);
 		IType content = decodeType(args.get(args.size() - 1));
 		return ((IContainerType) base).of(key, content);
-	}
-
-	/**
-	 * Parses the.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param tokenizer
-	 *            the tokenizer
-	 * @return the i type
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @date 4 nov. 2023
-	 */
-	IType decode(final StreamTokenizer tokenizer) throws IOException {
-		String baseName = tokenizer.sval;
-		IType result = get(baseName);
-		tokenizer.nextToken();
-		if (!(result instanceof IContainerType ic)) return result;
-
-		IType param1 = Types.NO_TYPE;
-		IType param2 = Types.NO_TYPE;
-		boolean first = true;
-		if (tokenizer.ttype == '<') {
-			do {
-				tokenizer.nextToken(); // Skip '<' or ','
-				if (first) {
-					param1 = decode(tokenizer);
-					first = false;
-				} else {
-					param2 = decode(tokenizer);
-					first = true;
-				}
-			} while (tokenizer.ttype == ',');
-			tokenizer.nextToken(); // skip '>'
-		}
-		if (first) return ic.of(param1, param2);
-		return ic.of(param1);
 	}
 
 }
