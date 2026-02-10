@@ -51,7 +51,41 @@ import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 
 /**
- * The class GamaBundleLoader.
+ * The GamaBundleLoader class is responsible for loading and initializing all GAMA plugins and their extensions at
+ * platform startup. This is the central registry and orchestrator for the GAMA plugin architecture.
+ * 
+ * <p>
+ * The loader performs the following critical operations in sequence:
+ * <ul>
+ * <li>Discovers all Eclipse bundles that extend the GAML language via extension points</li>
+ * <li>Loads language additions from each plugin (operators, statements, types, etc.)</li>
+ * <li>Registers extension delegates for key GAML statements (create, save, draw, event)</li>
+ * <li>Collects and indexes model libraries and test suites from plugins</li>
+ * <li>Initializes the GAMA metamodel and type hierarchy</li>
+ * <li>Registers content types and file extensions handled by the platform</li>
+ * </ul>
+ * 
+ * <p>
+ * The loading process is fault-tolerant: core plugins (gama.api and gama.core) must load successfully or the platform
+ * exits, but failures in additional plugins are logged and the platform continues loading. This allows the user to
+ * potentially fix issues or remove problematic plugins even when errors occur.
+ * 
+ * <p>
+ * Key extension points processed by this loader:
+ * <ul>
+ * <li><b>gaml.extension</b>: Main extension point for GAML language additions</li>
+ * <li><b>gama.create</b>: Extensions to the 'create' statement</li>
+ * <li><b>gama.save</b>: Extensions to the 'save' statement</li>
+ * <li><b>gama.draw</b>: Extensions to the 'draw' statement</li>
+ * <li><b>gama.event_layer</b>: Extensions for event layer handling</li>
+ * <li><b>gama.metadata</b>: File metadata providers for different content types</li>
+ * <li><b>gama.models</b>: Model library declarations</li>
+ * <li><b>gama.constants</b>: Constant value suppliers</li>
+ * </ul>
+ * 
+ * <p>
+ * Thread Safety: This class is designed to be called once during platform initialization and is not thread-safe.
+ * The ERRORED flag is marked volatile for visibility across threads.
  *
  * @author drogoul
  * @since 24 janv. 2012
@@ -65,10 +99,21 @@ public class GamaBundleLoader {
 	}
 
 	/**
-	 * Error.
+	 * Logs a critical error that occurred during plugin loading and sets the ERRORED flag. This method is used
+	 * throughout the loading process to capture and report failures while ensuring the error state is tracked.
+	 * 
+	 * <p>
+	 * When called, this method:
+	 * <ul>
+	 * <li>Outputs the generic error message about GAML initialization failure</li>
+	 * <li>Sets the volatile ERRORED flag to true for global visibility</li>
+	 * <li>Logs the specific error message and exception for debugging</li>
+	 * </ul>
 	 *
+	 * @param message
+	 *            a descriptive error message explaining what failed
 	 * @param e
-	 *            the e
+	 *            the exception that caused the error
 	 */
 	public static void ERROR(final String message, final Exception e) {
 		DEBUG.ERR(ERROR_MESSAGE);
@@ -148,13 +193,13 @@ public class GamaBundleLoader {
 	public static final String GENERATED_TESTS_LAYOUT = "gaml/tests";
 
 	/** The gama plugins. */
-	private static final List<Bundle> GAMA_PLUGINS = new ArrayList<>();
+	private static final List<Bundle> GAMA_PLUGINS = new ArrayList<>(50);
 
 	/** The Constant GAMA_PLUGINS_NAMES. */
-	private static final Set<String> GAMA_PLUGINS_NAMES = new LinkedHashSet<>();
+	private static final Set<String> GAMA_PLUGINS_NAMES = new LinkedHashSet<>(50);
 
 	/** The Constant GAMA_PLUGINS_NAMES. */
-	private static final Set<String> GAMA_DISPLAY_PLUGINS_NAMES = new LinkedHashSet<>();
+	private static final Set<String> GAMA_DISPLAY_PLUGINS_NAMES = new LinkedHashSet<>(10);
 
 	/** The Constant GAMA_CORE_DISPLAY_PLUGINS. */
 	private static final Set<String> GAMA_CORE_DISPLAY_PLUGINS =
@@ -173,10 +218,33 @@ public class GamaBundleLoader {
 	public static final Set<String> HANDLED_FILE_EXTENSIONS = new LinkedHashSet<>();
 
 	/**
-	 * Pre build contributions.
-	 *
-	 * @throws Exception
-	 *             the exception
+	 * Builds all plugin contributions to the GAMA platform. This is the main entry point for the plugin loading
+	 * process and should be called once during platform initialization.
+	 * 
+	 * <p>
+	 * This method orchestrates the complete plugin loading sequence in the following order:
+	 * <ol>
+	 * <li><b>Discovery</b>: Identifies all Eclipse bundles that declare GAML language extensions</li>
+	 * <li><b>Core Loading</b>: Loads gama.api and gama.core plugins first (mandatory - exits on failure)</li>
+	 * <li><b>Extension Loading</b>: Loads all other GAML extension plugins (fault-tolerant)</li>
+	 * <li><b>Delegate Registration</b>: Registers statement extensions (create, save, draw, event, metadata)</li>
+	 * <li><b>Model Gathering</b>: Indexes model libraries and test suites from all plugins</li>
+	 * <li><b>Content Types</b>: Registers file extensions and content types</li>
+	 * <li><b>Metamodel Initialization</b>: Builds the GAMA metamodel (species hierarchy)</li>
+	 * <li><b>Type System</b>: Initializes the type hierarchy and units</li>
+	 * <li><b>Constants</b>: Loads constant suppliers from all plugins</li>
+	 * </ol>
+	 * 
+	 * <p>
+	 * In headless mode, display plugins (gama.ui.display.java2d, gama.ui.display.opengl) are automatically excluded
+	 * from loading to prevent UI dependencies.
+	 * 
+	 * <p>
+	 * Error Handling: If core plugins fail to load, the platform exits immediately. For other plugins, errors are
+	 * logged and loading continues to allow potential recovery or plugin removal.
+	 * 
+	 * @throws RuntimeException
+	 *             if a critical error occurs during plugin loading
 	 */
 	public static void buildContributions() {
 
@@ -190,12 +258,12 @@ public class GamaBundleLoader {
 			// We retrieve the elements declared as extensions to the GAML language,
 			// either with the new or the deprecated extension, and add their contributor plugin to GAMA_PLUGINS
 			try {
-				// append two streams: the new and the deprecated extension points
-				Stream.of(registry.getExtensionPoint(GRAMMAR_EXTENSION).getExtensions())
-						.map(e -> Platform.getBundle(e.getContributor().getName()))
-						.sorted(Comparator.comparing(Bundle::getSymbolicName)).distinct().forEach(b -> {
-							GAMA_PLUGINS.add(b);
-						});
+				// Use a LinkedHashSet to maintain order and avoid duplicates automatically
+				final Set<Bundle> bundleSet = new LinkedHashSet<>();
+				for (final IExtension ext : registry.getExtensionPoint(GRAMMAR_EXTENSION).getExtensions()) {
+					bundleSet.add(Platform.getBundle(ext.getContributor().getName()));
+				}
+				GAMA_PLUGINS.addAll(bundleSet);
 			} catch (final InvalidRegistryObjectException e) {
 				ERROR("Error in retrieving GAMA plugins. One is invalid. ", e);
 			}
@@ -268,96 +336,116 @@ public class GamaBundleLoader {
 	}
 
 	/**
-	 * Load create extensions.
+	 * Generic method to load delegate extensions with consistent error handling. This method provides a unified way
+	 * to load and register various types of statement delegates (create, save, draw, event) from Eclipse extension
+	 * points.
+	 * 
+	 * <p>
+	 * The method iterates through all configuration elements registered for the specified extension point, creates
+	 * executable instances of the delegate classes, and passes them to the provided consumer for registration.
+	 * 
+	 * <p>
+	 * Error Handling: If a delegate fails to load, an error is logged but processing continues for remaining
+	 * delegates. This fault-tolerant approach ensures that one problematic plugin doesn't prevent other plugins from
+	 * loading successfully.
+	 * 
+	 * @param <T>
+	 *            the delegate type (e.g., ICreateDelegate, ISaveDelegate, IDrawDelegate)
+	 * @param registry
+	 *            the Eclipse extension registry containing plugin contributions
+	 * @param extensionPoint
+	 *            the extension point name to query (e.g., "gama.create", "gama.save")
+	 * @param delegateType
+	 *            a human-readable name for the delegate type, used in error messages (e.g., "CreateStatement",
+	 *            "SaveStatement")
+	 * @param delegateConsumer
+	 *            a consumer function that processes and registers the loaded delegate instance
+	 */
+	@SuppressWarnings("unchecked")
+	private static <T> void loadDelegateExtension(final IExtensionRegistry registry, final String extensionPoint,
+			final String delegateType, final java.util.function.Consumer<T> delegateConsumer) {
+		for (final IConfigurationElement e : registry.getConfigurationElementsFor(extensionPoint)) {
+			try {
+				final T delegate = (T) e.createExecutableExtension("class");
+				if (delegate != null) { delegateConsumer.accept(delegate); }
+			} catch (final Exception e1) {
+				ERROR("Error in loading " + delegateType + " delegate from "
+						+ e.getDeclaringExtension().getContributor().getName(), e1);
+				// We do not systematically exit in case of additional plugins failing to load, so as to
+				// give the platform a chance to execute even in case of errors (to save files, to
+				// remove offending plugins, etc.)
+			}
+		}
+	}
+
+	/**
+	 * Loads extensions to the 'create' statement from registered plugins. This method discovers and registers all
+	 * {@link ICreateDelegate} implementations that extend the behavior of GAML's create statement.
+	 * 
+	 * <p>
+	 * The create statement is used to instantiate agents in GAMA simulations. Plugins can extend this statement to
+	 * support creating agents from various data sources (files, databases, web services, etc.).
 	 *
 	 * @param registry
-	 *            the registry
+	 *            the Eclipse extension registry containing plugin contributions
 	 * @throws InvalidRegistryObjectException
-	 *             the invalid registry object exception
+	 *             if the extension registry contains invalid objects
 	 */
 	private static void loadCreateExt(final IExtensionRegistry registry) throws InvalidRegistryObjectException {
-		// We gather all the extensions to the `create` statement and add them
-		// as delegates to CreateStatement. If an exception occurs, we discard it
-		for (final IConfigurationElement e : registry.getConfigurationElementsFor(CREATE_EXTENSION)) {
-			ICreateDelegate cd = null;
-			try {
-				// TODO Add the defining plug-in
-				cd = (ICreateDelegate) e.createExecutableExtension("class");
-				if (cd != null) { GamaAdditionRegistry.addDelegate(cd); }
-			} catch (final Exception e1) {
-				ERROR("Error in loading CreateStatement delegate from "
-						+ e.getDeclaringExtension().getContributor().getName(), e1);
-				// We do not systematically exit in case of additional plugins failing to load, so as to
-				// give the platform a chance to execute even in case of errors (to save files, to
-				// remove offending plugins, etc.)
-				continue;
-			}
-		}
+		loadDelegateExtension(registry, CREATE_EXTENSION, "CreateStatement",
+				(ICreateDelegate cd) -> GamaAdditionRegistry.addDelegate(cd));
 	}
 
 	/**
-	 * Load save extensions.
+	 * Loads extensions to the 'save' statement from registered plugins. This method discovers and registers all
+	 * {@link ISaveDelegate} implementations that extend the behavior of GAML's save statement.
+	 * 
+	 * <p>
+	 * The save statement is used to persist data in GAMA simulations. Plugins can extend this statement to support
+	 * saving data to various formats and destinations (CSV, JSON, databases, remote services, etc.).
 	 *
 	 * @param registry
-	 *            the registry
+	 *            the Eclipse extension registry containing plugin contributions
 	 * @throws InvalidRegistryObjectException
-	 *             the invalid registry object exception
+	 *             if the extension registry contains invalid objects
 	 */
 	private static void loadSaveExt(final IExtensionRegistry registry) throws InvalidRegistryObjectException {
-		// We gather all the extensions to the `save` statement and add them
-		// as delegates to SaveStatement. If an exception occurs, we discard it
-		for (final IConfigurationElement e : registry.getConfigurationElementsFor(SAVE_EXTENSION)) {
-			ISaveDelegate sd = null;
-			try {
-				// TODO Add the defining plug-in
-				sd = (ISaveDelegate) e.createExecutableExtension("class");
-				if (sd != null) { GamaAdditionRegistry.addDelegate(sd); }
-			} catch (final Exception e1) {
-				ERROR("Error in loading SaveStatement delegate from "
-						+ e.getDeclaringExtension().getContributor().getName(), e1);
-				// We do not systematically exit in case of additional plugins failing to load, so as to
-				// give the platform a chance to execute even in case of errors (to save files, to
-				// remove offending plugins, etc.)
-				continue;
-			}
-		}
+		loadDelegateExtension(registry, SAVE_EXTENSION, "SaveStatement",
+				(ISaveDelegate sd) -> GamaAdditionRegistry.addDelegate(sd));
 	}
 
 	/**
-	 * Load draw extensions.
+	 * Loads extensions to the 'draw' statement from registered plugins. This method discovers and registers all
+	 * {@link IDrawDelegate} implementations that extend the behavior of GAML's draw statement.
+	 * 
+	 * <p>
+	 * The draw statement is used to render visual elements in GAMA simulations. Plugins can extend this statement to
+	 * support drawing custom geometries, images, charts, and other visual representations.
 	 *
 	 * @param registry
-	 *            the registry
+	 *            the Eclipse extension registry containing plugin contributions
 	 * @throws InvalidRegistryObjectException
-	 *             the invalid registry object exception
+	 *             if the extension registry contains invalid objects
 	 */
 	private static void loadDrawExt(final IExtensionRegistry registry) throws InvalidRegistryObjectException {
-		// We gather all the extensions to the `draw` statement and add them
-		// as delegates to DrawStatement. If an exception occurs, we discard it
-		for (final IConfigurationElement e : registry.getConfigurationElementsFor(DRAW_EXTENSION)) {
-			IDrawDelegate sd = null;
-			try {
-				// TODO Add the defining plug-in
-				sd = (IDrawDelegate) e.createExecutableExtension("class");
-				if (sd != null) { GamaAdditionRegistry.addDelegate(sd); }
-			} catch (final Exception e1) {
-				ERROR("Error in loading DrawStatement delegate from "
-						+ e.getDeclaringExtension().getContributor().getName(), e1);
-				// We do not systematically exit in case of additional plugins failing to load, so as to
-				// give the platform a chance to execute even in case of errors (to save files, to
-				// remove offending plugins, etc.)
-				continue;
-			}
-		}
+		loadDelegateExtension(registry, DRAW_EXTENSION, "DrawStatement",
+				(IDrawDelegate dd) -> GamaAdditionRegistry.addDelegate(dd));
 	}
 
 	/**
-	 * Load metadata ext.
+	 * Loads file metadata extensions from registered plugins. This method discovers and registers metadata providers
+	 * for different file content types.
+	 * 
+	 * <p>
+	 * Metadata providers supply information about files (e.g., dimensions, CRS, attributes) without fully loading
+	 * them. This is used for file previews, validation, and efficient resource management.
+	 * 
+	 * <p>
+	 * Each metadata extension associates a content type (e.g., "shapefile", "image", "csv") with a metadata class
+	 * that implements {@link IGamaFileMetaData}.
 	 *
 	 * @param registry
-	 *            the registry
-	 * @throws InvalidRegistryObjectException
-	 *             the invalid registry object exception
+	 *            the Eclipse extension registry containing plugin contributions
 	 */
 	private static void loadMetadataExt(final IExtensionRegistry registry) {
 		// We gather all the extensions to the `metadata` statement and add them
@@ -374,45 +462,48 @@ public class GamaBundleLoader {
 				// We do not systematically exit in case of additional plugins failing to load, so as to
 				// give the platform a chance to execute even in case of errors (to save files, to
 				// remove offending plugins, etc.)
-				continue;
 			}
 		}
 	}
 
 	/**
-	 * Load event layer extensions.
+	 * Loads extensions to event layer statement from registered plugins. This method discovers and registers all
+	 * {@link IEventLayerDelegate} implementations that extend event handling in displays.
+	 * 
+	 * <p>
+	 * Event layer delegates allow plugins to customize how user interactions (mouse, keyboard) are processed in
+	 * graphical displays. This enables custom interaction modes, tools, and display behaviors.
 	 *
 	 * @param registry
-	 *            the registry
+	 *            the Eclipse extension registry containing plugin contributions
 	 * @throws InvalidRegistryObjectException
-	 *             the invalid registry object exception
+	 *             if the extension registry contains invalid objects
 	 */
 	private static void loadEventExt(final IExtensionRegistry registry) throws InvalidRegistryObjectException {
-		// We gather all the extensions to the `event` statement and add them
-		// as delegates to EventLayerStatement
-		for (final IConfigurationElement e : registry.getConfigurationElementsFor(EVENT_LAYER_EXTENSION)) {
-			try {
-				// TODO Add the defining plug-in
-				GamaAdditionRegistry.addDelegate((IEventLayerDelegate) e.createExecutableExtension("class"));
-			} catch (final Exception e1) {
-				ERROR("Error in loading EventLayerStatement delegate : "
-						+ e.getDeclaringExtension().getContributor().getName(), e1);
-				// We do not systematically exit in case of additional plugins failing to load, so as to
-				// give the platform a chance to execute even in case of errors (to save files, to
-				// remove
-				// offending plugins, etc.)
-				continue;
-			}
-		}
+		loadDelegateExtension(registry, EVENT_LAYER_EXTENSION, "EventLayerStatement",
+				(IEventLayerDelegate ed) -> GamaAdditionRegistry.addDelegate(ed));
 	}
 
 	/**
-	 * Load models.
+	 * Discovers and indexes model libraries and test suites from all registered plugins. This method scans plugins
+	 * for standard directory layouts containing GAML models and tests.
+	 * 
+	 * <p>
+	 * The method recognizes three standard layouts:
+	 * <ul>
+	 * <li><b>models/</b>: Standard location for model library projects</li>
+	 * <li><b>tests/</b>: Standard location for test files</li>
+	 * <li><b>gaml/tests/</b>: Alternative location for generated test files</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * Plugins can also explicitly declare non-standard model locations using the "gama.models" extension point.
+	 * The core library bundle (gama.library) is always included as a model provider.
 	 *
 	 * @param registry
-	 *            the registry
+	 *            the Eclipse extension registry containing plugin contributions
 	 * @throws InvalidRegistryObjectException
-	 *             the invalid registry object exception
+	 *             if the extension registry contains invalid objects
 	 */
 	private static void loadModels(final IExtensionRegistry registry) throws InvalidRegistryObjectException {
 		MODEL_PLUGINS.put(CORE_MODELS, REGULAR_MODELS_LAYOUT);
@@ -430,35 +521,61 @@ public class GamaBundleLoader {
 	}
 
 	/**
-	 * Load content extensions.
+	 * Loads and registers content type extensions and file extension mappings from all GAMA plugins. This method
+	 * scans the Eclipse content type registry for extensions declared by GAMA plugins and extracts the file
+	 * extensions they handle.
+	 * 
+	 * <p>
+	 * The collected file extensions are stored in {@link #HANDLED_FILE_EXTENSIONS} and are used throughout the
+	 * platform to identify files that GAMA can process (e.g., .gaml, .shp, .csv, etc.).
+	 * 
+	 * <p>
+	 * Content types in Eclipse define the nature of files and can be associated with editors, validators, and other
+	 * tools. This method ensures GAMA is aware of all file types its plugins can handle.
 	 *
 	 * @param registry
-	 *            the registry
+	 *            the Eclipse extension registry containing plugin contributions
 	 * @throws InvalidRegistryObjectException
-	 *             the invalid registry object exception
+	 *             if the extension registry contains invalid objects
 	 */
 	private static void loadContentExtensions(final IExtensionRegistry registry) throws InvalidRegistryObjectException {
 		// We gather all the content types extensions defined in GAMA plugins
 		// (not in the other ones)
 		final IExtensionPoint contentType = registry.getExtensionPoint(CONTENT_EXTENSION);
-		final Set<IExtension> contentExtensions = new HashSet<>();
-		contentExtensions.addAll(Arrays.asList(contentType.getExtensions()));
-		for (final IExtension ext : contentExtensions) {
+		final IExtension[] extensions = contentType.getExtensions();
+		final Set<IExtension> contentExtensions = new HashSet<>(extensions.length);
+		for (final IExtension ext : extensions) {
+			contentExtensions.add(ext);
 			final IConfigurationElement[] configs = ext.getConfigurationElements();
 			for (final IConfigurationElement config : configs) {
 				final String s = config.getAttribute("file-extensions");
-				if (s != null) { HANDLED_FILE_EXTENSIONS.addAll(Arrays.asList(s.split(","))); }
+				if (s != null) {
+					final String[] fileExts = s.split(",");
+					for (final String fileExt : fileExts) {
+						HANDLED_FILE_EXTENSIONS.add(fileExt);
+					}
+				}
 			}
 		}
 	}
 
 	/**
-	 * Load constants.
+	 * Loads constant suppliers from registered plugins. This method discovers and invokes all
+	 * {@link IConstantsSupplier} implementations that contribute constants to the GAML language.
+	 * 
+	 * <p>
+	 * Constants suppliers can add predefined values (mathematical constants, colors, units, etc.) to the GAML
+	 * language that are available globally in models. Each supplier's constants are registered with the GAML
+	 * constant acceptor.
+	 * 
+	 * <p>
+	 * Error Handling: If a constants supplier fails to load, an error is logged but processing continues to ensure
+	 * other plugins can contribute their constants.
 	 *
 	 * @param registry
-	 *            the registry
+	 *            the Eclipse extension registry containing plugin contributions
 	 * @throws InvalidRegistryObjectException
-	 *             the invalid registry object exception
+	 *             if the extension registry contains invalid objects
 	 */
 	private static void loadConstants(final IExtensionRegistry registry) throws InvalidRegistryObjectException {
 		// We gather all the extensions to the constants and add them
@@ -474,90 +591,132 @@ public class GamaBundleLoader {
 				// We do not systematically exit in case of additional plugins failing to load, so as to
 				// give the platform a chance to execute even in case of errors (to save files, to
 				// remove offending plugins, etc.)
-				continue;
 			}
 		}
 	}
 
 	/**
-	 * Pre build.
+	 * Loads and initializes language additions from a specific plugin bundle. This method is called for each plugin
+	 * that declares GAML language extensions.
+	 * 
+	 * <p>
+	 * The method performs the following steps:
+	 * <ol>
+	 * <li>Registers the bundle's symbolic name in {@link #GAMA_PLUGINS_NAMES}</li>
+	 * <li>Adds the bundle to the GAMA class loader for runtime class resolution</li>
+	 * <li>Attempts to load the plugin's GamlAdditions class following the naming convention:
+	 * {@code gaml.additions.<shortname>.GamlAdditions}</li>
+	 * <li>Instantiates and initializes the GamlAdditions class to register operators, statements, types, etc.</li>
+	 * </ol>
+	 * 
+	 * <p>
+	 * The shortname is derived from the bundle's symbolic name by taking the part after the last dot. For example,
+	 * "gama.extension.maths" becomes "maths", and the loader looks for "gaml.additions.maths.GamlAdditions".
+	 * 
+	 * <p>
+	 * Error Handling: Any exception during loading is wrapped in a RuntimeException with a descriptive message
+	 * indicating the specific failure point (class not found, initialization failed, instantiation failed, or
+	 * runtime error).
 	 *
 	 * @param bundle
-	 *            the bundle
+	 *            the Eclipse bundle containing GAML language additions to load
 	 * @throws Exception
-	 *             the exception
+	 *             if the additions class cannot be found, initialized, instantiated, or executed
 	 */
 	@SuppressWarnings ("unchecked")
 	public static void preBuild(final Bundle bundle) throws Exception {
 		TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Extensions in " + bundle.getSymbolicName(), "loaded in", () -> {
-			String shortcut = bundle.getSymbolicName();
-			GAMA_PLUGINS_NAMES.add(shortcut);
-			shortcut = shortcut.substring(shortcut.lastIndexOf('.') + 1);
+			final String symbolicName = bundle.getSymbolicName();
+			GAMA_PLUGINS_NAMES.add(symbolicName);
+			final String shortcut = symbolicName.substring(symbolicName.lastIndexOf('.') + 1);
 			GamaClassLoader.getInstance().addBundle(bundle);
+			final String classPath = ADDITIONS_PACKAGE_BASE + "." + shortcut + "." + ADDITIONS_CLASS_NAME;
 			Class<IGamlAdditions> clazz = null;
-			String classPath = ADDITIONS_PACKAGE_BASE + "." + shortcut + "." + ADDITIONS_CLASS_NAME;
-			String error = ">> Impossible to load additions from " + bundle + " because " + classPath + " cannot be ";
 			try {
 				clazz = (Class<IGamlAdditions>) bundle.loadClass(classPath);
 				clazz.getConstructor().newInstance().initialize();
 			} catch (final ClassNotFoundException e) {
-				DEBUG.LOG(error + "found.");
-				throw new RuntimeException(error + "found.", e);
+				final String error = ">> Impossible to load additions from " + bundle + " because " + classPath + " cannot be found.";
+				DEBUG.LOG(error);
+				throw new RuntimeException(error, e);
 			} catch (final SecurityException | NoSuchMethodException e) {
-				DEBUG.LOG(error + "initialized.");
-				throw new RuntimeException(error + "initialized.", e);
+				final String error = ">> Impossible to load additions from " + bundle + " because " + classPath + " cannot be initialized.";
+				DEBUG.LOG(error);
+				throw new RuntimeException(error, e);
 			} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 					| InvocationTargetException e) {
-				DEBUG.LOG(error + "instantiated.");
-				throw new RuntimeException(error + "instantiated.", e);
+				final String error = ">> Impossible to load additions from " + bundle + " because " + classPath + " cannot be instantiated.";
+				DEBUG.LOG(error);
+				throw new RuntimeException(error, e);
 			} catch (Throwable e) {
 				DEBUG.LOG(e.getMessage());
-				throw new RuntimeException(error + "run.", e);
+				final String error = ">> Impossible to load additions from " + bundle + " because " + classPath + " cannot be run.";
+				throw new RuntimeException(error, e);
 			}
 		});
 	}
 
 	/**
-	 * The list of GAMA_PLUGINS declaring models, together with the inner path to the folder containing model projects
+	 * Returns a multimap of all GAMA plugins that contain model libraries, along with the inner path to the folder
+	 * containing model projects. This is used by the platform to discover and load built-in models.
+	 * 
+	 * <p>
+	 * The returned multimap maps Bundle objects to path strings (e.g., "models", "examples"). A single bundle may
+	 * have multiple entries if it contains models in multiple locations.
 	 *
-	 * @return
+	 * @return a multimap where keys are bundles containing models and values are the relative paths to model folders
+	 *         within those bundles
 	 */
 	public static Multimap<Bundle, String> getPluginsWithModels() { return MODEL_PLUGINS; }
 
 	/**
-	 * Gets the plugins with tests.
+	 * Returns a multimap of all GAMA plugins that contain test suites, along with the inner path to the folder
+	 * containing test files. This is used by the platform to discover and execute built-in tests.
+	 * 
+	 * <p>
+	 * The returned multimap maps Bundle objects to path strings (e.g., "tests", "gaml/tests"). A single bundle may
+	 * have multiple entries if it contains tests in multiple locations.
 	 *
-	 * @return the plugins with tests
+	 * @return a multimap where keys are bundles containing tests and values are the relative paths to test folders
+	 *         within those bundles
 	 */
 	public static Multimap<Bundle, String> getPluginsWithTests() { return TEST_PLUGINS; }
 
 	/**
-	 * Gaml plugin exists.
+	 * Checks whether a GAML plugin with the specified symbolic name has been successfully loaded during platform
+	 * initialization.
 	 *
 	 * @param s
-	 *            the s
-	 * @return true, if successful
+	 *            the symbolic name of the bundle to check (e.g., "gama.extension.maths")
+	 * @return true if a plugin with the given symbolic name was loaded, false otherwise
 	 */
 	public static boolean gamlPluginExists(final String s) {
 		return GAMA_PLUGINS_NAMES.contains(s);
 	}
 
 	/**
-	 * Checks if is display plugin.
+	 * Checks whether the specified plugin is a display plugin. Display plugins are responsible for rendering
+	 * graphical outputs in GAMA simulations.
+	 * 
+	 * <p>
+	 * This includes both core display plugins (gama.ui.display.java2d, gama.ui.display.opengl) and any
+	 * additional display plugins registered through {@link #addDisplayPlugin(String)}.
 	 *
 	 * @param s
-	 *            the s
-	 * @return true, if is display plugin
+	 *            the symbolic name of the plugin to check
+	 * @return true if the plugin is a display plugin, false otherwise
 	 */
 	public static boolean isDisplayPlugin(final String s) {
 		return GAMA_DISPLAY_PLUGINS_NAMES.contains(s) || GAMA_CORE_DISPLAY_PLUGINS.contains(s);
 	}
 
 	/**
-	 * Adds the display plugin.
+	 * Registers a plugin as a display plugin. Display plugins are responsible for rendering graphical outputs.
+	 * This method allows additional display plugins beyond the core ones (java2d, opengl) to be registered
+	 * at runtime.
 	 *
 	 * @param plugin
-	 *            the plugin
+	 *            the symbolic name of the display plugin to register
 	 */
 	public static void addDisplayPlugin(final String plugin) {
 		GAMA_DISPLAY_PLUGINS_NAMES.add(plugin);
