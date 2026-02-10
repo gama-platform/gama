@@ -40,62 +40,6 @@ public class UnitConstantExpression extends ConstantExpression implements IExpre
 	/** The name. */
 	String name;
 
-	/**
-	 * Creates the.
-	 *
-	 * @param val
-	 *            the val
-	 * @param t
-	 *            the t
-	 * @param unit
-	 *            the unit
-	 * @param doc
-	 *            the doc
-	 * @param isTime
-	 *            the is time
-	 * @param names
-	 *            the names
-	 * @return the unit constant expression
-	 */
-	// Already cached in IExpressionFactory.UNIT_EXPRS
-	public static UnitConstantExpression create(final Object val, final IType<?> t, final String unit, final String doc,
-			final boolean isTime, final String[] names) {
-
-		switch (unit) {
-			case "zoom":
-				return new ZoomUnitExpression(unit, doc);
-			case "fullscreen":
-				return new FullScreenExpression(unit, doc);
-			case "hidpi":
-				return new HiDPIExpression(unit, doc);
-			case "pixels":
-			case "px":
-				return new PixelUnitExpression(unit, doc);
-			case "display_width":
-				return new DisplayWidthUnitExpression(doc);
-			case "display_height":
-				return new DisplayHeightUnitExpression(doc);
-			case "now":
-				return new NowUnitExpression(unit, doc);
-			case "camera_location":
-				return new CameraPositionUnitExpression(doc);
-			case "camera_target":
-				return new CameraTargetUnitExpression(doc);
-			case "camera_orientation":
-				return new CameraOrientationUnitExpression(doc);
-			case "user_location":
-			case "user_location_in_world":
-				return new UserLocationUnitExpression(unit, doc);
-			case "user_location_in_display":
-				return new UserLocationInDisplayUnitExpression(doc);
-			case "current_error":
-				return new CurrentErrorUnitExpression(doc);
-
-		}
-		if (isTime) return new TimeUnitConstantExpression(val, t, unit, doc, names);
-		return new UnitConstantExpression(val, t, unit, doc, names);
-	}
-
 	/** The documentation. */
 	IGamlDocumentation documentation;
 

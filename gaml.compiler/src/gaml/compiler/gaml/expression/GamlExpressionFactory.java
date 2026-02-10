@@ -56,10 +56,9 @@ import gaml.compiler.gaml.prototypes.OperatorProto;
  * A factory for creating GamlExpression objects with optimized performance, memory management, and comprehensive
  * documentation.
  *
- * <h2>Overview</h2>
- * This factory is the central point for creating all types of GAML expressions including operators, constants,
- * variables, lists, maps, and type expressions. It implements thread-safe singleton pattern and provides extensive
- * caching for improved performance.
+ * <h2>Overview</h2> This factory is the central point for creating all types of GAML expressions including operators,
+ * constants, variables, lists, maps, and type expressions. It implements thread-safe singleton pattern and provides
+ * extensive caching for improved performance.
  *
  * <h2>Key Features</h2>
  * <ul>
@@ -73,13 +72,34 @@ import gaml.compiler.gaml.prototypes.OperatorProto;
  *
  * <h2>Cache Configuration</h2>
  * <table border="1">
- * <tr><th>Cache</th><th>Max Size</th><th>Expiration</th><th>Purpose</th></tr>
- * <tr><td>Operator Cache</td><td>1000</td><td>30 min</td><td>Operator signature mappings</td></tr>
- * <tr><td>Exact Operator Cache</td><td>10000</td><td>1 hour</td><td>Exact signature match results</td></tr>
- * <tr><td>Signature Match Cache</td><td>10000</td><td>1 hour</td><td>Signature compatibility results</td></tr>
+ * <tr>
+ * <th>Cache</th>
+ * <th>Max Size</th>
+ * <th>Expiration</th>
+ * <th>Purpose</th>
+ * </tr>
+ * <tr>
+ * <td>Operator Cache</td>
+ * <td>1000</td>
+ * <td>30 min</td>
+ * <td>Operator signature mappings</td>
+ * </tr>
+ * <tr>
+ * <td>Exact Operator Cache</td>
+ * <td>10000</td>
+ * <td>1 hour</td>
+ * <td>Exact signature match results</td>
+ * </tr>
+ * <tr>
+ * <td>Signature Match Cache</td>
+ * <td>10000</td>
+ * <td>1 hour</td>
+ * <td>Signature compatibility results</td>
+ * </tr>
  * </table>
  *
  * <h2>Usage Example</h2>
+ *
  * <pre>
  * GamlExpressionFactory factory = GamlExpressionFactory.getInstance();
  * IExpression expr = factory.createOperator("+", context, eObject, left, right);
@@ -107,7 +127,11 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 * provides consistent key format across all cache operations.
 	 */
 	private static final class CacheKeyBuilder {
+
+		/** The Constant SEPARATOR. */
 		private static final String SEPARATOR = "#";
+
+		/** The Constant NULL_TYPE. */
 		private static final String NULL_TYPE = "null";
 
 		/**
@@ -348,10 +372,66 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	@Override
 	public UnitConstantExpression createUnit(final Object value, final IType t, final String name, final String doc,
 			final String deprecated, final boolean isTime, final String[] names) {
-		final UnitConstantExpression exp = UnitConstantExpression.create(value, t, name, doc, isTime, names);
+		final UnitConstantExpression exp = createSpecialConstant(value, t, name, doc, isTime, names);
 		if (deprecated != null && !deprecated.isEmpty()) { exp.setDeprecated(deprecated); }
 		return exp;
 
+	}
+
+	/**
+	 * Creates the.
+	 *
+	 * @param val
+	 *            the val
+	 * @param t
+	 *            the t
+	 * @param unit
+	 *            the unit
+	 * @param doc
+	 *            the doc
+	 * @param isTime
+	 *            the is time
+	 * @param names
+	 *            the names
+	 * @return the unit constant expression
+	 */
+	// Already cached in IExpressionFactory.UNIT_EXPRS
+	public static UnitConstantExpression createSpecialConstant(final Object val, final IType<?> t, final String unit,
+			final String doc, final boolean isTime, final String[] names) {
+
+		switch (unit) {
+			case "zoom":
+				return new ZoomUnitExpression(unit, doc);
+			case "fullscreen":
+				return new FullScreenExpression(unit, doc);
+			case "hidpi":
+				return new HiDPIExpression(unit, doc);
+			case "pixels":
+			case "px":
+				return new PixelUnitExpression(unit, doc);
+			case "display_width":
+				return new DisplayWidthUnitExpression(doc);
+			case "display_height":
+				return new DisplayHeightUnitExpression(doc);
+			case "now":
+				return new NowUnitExpression(unit, doc);
+			case "camera_location":
+				return new CameraPositionUnitExpression(doc);
+			case "camera_target":
+				return new CameraTargetUnitExpression(doc);
+			case "camera_orientation":
+				return new CameraOrientationUnitExpression(doc);
+			case "user_location":
+			case "user_location_in_world":
+				return new UserLocationUnitExpression(unit, doc);
+			case "user_location_in_display":
+				return new UserLocationInDisplayUnitExpression(doc);
+			case "current_error":
+				return new CurrentErrorUnitExpression(doc);
+
+		}
+		if (isTime) return new TimeUnitConstantExpression(val, t, unit, doc, names);
+		return new UnitConstantExpression(val, t, unit, doc, names);
 	}
 
 	/**
@@ -658,23 +738,21 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		// Early validation - check for null or empty arguments
 		if (args == null || args.length == 0 || !GAML.OPERATORS.containsKey(op))
 			return emitError(op, context, eObject, args == null ? new IExpression[0] : args);
-		
+
 		// Validate all arguments are non-null
-		for (final IExpression exp : args) { 
-			if (exp == null) return emitError(op, context, eObject, args); 
-		}
-		
+		for (final IExpression exp : args) { if (exp == null) return emitError(op, context, eObject, args); }
+
 		// Get the possible sets of types registered in OPERATORS
 		final Map<Signature, IArtefactProto.Operator> ops = GAML.OPERATORS.get(op);
-		
+
 		// Create the signature corresponding to the arguments (only simplified signature is used)
 		Signature userSignature = Signature.createSimplified(args);
-		
+
 		// If the signature is not present in the registry, find the best match
 		if (!ops.containsKey(userSignature)) {
 			final Signature originalUserSignature = userSignature;
 			int bestDistance = Integer.MAX_VALUE;
-			
+
 			// Browse all the entries of the operators with this name to find best match
 			for (final Map.Entry<Signature, IArtefactProto.Operator> entry : ops.entrySet()) {
 				final Signature formalParametersSignature = entry.getKey();
@@ -694,7 +772,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				}
 			}
 
-			if (bestDistance == Integer.MAX_VALUE) { 
+			if (bestDistance == Integer.MAX_VALUE) {
 				// Not found - try varArg as last resort
 				final Signature varArg = Signature.varArgFrom(originalUserSignature);
 				for (final Map.Entry<Signature, IArtefactProto.Operator> entry : ops.entrySet()) {
@@ -710,9 +788,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				final IType<?> originalType = originalUserSignature.get(i);
 				final IType<?> newType = userSignature.get(i);
 				final IType<?> coercingType = findCoercingType(context, eObject, originalType, newType, args[i]);
-				if (coercingType != null) { 
-					args[i] = createAs(context, args[i], createTypeExpression(coercingType)); 
-				}
+				if (coercingType != null) { args[i] = createAs(context, args[i], createTypeExpression(coercingType)); }
 			}
 		}
 
@@ -723,7 +799,8 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			// Verify that it is not deprecated
 			final String deprecationMessage = proto.getDeprecated();
 			if (deprecationMessage != null) {
-				context.warning(proto.getName() + " is deprecated: " + deprecationMessage, IGamlIssue.DEPRECATED, eObject);
+				context.warning(proto.getName() + " is deprecated: " + deprecationMessage, IGamlIssue.DEPRECATED,
+						eObject);
 			}
 		}
 		return operator;
@@ -782,8 +859,8 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			final IExpression... args) {
 		final Map<Signature, IArtefactProto.Operator> ops = GAML.OPERATORS.get(op);
 		final Signature userSignature = new Signature(args).simplified();
-		final StringBuilder msg =
-				new StringBuilder(128).append("No operator found for applying '").append(op).append("' to ").append(userSignature);
+		final StringBuilder msg = new StringBuilder(128).append("No operator found for applying '").append(op)
+				.append("' to ").append(userSignature);
 		if (ops != null) {
 			msg.append(" (operators available for ").append(Arrays.toString(ops.keySet().toArray())).append(")");
 		}
