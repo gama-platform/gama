@@ -32,7 +32,7 @@ import gaml.compiler.gaml.descriptions.StatementWithChildrenDescription;
  * @todo Description
  *
  */
-public class StatementFactory implements ISymbolDescriptionFactory, IKeyword {
+public class StatementFactory implements ISymbolDescriptionFactory {
 
 	/** The instance. */
 	private static StatementFactory INSTANCE;

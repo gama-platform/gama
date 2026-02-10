@@ -20,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import org.eclipse.emf.common.util.URI;
@@ -71,13 +72,13 @@ public class GAML {
 
 	/** The operators. */
 	@SuppressWarnings ("unchecked") public static final Map<String, Map<Signature, IArtefactProto.Operator>> OPERATORS =
-			Collections.synchronizedMap(new HashMap<>());
+			new ConcurrentHashMap<>();
 
 	/** The iterators. */
-	public static final Set<String> ITERATORS = Collections.synchronizedSet(new HashSet<>());
+	public static final Set<String> ITERATORS = ConcurrentHashMap.newKeySet();
 
 	/** The Constant CONSTANTS. */
-	public static final Set<String> CONSTANTS = Collections.synchronizedSet(new HashSet<>());
+	public static final Set<String> CONSTANTS = ConcurrentHashMap.newKeySet();
 
 	/** The Constant ADDITIONS. */
 	public final static Multimap<Class, IDescription> ADDITIONS = Multimaps.synchronizedMultimap(HashMultimap.create());
@@ -86,7 +87,7 @@ public class GAML {
 	public final static Multimap<Class, IArtefactProto> FIELDS = Multimaps.synchronizedMultimap(HashMultimap.create());
 
 	/** The units. */
-	public static final Map<String, IExpression.Unit> UNITS = Collections.synchronizedMap(new HashMap<>());
+	public static final Map<String, IExpression.Unit> UNITS = new ConcurrentHashMap<>();
 
 	/** The Constant LISTENERS_BY_CLASS. */
 	public final static SetMultimap<Class, IGamaHelper> LISTENERS_BY_CLASS =
@@ -96,8 +97,11 @@ public class GAML {
 	public final static SetMultimap<String, Class> LISTENERS_BY_NAME =
 			Multimaps.synchronizedSetMultimap(HashMultimap.create());
 
-	/** The factories. */
-	public final static Map<Integer, ISymbolDescriptionFactory> DESCRIPTION_FACTORIES = new HashMap<>();
+	/** 
+	 * The factories map. Thread-safe map for storing symbol description factories by their kind.
+	 * Uses ConcurrentHashMap for better performance under concurrent access compared to synchronized wrapper.
+	 */
+	public final static Map<Integer, ISymbolDescriptionFactory> DESCRIPTION_FACTORIES = new ConcurrentHashMap<>();
 
 	/** The description factory. */
 	private static volatile IDescriptionFactory descriptionFactory = null;
@@ -387,17 +391,25 @@ public class GAML {
 	}
 
 	/**
-	 * Gets the all fields.
+	 * Gets the all fields for a class, including inherited fields from superclasses and interfaces.
+	 * 
+	 * <p>
+	 * This method efficiently collects all field prototypes associated with a class and its hierarchy,
+	 * avoiding duplicate lookups and minimizing object allocations.
+	 * </p>
 	 *
 	 * @param clazz
-	 *            the clazz
-	 * @return the all fields
+	 *            the class to get fields for
+	 * @return a map of field names to their prototypes
 	 */
 	public static Map<String, IArtefactProto> getAllFields(final Class clazz) {
 		final List<Class> classes = collectImplementationClasses(clazz, Collections.EMPTY_SET, FIELDS.keySet());
-		final Map<String, IArtefactProto> fieldsMap = new HashMap<>();
+		// Pre-size the map to avoid rehashing
+		final Map<String, IArtefactProto> fieldsMap = new HashMap<>(classes.size() * 4);
 		for (final Class c : classes) {
-			for (final IArtefactProto desc : FIELDS.get(c)) { fieldsMap.put(desc.getName(), desc); }
+			for (final IArtefactProto desc : FIELDS.get(c)) { 
+				fieldsMap.putIfAbsent(desc.getName(), desc); 
+			}
 		}
 		return fieldsMap;
 	}
@@ -419,13 +431,18 @@ public class GAML {
 	}
 
 	/**
+	 * Checks if the given operator name corresponds to a unary operator.
+	 * 
 	 * @param name
-	 * @return
+	 *            the operator name to check
+	 * @return true if the operator has at least one unary signature, false otherwise
 	 */
 	public static boolean isUnaryOperator(final String name) {
-		if (!OPERATORS.containsKey(name)) return false;
 		final Map<Signature, IArtefactProto.Operator> map = OPERATORS.get(name);
-		for (final Signature s : map.keySet()) { if (s.isUnary()) return true; }
+		if (map == null) return false;
+		for (final Signature s : map.keySet()) { 
+			if (s.isUnary()) return true; 
+		}
 		return false;
 	}
 
