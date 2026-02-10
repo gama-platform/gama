@@ -27,32 +27,33 @@ import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
 
 /**
- * Written by drogoul Modified on 15 d�c. 2010
+ * Utility class providing GAML casting operators and type coercion helpers. Includes operators for type checking (is,
+ * is_skill), type casting (as), specialized casting methods, and container creation (list_with, map_with,
+ * parallel_list_with).
  *
- * @todo Description
- *
+ * @author drogoul
  */
 @SuppressWarnings ({ "rawtypes" })
 public class Cast {
 
 	/**
-	 * Checks if is A.
+	 * Checks if an object is an instance of a given GAML type. For agent types, verifies species membership; for other
+	 * types, checks type assignability.
 	 *
 	 * @param scope
-	 *            the scope
-	 * @param a
-	 *            the a
-	 * @param b
-	 *            the b
-	 * @return the boolean
+	 *            the execution scope
+	 * @param object
+	 *            the object to check
+	 * @param typeExpression
+	 *            an expression denoting the type to check against
+	 * @return true if the object is an instance of the type
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if type resolution fails
 	 */
 	@operator (
 			value = { IKeyword.IS },
@@ -70,26 +71,26 @@ public class Cast {
 					@example (
 							value = "1 is float",
 							equals = "false") })
-	public static Boolean isA(final IScope scope, final Object a, final IExpression b) throws GamaRuntimeException {
-		final IType<?> type = asType(scope, b);
+	public static Boolean isA(final IScope scope, final Object object, final IExpression typeExpression)
+			throws GamaRuntimeException {
+		final IType<?> type = asType(scope, typeExpression);
 		if (type.isAgentType()) {
-			final ISpecies s = scope.getModel().getSpecies(type.getSpeciesName());
-			if (a instanceof IAgent) return ((IAgent) a).isInstanceOf(s, false);
-			return false;
+			final ISpecies species = scope.getModel().getSpecies(type.getSpeciesName());
+			return object instanceof IAgent a && a.isInstanceOf(species, false);
 		}
-		return type.isAssignableFrom(GamaType.of(a));
+		return type.isAssignableFrom(GamaType.of(object));
 	}
 
 	/**
-	 * Checks if is skill.
+	 * Checks if an agent has a specific skill.
 	 *
 	 * @param scope
-	 *            the scope
-	 * @param a
-	 *            the a
+	 *            the execution scope
+	 * @param agent
+	 *            the agent to check
 	 * @param skill
-	 *            the skill
-	 * @return the boolean
+	 *            the skill name
+	 * @return true if the agent's species implements the skill
 	 */
 	@operator (
 			value = IKeyword.IS_SKILL,
@@ -102,58 +103,53 @@ public class Cast {
 					equals = "true",
 					isExecutable = false) })
 	@test ("simulation is_skill 'moving' = false")
-	public static Boolean isSkill(final IScope scope, final Object a, final String skill) {
-		if (!(a instanceof IAgent)) return false;
-		final ISpecies s = ((IAgent) a).getSpecies();
-		return s.implementsSkill(skill);
+	public static Boolean isSkill(final IScope scope, final Object agent, final String skill) {
+		return agent instanceof IAgent a && a.getSpecies().implementsSkill(skill);
 	}
 
 	/**
-	 * As type.
+	 * Resolves an expression to a GAML type. Handles string type names, species, and type expressions.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param expr
-	 *            the expr
-	 * @return the i type
+	 *            the expression to resolve
+	 * @return the resolved GAML type
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if type resolution fails
 	 */
-	public static IType asType(final IScope scope, final IExpression expr) throws GamaRuntimeException {
+	public static IType<?> asType(final IScope scope, final IExpression expr) throws GamaRuntimeException {
 		final Object value = expr.value(scope);
-		if (value instanceof String) {
-			final IModelSpecies m = scope.getModel();
-			return m.getDescription().getTypeNamed((String) value);
-		}
-		if (value instanceof ISpecies) return ((ISpecies) value).getDescription().getGamlType();
+		if (value instanceof String s) return scope.getModel().getDescription().getTypeNamed(s);
+		if (value instanceof ISpecies is) return is.getDescription().getGamlType();
 		return expr.getGamlType();
 	}
 
 	/**
-	 * As agent.
+	 * Casts an object to an agent type.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param val
-	 *            the val
-	 * @return the i agent
+	 *            the value to cast
+	 * @return the casted agent
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if casting fails
 	 */
 	public static IAgent asAgent(final IScope scope, final Object val) throws GamaRuntimeException {
 		return (IAgent) Types.AGENT.cast(scope, val, null, false);
 	}
 
 	/**
-	 * As.
+	 * Generic type casting operator. Casts a value to the specified type.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param val
-	 *            the val
+	 *            the value to cast
 	 * @param type
-	 *            the type
-	 * @return the object
+	 *            the target GAML type
+	 * @return the casted value
 	 */
 	@operator (
 			value = IKeyword.AS,
@@ -170,76 +166,75 @@ public class Cast {
 					equals = "int(3.5)"))
 	@test ("int(4.2) = (4.2 as int)")
 	public static Object as(final IScope scope, final Object val, final IType type) {
-		// WARNING copy is set explicity to false
 		return type.cast(scope, val, null, false);
 	}
 
 	/**
+	 * Casts a value to boolean.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param val
-	 *            the val
-	 * @return the boolean
+	 *            the value to cast
+	 * @return the boolean result
 	 */
 	public static Boolean asBool(final IScope scope, final Object val) {
-		// copy not passed
 		return GamaBoolType.staticCast(scope, val, null, false);
 	}
 
 	/**
-	 * As float.
+	 * Casts a value to double (float).
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param val
-	 *            the val
-	 * @return the double
+	 *            the value to cast
+	 * @return the double result
 	 */
 	public static Double asFloat(final IScope scope, final Object val) {
 		return GamaFloatType.staticCast(scope, val, null, false);
 	}
 
 	/**
-	 * As int.
+	 * Casts a value to integer.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param val
-	 *            the val
-	 * @return the integer
+	 *            the value to cast
+	 * @return the integer result
 	 */
 	public static Integer asInt(final IScope scope, final Object val) {
 		return GamaIntegerType.staticCast(scope, val, null, false);
 	}
 
 	/**
-	 * As string.
+	 * Casts a value to string.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param val
-	 *            the val
-	 * @return the string
+	 *            the value to cast
+	 * @return the string result
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if casting fails
 	 */
 	public static String asString(final IScope scope, final Object val) throws GamaRuntimeException {
 		return GamaStringType.staticCast(scope, val, false);
 	}
 
 	/**
-	 * As int.
+	 * Parses a string as a signed integer in a specified radix.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param string
-	 *            the string
+	 *            the string to parse
 	 * @param radix
-	 *            the radix
-	 * @return the integer
+	 *            the radix (base) for parsing
+	 * @return the integer result, or 0 if string is null/empty
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if the string cannot be parsed as an integer
 	 */
 	@operator (
 			value = "as_int",
@@ -273,15 +268,15 @@ public class Cast {
 	}
 
 	/**
-	 * Parallel list with.
+	 * Creates a parallel-filled list of a given size. Useful for constant or thread-safe expressions.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param size
-	 *            the size
+	 *            the list size
 	 * @param init
-	 *            the init
-	 * @return the i list
+	 *            the initializer expression (evaluated in parallel for each position)
+	 * @return a new list filled with the expression value
 	 */
 	@operator (
 			value = "parallel_list_with",
@@ -301,17 +296,18 @@ public class Cast {
 	}
 
 	/**
-	 * List with.
+	 * Creates an iterator-based list of a given size. Each element is computed by evaluating the expression with a loop
+	 * variable (each/index).
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param eachName
-	 *            the each name
+	 *            the loop variable name
 	 * @param size
-	 *            the size
+	 *            the list size
 	 * @param fillExpr
-	 *            the fill expr
-	 * @return the i list
+	 *            the expression to evaluate for each position (may reference the loop variable)
+	 * @return a new list with the computed elements
 	 */
 	@operator (
 			value = "list_with",
@@ -334,32 +330,34 @@ public class Cast {
 		if (fillExpr == null || size <= 0) return GamaListFactory.create(Types.NO_TYPE);
 		final Object[] contents = new Object[size];
 		final IType contentType = fillExpr.getGamlType();
-		// 10/01/14. Cannot use Arrays.fill() everywhere: see Issue 778.
+
+		// Use parallel fill for constant expressions, sequential for others
 		if (fillExpr.isConst()) {
-			final Object o = fillExpr.value(scope);
-			GamaExecutorService.executeThreaded(() -> IntStream.range(0, contents.length).parallel().forEach(i -> {
-				contents[i] = o;
-			}));
+			final Object value = fillExpr.value(scope);
+			GamaExecutorService
+					.executeThreaded(() -> IntStream.range(0, size).parallel().forEach(i -> contents[i] = value));
 		} else {
-			for (int i = 0; i < contents.length; i++) {
+			for (int i = 0; i < size; i++) {
 				scope.setEach(eachName, i);
 				contents[i] = fillExpr.value(scope);
 			}
 		}
 		return GamaListFactory.create(scope, contentType, contents);
-
 	}
 
 	/**
-	 * List with.
+	 * Creates an iterator-based map of a given size. Each entry is computed by evaluating a pair expression with a loop
+	 * variable.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
+	 * @param eachName
+	 *            the loop variable name
 	 * @param size
-	 *            the size
-	 * @param init
-	 *            the init
-	 * @return the i list
+	 *            the map size
+	 * @param pairs
+	 *            the pair expression to evaluate for each position (returns key::value pairs)
+	 * @return a new map with the computed entries
 	 */
 	@operator (
 			value = "map_with",
@@ -385,19 +383,18 @@ public class Cast {
 			result.addValue(scope, pairs.value(scope));
 		}
 		return result;
-
 	}
 
 	/**
-	 * As species.
+	 * Casts a value to a species type.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param val
-	 *            the val
-	 * @return the i species
+	 *            the value to cast
+	 * @return the casted species
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if casting fails
 	 */
 	@operator (
 			value = { "species_of" },
