@@ -13,7 +13,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -38,129 +37,60 @@ import gama.api.utils.GamlProperties;
 import gama.dev.DEBUG;
 
 /**
+ * Written by drogoul Modified on 25 aout 2010
+ *
  * The superclass of all types descriptions in GAMA. Provides convenience methods, as well as some basic definitions.
  * Types allow to manipulate any Java class as a type in GAML. To be recognized by GAML, subclasses must be annotated
  * with the @type annotation (see GamlAnnotations).
  *
- * <p>Types are primarily used for conversions between values. They are also intended to support the operators specific to
+ * Types are primarily used for conversions between values. They are also intended to support the operators specific to
  * the objects they encompass (but this is not mandatory, as these operators need to be defined as static ones (and thus
- * can be defined anywhere))</p>
+ * can be defined anywhere)
  *
- * <p>Primary (simple) types also serve as the basis of parametric types (see ParametricType).</p>
+ * Primary (simple) types also serve as the basis of parametric types (see ParametricType).
  *
- * @param <Support> The Java class that this type wraps and manipulates
- * 
- * @author drogoul
- * @since 25 August 2010
- * @version 2025-03
  */
 public abstract class GamaType<Support> implements IType<Support> {
 
-	/** Debug flag for the class */
 	static {
 		DEBUG.OFF();
 	}
 
-	// Constants for pattern matching and documentation
-	/** Vowels used for article selection in pattern generation */
-	private static final String[] VOWELS = { "a", "e", "i", "o", "u", "A", "E", "I", "O", "U" };
-	
-	/** Data type prefix for title generation */
-	private static final String DATA_TYPE_PREFIX = "Data type ";
-	
-	/** Java objects wrapper description */
-	private static final String JAVA_WRAPPER_DESC = "Wraps Java objects of type ";
-	
-	/** Field access message when no fields are available */
-	private static final String NO_FIELDS_MSG = "No fields accessible";
-
-	/** Type comparison constants */
-	public static final int TYPE = 0;
-	public static final int CONTENT = 1;
-	public static final int KEY = 2;
-	public static final int DENOTED = 3;
-	public static final int PAIR_OF_TYPES = 4;
-
-	// ===========================================
-	// Instance Fields
-	// ===========================================
-
-	/** The unique identifier of this type */
+	/** The id. */
 	protected int id;
 
-	/** The name of this type */
+	/** The name. */
 	protected String name;
 
-	/** The Java class that this type supports */
+	/** The support. */
 	protected Class<Support> support;
 
-	/** The getters for field access */
-	private Map<String, IArtefactProto.Operator> getters;
+	/** The getters. */
+	Map<String, IArtefactProto.Operator> getters;
 
-	/** The parent type */
+	/** The parent. */
 	protected IType<? super Support> parent;
 
-	/** The variable kind for this type */
+	/** The parented. */
+	// protected boolean parented;
+
+	/** The var kind. */
 	protected int varKind;
 
-	/** The defining plugin name */
+	/** The plugin. */
 	protected String plugin;
 
-	/** The expression associated with this type */
-	private IExpression expression;
-
-	// ===========================================
-	// Basic Type Information Methods
-	// ===========================================
+	/** The expression. */
+	IExpression expression;
 
 	@Override
-	public String getTitle() { 
-		return DATA_TYPE_PREFIX + getName(); 
-	}
+	public String getTitle() { return "Data type " + getName(); }
 
 	@Override
-	public int getNumberOfParameters() { 
-		return 0; 
-	}
+	public int getNumberOfParameters() { return 0; }
 
 	@Override
-	public String getDefiningPlugin() { 
-		return plugin; 
-	}
-
-	@Override
-	public String getName() { 
-		return name; 
-	}
-
-	@Override
-	public void setName(final String name) {
-		// Name is immutable for types
-	}
-
-	@Override
-	public int getVarKind() { 
-		return varKind; 
-	}
-
-	@Override
-	public int id() {
-		return id;
-	}
-
-	@Override
-	public Class<? extends Support> toClass() {
-		return support;
-	}
-
-	@Override
-	public String serializeToGaml(final boolean includingBuiltIn) {
-		return name;
-	}
-
-	// ===========================================
-	// Documentation Methods
-	// ===========================================
+	public String getDefiningPlugin() { return plugin; }
 
 	@Override
 	public IGamlDocumentation getDocumentation() {
@@ -173,7 +103,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 				if (docs != null && docs.length > 0) { documentation = docs[0]; }
 			}
 		}
-		result.append("<i>").append(JAVA_WRAPPER_DESC).append(getSupportName()).append("</i>");
+		result.append("<i>").append("Wraps Java objects of type ").append(getSupportName()).append("</i>");
 		if (documentation != null) { result.append("<p>").append(documentation.value()).append("</p>"); }
 
 		documentFields(result);
@@ -184,7 +114,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	@Override
 	public void documentFields(final IGamlDocumentation result) {
 		if (getters != null) {
-			if (getters.isEmpty()) { result.append("<p>").append(NO_FIELDS_MSG).append("</p>"); }
+			if (getters.isEmpty()) { result.append("<p>").append("No fields accessible").append("</p>"); }
 			// sb.append("<b><br/>Fields :</b><ul>");
 			for (final IArtefactProto.Operator f : getters.values()) { getFieldDocumentation(result, f); }
 
@@ -222,9 +152,18 @@ public abstract class GamaType<Support> implements IType<Support> {
 		}
 	}
 
-	// ===========================================
-	// Type Initialization and Configuration
-	// ===========================================
+	@Override
+	public String getName() { return name; }
+
+	@Override
+	public void setName(final String name) {
+		// Nothing
+	}
+
+	@Override
+	public String serializeToGaml(final boolean includingBuiltIn) {
+		return name;
+	}
 
 	@SuppressWarnings ("unchecked")
 	@Override
@@ -242,30 +181,29 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	@Override
+	public int getVarKind() { return varKind; }
+
+	@Override
 	public void setParent(final IType<? super Support> p) { parent = p; }
 
 	@Override
 	public IType<? super Support> getParent() { return parent; }
 
 	/**
-	 * Sets the field getters for this type. Field getters allow access to specific
-	 * properties of instances of this type.
+	 * Sets the field getters.
 	 *
-	 * @param map the map containing field name to getter prototype mappings
+	 * @param map
+	 *            the map
 	 */
 	@Override
 	public void setFieldGetters(final Map<String, IArtefactProto.Operator> map) {
 		map.replaceAll((final String key, final IArtefactProto.Operator each) -> each.copyWithSignature(this));
+
 		getters = map;
 		// AD 20/09/13 Added the initialization of the type containing the fields
+
 	}
 
-	/**
-	 * Gets the getter for a specific field.
-	 *
-	 * @param field the field name to get the getter for
-	 * @return the artifact prototype for accessing the field, or null if not found
-	 */
 	@Override
 	public IArtefactProto getGetter(final String field) {
 		if (getters == null) return null;
@@ -273,14 +211,9 @@ public abstract class GamaType<Support> implements IType<Support> {
 		return result;
 	}
 
-	/**
-	 * Gets all field getters for this type.
-	 *
-	 * @return an immutable map of field name to getter mappings; empty map if no getters are defined
-	 */
 	@Override
 	public Map<String, IArtefactProto.Operator> getFieldGetters() {
-		return getters == null ? Collections.<String, IArtefactProto.Operator>emptyMap() : getters;
+		return getters == null ? Collections.EMPTY_MAP : getters;
 	}
 
 	@Override
@@ -294,9 +227,10 @@ public abstract class GamaType<Support> implements IType<Support> {
 		return cast(scope, obj, param, copy);
 	}
 
-	// ===========================================
-	// Object Lifecycle Methods
-	// ===========================================
+	@Override
+	public int id() {
+		return id;
+	}
 
 	@Override
 	public int hashCode() {
@@ -314,80 +248,44 @@ public abstract class GamaType<Support> implements IType<Support> {
 		return name;
 	}
 
-	/**
-	 * Returns a pattern representation of this type name for use in documentation.
-	 * Uses proper article (a/an) based on whether the type name starts with a vowel.
-	 *
-	 * @return a pattern string in the format "${a_typename}" or "${an_typename}"
-	 */
 	@Override
 	public String asPattern() {
-		final boolean vowel = StringUtils.startsWithAny(name, VOWELS);
+		final boolean vowel = StringUtils.startsWithAny(name, vowels);
 		return "${" + (vowel ? "an_" : "a_") + name + "}";
 	}
 
-	/**
-	 * Tests whether this type represents an agent type.
-	 * 
-	 * @return false by default; subclasses may override for agent types
-	 */
+	@Override
+	public Class<? extends Support> toClass() {
+		return support;
+	}
+
 	@Override
 	public boolean isAgentType() { return false; }
 
-	/**
-	 * Tests whether this type represents a skill type.
-	 * 
-	 * @return false by default; subclasses may override for skill types
-	 */
 	@Override
 	public boolean isSkillType() { return false; }
 
-	/**
-	 * Gets the content type for container types.
-	 * 
-	 * @return NO_TYPE by default; container types should override this
-	 */
 	@Override
 	public IType<?> getContentType() { return Types.NO_TYPE; }
 
-	/**
-	 * Gets the key type for container types.
-	 * 
-	 * @return NO_TYPE by default; container types should override this
-	 */
 	@Override
 	public IType<?> getKeyType() { return Types.NO_TYPE; }
 
-	/**
-	 * Gets the species name for species types.
-	 * 
-	 * @return null by default; species types should override this
-	 */
 	@Override
 	public String getSpeciesName() { return null; }
 
-	/**
-	 * Gets the species description for species types.
-	 * 
-	 * @return null by default; species types should override this
-	 */
 	@Override
 	public ISpeciesDescription getSpecies() { return null; }
 
-	/**
-	 * Gets the denoted species description.
-	 * 
-	 * @return the result of getSpecies() by default
-	 */
 	@Override
 	public ISpeciesDescription getDenotedSpecies() { return getSpecies(); }
 
 	/**
-	 * Checks if this type is a supertype of the specified type.
-	 * Traverses the type hierarchy to determine inheritance relationships.
+	 * Checks if is super type of.
 	 *
-	 * @param type the type to check
-	 * @return true if this type is a supertype of the given type
+	 * @param type
+	 *            the type
+	 * @return true, if is super type of
 	 */
 	protected boolean isSuperTypeOf(final IType<?> type) {
 		if (type == null) return false;
@@ -399,94 +297,43 @@ public abstract class GamaType<Support> implements IType<Support> {
 		return false;
 	}
 
-	/**
-	 * Tests whether values of the specified type can be assigned to variables of this type.
-	 * This includes direct equality and subtype relationships.
-	 *
-	 * @param t the type to test assignability from
-	 * @return true if this type can accept values of the specified type
-	 */
 	@Override
 	public boolean isAssignableFrom(final IType<?> t) {
 		return this == t || isSuperTypeOf(t);
 	}
 
-	/**
-	 * Tests whether values of this type can be translated into the specified type.
-	 * This is the inverse of isAssignableFrom.
-	 *
-	 * @param t the target type for translation
-	 * @return true if this type can be translated into the target type
-	 */
 	@Override
 	public boolean isTranslatableInto(final IType<?> t) {
 		return t.isAssignableFrom(this);
 	}
 
-	/**
-	 * Tests whether the specified object can be considered an instance of this type.
-	 * This performs runtime type checking based on the Java class hierarchy.
-	 *
-	 * @param scope the scope for context (may be needed for dynamic typing)
-	 * @param c the object to test
-	 * @return true if the object can be typed as this type
-	 */
 	@Override
 	public boolean canBeTypeOf(final IScope scope, final Object c) {
 		if (c == null) return acceptNullInstances();
 		return support.isAssignableFrom(c.getClass());
 	}
 
-	/**
-	 * Tests whether this is a parametric type (e.g., List&lt;String&gt;).
-	 *
-	 * @return false by default; parametric types should override this
-	 */
 	@Override
 	public boolean isParametricType() { return false; }
 
-	/**
-	 * Tests whether this type is a parametric form of the specified type.
-	 *
-	 * @param l the type to compare against
-	 * @return false by default; parametric types should override this
-	 */
 	@Override
 	public boolean isParametricFormOf(final IType<?> l) {
 		return false;
 	}
 
 	/**
-	 * Tests whether this type accepts null instances.
-	 * Types that have a null default value typically accept null instances.
-	 * 
 	 * @return true if this type can have nil as an instance
 	 */
 	protected boolean acceptNullInstances() {
 		return getDefault() == null;
 	}
 
-	/**
-	 * Attempts to coerce an expression's type to be compatible with this type.
-	 * This method allows types to perform custom type coercion logic.
-	 *
-	 * @param expr the expression type to potentially coerce
-	 * @param context the description context for the operation
-	 * @return the coerced type, or null if no coercion is needed
-	 */
 	@Override
 	public IType<?> coerce(final IType<?> expr, final IDescription context) {
 		// Nothing to do in the general case : we rely on Java polymorphism.
 		return null;
 	}
 
-	/**
-	 * Calculates the inheritance distance between this type and another type.
-	 * Used for method resolution and type compatibility checking.
-	 *
-	 * @param type the target type to measure distance to
-	 * @return the inheritance distance (0 for same type, Integer.MAX_VALUE for incompatible types)
-	 */
 	@Override
 	public int distanceTo(final IType<?> type) {
 		if (type == this) return 0;
@@ -495,13 +342,6 @@ public abstract class GamaType<Support> implements IType<Support> {
 		return 1 + getParent().distanceTo(type);
 	}
 
-	/**
-	 * Finds the most specific common supertype between this type and another type.
-	 * This is crucial for type inference in expressions with mixed types.
-	 *
-	 * @param type the other type to find common supertype with
-	 * @return the most specific common supertype
-	 */
 	@SuppressWarnings ({ "rawtypes", "unchecked" })
 	@Override
 	public IType<? super Support> findCommonSupertypeWith(final IType<?> type) {
@@ -512,40 +352,27 @@ public abstract class GamaType<Support> implements IType<Support> {
 		return getParent().findCommonSupertypeWith(type.getParent());
 	}
 
-	/**
-	 * Tests whether this type represents a container.
-	 *
-	 * @return false by default; container types should override this
-	 */
 	@Override
 	public boolean isContainer() { return false; }
 
-	/**
-	 * Tests whether this type represents a numeric type.
-	 *
-	 * @return false by default; numeric types should override this
-	 */
 	@Override
 	public boolean isNumber() { return false; }
 
-	/**
-	 * Tests whether this type has a fixed length.
-	 * Fixed length types have a predetermined size that cannot change.
-	 *
-	 * @return true by default; variable-length types should override this
-	 */
 	@Override
 	public boolean isFixedLength() { return true; }
 
 	/**
-	 * Converts the given value to the specified type, performing type casting if necessary.
-	 * This is a utility method that handles null type checks and delegation to proper casting.
+	 * To type.
 	 *
-	 * @param scope the scope for the operation
-	 * @param value the value to convert
-	 * @param type the target type
-	 * @param copy whether to create a copy during conversion
-	 * @return the converted object, or the original value if no conversion is needed
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 * @param type
+	 *            the type
+	 * @param copy
+	 *            the copy
+	 * @return the object
 	 */
 	public static Object toType(final IScope scope, final Object value, final IType<?> type, final boolean copy) {
 		if (type == null || type.id() == IType.NONE) return value;
@@ -553,20 +380,22 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	/**
-	 * Determines the key type when casting, used by expression type inference.
+	 * Key type if casting.
 	 *
-	 * @param exp the expression being processed
-	 * @return the appropriate key type for this type
+	 * @param exp
+	 *            the exp
+	 * @return the i type
 	 */
 	public IType<?> keyTypeIfCasting(final IExpression exp) {
 		return getKeyType();
 	}
 
 	/**
-	 * Determines the content type when casting, used by expression type inference.
+	 * Contents type if casting.
 	 *
-	 * @param exp the expression being processed
-	 * @return the appropriate content type for this type
+	 * @param exp
+	 *            the exp
+	 * @return the i type
 	 */
 	public IType<?> contentsTypeIfCasting(final IExpression exp) {
 		return getContentType();
@@ -581,23 +410,26 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	/**
-	 * Creates a type from a species description.
+	 * From.
 	 *
-	 * @param species the species description
-	 * @return a species type with the appropriate content type
+	 * @param species
+	 *            the species
+	 * @return the i type
 	 */
 	public static IType<?> from(final ITypeDescription species) {
 		return from(Types.SPECIES, Types.INT, species.getGamlType());
 	}
 
 	/**
-	 * Creates a parametric container type with the specified key and content types.
-	 * If both types are null or NO_TYPE, returns the original container type.
+	 * From.
 	 *
-	 * @param t the base container type
-	 * @param keyType the desired key type
-	 * @param contentType the desired content type
-	 * @return a parametric container type with the specified type parameters
+	 * @param t
+	 *            the t
+	 * @param keyType
+	 *            the key type
+	 * @param contentType
+	 *            the content type
+	 * @return the i container type
 	 */
 	public static IContainerType<?> from(final IContainerType<IContainer<?, ?>> t, final IType<?> keyType,
 			final IType<?> contentType) {
@@ -609,14 +441,29 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	/**
-	 * Creates a type from a base type with specified key and content types.
-	 * For container types, creates a parametric type. For non-container types,
-	 * returns the original type if it's already compatible.
+	 * From.
 	 *
-	 * @param t the base type
-	 * @param keyType the desired key type
-	 * @param contentType the desired content type
-	 * @return a type with the specified type parameters, or the original type if not applicable
+	 * @param t
+	 *            the t
+	 * @param keyType
+	 *            the key type
+	 * @param contentType
+	 *            the content type
+	 * @return the i type
+	 */
+
+	/**
+	 * From.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @param t
+	 *            the t
+	 * @param keyType
+	 *            the key type
+	 * @param contentType
+	 *            the content type
+	 * @return the i type
+	 * @date 27 déc. 2023
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	public static IType<?> from(final IType<?> t, final IType<?> keyType, final IType<?> contentType) {
@@ -630,13 +477,29 @@ public abstract class GamaType<Support> implements IType<Support> {
 		return t;
 	}
 
+	/** The Constant TYPE. */
+	public static final int TYPE = 0;
+
+	/** The Constant CONTENT. */
+	public static final int CONTENT = 1;
+
+	/** The Constant KEY. */
+	public static final int KEY = 2;
+
+	/** The Constant DENOTED. */
+	public static final int DENOTED = 3;
+
+	/** The Constant PAIR_OF_TYPES. */
+	public static final int PAIR_OF_TYPES = 4;
+
 	/**
-	 * Finds the most specific common type among the given expressions based on the specified kind.
-	 * This is essential for type inference in complex expressions.
+	 * Find common type.
 	 *
-	 * @param elements the array of expressions to analyze
-	 * @param kind the kind of type to compare (TYPE, CONTENT, KEY)
-	 * @return the most specific common type among all expressions
+	 * @param elements
+	 *            the elements
+	 * @param kind
+	 *            the kind
+	 * @return the i type
 	 */
 	public static IType<?> findCommonType(final IExpression[] elements, final int kind) {
 		final IType<?> result = Types.NO_TYPE;
@@ -652,22 +515,22 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	/**
-	 * Finds the most specific common type among the given expressions.
-	 * This is a convenience method for finding common types without specifying kind.
+	 * Find common type.
 	 *
-	 * @param elements the expressions to analyze
-	 * @return the most specific common type among all expressions
+	 * @param elements
+	 *            the elements
+	 * @return the i type
 	 */
 	public static IType<?> findCommonType(final IExpression... elements) {
 		return findCommonType(elements, TYPE);
 	}
 
 	/**
-	 * Finds the most specific common type among the given type array.
-	 * Uses inheritance relationships to determine the best common supertype.
+	 * Find common type.
 	 *
-	 * @param types the array of types to compare
-	 * @return the most specific common type among all types
+	 * @param types
+	 *            the types
+	 * @return the i type
 	 */
 	public static IType<?> findCommonType(final IType<?>... types) {
 		IType<?> result = Types.NO_TYPE;
@@ -688,11 +551,10 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	/**
-	 * Returns the GAMA type corresponding to the given object.
-	 * This method performs runtime type introspection to determine the appropriate type.
+	 * Return the type of the object passed in parameter
 	 *
-	 * @param obj the object to get the type for
-	 * @return the GAMA type corresponding to the object
+	 * @param obj
+	 * @return
 	 */
 	public static IType<?> of(final Object obj) {
 		if (obj instanceof IValue) return ((IValue) obj).getGamlType();
@@ -702,12 +564,11 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	/**
-	 * Returns the actual runtime type of an object, considering dynamic typing.
-	 * This method is more comprehensive than {@link #of(Object)} as it considers runtime context.
+	 * Actual type of.
 	 *
-	 * @param scope the scope for runtime context
-	 * @param obj the object to analyze
-	 * @return the actual runtime type of the object
+	 * @param obj
+	 *            the obj
+	 * @return the i type
 	 */
 	public static IType<?> actualTypeOf(final IScope scope, final Object obj) {
 		if (obj instanceof IValue v) return v.computeRuntimeType(scope);
@@ -715,24 +576,20 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	/**
-	 * Determines the most specific type between a casting type and an original type.
-	 * Used in type inference to choose the best type when casting is involved.
-	 *
-	 * @param castingType the target casting type
-	 * @param originalType the original type of the expression
-	 * @return the more specific type to use
+	 * @return
 	 */
 	public static IType<?> findSpecificType(final IType<?> castingType, final IType<?> originalType) {
 		return requiresCasting(castingType, originalType) ? castingType : originalType;
 	}
 
 	/**
-	 * Tests whether casting is required from the original type to the casting type.
-	 * This determines if explicit type conversion is needed.
+	 * Requires casting.
 	 *
-	 * @param castingType the target casting type
-	 * @param originalType the original type
-	 * @return true if casting is required, false otherwise
+	 * @param castingType
+	 *            the casting type
+	 * @param originalType
+	 *            the original type
+	 * @return true, if successful
 	 */
 	public static boolean requiresCasting(final IType<?> castingType, final IType<?> originalType) {
 		if (castingType == null || castingType == Types.NO_TYPE || castingType.isAssignableFrom(originalType))

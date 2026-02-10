@@ -14,7 +14,7 @@ import java.lang.annotation.RetentionPolicy;
  * @since 2 juin 2012
  *
  */
-@Retention (RetentionPolicy.RUNTIME)
+@Retention (RetentionPolicy.CLASS)
 public @interface vars {
 
 	/**

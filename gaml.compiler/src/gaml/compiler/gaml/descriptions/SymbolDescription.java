@@ -15,9 +15,7 @@ import static gama.api.constants.IKeyword.ORIGIN;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.StreamSupport;
@@ -78,7 +76,7 @@ public abstract class SymbolDescription implements IDescription {
 	private final EnumSet<Flag> state = EnumSet.noneOf(Flag.class);
 
 	/** The facets associated with this symbol. */
-	protected Facets facets;
+	private Facets facets;
 
 	/** The underlying EMF object from the parser. */
 	protected final EObject element;
@@ -103,9 +101,6 @@ public abstract class SymbolDescription implements IDescription {
 
 	/** The prototype information for this symbol type. */
 	final SymbolProto proto;
-
-	/** Cache for compiled type to avoid recomputation. */
-	private volatile boolean typeComputed = false;
 
 	/**
 	 * Creates a new symbol description.
@@ -190,15 +185,24 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Checks if this description has facets that are not in the given set. Optimized with early return and cleaner
-	 * logic.
+	 * Checks if this description has any facets.
+	 *
+	 * @return true if the description has facets, false otherwise
+	 */
+	protected boolean hasFacets() {
+		return facets != null;
+	}
+
+	/**
+	 * Checks if this description has facets that are not in the given set.
 	 *
 	 * @param others
 	 *            a set of facet names
 	 * @return true if the description has facets not included in the set, false otherwise
 	 */
 	protected boolean hasFacetsNotIn(final Set<String> others) {
-		return facets != null && !visitFacets((facetName, exp) -> others.contains(facetName));
+		if (facets == null) return false;
+		return !visitFacets((facetName, exp) -> others.contains(facetName));
 	}
 
 	/**
@@ -218,7 +222,7 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the expression description for the specified facet. Optimized with early null check.
+	 * Gets the expression description for the specified facet.
 	 *
 	 * @param string
 	 *            the facet name
@@ -226,11 +230,11 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public IExpressionDescription getFacet(final String string) {
-		return facets == null ? null : facets.get(string);
+		return !hasFacets() ? null : facets.get(string);
 	}
 
 	/**
-	 * Gets the compiled expression for the first matching facet name. Optimized with early null check.
+	 * Gets the compiled expression for the first matching facet name.
 	 *
 	 * @param strings
 	 *            one or more facet names to check
@@ -238,11 +242,11 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public IExpression getFacetExpr(final String... strings) {
-		return facets == null ? null : facets.getExpr(strings);
+		return !hasFacets() ? null : facets.getExpr(strings);
 	}
 
 	/**
-	 * Gets the expression description for the first matching facet name. Optimized with early null check.
+	 * Gets the expression description for the first matching facet name.
 	 *
 	 * @param strings
 	 *            one or more facet names to check
@@ -250,11 +254,11 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public IExpressionDescription getFacet(final String... strings) {
-		return facets == null ? null : facets.getDescr(strings);
+		return !hasFacets() ? null : facets.getDescr(strings);
 	}
 
 	/**
-	 * Checks if a specific facet exists in this description. Optimized with early null check.
+	 * Checks if a specific facet exists in this description.
 	 *
 	 * @param string
 	 *            the facet name to check
@@ -262,11 +266,11 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public boolean hasFacet(final String string) {
-		return facets != null && facets.containsKey(string);
+		return hasFacets() && facets.containsKey(string);
 	}
 
 	/**
-	 * Gets the literal value of a facet. Optimized with early null check.
+	 * Gets the literal value of a facet.
 	 *
 	 * @param string
 	 *            the facet name
@@ -274,11 +278,11 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public String getLitteral(final String string) {
-		return facets == null ? null : facets.getLabel(string);
+		return !hasFacets() ? null : facets.getLabel(string);
 	}
 
 	/**
-	 * Sets a facet with the given expression description. Optimized with lazy facets initialization.
+	 * Sets a facet with the given expression description.
 	 *
 	 * @param name
 	 *            the facet name
@@ -287,12 +291,12 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public void setFacetExprDescription(final String name, final IExpressionDescription desc) {
-		if (facets == null) { facets = new Facets(); }
+		if (!hasFacets()) { facets = new Facets(); }
 		facets.put(name, desc);
 	}
 
 	/**
-	 * Sets a facet with a pre-compiled expression. Optimized with lazy facets initialization.
+	 * Sets a facet with a pre-compiled expression.
 	 *
 	 * @param string
 	 *            the facet name
@@ -301,26 +305,25 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public void setFacet(final String string, final IExpression exp) {
-		if (facets == null) { facets = new Facets(); }
+		if (!hasFacets()) { facets = new Facets(); }
 		facets.putExpression(string, exp);
 	}
 
 	/**
-	 * Removes the specified facets from this description. Optimized with early return and null cleanup.
+	 * Removes the specified facets from this description.
 	 *
 	 * @param strings
 	 *            the facet names to remove
 	 */
 	@Override
 	public void removeFacets(final String... strings) {
-		if (facets == null) return;
+		if (!hasFacets()) return;
 		for (final String s : strings) { facets.remove(s); }
 		if (facets.isEmpty()) { facets = null; }
 	}
 
 	/**
-	 * Visits the facets in the specified set, applying the visitor to each. Optimized with early return for null
-	 * facets.
+	 * Visits the facets in the specified set, applying the visitor to each.
 	 *
 	 * @param names
 	 *            the set of facet names to visit
@@ -330,11 +333,12 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public final boolean visitFacets(final Set<String> names, final IFacetVisitor visitor) {
-		return facets == null || facets.forEachFacetIn(names, visitor);
+		if (!hasFacets()) return true;
+		return facets.forEachFacetIn(names, visitor);
 	}
 
 	/**
-	 * Visits all facets in this description, applying the visitor to each. Optimized with early return for null facets.
+	 * Visits all facets in this description, applying the visitor to each.
 	 *
 	 * @param visitor
 	 *            the visitor to apply
@@ -342,22 +346,24 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public final boolean visitFacets(final IFacetVisitor visitor) {
-		return facets == null || facets.forEachFacet(visitor);
+		if (!hasFacets()) return true;
+		return facets.forEachFacet(visitor);
 	}
 
 	/**
-	 * Gets the type denoted by the first matching facet name. Optimized with early return for null facets.
+	 * Gets the type denoted by the first matching facet name.
 	 *
 	 * @param s
 	 *            one or more facet names to check
 	 * @return the type denoted by the first matching facet, or NO_TYPE if none match
 	 */
 	public IType<?> getTypeDenotedByFacet(final String... s) {
-		return facets == null ? Types.NO_TYPE : getTypeDenotedByFacet(facets.getFirstExistingAmong(s), Types.NO_TYPE);
+		if (!hasFacets()) return Types.NO_TYPE;
+		return getTypeDenotedByFacet(facets.getFirstExistingAmong(s), Types.NO_TYPE);
 	}
 
 	/**
-	 * Returns the first facet name found among the specified names. Optimized with early return for null facets.
+	 * Returns the first facet name found among the specified names.
 	 *
 	 * @param strings
 	 *            the facet names to check
@@ -365,12 +371,12 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public String firstFacetFoundAmong(final String... strings) {
-		return facets == null ? null : facets.getFirstExistingAmong(strings);
+		if (!hasFacets()) return null;
+		return facets.getFirstExistingAmong(strings);
 	}
 
 	/**
-	 * Gets the type denoted by a specific facet, with a default type if not found. Optimized with early return for null
-	 * facets.
+	 * Gets the type denoted by a specific facet, with a default type if not found.
 	 *
 	 * @param s
 	 *            the facet name
@@ -379,15 +385,16 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return the type denoted by the facet, or the default type
 	 */
 	public IType<?> getTypeDenotedByFacet(final String s, final IType<?> defaultType) {
-		return facets == null ? defaultType : facets.getTypeDenotedBy(s, this, defaultType);
+		if (!hasFacets()) return defaultType;
+		return facets.getTypeDenotedBy(s, this, defaultType);
 	}
 
 	/**
-	 * Creates a clean copy of the facets. Optimized with early return for null facets.
+	 * Creates a clean copy of the facets.
 	 *
 	 * @return a copy of the facets, or null if there are no facets
 	 */
-	public Facets getFacetsCopy() { return facets == null ? null : facets.cleanCopy(); }
+	public Facets getFacetsCopy() { return !hasFacets() ? null : facets.cleanCopy(); }
 
 	/**
 	 * Creates a serializer for this symbol description.
@@ -431,13 +438,11 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * Compiles all facets that can provide type information. This ensures type provider facets are compiled before they
-	 * are needed. Optimized to use Set lookups for better performance.
+	 * are needed.
 	 */
 	protected void compileTypeProviderFacets() {
 		visitFacets((facetName, exp) -> {
-			if (staticTypeProvidersSet.contains(facetName) || dynamicTypeProvidersSet.contains(facetName)) {
-				exp.compile(SymbolDescription.this);
-			}
+			if (typeProviderFacets.contains(facetName)) { exp.compile(SymbolDescription.this); }
 			return true;
 		});
 	}
@@ -719,18 +724,15 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Cleans up resources used by this description. Recursively disposes of children first. Optimized with consistent
-	 * null checking.
+	 * Cleans up resources used by this description. Recursively disposes of children first.
 	 */
 	@Override
 	public void dispose() {
 		// DEBUG.LOG("Disposing " + getKeyword() + " " + getName());
 		if (isBuiltIn()) return;
 		visitOwnChildren(DISPOSING_VISITOR);
-		if (facets != null) {
-			facets.dispose();
-			facets = null;
-		}
+		if (hasFacets()) { facets.dispose(); }
+		facets = null;
 		enclosingDescription = null;
 		modelDescription = null;
 		setType(null);
@@ -965,37 +967,21 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Gets the GAML type of this symbol. Computes it if not already set. Optimized with thread-safe caching to avoid
-	 * recomputation.
+	 * Gets the GAML type of this symbol. Computes it if not already set.
 	 *
 	 * @return the GAML type
 	 */
 	@Override
 	public IType<?> getGamlType() {
-		if (!typeComputed) {
-			synchronized (this) {
-				if (!typeComputed) {
-					setType(computeType());
-					typeComputed = true;
-				}
-			}
-		}
+		if (type == null) { setType(computeType()); }
 		return type;
 	}
 
-	/** Facets that can provide static type information. Optimized as Set for faster lookups. */
-	static final Set<String> staticTypeProvidersSet = Collections.unmodifiableSet(
-			new HashSet<>(Arrays.asList(IKeyword.DATA, IKeyword.TYPE, IKeyword.SPECIES, IKeyword.AS, IKeyword.TARGET)));
-
-	/** Facets that can provide static type information - kept as array for compatibility. */
+	/** Facets that can provide static type information. */
 	static final String[] staticTypeProviders =
 			{ IKeyword.DATA, IKeyword.TYPE, IKeyword.SPECIES, IKeyword.AS, IKeyword.TARGET /* , ON */ };
 
-	/** Facets that can provide dynamic type information. Optimized as Set for faster lookups. */
-	static final Set<String> dynamicTypeProvidersSet = Collections.unmodifiableSet(new HashSet<>(
-			Arrays.asList(IKeyword.INIT, IKeyword.VALUE, IKeyword.UPDATE, IKeyword.FUNCTION, IKeyword.DEFAULT)));
-
-	/** Facets that can provide dynamic type information - kept as array for compatibility. */
+	/** Facets that can provide dynamic type information. */
 	static final String[] dynamicTypeProviders =
 			{ IKeyword.INIT, IKeyword.VALUE, IKeyword.UPDATE, IKeyword.FUNCTION, IKeyword.DEFAULT };
 
@@ -1010,33 +996,23 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Computes the type of this symbol with control over type inference. Optimized for better performance with early
-	 * returns and cached type provider compilation.
+	 * Computes the type of this symbol with control over type inference.
 	 *
 	 * @param doTypeInference
 	 *            whether to attempt type inference from facets
 	 * @return the computed type
 	 */
 	protected IType<?> computeType(final boolean doTypeInference) {
-		// Early compilation of type provider facets for better performance
-		if (!isBuiltIn() && facets != null) { compileTypeProviderFacets(); }
-
 		// Get type information from facets
 		IType<?> tt = getTypeDenotedByFacet(staticTypeProviders);
-
-		// Early return for non-container types when type inference is disabled
-		if (!doTypeInference && !tt.isContainer()) return tt;
-
 		IType<?> kt = getTypeDenotedByFacet(IKeyword.INDEX, tt.getKeyType());
 		IType<?> ct = getTypeDenotedByFacet(IKeyword.OF, tt.getContentType());
-
 		return doTypeInference ? inferTypesOf(tt, kt, ct) : GamaType.from(tt, kt, ct);
 	}
 
 	/**
 	 * Infers types from facets when they are not explicitly defined. This method attempts to determine the type, key
-	 * type, and content type by examining expressions in the facets. Optimized with early returns and better type
-	 * checking logic.
+	 * type, and content type by examining expressions in the facets.
 	 *
 	 * @param tt
 	 *            the initial type
@@ -1049,26 +1025,24 @@ public abstract class SymbolDescription implements IDescription {
 	protected IType<?> inferTypesOf(IType<?> tt, IType<?> kt, IType<?> ct) {
 		// If the initial type is NO_TYPE, try to find it in dynamic type providers
 		if (tt == Types.NO_TYPE) { tt = findInDynamicTypeProviders(tt); }
-
-		// Early return if the type is not a container
+		// If the type is not a container, return it as is
 		if (!tt.isContainer()) return tt;
-
-		// Only infer container types if needed
+		// If the content type or key type is NO_TYPE, try to infer them
 		if (ct == Types.NO_TYPE || kt == Types.NO_TYPE) {
 			IExpressionDescription ed = getFacet(dynamicTypeProviders);
 			if (ed != null) {
 				IExpression expr = ed.compile(this);
-				if (expr != null) {
-					IType<?> exprType = expr.getGamlType();
-					// If the initial type is assignable from the expression type, use the expression type
-					if (tt.isAssignableFrom(exprType)) return exprType; // Early return with the better type
+				IType<?> exprType = expr == null ? Types.NO_TYPE : expr.getGamlType();
+				// If the initial type is assignable from the expression type, use the expression type
+				if (tt.isAssignableFrom(exprType)) {
+					tt = exprType;
+				} else {
 					// Otherwise, infer the key type and content type from the expression type
 					if (kt == Types.NO_TYPE) { kt = exprType.getKeyType(); }
 					if (ct == Types.NO_TYPE) { ct = exprType.getContentType(); }
 				}
 			}
 		}
-
 		// Return the combined type
 		return GamaType.from(tt, kt, ct);
 	}
@@ -1555,7 +1529,6 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * Gets all facets for this description. Note: When possible, prefer using visitFacets() for better performance.
-	 * Optimized to return NULL constant instead of creating new objects.
 	 *
 	 * @return the facets, or NULL if none exist
 	 */
@@ -1604,15 +1577,12 @@ public abstract class SymbolDescription implements IDescription {
 	public void replaceChildrenWith(final Iterable<IDescription> array) {}
 
 	/**
-	 * Sets the type of this symbol and updates the cache flag.
+	 * Sets the type of this symbol.
 	 *
 	 * @param type
 	 *            the new type
 	 */
-	private void setType(final IType<?> type) {
-		this.type = type;
-		this.typeComputed = type != null;
-	}
+	private void setType(final IType<?> type) { this.type = type; }
 
 	/**
 	 * Checks if this description represents an action invocation (e.g., a "do" statement). Default implementation

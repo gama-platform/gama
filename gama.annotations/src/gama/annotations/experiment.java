@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 /**
  * The Interface experiment.
  */
-@Retention (RetentionPolicy.RUNTIME)
+@Retention (RetentionPolicy.CLASS)
 @Target (ElementType.TYPE)
 @Inherited
 public @interface experiment {

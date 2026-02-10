@@ -16,7 +16,7 @@ import gama.annotations.support.ITypeProvider;
  * Used to annotate methods that can be used as operators in GAML.
  *
  */
-@Retention (RetentionPolicy.RUNTIME)
+@Retention (RetentionPolicy.CLASS)
 @Target ({ ElementType.METHOD, ElementType.TYPE })
 public @interface operator {
 
