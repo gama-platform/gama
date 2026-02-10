@@ -59,11 +59,113 @@ import gaml.compiler.gaml.expression.SkillConstantExpression;
 import gaml.compiler.gaml.expression.SpeciesConstantExpression;
 
 /**
- * The Class SpeciesDescription.
- */
-
-/**
- * The Class SpeciesDescription.
+ * Describes agent type definitions (species) in GAML models.
+ * 
+ * <p>SpeciesDescription extends {@link TypeDescription} to provide comprehensive representation
+ * of agent types including their attributes, actions, behaviors (reflexes, rules), aspects
+ * (visual representations), and hierarchical relationships (micro-species).</p>
+ * 
+ * <p><strong>Key Concepts:</strong></p>
+ * <ul>
+ *   <li><strong>Species:</strong> Agent type definition with state (attributes) and behavior (actions/reflexes)</li>
+ *   <li><strong>Skills:</strong> Reusable behavior modules attached to species (e.g., moving, communicating)</li>
+ *   <li><strong>Control Architecture:</strong> Behavioral control system (reflex, FSM, BDI, task-based)</li>
+ *   <li><strong>Micro-species:</strong> Species nested within other species for hierarchical modeling</li>
+ *   <li><strong>Grid:</strong> Specialized species with fixed spatial organization</li>
+ * </ul>
+ * 
+ * <p><strong>Species Hierarchy Example:</strong></p>
+ * <pre>{@code
+ * species Animal {                    // Base species
+ *   float energy <- 100.0;
+ *   
+ *   reflex eat when: energy < 50 {   // Behavior
+ *     energy <- energy + 10;
+ *   }
+ *   
+ *   aspect default {                  // Visual representation
+ *     draw circle(2) color: #blue;
+ *   }
+ * }
+ * 
+ * species Bird parent: Animal skills: [moving] {  // Inherits from Animal, adds moving skill
+ *   float speed <- 5.0;
+ *   
+ *   reflex fly {
+ *     do wander speed: speed;        // Uses moving skill
+ *   }
+ * }
+ * 
+ * grid cell width: 50 height: 50 {    // Grid species (specialized)
+ *   int pollution <- 0;
+ * }
+ * }</pre>
+ * 
+ * <p><strong>Core Components:</strong></p>
+ * <ul>
+ *   <li><strong>Behaviors:</strong> Map of reflex/rule/state descriptions (inherited dynamically)</li>
+ *   <li><strong>Aspects:</strong> Map of visual representation descriptions (inherited dynamically)</li>
+ *   <li><strong>Actions:</strong> Map of user-defined action descriptions (from TypeDescription)</li>
+ *   <li><strong>Attributes:</strong> Map of variable descriptions (from TypeDescription)</li>
+ *   <li><strong>Micro-species:</strong> Map of nested species descriptions</li>
+ *   <li><strong>Skills:</strong> LinkedHashSet of skill descriptions (order matters for initialization)</li>
+ *   <li><strong>Control:</strong> Control architecture skill (FSM, BDI, etc.)</li>
+ *   <li><strong>Agent Constructor:</strong> Factory for creating agent instances</li>
+ * </ul>
+ * 
+ * <p><strong>Skills System:</strong></p>
+ * <p>Skills provide reusable behaviors that can be attached to multiple species:</p>
+ * <ul>
+ *   <li><strong>Built-in Skills:</strong> moving, communicating, grid, graph, etc.</li>
+ *   <li><strong>Control Skills:</strong> reflex (default), fsm, task_based, user_only, parallel</li>
+ *   <li><strong>Custom Skills:</strong> Defined via {@code @skill} annotation in Java</li>
+ *   <li><strong>Skill Inheritance:</strong> Species inherit skills from parent species</li>
+ * </ul>
+ * 
+ * <p><strong>Control Architectures:</strong></p>
+ * <ul>
+ *   <li><strong>reflex:</strong> Default - executes reflexes in order each step</li>
+ *   <li><strong>fsm:</strong> Finite State Machine - state-based behavior</li>
+ *   <li><strong>task_based:</strong> Task scheduling and priorities</li>
+ *   <li><strong>sorted_tasks:</strong> Tasks sorted by priority</li>
+ *   <li><strong>probabilistic_tasks:</strong> Probabilistic task selection</li>
+ *   <li><strong>user_only:</strong> No automatic behavior execution</li>
+ * </ul>
+ * 
+ * <p><strong>Memory Optimization:</strong></p>
+ * <ul>
+ *   <li>Behaviors and aspects inherit dynamically (not copied from parent)</li>
+ *   <li>Skills stored in LinkedHashSet (maintains insertion order, no duplicates)</li>
+ *   <li>Agent constructor cached and reused for all instances</li>
+ *   <li>Species expression cached as constant</li>
+ * </ul>
+ * 
+ * <p><strong>Performance Considerations:</strong></p>
+ * <ul>
+ *   <li><strong>Behavior Lookup:</strong> O(1) average case with dynamic inheritance chain</li>
+ *   <li><strong>Skill Lookup:</strong> O(n) where n is number of skills (typically 1-5)</li>
+ *   <li><strong>Micro-species Creation:</strong> Recursive, can be expensive for deep hierarchies</li>
+ *   <li><strong>Agent Construction:</strong> Optimized with cached constructor and minimal agents</li>
+ * </ul>
+ * 
+ * <p><strong>Optimization Opportunities:</strong></p>
+ * <ol>
+ *   <li><strong>Lazy Map Initialization:</strong> Create behavior/aspect maps only when needed</li>
+ *   <li><strong>Skill Caching:</strong> Cache skill lookup results for frequently accessed skills</li>
+ *   <li><strong>Immutable Skills:</strong> Use ImmutableSet after finalization</li>
+ *   <li><strong>Action Indexing:</strong> Use int indices instead of string lookups at runtime</li>
+ * </ol>
+ * 
+ * <p><strong>Thread Safety:</strong></p>
+ * <p>NOT thread-safe. Species descriptions are created and validated sequentially during
+ * compilation. Runtime species lookups are thread-safe as they only read immutable data.</p>
+ *
+ * @author drogoul
+ * @since 16 Mar 2010
+ * @see TypeDescription
+ * @see ISpeciesDescription
+ * @see SkillDescription
+ * @see IAgentConstructor
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class SpeciesDescription extends TypeDescription implements ISpeciesDescription {

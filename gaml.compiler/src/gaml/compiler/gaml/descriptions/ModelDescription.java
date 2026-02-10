@@ -47,10 +47,152 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.utils.ConsumerWithPruning;
 
 /**
- * The Class ModelDescription.
+ * Root description for complete GAML models, representing the top-level container of all model elements.
+ * 
+ * <p>ModelDescription extends {@link SpeciesDescription} as models can be thought of as the "world species"
+ * that contains all other species, global variables, and experiments. It provides additional functionality
+ * for managing experiments, type systems, file paths, and model imports.</p>
+ * 
+ * <p><strong>Architectural Position:</strong></p>
+ * <pre>
+ * ModelDescription (root of description hierarchy)
+ *   ├── Global Section (attributes, actions)
+ *   ├── Species Definitions
+ *   │   ├── Regular Species
+ *   │   ├── Grid Species
+ *   │   └── Micro-species (nested)
+ *   ├── Experiment Definitions
+ *   │   ├── GUI Experiments
+ *   │   ├── Batch Experiments
+ *   │   └── Test Experiments
+ *   └── Type System (TypesManager)
+ * </pre>
+ * 
+ * <p><strong>Key Responsibilities:</strong></p>
+ * <ul>
+ *   <li><strong>Model Container:</strong> Root element containing all species, experiments, and global definitions</li>
+ *   <li><strong>Experiment Management:</strong> Stores and manages experiment descriptions for this model</li>
+ *   <li><strong>Type System:</strong> Maintains the type manager for type resolution and validation</li>
+ *   <li><strong>Path Management:</strong> Tracks model file path and project path for resource loading</li>
+ *   <li><strong>Import System:</strong> Manages imported models (micro-models) and alternate search paths</li>
+ *   <li><strong>Validation Context:</strong> Provides context for validation (error/warning reporting)</li>
+ * </ul>
+ * 
+ * <p><strong>Example GAML Model Structure:</strong></p>
+ * <pre>{@code
+ * model TrafficSimulation        // ModelDescription
+ * 
+ * global {                        // Global section (attributes/actions)
+ *   int nb_cars <- 100;
+ *   init {
+ *     create car number: nb_cars;
+ *   }
+ * }
+ * 
+ * species car skills: [moving] {  // Species definitions
+ *   float speed <- 50.0 #km/#h;
+ *   reflex move {
+ *     do wander;
+ *   }
+ * }
+ * 
+ * grid road width: 100 height: 100 {  // Grid species
+ *   rgb color <- #gray;
+ * }
+ * 
+ * experiment MyExperiment type: gui {  // Experiment definition
+ *   parameter "Number of cars" var: nb_cars;
+ *   output {
+ *     display "Main" {
+ *       species car;
+ *       grid road;
+ *     }
+ *   }
+ * }
+ * }</pre>
+ * 
+ * <p><strong>Type System Management:</strong></p>
+ * <p>Each model has its own {@link ITypesManager} that extends the built-in type system:</p>
+ * <ul>
+ *   <li><strong>Built-in Types:</strong> int, float, bool, string, agent, etc.</li>
+ *   <li><strong>Species Types:</strong> Each species becomes a type</li>
+ *   <li><strong>Custom Types:</strong> Type definitions in the model</li>
+ *   <li><strong>Type Hierarchy:</strong> Tracks parent-child relationships for type compatibility</li>
+ * </ul>
+ * 
+ * <p><strong>Micro-Model System:</strong></p>
+ * <p>Models can import other models as micro-models for composition and reuse:</p>
+ * <pre>{@code
+ * import "utilities.gaml" as utils;   // Import with alias
+ * 
+ * model MainModel {
+ *   // Can reference species from utils
+ *   species myAgent parent: utils.baseAgent {
+ *     // ...
+ *   }
+ * }
+ * }</pre>
+ * 
+ * <p><strong>Experiment Management:</strong></p>
+ * <ul>
+ *   <li><strong>Multiple Experiments:</strong> One model can define multiple experiments</li>
+ *   <li><strong>Experiment Types:</strong> gui (interactive), batch (automated), test (unit testing)</li>
+ *   <li><strong>Parameter Spaces:</strong> Experiments define parameter ranges for exploration</li>
+ *   <li><strong>Output Definitions:</strong> Displays, monitors, and export configurations</li>
+ * </ul>
+ * 
+ * <p><strong>Path Management:</strong></p>
+ * <ul>
+ *   <li><strong>modelFilePath:</strong> Absolute path to the model file (e.g., /path/to/model.gaml)</li>
+ *   <li><strong>modelProjectPath:</strong> Path to the containing project</li>
+ *   <li><strong>alternatePaths:</strong> Additional search paths for imports and resources</li>
+ * </ul>
+ * 
+ * <p><strong>Memory Optimization:</strong></p>
+ * <ul>
+ *   <li>Experiments stored in lazy-initialized map</li>
+ *   <li>Type manager shared with parent model if in micro-model scenario</li>
+ *   <li>Alternate paths use Set to avoid duplicates</li>
+ *   <li>Validation context shared across model</li>
+ * </ul>
+ * 
+ * <p><strong>Performance Considerations:</strong></p>
+ * <ul>
+ *   <li><strong>Type Resolution:</strong> Cached in TypesManager for fast lookups</li>
+ *   <li><strong>Experiment Access:</strong> O(1) lookup by name</li>
+ *   <li><strong>Species Access:</strong> Inherited from SpeciesDescription</li>
+ *   <li><strong>Validation:</strong> Can be expensive for large models (1000s of symbols)</li>
+ * </ul>
+ * 
+ * <p><strong>Optimization Opportunities:</strong></p>
+ * <ol>
+ *   <li><strong>Experiment Lazy Loading:</strong> Load experiment descriptions on demand</li>
+ *   <li><strong>Type Cache:</strong> Aggressive caching of type lookups</li>
+ *   <li><strong>Path Normalization:</strong> Normalize paths once at construction</li>
+ *   <li><strong>Validation Caching:</strong> Cache validation results per file hash</li>
+ *   <li><strong>Resource Pooling:</strong> Share validation context across multiple validations</li>
+ * </ol>
+ * 
+ * <p><strong>Thread Safety:</strong></p>
+ * <p>NOT thread-safe during construction and validation. Thread-safe for read-only
+ * operations after validation completes (experiment lookup, type resolution, etc.).</p>
+ * 
+ * <p><strong>Lifecycle:</strong></p>
+ * <ol>
+ *   <li><strong>Creation:</strong> Factory creates from parsed AST</li>
+ *   <li><strong>Population:</strong> Species and experiments added</li>
+ *   <li><strong>Validation:</strong> Semantic validation performed</li>
+ *   <li><strong>Compilation:</strong> Compiled to runtime model</li>
+ *   <li><strong>Execution:</strong> Experiments run against compiled model</li>
+ *   <li><strong>Disposal:</strong> Clean up resources when model unloaded</li>
+ * </ol>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
- * @date 12 janv. 2024
+ * @since 12 janv. 2024
+ * @see SpeciesDescription
+ * @see IModelDescription
+ * @see ExperimentDescription
+ * @see ITypesManager
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class ModelDescription extends SpeciesDescription implements IModelDescription {
