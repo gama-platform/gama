@@ -20,11 +20,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.HashMultimap;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.SetMultimap;
 
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
@@ -64,11 +66,17 @@ public class ArtefactProtoRegistry {
 	public static final Map<String, IArtefactProto.Symbol> VAR_KEYWORDS_PROTOS = new HashMap<>();
 
 	/** The Constant VARTYPE2KEYWORDS. */
-	public final static Multimap<Integer, String> VARKIND2KEYWORDS =
-			Multimaps.synchronizedMultimap(HashMultimap.create());
+	public final static SetMultimap<Integer, String> VARKIND2KEYWORDS =
+			Multimaps.newSetMultimap(new ConcurrentHashMap<>(), ConcurrentHashMap::newKeySet);
 
 	/** The kinds protos. */
 	public static final Map<Integer, IArtefactProto.Symbol> KINDS_PROTOS = new HashMap<>();
+
+	/** Cache for statement protos. */
+	private static volatile Iterable<IArtefactProto.Symbol> cachedStatementProtos = null;
+
+	/** Cache for facets protos. */
+	private static volatile Iterable<? extends IArtefactProto.Facet> cachedFacetsProtos = null;
 
 	/**
 	 * Adds the new type name.
@@ -92,15 +100,14 @@ public class ArtefactProtoRegistry {
 	}
 
 	/** The no mandatory parenthesis. */
-	public static final Set<String> PROTOS_WITHOUT_PARENTHESES = ImmutableSet.copyOf(Arrays.<String> asList("-", "!"));
+	public static final Set<String> PROTOS_WITHOUT_PARENTHESES = ImmutableSet.of("-", "!");
 
 	/** The BINARY_PROTO_NAMES. */
-	public static final Set<String> BINARY_PROTO_NAMES = ImmutableSet
-			.copyOf(Arrays.<String> asList("=", "+", "-", "/", "*", "^", "<", ">", "<=", ">=", "?", "!=", ":", ".",
-					"where", "select", "collect", "first_with", "last_with", "overlapping", "at_distance", "in",
-					"inside", "among", "contains", "contains_any", "contains_all", "min_of", "max_of", "with_max_of",
-					"with_min_of", "of_species", "of_generic_species", "sort_by", "accumulate", "or", "and", "at", "is",
-					"group_by", "index_of", "last_index_of", "index_by", "count", "sort", "::", "as_map"));
+	public static final Set<String> BINARY_PROTO_NAMES = ImmutableSet.of("=", "+", "-", "/", "*", "^", "<", ">",
+			"<=", ">=", "?", "!=", ":", ".", "where", "select", "collect", "first_with", "last_with", "overlapping",
+			"at_distance", "in", "inside", "among", "contains", "contains_any", "contains_all", "min_of", "max_of",
+			"with_max_of", "with_min_of", "of_species", "of_generic_species", "sort_by", "accumulate", "or", "and",
+			"at", "is", "group_by", "index_of", "last_index_of", "index_by", "count", "sort", "::", "as_map");
 
 	/**
 	 * Adds the new var keyword.
@@ -160,10 +167,10 @@ public class ArtefactProtoRegistry {
 	 * @return the proto
 	 */
 	public final static IArtefactProto.Symbol getProto(final String keyword, final IDescription superDesc) {
-		final IArtefactProto.Symbol p = getStatementProto(keyword);
-		// If not a statement, we try to find a var declaration prototype
-		if (p == null) return getVarProto(keyword, superDesc);
-		return p;
+		// Check statement proto first
+		IArtefactProto.Symbol p = STATEMENT_KEYWORDS_PROTOS.get(keyword);
+		// If not a statement, try var declaration prototype
+		return p != null ? p : getVarProto(keyword, superDesc);
 	}
 
 	/**
@@ -224,7 +231,7 @@ public class ArtefactProtoRegistry {
 	 * @return the allowed facets for
 	 */
 	public static Set<String> getAllowedFacetsFor(final String... keys) {
-		if (keys == null || keys.length == 0) return Collections.EMPTY_SET;
+		if (keys == null || keys.length == 0) return Collections.emptySet();
 		final Set<String> result = new HashSet<>();
 		for (final String key : keys) {
 			final IArtefactProto.Symbol md = getProto(key, null);
@@ -240,8 +247,12 @@ public class ArtefactProtoRegistry {
 	 * @return the statement protos
 	 */
 	public static Iterable<IArtefactProto.Symbol> getStatementProtos() {
-		return Iterables.filter(Iterables.concat(STATEMENT_KEYWORDS_PROTOS.values(), VAR_KEYWORDS_PROTOS.values()),
-				IArtefactProto.Symbol.class);
+		if (cachedStatementProtos == null) {
+			cachedStatementProtos = Iterables.filter(
+					Iterables.concat(STATEMENT_KEYWORDS_PROTOS.values(), VAR_KEYWORDS_PROTOS.values()),
+					IArtefactProto.Symbol.class);
+		}
+		return cachedStatementProtos;
 	}
 
 	/**
@@ -250,7 +261,10 @@ public class ArtefactProtoRegistry {
 	 * @return the facets protos
 	 */
 	public static Iterable<? extends IArtefactProto.Facet> getFacetsProtos() {
-		return Iterables.concat(Iterables.transform(getStatementProtos(), each -> each.getPossibleFacets().values()));
+		if (cachedFacetsProtos == null) {
+			cachedFacetsProtos = Iterables.concat(Iterables.transform(getStatementProtos(), each -> each.getPossibleFacets().values()));
+		}
+		return cachedFacetsProtos;
 	}
 
 	/**
