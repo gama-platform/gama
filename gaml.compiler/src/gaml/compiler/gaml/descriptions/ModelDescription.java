@@ -96,7 +96,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 */
 	@Override
 	public Collection<String> getAlternatePaths() {
-		return alternatePaths == null ? Collections.EMPTY_LIST : alternatePaths;
+		return alternatePaths == null ? Collections.emptyList() : alternatePaths;
 	}
 
 	/**

@@ -100,7 +100,7 @@ public class ConstantExpressionDescription extends ConstantExpression implements
 
 	@Override
 	public Set<String> getStrings(final IDescription context, final boolean skills) {
-		return Collections.EMPTY_SET;
+		return Collections.emptySet();
 	}
 
 	/**

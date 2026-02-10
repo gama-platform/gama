@@ -115,6 +115,8 @@ public class DescriptionFactory implements IDescriptionFactory {
 	 *            the facets
 	 * @return the i description
 	 */
+	// NOTE: synchronized keyword may be overly conservative if factory registries are already thread-safe.
+	// Consider using more fine-grained locking or removing if compilation is single-threaded.
 	@Override
 	public synchronized IDescription create(final ISymbolDescriptionFactory factory, final String keyword,
 			final IDescription superDesc, final Iterable<IDescription> children, final Facets facets) {

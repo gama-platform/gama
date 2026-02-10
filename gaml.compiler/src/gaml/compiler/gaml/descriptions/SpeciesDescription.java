@@ -119,7 +119,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	public SpeciesDescription(final String keyword, final Class clazz, final ISpeciesDescription macroDesc,
 			final ISpeciesDescription parent, final Iterable<? extends IDescription> cp, final EObject source,
 			final Facets facets) {
-		this(keyword, clazz, macroDesc, parent, cp, source, facets, Collections.EMPTY_SET);
+		this(keyword, clazz, macroDesc, parent, cp, source, facets, Collections.emptySet());
 	}
 
 	/**
@@ -178,7 +178,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 */
 	protected void addSkill(final ISkillDescription sk) {
 		if (sk == null) return;
-		if (skills == null) { skills = new LinkedHashSet(); }
+		if (skills == null) { skills = new LinkedHashSet<>(); }
 		skills.add(sk);
 	}
 
@@ -440,6 +440,26 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	}
 
 	/**
+	 * Gets or creates the behaviors map.
+	 *
+	 * @return the behaviors map
+	 */
+	private IMap<String, StatementDescription> getBehaviorsMap() {
+		if (behaviors == null) { behaviors = GamaMapFactory.create(); }
+		return behaviors;
+	}
+
+	/**
+	 * Gets or creates the aspects map.
+	 *
+	 * @return the aspects map
+	 */
+	private IMap<String, StatementDescription> getAspectsMap() {
+		if (aspects == null) { aspects = GamaMapFactory.create(); }
+		return aspects;
+	}
+
+	/**
 	 * Adds the behavior.
 	 *
 	 * @param r
@@ -447,23 +467,26 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 */
 	protected void addBehavior(final StatementDescription r) {
 		final String behaviorName = r.getName();
-		if (behaviors == null) { behaviors = GamaMapFactory.create(); }
+		final IMap<String, StatementDescription> behaviorMap = getBehaviorsMap();
 		final StatementDescription existing = getBehavior(behaviorName);
 		if (existing != null && existing.getKeyword().equals(r.getKeyword())) { duplicateInfo(r, existing); }
-		behaviors.put(behaviorName, r);
+		behaviorMap.put(behaviorName, r);
 	}
-
+	
 	/**
-	 * Checks for behavior.
+	 * Adds the aspect.
 	 *
-	 * @param a
-	 *            the a
-	 * @return true, if successful
+	 * @param ce
+	 *            the ce
 	 */
-	@Override
-	public boolean hasBehavior(final String a) {
-		return behaviors != null && behaviors.containsKey(a)
-				|| parent != null && parent != this && getParent().hasBehavior(a);
+	private void addAspect(final StatementDescription ce) {
+		String aspectName = ce.getName();
+		if (aspectName == null) {
+			aspectName = IKeyword.DEFAULT;
+			ce.setName(aspectName);
+		}
+		if (!IKeyword.DEFAULT.equals(aspectName) && hasAspect(aspectName)) { duplicateInfo(ce, getAspect(aspectName)); }
+		getAspectsMap().put(aspectName, ce);
 	}
 
 	/**
@@ -481,20 +504,16 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	}
 
 	/**
-	 * Adds the aspect.
+	 * Checks for behavior.
 	 *
-	 * @param ce
-	 *            the ce
+	 * @param a
+	 *            the a
+	 * @return true, if successful
 	 */
-	private void addAspect(final StatementDescription ce) {
-		String aspectName = ce.getName();
-		if (aspectName == null) {
-			aspectName = IKeyword.DEFAULT;
-			ce.setName(aspectName);
-		}
-		if (!IKeyword.DEFAULT.equals(aspectName) && hasAspect(aspectName)) { duplicateInfo(ce, getAspect(aspectName)); }
-		if (aspects == null) { aspects = GamaMapFactory.create(); }
-		aspects.put(aspectName, ce);
+	@Override
+	public boolean hasBehavior(final String a) {
+		return behaviors != null && behaviors.containsKey(a)
+				|| parent != null && parent != this && getParent().hasBehavior(a);
 	}
 
 	/**
@@ -518,7 +537,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 */
 	public Collection<String> getBehaviorNames() {
 		final Collection<String> ownNames =
-				behaviors == null ? new LinkedHashSet() : new LinkedHashSet(behaviors.keySet());
+				behaviors == null ? new LinkedHashSet<>() : new LinkedHashSet<>(behaviors.keySet());
 		if (parent != null && parent != this) { ownNames.addAll(getParent().getBehaviorNames()); }
 		return ownNames;
 	}
@@ -529,7 +548,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 * @return the aspect names
 	 */
 	public Collection<String> getAspectNames() {
-		final Collection<String> ownNames = aspects == null ? new LinkedHashSet() : new LinkedHashSet(aspects.keySet());
+		final Collection<String> ownNames = aspects == null ? new LinkedHashSet<>() : new LinkedHashSet<>(aspects.keySet());
 		if (parent != null && parent != this) { ownNames.addAll(getParent().getAspectNames()); }
 		return ownNames;
 
@@ -542,7 +561,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 */
 	@Override
 	public Iterable<IStatementDescription> getAspects() {
-		return Iterables.transform(getAspectNames(), this::getAspect);
+		return getAspectNames().stream().map(this::getAspect).collect(java.util.stream.Collectors.toList());
 	}
 
 	/**
@@ -838,20 +857,20 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 * @return true, if successful
 	 */
 	private boolean parentIsAmongTheMicroSpecies() {
-		final boolean[] result = new boolean[1];
+		final java.util.concurrent.atomic.AtomicBoolean result = new java.util.concurrent.atomic.AtomicBoolean(false);
 		visitMicroSpecies(new DescriptionVisitor<ISpeciesDescription>() {
 
 			@Override
 			public boolean process(final ISpeciesDescription desc) {
 				if (desc == parent) {
-					result[0] = true;
+					result.set(true);
 					return false;
 				}
 				desc.visitMicroSpecies(this);
 				return true;
 			}
 		});
-		return result[0];
+		return result.get();
 	}
 
 	/**
@@ -1122,9 +1141,9 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	@Override
 	public Iterable<IDescription> getOwnChildren() {
 		return Iterables.concat(super.getOwnChildren(),
-				microSpecies == null ? Collections.EMPTY_LIST : microSpecies.values(),
-				behaviors == null ? Collections.EMPTY_LIST : behaviors.values(),
-				aspects == null ? Collections.EMPTY_LIST : aspects.values());
+				microSpecies == null ? Collections.emptyList() : microSpecies.values(),
+				behaviors == null ? Collections.emptyList() : behaviors.values(),
+				aspects == null ? Collections.emptyList() : aspects.values());
 	}
 
 	@Override
@@ -1149,7 +1168,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 */
 	@Override
 	public Iterable<IStatementDescription> getBehaviors() {
-		return Iterables.transform(getBehaviorNames(), this::getBehavior);
+		return getBehaviorNames().stream().map(this::getBehavior).collect(java.util.stream.Collectors.toList());
 	}
 
 	@Override
@@ -1176,7 +1195,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	@Override
 	public Iterable<ISkillDescription> getSkills() {
 		final List<ISkillDescription> base =
-				control == null ? Collections.EMPTY_LIST : Collections.singletonList(control);
+				control == null ? Collections.emptyList() : Collections.singletonList(control);
 		if (skills == null) return base;
 		return Iterables.concat(skills, base);
 	}

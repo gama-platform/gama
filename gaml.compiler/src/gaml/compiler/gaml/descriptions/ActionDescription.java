@@ -15,6 +15,8 @@ import static gama.api.constants.IKeyword.FALSE;
 import static gama.api.constants.IKeyword.OPTIONAL;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -90,7 +92,11 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 	 * @return
 	 */
 	@Override
-	public List<String> getArgNames() { return Lists.newArrayList(Iterables.transform(getFormalArgs(), TO_NAME)); }
+	public List<String> getArgNames() { 
+		return StreamSupport.stream(getFormalArgs().spliterator(), false)
+				.map(TO_NAME)
+				.collect(Collectors.toList());
+	}
 
 	/**
 	 * Verify args.
@@ -108,9 +114,11 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 		final Iterable<IDescription> formalArgs = getFormalArgs();
 		final boolean noArgs = names.isEmpty();
 		if (noArgs) {
-			final Iterable<IDescription> formalArgsWithoutDefault =
-					Iterables.filter(formalArgs, each -> !each.hasFacet(DEFAULT));
-			if (Iterables.isEmpty(formalArgsWithoutDefault)) return true;
+			final List<IDescription> formalArgsWithoutDefault = 
+					StreamSupport.stream(formalArgs.spliterator(), false)
+							.filter(each -> !each.hasFacet(DEFAULT))
+							.toList();
+			if (formalArgsWithoutDefault.isEmpty()) return true;
 		}
 
 		final List<String> allArgs = getArgNames();

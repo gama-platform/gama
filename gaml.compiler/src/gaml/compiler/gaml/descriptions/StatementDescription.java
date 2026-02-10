@@ -22,7 +22,8 @@ import static gama.api.constants.IKeyword.SPECIES;
 import static gama.api.constants.IKeyword.VALUE;
 import static gama.api.constants.IKeyword.WITH;
 import static gama.api.gaml.types.Types.NO_TYPE;
-import static java.util.Collections.EMPTY_LIST;
+
+import java.util.Collections;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.ecore.EObject;
@@ -358,7 +359,7 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 	}
 
 	@Override
-	public Iterable<IDescription> getOwnChildren() { return EMPTY_LIST; }
+	public Iterable<IDescription> getOwnChildren() { return Collections.emptyList(); }
 
 	/**
 	 * Creates the compiled args.

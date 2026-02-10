@@ -150,7 +150,7 @@ public class BasicExpressionDescription implements IExpressionDescription {
 
 	@Override
 	public Collection<String> getStrings(final IDescription context, final boolean skills) {
-		return Collections.EMPTY_SET;
+		return Collections.emptySet();
 	}
 
 	@Override
