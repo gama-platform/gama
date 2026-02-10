@@ -208,7 +208,7 @@ public class ExpressionDescriptionFactory extends GamlSwitch<IExpressionDescript
 	public IExpressionDescription caseUnitName(final UnitName object) {
 		if (object == null) return null;
 		final String unitKey = EGaml.getInstance().getKeyOf(object);
-		return unitKey != null ? GAML.UNITS.get(unitKey) : null;
+		return unitKey != null ? GAML.getUnit(unitKey) : null;
 	}
 
 	/**

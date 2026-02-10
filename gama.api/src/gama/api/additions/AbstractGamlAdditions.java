@@ -20,7 +20,6 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,6 +37,7 @@ import gama.api.compilation.factories.ISymbolFactory;
 import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
+import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.GamaFileType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ParametricFileType;
@@ -73,7 +73,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 *            the d
 	 */
 	public void _display(final String string, final Class<? extends IDisplaySurface> support, final IDisplayCreator d) {
-		GAML.CONSTANTS.add(string);
+		GAML.addConstants(string);
 		GamaAdditionRegistry.addDelegate(string, new DisplayDescription(d, support, string, CURRENT_PLUGIN_NAME));
 		GamaBundleLoader.addDisplayPlugin(CURRENT_PLUGIN_NAME);
 	}
@@ -88,7 +88,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 */
 	public void _experiment(final String string, final IExperimentAgentCreator d,
 			final Class<? extends IExperimentAgent> clazz) {
-		GAML.CONSTANTS.add(string);
+		GAML.addConstants(string);
 		IExperimentDescription.addExperimentAgentCreator(string,
 				new ExperimentAgentDescription(d, clazz, string, CURRENT_PLUGIN_NAME));
 	}
@@ -166,7 +166,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 *            the species
 	 */
 	protected void _skill(final String name, final Class clazz, final String... species) {
-		Iterable<IDescription> children = GAML.ADDITIONS.get(clazz);
+		Iterable<IDescription> children = GAML.getAdditions(clazz);
 		if (children != null) {
 			for (final IDescription d : children) {
 				d.setOriginName("skill " + name);
@@ -262,7 +262,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 			final int content, final int index, final int contentContentType, final IGamaGetter helper,
 			final boolean isIterator) {
 
-		if (isIterator) { Collections.addAll(GAML.ITERATORS, keywords); }
+		if (isIterator) { GAML.addIterators(keywords); }
 		final Signature signature = method == null ? new Signature(Types.NO_TYPE) : new Signature(method);
 		int nbParameters = signature.size();
 		final String plugin = GamaBundleLoader.CURRENT_PLUGIN_NAME;
@@ -303,8 +303,8 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 */
 	public void _listener(final String varName, final Class clazz, final IGamaHelper helper) {
 		GamaHelper gh = new GamaHelper(varName, clazz, helper);
-		GAML.LISTENERS_BY_CLASS.put(clazz, gh);
-		GAML.LISTENERS_BY_NAME.put(varName, clazz);
+		IVariable.addListenerByClass(clazz, gh);
+		IVariable.addListenerByName(varName, clazz);
 	}
 
 	/**
@@ -352,7 +352,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 */
 	protected void _var(final Class clazz, final IDescription desc, final IGamaHelper get, final IGamaHelper init,
 			final IGamaHelper set) {
-		GAML.ADDITIONS.put(clazz, desc);
+		GAML.addAddition(clazz, desc);
 		IVariableDescription vd = (IVariableDescription) desc;
 		vd.addHelpers(clazz, get, init, set);
 		vd.setDefiningPlugin(GamaBundleLoader.CURRENT_PLUGIN_NAME);
@@ -398,7 +398,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 			final Class signature, final int typeProvider, final int contentTypeProvider, final int keyTypeProvider) {
 		IArtefactProto proto = GAML.getArtefactProtoFactory().createOperatorProto(name, null, helper, false, true,
 				returnType, signature, typeProvider, contentTypeProvider, keyTypeProvider, AI);
-		GAML.FIELDS.put(clazz, proto);
+		GAML.addField(clazz, proto);
 	}
 
 	/**
@@ -408,7 +408,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 *            the strings
 	 */
 	public static void _constants(final String[]... strings) {
-		for (final String[] s : strings) { Collections.addAll(GAML.CONSTANTS, s); }
+		for (final String[] s : strings) { GAML.addConstants(s); }
 	}
 
 	/**
@@ -443,7 +443,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	protected void _action(final IGamaHelper e, final IDescription desc, final Method method) {
 		((IActionDescription) desc).setHelper(e, method);
 		desc.setDefiningPlugin(GamaBundleLoader.CURRENT_PLUGIN_NAME);
-		GAML.ADDITIONS.put(method.getDeclaringClass(), desc);
+		GAML.addAddition(method.getDeclaringClass(), desc);
 	}
 
 }

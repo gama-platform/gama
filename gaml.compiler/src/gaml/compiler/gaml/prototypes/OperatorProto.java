@@ -125,7 +125,7 @@ public class OperatorProto extends AbstractProto implements IArtefactProto.Opera
 			final Signature signature, final int typeProvider, final int contentTypeProvider, final int keyTypeProvider,
 			final int contentTypeContentTypeProvider, final int[] expectedContentType, final String plugin) {
 		super(name, method, plugin);
-		iterator = GAML.ITERATORS.contains(name);
+		iterator = GAML.isIterator(name);
 		if (constantDoc != null) { documentation = new GamlConstantDocumentation(constantDoc); }
 		if (IKeyword.AS.equals(name)) { AS = this; }
 		this.returnType = returnType;

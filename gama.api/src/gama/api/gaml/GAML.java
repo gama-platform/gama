@@ -15,25 +15,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.SetMultimap;
-
 import gama.api.GAMA;
 import gama.api.additions.IConstantAcceptor;
-import gama.api.additions.IGamaHelper;
 import gama.api.additions.registries.ArtefactProtoRegistry;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.ast.ISyntacticElement;
@@ -75,31 +69,30 @@ public class GAML {
 			new ConcurrentHashMap<>();
 
 	/** The iterators. */
-	public static final Set<String> ITERATORS = ConcurrentHashMap.newKeySet();
+	private static final Set<String> ITERATORS = ConcurrentHashMap.newKeySet();
 
 	/** The Constant CONSTANTS. */
-	public static final Set<String> CONSTANTS = ConcurrentHashMap.newKeySet();
+	private static final Set<String> CONSTANTS = ConcurrentHashMap.newKeySet();
 
-	/** The Constant ADDITIONS. */
-	public final static Multimap<Class, IDescription> ADDITIONS = Multimaps.synchronizedMultimap(HashMultimap.create());
+	/**
+	 * The Constant ADDITIONS. Thread-safe multimap using ConcurrentHashMap with concurrent sets as values. This
+	 * provides better concurrent performance than synchronized Guava multimaps by using lock-free reads and
+	 * fine-grained locking only on writes.
+	 */
+	private final static Map<Class, Set<IDescription>> ADDITIONS = new ConcurrentHashMap<>();
 
-	/** The Constant FIELDS. */
-	public final static Multimap<Class, IArtefactProto> FIELDS = Multimaps.synchronizedMultimap(HashMultimap.create());
+	/**
+	 * The Constant FIELDS. Thread-safe multimap using ConcurrentHashMap with concurrent sets as values. Stores field
+	 * prototypes for classes with efficient concurrent access.
+	 */
+	private final static Map<Class, Set<IArtefactProto>> FIELDS = new ConcurrentHashMap<>();
 
 	/** The units. */
-	public static final Map<String, IExpression.Unit> UNITS = new ConcurrentHashMap<>();
+	private static final Map<String, IExpression.Unit> UNITS = new ConcurrentHashMap<>();
 
-	/** The Constant LISTENERS_BY_CLASS. */
-	public final static SetMultimap<Class, IGamaHelper> LISTENERS_BY_CLASS =
-			Multimaps.synchronizedSetMultimap(HashMultimap.create());
-
-	/** The Constant LISTENERS_BY_NAME. */
-	public final static SetMultimap<String, Class> LISTENERS_BY_NAME =
-			Multimaps.synchronizedSetMultimap(HashMultimap.create());
-
-	/** 
-	 * The factories map. Thread-safe map for storing symbol description factories by their kind.
-	 * Uses ConcurrentHashMap for better performance under concurrent access compared to synchronized wrapper.
+	/**
+	 * The factories map. Thread-safe map for storing symbol description factories by their kind. Uses ConcurrentHashMap
+	 * for better performance under concurrent access compared to synchronized wrapper.
 	 */
 	public final static Map<Integer, ISymbolDescriptionFactory> DESCRIPTION_FACTORIES = new ConcurrentHashMap<>();
 
@@ -392,10 +385,10 @@ public class GAML {
 
 	/**
 	 * Gets the all fields for a class, including inherited fields from superclasses and interfaces.
-	 * 
+	 *
 	 * <p>
-	 * This method efficiently collects all field prototypes associated with a class and its hierarchy,
-	 * avoiding duplicate lookups and minimizing object allocations.
+	 * This method efficiently collects all field prototypes associated with a class and its hierarchy, avoiding
+	 * duplicate lookups and minimizing object allocations.
 	 * </p>
 	 *
 	 * @param clazz
@@ -407,8 +400,9 @@ public class GAML {
 		// Pre-size the map to avoid rehashing
 		final Map<String, IArtefactProto> fieldsMap = new HashMap<>(classes.size() * 4);
 		for (final Class c : classes) {
-			for (final IArtefactProto desc : FIELDS.get(c)) { 
-				fieldsMap.putIfAbsent(desc.getName(), desc); 
+			final Set<IArtefactProto> fields = FIELDS.get(c);
+			if (fields != null) {
+				for (final IArtefactProto desc : fields) { fieldsMap.putIfAbsent(desc.getName(), desc); }
 			}
 		}
 		return fieldsMap;
@@ -432,7 +426,7 @@ public class GAML {
 
 	/**
 	 * Checks if the given operator name corresponds to a unary operator.
-	 * 
+	 *
 	 * @param name
 	 *            the operator name to check
 	 * @return true if the operator has at least one unary signature, false otherwise
@@ -440,9 +434,7 @@ public class GAML {
 	public static boolean isUnaryOperator(final String name) {
 		final Map<Signature, IArtefactProto.Operator> map = OPERATORS.get(name);
 		if (map == null) return false;
-		for (final Signature s : map.keySet()) { 
-			if (s.isUnary()) return true; 
-		}
+		for (final Signature s : map.keySet()) { if (s.isUnary()) return true; }
 		return false;
 	}
 
@@ -477,6 +469,132 @@ public class GAML {
 	 */
 	public static int[] getLocationInFileInfo(final EObject source) {
 		return gamlTextValidator.getStartLineAndOffsetInFileInfo(source);
+	}
+
+	// ==================================================================================
+	// Utility methods for working with concurrent multimap-like structures
+	// ==================================================================================
+
+	/**
+	 * Adds a value to the ADDITIONS multimap in a thread-safe manner. Creates the set if it doesn't exist using
+	 * computeIfAbsent.
+	 *
+	 * @param key
+	 *            the class key
+	 * @param value
+	 *            the description to add
+	 * @return true if the value was added, false if it was already present
+	 */
+	public static boolean addAddition(final Class key, final IDescription value) {
+		return ADDITIONS.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(value);
+	}
+
+	/**
+	 * Adds a field to the FIELDS multimap in a thread-safe manner. Creates the set if it doesn't exist using
+	 * computeIfAbsent.
+	 *
+	 * @param key
+	 *            the class key
+	 * @param value
+	 *            the artefact proto to add
+	 * @return true if the field was added, false if it was already present
+	 */
+	public static boolean addField(final Class key, final IArtefactProto value) {
+		return FIELDS.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(value);
+	}
+
+	/**
+	 * Gets all additions for a class. Returns an empty set if none exist.
+	 *
+	 * @param key
+	 *            the class key
+	 * @return the set of descriptions, never null
+	 */
+	public static Set<IDescription> getAdditions(final Class key) {
+		return ADDITIONS.getOrDefault(key, Collections.emptySet());
+	}
+
+	/**
+	 * Gets all fields for a class. Returns an empty set if none exist.
+	 *
+	 * @param key
+	 *            the class key
+	 * @return the set of artefact protos, never null
+	 */
+	public static Set<IArtefactProto> getFields(final Class key) {
+		return FIELDS.getOrDefault(key, Collections.emptySet());
+	}
+
+	/**
+	 * Adds the iterators.
+	 *
+	 * @param iterators
+	 *            the iterators
+	 */
+	public static void addIterators(final String... iterators) {
+		Collections.addAll(ITERATORS, iterators);
+	}
+
+	/**
+	 * Adds the constants.
+	 *
+	 * @param constants
+	 *            the constants
+	 */
+	public static void addConstants(final String... constants) {
+		Collections.addAll(CONSTANTS, constants);
+	}
+
+	/**
+	 * Gets the addition classes.
+	 *
+	 * @return the addition classes
+	 */
+	public static Set<Class> getAdditionClasses() { return Collections.unmodifiableSet(ADDITIONS.keySet()); }
+
+	/**
+	 * Gets the constants.
+	 *
+	 * @return the constants
+	 */
+	public static Collection<String> getConstants() { return Collections.unmodifiableCollection(CONSTANTS); }
+
+	/**
+	 * Gets the fields.
+	 *
+	 * @return the fields
+	 */
+	public static Collection<IArtefactProto> getFields() {
+		return FIELDS.values().stream().flatMap(Set::stream).collect(Collectors.toSet());
+	}
+
+	/**
+	 * Gets the units.
+	 *
+	 * @return the units
+	 */
+	public static Map<String, IExpression.Unit> getUnits() { return Collections.unmodifiableMap(UNITS); }
+
+	/**
+	 * Gets the unit.
+	 *
+	 * @param name
+	 *            the name
+	 * @return the unit
+	 */
+	public static IExpression.Unit getUnit(final String name) {
+		return UNITS.get(name);
+	}
+
+	/**
+	 * Checks if is iterator.
+	 *
+	 * @param name
+	 *            the name
+	 * @return true, if is iterator
+	 */
+	public static boolean isIterator(final String name) {
+		return ITERATORS.contains(name);
 	}
 
 }

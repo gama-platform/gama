@@ -93,7 +93,7 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 					new GamlIdiomsProvider<>("statements", "Statements", ArtefactProtoRegistry.getStatementProtos());
 
 			GamlIdiomsProvider<IExpression> CONSTANTS =
-					new GamlIdiomsProvider<>("constant", "Constant & Units", GAML.UNITS.values());
+					new GamlIdiomsProvider<>("constant", "Constant & Units", GAML.getUnits().values());
 
 			GamlIdiomsProvider<IArtefactProto> OPERATORS = new GamlIdiomsProvider<>("operators", "Operators",
 					Iterables.concat(Iterables.transform(GAML.OPERATORS.values(), Map::values)));

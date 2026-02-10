@@ -16,10 +16,12 @@ import static gama.api.gaml.types.Types.getBuiltInSpecies;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
@@ -49,8 +51,6 @@ import gama.api.compilation.descriptions.IDescription.DescriptionVisitor;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.factories.IExpressionFactory;
-import gama.api.data.factories.GamaMapFactory;
-import gama.api.data.objects.IMap;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
 import gama.dev.BANNER_CATEGORY;
@@ -89,8 +89,14 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		/** The resource. */
 		final Resource resource;
 
-		/** The elements. */
-		final IMap<QualifiedName, IEObjectDescription> elements = GamaMapFactory.createUnordered();
+		/** The elements - using HashMap for better performance. */
+		final Map<QualifiedName, IEObjectDescription> elements = new HashMap<>();
+		
+		/** Cache for URI to description lookups to avoid repeated iterations. */
+		private final Map<URI, IEObjectDescription> uriCache = new HashMap<>();
+		
+		/** Cached immutable view of elements values. */
+		private Collection<IEObjectDescription> cachedValues;
 
 		/**
 		 * Instantiates a new e class based scope.
@@ -99,8 +105,9 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		 *            the uri
 		 */
 		public EClassBasedScope(final String uri) {
-			Resource r = rs.getResource(URI.createURI(uri, false), false);
-			if (r == null) { r = rs.createResource(URI.createURI(uri, false)); }
+			final URI resourceUri = URI.createURI(uri, false);
+			Resource r = rs.getResource(resourceUri, false);
+			if (r == null) { r = rs.createResource(resourceUri); }
 			resource = r;
 		}
 
@@ -110,7 +117,13 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		}
 
 		@Override
-		public Iterable<IEObjectDescription> getAllElements() { return elements.values(); }
+		public Iterable<IEObjectDescription> getAllElements() { 
+			// Return cached immutable collection to avoid creating new collection on each call
+			if (cachedValues == null) {
+				cachedValues = Collections.unmodifiableCollection(elements.values());
+			}
+			return cachedValues;
+		}
 
 		@Override
 		public Iterable<IEObjectDescription> getElements(final QualifiedName name) {
@@ -121,23 +134,27 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 
 		@Override
 		public IEObjectDescription getSingleElement(final EObject object) {
+			// Use cached URI lookup for better performance
 			final URI uri = EcoreUtil2.getPlatformResourceOrNormalizedURI(object);
-			for (Map.Entry<QualifiedName, IEObjectDescription> entry : elements.entrySet()) {
-				IEObjectDescription input = entry.getValue();
-				if (input.getEObjectOrProxy() == object || uri.equals(input.getEObjectURI())) return input;
+			IEObjectDescription cached = uriCache.get(uri);
+			if (cached != null && (cached.getEObjectOrProxy() == object || uri.equals(cached.getEObjectURI()))) {
+				return cached;
+			}
+			
+			// Fall back to iteration if not in cache
+			for (IEObjectDescription input : elements.values()) {
+				if (input.getEObjectOrProxy() == object || uri.equals(input.getEObjectURI())) {
+					uriCache.put(uri, input);
+					return input;
+				}
 			}
 			return null;
 		}
 
 		@Override
 		public List<IEObjectDescription> getElements(final EObject object) {
-			final URI uri = EcoreUtil2.getPlatformResourceOrNormalizedURI(object);
-			for (Map.Entry<QualifiedName, IEObjectDescription> entry : elements.entrySet()) {
-				IEObjectDescription input = entry.getValue();
-				if (input.getEObjectOrProxy() == object || uri.equals(input.getEObjectURI()))
-					return Collections.singletonList(input);
-			}
-			return Collections.EMPTY_LIST;
+			final IEObjectDescription result = getSingleElement(object);
+			return result != null ? Collections.singletonList(result) : Collections.emptyList();
 		}
 
 		/**
@@ -148,13 +165,18 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		 */
 		public void add(final QualifiedName name, final GamlDefinition stub) {
 			resource.getContents().add(stub);
-			elements.put(name, EObjectDescription.create(name, stub));
+			final IEObjectDescription desc = EObjectDescription.create(name, stub);
+			elements.put(name, desc);
+			// Pre-populate URI cache
+			uriCache.put(EcoreUtil2.getPlatformResourceOrNormalizedURI(stub), desc);
+			// Invalidate cached values since we're adding
+			cachedValues = null;
 		}
 
 	}
 
 	/** The global scopes. */
-	private final IMap<EClass, EClassBasedScope> scopes = GamaMapFactory.createUnordered();
+	private final Map<EClass, EClassBasedScope> scopes = new HashMap<>();
 
 	/** The all names. */
 	private final Set<QualifiedName> allQualifiedNames = new HashSet<>();
@@ -189,54 +211,53 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 			add(IExpressionFactory.TEMPORARY_ACTION_NAME, eAction);
 			Types.getTypeNames().forEach(t -> add(t, eType, eVar, eAction));
 
-			GAML.CONSTANTS.forEach(t -> {
+			GAML.getConstants().forEach(t -> {
 				try {
 					add(t, eType, eVar);
 				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding constant artefact " + t, ex);
+					GamaBundleLoader.ERROR("Error when building constant artefact " + t, ex);
 				}
 			});
-			GAML.UNITS.forEach((t, u) -> {
+			GAML.getUnits().forEach((t, u) -> {
 				try {
 					add(t, eUnit);
 				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding unit artefact " + t, ex);
+					GamaBundleLoader.ERROR("Error when building unit artefact " + t, ex);
 				}
 			});
-			GAML.FIELDS.values().forEach(t -> {
+			GAML.getFields().forEach(a -> {
 				try {
-					add(t.getName(), eVar);
-				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding field artefact " + t, ex);
+					add(a.getName(), eVar);
+				} catch (Exception e) {
+					GamaBundleLoader.ERROR("Error when building field artefact " + a, e);
 				}
 			});
-
 			getAllVars().forEach(t -> {
 				try {
 					add(t.getName(), eVar);
 				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding var artefact " + t.getName(), ex);
+					GamaBundleLoader.ERROR("Error when building var artefact " + t.getName(), ex);
 				}
 			});
 			GamaSkillRegistry.INSTANCE.getAllSkillNames().forEach(t -> {
 				try {
 					add(t, eSkill, eVar);
 				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding skill artefact " + t, ex);
+					GamaBundleLoader.ERROR("Error when building skill artefact " + t, ex);
 				}
 			});
 			getAllActions().forEach(t -> {
 				try {
 					add(t.getName(), eAction, eVar);
 				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding action artefact " + t.getName(), ex);
+					GamaBundleLoader.ERROR("Error when building action artefact " + t.getName(), ex);
 				}
 			});
 			GAML.OPERATORS.forEach((a, b) -> {
 				try {
 					add(a, eAction);
 				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding action artefact " + a, ex);
+					GamaBundleLoader.ERROR("Error when building action artefact " + a, ex);
 				}
 			});
 		});
@@ -316,10 +337,11 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 	 * @return the last stub constructed
 	 */
 	void add(final String t, final EClass... classes) {
-		QualifiedName qName = QualifiedName.create(t);
+		final QualifiedName qName = QualifiedName.create(t);
 		allQualifiedNames.add(qName);
-		for (EClass eClass : classes) {
-			scopes.get(eClass).add(qName, EGaml.getInstance().createGamlDefinition(t, eClass));
+		final EGaml eGaml = EGaml.getInstance();
+		for (final EClass eClass : classes) {
+			scopes.get(eClass).add(qName, eGaml.createGamlDefinition(t, eClass));
 		}
 	}
 

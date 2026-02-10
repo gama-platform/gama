@@ -12,7 +12,6 @@ package gama.core.experiment.batch.optimization;
 
 import static gama.api.gaml.types.Cast.asFloat;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +51,7 @@ public abstract class AOptimizationAlgorithm extends Symbol implements IExplorat
 	/** The Constant COMBINATIONS. */
 	public final static String[] COMBINATIONS = { "maximum", "minimum", "average" };
 	static {
-		Collections.addAll(GAML.CONSTANTS, COMBINATIONS);
+		GAML.addConstants(COMBINATIONS);
 	}
 
 	/** The tested solutions. */

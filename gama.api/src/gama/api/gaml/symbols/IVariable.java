@@ -9,6 +9,12 @@
  ********************************************************************************************************/
 package gama.api.gaml.symbols;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import gama.api.additions.IGamaHelper;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
@@ -17,6 +23,68 @@ import gama.api.runtime.scope.IScope;
  * @author drogoul
  */
 public interface IVariable extends ISymbol, IParameter {
+
+	/**
+	 * The Constant LISTENERS_BY_CLASS. Thread-safe multimap using ConcurrentHashMap with concurrent sets. Maps classes
+	 * to their associated helpers with lock-free concurrent access.
+	 */
+	Map<Class, Set<IGamaHelper>> LISTENERS_BY_CLASS = new ConcurrentHashMap<>();
+
+	/**
+	 * The Constant LISTENERS_BY_NAME. Thread-safe multimap using ConcurrentHashMap with concurrent sets. Maps listener
+	 * names to classes with efficient concurrent operations.
+	 */
+	Map<String, Set<Class>> LISTENERS_BY_NAME = new ConcurrentHashMap<>();
+
+	/**
+	 * Gets all listeners for a class. Returns an empty set if none exist.
+	 *
+	 * @param key
+	 *            the class key
+	 * @return the set of helpers, never null
+	 */
+	static Set<IGamaHelper> getListenersByClass(final Class key) {
+		return LISTENERS_BY_CLASS.getOrDefault(key, Collections.emptySet());
+	}
+
+	/**
+	 * Gets all classes for a listener name. Returns an empty set if none exist.
+	 *
+	 * @param key
+	 *            the listener name
+	 * @return the set of classes, never null
+	 */
+	static Set<Class> getListenersByName(final String key) {
+		return LISTENERS_BY_NAME.getOrDefault(key, Collections.emptySet());
+	}
+
+	/**
+	 * Adds a listener to the LISTENERS_BY_CLASS multimap in a thread-safe manner. Creates the set if it doesn't exist
+	 * using computeIfAbsent.
+	 *
+	 * @param key
+	 *            the class key
+	 * @param value
+	 *            the helper to add
+	 * @return true if the listener was added, false if it was already present
+	 */
+	static boolean addListenerByClass(final Class key, final IGamaHelper value) {
+		return LISTENERS_BY_CLASS.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(value);
+	}
+
+	/**
+	 * Adds a class to the LISTENERS_BY_NAME multimap in a thread-safe manner. Creates the set if it doesn't exist using
+	 * computeIfAbsent.
+	 *
+	 * @param key
+	 *            the listener name
+	 * @param value
+	 *            the class to add
+	 * @return true if the class was added, false if it was already present
+	 */
+	static boolean addListenerByName(final String key, final Class value) {
+		return LISTENERS_BY_NAME.computeIfAbsent(key, k -> ConcurrentHashMap.newKeySet()).add(value);
+	}
 
 	/**
 	 * Checks if is updatable.

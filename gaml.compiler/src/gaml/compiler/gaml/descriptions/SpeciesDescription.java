@@ -333,8 +333,8 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 		}
 		Iterable<Class<? extends ISkill>> skillClasses = transform(getSkills(), TO_CLASS);
 		final List<Class> classes =
-				JavaUtils.collectImplementationClasses(getJavaBase(), skillClasses, GAML.ADDITIONS.keySet());
-		for (final Class c : classes) { for (final IDescription v : GAML.ADDITIONS.get(c)) { addJavaChild(v); } }
+				JavaUtils.collectImplementationClasses(getJavaBase(), skillClasses, GAML.getAdditionClasses());
+		for (final Class c : classes) { for (final IDescription v : GAML.getAdditions(c)) { addJavaChild(v); } }
 	}
 
 	/**
@@ -472,7 +472,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 		if (existing != null && existing.getKeyword().equals(r.getKeyword())) { duplicateInfo(r, existing); }
 		behaviorMap.put(behaviorName, r);
 	}
-	
+
 	/**
 	 * Adds the aspect.
 	 *
@@ -499,9 +499,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	@Override
 	public StatementDescription getBehavior(final String aName) {
 		StatementDescription ownBehavior = behaviors == null ? null : behaviors.get(aName);
-		if (ownBehavior == null && parent != null && parent != this) { 
-			ownBehavior = getParent().getBehavior(aName); 
-		}
+		if (ownBehavior == null && parent != null && parent != this) { ownBehavior = getParent().getBehavior(aName); }
 		return ownBehavior;
 	}
 
@@ -528,9 +526,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	@Override
 	public StatementDescription getAspect(final String aName) {
 		StatementDescription ownAspect = aspects == null ? null : aspects.get(aName);
-		if (ownAspect == null && parent != null && parent != this) { 
-			ownAspect = getParent().getAspect(aName); 
-		}
+		if (ownAspect == null && parent != null && parent != this) { ownAspect = getParent().getAspect(aName); }
 		return ownAspect;
 	}
 
@@ -542,9 +538,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	public Collection<String> getBehaviorNames() {
 		final Collection<String> ownNames =
 				behaviors == null ? new LinkedHashSet<>() : new LinkedHashSet<>(behaviors.keySet());
-		if (parent != null && parent != this) { 
-			ownNames.addAll(getParent().getBehaviorNames()); 
-		}
+		if (parent != null && parent != this) { ownNames.addAll(getParent().getBehaviorNames()); }
 		return ownNames;
 	}
 
@@ -554,10 +548,9 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 * @return the aspect names
 	 */
 	public Collection<String> getAspectNames() {
-		final Collection<String> ownNames = aspects == null ? new LinkedHashSet<>() : new LinkedHashSet<>(aspects.keySet());
-		if (parent != null && parent != this) { 
-			ownNames.addAll(getParent().getAspectNames()); 
-		}
+		final Collection<String> ownNames =
+				aspects == null ? new LinkedHashSet<>() : new LinkedHashSet<>(aspects.keySet());
+		if (parent != null && parent != this) { ownNames.addAll(getParent().getAspectNames()); }
 		return ownNames;
 
 	}

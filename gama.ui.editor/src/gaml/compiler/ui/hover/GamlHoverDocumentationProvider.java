@@ -365,7 +365,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 	public IGamlDescription caseUnitName(final UnitName un) {
 		final UnitFakeDefinition fake = un.getRef();
 		if (fake != null) {
-			final IGamlDescription unit = GAML.UNITS.get(fake.getName());
+			final IGamlDescription unit = GAML.getUnit(fake.getName());
 			if (unit != null) return unit;
 		}
 		return null;

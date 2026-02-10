@@ -540,24 +540,18 @@ public class Variable extends Symbol implements IVariable {
 	 * // AD 2021: addition of the listeners
 	 */
 	private void addListeners(final AbstractSpecies species) {
-		// if (IKeyword.LOCATION.equals(getName())) {
-
-		// DEBUG.OUT("Adding listeners to " + this.getName());
-
-		// }
-
 		ISpeciesDescription sp = species.getDescription();
 		Class base = sp.getJavaBase();
 		if (base == null) return;
 		List<IGamaHelper> helpers = new ArrayList<>();
 		Iterable<Class<? extends ISkill>> skillClasses = Iterables.transform(sp.getSkills(), ITypeDescription.TO_CLASS);
-		if (GAML.LISTENERS_BY_NAME.containsKey(getName())) {
+		if (LISTENERS_BY_NAME.containsKey(getName())) {
 			DEBUG.OUT("Listeners found for " + getName());
 			List<Class> classes =
-					JavaUtils.collectImplementationClasses(base, skillClasses, GAML.LISTENERS_BY_NAME.get(getName()));
+					JavaUtils.collectImplementationClasses(base, skillClasses, IVariable.getListenersByName(getName()));
 			if (!classes.isEmpty()) {
 				for (Class c : classes) {
-					Set<IGamaHelper> set = GAML.LISTENERS_BY_CLASS.get(c);
+					Set<IGamaHelper> set = IVariable.getListenersByClass(c);
 					for (IGamaHelper h : set) {
 						if (h.getName().equals(getName())) {
 							DEBUG.OUT("--> Adding listener found in " + c.getSimpleName());
