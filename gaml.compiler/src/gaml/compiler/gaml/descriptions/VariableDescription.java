@@ -164,7 +164,7 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 	 */
 	@Override
 	public void copyFrom(final IVariableDescription vd) {
-		VariableDescription v2 = (VariableDescription) vd;
+		final VariableDescription v2 = (VariableDescription) vd;
 		// Special cases for functions
 		final boolean isFunction = hasFacet(FUNCTION);
 		// We dont replace existing facets
@@ -279,22 +279,25 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 
 		try (final ICollector<IVarDescriptionUser> alreadyProcessed = Collector.getSet();
 				final ICollector<IVariableDescription> result = Collector.getSet()) {
-			final Collection<String> deps = dependencies.get(getName());
+			final String varName = getName();
+			final Collection<String> deps = dependencies.get(varName);
 			if (deps != null) {
+				final ISpeciesDescription speciesContext = getSpeciesContext();
 				for (final String s : deps) {
-					final IVariableDescription vd = getSpeciesContext().getAttribute(s);
+					final IVariableDescription vd = speciesContext.getAttribute(s);
 					if (vd != null) { result.add(vd); }
 				}
 			}
 
+			final ISpeciesDescription speciesContext = getSpeciesContext();
 			this.visitFacets(facetsToVisit, (fName, exp) -> {
 				final IExpression expression = exp.getExpression();
-				if (expression != null) { expression.collectUsedVarsOf(getSpeciesContext(), alreadyProcessed, result); }
+				if (expression != null) { expression.collectUsedVarsOf(speciesContext, alreadyProcessed, result); }
 				return true;
 			});
 			if (isSyntheticSpeciesContainer()) {
 				final ISpeciesDescription mySpecies = (ISpeciesDescription) getEnclosingDescription();
-				final ISpeciesDescription sd = mySpecies.getMicroSpecies(getName());
+				final ISpeciesDescription sd = mySpecies.getMicroSpecies(varName);
 				sd.collectUsedVarsOf(mySpecies, alreadyProcessed, result);
 			}
 			if (!includingThis) { result.remove(this); }

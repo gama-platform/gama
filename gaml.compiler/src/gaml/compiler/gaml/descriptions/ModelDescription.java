@@ -392,7 +392,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		if (experiments == null) return false;
 		if (experiments.containsKey(nameOrTitle)) return true;
 		for (final ExperimentDescription exp : experiments.values()) {
-			String s = exp.getExperimentTitleFacet();
+			final String s = exp.getExperimentTitleFacet();
 			if (s != null && s.equals(nameOrTitle)) return true;
 		}
 		return false;
@@ -471,7 +471,8 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		final ExperimentDescription desc = experiments.get(name);
 		if (desc == null) {
 			for (final ExperimentDescription ed : experiments.values()) {
-				if (ed.getExperimentTitleFacet().equals(name)) return ed;
+				final String title = ed.getExperimentTitleFacet();
+				if (title != null && title.equals(name)) return ed;
 			}
 		}
 		return desc;

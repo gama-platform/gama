@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gaml.compiler.gaml.expression;
+package gaml.compiler.gaml.descriptions;
 
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.descriptions.IDescription;
@@ -17,7 +17,7 @@ import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
-import gaml.compiler.gaml.descriptions.EcoreBasedExpressionDescription;
+import gaml.compiler.gaml.expression.DenotedActionExpression;
 
 /**
  * The Class BlockExpressionDescription.

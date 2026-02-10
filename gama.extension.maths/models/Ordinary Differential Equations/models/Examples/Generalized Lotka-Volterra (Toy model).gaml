@@ -43,7 +43,7 @@ global {
 	bool showCumulatedGraph <- true;
 	
 	// names generator parameters
-	string language <- "French" among: ["French","English"];
+	string language <- "French" among: ["French","English"]; 
 
 	map<string,list<list<string>>> animal_names <- map(
 										"French"::

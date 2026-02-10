@@ -36,11 +36,11 @@ import gaml.compiler.gaml.StringLiteral;
 import gaml.compiler.gaml.Unary;
 import gaml.compiler.gaml.UnitName;
 import gaml.compiler.gaml.descriptions.BasicExpressionDescription;
+import gaml.compiler.gaml.descriptions.BlockExpressionDescription;
 import gaml.compiler.gaml.descriptions.ConstantExpressionDescription;
 import gaml.compiler.gaml.descriptions.EcoreBasedExpressionDescription;
 import gaml.compiler.gaml.descriptions.LabelExpressionDescription;
 import gaml.compiler.gaml.descriptions.StringBasedExpressionDescription;
-import gaml.compiler.gaml.expression.BlockExpressionDescription;
 import gaml.compiler.gaml.resource.GamlResourceServices;
 import gaml.compiler.gaml.util.GamlSwitch;
 

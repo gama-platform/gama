@@ -208,7 +208,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	@Override
 	public IVariableDescription getAttribute(final String vn) {
 		final IVariableDescription attribute = attributes == null ? null : attributes.get(vn);
-		if (attribute == null && parent != null && parent != this) return getParent().getAttribute(vn);
+		if (attribute == null && parent != null && parent != this) return parent.getAttribute(vn);
 		return attribute;
 	}
 
@@ -227,7 +227,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	@Override
 	public boolean hasAttribute(final String a) {
 		return attributes != null && attributes.containsKey(a)
-				|| parent != null && parent != this && getParent().hasAttribute(a);
+				|| parent != null && parent != this && parent.hasAttribute(a);
 	}
 
 	@Override
@@ -551,7 +551,9 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	public IActionDescription getAction(final String aName) {
 		IActionDescription ownAction = null;
 		if (actions != null) { ownAction = actions.get(aName); }
-		if (ownAction == null && parent != null && parent != this) { ownAction = getParent().getAction(aName); }
+		if (ownAction == null && parent != null && parent != this) { 
+			ownAction = parent.getAction(aName); 
+		}
 		return ownAction;
 	}
 
@@ -586,7 +588,9 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	public Collection<String> getActionNames() {
 		final Collection<String> allNames =
 				new LinkedHashSet(actions == null ? Collections.EMPTY_LIST : actions.keySet());
-		if (parent != null && parent != this) { allNames.addAll(getParent().getActionNames()); }
+		if (parent != null && parent != this) { 
+			allNames.addAll(parent.getActionNames()); 
+		}
 		return allNames;
 	}
 
@@ -605,7 +609,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 			return parent.hasAction(a, false);
 		}
 		return actions != null && actions.containsKey(a)
-				|| parent != null && parent != this && getParent().hasAction(a, superInvocation);
+				|| parent != null && parent != this && parent.hasAction(a, superInvocation);
 	}
 
 	@Override

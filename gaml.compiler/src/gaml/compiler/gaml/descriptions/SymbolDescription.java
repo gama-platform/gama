@@ -454,8 +454,8 @@ public abstract class SymbolDescription implements IDescription {
 	 *            the names of the facets to compile
 	 */
 	protected void compileTypeProviderFacets(final String... names) {
-		for (String s : names) {
-			IExpressionDescription exp = getFacet(s);
+		for (final String s : names) {
+			final IExpressionDescription exp = getFacet(s);
 			if (exp != null) { exp.compile(this); }
 		}
 	}
@@ -700,12 +700,15 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * Gets the name of this symbol. If the name is not set, attempts to get it from the NAME facet.
+	 * The result is cached to avoid repeated lookups.
 	 *
 	 * @return the symbol name
 	 */
 	@Override
 	public String getName() {
-		if (name == null) { name = getLitteral(IKeyword.NAME); }
+		if (name == null) { 
+			name = getLitteral(IKeyword.NAME); 
+		}
 		return name;
 	}
 
@@ -1208,8 +1211,8 @@ public abstract class SymbolDescription implements IDescription {
 		}
 		final IDescription enclosing = getEnclosingDescription();
 		if (enclosing != null) {
-			String kw = getKeyword();
-			String ekw = enclosing.getKeyword();
+			final String kw = getKeyword();
+			final String ekw = enclosing.getKeyword();
 			// We first verify that the description is at the right place
 			if (!proto.canBeDefinedIn(enclosing)) {
 				error(kw + " cannot be defined in " + ekw, IGamlIssue.WRONG_CONTEXT);
@@ -1252,9 +1255,9 @@ public abstract class SymbolDescription implements IDescription {
 		// Special case for "do", which can accept (at parsing time) any facet
 		final boolean isDo = isInvocation();
 		final boolean isBuiltIn = isBuiltIn();
-		List<String> mandatory = proto.getMandatoryFacets();
+		final List<String> mandatory = proto.getMandatoryFacets();
 		if (mandatory != null) {
-			for (String facet : mandatory) {
+			for (final String facet : mandatory) {
 				if (!facets.containsKey(facet)) {
 					error("Missing facet " + facet, IGamlIssue.MISSING_FACET, getUnderlyingElement(), facet, "nil");
 					return false;
