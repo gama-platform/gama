@@ -15,7 +15,7 @@ import java.lang.annotation.RetentionPolicy;
  * @since 2 juin 2012
  *
  */
-@Retention (RetentionPolicy.CLASS)
+@Retention (RetentionPolicy.RUNTIME)
 @Inherited
 public @interface arg {
 

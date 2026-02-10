@@ -83,7 +83,7 @@ import java.lang.annotation.Target;
  * @author GAMA Development Team
  * @since GAMA 1.0
  */
-@Retention (RetentionPolicy.CLASS)
+@Retention (RetentionPolicy.RUNTIME)
 @Target (ElementType.METHOD)
 public @interface action {
 

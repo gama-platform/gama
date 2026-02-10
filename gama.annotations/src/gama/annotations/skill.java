@@ -141,7 +141,7 @@ import java.lang.annotation.Target;
  * @author GAMA Development Team
  * @since GAMA 1.0 (June 2, 2012)
  */
-@Retention (RetentionPolicy.CLASS)
+@Retention (RetentionPolicy.RUNTIME)
 @Target (ElementType.TYPE)
 public @interface skill {
 
