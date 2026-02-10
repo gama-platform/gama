@@ -14,7 +14,6 @@ import static gama.ui.shared.resources.IGamaIcons.BUILD_ALL;
 import static gama.ui.shared.resources.IGamaIcons.TEST_RUN;
 import static gama.ui.shared.resources.IGamaIcons.TOGGLE_INFOS;
 import static gama.ui.shared.resources.IGamaIcons.TOGGLE_WARNINGS;
-import static gaml.compiler.gaml.validation.GamlResourceValidator.DURATION;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -42,7 +41,6 @@ import gama.api.GAMA;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
-import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.ui.shared.commands.TestsRunner;
 import gama.ui.shared.menus.GamaMenu;
@@ -195,7 +193,8 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 		GamlResourceIndexer.eraseIndex();
 
 		try {
-			DEBUG.BANNER(BANNER_CATEGORY.COMPIL, "Last compilation of all models", "in", String.valueOf(DURATION()));
+			// DEBUG.BANNER(BANNER_CATEGORY.COMPIL, "Last compilation of all models", "in",
+			// String.valueOf(DURATION()) + "ms");
 			GamlResourceValidator.RESET();
 			GAMA.getWorkspaceManager().getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
 		} catch (CoreException e) {

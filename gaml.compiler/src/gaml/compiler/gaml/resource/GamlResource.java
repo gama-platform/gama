@@ -63,7 +63,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	}
 
 	/** The element. */
-	ISyntacticElement element;
+	volatile ISyntacticElement element;
 
 	/**
 	 * Gets the validation context.
@@ -123,10 +123,15 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 * @return the syntactic contents
 	 */
 	public ISyntacticElement getSyntacticContents() {
-		if (element != null) // DEBUG.OUT("Reusing existing contents for " + uri.lastSegment());
-			return element;
-		setElement(GamlResourceServices.buildSyntacticContents(this));
-		return element;
+		ISyntacticElement result = element;
+		if (result != null) return result;
+		synchronized (this) {
+			result = element;
+			if (result == null) {
+				element = result = GamlResourceServices.buildSyntacticContents(this);
+			}
+		}
+		return result;
 	}
 
 	/** The Constant TO_SYNTACTIC_CONTENTS. */
@@ -182,7 +187,8 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 */
 	public IModelDescription buildCompleteDescription() {
 		final ImportedResources imports = GamlResourceIndexer.validateImportsOf(this);
-		if (hasErrors() || hasSemanticErrors()) return null;
+		final boolean hasErrors = hasErrors() || hasSemanticErrors();
+		if (hasErrors) return null;
 		final IModelDescription model = buildModelDescription(imports);
 		// If, for whatever reason, the description is null, we stop the
 		// semantic validation
@@ -380,15 +386,13 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 		switch (severity) {
 			case ERROR -> getErrors().add(diagnostic);
 			case WARNING -> getWarnings().add(diagnostic);
-			default -> {
-			}
+			default -> {}
 		}
-
 	}
 
 	@Override
 	public boolean hasConsumedDiagnostics(final Severity severity) {
-		return !getErrors().isEmpty() && !getWarnings().isEmpty();
+		return !getErrors().isEmpty() || !getWarnings().isEmpty();
 	}
 
 }
