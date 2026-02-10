@@ -12,7 +12,9 @@ package gama.api.gaml.types;
 import java.io.IOException;
 import java.io.StreamTokenizer;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -42,7 +44,8 @@ public class TypesManager implements ITypesManager {
 	private TypesManager parent;
 
 	/** The types. */
-	private final ConcurrentHashMap<String, IType<?>> types = new ConcurrentHashMap(5, 0.75f);
+	private final ConcurrentHashMap<String, IType<?>> types = new ConcurrentHashMap<>();
+	private final Set<IType<?>> uniqueTypes = ConcurrentHashMap.newKeySet();
 
 	/**
 	 * Instantiates a new types manager.
@@ -55,7 +58,7 @@ public class TypesManager implements ITypesManager {
 	}
 
 	@Override
-	public Set<IType<?>> getAllTypes() { return new HashSet(types.values()); }
+	public Set<IType<?>> getAllTypes() { return new HashSet(uniqueTypes); }
 
 	@Override
 	public void setParent(final ITypesManager parent) { this.parent = (TypesManager) parent; }
@@ -122,6 +125,7 @@ public class TypesManager implements ITypesManager {
 		final int i = t.id();
 		final String name = t.toString();
 		types.put(name, t);
+		uniqueTypes.add(t);
 		// Hack to allow types to be declared with their id as string
 		types.put(String.valueOf(i), t);
 		// for (final Class cc : wraps) {
@@ -143,6 +147,7 @@ public class TypesManager implements ITypesManager {
 		final int i = t.id();
 		final String name = t.toString();
 		types.put(name, t);
+		uniqueTypes.add(t);
 		// Hack to allow types to be declared with their id as string
 		types.put(String.valueOf(i), t);
 		ArtefactProtoRegistry.addNewTypeName(name, t.getVarKind());
@@ -214,17 +219,37 @@ public class TypesManager implements ITypesManager {
 	@Override
 	public void dispose() {
 		types.clear();
+		uniqueTypes.clear();
 	}
 
 	@Override
 	public IType decodeType(final String s) {
-		StreamTokenizer tokenizer = new StreamTokenizer(new StringReader(s));
-		try {
-			tokenizer.nextToken(); // Skip "BOF" token
-			return decode(tokenizer);
-		} catch (IOException e) {
-			throw new RuntimeException();
+		if (s == null || s.isEmpty()) return Types.NO_TYPE;
+		int index = s.indexOf('<');
+		if (index == -1) return get(s);
+		String baseName = s.substring(0, index);
+		IType base = get(baseName);
+		if (!(base instanceof IContainerType)) return base;
+		String params = s.substring(index + 1, s.lastIndexOf('>'));
+		List<String> args = new ArrayList<>();
+		int depth = 0;
+		int start = 0;
+		int length = params.length();
+		for (int i = 0; i < length; i++) {
+			char c = params.charAt(i);
+			if (c == '<') depth++;
+			else if (c == '>') depth--;
+			else if (c == ',' && depth == 0) {
+				args.add(params.substring(start, i).trim());
+				start = i + 1;
+			}
 		}
+		args.add(params.substring(start).trim());
+
+		IType key = args.isEmpty() ? Types.NO_TYPE : decodeType(args.get(0));
+		if (args.size() == 1) return ((IContainerType) base).of(key);
+		IType content = decodeType(args.get(args.size() - 1));
+		return ((IContainerType) base).of(key, content);
 	}
 
 	/**

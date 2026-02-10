@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Iterables;
 
@@ -33,18 +34,13 @@ import gama.dev.DEBUG;
 import one.util.streamex.StreamEx;
 
 /**
- * Written by drogoul Modified on 9 juin 2010
- *
- * @todo Description
- *
- */
-
-/**
  * The Class Types.
- */
-
-/**
- * The Class Types.
+ *
+ * This utility class provides static access to the built-in types of the GAML language, as well as methods to retrieve
+ * types by their name, ID, or underlying Java class. It also manages the type hierarchy and the correspondence between
+ * Java classes and GAML types.
+ *
+ * @author drogoul
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class Types {
@@ -53,58 +49,58 @@ public class Types {
 		DEBUG.OFF();
 	}
 
-	/** The Constant builtInTypes. */
+	/** The manager responsible for storing and retrieving built-in types. */
 	public final static ITypesManager builtInTypes = new TypesManager(null);
 
-	/** The built in species map. */
+	/** A simplified cache of built-in species (as types) */
 	private static volatile Map<String, ISpeciesDescription> builtInSpeciesMap;
 
-	/** The Constant NO_TYPE. */
+	/** The constant representing the absence of a type (GamaNoType). */
 	public final static IType NO_TYPE = new GamaNoType();
 
-	/** The type. */
+	/** Static references to common built-in types for fast access. */
 	public static IType AGENT, PATH, FONT, SKILL, DATE, ACTION, TYPE;
 
-	/** The int. */
+	/** The singleton instance of the Integer type. */
 	public static GamaIntegerType INT;
 
-	/** The float. */
+	/** The singleton instance of the Float type. */
 	public static GamaFloatType FLOAT;
 
-	/** The color. */
+	/** The singleton instance of the Color type. */
 	public static GamaColorType COLOR;
 
-	/** The bool. */
+	/** The singleton instance of the Boolean type. */
 	public static GamaBoolType BOOL;
 
-	/** The string. */
+	/** The singleton instance of the String type. */
 	public static GamaStringType STRING;
 
-	/** The point. */
+	/** The singleton instance of the Point type. */
 	public static GamaPointType POINT;
 
-	/** The geometry. */
+	/** The singleton instance of the Geometry type. */
 	public static GamaGeometryType GEOMETRY;
 
-	/** The topology. */
+	/** The singleton instance of the Topology type. */
 	public static GamaTopologyType TOPOLOGY;
 
-	/** The field. */
+	/** The singleton instance of the Field type. */
 	public static GamaFieldType FIELD;
 
-	/** The species. */
+	/** Static references to common container types. */
 	public static IContainerType LIST, MATRIX, MAP, GRAPH, FILE, PAIR, CONTAINER, SPECIES;
 
-	/** The Constant CLASSES_TYPES_CORRESPONDANCE. */
-	private static final Map<Class, String> CLASSES_TYPES_CORRESPONDANCE = new HashMap<>();
+	/** A thread-safe cache mapping Java classes to their corresponding GAML type names. */
+	private static final Map<Class, String> CLASSES_TYPES_CORRESPONDANCE = new ConcurrentHashMap<>();
 
 	/**
-	 * Adds the class type correspondance.
+	 * Associates a Java class with a GAML type name in the cache.
 	 *
 	 * @param clazz
-	 *            the clazz
+	 *            the Java class
 	 * @param type
-	 *            the type
+	 *            the GAML type name
 	 */
 	public static final void addClassTypeCorrespondance(final Class clazz, final String type) {
 		if (clazz == null || type == null) return;
@@ -112,12 +108,13 @@ public class Types {
 	}
 
 	/**
-	 * Cache.
+	 * Caches a type instance into the corresponding static field based on its ID. This method is called during type
+	 * initialization.
 	 *
 	 * @param id
-	 *            the id
+	 *            the type ID (see {@link IType})
 	 * @param instance
-	 *            the instance
+	 *            the type instance
 	 */
 	public static void cache(final int id, final IType instance) {
 		switch (id) {
@@ -198,11 +195,11 @@ public class Types {
 	}
 
 	/**
-	 * Gets the.
+	 * Retrieves a built-in type by its integer ID.
 	 *
 	 * @param type
-	 *            the type
-	 * @return the i type
+	 *            the type ID (see constants in {@link IType})
+	 * @return the IType instance, or a type looked up by string ID if not found in the fast switch.
 	 */
 	public static IType get(final int type) {
 		// use cache first
@@ -256,60 +253,64 @@ public class Types {
 	}
 
 	/**
-	 * Gets the.
+	 * Retrieves a type by its name.
 	 *
 	 * @param type
-	 *            the type
-	 * @return the i type
+	 *            the name of the type (e.g., "int", "list", "species_name")
+	 * @return the IType instance, or {@link Types#NO_TYPE} if not found.
 	 */
 	public static IType get(final String type) {
 		return builtInTypes.get(type);
 	}
 
 	/**
-	 * Gets the.
+	 * Retrieves the GAML type corresponding to a given Java class. This method uses a cache to speed up lookups and
+	 * searches the hierarchy of the class if no direct mapping is found.
 	 *
 	 * @param <T>
 	 *            the generic type
 	 * @param type
-	 *            the type
-	 * @return the i type
+	 *            the Java class
+	 * @return the GAML type, or {@link Types#NO_TYPE} if no correspondence is found.
 	 */
 	public static <T> IType<T> get(final Class<T> type) {
+		// Optimization: direct lookup first
+		String name = CLASSES_TYPES_CORRESPONDANCE.get(type);
+		if (name != null) return (IType<T>) builtInTypes.get(name);
 		final IType<T> t = internalGet(type);
 		return t == null ? Types.NO_TYPE : t;
 	}
 
 	/**
-	 * Internal get.
+	 * Internal method to find the GAML type for a Java class by traversing its hierarchy. The result is always cached.
 	 *
 	 * @param <T>
 	 *            the generic type
 	 * @param type
-	 *            the type
-	 * @return the i type
+	 *            the Java class to look up
+	 * @return the found IType, or NO_TYPE
 	 */
 	private static <T> IType<T> internalGet(final Class<T> type) {
-		final IType<T>[] t = new IType[] { builtInTypes.get(Types.CLASSES_TYPES_CORRESPONDANCE.get(type)) };
-		boolean newEntry = false;
-		if (t[0] == Types.NO_TYPE && !type.isInterface()) {
-			newEntry = true;
+		IType<T> result = Types.NO_TYPE;
+		// We iterate over the values to find a superclass
+		if (!type.isInterface()) {
 			for (Map.Entry<Class, String> entry : Types.CLASSES_TYPES_CORRESPONDANCE.entrySet()) {
 				Class<?> support = entry.getKey();
 				String id = entry.getValue();
+				// We exclude Object.class to avoid matching everything to NO_TYPE if cached
 				if (support != Object.class && support.isAssignableFrom(type)) {
-					t[0] = (IType<T>) builtInTypes.get(id);
-					newEntry = false;
+					result = (IType<T>) builtInTypes.get(id);
 					break;
 				}
 			}
 		}
-		if (newEntry) { addClassTypeCorrespondance(type, t[0].toString()); }
-		return t[0];
+		// We always cache the result, even if it is NO_TYPE (to avoid recomputing it)
+		addClassTypeCorrespondance(type, result.toString());
+		return result;
 	}
 
 	/**
-	 * Gets the type names.
+	 * Returns an iterable of all known type names.
 	 *
 	 * @return the type names
 	 */
@@ -318,7 +319,8 @@ public class Types {
 	}
 
 	/**
-	 * Inits the types hierarchy of built-in types
+	 * Initializes the type hierarchy of built-in types. This computes the parent-child relationships between types based
+	 * on their underlying Java classes and sets up the fields for each type.
 	 */
 	public static void init() {
 		// We build a graph-type multimap structure
@@ -358,35 +360,44 @@ public class Types {
 	}
 
 	/**
-	 * Gets the built in species.
+	 * Retrieves a map of all built-in species descriptions.
 	 *
-	 * @return the built in species
+	 * @return a map where keys are species names and values are their descriptions.
 	 */
 	public static Map<String, ? extends ISpeciesDescription> getBuiltInSpecies() {
 		if (builtInSpeciesMap != null) return builtInSpeciesMap;
-		final IModelDescription root = IModelDescription.ROOT[0];
-		List<ISpeciesDescription> result = new ArrayList();
-		root.getAllSpecies(result);
-		builtInSpeciesMap = StreamEx.of(result).toMap(ISpeciesDescription::getName, sd -> sd);
+		synchronized (Types.class) {
+			if (builtInSpeciesMap != null) return builtInSpeciesMap;
+			final IModelDescription root = IModelDescription.ROOT[0];
+			List<ISpeciesDescription> result = new ArrayList<>();
+			root.getAllSpecies(result);
+			builtInSpeciesMap = StreamEx.of(result).toMap(ISpeciesDescription::getName, sd -> sd);
+		}
 		return builtInSpeciesMap;
 	}
 
 	/**
-	 * @param matchType
-	 * @param switchType
-	 * @return
+	 * Checks if two types represent a combination of int and float (in any order).
+	 *
+	 * @param t1
+	 *            the first type
+	 * @param t2
+	 *            the second type
+	 * @return true if one is INT and the other is FLOAT
 	 */
 	public static boolean intFloatCase(final IType t1, final IType t2) {
 		return t1 == FLOAT && t2 == INT || t2 == FLOAT && t1 == INT;
 	}
 
 	/**
-	 * Tests whether constant list expressions can still be compatible with a receiver even if their actual types differ
+	 * Tests whether an expression is compatible with a container receiver (list or map) when the expression is empty,
+	 * handling nested empty lists recursively.
 	 *
 	 * @param receiverType
-	 * @param assignedType
+	 *            the type of the variable receiving the value
 	 * @param expr2
-	 * @return
+	 *            the expression being assigned
+	 * @return true if the expression represents an empty container compatible with the receiver
 	 */
 	public static boolean isEmptyContainerCase(final IType receiverType, final IExpression expr2) {
 		final IType receiver = receiverType.getGamlType();
@@ -404,22 +415,20 @@ public class Types {
 	}
 
 	/**
-	 * Gets the all fields.
+	 * Retrieves all fields (attributes/actions) defined across all known types.
 	 *
-	 * @return the all fields
+	 * @return an iterable of all IArtefactProto instances representing fields.
 	 */
 	public static Iterable<IArtefactProto> getAllFields() {
 		return concat(transform(builtInTypes.getAllTypes(), each -> each.getFieldGetters().values()));
 	}
 
 	/**
-	 * Checks for type.
+	 * Checks if a type with the given name exists.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param name
-	 *            the name
-	 * @return true, if successful
-	 * @date 7 janv. 2024
+	 *            the name of the type
+	 * @return true if the type exists, false otherwise
 	 */
 	public static boolean hasType(final String name) {
 		return builtInTypes.containsType(name);
