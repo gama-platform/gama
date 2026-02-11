@@ -38,6 +38,17 @@ import gama.api.runtime.scope.IScope;
 		doc = @doc ("Meta-type of the skills present in the GAML language"))
 public class GamaSkillType extends GamaType<ISkill> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaSkillType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@Override
 	@doc ("Tries to convert the parameter to a skill. If it is a skill already, returns it. If it is a string, returns it if it is registered in GAMA. Otherwise return null")
 	public ISkill cast(final IScope scope, final Object obj, final Object param, final boolean copy)

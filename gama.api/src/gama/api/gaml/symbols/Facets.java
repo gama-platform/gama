@@ -13,7 +13,6 @@ package gama.api.gaml.symbols;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import gama.api.compilation.descriptions.IDescription;
@@ -28,9 +27,9 @@ import gama.api.utils.StringUtils;
 import gama.dev.DEBUG;
 
 /**
- * Represents a map of named facet expressions in GAML.
- * Provides convenient access to expression descriptions with type denotation, copying, and disposal support.
- * Facets are typically used to represent optional or named parameters in GAML statements and expressions.
+ * Represents a map of named facet expressions in GAML. Provides convenient access to expression descriptions with type
+ * denotation, copying, and disposal support. Facets are typically used to represent optional or named parameters in
+ * GAML statements and expressions.
  *
  * @author drogoul
  */
@@ -61,17 +60,19 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Instantiates a facets map with a specific initial capacity.
 	 *
-	 * @param size the initial capacity
+	 * @param size
+	 *            the initial capacity
 	 */
 	protected Facets(final int size) {
 		super(size, 0.8f);
 	}
 
 	/**
-	 * Instantiates a facets map from alternating key-value string pairs.
-	 * Pairs are converted to constant expressions automatically.
+	 * Instantiates a facets map from alternating key-value string pairs. Pairs are converted to constant expressions
+	 * automatically.
 	 *
-	 * @param strings alternating keys and values (e.g., "key1", "value1", "key2", "value2")
+	 * @param strings
+	 *            alternating keys and values (e.g., "key1", "value1", "key2", "value2")
 	 */
 	public Facets(final String... strings) {
 		this(strings == null ? 0 : (strings.length + 1) / 2);
@@ -85,7 +86,8 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Instantiates a facets map from another facets map (shallow copy).
 	 *
-	 * @param other the source facets map
+	 * @param other
+	 *            the source facets map
 	 */
 	public Facets(final Facets other) {
 		super(other == null ? Collections.emptyMap() : other);
@@ -94,18 +96,18 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Complement with.
 	 *
-	 * @param newFacets the new facets to add (without replacing existing values)
+	 * @param newFacets
+	 *            the new facets to add (without replacing existing values)
 	 */
 	public void complementWith(final Facets newFacets) {
-		if (newFacets != null) {
-			newFacets.forEach(this::putIfAbsent);
-		}
+		if (newFacets != null) { newFacets.forEach(this::putIfAbsent); }
 	}
 
 	/**
 	 * Gets the first matching expression description among the given keys.
 	 *
-	 * @param keys the keys to search
+	 * @param keys
+	 *            the keys to search
 	 * @return the first found expression description, or null
 	 */
 	public IExpressionDescription getDescr(final String... keys) {
@@ -120,7 +122,8 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Gets the label.
 	 *
-	 * @param key the key
+	 * @param key
+	 *            the key
 	 * @return the label as a Java string, or null
 	 */
 	public String getLabel(final String key) {
@@ -131,7 +134,8 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Gets the expression for a given key.
 	 *
-	 * @param key the key
+	 * @param key
+	 *            the key
 	 * @return the expression, or null if not found
 	 */
 	public IExpression getExpr(final String key) {
@@ -141,7 +145,8 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Gets the first existing expression among the given keys.
 	 *
-	 * @param keys the keys to search
+	 * @param keys
+	 *            the keys to search
 	 * @return the first found expression, or null
 	 */
 	public IExpression getExpr(final String... keys) {
@@ -156,8 +161,10 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Gets the expression for a given key with a fallback.
 	 *
-	 * @param key the key
-	 * @param ifAbsent the fallback expression
+	 * @param key
+	 *            the key
+	 * @param ifAbsent
+	 *            the fallback expression
 	 * @return the expression or fallback
 	 */
 	public IExpression getExpr(final String key, final IExpression ifAbsent) {
@@ -168,8 +175,10 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Put as label.
 	 *
-	 * @param key the key
-	 * @param desc the label description
+	 * @param key
+	 *            the key
+	 * @param desc
+	 *            the label description
 	 */
 	public void putAsLabel(final String key, final String desc) {
 		put(key, GAML.getExpressionDescriptionFactory().createLabel(desc));
@@ -178,8 +187,10 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Put expression.
 	 *
-	 * @param key the key
-	 * @param expr the expression
+	 * @param key
+	 *            the key
+	 * @param expr
+	 *            the expression
 	 */
 	public void putExpression(final String key, final IExpression expr) {
 		final IExpressionDescription result = get(key);
@@ -193,8 +204,10 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Put expression description.
 	 *
-	 * @param key the key
-	 * @param expr the expression description
+	 * @param key
+	 *            the key
+	 * @param expr
+	 *            the expression description
 	 * @return the previous expression description, or null
 	 */
 	@Override
@@ -206,8 +219,10 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Checks if a facet equals a string value.
 	 *
-	 * @param key the key
-	 * @param o the string to compare
+	 * @param key
+	 *            the key
+	 * @param o
+	 *            the string to compare
 	 * @return true if the facet's string value matches
 	 */
 	public boolean equals(final String key, final String o) {
@@ -231,17 +246,14 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	 */
 	@Override
 	public void dispose() {
-		forEach((s, e) -> {
-			if (e != null) {
-				e.dispose();
-			}
-		});
+		forEach((s, e) -> { if (e != null) { e.dispose(); } });
 	}
 
 	/**
 	 * For each facet.
 	 *
-	 * @param visitor the visitor callback
+	 * @param visitor
+	 *            the visitor callback
 	 * @return true if all facets were processed, false if visitor returned false
 	 */
 	public boolean forEachFacet(final BiConsumerWithPruning<String, IExpressionDescription> visitor) {
@@ -255,8 +267,10 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * For each facet in a restricted set of names.
 	 *
-	 * @param names the names to process (or null for all)
-	 * @param visitor the visitor callback
+	 * @param names
+	 *            the names to process (or null for all)
+	 * @param visitor
+	 *            the visitor callback
 	 * @return true if all matching facets were processed, false if visitor returned false
 	 */
 	public boolean forEachFacetIn(final Set<String> names,
@@ -273,23 +287,25 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Gets the first existing key among the given strings.
 	 *
-	 * @param strings the keys to check
+	 * @param strings
+	 *            the keys to check
 	 * @return the first found key, or null
 	 */
 	public String getFirstExistingAmong(final String... strings) {
 		if (strings == null || strings.length == 0) return null;
-		for (final String s : strings) {
-			if (containsKey(s)) return s;
-		}
+		for (final String s : strings) { if (containsKey(s)) return s; }
 		return null;
 	}
 
 	/**
 	 * Gets the type denoted by a facet.
 	 *
-	 * @param key the facet key
-	 * @param context the description context for type resolution
-	 * @param noType the fallback type if not found
+	 * @param key
+	 *            the facet key
+	 * @param context
+	 *            the description context for type resolution
+	 * @param noType
+	 *            the fallback type if not found
 	 * @return the denoted type or fallback
 	 */
 	public IType<?> getTypeDenotedBy(final String key, final IDescription context, final IType<?> noType) {
@@ -300,7 +316,8 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Contains key.
 	 *
-	 * @param key the key
+	 * @param key
+	 *            the key
 	 * @return true if the key exists
 	 */
 	public boolean containsKey(final String key) {
@@ -310,7 +327,8 @@ public class Facets extends HashMap<String, IExpressionDescription> implements I
 	/**
 	 * Removes the facet.
 	 *
-	 * @param key the key
+	 * @param key
+	 *            the key
 	 * @return the removed expression description
 	 */
 	public IExpressionDescription remove(final String key) {

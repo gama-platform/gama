@@ -45,6 +45,17 @@ import gama.api.utils.files.IGamaFile;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaFileType extends GamaContainerType<IGamaFile> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaFileType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	/** The extensions to full type. */
 	public static final Map<String, ParametricFileType> extensionsToFullType = new HashMap<>();
 
@@ -55,7 +66,7 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 	static final Multimap<String, String> aliasesToExtensions = HashMultimap.<String, String> create();
 
 	/** The current file type index. */
-	static int currentFileTypeIndex = 1000;
+	private static int currentFileTypeIndex = 0;
 
 	/**
 	 * Adds a new file type definition.
@@ -79,15 +90,13 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 		}
 
 		// classToExtensions.put(clazz, exts);
-		final ParametricFileType t =
-				new ParametricFileType(alias + "_file", clazz, builder, bufferType, keyType, contentType);
+		final ParametricFileType t = new ParametricFileType(alias + "_file", clazz, builder, bufferType, keyType,
+				contentType, provideNewIndex());
 		t.setDefiningPlugin(plugin);
 		aliasesToFullType.put(alias, t);
 		for (final String s : aliasesToExtensions.get(alias)) { extensionsToFullType.put(s, t); }
 		t.setParent(Types.FILE);
-		Types.builtInTypes.initType(alias + "_file", t, IType.AVAILABLE_TYPES + ++currentFileTypeIndex,
-				ISymbolKind.Variable.CONTAINER, clazz, plugin);
-
+		Types.builtInTypes.addRegularType(t.getName(), t, plugin);
 	}
 
 	/**
@@ -99,7 +108,7 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 	 */
 	public static ParametricFileType getTypeFromAlias(final String alias) {
 		final ParametricFileType ft = aliasesToFullType.get(alias);
-		if (ft == null) return ParametricFileType.getGenericInstance();
+		if (ft == null) return ParametricFileType.getGenericFileType();
 		return ft;
 	}
 
@@ -114,7 +123,7 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 		final IPath p = new Path(fileName);
 		final String ext = p.getFileExtension();
 		ParametricFileType ft = extensionsToFullType.get(ext);
-		if (ft == null) { ft = ParametricFileType.getGenericInstance(); }
+		if (ft == null) { ft = ParametricFileType.getGenericFileType(); }
 		return ft;
 	}
 
@@ -196,6 +205,13 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 			return getTypeFromFileName(s);
 		}
 		return super.typeIfCasting(exp);
+	}
+
+	/**
+	 * @return
+	 */
+	public static int provideNewIndex() {
+		return IType.BEGINNING_OF_FILE_TYPES + ++currentFileTypeIndex;
 	}
 
 }

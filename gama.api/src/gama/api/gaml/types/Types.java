@@ -56,7 +56,7 @@ public class Types {
 	private static volatile Map<String, ISpeciesDescription> builtInSpeciesMap;
 
 	/** The constant representing the absence of a type (GamaNoType). */
-	public final static IType NO_TYPE = new GamaNoType();
+	public final static IType NO_TYPE = new GamaNoType(builtInTypes);
 
 	/** Static references to common built-in types for fast access. */
 	public static IType AGENT, PATH, FONT, SKILL, DATE, ACTION, TYPE;
@@ -116,8 +116,8 @@ public class Types {
 	 * @param instance
 	 *            the type instance
 	 */
-	public static void cache(final int id, final IType instance) {
-		switch (id) {
+	public static void cache(final IType instance) {
+		switch (instance.id()) {
 			case IType.INT:
 				INT = (GamaIntegerType) instance;
 				break;
@@ -432,6 +432,18 @@ public class Types {
 	 */
 	public static boolean hasType(final String name) {
 		return builtInTypes.containsType(name);
+	}
+
+	/**
+	 * @param types
+	 * @param typesManager
+	 * @param typesManager2
+	 * @param typesManager3
+	 * @return
+	 */
+	public static ITypesManager findMoreSpecificTypesManagerAmong(final ITypesManager... typesManagers) {
+		for (ITypesManager tm : typesManagers) { if (tm != builtInTypes) return tm; }
+		return builtInTypes;
 	}
 
 }

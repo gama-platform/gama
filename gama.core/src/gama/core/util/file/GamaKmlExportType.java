@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaKmlExportType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaKmlExportType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -17,6 +16,7 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.ITypesManager;
 import gama.api.runtime.scope.IScope;
 
 /**
@@ -31,6 +31,17 @@ import gama.api.runtime.scope.IScope;
 		doc = { @doc (
 				value = "Type of variables that enables to store objects and to export them into a KML (Keyhole Markup Language) file") })
 public class GamaKmlExportType extends GamaType<GamaKmlExport> {
+
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaKmlExportType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
 
 	@Override
 	public boolean canCastToConst() {

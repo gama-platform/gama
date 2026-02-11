@@ -29,6 +29,17 @@ import gama.api.runtime.scope.IScope;
 		doc = @doc ("Metatype of all types in GAML"))
 public class GamaMetaType extends GamaType<IType<?>> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaMetaType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@Override
 	public boolean canCastToConst() {
 		return true;

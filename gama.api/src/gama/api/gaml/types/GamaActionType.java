@@ -33,6 +33,17 @@ import gama.api.runtime.scope.IScope;
 		concept = { IConcept.TYPE, IConcept.ACTION, IConcept.SPECIES })
 public class GamaActionType extends GamaType<IDescription> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaActionType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@Override
 	public boolean canCastToConst() {
 		return false;

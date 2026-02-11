@@ -123,11 +123,10 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 * @param wraps
 	 *            the wraps
 	 */
-	protected void _type(final String keyword, final IType typeInstance, final int id, final int varKind,
-			final Class... wraps) {
-		final IType<?> type = builtInTypes.initType(keyword, typeInstance, id, varKind, wraps[0], CURRENT_PLUGIN_NAME);
+	protected void _type(final String keyword, final IType typeInstance, final Class... wraps) {
+		final IType<?> type = builtInTypes.addRegularType(keyword, typeInstance, CURRENT_PLUGIN_NAME);
 		for (final Class cc : wraps) { Types.addClassTypeCorrespondance(cc, type.getName()); }
-		Types.cache(id, typeInstance);
+		Types.cache(typeInstance);
 	}
 
 	/**

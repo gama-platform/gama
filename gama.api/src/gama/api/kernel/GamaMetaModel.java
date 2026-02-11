@@ -29,8 +29,6 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription.Platform;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
-import gama.api.gaml.types.GamaGenericAgentType;
-import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.ISpecies;
@@ -189,7 +187,6 @@ public class GamaMetaModel {
 		final SpeciesProto ap = tempSpecies.remove(AGENT);
 		// "agent" has no super-species yet
 		agent = buildSpecies(ap, null, null, false, false);
-		((GamaGenericAgentType) Types.builtInTypes.get(IKeyword.AGENT)).setSpecies(agent);
 
 		// We then build "model", sub-species of "agent"
 		final SpeciesProto wp = tempSpecies.remove(MODEL);

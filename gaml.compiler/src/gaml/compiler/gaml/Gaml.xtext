@@ -51,11 +51,20 @@ S_Experiment:
 
 /**
  * Statements
+ * Optimized: keyword-based statements first, then ID-based statements
  */
 Statement:
-	(=> S_Declaration | 
-	((=> S_Assignment | S_1Expr_Facets_BlockOrEnd | S_Other | S_Do | S_Return | S_Solve | S_If | S_Try | S_Equations)))
-	| S_Display;
+	S_Display |
+	S_If |
+	S_Try |
+	S_Return |
+	S_Do |
+	S_Solve |
+	S_Equations |
+	S_1Expr_Facets_BlockOrEnd |
+	S_Declaration |
+	S_Assignment |
+	S_Other;
 
 S_1Expr_Facets_BlockOrEnd returns Statement:
 	key=_1Expr_Facets_BlockOrEnd_Key (firstFacet=FirstFacetKey)? (expr=Expression) (facets+=Facet)* (block=Block | ";");
@@ -249,8 +258,7 @@ BinaryOperator returns Expression:
 	Or | And | Cast | Comparison | Addition | Multiplication | Exponentiation | Binary | Pair | Unit;
 
 ArgumentPair:
-	=> (op=(Valid_ID) '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':'
-	)? right=Pair;
+	=> (op=(Valid_ID) '::')? right=Pair;
 
 Pair returns Expression:
 	If
@@ -330,7 +338,7 @@ AbstractRef returns Expression:
 	=>Function | VariableRef;
 
 Function returns Expression:
-	{Function} (left=ActionRef) (type=TypeInfo)? '(' right=ExpressionList? ')';
+	{Function} (left=ActionRef) (type=TypeInfo)? => '(' right=ExpressionList? ')';
 
 ExpressionList:
 	(exprs+=Expression (',' exprs+=Expression)*) | (exprs+=Parameter (',' exprs+=Parameter)*);
@@ -397,8 +405,7 @@ EquationFakeDefinition:
 	'**equation*' name=Valid_ID;
 
 Valid_ID:
-	_SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _1Expr_Facets_BlockOrEnd_Key | _EquationsKey | ID |
-	_ExperimentKey;
+	_SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _EquationsKey | ID | _ExperimentKey;
 
 /**
  * Terminals

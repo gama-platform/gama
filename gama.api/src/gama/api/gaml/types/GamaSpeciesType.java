@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaSpeciesType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaSpeciesType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -42,6 +41,17 @@ import gama.api.runtime.scope.IScope;
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 public class GamaSpeciesType extends GamaContainerType<ISpecies> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaSpeciesType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@Override
 	@doc (
 			value = "casting of the operand to a species.",
@@ -69,11 +79,11 @@ public class GamaSpeciesType extends GamaContainerType<ISpecies> {
 			throws GamaRuntimeException {
 		// TODO Add a more general cast with list of agents to find a common
 		// species.
-		ISpecies species = obj == null ? getDefault() : obj instanceof ISpecies ? (ISpecies) obj
-				: obj instanceof IAgent ? ((IAgent) obj).getSpecies()
-				: obj instanceof String
-						? scope.getModel() != null ? scope.getModel().getSpecies((String) obj) : getDefault()
-				: getDefault();
+		ISpecies species =
+				obj == null ? getDefault() : obj instanceof ISpecies i ? i : obj instanceof IAgent i ? i.getSpecies()
+						: obj instanceof String s
+								? scope.getModel() != null ? scope.getModel().getSpecies(s) : getDefault()
+						: getDefault();
 		if (obj instanceof IPopulationSet) { species = ((IPopulationSet) obj).getSpecies(); }
 		return species;
 	}

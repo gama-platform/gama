@@ -57,11 +57,16 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
 /**
  * Abstract base class for all GAML symbol descriptions in the compilation pipeline.
  * 
- * <p>SymbolDescription serves as the core intermediary representation between parsed GAML source code
- * and executable runtime objects. It bridges the gap between the Abstract Syntax Tree (AST) produced
- * by the parser and the runtime {@link ISymbol} instances that execute during simulation.</p>
+ * <p>
+ * SymbolDescription serves as the core intermediary representation between parsed GAML source code and executable
+ * runtime objects. It bridges the gap between the Abstract Syntax Tree (AST) produced by the parser and the runtime
+ * {@link ISymbol} instances that execute during simulation.
+ * </p>
  * 
- * <p><strong>Architectural Role:</strong></p>
+ * <p>
+ * <strong>Architectural Role:</strong>
+ * </p>
+ *
  * <pre>
  * Source Code (GAML) 
  *   → Parser → ISyntacticElement (AST)
@@ -70,17 +75,22 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
  *   → Execution
  * </pre>
  * 
- * <p><strong>Key Responsibilities:</strong></p>
+ * <p>
+ * <strong>Key Responsibilities:</strong>
+ * </p>
  * <ul>
- *   <li><strong>Semantic Validation:</strong> Validates syntax correctness, type compatibility, and semantic rules</li>
- *   <li><strong>Type Management:</strong> Resolves and manages GAML types for expressions and symbols</li>
- *   <li><strong>Facet Handling:</strong> Manages attributes (facets) like name, type, value, etc.</li>
- *   <li><strong>Hierarchy Management:</strong> Maintains parent-child relationships in the model structure</li>
- *   <li><strong>Symbol Compilation:</strong> Compiles descriptions into executable runtime symbols</li>
- *   <li><strong>Error Reporting:</strong> Provides detailed error messages with source location context</li>
+ * <li><strong>Semantic Validation:</strong> Validates syntax correctness, type compatibility, and semantic rules</li>
+ * <li><strong>Type Management:</strong> Resolves and manages GAML types for expressions and symbols</li>
+ * <li><strong>Facet Handling:</strong> Manages attributes (facets) like name, type, value, etc.</li>
+ * <li><strong>Hierarchy Management:</strong> Maintains parent-child relationships in the model structure</li>
+ * <li><strong>Symbol Compilation:</strong> Compiles descriptions into executable runtime symbols</li>
+ * <li><strong>Error Reporting:</strong> Provides detailed error messages with source location context</li>
  * </ul>
  * 
- * <p><strong>Description Hierarchy:</strong></p>
+ * <p>
+ * <strong>Description Hierarchy:</strong>
+ * </p>
+ *
  * <pre>
  * SymbolDescription (abstract base)
  *   ├── StatementDescription → Simple statements (create, write, etc.)
@@ -97,18 +107,27 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
  *   └── PrimitiveDescription → Built-in operators and functions
  * </pre>
  * 
- * <p><strong>State Management with Flags:</strong></p>
- * <p>Uses an efficient {@link EnumSet} to track boolean states. Common flags include:</p>
+ * <p>
+ * <strong>State Management with Flags:</strong>
+ * </p>
+ * <p>
+ * Uses an efficient {@link EnumSet} to track boolean states. Common flags include:
+ * </p>
  * <ul>
- *   <li>{@link Flag#BuiltIn} - Symbol is part of the GAML standard library</li>
- *   <li>{@link Flag#Validated} - Symbol has passed validation</li>
- *   <li>{@link Flag#Synthetic} - Symbol was generated programmatically</li>
- *   <li>{@link Flag#Abstract} - Symbol is abstract and cannot be instantiated</li>
- *   <li>{@link Flag#NoTypeInference} - Disable automatic type inference</li>
+ * <li>{@link Flag#BuiltIn} - Symbol is part of the GAML standard library</li>
+ * <li>{@link Flag#Validated} - Symbol has passed validation</li>
+ * <li>{@link Flag#Synthetic} - Symbol was generated programmatically</li>
+ * <li>{@link Flag#Abstract} - Symbol is abstract and cannot be instantiated</li>
+ * <li>{@link Flag#NoTypeInference} - Disable automatic type inference</li>
  * </ul>
  * 
- * <p><strong>Facets (Attributes):</strong></p>
- * <p>Facets are key-value pairs representing symbol attributes. Examples:</p>
+ * <p>
+ * <strong>Facets (Attributes):</strong>
+ * </p>
+ * <p>
+ * Facets are key-value pairs representing symbol attributes. Examples:
+ * </p>
+ *
  * <pre>{@code
  * species Bird {              // keyword="species", name facet="Bird"
  *   float speed <- 1.0;       // keyword="float", name="speed", init="1.0"
@@ -118,41 +137,53 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
  * }
  * }</pre>
  * 
- * <p><strong>Memory Optimization:</strong></p>
+ * <p>
+ * <strong>Memory Optimization:</strong>
+ * </p>
  * <ul>
- *   <li>Facets are lazily initialized and nullified when empty</li>
- *   <li>EnumSet provides compact flag storage (single long for ≤64 flags)</li>
- *   <li>Weak references used for model description to prevent circular retention</li>
- *   <li>Prototype (meta) information shared across instances of same symbol type</li>
+ * <li>Facets are lazily initialized and nullified when empty</li>
+ * <li>EnumSet provides compact flag storage (single long for ≤64 flags)</li>
+ * <li>Weak references used for model description to prevent circular retention</li>
+ * <li>Prototype (meta) information shared across instances of same symbol type</li>
  * </ul>
  * 
- * <p><strong>Thread Safety:</strong></p>
- * <p>NOT thread-safe. Descriptions are created and validated sequentially during compilation.
- * The compilation process is single-threaded by design for error reporting consistency.</p>
+ * <p>
+ * <strong>Thread Safety:</strong>
+ * </p>
+ * <p>
+ * NOT thread-safe. Descriptions are created and validated sequentially during compilation. The compilation process is
+ * single-threaded by design for error reporting consistency.
+ * </p>
  * 
- * <p><strong>Validation Process:</strong></p>
+ * <p>
+ * <strong>Validation Process:</strong>
+ * </p>
  * <ol>
- *   <li>Parse facets and validate required/optional attributes</li>
- *   <li>Resolve types for expressions and variables</li>
- *   <li>Check semantic rules (e.g., variable name conflicts)</li>
- *   <li>Validate child descriptions recursively</li>
- *   <li>Mark as validated if successful</li>
+ * <li>Parse facets and validate required/optional attributes</li>
+ * <li>Resolve types for expressions and variables</li>
+ * <li>Check semantic rules (e.g., variable name conflicts)</li>
+ * <li>Validate child descriptions recursively</li>
+ * <li>Mark as validated if successful</li>
  * </ol>
  * 
- * <p><strong>Performance Considerations:</strong></p>
+ * <p>
+ * <strong>Performance Considerations:</strong>
+ * </p>
  * <ul>
- *   <li>Description creation is O(n) where n is the number of symbols in the model</li>
- *   <li>Validation is also O(n) but with higher constant factors due to type resolution</li>
- *   <li>Typical large models have 1000-10000 descriptions</li>
- *   <li>Memory usage: ~200-500 bytes per description depending on facets</li>
+ * <li>Description creation is O(n) where n is the number of symbols in the model</li>
+ * <li>Validation is also O(n) but with higher constant factors due to type resolution</li>
+ * <li>Typical large models have 1000-10000 descriptions</li>
+ * <li>Memory usage: ~200-500 bytes per description depending on facets</li>
  * </ul>
  * 
- * <p><strong>Design Patterns:</strong></p>
+ * <p>
+ * <strong>Design Patterns:</strong>
+ * </p>
  * <ul>
- *   <li><strong>Factory Method:</strong> {@link #compile()} creates runtime symbols</li>
- *   <li><strong>Template Method:</strong> {@link #validate()} defines validation algorithm</li>
- *   <li><strong>Visitor:</strong> {@link #visitFacets} and {@link #visitChildren} support traversal</li>
- *   <li><strong>Prototype:</strong> {@link SymbolProto} stores shared metadata</li>
+ * <li><strong>Factory Method:</strong> {@link #compile()} creates runtime symbols</li>
+ * <li><strong>Template Method:</strong> {@link #validate()} defines validation algorithm</li>
+ * <li><strong>Visitor:</strong> {@link #visitFacets} and {@link #visitChildren} support traversal</li>
+ * <li><strong>Prototype:</strong> {@link SymbolProto} stores shared metadata</li>
  * </ul>
  *
  * @author Alexis Drogoul
@@ -171,118 +202,161 @@ public abstract class SymbolDescription implements IDescription {
 	/**
 	 * State flags for this description stored in a compact EnumSet.
 	 * 
-	 * <p><strong>Memory Optimization:</strong> EnumSet uses a single long value for up to 64 flags,
-	 * providing O(1) operations with minimal memory overhead (~16 bytes vs ~40+ for HashSet).</p>
+	 * <p>
+	 * <strong>Memory Optimization:</strong> EnumSet uses a single long value for up to 64 flags, providing O(1)
+	 * operations with minimal memory overhead (~16 bytes vs ~40+ for HashSet).
+	 * </p>
 	 * 
-	 * <p>Common flags include: BuiltIn, Validated, Synthetic, Abstract, NoTypeInference.
-	 * See {@link Flag} enum for complete list.</p>
+	 * <p>
+	 * Common flags include: BuiltIn, Validated, Synthetic, Abstract, NoTypeInference. See {@link Flag} enum for
+	 * complete list.
+	 * </p>
 	 */
 	private final EnumSet<Flag> state = EnumSet.noneOf(Flag.class);
 
 	/**
 	 * The facets (attributes) associated with this symbol.
 	 * 
-	 * <p>Facets are key-value pairs where keys are facet names (e.g., "name", "type", "value")
-	 * and values are {@link IExpressionDescription} objects that can be compiled to expressions.</p>
+	 * <p>
+	 * Facets are key-value pairs where keys are facet names (e.g., "name", "type", "value") and values are
+	 * {@link IExpressionDescription} objects that can be compiled to expressions.
+	 * </p>
 	 * 
-	 * <p><strong>Lazy Initialization:</strong> Null until first facet is set, saving memory for
-	 * symbols without facets. Nullified again if all facets are removed.</p>
+	 * <p>
+	 * <strong>Lazy Initialization:</strong> Null until first facet is set, saving memory for symbols without facets.
+	 * Nullified again if all facets are removed.
+	 * </p>
 	 * 
-	 * <p><strong>Example:</strong> For {@code int age <- 10;}, facets would contain:
-	 * {@code {name: "age", init: "10"}}</p>
+	 * <p>
+	 * <strong>Example:</strong> For {@code int age <- 10;}, facets would contain: {@code {name: "age", init: "10"}}
+	 * </p>
 	 */
 	private Facets facets;
 
 	/**
 	 * The underlying EMF EObject from the parser's Abstract Syntax Tree.
 	 * 
-	 * <p>Provides access to source code location for error reporting and debugging.
-	 * Null for built-in symbols defined programmatically rather than parsed from source.</p>
+	 * <p>
+	 * Provides access to source code location for error reporting and debugging. Null for built-in symbols defined
+	 * programmatically rather than parsed from source.
+	 * </p>
 	 * 
-	 * <p><strong>Usage:</strong> Used by {@link #error(String)} and {@link #info(String)}
-	 * to generate error messages with file/line information.</p>
+	 * <p>
+	 * <strong>Usage:</strong> Used by {@link #error(String)} and {@link #info(String)} to generate error messages with
+	 * file/line information.
+	 * </p>
 	 */
 	protected final EObject element;
 
 	/**
 	 * The description that encloses/contains this description.
 	 * 
-	 * <p>Forms the parent-child hierarchy of the model structure. For example:
-	 * A variable's enclosing description is its species, a species' enclosing description
-	 * is the model or parent species.</p>
+	 * <p>
+	 * Forms the parent-child hierarchy of the model structure. For example: A variable's enclosing description is its
+	 * species, a species' enclosing description is the model or parent species.
+	 * </p>
 	 * 
-	 * <p><strong>Null for:</strong> Top-level model descriptions which have no parent.</p>
+	 * <p>
+	 * <strong>Null for:</strong> Top-level model descriptions which have no parent.
+	 * </p>
 	 */
 	private IDescription enclosingDescription;
 
 	/**
 	 * The model description this symbol belongs to.
 	 * 
-	 * <p>Provides access to global model context including other species, global variables,
-	 * and model-level configuration. All descriptions in a model share the same model description.</p>
+	 * <p>
+	 * Provides access to global model context including other species, global variables, and model-level configuration.
+	 * All descriptions in a model share the same model description.
+	 * </p>
 	 * 
-	 * <p><strong>Phase 2 Optimization:</strong> Uses {@link WeakReference} to prevent circular
-	 * retention. Since model descriptions can hold references to all their children, and children
-	 * hold references back to the model, this creates a circular reference that can prevent
-	 * garbage collection. WeakReference allows the model to be collected when no longer in use.</p>
+	 * <p>
+	 * <strong>Phase 2 Optimization:</strong> Uses {@link WeakReference} to prevent circular retention. Since model
+	 * descriptions can hold references to all their children, and children hold references back to the model, this
+	 * creates a circular reference that can prevent garbage collection. WeakReference allows the model to be collected
+	 * when no longer in use.
+	 * </p>
 	 * 
-	 * <p><strong>Memory Impact:</strong> Reduces retained heap in scenarios where models are
-	 * frequently loaded/unloaded (e.g., batch processing, testing).</p>
+	 * <p>
+	 * <strong>Memory Impact:</strong> Reduces retained heap in scenarios where models are frequently loaded/unloaded
+	 * (e.g., batch processing, testing).
+	 * </p>
 	 */
 	private WeakReference<IModelDescription> modelDescriptionRef;
 
 	/**
 	 * The origin name of the symbol that created this description.
 	 * 
-	 * <p>Used for tracing inheritance and imports. For example, if a species inherits an action
-	 * from a parent species, originName would be the parent species name.</p>
+	 * <p>
+	 * Used for tracing inheritance and imports. For example, if a species inherits an action from a parent species,
+	 * originName would be the parent species name.
+	 * </p>
 	 * 
-	 * <p><strong>Set from:</strong> Either the {@link IKeyword#ORIGIN} facet or the enclosing
-	 * description's name during construction.</p>
+	 * <p>
+	 * <strong>Set from:</strong> Either the {@link IKeyword#ORIGIN} facet or the enclosing description's name during
+	 * construction.
+	 * </p>
 	 */
 	protected String originName;
 
 	/**
 	 * The name of this symbol.
 	 * 
-	 * <p>Typically extracted from the "name" facet during construction. Used as the identifier
-	 * for the symbol in its containing scope.</p>
+	 * <p>
+	 * Typically extracted from the "name" facet during construction. Used as the identifier for the symbol in its
+	 * containing scope.
+	 * </p>
 	 * 
-	 * <p><strong>Caching:</strong> Cached here for performance rather than repeatedly accessing facets.</p>
+	 * <p>
+	 * <strong>Caching:</strong> Cached here for performance rather than repeatedly accessing facets.
+	 * </p>
 	 */
 	protected String name;
 
 	/**
 	 * The GAML keyword that defines this symbol's type.
 	 * 
-	 * <p>Examples: "species", "action", "reflex", "int", "float", "create", "if", "loop"</p>
+	 * <p>
+	 * Examples: "species", "action", "reflex", "int", "float", "create", "if", "loop"
+	 * </p>
 	 * 
-	 * <p><strong>Immutable:</strong> Set at construction and never changes. Used to look up
-	 * the symbol's prototype information.</p>
+	 * <p>
+	 * <strong>Immutable:</strong> Set at construction and never changes. Used to look up the symbol's prototype
+	 * information.
+	 * </p>
 	 */
 	protected final String keyword;
 
 	/**
 	 * The GAML type of this symbol.
 	 * 
-	 * <p>For variables and expressions, this is their data type (int, float, agent, etc.).
-	 * For statements, this is typically the return type if applicable.</p>
+	 * <p>
+	 * For variables and expressions, this is their data type (int, float, agent, etc.). For statements, this is
+	 * typically the return type if applicable.
+	 * </p>
 	 * 
-	 * <p><strong>Type Inference:</strong> May be inferred from facets like "init", "value",
-	 * "function", unless {@link Flag#NoTypeInference} is set.</p>
+	 * <p>
+	 * <strong>Type Inference:</strong> May be inferred from facets like "init", "value", "function", unless
+	 * {@link Flag#NoTypeInference} is set.
+	 * </p>
 	 */
 	private IType<?> type;
 
 	/**
 	 * The prototype (meta-information) for this symbol type.
 	 * 
-	 * <p>Shared across all instances of the same symbol type. Contains information like:
-	 * required/optional facets, allowed contexts, serializer, validator, etc.</p>
+	 * <p>
+	 * Shared across all instances of the same symbol type. Contains information like: required/optional facets, allowed
+	 * contexts, serializer, validator, etc.
+	 * </p>
 	 * 
-	 * <p><strong>Flyweight Pattern:</strong> Shared immutable metadata reduces memory per instance.</p>
+	 * <p>
+	 * <strong>Flyweight Pattern:</strong> Shared immutable metadata reduces memory per instance.
+	 * </p>
 	 * 
-	 * <p><strong>Lookup:</strong> Retrieved from {@link ArtefactProtoRegistry} based on keyword
-	 * and species context.</p>
+	 * <p>
+	 * <strong>Lookup:</strong> Retrieved from {@link ArtefactProtoRegistry} based on keyword and species context.
+	 * </p>
 	 */
 	final SymbolProto proto;
 
@@ -883,16 +957,14 @@ public abstract class SymbolDescription implements IDescription {
 	public String getKeyword() { return keyword; }
 
 	/**
-	 * Gets the name of this symbol. If the name is not set, attempts to get it from the NAME facet.
-	 * The result is cached to avoid repeated lookups.
+	 * Gets the name of this symbol. If the name is not set, attempts to get it from the NAME facet. The result is
+	 * cached to avoid repeated lookups.
 	 *
 	 * @return the symbol name
 	 */
 	@Override
 	public String getName() {
-		if (name == null) { 
-			name = getLitteral(IKeyword.NAME); 
-		}
+		if (name == null) { name = getLitteral(IKeyword.NAME); }
 		return name;
 	}
 
@@ -921,21 +993,23 @@ public abstract class SymbolDescription implements IDescription {
 		if (hasFacets()) { facets.dispose(); }
 		facets = null;
 		enclosingDescription = null;
-		modelDescriptionRef = null;  // Clear WeakReference
+		modelDescriptionRef = null; // Clear WeakReference
 		setType(null);
 	}
 
 	/**
 	 * Gets the model description this symbol belongs to.
 	 * 
-	 * <p><strong>Phase 2 Optimization:</strong> Unwraps the {@link WeakReference} to get
-	 * the actual model description. Returns null if the model has been garbage collected.</p>
+	 * <p>
+	 * <strong>Phase 2 Optimization:</strong> Unwraps the {@link WeakReference} to get the actual model description.
+	 * Returns null if the model has been garbage collected.
+	 * </p>
 	 *
 	 * @return the model description, or null if collected or not set
 	 */
 	@Override
-	public IModelDescription getModelDescription() { 
-		return modelDescriptionRef == null ? null : modelDescriptionRef.get(); 
+	public IModelDescription getModelDescription() {
+		return modelDescriptionRef == null ? null : modelDescriptionRef.get();
 	}
 
 	/**
@@ -967,19 +1041,20 @@ public abstract class SymbolDescription implements IDescription {
 	/**
 	 * Sets the enclosing description and updates the model description accordingly.
 	 * 
-	 * <p><strong>Phase 2 Optimization:</strong> Wraps the model description in a
-	 * {@link WeakReference} to prevent circular retention issues.</p>
+	 * <p>
+	 * <strong>Phase 2 Optimization:</strong> Wraps the model description in a {@link WeakReference} to prevent circular
+	 * retention issues.
+	 * </p>
 	 *
-	 * @param desc the new enclosing description
+	 * @param desc
+	 *            the new enclosing description
 	 */
 	@Override
 	public void setEnclosingDescription(final IDescription desc) {
 		enclosingDescription = desc;
 		if (enclosingDescription == null) return;
 		IModelDescription md = enclosingDescription.getModelDescription();
-		if (md != null && md.isBuiltIn() && !this.isBuiltIn()) { 
-			md = null; 
-		}
+		if (md != null && md.isBuiltIn() && !this.isBuiltIn()) { md = null; }
 		modelDescriptionRef = md == null ? null : new WeakReference<>(md);
 	}
 
@@ -1166,16 +1241,20 @@ public abstract class SymbolDescription implements IDescription {
 	/**
 	 * Gets the GAML type of this symbol. Computes it if not already set.
 	 * 
-	 * <p><strong>Optimization:</strong> Type is computed once on first access and cached
-	 * in the {@code type} field. Subsequent calls return the cached value immediately.</p>
+	 * <p>
+	 * <strong>Optimization:</strong> Type is computed once on first access and cached in the {@code type} field.
+	 * Subsequent calls return the cached value immediately.
+	 * </p>
 	 * 
-	 * <p>Type computation can be expensive as it may involve:
+	 * <p>
+	 * Type computation can be expensive as it may involve:
 	 * <ul>
-	 *   <li>Facet compilation and expression evaluation</li>
-	 *   <li>Type inference from multiple facets</li>
-	 *   <li>Generic type parameter resolution</li>
+	 * <li>Facet compilation and expression evaluation</li>
+	 * <li>Type inference from multiple facets</li>
+	 * <li>Generic type parameter resolution</li>
 	 * </ul>
-	 * Caching ensures this expensive operation happens only once per description.</p>
+	 * Caching ensures this expensive operation happens only once per description.
+	 * </p>
 	 *
 	 * @return the GAML type
 	 */

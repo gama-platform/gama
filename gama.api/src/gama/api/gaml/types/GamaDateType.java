@@ -35,6 +35,17 @@ import gama.api.runtime.scope.IScope;
 		doc = { @doc ("GAML objects that represent a date") })
 public class GamaDateType extends GamaType<IDate> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaDateType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@doc ("Cast the argument into a date. If the argument is a date already, returns it, otherwise: if it is a container, casts its contents to integer numbers and tries to build a date from it (following the order 'year, month, day, hour, minute, second'); if it is a string, tries to decode it into a date using the format described in the preferences; otherwise cast the argument into a float number and interprets it as the number of milliseconds since the start of the simulation")
 	@Override
 	public IDate cast(final IScope scope, final Object obj, final Object param, final boolean copy)

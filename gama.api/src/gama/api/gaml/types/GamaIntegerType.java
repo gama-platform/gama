@@ -35,6 +35,17 @@ import gama.api.runtime.scope.IScope;
 		doc = @doc ("Type of integer numbers"))
 public class GamaIntegerType extends GamaType<Integer> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaIntegerType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@Override
 	@doc ("""
 			Returns the parameter casted to an int value. If it is an integer, returns it. A float, returns its integer value. \
@@ -101,7 +112,7 @@ public class GamaIntegerType extends GamaType<Integer> {
 	public Integer getDefault() { return 0; }
 
 	@Override
-	public boolean isTranslatableInto(final IType<?> type) {
+	public boolean computeIsTranslatableInto(final IType<?> type) {
 		return type.isNumber() || type == Types.NO_TYPE;
 	}
 
@@ -116,7 +127,7 @@ public class GamaIntegerType extends GamaType<Integer> {
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	@Override
-	public IType findCommonSupertypeWith(final IType<?> type) {
+	public IType computeFindCommonSupertypeWith(final IType<?> type) {
 		return type == this ? this : type.id() == IType.FLOAT ? type : Types.NO_TYPE;
 	}
 

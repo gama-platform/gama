@@ -33,6 +33,17 @@ import gama.api.runtime.scope.IScope;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaMapType extends GamaContainerType<IMap> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaMapType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@Override
 	@doc ("Casts the operand into a map. In case of an agent, returns its attributes. In case of a string, tries to parse JSON contents and returns a corresponding map.")
 	public IMap cast(final IScope scope, final Object obj, final Object param, final IType keyType,

@@ -32,6 +32,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.GamaFileType;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.ITypesManager;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.core.topology.grid.GamaSpatialMatrix;
@@ -64,8 +65,19 @@ import gama.extension.image.svg.GamaSVGFile;
 		concept = { IConcept.TYPE, IConcept.IMAGE, IConcept.DISPLAY })
 public class GamaImageType extends GamaType<GamaImage> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaImageType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	/** The Constant ID. */
-	public static final int ID = IType.AVAILABLE_TYPES + 30;
+	public static final int ID = IType.BEGINNING_OF_CUSTOM_TYPES + 30;
 
 	/**
 	 * Cast.

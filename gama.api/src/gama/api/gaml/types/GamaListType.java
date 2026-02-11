@@ -33,6 +33,17 @@ import gama.api.runtime.scope.IScope;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaListType extends GamaContainerType<IList> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaListType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@Override
 	public IList cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentsType, final boolean copy) throws GamaRuntimeException {

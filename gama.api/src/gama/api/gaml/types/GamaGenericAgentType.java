@@ -19,6 +19,7 @@ import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 
@@ -38,27 +39,25 @@ import gama.api.runtime.scope.IScope;
 		kind = ISymbolKind.Variable.REGULAR,
 		concept = { IConcept.TYPE, IConcept.SPECIES },
 		doc = @doc ("The basic and default type of agents in GAML"))
-public class GamaGenericAgentType extends GamaAgentType {
+public class GamaGenericAgentType extends GamaAgentType<IAgent> {
 
 	/**
 	 * Instantiates a new gama generic agent type.
 	 */
-	public GamaGenericAgentType() {
-		super(null, IKeyword.AGENT, IType.AGENT, IAgent.class);
+	public GamaGenericAgentType(final ITypesManager typesManager) {
+		super(typesManager, null, IKeyword.AGENT, IAgent.class, IType.AGENT);
 	}
-
-	/**
-	 * Sets the species.
-	 *
-	 * @param sd
-	 *            the new species
-	 */
-	public void setSpecies(final ISpeciesDescription sd) { species = sd; }
 
 	@Override
 	public IAgent cast(final IScope scope, final Object obj, final Object param, final IType<?> keyType,
 			final IType<?> contentsType, final boolean copy) throws GamaRuntimeException {
 		return cast(scope, obj, param, copy);
+	}
+
+	@Override
+	public ISpeciesDescription getSpecies() {
+		if (species == null) { species = GamaMetaModel.getAgentSpeciesDescription(); }
+		return species;
 	}
 
 	@Override

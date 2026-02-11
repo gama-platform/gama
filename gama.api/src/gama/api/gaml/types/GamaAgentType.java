@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.api.gaml.types;
 
+import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
@@ -28,8 +29,15 @@ import gama.api.runtime.scope.IScope;
  * @todo Description
  *
  */
-@SuppressWarnings ("unchecked")
-public class GamaAgentType extends GamaType<IAgent> {
+
+/**
+ * The Class GamaAgentType.
+ */
+
+/**
+ * The Class GamaAgentType.
+ */
+public class GamaAgentType<T extends IAgent> extends GamaType<T> {
 
 	/** The species. */
 	ISpeciesDescription species;
@@ -46,15 +54,37 @@ public class GamaAgentType extends GamaType<IAgent> {
 	 * @param base
 	 *            the base
 	 */
-	public GamaAgentType(final ISpeciesDescription species, final String name, final int speciesId,
-			final Class<IAgent> base) {
-		this.species = species;
-		this.name = name;
-		id = speciesId;
-		support = base;
-		// supports = new Class[] { base };
-		if (species != null) { setDefiningPlugin(species.getDefiningPlugin()); }
+	@SuppressWarnings ("unchecked")
+	public GamaAgentType(final ITypesManager typesManager, final ISpeciesDescription species, final int id) {
+		this(typesManager, species, species.getName(), (Class<T>) species.getJavaBase(), id);
 	}
+
+	/**
+	 * Instantiates a new gama agent type.
+	 *
+	 * @param typesManager
+	 *            the types manager
+	 * @param species
+	 *            the species.
+	 * @param name
+	 *            the name
+	 * @param support
+	 *            the support
+	 * @param id
+	 *            the id
+	 */
+	public GamaAgentType(final ITypesManager typesManager, final ISpeciesDescription species, final String name,
+			final Class<T> support, final int id) {
+		super(typesManager);
+		this.species = species;
+		this.id = id;
+		this.name = name;
+		this.varKind = ISymbolKind.Variable.REGULAR;
+		this.support = support;
+	}
+
+	@Override
+	protected void init() {}
 
 	@Override
 	public boolean isAssignableFrom(final IType<?> t) {
@@ -67,26 +97,26 @@ public class GamaAgentType extends GamaType<IAgent> {
 	}
 
 	@Override
-	public String getDefiningPlugin() { return species.getDefiningPlugin(); }
+	public String getDefiningPlugin() { return getSpecies().getDefiningPlugin(); }
 
+	@SuppressWarnings ("unchecked")
 	@Override
-	public IAgent cast(final IScope scope, final Object obj, final Object param, final boolean copy)
+	public T cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
 		if (obj == null || scope == null || scope.getModel() == null) return null;
-		ISpecies species = (ISpecies) param;
-		if (species == null) { species = scope.getModel().getSpecies(this.species.getName()); }
-		if (species == null) return (IAgent) Types.AGENT.cast(scope, obj, param, copy);
-		if (obj instanceof IAgent) return ((IAgent) obj).isInstanceOf(species, false) ? (IAgent) obj : null;
-		if (obj instanceof Integer) return scope.getAgent().getPopulationFor(species).getAgent((Integer) obj);
-		if (obj instanceof IPoint) {
-			IAgent agent = scope.getAgent();
-			if (agent != null) return agent.getPopulationFor(species).getAgent(scope, (IPoint) obj);
+		final ISpecies species = param instanceof ISpecies sp ? sp : scope.getModel().getSpecies(getName());
+		if (species == null) return (T) Types.AGENT.cast(scope, obj, param, copy);
+		if (obj instanceof IAgent ia) return ia.isInstanceOf(species, false) ? (T) ia : null;
+		final IAgent agent = scope.getAgent();
+		if (agent != null) {
+			if (obj instanceof Integer i) return (T) agent.getPopulationFor(species).getAgent(i);
+			if (obj instanceof IPoint p) return (T) agent.getPopulationFor(species).getAgent(scope, p);
 		}
 		return null;
 	}
 
 	@Override
-	public IAgent getDefault() { return null; }
+	public T getDefault() { return null; }
 
 	@Override
 	public boolean isAgentType() { return true; }
@@ -116,8 +146,8 @@ public class GamaAgentType extends GamaType<IAgent> {
 	@Override
 	public IGamlDocumentation getDocumentation() {
 		IGamlDocumentation result =
-				new GamlRegularDocumentation("Represents instances of species " + species.getName());
-		species.documentAttributes(result);
+				new GamlRegularDocumentation("Represents instances of species " + getSpecies().getName());
+		getSpecies().documentAttributes(result);
 		return result;
 	}
 

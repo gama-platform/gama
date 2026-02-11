@@ -41,6 +41,17 @@ import gama.api.runtime.scope.IScope;
 		doc = @doc ("Represents a topology, obtained from agents or geometries, that can be used to compute distances, neighbours, etc."))
 public class GamaTopologyType extends GamaType<ITopology> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaTopologyType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@Override
 	@doc (
 			value = "casting of the operand to a topology.",

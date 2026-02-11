@@ -38,6 +38,18 @@ import gama.api.runtime.scope.IScope;
 		concept = { IConcept.TYPE, IConcept.TEXT, IConcept.DISPLAY })
 public class GamaFontType extends GamaType<IFont> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaFontType(final ITypesManager typesManager) {
+		super(typesManager);
+		// TODO Auto-generated constructor stub
+	}
+
 	@doc (
 			value = "Cast any object as a font",
 			usages = { @usage (

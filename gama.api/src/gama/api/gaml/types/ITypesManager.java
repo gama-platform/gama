@@ -106,8 +106,7 @@ public interface ITypesManager extends IDisposable {
 	 *            the plugin name
 	 * @return the i type
 	 */
-	<Support> IType<Support> initType(String keyword, IType<Support> typeInstance, int id, int varKind,
-			Class<Support> support, String pluginName);
+	<Support> IType<Support> addRegularType(String name, IType<Support> typeInstance, String pluginName);
 
 	/**
 	 * Gets the all types.
@@ -126,5 +125,53 @@ public interface ITypesManager extends IDisposable {
 	 * @date 4 nov. 2023
 	 */
 	IType decodeType(String type);
+
+	/**
+	 * Checks if one type is assignable from another, using cache when possible. This is the cached version of
+	 * {@link IType#isAssignableFrom(IType)}.
+	 *
+	 * @param from
+	 *            the type to check (target type)
+	 * @param to
+	 *            the type being assigned (source type)
+	 * @return true if 'from' is assignable from 'to'
+	 */
+	boolean checkAssignability(IType<?> from, IType<?> to);
+
+	/**
+	 * Finds the common supertype between two types, using cache when possible. This is the cached version of
+	 * {@link IType#findCommonSupertypeWith(IType)}.
+	 *
+	 * @param type1
+	 *            the first type
+	 * @param type2
+	 *            the second type
+	 * @return the common supertype, or Types.NO_TYPE if none found
+	 */
+	IType<?> computeCommonSupertype(IType<?> type1, IType<?> type2);
+
+	/**
+	 * Computes the distance between two types in the type hierarchy, using cache when possible. This is the cached
+	 * version of {@link IType#distanceTo(IType)}.
+	 *
+	 * @param from
+	 *            the starting type
+	 * @param to
+	 *            the target type
+	 * @return the distance (number of steps in hierarchy), or Integer.MAX_VALUE if unreachable
+	 */
+	int computeDistance(IType<?> from, IType<?> to);
+
+	/**
+	 * Checks if one type is translatable into another, using cache when possible. This is the cached version of
+	 * {@link IType#isTranslatableInto(IType)}.
+	 *
+	 * @param from
+	 *            the source type
+	 * @param to
+	 *            the target type
+	 * @return true if 'from' is translatable into 'to'
+	 */
+	boolean checkTranslatability(IType<?> from, IType<?> to);
 
 }

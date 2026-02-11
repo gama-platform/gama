@@ -40,6 +40,17 @@ import gama.api.runtime.scope.IScope;
 public class GamaFieldType extends GamaMatrixType {
 
 	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaFieldType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
+	/**
 	 * Static cast.
 	 *
 	 * @param scope

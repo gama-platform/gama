@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * GamaContainerType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaContainerType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -35,6 +34,17 @@ import gama.api.runtime.scope.IScope;
 		concept = { IConcept.TYPE, IConcept.CONTAINER },
 		doc = @doc ("Generic super-type of all the container types (list, graph, matrix, etc.)"))
 public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> implements IContainerType<T> {
+
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaContainerType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
 
 	@doc ("Allows to cast the argument to a container. If the argument is already a container, returns it, otherwise cast it to a list")
 	@Override
@@ -100,7 +110,7 @@ public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> i
 			if (kt == Types.NO_TYPE) return this;
 			ct = getContentType();
 		}
-		return ParametricType.createParametricType((IContainerType<IContainer<?, ?>>) this, kt, ct);
+		return new ParametricType(typesManager, (IContainerType<IContainer<?, ?>>) this, kt, ct);
 
 	}
 
@@ -114,7 +124,7 @@ public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> i
 			ct = getContentType();
 		}
 		if (kt == Types.NO_TYPE) { kt = getKeyType(); }
-		return ParametricType.createParametricType((IContainerType<IContainer<?, ?>>) this, kt, ct);
+		return new ParametricType(typesManager, (IContainerType<IContainer<?, ?>>) this, kt, ct);
 
 	}
 

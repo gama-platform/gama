@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * BDIPlanType.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * BDIPlanType.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -17,6 +16,7 @@ import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.ITypesManager;
 import gama.api.runtime.scope.IScope;
 
 /**
@@ -31,8 +31,19 @@ import gama.api.runtime.scope.IScope;
 // @converter (GamaBDIPlanConverter.class)
 public class BDIPlanType extends GamaType<BDIPlan> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public BDIPlanType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	/** The Constant id. */
-	public final static int BDIPLANTYPE_ID = IType.AVAILABLE_TYPES + 546655;
+	public final static int BDIPLANTYPE_ID = IType.BEGINNING_OF_CUSTOM_TYPES + 546655;
 
 	@Override
 	public boolean canCastToConst() {

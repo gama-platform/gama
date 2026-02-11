@@ -36,6 +36,18 @@ import gama.api.runtime.scope.IScope;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaColorType extends GamaType<IColor> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaColorType(final ITypesManager typesManager) {
+		super(typesManager);
+		// TODO Auto-generated constructor stub
+	}
+
 	@Override
 	@doc ("Transforms the parameter into a rgb color. A second parameter can be used to express the transparency of the color, either an int (between 0 and 255) or a float (between 0 and 1)")
 	public IColor cast(final IScope scope, final Object obj, final Object param, final boolean copy)

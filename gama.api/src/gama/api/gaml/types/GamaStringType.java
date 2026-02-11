@@ -1,24 +1,24 @@
 /*******************************************************************************************************
  *
- * GamaStringType.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * GamaStringType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.api.gaml.types;
 
+import gama.annotations.doc;
+import gama.annotations.type;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
 import gama.api.data.objects.IValue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.INamed;
-import gama.annotations.doc;
-import gama.annotations.type;
-import gama.annotations.support.IConcept;
-import gama.annotations.support.ISymbolKind;
 
 /**
  *
@@ -38,6 +38,17 @@ import gama.annotations.support.ISymbolKind;
 		concept = { IConcept.TYPE, IConcept.STRING },
 		doc = @doc ("Strings are ordered list of characters"))
 public class GamaStringType extends GamaType<String> {
+
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaStringType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
 
 	@Override
 	@doc ("Transforms the parameter into a string")

@@ -18,6 +18,7 @@ import gama.annotations.doc;
 import gama.annotations.file;
 import gama.annotations.variable;
 import gama.annotations.vars;
+import gama.annotations.support.ISymbolKind;
 import gama.api.additions.IGamaGetter;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
@@ -36,11 +37,22 @@ import gama.api.utils.files.IGamaFile;
  */
 public class ParametricFileType extends ParametricType {
 
+	/**
+	 * Gets the generic instance.
+	 *
+	 * @return the generic instance
+	 */
+	public static ParametricFileType getGenericFileType() {
+		if (genericInstance == null) {
+			genericInstance =
+					new ParametricFileType("generic_file", IGamaFile.class, (s, o) -> new GenericFile(s, (String) o[0]),
+							Types.LIST, Types.NO_TYPE, Types.NO_TYPE, GamaFileType.provideNewIndex());
+		}
+		return genericInstance;
+	}
+
 	/** The id. */
 	int id;
-
-	/** The var kind. */
-	int varKind;
 
 	/** The support. */
 	@SuppressWarnings ("rawtypes") final Class<IGamaFile> support;
@@ -79,13 +91,15 @@ public class ParametricFileType extends ParametricType {
 	 * @param ct
 	 *            the ct
 	 */
-	protected ParametricFileType(final String name, @SuppressWarnings ("rawtypes") final Class<IGamaFile> class1,
-			final IGamaGetter<IGamaFile<?, ?>> helper, final IType<?> buffer, final IType<?> kt, final IType<?> ct) {
-		super(Types.FILE, kt, ct);
+	protected ParametricFileType(final String name, final Class<IGamaFile> class1,
+			final IGamaGetter<IGamaFile<?, ?>> helper, final IType<?> buffer, final IType<?> kt, final IType<?> ct,
+			final int id) {
+		super(Types.builtInTypes, Types.FILE, kt, ct);
 		support = class1;
 		bufferType = (IContainerType<?>) buffer;
 		builder = helper;
 		alias = name;
+		this.id = id;
 	}
 
 	@Override
@@ -100,12 +114,6 @@ public class ParametricFileType extends ParametricType {
 	 * @return the builder
 	 */
 	public IGamaGetter<IGamaFile<?, ?>> getBuilder() { return builder; }
-
-	@Override
-	public void init(final int kind, final int index, final String name, final Class<IContainer<?, ?>> clazz) {
-		this.id = index;
-		this.varKind = kind;
-	}
 
 	@Override
 	public int hashCode() {
@@ -189,20 +197,6 @@ public class ParametricFileType extends ParametricType {
 		return null;
 	}
 
-	/**
-	 * Gets the generic instance.
-	 *
-	 * @return the generic instance
-	 */
-	public static ParametricFileType getGenericInstance() {
-
-		if (genericInstance == null) {
-			genericInstance = new ParametricFileType("generic_file", IGamaFile.class,
-					(s, o) -> new GenericFile(s, (String) o[0]), Types.LIST, Types.NO_TYPE, Types.NO_TYPE);
-		}
-		return genericInstance;
-	}
-
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	@Override
 	public Class toClass() {
@@ -210,7 +204,7 @@ public class ParametricFileType extends ParametricType {
 	}
 
 	@Override
-	public int getVarKind() { return varKind; }
+	public int getVarKind() { return ISymbolKind.Variable.CONTAINER; }
 
 	@Override
 	public int id() {

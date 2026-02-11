@@ -34,6 +34,17 @@ import gama.api.runtime.scope.IScope;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaPathType extends GamaType<IPath> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaPathType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@doc (
 			value = "Cast any object as a path",
 			usages = { @usage (

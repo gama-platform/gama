@@ -36,6 +36,17 @@ import gama.api.runtime.scope.IScope;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaPairType extends GamaContainerType<IPair> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaPairType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@Override
 	public IPair cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentsType, final boolean copy) {

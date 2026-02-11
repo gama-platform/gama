@@ -43,6 +43,17 @@ import gama.api.runtime.scope.IScope;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaGeometryType extends GamaType<IShape> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaGeometryType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@Override
 	@doc ("""
 			Cast the argument into a geometry. If the argument is already a geometry or an agent, returns it; \

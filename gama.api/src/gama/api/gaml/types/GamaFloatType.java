@@ -35,6 +35,17 @@ import gama.api.runtime.scope.IScope;
 		concept = { IConcept.TYPE })
 public class GamaFloatType extends GamaType<Double> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaFloatType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@Override
 	@doc ("Cast the argument into a float number. If the argument is a float, returns it; if it is an int, returns it as a float; if it is a string, tries to extract a double from it; if it is a bool, return 1.0 if true and 0.0 if false; if it is a shape (or an agent) returns its area; if it is a font, returns its size; if it is a date, returns the number of milliseconds since the starting date and time of the simulation ")
 	public Double cast(final IScope scope, final Object obj, final Object param, final boolean copy)
@@ -89,7 +100,7 @@ public class GamaFloatType extends GamaType<Double> {
 	public Double getDefault() { return 0d; }
 
 	@Override
-	public boolean isTranslatableInto(final IType<?> type) {
+	public boolean computeIsTranslatableInto(final IType<?> type) {
 		return type.isNumber() || type == Types.NO_TYPE;
 	}
 
@@ -100,7 +111,7 @@ public class GamaFloatType extends GamaType<Double> {
 	}
 
 	@Override
-	public IType<? super Double> findCommonSupertypeWith(final IType<?> type) {
+	public IType<? super Double> computeFindCommonSupertypeWith(final IType<?> type) {
 		return type.isNumber() ? this : Types.NO_TYPE;
 	}
 

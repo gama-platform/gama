@@ -9,11 +9,17 @@
  ********************************************************************************************************/
 package gama.api.gaml.types;
 
+import static com.google.common.cache.CacheBuilder.newBuilder;
+import static java.util.concurrent.TimeUnit.MINUTES;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+
+import com.google.common.cache.Cache;
 
 import gama.api.additions.registries.ArtefactProtoRegistry;
 import gama.api.compilation.descriptions.IModelDescription;
@@ -25,8 +31,12 @@ import gama.api.kernel.agent.IAgent;
 import gama.dev.DEBUG;
 
 /**
- * Model-scoped registry that hosts GAML types (built-in and species) and parses/aliases type names.
- * Can delegate lookups to a parent manager while supporting local additions, aliases, and parametric decoding.
+ * Model-scoped registry that hosts GAML types (built-in and species) and parses/aliases type names. Can delegate
+ * lookups to a parent manager while supporting local additions, aliases, and parametric decoding.
+ */
+
+/**
+ * The Class TypesManager.
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class TypesManager implements ITypesManager {
@@ -36,7 +46,7 @@ public class TypesManager implements ITypesManager {
 	}
 
 	/** The current index. */
-	public static int CURRENT_INDEX = IType.SPECIES_TYPES;
+	public static int CURRENT_INDEX = IType.BEGINNING_OF_SPECIES_TYPES;
 
 	/** The parent. */
 	private TypesManager parent;
@@ -46,6 +56,18 @@ public class TypesManager implements ITypesManager {
 
 	/** The unique types. */
 	private final Set<IType<?>> uniqueTypes = ConcurrentHashMap.newKeySet();
+
+	/** Cache for isAssignableFrom operations - stores Boolean results */
+	private final Cache<TypePair, Boolean> assignabilityCache = newBuilder().expireAfterAccess(5, MINUTES).build();
+
+	/** Cache for findCommonSupertypeWith operations - stores IType results */
+	private final Cache<TypePair, IType<?>> commonSupertypeCache = newBuilder().expireAfterAccess(5, MINUTES).build();
+
+	/** Cache for distanceTo operations - stores Integer results */
+	private final Cache<TypePair, Integer> distanceCache = newBuilder().expireAfterAccess(5, MINUTES).build();
+
+	/** Cache for isTranslatableInto operations - stores Boolean results */
+	private final Cache<TypePair, Boolean> translatabilityCache = newBuilder().expireAfterAccess(5, MINUTES).build();
 
 	/**
 	 * Instantiates a new types manager.
@@ -71,8 +93,10 @@ public class TypesManager implements ITypesManager {
 	/**
 	 * Registers an alias for an existing type name.
 	 *
-	 * @param existing canonical type name
-	 * @param alias alternative keyword
+	 * @param existing
+	 *            canonical type name
+	 * @param alias
+	 *            alternative keyword
 	 */
 	@Override
 	public void alias(final String existingTypeName, final String otherTypeName) {
@@ -92,10 +116,42 @@ public class TypesManager implements ITypesManager {
 	 *
 	 * @see gama.gaml.types.ITypesManager#addSpeciesType(gama.gaml.descriptions. TypeDescription)
 	 */
+
+	/**
+	 * Registers a type into this manager, initializing its metadata and capturing its plugin origin.
+	 *
+	 * @param <Support>
+	 *            Java support class of the type
+	 * @param name
+	 *            keyword used in GAML
+	 * @param originalType
+	 *            type instance to initialize/store
+	 * @param id
+	 *            numeric id (see {@link IType})
+	 * @param varKind
+	 *            variable kind (field/attribute/etc.)
+	 * @param support
+	 *            Java class backing the type
+	 * @param plugin
+	 *            plugin identifier defining the type
+	 * @return initialized type (or NO_TYPE for "unknown")
+	 */
+	@Override
+	public <Support> IType<Support> addRegularType(final String name, final IType<Support> originalType,
+			final String plugin) {
+		IType<Support> type = originalType;
+		if (IKeyword.UNKNOWN.equals(name)) { type = Types.NO_TYPE; }
+		type.setDefiningPlugin(plugin);
+		ArtefactProtoRegistry.addNewTypeName(name, type.getVarKind());
+		addType(type);
+		return type;
+	}
+
 	/**
 	 * Registers a species description as a type and ensures unique naming.
 	 *
-	 * @param species species description to register
+	 * @param species
+	 *            species description to register
 	 * @return resulting species type
 	 */
 	@Override
@@ -107,54 +163,9 @@ public class TypesManager implements ITypesManager {
 					IGamlIssue.DUPLICATE_NAME, species.getUnderlyingElement(), name);
 			return this.get(name);
 		}
-		return addSpeciesType(
-				new GamaAgentType(species, species.getName(), ++CURRENT_INDEX, (Class<IAgent>) species.getJavaBase()),
-				species.getJavaBase());
-
-	}
-
-	/**
-	 * Registers a type into this manager, initializing its metadata and capturing its plugin origin.
-	 *
-	 * @param <Support> Java support class of the type
-	 * @param name keyword used in GAML
-	 * @param originalType type instance to initialize/store
-	 * @param id numeric id (see {@link IType})
-	 * @param varKind variable kind (field/attribute/etc.)
-	 * @param support Java class backing the type
-	 * @param plugin plugin identifier defining the type
-	 * @return initialized type (or NO_TYPE for "unknown")
-	 */
-	@Override
-	public <Support> IType<Support> initType(final String keyword, final IType<Support> originalType, final int id,
-			final int varKind, final Class<Support> support, final String plugin) {
-		IType<Support> typeInstance = originalType;
-		if (IKeyword.UNKNOWN.equals(keyword)) { typeInstance = Types.NO_TYPE; }
-		typeInstance.init(varKind, id, keyword, support);
-		typeInstance.setDefiningPlugin(plugin);
-		return addType(typeInstance, support);
-	}
-
-	/**
-	 * Adds the species type.
-	 *
-	 * @param t
-	 *            the t
-	 * @param clazz
-	 *            the clazz
-	 * @return the i type<? extends I agent>
-	 */
-	private IType<? extends IAgent> addSpeciesType(final IType<? extends IAgent> t,
-			final Class<? extends IAgent> clazz) {
-		final int i = t.id();
-		final String name = t.toString();
-		types.put(name, t);
-		uniqueTypes.add(t);
-		// Hack to allow types to be declared with their id as string
-		types.put(String.valueOf(i), t);
-		// for (final Class cc : wraps) {
-		Types.addClassTypeCorrespondance(clazz, name);
-		// }
+		GamaAgentType t = new GamaAgentType(this, species, ++CURRENT_INDEX);
+		Types.addClassTypeCorrespondance(species.getJavaBase(), name);
+		addType(t);
 		return t;
 	}
 
@@ -167,21 +178,19 @@ public class TypesManager implements ITypesManager {
 	 *            the support
 	 * @return the i type
 	 */
-	private IType addType(final IType t, final Class support) {
-		final int i = t.id();
+	private void addType(final IType t) {
 		final String name = t.toString();
 		types.put(name, t);
-		uniqueTypes.add(t);
 		// Hack to allow types to be declared with their id as string
-		types.put(String.valueOf(i), t);
-		ArtefactProtoRegistry.addNewTypeName(name, t.getVarKind());
-		return t;
+		types.put(String.valueOf(t.id()), t);
+		uniqueTypes.add(t);
 	}
 
 	/**
 	 * Initializes built-in species types from a model, sets their parents, and fills the local registry.
 	 *
-	 * @param model root model description containing species
+	 * @param model
+	 *            root model description containing species
 	 */
 	/*
 	 * (non-Javadoc)
@@ -213,7 +222,8 @@ public class TypesManager implements ITypesManager {
 	 * @see gama.gaml.types.ITypesManager#containsType(java.lang.String)
 	 */
 	/**
-	 * @param name type keyword
+	 * @param name
+	 *            type keyword
 	 * @return true when this manager (or parent) knows a type with that name
 	 */
 	@Override
@@ -232,8 +242,10 @@ public class TypesManager implements ITypesManager {
 	/**
 	 * Resolves a type by name, optionally falling back to a default when not found.
 	 *
-	 * @param name keyword or id string
-	 * @param defaultValue fallback if absent
+	 * @param name
+	 *            keyword or id string
+	 * @param defaultValue
+	 *            fallback if absent
 	 * @return resolved type or {@code defaultValue}
 	 */
 	@Override
@@ -251,18 +263,23 @@ public class TypesManager implements ITypesManager {
 	 * @see gama.gaml.types.ITypesManager#dispose()
 	 */
 	/**
-	 * Clears all locally registered types and aliases.
+	 * Clears all locally registered types and aliases, and invalidates all caches.
 	 */
 	@Override
 	public void dispose() {
 		types.clear();
 		uniqueTypes.clear();
+		assignabilityCache.invalidateAll();
+		commonSupertypeCache.invalidateAll();
+		distanceCache.invalidateAll();
+		translatabilityCache.invalidateAll();
 	}
 
 	/**
 	 * Parses a type expression possibly containing parametric parts (e.g., "list<float>" or "map<string,int>").
 	 *
-	 * @param s textual type expression
+	 * @param s
+	 *            textual type expression
 	 * @return resolved type or {@link Types#NO_TYPE} on failure
 	 */
 	@Override
@@ -295,6 +312,97 @@ public class TypesManager implements ITypesManager {
 		if (args.size() == 1) return ((IContainerType) base).of(key);
 		IType content = decodeType(args.get(args.size() - 1));
 		return ((IContainerType) base).of(key, content);
+	}
+
+	// ========== Type Relation Caching Methods ==========
+
+	/**
+	 * Checks if one type is assignable from another, using cache when possible. This is the cached version of
+	 * {@link IType#isAssignableFrom(IType)}.
+	 *
+	 * @param from
+	 *            the type to check (target type)
+	 * @param to
+	 *            the type being assigned (source type)
+	 * @return true if 'from' is assignable from 'to'
+	 */
+	@Override
+	public boolean checkAssignability(final IType<?> from, final IType<?> to) {
+		if (from == null || to == null) return false;
+		if (from == to) return true;
+		final TypePair key = new TypePair(from, to);
+		try {
+			return assignabilityCache.get(key, () -> from.computeIsAssignableFrom(to));
+		} catch (ExecutionException e) {
+			return false;
+		}
+
+	}
+
+	/**
+	 * Finds the common supertype between two types, using cache when possible. This is the cached version of
+	 * {@link IType#findCommonSupertypeWith(IType)}.
+	 *
+	 * @param type1
+	 *            the first type
+	 * @param type2
+	 *            the second type
+	 * @return the common supertype, or Types.NO_TYPE if none found
+	 */
+	@Override
+	public IType<?> computeCommonSupertype(final IType<?> type1, final IType<?> type2) {
+		if (type1 == null || type2 == null) return Types.NO_TYPE;
+		if (type1 == type2) return type1;
+		final TypePair key = new TypePair(type1, type2);
+		try {
+			return commonSupertypeCache.get(key, () -> type1.computeFindCommonSupertypeWith(type2));
+		} catch (ExecutionException e) {
+			return Types.NO_TYPE;
+		}
+	}
+
+	/**
+	 * Computes the distance between two types in the type hierarchy, using cache when possible. This is the cached
+	 * version of {@link IType#distanceTo(IType)}.
+	 *
+	 * @param from
+	 *            the starting type
+	 * @param to
+	 *            the target type
+	 * @return the distance (number of steps in hierarchy), or Integer.MAX_VALUE if unreachable
+	 */
+	@Override
+	public int computeDistance(final IType<?> from, final IType<?> to) {
+		if (from == null || to == null) return Integer.MAX_VALUE;
+		if (from == to) return 0;
+		final TypePair key = new TypePair(from, to);
+		try {
+			return distanceCache.get(key, () -> from.computeDistanceTo(to));
+		} catch (ExecutionException e) {
+			return Integer.MAX_VALUE;
+		}
+	}
+
+	/**
+	 * Checks if one type is translatable into another, using cache when possible. This is the cached version of
+	 * {@link IType#isTranslatableInto(IType)}.
+	 *
+	 * @param from
+	 *            the source type
+	 * @param to
+	 *            the target type
+	 * @return true if 'from' is translatable into 'to'
+	 */
+	@Override
+	public boolean checkTranslatability(final IType<?> from, final IType<?> to) {
+		if (from == null || to == null) return false;
+		if (from == to) return true;
+		final TypePair key = new TypePair(from, to);
+		try {
+			return translatabilityCache.get(key, () -> from.computeIsTranslatableInto(to));
+		} catch (ExecutionException e) {
+			return false;
+		}
 	}
 
 }

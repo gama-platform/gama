@@ -29,13 +29,19 @@ import gama.api.runtime.scope.IScope;
 		doc = @doc ("Represents the messages exchanged between agents"))
 public class GamaMessageType extends GamaType<IMessage> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaMessageType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	/** The Constant MESSAGE_STR. */
 	public static final String MESSAGE_STR = "message";
-
-	/**
-	 * Instantiates a new gama message type.
-	 */
-	public GamaMessageType() {}
 
 	@Override
 	public IMessage getDefault() { return null; }

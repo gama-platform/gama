@@ -30,6 +30,7 @@ import gama.api.data.objects.IShape;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.ITypesManager;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.PlatformAgent;
 import gama.api.kernel.agent.IAgent;
@@ -142,6 +143,9 @@ public abstract class UtilsForGamlAdditions {
 	/** The b. */
 	protected Class<?> b = boolean.class;
 
+	/** The tm. */
+	protected ITypesManager TM = Types.builtInTypes;
+
 	/**
 	 * The Class Children.
 	 */
@@ -210,7 +214,6 @@ public abstract class UtilsForGamlAdditions {
 	 */
 	protected IDescription desc(final int keyword, final String... facets) {
 		final IType t = Types.get(keyword);
-		if (t == null) throw new RuntimeException("Types not defined");
 		return desc(t.toString(), facets);
 	}
 

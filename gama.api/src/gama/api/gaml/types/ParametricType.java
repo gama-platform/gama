@@ -10,15 +10,9 @@
  ********************************************************************************************************/
 package gama.api.gaml.types;
 
-import static com.google.common.cache.CacheBuilder.newBuilder;
-import static gama.api.gaml.types.Types.builtInTypes;
-import static java.util.concurrent.TimeUnit.MINUTES;
-
 import java.util.Map;
 
 import org.apache.commons.lang3.Strings;
-
-import com.google.common.cache.Cache;
 
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
@@ -47,49 +41,6 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 		DEBUG.OFF();
 	}
 
-	/** The cache2. */
-	static Cache<Integer, ParametricType> CACHE2 = newBuilder().expireAfterAccess(5, MINUTES).build();
-
-	/** The use cache. */
-	static boolean USE_CACHE = true;
-
-	/**
-	 * Use cache for.
-	 *
-	 * @param t
-	 *            the t
-	 * @return true, if successful
-	 */
-	static boolean useCacheFor(final IType<?> t) {
-		final boolean builtIn = builtInTypes.containsType(t.getName());
-		return t.isCompoundType() ? builtIn && useCacheFor(t.getContentType()) && useCacheFor(t.getKeyType()) : builtIn;
-	}
-
-	/**
-	 * Creates the parametric type.
-	 *
-	 * @param t
-	 *            the t
-	 * @param kt
-	 *            the kt
-	 * @param ct
-	 *            the ct
-	 * @return the parametric type
-	 */
-	public static ParametricType createParametricType(final IContainerType<IContainer<?, ?>> t, final IType<?> kt,
-			final IType<?> ct) {
-		if (USE_CACHE) {
-			final Integer key = 31 * (31 * (31 + t.hashCode()) + kt.hashCode()) + ct.hashCode();
-			ParametricType p = CACHE2.getIfPresent(key);
-			if (p == null && useCacheFor(t) && useCacheFor(kt) && useCacheFor(ct)) {
-				p = new ParametricType(t, kt, ct);
-				CACHE2.put(key, p);
-				return p;
-			}
-		}
-		return new ParametricType(t, kt, ct);
-	}
-
 	/** The type. */
 	private final IContainerType<IContainer<?, ?>> type;
 
@@ -102,6 +53,12 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	/** The expression. */
 	private final IExpression expression;
 
+	/** The types manager inherited from the base type */
+	private final ITypesManager typesManager;
+
+	/** The name. */
+	private String name;
+
 	/**
 	 * Instantiates a new parametric type.
 	 *
@@ -112,11 +69,15 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @param ct
 	 *            the ct
 	 */
-	protected ParametricType(final IContainerType<IContainer<?, ?>> t, final IType<?> kt, final IType<?> ct) {
+	protected ParametricType(final ITypesManager manager, final IContainerType<IContainer<?, ?>> t, final IType<?> kt,
+			final IType<?> ct) {
 		type = t;
 		contentsType = ct;
 		keyType = kt;
 		expression = GAML.getExpressionFactory().createTypeExpression(this);
+		// Inherit the typesManager from the base type
+		this.typesManager = Types.findMoreSpecificTypesManagerAmong(manager, t.getTypesManager(), kt.getTypesManager(),
+				ct.getTypesManager());
 	}
 
 	@Override
@@ -276,9 +237,18 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.api.gaml.types.IType#isAssignableFrom(gama.api.gaml.types.IType)
 	 */
 	@Override
+	public boolean computeIsAssignableFrom(final IType<?> l) {
+		// Use polymorphic internal methods to avoid recursion
+		return type.computeIsAssignableFrom(l.getGamlType()) && contentsType.computeIsAssignableFrom(l.getContentType())
+				&& keyType.computeIsAssignableFrom(l.getKeyType());
+	}
+
+	@Override
 	public boolean isAssignableFrom(final IType<?> l) {
-		return type.isAssignableFrom(l.getGamlType()) && contentsType.isAssignableFrom(l.getContentType())
-				&& keyType.isAssignableFrom(l.getKeyType());
+		// Use cached version if typesManager is available
+		if (typesManager != null) return typesManager.checkAssignability(this, l);
+		// Fallback to direct computation
+		return computeIsAssignableFrom(l);
 	}
 
 	/**
@@ -287,9 +257,19 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.api.gaml.types.IType#isTranslatableInto(gama.api.gaml.types.IType)
 	 */
 	@Override
+	public boolean computeIsTranslatableInto(final IType<?> l) {
+		// Use polymorphic internal methods to avoid recursion
+		return type.computeIsTranslatableInto(l.getGamlType())
+				&& contentsType.computeIsTranslatableInto(l.getContentType())
+				&& keyType.computeIsTranslatableInto(l.getKeyType());
+	}
+
+	@Override
 	public boolean isTranslatableInto(final IType<?> l) {
-		return type.isTranslatableInto(l.getGamlType()) && contentsType.isTranslatableInto(l.getContentType())
-				&& keyType.isTranslatableInto(l.getKeyType());
+		// Use cached version if typesManager is available
+		if (typesManager != null) return typesManager.checkTranslatability(this, l);
+		// Fallback to direct computation
+		return computeIsTranslatableInto(l);
 	}
 
 	@Override
@@ -332,9 +312,18 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.api.gaml.types.IType#distanceTo(gama.api.gaml.types.IType)
 	 */
 	@Override
+	public int computeDistanceTo(final IType<?> t) {
+		// Use polymorphic internal methods to avoid recursion
+		return t.getGamlType().computeDistanceTo(type) + t.getContentType().computeDistanceTo(contentsType)
+				+ t.getKeyType().computeDistanceTo(keyType);
+	}
+
+	@Override
 	public int distanceTo(final IType<?> t) {
-		return t.getGamlType().distanceTo(type) + t.getContentType().distanceTo(contentsType)
-				+ t.getKeyType().distanceTo(keyType);
+		// Use cached version if typesManager is available
+		if (typesManager != null) return typesManager.computeDistance(this, t);
+		// Fallback to direct computation
+		return computeDistanceTo(t);
 	}
 
 	/**
@@ -354,14 +343,6 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	public boolean canBeTypeOf(final IScope s, final Object c) {
 		return type.canBeTypeOf(s, c);
 	}
-
-	/**
-	 * Method init()
-	 *
-	 * @see gama.api.gaml.types.IType#init(int, int, java.lang.String, java.lang.Class[])
-	 */
-	@Override
-	public void init(final int varKind, final int id, final String name, final Class<IContainer<?, ?>> clazz) {}
 
 	/**
 	 * Method isContainer()
@@ -388,35 +369,33 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 */
 	@SuppressWarnings ("unchecked")
 	@Override
-	public IType<? super IContainer<?, ?>> findCommonSupertypeWith(final IType<?> iType) {
+	public IType<? super IContainer<?, ?>> computeFindCommonSupertypeWith(final IType<?> iType) {
+		// Use polymorphic internal methods to avoid recursion
 		if (iType instanceof ParametricType) {
 			final IType<?> pType = iType;
-			final IType<?> cType = type.findCommonSupertypeWith(pType.getGamlType());
+			final IType<?> cType = type.computeFindCommonSupertypeWith(pType.getGamlType());
 			if (cType.isContainer()) {
-				final IType<?> kt = keyType.findCommonSupertypeWith(pType.getKeyType());
-				final IType<?> ct = contentsType.findCommonSupertypeWith(pType.getContentType());
+				final IType<?> kt = keyType.computeFindCommonSupertypeWith(pType.getKeyType());
+				final IType<?> ct = contentsType.computeFindCommonSupertypeWith(pType.getContentType());
 				return (IType<? super IContainer<?, ?>>) GamaType.from(cType, kt, ct);
 			}
 			return (IType<? super IContainer<?, ?>>) cType;
 		}
-		if (iType.isContainer()) {
-			final IType<?> cType = type.findCommonSupertypeWith(iType);
-			return (IType<? super IContainer<?, ?>>) cType;
-			// dont we need to use the key and contents type here ?
-		}
-		return type.findCommonSupertypeWith(iType);
+		return type;
+	}
+
+	@SuppressWarnings ("unchecked")
+	@Override
+	public IType<? super IContainer<?, ?>> findCommonSupertypeWith(final IType<?> iType) {
+		// Use cached version if typesManager is available
+		if (typesManager != null)
+			return (IType<? super IContainer<?, ?>>) typesManager.computeCommonSupertype(this, iType);
+		// Fallback to direct computation
+		return computeFindCommonSupertypeWith(iType);
 	}
 
 	@Override
 	public boolean isDrawable() { return type.isDrawable(); }
-
-	/**
-	 * Method setSupport()
-	 *
-	 * @see gama.api.gaml.types.IType#setSupport(java.lang.Class)
-	 */
-	@Override
-	public void setSupport(final Class<IContainer<?, ?>> clazz) {}
 
 	@Override
 	public IContainer<?, ?> cast(final IScope scope, final Object obj, final Object param, final boolean copy)
@@ -455,7 +434,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 			final IType<?> genericCast = type.typeIfCasting(exp);
 			final IType<?> ct = contentsType == Types.NO_TYPE ? genericCast.getContentType() : contentsType;
 			final IType<?> kt = keyType == Types.NO_TYPE ? genericCast.getKeyType() : keyType;
-			return createParametricType(type, kt, ct);
+			return new ParametricType(typesManager, type, kt, ct);
 		}
 		return this;
 	}
@@ -482,11 +461,9 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.api.compilation.descriptions.IGamlDescription#getName()
 	 */
 	@Override
-	public String getName() { return toString(); }
-
-	@Override
-	public void setName(final String name) {
-		// Nothing
+	public String getName() {
+		if (name == null) { name = toString(); }
+		return name;
 	}
 
 	@Override
@@ -503,10 +480,21 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 			ct = getContentType();
 		}
 		if (kt == Types.NO_TYPE) { kt = getKeyType(); }
-		return createParametricType(this, kt, ct);
+		return new ParametricType(typesManager, this, kt, ct);
 
 	}
 
+	/**
+	 * Of.
+	 *
+	 * @param typesManager
+	 *            the types manager
+	 * @param sub1
+	 *            the sub 1
+	 * @param sub2
+	 *            the sub 2
+	 * @return the i container type
+	 */
 	@Override
 	public IContainerType<?> of(final IType<?> sub1, final IType<?> sub2) {
 		IType<?> kt = sub1;
@@ -516,7 +504,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 			ct = getContentType();
 		}
 		if (kt == Types.NO_TYPE) { kt = getKeyType(); }
-		return createParametricType(this, kt, ct);
+		return new ParametricType(typesManager, this, kt, ct);
 
 	}
 
@@ -555,5 +543,8 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 
 	@Override
 	public void setExpression(final IExpression exp) {}
+
+	@Override
+	public ITypesManager getTypesManager() { return typesManager; }
 
 }

@@ -17,6 +17,7 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.GamaContainerType;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.ITypesManager;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 
@@ -32,16 +33,22 @@ import gama.api.runtime.scope.IScope;
 		doc = @doc ("Represents a list of the messages exchanged by agents"))
 public class ConversationType extends GamaContainerType<Conversation> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public ConversationType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	/** The Constant CONVERSATION_STR. */
 	public final static String CONVERSATION_STR = "conversation";
 
 	/** The Constant CONV_ID. */
 	public final static int CONV_ID = 98;
-
-	/**
-	 * Instantiates a new conversation type.
-	 */
-	public ConversationType() {}
 
 	@Override
 

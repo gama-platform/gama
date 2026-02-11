@@ -12,7 +12,6 @@ package gama.api.gaml.types;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import gama.annotations.doc;
@@ -82,12 +81,59 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/** The expression. */
 	IExpression expression;
 
+	/** The types manager that owns this type - used for cached type relations */
+	protected final ITypesManager typesManager;
+
 	/** Vowel characters for asPattern pattern generation (lowercase and uppercase). */
 	private static final String VOWELS = "aeiouyAEIOUY";
 
 	/** The support simple name. */
 	// Cached simple name of the support class to avoid repeated reflection
 	private transient String supportSimpleName;
+
+	/**
+	 * Instantiates a new gama type.
+	 *
+	 * @param typesManager
+	 *            the types manager that owns this type - used for cached type relations
+	 * @param varKind
+	 *            the parented.
+	 * @param id
+	 *            the id.
+	 * @param name
+	 *            the name.
+	 * @param support
+	 *            the support.
+	 */
+	@SuppressWarnings ("unchecked")
+	public GamaType(final ITypesManager typesManager) {
+		this.typesManager = typesManager;
+		init();
+	}
+
+	/**
+	 * Instantiates a new gama type.
+	 *
+	 * @param typesManager
+	 *            the types manager that owns this type - used for cached type relations
+	 * @param id
+	 *            the id.
+	 * @param varKind
+	 *            the parented.
+	 * @param name
+	 *            the name.
+	 * @param support
+	 *            the support.
+	 */
+	@SuppressWarnings ("unchecked")
+	protected void init() {
+		type annotation = getClass().getAnnotation(type.class);
+		if (annotation == null) throw new IllegalStateException("Missing @type annotation on " + getClass().getName());
+		this.varKind = annotation.kind();
+		this.id = annotation.id();
+		this.name = annotation.name();
+		this.support = annotation.wraps()[0];
+	}
 
 	@Override
 	public String getTitle() { return "Data type " + getName(); }
@@ -121,10 +167,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	public void documentFields(final IGamlDocumentation result) {
 		if (getters != null) {
 			if (getters.isEmpty()) { result.append("<p>").append("No fields accessible").append("</p>"); }
-			// sb.append("<b><br/>Fields :</b><ul>");
 			for (final IArtefactProto.Operator f : getters.values()) { getFieldDocumentation(result, f); }
-
-			// result.append("</ul>");
 		}
 	}
 
@@ -166,28 +209,8 @@ public abstract class GamaType<Support> implements IType<Support> {
 	public String getName() { return name; }
 
 	@Override
-	public void setName(final String name) {
-		// Nothing
-	}
-
-	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
 		return name;
-	}
-
-	@SuppressWarnings ("unchecked")
-	@Override
-	public void init(final int varKind, final int id, final String name, final Class<Support> support) {
-		this.varKind = varKind;
-		this.id = id;
-		this.name = name;
-		this.support = support;
-	}
-
-	@Override
-	public void setSupport(final Class<Support> clazz) {
-		support = clazz;
-		// supports = new Class[] { clazz };
 	}
 
 	@Override
@@ -290,25 +313,56 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Checks if this type is a supertype of another type by walking up the parent chain.
 	 *
-	 * @param type the type to check
+	 * @param type
+	 *            the type to check
 	 * @return true if this type is a supertype of the given type
 	 */
 	protected boolean isSuperTypeOf(final IType<?> type) {
 		if (type == null) return false;
-		for (IType<?> t = type.getParent(); t != null; t = t.getParent()) {
-			if (this == t) return true;
-		}
+		for (IType<?> t = type.getParent(); t != null; t = t.getParent()) { if (this == t) return true; }
 		return false;
 	}
 
+	/**
+	 * Internal computation of isAssignableFrom without cache lookup. Used by TypesManager to avoid infinite recursion.
+	 *
+	 * @param t
+	 *            the type to check
+	 * @return true if this type is assignable from t
+	 */
 	@Override
-	public boolean isAssignableFrom(final IType<?> t) {
+	public boolean computeIsAssignableFrom(final IType<?> t) {
 		return this == t || isSuperTypeOf(t);
 	}
 
 	@Override
-	public boolean isTranslatableInto(final IType<?> t) {
+	public boolean isAssignableFrom(final IType<?> t) {
+		// Use cached version if typesManager is available
+		if (typesManager != null) return typesManager.checkAssignability(this, t);
+		// Fallback to direct computation
+		return computeIsAssignableFrom(t);
+	}
+
+	/**
+	 * Internal computation of isTranslatableInto without cache lookup. Used by TypesManager to avoid infinite
+	 * recursion. Note: This still calls the public isAssignableFrom on the target type, but since we're called from
+	 * TypesManager, the cache will handle it.
+	 *
+	 * @param t
+	 *            the target type
+	 * @return true if this type is translatable into t
+	 */
+	@Override
+	public boolean computeIsTranslatableInto(final IType<?> t) {
 		return t.isAssignableFrom(this);
+	}
+
+	@Override
+	public final boolean isTranslatableInto(final IType<?> t) {
+		// Use cached version if typesManager is available
+		if (typesManager != null) return typesManager.checkTranslatability(this, t);
+		// Fallback to direct computation
+		return computeIsTranslatableInto(t);
 	}
 
 	@Override
@@ -339,22 +393,57 @@ public abstract class GamaType<Support> implements IType<Support> {
 		return null;
 	}
 
+	/**
+	 * Internal computation of distanceTo without cache lookup. Used by TypesManager to avoid infinite recursion.
+	 *
+	 * @param type
+	 *            the target type
+	 * @return the distance to the type
+	 */
 	@Override
-	public int distanceTo(final IType<?> type) {
+	public int computeDistanceTo(final IType<?> type) {
 		if (type == this) return 0;
 		if (type == null) return Integer.MAX_VALUE;
-		if (isSuperTypeOf(type)) return 1 + distanceTo(type.getParent());
+		if (isSuperTypeOf(type)) {
+			IType<?> parent = type.getParent();
+			return 1 + distanceTo(parent);
+		}
 		return 1 + getParent().distanceTo(type);
 	}
 
+	@Override
+	public final int distanceTo(final IType<?> type) {
+		// Use cached version if typesManager is available
+		if (typesManager != null) return typesManager.computeDistance(this, type);
+		// Fallback to direct computation
+		return computeDistanceTo(type);
+	}
+
+	/**
+	 * Internal computation of findCommonSupertypeWith without cache lookup. Used by TypesManager to avoid infinite
+	 * recursion.
+	 *
+	 * @param type
+	 *            the other type
+	 * @return the common supertype
+	 */
 	@SuppressWarnings ({ "rawtypes", "unchecked" })
 	@Override
-	public IType<? super Support> findCommonSupertypeWith(final IType<?> type) {
+	public IType<? super Support> computeFindCommonSupertypeWith(final IType<?> type) {
 		if (type == this) return this;
 		if (type == Types.NO_TYPE) return getDefault() == null ? this : (GamaNoType) type;
 		if (type.isTranslatableInto(this)) return this;
 		if (this.isTranslatableInto(type)) return (IType) type;
 		return getParent().findCommonSupertypeWith(type.getParent());
+	}
+
+	@SuppressWarnings ({ "rawtypes", "unchecked" })
+	@Override
+	public final IType<? super Support> findCommonSupertypeWith(final IType<?> type) {
+		// Use cached version if typesManager is available
+		if (typesManager != null) return (IType<? super Support>) typesManager.computeCommonSupertype(this, type);
+		// Fallback to direct computation
+		return computeFindCommonSupertypeWith(type);
 	}
 
 	@Override
@@ -369,10 +458,14 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * To type.
 	 *
-	 * @param scope the scope
-	 * @param value the value
-	 * @param type the type
-	 * @param copy the copy
+	 * @param scope
+	 *            the scope
+	 * @param value
+	 *            the value
+	 * @param type
+	 *            the type
+	 * @param copy
+	 *            the copy
 	 * @return the object
 	 */
 	public static Object toType(final IScope scope, final Object value, final IType<?> type, final boolean copy) {
@@ -383,7 +476,8 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Key type if casting.
 	 *
-	 * @param exp the expression
+	 * @param exp
+	 *            the expression
 	 * @return the key type for this type (defaults to getKeyType)
 	 */
 	public IType<?> keyTypeIfCasting(final IExpression exp) {
@@ -393,7 +487,8 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Contents type if casting.
 	 *
-	 * @param exp the expression
+	 * @param exp
+	 *            the expression
 	 * @return the content type for this type (defaults to getContentType)
 	 */
 	public IType<?> contentsTypeIfCasting(final IExpression exp) {
@@ -436,7 +531,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 			return t;
 		final IType<?> kt = keyType == Types.NO_TYPE ? t.getGamlType().getKeyType() : keyType;
 		final IType<?> ct = contentType == Types.NO_TYPE ? t.getGamlType().getContentType() : contentType;
-		return ParametricType.createParametricType(t.getGamlType(), kt, ct);
+		return new ParametricType(t.getTypesManager(), t.getGamlType(), kt, ct);
 	}
 
 	/**
@@ -494,15 +589,17 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Find common type.
 	 *
-	 * @param elements the expressions
-	 * @param kind the kind of type to extract (TYPE, CONTENT, or KEY)
+	 * @param elements
+	 *            the expressions
+	 * @param kind
+	 *            the kind of type to extract (TYPE, CONTENT, or KEY)
 	 * @return the common type among the extracted types
 	 */
 	public static IType<?> findCommonType(final IExpression[] elements, final int kind) {
 		if (elements.length == 0) return Types.NO_TYPE;
 		Set<IType<?>> types = new LinkedHashSet<>();
 		for (final IExpression e : elements) {
-			if (e == null) continue;
+			if (e == null) { continue; }
 			final IType<?> eType = e.getGamlType();
 			types.add(kind == TYPE ? eType : kind == CONTENT ? eType.getContentType() : eType.getKeyType());
 		}
@@ -512,7 +609,8 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Find common type.
 	 *
-	 * @param elements the expressions
+	 * @param elements
+	 *            the expressions
 	 * @return the common type
 	 */
 	public static IType<?> findCommonType(final IExpression... elements) {
@@ -522,7 +620,8 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Find common type.
 	 *
-	 * @param types the types to compare
+	 * @param types
+	 *            the types to compare
 	 * @return the common supertype
 	 */
 	public static IType<?> findCommonType(final IType<?>... types) {
@@ -532,7 +631,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 		for (int i = 1; i < types.length; i++) {
 			final IType<?> currentType = types[i];
 			if (currentType == Types.NO_TYPE) {
-				if (result.getDefault() != null) result = Types.NO_TYPE;
+				if (result.getDefault() != null) { result = Types.NO_TYPE; }
 			} else if (result == Types.NO_TYPE) {
 				result = currentType.findCommonSupertypeWith(result);
 			} else {
@@ -545,7 +644,8 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Return the type of the object passed in parameter
 	 *
-	 * @param obj the object to get the type of
+	 * @param obj
+	 *            the object to get the type of
 	 * @return the GAML type of the object
 	 */
 	public static IType<?> of(final Object obj) {
@@ -577,8 +677,10 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Checks if the casting type requires explicit type conversion from the original type.
 	 *
-	 * @param castingType the target type for conversion
-	 * @param originalType the source type
+	 * @param castingType
+	 *            the target type for conversion
+	 * @param originalType
+	 *            the source type
 	 * @return true if casting is needed
 	 */
 	public static boolean requiresCasting(final IType<?> castingType, final IType<?> originalType) {
@@ -616,5 +718,8 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	@Override
 	public void setExpression(final IExpression exp) { this.expression = exp; }
+
+	@Override
+	public ITypesManager getTypesManager() { return typesManager; }
 
 }

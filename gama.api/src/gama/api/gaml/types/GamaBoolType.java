@@ -11,16 +11,16 @@ package gama.api.gaml.types;
 
 import java.io.File;
 
+import gama.annotations.doc;
+import gama.annotations.type;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
 import gama.api.data.objects.IContainer;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.IGamaFile;
-import gama.annotations.doc;
-import gama.annotations.type;
-import gama.annotations.support.IConcept;
-import gama.annotations.support.ISymbolKind;
 
 /**
  * Written by drogoul Modified on 1 ao�t 2010
@@ -37,6 +37,17 @@ import gama.annotations.support.ISymbolKind;
 		doc = { @doc ("Represents boolean values, either true or false") },
 		concept = { IConcept.TYPE, IConcept.LOGICAL, IConcept.CONDITION })
 public class GamaBoolType extends GamaType<Boolean> {
+
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaBoolType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
 
 	@Override
 	@doc ("Casts parameter into a bool. false if the parameter is nil, equal to zero, empty or dead, depending on its type")

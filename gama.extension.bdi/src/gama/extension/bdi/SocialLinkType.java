@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * SocialLinkType.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * SocialLinkType.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -17,6 +16,7 @@ import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.ITypesManager;
 import gama.api.runtime.scope.IScope;
 
 /**
@@ -31,8 +31,19 @@ import gama.api.runtime.scope.IScope;
 @doc ("represents a social link")
 public class SocialLinkType extends GamaType<SocialLink> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public SocialLinkType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	/** The Constant id. */
-	public final static int id = IType.AVAILABLE_TYPES + 546657;
+	public final static int id = IType.BEGINNING_OF_CUSTOM_TYPES + 546657;
 
 	@Override
 	public boolean canCastToConst() {

@@ -145,10 +145,13 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	int FIELD = 31;
 
 	/** The available types. */
-	int AVAILABLE_TYPES = 50;
+	int BEGINNING_OF_CUSTOM_TYPES = 5000;
 
 	/** The species types. */
-	int SPECIES_TYPES = 100;
+	int BEGINNING_OF_SPECIES_TYPES = 10000;
+
+	/** The beginning of file types. */
+	int BEGINNING_OF_FILE_TYPES = 20000;
 
 	/**
 	 * Cast.
@@ -282,6 +285,16 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	boolean isAssignableFrom(IType<?> l);
 
 	/**
+	 * Internal computation of isAssignableFrom without cache lookup. Used by TypesManager to avoid infinite recursion.
+	 * Implementations should provide the actual logic without delegating to the cache.
+	 *
+	 * @param l
+	 *            the l
+	 * @return true, if is assignable from
+	 */
+	boolean computeIsAssignableFrom(IType<?> l);
+
+	/**
 	 * Checks if is translatable into.
 	 *
 	 * @param t
@@ -289,6 +302,16 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @return true, if is translatable into
 	 */
 	boolean isTranslatableInto(IType<?> t);
+
+	/**
+	 * Internal computation of isTranslatableInto without cache lookup. Used by TypesManager to avoid infinite
+	 * recursion. Implementations should provide the actual logic without delegating to the cache.
+	 *
+	 * @param t
+	 *            the t
+	 * @return true, if is translatable into
+	 */
+	boolean computeIsTranslatableInto(IType<?> t);
 
 	/**
 	 * Sets the parent.
@@ -325,6 +348,15 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	int distanceTo(IType<?> originalChildType);
 
 	/**
+	 * Internal computation of distanceTo without cache lookup. Used by TypesManager to avoid infinite recursion.
+	 * Implementations should provide the actual logic without delegating to the cache.
+	 *
+	 * @param originalChildType
+	 * @return the distance
+	 */
+	int computeDistanceTo(IType<?> originalChildType);
+
+	/**
 	 * @param n
 	 * @param typeFieldExpression
 	 */
@@ -337,27 +369,10 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	boolean canBeTypeOf(IScope s, Object c);
 
 	/**
-	 * Inits the.
+	 * Checks if is container.
 	 *
-	 * @param varKind
-	 *            the var kind
-	 * @param id
-	 *            the id
-	 * @param name
-	 *            the name
-	 * @param clazz
-	 *            the clazz
+	 * @return true, if is container
 	 */
-	void init(int varKind, final int id, final String name, final Class<Support> clazz);
-
-	/**
-	 * Whether or not this type can be considered as having a contents. True for all containers and special types (like
-	 * rgb, species, etc.)
-	 *
-	 * @return
-	 */
-	// public abstract boolean hasContents();
-
 	boolean isContainer();
 
 	/**
@@ -376,12 +391,13 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	IType<? super Support> findCommonSupertypeWith(IType<?> iType);
 
 	/**
-	 * Sets the support.
+	 * Internal computation of findCommonSupertypeWith without cache lookup. Used by TypesManager to avoid infinite
+	 * recursion. Implementations should provide the actual logic without delegating to the cache.
 	 *
-	 * @param clazz
-	 *            the new support
+	 * @param iType
+	 * @return the common supertype
 	 */
-	void setSupport(Class<Support> clazz);
+	IType<? super Support> computeFindCommonSupertypeWith(IType<?> iType);
 
 	/**
 	 * @param context
@@ -529,5 +545,12 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param exp
 	 */
 	void setExpression(IExpression exp);
+
+	/**
+	 * Gets the types manager that owns this type. This manager provides cached type relation operations.
+	 *
+	 * @return the types manager, or null if not set
+	 */
+	ITypesManager getTypesManager();
 
 }

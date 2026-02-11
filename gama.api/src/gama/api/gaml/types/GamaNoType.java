@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * GamaNoType.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamaNoType.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.api.gaml.types;
 
@@ -35,6 +34,17 @@ import gama.api.runtime.scope.IScope;
 		doc = @doc ("A type, root of all other types, that represents values without a precise type"))
 public class GamaNoType extends GamaType<Object> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaNoType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@Override
 	@doc ("Returns the parameter itself")
 	public Object cast(final IScope scope, final Object obj, final Object param, final boolean copy) {
@@ -51,9 +61,9 @@ public class GamaNoType extends GamaType<Object> {
 	}
 
 	@Override
-	public IType<Object> findCommonSupertypeWith(final IType<?> iType) {
+	public IType<Object> computeFindCommonSupertypeWith(final IType<?> iType) {
 		// By default, this is the supertype common to all subtypes
-		return /* iType.getDefault() == null ? iType : */this;
+		return this;
 	}
 
 	@Override
@@ -65,15 +75,11 @@ public class GamaNoType extends GamaType<Object> {
 	 * An unknown value (at the time of compilation) cannot be translated into a bool, an int or a float value
 	 */
 	@Override
-	public boolean isTranslatableInto(final IType<?> t) {
-		switch (t.id()) {
-			case IType.BOOL:
-			case IType.INT:
-			case IType.FLOAT:
-				return false;
-			default:
-				return true;
-		}
+	public boolean computeIsTranslatableInto(final IType<?> t) {
+		return switch (t.id()) {
+			case IType.BOOL, IType.INT, IType.FLOAT -> false;
+			default -> true;
+		};
 	}
 
 }

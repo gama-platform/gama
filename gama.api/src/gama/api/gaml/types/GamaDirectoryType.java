@@ -30,6 +30,17 @@ import gama.api.utils.files.GamaFolderFile;
 		doc = @doc ("specific type for directories (folders). Contains the list of file names"))
 public class GamaDirectoryType extends GamaFileType {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public GamaDirectoryType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	@Override
 	public IType<?> getContentType() { return Types.STRING; }
 
