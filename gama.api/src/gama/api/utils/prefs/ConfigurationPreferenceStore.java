@@ -15,13 +15,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashSet;
 import java.util.Properties;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+
+import gama.dev.DEBUG;
 
 /**
  *
@@ -39,59 +40,11 @@ public class ConfigurationPreferenceStore extends GamaPreferenceStore<IEclipsePr
 	 */
 	public ConfigurationPreferenceStore(final IEclipsePreferences store) {
 		super(store);
-	}
-
-	@Override
-	protected List<String> computeKeys() {
 		try {
-			return Arrays.asList(store.keys());
+			overriddenKeys = new LinkedHashSet<>(Arrays.asList(store.keys()));
 		} catch (org.osgi.service.prefs.BackingStoreException e) {
-			return Collections.EMPTY_LIST;
+			DEBUG.ERR("Impossible to read the preferences key from the global preferences store");
 		}
-	}
-
-	@Override
-	public void put(final String key, final String value) {
-		store.put(key, value);
-		flush();
-	}
-
-	@Override
-	public void putInt(final String key, final int value) {
-		store.putInt(key, value);
-		flush();
-	}
-
-	@Override
-	public void putDouble(final String key, final Double value) {
-		store.putDouble(key, value);
-		flush();
-	}
-
-	@Override
-	public void putBoolean(final String key, final Boolean value) {
-		store.putBoolean(key, value);
-		flush();
-	}
-
-	@Override
-	public String getStringPreference(final String key, final String def) {
-		return store.get(key, def);
-	}
-
-	@Override
-	public Integer getIntPreference(final String key, final Integer def) {
-		return store.getInt(key, def);
-	}
-
-	@Override
-	public Double getDoublePreference(final String key, final Double def) {
-		return store.getDouble(key, def);
-	}
-
-	@Override
-	public Boolean getBooleanPreference(final String key, final Boolean def) {
-		return store.getBoolean(key, def);
 	}
 
 	@Override
@@ -106,6 +59,21 @@ public class ConfigurationPreferenceStore extends GamaPreferenceStore<IEclipsePr
 		try {
 			store.removeNode();
 		} catch (org.osgi.service.prefs.BackingStoreException e) {}
+	}
+
+	@Override
+	public <T> void putInStore(final String key, final T value) {
+		switch (value) {
+			case null -> store.put(key, "");
+			case String s -> store.put(key, s);
+			case Integer i -> store.putInt(key, i);
+			case Double j -> store.putDouble(key, j);
+			case Boolean k -> store.putBoolean(key, k);
+			default -> {
+				store.put(key, value.toString());
+			}
+		}
+		flush();
 	}
 
 	@Override
@@ -126,6 +94,11 @@ public class ConfigurationPreferenceStore extends GamaPreferenceStore<IEclipsePr
 		} catch (final IOException | org.osgi.service.prefs.BackingStoreException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public String getInStore(final String key, final String def) {
+		return store.get(key, def);
 	}
 
 }

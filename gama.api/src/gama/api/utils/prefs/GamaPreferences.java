@@ -13,9 +13,6 @@ package gama.api.utils.prefs;
 import static gama.api.data.factories.GamaColorFactory.LIGHT_GRAY;
 
 import java.awt.Font;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +25,7 @@ import org.eclipse.emf.common.util.URI;
 import org.geotools.referencing.CRS;
 
 import gama.api.GAMA;
+import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.constants.Generators;
 import gama.api.constants.IKeyword;
 import gama.api.data.factories.GamaColorFactory;
@@ -37,6 +35,7 @@ import gama.api.data.objects.IColor;
 import gama.api.data.objects.IFont;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.IType;
+import gama.api.kernel.GamaMetaModel;
 import gama.api.runtime.SystemInfo;
 import gama.api.ui.layers.ICameraDefinition;
 import gama.api.utils.StringUtils;
@@ -45,7 +44,6 @@ import gama.api.utils.files.FileUtils;
 import gama.api.utils.files.GenericFile;
 import gama.api.utils.files.IGamaFile;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceBeforeChangeListener;
-import one.util.streamex.StreamEx;
 
 /**
  * The Class GamaPreferences.
@@ -159,7 +157,7 @@ public class GamaPreferences {
 		public static final Pref<Boolean> CORE_EXTERNAL_BROWSER = create("pref_external_browser",
 				"Browser to open to display web links (in documentation or text statements)", true, IType.BOOL, true)
 						.withLabels("Internal", "System")
-						.withColors(GamaColorFactory.get("lightgray"), GamaColorFactory.get("gray"))
+						.withColors(() -> GamaColorFactory.get("lightgray"), () -> GamaColorFactory.get("gray"))
 						.in(Network.NAME, WEB);
 
 	}
@@ -483,7 +481,7 @@ public class GamaPreferences {
 		public static final Pref<Boolean> EDITOR_EXPERIMENT_MENU = GamaPreferences
 				.create("pref_editor_experiment_menu", "Display experiments as", false, IType.BOOL, false)
 				.withLabels("Menu", "Buttons").deactivates("pref_editor_collapse_buttons").in(NAME, TEXT)
-				.withColors(GamaColorFactory.get("white"), GamaColorFactory.get("darkgray"));
+				.withColors(() -> GamaColorFactory.get("white"), () -> GamaColorFactory.get("darkgray"));
 
 		/** The Constant EDITOR_COLLAPSE_BUTTONS. */
 		public static final Pref<Boolean> EDITOR_COLLAPSE_BUTTONS =
@@ -527,7 +525,7 @@ public class GamaPreferences {
 		public static final Pref<Boolean> CORE_SLIDER_TYPE =
 				create("pref_experiment_type_slider", "Scale of the step duration slider", true, IType.BOOL, true)
 						.in(NAME, EXECUTION).withLabels("Linear", "Logarithmic")
-						.withColors(GamaColorFactory.get("white"), GamaColorFactory.get("darkgray"));
+						.withColors(() -> GamaColorFactory.get("white"), () -> GamaColorFactory.get("darkgray"));
 
 		/** The Constant CORE_SYNC. */
 		public static final Pref<Boolean> CORE_SYNC =
@@ -627,12 +625,12 @@ public class GamaPreferences {
 				create("pref_errors_recent_first", "Display most recent first", true, IType.BOOL, true).in(NAME, ERRORS)
 						.hidden();
 
-		/** The Constant CORE_REVEAL_AND_STOP. */
-		public static final Pref<Boolean> CORE_REVEAL_AND_STOP =
+		/** The Constant CORE_STOP_AT_FIRST_ERROR. */
+		public static final Pref<Boolean> CORE_STOP_AT_FIRST_ERROR =
 				create("pref_errors_stop", "Stop simulation at first error", true, IType.BOOL, true).in(NAME, ERRORS);
 
-		/** The Constant CORE_WARNINGS. */
-		public static final Pref<Boolean> CORE_WARNINGS =
+		/** The Constant CORE_WARNINGS_AS_ERRORS. */
+		public static final Pref<Boolean> CORE_WARNINGS_AS_ERRORS =
 				create("pref_errors_warnings_errors", "Treat warnings as errors", false, IType.BOOL, true).in(NAME,
 						ERRORS);
 
@@ -988,19 +986,19 @@ public class GamaPreferences {
 		/** The Constant JSON_INFINITY. */
 		public static final Pref<Boolean> JSON_INFINITY =
 				create("pref_json_infinity_as_string", "Write and parse #infinity as", true, IType.BOOL, true)
-						.withLabels("string \"Infinity\"", "literal Infinity").withColors(LIGHT_GRAY, LIGHT_GRAY)
-						.in(NAME, "JSON Format");
+						.withLabels("string \"Infinity\"", "literal Infinity")
+						.withColors(() -> LIGHT_GRAY, () -> LIGHT_GRAY).in(NAME, "JSON Format");
 
 		/** The Constant JSON_NAN. */
 		public static final Pref<Boolean> JSON_NAN =
 				create("pref_json_nan_as_string", "Write and parse #nan as", true, IType.BOOL, true)
-						.withLabels("string \"NaN\"", "literal NaN").withColors(LIGHT_GRAY, LIGHT_GRAY)
+						.withLabels("string \"NaN\"", "literal NaN").withColors(() -> LIGHT_GRAY, () -> LIGHT_GRAY)
 						.in(NAME, "JSON Format");
 
 		/** The Constant JSON_NAN. */
 		public static final Pref<Boolean> JSON_INT_OVERFLOW = create("pref_json_int_overflow_as_double",
 				"In case of an int overflow, parse the item as a", true, IType.BOOL, true).withLabels("float", "string")
-						.withColors(LIGHT_GRAY, LIGHT_GRAY).in(NAME, "JSON Format");
+						.withColors(() -> LIGHT_GRAY, () -> LIGHT_GRAY).in(NAME, "JSON Format");
 	}
 
 	/**
@@ -1083,32 +1081,6 @@ public class GamaPreferences {
 	}
 
 	/**
-	 * Gets the.
-	 *
-	 * @param <T>
-	 *            the generic type
-	 * @param key
-	 *            the key
-	 * @param clazz
-	 *            the clazz
-	 * @return the pref
-	 */
-	public static <T> Pref<T> get(final String key, final Class<T> clazz) {
-		return GAMA.getPreferences().get(key);
-	}
-
-	/**
-	 * Gets the.
-	 *
-	 * @param key
-	 *            the key
-	 * @return the pref
-	 */
-	public static Pref<?> get(final String key) {
-		return GAMA.getPreferences().get(key);
-	}
-
-	/**
 	 * Creates the.
 	 *
 	 * @param <T>
@@ -1152,11 +1124,10 @@ public class GamaPreferences {
 	private static void register(final Pref<?> gp) {
 		final String key = gp.getKey();
 		if (key == null) return;
-		GAMA.getPreferences().put(key, gp);
 		GAMA.getPreferenceStore().register(gp);
 		// Adds the preferences to the platform species if it is already created
-		// final ISpeciesDescription.Platform spec = (Platform) GAMA.getPlatformAgent().getSpecies().getDescription();
-		// if (spec != null && !spec.hasAttribute(key) && gp.inGaml()) { spec.addPref(key, gp); }
+		final ISpeciesDescription.Platform spec = GamaMetaModel.getPlatformSpeciesDescription();
+		if (spec != null && !spec.hasAttribute(key) && gp.inGaml()) { spec.addPrefAsVariable(gp); }
 	}
 
 	/**
@@ -1167,7 +1138,7 @@ public class GamaPreferences {
 	public static Map<String, Map<String, List<Pref<?>>>> organizePrefs() {
 		final Map<String, Map<String, List<Pref<?>>>> result = GamaMapFactory.create();
 		for (String tab : ORDER_OF_PREFERENCES) { result.put(tab, GamaMapFactory.create()); }
-		for (final Pref<?> e : GAMA.getPreferences().values()) {
+		for (final Pref<?> e : GAMA.getPreferenceStore().getPreferences()) {
 			if (e.isHidden()) { continue; }
 			final String tab = e.getTab();
 			var groups = result.get(tab);
@@ -1194,7 +1165,7 @@ public class GamaPreferences {
 	 */
 	public static void setNewPreferences(final Map<String, Object> modelValues) {
 		for (final String name : modelValues.keySet()) {
-			final Pref<Object> e = GAMA.getPreferences().get(name);
+			final Pref<Object> e = GAMA.getPreferenceStore().get(name);
 			if (e == null) { continue; }
 			e.set(modelValues.get(name));
 			GAMA.getPreferenceStore().write(e);
@@ -1209,75 +1180,6 @@ public class GamaPreferences {
 	 */
 	public static void revertToDefaultValues(final Map<String, Object> modelValues) {
 		GAMA.getPreferenceStore().clear();
-	}
-
-	/**
-	 * Apply preferences from.
-	 *
-	 * @param path
-	 *            the path
-	 * @param modelValues
-	 *            the model values
-	 */
-	public static void applyPreferencesFrom(final String path, final Map<String, Object> modelValues) {
-		// DEBUG.OUT("Apply preferences from " + path);
-		GAMA.getPreferenceStore().loadFromProperties(path);
-		final List<Pref<?>> entries = new ArrayList<>(GAMA.getPreferences().values());
-		for (final Pref<?> e : entries) {
-			register(e);
-			modelValues.put(e.getKey(), e.getValue());
-		}
-	}
-
-	/**
-	 * Save preferences to GAML.
-	 *
-	 * @param path
-	 *            the path
-	 */
-	public static void savePreferencesToGAML(final String path) {
-		try (var os = new FileWriter(path)) {
-			final var entries = StreamEx.ofValues(GAMA.getPreferences()).sortedBy(Pref::getName).toList();
-
-			final var read = new StringBuilder(1000);
-			final var write = new StringBuilder(1000);
-			for (final Pref<?> e : entries) {
-				if (e.isHidden() || !e.inGaml()) { continue; }
-				read.append(StringUtils.TAB).append("//").append(e.getTitle()).append(StringUtils.LN);
-				read.append(StringUtils.TAB).append("write sample(gama.").append(e.getName()).append(");")
-						.append(StringUtils.LN).append(StringUtils.LN);
-				write.append(StringUtils.TAB).append("//").append(e.getTitle()).append(StringUtils.LN);
-				write.append(StringUtils.TAB).append("gama.").append(e.getName()).append(" <- ")
-						.append(StringUtils.toGaml(e.getValue(), false)).append(";").append(StringUtils.LN)
-						.append(StringUtils.LN);
-			}
-			os.append("// ").append(SystemInfo.VERSION).append(" __PREFS__ saved on ")
-					.append(LocalDateTime.now().toString()).append(StringUtils.LN).append(StringUtils.LN);
-			os.append("model preferences").append(StringUtils.LN).append(StringUtils.LN);
-			os.append("experiment 'Display __PREFS__' type: gui {").append(StringUtils.LN);
-			os.append("init {").append(StringUtils.LN);
-			os.append(read);
-			os.append("}").append(StringUtils.LN);
-			os.append("}").append(StringUtils.LN).append(StringUtils.LN).append(StringUtils.LN);
-			os.append("experiment 'Set __PREFS__' type: gui {").append(StringUtils.LN);
-			os.append("init {").append(StringUtils.LN);
-			os.append(write);
-			os.append("}").append(StringUtils.LN);
-			os.append("}").append(StringUtils.LN);
-			os.flush();
-		} catch (final IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Save preferences to properties.
-	 *
-	 * @param path
-	 *            the path
-	 */
-	public static void savePreferencesToProperties(final String path) {
-		GAMA.getPreferenceStore().saveToProperties(path);
 	}
 
 	/** The order of preferences. */

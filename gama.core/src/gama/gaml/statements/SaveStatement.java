@@ -114,9 +114,8 @@ import gama.gaml.statements.SaveStatement.SaveValidator;
 						doc = @doc (
 								value = "Allows to specify a buffering strategy to write the file. Accepted values are `"
 										+ BufferingUtils.PER_CYCLE_BUFFERING + "` and `"
-										+ BufferingUtils.PER_SIMULATION_BUFFERING + "`, `"
-										+ BufferingUtils.NO_BUFFERING + "`. " + "In the case of `"
-										+ BufferingUtils.PER_CYCLE_BUFFERING + "` or `"
+										+ BufferingUtils.PER_SIMULATION_BUFFERING + "`, `" + BufferingUtils.NO_BUFFERING
+										+ "`. " + "In the case of `" + BufferingUtils.PER_CYCLE_BUFFERING + "` or `"
 										+ BufferingUtils.PER_SIMULATION_BUFFERING
 										+ "`, all the write operations in the simulation which used these values would be "
 										+ "executed all at once at the end of the cycle or simulation while keeping the initial order. In case of '"
@@ -254,11 +253,9 @@ public class SaveStatement extends AbstractStatementSequence {
 
 			if (bufferingStrategy != null
 					&& !BufferingUtils.BUFFERING_STRATEGIES.contains(bufferingStrategy.literalValue())) {
-				desc.error(
-						"The value for buffering must be '" + BufferingUtils.NO_BUFFERING + "', '"
-								+ BufferingUtils.PER_CYCLE_BUFFERING + "', '" + BufferingUtils.PER_AGENT + "'"
-								+ "' or '" + BufferingUtils.PER_SIMULATION_BUFFERING + "'.",
-						IGamlIssue.WRONG_TYPE);
+				desc.error("The value for buffering must be '" + BufferingUtils.NO_BUFFERING + "', '"
+						+ BufferingUtils.PER_CYCLE_BUFFERING + "', '" + BufferingUtils.PER_AGENT + "'" + "' or '"
+						+ BufferingUtils.PER_SIMULATION_BUFFERING + "'.", IGamlIssue.WRONG_TYPE);
 			}
 
 			// Starting from here we validate the attributes, other validations must be done before
@@ -412,15 +409,14 @@ public class SaveStatement extends AbstractStatementSequence {
 
 		// get the buffering strategy
 		BufferingStrategies strategy = BufferingUtils.stringToBufferingStrategies(scope,
-				(String) GamaPreferences.get(GamaPreferences.PREF_SAVE_BUFFERING_STRATEGY).value(scope));
+				GamaPreferences.Experimental.DEFAULT_SAVE_BUFFERING_STRATEGY.value(scope));
 		if (bufferingStrategy != null) {
 			strategy = BufferingUtils.stringToBufferingStrategies(scope, (String) bufferingStrategy.value(scope));
 		}
 
 		try {
 			Files.createDirectories(fileToSave.toPath().getParent());
-			boolean exists =
-					fileToSave.exists() || BufferingUtils.getInstance().isFileWaitingToBeWritten(fileToSave);
+			boolean exists = fileToSave.exists() || BufferingUtils.getInstance().isFileWaitingToBeWritten(fileToSave);
 			final boolean rewrite = shouldOverwrite(scope);
 
 			IExpression header = getFacet(IKeyword.HEADER);

@@ -46,7 +46,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class MatrixEditorDialog extends Dialog {
 
 	/** The data. */
-	IMatrix data;
+	IMatrix<?> data;
 
 	/** The container. */
 	Composite container = null;

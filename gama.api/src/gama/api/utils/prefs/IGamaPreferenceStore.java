@@ -10,19 +10,13 @@
  ********************************************************************************************************/
 package gama.api.utils.prefs;
 
-import java.util.List;
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * @param <T>
  */
 public interface IGamaPreferenceStore {
-
-	/**
-	 * Gets the keys.
-	 *
-	 * @return the keys
-	 */
-	List<String> getKeys();
 
 	/**
 	 * Put.
@@ -32,100 +26,29 @@ public interface IGamaPreferenceStore {
 	 * @param value
 	 *            the value
 	 */
-	void put(String key, String value);
+	<T> void putInStore(String key, T value);
 
 	/**
-	 * Put int.
+	 * Gets the in store.
 	 *
 	 * @param key
 	 *            the key
-	 * @param value
-	 *            the value
+	 * @return the in store
 	 */
-	void putInt(String key, int value);
-
-	/**
-	 * Put double.
-	 *
-	 * @param key
-	 *            the key
-	 * @param value
-	 *            the value
-	 */
-	void putDouble(String key, Double value);
-
-	/**
-	 * Put boolean.
-	 *
-	 * @param key
-	 *            the key
-	 * @param value
-	 *            the value
-	 */
-	void putBoolean(String key, Boolean value);
-
-	/**
-	 * Gets the.
-	 *
-	 * @param key
-	 *            the key
-	 * @return the object
-	 */
-	default Object get(final String key) {
-		return get(key, null);
-	}
-
-	/**
-	 * Gets the.
-	 *
-	 * @param key
-	 *            the key
-	 * @param def
-	 *            the def
-	 * @return the string
-	 */
-	String get(String key, String def);
-
-	/**
-	 * First searches if the preference is overriden in the system/VM properties/arguments, then looks into the store if
-	 * not
-	 *
-	 * @param key
-	 * @param def
-	 * @return
-	 */
-	Integer getInt(String key, Integer def);
-
-	/**
-	 * First searches if the preference is overriden in the system/VM properties/arguments, then looks into the store if
-	 * not
-	 *
-	 * @param key
-	 * @param def
-	 * @return
-	 */
-	Double getDouble(String key, Double def);
-
-	/**
-	 * First searches if the preference is overriden in the system/VM properties/arguments, then looks into the store if
-	 * not
-	 *
-	 * @param key
-	 * @param def
-	 * @return
-	 */
-	Boolean getBoolean(String key, Boolean def);
-
-	/**
-	 * Makes sure preferences are kept in sync between GAMA runtime and the backend file
-	 */
-
-	void flush();
+	String getInStore(String key, String def);
 
 	/**
 	 * Destroys the preferences node (all preferences are removed and replaced by defaults
 	 */
 	void clear();
+
+	/**
+	 * Save to GAML.
+	 *
+	 * @param path
+	 *            the path
+	 */
+	void saveToGAML(final String path);
 
 	/**
 	 * Exports the contents of the preferences as a properties (key = value) file, which can then be reloaded in another
@@ -158,4 +81,31 @@ public interface IGamaPreferenceStore {
 	 */
 	void register(Pref<?> gp);
 
+	/**
+	 * @return
+	 */
+	Collection<String> getKeys();
+
+	/**
+	 * Gets the preferences.
+	 *
+	 * @return the preferences
+	 */
+	Collection<Pref> getPreferences();
+
+	/**
+	 * @param s
+	 * @return
+	 */
+	Pref get(String s);
+
+	/**
+	 * Apply preferences from.
+	 *
+	 * @param path
+	 *            the path
+	 * @param modelValues
+	 *            the model values
+	 */
+	void applyPreferencesFrom(final String path, final Map<String, Object> modelValues);
 }

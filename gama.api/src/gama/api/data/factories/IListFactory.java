@@ -53,18 +53,24 @@ public interface IListFactory extends IFactory<IList> {
 	/**
 	 * Creates a GamaList from an array of objects without type casting checks.
 	 *
-	 * @param contentType the type of content
-	 * @param objects the array of objects
+	 * @param contentType
+	 *            the type of content
+	 * @param objects
+	 *            the array of objects
 	 * @warning This operation can end up putting values of the wrong type into the list if not used carefully.
 	 * @return the created list
 	 */
+
+	@SuppressWarnings ("unchecked")
 	<T> IList<T> createWithoutCasting(IType contentType, T... objects);
 
 	/**
 	 * Creates a GamaList from an array of ints without type casting checks.
 	 *
-	 * @param contentType the type of content (usually Types.INT)
-	 * @param objects the array of ints
+	 * @param contentType
+	 *            the type of content (usually Types.INT)
+	 * @param objects
+	 *            the array of ints
 	 * @warning This operation can end up putting values of the wrong type into the list.
 	 * @return the created list
 	 */
@@ -73,8 +79,10 @@ public interface IListFactory extends IFactory<IList> {
 	/**
 	 * Creates a GamaList from an array of doubles without type casting checks.
 	 *
-	 * @param contentType the type of content (usually Types.FLOAT)
-	 * @param objects the array of doubles
+	 * @param contentType
+	 *            the type of content (usually Types.FLOAT)
+	 * @param objects
+	 *            the array of doubles
 	 * @warning This operation can end up putting values of the wrong type into the list.
 	 * @return the created list
 	 */
@@ -83,8 +91,10 @@ public interface IListFactory extends IFactory<IList> {
 	/**
 	 * Creates a GamaList from an iterable without type casting checks.
 	 *
-	 * @param contentType the type of content
-	 * @param objects the iterable
+	 * @param contentType
+	 *            the type of content
+	 * @param objects
+	 *            the iterable
 	 * @warning This operation can end up putting values of the wrong type into the list.
 	 * @return the created list
 	 */
@@ -176,6 +186,7 @@ public interface IListFactory extends IFactory<IList> {
 	 *            the array of objects
 	 * @return the created list
 	 */
+	@SuppressWarnings ("unchecked")
 	<T> IList<T> create(IScope scope, IType contentType, T... objects);
 
 	/**
@@ -316,31 +327,36 @@ public interface IListFactory extends IFactory<IList> {
 	<T> IList<T> create();
 
 	/**
-	 * Wraps a Java List into an IList. 
-	 * Changes are reflected in both directions.
+	 * Wraps a Java List into an IList. Changes are reflected in both directions.
 	 *
-	 * @param contentType the content type
-	 * @param wrapped the list to wrap
+	 * @param contentType
+	 *            the content type
+	 * @param wrapped
+	 *            the list to wrap
 	 * @return a view of the list as an IList
 	 */
 	<E> IList<E> wrap(IType contentType, List<E> wrapped);
 
 	/**
-	 * Wraps an array into an IList.
-	 * Changes to elements are reflected, but structural changes (add/remove) are not supported.
+	 * Wraps an array into an IList. Changes to elements are reflected, but structural changes (add/remove) are not
+	 * supported.
 	 *
-	 * @param contentType the content type
-	 * @param wrapped the array to wrap
+	 * @param contentType
+	 *            the content type
+	 * @param wrapped
+	 *            the array to wrap
 	 * @return a view of the array as an IList
 	 */
+	@SuppressWarnings ("unchecked")
 	<E> IList<E> wrap(IType contentType, E... wrapped);
 
 	/**
-	 * Wraps a Collection into an IList.
-	 * Since Collections are not indexed, some list operations are emulated.
+	 * Wraps a Collection into an IList. Since Collections are not indexed, some list operations are emulated.
 	 *
-	 * @param contentType the content type
-	 * @param wrapped the collection to wrap
+	 * @param contentType
+	 *            the content type
+	 * @param wrapped
+	 *            the collection to wrap
 	 * @return a view of the collection as an IList
 	 */
 	<E> IList<E> wrap(IType contentType, Collection<E> wrapped);
@@ -358,7 +374,7 @@ public interface IListFactory extends IFactory<IList> {
 
 	/**
 	 * Returns a shared immutable empty list.
-	 * 
+	 *
 	 * @return the empty list
 	 */
 	IList getEmptyList();

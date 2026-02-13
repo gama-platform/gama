@@ -12,11 +12,11 @@ package gaml.compiler.gaml.descriptions;
 
 import static gama.api.compilation.descriptions.IVariableDescription.PREF_DEFINITIONS;
 
-import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.api.GAMA;
 import gama.api.additions.IGamaHelper;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
@@ -28,7 +28,6 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.Facets;
 import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.kernel.simulation.ITopLevelAgent;
-import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.Pref;
 import gaml.compiler.gaml.validation.ValidationContext;
 
@@ -98,9 +97,7 @@ public class PlatformSpeciesDescription extends SpeciesDescription implements IS
 	@Override
 	public void copyJavaAdditions() {
 		super.copyJavaAdditions();
-		for (final Map.Entry<String, Pref> pref : gama.api.GAMA.getPreferences().entrySet()) {
-			addPref(pref.getKey(), pref.getValue());
-		}
+		for (final Pref<?> pref : GAMA.getPreferenceStore().getPreferences()) { addPrefAsVariable(pref); }
 	}
 
 	/**
@@ -112,20 +109,21 @@ public class PlatformSpeciesDescription extends SpeciesDescription implements IS
 	 *            the entry
 	 */
 	@Override
-	public void addPref(final String key, final Pref<?> entry) {
+	public void addPrefAsVariable(final Pref<?> entry) {
+		String key = entry.getKey();
 		final VariableDescription var = (VariableDescription) GAML.getDescriptionFactory()
 				.create(entry.getType().toString(), this, IKeyword.NAME, key);
 		PREF_DEFINITIONS.put(key, entry.getTitle());
-		final IGamaHelper<?> get = (scope, agent, skill, values) -> GamaPreferences.get(key).getValue();
+		final IGamaHelper<?> get = (scope, agent, skill, values) -> entry.getValue();
 		final IGamaHelper<?> set = (scope, agent, skill, val) -> {
 			if (agent instanceof ITopLevelAgent.Platform gama) {
 				// Should be in any case
-				gama.savePrefToRestore(key, GamaPreferences.get(key).getValue());
+				gama.savePrefToRestore(key, entry.getValue());
 			}
-			GamaPreferences.get(key).setValue(scope, val);
+			GAMA.getPreferenceStore().get(key).setValue(scope, val);
 			return this;
 		};
-		final IGamaHelper<?> init = (scope, agent, skill, values) -> GamaPreferences.get(key).getValue();
+		final IGamaHelper<?> init = (scope, agent, skill, values) -> entry.getValue();
 		var.addHelpers(get, init, set);
 		addChild(var);
 	}

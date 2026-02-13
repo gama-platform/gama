@@ -12,7 +12,6 @@ package gama.api;
 import org.osgi.framework.BundleContext;
 
 import gama.api.runtime.GamaExecutorService;
-import gama.api.utils.prefs.GamaPreferenceMap;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dependencies.GamaBundleActivator;
 import gama.dev.DEBUG;
@@ -29,7 +28,6 @@ public class APIActivator extends GamaBundleActivator {
 	@Override
 	public void initialize(final BundleContext context) {
 		DEBUG.OUT("Starting GAMA API Bundle");
-		GAMA.setPreferencesRegistry(new GamaPreferenceMap());
 		GamaPreferences.initialize();
 		GamaExecutorService.reset();
 	}

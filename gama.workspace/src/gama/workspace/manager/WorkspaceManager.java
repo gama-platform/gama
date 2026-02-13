@@ -72,7 +72,9 @@ public class WorkspaceManager implements IWorkspaceManager {
 	 * Returns whether the user selected "remember workspace" in the preferences
 	 */
 	@Override
-	public boolean isRememberWorkspace() { return GAMA.getPreferenceStore().getBoolean(KEY_WORKSPACE_REMEMBER, false); }
+	public boolean isRememberWorkspace() {
+		return Boolean.parseBoolean(GAMA.getPreferenceStore().getInStore(KEY_WORKSPACE_REMEMBER, "false"));
+	}
 
 	/**
 	 * Checks if is remember workspace.
@@ -82,7 +84,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 	 */
 	@Override
 	public void isRememberWorkspace(final boolean remember) {
-		GAMA.getPreferenceStore().putBoolean(KEY_WORKSPACE_REMEMBER, remember);
+		GAMA.getPreferenceStore().putInStore(KEY_WORKSPACE_REMEMBER, remember);
 	}
 
 	/**
@@ -91,7 +93,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 	 * @return the last used workspaces
 	 */
 	@Override
-	public String getLastUsedWorkspaces() { return GAMA.getPreferenceStore().get(KEY_WORKSPACE_LIST, ""); }
+	public String getLastUsedWorkspaces() { return GAMA.getPreferenceStore().getInStore(KEY_WORKSPACE_LIST, ""); }
 
 	/**
 	 * Sets the last used workspaces.
@@ -101,7 +103,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 	 */
 	@Override
 	public void setLastUsedWorkspaces(final String used) {
-		GAMA.getPreferenceStore().put(KEY_WORKSPACE_LIST, used);
+		GAMA.getPreferenceStore().putInStore(KEY_WORKSPACE_LIST, used);
 	}
 
 	/**
@@ -111,7 +113,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 	 */
 	@Override
 	public String getLastSetWorkspaceDirectory() {
-		return GAMA.getPreferenceStore().get(KEY_WORSPACE_PATH,
+		return GAMA.getPreferenceStore().getInStore(KEY_WORSPACE_PATH,
 				System.getProperty("user.home") + File.separator + "Gama_Workspace");
 	}
 
@@ -123,7 +125,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 	 */
 	@Override
 	public void setLastSetWorkspaceDirectory(final String last) {
-		GAMA.getPreferenceStore().put(KEY_WORSPACE_PATH, last);
+		GAMA.getPreferenceStore().putInStore(KEY_WORSPACE_PATH, last);
 	}
 
 	/**
@@ -134,7 +136,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 	private boolean askBeforeRebuildingWorkspace() {
 		// true by default
 		// return GamaPreferences.Interface.CORE_ASK_REBUILD.getValue();
-		return GAMA.getPreferenceStore().getBoolean(KEY_ASK_REBUILD, true);
+		return Boolean.parseBoolean(GAMA.getPreferenceStore().getInStore(KEY_ASK_REBUILD, "true"));
 	}
 
 	/**
@@ -145,7 +147,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 	private boolean askBeforeUsingOutdatedWorkspace() {
 		// true by default
 		// return GamaPreferences.Interface.CORE_ASK_OUTDATED.getValue();
-		return GAMA.getPreferenceStore().getBoolean(KEY_ASK_OUTDATED, true);
+		return Boolean.parseBoolean(GAMA.getPreferenceStore().getInStore(KEY_ASK_OUTDATED, "true"));
 	}
 
 	/**
@@ -422,7 +424,7 @@ public class WorkspaceManager implements IWorkspaceManager {
 	 */
 	@Override
 	public void clearWorkspace(final boolean clear) {
-		GAMA.getPreferenceStore().putBoolean(CLEAR_WORKSPACE, clear);
+		GAMA.getPreferenceStore().putInStore(CLEAR_WORKSPACE, clear);
 	}
 
 	/**

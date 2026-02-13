@@ -29,10 +29,10 @@ import gama.api.kernel.simulation.IExperimentController;
 import gama.api.kernel.simulation.IExperimentRecorder;
 import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.simulation.IExperimentStateListener.State;
-import gama.api.kernel.species.IExperimentSpecies;
-import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.IWorkspaceManager;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.InScope;
@@ -47,8 +47,8 @@ import gama.api.utils.benchmark.StopWatch;
 import gama.api.utils.files.IFileMetadataProvider;
 import gama.api.utils.files.IGamaFileMetaData;
 import gama.api.utils.prefs.ConfigurationPreferenceStore;
-import gama.api.utils.prefs.GamaPreferenceMap;
 import gama.api.utils.prefs.GamaPreferenceStore;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.IGamaPreferenceStore;
 import gama.api.utils.prefs.JREPreferenceStore;
 import gama.api.utils.random.IRandom;
@@ -118,9 +118,6 @@ public class GAMA {
 	/** The platform agent instance */
 	private volatile static ITopLevelAgent.Platform __AGENT__;
 
-	/** The platform preferences registry */
-	public volatile static GamaPreferenceMap __PREFS__;
-
 	/** The platform preference store */
 	public volatile static IGamaPreferenceStore __STORE__;
 
@@ -159,14 +156,6 @@ public class GAMA {
 	 *            the file metadata provider implementation
 	 */
 	public static void setMetadataProvider(final IFileMetadataProvider metadata) { __METADATA__ = metadata; }
-
-	/**
-	 * Sets the preference registry for the platform.
-	 *
-	 * @param p
-	 *            the preference map instance
-	 */
-	public static void setPreferencesRegistry(final GamaPreferenceMap p) { __PREFS__ = p; }
 
 	/**
 	 * Sets the recorder class.
@@ -268,13 +257,6 @@ public class GAMA {
 		}
 		return __STORE__;
 	}
-
-	/**
-	 * Gets the platform preferences registry.
-	 *
-	 * @return the preferences map
-	 */
-	public static GamaPreferenceMap getPreferences() { return __PREFS__; }
 
 	/**
 	 * Gets the GAMA server instance.
@@ -598,8 +580,8 @@ public class GAMA {
 			final boolean shouldStopSimulation) {
 		boolean warning = g.isWarning();
 		final boolean shouldStop =
-				(warning && __PREFS__.getBoolean("pref_errors_warnings_errors") || !warning && shouldStopSimulation)
-						&& __PREFS__.getBoolean("pref_errors_stop");
+				(warning && GamaPreferences.Runtime.CORE_WARNINGS_AS_ERRORS.getValue() || !warning && shouldStopSimulation)
+						&& GamaPreferences.Runtime.CORE_STOP_AT_FIRST_ERROR.getValue();
 		if (g.isReported()) return !shouldStop;
 		final IExperimentController controller = getFrontmostController();
 		if (controller == null || controller.getExperiment() == null || controller.isDisposing()

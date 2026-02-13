@@ -61,9 +61,8 @@ import gama.api.utils.prefs.GamaPreferences;
 						doc = @doc (
 								value = "Allows to specify a buffering strategy to write in the console. Accepted values are `"
 										+ BufferingUtils.PER_CYCLE_BUFFERING + "` and `"
-										+ BufferingUtils.PER_SIMULATION_BUFFERING + "`, `"
-										+ BufferingUtils.NO_BUFFERING + "`. " + "In the case of `"
-										+ BufferingUtils.PER_CYCLE_BUFFERING + "` or `"
+										+ BufferingUtils.PER_SIMULATION_BUFFERING + "`, `" + BufferingUtils.NO_BUFFERING
+										+ "`. " + "In the case of `" + BufferingUtils.PER_CYCLE_BUFFERING + "` or `"
 										+ BufferingUtils.PER_SIMULATION_BUFFERING
 										+ "`, all the write operations in the simulation which used these values would be "
 										+ "executed all at once at the end of the cycle or simulation while keeping the initial order. In case of '"
@@ -119,7 +118,7 @@ public class BenchmarkStatement extends AbstractStatementSequence {
 		IColor rgb = null;
 		if (color != null) { rgb = (IColor) color.value(scope); }
 		BufferingStrategies strategy = BufferingUtils.stringToBufferingStrategies(scope,
-				(String) GamaPreferences.get(GamaPreferences.PREF_WRITE_BUFFERING_STRATEGY).value(scope));
+				GamaPreferences.Experimental.DEFAULT_WRITE_BUFFERING_STRATEGY.value(scope));
 		if (bufferingStrategy != null) {
 			strategy = BufferingUtils.stringToBufferingStrategies(scope,
 					Cast.asString(scope, bufferingStrategy.value(scope)));

@@ -58,13 +58,13 @@ public class InternalGamaPairFactory implements IPairFactory {
 			final DynamicLineString g = (DynamicLineString) s.getInnerGeometry();
 			key = g.getSource();
 			value = g.getTarget();
-		} else if (obj instanceof IMap m) {
+		} else if (obj instanceof IMap<?, ?> m) {
 			if (m.containsKey("key") && m.containsKey("value")) {
 				key = m.get("key");
 				value = m.get("value");
 			} else {
-				key = GamaListFactory.create(scope, m.getGamlType().getKeyType(), m.keySet());
-				value = GamaListFactory.create(scope, m.getGamlType().getContentType(), m.values());
+				key = GamaListFactory.<Object> create(scope, m.getGamlType().getKeyType(), m.keySet());
+				value = GamaListFactory.<Object> create(scope, m.getGamlType().getContentType(), m.values());
 			}
 		} else {
 			// 8/01/14 : Change of behavior: now returns a pair object::object

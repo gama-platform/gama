@@ -188,7 +188,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 
 	/** The warnings as errors. */
 	// Removed while working on #3641 : is redundant with gama.prefs_errors_warnings_errors
-	// protected boolean warningsAsErrors = GamaPreferences.Runtime.CORE_WARNINGS.getValue();
+	// protected boolean warningsAsErrors = GamaPreferences.Runtime.CORE_WARNINGS_AS_ERRORS.getValue();
 
 	/** The own model path. */
 	protected String ownModelPath;

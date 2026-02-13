@@ -109,7 +109,8 @@ public class ThemeHelper {
 			create("pref_theme_light", "Theme to apply (requires restart)", true, IType.BOOL, false).in(NAME, UI)
 					.restartRequired().onChange(yes -> {
 						chooseThemeBasedOnPreferences();
-					}).withLabels("Light", "Dark").withColors(GamaColorFactory.get("white"), GamaColorFactory.get("black"));
+					}).withLabels("Light", "Dark")
+					.withColors(() -> GamaColorFactory.get("white"), () -> GamaColorFactory.get("black"));
 
 	/**
 	 * Chooses a light/dark theme based on the GAMA preferences and the actual theme

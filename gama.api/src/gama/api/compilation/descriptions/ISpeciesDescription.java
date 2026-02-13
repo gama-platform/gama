@@ -164,7 +164,7 @@ public interface ISpeciesDescription extends ITypeDescription {
 		 * @param key
 		 * @param gp
 		 */
-		void addPref(String key, Pref<?> gp);
+		void addPrefAsVariable(Pref<?> gp);
 	}
 
 	/**

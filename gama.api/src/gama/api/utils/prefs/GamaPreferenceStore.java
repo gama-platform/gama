@@ -10,8 +10,13 @@
  ********************************************************************************************************/
 package gama.api.utils.prefs;
 
-import java.util.List;
-import java.util.function.Function;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import gama.api.data.factories.GamaColorFactory;
@@ -23,10 +28,12 @@ import gama.api.data.objects.IDate;
 import gama.api.data.objects.IPoint;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
+import gama.api.runtime.SystemInfo;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.GenericFile;
 import gama.api.utils.files.IGamaFile;
+import one.util.streamex.StreamEx;
 
 /**
  * A store that acts as a gateway with either the JREPreferenceStore preference store (global) or configuration-specific
@@ -38,12 +45,9 @@ import gama.api.utils.files.IGamaFile;
  *
  * @param <T>
  */
+
 @SuppressWarnings ({ "restriction", "unchecked", "rawtypes" })
 public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
-
-	static {
-		// DEBUG.OFF();
-	}
 
 	/** The Constant NODE_NAME. */
 	public static final String NODE_NAME = "gama";
@@ -54,8 +58,11 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 	/** The store. */
 	T store;
 
-	/** The keys. */
-	private final List<String> keys;
+	/** The cache. */
+	Map<String, Pref> map = new LinkedHashMap<>();
+
+	/** The overridden keys. */
+	Set<String> overriddenKeys = Set.of();
 
 	/**
 	 * Instantiates a new gama preference store.
@@ -65,192 +72,14 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 	 */
 	GamaPreferenceStore(final T store) {
 		this.store = store;
-		keys = computeKeys();
 		flush();
 	}
-
-	/**
-	 * Gets the keys.
-	 *
-	 * @return the keys
-	 */
-	@Override
-	public List<String> getKeys() { return keys; }
-
-	/**
-	 * Compute keys.
-	 *
-	 * @return the list
-	 */
-	protected abstract List<String> computeKeys();
-
-	/**
-	 * Put.
-	 *
-	 * @param key
-	 *            the key
-	 * @param value
-	 *            the value
-	 */
-	@Override
-	public abstract void put(final String key, final String value);
-
-	/**
-	 * Put int.
-	 *
-	 * @param key
-	 *            the key
-	 * @param value
-	 *            the value
-	 */
-	@Override
-	public abstract void putInt(final String key, final int value);
-
-	/**
-	 * Put double.
-	 *
-	 * @param key
-	 *            the key
-	 * @param value
-	 *            the value
-	 */
-	@Override
-	public abstract void putDouble(final String key, final Double value);
-
-	/**
-	 * Put boolean.
-	 *
-	 * @param key
-	 *            the key
-	 * @param value
-	 *            the value
-	 */
-	@Override
-	public abstract void putBoolean(final String key, final Boolean value);
-
-	/**
-	 * First searches if the preference is overriden in the system/VM properties/arguments, then looks into the store if
-	 * not
-	 *
-	 * @param key
-	 * @param def
-	 * @return
-	 */
-
-	public final <E> E get(final String key, final Function<String, E> function, final E def) {
-		String result = System.getProperty(key);
-		return result == null ? def : function.apply(result);
-	}
-
-	/**
-	 * Gets the.
-	 *
-	 * @param key
-	 *            the key
-	 * @param def
-	 *            the def
-	 * @return the string
-	 */
-	@Override
-	public final String get(final String key, final String def) {
-		return get(key, Function.identity(), getStringPreference(key, def));
-	}
-
-	/**
-	 * Gets the string preference.
-	 *
-	 * @param key
-	 *            the key
-	 * @param def
-	 *            the def
-	 * @return the string preference
-	 */
-	protected abstract String getStringPreference(String key, String def);
-
-	/**
-	 * First searches if the preference is overriden in the system/VM properties/arguments, then looks into the store if
-	 * not
-	 *
-	 * @param key
-	 * @param def
-	 * @return
-	 */
-	@Override
-	public final Integer getInt(final String key, final Integer def) {
-		return get(key, Integer::valueOf, getIntPreference(key, def));
-	}
-
-	/**
-	 * Gets the int preference.
-	 *
-	 * @param key
-	 *            the key
-	 * @param def
-	 *            the def
-	 * @return the int preference
-	 */
-	protected abstract Integer getIntPreference(String key, Integer def);
-
-	/**
-	 * First searches if the preference is overriden in the system/VM properties/arguments, then looks into the store if
-	 * not
-	 *
-	 * @param key
-	 * @param def
-	 * @return
-	 */
-	@Override
-	public final Double getDouble(final String key, final Double def) {
-		return get(key, Double::valueOf, getDoublePreference(key, def));
-	}
-
-	/**
-	 * Gets the double preference.
-	 *
-	 * @param key
-	 *            the key
-	 * @param def
-	 *            the def
-	 * @return the double preference
-	 */
-	protected abstract Double getDoublePreference(String key, Double def);
-
-	/**
-	 * First searches if the preference is overriden in the system/VM properties/arguments, then looks into the store if
-	 * not
-	 *
-	 * @param key
-	 * @param def
-	 * @return
-	 */
-	@Override
-	public final Boolean getBoolean(final String key, final Boolean def) {
-		return get(key, Boolean::valueOf, getBooleanPreference(key, def));
-	}
-
-	/**
-	 * Gets the boolean preference.
-	 *
-	 * @param key
-	 *            the key
-	 * @param def
-	 *            the def
-	 * @return the boolean preference
-	 */
-	protected abstract Boolean getBooleanPreference(String key, Boolean def);
 
 	/**
 	 * Makes sure preferences are kept in sync between GAMA runtime and the backend file
 	 */
 
-	@Override
-	public abstract void flush();
-
-	/**
-	 * Destroys the preferences node (all preferences are removed and replaced by defaults
-	 */
-	@Override
-	public abstract void clear();
+	protected abstract void flush();
 
 	/**
 	 * Exports the contents of the preferences as a properties (key = value) file, which can then be reloaded in another
@@ -270,6 +99,48 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 	public abstract void loadFromProperties(final String path);
 
 	/**
+	 * Save preferences to GAML.
+	 *
+	 * @param path
+	 *            the path
+	 */
+	@Override
+	public void saveToGAML(final String path) {
+		try (var os = new FileWriter(path)) {
+			final var entries = StreamEx.ofValues(map).sortedBy(Pref::getName).toList();
+
+			final var read = new StringBuilder(1000);
+			final var write = new StringBuilder(1000);
+			for (final Pref<?> e : entries) {
+				if (e.isHidden() || !e.inGaml()) { continue; }
+				read.append(StringUtils.TAB).append("//").append(e.getTitle()).append(StringUtils.LN);
+				read.append(StringUtils.TAB).append("write sample(gama.").append(e.getName()).append(");")
+						.append(StringUtils.LN).append(StringUtils.LN);
+				write.append(StringUtils.TAB).append("//").append(e.getTitle()).append(StringUtils.LN);
+				write.append(StringUtils.TAB).append("gama.").append(e.getName()).append(" <- ")
+						.append(StringUtils.toGaml(e.getValue(), false)).append(";").append(StringUtils.LN)
+						.append(StringUtils.LN);
+			}
+			os.append("// ").append(SystemInfo.VERSION).append(" __PREFS__ saved on ")
+					.append(LocalDateTime.now().toString()).append(StringUtils.LN).append(StringUtils.LN);
+			os.append("model preferences").append(StringUtils.LN).append(StringUtils.LN);
+			os.append("experiment 'Display __PREFS__' type: gui {").append(StringUtils.LN);
+			os.append("init {").append(StringUtils.LN);
+			os.append(read);
+			os.append("}").append(StringUtils.LN);
+			os.append("}").append(StringUtils.LN).append(StringUtils.LN).append(StringUtils.LN);
+			os.append("experiment 'Set __PREFS__' type: gui {").append(StringUtils.LN);
+			os.append("init {").append(StringUtils.LN);
+			os.append(write);
+			os.append("}").append(StringUtils.LN);
+			os.append("}").append(StringUtils.LN);
+			os.flush();
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
 	 * Write.
 	 *
 	 * @param gp
@@ -280,17 +151,18 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 		final String key = gp.getKey();
 		final Object value = gp.getValue();
 		switch (gp.getTypeId()) {
-			case IType.INT -> putInt(key, (Integer) value);
-			case IType.FLOAT -> putDouble(key, (Double) value);
-			case IType.BOOL -> putBoolean(key, (Boolean) value);
-			case IType.STRING -> put(key, StringUtils.toJavaString((String) value));
-			case IType.FILE -> put(key, value == null ? "" : ((IGamaFile) value).getPath(null));
-			case IType.COLOR -> putInt(key, value == null ? 0 : ((IColor) value).getRGB());
-			case IType.POINT -> put(key, value == null ? "{0,0}" : ((IPoint) value).stringValue(null));
-			case IType.FONT -> put(key, value == null ? DEFAULT_FONT : value.toString());
-			case IType.DATE -> put(key, value == null ? StringUtils.toJavaString(GamaDateFactory.EPOCH.toISOString())
-					: StringUtils.toJavaString(((IDate) value).toISOString()));
-			default -> put(key, (String) value);
+			case IType.INT -> putInStore(key, value == null ? 0 : value.toString());
+			case IType.FLOAT -> putInStore(key, value == null ? 0.0 : value.toString());
+			case IType.BOOL -> putInStore(key, value == null ? false : value.toString());
+			case IType.STRING -> putInStore(key, StringUtils.toJavaString((String) value));
+			case IType.FILE -> putInStore(key, value == null ? "" : ((IGamaFile) value).getPath(null));
+			case IType.COLOR -> putInStore(key, value == null ? 0 : ((IColor) value).getRGB());
+			case IType.POINT -> putInStore(key, value == null ? "{0,0}" : ((IPoint) value).stringValue(null));
+			case IType.FONT -> putInStore(key, value == null ? DEFAULT_FONT : value.toString());
+			case IType.DATE -> putInStore(key,
+					value == null ? StringUtils.toJavaString(GamaDateFactory.EPOCH.toISOString())
+							: StringUtils.toJavaString(((IDate) value).toISOString()));
+			default -> putInStore(key, (String) value);
 		}
 
 		flush();
@@ -307,9 +179,8 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 		final IScope scope = null;
 		final String key = gp.getKey();
 		if (key == null) return;
-		// final Object value = gp.getValue();
-		if (getKeys().contains(key)) {
-			Object val = get(key);
+		if (isOverriden(key)) {
+			String val = getOverridenValue(key);
 			switch (gp.getTypeId()) {
 				case IType.POINT -> {
 					gp.init(val == null ? (Supplier) gp.getValueProvider()
@@ -323,8 +194,8 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 						val == null ? (Supplier) gp.getValueProvider() : (Supplier) () -> Cast.asBool(scope, val));
 				case IType.STRING -> gp.init(val == null ? (Supplier) gp.getValueProvider()
 						: (Supplier) () -> StringUtils.toJavaString(Cast.asString(scope, val)));
-				case IType.FILE -> gp.init(val == null ? (Supplier) gp.getValueProvider()
-						: (Supplier) () -> new GenericFile(get(key, Cast.asString(scope, val)), false));
+				case IType.FILE -> gp.init(
+						val == null ? (Supplier) gp.getValueProvider() : (Supplier) () -> new GenericFile(val, false));
 				case IType.COLOR -> gp.init(val == null ? (Supplier) gp.getValueProvider()
 						: (Supplier) () -> GamaColorFactory.get(Cast.asInt(scope, val)));
 				case IType.FONT -> gp.init((Supplier) () -> {
@@ -340,7 +211,88 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 			}
 
 		}
+		map.put(key, gp);
 		flush();
+	}
+
+	/**
+	 * @param key
+	 * @param object
+	 * @return
+	 */
+	protected String getOverridenValue(final String key) {
+		if (isOverridenInSystemProperties(key)) return System.getProperty(key);
+		if (isOverridenInStore(key)) return getInStore(key, null);
+		return null;
+	}
+
+	/**
+	 * @param key
+	 * @return
+	 */
+	protected boolean isOverriden(final String key) {
+		return isOverridenInSystemProperties(key) || isOverridenInStore(key);
+	}
+
+	/**
+	 * Checks if is overriden in system properties.
+	 *
+	 * @param key
+	 *            the key
+	 * @return true, if is overriden in system properties
+	 */
+	protected boolean isOverridenInSystemProperties(final String key) {
+		return System.getProperty(key) != null;
+	}
+
+	/**
+	 * Checks if is overriden in store.
+	 *
+	 * @param key
+	 *            the key
+	 * @return true, if is overriden in store
+	 */
+	protected boolean isOverridenInStore(final String key) {
+		return overriddenKeys.contains(key);
+	}
+
+	/**
+	 * Gets the keys.
+	 *
+	 * @return the keys
+	 */
+	@Override
+	public Collection<String> getKeys() { return map.keySet(); }
+
+	/**
+	 * Gets the preferences.
+	 *
+	 * @return the preferences
+	 */
+	@Override
+	public Collection<Pref> getPreferences() { return map.values(); }
+
+	@Override
+	public Pref get(final String key) {
+		return map.get(key);
+	}
+
+	/**
+	 * Apply preferences from.
+	 *
+	 * @param path
+	 *            the path
+	 * @param modelValues
+	 *            the model values
+	 */
+	@Override
+	public void applyPreferencesFrom(final String path, final Map<String, Object> modelValues) {
+		// DEBUG.OUT("Apply preferences from " + path);
+		loadFromProperties(path);
+		for (final Pref<?> e : getPreferences()) {
+			register(e);
+			modelValues.put(e.getKey(), e.getValue());
+		}
 	}
 
 }

@@ -36,7 +36,6 @@ import gama.api.additions.GamaBundleLoader;
 import gama.api.runtime.SystemInfo;
 import gama.api.ui.IGui;
 import gama.api.utils.prefs.GamaPreferences;
-import gama.api.utils.prefs.Pref;
 import gama.dev.DEBUG;
 import gama.ui.shared.bindings.GamaKeyBindings;
 import gama.ui.shared.bindings.GamaKeyBindings.PluggableBinding;
@@ -122,9 +121,6 @@ public class EditorToolbar {
 
 	/** The editor. */
 	final GamlEditor editor;
-
-	/** The mark pref. */
-	public Pref<Boolean> markPref;
 
 	/** The searching. */
 	volatile boolean searching;
@@ -257,7 +253,6 @@ public class EditorToolbar {
 		if (menuItem.getMenu() != null) { menuItem.getMenu().dispose(); }
 		menuItem.setMenu(menu);
 		menu.addListener(SWT.Show, e -> {
-			markPref = GamaPreferences.get("pref_editor_mark_occurrences", Boolean.class);
 			for (final MenuItem item : menu.getItems()) { item.dispose(); }
 			createLineToggle(menu);
 			createFoldingToggle(menu);
@@ -379,7 +374,7 @@ public class EditorToolbar {
 	 */
 	public void createMarkToggle(final Menu menu) {
 		final MenuItem mark = new MenuItem(menu, SWT.PUSH);
-		boolean selected = markPref.getValue();
+		boolean selected = GamaPreferences.Modeling.EDITOR_MARK_OCCURRENCES.getValue();
 		mark.setText(selected ? " Do not mark symbols occurences" : " Mark occurences of symbols");
 		// mark.setSelection(markPref.getValue());
 		mark.setImage(GamaIcon.named("editor/toggle.mark").image());
@@ -388,7 +383,7 @@ public class EditorToolbar {
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				markPref.set(mark.getSelection()).save();
+				GamaPreferences.Modeling.EDITOR_MARK_OCCURRENCES.set(mark.getSelection()).save();
 			}
 		});
 

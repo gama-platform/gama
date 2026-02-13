@@ -373,7 +373,7 @@ public class GamaPreferencesView {
 			fd.setFilterExtensions("*.prefs");
 			final var path = fd.open();
 			if (path == null) return;
-			GamaPreferences.applyPreferencesFrom(path, modelValues);
+			GAMA.getPreferenceStore().applyPreferencesFrom(path, modelValues);
 			for (final IParameterEditor ed : editors.values()) { ed.updateWithValueOfParameter(true, false); }
 		});
 
@@ -386,7 +386,7 @@ public class GamaPreferencesView {
 			fd.setOverwrite(false);
 			final var path = fd.open();
 			if (path == null) return;
-			GamaPreferences.savePreferencesToGAML(path);
+			GAMA.getPreferenceStore().saveToGAML(path);
 		});
 
 		final var buttonExport = FlatButton.button(group1, IGamaColors.LIGHT_GRAY, "Export to preferences");
@@ -399,7 +399,7 @@ public class GamaPreferencesView {
 			fd.setOverwrite(false);
 			final var path = fd.open();
 			if (path == null) return;
-			GamaPreferences.savePreferencesToProperties(path);
+			GAMA.getPreferenceStore().saveToProperties(path);
 		});
 
 		final var group2 = new Composite(shell, SWT.NONE);
@@ -548,7 +548,6 @@ public class GamaPreferencesView {
 	 */
 	public static void setRestartRequired() {
 		restartRequired = true;
-
 	}
 
 }

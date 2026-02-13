@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.api.kernel;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -43,6 +44,7 @@ import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
@@ -168,8 +170,6 @@ public class PlatformAgent implements ITopLevelAgent.Platform {
 	 */
 	public PlatformAgent() {
 		prefsToRestore = new HashMap<>();
-		// TODO get the preferences instead of pushing them from GamaPreferences
-
 		basicScope = new ExecutionScope(this, "Gama platform scope");
 		if (GamaPreferences.Runtime.CORE_MEMORY_POLLING.getValue()) { startPollingMemory(); }
 		GamaPreferences.Runtime.CORE_MEMORY_POLLING.onChange(newValue -> {
@@ -469,7 +469,7 @@ public class PlatformAgent implements ITopLevelAgent.Platform {
 	public void restorePrefs() {
 		// DEBUG.OUT("Restoring preferences" + prefsToRestore);
 		prefsToRestore.forEach((key, value) -> {
-			Pref<?> p = GamaPreferences.get(key);
+			Pref<?> p = GAMA.getPreferenceStore().get(key);
 			if (p != null) { p.setValue(basicScope, value); }
 		});
 
@@ -556,13 +556,13 @@ public class PlatformAgent implements ITopLevelAgent.Platform {
 	@Override
 	public IAgent captureMicroAgent(final IScope scope, final ISpecies microSpecies, final IAgent microAgent)
 			throws GamaRuntimeException {
-		return null;
+		return microAgent;
 	}
 
 	@Override
 	public IList<IAgent> captureMicroAgents(final IScope scope, final ISpecies microSpecies,
 			final IList<IAgent> microAgents) throws GamaRuntimeException {
-		return null;
+		return microAgents;
 	}
 
 	@Override
@@ -603,7 +603,7 @@ public class PlatformAgent implements ITopLevelAgent.Platform {
 	@Override
 	public IList<IAgent> migrateMicroAgents(final IScope scope, final IList<IAgent> microAgents,
 			final ISpecies newMicroSpecies) {
-		return GamaListFactory.getEmptyList();
+		return microAgents;
 	}
 
 	@Override
@@ -615,7 +615,7 @@ public class PlatformAgent implements ITopLevelAgent.Platform {
 	@Override
 	public IList<IAgent> releaseMicroAgents(final IScope scope, final IList<IAgent> microAgents)
 			throws GamaRuntimeException {
-		return GamaListFactory.getEmptyList();
+		return microAgents;
 	}
 
 	@Override
@@ -698,11 +698,19 @@ public class PlatformAgent implements ITopLevelAgent.Platform {
 
 	@Override
 	public Object getDirectVarValue(final IScope scope, final String s) throws GamaRuntimeException {
+		final IVariable var = getSpecies().getVar(s);
+		if (var != null) return var.value(scope, this);
+		Collection<String> keys = GAMA.getPreferenceStore().getKeys();
+		if (keys.contains(s)) return GAMA.getPreferenceStore().get(s).getValue();
 		return null;
+
 	}
 
 	@Override
-	public void setDirectVarValue(final IScope scope, final String s, final Object v) throws GamaRuntimeException {}
+	public void setDirectVarValue(final IScope scope, final String s, final Object v) throws GamaRuntimeException {
+		final IVariable var = getSpecies().getVar(s);
+		if (var != null) { var.setVal(scope, this, v); }
+	}
 
 	@Override
 	public IModelSpecies getModel() { return GAMA.getModel(); }

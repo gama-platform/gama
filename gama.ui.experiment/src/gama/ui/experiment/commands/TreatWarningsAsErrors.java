@@ -29,7 +29,7 @@ public class TreatWarningsAsErrors extends AbstractHandler implements IElementUp
 
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
-		GamaPreferences.Runtime.CORE_WARNINGS.set(!GamaPreferences.Runtime.CORE_WARNINGS.getValue());
+		GamaPreferences.Runtime.CORE_WARNINGS_AS_ERRORS.set(!GamaPreferences.Runtime.CORE_WARNINGS_AS_ERRORS.getValue());
 		final ICommandService service =
 				HandlerUtil.getActiveWorkbenchWindowChecked(event).getService(ICommandService.class);
 		service.refreshElements(event.getCommand().getId(), null);
@@ -38,7 +38,7 @@ public class TreatWarningsAsErrors extends AbstractHandler implements IElementUp
 
 	@Override
 	public void updateElement(final UIElement element, final Map parameters) {
-		element.setChecked(GamaPreferences.Runtime.CORE_WARNINGS.getValue());
+		element.setChecked(GamaPreferences.Runtime.CORE_WARNINGS_AS_ERRORS.getValue());
 	}
 
 }

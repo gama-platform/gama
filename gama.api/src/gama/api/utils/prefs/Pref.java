@@ -10,6 +10,7 @@
 package gama.api.utils.prefs;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +28,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.dev.COUNTER;
+import one.util.streamex.StreamEx;
 
 /**
  * The Class Pref.
@@ -94,7 +96,7 @@ public class Pref<T> implements IParameter {
 	String[] labels = PREF_SWITCH_STRINGS;
 
 	/** The colors. */
-	List<IColor> colors = null;
+	Supplier<List<IColor>> colors = Collections::emptyList;
 
 	/** The listeners. */
 	Set<IPreferenceChangeListener<T>> listeners = new HashSet<>();
@@ -575,12 +577,13 @@ public class Pref<T> implements IParameter {
 
 	@Override
 	public List<IColor> getColors(final IScope scope) {
-		return colors;
+		return colors.get();
 	}
 
 	@Override
 	public IColor getColor(final IScope scope) {
-		return colors == null || colors.isEmpty() ? null : colors.get(0);
+		List<IColor> cc = colors.get();
+		return cc == null || cc.isEmpty() ? null : cc.get(0);
 	}
 
 	@Override
@@ -645,8 +648,9 @@ public class Pref<T> implements IParameter {
 	 *            the gcs
 	 * @return the pref
 	 */
-	public Pref<T> withColors(final IColor... gcs) {
-		colors = Arrays.asList(gcs);
+	@SafeVarargs
+	public final Pref<T> withColors(final Supplier<IColor>... gcs) {
+		colors = () -> StreamEx.of(gcs).map(Supplier::get).toList();
 		return this;
 	}
 
