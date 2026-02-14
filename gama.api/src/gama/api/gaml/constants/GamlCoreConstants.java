@@ -12,12 +12,12 @@ package gama.api.gaml.constants;
 
 import java.awt.Font;
 
-import gama.api.data.factories.GamaPointFactory;
-import gama.api.data.objects.IPoint;
 import gama.annotations.constant;
 import gama.annotations.doc;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IConstantCategory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IPoint;
 
 /**
  * The Interface GamlCoreConstants.
@@ -239,80 +239,6 @@ public interface GamlCoreConstants {
 			doc = @doc ("This constant represents a square line buffer end cap style")) int square = 3;
 
 	/**
-	 * Anchor constants
-	 */
-	@constant (
-			value = "center",
-			category = { IConstantCategory.GRAPHIC },
-			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the center of the text to draw")) IPoint center =
-					GamaPointFactory.create(0.5, 0.5);
-
-	/** The top left. */
-	@constant (
-			value = "top_left",
-			category = { IConstantCategory.GRAPHIC },
-			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the top left corner of the text to draw")) IPoint top_left =
-					GamaPointFactory.create(0, 1);
-
-	/** The left center. */
-	@constant (
-			value = "left_center",
-			category = { IConstantCategory.GRAPHIC },
-			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the center of the left side of the text to draw")) IPoint left_center =
-					GamaPointFactory.create(0, 0.5);
-
-	/** The bottom left. */
-	@constant (
-			value = "bottom_left",
-			category = { IConstantCategory.GRAPHIC },
-			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the bottom left corner of the text to draw")) IPoint bottom_left =
-					GamaPointFactory.create(0, 0);
-
-	/** The bottom center. */
-	@constant (
-			value = "bottom_center",
-			category = { IConstantCategory.GRAPHIC },
-			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the center of the bottom side of the text to draw")) IPoint bottom_center =
-					GamaPointFactory.create(0.5, 0);
-
-	/** The bottom right. */
-	@constant (
-			value = "bottom_right",
-			category = { IConstantCategory.GRAPHIC },
-			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the bottom right corner of the text to draw")) IPoint bottom_right =
-					GamaPointFactory.create(1, 0);
-
-	/** The right center. */
-	@constant (
-			value = "right_center",
-			category = { IConstantCategory.GRAPHIC },
-			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the center of the right side of the text to draw")) IPoint right_center =
-					GamaPointFactory.create(1, 0.5);
-
-	/** The top right. */
-	@constant (
-			value = "top_right",
-			category = { IConstantCategory.GRAPHIC },
-			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the top right corner of the text to draw")) IPoint top_right =
-					GamaPointFactory.create(1, 1);
-
-	/** The top center. */
-	@constant (
-			value = "top_center",
-			category = { IConstantCategory.GRAPHIC },
-			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
-			doc = @doc ("Represents an anchor situated at the center of the top side of the text to draw")) IPoint top_center =
-					GamaPointFactory.create(0.5, 1);
-
-	/**
 	 * Layout constants
 	 *
 	 */
@@ -421,6 +347,81 @@ public interface GamlCoreConstants {
 			concept = { IConcept.GRAPHIC, IConcept.GRAPHIC_UNIT, IConcept.THREED },
 			doc = @doc ("This unit, only available when running aspects or declaring displays, returns the current orientation of the camera as a point")) IPoint camera_orientation =
 					GamaPointFactory.create();
+
+	/**
+	 * Anchor constants
+	 */
+	@constant (
+			value = "center",
+			category = { IConstantCategory.GRAPHIC },
+			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
+			doc = @doc ("Represents an anchor situated at the center of the text to draw")) IPoint center =
+					GamaPointFactory.create(0.5, 0.5);
+
+	/** The top left. */
+	@constant (
+			value = "top_left",
+			category = { IConstantCategory.GRAPHIC },
+			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
+			doc = @doc ("Represents an anchor situated at the top left corner of the text to draw")) IPoint top_left =
+					GamaPointFactory.create(0, 1);
+
+	/** The left center. */
+	@constant (
+			value = "left_center",
+			category = { IConstantCategory.GRAPHIC },
+			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
+			doc = @doc ("Represents an anchor situated at the center of the left side of the text to draw"))
+
+	IPoint left_center = GamaPointFactory.create(0, 0.5);
+
+	/** The bottom left. */
+	@constant (
+			value = "bottom_left",
+			category = { IConstantCategory.GRAPHIC },
+			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
+			doc = @doc ("Represents an anchor situated at the bottom left corner of the text to draw")) IPoint bottom_left =
+					GamaPointFactory.create(0, 0);
+
+	/** The bottom center. */
+	@constant (
+			value = "bottom_center",
+			category = { IConstantCategory.GRAPHIC },
+			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
+			doc = @doc ("Represents an anchor situated at the center of the bottom side of the text to draw")) IPoint bottom_center =
+					GamaPointFactory.create(0.5, 0);
+
+	/** The bottom right. */
+	@constant (
+			value = "bottom_right",
+			category = { IConstantCategory.GRAPHIC },
+			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
+			doc = @doc ("Represents an anchor situated at the bottom right corner of the text to draw")) IPoint bottom_right =
+					GamaPointFactory.create(1, 0);
+
+	/** The right center. */
+	@constant (
+			value = "right_center",
+			category = { IConstantCategory.GRAPHIC },
+			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
+			doc = @doc ("Represents an anchor situated at the center of the right side of the text to draw")) IPoint right_center =
+					GamaPointFactory.create(1, 0.5);
+
+	/** The top right. */
+	@constant (
+			value = "top_right",
+			category = { IConstantCategory.GRAPHIC },
+			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
+			doc = @doc ("Represents an anchor situated at the top right corner of the text to draw")) IPoint top_right =
+					GamaPointFactory.create(1, 1);
+
+	/** The top center. */
+	@constant (
+			value = "top_center",
+			category = { IConstantCategory.GRAPHIC },
+			concept = { IConcept.DISPLAY, IConcept.OUTPUT },
+			doc = @doc ("Represents an anchor situated at the center of the top side of the text to draw")) IPoint top_center =
+					GamaPointFactory.create(0.5, 1);
 
 	/** The zoom. */
 	@constant (

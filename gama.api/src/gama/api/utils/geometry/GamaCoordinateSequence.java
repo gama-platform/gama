@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.geometry;
+package gama.api.utils.geometry;
 
 import static com.google.common.collect.Iterators.forArray;
 import static gama.api.data.factories.GamaGeometryFactory.isRing;
@@ -27,7 +27,6 @@ import gama.api.data.json.IJsonArray;
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IPoint;
-import gama.api.utils.geometry.Rotation3D;
 
 /**
  * Clockwise sequence of points. Supports several computations (rotation, etc.) and a cheap visitor pattern. Be aware
@@ -297,7 +296,7 @@ public class GamaCoordinateSequence implements ICoordinates {
 			final IPoint p = points[size - i - 1];
 			// CW property is ensured by reversing the resulting array
 			points2[i] =
-					p instanceof GamaPoint gp ? gp.yNegated() : GamaPointFactory.create(p.getX(), -p.getY(), p.getZ());
+					p instanceof IPoint gp ? gp.yNegated() : GamaPointFactory.create(p.getX(), -p.getY(), p.getZ());
 		}
 		return new GamaCoordinateSequence(dimension, false, points2);
 	}

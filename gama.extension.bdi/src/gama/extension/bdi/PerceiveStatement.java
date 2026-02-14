@@ -40,7 +40,6 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
-import gama.core.geometry.GamaShape;
 import gama.gaml.operators.spatial.SpatialQueries;
 import gama.gaml.statements.RemoteSequence;
 
@@ -226,7 +225,7 @@ public class PerceiveStatement extends AbstractStatementSequence {
 			return this;
 
 		}
-		if (inArg instanceof gama.api.gaml.types.GamaGeometryType || inArg instanceof GamaShape) {
+		if (inArg instanceof gama.api.gaml.types.GamaGeometryType || inArg instanceof IShape) {
 			IList temp = GamaListFactory.create();
 			final IShape geom = GamaShapeFactory.createFrom(scope, inArg, false);
 			if (obj instanceof IContainer container) {

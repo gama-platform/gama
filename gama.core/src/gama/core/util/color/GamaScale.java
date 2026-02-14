@@ -14,6 +14,7 @@ import gama.api.data.objects.IColor;
 import gama.api.data.objects.IMap;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.color.GamaColor;
 import gama.core.util.map.GamaMap;
 
 /**

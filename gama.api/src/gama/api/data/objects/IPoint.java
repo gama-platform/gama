@@ -25,6 +25,7 @@ import gama.api.constants.IKeyword;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.IIntersectable;
 
@@ -47,7 +48,7 @@ import gama.api.utils.geometry.IIntersectable;
  * Interface for 3D points.
  */
 
-public interface IPoint extends IShape, IIntersectable, Cloneable {
+public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Coordinate> {
 
 	/**
 	 * Smaller than.
@@ -790,7 +791,19 @@ public interface IPoint extends IShape, IIntersectable, Cloneable {
 	 *            the p
 	 * @return the i point
 	 */
-	int compareTo(IPoint p);
+	@Override
+	int compareTo(Coordinate p);
+
+	/**
+	 * Compare to.
+	 *
+	 * @param p
+	 *            the p
+	 * @return the int
+	 */
+	default int compareTo(final IPoint p) {
+		return compareTo(p.toCoordinate());
+	}
 
 	/**
 	 *
@@ -816,5 +829,13 @@ public interface IPoint extends IShape, IIntersectable, Cloneable {
 	 * @return
 	 */
 	boolean equals2D(IPoint current, double tolerance);
+
+	/**
+	 * Gets the gaml type.
+	 *
+	 * @return the gaml type
+	 */
+	@Override
+	default IType<IPoint> getGamlType() { return Types.POINT; }
 
 }

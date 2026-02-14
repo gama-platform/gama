@@ -19,8 +19,8 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IGridAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.color.GamaColor;
 import gama.core.agent.GamlAgent;
-import gama.core.util.color.GamaColor;
 
 /**
  * The Class GamlGridAgent.

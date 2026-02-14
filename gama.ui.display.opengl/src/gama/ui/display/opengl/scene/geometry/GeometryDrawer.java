@@ -31,8 +31,8 @@ import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.data.objects.IShape.Type;
 import gama.api.utils.geometry.Rotation3D;
+import gama.api.utils.geometry.UnboundedCoordinateSequence;
 import gama.api.utils.geometry.Scaling3D.Heterogeneous;
-import gama.core.geometry.UnboundedCoordinateSequence;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 

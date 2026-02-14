@@ -22,6 +22,7 @@ import gama.api.data.objects.IDate;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.date.InternalGamaDateFactory;
 
 /**
  * A static factory for creating and manipulating {@link IDate} instances. This class handles date and time related
@@ -33,7 +34,7 @@ public class GamaDateFactory implements IFactory<IDate> {
 	/**
 	 * The internal factory implementation used to create date instances.
 	 */
-	private static IDateFactory InternalFactory;
+	private static IDateFactory InternalFactory = new InternalGamaDateFactory();
 
 	/**
 	 * The default time zone (ID) of the system.
@@ -49,18 +50,7 @@ public class GamaDateFactory implements IFactory<IDate> {
 	/**
 	 * The epoch date (1970-01-01T00:00:00Z), adjusted to the default system offset if necessary.
 	 */
-	public static IDate EPOCH;
-
-	/**
-	 * Updates the internal factory builder and initializes static constants like EPOCH.
-	 *
-	 * @param builder
-	 *            the {@link IDateFactory} to be used as the internal builder.
-	 */
-	public static void setBuilder(final IDateFactory builder) {
-		InternalFactory = builder;
-		EPOCH = createFromTemporal(LocalDateTime.ofEpochSecond(0, 0, DEFAULT_OFFSET_IN_SECONDS));
-	}
+	public static IDate EPOCH = createFromTemporal(LocalDateTime.ofEpochSecond(0, 0, DEFAULT_OFFSET_IN_SECONDS));
 
 	/**
 	 * Creates a new {@link IDate} from an ISO-8601 formatted string.

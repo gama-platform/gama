@@ -16,7 +16,6 @@ import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
-import gama.api.gaml.types.Types;
 import gama.api.kernel.simulation.IExploration;
 
 /**
@@ -54,13 +53,13 @@ public class BatchValidator implements IDescriptionValidator {
 			IDescription tmpDesc = desc.getChildWithKeyword(EXPLORATION);
 			if (tmpDesc.hasFacet(IKeyword.BATCH_VAR_OUTPUTS)) {
 				IExpression xp = tmpDesc.getFacet(IKeyword.BATCH_VAR_OUTPUTS).getExpression();
-				if (xp.getGamlType().isAssignableFrom(Types.LIST)) {
-					desc.error("Using " + IKeyword.BATCH_VAR_OUTPUTS + " requires to input a list: got "
-							+ xp.getDenotedType());
+				if (!(xp instanceof IExpression.List list)) {
+					desc.error(IKeyword.BATCH_VAR_OUTPUTS + " expects a list of variables");
 				}
 				if (!tmpDesc.hasFacet(IKeyword.BATCH_OUTPUT)) {
-					desc.warning("Facet " + IKeyword.BATCH_OUTPUT
-							+ " is undefined, hence output will be save in a default file side to this .gaml file (coucou Benoit!)",
+					desc.warning(
+							"Facet " + IKeyword.BATCH_OUTPUT
+									+ " is undefined. Output will be saved in a default file beside this .gaml file",
 							"");
 				}
 			}
@@ -76,7 +75,7 @@ public class BatchValidator implements IDescriptionValidator {
 
 					case IKeyword.MORRIS:
 						if (!tmpDesc.hasFacet(IExploration.NB_LEVELS)) {
-							tmpDesc.warning("levels not defined for Morris sampling, will be 4 by default",
+							tmpDesc.warning("Levels are not defined for Morris sampling, will be 4 by default",
 									IGamlIssue.MISSING_FACET);
 						} else {
 							int levels = Integer.parseInt(tmpDesc.getLitteral(IExploration.NB_LEVELS));
@@ -152,8 +151,7 @@ public class BatchValidator implements IDescriptionValidator {
 						}
 						break;
 					default:
-						tmpDesc.error(
-								"The sampling " + tmpDesc.getLitteral(IExploration.METHODS) + " doesn't exist yet",
+						tmpDesc.error("The sampling " + tmpDesc.getLitteral(IExploration.METHODS) + " doesn't exist",
 								IGamlIssue.MISSING_FACET);
 				}
 			}

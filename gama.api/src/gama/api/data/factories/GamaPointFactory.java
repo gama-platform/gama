@@ -30,6 +30,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.GamaPointType;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.InternalGamaPointFactory;
 
 /**
  * A static factory for creating and managing {@link IPoint} instances. This class handles the creation of 3D points,
@@ -41,7 +42,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 	/**
 	 * The internal factory used for creating point instances.
 	 */
-	private static IPointFactory InternalFactory;
+	private static IPointFactory InternalFactory = new InternalGamaPointFactory();
 
 	/**
 	 * Configures the internal factory and initializes the NULL_POINT constant.

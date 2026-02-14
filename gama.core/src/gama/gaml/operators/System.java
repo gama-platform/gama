@@ -49,9 +49,9 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
+import gama.api.utils.color.GamaColor;
 import gama.api.utils.files.FileUtils;
 import gama.core.experiment.parameters.InputParameter;
-import gama.core.util.color.GamaColor;
 
 /**
  * Written by drogoul Modified on 10 d�c. 2010

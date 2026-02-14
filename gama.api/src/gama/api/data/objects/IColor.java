@@ -17,6 +17,7 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 
 /**
  *
@@ -169,5 +170,13 @@ public interface IColor extends IValue, Comparable<IColor> {
 	 * @return the AWT color
 	 */
 	Color getAWTColor();
+
+	/**
+	 * Gets the gaml type.
+	 *
+	 * @return the gaml type
+	 */
+	@Override
+	default IType<IColor> getGamlType() { return Types.COLOR; }
 
 }

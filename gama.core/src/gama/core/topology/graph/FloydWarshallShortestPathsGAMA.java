@@ -22,8 +22,8 @@ import org.jgrapht.graph.GraphWalk;
 
 import gama.api.GAMA;
 import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.objects.IGraph;
 import gama.api.data.objects.IMap;
-import gama.core.util.graph.GamaGraph;
 import gama.core.util.matrix.GamaIntMatrix;
 
 /**
@@ -42,7 +42,7 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 	// ~ Instance fields --------------------------------------------------------
 
 	/** The graph. */
-	private final GamaGraph<V, E> graph;
+	private final IGraph<V, E> graph;
 
 	/** The vertices. */
 	private final List<V> vertices;
@@ -73,7 +73,7 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 	 * @param graph
 	 *            the graph
 	 */
-	public FloydWarshallShortestPathsGAMA(final GamaGraph<V, E> graph) {
+	public FloydWarshallShortestPathsGAMA(final IGraph<V, E> graph) {
 		this.graph = graph;
 		this.vertices = new ArrayList<>(graph.getVertexMap().keySet());
 
@@ -89,7 +89,7 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 	 * @param matrix
 	 *            the matrix
 	 */
-	public FloydWarshallShortestPathsGAMA(final GamaGraph<V, E> graph, final GamaIntMatrix matrix) {
+	public FloydWarshallShortestPathsGAMA(final IGraph<V, E> graph, final GamaIntMatrix matrix) {
 		this.graph = graph;
 		this.vertices = new ArrayList<>(graph.getVertexMap().keySet());
 		this.paths = GamaMapFactory.createUnordered();
@@ -150,8 +150,8 @@ public class FloydWarshallShortestPathsGAMA<V, E> {
 		final Set<E> edges = graph.edgeSet();
 
 		for (final E edge : edges) {
-			final V v1 = (V) graph.getEdgeSource(edge);
-			final V v2 = (V) graph.getEdgeTarget(edge);
+			final V v1 = graph.getEdgeSource(edge);
+			final V v2 = graph.getEdgeTarget(edge);
 
 			final int v_1 = vertices.indexOf(v1);
 			final int v_2 = vertices.indexOf(v2);

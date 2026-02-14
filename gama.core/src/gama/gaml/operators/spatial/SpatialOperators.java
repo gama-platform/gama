@@ -105,7 +105,7 @@ public class SpatialOperators {
 	 * @return the i shape
 	 */
 	@operator (
-			value = { "+", "union" },
+			value = { IKeyword.PLUS, "union" },
 			category = { IOperatorCategory.SPATIAL },
 			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION })
 	@doc (

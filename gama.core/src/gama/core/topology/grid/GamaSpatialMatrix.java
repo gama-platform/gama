@@ -71,7 +71,6 @@ import gama.api.utils.collections.ICollector;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.random.IRandom;
 import gama.core.geometry.GamaProxyGeometry;
-import gama.core.geometry.GamaShape;
 import gama.core.util.file.GamaGridFile;
 import gama.core.util.matrix.GamaMatrix;
 import gama.gaml.operators.Maths;
@@ -438,7 +437,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		for (int l = 0; l < numRows; l++) {
 			for (int c = 0; c < numCols; c = c + 2) {
 				i = c + numCols * l;
-				final GamaShape poly = (GamaShape) GamaShapeFactory.buildHexagon(cellWidth, cellHeight,
+				final IShape poly = GamaShapeFactory.buildHexagon(cellWidth, cellHeight,
 						GamaPointFactory.create(xmin + c * cellWidth * 0.75, ymin + l * cellHeight));
 				// if (gbg.covers(poly)) {
 				if (firstCell == -1) { firstCell = i; }
@@ -454,7 +453,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 			for (int c = 1; c < numCols; c = c + 2) {
 				i = c + numCols * l;
 
-				final GamaShape poly = (GamaShape) GamaShapeFactory.buildHexagon(cellWidth, cellHeight,
+				final IShape poly = GamaShapeFactory.buildHexagon(cellWidth, cellHeight,
 						GamaPointFactory.create(xmin + c * cellWidth * 0.75, ymin + (l + 0.5) * cellHeight));
 
 				// if (gbg.covers(poly)) {

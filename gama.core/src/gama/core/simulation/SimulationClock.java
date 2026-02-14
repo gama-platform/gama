@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import gama.api.data.objects.IDate;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.GamaDateType;
 import gama.api.kernel.simulation.IClock;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
@@ -55,7 +56,7 @@ public class SimulationClock implements IClock {
 	// AD: kept as an expression to allow temporal expressions to be evaluated
 	// in the context of the starting_date
 	// private IExpression step = new ConstantExpression(1);
-	private double step = Dates.DATES_TIME_STEP.getValue();
+	private double step = GamaDateType.DATES_TIME_STEP.getValue();
 
 	/** The duration (in milliseconds) of the last cycle elapsed. */
 	protected long duration = 0;
@@ -378,7 +379,7 @@ public class SimulationClock implements IClock {
 	 */
 	@Override
 	public IDate getStartingDate() {
-		if (startingDate == null) { setStartingDate(Dates.DATES_STARTING_DATE.getValue()); }
+		if (startingDate == null) { setStartingDate(GamaDateType.DATES_STARTING_DATE.getValue()); }
 		return startingDate;
 	}
 

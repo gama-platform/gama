@@ -96,9 +96,6 @@ import gama.core.util.graph.LayoutCircle;
 import gama.core.util.graph.LayoutForceDirected;
 import gama.core.util.graph.LayoutGrid;
 import gama.core.util.graph.NodesToAdd;
-import gama.core.util.map.GamaMap;
-import gama.core.util.matrix.GamaFloatMatrix;
-import gama.core.util.matrix.GamaMatrix;
 import gama.gaml.operators.spatial.SpatialProperties;
 import gama.gaml.operators.spatial.SpatialPunctal;
 import gama.gaml.operators.spatial.SpatialRelations;
@@ -2294,7 +2291,7 @@ public class Graphs {
 					value = "max_flow_between(my_graph, vertice1, vertice2)",
 					isExecutable = false) })
 	@no_test
-	public static IMap<Object, Double> maxFlowBetween(final IScope scope, final GamaGraph graph, final Object source,
+	public static IMap<Object, Double> maxFlowBetween(final IScope scope, final IGraph graph, final Object source,
 			final Object sink) throws GamaRuntimeException {
 		final EdmondsKarpMFImpl ek = new EdmondsKarpMFImpl(graph);
 		final MaximumFlow<IShape> mf = ek.getMaximumFlow(source, sink);
@@ -2362,7 +2359,7 @@ public class Graphs {
 					equals = "return my_graph with all the shortest paths computed",
 					isExecutable = false) })
 	@no_test
-	public static IGraph primShortestPathFile(final IScope scope, final GamaGraph graph, final GamaMatrix matrix)
+	public static IGraph primShortestPathFile(final IScope scope, final IGraph graph, final IMatrix matrix)
 			throws GamaRuntimeException {
 		if (graph == null) throw GamaRuntimeException
 				.error("In the load_shortest_paths operator, the graph should not be null!", scope);
@@ -2394,8 +2391,7 @@ public class Graphs {
 					equals = "shortest_paths_matrix will contain all pairs of shortest paths",
 					isExecutable = false) })
 	@no_test
-	public static IMatrix primAllPairShortestPaths(final IScope scope, final GamaGraph graph)
-			throws GamaRuntimeException {
+	public static IMatrix primAllPairShortestPaths(final IScope scope, final IGraph graph) throws GamaRuntimeException {
 		if (graph == null) throw GamaRuntimeException
 				.error("In the all_pairs_shortest_paths operator, the graph should not be null!", scope);
 		return graph.getPathComputer().saveShortestPaths(scope);
@@ -2436,7 +2432,7 @@ public class Graphs {
 					cooling rate is the decreasing coefficient of the temperature, typical value is 0.01;  max_iteration is the maximal number of iterations; equilibirum criterion is the maximal\
 					distance of displacement for a vertice to be considered as in equilibrium""")
 	@no_test
-	public static IGraph layoutForce(final IScope scope, final GamaGraph graph, final IShape bounds,
+	public static IGraph layoutForce(final IScope scope, final IGraph graph, final IShape bounds,
 			final double coeffForce, final double coolingRate, final int maxIteration, final double criterion) {
 		final LayoutForceDirected sim =
 				new LayoutForceDirected(graph, bounds, coeffForce, coolingRate, maxIteration, true, criterion);
@@ -2474,7 +2470,7 @@ public class Graphs {
 					applied the layout;  bounds is the shape (geometry) in which the graph should be located; normalization_factor is the normalization factor for the optimal distance, typical value is 1.0; \
 					  max_iteration is the maximal number of iterations""")
 	@no_test
-	public static IGraph layoutForceFR(final IScope scope, final GamaGraph graph, final IShape bounds,
+	public static IGraph layoutForceFR(final IScope scope, final IGraph graph, final IShape bounds,
 			final double normalization_factor, final int maxIteration) {
 		final FRLayoutAlgorithm2D sim = new FRLayoutAlgorithm2D(maxIteration, normalization_factor,
 				scope.getSimulation().getRandomGenerator().getGenerator());
@@ -2515,7 +2511,7 @@ public class Graphs {
 					applied the layout;  bounds is the shape (geometry) in which the graph should be located; theta value for approximation using the Barnes-Hut technique, typical value is 0.5; normalization_factor is the normalization factor for the optimal distance, typical value is 1.0; \
 					  max_iteration is the maximal number of iterations""")
 	@no_test
-	public static IGraph indexedFRLayout(final IScope scope, final GamaGraph graph, final IShape bounds,
+	public static IGraph indexedFRLayout(final IScope scope, final IGraph graph, final IShape bounds,
 			final double theta, final double normalizationFactor, final int maxIteration) {
 		final IndexedFRLayoutAlgorithm2D sim = new IndexedFRLayoutAlgorithm2D(maxIteration, theta, normalizationFactor,
 				scope.getSimulation().getRandomGenerator().getGenerator());
@@ -2552,7 +2548,7 @@ public class Graphs {
 	 *            the bounds
 	 * @return the layout model 2 D
 	 */
-	static LayoutModel2D toModel(final GamaGraph graph, final IShape bounds) {
+	static LayoutModel2D toModel(final IGraph graph, final IShape bounds) {
 		IEnvelope env = bounds.getEnvelope();
 		LayoutModel2D model =
 				new MapLayoutModel2D<>(new Box2D(env.getMinY(), env.getMinY(), env.getWidth(), env.getHeight()));
@@ -2596,7 +2592,7 @@ public class Graphs {
 					cooling rate is the decreasing coefficient of the temperature, typical value is 0.01;  max_iteration is the maximal number of iterations\
 					distance of displacement for a vertice to be considered as in equilibrium""")
 	@no_test
-	public static IGraph layoutForce(final IScope scope, final GamaGraph graph, final IShape bounds,
+	public static IGraph layoutForce(final IScope scope, final IGraph graph, final IShape bounds,
 			final double coeffForce, final double coolingRate, final int maxIteration) {
 		final LayoutForceDirected sim =
 				new LayoutForceDirected(graph, bounds, coeffForce, coolingRate, maxIteration, false, 0);
@@ -2631,7 +2627,7 @@ public class Graphs {
 					value = "layout_circle(graph, world.shape, false);",
 					isExecutable = false) })
 	@no_test
-	public static IGraph layoutCircle(final IScope scope, final GamaGraph graph, final IShape bounds,
+	public static IGraph layoutCircle(final IScope scope, final IGraph graph, final IShape bounds,
 			final boolean shuffle) {
 		final LayoutCircle layouter = new LayoutCircle(graph, bounds);
 		layouter.applyLayout(scope, shuffle);
@@ -2666,8 +2662,7 @@ public class Graphs {
 					value = "layout_grid(graph, world.shape);",
 					isExecutable = false) })
 	@no_test
-	public static IGraph layoutGrid(final IScope scope, final GamaGraph graph, final IShape bounds,
-			final double coeffSq) {
+	public static IGraph layoutGrid(final IScope scope, final IGraph graph, final IShape bounds, final double coeffSq) {
 		final LayoutGrid layouter = new LayoutGrid(graph, bounds, Math.max(1.0, coeffSq));
 		layouter.applyLayout(scope);
 		return graph;
@@ -2689,7 +2684,7 @@ public class Graphs {
 	@doc (
 			value = "adjacency matrix of the given graph.")
 	@no_test
-	public static GamaFloatMatrix adjacencyMatrix(final IScope scope, final GamaGraph graph) {
+	public static IMatrix adjacencyMatrix(final IScope scope, final IGraph graph) {
 		return graph.toMatrix(scope);
 	}
 
@@ -2709,7 +2704,7 @@ public class Graphs {
 	@doc (
 			value = "retur for each edge, its strahler number")
 	@no_test
-	public static IMap strahlerNumber(final IScope scope, final GamaGraph graph) {
+	public static IMap strahlerNumber(final IScope scope, final IGraph graph) {
 		final IMap<Object, Integer> results = GamaMapFactory.create(Types.NO_TYPE, Types.INT);
 		if (graph == null || graph.isEmpty(scope)) return results;
 
@@ -3321,7 +3316,7 @@ public class Graphs {
 		gen.generateGraph(graph);
 		IList l = nodes.listValue(scope, Types.NO_TYPE, false);
 
-		GamaMap nodesM = (GamaMap) GamaMapFactory.create();
+		IMap nodesM = GamaMapFactory.create();
 		List vs = new ArrayList<>(graph.vertexSet());
 		for (int i = 0; i < graph.vertexSet().size(); i++) { nodesM.put(vs.get(i), l.get(i)); }
 		return new GamaGraph<>(scope, graph, nodesM);
@@ -3701,7 +3696,7 @@ public class Graphs {
 				: new Multigraph(SupplierUtil.createStringSupplier(), SupplierUtil.DEFAULT_EDGE_SUPPLIER, true);
 		wsg.generateGraph(graph);
 		IList l = nodes.listValue(scope, Types.NO_TYPE, false);
-		GamaMap nodesM = (GamaMap) GamaMapFactory.create();
+		IMap nodesM = GamaMapFactory.create();
 		List vs = new ArrayList<>(graph.vertexSet());
 		for (int i = 0; i < graph.vertexSet().size(); i++) { nodesM.put(vs.get(i), l.get(i)); }
 		return new GamaGraph<>(scope, graph, nodesM);

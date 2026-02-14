@@ -328,7 +328,7 @@ public interface IKeyword {
 	/*
 	 * Equations
 	 */
-	String EQUATION_OP = "=";
+	String EQUALS = "=";
 
 	/** The equation right. */
 	String EQUATION_RIGHT = "right";

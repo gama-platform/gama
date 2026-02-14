@@ -45,9 +45,9 @@ import gama.api.compilation.validation.IGamlTextValidator;
 import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Signature;
-import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IExperimentSpecies;
@@ -218,7 +218,7 @@ public class GAML {
 		return (name, value, doc, deprec, isTime, names) -> {
 			if (UNITS.containsKey(name)) return false;
 			// DEBUG.LOG("Added constant " + name);
-			final IType t = Types.get(value.getClass());
+			final IType t = GamaType.of(value);
 			final IExpression.Unit exp = getExpressionFactory().createUnit(value, t, name, doc, deprec, isTime, names);
 			UNITS.put(name, exp);
 			if (names != null) { for (final String s : names) { UNITS.put(s, exp); } }

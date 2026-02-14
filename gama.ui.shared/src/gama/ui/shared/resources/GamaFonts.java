@@ -18,8 +18,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
+import gama.api.data.factories.GamaFontFactory;
 import gama.api.data.objects.IFont;
-import gama.core.util.GamaFont;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
@@ -75,7 +75,7 @@ public class GamaFonts {
 	 */
 	public static IFont getFont(final Font font) {
 		FontData data = font.getFontData()[0];
-		return new GamaFont(data.getName(), (int) data.height, data.getStyle());
+		return GamaFontFactory.createFont(data.getName(), (int) data.height, data.getStyle());
 	}
 
 	/**

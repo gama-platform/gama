@@ -11,17 +11,10 @@ package gama.core.util;
 
 import java.awt.Font;
 
-import gama.annotations.doc;
-import gama.annotations.example;
-import gama.annotations.no_test;
-import gama.annotations.operator;
-import gama.annotations.support.IConcept;
-import gama.annotations.support.IOperatorCategory;
-import gama.api.constants.IKeyword;
+import gama.api.data.factories.GamaFontFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
 import gama.api.data.objects.IFont;
-import gama.api.data.objects.IValue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -119,109 +112,8 @@ public class GamaFont extends Font implements IFont {
 	 * @see gama.api.data.objects.IValue#copy(gama.api.runtime.scope.IScope)
 	 */
 	@Override
-	public IValue copy(final IScope scope) throws GamaRuntimeException {
-		return new GamaFont(name, style, size);
-	}
-
-	/**
-	 * Font.
-	 *
-	 * @param name
-	 *            the name
-	 * @param size
-	 *            the size
-	 * @param style
-	 *            the style
-	 * @return the gama font
-	 */
-	@operator (
-			value = IKeyword.FONT,
-			category = { IOperatorCategory.CASTING },
-			concept = { IConcept.TEXT, IConcept.DISPLAY },
-			can_be_const = true)
-	@doc (
-			value = "Creates a new font, by specifying its name (either a font face name like 'Lucida Grande Bold' or 'Helvetica', or a logical name like 'Dialog', 'SansSerif', 'Serif', etc.), a size in points and a style, either #bold, #italic or #plain or a combination (addition) of them.",
-			masterDoc = true,
-			examples = @example (
-					value = "font ('Helvetica Neue',12, #bold + #italic)",
-					equals = "a bold and italic face of the Helvetica Neue family",
-					test = false))
-	@no_test
-	public static IFont font(final String name, final Integer size, final Integer style) {
-		return new GamaFont(name, style, size);
-	}
-
-	/**
-	 * With size.
-	 *
-	 * @param font
-	 *            the font
-	 * @param size
-	 *            the size
-	 * @return the gama font
-	 */
-	@operator (
-			value = "with_size",
-			category = { IOperatorCategory.CASTING },
-			concept = { IConcept.TEXT, IConcept.DISPLAY },
-			can_be_const = true)
-	@doc (
-			value = "Creates a new font from an existing font, with a new size in points",
-			masterDoc = true,
-			examples = @example (
-					value = "font ('Helvetica Neue',12, #bold + #italic) with_size 24",
-					equals = "a bold and italic face of the Helvetica Neue family with a size of 24 points",
-					test = false))
-	@no_test
-	public static IFont withSize(final GamaFont font, final Integer size) {
-		return new GamaFont(font.name, font.style, size);
-	}
-
-	/**
-	 * With size.
-	 *
-	 * @param font
-	 *            the font
-	 * @param size
-	 *            the size
-	 * @return the gama font
-	 */
-	@operator (
-			value = "with_style",
-			category = { IOperatorCategory.CASTING },
-			concept = { IConcept.TEXT, IConcept.DISPLAY },
-			can_be_const = true)
-	@doc (
-			value = "Creates a new font from an existing font, with a new style: either #bold, #italic or #plain or a combination (addition) of them.",
-			masterDoc = true,
-			examples = @example (
-					value = "font ('Helvetica Neue',12, #bold + #italic) with_style #plain",
-					equals = "a plain face of the Helvetica Neue family with a size of 12 points",
-					test = false))
-	@no_test
-	public static IFont withStyle(final GamaFont font, final Integer style) {
-		return new GamaFont(font.name, style, font.size);
-	}
-
-	/**
-	 * Font.
-	 *
-	 * @param name
-	 *            the name
-	 * @param size
-	 *            the size
-	 * @return the gama font
-	 */
-	@operator (
-			value = IKeyword.FONT,
-			category = { IOperatorCategory.CASTING },
-			concept = { IConcept.TEXT, IConcept.DISPLAY },
-			can_be_const = true)
-	@doc (
-			value = "Creates a new font, by specifying its name (either a font face name like 'Lucida Grande Bold' or 'Helvetica', or a logical name like 'Dialog', 'SansSerif', 'Serif', etc.) and a size in points. No style is attached to this font")
-	@no_test
-	public static IFont font(final String name, final Integer size) {
-		return new GamaFont(name, Font.PLAIN, size);
+	public IFont copy(final IScope scope) throws GamaRuntimeException {
+		return GamaFontFactory.createFont(name, style, size);
 	}
 
 	@Override

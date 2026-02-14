@@ -25,8 +25,8 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
 import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.symbols.IParameter.Batch;
+import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExperimentAgent;
@@ -72,7 +72,6 @@ import gama.core.experiment.parameters.ParametersSet;
 				@facet (
 						name = IKeyword.BATCH_VAR_OUTPUTS,
 						type = IType.LIST,
-						of = IType.STRING,
 						optional = true,
 						doc = @doc ("The list of output variables to track throughout exploration")),
 				@facet (

@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * NBAStarPathfinder.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * NBAStarPathfinder.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.topology.graph;
 
@@ -23,12 +22,12 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 import gama.api.data.factories.GamaListFactory;
+import gama.api.data.objects.IGraph;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.utils.collections._Edge;
 import gama.api.utils.collections._Vertex;
-import gama.core.util.graph.GamaGraph;
 
 /**
  * This pathfinding algorithm is due to Wim Pijls and Henk Post in "Yet another bidirectional algorithm for shortest
@@ -44,25 +43,25 @@ public final class NBAStarPathfinder<V, E> {
 
 	/** The opena. */
 	private final PriorityQueue<HeapEntry<V>> OPENA = new PriorityQueue<>();
-	
+
 	/** The openb. */
 	private final PriorityQueue<HeapEntry<V>> OPENB = new PriorityQueue<>();
-	
+
 	/** The parentsa. */
 	private final Map<V, V> PARENTSA = new HashMap<>();
-	
+
 	/** The parentsb. */
 	private final Map<V, V> PARENTSB = new HashMap<>();
-	
+
 	/** The distancea. */
 	private final Map<V, Double> DISTANCEA = new HashMap<>();
-	
+
 	/** The distanceb. */
 	private final Map<V, Double> DISTANCEB = new HashMap<>();
-	
+
 	/** The closed. */
 	private final Set<V> CLOSED = new HashSet<>();
-	
+
 	/** The vertices. */
 	private final Map<V, _Vertex<V, E>> vertices = new IdentityHashMap<>();
 
@@ -71,35 +70,37 @@ public final class NBAStarPathfinder<V, E> {
 
 	/** The f A. */
 	private double fA;
-	
+
 	/** The f B. */
 	private double fB;
-	
+
 	/** The best path length. */
 	private double bestPathLength;
-	
+
 	/** The touch node. */
 	private V touchNode;
-	
+
 	/** The source node. */
 	private V sourceNode;
-	
+
 	/** The target node. */
 	private V targetNode;
 
 	/** The graph. */
-	GamaGraph<V, E> graph;
-	
+	IGraph<V, E> graph;
+
 	/** The is spatial graph. */
 	boolean isSpatialGraph;
 
 	/**
 	 * Instantiates a new NBA star pathfinder.
 	 *
-	 * @param graph the graph
-	 * @param stopWhenPathFound the stop when path found
+	 * @param graph
+	 *            the graph
+	 * @param stopWhenPathFound
+	 *            the stop when path found
 	 */
-	public NBAStarPathfinder(final GamaGraph<V, E> graph, final boolean stopWhenPathFound) {
+	public NBAStarPathfinder(final IGraph<V, E> graph, final boolean stopWhenPathFound) {
 		this.graph = graph;
 		isSpatialGraph = graph instanceof GamaSpatialGraph;
 		this.stopWhenPathFound = stopWhenPathFound;
@@ -108,8 +109,10 @@ public final class NBAStarPathfinder<V, E> {
 	/**
 	 * Search.
 	 *
-	 * @param sourceNode the source node
-	 * @param targetNode the target node
+	 * @param sourceNode
+	 *            the source node
+	 * @param targetNode
+	 *            the target node
 	 * @return the i list
 	 */
 	public IList<E> search(final V sourceNode, final V targetNode) {
@@ -170,7 +173,7 @@ public final class NBAStarPathfinder<V, E> {
 					final HeapEntry<V> e = new HeapEntry<>(childNode,
 							tentativeDistance + estimateDistanceBetween(childNode, targetNode));
 					OPENA.add(e);
-					
+
 					Double distanceBChild = DISTANCEB.get(childNode);
 					if (distanceBChild != null) {
 						final double pathLength = tentativeDistance + distanceBChild;
@@ -222,13 +225,13 @@ public final class NBAStarPathfinder<V, E> {
 
 				final double tentativeDistance = DISTANCEB.get(currentNode) + eg.getWeight();
 				Double distanceBParent = DISTANCEB.get(parentNode);
-				if (distanceBParent == null ||  distanceBParent> tentativeDistance) {
+				if (distanceBParent == null || distanceBParent > tentativeDistance) {
 					DISTANCEB.put(parentNode, tentativeDistance);
 					PARENTSB.put(parentNode, currentNode);
 					final HeapEntry<V> e = new HeapEntry<>(parentNode,
 							tentativeDistance + estimateDistanceBetween(parentNode, sourceNode));
 					OPENB.add(e);
-					
+
 					Double distanceAParent = DISTANCEA.get(parentNode);
 					if (distanceAParent != null) {
 						final double pathLength = tentativeDistance + distanceAParent;
@@ -251,8 +254,10 @@ public final class NBAStarPathfinder<V, E> {
 	/**
 	 * Inits the.
 	 *
-	 * @param sourceNode the source node
-	 * @param targetNode the target node
+	 * @param sourceNode
+	 *            the source node
+	 * @param targetNode
+	 *            the target node
 	 */
 	private void init(final V sourceNode, final V targetNode) {
 		OPENA.clear();
@@ -347,15 +352,17 @@ public final class NBAStarPathfinder<V, E> {
 
 		/** The node id. */
 		private final V nodeId;
-		
+
 		/** The distance. */
 		private final double distance; // The priority key.
 
 		/**
 		 * Instantiates a new heap entry.
 		 *
-		 * @param nodeId the node id
-		 * @param distance the distance
+		 * @param nodeId
+		 *            the node id
+		 * @param distance
+		 *            the distance
 		 */
 		public HeapEntry(final V nodeId, final double distance) {
 			this.nodeId = nodeId;
@@ -385,8 +392,10 @@ public final class NBAStarPathfinder<V, E> {
 	/**
 	 * Estimate distance between.
 	 *
-	 * @param node1 the node 1
-	 * @param node2 the node 2
+	 * @param node1
+	 *            the node 1
+	 * @param node2
+	 *            the node 2
 	 * @return the double
 	 */
 	public double estimateDistanceBetween(final V node1, final V node2) {

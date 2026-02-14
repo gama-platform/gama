@@ -22,8 +22,8 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IGridAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.color.GamaColor;
 import gama.core.agent.AbstractAgent;
-import gama.core.util.color.GamaColor;
 
 /**
  * The Class MinimalGridAgent.

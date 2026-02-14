@@ -696,7 +696,8 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected abstract IMatrix<T> _reverse(IScope scope) throws GamaRuntimeException;
+	@Override
+	public abstract IMatrix<T> _reverse(IScope scope) throws GamaRuntimeException;
 
 	/**
 	 * Checks if is empty.

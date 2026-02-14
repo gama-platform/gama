@@ -37,24 +37,6 @@ import cern.jet.math.Arithmetic;
 import cern.jet.stat.Descriptive;
 import cern.jet.stat.Gamma;
 import cern.jet.stat.Probability;
-import gama.api.annotations.validator;
-import gama.api.data.factories.GamaColorFactory;
-import gama.api.data.factories.GamaListFactory;
-import gama.api.data.factories.GamaMapFactory;
-import gama.api.data.factories.GamaPointFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPoint;
-import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.expressions.IExpression;
-import gama.api.gaml.types.Cast;
-import gama.api.gaml.types.IType;
-import gama.api.gaml.types.Types;
-import gama.api.runtime.scope.IScope;
-import gama.api.utils.StringUtils;
-import gama.api.utils.collections.Collector;
-import gama.api.utils.files.FileUtils;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
@@ -64,12 +46,30 @@ import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
+import gama.api.annotations.validator;
+import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.factories.GamaListFactory;
+import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
+import gama.api.data.objects.IMatrix;
+import gama.api.data.objects.IPoint;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
+import gama.api.utils.collections.Collector;
+import gama.api.utils.color.GamaColor;
+import gama.api.utils.files.FileUtils;
 import gama.core.experiment.batch.exploration.Morris;
 import gama.core.experiment.batch.exploration.Sobol;
 import gama.core.experiment.batch.exploration.Stochanalysis;
-import gama.core.util.color.GamaColor;
 import gama.core.util.matrix.GamaField;
-import gama.core.util.matrix.GamaMatrix;
 import gama.gaml.operators.Containers;
 import gama.gaml.operators.Containers.ComparableValidator;
 
@@ -1721,7 +1721,8 @@ public class Stats {
 					b.addValue(p.blue());
 				}
 				if (r.getSize() == 0) return GamaColorFactory.createWithRGBA(0, 0, 0, 0);
-				return GamaColorFactory.createWithRGBA((int) r.getMedian(), (int) g.getMedian(), (int) b.getMedian(), 0);
+				return GamaColorFactory.createWithRGBA((int) r.getMedian(), (int) g.getMedian(), (int) b.getMedian(),
+						0);
 			default:
 				final DataSet d = new DataSet();
 				for (final Object o : values.iterable(scope)) { d.addValue(Cast.asFloat(scope, o)); }
@@ -2250,7 +2251,7 @@ public class Stats {
 					value = "build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0]]))",
 					isExecutable = false) })
 	@test ("build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0],[5.0,1.0,3.0,5.0],[3.0,4.0,5.0,1.0]])).parameters collect (each with_precision 5) = [0.5,2.5,0.0,-1.5]")
-	public static GamaRegression opRegression(final IScope scope, final GamaMatrix data) throws GamaRuntimeException {
+	public static GamaRegression opRegression(final IScope scope, final IMatrix data) throws GamaRuntimeException {
 		try {
 			return new GamaRegression(scope, data);
 		} catch (final Exception e) {

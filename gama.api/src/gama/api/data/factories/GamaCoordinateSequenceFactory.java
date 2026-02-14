@@ -21,6 +21,7 @@ import org.locationtech.jts.geom.impl.CoordinateArraySequence;
 
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IPoint;
+import gama.api.utils.geometry.InternalGamaCoordinateSequenceFactory;
 
 /**
  * A static factory for creating {@link ICoordinates} instances. This class acts as a global access point and wrapper
@@ -33,7 +34,7 @@ public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 	 * The internal factory implementation responsible for the actual object creation. This field should be initialized
 	 * early in the application lifecycle.
 	 */
-	public static ICoordinateSequenceFactory InternalFactory;
+	public static ICoordinateSequenceFactory InternalFactory = new InternalGamaCoordinateSequenceFactory();
 
 	/**
 	 * A constant coordinate sequence representing a "keystone" identity, typically used for internal comparisons or
@@ -50,14 +51,14 @@ public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 		if (KEYSTONE_IDENTITY == null) { KEYSTONE_IDENTITY = create(3, 3).setTo(0d, 0, 0, 0, 1, 0, 1, 1, 0, 1, 0, 0); }
 		return KEYSTONE_IDENTITY;
 	}
-
-	/**
-	 * Configures the internal factory used by this class and initializes static constants.
-	 *
-	 * @param factory
-	 *            the {@link ICoordinateSequenceFactory} implementation to use.
-	 */
-	public static void setBuilder(final ICoordinateSequenceFactory factory) { InternalFactory = factory; }
+	//
+	// /**
+	// * Configures the internal factory used by this class and initializes static constants.
+	// *
+	// * @param factory
+	// * the {@link ICoordinateSequenceFactory} implementation to use.
+	// */
+	// public static void setBuilder(final ICoordinateSequenceFactory factory) { InternalFactory = factory; }
 
 	/**
 	 * Creates an {@link ICoordinates} sequence from an array of JTS {@link Coordinate}.

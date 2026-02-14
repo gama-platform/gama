@@ -208,7 +208,8 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	 * @return the matrix concatenated
 	 */
 
-	public IMatrix<?> _opAppendVertically(final IScope scope, final IMatrix<?> b) {
+	@Override
+	public IMatrix<?> _opAppendVertically(final IScope scope, final IMatrix b) {
 		final Object[] mab = ArrayUtils.addAll(getMatrix(), ((GamaObjectMatrix) b).getMatrix());
 		final IType<?> newContentsType =
 				GamaType.findCommonType(getGamlType().getContentType(), b.getGamlType().getContentType());

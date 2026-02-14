@@ -9,13 +9,6 @@
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import static java.time.temporal.ChronoField.DAY_OF_MONTH;
-import static java.time.temporal.ChronoField.DAY_OF_WEEK;
-import static java.time.temporal.ChronoField.HOUR_OF_DAY;
-import static java.time.temporal.ChronoField.MINUTE_OF_HOUR;
-import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
-import static java.time.temporal.ChronoField.SECOND_OF_MINUTE;
-import static java.time.temporal.ChronoField.YEAR;
 import static java.time.temporal.ChronoUnit.DAYS;
 import static java.time.temporal.ChronoUnit.HOURS;
 import static java.time.temporal.ChronoUnit.MINUTES;
@@ -25,21 +18,8 @@ import static java.time.temporal.ChronoUnit.WEEKS;
 import static java.time.temporal.ChronoUnit.YEARS;
 
 import java.time.Duration;
-import java.time.chrono.IsoChronology;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.Temporal;
-import java.time.temporal.TemporalAccessor;
-import java.time.temporal.TemporalField;
-import java.time.temporal.TemporalQueries;
-import java.time.temporal.TemporalQuery;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.eclipse.emf.ecore.EObject;
 import org.geotools.filter.ConstantExpression;
@@ -53,7 +33,6 @@ import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
-import gama.api.GAMA;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.validation.IOperatorValidator;
@@ -63,131 +42,24 @@ import gama.api.data.factories.GamaDateFactory;
 import gama.api.data.objects.IDate;
 import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.constants.GamlCoreUnits;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.simulation.IClock;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.StringUtils;
-import gama.api.utils.prefs.GamaPreferences;
-import gama.api.utils.prefs.Pref;
-import gama.core.util.date.GamaDateInterval;
-import gama.dev.DEBUG;
+import gama.api.utils.date.DurationFormatter;
+import gama.api.utils.date.GamaDateInterval;
 
 /**
  * The Class Dates.
  */
 public class Dates {
 
-	/** The default value. */
-	public static String DEFAULT_VALUE = "CUSTOM";
-
-	/** The Constant DEFAULT_KEY. */
-	public static final String DEFAULT_KEY = "DEFAULT";
-
-	/** The Constant DEFAULT_FORMAT. */
-	public static final String DEFAULT_FORMAT = "yyyy-MM-dd HH:mm:ss";
-
-	/** The Constant ISO_SIMPLE_FORMAT. */
-	public static final String ISO_SIMPLE_FORMAT = "yy-MM-dd HH:mm:ss";
-
-	/** The Constant DURATION_FORMATTER. */
-	static final DurationFormatter DURATION_FORMATTER = new DurationFormatter();
-
-	/** The Constant FORMATTERS. */
-	public static final HashMap<String, DateTimeFormatter> FORMATTERS = new HashMap<>() {
-		{
-			put(DEFAULT_KEY, DateTimeFormatter.ofPattern(DEFAULT_FORMAT));
-			put(GamlCoreUnits.ISO_SIMPLE_KEY, DateTimeFormatter.ofPattern(ISO_SIMPLE_FORMAT));
-			put(GamlCoreUnits.ISO_LOCAL_KEY, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-			put(GamlCoreUnits.ISO_OFFSET_KEY, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-			put(GamlCoreUnits.ISO_ZONED_KEY, DateTimeFormatter.ISO_ZONED_DATE_TIME);
-
-		}
-	};
-
-	/** The Constant DATES_CUSTOM_FORMATTER. */
-	public final static Pref<String> DATES_CUSTOM_FORMATTER = GamaPreferences.create("pref_date_custom_formatter",
-			"Custom date pattern (https://docs.oracle.com/javase/8/docs/api/java/time/format/DateTimeFormatter.html#patterns)",
-			DEFAULT_FORMAT, IType.STRING, true).in(GamaPreferences.External.NAME, GamaPreferences.External.DATES)
-			.onChange(e -> {
-				try {
-					FORMATTERS.put(GamlCoreUnits.CUSTOM_KEY, getFormatter(StringUtils.toJavaString(e), null));
-					if (GamlCoreUnits.CUSTOM_KEY.equals(DEFAULT_VALUE)) {
-						FORMATTERS.put(DEFAULT_KEY, FORMATTERS.get(GamlCoreUnits.CUSTOM_KEY));
-					}
-				} catch (
-				/** The ex. */
-				final Exception ex) {
-					DEBUG.ERR("Formatter not valid: " + e);
-				}
-			});
-
-	/** The Constant DATES_DEFAULT_FORMATTER. */
-	public final static Pref<String> DATES_DEFAULT_FORMATTER = GamaPreferences
-			.create("pref_date_default_formatter", "Default date pattern for writing dates (i.e. string(date1))",
-					GamlCoreUnits.CUSTOM_KEY, IType.STRING, true)
-			.in(GamaPreferences.External.NAME, GamaPreferences.External.DATES)
-			.among(GamlCoreUnits.ISO_LOCAL_KEY, GamlCoreUnits.ISO_OFFSET_KEY, GamlCoreUnits.ISO_ZONED_KEY,
-					GamlCoreUnits.ISO_SIMPLE_KEY, GamlCoreUnits.CUSTOM_KEY)
-			.onChange(e -> {
-				DEFAULT_VALUE = e;
-				FORMATTERS.put(DEFAULT_KEY, FORMATTERS.get(e));
-			});
-
-	/** The Constant DATES_STARTING_DATE. */
-	public final static Pref<IDate> DATES_STARTING_DATE =
-			GamaPreferences.create("pref_date_starting_date", "Default starting date of models", GamaDateFactory.EPOCH,
-					IType.DATE, true).in(GamaPreferences.External.NAME, GamaPreferences.External.DATES);
-
-	/** The Constant DATES_TIME_STEP. */
-	public final static Pref<Double> DATES_TIME_STEP =
-			GamaPreferences.create("pref_date_time_step", "Default time step of models", 1d, IType.FLOAT, true)
-					.in(GamaPreferences.External.NAME, GamaPreferences.External.DATES).between(1d, null);
-
-	static {
-		FORMATTERS.put(GamlCoreUnits.CUSTOM_KEY, DateTimeFormatter.ofPattern(DATES_CUSTOM_FORMATTER.getValue()));
-		FORMATTERS.put(DEFAULT_KEY, FORMATTERS.get(GamlCoreUnits.CUSTOM_KEY));
-	}
-
-	/** The Constant APPROXIMATE_TEMPORAL_QUERY. */
-	// public static final String APPROXIMATE_TEMPORAL_QUERY = IKeyword.INTERNAL_FUNCTION + "_temporal_query";
-
-	/** The model pattern. */
-	static Pattern model_pattern = Pattern.compile("%[YMNDEhmsz]");
-
 	/**
 	 * Initialize.Only here to load the class and its preferences
 	 */
 	public static void initialize() {}
-
-	/**
-	 * Approximal query.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param left
-	 *            the left
-	 * @param right
-	 *            the right
-	 * @return the double
-	 */
-	// @operator (
-	// value = APPROXIMATE_TEMPORAL_QUERY,
-	// doc = @doc ("For internal use only"),
-	// internal = true)
-	// @no_test
-	// public static double approximalQuery(final IScope scope, final IExpression left, final IExpression right) {
-	// final Double arg = Cast.asFloat(scope, left.value(scope));
-	// if (right instanceof TimeUnitConstantExpression timeUnit) {
-	// IDate date = scope.getClock().getCurrentDate();
-	// IDate next = date.plus(1l, timeUnit.getName().startsWith("m") ? ChronoUnit.MONTHS : ChronoUnit.YEARS);
-	// return arg * date.until(next, ChronoUnit.MILLIS) / 1000d;
-	// }
-	// return 0d;
-	// }
 
 	/**
 	 * Minus date.
@@ -2122,7 +1994,7 @@ public class Dates {
 	 *             the gama runtime exception
 	 */
 	@operator (
-			value = { "=" },
+			value = { IKeyword.EQUALS },
 			content_type = IType.NONE,
 			category = { IOperatorCategory.DATE },
 			concept = { IConcept.DATE })
@@ -2180,110 +2052,6 @@ public class Dates {
 	}
 
 	/**
-	 * Gets the locale.
-	 *
-	 * @param l
-	 *            the l
-	 * @return the locale
-	 */
-	static Locale getLocale(final String l) {
-		if (l == null) return Locale.getDefault();
-		final String locale = l.toLowerCase();
-		return switch (locale) {
-			case "us" -> Locale.US;
-			case "fr" -> Locale.FRANCE;
-			case "en" -> Locale.ENGLISH;
-			case "de" -> Locale.GERMAN;
-			case "it" -> Locale.ITALIAN;
-			case "jp" -> Locale.JAPANESE;
-			case "uk" -> Locale.UK;
-			default -> new Locale(locale);
-		};
-	}
-
-	/**
-	 * Gets the formatter key.
-	 *
-	 * @param p
-	 *            the p
-	 * @param locale
-	 *            the locale
-	 * @return the formatter key
-	 */
-	static String getFormatterKey(final String p, final String locale) {
-		if (locale == null) return p;
-		return p + locale;
-	}
-
-	/**
-	 * Gets the formatter.
-	 *
-	 * @param p
-	 *            the p
-	 * @param locale
-	 *            the locale
-	 * @return the formatter
-	 */
-	public static DateTimeFormatter getFormatter(final String p, final String locale) {
-
-		final String pattern = p;
-		// Can happen during initialization
-		if (FORMATTERS == null || FORMATTERS.isEmpty()) return DateTimeFormatter.ofPattern(DEFAULT_FORMAT);
-		if (pattern == null) return FORMATTERS.get(DEFAULT_KEY);
-		final DateTimeFormatter formatter = FORMATTERS.get(getFormatterKey(pattern, locale));
-		if (formatter != null) return formatter;
-		if (!pattern.contains("%")) {
-			try {
-				final DateTimeFormatterBuilder df = new DateTimeFormatterBuilder();
-				final DateTimeFormatter result =
-						df.parseCaseInsensitive().appendPattern(pattern).toFormatter(getLocale(locale));
-				FORMATTERS.put(getFormatterKey(pattern, locale), result);
-				return result;
-			} catch (final IllegalArgumentException e) {
-				GAMA.reportAndThrowIfNeeded(GAMA.getRuntimeScope(),
-						GamaRuntimeException.create(e, GAMA.getRuntimeScope()), false);
-				return FORMATTERS.get(DEFAULT_KEY);
-			}
-		}
-		final DateTimeFormatterBuilder df = new DateTimeFormatterBuilder();
-		df.parseCaseInsensitive();
-		final List<String> dateList = new ArrayList<>();
-		final Matcher m = model_pattern.matcher(pattern);
-		int i = 0;
-		while (m.find()) {
-			final String tmp = m.group();
-			if (i != m.start()) { dateList.add(pattern.substring(i, m.start())); }
-			dateList.add(tmp);
-			i = m.end();
-		}
-		if (i != pattern.length()) { dateList.add(pattern.substring(i)); }
-		for (i = 0; i < dateList.size(); i++) {
-			final String s = dateList.get(i);
-			if (s.charAt(0) == '%' && s.length() == 2) {
-				final Character c = s.charAt(1);
-				switch (c) {
-					case 'Y' -> df.appendValue(YEAR, 4);
-					case 'M' -> df.appendValue(MONTH_OF_YEAR, 2);
-					case 'N' -> df.appendText(MONTH_OF_YEAR);
-					case 'D' -> df.appendValue(DAY_OF_MONTH, 2);
-					case 'E' -> df.appendText(DAY_OF_WEEK);
-					case 'h' -> df.appendValue(HOUR_OF_DAY, 2);
-					case 'm' -> df.appendValue(MINUTE_OF_HOUR, 2);
-					case 's' -> df.appendValue(SECOND_OF_MINUTE, 2);
-					case 'z' -> df.appendZoneOrOffsetId();
-					default -> df.appendLiteral(s);
-				}
-
-			} else {
-				df.appendLiteral(s);
-			}
-		}
-		final DateTimeFormatter result = df.toFormatter(getLocale(locale));
-		FORMATTERS.put(getFormatterKey(pattern, locale), result);
-		return result;
-	}
-
-	/**
 	 * As duration.
 	 *
 	 * @param d1
@@ -2294,7 +2062,7 @@ public class Dates {
 	 */
 	public static String asDuration(final Temporal d1, final Temporal d2) {
 		final Duration p = Duration.between(d1, d2);
-		return DurationFormatter.format(p);
+		return DurationFormatter.INSTANCE.toString(p);
 	}
 
 	/**
@@ -2462,114 +2230,6 @@ public class Dates {
 
 	public static String format(final IDate time, final String pattern, final String locale) {
 		return time.toString(pattern, locale);
-	}
-
-	/**
-	 * The Class DurationFormatter.
-	 */
-	static class DurationFormatter implements TemporalAccessor {
-
-		/** The Constant YMDHMS. */
-		private static final DateTimeFormatter YMDHMS = DateTimeFormatter.ofPattern("u'y' M'm' d'd' HH:mm:ss");
-
-		/** The Constant MDHMS. */
-		private static final DateTimeFormatter MDHMS = DateTimeFormatter.ofPattern("M' months' d 'days' HH:mm:ss");
-
-		/** The Constant M1DHMS. */
-		private static final DateTimeFormatter M1DHMS = DateTimeFormatter.ofPattern("M' month' d 'days' HH:mm:ss");
-
-		/** The Constant M1D1HMS. */
-		private static final DateTimeFormatter M1D1HMS = DateTimeFormatter.ofPattern("M' month' d 'day' HH:mm:ss");
-
-		/** The Constant DHMS. */
-		private static final DateTimeFormatter DHMS = DateTimeFormatter.ofPattern("d 'days' HH:mm:ss");
-
-		/** The Constant D1HMS. */
-		private static final DateTimeFormatter D1HMS = DateTimeFormatter.ofPattern("d 'day' HH:mm:ss");
-
-		/** The Constant HMS. */
-		private static final DateTimeFormatter HMS = DateTimeFormatter.ofPattern("HH:mm:ss");
-
-		/**
-		 * Format.
-		 *
-		 * @param duration
-		 *            the duration
-		 * @return the string
-		 */
-		static String format(final Duration duration) {
-			return DURATION_FORMATTER.toString(duration);
-		}
-
-		/** The temporal. */
-		private Temporal temporal;
-
-		/**
-		 * To string.
-		 *
-		 * @param duration
-		 *            the duration
-		 * @return the string
-		 */
-		private String toString(final Duration duration) {
-			this.temporal = duration.addTo(Dates.DATES_STARTING_DATE.getValue())
-					.minus(GamaDateFactory.DEFAULT_OFFSET_IN_SECONDS.getTotalSeconds(), SECONDS);
-			// if (duration.toDays() == 0l)
-			// temporal = LocalDateTime.(temporal);
-			return toString();
-		}
-
-		/**
-		 * Gets the formatter.
-		 *
-		 * @return the formatter
-		 */
-		private DateTimeFormatter getFormatter() {
-			if (getLong(YEAR) > 0) return YMDHMS;
-			final long month = getLong(MONTH_OF_YEAR);
-			final long day = getLong(DAY_OF_MONTH);
-			if (month > 0) {
-				if (month >= 2) return MDHMS;
-				if (day < 2) return M1D1HMS;
-				return M1DHMS;
-			}
-			if (day > 0) {
-				if (day < 2) return D1HMS;
-				return DHMS;
-			}
-			return HMS;
-		}
-
-		@Override
-		public boolean isSupported(final TemporalField field) {
-			return temporal.isSupported(field);
-		}
-
-		@Override
-		public long getLong(final TemporalField field) {
-			if (field == SECOND_OF_MINUTE) return temporal.getLong(SECOND_OF_MINUTE);
-			if (field == MINUTE_OF_HOUR) return temporal.getLong(MINUTE_OF_HOUR);
-			if (field == HOUR_OF_DAY) return temporal.getLong(HOUR_OF_DAY);
-			if (field == DAY_OF_MONTH) return temporal.getLong(DAY_OF_MONTH) - 1l;
-			if (field == MONTH_OF_YEAR) return temporal.getLong(MONTH_OF_YEAR) - 1;
-			if (field == YEAR) return temporal.getLong(YEAR) - Dates.DATES_STARTING_DATE.getValue().getLong(YEAR);
-			return 0;
-		}
-
-		@Override
-		public String toString() {
-			return getFormatter().format(this);
-		}
-
-		@SuppressWarnings ("unchecked")
-		@Override
-		public <R> R query(final TemporalQuery<R> query) {
-			if (query == TemporalQueries.precision()) return (R) SECONDS;
-			if (query == TemporalQueries.chronology()) return (R) IsoChronology.INSTANCE;
-			if (query == TemporalQueries.zone() || query == TemporalQueries.zoneId()) return null;
-			return query.queryFrom(this);
-		}
-
 	}
 
 }

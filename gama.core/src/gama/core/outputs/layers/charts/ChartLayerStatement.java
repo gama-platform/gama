@@ -32,6 +32,7 @@ import gama.api.constants.IKeyword;
 import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IColor;
+import gama.api.data.objects.IFont;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
@@ -46,7 +47,6 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.IOutput;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.layers.AbstractLayerStatement;
-import gama.core.util.GamaFont;
 
 /**
  * Written by drogoul Modified on 9 nov. 2009
@@ -713,13 +713,13 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			colorvalue = GamaColorFactory.createFrom(scope, color.value(scope));
 			chartOutput.setBackgroundColorValue(scope, colorvalue);
 		}
-		GamaFont font = null;
+		IFont font = null;
 		IExpression face = getFacet(TICKFONTFACE);
 		if (face != null) {
 			if (face.getGamlType() == Types.STRING) {
 				chartOutput.setTickFontFace(scope, Cast.asString(scope, face.value(scope)));
 			} else {
-				font = (GamaFont) Types.FONT.cast(scope, face.value(scope), null, false);
+				font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
 				if (font != null) {
 					chartOutput.setTickFontFace(scope, font.getFontName());
 					chartOutput.setTickFontSize(scope, font.getSize());
@@ -733,7 +733,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			if (face.getGamlType() == Types.STRING) {
 				chartOutput.setLabelFontFace(scope, Cast.asString(scope, face.value(scope)));
 			} else {
-				font = (GamaFont) Types.FONT.cast(scope, face.value(scope), null, false);
+				font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
 				if (font != null) {
 					chartOutput.setLabelFontFace(scope, font.getFontName());
 					chartOutput.setLabelFontSize(scope, font.getSize());
@@ -747,7 +747,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			if (face.getGamlType() == Types.STRING) {
 				chartOutput.setLegendFontFace(scope, Cast.asString(scope, face.value(scope)));
 			} else {
-				font = (GamaFont) Types.FONT.cast(scope, face.value(scope), null, false);
+				font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
 				if (font != null) {
 					chartOutput.setLegendFontFace(scope, font.getFontName());
 					chartOutput.setLegendFontSize(scope, font.getSize());
@@ -761,7 +761,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 			if (face.getGamlType() == Types.STRING) {
 				chartOutput.setTitleFontFace(scope, Cast.asString(scope, face.value(scope)));
 			} else {
-				font = (GamaFont) Types.FONT.cast(scope, face.value(scope), null, false);
+				font = (IFont) Types.FONT.cast(scope, face.value(scope), null, false);
 				if (font != null) {
 					chartOutput.setTitleFontFace(scope, font.getFontName());
 					chartOutput.setTitleFontSize(scope, font.getSize());

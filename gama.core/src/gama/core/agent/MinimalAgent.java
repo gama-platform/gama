@@ -19,6 +19,7 @@ import gama.api.constants.IKeyword;
 import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IEnvelope;
+import gama.api.data.objects.IGraph;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.gaml.species.GamlSpecies;
@@ -27,7 +28,6 @@ import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
-import gama.core.util.graph.GamaGraph;
 
 /**
  * The Class MinimalAgent.
@@ -192,13 +192,13 @@ public class MinimalAgent extends AbstractAgent {
 			// pop.hostChangesShape();
 			// }
 		}
-		final GamaGraph graph = (GamaGraph) getAttribute("attached_graph");
+		final IGraph<IShape, Object> graph = (IGraph) getAttribute("attached_graph");
 		if (graph != null) {
-			final Set edgesToModify = graph.edgesOf(this);
+			final Set<Object> edgesToModify = graph.edgesOf(this);
 			for (final Object obj : edgesToModify) {
 				if (obj instanceof IAgent) {
-					final IShape ext1 = (IShape) graph.getEdgeSource(obj);
-					final IShape ext2 = (IShape) graph.getEdgeTarget(obj);
+					final IShape ext1 = graph.getEdgeSource(obj);
+					final IShape ext2 = graph.getEdgeTarget(obj);
 					((IAgent) obj).setGeometry(GamaShapeFactory.buildLine(ext1.getLocation(), ext2.getLocation()));
 				}
 			}

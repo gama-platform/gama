@@ -39,11 +39,12 @@ import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
-import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.symbols.IParameter.Batch;
+import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.IExploration;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.FileUtils;
 import gama.core.experiment.parameters.ParameterAdapter;
@@ -76,7 +77,6 @@ import gama.core.experiment.parameters.ParametersSet;
 				@facet (
 						name = IKeyword.BATCH_VAR_OUTPUTS,
 						type = IType.LIST,
-						of = IType.STRING,
 						optional = false,
 						doc = @doc ("The list of output variables to analyze through morris method")),
 				@facet (
@@ -162,8 +162,8 @@ public class MorrisExploration extends AExplorationAlgorithm {
 
 	@Override
 	public void explore(final IScope scope) {
-		this.sample = hasFacet(Exploration.SAMPLE_SIZE)
-				? Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope)) : Morris.DEFAULT_TRAJECTORIES;
+		this.sample = hasFacet(IExploration.SAMPLE_SIZE)
+				? Cast.asInt(scope, getFacet(IExploration.SAMPLE_SIZE).value(scope)) : Morris.DEFAULT_TRAJECTORIES;
 		this.nb_levels =
 				hasFacet(NB_LEVELS) ? Cast.asInt(scope, getFacet(NB_LEVELS).value(scope)) : Morris.DEFAULT_LEVELS;
 		if (hasFacet(PARAMETER_CSV_PATH)) {

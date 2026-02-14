@@ -69,7 +69,6 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.IStatusMessage;
 import gama.api.utils.IFieldMatrixProvider;
 import gama.core.topology.gis.GamaCRS;
-import gama.core.util.matrix.GamaField;
 import gama.core.util.matrix.GamaFloatMatrix;
 
 /**
@@ -234,7 +233,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			examples = { @example (
 					value = "file f <- grid_file(\"file.tif\",my_field); save f;",
 					isExecutable = false) })
-	public GamaGridFile(final IScope scope, final String pathName, final GamaField field) {
+	public GamaGridFile(final IScope scope, final String pathName, final IField field) {
 		super(scope, pathName, false);
 		setWritable(scope, true);
 		createCoverage(scope, field);
@@ -419,7 +418,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 * @param field
 	 *            the field
 	 */
-	private void createCoverage(final IScope scope, final GamaField field) {
+	private void createCoverage(final IScope scope, final IField field) {
 		// temporary fixes #3128 - the code comes from the save statement... maybe we can do better
 
 		// old code
@@ -435,8 +434,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		 */
 		final boolean nullProjection = scope.getSimulation().getProjectionFactory().getWorld() == null;
 
-		final int cols = field.numCols;
-		final int rows = field.numRows;
+		final int cols = field.getCols(scope);
+		final int rows = field.getRows(scope);
 		double x = nullProjection ? 0
 				: scope.getSimulation().getProjectionFactory().getWorld().getProjectedEnvelope().getMinX();
 		double y = nullProjection ? 0

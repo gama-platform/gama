@@ -19,12 +19,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SetMultimap;
 
@@ -103,11 +101,12 @@ public class ArtefactProtoRegistry {
 	public static final Set<String> PROTOS_WITHOUT_PARENTHESES = ImmutableSet.of("-", "!");
 
 	/** The BINARY_PROTO_NAMES. */
-	public static final Set<String> BINARY_PROTO_NAMES = ImmutableSet.of("=", "+", "-", "/", "*", "^", "<", ">",
-			"<=", ">=", "?", "!=", ":", ".", "where", "select", "collect", "first_with", "last_with", "overlapping",
-			"at_distance", "in", "inside", "among", "contains", "contains_any", "contains_all", "min_of", "max_of",
-			"with_max_of", "with_min_of", "of_species", "of_generic_species", "sort_by", "accumulate", "or", "and",
-			"at", "is", "group_by", "index_of", "last_index_of", "index_by", "count", "sort", "::", "as_map");
+	public static final Set<String> BINARY_PROTO_NAMES = ImmutableSet.of(IKeyword.EQUALS, IKeyword.PLUS, IKeyword.MINUS,
+			IKeyword.DIVIDE, IKeyword.TIMES, "^", "<", ">", "<=", ">=", "?", "!=", ":", ".", "where", "select",
+			"collect", "first_with", "last_with", "overlapping", "at_distance", "in", "inside", "among", "contains",
+			"contains_any", "contains_all", "min_of", "max_of", "with_max_of", "with_min_of", "of_species",
+			"of_generic_species", "sort_by", "accumulate", "or", "and", "at", "is", "group_by", "index_of",
+			"last_index_of", "index_by", "count", "sort", "::", "as_map");
 
 	/**
 	 * Adds the new var keyword.
@@ -248,9 +247,9 @@ public class ArtefactProtoRegistry {
 	 */
 	public static Iterable<IArtefactProto.Symbol> getStatementProtos() {
 		if (cachedStatementProtos == null) {
-			cachedStatementProtos = Iterables.filter(
-					Iterables.concat(STATEMENT_KEYWORDS_PROTOS.values(), VAR_KEYWORDS_PROTOS.values()),
-					IArtefactProto.Symbol.class);
+			cachedStatementProtos =
+					Iterables.filter(Iterables.concat(STATEMENT_KEYWORDS_PROTOS.values(), VAR_KEYWORDS_PROTOS.values()),
+							IArtefactProto.Symbol.class);
 		}
 		return cachedStatementProtos;
 	}
@@ -262,7 +261,8 @@ public class ArtefactProtoRegistry {
 	 */
 	public static Iterable<? extends IArtefactProto.Facet> getFacetsProtos() {
 		if (cachedFacetsProtos == null) {
-			cachedFacetsProtos = Iterables.concat(Iterables.transform(getStatementProtos(), each -> each.getPossibleFacets().values()));
+			cachedFacetsProtos = Iterables
+					.concat(Iterables.transform(getStatementProtos(), each -> each.getPossibleFacets().values()));
 		}
 		return cachedFacetsProtos;
 	}

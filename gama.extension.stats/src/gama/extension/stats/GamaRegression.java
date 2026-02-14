@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * GamaRegression.java, in gama.extension.stats, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaRegression.java, in gama.extension.stats, is part of the source code of the GAMA modeling and simulation platform
+ * .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -21,13 +21,13 @@ import gama.api.data.factories.GamaListFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
 import gama.api.data.objects.IList;
+import gama.api.data.objects.IMatrix;
 import gama.api.data.objects.IValue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.core.util.matrix.GamaMatrix;
 
 /**
  * The Class GamaRegression.
@@ -77,12 +77,12 @@ public class GamaRegression implements IValue {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public GamaRegression(final IScope scope, final GamaMatrix<?> data) throws Exception {
+	public GamaRegression(final IScope scope, final IMatrix<?> data) throws Exception {
 		final OLSMultipleLinearRegression regressionMethod = new OLSMultipleLinearRegression();
-		final int nbFeatures = data.numCols - 1;
-		final int nbInstances = data.numRows;
+		final int nbFeatures = data.getCols(scope) - 1;
+		final int nbInstances = data.getRows(scope);
 
-		final double[] instances = new double[data.numCols * data.numRows];
+		final double[] instances = new double[data.getCols(scope) * data.getRows(scope)];
 
 		for (int i = 0; i < data.length(scope); i++) { instances[i] = Cast.asFloat(scope, data.getNthElement(i)); }
 		regressionMethod.newSampleData(instances, nbInstances, nbFeatures);

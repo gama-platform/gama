@@ -18,6 +18,7 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.data.csv.AbstractCSVManipulator;
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
+import gama.api.data.objects.IMatrix;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
@@ -27,7 +28,6 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.BufferingUtils;
 import gama.api.utils.files.SaveOptions;
-import gama.core.util.matrix.GamaMatrix;
 import gama.gaml.statements.SaveStatement;
 
 /**
@@ -121,7 +121,7 @@ public class CSVSaver extends AbstractSaver {
 				sb.append(StringUtils.LN);
 			}
 			if (itemType.id() == IType.MATRIX) {
-				GamaMatrix<?> matrix = (GamaMatrix<?>) value;
+				IMatrix<?> matrix = (IMatrix<?>) value;
 				matrix.rowByRow(scope, v -> sb.append(toCleanString(v)), () -> sb.append(del),
 						() -> sb.append(StringUtils.LN));
 			} else {

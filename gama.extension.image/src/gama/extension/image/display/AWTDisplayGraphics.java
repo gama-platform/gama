@@ -67,7 +67,6 @@ import gama.api.utils.geometry.GeometryUtils;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.util.file.GamaGeometryFile;
-import gama.core.util.matrix.GamaField;
 import gama.gaml.operators.Maths;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 
@@ -204,8 +203,8 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 			if (image instanceof IImageProvider im) return drawAsset(im, attributes);
 			if (image instanceof BufferedImage bi) return drawImage(bi, attributes);
 		}
-		if (!(fieldValues instanceof GamaField gf)) return null;
-		GamaField flatten = gf.flatten(surface.getScope(), attributes.getColorProvider());
+		if (!(fieldValues instanceof IField gf)) return null;
+		IField flatten = gf.flatten(surface.getScope(), attributes.getColorProvider());
 		// AD Attempt to provide smoothing but it doesnt work as expected
 		// double[] data = attributes.getSmoothProvider().smooth(flatten.numCols, flatten.numRows, flatten.getMatrix(),
 		// flatten.getNoData(null), attributes.getSmooth());

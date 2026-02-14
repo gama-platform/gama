@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.color;
+package gama.api.utils.color;
 
 import java.awt.Color;
 
@@ -17,8 +17,6 @@ import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
 import gama.api.data.objects.IColor;
-import gama.api.gaml.types.IType;
-import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 
 /**
@@ -230,14 +228,6 @@ public class GamaColor implements IColor {
 	public int compareTo(final IColor c2) {
 		return compareRgbTo(c2);
 	}
-
-	/**
-	 * Method getType()
-	 *
-	 * @see gama.api.gaml.types.ITyped#getGamlType()
-	 */
-	@Override
-	public IType<?> getGamlType() { return Types.COLOR; }
 
 	/**
 	 * With alpha.

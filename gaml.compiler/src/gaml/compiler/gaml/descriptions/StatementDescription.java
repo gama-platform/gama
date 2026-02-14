@@ -126,7 +126,7 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 	@Override
 	public boolean manipulatesVar(final String nm) {
 		if (IKeyword.EQUATION.equals(getKeyword())) {
-			final Iterable<IDescription> equations = getChildrenWithKeyword(IKeyword.EQUATION_OP);
+			final Iterable<IDescription> equations = getChildrenWithKeyword(IKeyword.EQUALS);
 			for (final IDescription equation : equations) {
 				final IExpressionDescription desc = equation.getFacet(IKeyword.EQUATION_LEFT);
 				desc.compile(equation);

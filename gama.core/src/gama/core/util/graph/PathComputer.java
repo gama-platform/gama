@@ -70,7 +70,7 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	/**
 	 *
 	 */
-	private final GamaGraph<V, E> graph;
+	private final IGraph<V, E> graph;
 
 	/** The save computed shortest paths. */
 	protected boolean saveComputedShortestPaths = true;
@@ -83,7 +83,7 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	 *            TODO
 	 * @date 30 oct. 2023
 	 */
-	PathComputer(final GamaGraph<V, E> gamaGraph) {
+	PathComputer(final IGraph<V, E> gamaGraph) {
 		graph = gamaGraph;
 	}
 
@@ -158,7 +158,7 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 		final IMap<V, Integer> indexVertices = GamaMapFactory.create(graph.getGamlType().getKeyType(), Types.INT);
 		final IList<V> vertices = graph.getVertices();
 
-		for (int i = 0; i < graph.vertexMap.size(); i++) { indexVertices.put(vertices.get(i), i); }
+		for (int i = 0; i < graph.getVertexMap().size(); i++) { indexVertices.put(vertices.get(i), i); }
 		final GamaIntMatrix matrix =
 				(GamaIntMatrix) GamaMatrixFactory.create(vertices.size(), vertices.size(), IType.INT);
 		for (int i = 0; i < vertices.size(); i++) {
@@ -172,36 +172,36 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 					final GraphPath<V, E> path = optimizer.getShortestPath(v1, v2);
 					if (path == null || path.getEdgeList() == null || path.getEdgeList().isEmpty()) { continue; }
 					matrix.set(scope, j, i,
-							nextVertice(scope, path.getEdgeList().get(0), v1, indexVertices, graph.directed));
+							nextVertice(scope, path.getEdgeList().get(0), v1, indexVertices, graph.isDirected()));
 				}
 			}
 		} else if (ShortestPathAlgorithmEnum.FloydWarshall.equals(pathFindingAlgo)) {
 			optimizer = new FloydWarshallShortestPathsGAMA<>(graph);
 			optimizer.lazyCalculateMatrix();
-			for (int i = 0; i < graph.vertexMap.size(); i++) {
-				for (int j = 0; j < graph.vertexMap.size(); j++) {
+			for (int i = 0; i < graph.getVertexMap().size(); i++) {
+				for (int j = 0; j < graph.getVertexMap().size(); j++) {
 					if (i == j) { continue; }
 					matrix.set(scope, j, i, optimizer.succRecur(i, j));
 				}
 			}
 		} else {
-			for (int i = 0; i < graph.vertexMap.size(); i++) {
+			for (int i = 0; i < graph.getVertexMap().size(); i++) {
 				final V v1 = vertices.get(i);
-				for (int j = 0; j < graph.vertexMap.size(); j++) {
+				for (int j = 0; j < graph.getVertexMap().size(); j++) {
 					if (i == j || matrix.get(scope, j, i) != i) { continue; }
 					final V v2 = vertices.get(j);
-					final List edges = computeBestRouteBetween(scope, v1, v2);
+					final List<E> edges = computeBestRouteBetween(scope, v1, v2);
 					// DEBUG.LOG("edges : " + edges);
 					if (edges == null) { continue; }
 					V source = v1;
 					int s = i;
-					for (final Object edge : edges) {
+					for (final E edge : edges) {
 						// DEBUG.LOG("s : " + s + " j : " + j + "
 						// i: " + i);
 						if (s != i && matrix.get(scope, j, s) != s) { break; }
 
-						V target = (V) graph.getEdgeTarget(edge);
-						if (!graph.directed && target == source) { target = (V) graph.getEdgeSource(edge); }
+						V target = graph.getEdgeTarget(edge);
+						if (!graph.isDirected() && target == source) { target = graph.getEdgeSource(edge); }
 						final Integer k = indexVertices.get(scope, target);
 						// DEBUG.LOG("k : " +k);
 						matrix.set(scope, j, s, k);
@@ -234,12 +234,12 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	@SuppressWarnings ("unchecked")
 	private Integer nextVertice(final IScope scope, final E edge, final V source, final IMap<V, Integer> indexVertices,
 			final boolean isDirected) {
-		if (isDirected) return indexVertices.get(scope, (V) graph.getEdgeTarget(edge));
+		if (isDirected) return indexVertices.get(scope, graph.getEdgeTarget(edge));
 
-		final V target = (V) graph.getEdgeTarget(edge);
+		final V target = graph.getEdgeTarget(edge);
 		if (target != source) // source = target;
 			return indexVertices.get(scope, target);
-		return indexVertices.get(scope, (V) graph.getEdgeSource(edge));
+		return indexVertices.get(scope, graph.getEdgeSource(edge));
 	}
 
 	/**
@@ -267,12 +267,12 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 			final IList<E> edges = GamaListFactory.create(graph.getGamlType().getContentType());
 			final V vt = (V) vertices.get(j);
 			if (v1 == vt) { continue; }
-			Object vc = vt;
+			V vc = vt;
 			int previous;
 			int next = M[j];
 			if (j == next || next == -1) { continue; }
 			do {
-				final Object vn = vertices.get(next);
+				final V vn = (V) vertices.get(next);
 
 				final Set<E> eds = graph.getAllEdges(vn, vc);
 
@@ -314,7 +314,7 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 		final int indexS = vertices.indexOf(vs);
 		final int indexT = vertices.indexOf(t);
 		int previous = indexS;
-		Integer next = shortestPathMatrix.get(graph.graphScope, indexT, previous);
+		Integer next = shortestPathMatrix.get(graph.getScope(), indexT, previous);
 		if (previous == next) return edges;
 		do {
 			if (next == -1) return GamaListFactory.create(graph.getGamlType().getContentType());
@@ -328,7 +328,7 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 			if (edge == null) return GamaListFactory.create(graph.getGamlType().getContentType());
 			edges.add(edge);
 			previous = next;
-			next = shortestPathMatrix.get(graph.graphScope, indexT, next);
+			next = shortestPathMatrix.get(graph.getScope(), indexT, next);
 			vs = vn;
 		} while (previous != indexT);
 		return edges;
@@ -518,13 +518,13 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 		final IList<IList<E>> spl = GamaListFactory.create(Types.LIST.of(graph.getGamlType().getContentType()));
 		spl.add(GamaListFactory.createWithoutCasting(graph.getGamlType().getContentType(), edges));
 		shortestPathComputed.put(new Pair<>(source, target), spl);
-		final List<E> edges2 = GamaListFactory.create(graph.graphScope, graph.getGamlType().getContentType(), edges);
+		final List<E> edges2 = GamaListFactory.create(graph.getScope(), graph.getGamlType().getContentType(), edges);
 		for (int i = 0; i < edges.size(); i++) {
 			final E edge = edges2.remove(0);
 			if (edges2.isEmpty()) { break; }
 			// DEBUG.LOG("s : " + s + " j : " + j + " i: " + i);
-			V nwS = (V) graph.getEdgeTarget(edge);
-			if (!graph.directed && nwS.equals(s)) { nwS = (V) graph.getEdgeSource(edge); }
+			V nwS = graph.getEdgeTarget(edge);
+			if (!graph.isDirected() && nwS.equals(s)) { nwS = graph.getEdgeSource(edge); }
 			final Pair<V, V> pp = new Pair<>(nwS, target);
 			if (!shortestPathComputed.containsKey(pp)) {
 				final IList<IList<E>> spl2 = GamaListFactory.create(graph.getGamlType().getContentType());
@@ -554,7 +554,7 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	@Override
 	public IList<IPath<V, E, IGraph<V, E>>> computeKShortestPathsBetween(final IScope scope, final V source,
 			final V target, final int k) {
-		if (!graph.directed && ONLY_FOR_DIRECTED_GRAPH.contains(kPathFindingAlgo)) throw GamaRuntimeException.error(
+		if (!graph.isDirected() && ONLY_FOR_DIRECTED_GRAPH.contains(kPathFindingAlgo)) throw GamaRuntimeException.error(
 				kPathFindingAlgo.name() + " cannot be used for undirected graphs - use the Yen algorithm for that",
 				scope);
 		final IList<IList<E>> pathLists = computeKBestRoutesBetween(scope, source, target, k);
@@ -654,13 +654,13 @@ public class PathComputer<V, E> implements IPathComputer<V, E> {
 	void generateGraph() {
 		if (linkedJGraph != null) return;
 		fromLinkedGtoEdges = GamaMapFactory.create();
-		linkedJGraph = graph.directed
+		linkedJGraph = graph.isDirected()
 				? new DefaultDirectedGraph(SupplierUtil.createStringSupplier(),
 						SupplierUtil.createDefaultWeightedEdgeSupplier(), true)
 				: new DefaultUndirectedGraph(SupplierUtil.createStringSupplier(),
 						SupplierUtil.createDefaultWeightedEdgeSupplier(), true);
 		for (Object v : graph.getVertices()) { linkedJGraph.addVertex(v.toString()); }
-		for (Object e : graph.getEdges()) {
+		for (E e : graph.getEdges()) {
 			String s = graph.getEdgeSource(e).toString();
 			String t = graph.getEdgeTarget(e).toString();
 			if (s.equals(t)) { continue; }

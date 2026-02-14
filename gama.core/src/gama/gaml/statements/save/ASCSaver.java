@@ -18,6 +18,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
+import gama.api.data.objects.IField;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.species.ISpecies;
@@ -26,7 +27,6 @@ import gama.api.utils.StringUtils;
 import gama.api.utils.files.SaveOptions;
 import gama.core.topology.gis.ProjectionFactory;
 import gama.core.topology.grid.GridPopulation;
-import gama.core.util.matrix.GamaField;
 import gama.gaml.operators.Comparison;
 
 /**
@@ -96,7 +96,7 @@ public class ASCSaver extends AbstractSaver {
 	public void save(final IScope scope, final IExpression item, final Writer fw) throws IOException {
 		try (fw) {
 			Object v = item.value(scope);
-			if (v instanceof GamaField gf) {
+			if (v instanceof IField gf) {
 				saveField(scope, gf, fw);
 			} else {
 				final ISpecies species = Cast.asSpecies(scope, v);
@@ -166,13 +166,13 @@ public class ASCSaver extends AbstractSaver {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	private void saveField(final IScope scope, final GamaField field, final Writer fw) throws IOException {
+	private void saveField(final IScope scope, final IField field, final Writer fw) throws IOException {
 
 		if (field == null || field.isEmpty(scope)) return;
 
 		StringBuilder theHeader = new StringBuilder();
-		final int nbCols = field.numCols;
-		final int nbRows = field.numRows;
+		final int nbCols = field.getCols(scope);
+		final int nbRows = field.getRows(scope);
 		theHeader.append("ncols         ").append(nbCols).append(StringUtils.LN);
 		theHeader.append("nrows         ").append(nbRows).append(StringUtils.LN);
 		final boolean nullProjection = scope.getSimulation().getProjectionFactory().getWorld() == null;

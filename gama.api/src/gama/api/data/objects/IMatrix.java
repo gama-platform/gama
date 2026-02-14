@@ -9,6 +9,8 @@
  ********************************************************************************************************/
 package gama.api.data.objects;
 
+import org.eclipse.core.runtime.ISafeRunnable;
+
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.getter;
@@ -28,6 +30,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.IFieldMatrixProvider;
+import gama.api.utils.ISafeConsumer;
 import gama.api.utils.random.IRandom;
 import one.util.streamex.StreamEx;
 
@@ -598,5 +601,48 @@ public interface IMatrix<T> extends IContainer.Modifiable<IPoint, T, IPoint, T>,
 		return Types.MATRIX.of(
 				GamaType.findCommonType(stream(scope).map(e -> GamaType.actualTypeOf(scope, e)).toArray(IType.class)));
 	}
+
+	/**
+	 * Does nothing in the default case
+	 *
+	 * @param scope
+	 * @param bprime
+	 * @return
+	 */
+	default IMatrix _opAppendVertically(final IScope scope, final IMatrix bprime) {
+		return this;
+	}
+
+	/**
+	 * @param scope
+	 * @return
+	 */
+	IMatrix _reverse(IScope scope);
+
+	/**
+	 * Gets the nth element.
+	 *
+	 * @param index
+	 *            the index
+	 * @return the nth element
+	 */
+	T getNthElement(Integer index);
+
+	/**
+	 * Row by row.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param forEachValue
+	 *            the for each value
+	 * @param afterEachValue
+	 *            the after each value
+	 * @param afterEachRow
+	 *            the after each row
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	void rowByRow(final IScope scope, final ISafeConsumer<T> forEachValue, final ISafeRunnable afterEachValue,
+			final ISafeRunnable afterEachRow) throws GamaRuntimeException;
 
 }

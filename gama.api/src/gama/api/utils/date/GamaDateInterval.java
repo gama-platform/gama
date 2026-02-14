@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.date;
+package gama.api.utils.date;
 
 import java.time.DateTimeException;
 import java.time.Duration;
@@ -30,11 +30,11 @@ import gama.api.data.objects.IMap;
 import gama.api.data.objects.IMatrix;
 import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.GamaDateType;
 import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.gaml.operators.Dates;
 
 /**
  * An immutable interval of time between two instants.
@@ -89,7 +89,7 @@ public final class GamaDateInterval implements IList<IDate> {
 	 */
 	private GamaDateInterval(final IDate startInclusive, final IDate endExclusive) {
 		this(startInclusive, endExclusive,
-				Duration.of(Dates.DATES_TIME_STEP.getValue().longValue(), ChronoUnit.SECONDS));
+				Duration.of(GamaDateType.DATES_TIME_STEP.getValue().longValue(), ChronoUnit.SECONDS));
 	}
 
 	/**
@@ -524,7 +524,7 @@ public final class GamaDateInterval implements IList<IDate> {
 	}
 
 	@Override
-	public IMatrix<IDate> matrixValue(final IScope scope, final IType contentType, final IPoint  size,
+	public IMatrix<IDate> matrixValue(final IScope scope, final IType contentType, final IPoint size,
 			final boolean copy) {
 		return GamaListFactory.wrap(Types.DATE, this).matrixValue(scope, contentType, copy);
 	}

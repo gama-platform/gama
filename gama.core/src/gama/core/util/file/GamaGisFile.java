@@ -47,7 +47,6 @@ import gama.api.ui.IProgressIndicator;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.core.geometry.GamaGisGeometry;
-import gama.core.geometry.GamaShape;
 import gama.core.topology.gis.GamaCRS;
 import gama.core.topology.gis.ProjectionFactory;
 
@@ -167,7 +166,7 @@ public abstract class GamaGisFile extends GamaGeometryFile {
 						g.geometryChanged();
 					}
 					g = multiPolygonManagement(g);
-					GamaShape gt = new GamaGisGeometry(g, feature);
+					IShape gt = new GamaGisGeometry(g, feature);
 					if (gt.getInnerGeometry() != null) { getBuffer().add(gt); }
 				} else if (g == null) {
 					// See Issue 725

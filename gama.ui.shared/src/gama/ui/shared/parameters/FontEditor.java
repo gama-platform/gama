@@ -16,10 +16,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FontDialog;
 
+import gama.api.data.factories.GamaFontFactory;
 import gama.api.data.objects.IFont;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.kernel.agent.IAgent;
-import gama.core.util.GamaFont;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.resources.GamaFonts;
@@ -78,7 +78,7 @@ public class FontEditor extends AbstractEditor<IFont> {
 	 * @return the gama font
 	 */
 	private IFont toGamaFont(final FontData fd) {
-		return new GamaFont(fd.getName(), fd.getStyle(), fd.getHeight());
+		return GamaFontFactory.createFont(fd.getName(), fd.getStyle(), fd.getHeight());
 	}
 
 	@Override

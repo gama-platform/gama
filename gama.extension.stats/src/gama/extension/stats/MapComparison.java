@@ -30,6 +30,7 @@ import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IList;
+import gama.api.data.objects.IMatrix;
 import gama.api.data.objects.IPoint;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
@@ -38,7 +39,6 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.IAgentFilter;
 import gama.core.topology.filter.In;
-import gama.core.util.matrix.GamaMatrix;
 import gama.gaml.operators.Containers;
 
 //
@@ -306,7 +306,7 @@ public class MapComparison {
 	public static double fuzzyKappa(final IScope scope,
 			final IContainer.Addressable<Integer, IAgent, Integer, IAgent> agents, final IList<Object> vals1,
 			final IList<Object> vals2, final IList<Double> similarities, final IList<Object> categories,
-			final GamaMatrix<Double> fuzzycategories, final Double distance) {
+			final IMatrix<Double> fuzzycategories, final Double distance) {
 		return fuzzyKappa(scope, agents, vals1, vals2, similarities, categories, fuzzycategories, distance, null);
 	}
 
@@ -347,7 +347,7 @@ public class MapComparison {
 	public static double fuzzyKappa(final IScope scope,
 			final IContainer.Addressable<Integer, IAgent, Integer, IAgent> agents, final IList<Object> vals1,
 			final IList<Object> vals2, final IList<Double> similarities, final IList<Object> categories,
-			final GamaMatrix<Double> fuzzycategories, final Double distance, final IList<Object> weights) {
+			final IMatrix<Double> fuzzycategories, final Double distance, final IList<Object> weights) {
 		if (agents == null) return 1;
 		final int nb = agents.length(scope);
 		if (nb < 1) return 1;
@@ -414,7 +414,7 @@ public class MapComparison {
 	public static double fuzzyKappaSimulation(final IScope scope,
 			final IContainer.Addressable<Integer, IAgent, Integer, IAgent> agents, final IList<Object> valsInit,
 			final IList<Object> valsObs, final IList<Object> valsSim, final IList<Double> similarities,
-			final IList<Object> categories, final GamaMatrix<Double> fuzzytransitions, final Double distance) {
+			final IList<Object> categories, final IMatrix<Double> fuzzytransitions, final Double distance) {
 		return fuzzyKappaSimulation(scope, agents, valsInit, valsObs, valsSim, similarities, categories,
 				fuzzytransitions, distance, null);
 
@@ -459,7 +459,7 @@ public class MapComparison {
 	public static double fuzzyKappaSimulation(final IScope scope,
 			final IContainer.Addressable<Integer, IAgent, Integer, IAgent> agents, final IList<Object> valsInit,
 			final IList<Object> valsObs, final IList<Object> valsSim, final IList<Double> similarities,
-			final IList<Object> categories, final GamaMatrix<Double> fuzzytransitions, final Double distance,
+			final IList<Object> categories, final IMatrix<Double> fuzzytransitions, final Double distance,
 			final IList<Object> weights) {
 		if (agents == null) return 1;
 		final int nb = agents.length(scope);
@@ -559,7 +559,7 @@ public class MapComparison {
 	 * @return the double
 	 */
 	private static double computePo(final IScope scope, final IAgentFilter filter,
-			final Map<Object, Integer> categoriesId, final GamaMatrix<Double> fuzzytransitions, final Double distance,
+			final Map<Object, Integer> categoriesId, final IMatrix<Double> fuzzytransitions, final Double distance,
 			final IList<Object> valsInit, final IList<Object> valsObs, final IList<Object> valsSim,
 			final IContainer.Addressable<Integer, IAgent, Integer, IAgent> agents, final int nbCat, final int nb,
 			final IList<Double> similarities, final IList<Object> weights) {
@@ -627,7 +627,7 @@ public class MapComparison {
 	 */
 	private static double[] computeXaXs(final IScope scope, final IAgentFilter filter,
 			final Map<Object, Integer> categoriesId, final Map<IAgent, Integer> agsId, final int valObsId,
-			final int valSimId, final int valInitId, final GamaMatrix<Double> fuzzytransitions, final Double distance,
+			final int valSimId, final int valInitId, final IMatrix<Double> fuzzytransitions, final Double distance,
 			final IAgent agent, final IList<Object> valsInit, final IList<Object> valsObs, final IList<Object> valsSim,
 			final IContainer.ToGet<Integer, IAgent> agents, final int nbCat) {
 		double xa = 0.0;
@@ -685,8 +685,8 @@ public class MapComparison {
 	 *            the to 2
 	 * @return the double
 	 */
-	private static double fuzzyTransition(final IScope scope, final GamaMatrix<Double> fuzzytransitions,
-			final int nbCat, final int from1, final int to1, final int from2, final int to2) {
+	private static double fuzzyTransition(final IScope scope, final IMatrix<Double> fuzzytransitions, final int nbCat,
+			final int from1, final int to1, final int from2, final int to2) {
 		return fuzzytransitions.get(scope, from1 + nbCat * to1, from2 + nbCat * to2);
 	}
 
@@ -714,7 +714,7 @@ public class MapComparison {
 	 */
 	@SuppressWarnings ("unchecked")
 	private static void computeXaXsTransitions(final IScope scope, final IAgentFilter filter,
-			final GamaMatrix<Double> fuzzytransitions, final Double distance, final IContainer<Integer, IAgent> agents,
+			final IMatrix<Double> fuzzytransitions, final Double distance, final IContainer<Integer, IAgent> agents,
 			final int nbCat, final Map<List<Integer>, Map<Double, Double>> XaPerTransition,
 			final Map<List<Integer>, Map<Double, Double>> XsPerTransition, final Set<Double> Xvals) {
 
@@ -982,7 +982,7 @@ public class MapComparison {
 	 */
 	private static void computeXYCrispVector(final IScope scope, final Map<Object, Integer> categoriesId,
 			final List<Object> categories, final IList<Object> vals1, final IList<Object> vals2,
-			final GamaMatrix<Double> fuzzycategories, final int nbCat, final int nb, final double[][] crispVector1,
+			final IMatrix<Double> fuzzycategories, final int nbCat, final int nb, final double[][] crispVector1,
 			final double[][] crispVector2, final double[] X, final double[] Y, final boolean[] sim,
 			final IList<Object> weights) {
 		for (int j = 0; j < nbCat; j++) {

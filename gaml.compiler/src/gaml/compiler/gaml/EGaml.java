@@ -598,7 +598,8 @@ public class EGaml {
 			case UnitName u -> {
 				serializer.append(getKeyOf(u));
 			}
-			default -> throw new IllegalArgumentException("Unexpected value: " + expr);
+			default -> {
+			}
 
 		}
 	}

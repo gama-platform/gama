@@ -33,7 +33,7 @@ import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
-import gama.api.gaml.types.IContainerType;
+import gama.api.gaml.types.GamaFieldType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
@@ -384,7 +384,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	}
 
 	@Override
-	public GamaField copy(final IScope scope, final IPoint size, final boolean copy) {
+	public IField copy(final IScope scope, final IPoint size, final boolean copy) {
 		if (size == null) {
 			if (!copy) return this;
 			GamaField result =
@@ -419,13 +419,15 @@ public class GamaField extends GamaFloatMatrix implements IField {
 					value = "Adds a matrix or a field to the left field"))
 	@Override
 	@no_test
-	public GamaField plus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
+	public IField plus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		switch (other) {
-			case GamaField gf -> {
-				double otherNoDataValue = gf.noDataValue;
+			case IField gf -> {
+				double otherNoDataValue = gf.getNoData(scope);
 				for (int i = 0; i < matrix.length; i++) {
-					if (matrix[i] != noDataValue && gf.matrix[i] != otherNoDataValue) { matrix[i] += gf.matrix[i]; }
+					if (matrix[i] != noDataValue && gf.getMatrix()[i] != otherNoDataValue) {
+						matrix[i] += gf.getMatrix()[i];
+					}
 				}
 			}
 			case GamaFloatMatrix nm -> {
@@ -451,13 +453,15 @@ public class GamaField extends GamaFloatMatrix implements IField {
 					value = "Subtracts a matrix or a field from the left field"))
 	@Override
 	@no_test
-	public GamaField minus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
+	public IField minus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		switch (other) {
-			case GamaField gf -> {
-				double otherNoDataValue = gf.noDataValue;
+			case IField gf -> {
+				double otherNoDataValue = gf.getNoData(scope);
 				for (int i = 0; i < matrix.length; i++) {
-					if (matrix[i] != noDataValue && gf.matrix[i] != otherNoDataValue) { matrix[i] -= gf.matrix[i]; }
+					if (matrix[i] != noDataValue && gf.getMatrix()[i] != otherNoDataValue) {
+						matrix[i] -= gf.getMatrix()[i];
+					}
 				}
 			}
 			case GamaFloatMatrix nm -> {
@@ -483,7 +487,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 					value = "Scales the values in the field by the float parameter"))
 	@Override
 	@no_test
-	public GamaField times(final Double val) throws GamaRuntimeException {
+	public IField times(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] *= val; } }
 		return this;
@@ -500,7 +504,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 					value = "Scales the values in the field by the int parameter"))
 	@Override
 	@no_test
-	public GamaField times(final Integer val) throws GamaRuntimeException {
+	public IField times(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] *= val; } }
 		return this;
@@ -517,7 +521,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 					value = "Scales the values in the field by 1 on the float parameter"))
 	@Override
 	@no_test
-	public GamaField divides(final Double val) throws GamaRuntimeException {
+	public IField divides(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] /= val; } }
 		return this;
@@ -534,7 +538,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 					value = "Scales the values in the field by 1 on the int parameter"))
 	@Override
 	@no_test
-	public GamaField divides(final Integer val) throws GamaRuntimeException {
+	public IField divides(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] /= val; } }
 		return this;
@@ -551,7 +555,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 					value = "Adds a float value to all the values in the field"))
 	@Override
 	@no_test
-	public GamaField plus(final Double val) throws GamaRuntimeException {
+	public IField plus(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += val; } }
 		return this;
@@ -568,7 +572,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 					value = "Adds an int value to all the values in the field"))
 	@Override
 	@no_test
-	public GamaField plus(final Integer val) throws GamaRuntimeException {
+	public IField plus(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += val; } }
 		return this;
@@ -585,7 +589,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 					value = "Subtracts a float value from all the values in the field"))
 	@Override
 	@no_test
-	public GamaField minus(final Double val) throws GamaRuntimeException {
+	public IField minus(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= val; } }
 		return this;
@@ -602,7 +606,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 					value = "Subtracts an int value from all the values in the field"))
 	@Override
 	@no_test
-	public GamaField minus(final Integer val) throws GamaRuntimeException {
+	public IField minus(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= val; } }
 		return this;
@@ -625,7 +629,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 					side_effects = "Does not modify the field but can return the same one. Use an explicit copy operation to prevent this",
 					value = "Flattens this field into a grayscale 1-band field. The bands if they exist are supposed to represent RGB components"))
 	@no_test
-	public GamaField flatten(final IScope scope) throws GamaRuntimeException {
+	public IField flatten(final IScope scope) throws GamaRuntimeException {
 		return flatten(scope, null);
 	}
 
@@ -648,7 +652,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 					side_effects = "Does not modify the field",
 					value = "Flattens this field into a 1-band field using the color computer passed in parameter (the same argument as the one used in mesh layers): a palette, a scale, a color. If this computer cannot be interpreted, defaults to flattening interpreting the bands as RGB components"))
 	@no_test
-	public GamaField flatten(final IScope scope, final Object computer) throws GamaRuntimeException {
+	public IField flatten(final IScope scope, final Object computer) throws GamaRuntimeException {
 		// if (bands.size() == 1) return this;
 		IMeshColorProvider provider =
 				computer instanceof IMeshColorProvider msp ? msp : MeshDrawingAttributes.computeColors(computer, true);
@@ -668,8 +672,32 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		return result;
 	}
 
-	@SuppressWarnings ("unchecked")
+	/**
+	 * Gets the gaml type.
+	 *
+	 * @return the gaml type
+	 */
 	@Override
-	public IContainerType getGamlType() { return Types.FIELD; }
+	public GamaFieldType getGamlType() { return Types.FIELD; }
+
+	@Override
+	public IField plus(final IScope scope, final IField other) throws GamaRuntimeException {
+		return super.plus(scope, other).getField(scope);
+	}
+
+	@Override
+	public IField times(final IScope scope, final IField other) throws GamaRuntimeException {
+		return super.times(scope, other).getField(scope);
+	}
+
+	@Override
+	public IField divides(final IScope scope, final IField other) throws GamaRuntimeException {
+		return super.divides(scope, other).getField(scope);
+	}
+
+	@Override
+	public IField minus(final IScope scope, final IField other) throws GamaRuntimeException {
+		return super.minus(scope, other).getField(scope);
+	}
 
 }

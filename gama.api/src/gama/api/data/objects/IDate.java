@@ -24,8 +24,8 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-
 
 /**
  *
@@ -431,5 +431,13 @@ public interface IDate extends IValue, Temporal, Comparable<IDate> {
 	 * @return
 	 */
 	IList<?> listValue(IScope scope, IType<?> contentsType);
+
+	/**
+	 * Gets the gaml type.
+	 *
+	 * @return the gaml type
+	 */
+	@Override
+	default IType<?> getGamlType() { return Types.DATE; }
 
 }

@@ -11,12 +11,22 @@ package gama.api.data.objects;
 
 import gama.annotations.doc;
 import gama.annotations.getter;
+import gama.annotations.operator;
 import gama.annotations.setter;
+import gama.annotations.test;
 import gama.annotations.variable;
 import gama.annotations.vars;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.GamaFieldType;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.IDiffusionTarget;
+import gama.api.utils.IImageProvider;
 
 /**
  * A matrix of doubles with additionnal attributes that can serve as a lightweight replacement for grids (holding only
@@ -45,7 +55,7 @@ import gama.api.utils.IDiffusionTarget;
 				type = IType.LIST,
 				of = IType.FIELD,
 				doc = @doc ("The list of bands that are optionnaly present in the field. The first band is the primary field itself, and each of these bands is a field w/o bands ")) })
-public interface IField extends IMatrix<Double>, IDiffusionTarget {
+public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvider {
 
 	/** The no no data. */
 	double NO_NO_DATA = Double.MAX_VALUE;
@@ -208,5 +218,264 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget {
 	 * @return the neighbors of
 	 */
 	IList<IPoint> getNeighborsOf(IScope scope, IPoint point);
+
+	/**
+	 * Gets the gaml type.
+	 *
+	 * @return the gaml type
+	 */
+	@Override
+	default GamaFieldType getGamlType() { return Types.FIELD; }
+
+	/**
+	 * Plus.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param other
+	 *            the other
+	 * @return the i matrix
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@operator (
+			value = IKeyword.PLUS,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX },
+			doc = @doc ("Returns a field containing the addition of  the elements of two fields in argument "))
+	@test ("field([[1,2],[3,4]]) + field([[1,2],[3,4]]) = field([[2,4],[6,8]])")
+	IField plus(IScope scope, IField other) throws GamaRuntimeException;
+
+	/**
+	 * Times.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param other
+	 *            the other
+	 * @return the i matrix
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@operator (
+			value = IKeyword.MULTIPLY,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX },
+			doc = @doc ("Multiplies the two field operands"))
+	@test ("field([[1,2],[3,4]]) * field([[1,2],[3,4]]) = field([[1,4],[9,16]]) ")
+	IField times(IScope scope, IField other) throws GamaRuntimeException;
+
+	/**
+	 * Divides.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param other
+	 *            the other
+	 * @return the i matrix
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@operator (
+			value = IKeyword.DIVIDE,
+			can_be_const = true,
+			content_type = IType.FLOAT,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX },
+			doc = @doc ("Divides the two field operands"))
+	@test ("field([[1,2],[3,4]]) / field([[1,2],[3,4]]) = field([[1,1],[1,1]])")
+	IField divides(IScope scope, IField other) throws GamaRuntimeException;
+
+	/**
+	 * Minus.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param other
+	 *            the other
+	 * @return the i matrix
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@operator (
+			value = IKeyword.MINUS,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = {},
+			doc = @doc ("Performs a subtraction between the two field operands"))
+	@test ("field([[1,2],[3,4]]) - field([[1,2],[3,4]]) = field([[0,0],[0,0]])")
+	IField minus(IScope scope, IField other) throws GamaRuntimeException;
+
+	/**
+	 * Times.
+	 *
+	 * @param val
+	 *            the val
+	 * @return the i matrix
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@Override
+	@operator (
+			value = IKeyword.MULTIPLY,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = {},
+			doc = @doc ("Performs a multiplication between the field operand and the float operand"))
+	@test ("field([[1,2],[3,4]]) * 2.5 = field([[2.5,5.0],[7.5,10]])")
+	IField times(Double val) throws GamaRuntimeException;
+
+	/**
+	 * Times.
+	 *
+	 * @param val
+	 *            the val
+	 * @return the i matrix
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@Override
+	@operator (
+			value = IKeyword.MULTIPLY,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = { IConcept.MATRIX },
+			doc = @doc ("Performs a multiplication between the two field operands"))
+	@test ("field([[1,2],[3,4]]) * 2 = field([[2,4],[6,8]])")
+	IField times(Integer val) throws GamaRuntimeException;
+
+	/**
+	 * Divides.
+	 *
+	 * @param val
+	 *            the val
+	 * @return the i matrix
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@Override
+	@operator (
+			value = IKeyword.DIVIDE,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = {},
+			doc = @doc ("Divides all the elements of the field operand by the float operand"))
+	@test ("field([[1,2],[3,4]]) / 2.5 = field([[0.4,0.8],[1.2,1.6]])")
+	IField divides(Double val) throws GamaRuntimeException;
+
+	/**
+	 * Divides.
+	 *
+	 * @param val
+	 *            the val
+	 * @return the i matrix
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@Override
+	@operator (
+			value = IKeyword.DIVIDE,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = {},
+			doc = @doc ("Divides all the elements of the field operand by the integer operand"))
+	@test ("field([[1,2],[3,4]]) / 2 = field([[0.5,1],[1.5,2]])")
+	IField divides(Integer val) throws GamaRuntimeException;
+
+	/**
+	 * Plus.
+	 *
+	 * @param val
+	 *            the val
+	 * @return the i matrix
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@Override
+	@operator (
+			value = IKeyword.PLUS,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = {},
+			doc = @doc ("Adds the float operand to all the elements in the field"))
+	@test ("field([[1,2],[3,4]]) + 22.5 = field([[23.5,24.5],[25.5,26.5]])")
+	IField plus(Double val) throws GamaRuntimeException;
+
+	/**
+	 * Plus.
+	 *
+	 * @param val
+	 *            the val
+	 * @return the i matrix
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@Override
+	@operator (
+			value = IKeyword.PLUS,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = {},
+			doc = @doc ("Adds the int operand to all the elements in the field"))
+	@test ("field([[1,2],[3,4]]) + 2 = field([[3,4],[5,6]])")
+	IField plus(Integer val) throws GamaRuntimeException;
+
+	/**
+	 * Minus.
+	 *
+	 * @param val
+	 *            the val
+	 * @return the i matrix
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@Override
+	@operator (
+			value = IKeyword.MINUS,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = {},
+			doc = @doc ("Subtracts the float operand from all the elements in the field"))
+	@test ("field([[1,2],[3,4]]) - 1.5 = field([[-0.5,0.5],[1.5,2.5]])")
+	IField minus(Double val) throws GamaRuntimeException;
+
+	/**
+	 * Minus.
+	 *
+	 * @param val
+	 *            the val
+	 * @return the i matrix
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@Override
+	@operator (
+			value = IKeyword.MINUS,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
+			category = { IOperatorCategory.MATRIX },
+			concept = {},
+			doc = @doc ("Subtracts the int operand from all the elements in the field"))
+	@test ("field([[1,2],[3,4]]) - 1 = field([[0,1],[2,3]])")
+	IField minus(Integer val) throws GamaRuntimeException;
+
+	/**
+	 * @param scope
+	 * @param colorProvider
+	 * @return
+	 */
+	IField flatten(IScope scope, Object computer);
 
 }

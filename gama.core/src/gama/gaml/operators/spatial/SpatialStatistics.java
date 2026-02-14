@@ -44,7 +44,6 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.IAgentFilter;
 import gama.api.utils.collections.Collector;
 import gama.core.topology.filter.In;
-import gama.core.util.matrix.GamaMatrix;
 import gama.gaml.operators.Containers;
 
 /**
@@ -381,12 +380,12 @@ public class SpatialStatistics {
 							test = false,
 							isExecutable = false) }) })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
-	public static double moranIndex(final IScope scope, final IList<Double> vals, final IMatrix<Double> mat) {
-		final GamaMatrix<Double> weightMatrix = (GamaMatrix<Double>) mat;
-		if (weightMatrix == null || weightMatrix.numCols != weightMatrix.numRows) throw GamaRuntimeException
-				.error("A squared weight matrix should be given for the moran index computation", scope);
+	public static double moranIndex(final IScope scope, final IList<Double> vals, final IMatrix<Double> weightMatrix) {
+		if (weightMatrix == null || weightMatrix.getCols(scope) != weightMatrix.getRows(scope))
+			throw GamaRuntimeException.error("A squared weight matrix should be given for the moran index computation",
+					scope);
 		final int N = vals.size();
-		if (N != weightMatrix.numRows) throw GamaRuntimeException
+		if (N != weightMatrix.getRows(scope)) throw GamaRuntimeException
 				.error("The lengths of the value list and of the weight matrix do not match", scope);
 		double I = 0.0;
 		double sumWeights = 0.0;

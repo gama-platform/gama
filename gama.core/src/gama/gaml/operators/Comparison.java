@@ -9,18 +9,12 @@
  ********************************************************************************************************/
 package gama.gaml.operators;
 
+import static gama.api.constants.IKeyword.EQUALS;
 import static org.locationtech.jts.index.quadtree.IntervalSize.isZeroWidth;
 
 import org.eclipse.emf.ecore.EObject;
 import org.locationtech.jts.index.quadtree.IntervalSize;
 
-import gama.api.annotations.validator;
-import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.validation.IOperatorValidator;
-import gama.api.constants.IGamlIssue;
-import gama.api.data.objects.IPoint;
-import gama.api.gaml.expressions.IExpression;
-import gama.api.gaml.types.IType;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.operator;
@@ -28,6 +22,13 @@ import gama.annotations.test;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.validation.IOperatorValidator;
+import gama.api.constants.IGamlIssue;
+import gama.api.data.objects.IPoint;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.IType;
 
 /**
  * Written by drogoul Modified on 10 dec. 2010
@@ -153,7 +154,7 @@ public class Comparison {
 			examples = @example (
 					value = "13.0 > 7.0",
 					equals = "true"),
-			see = { LT, GTE, LTE, "=", "!=" })
+			see = { LT, GTE, LTE, EQUALS, "!=" })
 	@test (
 			value = "bool val <- (3 > 17); val = false ")
 	@test (
@@ -256,7 +257,7 @@ public class Comparison {
 			examples = { @example (
 					value = "3 < 7",
 					equals = "true") },
-			see = { GT, GTE, LTE, "=", "!=" })
+			see = { GT, GTE, LTE, EQUALS, "!=" })
 	public static Boolean less(final Integer a, final Integer b) {
 		if (a == null || b == null) return false;
 		return a < b;
@@ -355,7 +356,7 @@ public class Comparison {
 			examples = { @example (
 					value = "3 >= 7",
 					equals = "false") },
-			see = { GT, LT, LTE, "=", "!=" })
+			see = { GT, LT, LTE, EQUALS, "!=" })
 	public static Boolean greaterOrEqual(final Integer a, final Integer b) {
 		if (a == null || b == null) return false;
 		return a >= b;
@@ -478,7 +479,7 @@ public class Comparison {
 			examples = { @example (
 					value = "3 <= 2.5",
 					equals = "false") },
-			see = { GT, LT, GTE, "=", "!=" })
+			see = { GT, LT, GTE, EQUALS, "!=" })
 	public static Boolean lessOrEqual(final Integer a, final Double b) {
 		if (a == null || b == null) return false;
 		return a <= b;
@@ -542,7 +543,7 @@ public class Comparison {
 	 * @return the boolean
 	 */
 	@operator (
-			value = { "=" },
+			value = { EQUALS },
 			can_be_const = true,
 			category = { IOperatorCategory.COMPARISON },
 			concept = { IConcept.COMPARISON })
@@ -568,7 +569,7 @@ public class Comparison {
 	 * @return the boolean
 	 */
 	@operator (
-			value = { "=" },
+			value = { EQUALS },
 			can_be_const = true,
 			category = { IOperatorCategory.COMPARISON },
 			concept = {})
@@ -594,7 +595,7 @@ public class Comparison {
 	 * @return the boolean
 	 */
 	@operator (
-			value = { "=" },
+			value = { EQUALS },
 			can_be_const = true,
 			category = { IOperatorCategory.COMPARISON },
 			concept = {})
@@ -622,7 +623,7 @@ public class Comparison {
 	 * @return the boolean
 	 */
 	@operator (
-			value = { "=" },
+			value = { EQUALS },
 			can_be_const = true,
 			category = { IOperatorCategory.COMPARISON },
 			concept = {})
@@ -660,7 +661,7 @@ public class Comparison {
 					@example (
 							value = "4.0 != 4.7",
 							equals = "true") },
-			see = { "=", GT, LT, GTE, LTE, "=" })
+			see = { EQUALS, GT, LT, GTE, LTE })
 	public static Boolean different(final Double a, final Double b) {
 		if (a == null) return b != null;
 		if (b == null) return false;
@@ -691,7 +692,7 @@ public class Comparison {
 					@example (
 							value = "4 != 5",
 							equals = "true") },
-			see = { "=", GT, LT, GTE, LTE, "=" })
+			see = { EQUALS, GT, LT, GTE, LTE })
 	public static Boolean different(final Integer a, final Integer b) {
 		if (a == null) return b != null;
 		if (b == null) return false;
@@ -720,7 +721,7 @@ public class Comparison {
 					@example (
 							value = "4 != 4.7",
 							equals = "true") },
-			see = { "=" })
+			see = { EQUALS })
 	public static Boolean different(final Integer a, final Double b) {
 		return a == null ? b == null : !isZeroWidth(a.doubleValue(), b);
 		// return !(a < b) && !(a > b);
@@ -748,7 +749,7 @@ public class Comparison {
 					@example (
 							value = "4.7 != 4",
 							equals = "true") },
-			see = { "=" })
+			see = { EQUALS })
 	public static Boolean different(final Double a, final Integer b) {
 		return a == null ? b == null : !isZeroWidth(a, b.doubleValue());
 	}
@@ -874,7 +875,7 @@ public class Comparison {
 	 * @return the boolean
 	 */
 	@operator (
-			value = { "=" },
+			value = { EQUALS },
 			can_be_const = true,
 			category = { IOperatorCategory.COMPARISON },
 			concept = {})

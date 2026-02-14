@@ -284,7 +284,6 @@ Export-Package: gama.core,
    gama.core.util.file.json,
    gama.core.runtime",
  gama.core.util.color,
- gama.core.util.date,
  gama.core.util.file;
   uses:="gama.dependencies.kabeja.dxf,
    org.geotools.data,

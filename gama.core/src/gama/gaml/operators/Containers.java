@@ -2069,12 +2069,10 @@ public class Containers {
 			IType contentType = arguments[0].getGamlType().getContentType();
 			if (contentType != Types.NO_TYPE && !valueType.isTranslatableInto(contentType)
 					&& !Types.isEmptyContainerCase(contentType, item)) {
-				StringBuilder message =
-						new StringBuilder("The type of the elements of ").append(list.serializeToGaml(false))
-								.append(" (").append(contentType).append(") does not match with the type of the ");
-				message.append("argument");
-				message.append(" (").append(valueType).append("). ");
-				message.append("The argument will be casted to ").append(contentType).append(". ");
+				StringBuilder message = new StringBuilder("The contents type of ").append(list.serializeToGaml(false))
+						.append(" (").append(contentType).append(") does not match with the type of the argument");
+				message.append(" (").append(valueType).append("), which will be casted to ").append(contentType)
+						.append(". ");
 				context.warning(message.toString(), IGamlIssue.WRONG_TYPE, emfContext);
 			}
 			return true;
@@ -2600,12 +2598,7 @@ public class Containers {
 							value = "if the left-operand is a matrix, the elements will be traversed and filtered row by row.",
 							examples = { @example (
 									value = "matrix([1, 2, 3], [4, 5, 6]) where (each > 2)",
-									equals = "[4, 5, 3, 6]") }),
-					@usage (
-							value = "if the right-operand is not a bool, it will be casted into a bool. For numbers, 0 will be interpreted as false and the rest as true.",
-							examples = { @example (
-									value = "[-2.000001,-2,-1,0,0.0,1,2,3,4,5,6.5] select each",
-									equals = "[-2.000001,-2,-1,1,2,3,4,5,6.5]") }) },
+									equals = "[4, 5, 3, 6]") }) },
 			examples = { @example (
 					value = "[1,2,3,4,5,6,7,8] where (each > 3)",
 					equals = "[4, 5, 6, 7, 8] "),
@@ -2623,7 +2616,6 @@ public class Containers {
 			see = { "first_with", "last_with" })
 	@test ("[1,2,3,4,5,6,7,8] where (each > 3) = [4, 5, 6, 7, 8] ")
 	@test ("matrix([1, 2, 3], [4, 5, 6]) where (each > 2) = [4, 5, 3, 6] ")
-	@test ("[-2.000001,-2,-1,0,0.0,1,2,3,4,5,6.5] select each = [-2.000001,-2,-1,1,2,3,4,5,6.5]")
 	public static IList where(final IScope scope, final String eachName, final IContainer c, final IExpression filter) {
 		return (IList) stream(scope, c).filter(by(scope, eachName, filter)).toCollection(listLike(c));
 	}

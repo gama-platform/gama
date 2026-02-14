@@ -20,7 +20,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
-import gama.core.util.color.GamaColor;
+import gama.api.utils.color.GamaColor;
 import gama.dev.COUNTER;
 
 /**

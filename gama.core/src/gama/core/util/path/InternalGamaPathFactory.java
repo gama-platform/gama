@@ -13,8 +13,6 @@ package gama.core.util.path;
 import static gama.api.utils.geometry.GeometryUtils.getFirstPointOf;
 import static gama.api.utils.geometry.GeometryUtils.getLastPointOf;
 
-import java.util.List;
-
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.IPathFactory;
@@ -26,7 +24,6 @@ import gama.api.data.objects.IShape;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
-import gama.core.geometry.GamaShape;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.topology.graph.GraphTopology;
 
@@ -201,8 +198,8 @@ public class InternalGamaPathFactory implements IPathFactory {
 	@Override
 	public IPath createFrom(final IScope scope, final IList<? extends IShape> edgesNodes, final boolean isEdges) {
 		if (isEdges) {
-			final GamaShape shapeS = (GamaShape) edgesNodes.get(0).getGeometry();
-			final GamaShape shapeT = (GamaShape) edgesNodes.get(edgesNodes.size() - 1).getGeometry();
+			final IShape shapeS = edgesNodes.get(0).getGeometry();
+			final IShape shapeT = edgesNodes.get(edgesNodes.size() - 1).getGeometry();
 			return new GamaSpatialPath(null, getFirstPointOf(shapeS), getLastPointOf(shapeT), edgesNodes, false);
 		}
 		return new GamaSpatialPath(edgesNodes);
@@ -221,17 +218,27 @@ public class InternalGamaPathFactory implements IPathFactory {
 	 *            the copy
 	 * @return the i path
 	 */
+	@Override
 	public IPath createFrom(final IScope scope, final Object obj, final Object param, final boolean copy) {
-		if (obj instanceof IPath p) return p;
-		if (obj instanceof IShape shape) return createFrom(scope, shape.getPoints(), false);
-		if (obj instanceof List) {
-			final List<IShape> list = GamaListFactory.create(Types.GEOMETRY);
-			boolean isEdges = true;
-			for (final Object p : (List) obj) {
-				list.add(GamaPointFactory.toPoint(scope, p));
-				if (isEdges && (!(p instanceof IShape) || !((IShape) p).isLine())) { isEdges = false; }
+		switch (obj) {
+			case IPath p -> {
+				return p;
 			}
-			return createFrom(scope, isEdges ? (IList<IShape>) obj : (IList<IShape>) list, isEdges);
+			case IShape shape -> {
+				return createFrom(scope, shape.getPoints(), false);
+			}
+			case IList ll -> {
+				final IList<IShape> lobj = ll;
+				final IList<IShape> list = GamaListFactory.create(Types.GEOMETRY);
+				boolean isEdges = true;
+				for (final Object p : ll) {
+					list.add(GamaPointFactory.toPoint(scope, p));
+					if (isEdges && (!(p instanceof IShape s) || !s.isLine())) { isEdges = false; }
+				}
+				return createFrom(scope, isEdges ? lobj : list, isEdges);
+			}
+			case null, default -> {
+			}
 		}
 		return null;
 	}

@@ -45,6 +45,7 @@ import gama.api.GAMA;
 import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
+import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -55,7 +56,6 @@ import gama.api.utils.files.IGamaFileMetaData;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.geometry.GamaGisGeometry;
-import gama.core.geometry.GamaShape;
 import gama.dev.DEBUG;
 
 /**
@@ -487,7 +487,7 @@ public class GamaShapeFile extends GamaGisFile {
 						g.geometryChanged();
 					}
 					g = multiPolygonManagement(g);
-					GamaShape gt = new GamaGisGeometry(g, feature);
+					IShape gt = new GamaGisGeometry(g, feature);
 					if (gt.getInnerGeometry() != null) { getBuffer().add(gt); }
 				} else if (g == null) {
 					// See Issue 725
@@ -504,7 +504,8 @@ public class GamaShapeFile extends GamaGisFile {
 				getBuffer().clear();
 				indexOfGeometry[0] = 0;
 				ShpFiles shp = new ShpFiles(getFile(scope).toURI().toURL());
-				try (ShapefileReader reader = new ShapefileReader(shp, false, false, GeometryUtils.getGeometryFactory())) {
+				try (ShapefileReader reader =
+						new ShapefileReader(shp, false, false, GeometryUtils.getGeometryFactory())) {
 					reader.setFlatGeometry(true);
 					while (reader.hasNext()) {
 						Record record = reader.nextRecord();
@@ -528,7 +529,7 @@ public class GamaShapeFile extends GamaGisFile {
 							g = multiPolygonManagement(g);
 
 							for (int i = 0; i < g.getNumGeometries(); i++) {
-								GamaShape gt = new GamaGisGeometry(g.getGeometryN(i), null);
+								IShape gt = new GamaGisGeometry(g.getGeometryN(i), null);
 								if (gt.getInnerGeometry() != null) { getBuffer().add(gt); }
 							}
 

@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * GamlFormatter.java, in gaml.compiler.gaml, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamlFormatter.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gaml.compiler.gaml.formatting;
 
@@ -19,14 +18,15 @@ import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
 import org.eclipse.xtext.parsetree.reconstr.ITokenStream;
 
+import gama.api.constants.IKeyword;
 import gaml.compiler.services.GamlGrammarAccess;
 import gaml.compiler.services.GamlGrammarAccess.BlockElements;
 
 /**
  * This class contains custom formatting description.
- * 
+ *
  * see : http://www.eclipse.org/Xtext/documentation/latest/xtext.html#formatting on how and when to use it
- * 
+ *
  * Also see {@link org.eclipse.xtext.xtext.XtextFormattingTokenSerializer} as an example
  */
 public class GamlFormatter extends AbstractDeclarativeFormatter {
@@ -34,25 +34,23 @@ public class GamlFormatter extends AbstractDeclarativeFormatter {
 	@Override
 	public ITokenStream createFormatterStream(final EObject context, final String indent, final ITokenStream out,
 			final boolean preserveWhitespaces) {
-		if (context == null || !context.eResource().getErrors().isEmpty()) {
-			// Fixes #2018
+		if (context == null || !context.eResource().getErrors().isEmpty()) // Fixes #2018
 			return out;
-		}
 		return super.createFormatterStream(context, indent, out, preserveWhitespaces);
 	}
 
 	/** The keywords 1 space around. */
-	static String[] keywords1SpaceAround =
-			new String[] { ">", "<", "=", "<<", ">>", "<-", "->", ">=", "<=", "+", "-", "/", "*" };
-	
+	static String[] keywords1SpaceAround = { ">", "<", IKeyword.EQUALS, "<<", ">>", "<-", "->", ">=", "<=",
+			IKeyword.PLUS, IKeyword.MINUS, IKeyword.DIVIDE, IKeyword.TIMES };
+
 	/** The keyword no space after. */
-	static String[] keywordNoSpaceAfter = new String[] { ".", "[", "(", "::", "°", "#", "!", "{" };
-	
+	static String[] keywordNoSpaceAfter = { ".", "[", "(", "::", "°", "#", "!", "{" };
+
 	/** The keyword no space before. */
-	static String[] keywordNoSpaceBefore = new String[] { "]", ".", ")", ",", ":", "::", "}" };
-	
+	static String[] keywordNoSpaceBefore = { "]", ".", ")", ",", ":", "::", "}" };
+
 	/** The keyword 1 space after. */
-	static String[] keyword1SpaceAfter = new String[] { ",", ":" };
+	static String[] keyword1SpaceAfter = { ",", ":" };
 
 	/**
 	 * @see org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter#configureFormatting(org.eclipse.xtext.formatting.impl.FormattingConfig)
@@ -72,9 +70,7 @@ public class GamlFormatter extends AbstractDeclarativeFormatter {
 
 		// Operators are surrounded by a space
 		for (final Keyword k : g.findKeywords(keywords1SpaceAround)) {
-			if (!handled.contains(k)) {
-				c.setSpace(" ").around(k);
-			}
+			if (!handled.contains(k)) { c.setSpace(" ").around(k); }
 		}
 		handled.add(g.getBlockAccess().getLeftCurlyBracketKeyword_1());
 		handled.add(g.getDisplayBlockAccess().getLeftCurlyBracketKeyword_1());
@@ -84,20 +80,14 @@ public class GamlFormatter extends AbstractDeclarativeFormatter {
 		handled.add(g.getS_EquationsAccess().getRightCurlyBracketKeyword_3_0_2());
 		// No space after these elements
 		for (final Keyword k : g.findKeywords(keywordNoSpaceAfter)) {
-			if (!handled.contains(k)) {
-				c.setNoSpace().after(k);
-			}
+			if (!handled.contains(k)) { c.setNoSpace().after(k); }
 		}
 		// No space before these ones
 		for (final Keyword k : g.findKeywords(keywordNoSpaceBefore)) {
-			if (!handled.contains(k)) {
-				c.setNoSpace().before(k);
-			}
+			if (!handled.contains(k)) { c.setNoSpace().before(k); }
 		}
 		// One space after these ones
-		for (final Keyword k : g.findKeywords(keyword1SpaceAfter)) {
-			c.setSpace(" ").after(k);
-		}
+		for (final Keyword k : g.findKeywords(keyword1SpaceAfter)) { c.setSpace(" ").after(k); }
 
 		// Parameters of operators/actions and access should be handled with no
 		// space before
@@ -165,8 +155,10 @@ public class GamlFormatter extends AbstractDeclarativeFormatter {
 	/**
 	 * Handle block opening.
 	 *
-	 * @param c the c
-	 * @param opening the opening
+	 * @param c
+	 *            the c
+	 * @param opening
+	 *            the opening
 	 */
 	private void handleBlockOpening(final FormattingConfig c, final Keyword opening) {
 		// c.setLinewrap().before(opening);
@@ -177,9 +169,12 @@ public class GamlFormatter extends AbstractDeclarativeFormatter {
 	/**
 	 * Handle block termination.
 	 *
-	 * @param c the c
-	 * @param closing the closing
-	 * @param lineWrapAfter the line wrap after
+	 * @param c
+	 *            the c
+	 * @param closing
+	 *            the closing
+	 * @param lineWrapAfter
+	 *            the line wrap after
 	 */
 	private void handleBlockTermination(final FormattingConfig c, final Keyword closing, final int lineWrapAfter) {
 
@@ -191,15 +186,15 @@ public class GamlFormatter extends AbstractDeclarativeFormatter {
 	}
 
 	@Override
-	public GamlGrammarAccess getGrammarAccess() {
-		return (GamlGrammarAccess) super.getGrammarAccess();
-	}
+	public GamlGrammarAccess getGrammarAccess() { return (GamlGrammarAccess) super.getGrammarAccess(); }
 
 	/**
 	 * Handle comments.
 	 *
-	 * @param c the c
-	 * @param f the f
+	 * @param c
+	 *            the c
+	 * @param f
+	 *            the f
 	 */
 	private void handleComments(final FormattingConfig c, final GamlGrammarAccess f) {
 		c.setLinewrap(0, 1, 2).before(f.getSL_COMMENTRule());

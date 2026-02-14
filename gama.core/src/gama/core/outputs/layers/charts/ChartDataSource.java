@@ -27,7 +27,6 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.displays.IChartDataSource;
-import gama.core.util.matrix.GamaMatrix;
 
 /**
  * The Class ChartDataSource.
@@ -228,6 +227,7 @@ public class ChartDataSource implements IChartDataSource {
 	 * @param isBoxAndWhiskerData
 	 *            the new checks if is box and whisker data
 	 */
+	@Override
 	public void setisBoxAndWhiskerData(final boolean isBoxAndWhiskerData) {
 		this.isBoxAndWhiskerData = isBoxAndWhiskerData;
 	}
@@ -284,6 +284,7 @@ public class ChartDataSource implements IChartDataSource {
 	 * @param useXErrValues
 	 *            the new use X err values
 	 */
+	@Override
 	public void setUseXErrValues(final boolean useXErrValues) { this.useXErrValues = useXErrValues; }
 
 	/**
@@ -337,6 +338,7 @@ public class ChartDataSource implements IChartDataSource {
 	 * @param isCumulative
 	 *            the is cumulative
 	 */
+	@Override
 	public void setCumulative(final IScope scope, final boolean isCumulative) {
 		if (!forceCumulative) { this.isCumulative = isCumulative; }
 	}
@@ -356,6 +358,7 @@ public class ChartDataSource implements IChartDataSource {
 	 * @param isCumulative
 	 *            the is cumulative
 	 */
+	@Override
 	public void setCumulativeY(final IScope scope, final boolean isCumulative) {
 		if (!forceCumulativeY) { this.isCumulativeY = isCumulative; }
 		if (this.isCumulativeY) { this.getDataset().setForceNoYAccumulate(false); }
@@ -450,7 +453,7 @@ public class ChartDataSource implements IChartDataSource {
 		// final int type = this.DATA_TYPE_NULL;
 		if (o == null) return IChartDataSource.DATA_TYPE_NULL;
 		if (o instanceof IPoint) return IChartDataSource.DATA_TYPE_POINT;
-		if (o instanceof GamaMatrix) {
+		if (o instanceof IMatrix) {
 			final IMatrix l1value = GamaMatrixFactory.createFrom(scope, o);
 			if (l1value.length(scope) == 0) return IChartDataSource.DATA_TYPE_MATRIX_DOUBLE;
 			final Object o2 = l1value.get(scope, 0, 0);
@@ -1185,6 +1188,7 @@ public class ChartDataSource implements IChartDataSource {
 	 * @param b
 	 *            the b
 	 */
+	@Override
 	public void setUseSize(final IScope scope, final boolean b) {
 		this.setUseSize(b);
 	}

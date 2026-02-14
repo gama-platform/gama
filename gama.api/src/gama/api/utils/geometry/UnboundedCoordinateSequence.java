@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.geometry;
+package gama.api.utils.geometry;
 
 import static com.google.common.collect.Iterators.forArray;
 import static com.google.common.collect.Iterators.limit;
@@ -25,7 +25,6 @@ import gama.api.data.json.IJsonArray;
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IPoint;
-import gama.api.utils.geometry.Rotation3D;
 
 /**
  * The Class UnboundedCoordinateSequence.

@@ -15,9 +15,6 @@ import org.osgi.framework.BundleContext;
 import gama.api.GAMA;
 import gama.api.additions.GamaBundleLoader;
 import gama.api.additions.registries.AgentConstructorsRegistry;
-import gama.api.data.factories.GamaColorFactory;
-import gama.api.data.factories.GamaCoordinateSequenceFactory;
-import gama.api.data.factories.GamaDateFactory;
 import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaFontFactory;
 import gama.api.data.factories.GamaGraphFactory;
@@ -27,22 +24,17 @@ import gama.api.data.factories.GamaMatrixFactory;
 import gama.api.data.factories.GamaMessageFactory;
 import gama.api.data.factories.GamaPairFactory;
 import gama.api.data.factories.GamaPathFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.factories.GamaTopologyFactory;
 import gama.core.agent.GamlAgent;
 import gama.core.agent.MinimalAgent;
-import gama.core.geometry.InternalGamaCoordinateSequenceFactory;
 import gama.core.geometry.InternalGamaEnvelopeFactory;
-import gama.core.geometry.InternalGamaPointFactory;
 import gama.core.geometry.InternalGamaShapeFactory;
 import gama.core.topology.InternalTopologyFactory;
 import gama.core.topology.grid.GamlGridAgent;
 import gama.core.topology.grid.MinimalGridAgent;
 import gama.core.util.InternalGamaFontFactory;
 import gama.core.util.InternalGamaPairFactory;
-import gama.core.util.color.InternalGamaColorFactory;
-import gama.core.util.date.InternalGamaDateFactory;
 import gama.core.util.graph.InternalGamaGraphFactory;
 import gama.core.util.json.Json;
 import gama.core.util.list.InternalGamaListFactory;
@@ -52,6 +44,7 @@ import gama.core.util.messaging.GamaMessage;
 import gama.core.util.path.InternalGamaPathFactory;
 import gama.dependencies.GamaBundleActivator;
 import gama.dev.DEBUG;
+import gama.gaml.operators.Dates;
 
 /**
  * The CoreActivator is the main entry point for initializing the GAMA core platform bundle.
@@ -186,16 +179,18 @@ public class CoreActivator extends GamaBundleActivator {
 		GamaPairFactory.setBuilder(new InternalGamaPairFactory());
 
 		// Geometry and spatial factories
-		GamaPointFactory.setBuilder(new InternalGamaPointFactory());
-		GamaCoordinateSequenceFactory.setBuilder(new InternalGamaCoordinateSequenceFactory());
+		// GamaPointFactory.setBuilder(new InternalGamaPointFactory());
+		// GamaCoordinateSequenceFactory.setBuilder(new InternalGamaCoordinateSequenceFactory());
 		GamaEnvelopeFactory.setBuilder(new InternalGamaEnvelopeFactory());
 		GamaShapeFactory.setBuilder(new InternalGamaShapeFactory());
 		GamaTopologyFactory.setBuilder(new InternalTopologyFactory());
 		GamaPathFactory.setBuilder(new InternalGamaPathFactory());
 
 		// Utility type factories
-		GamaColorFactory.setBuilder(new InternalGamaColorFactory());
-		GamaDateFactory.setBuilder(new InternalGamaDateFactory());
+		// GamaColorFactory.setBuilder(new InternalGamaColorFactory());
+		// Only here to load the class and its preferences
+		Dates.initialize();
+		// GamaDateFactory.setBuilder(new InternalGamaDateFactory());
 		GamaFontFactory.setBuilder(new InternalGamaFontFactory());
 
 		// Graph and network factories

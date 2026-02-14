@@ -41,9 +41,9 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.IExperimentDisplayable;
 import gama.api.ui.IGui;
 import gama.api.ui.IItemList;
+import gama.api.utils.color.GamaColor;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.GamaPreferences;
-import gama.core.util.color.GamaColor;
 import gama.gaml.operators.Files;
 
 /**

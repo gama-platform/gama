@@ -40,7 +40,6 @@ import gama.api.utils.collections.ICollector;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.topology.AbstractTopology;
 import gama.core.topology.filter.In;
-import gama.core.util.path.GamaPath;
 
 /**
  * The class GraphTopology.
@@ -294,7 +293,7 @@ public class GraphTopology extends AbstractTopology {
 			if (edge != null && this.getPlaces().containsEdge(edge)
 					&& ref.getLocation().euclidianDistanceTo(edge) < 0.1)
 				return edge;
-			final IPath path = (GamaPath) ref.getAgent().getAttribute("current_path");
+			final IPath path = (IPath) ref.getAgent().getAttribute("current_path");
 			if (path != null && path.getTopology(scope) != null && this.equals(path.getTopology(scope))
 					&& ((IShape) path.getStartVertex()).getLocation().equals(ref.getLocation())) {
 				final int index = path.indexOf(ref.getAgent());

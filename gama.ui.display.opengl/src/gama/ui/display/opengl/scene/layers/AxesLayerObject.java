@@ -20,6 +20,7 @@ import static gama.api.utils.geometry.Scaling3D.of;
 import java.util.List;
 
 import gama.api.data.factories.GamaColorFactory;
+import gama.api.data.factories.GamaFontFactory;
 import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IColor;
@@ -29,8 +30,6 @@ import gama.api.data.objects.IShape;
 import gama.api.kernel.agent.IAgent;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.prefs.GamaPreferences;
-import gama.core.geometry.GamaShape;
-import gama.core.util.GamaFont;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 import gama.gaml.statements.draw.TextDrawingAttributes;
@@ -65,16 +64,16 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	protected final static IPoint ORIGIN = GamaPointFactory.create(0, 0, 0);
 
 	/** The Constant AXES_FONT. */
-	protected final static IFont AXES_FONT = new GamaFont("Helvetica", 0, 18);
+	protected final static IFont AXES_FONT = GamaFontFactory.createFont("Helvetica", 0, 18);
 
 	/** The arrow. */
-	final GamaShape arrow;
+	final IShape arrow;
 
 	/** The dirs. */
 	final IPoint[] dirs;
 
 	/** The axes. */
-	final GamaShape[] axes = new GamaShape[3];
+	final IShape[] axes = new IShape[3];
 
 	/**
 	 * Instantiates a new axes layer object.
@@ -87,12 +86,10 @@ public class AxesLayerObject extends StaticLayerObject.World {
 		// Addition to fix #2227
 		currentList.scale.setLocation(DEFAULT_SCALE);
 		final double max = renderer.getMaxEnvDim();
-		arrow = (GamaShape) GamaShapeFactory.buildCone3D(max / 20, max / 8, ORIGIN);
+		arrow = GamaShapeFactory.buildCone3D(max / 20, max / 8, ORIGIN);
 		dirs = new IPoint[] { GamaPointFactory.create(max / 2, 0, 0), GamaPointFactory.create(0, max / 2, 0),
 				GamaPointFactory.create(0, 0, max / 2) };
-		for (int i = 0; i < 3; i++) {
-			axes[i] = (GamaShape) GamaShapeFactory.buildLineCylinder(ORIGIN, dirs[i], max / 60);
-		}
+		for (int i = 0; i < 3; i++) { axes[i] = GamaShapeFactory.buildLineCylinder(ORIGIN, dirs[i], max / 60); }
 	}
 
 	@Override

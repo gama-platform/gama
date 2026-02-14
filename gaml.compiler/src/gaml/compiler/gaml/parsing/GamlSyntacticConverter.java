@@ -20,7 +20,7 @@ import static gama.api.constants.IKeyword.DISPLAY;
 import static gama.api.constants.IKeyword.ELSE;
 import static gama.api.constants.IKeyword.EQUATION;
 import static gama.api.constants.IKeyword.EQUATION_LEFT;
-import static gama.api.constants.IKeyword.EQUATION_OP;
+import static gama.api.constants.IKeyword.EQUALS;
 import static gama.api.constants.IKeyword.EQUATION_RIGHT;
 import static gama.api.constants.IKeyword.EXPERIMENT;
 import static gama.api.constants.IKeyword.FROM;
@@ -616,7 +616,7 @@ public class GamlSyntacticConverter {
 			keyword = processAdditiveAssignment(elt, expr, value, keyword);
 		} else if (keyword.startsWith(">>") || ">-".equals(keyword)) {
 			keyword = processRemovalAssignment(elt, expr, value, keyword);
-		} else if (EQUATION_OP.equals(keyword)) { processEquationAssignment(elt, expr, value); }
+		} else if (EQUALS.equals(keyword)) { processEquationAssignment(elt, expr, value); }
 		return keyword;
 	}
 

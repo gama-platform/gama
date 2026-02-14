@@ -17,9 +17,9 @@ import gama.annotations.getter;
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaMatrixFactory;
+import gama.api.data.factories.GamaPairFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
-import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
 import gama.api.data.objects.IMatrix;
@@ -92,18 +92,6 @@ public class GamaPair<K, V> implements IPair<K, V> {
 		type = Types.PAIR.of(keyType, contentsType);
 	}
 
-	/**
-	 * Equals.
-	 *
-	 * @param p
-	 *            the p
-	 * @return true, if successful
-	 */
-	public boolean equals(final GamaPair p) {
-		return Objects.equals(key, p.key) && Objects.equals(value, p.value);
-		// return key.equals(p.key) && value.equals(p.value);
-	}
-
 	@Override
 	public int hashCode() {
 		return hash(key, value);
@@ -112,7 +100,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	@Override
 	public boolean equals(final Object a) {
 		if (a == null) return false;
-		if (a instanceof IPair) return equals(a);
+		if (a instanceof IPair p) return Objects.equals(key, p.getKey()) && Objects.equals(value, p.getValue());
 		return false;
 	}
 
@@ -166,7 +154,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 
 	@Override
 	public IPair<K, V> copy(final IScope scope) {
-		return new GamaPair(key, value, type.getKeyType(), type.getContentType());
+		return GamaPairFactory.createWith(key, value, type.getKeyType(), type.getContentType());
 	}
 
 	@Override
@@ -188,7 +176,8 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method getFromIndicesList()
 	 *
-	 * @see gama.api.data.objects.IContainer#getFromIndicesList(gama.api.runtime.scope.IScope, gama.api.data.objects.IList)
+	 * @see gama.api.data.objects.IContainer#getFromIndicesList(gama.api.runtime.scope.IScope,
+	 *      gama.api.data.objects.IList)
 	 */
 	@Override
 	public Object getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
@@ -251,8 +240,8 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	 * @see gama.api.data.objects.IContainer#reverse(gama.api.runtime.scope.IScope)
 	 */
 	@Override
-	public IContainer reverse(final IScope scope) throws GamaRuntimeException {
-		return new GamaPair(value, key, type.getContentType(), type.getKeyType());
+	public IPair reverse(final IScope scope) throws GamaRuntimeException {
+		return GamaPairFactory.createWith(value, key, type.getContentType(), type.getKeyType());
 	}
 
 	/**

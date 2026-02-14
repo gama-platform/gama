@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.date;
+package gama.api.utils.date;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 import static java.time.temporal.ChronoField.DAY_OF_WEEK;
@@ -49,11 +49,10 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.constants.GamlCoreUnits;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaDateType;
 import gama.api.gaml.types.IType;
-import gama.api.gaml.types.Types;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
-import gama.gaml.operators.Dates;
 
 /**
  * The Class GamaDate. Immutable class that holds a date (based on JSR-310)
@@ -111,11 +110,10 @@ public class GamaDate implements IDate {
 		if (!d.isSupported(MINUTE_OF_HOUR)) {
 			internal = ZonedDateTime.of(LocalDate.from(d), LocalTime.of(0, 0), zone);
 		} else if (!d.isSupported(DAY_OF_MONTH)) {
-			internal =
-					ZonedDateTime.of(
-							LocalDate.from(scope == null || scope.getSimulation() == null
-									? Dates.DATES_STARTING_DATE.getValue() : scope.getSimulation().getStartingDate()),
-							LocalTime.from(d), zone);
+			internal = ZonedDateTime.of(
+					LocalDate.from(scope == null || scope.getSimulation() == null
+							? GamaDateType.DATES_STARTING_DATE.getValue() : scope.getSimulation().getStartingDate()),
+					LocalTime.from(d), zone);
 		} else {
 			internal = d;
 		}
@@ -160,7 +158,7 @@ public class GamaDate implements IDate {
 	 *            the locale
 	 */
 	GamaDate(final IScope scope, final String dateStr, final String pattern, final String locale) {
-		this(scope, parse(scope, dateStr, Dates.getFormatter(pattern, locale)));
+		this(scope, parse(scope, dateStr, GamaDateType.getFormatter(pattern, locale)));
 	}
 
 	/**
@@ -313,7 +311,7 @@ public class GamaDate implements IDate {
 	@Override
 	public double floatValue(final IScope scope) {
 		final ISimulationAgent sim = scope.getSimulation();
-		if (sim == null) return Dates.DATES_STARTING_DATE.getValue().until(this, ChronoUnit.SECONDS);
+		if (sim == null) return GamaDateType.DATES_STARTING_DATE.getValue().until(this, ChronoUnit.SECONDS);
 		return sim.getStartingDate().until(this, ChronoUnit.SECONDS);
 	}
 
@@ -395,9 +393,6 @@ public class GamaDate implements IDate {
 	public String stringValue(final IScope scope) {
 		return toString();
 	}
-
-	@Override
-	public IType<?> getGamlType() { return Types.DATE; }
 
 	@Override
 	public GamaDate copy(final IScope scope) throws GamaRuntimeException {
@@ -609,7 +604,7 @@ public class GamaDate implements IDate {
 	 */
 	@Override
 	public String toString(final String string, final String locale) {
-		return Dates.getFormatter(string, locale).format(this);
+		return GamaDateType.getFormatter(string, locale).format(this);
 	}
 
 	/**

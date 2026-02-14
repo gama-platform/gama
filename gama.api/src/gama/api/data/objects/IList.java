@@ -24,6 +24,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.GamaIntegerType;
 import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
@@ -567,5 +568,13 @@ public interface IList<E>
 		return Types.LIST.of(
 				GamaType.findCommonType(stream(scope).map(e -> GamaType.actualTypeOf(scope, e)).toArray(IType.class)));
 	}
+
+	/**
+	 * Gets the gaml type. Specialized in implementing classes with the contents type
+	 *
+	 * @return the gaml type
+	 */
+	@Override
+	default IContainerType<?> getGamlType() { return Types.LIST; }
 
 }

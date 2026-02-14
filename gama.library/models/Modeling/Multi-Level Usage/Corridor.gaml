@@ -140,7 +140,7 @@ experiment "Corridor" type: gui autorun: true {
 				draw square(30) wireframe: false color: #white;
 			}
 
-			species pedestrian {
+			species pedestrian { 
 				draw square(20) wireframe: false color: color;
 			}
 

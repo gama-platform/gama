@@ -150,7 +150,7 @@ import gaml.compiler.gaml.expression.UnaryOperator;
 										isExecutable = false) }),
 				@usage (
 						value = "If the simultaneously: facet is used, system of all the agents will be solved simultaneously.") },
-		see = { "=", IKeyword.SOLVE })
+		see = { IKeyword.EQUALS, IKeyword.SOLVE })
 // @validator (SystemOfEquationsValidator.class)
 
 @SuppressWarnings ({ "rawtypes", "unchecked" })

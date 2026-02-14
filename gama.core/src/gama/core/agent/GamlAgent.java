@@ -17,6 +17,7 @@ import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IContainer;
+import gama.api.data.objects.IGraph;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
 import gama.api.data.objects.IShape;
@@ -30,9 +31,7 @@ import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.collections.IGraphEventProvider;
 import gama.core.population.MetaPopulation;
-import gama.core.util.graph.GamaGraph;
 
 /**
  * The Class GamlAgent. Represents agents that can be manipulated in GAML. They are provided with everything their
@@ -254,10 +253,7 @@ public class GamlAgent extends MinimalAgent implements IMacroAgent {
 		for (final IPopulation pop : microPops) { pop.dispose(); }
 
 		final Object graph = getAttribute("attached_graph");
-		if (graph instanceof IGraphEventProvider) {
-			((GamaGraph) graph).disposeVertex(this);
-
-		}
+		if (graph instanceof IGraph g) { g.disposeVertex(this); }
 		super.dispose();
 	}
 

@@ -79,6 +79,23 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 		return null;
 	}
 
+	/**
+	 * Take two matrices (with the same number of columns) and create a big matrix putting the second matrix on the
+	 * right side of the first matrix
+	 *
+	 * @param two
+	 *            matrix to concatenate
+	 * @return the matrix concatenated
+	 */
+	@Override
+	public IMatrix _opAppendVertically(final IScope scope, final IMatrix b) {
+		if (b instanceof GamaIntMatrix gfm) {
+			final int[] mab = ArrayUtils.addAll(getMatrix(), gfm.getMatrix());
+			return new GamaIntMatrix(numCols, numRows + gfm.getRows(scope), mab);
+		}
+		return this;
+	}
+
 	/** The cell size. */
 	// In case the matrix represents a discretization of an environment
 	private double cellSize;
@@ -270,7 +287,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 *            matrix to concatenate
 	 * @return the matrix concatenated
 	 */
-	public GamaIntMatrix _opAppendVertically(final IScope scope, final GamaIntMatrix b) {
+	public IMatrix _opAppendVertically(final IScope scope, final GamaIntMatrix b) {
 		final int[] mab = ArrayUtils.addAll(getMatrix(), b.getMatrix());
 		return new GamaIntMatrix(numCols, numRows + b.getRows(scope), mab);
 	}
@@ -284,10 +301,10 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	 * @return the matrix concatenated
 	 */
 
-	public GamaIntMatrix _opAppendHorizontally(final IScope scope, final GamaIntMatrix b) {
-		final GamaIntMatrix aprime = _reverse(scope);
-		final GamaIntMatrix bprime = b._reverse(scope);
-		final GamaIntMatrix c = aprime._opAppendVertically(scope, bprime);
+	public IMatrix _opAppendHorizontally(final IScope scope, final IMatrix b) {
+		final IMatrix aprime = _reverse(scope);
+		final IMatrix bprime = b._reverse(scope);
+		final IMatrix c = aprime._opAppendVertically(scope, bprime);
 		return c._reverse(scope);
 	}
 
@@ -310,7 +327,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public GamaIntMatrix _reverse(final IScope scope) throws GamaRuntimeException {
+	public IMatrix _reverse(final IScope scope) throws GamaRuntimeException {
 		final GamaIntMatrix result = new GamaIntMatrix(numRows, numCols);
 		for (int i = 0; i < numCols; i++) {
 			for (int j = 0; j < numRows; j++) { result.set(scope, j, i, get(scope, i, j)); }
@@ -319,7 +336,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public GamaIntMatrix copy(final IScope scope, final IPoint preferredSize, final boolean copy) {
+	public IMatrix copy(final IScope scope, final IPoint preferredSize, final boolean copy) {
 		if (preferredSize != null) return new GamaIntMatrix((int) preferredSize.getX(), (int) preferredSize.getX(),
 				Arrays.copyOf(matrix, matrix.length));
 		if (copy) return new GamaIntMatrix(numCols, numRows, Arrays.copyOf(matrix, matrix.length));
@@ -466,7 +483,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public GamaIntMatrix plus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
+	public IMatrix plus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
 		final GamaIntMatrix matb = from(scope, other);
 		if (matb != null && this.numCols == matb.numCols && this.numRows == matb.numRows) {
 			final GamaIntMatrix nm = new GamaIntMatrix(this.numCols, this.numRows);
@@ -477,7 +494,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public GamaIntMatrix times(final IScope scope, final IMatrix other) throws GamaRuntimeException {
+	public IMatrix times(final IScope scope, final IMatrix other) throws GamaRuntimeException {
 		final GamaIntMatrix matb = from(scope, other);
 		if (matb != null && this.numCols == matb.numCols && this.numRows == matb.numRows) {
 			final GamaIntMatrix nm = new GamaIntMatrix(this.numCols, this.numRows);
@@ -488,7 +505,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public GamaIntMatrix minus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
+	public IMatrix minus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
 		final GamaIntMatrix matb = from(scope, other);
 		if (matb != null && this.numCols == matb.numCols && this.numRows == matb.numRows) {
 			final GamaIntMatrix nm = new GamaIntMatrix(this.numCols, this.numRows);
@@ -499,7 +516,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public GamaFloatMatrix times(final Double val) throws GamaRuntimeException {
+	public IMatrix times(final Double val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
 		for (int i = 0; i < matrix.length; i++) { mm[i] = matrix[i] * val; }
@@ -507,14 +524,14 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public GamaIntMatrix times(final Integer val) throws GamaRuntimeException {
+	public IMatrix times(final Integer val) throws GamaRuntimeException {
 		final GamaIntMatrix nm = new GamaIntMatrix(this.numCols, this.numRows);
 		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] * val; }
 		return nm;
 	}
 
 	@Override
-	public GamaFloatMatrix divides(final Double val) throws GamaRuntimeException {
+	public IMatrix divides(final Double val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
 		for (int i = 0; i < matrix.length; i++) { mm[i] = matrix[i] / val; }
@@ -522,7 +539,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public GamaFloatMatrix divides(final Integer val) throws GamaRuntimeException {
+	public IMatrix divides(final Integer val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
 		for (int i = 0; i < matrix.length; i++) { mm[i] = matrix[i] / (double) val; }
@@ -530,7 +547,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public GamaIntMatrix divides(final IScope scope, final IMatrix other) throws GamaRuntimeException {
+	public IMatrix divides(final IScope scope, final IMatrix other) throws GamaRuntimeException {
 		final GamaIntMatrix matb = from(scope, other);
 		if (matb != null && this.numCols == matb.numCols && this.numRows == matb.numRows) {
 			final GamaIntMatrix nm = new GamaIntMatrix(this.numCols, this.numRows);
@@ -541,7 +558,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public GamaFloatMatrix plus(final Double val) throws GamaRuntimeException {
+	public IMatrix plus(final Double val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
 		for (int i = 0; i < matrix.length; i++) { mm[i] = matrix[i] + val; }
@@ -549,14 +566,14 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public GamaIntMatrix plus(final Integer val) throws GamaRuntimeException {
+	public IMatrix plus(final Integer val) throws GamaRuntimeException {
 		final GamaIntMatrix nm = new GamaIntMatrix(this.numCols, this.numRows);
 		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] + val; }
 		return nm;
 	}
 
 	@Override
-	public GamaFloatMatrix minus(final Double val) throws GamaRuntimeException {
+	public IMatrix minus(final Double val) throws GamaRuntimeException {
 		final GamaFloatMatrix nm = new GamaFloatMatrix(this.numCols, this.numRows);
 		final double[] mm = nm.getMatrix();
 		for (int i = 0; i < matrix.length; i++) { mm[i] = matrix[i] - val; }
@@ -564,7 +581,7 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public GamaIntMatrix minus(final Integer val) throws GamaRuntimeException {
+	public IMatrix minus(final Integer val) throws GamaRuntimeException {
 		final GamaIntMatrix nm = new GamaIntMatrix(this.numCols, this.numRows);
 		for (int i = 0; i < matrix.length; i++) { nm.matrix[i] = matrix[i] - val; }
 		return nm;

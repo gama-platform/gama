@@ -1,12 +1,11 @@
 /*******************************************************************************************************
  *
- * AStar.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * AStar.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.core.topology.graph;
 
@@ -18,6 +17,7 @@ import java.util.Set;
 import gama.api.GAMA;
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
+import gama.api.data.objects.IGraph;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
@@ -25,37 +25,37 @@ import gama.api.gaml.types.Types;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections._Edge;
 import gama.api.utils.collections._Vertex;
-import gama.core.util.graph.GamaGraph;
 
 /**
  * The Class AStar.
  *
- * @param <V> the value type
- * @param <E> the element type
+ * @param <V>
+ *            the value type
+ * @param <E>
+ *            the element type
  */
 public class AStar<V, E> {
 
 	/** The graph. */
-	protected GamaGraph<V, E> graph;
-	
+	protected IGraph<V, E> graph;
+
 	/** The source. */
 	protected V source;
-	
+
 	/** The target. */
 	protected V target;
-	
+
 	/** The open map. */
 	protected Map<V, ASNode> openMap = GamaMapFactory.create();
-	
+
 	/** The closed map. */
 	protected Map<V, ASNode> closedMap = GamaMapFactory.create();
 
 	/** The result. */
 	protected List<E> result;
-	
+
 	/** The is spatial graph. */
 	protected boolean isSpatialGraph;
-	
 
 	/**
 	 * Instantiates a new a star.
@@ -65,20 +65,24 @@ public class AStar<V, E> {
 	/**
 	 * Instantiates a new a star.
 	 *
-	 * @param graph the graph
+	 * @param graph
+	 *            the graph
 	 */
-	public AStar(final GamaGraph<V, E> graph) {
+	public AStar(final IGraph<V, E> graph) {
 		init(graph);
 	}
 
 	/**
 	 * Instantiates a new a star.
 	 *
-	 * @param graph the graph
-	 * @param src the src
-	 * @param trg the trg
+	 * @param graph
+	 *            the graph
+	 * @param src
+	 *            the src
+	 * @param trg
+	 *            the trg
 	 */
-	public AStar(final GamaGraph<V, E> graph, final V src, final V trg) {
+	public AStar(final IGraph<V, E> graph, final V src, final V trg) {
 		this(graph);
 		setSource(src);
 		setTarget(trg);
@@ -87,7 +91,8 @@ public class AStar<V, E> {
 	/**
 	 * Sets the source.
 	 *
-	 * @param node the new source
+	 * @param node
+	 *            the new source
 	 */
 	public void setSource(final V node) {
 		cleanAll();
@@ -97,7 +102,8 @@ public class AStar<V, E> {
 	/**
 	 * Sets the target.
 	 *
-	 * @param node the new target
+	 * @param node
+	 *            the new target
 	 */
 	public void setTarget(final V node) {
 		cleanAll();
@@ -107,9 +113,10 @@ public class AStar<V, E> {
 	/**
 	 * Inits the.
 	 *
-	 * @param graph the graph
+	 * @param graph
+	 *            the graph
 	 */
-	public void init(final GamaGraph<V, E> graph) {
+	public void init(final IGraph<V, E> graph) {
 		cleanAll();
 		this.graph = graph;
 		isSpatialGraph = graph instanceof GamaSpatialGraph;
@@ -131,7 +138,8 @@ public class AStar<V, E> {
 	/**
 	 * Builds the path.
 	 *
-	 * @param target the target
+	 * @param target
+	 *            the target
 	 * @return the i list
 	 */
 	public IList<E> buildPath(final ASNode target) {
@@ -173,14 +181,15 @@ public class AStar<V, E> {
 	/**
 	 * A star.
 	 *
-	 * @param sourceNode the source node
-	 * @param targetNode the target node
+	 * @param sourceNode
+	 *            the source node
+	 * @param targetNode
+	 *            the target node
 	 */
 	@SuppressWarnings ("unchecked")
 	protected void aStar(final V sourceNode, final V targetNode) {
 		cleanAll();
 		openMap.put(sourceNode, new ASNode(sourceNode, null, null, 0, heuristic(sourceNode, targetNode)));
-
 
 		while (!openMap.isEmpty()) {
 			final ASNode current = getNextBetterNode();
@@ -216,8 +225,10 @@ public class AStar<V, E> {
 	/**
 	 * Heuristic.
 	 *
-	 * @param node1 the node 1
-	 * @param node2 the node 2
+	 * @param node1
+	 *            the node 1
+	 * @param node2
+	 *            the node 2
 	 * @return the double
 	 */
 	protected double heuristic(final Object node1, final Object node2) {
@@ -256,13 +267,13 @@ public class AStar<V, E> {
 
 		/** The node. */
 		public V node;
-		
+
 		/** The parent. */
 		public ASNode parent;
-		
+
 		/** The edge. */
 		public E edge;
-		
+
 		/** The g. */
 		public double g;
 		// public double h;
@@ -273,11 +284,16 @@ public class AStar<V, E> {
 		/**
 		 * Instantiates a new AS node.
 		 *
-		 * @param node the node
-		 * @param edge the edge
-		 * @param parent the parent
-		 * @param g the g
-		 * @param h the h
+		 * @param node
+		 *            the node
+		 * @param edge
+		 *            the edge
+		 * @param parent
+		 *            the parent
+		 * @param g
+		 *            the g
+		 * @param h
+		 *            the h
 		 */
 		public ASNode(final V node, final E edge, final ASNode parent, final double g, final double h) {
 			this.node = node;

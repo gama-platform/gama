@@ -19,6 +19,7 @@ import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
 import gama.api.GAMA;
 import gama.api.constants.IKeyword;
+import gama.api.data.objects.IField;
 import gama.api.data.objects.IMatrix;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
@@ -1366,6 +1367,31 @@ public class Maths {
 							value = "2 * matrix([[2,5],[3,4]])",
 							equals = "matrix([[4,10],[6,8]])") }) })
 	public static IMatrix opTimes(final Integer a, final IMatrix b) {
+		return b.times(a);
+	}
+
+	/**
+	 * Op times.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the i field
+	 */
+	@operator (
+			value = IKeyword.MULTIPLY,
+			can_be_const = true,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			category = { IOperatorCategory.ARITHMETIC },
+			concept = {})
+	@doc (
+			usages = { @usage (
+					value = "if one operand is a matrix and the other a number (float or int), performs a normal arithmetic product of the number with each element of the matrix (results are float if the number is a float.",
+					examples = { @example (
+							value = "2 * matrix([[2,5],[3,4]])",
+							equals = "matrix([[4,10],[6,8]])") }) })
+	public static IField opTimes(final Integer a, final IField b) {
 		return b.times(a);
 	}
 

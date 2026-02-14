@@ -14,7 +14,7 @@ import static gama.api.constants.IKeyword.DIF2;
 import static gama.api.constants.IKeyword.DIFF;
 import static gama.api.constants.IKeyword.EQUATION;
 import static gama.api.constants.IKeyword.EQUATION_LEFT;
-import static gama.api.constants.IKeyword.EQUATION_OP;
+import static gama.api.constants.IKeyword.EQUALS;
 import static gama.api.constants.IKeyword.EQUATION_RIGHT;
 import static gama.api.constants.IKeyword.SOLVE;
 import static gama.api.constants.IKeyword.ZERO;
@@ -69,7 +69,7 @@ import gaml.compiler.gaml.expression.AbstractNAryOperator;
  */
 
 @symbol (
-		name = { EQUATION_OP },
+		name = { EQUALS },
 		kind = ISymbolKind.SINGLE_STATEMENT,
 		with_sequence = false,
 		concept = { IConcept.EQUATION, IConcept.MATH })

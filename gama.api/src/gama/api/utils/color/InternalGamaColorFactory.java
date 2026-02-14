@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.color;
+package gama.api.utils.color;
 
 import java.awt.Color;
 

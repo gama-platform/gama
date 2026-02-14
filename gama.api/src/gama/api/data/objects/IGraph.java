@@ -11,6 +11,7 @@ package gama.api.data.objects;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jgrapht.Graph;
 
@@ -60,11 +61,13 @@ import gama.api.utils.collections._Vertex;
 				of = ITypeProvider.KEY_TYPE_AT_INDEX + 1,
 				doc = { @doc ("Returns the list of vertices of the receiver graph") }) })
 @SuppressWarnings ({ "rawtypes" })
-public interface IGraph<Node, Edge> extends IContainer.Modifiable<Node, Edge, IPair<Node, Node>, GraphObjectToAdd>,
-		IContainer.Addressable<Node, Edge, IPair<Node, Node>, List<Edge>>, Graph<Node, Edge>, IGraphEventProvider {
+public interface IGraph<Vertex, Edge>
+		extends IContainer.Modifiable<Vertex, Edge, IPair<Vertex, Vertex>, GraphObjectToAdd>,
+		IContainer.Addressable<Vertex, Edge, IPair<Vertex, Vertex>, List<Edge>>, Graph<Vertex, Edge>,
+		IGraphEventProvider {
 
-	/** The default node weight. */
-	double DEFAULT_NODE_WEIGHT = 0.0;
+	/** The default vertex weight. */
+	double DEFAULT_VERTEX_WEIGHT = 0.0;
 
 	/**
 	 * Gets the vertex weight.
@@ -116,7 +119,7 @@ public interface IGraph<Node, Edge> extends IContainer.Modifiable<Node, Edge, IP
 	 * @return the vertices
 	 */
 	@getter ("vertices")
-	IList<Node> getVertices();
+	IList<Vertex> getVertices();
 
 	/**
 	 * Gets the spanning tree.
@@ -136,7 +139,7 @@ public interface IGraph<Node, Edge> extends IContainer.Modifiable<Node, Edge, IP
 	 * @return the circuit
 	 */
 	@getter ("circuit")
-	IPath<Node, Edge, IGraph<Node, Edge>> getCircuit(IScope scope);
+	IPath<Vertex, Edge, IGraph<Vertex, Edge>> getCircuit(IScope scope);
 
 	/**
 	 * Gets the connected.
@@ -185,7 +188,7 @@ public interface IGraph<Node, Edge> extends IContainer.Modifiable<Node, Edge, IP
 	 *            the gama path
 	 * @return the double
 	 */
-	double computeWeight(final IPath<Node, Edge, ? extends IGraph<Node, Edge>> gamaPath);
+	double computeWeight(final IPath<Vertex, Edge, ? extends IGraph<Vertex, Edge>> gamaPath);
 
 	/**
 	 * Compute total weight.
@@ -225,7 +228,7 @@ public interface IGraph<Node, Edge> extends IContainer.Modifiable<Node, Edge, IP
 	 *            the object
 	 * @return the gama pair
 	 */
-	IPair<Node, Node> buildIndex(IScope scope, Object object);
+	IPair<Vertex, Vertex> buildIndex(IScope scope, Object object);
 
 	/**
 	 * Builds the indexes.
@@ -236,7 +239,7 @@ public interface IGraph<Node, Edge> extends IContainer.Modifiable<Node, Edge, IP
 	 *            the value
 	 * @return the i container
 	 */
-	IContainer<?, IPair<Node, Node>> buildIndexes(IScope scope, IContainer value);
+	IContainer<?, IPair<Vertex, Vertex>> buildIndexes(IScope scope, IContainer value);
 
 	/**
 	 * Gets the vertex species.
@@ -308,7 +311,7 @@ public interface IGraph<Node, Edge> extends IContainer.Modifiable<Node, Edge, IP
 	 *            the e
 	 * @return the edge
 	 */
-	_Edge<Node, Edge> getEdge(final Object e);
+	_Edge<Vertex, Edge> getEdge(final Object e);
 
 	/**
 	 * Gets the vertex.
@@ -317,20 +320,51 @@ public interface IGraph<Node, Edge> extends IContainer.Modifiable<Node, Edge, IP
 	 *            the v
 	 * @return the vertex
 	 */
-	_Vertex<Node, Edge> getVertex(final Object v);
+	_Vertex<Vertex, Edge> getVertex(final Object v);
 
 	/**
 	 * Gets the vertex map.
 	 *
 	 * @return the vertex map
 	 */
-	Map<Node, _Vertex<Node, Edge>> getVertexMap();
+	Map<Vertex, _Vertex<Vertex, Edge>> getVertexMap();
 
 	/**
 	 * Gets the edge map.
 	 *
 	 * @return the edge map
 	 */
-	Map<Edge, _Edge<Node, Edge>> getEdgeMap();
+	Map<Edge, _Edge<Vertex, Edge>> getEdgeMap();
+
+	/**
+	 * Disposes the vertex associated with the given node.
+	 *
+	 * @param node
+	 *            the node to dispose
+	 */
+	void disposeVertex(Vertex node);
+
+	/**
+	 * @param vn
+	 * @param vc
+	 * @return
+	 */
+	@Override
+	Set<Edge> getAllEdges(Vertex vn, Vertex vc);
+
+	/**
+	 * @param scope
+	 * @param source
+	 * @param target
+	 * @param p
+	 * @return
+	 */
+	IPath<Vertex, Edge, IGraph<Vertex, Edge>> pathFromEdges(IScope scope, Vertex source, Vertex target, IList<Edge> p);
+
+	/**
+	 * @param scope
+	 * @return
+	 */
+	IMatrix toMatrix(IScope scope);
 
 }

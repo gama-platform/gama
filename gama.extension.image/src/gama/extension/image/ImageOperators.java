@@ -51,7 +51,6 @@ import gama.api.ui.IOutput;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.utils.server.MessageType;
 import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.util.color.GamaColor;
 import gama.extension.image.ImageHelper.Mode;
 import gama.extension.image.ImageHelper.TransferableImage;
 
@@ -568,7 +567,7 @@ public class ImageOperators implements ImageConstants {
 	@operator ({ "tinted_with", "*" })
 	@doc ("Returns the image tinted using the color passed in parameter. This effectively multiplies the colors of the image by it. The original image is left untouched")
 	@no_test
-	public static GamaImage tint(final IScope scope, final GamaImage image, final GamaColor color) {
+	public static GamaImage tint(final IScope scope, final GamaImage image, final IColor color) {
 		GamaImage result = GamaImage.ofDimensions(image.getWidth(), image.getHeight(), Transparency.TRANSLUCENT);
 		Graphics2D graphics = result.createGraphics();
 		graphics.drawImage(image, 0, 0, null);

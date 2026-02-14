@@ -65,6 +65,7 @@ import gama.api.ui.IOutputManager;
 import gama.api.ui.IStatusMessage;
 import gama.api.utils.IReference;
 import gama.api.utils.SimulationLocal;
+import gama.api.utils.color.GamaColor;
 import gama.api.utils.files.BufferingUtils;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.random.IRandom;
@@ -75,7 +76,6 @@ import gama.core.outputs.SimulationOutputManager;
 import gama.core.topology.continuous.RootTopology;
 import gama.core.topology.gis.ProjectionFactory;
 import gama.core.topology.gis.WorldProjection;
-import gama.core.util.color.GamaColor;
 import gama.gaml.operators.spatial.SpatialTransformations;
 
 /**

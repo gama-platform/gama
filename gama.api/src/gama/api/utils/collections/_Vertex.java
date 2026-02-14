@@ -49,7 +49,7 @@ public class _Vertex<E, V> extends GraphObject<IGraph<E, V>, E, V> {
 	 * @param gamaGraph
 	 */
 	public _Vertex(final IGraph<E, V> gamaGraph) {
-		super(gamaGraph, IGraph.DEFAULT_NODE_WEIGHT);
+		super(gamaGraph, IGraph.DEFAULT_VERTEX_WEIGHT);
 	}
 
 	@Override

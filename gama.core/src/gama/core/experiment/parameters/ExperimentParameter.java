@@ -54,14 +54,14 @@ import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.symbols.Symbol;
 import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaDateType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.gaml.variables.Variable;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.date.GamaDateInterval;
 import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterValidator;
-import gama.core.util.date.GamaDateInterval;
-import gama.gaml.operators.Dates;
 
 /**
  * The Class ExperimentParameter.
@@ -672,8 +672,8 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 					yield GAMA.getRandom(scope).between(pMin, pMax, pStep);
 				}
 				case IType.DATE -> {
-					final double dStep =
-							stepValue == null ? Dates.DATES_TIME_STEP.getValue() : Cast.asFloat(scope, stepValue);
+					final double dStep = stepValue == null ? GamaDateType.DATES_TIME_STEP.getValue()
+							: Cast.asFloat(scope, stepValue);
 					final IDate dMin = minValue == null ? GamaDateFactory.createFromTemporal(LocalDateTime.now())
 							.minus(Integer.MAX_VALUE, ChronoUnit.SECONDS) : GamaDateFactory.toDate(scope, minValue);
 					final IDate dMax = maxValue == null ? GamaDateFactory.createFromTemporal(LocalDateTime.now())
@@ -757,8 +757,8 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 					}
 					break;
 				case IType.DATE:
-					final double dStep =
-							stepValue == null ? Dates.DATES_TIME_STEP.getValue() : Cast.asFloat(scope, stepValue);
+					final double dStep = stepValue == null ? GamaDateType.DATES_TIME_STEP.getValue()
+							: Cast.asFloat(scope, stepValue);
 					final IDate dMin = minValue == null ? GamaDateFactory.createFromTemporal(LocalDateTime.now())
 							.minus(Integer.MAX_VALUE, ChronoUnit.SECONDS) : GamaDateFactory.toDate(scope, minValue);
 					final IDate dMax = maxValue == null ? GamaDateFactory.createFromTemporal(LocalDateTime.now())

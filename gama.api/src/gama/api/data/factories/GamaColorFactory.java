@@ -23,6 +23,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.color.InternalGamaColorFactory;
 
 /**
  * A static factory for creating and managing {@link IColor} instances. This class serves as a central point for
@@ -40,7 +41,7 @@ public class GamaColorFactory implements IFactory<IColor> {
 	/**
 	 * The internal factory implementation used to create color instances.
 	 */
-	private static IColorFactory InternalFactory;
+	private static final IColorFactory InternalFactory = new InternalGamaColorFactory();
 
 	/**
 	 * Updates the internal factory builder and initializes default colors.
@@ -48,8 +49,7 @@ public class GamaColorFactory implements IFactory<IColor> {
 	 * @param builder
 	 *            the {@link IColorFactory} to be used as the internal builder.
 	 */
-	public static void setBuilder(final IColorFactory builder) {
-		InternalFactory = builder;
+	static {
 		for (int i = 0; i < ColorCSS.array.length; i += 2) {
 			String name = (String) ColorCSS.array[i];
 			int[] rgba = (int[]) ColorCSS.array[i + 1];

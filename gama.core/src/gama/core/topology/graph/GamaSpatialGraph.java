@@ -40,9 +40,9 @@ import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.collections.GraphEvent;
+import gama.api.utils.collections.GraphEvent.GraphEventType;
 import gama.api.utils.collections.VertexRelationship;
 import gama.api.utils.collections._Edge;
-import gama.api.utils.collections.GraphEvent.GraphEventType;
 import gama.core.util.graph.GamaGraph;
 import gama.dev.DEBUG;
 
@@ -168,7 +168,7 @@ public class GamaSpatialGraph extends GamaGraph<IShape, IShape> implements ISpat
 	}
 
 	@Override
-	protected IPath pathFromEdges(final IScope scope, final IShape source, final IShape target,
+	public IPath pathFromEdges(final IScope scope, final IShape source, final IShape target,
 			final IList<IShape> edges) {
 		return GamaPathFactory.createFrom(scope, getTopology(scope), source, target, edges);
 		// return new GamaPath(getTopology(), (IShape) source, (IShape) target,

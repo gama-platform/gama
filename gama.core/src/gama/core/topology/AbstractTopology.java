@@ -46,7 +46,6 @@ import gama.api.utils.IAgentFilter;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.ICollector;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.core.geometry.GamaShape;
 import gama.core.topology.continuous.RootTopology;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.spatial.SpatialPunctal;
@@ -376,8 +375,8 @@ public abstract class AbstractTopology implements ITopology {
 		if (p == null) return null;
 		final double z = p.getZ();
 		if (z < 0) return null;
-		if (((GamaShape) environment.getGeometry()).getDepth() != null) {
-			if (z > ((GamaShape) environment.getGeometry()).getDepth()) return null;
+		if (environment.getGeometry().getDepth() != null) {
+			if (z > environment.getGeometry().getDepth()) return null;
 			return point;
 		}
 		throw GamaRuntimeException.error("The environment must be a 3D environment (e.g shape <- cube(100)).", scope);

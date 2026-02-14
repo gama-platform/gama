@@ -35,9 +35,7 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.core.util.matrix.GamaFloatMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
-import gama.core.util.matrix.GamaObjectMatrix;
 
 /**
  * The Class MatrixOperators.
@@ -235,19 +233,7 @@ public class MatrixOperators {
 					value = "matrix([[1,2],[3,4]]) append_vertically matrix([[1,2],[3,4]])",
 					equals = "matrix([[1,2,1,2],[3,4,3,4]])") })
 	public static IMatrix opAppendVertically(final IScope scope, final IMatrix a, final IMatrix b) {
-		if (a instanceof GamaIntMatrix) {
-			if (b instanceof GamaIntMatrix) return ((GamaIntMatrix) a)._opAppendVertically(scope, (GamaIntMatrix) b);
-			if (b instanceof GamaFloatMatrix)
-				return GamaFloatMatrix.from(scope, b)._opAppendVertically(scope, (GamaFloatMatrix) b);
-		} else if (a instanceof GamaFloatMatrix) {
-			if (b instanceof GamaIntMatrix)
-				return ((GamaFloatMatrix) a)._opAppendVertically(scope, GamaFloatMatrix.from(scope, b));
-			if (b instanceof GamaFloatMatrix)
-				return ((GamaFloatMatrix) a)._opAppendVertically(scope, (GamaFloatMatrix) b);
-		}
-		if (a instanceof GamaObjectMatrix && b instanceof GamaObjectMatrix)
-			return ((GamaObjectMatrix) a)._opAppendVertically(scope, b);
-		return a;
+		return a._opAppendVertically(scope, b);
 	}
 
 	/**
@@ -269,19 +255,7 @@ public class MatrixOperators {
 			masterDoc = false)
 	@no_test
 	public static IMatrix opAppendHorizontally(final IScope scope, final IMatrix a, final IMatrix b) {
-		if (a instanceof GamaIntMatrix) {
-			if (b instanceof GamaIntMatrix) return ((GamaIntMatrix) a)._opAppendHorizontally(scope, (GamaIntMatrix) b);
-			if (b instanceof GamaFloatMatrix)
-				return GamaFloatMatrix.from(scope, a)._opAppendHorizontally(scope, (GamaFloatMatrix) b);
-		} else if (a instanceof GamaFloatMatrix) {
-			if (b instanceof GamaIntMatrix)
-				return ((GamaFloatMatrix) a)._opAppendHorizontally(scope, GamaFloatMatrix.from(scope, b));
-			if (b instanceof GamaFloatMatrix)
-				return GamaFloatMatrix.from(scope, a)._opAppendHorizontally(scope, (GamaFloatMatrix) b);
-		}
-		if (a instanceof GamaObjectMatrix && b instanceof GamaObjectMatrix)
-			return ((GamaObjectMatrix) a)._opAppendHorizontally(scope, b);
-		return a;
+		return a._opAppendVertically(scope, b);
 	}
 
 	/**
@@ -338,9 +312,8 @@ public class MatrixOperators {
 	 *            the m
 	 * @return the gama float matrix
 	 */
-	public static GamaFloatMatrix toGamaFloatMatrix(final RealMatrix m) {
-		GamaFloatMatrix result =
-				(GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(m.getColumnDimension(), m.getRowDimension());
+	public static IMatrix toGamaFloatMatrix(final RealMatrix m) {
+		IMatrix result = GamaMatrixFactory.createFloatMatrix(m.getColumnDimension(), m.getRowDimension());
 		updateMatrix(result, m);
 		return result;
 	}

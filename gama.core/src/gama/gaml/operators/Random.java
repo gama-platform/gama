@@ -36,7 +36,6 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.random.IRandom;
 import gama.api.utils.random.RandomUtils;
-import gama.core.util.matrix.GamaField;
 import one.util.streamex.IntStreamEx;
 
 /**
@@ -1092,7 +1091,7 @@ public class Random {
 		double scale = scattering <= 0 ? 0.0001 : scattering >= 1 ? 0.01 : scattering / 100d;
 		// details between 0 (1 octave) and 1 (10 octaves)
 		int octaves = details < 0.1 ? 1 : details >= 1 ? 10 : (int) (details * 10);
-		GamaField result = (GamaField) GamaMatrixFactory.createFieldWithSize(scope, width, height);
+		IField result = GamaMatrixFactory.createFieldWithSize(scope, width, height);
 		double[] totalNoise = result.getMatrix();
 		double layerWeight = 1d;
 		double weightSum = 0d;

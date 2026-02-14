@@ -20,6 +20,7 @@ import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.gce.geotiff.GeoTiffFormat;
 import org.geotools.geometry.Envelope2DArchived;
 
+import gama.api.data.objects.IField;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.species.ISpecies;
@@ -29,7 +30,6 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.SaveOptions;
 import gama.core.topology.gis.ProjectionFactory;
 import gama.core.topology.grid.GridPopulation;
-import gama.core.util.matrix.GamaField;
 
 /**
  * The Class GeoTiffSaver.
@@ -69,7 +69,7 @@ public class GeoTiffSaver extends AbstractSaver {
 
 		try {
 			Object v = item.value(scope);
-			if (v instanceof GamaField gf) {
+			if (v instanceof IField gf) {
 				saveField(scope, gf, f);
 			} else {
 				final ISpecies species = Cast.asSpecies(scope, v);
@@ -145,11 +145,11 @@ public class GeoTiffSaver extends AbstractSaver {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	private void saveField(final IScope scope, final GamaField field, final File f)
+	private void saveField(final IScope scope, final IField field, final File f)
 			throws IllegalArgumentException, IOException {
 		if (field.isEmpty(scope)) return;
-		final int cols = field.numCols;
-		final int rows = field.numRows;
+		final int cols = field.getCols(scope);
+		final int rows = field.getRows(scope);
 		IProjection worldProjection = scope.getSimulation().getProjectionFactory().getWorld();
 		double x = worldProjection == null ? 0 : worldProjection.getProjectedEnvelope().getMinX();
 		double y = worldProjection == null ? 0 : worldProjection.getProjectedEnvelope().getMinY();

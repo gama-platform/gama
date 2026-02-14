@@ -19,11 +19,11 @@ import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
 
 import gama.api.data.factories.GamaMessageFactory;
+import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
 import gama.api.data.objects.IMessage;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.core.util.list.GamaList;
 import gama.core.util.messaging.GamaMailbox;
 import gama.core.util.messaging.GamaMessage;
 import gama.core.util.messaging.MessagingSkill;
@@ -98,7 +98,7 @@ public class HTTPRequestConnector extends Connector {
 	public void send(final IAgent sender, final String receiver, final GamaMessage content) {
 		Object cont = content.getContents(sender.getScope());
 		try {
-			if (!(cont instanceof GamaList listContent)) throw GamaNetworkException.cannotSendMessage(null,
+			if (!(cont instanceof IList listContent)) throw GamaNetworkException.cannotSendMessage(null,
 					"The content expected to be sent is well formatted, a list [method,body,headers] is expected.");
 			URI uri = null;
 			try {
@@ -127,7 +127,6 @@ public class HTTPRequestConnector extends Connector {
 				if (listContent.size() <= 1) throw GamaNetworkException.cannotSendMessage(null,
 						"" + uri + ". POST/PUT HTTP method are expecting a body.");
 				body = (String) listContent.get(1);
-				// body = Jsoner.serialize(listContent.get(1));
 				headers = listContent.size() > 2 ? (IMap<String, String>) listContent.get(2) : null;
 			}
 

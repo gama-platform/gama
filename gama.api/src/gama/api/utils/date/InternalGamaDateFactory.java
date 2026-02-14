@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.date;
+package gama.api.utils.date;
 
 import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
@@ -18,24 +18,19 @@ import gama.api.data.factories.IDateFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IDate;
 import gama.api.gaml.constants.GamlCoreUnits;
+import gama.api.gaml.types.GamaDateType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.gaml.operators.Dates;
 
 /**
  *
  */
 public class InternalGamaDateFactory implements IDateFactory {
 
-	static {
-		// Only here to load the class and its preferences
-		Dates.initialize();
-	}
-
 	@Override
 	public IDate createFromISOString(final String s) {
 		try {
-			final TemporalAccessor t = Dates.getFormatter(GamlCoreUnits.ISO_OFFSET_KEY, null).parse(s);
+			final TemporalAccessor t = GamaDateType.getFormatter(GamlCoreUnits.ISO_OFFSET_KEY, null).parse(s);
 			if (t instanceof Temporal tmp) return createFromTemporal(tmp);
 		} catch (final DateTimeParseException e) {
 			//

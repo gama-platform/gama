@@ -36,6 +36,7 @@ import gama.api.constants.IKeyword;
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaPathFactory;
 import gama.api.data.factories.GamaPointFactory;
+import gama.api.data.objects.IGraph;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IPath;
 import gama.api.data.objects.IPoint;
@@ -51,7 +52,6 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
 import gama.core.topology.graph.GamaSpatialGraph;
-import gama.core.util.graph.GamaGraph;
 import gama.dev.DEBUG;
 import gama.extension.traffic.driving.carfollowing.MOBIL;
 import gama.extension.traffic.driving.carfollowing.Utils;
@@ -1642,7 +1642,7 @@ public class DrivingSkill extends MovingSkill {
 					examples = { @example ("do compute_path graph: road_network target: target_node;"),
 							@example ("do compute_path graph: road_network nodes: [node1, node5, node10];") }))
 	public IPath primComputePath(final IScope scope) throws GamaRuntimeException {
-		GamaGraph graph = (GamaGraph) scope.getArg("graph", IType.GRAPH);
+		IGraph graph = (IGraph) scope.getArg("graph", IType.GRAPH);
 		IList<IAgent> nodes = (IList) scope.getArg("nodes", IType.LIST);
 		IAgent target = (IAgent) scope.getArg("target", IType.AGENT);
 		IAgent source = (IAgent) scope.getArg("source", IType.AGENT);

@@ -17,6 +17,7 @@ import java.util.Map;
 import org.locationtech.jts.geom.Geometry;
 
 import gama.api.constants.ISerialisationConstants;
+import gama.api.data.factories.GamaFontFactory;
 import gama.api.data.factories.GamaGeometryFactory;
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
@@ -41,7 +42,6 @@ import gama.api.kernel.topology.IGrid;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.AgentReference;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.core.util.GamaFont;
 import gama.extension.serialize.fst.FSTBasicObjectSerializer;
 import gama.extension.serialize.fst.FSTClazzInfo;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
@@ -359,7 +359,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 
 			@Override
 			public IFont deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
-				return new GamaFont(in.readStringUTF(), in.readInt(), in.readInt());
+				return GamaFontFactory.createFont(in.readStringUTF(), in.readInt(), in.readInt());
 			}
 		});
 

@@ -7,9 +7,9 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.geometry;
+package gama.api.utils.geometry;
 
-import static gama.gaml.operators.Maths.round;
+import static gama.api.utils.MathUtils.round;
 import static java.lang.Math.sqrt;
 
 import org.locationtech.jts.geom.Coordinate;
@@ -25,15 +25,14 @@ import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IList;
+import gama.api.data.objects.IMap;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.prefs.GamaPreferences;
-import gama.core.util.map.GamaMap;
 
 /**
  * A mutable point in 3D, deriving from JTS Coordinate, that serves muliple purposes (location of agents, of geometries
@@ -142,7 +141,7 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 * @return the gama point
 	 */
 	@Override
-	public GamaPoint setLocation(final double x, final double y, final double z) {
+	public IPoint setLocation(final double x, final double y, final double z) {
 		this.x = x;
 		this.y = y;
 		setZ(z);
@@ -219,7 +218,7 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 * @return the gama point
 	 */
 	@Override
-	public GamaPoint add(final IPoint loc) {
+	public IPoint add(final IPoint loc) {
 		x += loc.getX();
 		y += loc.getY();
 		setZ(z + loc.getZ());
@@ -238,7 +237,7 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 * @return the gama point
 	 */
 	@Override
-	public GamaPoint add(final double ax, final double ay, final double az) {
+	public IPoint add(final double ax, final double ay, final double az) {
 		x += ax;
 		y += ay;
 		setZ(z + az);
@@ -268,7 +267,7 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 * @return the gama point
 	 */
 	@Override
-	public GamaPoint multiplyBy(final double value) {
+	public IPoint multiplyBy(final double value) {
 		x *= value;
 		y *= value;
 		setZ(z * value);
@@ -283,7 +282,7 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 * @return the gama point
 	 */
 	@Override
-	public GamaPoint divideBy(final double value) {
+	public IPoint divideBy(final double value) {
 		x /= value;
 		y /= value;
 		setZ(z / value);
@@ -292,7 +291,7 @@ public class GamaPoint extends Coordinate implements IPoint {
 
 	@Override
 	public IPoint copy(final IScope scope) {
-		return new GamaPoint(x, y, z);
+		return GamaPointFactory.create(x, y, z);
 	}
 
 	@Override
@@ -433,7 +432,7 @@ public class GamaPoint extends Coordinate implements IPoint {
 	public void dispose() {}
 
 	@Override
-	public GamaMap getAttributes(final boolean createIfNeeded) {
+	public IMap getAttributes(final boolean createIfNeeded) {
 		return null;
 	}
 
@@ -665,8 +664,8 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 * @return the point with y negated (for OpenGL, for example), without side effect on the point.
 	 */
 	@Override
-	public GamaPoint yNegated() {
-		return new GamaPoint(x, -y, z);
+	public IPoint yNegated() {
+		return GamaPointFactory.create(x, -y, z);
 	}
 
 	@Override
@@ -832,6 +831,7 @@ public class GamaPoint extends Coordinate implements IPoint {
 	@Override
 	public void setGeometricalType(final Type t) {}
 
+	// Necessary to keep GamaPoint here.
 	@Override
 	public GamaPoint clone() {
 		return new GamaPoint(x, y, z);

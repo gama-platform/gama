@@ -65,4 +65,9 @@ public interface IFont extends IValue {
 	 */
 	Font getAwtFont();
 
+	/**
+	 * @return
+	 */
+	String getFontName();
+
 }
