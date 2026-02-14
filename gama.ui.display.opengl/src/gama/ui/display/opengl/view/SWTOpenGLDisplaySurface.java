@@ -53,17 +53,17 @@ import gama.api.data.objects.IShape;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.GeneralSynchronizer;
 import gama.api.runtime.SystemInfo;
+import gama.api.ui.IOutput;
 import gama.api.ui.displays.IDisplayData;
+import gama.api.ui.displays.IDisplayData.Changes;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
-import gama.api.ui.displays.IDisplayData.Changes;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IEventLayerListener;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerManager;
 import gama.api.utils.prefs.GamaPreferences;
-import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.display.LayerManager;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.topology.filter.Different;
@@ -108,7 +108,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	Set<IEventLayerListener> listeners = new HashSet<>();
 
 	/** The output. */
-	final LayeredDisplayOutput output;
+	final IOutput.Display output;
 
 	/** The layer manager. */
 	final LayerManager layerManager;
@@ -140,16 +140,16 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 * @param objects
 	 *            the objects
 	 */
-	public SWTOpenGLDisplaySurface(final Object... objects) {
-		output = (LayeredDisplayOutput) objects[0];
-		parent = (Composite) objects[1];
-		output.getData().addListener(this);
-		output.setSurface(this);
-		setDisplayScope(output.getScope().copyForGraphics("in opengl display"));
+	public SWTOpenGLDisplaySurface(final IOutput.Display output, final Object parent) {
+		this.output = output;
+		this.parent = (Composite) parent;
+		this.output.getData().addListener(this);
+		this.output.setSurface(this);
+		setDisplayScope(this.output.getScope().copyForGraphics("in opengl display"));
 		layerManager = new LayerManager(this, output);
 		if (!layerManager.stayProportional()) { output.getData().setDrawEnv(false); }
 		renderer = createRenderer();
-		animator = new GamaGLCanvas(parent, renderer, getOutput().getName()).getAnimator();
+		animator = new GamaGLCanvas(this.parent, renderer, getOutput().getName()).getAnimator();
 		animator.start();
 	}
 
@@ -542,7 +542,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 * @see gama.api.ui.displays.IDisplaySurface#getOutput()
 	 */
 	@Override
-	public LayeredDisplayOutput getOutput() { return output; }
+	public IOutput.Display getOutput() { return output; }
 
 	/**
 	 * Method setPaused()

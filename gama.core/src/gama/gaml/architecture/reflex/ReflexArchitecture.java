@@ -49,6 +49,11 @@ public class ReflexArchitecture extends AbstractArchitecture {
 	/** The aborts. */
 	protected List<IStatement> _aborts;
 
+	/**
+	 * Instantiates a new reflex architecture.
+	 */
+	public ReflexArchitecture() {}
+
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {
 		clearBehaviors();

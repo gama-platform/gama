@@ -116,4 +116,9 @@ public interface ILayerStatement extends IStepable, ISymbol, Comparable<ILayerSt
 	 */
 	IExpression getRefreshFacet();
 
+	/**
+	 * @return
+	 */
+	boolean isToCreate();
+
 }

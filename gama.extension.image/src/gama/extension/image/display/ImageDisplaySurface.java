@@ -39,7 +39,6 @@ import gama.api.ui.layers.IEventLayerListener;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerManager;
 import gama.api.utils.prefs.GamaPreferences;
-import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.display.LayerManager;
 import gama.dev.DEBUG;
 import gama.extension.image.GamaImage;
@@ -57,7 +56,7 @@ import gama.extension.image.GamaImage;
 public class ImageDisplaySurface implements IDisplaySurface {
 
 	/** The output. */
-	private final LayeredDisplayOutput output;
+	private final IOutput.Display output;
 
 	/** The buff image. */
 	private GamaImage bufferImage = null;
@@ -83,8 +82,8 @@ public class ImageDisplaySurface implements IDisplaySurface {
 	 * @param args
 	 *            the args
 	 */
-	public ImageDisplaySurface(final Object... args) {
-		output = (LayeredDisplayOutput) args[0];
+	public ImageDisplaySurface(final IOutput.Display output, final Object uiComponent) {
+		this.output = output;
 		DEBUG.LOG("Image Display Surface created for simulation " + output.getScope().getSimulation());
 		data = output.getData();
 		resizeImage(width, height, true);

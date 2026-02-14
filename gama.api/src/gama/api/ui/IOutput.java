@@ -14,8 +14,9 @@ import gama.api.gaml.symbols.ISymbol;
 import gama.api.runtime.IStepable;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.IScoped;
-import gama.api.ui.IGamaView.Display;
 import gama.api.ui.displays.IDisplayData;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.layers.ILayerStatement;
 
 /**
  * This interface represents the objects, declared in a model, which perform various types of computations and return
@@ -48,6 +49,15 @@ public interface IOutput extends ISymbol, IStepable, IScoped {
 		 * @return
 		 */
 		IDisplayData getData();
+
+		/**
+		 * @return
+		 */
+		Iterable<ILayerStatement> getLayers();
+
+		/**
+		 */
+		void setSurface(IDisplaySurface swtOpenGLDisplaySurface);
 	}
 
 	/**

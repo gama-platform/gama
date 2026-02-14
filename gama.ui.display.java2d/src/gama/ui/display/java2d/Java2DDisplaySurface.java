@@ -47,16 +47,16 @@ import gama.api.data.objects.IShape;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.GeneralSynchronizer;
 import gama.api.runtime.SystemInfo;
+import gama.api.ui.IOutput;
 import gama.api.ui.displays.IDisplayData;
+import gama.api.ui.displays.IDisplayData.Changes;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
-import gama.api.ui.displays.IDisplayData.Changes;
 import gama.api.ui.layers.IEventLayerListener;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerManager;
 import gama.api.utils.prefs.GamaPreferences;
-import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.display.LayerManager;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.dev.DEBUG;
@@ -98,7 +98,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	}
 
 	/** The output. */
-	final LayeredDisplayOutput output;
+	final IOutput.Display output;
 
 	/** The view port. */
 	protected final Rectangle viewPort = new Rectangle();
@@ -149,8 +149,8 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	 * @param args
 	 *            the args
 	 */
-	public Java2DDisplaySurface(final Object... args) {
-		output = (LayeredDisplayOutput) args[0];
+	public Java2DDisplaySurface(final IOutput.Display output, final Object uiComponent) {
+		this.output = output;
 		output.setSurface(this);
 		setDisplayScope(output.getScope().copyForGraphics("in java2D display"));
 		output.getData().addListener(this);
@@ -618,7 +618,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	protected void setDisplayHeight(final int displayHeight) { viewPort.height = displayHeight /*- 2*/; }
 
 	@Override
-	public LayeredDisplayOutput getOutput() { return output; }
+	public IOutput.Display getOutput() { return output; }
 
 	/**
 	 * New zoom level.

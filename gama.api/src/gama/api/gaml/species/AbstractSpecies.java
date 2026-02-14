@@ -113,7 +113,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 		setName(description.getName());
 		isGrid = IKeyword.GRID.equals(getKeyword());
 		isGraph = IGraphAgent.class.isAssignableFrom(((ISpeciesDescription) description).getJavaBase());
-		control = (IArchitecture) getDescription().getControl().getInstance();
+		control = getDescription().getControl().createArchitectureInstance();
 	}
 
 	@Override
@@ -361,7 +361,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 			} else if (s instanceof IVariable) {
 				DEBUG.OUT("Adding " + s.getName() + " to " + this);
 				variables.put(s.getName(), (IVariable) s);
-			} else
+			} else {
 				switch (s) {
 					case IStatement.Aspect as -> aspects.put(s.getName(), as);
 					case IStatement.Action ac -> {
@@ -375,6 +375,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 						}
 					}
 				}
+			}
 		}
 		control.setChildren(behaviors);
 		behaviors.forEach(b -> b.setEnclosing(this));

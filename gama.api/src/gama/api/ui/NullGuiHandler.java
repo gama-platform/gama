@@ -126,10 +126,10 @@ public class NullGuiHandler implements IGui {
 	 * @return the i display surface
 	 */
 	@Override
-	public IDisplaySurface createDisplaySurfaceFor(final IOutput.Display output, final Object... objects) {
+	public IDisplaySurface createDisplaySurfaceFor(final IOutput.Display output, final Object uiComponent) {
 		final IDisplayCreator creator = GamaAdditionRegistry.getDisplay("image");
 		if (creator == null) return IDisplaySurface.NULL;
-		IDisplaySurface surface = creator.create(output);
+		IDisplaySurface surface = creator.create(output, null);
 		surface.outputReloaded();
 		return surface;
 	}

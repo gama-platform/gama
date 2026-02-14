@@ -263,7 +263,7 @@ public interface IGui {
 	 *            the args
 	 * @return the i display surface
 	 */
-	default IDisplaySurface createDisplaySurfaceFor(final IOutput.Display output, final Object... args) {
+	default IDisplaySurface createDisplaySurfaceFor(final IOutput.Display output, final Object uiComponent) {
 		return null;
 	}
 

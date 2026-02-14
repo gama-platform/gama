@@ -11,6 +11,7 @@
 package gama.api.ui.displays;
 
 import gama.api.compilation.descriptions.IGamlDescription;
+import gama.api.ui.IOutput;
 
 /**
  * The Interface IDisplayCreator.
@@ -25,6 +26,6 @@ public interface IDisplayCreator extends IGamlDescription {
 	 *            the args
 	 * @return the i display surface
 	 */
-	IDisplaySurface create(Object... args);
+	IDisplaySurface create(IOutput.Display output, Object uiComponent);
 
 }

@@ -43,25 +43,9 @@ public class DisplayDescription extends GamlAddition implements IDisplayCreator 
 	 * @see gama.api.ui.displays.IDisplayCreator#create(java.lang.Object[])
 	 */
 	@Override
-	public IDisplaySurface create(final Object... args) {
-		if (delegate != null) return delegate.create(args);
+	public IDisplaySurface create(final IOutput.Display output, final Object uiComponent) {
+		if (delegate != null) return delegate.create(output, uiComponent);
 		return IDisplaySurface.NULL;
-	}
-
-	/**
-	 * Creates the.
-	 *
-	 * @param output
-	 *            the output
-	 * @param args
-	 *            the args
-	 * @return the i display surface
-	 */
-	public IDisplaySurface create(final IOutput output, final Object... args) {
-		final Object[] params = new Object[args.length + 1];
-		params[0] = output;
-		for (int i = 0; i < args.length; i++) { params[i + 1] = args[i]; }
-		return create(params);
 	}
 
 	/**

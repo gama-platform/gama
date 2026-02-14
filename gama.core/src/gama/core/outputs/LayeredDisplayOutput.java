@@ -225,7 +225,7 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	}
 
 	/** The layers. */
-	private final List<AbstractLayerStatement> layers;
+	private final List<ILayerStatement> layers;
 
 	/** The cameras. */
 	private final List<CameraStatement> cameras;
@@ -473,7 +473,7 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 			// If in headless mode, we need to get the 'image' surface
 			getData().setDisplayType(IKeyword.IMAGE);
 		} else if (getData().is3D()) return;
-		surface = scope.getGui().createDisplaySurfaceFor(this);
+		surface = scope.getGui().createDisplaySurfaceFor(this, null);
 	}
 
 	@Override
@@ -561,7 +561,8 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	 *
 	 * @return the layers
 	 */
-	public List<AbstractLayerStatement> getLayers() { return layers; }
+	@Override
+	public List<ILayerStatement> getLayers() { return layers; }
 
 	@Override
 	public void setPaused(final boolean paused) {

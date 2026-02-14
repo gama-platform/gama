@@ -290,12 +290,12 @@ public class SwtGui implements IGui {
 	 * @return the i display surface
 	 */
 	@Override
-	public IDisplaySurface createDisplaySurfaceFor(final IOutput.Display output, final Object... args) {
+	public IDisplaySurface createDisplaySurfaceFor(final IOutput.Display output, final Object uiComponent) {
 		final String keyword = output.getData().getDisplayType();
 		final IDisplayCreator creator = GamaAdditionRegistry.getDisplay(keyword);
 		if (creator == null)
 			throw GamaRuntimeException.error("Display " + keyword + " is not defined anywhere.", output.getScope());
-		IDisplaySurface surface = creator.create(output, args);
+		IDisplaySurface surface = creator.create(output, uiComponent);
 		surface.outputReloaded();
 		return surface;
 	}

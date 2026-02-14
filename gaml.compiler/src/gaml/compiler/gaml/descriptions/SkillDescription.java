@@ -111,6 +111,20 @@ public class SkillDescription extends TypeDescription implements ISkillDescripti
 		return instance1;
 	}
 
+	@Override
+	public IArchitecture createArchitectureInstance() {
+		if (!isControl()) return null;
+		IArchitecture instance1 = null;
+		try {
+			Constructor<? extends ISkill> c = getJavaBase().getConstructor();
+			instance1 = (IArchitecture) c.newInstance();
+			instance1.setDescription(this);
+		} catch (Exception e) {
+			return null;
+		}
+		return instance1;
+	}
+
 	/**
 	 * Gets the single INSTANCE of SkillDescription.
 	 *

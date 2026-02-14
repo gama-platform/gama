@@ -43,7 +43,6 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.GamlProperties;
 import gama.api.utils.collections.ICollector;
-import gama.dev.DEBUG;
 
 /**
  * AbstractBinaryOperator
@@ -98,11 +97,6 @@ public abstract class AbstractNAryOperator extends AbstractExpression implements
 	 * @return the i type
 	 */
 	protected IType computeType() {
-		if ("+".equals(getName())) {
-
-			DEBUG.OUT("");
-
-		}
 		if (prototype == null) return Types.NO_TYPE;
 		IType result = computeType(prototype.getTypeProvider(), 0, prototype.getReturnType(), GamaType.TYPE);
 		if (result.isContainer()) {

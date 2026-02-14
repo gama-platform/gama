@@ -17,16 +17,16 @@ import java.util.List;
 import java.util.Map;
 
 import gama.api.GAMA;
+import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.ui.IOutput;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerManager;
 import gama.api.ui.layers.ILayerStatement;
-import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.outputs.layers.AbstractLayerStatement;
 import gama.core.outputs.layers.AgentLayer;
 import gama.core.outputs.layers.EventLayer;
 import gama.core.outputs.layers.EventLayerStatement;
@@ -35,9 +35,7 @@ import gama.core.outputs.layers.GraphicLayer;
 import gama.core.outputs.layers.GridLayer;
 import gama.core.outputs.layers.HexagonalGridLayer;
 import gama.core.outputs.layers.ImageLayer;
-import gama.core.outputs.layers.KeyboardEventLayerDelegate;
 import gama.core.outputs.layers.MeshLayer;
-import gama.core.outputs.layers.MouseEventLayerDelegate;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.outputs.layers.SpeciesLayer;
 import gama.core.outputs.layers.charts.ChartLayer;
@@ -59,7 +57,7 @@ public class LayerManager implements ILayerManager {
 	 *            the layer
 	 * @return the i layer
 	 */
-	public static ILayer createLayer(final LayeredDisplayOutput output, final ILayerStatement layer) {
+	public static ILayer createLayer(final IOutput.Display output, final ILayerStatement layer) {
 		return switch (layer.getType(output)) {
 			case GRID -> new GridLayer(layer);
 			case AGENTS -> new AgentLayer(layer);
@@ -96,11 +94,11 @@ public class LayerManager implements ILayerManager {
 	 * @param output
 	 *            the output
 	 */
-	public LayerManager(final IDisplaySurface surface, final LayeredDisplayOutput output) {
+	public LayerManager(final IDisplaySurface surface, final IOutput.Display output) {
 		this.surface = surface;
 		OverlayLayer overlay = null;
 		final List<ILayer> layers = new ArrayList<>();
-		for (final AbstractLayerStatement layer : output.getLayers()) {
+		for (final ILayerStatement layer : output.getLayers()) {
 			if (layer instanceof EventLayerStatement el) { eventLayers.put(el.getName(), el); }
 			if (layer.isToCreate()) {
 				final ILayer result = createLayer(output, layer);
@@ -249,12 +247,12 @@ public class LayerManager implements ILayerManager {
 
 	@Override
 	public boolean hasMouseMenuEventLayer() {
-		return eventLayers.containsKey(MouseEventLayerDelegate.MOUSE_MENU);
+		return eventLayers.containsKey(IEventLayerDelegate.MOUSE_MENU);
 	}
 
 	@Override
 	public boolean hasEscEventLayer() {
-		return eventLayers.containsKey(KeyboardEventLayerDelegate.KEY_ESC);
+		return eventLayers.containsKey(IEventLayerDelegate.KEY_ESC);
 	}
 
 	/**
@@ -264,10 +262,10 @@ public class LayerManager implements ILayerManager {
 	 */
 	@Override
 	public boolean hasArrowEventLayer() {
-		return eventLayers.containsKey(KeyboardEventLayerDelegate.ARROW_DOWN)
-				|| eventLayers.containsKey(KeyboardEventLayerDelegate.ARROW_UP)
-				|| eventLayers.containsKey(KeyboardEventLayerDelegate.ARROW_RIGHT)
-				|| eventLayers.containsKey(KeyboardEventLayerDelegate.ARROW_LEFT);
+		return eventLayers.containsKey(IEventLayerDelegate.ARROW_DOWN)
+				|| eventLayers.containsKey(IEventLayerDelegate.ARROW_UP)
+				|| eventLayers.containsKey(IEventLayerDelegate.ARROW_RIGHT)
+				|| eventLayers.containsKey(IEventLayerDelegate.ARROW_LEFT);
 	}
 
 	@Override
