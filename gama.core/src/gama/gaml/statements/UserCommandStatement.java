@@ -46,7 +46,6 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
-import gama.api.ui.IExperimentDisplayable;
 import gama.gaml.statements.UserCommandStatement.UserCommandValidator;
 
 /**
@@ -111,8 +110,7 @@ import gama.gaml.statements.UserCommandStatement.UserCommandValidator;
 		see = { IKeyword.USER_INIT, IKeyword.USER_PANEL, IKeyword.USER_INPUT })
 @validator (UserCommandValidator.class)
 
-public class UserCommandStatement extends AbstractStatementSequence
-		implements IStatement.WithArgs, IExperimentDisplayable {
+public class UserCommandStatement extends AbstractStatementSequence implements IStatement.UserCommand {
 
 	/**
 	 * The Class UserCommandValidator.
@@ -198,6 +196,12 @@ public class UserCommandStatement extends AbstractStatementSequence
 	 */
 	public List<UserInputStatement> getInputs() { return inputs; }
 
+	/**
+	 * Sets the formal args.
+	 *
+	 * @param args
+	 *            the new formal args
+	 */
 	@Override
 	public void setFormalArgs(final Arguments args) { this.args = args; }
 
@@ -288,7 +292,7 @@ public class UserCommandStatement extends AbstractStatementSequence
 
 	@Override
 	public String getCategory() {
-		if (category == null) { category = IExperimentDisplayable.super.getCategory(); }
+		if (category == null) { category = UserCommand.super.getCategory(); }
 		return category;
 	}
 

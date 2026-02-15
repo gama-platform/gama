@@ -266,7 +266,6 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {
 		final List forExperiment = new ArrayList<>();
-
 		final List<IExperimentSpecies> theExperiments = new ArrayList<>();
 
 		for (final Iterator<? extends ISymbol> it = children.iterator(); it.hasNext();) {

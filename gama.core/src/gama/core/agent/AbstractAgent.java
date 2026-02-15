@@ -278,7 +278,15 @@ public abstract class AbstractAgent implements IAgent {
 	 * @return whether or not the step has been successful (i.e. no errors, etc.)
 	 */
 	protected boolean doStep(final IScope scope) {
-		return scope.execute(getSpecies().getArchitecture(), this, null).passed() ? stepSubPopulations(scope) : false;
+		boolean populationStepPassed = scope.execute(getSpecies().getArchitecture(), this, null).passed();
+		if (populationStepPassed) {
+			
+			
+			return stepSubPopulations(scope);
+	
+		
+		}
+		return false;
 	}
 
 	/**

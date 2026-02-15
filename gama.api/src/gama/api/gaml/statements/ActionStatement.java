@@ -146,7 +146,7 @@ import gama.api.runtime.scope.IScope;
 @validator (ActionValidator.class)
 @serializer (ActionSerializer.class)
 @SuppressWarnings ({ "rawtypes" })
-public class ActionStatement extends AbstractStatementSequenceWithArgs {
+public class ActionStatement extends AbstractStatementSequenceWithArgs implements IStatement.Action {
 
 	/**
 	 * The Class ActionSerializer.

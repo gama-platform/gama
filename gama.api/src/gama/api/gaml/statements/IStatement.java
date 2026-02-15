@@ -38,7 +38,7 @@ public interface IStatement extends ISymbol, IExecutable {
 	/**
 		 *
 		 */
-	public interface UserCommand extends IStatement, IExperimentDisplayable {
+	public interface UserCommand extends IStatement.WithArgs, IExperimentDisplayable {
 
 	}
 

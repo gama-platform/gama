@@ -462,4 +462,15 @@ public interface ISpecies
 	 */
 	ISkill getSkillInstanceFor(Class skillClass);
 
+	/**
+	 * Sets the enclosing.
+	 *
+	 * @param enclosing
+	 *            the new enclosing
+	 */
+	@Override
+	default void setEnclosing(final ISymbol enclosing) {
+		if (enclosing instanceof ISpecies s) { setMacroSpecies(s); }
+	}
+
 }

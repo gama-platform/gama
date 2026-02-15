@@ -355,31 +355,21 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 					GAMA.getRuntimeScope());
 		// Then we classify the children in their categories
 		for (final ISymbol s : children) {
-			if (s instanceof ISpecies oneMicroSpecies) {
-				oneMicroSpecies.setMacroSpecies(this);
-				microSpecies.put(oneMicroSpecies.getName(), oneMicroSpecies);
-			} else if (s instanceof IVariable) {
-				DEBUG.OUT("Adding " + s.getName() + " to " + this);
-				variables.put(s.getName(), (IVariable) s);
-			} else {
+			if (s != null) {
+				s.setEnclosing(this);
 				switch (s) {
+					case ISpecies spec -> microSpecies.put(spec.getName(), spec);
+					case IVariable v -> variables.put(v.getName(), v);
 					case IStatement.Aspect as -> aspects.put(s.getName(), as);
-					case IStatement.Action ac -> {
-						s.setEnclosing(this);
-						actions.put(s.getName(), ac);
-					}
+					case IStatement.Action ac -> actions.put(s.getName(), ac);
 					case IStatement.UserCommand uc -> userCommands.put(s.getName(), uc);
-					case null, default -> {
-						if (s instanceof IStatement) {
-							behaviors.add((IStatement) s); // reflexes, states or tasks
-						}
+					case IStatement stat -> behaviors.add(stat);
+					default -> {
 					}
 				}
 			}
 		}
 		control.setChildren(behaviors);
-		behaviors.forEach(b -> b.setEnclosing(this));
-		variables.forEach((n, v) -> v.setEnclosing(this));
 		control.verifyBehaviors(this);
 	}
 

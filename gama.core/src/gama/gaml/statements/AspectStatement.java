@@ -25,6 +25,7 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
@@ -77,7 +78,7 @@ import gama.api.ui.displays.IGraphicsScope;
 						@example (
 								value = "}",
 								isExecutable = false) }) })
-public class AspectStatement extends AbstractStatementSequence {
+public class AspectStatement extends AbstractStatementSequence implements IStatement.Aspect {
 
 	/** The is highlight aspect. */
 	boolean isHighlightAspect;
