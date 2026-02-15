@@ -75,7 +75,7 @@ public class GamaMapWrapper<K, V> extends ForwardingMap<K, V> implements IMap<K,
 	 * @param isOrdered
 	 *            the is ordered
 	 */
-	public GamaMapWrapper(final Map<K, V> wrapped, final IType key, final IType contents, final boolean isOrdered) {
+	GamaMapWrapper(final Map<K, V> wrapped, final IType key, final IType contents, final boolean isOrdered) {
 		this.wrapped = wrapped;
 		this.contentsType = contents;
 		this.keyType = key;
