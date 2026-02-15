@@ -26,6 +26,7 @@ import org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory;
 
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IPoint;
+import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * A specific implementation of {@link GeometryFactory} optimized for GAMA. This class provides factory methods for

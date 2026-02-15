@@ -34,6 +34,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.IFieldMatrixProvider;
+import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * A static factory for creating and manipulating {@link IMatrix} instances. This class handles matrix creation from

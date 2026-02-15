@@ -36,6 +36,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.IGamaFile;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
 
 /**

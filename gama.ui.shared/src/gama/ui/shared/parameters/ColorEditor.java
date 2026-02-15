@@ -18,12 +18,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.MenuItem;
 
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.objects.IColor;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.GamaColorType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
+import gama.api.utils.color.GamaColorFactory;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.menus.GamaColorMenu;

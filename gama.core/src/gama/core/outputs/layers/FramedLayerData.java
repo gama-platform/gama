@@ -11,12 +11,12 @@
 package gama.core.outputs.layers;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.objects.IColor;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.color.GamaColorFactory;
 
 /**
  * The Class OverlayLayerData.

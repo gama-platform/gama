@@ -16,8 +16,8 @@ import gama.annotations.constant;
 import gama.annotations.doc;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IConstantCategory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IPoint;
+import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * The Interface GamlCoreConstants.

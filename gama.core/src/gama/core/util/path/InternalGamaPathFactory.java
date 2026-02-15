@@ -14,7 +14,6 @@ import static gama.api.utils.geometry.GeometryUtils.getFirstPointOf;
 import static gama.api.utils.geometry.GeometryUtils.getLastPointOf;
 
 import gama.api.data.factories.GamaListFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.IPathFactory;
 import gama.api.data.objects.IGraph;
 import gama.api.data.objects.IList;
@@ -24,6 +23,7 @@ import gama.api.data.objects.IShape;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.topology.graph.GraphTopology;
 

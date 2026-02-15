@@ -10,12 +10,12 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.expression;
 
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IPoint;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
+import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  *

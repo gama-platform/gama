@@ -17,7 +17,6 @@ import java.util.Map;
 import gama.api.constants.IKeyword;
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMatrix;
 import gama.api.data.objects.IPoint;
@@ -27,6 +26,7 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.displays.IChartDataSource;
+import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * The Class ChartDataSource.

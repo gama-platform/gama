@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.api.utils.prefs;
 
-import static gama.api.data.factories.GamaColorFactory.LIGHT_GRAY;
+import static gama.api.utils.color.GamaColorFactory.LIGHT_GRAY;
 
 import java.awt.Font;
 import java.util.ArrayList;
@@ -29,7 +29,6 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription.Platform;
 import gama.api.constants.Generators;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.factories.GamaFontFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IColor;
@@ -40,6 +39,7 @@ import gama.api.kernel.GamaMetaModel;
 import gama.api.runtime.SystemInfo;
 import gama.api.ui.layers.ICameraDefinition;
 import gama.api.utils.StringUtils;
+import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.files.BufferingUtils;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.files.GenericFile;

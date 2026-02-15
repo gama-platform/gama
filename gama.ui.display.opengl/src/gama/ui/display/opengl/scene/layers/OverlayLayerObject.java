@@ -16,13 +16,13 @@ import com.jogamp.opengl.GL2ES3;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.layers.ILayer;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.core.outputs.layers.OverlayLayerData;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl.OpenGL;

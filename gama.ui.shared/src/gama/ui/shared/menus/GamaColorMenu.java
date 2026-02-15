@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.shared.menus;
 
-import static gama.api.data.factories.IColorFactory.NAME_REGISTRY;
+import static gama.api.utils.color.GamaColorFactory.NAME_REGISTRY;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,8 +30,8 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.objects.IColor;
+import gama.api.utils.color.GamaColorFactory;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;

@@ -14,7 +14,6 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 
 import gama.api.data.factories.GamaCoordinateSequenceFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.ICoordinateSequenceFactory;
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IPoint;

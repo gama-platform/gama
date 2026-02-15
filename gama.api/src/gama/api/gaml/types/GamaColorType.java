@@ -14,11 +14,11 @@ import gama.annotations.type;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.color.GamaColorFactory;
 
 /**
  * Written by drogoul Modified on 1 ao�t 2010

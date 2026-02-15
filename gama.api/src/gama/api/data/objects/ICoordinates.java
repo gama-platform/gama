@@ -13,8 +13,8 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 
 import gama.api.data.factories.GamaEnvelopeFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.json.IJsonable;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.Rotation3D;
 
 /**

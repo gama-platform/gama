@@ -55,7 +55,6 @@ import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaGeometryFactory;
 import gama.api.data.factories.GamaListFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IEnvelope;

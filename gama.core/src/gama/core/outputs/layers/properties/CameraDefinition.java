@@ -11,11 +11,11 @@
 package gama.core.outputs.layers.properties;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IPoint;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.GraphicsScope;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.prefs.GamaPreferences;
 
 /**

@@ -18,7 +18,6 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IField;
 import gama.api.data.objects.IPoint;
@@ -29,6 +28,7 @@ import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerData;
 import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.Scaling3D;
 import gama.core.outputs.layers.FramedLayerData;

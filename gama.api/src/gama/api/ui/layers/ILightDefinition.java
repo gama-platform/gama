@@ -15,11 +15,11 @@ import java.util.List;
 import gama.annotations.constant;
 import gama.annotations.doc;
 import gama.annotations.support.IOperatorCategory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IPoint;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.INamed;
+import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * The Interface ILightDefinition.

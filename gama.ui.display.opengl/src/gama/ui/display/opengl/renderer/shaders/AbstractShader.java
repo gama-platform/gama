@@ -17,8 +17,8 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL2ES2;
 
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IPoint;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.dev.DEBUG;
 
 /**

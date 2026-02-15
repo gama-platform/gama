@@ -52,7 +52,6 @@ import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Lineal;
 import org.locationtech.jts.geom.Puntal;
 
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IField;
@@ -62,6 +61,7 @@ import gama.api.ui.displays.IAsset;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
 import gama.api.utils.IImageProvider;
+import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.core.outputs.display.AbstractDisplayGraphics;

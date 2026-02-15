@@ -14,7 +14,6 @@ import java.io.Serializable;
 
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IPoint;
 
 /**

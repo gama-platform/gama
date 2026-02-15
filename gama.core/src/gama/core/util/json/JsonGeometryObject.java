@@ -31,7 +31,6 @@ import org.locationtech.jts.io.ParseException;
 
 import gama.api.GAMA;
 import gama.api.data.factories.GamaCoordinateSequenceFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonArray;
@@ -42,6 +41,7 @@ import gama.api.data.objects.IShape;
 import gama.api.data.objects.IShape.Type;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.core.topology.gis.ProjectionFactory;
 import one.util.streamex.StreamEx;
 

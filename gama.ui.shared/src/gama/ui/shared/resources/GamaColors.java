@@ -17,8 +17,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Control;
 
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.objects.IColor;
+import gama.api.utils.color.GamaColorFactory;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.utils.WorkbenchHelper;

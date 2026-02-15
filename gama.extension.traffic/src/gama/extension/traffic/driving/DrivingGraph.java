@@ -14,7 +14,6 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IMap;
 import gama.api.data.objects.IPoint;
@@ -26,6 +25,7 @@ import gama.api.utils.StringUtils;
 import gama.api.utils.collections.GraphEvent;
 import gama.api.utils.collections._Edge;
 import gama.api.utils.collections.GraphEvent.GraphEventType;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.core.topology.graph.GamaSpatialGraph;
 
 /**

@@ -18,12 +18,12 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.validation.IOperatorValidator;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IMap;
 import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * Written by drogoul Modified on 1 ao�t 2010

@@ -14,7 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.gaml.types.IType;
@@ -22,6 +21,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.skill.Skill;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.annotations.action;
 import gama.annotations.arg;
 import gama.annotations.doc;

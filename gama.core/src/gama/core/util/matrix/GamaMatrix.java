@@ -16,7 +16,6 @@ import org.eclipse.core.runtime.ISafeRunnable;
 import gama.api.GAMA;
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IField;
 import gama.api.data.objects.IList;
@@ -33,6 +32,7 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.ISafeConsumer;
 import gama.api.utils.StringUtils;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.random.IRandom;
 import gama.dev.FLAGS;
 

@@ -20,7 +20,6 @@ import gama.annotations.example;
 import gama.annotations.file;
 import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaListFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IPair;
@@ -31,6 +30,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.FileUtils;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.dev.DEBUG;
 
 /**

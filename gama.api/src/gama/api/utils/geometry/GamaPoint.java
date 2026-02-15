@@ -19,7 +19,6 @@ import org.locationtech.jts.util.NumberUtil;
 
 import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaListFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
@@ -60,8 +59,10 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 * @param z
 	 *            the z
 	 */
-	public GamaPoint(final double x, final double y, final double z) {
-		setLocation(x, y, z);
+	GamaPoint(final double x, final double y, final double z) {
+		this.x = x;
+		this.y = y;
+		this.z = z;
 	}
 
 	/**

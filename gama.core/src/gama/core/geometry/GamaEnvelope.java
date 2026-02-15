@@ -14,12 +14,12 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 
 import gama.api.data.factories.GamaEnvelopeFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.gaml.operators.Comparison;
 
 // import org.opengis.geometry.MismatchedDimensionException;

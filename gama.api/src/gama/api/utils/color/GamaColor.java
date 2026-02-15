@@ -13,7 +13,6 @@ import java.awt.Color;
 
 import gama.annotations.getter;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
 import gama.api.data.objects.IColor;

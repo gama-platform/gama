@@ -9,7 +9,6 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
@@ -24,6 +23,7 @@ import gama.api.ui.layers.ILayerData;
 import gama.api.ui.layers.ILayerStatement;
 import gama.api.utils.IImageProvider;
 import gama.api.utils.files.IGamaFile;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.Scaling3D;
 import gama.gaml.statements.draw.AssetDrawingAttributes;
 

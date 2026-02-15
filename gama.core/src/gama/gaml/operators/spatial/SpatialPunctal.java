@@ -26,7 +26,6 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.Reason;
 import gama.api.data.factories.GamaListFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
@@ -34,6 +33,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.gaml.operators.Maths;
 

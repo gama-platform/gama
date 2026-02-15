@@ -17,7 +17,6 @@ import java.awt.image.BufferedImage;
 import java.util.Collection;
 import java.util.Collections;
 
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
@@ -32,6 +31,7 @@ import gama.api.ui.layers.IEventLayerListener;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerManager;
 import gama.api.utils.IDisposable;
+import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * Class IDisplaySurface. Represents a concrete object on which layers can be drawn on screen. Instances of subclasses

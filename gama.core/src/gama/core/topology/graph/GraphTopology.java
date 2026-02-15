@@ -22,7 +22,6 @@ import com.google.common.collect.Ordering;
 
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaPathFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IPath;
@@ -37,6 +36,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.IAgentFilter;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.ICollector;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.topology.AbstractTopology;
 import gama.core.topology.filter.In;

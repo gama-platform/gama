@@ -19,10 +19,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import gama.api.data.factories.GamaColorFactory;
-import gama.api.data.factories.GamaDateFactory;
 import gama.api.data.factories.GamaFontFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IDate;
 import gama.api.data.objects.IPoint;
@@ -31,8 +28,11 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.SystemInfo;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
+import gama.api.utils.color.GamaColorFactory;
+import gama.api.utils.date.GamaDateFactory;
 import gama.api.utils.files.GenericFile;
 import gama.api.utils.files.IGamaFile;
+import gama.api.utils.geometry.GamaPointFactory;
 import one.util.streamex.StreamEx;
 
 /**

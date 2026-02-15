@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.objects.IColor;
 import gama.api.ui.layers.ILightDefinition;
+import gama.api.utils.color.GamaColorFactory;
 
 /**
  * The Class AmbientLightDefinition.

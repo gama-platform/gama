@@ -27,7 +27,6 @@ import gama.api.annotations.depends_on;
 import gama.api.constants.IKeyword;
 import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaListFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IEnvelope;
@@ -39,6 +38,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.gaml.operators.Maths;
 

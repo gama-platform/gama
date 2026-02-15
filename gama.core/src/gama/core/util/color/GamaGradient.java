@@ -11,12 +11,12 @@ package gama.core.util.color;
 
 import java.util.Map;
 
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IMap;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.color.GamaColorFactory;
 import gama.core.util.map.GamaMap;
 
 /**

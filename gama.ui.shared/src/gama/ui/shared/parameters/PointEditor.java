@@ -33,7 +33,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IParameter;
@@ -42,6 +41,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.utils.StringUtils;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.ui.shared.interfaces.EditorListener;
 
 /**

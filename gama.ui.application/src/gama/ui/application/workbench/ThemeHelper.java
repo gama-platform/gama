@@ -48,8 +48,8 @@ import org.w3c.css.sac.CSSParseException;
 
 import com.google.common.collect.Iterables;
 
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.gaml.types.IType;
+import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.prefs.Pref;
 import gama.dev.DEBUG;
 

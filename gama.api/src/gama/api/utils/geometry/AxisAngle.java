@@ -10,7 +10,6 @@
 
 package gama.api.utils.geometry;
 
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IPoint;
 
 /**

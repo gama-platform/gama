@@ -10,10 +10,8 @@
 package gama.api.ui.displays;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaPairFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IFont;
 import gama.api.data.objects.IList;
@@ -28,7 +26,9 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.AttributeHolder;
+import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.prefs.GamaPreferences;
 

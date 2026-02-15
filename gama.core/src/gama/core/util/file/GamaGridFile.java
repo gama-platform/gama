@@ -52,7 +52,6 @@ import gama.api.GAMA;
 import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IField;
@@ -68,6 +67,7 @@ import gama.api.kernel.topology.ICoordinateReferenceSystem;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IStatusMessage;
 import gama.api.utils.IFieldMatrixProvider;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.core.topology.gis.GamaCRS;
 import gama.core.util.matrix.GamaFloatMatrix;
 

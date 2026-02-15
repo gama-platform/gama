@@ -9,8 +9,8 @@
  ********************************************************************************************************/
 package gama.api.kernel.simulation;
 
-import gama.api.data.factories.GamaDateFactory;
 import gama.api.data.objects.IDate;
+import gama.api.utils.date.GamaDateFactory;
 
 /**
  * The Interface IClock. Defines the methods required for a clock used in simulations.

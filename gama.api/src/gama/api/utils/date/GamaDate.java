@@ -39,7 +39,6 @@ import java.time.temporal.WeekFields;
 import org.apache.commons.lang3.StringUtils;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaDateFactory;
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
@@ -296,8 +295,8 @@ public class GamaDate implements IDate {
 	 * @param year
 	 *            the year
 	 */
-	public GamaDate(final IScope scope, final int second, final int minute, final int hour, final int day,
-			final int month, final int year) {
+	GamaDate(final IScope scope, final int second, final int minute, final int hour, final int day, final int month,
+			final int year) {
 		this(scope, LocalDateTime.of(year, month, day, hour, minute));
 	}
 

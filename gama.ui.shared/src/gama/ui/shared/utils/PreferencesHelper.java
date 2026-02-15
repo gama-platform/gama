@@ -18,11 +18,11 @@ import static gama.api.utils.prefs.GamaPreferences.Interface.NAVIGATOR;
 import org.eclipse.core.runtime.CoreException;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.objects.IColor;
 import gama.api.gaml.types.IType;
 import gama.api.ui.IGui;
 import gama.api.utils.MemoryUtils;
+import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.Pref;
 import gama.ui.shared.menus.GamaColorMenu;

@@ -17,8 +17,6 @@ import java.util.LinkedHashMap;
 import org.jfree.chart.JFreeChart;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaColorFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IPoint;
 import gama.api.gaml.expressions.IExpression;
@@ -28,6 +26,8 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.displays.IChart;
 import gama.api.ui.displays.IChartDataSource;
 import gama.api.ui.displays.IDisplaySurface;
+import gama.api.utils.color.GamaColorFactory;
+import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * The Class ChartOutput.

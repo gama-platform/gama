@@ -13,7 +13,6 @@ package gama.core.outputs.layers;
 import java.awt.geom.Rectangle2D;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
@@ -23,6 +22,7 @@ import gama.api.runtime.scope.IExecutionResult;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.color.GamaColorFactory;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 

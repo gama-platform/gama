@@ -14,8 +14,8 @@ import gama.annotations.constant;
 import gama.annotations.doc;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IConstantCategory;
-import gama.api.data.factories.GamaDateFactory;
 import gama.api.data.objects.IDate;
+import gama.api.utils.date.GamaDateFactory;
 
 /**
  * The Interface GamlCoreUnits. Contains the list of GAML units

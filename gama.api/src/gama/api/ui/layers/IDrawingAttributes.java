@@ -12,7 +12,6 @@ package gama.api.ui.layers;
 
 import java.util.List;
 
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IField;
 import gama.api.data.objects.IFont;
@@ -20,6 +19,7 @@ import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.kernel.agent.IAgent;
 import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.Scaling3D;
 
 /**

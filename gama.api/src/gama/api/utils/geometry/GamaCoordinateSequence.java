@@ -21,7 +21,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonArray;
 import gama.api.data.objects.ICoordinates;

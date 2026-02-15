@@ -19,9 +19,9 @@ import java.util.Random;
 
 import gama.api.GAMA;
 import gama.api.constants.Generators;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IPoint;
 import gama.api.utils.MathUtils;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.prefs.GamaPreferences;
 
 /**

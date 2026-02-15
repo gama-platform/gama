@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.stream.IntStream;
 
 import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.IMatrixFactory;
 import gama.api.data.objects.IField;
 import gama.api.data.objects.IList;
@@ -29,6 +28,7 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.IFieldMatrixProvider;
+import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  *

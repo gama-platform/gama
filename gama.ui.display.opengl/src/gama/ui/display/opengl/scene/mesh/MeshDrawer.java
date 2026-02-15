@@ -21,14 +21,14 @@ import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.fixedfunc.GLPointerFunc;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.factories.GamaCoordinateSequenceFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IField;
 import gama.api.data.objects.IPoint;
 import gama.api.ui.layers.IMeshColorProvider;
+import gama.api.utils.color.GamaColorFactory;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.core.outputs.layers.MeshLayerData;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl.OpenGL;

@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.data.factories;
+package gama.api.utils.geometry;
 
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +22,7 @@ import gama.annotations.operator;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.annotations.validator;
 import gama.api.constants.IKeyword;
+import gama.api.data.factories.IFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IPair;
 import gama.api.data.objects.IPoint;
@@ -31,7 +32,6 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.GamaPointType;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GamaPoint;
 
 /**
  * A static factory for creating and managing {@link IPoint} instances. This class handles the creation of 3D points,

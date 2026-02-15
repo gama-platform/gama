@@ -20,8 +20,6 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaColorFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IField;
@@ -33,6 +31,8 @@ import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
 import gama.api.utils.IImageProvider;
+import gama.api.utils.color.GamaColorFactory;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.util.file.GamaGeometryFile;
 import gama.dev.DEBUG;

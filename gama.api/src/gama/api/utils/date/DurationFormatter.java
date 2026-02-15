@@ -20,7 +20,6 @@ import java.time.temporal.TemporalField;
 import java.time.temporal.TemporalQueries;
 import java.time.temporal.TemporalQuery;
 
-import gama.api.data.factories.GamaDateFactory;
 import gama.api.gaml.types.GamaDateType;
 
 /**

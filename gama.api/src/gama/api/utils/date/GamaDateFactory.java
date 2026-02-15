@@ -8,21 +8,26 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.data.factories;
+package gama.api.utils.date;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAccessor;
 
+import gama.api.data.factories.IFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IDate;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.constants.GamlCoreUnits;
 import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaDateType;
+import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.date.InternalGamaDateFactory;
 
 /**
  * A static factory for creating and manipulating {@link IDate} instances. This class handles date and time related
@@ -30,11 +35,6 @@ import gama.api.utils.date.InternalGamaDateFactory;
  * actual creation to an {@link IDateFactory} implementation.
  */
 public class GamaDateFactory implements IFactory<IDate> {
-
-	/**
-	 * The internal factory implementation used to create date instances.
-	 */
-	private static IDateFactory InternalFactory = new InternalGamaDateFactory();
 
 	/**
 	 * The default time zone (ID) of the system.
@@ -60,7 +60,13 @@ public class GamaDateFactory implements IFactory<IDate> {
 	 * @return the corresponding {@link IDate} instance.
 	 */
 	public static IDate createFromISOString(final String isoString) {
-		return InternalFactory.createFromISOString(isoString);
+		try {
+			final TemporalAccessor t = GamaDateType.getFormatter(GamlCoreUnits.ISO_OFFSET_KEY, null).parse(isoString);
+			if (t instanceof Temporal tmp) return createFromTemporal(tmp);
+		} catch (final DateTimeParseException e) {
+			//
+		}
+		return new GamaDate(null, isoString);
 	}
 
 	/**
@@ -73,7 +79,7 @@ public class GamaDateFactory implements IFactory<IDate> {
 	 * @return a new {@link IDate} instance identical to the source.
 	 */
 	public static IDate createFromIDate(final IScope scope, final IDate date) {
-		return InternalFactory.createFromIDate(scope, date);
+		return new GamaDate(scope, date);
 	}
 
 	/**
@@ -84,7 +90,7 @@ public class GamaDateFactory implements IFactory<IDate> {
 	 * @return the corresponding {@link IDate} instance.
 	 */
 	public static IDate createFromTemporal(final Temporal temporal) {
-		return InternalFactory.createFromTemporal(temporal);
+		return new GamaDate(temporal);
 	}
 
 	/**
@@ -96,8 +102,8 @@ public class GamaDateFactory implements IFactory<IDate> {
 	 *            the container holding date information.
 	 * @return the corresponding {@link IDate} instance.
 	 */
-	public static IDate createFromContainer(final IScope scope, final IContainer c) {
-		return InternalFactory.createFromContainer(scope, c);
+	public static IDate createFromContainer(final IScope scope, final IContainer<?, ?> c) {
+		return new GamaDate(scope, c.listValue(scope, Types.INT, false));
 	}
 
 	/**
@@ -110,7 +116,7 @@ public class GamaDateFactory implements IFactory<IDate> {
 	 * @return the parsed {@link IDate} instance.
 	 */
 	public static IDate createFromString(final IScope scope, final String s) {
-		return InternalFactory.createFromString(scope, s);
+		return new GamaDate(scope, s);
 	}
 
 	/**
@@ -123,7 +129,7 @@ public class GamaDateFactory implements IFactory<IDate> {
 	 * @return the corresponding {@link IDate} instance.
 	 */
 	public static IDate createFromDouble(final IScope scope, final Double d) {
-		return InternalFactory.createFromDouble(scope, d);
+		return new GamaDate(scope, d);
 	}
 
 	/**
@@ -140,7 +146,7 @@ public class GamaDateFactory implements IFactory<IDate> {
 	 * @return the parsed {@link IDate} instance.
 	 */
 	public static IDate createWith(final IScope scope, final String value, final String pattern, final String locale) {
-		return InternalFactory.createWith(scope, value, pattern, locale);
+		return new GamaDate(scope, value, pattern, locale);
 	}
 
 	/**
@@ -155,7 +161,7 @@ public class GamaDateFactory implements IFactory<IDate> {
 	 * @return the parsed {@link IDate} instance.
 	 */
 	public static IDate createWith(final IScope scope, final String value, final String pattern) {
-		return InternalFactory.createWith(scope, value, pattern);
+		return new GamaDate(scope, value, pattern);
 	}
 
 	/**

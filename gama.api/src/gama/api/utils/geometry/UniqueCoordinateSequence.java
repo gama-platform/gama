@@ -17,7 +17,6 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.Iterators;
 
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonArray;
 import gama.api.data.objects.ICoordinates;

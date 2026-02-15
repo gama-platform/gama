@@ -16,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import gama.api.data.factories.GamaDateFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IDate;
 import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
@@ -25,6 +23,8 @@ import gama.api.gaml.symbols.IParameter.Batch;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.date.GamaDateFactory;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.core.experiment.parameters.ParametersSet;
 
 /**

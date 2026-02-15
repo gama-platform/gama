@@ -16,7 +16,6 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
 import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
 import gama.api.data.objects.IMatrix;
@@ -24,6 +23,7 @@ import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * The Class GamaMatrixType.

@@ -12,9 +12,9 @@ package gama.api.ui;
 
 import org.eclipse.core.runtime.QualifiedName;
 
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.objects.IColor;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.utils.color.GamaColorFactory;
 
 /**
  *

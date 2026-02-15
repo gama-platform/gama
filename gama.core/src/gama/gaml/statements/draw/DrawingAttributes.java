@@ -14,8 +14,6 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-import gama.api.data.factories.GamaColorFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
@@ -24,7 +22,9 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IDrawingAttributes.Flag;
 import gama.api.utils.IImageProvider;
+import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.Scaling3D;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;

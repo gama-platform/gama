@@ -40,11 +40,6 @@ public class GamaList<E> extends ArrayList<E> implements IList<E> {
 
 	@Override
 	public StreamEx<E> stream(final IScope scope) {
-		// Building an explicit copy for preventing concurrent modifications.
-		// Performances need to be tested as it may create bottlenecks (large population of agents being copied over and
-		// over again...). See #3626.
-		// E[] array = (E[]) this.toArray();
-		// return StreamEx.<E> of(array);
 		return StreamEx.<E> of(this);
 	}
 
@@ -121,8 +116,7 @@ public class GamaList<E> extends ArrayList<E> implements IList<E> {
 		if (indices == null || indices.isEmpty()) return null;
 		return get(scope, Cast.asInt(scope, indices.get(0)));
 		// We do not consider the case where multiple indices are used. Maybe
-		// could be used in the
-		// future to return a list of values ?
+		// could be used in the future to return a list of values ?
 	}
 
 }

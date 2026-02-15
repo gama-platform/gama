@@ -21,13 +21,13 @@ import org.eclipse.ui.services.AbstractServiceFactory;
 import org.eclipse.ui.services.IServiceLocator;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.objects.IColor;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.ui.IConsoleListener;
 import gama.api.ui.IGamaView;
 import gama.api.ui.IGui;
 import gama.api.ui.IGamaView.Console;
+import gama.api.utils.color.GamaColorFactory;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;

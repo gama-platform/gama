@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene;
 
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IPoint;
 import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.Scaling3D;
 import gama.ui.display.opengl.OpenGL;
 

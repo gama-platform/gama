@@ -14,9 +14,7 @@ import java.awt.image.BufferedImage;
 import java.util.Collection;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
@@ -29,6 +27,8 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.layers.ILayerStatement;
 import gama.api.utils.IImageProvider;
+import gama.api.utils.color.GamaColorFactory;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.topology.grid.GridPopulation;
 import gama.core.util.matrix.GamaFloatMatrix;

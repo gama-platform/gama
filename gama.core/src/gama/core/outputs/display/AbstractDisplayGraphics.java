@@ -18,13 +18,13 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IPoint;
 import gama.api.ui.displays.IDisplayData;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.layers.ILayer;
+import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.random.IRandom;
 import gama.api.utils.random.RandomUtils;
 import gama.core.outputs.layers.OverlayLayer;

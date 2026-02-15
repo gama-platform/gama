@@ -8,8 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.data.factories;
-import static gama.api.data.factories.IColorFactory.NAME_REGISTRY;
+package gama.api.utils.color;
 import java.awt.Color;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,13 +16,13 @@ import java.util.List;
 import java.util.Map;
 
 import gama.annotations.constants.ColorCSS;
+import gama.api.data.factories.IFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IContainer;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.color.InternalGamaColorFactory;
 
 /**
  * A static factory for creating and managing {@link IColor} instances. This class serves as a central point for
@@ -31,6 +30,17 @@ import gama.api.utils.color.InternalGamaColorFactory;
  * to an {@link IColorFactory} implementation.
  */
 public class GamaColorFactory implements IFactory<IColor> {
+	
+
+	/**
+	 * A map storing named colors accessible by their lowercase names.
+	 */
+	public static Map<String, IColor> NAME_REGISTRY = new HashMap<>();
+
+	/**
+	 * A thread-safe map storing colors indexed by their integer RGB value.
+	 */
+	static Map<Integer, IColor> INT_REGISTRY = Collections.synchronizedMap(new HashMap<>());
 
 
 	/**
@@ -38,10 +48,46 @@ public class GamaColorFactory implements IFactory<IColor> {
 	 */
 	public static IColor  BLACK, WHITE, RED, GREEN, BLUE, YELLOW, LIGHT_GRAY, GRAY;
 
+
 	/**
-	 * The internal factory implementation used to create color instances.
+	 * The Class NamedGamaColor.
 	 */
-	private static final IColorFactory InternalFactory = new InternalGamaColorFactory();
+	public static class NamedGamaColor extends GamaColor {
+
+		/**
+		 * Instantiates a new named gama color.
+		 *
+		 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+		 * @param name
+		 *            the name.
+		 * @param rgba
+		 *            the rgba
+		 * @date 20 août 2023
+		 */
+		NamedGamaColor(final String name, final int... rgba) {
+			super(rgba[0], rgba[1], rgba[2], rgba[3]);
+			this.name = name;
+		}
+
+		/** The name. */
+		final String name;
+
+		@Override
+		public String toString() {
+			return "color[" + name + "]";
+		}
+
+		@Override
+		public String serializeToGaml(final boolean includingBuiltIn) {
+			return "#" + name;
+		}
+
+		@Override
+		public String stringValue(final IScope scope) {
+			return name;
+		}
+
+	}
 
 	/**
 	 * Updates the internal factory builder and initializes default colors.
@@ -74,8 +120,13 @@ public class GamaColorFactory implements IFactory<IColor> {
 	 * @return the corresponding {@link IColor} instance.
 	 */
 
-	public static IColor get(final int rgb) {
-		return InternalFactory.get(rgb);
+	public static IColor get(final int rgba) {
+		IColor result = INT_REGISTRY.get(rgba);
+		if (result == null) {
+			result = new GamaColor(rgba);
+			INT_REGISTRY.put(rgba, result);
+		}
+		return result;
 	}
 
 	/**
@@ -88,7 +139,8 @@ public class GamaColorFactory implements IFactory<IColor> {
 	 * @return the new {@link IColor} instance.
 	 */
 	public static IColor createWithAlpha(final int rgb, final int alpha) {
-		return InternalFactory.create(rgb, alpha);
+		IColor c = get(rgb);
+		return createWithRGBA(c.red(), c.green(), c.blue(), alpha);
 	}
 
 	/**
@@ -101,7 +153,9 @@ public class GamaColorFactory implements IFactory<IColor> {
 	 * @return the new {@link IColor} instance.
 	 */
 	public static IColor createWithAlpha(final String c, final int alpha) {
-		return InternalFactory.createWithAlpha(c, alpha);
+		IColor color = get(c);
+		if (color == null) { color = BLACK; }
+		return color.withAlpha(alpha / 255d);
 	}
 
 	/**
@@ -116,7 +170,7 @@ public class GamaColorFactory implements IFactory<IColor> {
 	 * @return the corresponding {@link IColor} instance.
 	 */
 	public static IColor get(final int r, final int g, final int b) {
-		return InternalFactory.get(r, g, b);
+		return createWithRGBA(r, g, b, 0);
 	}
 
 	/**
@@ -133,7 +187,9 @@ public class GamaColorFactory implements IFactory<IColor> {
 	 * @return the corresponding {@link IColor} instance.
 	 */
 	public static IColor createWithRGBA(final int r, final int g, final int b, final int a) {
-		return InternalFactory.create(r, g, b, a);
+		// rgb in 3 components + alpha
+		return get((normalize(a) & 0xFF) << 24 | (normalize(r) & 0xFF) << 16 | (normalize(g) & 0xFF) << 8
+				| (normalize(b) & 0xFF) << 0);
 	}
 
 	/**
@@ -151,7 +207,7 @@ public class GamaColorFactory implements IFactory<IColor> {
 	 * @return the corresponding {@link IColor} instance.
 	 */
 	public static IColor createWithDoubleAlpha(final int r, final int g, final int b, final double t) {
-		return InternalFactory.getWithDoubleAlpha(r, g, b, t);
+		return createWithRGBA((r), (g), (b), normalize(t));
 	}
 
 	/**
@@ -168,7 +224,7 @@ public class GamaColorFactory implements IFactory<IColor> {
 	 * @return the corresponding {@link IColor} instance.
 	 */
 	public static IColor getWithDoubles(final double r, final double g, final double b, final double t) {
-		return InternalFactory.getWithDoubles(r, g, b, t);
+		return createWithRGBA(normalize(r), normalize(g), normalize(b), normalize(t));
 	}
 
 	/**
@@ -181,7 +237,7 @@ public class GamaColorFactory implements IFactory<IColor> {
 	 * @return the new {@link IColor} instance.
 	 */
 	public static IColor createWithAlpha(final Color c, final double t) {
-		return InternalFactory.createWithAlpha(c, t);
+		return createWithRGBA(c.getRed(), c.getGreen(), c.getBlue(), normalize(t));
 	}
 
 	/**
@@ -257,7 +313,13 @@ public class GamaColorFactory implements IFactory<IColor> {
 	 * @return the {@link IColor} instance.
 	 */
 	private static IColor register(final String name, final int r, final int g, final int b, final int a) {
-		return InternalFactory.createWithNameAndRGBA(name, r, g, b, a);
+		IColor c = NAME_REGISTRY.get(name);
+		if (c == null) {
+			c = new NamedGamaColor(name, normalize(r), normalize(g), normalize(b), normalize(a));
+			NAME_REGISTRY.put(name, c);
+			INT_REGISTRY.put(c.getRGB(), c);
+		}
+		return c;
 	}
 
 	/**
@@ -305,8 +367,8 @@ public class GamaColorFactory implements IFactory<IColor> {
 			default -> {
 			}
 		}
-		if (obj instanceof IContainer)
-			return createFrom(scope, ((IContainer) obj).listValue(scope, Types.NO_TYPE, false), param, copy);
+		if (obj instanceof IContainer<?,?> c)
+			return createFrom(scope, c.listValue(scope, Types.NO_TYPE, false), param, copy);
 		if (obj instanceof String) {
 			final String s = ((String) obj).toLowerCase();
 			IColor c = NAME_REGISTRY.get(s);
@@ -367,8 +429,35 @@ public class GamaColorFactory implements IFactory<IColor> {
 		return createFrom(scope, value, null, false);
 	}
 
-	public static IColor createByMerging(IColor c1, IColor c2) {
-		return InternalFactory.createByMerging(c1, c2);
+	public static IColor createByMerging(IColor c1, IColor c2) { 
+		int r = (c1.red() + c2.red()) / 2;
+		int g = (c1.green() + c2.green()) / 2;
+		int b = (c1.blue() + c2.blue()) / 2;
+		int a = (c1.alpha() + c2.alpha()) / 2;
+		return createWithRGBA(r, g, b, a);
+	}
+	
+	/**
+	 * Normalize.
+	 *
+	 * @param number
+	 *            the transp
+	 * @return the int
+	 */
+	// returns a value between 0 and 255 from a double between 0 and 1
+	private static int normalize(final double number) {
+		return (int) (number < 0 ? 0 : number > 1 ? 255 : 255 * number);
+	}
+
+	/**
+	 * Normalize.
+	 *
+	 * @param number
+	 *            the rgb comp
+	 * @return the int
+	 */
+	private static int normalize(final int number) {
+		return number < 0 ? 0 : number > 255 ? 255 : number;
 	}
 
 }

@@ -13,13 +13,13 @@ package gama.core.outputs.layers.charts;
 import java.util.HashMap;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.objects.IColor;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.color.GamaColorFactory;
 import gama.gaml.operators.Random;
 
 /**

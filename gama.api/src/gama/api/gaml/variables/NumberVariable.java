@@ -21,8 +21,6 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaDateFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IDate;
 import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
@@ -32,6 +30,8 @@ import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.InScope;
+import gama.api.utils.date.GamaDateFactory;
+import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * The Class IntVariable.

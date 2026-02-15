@@ -31,7 +31,6 @@ import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.validation.ValidNameValidator;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.objects.IColor;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -46,6 +45,7 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.color.GamaColorFactory;
 import gama.gaml.statements.UserCommandStatement.UserCommandValidator;
 
 /**

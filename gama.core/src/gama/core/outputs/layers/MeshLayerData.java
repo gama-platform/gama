@@ -11,9 +11,7 @@
 package gama.core.outputs.layers;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaColorFactory;
 import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.factories.GamaPointFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IField;
 import gama.api.data.objects.IMatrix;
@@ -25,6 +23,8 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.layers.ILayerStatement;
 import gama.api.utils.IImageProvider;
+import gama.api.utils.color.GamaColorFactory;
+import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * The Class MeshLayerData.
