@@ -470,7 +470,15 @@ public interface ISpecies
 	 */
 	@Override
 	default void setEnclosing(final ISymbol enclosing) {
+		if (isBuiltIn()) return;
 		if (enclosing instanceof ISpecies s) { setMacroSpecies(s); }
 	}
+
+	/**
+	 * Checks if is built in.
+	 *
+	 * @return true, if is built in
+	 */
+	default boolean isBuiltIn() { return getDescription() != null && getDescription().isBuiltIn(); }
 
 }

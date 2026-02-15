@@ -16,6 +16,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.base.Objects;
+
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISkillDescription;
@@ -259,7 +261,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	@Override
 	public boolean isPeer(final ISpecies other) {
-		return other != null && other.getMacroSpecies().equals(this.getMacroSpecies());
+		return other != null && Objects.equal(other.getMacroSpecies(), this.getMacroSpecies());
 	}
 
 	@Override
@@ -375,6 +377,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	@Override
 	public void dispose() {
+		if (isBuiltIn()) return;
 		super.dispose();
 		for (final IVariable v : variables.values()) { v.dispose(); }
 		variables.clear();

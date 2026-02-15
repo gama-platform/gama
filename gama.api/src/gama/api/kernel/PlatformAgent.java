@@ -253,9 +253,7 @@ public class PlatformAgent implements ITopLevelAgent.Platform {
 	}
 
 	@Override
-	public ISpecies getSpecies() {
-		return GamaMetaModel.INSTANCE.getAbstractModelSpecies().getMicroSpecies(IKeyword.PLATFORM);
-	}
+	public ISpecies getSpecies() { return GamaMetaModel.getSpecies(IKeyword.PLATFORM); }
 
 	@Override
 	public IClock getClock() { return IClock.NULL_CLOCK; }

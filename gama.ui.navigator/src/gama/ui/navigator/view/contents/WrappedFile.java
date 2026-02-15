@@ -24,7 +24,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 
 import gama.api.additions.GamaBundleLoader;
+import gama.api.constants.IKeyword;
 import gama.api.kernel.GamaMetaModel;
+import gama.api.utils.files.IFileMetadataProvider;
 import gama.api.utils.files.IGamaFileMetaData;
 import gama.core.util.file.GMLInfo;
 import gama.core.util.file.OSMInfo;
@@ -94,7 +96,7 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 		final IFile f = getResource();
 		hasSupportFiles = FileMetaDataProvider.getInstance().hasSupportFiles(f);
 		isShapeFileSupport =
-				FileMetaDataProvider.SHAPEFILE_SUPPORT_CT_ID.equals(FileMetaDataProvider.getContentTypeId(f));
+				IFileMetadataProvider.SHAPEFILE_SUPPORT_CT_ID.equals(FileMetaDataProvider.getContentTypeId(f));
 	}
 
 	/**
@@ -125,7 +127,8 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 
 	@Override
 	public Object[] getNavigatorChildren() {
-		if (NavigatorContentProvider.FILE_CHILDREN_ENABLED && (isGamaFile() || hasSupportFiles)) return getFileChildren();
+		if (NavigatorContentProvider.FILE_CHILDREN_ENABLED && (isGamaFile() || hasSupportFiles))
+			return getFileChildren();
 		return EMPTY;
 	}
 
@@ -146,17 +149,17 @@ public class WrappedFile extends WrappedResource<WrappedResource<?, ?>, IFile> {
 			}
 			final IGamaFileMetaData metaData = getMetaDataProvider().getMetaData(p, false, false);
 			Map<String, String> attributes = null;
-			if (metaData instanceof ShapeInfo info) {
-				attributes = info.getAttributes();
-			} else if (metaData instanceof GMLInfo info) {
-				attributes = info.getAttributes();
-			} else if (metaData instanceof OSMInfo info) {
-				attributes = info.getAttributes();
+			switch (metaData) {
+				case ShapeInfo info -> attributes = info.getAttributes();
+				case GMLInfo info -> attributes = info.getAttributes();
+				case OSMInfo info -> attributes = info.getAttributes();
+				case null, default -> {
+				}
 			}
 			if (attributes != null && !attributes.isEmpty()) {
 				Map<String, String> tags = new LinkedHashMap<>(attributes);
 				attributes.forEach((k, v) -> {
-					if (GamaMetaModel.getAgentSpeciesDescription().hasAttribute(k)) {
+					if (GamaMetaModel.getSpeciesDescription(IKeyword.AGENT).hasAttribute(k)) {
 						tags.put(k, tags.get(k) + " <- built-in attribute of agents");
 						color = GamaColors.system(SWT.COLOR_DARK_RED);
 					}

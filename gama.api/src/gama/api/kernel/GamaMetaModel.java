@@ -61,59 +61,14 @@ public class GamaMetaModel {
 	/** The species skills. */
 	private final Multimap<String, String> speciesSkills = HashMultimap.create();
 
-	/** The abstract model species. */
-	private ISpecies abstractModelSpecies, abstractAgentSpecies;
+	/** The built in species. */
+	private final Map<String, ISpecies> builtInSpecies = new HashMap<>();
+
+	/** The built in species descriptions. */
+	private final Map<String, ISpeciesDescription> builtInSpeciesDescriptions = new HashMap<>();
 
 	/** The is initialized. */
 	public volatile boolean isInitialized;
-
-	/** The experiment. */
-	private ISpeciesDescription agent;
-
-	/** The model. */
-	private IModelDescription model;
-
-	/** The experiment. */
-	private IExperimentDescription experiment;
-
-	/** The platform. */
-	private ISpeciesDescription.Platform platform;
-
-	/**
-	 * Gets the agent species description.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the agent species description
-	 * @date 15 janv. 2024
-	 */
-	public static ISpeciesDescription getAgentSpeciesDescription() { return INSTANCE.agent; }
-
-	/**
-	 * Gets the model description.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the model description
-	 * @date 15 janv. 2024
-	 */
-	public static IModelDescription getModelDescription() { return INSTANCE.model; }
-
-	/**
-	 * Gets the experiment description.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the experiment description
-	 * @date 15 janv. 2024
-	 */
-	public static IExperimentDescription getExperimentDescription() { return INSTANCE.experiment; }
-
-	/**
-	 * Gets the platform species description.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the platform species description
-	 * @date 15 janv. 2024
-	 */
-	public static ISpeciesDescription.Platform getPlatformSpeciesDescription() { return INSTANCE.platform; }
 
 	/**
 	 * The Class SpeciesRecord.
@@ -143,6 +98,35 @@ public class GamaMetaModel {
 	}
 
 	/**
+	 * Gets the species description.
+	 *
+	 * @param name
+	 *            the name
+	 * @return the species description
+	 */
+	public static ISpeciesDescription getSpeciesDescription(final String name) {
+		return INSTANCE.builtInSpeciesDescriptions.get(name);
+	}
+
+	/**
+	 * Gets the species.
+	 *
+	 * @param name
+	 *            the name
+	 * @return the species
+	 */
+	public static ISpecies getSpecies(final String name) {
+		ISpecies s = INSTANCE.builtInSpecies.get(name);
+		if (s == null) {
+			ISpeciesDescription sd = getSpeciesDescription(name);
+			if (sd == null) return null;
+			s = sd.compileAsBuiltIn();
+			INSTANCE.builtInSpecies.put(name, s);
+		}
+		return s;
+	}
+
+	/**
 	 * Builds the.
 	 */
 	public void build() {
@@ -150,12 +134,11 @@ public class GamaMetaModel {
 		// "model")
 		final SpeciesRecord ap = tempSpecies.remove(AGENT);
 		// "agent" has no super-species yet
-		agent = buildSpecies(ap, null, null);
+		ISpeciesDescription agent = buildSpecies(ap, null, null);
 
 		// We then build "model", sub-species of "agent"
 		final SpeciesRecord wp = tempSpecies.remove(MODEL);
-		model = (IModelDescription) buildSpecies(wp, null, agent);
-
+		IModelDescription model = (IModelDescription) buildSpecies(wp, null, null);
 		// We close the first loop by putting agent "inside" model
 		agent.setEnclosingDescription(model);
 		model.addChild(agent);
@@ -163,7 +146,7 @@ public class GamaMetaModel {
 		// We create "experiment" as the root of all experiments, sub-species of
 		// "agent"
 		final SpeciesRecord ep = tempSpecies.remove(EXPERIMENT);
-		experiment = (IExperimentDescription) buildSpecies(ep, null, agent);
+		IExperimentDescription experiment = (IExperimentDescription) buildSpecies(ep, null, agent);
 		experiment.finalizeDescription();
 
 		// We now can attach "experiment" as a child of "model"
@@ -198,6 +181,7 @@ public class GamaMetaModel {
 		ISpeciesDescription desc = create(macro, parent, proto.clazz, proto.name, proto.helper, proto.plugin, skills);
 		desc.copyJavaAdditions();
 		desc.inheritFromParent();
+		builtInSpeciesDescriptions.put(proto.name, desc);
 		return desc;
 	}
 
@@ -228,8 +212,8 @@ public class GamaMetaModel {
 			final Class clazz, final String name, final IAgentConstructor helper, final String plugin,
 			final Set<String> skills) {
 		IDescriptionFactory factory = GAML.getDescriptionFactory();
-		if (IKeyword.PLATFORM.equals(name)) return platform =
-				factory.createPlatformSpeciesDescription(name, clazz, macro, parent, helper, skills, plugin);
+		if (IKeyword.PLATFORM.equals(name))
+			return factory.createPlatformSpeciesDescription(name, clazz, macro, parent, helper, skills, plugin);
 		if (ISimulationAgent.class.isAssignableFrom(clazz)) // macro represents the parent here (except for root)
 			return factory.createRootModelDescription(name, clazz, macro, parent, helper, skills, plugin);
 		if (IExperimentAgent.class.isAssignableFrom(clazz))
@@ -248,26 +232,6 @@ public class GamaMetaModel {
 	 */
 	public void addSpeciesSkill(final String spec, final String name) {
 		speciesSkills.put(spec, name);
-	}
-
-	/**
-	 * Gets the abstract model species.
-	 *
-	 * @return the abstract model species
-	 */
-	public ISpecies getAbstractModelSpecies() {
-		if (abstractModelSpecies == null) { abstractModelSpecies = (ISpecies) getModelDescription().compile(); }
-		return abstractModelSpecies;
-	}
-
-	/**
-	 * Gets the abstract agent species.
-	 *
-	 * @return the abstract agent species
-	 */
-	public ISpecies getAbstractAgentSpecies() {
-		if (abstractAgentSpecies == null) { abstractAgentSpecies = (ISpecies) getAgentSpeciesDescription().compile(); }
-		return abstractAgentSpecies;
 	}
 
 }

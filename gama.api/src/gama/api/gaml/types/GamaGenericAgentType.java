@@ -56,7 +56,7 @@ public class GamaGenericAgentType extends GamaAgentType<IAgent> {
 
 	@Override
 	public ISpeciesDescription getSpecies() {
-		if (species == null) { species = GamaMetaModel.getAgentSpeciesDescription(); }
+		if (species == null) { species = GamaMetaModel.getSpeciesDescription(IKeyword.AGENT); }
 		return species;
 	}
 

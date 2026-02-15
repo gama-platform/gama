@@ -26,6 +26,7 @@ import org.geotools.referencing.CRS;
 
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ISpeciesDescription.Platform;
 import gama.api.constants.Generators;
 import gama.api.constants.IKeyword;
 import gama.api.data.factories.GamaColorFactory;
@@ -1126,7 +1127,7 @@ public class GamaPreferences {
 		if (key == null) return;
 		GAMA.getPreferenceStore().register(gp);
 		// Adds the preferences to the platform species if it is already created
-		final ISpeciesDescription.Platform spec = GamaMetaModel.getPlatformSpeciesDescription();
+		final ISpeciesDescription.Platform spec = (Platform) GamaMetaModel.getSpeciesDescription(IKeyword.PLATFORM);
 		if (spec != null && !spec.hasAttribute(key) && gp.inGaml()) { spec.addPrefAsVariable(gp); }
 	}
 

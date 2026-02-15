@@ -425,6 +425,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 
 	@Override
 	public void dispose() {
+		if (isBuiltIn()) return;
 		GAMA.getPlatformAgent().restorePrefs();
 		// DEBUG.LOG("ExperimentSpecies.dipose BEGIN");
 		// Dec 2015 Addition

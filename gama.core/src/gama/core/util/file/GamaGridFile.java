@@ -262,9 +262,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			try {
 				privateCreateCoverage(scope, fis);
 			} catch (final Exception e) {
-				String name = getName(scope);
 				if (isTiff(scope)) throw GamaRuntimeException
-						.error("The format of " + name + " seems incorrect: " + e.getMessage(), scope);
+						.error("The format of " + getName(scope) + " seems incorrect: " + e.getMessage(), scope);
 				// A problem appeared, likely related to the wrong format of the file (see Issue 412)
 				// reportError(scope, warning("Format of " + name + " seems incorrect. Trying to read it anyway.",
 				// scope),

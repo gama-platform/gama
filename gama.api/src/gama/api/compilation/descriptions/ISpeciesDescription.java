@@ -16,6 +16,7 @@ import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IAgentConstructor;
+import gama.api.kernel.species.ISpecies;
 import gama.api.utils.prefs.Pref;
 
 /**
@@ -210,4 +211,9 @@ public interface ISpeciesDescription extends ITypeDescription {
 	 * @return
 	 */
 	Iterable<String> getSkillsNames();
+
+	/**
+	 * @return
+	 */
+	ISpecies compileAsBuiltIn();
 }

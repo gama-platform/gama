@@ -56,25 +56,25 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
 
 /**
  * Abstract base class for all GAML symbol descriptions in the compilation pipeline.
- * 
+ *
  * <p>
  * SymbolDescription serves as the core intermediary representation between parsed GAML source code and executable
  * runtime objects. It bridges the gap between the Abstract Syntax Tree (AST) produced by the parser and the runtime
  * {@link ISymbol} instances that execute during simulation.
  * </p>
- * 
+ *
  * <p>
  * <strong>Architectural Role:</strong>
  * </p>
  *
  * <pre>
- * Source Code (GAML) 
+ * Source Code (GAML)
  *   → Parser → ISyntacticElement (AST)
  *   → DescriptionFactory → SymbolDescription (Semantic Model)  ← THIS CLASS
  *   → Compiler → ISymbol (Runtime Objects)
  *   → Execution
  * </pre>
- * 
+ *
  * <p>
  * <strong>Key Responsibilities:</strong>
  * </p>
@@ -86,7 +86,7 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
  * <li><strong>Symbol Compilation:</strong> Compiles descriptions into executable runtime symbols</li>
  * <li><strong>Error Reporting:</strong> Provides detailed error messages with source location context</li>
  * </ul>
- * 
+ *
  * <p>
  * <strong>Description Hierarchy:</strong>
  * </p>
@@ -106,7 +106,7 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
  *   ├── SkillDescription → Reusable behavior modules
  *   └── PrimitiveDescription → Built-in operators and functions
  * </pre>
- * 
+ *
  * <p>
  * <strong>State Management with Flags:</strong>
  * </p>
@@ -120,7 +120,7 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
  * <li>{@link Flag#Abstract} - Symbol is abstract and cannot be instantiated</li>
  * <li>{@link Flag#NoTypeInference} - Disable automatic type inference</li>
  * </ul>
- * 
+ *
  * <p>
  * <strong>Facets (Attributes):</strong>
  * </p>
@@ -136,7 +136,7 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
  *   }
  * }
  * }</pre>
- * 
+ *
  * <p>
  * <strong>Memory Optimization:</strong>
  * </p>
@@ -146,7 +146,7 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
  * <li>Weak references used for model description to prevent circular retention</li>
  * <li>Prototype (meta) information shared across instances of same symbol type</li>
  * </ul>
- * 
+ *
  * <p>
  * <strong>Thread Safety:</strong>
  * </p>
@@ -154,7 +154,7 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
  * NOT thread-safe. Descriptions are created and validated sequentially during compilation. The compilation process is
  * single-threaded by design for error reporting consistency.
  * </p>
- * 
+ *
  * <p>
  * <strong>Validation Process:</strong>
  * </p>
@@ -165,7 +165,7 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
  * <li>Validate child descriptions recursively</li>
  * <li>Mark as validated if successful</li>
  * </ol>
- * 
+ *
  * <p>
  * <strong>Performance Considerations:</strong>
  * </p>
@@ -175,7 +175,7 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
  * <li>Typical large models have 1000-10000 descriptions</li>
  * <li>Memory usage: ~200-500 bytes per description depending on facets</li>
  * </ul>
- * 
+ *
  * <p>
  * <strong>Design Patterns:</strong>
  * </p>
@@ -201,12 +201,12 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * State flags for this description stored in a compact EnumSet.
-	 * 
+	 *
 	 * <p>
 	 * <strong>Memory Optimization:</strong> EnumSet uses a single long value for up to 64 flags, providing O(1)
 	 * operations with minimal memory overhead (~16 bytes vs ~40+ for HashSet).
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Common flags include: BuiltIn, Validated, Synthetic, Abstract, NoTypeInference. See {@link Flag} enum for
 	 * complete list.
@@ -216,17 +216,17 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * The facets (attributes) associated with this symbol.
-	 * 
+	 *
 	 * <p>
 	 * Facets are key-value pairs where keys are facet names (e.g., "name", "type", "value") and values are
 	 * {@link IExpressionDescription} objects that can be compiled to expressions.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Lazy Initialization:</strong> Null until first facet is set, saving memory for symbols without facets.
 	 * Nullified again if all facets are removed.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Example:</strong> For {@code int age <- 10;}, facets would contain: {@code {name: "age", init: "10"}}
 	 * </p>
@@ -235,12 +235,12 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * The underlying EMF EObject from the parser's Abstract Syntax Tree.
-	 * 
+	 *
 	 * <p>
 	 * Provides access to source code location for error reporting and debugging. Null for built-in symbols defined
 	 * programmatically rather than parsed from source.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Usage:</strong> Used by {@link #error(String)} and {@link #info(String)} to generate error messages with
 	 * file/line information.
@@ -250,12 +250,12 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * The description that encloses/contains this description.
-	 * 
+	 *
 	 * <p>
 	 * Forms the parent-child hierarchy of the model structure. For example: A variable's enclosing description is its
 	 * species, a species' enclosing description is the model or parent species.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Null for:</strong> Top-level model descriptions which have no parent.
 	 * </p>
@@ -264,19 +264,19 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * The model description this symbol belongs to.
-	 * 
+	 *
 	 * <p>
 	 * Provides access to global model context including other species, global variables, and model-level configuration.
 	 * All descriptions in a model share the same model description.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Phase 2 Optimization:</strong> Uses {@link WeakReference} to prevent circular retention. Since model
 	 * descriptions can hold references to all their children, and children hold references back to the model, this
 	 * creates a circular reference that can prevent garbage collection. WeakReference allows the model to be collected
 	 * when no longer in use.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Memory Impact:</strong> Reduces retained heap in scenarios where models are frequently loaded/unloaded
 	 * (e.g., batch processing, testing).
@@ -286,12 +286,12 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * The origin name of the symbol that created this description.
-	 * 
+	 *
 	 * <p>
 	 * Used for tracing inheritance and imports. For example, if a species inherits an action from a parent species,
 	 * originName would be the parent species name.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Set from:</strong> Either the {@link IKeyword#ORIGIN} facet or the enclosing description's name during
 	 * construction.
@@ -301,12 +301,12 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * The name of this symbol.
-	 * 
+	 *
 	 * <p>
 	 * Typically extracted from the "name" facet during construction. Used as the identifier for the symbol in its
 	 * containing scope.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Caching:</strong> Cached here for performance rather than repeatedly accessing facets.
 	 * </p>
@@ -315,11 +315,11 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * The GAML keyword that defines this symbol's type.
-	 * 
+	 *
 	 * <p>
 	 * Examples: "species", "action", "reflex", "int", "float", "create", "if", "loop"
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Immutable:</strong> Set at construction and never changes. Used to look up the symbol's prototype
 	 * information.
@@ -329,12 +329,12 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * The GAML type of this symbol.
-	 * 
+	 *
 	 * <p>
 	 * For variables and expressions, this is their data type (int, float, agent, etc.). For statements, this is
 	 * typically the return type if applicable.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Type Inference:</strong> May be inferred from facets like "init", "value", "function", unless
 	 * {@link Flag#NoTypeInference} is set.
@@ -344,16 +344,16 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * The prototype (meta-information) for this symbol type.
-	 * 
+	 *
 	 * <p>
 	 * Shared across all instances of the same symbol type. Contains information like: required/optional facets, allowed
 	 * contexts, serializer, validator, etc.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Flyweight Pattern:</strong> Shared immutable metadata reduces memory per instance.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Lookup:</strong> Retrieved from {@link ArtefactProtoRegistry} based on keyword and species context.
 	 * </p>
@@ -999,7 +999,7 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * Gets the model description this symbol belongs to.
-	 * 
+	 *
 	 * <p>
 	 * <strong>Phase 2 Optimization:</strong> Unwraps the {@link WeakReference} to get the actual model description.
 	 * Returns null if the model has been garbage collected.
@@ -1040,7 +1040,7 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * Sets the enclosing description and updates the model description accordingly.
-	 * 
+	 *
 	 * <p>
 	 * <strong>Phase 2 Optimization:</strong> Wraps the model description in a {@link WeakReference} to prevent circular
 	 * retention issues.
@@ -1240,12 +1240,12 @@ public abstract class SymbolDescription implements IDescription {
 
 	/**
 	 * Gets the GAML type of this symbol. Computes it if not already set.
-	 * 
+	 *
 	 * <p>
 	 * <strong>Optimization:</strong> Type is computed once on first access and cached in the {@code type} field.
 	 * Subsequent calls return the cached value immediately.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Type computation can be expensive as it may involve:
 	 * <ul>
@@ -1755,7 +1755,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return the compiled symbol, or null if compilation failed
 	 */
 	@Override
-	public final ISymbol compile() {
+	public ISymbol compile() {
 		validate();
 		final ISymbol cs = proto.create(this);
 		if (cs == null) return null;

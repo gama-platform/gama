@@ -815,10 +815,6 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				if (originalUserSignature.matchesDesiredSignature(formalParametersSignature)) {
 					// Calculate "distance" - measure of how many type conversions are needed
 					final int dist = Signature.distanceBetween(formalParametersSignature, originalUserSignature);
-					if ("+".equals(op)) {
-						DEBUG.LOG("Distance between " + originalUserSignature + " and " + formalParametersSignature
-								+ " is " + dist);
-					}
 					if (dist == 0) {
 						// Perfect match found - use it immediately (no conversions needed)
 						userSignature = formalParametersSignature;

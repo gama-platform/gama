@@ -188,6 +188,7 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 
 	@Override
 	public void dispose() {
+		if (isBuiltIn()) return;
 		super.dispose();
 		for (final IExperimentSpecies exp : experiments.values()) { exp.dispose(); }
 		experiments.clear();
@@ -199,15 +200,14 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 	public ISpecies getSpecies(final String speciesName) {
 		if (speciesName == null) return null;
 		if (speciesName.equals(getName())) return this;
-		if (IKeyword.MODEL.equals(speciesName)) return GamaMetaModel.INSTANCE.getAbstractModelSpecies();
-		if (IKeyword.AGENT.equals(speciesName)) return GamaMetaModel.INSTANCE.getAbstractAgentSpecies();
+		ISpecies sp = GamaMetaModel.getSpecies(speciesName);
 		/*
 		 * the original is: return getAllSpecies().get(speciesName);
 		 */
 
 		// hqnghi 11/Oct/13
 		// get experiementSpecies in any model
-		ISpecies sp = getAllSpecies().get(speciesName);
+		if (sp == null) { sp = getAllSpecies().get(speciesName); }
 		if (sp == null) {
 			sp = getExperiment(speciesName);
 			if (sp == null) {
@@ -256,7 +256,7 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 				allSpecies.put(currentSpecies.getName(), currentSpecies);
 				final List<ISpecies> theMicroSpecies = currentSpecies.getMicroSpecies();
 				for (final ISpecies microSpec : theMicroSpecies) {
-					if (microSpec.getMacroSpecies().equals(currentSpecies)) { speciesStack.push(microSpec); }
+					if (currentSpecies.equals(microSpec.getMacroSpecies())) { speciesStack.push(microSpec); }
 				}
 			}
 		}

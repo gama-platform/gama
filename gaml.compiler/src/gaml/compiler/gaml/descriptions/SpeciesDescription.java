@@ -50,10 +50,12 @@ import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
+import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.kernel.agent.IMacroAgent;
 import gama.api.kernel.skill.ISkill;
+import gama.api.kernel.species.ISpecies;
 import gama.api.utils.GamlProperties;
 import gama.api.utils.JavaUtils;
 import gama.dev.DEBUG;
@@ -550,7 +552,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 			sd.error("For the moment, grids cannot be defined as micro-species anywhere else than in the model");
 		}
 		getMicroSpeciesMap().put(sd.getName(), sd);
-		DEBUG.LOG("Adding micro-species " + sd.getName() + " to " + getName());
+		// DEBUG.LOG("Adding micro-species " + sd.getName() + " to " + getName());
 		invalidateMinimalAgents();
 	}
 
@@ -1371,6 +1373,23 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 				control == null ? Collections.emptyList() : Collections.singletonList(control);
 		if (skills == null) return base;
 		return Iterables.concat(skills, base);
+	}
+
+	@Override
+	public ISpecies compile() {
+		if (isBuiltIn()) return GamaMetaModel.getSpecies(getName());
+		// Compilation logic for non-built-in species goes here
+		return (ISpecies) super.compile();
+	}
+
+	/**
+	 * Compile as built in.
+	 *
+	 * @return the i species
+	 */
+	@Override
+	public ISpecies compileAsBuiltIn() {
+		return (ISpecies) super.compile();
 	}
 
 }
