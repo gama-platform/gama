@@ -50,11 +50,72 @@ import gama.dev.FLAGS;
 
 /**
  * A static factory for creating and managing {@link IList} instances. This class serves as a frontend for list
- * creation, delegating to an {@link IListFactory}. It supports creation from various sources (arrays, streams,
- * collections) and handles GAML-specific type casting and wrapping logic.
- *
+ * creation, delegating to concrete implementations ({@link GamaList}, {@link GamaListWrapper}, etc.). It supports
+ * creation from various sources (arrays, streams, collections) and handles GAML-specific type casting and wrapping
+ * logic.
+ * 
+ * <h2>Factory Method Categories</h2>
+ * <ul>
+ * <li><b>Core creation methods</b> - {@link #create(IType)}, {@link #create(IType, int)} - Create empty lists</li>
+ * <li><b>Scope-aware methods</b> - {@link #create(IScope, IType, Object...)} - Cast elements according to GAML
+ * contracts</li>
+ * <li><b>Wrapping methods</b> - {@link #wrap(IType, List)}, {@link #wrap(IType, Object[])} - Zero-copy wrappers for
+ * existing data</li>
+ * <li><b>Without-casting methods</b> - {@link #createWithoutCasting(IType, Object[])} - Skip type casting for
+ * performance</li>
+ * <li><b>Stream/Collector support</b> - {@link #toGamaList()}, {@link #create(IType, Stream)} - Integration with Java
+ * Streams API</li>
+ * </ul>
+ * 
+ * <h2>Usage Examples</h2>
+ * 
+ * <pre>
+ * // Creating an empty list with a specific content type
+ * IList&lt;Integer&gt; numbers = GamaListFactory.create(Types.INT);
+ * 
+ * // Creating a list from an array with type casting (requires scope)
+ * IList&lt;Double&gt; values = GamaListFactory.create(scope, Types.FLOAT, 1, 2.5, "3.14");
+ * 
+ * // Creating a list without casting (for performance when types are guaranteed)
+ * IList&lt;String&gt; strings = GamaListFactory.createWithoutCasting(Types.STRING, "a", "b", "c");
+ * 
+ * // Wrapping an existing Java list (zero-copy, changes are bidirectional)
+ * List&lt;IAgent&gt; javaList = new ArrayList&lt;&gt;();
+ * IList&lt;IAgent&gt; gamaList = GamaListFactory.wrap(Types.AGENT, javaList);
+ * 
+ * // Using with Java Streams
+ * IList&lt;Integer&gt; streamResult = IntStream.range(0, 10)
+ *     .boxed()
+ *     .collect(GamaListFactory.toGamaList());
+ * 
+ * // Converting objects to lists
+ * IList&lt;?&gt; converted = GamaListFactory.toList(scope, someObject);
+ * </pre>
+ * 
+ * <h2>Performance Considerations</h2>
+ * <ul>
+ * <li><b>Wrapping vs. Copying</b>: {@code wrap()} methods provide zero-copy views but changes affect the original
+ * data. {@code create()} methods always create new independent lists.</li>
+ * <li><b>Casting Overhead</b>: Methods with {@link IScope} parameter perform type casting based on
+ * {@code FLAGS.CAST_CONTAINER_CONTENTS}. Use {@code createWithoutCasting()} when type safety is guaranteed.</li>
+ * <li><b>Parallel Filling</b>: {@link #create(IScope, IExpression, Integer, boolean)} supports parallel execution for
+ * expression evaluation when creating large lists.</li>
+ * </ul>
+ * 
+ * <h2>Type Casting Behavior</h2>
+ * <p>
  * All methods accepting an {@link IScope} strictly adhere to GAML container contracts, ensuring elements are cast to
- * the list's content type. Methods without a scope generally wrap existing data to avoid unnecessary casting overhead.
+ * the list's content type when {@code FLAGS.CAST_CONTAINER_CONTENTS} is enabled (default: true). Methods without a
+ * scope generally wrap existing data to avoid unnecessary casting overhead.
+ * </p>
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
+ * @see IList
+ * @see GamaList
+ * @see GamaListWrapper
+ * @see GamaListArrayWrapper
+ * @see GamaListCollectionWrapper
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaListFactory implements IFactory<IList> {
@@ -65,6 +126,11 @@ public class GamaListFactory implements IFactory<IList> {
 
 	/** The empty list. */
 	public static IList<Object> EMPTY_LIST = wrap(Types.NO_TYPE, Collections.emptyList());
+
+	// ================================================================================================
+	// STREAM AND COLLECTOR SUPPORT
+	// Methods for integrating with Java Streams API
+	// ================================================================================================
 
 	/**
 	 * To gama list.
@@ -123,6 +189,11 @@ public class GamaListFactory implements IFactory<IList> {
 	public static <T> IList<T> create(final IType t, final Stream<T> stream) {
 		return (IList<T>) stream.collect(TO_GAMA_LIST);
 	}
+
+	// ================================================================================================
+	// CREATION WITHOUT CASTING
+	// Methods for creating lists without type casting (performance-optimized)
+	// ================================================================================================
 
 	/**
 	 * Creates a list from an array of objects without casting. Warning: The caller must ensure the objects are
@@ -185,6 +256,11 @@ public class GamaListFactory implements IFactory<IList> {
 		for (T o : objects) { list.add(o); }
 		return list;
 	}
+
+	// ================================================================================================
+	// SCOPE-AWARE CREATION WITH CASTING
+	// Methods that cast elements according to GAML type contracts (require scope)
+	// ================================================================================================
 
 	/**
 	 * Cast and add.
@@ -273,17 +349,14 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> create(final IScope scope, final IType contentType, final Iterator<T> iterator) {
-		final IList<T> list = create(contentType);
-		if (iterator != null) {
-			while (iterator.hasNext()) {
-				T object = iterator.next();
-				if (FLAGS.CAST_CONTAINER_CONTENTS) {
-					castAndAdd(scope, list, object);
-				} else {
-					list.add(object);
-				}
-			}
+		if (iterator == null) return create(contentType);
+		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
+			final IList<T> list = create(contentType);
+			iterator.forEachRemaining(list::add);
+			return list;
 		}
+		final IList<T> list = create(contentType);
+		while (iterator.hasNext()) { castAndAdd(scope, list, iterator.next()); }
 		return list;
 	}
 
@@ -301,17 +374,14 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> create(final IScope scope, final IType contentType, final Enumeration<T> iterator) {
-		final IList<T> list = create(contentType);
-		if (iterator != null) {
-			while (iterator.hasMoreElements()) {
-				T object = iterator.nextElement();
-				if (FLAGS.CAST_CONTAINER_CONTENTS) {
-					castAndAdd(scope, list, object);
-				} else {
-					list.add(object);
-				}
-			}
+		if (iterator == null) return create(contentType);
+		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
+			final IList<T> list = create(contentType);
+			while (iterator.hasMoreElements()) { list.add(iterator.nextElement()); }
+			return list;
 		}
+		final IList<T> list = create(contentType);
+		while (iterator.hasMoreElements()) { castAndAdd(scope, list, iterator.nextElement()); }
 		return list;
 	}
 
@@ -351,16 +421,12 @@ public class GamaListFactory implements IFactory<IList> {
 	 */
 	public static <T> IList<T> create(final IScope scope, final IType contentType, final char[] objects) {
 		final IList list = create(contentType, objects == null ? 0 : objects.length);
-		if (objects != null) {
-			for (final char o : objects) {
-				String object = String.valueOf(o);
-				if (FLAGS.CAST_CONTAINER_CONTENTS) {
-					castAndAdd(scope, list, object);
-				} else {
-					list.add(object);
-				}
-			}
+		if (objects == null) return list;
+		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
+			for (final char o : objects) { list.add(String.valueOf(o)); }
+			return list;
 		}
+		for (final char o : objects) { castAndAdd(scope, list, String.valueOf(o)); }
 		return list;
 	}
 
@@ -377,16 +443,12 @@ public class GamaListFactory implements IFactory<IList> {
 	 */
 	public static IList create(final IScope scope, final IType contentType, final byte[] ints) {
 		final IList list = create(contentType, ints == null ? 0 : ints.length);
-		if (ints != null) {
-			for (final int o : ints) {
-				Integer object = o;
-				if (FLAGS.CAST_CONTAINER_CONTENTS) {
-					castAndAdd(scope, list, object);
-				} else {
-					list.add(object);
-				}
-			}
+		if (ints == null) return list;
+		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
+			for (final int o : ints) { list.add(Integer.valueOf(o)); }
+			return list;
 		}
+		for (final int o : ints) { castAndAdd(scope, list, Integer.valueOf(o)); }
 		return list;
 	}
 
@@ -403,16 +465,12 @@ public class GamaListFactory implements IFactory<IList> {
 	 */
 	public static IList create(final IScope scope, final IType contentType, final int[] ints) {
 		final IList list = create(contentType, ints == null ? 0 : ints.length);
-		if (ints != null) {
-			for (final int o : ints) {
-				Integer object = o;
-				if (FLAGS.CAST_CONTAINER_CONTENTS) {
-					castAndAdd(scope, list, object);
-				} else {
-					list.add(object);
-				}
-			}
+		if (ints == null) return list;
+		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
+			for (final int o : ints) { list.add(o); }
+			return list;
 		}
+		for (final int o : ints) { castAndAdd(scope, list, o); }
 		return list;
 	}
 
@@ -429,16 +487,12 @@ public class GamaListFactory implements IFactory<IList> {
 	 */
 	public static IList create(final IScope scope, final IType contentType, final long[] ints) {
 		final IList list = create(contentType, ints == null ? 0 : ints.length);
-		if (ints != null) {
-			for (final long o : ints) {
-				Integer object = Long.valueOf(o).intValue();
-				if (FLAGS.CAST_CONTAINER_CONTENTS) {
-					castAndAdd(scope, list, object);
-				} else {
-					list.add(object);
-				}
-			}
+		if (ints == null) return list;
+		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
+			for (final long o : ints) { list.add(Long.valueOf(o).intValue()); }
+			return list;
 		}
+		for (final long o : ints) { castAndAdd(scope, list, Long.valueOf(o).intValue()); }
 		return list;
 	}
 
@@ -455,16 +509,12 @@ public class GamaListFactory implements IFactory<IList> {
 	 */
 	public static IList create(final IScope scope, final IType contentType, final float[] doubles) {
 		final IList list = create(contentType, doubles == null ? 0 : doubles.length);
-		if (doubles != null) {
-			for (final float o : doubles) {
-				Double object = (double) o;
-				if (FLAGS.CAST_CONTAINER_CONTENTS) {
-					castAndAdd(scope, list, object);
-				} else {
-					list.add(object);
-				}
-			}
+		if (doubles == null) return list;
+		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
+			for (final float o : doubles) { list.add((double) o); }
+			return list;
 		}
+		for (final float o : doubles) { castAndAdd(scope, list, (double) o); }
 		return list;
 	}
 
@@ -481,16 +531,12 @@ public class GamaListFactory implements IFactory<IList> {
 	 */
 	public static IList create(final IScope scope, final IType contentType, final double[] doubles) {
 		final IList list = create(contentType, doubles == null ? 0 : doubles.length);
-		if (doubles != null) {
-			for (final double o : doubles) {
-				Double object = o;
-				if (FLAGS.CAST_CONTAINER_CONTENTS) {
-					castAndAdd(scope, list, object);
-				} else {
-					list.add(object);
-				}
-			}
+		if (doubles == null) return list;
+		if (!FLAGS.CAST_CONTAINER_CONTENTS) {
+			for (final double o : doubles) { list.add(o); }
+			return list;
 		}
+		for (final double o : doubles) { castAndAdd(scope, list, o); }
 		return list;
 	}
 
@@ -528,6 +574,11 @@ public class GamaListFactory implements IFactory<IList> {
 		}
 		return create(scope, contentType, contents);
 	}
+
+	// ================================================================================================
+	// CORE CREATION METHODS
+	// Methods for creating empty or sized lists
+	// ================================================================================================
 
 	/**
 	 * Creates an empty list of a specific size and type.
@@ -581,8 +632,17 @@ public class GamaListFactory implements IFactory<IList> {
 		return create(Types.NO_TYPE);
 	}
 
+	// ================================================================================================
+	// WRAPPING METHODS
+	// Zero-copy wrappers that expose existing data as IList (changes are bidirectional)
+	// ================================================================================================
+
 	/**
 	 * Wraps a Java list into an {@link IList}. Changes are reflected in both the wrapper and the original list.
+	 * <p>
+	 * <b>Performance Note:</b> This is a zero-copy operation. The returned list is a view over the original list, so
+	 * any modifications affect both. For an independent copy, use {@link #create(IScope, IType, Iterable)} instead.
+	 * </p>
 	 *
 	 * @param <E>
 	 *            the type of elements.
@@ -591,6 +651,7 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @param wrapped
 	 *            the list to wrap.
 	 * @return the {@link IList} wrapper.
+	 * @since GAMA 1.0
 	 */
 	public static <E> IList<E> wrap(final IType contentType, final List<E> wrapped) {
 		// return createWithoutCasting(contentType, wrapped);
@@ -599,6 +660,10 @@ public class GamaListFactory implements IFactory<IList> {
 
 	/**
 	 * Wraps an array into an {@link IList}. The returned list is backed by the array. Resizing operations will fail.
+	 * <p>
+	 * <b>Performance Note:</b> This is a zero-copy operation providing a read-write view of the array. Changes to the
+	 * list modify the underlying array and vice-versa. The list cannot grow beyond the array size.
+	 * </p>
 	 *
 	 * @param <E>
 	 *            the type of elements.
@@ -607,6 +672,7 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @param wrapped
 	 *            the array to wrap.
 	 * @return the {@link IList} wrapper.
+	 * @since GAMA 1.0
 	 */
 	public static <E> IList<E> wrap(final IType contentType, final E... wrapped) {
 		// return createWithoutCasting(contentType, wrapped);
@@ -616,6 +682,10 @@ public class GamaListFactory implements IFactory<IList> {
 	/**
 	 * Wraps a collection into an {@link IList}. Changes to the collection are visible in the list and vice-versa.
 	 * Indexed access is emulated for non-list collections.
+	 * <p>
+	 * <b>Performance Note:</b> For {@link List} arguments, delegates to {@link #wrap(IType, List)} for optimal
+	 * performance. For other collections, indexed operations have O(n) complexity.
+	 * </p>
 	 *
 	 * @param <E>
 	 *            the type of elements.
@@ -624,11 +694,17 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @param wrapped
 	 *            the collection to wrap.
 	 * @return the {@link IList} wrapper.
+	 * @since GAMA 1.0
 	 */
 	public static <E> IList<E> wrap(final IType contentType, final Collection<E> wrapped) {
 		if (wrapped instanceof List) return wrap(contentType, (List<E>) wrapped);
 		return new GamaListCollectionWrapper(wrapped, contentType);
 	}
+
+	// ================================================================================================
+	// UTILITY AND CONVERSION METHODS
+	// Helper methods for list comparison, conversion, and GAML operators
+	// ================================================================================================
 
 	/**
 	 * Checks if two lists are equal (contain the same elements in the same order).

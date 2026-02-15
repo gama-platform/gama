@@ -19,7 +19,6 @@ import org.locationtech.jts.geom.Geometry;
 
 import gama.api.constants.ISerialisationConstants;
 import gama.api.data.factories.GamaFontFactory;
-import gama.api.data.factories.GamaGeometryFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IFont;
 import gama.api.data.objects.IList;
@@ -39,6 +38,7 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.IGrid;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.AgentReference;
+import gama.api.utils.geometry.GamaGeometryFactory;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.map.GamaMapFactory;

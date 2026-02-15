@@ -22,11 +22,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-import gama.api.data.factories.GamaGeometryFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IShape;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
+import gama.api.utils.geometry.GamaGeometryFactory;
 import gama.dev.DEBUG;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
 import gama.extension.serialize.fst.util.FSTUtil;
