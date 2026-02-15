@@ -18,7 +18,7 @@ import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.IGamaFile;
-import gama.core.util.map.GamaMap;
+import gama.api.utils.map.GamaMap;
 
 /**
  * The Class ParametersSet.

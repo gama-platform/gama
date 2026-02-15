@@ -35,7 +35,6 @@ import org.locationtech.jts.operation.distance.DistanceOp;
 import com.google.common.collect.Ordering;
 
 import gama.api.data.factories.GamaEnvelopeFactory;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaMatrixFactory;
 import gama.api.data.factories.GamaPathFactory;
@@ -69,6 +68,7 @@ import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.ICollector;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.random.IRandom;
 import gama.core.geometry.GamaProxyGeometry;
 import gama.core.util.file.GamaGridFile;

@@ -13,7 +13,7 @@ import gama.api.data.objects.IContainer;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.collections.GraphObjectToAdd;
-import gama.core.util.list.GamaList;
+import gama.api.utils.list.GamaList;
 
 /**
  * The Class EdgesToAdd.

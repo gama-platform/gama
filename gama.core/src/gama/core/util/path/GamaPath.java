@@ -11,7 +11,6 @@ package gama.core.util.path;
 
 import org.jgrapht.GraphPath;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
 import gama.api.data.objects.IGraph;
@@ -26,6 +25,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.topology.graph.GamaSpatialGraph;
 
 // If build from a list of points, creates the corresponding geometry

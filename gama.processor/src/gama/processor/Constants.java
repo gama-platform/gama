@@ -281,9 +281,9 @@ public interface Constants {
 			"gama.api.kernel.simulation", "gama.api.kernel.skill", "gama.api.kernel.species",
 			"gama.api.kernel.topology", "gama.api.runtime", "gama.api.runtime.scope", "gama.api.ui",
 			"gama.api.ui.displays", "gama.api.ui.layers", "gama.api.utils", "gama.api.utils.benchmark",
-			"gama.api.utils.collections", "gama.api.utils.files", "gama.api.utils.geometry", "gama.api.utils.prefs",
-			"gama.api.utils.random", "gama.api.utils.server", "gama.api.utils.tests").map(s -> s + ".")
-			.collect(Collectors.toSet());
+			"gama.api.utils.collections", "gama.api.utils.files", "gama.api.utils.geometry", "gama.api.utils.list",
+			"gama.api.utils.map", "gama.api.utils.prefs", "gama.api.utils.random", "gama.api.utils.server",
+			"gama.api.utils.tests").map(s -> s + ".").collect(Collectors.toSet());
 
 	/** The static star imports. */
 	Set<String> STATIC_COLLECTIVE_IMPORTS = Stream.of("gama.api.gaml.types.Cast", "gama.api.constants.IKeyword")

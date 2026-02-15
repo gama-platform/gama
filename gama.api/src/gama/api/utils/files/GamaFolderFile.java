@@ -10,12 +10,11 @@
  ********************************************************************************************************/
 package gama.api.utils.files;
 
-import static gama.api.data.factories.GamaListFactory.createWithoutCasting;
+import static gama.api.utils.list.GamaListFactory.createWithoutCasting;
 
 import java.io.File;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IList;
@@ -24,6 +23,7 @@ import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.GamaFileType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  * The Class GamaFolderFile.

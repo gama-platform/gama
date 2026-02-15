@@ -34,7 +34,6 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
@@ -47,6 +46,7 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExploration;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.FileUtils;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.experiment.parameters.ParameterAdapter;
 import gama.core.experiment.parameters.ParametersSet;
 

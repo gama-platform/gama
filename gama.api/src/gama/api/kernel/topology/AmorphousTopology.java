@@ -16,7 +16,6 @@ import java.util.Set;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaPathFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IContainer;
@@ -34,6 +33,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.IAgentFilter;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  * The class AmorphousTopology.

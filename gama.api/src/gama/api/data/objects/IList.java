@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaMatrixFactory;
 import gama.api.data.factories.GamaPairFactory;
@@ -29,6 +28,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
+import gama.api.utils.list.GamaListFactory;
 import gama.dev.FLAGS;
 
 /**

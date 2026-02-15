@@ -14,7 +14,7 @@ import gama.api.data.objects.IMessage;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.core.util.list.GamaList;
+import gama.api.utils.list.GamaList;
 
 /**
  * A specialized GamaList that holds messages

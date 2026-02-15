@@ -26,7 +26,6 @@ import gama.annotations.operator;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IList;
@@ -38,6 +37,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.IAgentFilter;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.topology.filter.In;
 import gama.gaml.operators.Containers;
 

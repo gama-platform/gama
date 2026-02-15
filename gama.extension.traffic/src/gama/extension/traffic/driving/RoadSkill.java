@@ -30,7 +30,6 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ITypeProvider;
 import gama.api.GAMA;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
@@ -40,6 +39,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.skill.Skill;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.list.GamaListFactory;
 import gama.extension.traffic.driving.carfollowing.CustomDualTreeBidiMap;
 import gama.gaml.operators.Containers;
 

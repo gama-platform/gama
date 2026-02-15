@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.map;
+package gama.api.utils.map;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,7 +25,6 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.core.util.json.ParseException;
 
 /**
  * Class GamaMapFactory.
@@ -446,7 +445,7 @@ public class InternalGamaMapFactory implements IMapFactory {
 			map = create();
 			map.put(IKeyword.CONTENTS, (V) o);
 			return map;
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			throw GamaRuntimeException.create(e, scope);
 		}
 

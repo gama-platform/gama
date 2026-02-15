@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IGraph;
 import gama.api.data.objects.IList;
@@ -25,6 +24,7 @@ import gama.api.gaml.types.Types;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections._Edge;
 import gama.api.utils.collections._Vertex;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  * The Class AStar.

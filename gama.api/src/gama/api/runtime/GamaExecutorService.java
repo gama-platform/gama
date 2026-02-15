@@ -18,7 +18,6 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
@@ -31,6 +30,7 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.FlowStatus;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.benchmark.StopWatch;
+import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.Pref;
 

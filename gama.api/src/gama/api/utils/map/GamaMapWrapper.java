@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util.map;
+package gama.api.utils.map;
 
 import static gama.api.data.factories.GamaMapFactory.createWithoutCasting;
 
@@ -20,7 +20,6 @@ import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaMatrixFactory;
 import gama.api.data.factories.GamaPairFactory;
@@ -41,7 +40,8 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.BiConsumerWithPruning;
 import gama.api.utils.ConsumerWithPruning;
-import gama.core.util.list.GamaPairList;
+import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.list.GamaPairList;
 import gama.dev.FLAGS;
 
 /**

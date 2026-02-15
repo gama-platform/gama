@@ -38,6 +38,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.IGamaFile;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  * A comprehensive factory for creating {@link IShape} objects. This class provides methods to create shapes from

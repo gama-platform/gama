@@ -21,7 +21,6 @@ import org.locationtech.jts.index.quadtree.IntervalSize;
 
 import com.google.common.primitives.Doubles;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMatrixFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IField;
@@ -35,6 +34,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.IImageProvider;
+import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.random.IRandom;
 import one.util.streamex.DoubleStreamEx;
 import one.util.streamex.StreamEx;

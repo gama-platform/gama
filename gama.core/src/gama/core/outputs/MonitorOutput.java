@@ -27,7 +27,6 @@ import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
 import gama.api.data.csv.CsvWriter;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IValue;
 import gama.api.exceptions.GamaRuntimeException;
@@ -43,6 +42,7 @@ import gama.api.ui.IItemList;
 import gama.api.utils.color.GamaColor;
 import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.files.FileUtils;
+import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.gaml.operators.Files;
 

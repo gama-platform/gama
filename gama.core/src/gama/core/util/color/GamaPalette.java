@@ -12,7 +12,7 @@ package gama.core.util.color;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IList;
 import gama.api.gaml.types.Types;
-import gama.core.util.list.GamaList;
+import gama.api.utils.list.GamaList;
 
 /**
  * The Class GamaPalette.

@@ -21,9 +21,9 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
 import gama.api.kernel.agent.IAgent;
+import gama.api.utils.list.GamaListFactory;
 import gama.dev.DEBUG;
 import gama.extension.network.common.IConnector;
 import gama.extension.network.common.MessageFactory;

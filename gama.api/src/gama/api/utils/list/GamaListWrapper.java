@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  * 
  ********************************************************************************************************/
-package gama.core.util.list;
+package gama.api.utils.list;
 
 import java.util.List;
 

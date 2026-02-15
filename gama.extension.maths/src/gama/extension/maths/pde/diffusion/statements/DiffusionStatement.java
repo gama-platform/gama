@@ -27,7 +27,6 @@ import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMatrixFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMatrix;
@@ -42,6 +41,7 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.IDiffusionTarget;
 import gama.api.utils.SimulationLocal;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.topology.grid.FieldDiffuser;
 import gama.extension.maths.pde.diffusion.statements.DiffusionStatement.DiffusionValidator;
 

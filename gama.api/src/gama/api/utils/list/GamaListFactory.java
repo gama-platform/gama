@@ -8,22 +8,30 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.data.factories;
+package gama.api.utils.list;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
+
+import com.google.common.collect.ImmutableSet;
 
 import gama.annotations.doc;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ITypeProvider;
+import gama.api.data.factories.IFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IDate;
@@ -31,11 +39,14 @@ import gama.api.data.objects.IList;
 import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IPopulation;
+import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
+import gama.dev.FLAGS;
 
 /**
  * A static factory for creating and managing {@link IList} instances. This class serves as a frontend for list
@@ -48,33 +59,55 @@ import gama.api.runtime.scope.IScope;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaListFactory implements IFactory<IList> {
 
-	/**
-	 * The internal factory used for creating list instances.
-	 */
-	private static IListFactory InternalFactory;
+	/** The ch. */
+	static final Set<Collector.Characteristics> CH =
+			ImmutableSet.<Collector.Characteristics> of(Collector.Characteristics.IDENTITY_FINISH);
+
+	/** The empty list. */
+	public static IList<Object> EMPTY_LIST = wrap(Types.NO_TYPE, Collections.emptyList());
 
 	/**
-	 * A shared, empty, immutable list instance.
-	 */
-
-		/**
-		 * Configures the internal factory and initializes the empty list constant.
-		 *
-		 * @param builder
-		 *            the {@link IListFactory} to be used.
-		 */
-	public static void setBuilder(final IListFactory builder) { InternalFactory = builder; }
-
-	/**
-	 * Returns a {@link Collector} that accumulates input elements into a new {@link IList}.
+	 * To gama list.
 	 *
 	 * @param <T>
-	 *            the type of elements.
-	 * @return a collector creating an {@link IList}.
+	 *            the generic type
+	 * @return the collector
 	 */
 	public static <T> Collector<T, IList<T>, IList<T>> toGamaList() {
-		return InternalFactory.toGamaList();
+		return new Collector<>() {
+
+			@Override
+			public Supplier<IList<T>> supplier() {
+				return GamaListFactory::create;
+			}
+
+			@Override
+			public BiConsumer<IList<T>, T> accumulator() {
+				return IList::add;
+			}
+
+			@Override
+			public BinaryOperator<IList<T>> combiner() {
+				return (left, right) -> {
+					left.addAll(right);
+					return left;
+				};
+			}
+
+			@Override
+			public java.util.function.Function<IList<T>, IList<T>> finisher() {
+				return left -> left;
+			}
+
+			@Override
+			public Set<java.util.stream.Collector.Characteristics> characteristics() {
+				return CH;
+			}
+		};
 	}
+
+	/** The to gama list. */
+	public static final Collector<Object, IList<Object>, IList<Object>> TO_GAMA_LIST = toGamaList();
 
 	/**
 	 * Creates a list from a stream of elements.
@@ -88,7 +121,7 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> create(final IType t, final Stream<T> stream) {
-		return InternalFactory.create(t, stream);
+		return (IList<T>) stream.collect(TO_GAMA_LIST);
 	}
 
 	/**
@@ -102,7 +135,9 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> createWithoutCasting(final IType contentType, final T... objects) {
-		return InternalFactory.createWithoutCasting(contentType, objects);
+		final IList<T> list = create(contentType, objects.length);
+		Collections.addAll(list, objects);
+		return list;
 	}
 
 	/**
@@ -115,7 +150,9 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static IList<Integer> createWithoutCasting(final IType contentType, final int[] objects) {
-		return InternalFactory.createWithoutCasting(contentType, objects);
+		final IList<Integer> list = create(contentType, objects.length);
+		for (int i : objects) { list.add(i); }
+		return list;
 	}
 
 	/**
@@ -128,7 +165,9 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static IList<Double> createWithoutCasting(final IType contentType, final double[] objects) {
-		return InternalFactory.createWithoutCasting(contentType, objects);
+		final IList<Double> list = create(contentType, objects.length);
+		for (double i : objects) { list.add(i); }
+		return list;
 	}
 
 	/**
@@ -142,7 +181,23 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> createWithoutCasting(final IType contentType, final Iterable<T> objects) {
-		return InternalFactory.createWithoutCasting(contentType, objects);
+		final IList<T> list = create(contentType);
+		for (T o : objects) { list.add(o); }
+		return list;
+	}
+
+	/**
+	 * Cast and add.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param list
+	 *            the list
+	 * @param o
+	 *            the o
+	 */
+	private static void castAndAdd(final IScope scope, final IList list, final Object o) {
+		list.addValue(scope, o);
 	}
 
 	/**
@@ -157,7 +212,14 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static IList create(final IScope scope, final IType contentType, final IContainer container) {
-		return InternalFactory.create(scope, contentType, container);
+		if (container == null) return create(contentType);
+		if (FLAGS.CAST_CONTAINER_CONTENTS
+				&& GamaType.requiresCasting(contentType, container.getGamlType().getContentType())) {
+			final IList list = create(contentType);
+			for (final Object o : container.iterable(scope)) { castAndAdd(scope, list, o); }
+			return list;
+		}
+		return createWithoutCasting(contentType, container.iterable(scope));
 	}
 
 	/**
@@ -174,7 +236,7 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> create(final IScope scope, final IType contentType, final IList<T> list) {
-		return InternalFactory.create(scope, contentType, list);
+		return create(scope, contentType, (Iterable<T>) list);
 	}
 
 	/**
@@ -191,7 +253,10 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> create(final IScope scope, final IType contentType, final Iterable<T> iterable) {
-		return InternalFactory.create(scope, contentType, iterable);
+		if (!FLAGS.CAST_CONTAINER_CONTENTS) return createWithoutCasting(contentType, iterable);
+		final IList<T> list = create(contentType);
+		for (final Object o : iterable) { castAndAdd(scope, list, o); }
+		return list;
 	}
 
 	/**
@@ -208,7 +273,18 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> create(final IScope scope, final IType contentType, final Iterator<T> iterator) {
-		return InternalFactory.create(scope, contentType, iterator);
+		final IList<T> list = create(contentType);
+		if (iterator != null) {
+			while (iterator.hasNext()) {
+				T object = iterator.next();
+				if (FLAGS.CAST_CONTAINER_CONTENTS) {
+					castAndAdd(scope, list, object);
+				} else {
+					list.add(object);
+				}
+			}
+		}
+		return list;
 	}
 
 	/**
@@ -225,7 +301,18 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> create(final IScope scope, final IType contentType, final Enumeration<T> iterator) {
-		return InternalFactory.create(scope, contentType, iterator);
+		final IList<T> list = create(contentType);
+		if (iterator != null) {
+			while (iterator.hasMoreElements()) {
+				T object = iterator.nextElement();
+				if (FLAGS.CAST_CONTAINER_CONTENTS) {
+					castAndAdd(scope, list, object);
+				} else {
+					list.add(object);
+				}
+			}
+		}
+		return list;
 	}
 
 	/**
@@ -243,7 +330,10 @@ public class GamaListFactory implements IFactory<IList> {
 	 */
 	@SafeVarargs
 	public static <T> IList<T> create(final IScope scope, final IType contentType, final T... objects) {
-		return InternalFactory.create(scope, contentType, objects);
+		if (!FLAGS.CAST_CONTAINER_CONTENTS) return createWithoutCasting(contentType, objects);
+		final IList<T> list = create(contentType, objects == null ? 0 : objects.length);
+		if (objects != null) { for (final Object o : objects) { castAndAdd(scope, list, o); } }
+		return list;
 	}
 
 	/**
@@ -260,7 +350,18 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> create(final IScope scope, final IType contentType, final char[] objects) {
-		return InternalFactory.create(scope, contentType, objects);
+		final IList list = create(contentType, objects == null ? 0 : objects.length);
+		if (objects != null) {
+			for (final char o : objects) {
+				String object = String.valueOf(o);
+				if (FLAGS.CAST_CONTAINER_CONTENTS) {
+					castAndAdd(scope, list, object);
+				} else {
+					list.add(object);
+				}
+			}
+		}
+		return list;
 	}
 
 	/**
@@ -275,7 +376,18 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static IList create(final IScope scope, final IType contentType, final byte[] ints) {
-		return InternalFactory.create(scope, contentType, ints);
+		final IList list = create(contentType, ints == null ? 0 : ints.length);
+		if (ints != null) {
+			for (final int o : ints) {
+				Integer object = o;
+				if (FLAGS.CAST_CONTAINER_CONTENTS) {
+					castAndAdd(scope, list, object);
+				} else {
+					list.add(object);
+				}
+			}
+		}
+		return list;
 	}
 
 	/**
@@ -290,7 +402,18 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static IList create(final IScope scope, final IType contentType, final int[] ints) {
-		return InternalFactory.create(scope, contentType, ints);
+		final IList list = create(contentType, ints == null ? 0 : ints.length);
+		if (ints != null) {
+			for (final int o : ints) {
+				Integer object = o;
+				if (FLAGS.CAST_CONTAINER_CONTENTS) {
+					castAndAdd(scope, list, object);
+				} else {
+					list.add(object);
+				}
+			}
+		}
+		return list;
 	}
 
 	/**
@@ -305,7 +428,18 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static IList create(final IScope scope, final IType contentType, final long[] ints) {
-		return InternalFactory.create(scope, contentType, ints);
+		final IList list = create(contentType, ints == null ? 0 : ints.length);
+		if (ints != null) {
+			for (final long o : ints) {
+				Integer object = Long.valueOf(o).intValue();
+				if (FLAGS.CAST_CONTAINER_CONTENTS) {
+					castAndAdd(scope, list, object);
+				} else {
+					list.add(object);
+				}
+			}
+		}
+		return list;
 	}
 
 	/**
@@ -320,7 +454,18 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static IList create(final IScope scope, final IType contentType, final float[] doubles) {
-		return InternalFactory.create(scope, contentType, doubles);
+		final IList list = create(contentType, doubles == null ? 0 : doubles.length);
+		if (doubles != null) {
+			for (final float o : doubles) {
+				Double object = (double) o;
+				if (FLAGS.CAST_CONTAINER_CONTENTS) {
+					castAndAdd(scope, list, object);
+				} else {
+					list.add(object);
+				}
+			}
+		}
+		return list;
 	}
 
 	/**
@@ -335,7 +480,18 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static IList create(final IScope scope, final IType contentType, final double[] doubles) {
-		return InternalFactory.create(scope, contentType, doubles);
+		final IList list = create(contentType, doubles == null ? 0 : doubles.length);
+		if (doubles != null) {
+			for (final double o : doubles) {
+				Double object = o;
+				if (FLAGS.CAST_CONTAINER_CONTENTS) {
+					castAndAdd(scope, list, object);
+				} else {
+					list.add(object);
+				}
+			}
+		}
+		return list;
 	}
 
 	/**
@@ -353,7 +509,24 @@ public class GamaListFactory implements IFactory<IList> {
 	 */
 	public static IList create(final IScope scope, final IExpression fillExpr, final Integer size,
 			final boolean parallel) {
-		return InternalFactory.create(scope, fillExpr, size, parallel);
+		if (fillExpr == null) return create(Types.NO_TYPE, size);
+		final Object[] contents = new Object[size];
+		final IType contentType = fillExpr.getGamlType();
+		// 10/01/14. Cannot use Arrays.fill() everywhere: see Issue 778.
+		if (fillExpr.isConst()) {
+			final Object o = fillExpr.value(scope);
+			GamaExecutorService.executeThreaded(() -> IntStream.range(0, contents.length).parallel().forEach(i -> {
+				contents[i] = o;
+			}));
+		} else if (parallel) {
+			GamaExecutorService.executeThreaded(
+					() -> IntStream.range(0, contents.length)./* see #2974. parallel(). */forEach(i -> {
+						contents[i] = fillExpr.value(scope);
+					}));
+		} else {
+			for (int i = 0; i < contents.length; i++) { contents[i] = fillExpr.value(scope); }
+		}
+		return create(scope, contentType, contents);
 	}
 
 	/**
@@ -368,7 +541,7 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> create(final IType contentType, final int size) {
-		return InternalFactory.create(contentType, size);
+		return new GamaList<>(size, contentType);
 	}
 
 	/**
@@ -381,7 +554,7 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> create(final IType contentType) {
-		return InternalFactory.create(contentType);
+		return create(contentType, 4);
 	}
 
 	/**
@@ -394,7 +567,7 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> create(final Class<T> clazz) {
-		return InternalFactory.create(clazz);
+		return create(Types.get(clazz));
 	}
 
 	/**
@@ -405,7 +578,7 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created {@link IList}.
 	 */
 	public static <T> IList<T> create() {
-		return InternalFactory.create();
+		return create(Types.NO_TYPE);
 	}
 
 	/**
@@ -420,7 +593,8 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the {@link IList} wrapper.
 	 */
 	public static <E> IList<E> wrap(final IType contentType, final List<E> wrapped) {
-		return InternalFactory.wrap(contentType, wrapped);
+		// return createWithoutCasting(contentType, wrapped);
+		return new GamaListWrapper(wrapped, contentType);
 	}
 
 	/**
@@ -435,7 +609,8 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the {@link IList} wrapper.
 	 */
 	public static <E> IList<E> wrap(final IType contentType, final E... wrapped) {
-		return InternalFactory.wrap(contentType, wrapped);
+		// return createWithoutCasting(contentType, wrapped);
+		return new GamaListArrayWrapper(wrapped, contentType);
 	}
 
 	/**
@@ -451,7 +626,8 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the {@link IList} wrapper.
 	 */
 	public static <E> IList<E> wrap(final IType contentType, final Collection<E> wrapped) {
-		return InternalFactory.wrap(contentType, wrapped);
+		if (wrapped instanceof List) return wrap(contentType, (List<E>) wrapped);
+		return new GamaListCollectionWrapper(wrapped, contentType);
 	}
 
 	/**
@@ -480,7 +656,7 @@ public class GamaListFactory implements IFactory<IList> {
 	 * @return the created list.
 	 */
 	public static List create(final IContainerType ct, final int size) {
-		return InternalFactory.create(ct, size);
+		return create((IType) ct.getGamlType(), size);
 	}
 
 	/**
@@ -567,6 +743,6 @@ public class GamaListFactory implements IFactory<IList> {
 	 *
 	 * @return the empty list
 	 */
-	public static IList getEmptyList() { return InternalFactory.getEmptyList(); }
+	public static IList getEmptyList() { return EMPTY_LIST; }
 
 }

@@ -37,7 +37,6 @@ import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IDate;
 import gama.api.data.objects.IPoint;
@@ -61,6 +60,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.date.GamaDateFactory;
 import gama.api.utils.date.GamaDateInterval;
 import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterValidator;
 
 /**

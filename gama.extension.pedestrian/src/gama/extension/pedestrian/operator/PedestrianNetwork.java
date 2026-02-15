@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IPoint;
@@ -25,6 +24,7 @@ import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.dev.DEBUG;
 import gama.extension.pedestrian.skills.PedestrianRoadSkill;
 import gama.gaml.operators.spatial.SpatialCreation;

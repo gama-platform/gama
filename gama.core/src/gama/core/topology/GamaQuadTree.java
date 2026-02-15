@@ -16,7 +16,6 @@ import java.util.Map;
 import com.google.common.collect.Ordering;
 
 import gama.api.data.factories.GamaEnvelopeFactory;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IPoint;
@@ -28,6 +27,7 @@ import gama.api.utils.IAgentFilter;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.ICollector;
 import gama.api.utils.geometry.IIntersectable;
+import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;

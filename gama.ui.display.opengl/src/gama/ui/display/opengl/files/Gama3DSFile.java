@@ -22,7 +22,6 @@ import org.locationtech.jts.geom.Geometry;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IPoint;
@@ -32,6 +31,7 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.util.file.Gama3DGeometryFile;
 import gama.dev.DEBUG;
 

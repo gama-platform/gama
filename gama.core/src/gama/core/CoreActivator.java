@@ -18,8 +18,6 @@ import gama.api.additions.registries.AgentConstructorsRegistry;
 import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaFontFactory;
 import gama.api.data.factories.GamaGraphFactory;
-import gama.api.data.factories.GamaListFactory;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaMatrixFactory;
 import gama.api.data.factories.GamaMessageFactory;
 import gama.api.data.factories.GamaPairFactory;
@@ -37,8 +35,6 @@ import gama.core.util.InternalGamaFontFactory;
 import gama.core.util.InternalGamaPairFactory;
 import gama.core.util.graph.InternalGamaGraphFactory;
 import gama.core.util.json.Json;
-import gama.core.util.list.InternalGamaListFactory;
-import gama.core.util.map.InternalGamaMapFactory;
 import gama.core.util.matrix.InternalGamaMatrixFactory;
 import gama.core.util.messaging.GamaMessage;
 import gama.core.util.path.InternalGamaPathFactory;
@@ -173,8 +169,8 @@ public class CoreActivator extends GamaBundleActivator {
 	 */
 	void initializeFactories() {
 		// Collection factories for data structures
-		GamaListFactory.setBuilder(new InternalGamaListFactory());
-		GamaMapFactory.setBuilder(new InternalGamaMapFactory());
+		// GamaListFactory.setBuilder(new InternalGamaListFactory());
+		// GamaMapFactory.setBuilder(new InternalGamaMapFactory());
 		GamaMatrixFactory.setBuilder(new InternalGamaMatrixFactory());
 		GamaPairFactory.setBuilder(new InternalGamaPairFactory());
 

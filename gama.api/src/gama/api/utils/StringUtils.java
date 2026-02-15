@@ -15,10 +15,10 @@ import java.util.Collection;
 import java.util.Map;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  * The class StringUtils.

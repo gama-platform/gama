@@ -12,8 +12,8 @@ package gama.ui.shared.parameters;
 
 import static gama.api.GAMA.getRuntimeScope;
 import static gama.api.GAMA.reportError;
-import static gama.api.data.factories.GamaListFactory.wrap;
 import static gama.api.gaml.types.Types.NO_TYPE;
+import static gama.api.utils.list.GamaListFactory.wrap;
 import static gama.gaml.operators.System.enterValue;
 import static gama.gaml.operators.System.userInputDialog;
 import static gama.ui.shared.menus.GamaMenu.action;

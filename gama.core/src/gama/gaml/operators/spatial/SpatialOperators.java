@@ -40,7 +40,6 @@ import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IList;
@@ -53,6 +52,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  * The Class Operators.

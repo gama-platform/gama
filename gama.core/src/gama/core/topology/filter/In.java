@@ -16,7 +16,6 @@ import java.util.Set;
 
 import com.google.common.collect.Iterables;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IShape;
@@ -29,6 +28,7 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.ISpatialGraph;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.IAgentFilter;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  * The Class In.

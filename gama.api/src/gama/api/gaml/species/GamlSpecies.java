@@ -27,7 +27,6 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
 import gama.api.data.objects.IContainer;
@@ -43,6 +42,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import one.util.streamex.StreamEx;
 
 /**

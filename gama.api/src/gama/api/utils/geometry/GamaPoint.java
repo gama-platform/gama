@@ -18,7 +18,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.util.NumberUtil;
 
 import gama.api.data.factories.GamaEnvelopeFactory;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
@@ -31,6 +30,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.prefs.GamaPreferences;
 
 /**

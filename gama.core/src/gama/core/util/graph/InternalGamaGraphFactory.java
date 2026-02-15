@@ -12,7 +12,6 @@ package gama.core.util.graph;
 
 import java.util.Map;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaPairFactory;
 import gama.api.data.factories.IGraphFactory;
 import gama.api.data.objects.IGraph;
@@ -24,6 +23,7 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.topology.graph.GamaSpatialGraph;
 
 /**

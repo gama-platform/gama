@@ -17,7 +17,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -26,6 +25,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.displays.IChart;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.FileUtils;
+import gama.api.utils.list.GamaListFactory;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Files;
 

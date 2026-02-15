@@ -12,7 +12,6 @@ package gama.core.topology.filter;
 
 import java.util.Collection;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IShape;
 import gama.api.kernel.agent.IAgent;
@@ -20,6 +19,7 @@ import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.IAgentFilter;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  * The Class Different.

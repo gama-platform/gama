@@ -16,7 +16,6 @@ import gama.annotations.doc;
 import gama.annotations.skill;
 import gama.annotations.support.IConcept;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -26,6 +25,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.gaml.operators.Maths;
 
 /**

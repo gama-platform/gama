@@ -17,7 +17,7 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.color.GamaColorFactory;
-import gama.core.util.map.GamaMap;
+import gama.api.utils.map.GamaMap;
 
 /**
  * The Class GamaGradient.

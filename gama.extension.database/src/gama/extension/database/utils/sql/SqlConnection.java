@@ -23,13 +23,13 @@ import java.util.Map;
 import org.locationtech.jts.geom.Geometry;
 
 import gama.api.data.factories.GamaEnvelopeFactory;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.topology.IProjection;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.topology.gis.Projection;
 import gama.dev.DEBUG;

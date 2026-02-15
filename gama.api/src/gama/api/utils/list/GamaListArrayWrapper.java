@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  * 
  ********************************************************************************************************/
-package gama.core.util.list;
+package gama.api.utils.list;
 
 import java.util.AbstractList;
 import java.util.Arrays;
@@ -23,7 +23,6 @@ import java.util.function.UnaryOperator;
 
 import com.google.common.collect.Iterators;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
 import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;

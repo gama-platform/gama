@@ -3,11 +3,11 @@ package gama.extension.bdi;
 import java.util.List;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.gaml.operators.Maths;
 
 public class BdiUtils {

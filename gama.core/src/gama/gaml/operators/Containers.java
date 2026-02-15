@@ -46,7 +46,6 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.validation.IOperatorValidator;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaMatrixFactory;
 import gama.api.data.factories.GamaPairFactory;
@@ -75,8 +74,9 @@ import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.map.GamaMapSupplier;
 import gama.core.population.MetaPopulation;
-import gama.core.util.map.GamaMapSupplier;
 import one.util.streamex.IntStreamEx;
 import one.util.streamex.StreamEx;
 

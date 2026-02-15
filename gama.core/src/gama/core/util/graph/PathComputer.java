@@ -36,7 +36,6 @@ import org.jgrapht.util.SupplierUtil;
 
 import com.google.common.collect.ImmutableList;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaMatrixFactory;
 import gama.api.data.objects.IGraph;
@@ -50,6 +49,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.topology.IPathComputer;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.topology.graph.AStar;
 import gama.core.topology.graph.FloydWarshallShortestPathsGAMA;
 import gama.core.topology.graph.NBAStarPathfinder;

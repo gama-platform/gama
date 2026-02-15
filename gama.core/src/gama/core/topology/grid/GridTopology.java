@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IList;
@@ -32,6 +31,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.IAgentFilter;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.ICollector;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.topology.AbstractTopology;
 import gama.core.topology.filter.Different;
 import gama.core.topology.filter.DifferentList;

@@ -18,7 +18,6 @@ import gama.annotations.getter;
 import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.IConcept;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
@@ -29,6 +28,7 @@ import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.GamaFile;
 import gama.api.utils.files.IGamlFileInfo;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  * Written by drogoul Modified on 13 nov. 2011

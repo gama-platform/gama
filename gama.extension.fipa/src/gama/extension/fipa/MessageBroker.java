@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
@@ -23,6 +22,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  * The Class MessageBroker.

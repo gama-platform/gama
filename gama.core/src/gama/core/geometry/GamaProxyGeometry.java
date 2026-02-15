@@ -16,7 +16,6 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IList;
@@ -30,6 +29,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  * Class GamaProxyGeometry. A geometry that represents a wrapper to a reference geometry and a translation. All the

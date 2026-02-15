@@ -44,7 +44,6 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.serialization.StatementSerializer;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
@@ -64,6 +63,7 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.gaml.statements.CreateStatement.CreateSerializer;
 import gama.gaml.statements.CreateStatement.CreateValidator;
 

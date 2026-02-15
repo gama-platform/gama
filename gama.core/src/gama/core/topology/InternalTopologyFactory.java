@@ -18,7 +18,6 @@ import static gama.api.constants.IKeyword.NEIGHBORS;
 import static gama.api.constants.IKeyword.WIDTH;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.factories.ITopologyFactory;
 import gama.api.data.objects.IContainer;
@@ -35,6 +34,7 @@ import gama.api.kernel.topology.IGrid;
 import gama.api.kernel.topology.ISpatialGraph;
 import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.topology.continuous.ContinuousTopology;
 import gama.core.topology.continuous.MultipleTopology;
 import gama.core.topology.graph.GraphTopology;

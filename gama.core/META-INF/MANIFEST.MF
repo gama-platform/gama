@@ -338,8 +338,6 @@ Export-Package: gama.core,
    gama.core.util.file.json,
    gama.core.runtime",
  gama.core.util.json,
- gama.core.util.list,
- gama.core.util.map,
  gama.core.util.matrix;
   uses:="gama.core.common.util,
    one.util.streamex,

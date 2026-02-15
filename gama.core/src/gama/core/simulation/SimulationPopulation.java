@@ -17,7 +17,6 @@ import java.util.Set;
 
 import gama.api.GAMA;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
@@ -36,6 +35,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.runtime.ISimulationRunner;
 import gama.api.runtime.SimulationRunner;
 import gama.api.ui.IStatusMessage;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.experiment.ExperimentAgent;
 import gama.core.experiment.ExperimentSpecies;
 import gama.core.experiment.parameters.ParametersSet;

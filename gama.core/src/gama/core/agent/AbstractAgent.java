@@ -22,7 +22,6 @@ import gama.annotations.doc;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
@@ -48,6 +47,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.AgentReference;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.BufferingUtils;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  *

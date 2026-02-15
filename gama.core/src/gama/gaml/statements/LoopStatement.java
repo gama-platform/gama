@@ -28,7 +28,6 @@ import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.compilation.validation.Assert;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -40,6 +39,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.FlowStatus;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.gaml.statements.LoopStatement.LoopSerializer;
 import gama.gaml.statements.LoopStatement.LoopValidator;
 

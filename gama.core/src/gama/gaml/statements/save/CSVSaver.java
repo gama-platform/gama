@@ -16,7 +16,6 @@ import java.util.Set;
 
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.data.csv.AbstractCSVManipulator;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMatrix;
 import gama.api.exceptions.GamaRuntimeException;
@@ -28,6 +27,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.BufferingUtils;
 import gama.api.utils.files.SaveOptions;
+import gama.api.utils.list.GamaListFactory;
 import gama.gaml.statements.SaveStatement;
 
 /**

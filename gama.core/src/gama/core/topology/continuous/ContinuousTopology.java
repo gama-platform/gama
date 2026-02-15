@@ -11,13 +11,13 @@
 package gama.core.topology.continuous;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.topology.AbstractTopology;
 import gama.gaml.operators.Maths;
 

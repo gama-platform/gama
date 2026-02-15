@@ -18,7 +18,6 @@ import org.apache.commons.math3.ode.sampling.StepHandler;
 import org.apache.commons.math3.ode.sampling.StepInterpolator;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
 import gama.api.data.objects.IPair;
@@ -27,6 +26,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.dev.DEBUG;
 import gama.extension.maths.ode.statements.SystemOfEquationsStatement;
 import gama.gaml.operators.Maths;

@@ -35,7 +35,6 @@ import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaMatrixFactory;
 import gama.api.data.factories.GamaPairFactory;
@@ -66,6 +65,7 @@ import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.EdgeToAdd;
 import gama.api.utils.collections.GraphEvent;
 import gama.api.utils.collections.GraphEvent.GraphEventType;
+import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.collections.GraphObjectToAdd;
 import gama.api.utils.collections.IGraphEventListener;
 import gama.api.utils.collections.VertexRelationship;

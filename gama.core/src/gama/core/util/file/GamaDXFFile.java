@@ -34,7 +34,6 @@ import gama.annotations.example;
 import gama.annotations.file;
 import gama.annotations.support.IConcept;
 import gama.api.data.factories.GamaEnvelopeFactory;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IList;
@@ -46,6 +45,7 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.list.GamaListFactory;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialTransformations;
 

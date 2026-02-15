@@ -21,13 +21,13 @@ import java.util.Optional;
 import java.util.PriorityQueue;
 import java.util.Set;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IGraph;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.utils.collections._Edge;
 import gama.api.utils.collections._Vertex;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  * This pathfinding algorithm is due to Wim Pijls and Henk Post in "Yet another bidirectional algorithm for shortest

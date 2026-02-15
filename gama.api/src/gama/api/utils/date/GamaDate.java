@@ -39,7 +39,6 @@ import java.time.temporal.WeekFields;
 import org.apache.commons.lang3.StringUtils;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
 import gama.api.data.objects.IDate;
@@ -52,6 +51,7 @@ import gama.api.gaml.types.GamaDateType;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 
 /**
  * The Class GamaDate. Immutable class that holds a date (based on JSR-310)

@@ -18,7 +18,6 @@ import gama.annotations.test;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaPathFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IList;
@@ -32,6 +31,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.topology.grid.GridTopology;
 
 /**

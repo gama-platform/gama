@@ -14,7 +14,6 @@ import java.util.List;
 
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
@@ -30,6 +29,7 @@ import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.FlowStatus;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;

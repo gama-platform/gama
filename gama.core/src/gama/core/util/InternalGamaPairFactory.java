@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.core.util;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.IPairFactory;
 import gama.api.data.objects.IMap;
 import gama.api.data.objects.IPair;
@@ -20,6 +19,7 @@ import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.geometry.DynamicLineString;
 
 /**

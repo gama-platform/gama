@@ -18,7 +18,6 @@ import java.util.Set;
 import org.jgrapht.Graphs;
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaPathFactory;
 import gama.api.data.factories.GamaShapeFactory;
@@ -41,6 +40,7 @@ import gama.api.utils.StringUtils;
 import gama.api.utils.collections.GraphEvent;
 import gama.api.utils.collections.GraphEvent.GraphEventType;
 import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.collections.VertexRelationship;
 import gama.api.utils.collections._Edge;
 import gama.core.util.graph.GamaGraph;

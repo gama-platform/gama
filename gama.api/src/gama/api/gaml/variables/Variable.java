@@ -39,7 +39,6 @@ import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.validation.Assert;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IColor;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
@@ -59,6 +58,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.JavaUtils;
 import gama.api.utils.StringUtils;
 import gama.api.utils.benchmark.StopWatch;
+import gama.api.utils.list.GamaListFactory;
 import gama.dev.DEBUG;
 
 /**

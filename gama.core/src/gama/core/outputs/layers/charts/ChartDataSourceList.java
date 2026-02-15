@@ -14,12 +14,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.objects.IList;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.displays.IChartDataSource;
+import gama.api.utils.list.GamaListFactory;
 import gama.dev.DEBUG;
 
 /**

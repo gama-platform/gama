@@ -25,7 +25,6 @@ import org.locationtech.jts.geom.Point;
 
 import gama.api.GAMA;
 import gama.api.data.factories.GamaCoordinateSequenceFactory;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.ICoordinates;
@@ -42,6 +41,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialPunctal;

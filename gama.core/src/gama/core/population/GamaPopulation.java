@@ -42,7 +42,6 @@ import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.factories.GamaTopologyFactory;
@@ -70,10 +69,11 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.IAgentFilter;
 import gama.api.utils.benchmark.StopWatch;
 import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.list.GamaList;
+import gama.api.utils.list.GamaListFactory;
 import gama.core.topology.filter.In;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.util.graph.AbstractGraphNodeAgent;
-import gama.core.util.list.GamaList;
 import gama.dev.DEBUG;
 
 /**

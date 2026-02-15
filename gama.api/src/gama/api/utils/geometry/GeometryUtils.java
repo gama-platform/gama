@@ -54,7 +54,6 @@ import gama.api.GAMA;
 import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaGeometryFactory;
-import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IEnvelope;
@@ -65,6 +64,7 @@ import gama.api.data.objects.IShape.Type;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.random.IRandom;
 import gama.dev.DEBUG;
 
