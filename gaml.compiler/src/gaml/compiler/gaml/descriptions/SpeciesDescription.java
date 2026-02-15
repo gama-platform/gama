@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.ecore.EObject;
@@ -61,105 +62,130 @@ import gaml.compiler.gaml.expression.SpeciesConstantExpression;
 
 /**
  * Describes agent type definitions (species) in GAML models.
- * 
- * <p>SpeciesDescription extends {@link TypeDescription} to provide comprehensive representation
- * of agent types including their attributes, actions, behaviors (reflexes, rules), aspects
- * (visual representations), and hierarchical relationships (micro-species).</p>
- * 
- * <p><strong>Key Concepts:</strong></p>
+ *
+ * <p>
+ * SpeciesDescription extends {@link TypeDescription} to provide comprehensive representation of agent types including
+ * their attributes, actions, behaviors (reflexes, rules), aspects (visual representations), and hierarchical
+ * relationships (micro-species).
+ * </p>
+ *
+ * <p>
+ * <strong>Key Concepts:</strong>
+ * </p>
  * <ul>
- *   <li><strong>Species:</strong> Agent type definition with state (attributes) and behavior (actions/reflexes)</li>
- *   <li><strong>Skills:</strong> Reusable behavior modules attached to species (e.g., moving, communicating)</li>
- *   <li><strong>Control Architecture:</strong> Behavioral control system (reflex, FSM, BDI, task-based)</li>
- *   <li><strong>Micro-species:</strong> Species nested within other species for hierarchical modeling</li>
- *   <li><strong>Grid:</strong> Specialized species with fixed spatial organization</li>
+ * <li><strong>Species:</strong> Agent type definition with state (attributes) and behavior (actions/reflexes)</li>
+ * <li><strong>Skills:</strong> Reusable behavior modules attached to species (e.g., moving, communicating)</li>
+ * <li><strong>Control Architecture:</strong> Behavioral control system (reflex, FSM, BDI, task-based)</li>
+ * <li><strong>Micro-species:</strong> Species nested within other species for hierarchical modeling</li>
+ * <li><strong>Grid:</strong> Specialized species with fixed spatial organization</li>
  * </ul>
- * 
- * <p><strong>Species Hierarchy Example:</strong></p>
+ *
+ * <p>
+ * <strong>Species Hierarchy Example:</strong>
+ * </p>
+ *
  * <pre>{@code
  * species Animal {                    // Base species
  *   float energy <- 100.0;
- *   
+ *
  *   reflex eat when: energy < 50 {   // Behavior
  *     energy <- energy + 10;
  *   }
- *   
+ *
  *   aspect default {                  // Visual representation
  *     draw circle(2) color: #blue;
  *   }
  * }
- * 
+ *
  * species Bird parent: Animal skills: [moving] {  // Inherits from Animal, adds moving skill
  *   float speed <- 5.0;
- *   
+ *
  *   reflex fly {
  *     do wander speed: speed;        // Uses moving skill
  *   }
  * }
- * 
+ *
  * grid cell width: 50 height: 50 {    // Grid species (specialized)
  *   int pollution <- 0;
  * }
  * }</pre>
- * 
- * <p><strong>Core Components:</strong></p>
+ *
+ * <p>
+ * <strong>Core Components:</strong>
+ * </p>
  * <ul>
- *   <li><strong>Behaviors:</strong> Map of reflex/rule/state descriptions (inherited dynamically)</li>
- *   <li><strong>Aspects:</strong> Map of visual representation descriptions (inherited dynamically)</li>
- *   <li><strong>Actions:</strong> Map of user-defined action descriptions (from TypeDescription)</li>
- *   <li><strong>Attributes:</strong> Map of variable descriptions (from TypeDescription)</li>
- *   <li><strong>Micro-species:</strong> Map of nested species descriptions</li>
- *   <li><strong>Skills:</strong> LinkedHashSet of skill descriptions (order matters for initialization)</li>
- *   <li><strong>Control:</strong> Control architecture skill (FSM, BDI, etc.)</li>
- *   <li><strong>Agent Constructor:</strong> Factory for creating agent instances</li>
+ * <li><strong>Behaviors:</strong> Map of reflex/rule/state descriptions (inherited dynamically)</li>
+ * <li><strong>Aspects:</strong> Map of visual representation descriptions (inherited dynamically)</li>
+ * <li><strong>Actions:</strong> Map of user-defined action descriptions (from TypeDescription)</li>
+ * <li><strong>Attributes:</strong> Map of variable descriptions (from TypeDescription)</li>
+ * <li><strong>Micro-species:</strong> Map of nested species descriptions</li>
+ * <li><strong>Skills:</strong> LinkedHashSet of skill descriptions (order matters for initialization)</li>
+ * <li><strong>Control:</strong> Control architecture skill (FSM, BDI, etc.)</li>
+ * <li><strong>Agent Constructor:</strong> Factory for creating agent instances</li>
  * </ul>
- * 
- * <p><strong>Skills System:</strong></p>
- * <p>Skills provide reusable behaviors that can be attached to multiple species:</p>
+ *
+ * <p>
+ * <strong>Skills System:</strong>
+ * </p>
+ * <p>
+ * Skills provide reusable behaviors that can be attached to multiple species:
+ * </p>
  * <ul>
- *   <li><strong>Built-in Skills:</strong> moving, communicating, grid, graph, etc.</li>
- *   <li><strong>Control Skills:</strong> reflex (default), fsm, task_based, user_only, parallel</li>
- *   <li><strong>Custom Skills:</strong> Defined via {@code @skill} annotation in Java</li>
- *   <li><strong>Skill Inheritance:</strong> Species inherit skills from parent species</li>
+ * <li><strong>Built-in Skills:</strong> moving, communicating, grid, graph, etc.</li>
+ * <li><strong>Control Skills:</strong> reflex (default), fsm, task_based, user_only, parallel</li>
+ * <li><strong>Custom Skills:</strong> Defined via {@code @skill} annotation in Java</li>
+ * <li><strong>Skill Inheritance:</strong> Species inherit skills from parent species</li>
  * </ul>
- * 
- * <p><strong>Control Architectures:</strong></p>
+ *
+ * <p>
+ * <strong>Control Architectures:</strong>
+ * </p>
  * <ul>
- *   <li><strong>reflex:</strong> Default - executes reflexes in order each step</li>
- *   <li><strong>fsm:</strong> Finite State Machine - state-based behavior</li>
- *   <li><strong>task_based:</strong> Task scheduling and priorities</li>
- *   <li><strong>sorted_tasks:</strong> Tasks sorted by priority</li>
- *   <li><strong>probabilistic_tasks:</strong> Probabilistic task selection</li>
- *   <li><strong>user_only:</strong> No automatic behavior execution</li>
+ * <li><strong>reflex:</strong> Default - executes reflexes in order each step</li>
+ * <li><strong>fsm:</strong> Finite State Machine - state-based behavior</li>
+ * <li><strong>task_based:</strong> Task scheduling and priorities</li>
+ * <li><strong>sorted_tasks:</strong> Tasks sorted by priority</li>
+ * <li><strong>probabilistic_tasks:</strong> Probabilistic task selection</li>
+ * <li><strong>user_only:</strong> No automatic behavior execution</li>
  * </ul>
- * 
- * <p><strong>Memory Optimization:</strong></p>
+ *
+ * <p>
+ * <strong>Memory Optimization:</strong>
+ * </p>
  * <ul>
- *   <li>Behaviors and aspects inherit dynamically (not copied from parent)</li>
- *   <li>Skills stored in LinkedHashSet (maintains insertion order, no duplicates)</li>
- *   <li>Agent constructor cached and reused for all instances</li>
- *   <li>Species expression cached as constant</li>
+ * <li>Behaviors and aspects inherit dynamically (not copied from parent)</li>
+ * <li>Skills stored in LinkedHashSet (maintains insertion order, no duplicates)</li>
+ * <li>Agent constructor cached and reused for all instances</li>
+ * <li>Species expression cached as constant</li>
  * </ul>
- * 
- * <p><strong>Performance Considerations:</strong></p>
+ *
+ * <p>
+ * <strong>Performance Considerations:</strong>
+ * </p>
  * <ul>
- *   <li><strong>Behavior Lookup:</strong> O(1) average case with dynamic inheritance chain</li>
- *   <li><strong>Skill Lookup:</strong> O(n) where n is number of skills (typically 1-5)</li>
- *   <li><strong>Micro-species Creation:</strong> Recursive, can be expensive for deep hierarchies</li>
- *   <li><strong>Agent Construction:</strong> Optimized with cached constructor and minimal agents</li>
+ * <li><strong>Behavior Lookup:</strong> O(1) average case with dynamic inheritance chain</li>
+ * <li><strong>Skill Lookup:</strong> O(n) where n is number of skills (typically 1-5)</li>
+ * <li><strong>Micro-species Creation:</strong> Recursive, can be expensive for deep hierarchies</li>
+ * <li><strong>Agent Construction:</strong> Optimized with cached constructor and minimal agents</li>
  * </ul>
- * 
- * <p><strong>Optimization Opportunities:</strong></p>
+ *
+ * <p>
+ * <strong>Optimization Opportunities:</strong>
+ * </p>
  * <ol>
- *   <li><strong>Lazy Map Initialization:</strong> Create behavior/aspect maps only when needed</li>
- *   <li><strong>Skill Caching:</strong> Cache skill lookup results for frequently accessed skills</li>
- *   <li><strong>Immutable Skills:</strong> Use ImmutableSet after finalization</li>
- *   <li><strong>Action Indexing:</strong> Use int indices instead of string lookups at runtime</li>
+ * <li><strong>Lazy Map Initialization:</strong> Create behavior/aspect maps only when needed</li>
+ * <li><strong>Skill Caching:</strong> Cache skill lookup results for frequently accessed skills</li>
+ * <li><strong>Immutable Skills:</strong> Use ImmutableSet after finalization</li>
+ * <li><strong>Action Indexing:</strong> Use int indices instead of string lookups at runtime</li>
  * </ol>
- * 
- * <p><strong>Thread Safety:</strong></p>
- * <p>NOT thread-safe. Species descriptions are created and validated sequentially during
- * compilation. Runtime species lookups are thread-safe as they only read immutable data.</p>
+ *
+ * <p>
+ * <strong>Thread Safety:</strong>
+ * </p>
+ * <p>
+ * NOT thread-safe. Species descriptions are created and validated sequentially during compilation. Runtime species
+ * lookups are thread-safe as they only read immutable data.
+ * </p>
  *
  * @author drogoul
  * @since 16 Mar 2010
@@ -510,11 +536,14 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 
 	/**
 	 * Adds a micro-species to this species.
-	 * 
-	 * <p>Micro-species are species defined within other species, creating a hierarchical
-	 * agent structure. Grids cannot be micro-species except in the model itself.</p>
 	 *
-	 * @param sd the micro-species description to add
+	 * <p>
+	 * Micro-species are species defined within other species, creating a hierarchical agent structure. Grids cannot be
+	 * micro-species except in the model itself.
+	 * </p>
+	 *
+	 * @param sd
+	 *            the micro-species description to add
 	 */
 	protected void addMicroSpecies(final SpeciesDescription sd) {
 		if (!isModel() && sd.isGrid()) {
@@ -545,10 +574,21 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	}
 
 	/**
+	 * Gets the own behaviors.
+	 *
+	 * @return the own behaviors
+	 */
+	public IMap<String, StatementDescription> getOwnBehaviors() {
+		return behaviors == null ? GamaMapFactory.EMPTY : behaviors;
+	}
+
+	/**
 	 * Gets or creates the behaviors map with lazy initialization.
-	 * 
-	 * <p><strong>Memory Optimization:</strong> Map is only created when first behavior is added,
-	 * saving memory for species without behaviors.</p>
+	 *
+	 * <p>
+	 * <strong>Memory Optimization:</strong> Map is only created when first behavior is added, saving memory for species
+	 * without behaviors.
+	 * </p>
 	 *
 	 * @return the behaviors map, created if necessary
 	 */
@@ -559,9 +599,11 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 
 	/**
 	 * Gets or creates the aspects map with lazy initialization.
-	 * 
-	 * <p><strong>Memory Optimization:</strong> Map is only created when first aspect is added,
-	 * saving memory for species without visual aspects.</p>
+	 *
+	 * <p>
+	 * <strong>Memory Optimization:</strong> Map is only created when first aspect is added, saving memory for species
+	 * without visual aspects.
+	 * </p>
 	 *
 	 * @return the aspects map, created if necessary
 	 */
@@ -571,16 +613,12 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	}
 
 	/**
-	 * Gets or creates the micro-species map with lazy initialization.
-	 * 
-	 * <p><strong>Memory Optimization:</strong> Map is only created when first micro-species is added,
-	 * saving memory for species without nested species (most common case).</p>
+	 * Gets the own aspects.
 	 *
-	 * @return the micro-species map, created if necessary
+	 * @return the own aspects
 	 */
-	private IMap<String, ISpeciesDescription> getMicroSpeciesMap() {
-		if (microSpecies == null) { microSpecies = GamaMapFactory.create(); }
-		return microSpecies;
+	public IMap<String, StatementDescription> getOwnAspects() {
+		return aspects == null ? GamaMapFactory.EMPTY : aspects;
 	}
 
 	/**
@@ -622,7 +660,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 */
 	@Override
 	public StatementDescription getBehavior(final String aName) {
-		StatementDescription ownBehavior = behaviors == null ? null : behaviors.get(aName);
+		StatementDescription ownBehavior = getOwnBehaviors().get(aName);
 		if (ownBehavior == null && parent != null && parent != this) { ownBehavior = getParent().getBehavior(aName); }
 		return ownBehavior;
 	}
@@ -636,8 +674,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 */
 	@Override
 	public boolean hasBehavior(final String a) {
-		return behaviors != null && behaviors.containsKey(a)
-				|| parent != null && parent != this && getParent().hasBehavior(a);
+		return getOwnBehaviors().containsKey(a) || parent != null && parent != this && getParent().hasBehavior(a);
 	}
 
 	/**
@@ -649,68 +686,56 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 */
 	@Override
 	public StatementDescription getAspect(final String aName) {
-		StatementDescription ownAspect = aspects == null ? null : aspects.get(aName);
+		StatementDescription ownAspect = getOwnAspects().get(aName);
 		if (ownAspect == null && parent != null && parent != this) { ownAspect = getParent().getAspect(aName); }
 		return ownAspect;
 	}
 
 	/**
 	 * Gets the behavior names.
-	 * 
-	 * <p><strong>Optimization:</strong> Pre-sizes the LinkedHashSet based on known size
-	 * to avoid rehashing during construction.</p>
+	 *
+	 * <p>
+	 * <strong>Optimization:</strong> Pre-sizes the LinkedHashSet based on known size to avoid rehashing during
+	 * construction.
+	 * </p>
 	 *
 	 * @return the behavior names
 	 */
 	public Collection<String> getBehaviorNames() {
-		final int size = behaviors == null ? 0 : behaviors.size();
-		final Collection<String> ownNames = behaviors == null 
-				? new LinkedHashSet<>() 
-				: new LinkedHashSet<>(size + (size / 3) + 1, 0.75f);  // Pre-size for load factor
-		if (behaviors != null) {
-			ownNames.addAll(behaviors.keySet());
-		}
+		final Collection<String> ownNames = new LinkedHashSet<>(getOwnBehaviors().keySet());
 		if (parent != null && parent != this) { ownNames.addAll(getParent().getBehaviorNames()); }
 		return ownNames;
 	}
 
 	/**
 	 * Gets the aspect names.
-	 * 
-	 * <p><strong>Optimization:</strong> Pre-sizes the LinkedHashSet based on known size
-	 * to avoid rehashing during construction.</p>
+	 *
+	 * <p>
+	 * <strong>Optimization:</strong> Pre-sizes the LinkedHashSet based on known size to avoid rehashing during
+	 * construction.
+	 * </p>
 	 *
 	 * @return the aspect names
 	 */
 	public Collection<String> getAspectNames() {
-		final int size = aspects == null ? 0 : aspects.size();
-		final Collection<String> ownNames = aspects == null 
-				? new LinkedHashSet<>() 
-				: new LinkedHashSet<>(size + (size / 3) + 1, 0.75f);  // Pre-size for load factor
-		if (aspects != null) {
-			ownNames.addAll(aspects.keySet());
-		}
+		final Collection<String> ownNames = new LinkedHashSet<>(getOwnAspects().keySet());
 		if (parent != null && parent != this) { ownNames.addAll(getParent().getAspectNames()); }
 		return ownNames;
 	}
 
 	/**
 	 * Gets the aspects.
-	 * 
-	 * <p><strong>Phase 2 Optimization:</strong> Replaced stream operation with direct
-	 * iteration to reduce overhead. Streams create additional objects (Spliterator,
-	 * StreamPipeline) that aren't needed for simple mapping operations.</p>
+	 *
+	 * <p>
+	 * <strong>Phase 2 Optimization:</strong> Replaced stream operation with direct iteration to reduce overhead.
+	 * Streams create additional objects (Spliterator, StreamPipeline) that aren't needed for simple mapping operations.
+	 * </p>
 	 *
 	 * @return the aspects
 	 */
 	@Override
 	public Iterable<IStatementDescription> getAspects() {
-		final Collection<String> aspectNames = getAspectNames();
-		final List<IStatementDescription> result = new ArrayList<>(aspectNames.size());
-		for (final String name : aspectNames) {
-			result.add(getAspect(name));
-		}
-		return result;
+		return getAspectNames().stream().map(this::getAspect).collect(Collectors.toList());
 	}
 
 	/**
@@ -730,8 +755,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 */
 	@Override
 	public boolean hasAspect(final String a) {
-		return aspects != null && aspects.containsKey(a)
-				|| parent != null && parent != this && getParent().hasAspect(a);
+		return getOwnAspects().containsKey(a) || parent != null && parent != this && getParent().hasAspect(a);
 	}
 
 	@Override
@@ -746,13 +770,10 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 */
 	@Override
 	public ISpeciesDescription getMicroSpecies(final String name) {
-		if (hasMicroSpecies()) {
-			final ISpeciesDescription retVal = microSpecies.get(name);
-			if (retVal != null) return retVal;
-		}
+		ISpeciesDescription retVal = getOwnMicroSpecies().get(name);
 		// Takes care of invalid species (see Issue 711)
-		if (parent != null && parent != this) return getParent().getMicroSpecies(name);
-		return null;
+		if (retVal == null && parent != null && parent != this) { retVal = getParent().getMicroSpecies(name); }
+		return retVal;
 	}
 
 	@Override
@@ -852,19 +873,19 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 
 	/**
 	 * Inherits micro-species from the parent species.
-	 * 
-	 * <p>Only adds micro-species that don't already exist in this species,
-	 * respecting the override semantics.</p>
 	 *
-	 * @param parentSpecies the parent species to inherit from
+	 * <p>
+	 * Only adds micro-species that don't already exist in this species, respecting the override semantics.
+	 * </p>
+	 *
+	 * @param parentSpecies
+	 *            the parent species to inherit from
 	 */
 	private void inheritMicroSpecies(final SpeciesDescription parentSpecies) {
-		if (parentSpecies.hasMicroSpecies()) {
-			parentSpecies.getMicroSpecies().forEachPair((k, v) -> {
-				getMicroSpeciesMap().putIfAbsent(k, v);
-				return true;
-			});
-		}
+		parentSpecies.getOwnMicroSpecies().forEachPair((k, v) -> {
+			getMicroSpeciesMap().putIfAbsent(k, v);
+			return true;
+		});
 	}
 
 	/**
@@ -936,8 +957,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 */
 	@Override
 	public boolean visitMicroSpecies(final DescriptionVisitor<ISpeciesDescription> visitor) {
-		if (!hasMicroSpecies()) return true;
-		return getMicroSpecies().forEachValue(visitor);
+		return getOwnMicroSpecies().forEachValue(visitor);
 	}
 
 	// public boolean visitSortedMicroSpecies(final DescriptionVisitor<SpeciesDescription> visitor) {
@@ -1169,28 +1189,33 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	public boolean isModel() { return false; }
 
 	/**
-	 * Checks if this species has any micro-species.
-	 * 
-	 * <p><strong>Optimization:</strong> Checks both null and empty to handle lazy initialization.</p>
-	 *
-	 * @return true if micro-species exist, false otherwise
-	 */
-	@Override
-	public boolean hasMicroSpecies() {
-		return microSpecies != null && !microSpecies.isEmpty();
-	}
-
-	/**
 	 * Gets the micro-species map.
-	 * 
-	 * <p><strong>Optimization:</strong> Returns empty map if microSpecies is null to avoid
-	 * creating the map just for read operations. Only {@link #getMicroSpeciesMap()} creates it.</p>
+	 *
+	 * <p>
+	 * <strong>Optimization:</strong> Returns empty map if microSpecies is null to avoid creating the map just for read
+	 * operations. Only {@link #getMicroSpeciesMap()} creates it.
+	 * </p>
 	 *
 	 * @return the micro-species map, or empty map if none exist
 	 */
 	@Override
-	public IMap<String, ISpeciesDescription> getMicroSpecies() {
-		return microSpecies == null ? GamaMapFactory.createUnordered() : microSpecies;
+	public IMap<String, ISpeciesDescription> getOwnMicroSpecies() {
+		return microSpecies == null ? GamaMapFactory.EMPTY : microSpecies;
+	}
+
+	/**
+	 * Gets or creates the micro-species map with lazy initialization.
+	 *
+	 * <p>
+	 * <strong>Memory Optimization:</strong> Map is only created when first micro-species is added, saving memory for
+	 * species without nested species (most common case).
+	 * </p>
+	 *
+	 * @return the micro-species map, created if necessary
+	 */
+	private IMap<String, ISpeciesDescription> getMicroSpeciesMap() {
+		if (microSpecies == null) { microSpecies = GamaMapFactory.createUnordered(); }
+		return microSpecies;
 	}
 
 	/**
@@ -1273,11 +1298,8 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 
 	@Override
 	public boolean visitOwnChildren(final DescriptionVisitor<IDescription> visitor) {
-		if (!super.visitOwnChildren(visitor) || microSpecies != null && !microSpecies.forEachValue(visitor))
-			return false;
-		if (behaviors != null && !behaviors.forEachValue(visitor) || aspects != null && !aspects.forEachValue(visitor))
-			return false;
-		return true;
+		return super.visitOwnChildren(visitor) && !getOwnMicroSpecies().forEachValue(visitor)
+				&& !getOwnBehaviors().forEachValue(visitor) && !getOwnAspects().forEachValue(visitor);
 	}
 
 	@Override
@@ -1286,55 +1308,39 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 			if (!visitor.process(each)) return false;
 			return each.visitOwnChildrenRecursively(visitor);
 		};
-		if (!super.visitOwnChildrenRecursively(visitor)
-				|| microSpecies != null && !microSpecies.forEachValue(recursiveVisitor))
-			return false;
-		if (behaviors != null && !behaviors.forEachValue(recursiveVisitor)
-				|| aspects != null && !aspects.forEachValue(recursiveVisitor))
-			return false;
-		return true;
+		return super.visitOwnChildrenRecursively(visitor) && !getOwnMicroSpecies().forEachValue(recursiveVisitor)
+				&& !getOwnBehaviors().forEachValue(recursiveVisitor) && !getOwnAspects().forEachValue(recursiveVisitor);
 	}
 
 	@Override
 	public Iterable<IDescription> getOwnChildren() {
-		return Iterables.concat(super.getOwnChildren(),
-				microSpecies == null ? Collections.emptyList() : microSpecies.values(),
-				behaviors == null ? Collections.emptyList() : behaviors.values(),
-				aspects == null ? Collections.emptyList() : aspects.values());
+		return Iterables.concat(super.getOwnChildren(), getOwnMicroSpecies().values(), getOwnBehaviors().values(),
+				getOwnAspects().values());
 	}
 
 	@Override
 	public boolean visitChildren(final DescriptionVisitor<IDescription> visitor) {
-		boolean result = super.visitChildren(visitor);
-		if (!result) return false;
-		if (hasMicroSpecies()) { result &= microSpecies.forEachValue(visitor); }
-		if (!result) return false;
-		for (final IDescription d : getBehaviors()) {
-			result &= visitor.process(d);
-			if (!result) return false;
-		}
-		for (final IDescription d : getAspects()) {
-			result &= visitor.process(d);
-			if (!result) return false;
-		}
-		return result;
+		if (!super.visitChildren(visitor) || !getOwnMicroSpecies().forEachValue(visitor)) return false;
+		for (final IDescription d : getBehaviors()) { if (!visitor.process(d)) return false; }
+		for (final IDescription d : getAspects()) { if (!visitor.process(d)) return false; }
+		return true;
 	}
 
 	/**
 	 * Gets all behaviors defined in this species.
-	 * 
-	 * <p><strong>Phase 2 Optimization:</strong> Replaced stream operation with direct
-	 * iteration to reduce overhead in this frequently-called method.</p>
-	 * 
+	 *
+	 * <p>
+	 * <strong>Phase 2 Optimization:</strong> Replaced stream operation with direct iteration to reduce overhead in this
+	 * frequently-called method.
+	 * </p>
+	 *
 	 * @return the behaviors
 	 */
 	@Override
 	public Iterable<IStatementDescription> getBehaviors() {
 		final Collection<String> behaviorNames = getBehaviorNames();
 		final List<IStatementDescription> result = new ArrayList<>(behaviorNames.size());
-		for (final String name : behaviorNames) {
-			result.add(getBehavior(name));
-		}
+		for (final String name : behaviorNames) { result.add(getBehavior(name)); }
 		return result;
 	}
 

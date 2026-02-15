@@ -61,13 +61,12 @@ public class OperatorsReferenceMenu extends GamlReferenceMenu {
 	 * Fill menu by name.
 	 */
 	protected void fillMenuByName() {
-		final Map<String, Map<Signature, IArtefactProto.Operator>> operators = GAML.OPERATORS;
-		final List<String> nn = new ArrayList(operators.keySet());
+		final List<String> nn = new ArrayList(GAML.getOperatorsNames());
 		Collections.sort(nn, IGNORE_CASE);
 		for (final String name : nn) {
 			final List<IArtefactProto.Operator> protos = new ArrayList<>();
-			for (final Signature sig : operators.get(name).keySet()) {
-				final IArtefactProto.Operator proto = operators.get(name).get(sig);
+			for (final Signature sig : GAML.getOperatorsNamed(name).keySet()) {
+				final IArtefactProto.Operator proto = GAML.getOperatorsNamed(name).get(sig);
 				if (proto.getDeprecated() == null) { protos.add(proto); }
 			}
 			if (protos.isEmpty()) { continue; }
@@ -91,12 +90,11 @@ public class OperatorsReferenceMenu extends GamlReferenceMenu {
 	 * Fill menu by category.
 	 */
 	protected void fillMenuByCategory() {
-		final Map<String, Map<Signature, IArtefactProto.Operator>> operators = GAML.OPERATORS;
 		final Map<String, Map<String, Map<IArtefactProto.Operator, Template>>> categories = new LinkedHashMap();
-		final List<String> nn = new ArrayList(operators.keySet());
+		final List<String> nn = new ArrayList(GAML.getOperatorsNames());
 		Collections.sort(nn, IGNORE_CASE);
 		for (final String name : nn) {
-			final Map<Signature, IArtefactProto.Operator> ops = operators.get(name);
+			final Map<Signature, IArtefactProto.Operator> ops = GAML.getOperatorsNamed(name);
 			for (final Signature sig : ops.keySet()) {
 				final IArtefactProto.Operator proto = ops.get(sig);
 				if (proto.getDeprecated() != null) { continue; }

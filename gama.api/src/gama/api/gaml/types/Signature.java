@@ -23,23 +23,23 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 
 /**
- * The Class Signature.
- * Immutable sequence of parameter types used to match operator/method signatures in GAML.
- * Provides helpers to build signatures from expressions, Java reflection or plain classes,
- * to compare desired/actual parameters, and to compute coercion/distance when selecting operators.
+ * The Class Signature. Immutable sequence of parameter types used to match operator/method signatures in GAML. Provides
+ * helpers to build signatures from expressions, Java reflection or plain classes, to compare desired/actual parameters,
+ * and to compute coercion/distance when selecting operators.
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 
-public record Signature(IType[] list) implements Iterable<IType> {
+public record Signature(IType... list) implements Iterable<IType> {
 
 	/** The empty types. */
 	static IType[] EMPTY_TYPES = {};
 
 	/**
-	 * Builds a var-arg signature by wrapping the common type of {@code sig} elements into a list type.
-	 * Useful when an operator accepts an arbitrary number of homogeneous arguments.
+	 * Builds a var-arg signature by wrapping the common type of {@code sig} elements into a list type. Useful when an
+	 * operator accepts an arbitrary number of homogeneous arguments.
 	 *
-	 * @param sig signature to convert to var-arg form
+	 * @param sig
+	 *            signature to convert to var-arg form
 	 * @return a new signature containing a single list type
 	 */
 	public static Signature varArgFrom(final Signature sig) {
@@ -49,7 +49,8 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	/**
 	 * Creates a simplified signature from expressions by stripping any parametric information (keeps base GAML types).
 	 *
-	 * @param args expressions to infer types from
+	 * @param args
+	 *            expressions to infer types from
 	 * @return a non-parametric signature mirroring {@code args} order
 	 */
 	public static Signature createSimplified(final IExpression... args) {
@@ -59,10 +60,11 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	}
 
 	/**
-	 * Builds a signature from a Java executable (method or constructor), ignoring {@link IScope} parameters
-	 * and inserting the receiver type for instance methods.
+	 * Builds a signature from a Java executable (method or constructor), ignoring {@link IScope} parameters and
+	 * inserting the receiver type for instance methods.
 	 *
-	 * @param method Java executable to analyse
+	 * @param method
+	 *            Java executable to analyse
 	 */
 	public Signature(final Executable method) {
 		this(extractTypesFrom(method));
@@ -71,17 +73,19 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	/**
 	 * Convenience ctor for unary signatures.
 	 *
-	 * @param t single type in the signature
+	 * @param t
+	 *            single type in the signature
 	 */
 	public Signature(final IType t) {
 		this(new IType[] { t });
 	}
 
 	/**
-	 * Extracts the sequence of GAML types corresponding to a Java executable parameters.
-	 * Skips {@link IScope}, and prepends the declaring class when the method is non-static.
+	 * Extracts the sequence of GAML types corresponding to a Java executable parameters. Skips {@link IScope}, and
+	 * prepends the declaring class when the method is non-static.
 	 *
-	 * @param method Java executable to inspect
+	 * @param method
+	 *            Java executable to inspect
 	 * @return ordered array of argument types (may be empty)
 	 */
 	private static IType[] extractTypesFrom(final Executable method) {
@@ -102,7 +106,8 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	/**
 	 * Builds a signature from type ids.
 	 *
-	 * @param types array of IType ids
+	 * @param types
+	 *            array of IType ids
 	 */
 	public Signature(final int[] types) {
 		this(new IType[types.length]);
@@ -112,7 +117,8 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	/**
 	 * Builds a signature from expressions, keeping their declared runtime type (or NO_TYPE when null).
 	 *
-	 * @param objects expressions that provide types
+	 * @param objects
+	 *            expressions that provide types
 	 */
 	public Signature(final IExpression... objects) {
 		this(new IType[objects.length]);
@@ -125,7 +131,8 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	/**
 	 * Builds a signature from a list of expressions.
 	 *
-	 * @param objects expressions that provide types
+	 * @param objects
+	 *            expressions that provide types
 	 */
 	public Signature(final List<IExpression> objects) {
 		this(new IType[objects.size()]);
@@ -138,7 +145,8 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	/**
 	 * Builds a signature from Java classes by resolving each to its GAML type.
 	 *
-	 * @param classes Java classes to convert
+	 * @param classes
+	 *            Java classes to convert
 	 */
 	public Signature(final Class... classes) {
 		this(new IType[classes.length]);
@@ -171,7 +179,8 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	 * Checks assignability of this signature to a desired one (same arity), allowing int/float interchange and NO_TYPE
 	 * as wildcard for non-number types.
 	 *
-	 * @param types desired signature
+	 * @param types
+	 *            desired signature
 	 * @return true when each position is compatible
 	 */
 	public boolean matchesDesiredSignature(final Signature types) {
@@ -191,7 +200,8 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	/**
 	 * Variant of {@link #matchesDesiredSignature(Signature)} accepting raw type array.
 	 *
-	 * @param types desired types
+	 * @param types
+	 *            desired types
 	 * @return true when each position is compatible
 	 */
 	public boolean matchesDesiredSignature(final IType... types) {
@@ -209,11 +219,13 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	}
 
 	/**
-	 * Computes the summed distance between two signatures (same arity) using {@link IType#distanceTo(IType)}.
-	 * Returns {@link Integer#MAX_VALUE} on arity mismatch.
+	 * Computes the summed distance between two signatures (same arity) using {@link IType#distanceTo(IType)}. Returns
+	 * {@link Integer#MAX_VALUE} on arity mismatch.
 	 *
-	 * @param formalSignature reference signature
-	 * @param passedSignature tested signature
+	 * @param formalSignature
+	 *            reference signature
+	 * @param passedSignature
+	 *            tested signature
 	 * @return summed distance (0 means identical), or MAX_VALUE if lengths differ
 	 */
 	public static int distanceBetween(final Signature formalSignature, final Signature passedSignature) {
@@ -223,8 +235,7 @@ public record Signature(IType[] list) implements Iterable<IType> {
 		// We now take into account the min and the max (see #2266 and the case where [unknown, geometry, geometry] was
 		// preffered to [topology, geometry, geometry] for an input of [topology, a_species, a_species])
 		// Modified again for the case where [string, matrix, unknown] and [string, container, unknown] return both 1
-		// for an
-		// input of [string,matrix, int] ...Now we sum the distances between types and return this.
+		// for an input of [string,matrix, int] ...Now we sum the distances between types and return this.
 		int totalDistance = 0;
 		for (int i = 0; i < formalTypes.length; i++) { totalDistance += formalTypes[i].distanceTo(passedTypes[i]); }
 		return totalDistance;
@@ -269,7 +280,8 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	/**
 	 * Returns the type at the given position.
 	 *
-	 * @param i index of the argument
+	 * @param i
+	 *            index of the argument
 	 * @return type at index
 	 */
 	public IType get(final int i) {
@@ -279,8 +291,10 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	/**
 	 * Coerces each type of this signature so it can be used where {@code originalSignature} was expected.
 	 *
-	 * @param originalSignature target signature to adapt to
-	 * @param context description context providing resolution hints
+	 * @param originalSignature
+	 *            target signature to adapt to
+	 * @param context
+	 *            description context providing resolution hints
 	 * @return array of coerced types (same length as this signature)
 	 */
 	public IType[] coerce(final Signature originalSignature, final IDescription context) {
@@ -292,7 +306,8 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	/**
 	 * Indicates whether numeric coercion (int/float) might be required between two signatures of same arity.
 	 *
-	 * @param other signature to compare
+	 * @param other
+	 *            signature to compare
 	 * @return true if any position mixes int and float
 	 */
 	public boolean mightNeedCoercionWith(final Signature other) {
@@ -304,7 +319,8 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	/**
 	 * Returns a CSV of types either as patterns (withVariables=true) or serialized names.
 	 *
-	 * @param withVariables whether to include variable placeholders via {@link IType#asPattern()}
+	 * @param withVariables
+	 *            whether to include variable placeholders via {@link IType#asPattern()}
 	 * @return comma-separated textual representation
 	 */
 	public String asPattern(final boolean withVariables) {
@@ -331,8 +347,10 @@ public record Signature(IType[] list) implements Iterable<IType> {
 	public int size() {
 		return list.length;
 	}
- 
+
 	@Override
-	public Iterator<IType> iterator() { return Iterators.forArray(list); }
+	public Iterator<IType> iterator() {
+		return Iterators.forArray(list);
+	}
 
 }

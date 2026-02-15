@@ -17,9 +17,7 @@ import com.google.common.primitives.Doubles;
 import gama.annotations.doc;
 import gama.annotations.no_test;
 import gama.annotations.operator;
-import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
-import gama.api.constants.IKeyword;
 import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaListFactory;
 import gama.api.data.factories.GamaMatrixFactory;
@@ -408,17 +406,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		return result;
 	}
 
-	@operator (
-			value = IKeyword.PLUS,
-			can_be_const = true,
-			content_type = IType.FLOAT,
-			category = { IOperatorCategory.MATRIX },
-			concept = { IConcept.MATRIX },
-			doc = @doc (
-					side_effects = "Modifies the left field. Use an explicit copy operation to prevent this",
-					value = "Adds a matrix or a field to the left field"))
 	@Override
-	@no_test
 	public IField plus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		switch (other) {
@@ -442,17 +430,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		return this;
 	}
 
-	@operator (
-			value = IKeyword.MINUS,
-			can_be_const = true,
-			content_type = IType.FLOAT,
-			category = { IOperatorCategory.MATRIX },
-			concept = { IConcept.MATRIX },
-			doc = @doc (
-					side_effects = "Modifies the left field. Use an explicit copy operation to prevent this",
-					value = "Subtracts a matrix or a field from the left field"))
 	@Override
-	@no_test
 	public IField minus(final IScope scope, final IMatrix other) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		switch (other) {
@@ -476,136 +454,56 @@ public class GamaField extends GamaFloatMatrix implements IField {
 		return this;
 	}
 
-	@operator (
-			value = IKeyword.MULTIPLY,
-			can_be_const = true,
-			content_type = IType.FLOAT,
-			category = { IOperatorCategory.MATRIX },
-			concept = {},
-			doc = @doc (
-					side_effects = "Modifies the field. Use an explicit copy operation to prevent this",
-					value = "Scales the values in the field by the float parameter"))
 	@Override
-	@no_test
 	public IField times(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] *= val; } }
 		return this;
 	}
 
-	@operator (
-			value = IKeyword.MULTIPLY,
-			can_be_const = true,
-			content_type = IType.FLOAT,
-			category = { IOperatorCategory.MATRIX },
-			concept = {},
-			doc = @doc (
-					side_effects = "Modifies the field. Use an explicit copy operation to prevent this",
-					value = "Scales the values in the field by the int parameter"))
 	@Override
-	@no_test
 	public IField times(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] *= val; } }
 		return this;
 	}
 
-	@operator (
-			value = IKeyword.DIVIDE,
-			can_be_const = true,
-			content_type = IType.FLOAT,
-			category = { IOperatorCategory.MATRIX },
-			concept = {},
-			doc = @doc (
-					side_effects = "Modifies the field. Use an explicit copy operation to prevent this",
-					value = "Scales the values in the field by 1 on the float parameter"))
 	@Override
-	@no_test
 	public IField divides(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] /= val; } }
 		return this;
 	}
 
-	@operator (
-			value = IKeyword.DIVIDE,
-			can_be_const = true,
-			content_type = IType.FLOAT,
-			category = { IOperatorCategory.MATRIX },
-			concept = {},
-			doc = @doc (
-					side_effects = "Modifies the field. Use an explicit copy operation to prevent this",
-					value = "Scales the values in the field by 1 on the int parameter"))
 	@Override
-	@no_test
 	public IField divides(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] /= val; } }
 		return this;
 	}
 
-	@operator (
-			value = IKeyword.PLUS,
-			can_be_const = true,
-			content_type = IType.FLOAT,
-			category = { IOperatorCategory.MATRIX },
-			concept = {},
-			doc = @doc (
-					side_effects = "Modifies the field. Use an explicit copy operation to prevent this",
-					value = "Adds a float value to all the values in the field"))
 	@Override
-	@no_test
 	public IField plus(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += val; } }
 		return this;
 	}
 
-	@operator (
-			value = IKeyword.PLUS,
-			can_be_const = true,
-			content_type = IType.FLOAT,
-			category = { IOperatorCategory.MATRIX },
-			concept = {},
-			doc = @doc (
-					side_effects = "Modifies the field. Use an explicit copy operation to prevent this",
-					value = "Adds an int value to all the values in the field"))
 	@Override
-	@no_test
 	public IField plus(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] += val; } }
 		return this;
 	}
 
-	@operator (
-			value = IKeyword.MINUS,
-			can_be_const = true,
-			content_type = IType.FLOAT,
-			category = { IOperatorCategory.MATRIX },
-			concept = {},
-			doc = @doc (
-					side_effects = "Modifies the field. Use an explicit copy operation to prevent this",
-					value = "Subtracts a float value from all the values in the field"))
 	@Override
-	@no_test
 	public IField minus(final Double val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= val; } }
 		return this;
 	}
 
-	@operator (
-			value = IKeyword.MINUS,
-			can_be_const = true,
-			content_type = IType.FLOAT,
-			category = { IOperatorCategory.MATRIX },
-			concept = {},
-			doc = @doc (
-					side_effects = "Modifies the field. Use an explicit copy operation to prevent this",
-					value = "Subtracts an int value from all the values in the field"))
 	@Override
-	@no_test
 	public IField minus(final Integer val) throws GamaRuntimeException {
 		// No check for best performances. Errors will be emitted by the various sub-operations (out of bounds, etc.)
 		for (int i = 0; i < matrix.length; i++) { if (matrix[i] != noDataValue) { matrix[i] -= val; } }
@@ -642,6 +540,7 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@Override
 	@operator (
 			value = "flatten",
 			can_be_const = true,

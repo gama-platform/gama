@@ -203,9 +203,9 @@ public class GamlTemplateStore extends XtextTemplateStore {
 				if (data != null) { internalAdd(data); }
 			}
 		}
-		protos = GAML.OPERATORS.keySet();
+		protos = GAML.getOperatorsNames();
 		for (final String keyword : protos) {
-			final Map<Signature, IArtefactProto.Operator> map = GAML.OPERATORS.get(keyword);
+			final Map<Signature, IArtefactProto.Operator> map = GAML.getOperatorsNamed(keyword);
 			for (final IArtefactProto.Operator p : map.values()) {
 				for (final usage u : p.getUsages()) {
 					final TemplatePersistenceData data = GamlTemplateFactory.from(u, p);

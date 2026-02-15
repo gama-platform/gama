@@ -65,7 +65,6 @@ import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -212,10 +211,6 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 * simple expressions (containing constants) can be parsed.
 	 */
 	private IDescription currentContext;
-
-	static {
-		GAML.OPERATORS.put(MY, GamaMapFactory.createUnordered());
-	}
 
 	@Override
 	public IExpression compile(final IExpressionDescription s, final IDescription parsingContext) {
@@ -564,7 +559,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		// Early returns for invalid inputs
 		if (left == null || op == null) return null;
 
-		if (!GAML.OPERATORS.containsKey(op)) {
+		if (!GAML.containsOperatorNamed(op)) {
 			getContext().error("Unknown operator: " + op, IGamlIssue.UNKNOWN_ACTION, originalExpression.eContainer(),
 					op);
 			return null;

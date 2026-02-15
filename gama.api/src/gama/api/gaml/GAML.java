@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.api.gaml;
 
+import static gama.api.constants.IKeyword.MY;
 import static gama.api.utils.JavaUtils.collectImplementationClasses;
 
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import gama.api.compilation.factories.IExpressionDescriptionFactory;
 import gama.api.compilation.factories.IExpressionFactory;
 import gama.api.compilation.factories.ISymbolDescriptionFactory;
 import gama.api.compilation.prototypes.IArtefactProto;
+import gama.api.compilation.prototypes.IArtefactProto.Operator;
 import gama.api.compilation.prototypes.IArtefactProtoFactory;
 import gama.api.compilation.validation.IGamlModelBuilder;
 import gama.api.compilation.validation.IGamlTextValidator;
@@ -54,6 +56,7 @@ import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.IExecutionContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.IGamlFileInfo;
+import gama.dev.DEBUG;
 
 /**
  * Class GAML. Static support for various GAML constructs and functions
@@ -65,8 +68,12 @@ import gama.api.utils.files.IGamlFileInfo;
 public class GAML {
 
 	/** The operators. */
-	@SuppressWarnings ("unchecked") public static final Map<String, Map<Signature, IArtefactProto.Operator>> OPERATORS =
-			new ConcurrentHashMap<>();
+	private static final Map<String, Map<Signature, IArtefactProto.Operator>> OPERATORS = new ConcurrentHashMap<>();
+
+	static {
+		// Trick to accept "my" as an operator
+		OPERATORS.put(MY, Collections.emptyMap());
+	}
 
 	/** The iterators. */
 	private static final Set<String> ITERATORS = ConcurrentHashMap.newKeySet();
@@ -595,6 +602,65 @@ public class GAML {
 	 */
 	public static boolean isIterator(final String name) {
 		return ITERATORS.contains(name);
+	}
+
+	/**
+	 * Returns false if the signature is already registered for this keyword
+	 *
+	 * @param kw
+	 * @return
+	 */
+	public static boolean canRegisterOperator(final String kw, final Signature signature) {
+		return !getOperatorsRegistryFor(kw).containsKey(signature);
+	}
+
+	/**
+	 * Gets the operators registry for.
+	 *
+	 * @param kw
+	 *            the kw
+	 * @return the operators registry for
+	 */
+	private static Map<Signature, Operator> getOperatorsRegistryFor(final String kw) {
+		Map<Signature, Operator> registry = OPERATORS.get(kw);
+		if (registry == null) {
+			registry = new HashMap<>();
+			OPERATORS.put(kw, registry);
+		}
+		return registry;
+	}
+
+	/**
+	 * Register.
+	 */
+	public static void registerOperator(final Operator proto) {
+		if ("+".equals(proto.getName())) {
+
+			DEBUG.LOG("Registering + with signature: " + proto.getSignature());
+
+		}
+		getOperatorsRegistryFor(proto.getName()).put(proto.getSignature(), proto);
+	}
+
+	/**
+	 * @return
+	 */
+	public static Collection<String> getOperatorsNames() { return OPERATORS.keySet(); }
+
+	/**
+	 * @param name
+	 * @return
+	 */
+	public static Map<Signature, Operator> getOperatorsNamed(final String name) {
+		return OPERATORS.get(name);
+	}
+
+	/**
+	 * @param op
+	 * @return
+	 */
+	public static boolean containsOperatorNamed(final String op) {
+		return OPERATORS.containsKey(op);
 	}
 
 }

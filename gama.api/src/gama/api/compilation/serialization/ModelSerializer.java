@@ -58,12 +58,10 @@ public class ModelSerializer extends SpeciesSerializer {
 		sb.append("// Aspects of ").append(desc.getName()).append(StringUtils.LN);
 		for (final IDescription s : children) { serializeChild(s, sb, includingBuiltIn); }
 		sb.append('}').append(StringUtils.LN);
-		if (desc.hasMicroSpecies()) {
-			children = desc.getMicroSpecies().values();
-			for (final IDescription s : children) {
-				sb.append(StringUtils.LN);
-				serializeChild(s, sb, includingBuiltIn);
-			}
+		children = desc.getOwnMicroSpecies().values();
+		for (final IDescription s : children) {
+			sb.append(StringUtils.LN);
+			serializeChild(s, sb, includingBuiltIn);
 		}
 
 		children = ((IModelDescription) desc).getExperiments();

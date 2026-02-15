@@ -188,12 +188,7 @@ public interface ISpeciesDescription extends ITypeDescription {
 	/**
 	 * @return
 	 */
-	boolean hasMicroSpecies();
-
-	/**
-	 * @return
-	 */
-	Map<String, ISpeciesDescription> getMicroSpecies();
+	Map<String, ISpeciesDescription> getOwnMicroSpecies();
 
 	/**
 	 * @return

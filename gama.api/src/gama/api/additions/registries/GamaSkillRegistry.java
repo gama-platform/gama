@@ -22,9 +22,9 @@ import java.util.Set;
 import com.google.common.collect.Iterables;
 
 import gama.api.compilation.descriptions.IActionDescription;
+import gama.api.compilation.descriptions.IDescription.DescriptionVisitor;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
-import gama.api.compilation.descriptions.IDescription.DescriptionVisitor;
 import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IMap;
 import gama.api.kernel.skill.ISkill;
@@ -198,7 +198,7 @@ public class GamaSkillRegistry {
 	public Iterable<? extends IVariableDescription> getVariablesForSkill(final String s) {
 		final ISkillDescription sd = skills.get(s);
 		if (sd == null) return Collections.EMPTY_LIST;
-		return sd.getOwnAttributes();
+		return sd.getOwnAttributes().values();
 	}
 
 	/**
@@ -211,7 +211,7 @@ public class GamaSkillRegistry {
 	public Iterable<? extends IActionDescription> getActionsForSkill(final String s) {
 		final ISkillDescription sd = skills.get(s);
 		if (sd == null) return Collections.EMPTY_LIST;
-		return sd.getOwnActions();
+		return sd.getOwnActions().values();
 	}
 
 	/**
@@ -237,7 +237,7 @@ public class GamaSkillRegistry {
 	 * @return the registered skills attributes
 	 */
 	public Iterable<? extends IVariableDescription> getRegisteredSkillsAttributes() {
-		return Iterables.concat(Iterables.transform(getRegisteredSkills(), ISkillDescription::getOwnAttributes));
+		return Iterables.concat(Iterables.transform(getRegisteredSkills(), s -> s.getOwnAttributes().values()));
 	}
 
 	/**
@@ -246,7 +246,7 @@ public class GamaSkillRegistry {
 	 * @return the registered skills actions
 	 */
 	public Iterable<? extends IActionDescription> getRegisteredSkillsActions() {
-		return Iterables.concat(Iterables.transform(getRegisteredSkills(), ISkillDescription::getOwnActions));
+		return Iterables.concat(Iterables.transform(getRegisteredSkills(), s -> s.getOwnActions().values()));
 	}
 
 }

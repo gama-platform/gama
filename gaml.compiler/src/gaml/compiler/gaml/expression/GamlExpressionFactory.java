@@ -175,25 +175,24 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	private static final AtomicReference<GamlExpressionFactory> INSTANCE_REF = new AtomicReference<>();
 
 	/**
-	 * Cache for operator signature matching to improve performance. 
-	 * Stores nested cache: operator name -> (signature -> operator proto).
-	 * Config: max 1000 entries, expires after 30 minutes of no access, tracks statistics.
+	 * Cache for operator signature matching to improve performance. Stores nested cache: operator name -> (signature ->
+	 * operator proto). Config: max 1000 entries, expires after 30 minutes of no access, tracks statistics.
 	 */
 	private static final Cache<String, Cache<Signature, IArtefactProto.Operator>> operatorCache =
 			CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).recordStats().build();
 
 	/**
-	 * Cache for exact operator matching results (operator name + exact type -> boolean).
-	 * Stores whether an exact operator match exists for a given operator and argument type.
-	 * Config: max 10,000 entries, expires after 1 hour of no access, tracks statistics.
+	 * Cache for exact operator matching results (operator name + exact type -> boolean). Stores whether an exact
+	 * operator match exists for a given operator and argument type. Config: max 10,000 entries, expires after 1 hour of
+	 * no access, tracks statistics.
 	 */
 	private static final Cache<String, Boolean> exactOperatorCache =
 			CacheBuilder.newBuilder().maximumSize(10000).expireAfterAccess(1, TimeUnit.HOURS).recordStats().build();
 
 	/**
-	 * Cache for signature matching results (operator name + signature -> boolean).
-	 * Stores whether an operator can handle a particular signature (with conversions).
-	 * Config: max 10,000 entries, expires after 1 hour of no access, tracks statistics.
+	 * Cache for signature matching results (operator name + signature -> boolean). Stores whether an operator can
+	 * handle a particular signature (with conversions). Config: max 10,000 entries, expires after 1 hour of no access,
+	 * tracks statistics.
 	 */
 	private static final Cache<String, Boolean> signatureMatchCache =
 			CacheBuilder.newBuilder().maximumSize(10000).expireAfterAccess(1, TimeUnit.HOURS).recordStats().build();
@@ -704,7 +703,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		if (cachedResult != null) return cachedResult;
 
 		// If the operator is not known, we have no match
-		final Map<Signature, IArtefactProto.Operator> variants = GAML.OPERATORS.get(op);
+		final Map<Signature, IArtefactProto.Operator> variants = GAML.getOperatorsNamed(op);
 		if (variants == null) {
 			exactOperatorCache.put(cacheKey, Boolean.FALSE);
 			return false;
@@ -740,7 +739,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	@Override
 	public boolean hasOperator(final String op, final Signature s) {
 		// Early validation - check for invalid parameters
-		if (s == null || s.size() == 0 || op == null || op.isEmpty() || !GAML.OPERATORS.containsKey(op)) return false;
+		if (s == null || s.size() == 0 || op == null || op.isEmpty() || !GAML.containsOperatorNamed(op)) return false;
 
 		// Create cache key for this operation (operator + signature)
 		final String cacheKey = CacheKeyBuilder.forSignature(op, s.simplified());
@@ -750,7 +749,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		if (cachedResult != null) return cachedResult; // Cache hit - return cached result
 
 		// Cache miss - need to compute the result
-		final Map<Signature, IArtefactProto.Operator> ops = GAML.OPERATORS.get(op);
+		final Map<Signature, IArtefactProto.Operator> ops = GAML.getOperatorsNamed(op);
 		final Signature sig = s.simplified();
 
 		// Does any known operator signature match with the signature of the expressions?
@@ -790,14 +789,14 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	public IExpression createOperator(final String op, final IDescription context, final EObject eObject,
 			final IExpression... args) {
 		// Early validation - check for null or empty arguments
-		if (args == null || args.length == 0 || !GAML.OPERATORS.containsKey(op))
+		if (args == null || args.length == 0 || !GAML.containsOperatorNamed(op))
 			return emitError(op, context, eObject, args == null ? new IExpression[0] : args);
 
 		// Validate all arguments are non-null
 		for (final IExpression exp : args) { if (exp == null) return emitError(op, context, eObject, args); }
 
 		// Get the possible sets of types registered in OPERATORS
-		final Map<Signature, IArtefactProto.Operator> ops = GAML.OPERATORS.get(op);
+		final Map<Signature, IArtefactProto.Operator> ops = GAML.getOperatorsNamed(op);
 
 		// Create the signature corresponding to the arguments (only simplified signature is used)
 		Signature userSignature = Signature.createSimplified(args);
@@ -816,6 +815,10 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				if (originalUserSignature.matchesDesiredSignature(formalParametersSignature)) {
 					// Calculate "distance" - measure of how many type conversions are needed
 					final int dist = Signature.distanceBetween(formalParametersSignature, originalUserSignature);
+					if ("+".equals(op)) {
+						DEBUG.LOG("Distance between " + originalUserSignature + " and " + formalParametersSignature
+								+ " is " + dist);
+					}
 					if (dist == 0) {
 						// Perfect match found - use it immediately (no conversions needed)
 						userSignature = formalParametersSignature;
@@ -892,7 +895,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			final IType newType, final IExpression argument) {
 		// Allow implicit widening conversion: int -> float (no precision loss)
 		if (originalType == Types.INT && newType == Types.FLOAT) return Types.FLOAT;
-		
+
 		// Allow narrowing conversion: float -> int (with truncation warning)
 		if (originalType == Types.FLOAT && newType == Types.INT) {
 			// Emits an info when a float is truncated. See Issue 735.
@@ -924,7 +927,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 */
 	private IExpression emitError(final String op, final IDescription context, final EObject eObject,
 			final IExpression... args) {
-		final Map<Signature, IArtefactProto.Operator> ops = GAML.OPERATORS.get(op);
+		final Map<Signature, IArtefactProto.Operator> ops = GAML.getOperatorsNamed(op);
 		final Signature userSignature = new Signature(args).simplified();
 		final StringBuilder msg = new StringBuilder(128).append("No operator found for applying '").append(op)
 				.append("' to ").append(userSignature);
@@ -1077,23 +1080,23 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			final IExecutionContext tempContext) {
 		// Get the species description that defines the agent's type
 		final ISpeciesDescription context = agent.getSpecies().getDescription();
-		
+
 		// Create a new action description with a temporary name
 		final IActionDescription desc = (IActionDescription) GAML.getDescriptionFactory().create(IKeyword.ACTION,
 				context, Collections.EMPTY_LIST, IKeyword.TYPE, IKeyword.UNKNOWN, IKeyword.NAME, TEMPORARY_ACTION_NAME);
-		
+
 		// Parse the action code into statements and add them as children
 		final List<IDescription> children = getParser().compileBlock(action, context, tempContext);
 		for (final IDescription child : children) { desc.addChild(child); }
-		
+
 		// Validate and compile the action
 		desc.validate();
 		context.addChild(desc);
 		final IStatement.Action a = (IStatement.Action) desc.compile();
-		
+
 		// Register the temporary action with the species so it can be called
 		agent.getSpecies().addTemporaryAction(a);
-		
+
 		// Return an expression that calls this temporary action
 		return getParser().compile(TEMPORARY_ACTION_NAME + "()", context, null);
 	}

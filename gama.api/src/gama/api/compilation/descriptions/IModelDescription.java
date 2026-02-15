@@ -88,7 +88,7 @@ public interface IModelDescription extends ISpeciesDescription {
 	 * @return
 	 */
 	@Override
-	Map<String, ISpeciesDescription> getMicroSpecies();
+	Map<String, ISpeciesDescription> getOwnMicroSpecies();
 
 	/**
 	 * @param allModelNames

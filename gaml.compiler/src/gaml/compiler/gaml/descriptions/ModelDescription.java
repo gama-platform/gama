@@ -19,6 +19,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -48,12 +49,17 @@ import gama.api.utils.ConsumerWithPruning;
 
 /**
  * Root description for complete GAML models, representing the top-level container of all model elements.
- * 
- * <p>ModelDescription extends {@link SpeciesDescription} as models can be thought of as the "world species"
- * that contains all other species, global variables, and experiments. It provides additional functionality
- * for managing experiments, type systems, file paths, and model imports.</p>
- * 
- * <p><strong>Architectural Position:</strong></p>
+ *
+ * <p>
+ * ModelDescription extends {@link SpeciesDescription} as models can be thought of as the "world species" that contains
+ * all other species, global variables, and experiments. It provides additional functionality for managing experiments,
+ * type systems, file paths, and model imports.
+ * </p>
+ *
+ * <p>
+ * <strong>Architectural Position:</strong>
+ * </p>
+ *
  * <pre>
  * ModelDescription (root of description hierarchy)
  *   ├── Global Section (attributes, actions)
@@ -67,39 +73,44 @@ import gama.api.utils.ConsumerWithPruning;
  *   │   └── Test Experiments
  *   └── Type System (TypesManager)
  * </pre>
- * 
- * <p><strong>Key Responsibilities:</strong></p>
+ *
+ * <p>
+ * <strong>Key Responsibilities:</strong>
+ * </p>
  * <ul>
- *   <li><strong>Model Container:</strong> Root element containing all species, experiments, and global definitions</li>
- *   <li><strong>Experiment Management:</strong> Stores and manages experiment descriptions for this model</li>
- *   <li><strong>Type System:</strong> Maintains the type manager for type resolution and validation</li>
- *   <li><strong>Path Management:</strong> Tracks model file path and project path for resource loading</li>
- *   <li><strong>Import System:</strong> Manages imported models (micro-models) and alternate search paths</li>
- *   <li><strong>Validation Context:</strong> Provides context for validation (error/warning reporting)</li>
+ * <li><strong>Model Container:</strong> Root element containing all species, experiments, and global definitions</li>
+ * <li><strong>Experiment Management:</strong> Stores and manages experiment descriptions for this model</li>
+ * <li><strong>Type System:</strong> Maintains the type manager for type resolution and validation</li>
+ * <li><strong>Path Management:</strong> Tracks model file path and project path for resource loading</li>
+ * <li><strong>Import System:</strong> Manages imported models (micro-models) and alternate search paths</li>
+ * <li><strong>Validation Context:</strong> Provides context for validation (error/warning reporting)</li>
  * </ul>
- * 
- * <p><strong>Example GAML Model Structure:</strong></p>
+ *
+ * <p>
+ * <strong>Example GAML Model Structure:</strong>
+ * </p>
+ *
  * <pre>{@code
  * model TrafficSimulation        // ModelDescription
- * 
+ *
  * global {                        // Global section (attributes/actions)
  *   int nb_cars <- 100;
  *   init {
  *     create car number: nb_cars;
  *   }
  * }
- * 
+ *
  * species car skills: [moving] {  // Species definitions
  *   float speed <- 50.0 #km/#h;
  *   reflex move {
  *     do wander;
  *   }
  * }
- * 
+ *
  * grid road width: 100 height: 100 {  // Grid species
  *   rgb color <- #gray;
  * }
- * 
+ *
  * experiment MyExperiment type: gui {  // Experiment definition
  *   parameter "Number of cars" var: nb_cars;
  *   output {
@@ -110,21 +121,30 @@ import gama.api.utils.ConsumerWithPruning;
  *   }
  * }
  * }</pre>
- * 
- * <p><strong>Type System Management:</strong></p>
- * <p>Each model has its own {@link ITypesManager} that extends the built-in type system:</p>
+ *
+ * <p>
+ * <strong>Type System Management:</strong>
+ * </p>
+ * <p>
+ * Each model has its own {@link ITypesManager} that extends the built-in type system:
+ * </p>
  * <ul>
- *   <li><strong>Built-in Types:</strong> int, float, bool, string, agent, etc.</li>
- *   <li><strong>Species Types:</strong> Each species becomes a type</li>
- *   <li><strong>Custom Types:</strong> Type definitions in the model</li>
- *   <li><strong>Type Hierarchy:</strong> Tracks parent-child relationships for type compatibility</li>
+ * <li><strong>Built-in Types:</strong> int, float, bool, string, agent, etc.</li>
+ * <li><strong>Species Types:</strong> Each species becomes a type</li>
+ * <li><strong>Custom Types:</strong> Type definitions in the model</li>
+ * <li><strong>Type Hierarchy:</strong> Tracks parent-child relationships for type compatibility</li>
  * </ul>
- * 
- * <p><strong>Micro-Model System:</strong></p>
- * <p>Models can import other models as micro-models for composition and reuse:</p>
+ *
+ * <p>
+ * <strong>Micro-Model System:</strong>
+ * </p>
+ * <p>
+ * Models can import other models as micro-models for composition and reuse:
+ * </p>
+ *
  * <pre>{@code
  * import "utilities.gaml" as utils;   // Import with alias
- * 
+ *
  * model MainModel {
  *   // Can reference species from utils
  *   species myAgent parent: utils.baseAgent {
@@ -132,59 +152,75 @@ import gama.api.utils.ConsumerWithPruning;
  *   }
  * }
  * }</pre>
- * 
- * <p><strong>Experiment Management:</strong></p>
+ *
+ * <p>
+ * <strong>Experiment Management:</strong>
+ * </p>
  * <ul>
- *   <li><strong>Multiple Experiments:</strong> One model can define multiple experiments</li>
- *   <li><strong>Experiment Types:</strong> gui (interactive), batch (automated), test (unit testing)</li>
- *   <li><strong>Parameter Spaces:</strong> Experiments define parameter ranges for exploration</li>
- *   <li><strong>Output Definitions:</strong> Displays, monitors, and export configurations</li>
+ * <li><strong>Multiple Experiments:</strong> One model can define multiple experiments</li>
+ * <li><strong>Experiment Types:</strong> gui (interactive), batch (automated), test (unit testing)</li>
+ * <li><strong>Parameter Spaces:</strong> Experiments define parameter ranges for exploration</li>
+ * <li><strong>Output Definitions:</strong> Displays, monitors, and export configurations</li>
  * </ul>
- * 
- * <p><strong>Path Management:</strong></p>
+ *
+ * <p>
+ * <strong>Path Management:</strong>
+ * </p>
  * <ul>
- *   <li><strong>modelFilePath:</strong> Absolute path to the model file (e.g., /path/to/model.gaml)</li>
- *   <li><strong>modelProjectPath:</strong> Path to the containing project</li>
- *   <li><strong>alternatePaths:</strong> Additional search paths for imports and resources</li>
+ * <li><strong>modelFilePath:</strong> Absolute path to the model file (e.g., /path/to/model.gaml)</li>
+ * <li><strong>modelProjectPath:</strong> Path to the containing project</li>
+ * <li><strong>alternatePaths:</strong> Additional search paths for imports and resources</li>
  * </ul>
- * 
- * <p><strong>Memory Optimization:</strong></p>
+ *
+ * <p>
+ * <strong>Memory Optimization:</strong>
+ * </p>
  * <ul>
- *   <li>Experiments stored in lazy-initialized map</li>
- *   <li>Type manager shared with parent model if in micro-model scenario</li>
- *   <li>Alternate paths use Set to avoid duplicates</li>
- *   <li>Validation context shared across model</li>
+ * <li>Experiments stored in lazy-initialized map</li>
+ * <li>Type manager shared with parent model if in micro-model scenario</li>
+ * <li>Alternate paths use Set to avoid duplicates</li>
+ * <li>Validation context shared across model</li>
  * </ul>
- * 
- * <p><strong>Performance Considerations:</strong></p>
+ *
+ * <p>
+ * <strong>Performance Considerations:</strong>
+ * </p>
  * <ul>
- *   <li><strong>Type Resolution:</strong> Cached in TypesManager for fast lookups</li>
- *   <li><strong>Experiment Access:</strong> O(1) lookup by name</li>
- *   <li><strong>Species Access:</strong> Inherited from SpeciesDescription</li>
- *   <li><strong>Validation:</strong> Can be expensive for large models (1000s of symbols)</li>
+ * <li><strong>Type Resolution:</strong> Cached in TypesManager for fast lookups</li>
+ * <li><strong>Experiment Access:</strong> O(1) lookup by name</li>
+ * <li><strong>Species Access:</strong> Inherited from SpeciesDescription</li>
+ * <li><strong>Validation:</strong> Can be expensive for large models (1000s of symbols)</li>
  * </ul>
- * 
- * <p><strong>Optimization Opportunities:</strong></p>
+ *
+ * <p>
+ * <strong>Optimization Opportunities:</strong>
+ * </p>
  * <ol>
- *   <li><strong>Experiment Lazy Loading:</strong> Load experiment descriptions on demand</li>
- *   <li><strong>Type Cache:</strong> Aggressive caching of type lookups</li>
- *   <li><strong>Path Normalization:</strong> Normalize paths once at construction</li>
- *   <li><strong>Validation Caching:</strong> Cache validation results per file hash</li>
- *   <li><strong>Resource Pooling:</strong> Share validation context across multiple validations</li>
+ * <li><strong>Experiment Lazy Loading:</strong> Load experiment descriptions on demand</li>
+ * <li><strong>Type Cache:</strong> Aggressive caching of type lookups</li>
+ * <li><strong>Path Normalization:</strong> Normalize paths once at construction</li>
+ * <li><strong>Validation Caching:</strong> Cache validation results per file hash</li>
+ * <li><strong>Resource Pooling:</strong> Share validation context across multiple validations</li>
  * </ol>
- * 
- * <p><strong>Thread Safety:</strong></p>
- * <p>NOT thread-safe during construction and validation. Thread-safe for read-only
- * operations after validation completes (experiment lookup, type resolution, etc.).</p>
- * 
- * <p><strong>Lifecycle:</strong></p>
+ *
+ * <p>
+ * <strong>Thread Safety:</strong>
+ * </p>
+ * <p>
+ * NOT thread-safe during construction and validation. Thread-safe for read-only operations after validation completes
+ * (experiment lookup, type resolution, etc.).
+ * </p>
+ *
+ * <p>
+ * <strong>Lifecycle:</strong>
+ * </p>
  * <ol>
- *   <li><strong>Creation:</strong> Factory creates from parsed AST</li>
- *   <li><strong>Population:</strong> Species and experiments added</li>
- *   <li><strong>Validation:</strong> Semantic validation performed</li>
- *   <li><strong>Compilation:</strong> Compiled to runtime model</li>
- *   <li><strong>Execution:</strong> Experiments run against compiled model</li>
- *   <li><strong>Disposal:</strong> Clean up resources when model unloaded</li>
+ * <li><strong>Creation:</strong> Factory creates from parsed AST</li>
+ * <li><strong>Population:</strong> Species and experiments added</li>
+ * <li><strong>Validation:</strong> Semantic validation performed</li>
+ * <li><strong>Compilation:</strong> Compiled to runtime model</li>
+ * <li><strong>Execution:</strong> Experiments run against compiled model</li>
+ * <li><strong>Disposal:</strong> Clean up resources when model unloaded</li>
  * </ol>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -491,15 +527,31 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 			microModels.put(((ModelDescription) child).getAlias(), (ModelDescription) child);
 		} // no else as models are also species, which should be added after.
 
-		if (child instanceof ExperimentDescription) {
-			final String s = child.getName();
-			if (experiments == null) { experiments = GamaMapFactory.createOrdered(); }
-			experiments.put(s, (ExperimentDescription) child);
+		if (child instanceof ExperimentDescription exp) {
+			getExperimentsMap().put(exp.getName(), exp);
 		} else {
 			super.addChild(child);
 		}
-
 		return child;
+	}
+
+	/**
+	 * Gets the own experiments.
+	 *
+	 * @return the own experiments
+	 */
+	public IMap<String, ExperimentDescription> getOwnExperiments() {
+		return experiments == null ? GamaMapFactory.EMPTY : experiments;
+	}
+
+	/**
+	 * Gets the experiments map.
+	 *
+	 * @return the experiments map
+	 */
+	public IMap<String, ExperimentDescription> getExperimentsMap() {
+		if (experiments == null) { experiments = GamaMapFactory.create(); }
+		return experiments;
 	}
 
 	/**
@@ -531,9 +583,8 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 */
 	@Override
 	public boolean hasExperiment(final String nameOrTitle) {
-		if (experiments == null) return false;
-		if (experiments.containsKey(nameOrTitle)) return true;
-		for (final ExperimentDescription exp : experiments.values()) {
+		if (getOwnExperiments().containsKey(nameOrTitle)) return true;
+		for (final ExperimentDescription exp : getOwnExperiments().values()) {
 			final String s = exp.getExperimentTitleFacet();
 			if (s != null && s.equals(nameOrTitle)) return true;
 		}
@@ -549,8 +600,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		if (IKeyword.EXPERIMENT.equals(spec) && gama.api.GAMA.getExperiment() != null)
 			return gama.api.GAMA.getExperiment().getDescription();
 		if (getTypesManager() != null) return getTypesManager().get(spec).getSpecies();
-		if (hasMicroSpecies()) return getMicroSpecies().get(spec);
-		return null;
+		return getOwnMicroSpecies().get(spec);
 	}
 
 	@Override
@@ -576,10 +626,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 * @return the experiment names
 	 */
 	@Override
-	public Set<String> getExperimentNames() {
-		if (experiments == null) return Collections.EMPTY_SET;
-		return new LinkedHashSet(experiments.keySet());
-	}
+	public Set<String> getExperimentNames() { return new LinkedHashSet(getOwnExperiments().keySet()); }
 
 	/**
 	 * Gets the experiment titles.
@@ -587,14 +634,9 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 * @return the experiment titles
 	 */
 	public Set<String> getExperimentTitles() {
-		final Set<String> strings = new LinkedHashSet();
-		if (experiments != null) {
-			experiments.forEachPair((a, b) -> {
-				if (b.getOriginName().equals(getName())) { strings.add(b.getExperimentTitleFacet()); }
-				return true;
-			});
-		}
-		return strings;
+		return getOwnExperiments().values().stream().filter(b -> b.getOriginName().equals(getName()))
+				.map(ExperimentDescription::getExperimentTitleFacet)
+				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 	@Override
@@ -609,10 +651,9 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 */
 	@Override
 	public ExperimentDescription getExperiment(final String name) {
-		if (experiments == null) return null;
-		final ExperimentDescription desc = experiments.get(name);
+		final ExperimentDescription desc = getOwnExperiments().get(name);
 		if (desc == null) {
-			for (final ExperimentDescription ed : experiments.values()) {
+			for (final ExperimentDescription ed : getOwnExperiments().values()) {
 				final String title = ed.getExperimentTitleFacet();
 				if (title != null && title.equals(name)) return ed;
 			}
@@ -622,15 +663,12 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 
 	@Override
 	public boolean visitChildren(final DescriptionVisitor<IDescription> visitor) {
-		boolean result = super.visitChildren(visitor);
-		if (result && experiments != null) { result &= experiments.forEachValue(visitor); }
-		return result;
+		return super.visitChildren(visitor) && getOwnExperiments().forEachValue(visitor);
 	}
 
 	@Override
 	public boolean visitOwnChildren(final DescriptionVisitor<IDescription> visitor) {
-		if (!super.visitOwnChildren(visitor) || experiments != null && !experiments.forEachValue(visitor)) return false;
-		return true;
+		return super.visitOwnChildren(visitor) && getOwnExperiments().forEachValue(visitor);
 	}
 
 	@Override
@@ -639,23 +677,18 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 			if (!visitor.process(each)) return false;
 			return each.visitOwnChildrenRecursively(visitor);
 		};
-		if (!super.visitOwnChildrenRecursively(visitor)
-				|| experiments != null && !experiments.forEachValue(recursiveVisitor))
-			return false;
-		return true;
+		return super.visitOwnChildrenRecursively(visitor) && getOwnExperiments().forEachValue(recursiveVisitor);
 	}
 
 	@Override
 	public boolean finalizeDescription() {
 		if (!super.finalizeDescription()) return false;
-		if (actions != null) {
-			for (final IActionDescription action : actions.values()) {
-				if (action.isAbstract() && (action.getUnderlyingElement() == null
-						|| !action.getUnderlyingElement().eResource().equals(getUnderlyingElement().eResource()))) {
-					this.error("Abstract action '" + action.getName() + "', defined in " + action.getOriginName()
-							+ ", should be redefined.", IGamlIssue.MISSING_ACTION);
-					return false;
-				}
+		for (final IActionDescription action : getOwnActions().values()) {
+			if (action.isAbstract() && (action.getUnderlyingElement() == null
+					|| !action.getUnderlyingElement().eResource().equals(getUnderlyingElement().eResource()))) {
+				this.error("Abstract action '" + action.getName() + "', defined in " + action.getOriginName()
+						+ ", should be redefined.", IGamlIssue.MISSING_ACTION);
+				return false;
 			}
 		}
 		return true;
@@ -674,10 +707,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 * @return
 	 */
 	@Override
-	public Collection<? extends ExperimentDescription> getExperiments() {
-		if (experiments == null) return Collections.EMPTY_LIST;
-		return experiments.values();
-	}
+	public Collection<? extends ExperimentDescription> getExperiments() { return getOwnExperiments().values(); }
 
 	/**
 	 * Sets the imported model names.
@@ -705,7 +735,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 				return desc.visitMicroSpecies(this);
 			}
 		})) return;
-		if (experiments != null) { experiments.forEachValue(visitor); }
+		getOwnExperiments().forEachValue(visitor);
 	}
 
 	/**

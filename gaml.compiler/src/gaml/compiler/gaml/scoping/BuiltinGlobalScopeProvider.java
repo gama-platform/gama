@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EClass;
@@ -91,10 +90,10 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 
 		/** The elements - using HashMap for better performance. */
 		final Map<QualifiedName, IEObjectDescription> elements = new HashMap<>();
-		
+
 		/** Cache for URI to description lookups to avoid repeated iterations. */
 		private final Map<URI, IEObjectDescription> uriCache = new HashMap<>();
-		
+
 		/** Cached immutable view of elements values. */
 		private Collection<IEObjectDescription> cachedValues;
 
@@ -117,11 +116,9 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		}
 
 		@Override
-		public Iterable<IEObjectDescription> getAllElements() { 
+		public Iterable<IEObjectDescription> getAllElements() {
 			// Return cached immutable collection to avoid creating new collection on each call
-			if (cachedValues == null) {
-				cachedValues = Collections.unmodifiableCollection(elements.values());
-			}
+			if (cachedValues == null) { cachedValues = Collections.unmodifiableCollection(elements.values()); }
 			return cachedValues;
 		}
 
@@ -137,10 +134,9 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 			// Use cached URI lookup for better performance
 			final URI uri = EcoreUtil2.getPlatformResourceOrNormalizedURI(object);
 			IEObjectDescription cached = uriCache.get(uri);
-			if (cached != null && (cached.getEObjectOrProxy() == object || uri.equals(cached.getEObjectURI()))) {
+			if (cached != null && (cached.getEObjectOrProxy() == object || uri.equals(cached.getEObjectURI())))
 				return cached;
-			}
-			
+
 			// Fall back to iteration if not in cache
 			for (IEObjectDescription input : elements.values()) {
 				if (input.getEObjectOrProxy() == object || uri.equals(input.getEObjectURI())) {
@@ -253,7 +249,7 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 					GamaBundleLoader.ERROR("Error when building action artefact " + t.getName(), ex);
 				}
 			});
-			GAML.OPERATORS.forEach((a, b) -> {
+			GAML.getOperatorsNames().forEach(a -> {
 				try {
 					add(a, eAction);
 				} catch (Exception ex) {
@@ -340,9 +336,7 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		final QualifiedName qName = QualifiedName.create(t);
 		allQualifiedNames.add(qName);
 		final EGaml eGaml = EGaml.getInstance();
-		for (final EClass eClass : classes) {
-			scopes.get(eClass).add(qName, eGaml.createGamlDefinition(t, eClass));
-		}
+		for (final EClass eClass : classes) { scopes.get(eClass).add(qName, eGaml.createGamlDefinition(t, eClass)); }
 	}
 
 	@Override

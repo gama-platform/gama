@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.api.compilation.descriptions;
 
+import gama.api.data.objects.IMap;
 import gama.api.kernel.skill.IArchitecture;
 import gama.api.kernel.skill.ISkill;
 
@@ -39,7 +40,7 @@ public interface ISkillDescription extends ITypeDescription {
 	 * @return the own attributes
 	 */
 	@Override
-	Iterable<IVariableDescription> getOwnAttributes();
+	IMap<String, IVariableDescription> getOwnAttributes();
 
 	/**
 	 * Gets the own actions.
@@ -47,7 +48,7 @@ public interface ISkillDescription extends ITypeDescription {
 	 * @return the own actions
 	 */
 	@Override
-	Iterable<IActionDescription> getOwnActions();
+	IMap<String, IActionDescription> getOwnActions();
 
 	/**
 	 * @return

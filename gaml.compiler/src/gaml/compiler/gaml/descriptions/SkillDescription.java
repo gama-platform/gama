@@ -12,7 +12,6 @@ package gaml.compiler.gaml.descriptions;
 
 import java.lang.reflect.Constructor;
 import java.util.Collection;
-import java.util.Collections;
 
 import gama.annotations.doc;
 import gama.annotations.skill;
@@ -87,12 +86,10 @@ public class SkillDescription extends TypeDescription implements ISkillDescripti
 	}
 
 	@Override
-	public Collection<String> getActionNames() { return actions == null ? Collections.EMPTY_LIST : actions.keySet(); }
+	public Collection<String> getActionNames() { return getOwnActions().keySet(); }
 
 	@Override
-	public Collection<String> getAttributeNames() {
-		return attributes == null ? Collections.EMPTY_LIST : attributes.keySet();
-	}
+	public Collection<String> getAttributeNames() { return getOwnAttributes().keySet(); }
 
 	/**
 	 * Creates the INSTANCE.

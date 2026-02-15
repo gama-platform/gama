@@ -20,8 +20,6 @@ import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import gama.annotations.support.ISymbolKind;
 import gama.annotations.support.ITypeProvider;
@@ -241,7 +239,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 *            an optional string that contains the constant doc of the operator (can be null)
 	 * @param expectedContentTypes
 	 *            the expected content types
-	 * @param returnClassOrType
+	 * @param returnType
 	 *            the return class or type
 	 * @param c
 	 *            the c
@@ -257,37 +255,21 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 *            the helper
 	 */
 	public void _operator(final String[] keywords, final Executable method, final String doc,
-			final int[] expectedContentTypes, final Object returnClassOrType, final boolean c, final int t,
-			final int content, final int index, final int contentContentType, final IGamaGetter helper,
-			final boolean isIterator) {
-
+			final int[] expectedContentTypes, final Object returnType, final boolean c, final int t, final int content,
+			final int index, final int contentContentType, final IGamaGetter helper, final boolean isIterator) {
 		if (isIterator) { GAML.addIterators(keywords); }
 		final Signature signature = method == null ? new Signature(Types.NO_TYPE) : new Signature(method);
-		int nbParameters = signature.size();
+		int nbParam = signature.size();
 		final String plugin = GamaBundleLoader.CURRENT_PLUGIN_NAME;
-		final IType rt;
-		if (returnClassOrType instanceof Class) {
-			rt = Types.get((Class) returnClassOrType);
-		} else {
-			rt = (IType) returnClassOrType;
-		}
-		for (final String keyword : keywords) {
-			final String kw = keyword;
-			if (!GAML.OPERATORS.containsKey(kw)) { GAML.OPERATORS.put(kw, new HashMap()); }
-			final Map<Signature, IArtefactProto.Operator> map = GAML.OPERATORS.get(kw);
-			if (!map.containsKey(signature)) {
-				IArtefactProto.Operator proto;
-				if (nbParameters == 2 && (OF.equals(kw) || _DOT.equals(kw)) && signature.get(0).isAgentType()) {
-					proto = GAML.getArtefactProtoFactory().createOperatorProto(kw, method, null, helper, c, true, rt,
-							signature, t, content, index, contentContentType, expectedContentTypes, plugin);
-				} else {
-					proto = GAML.getArtefactProtoFactory().createOperatorProto(kw, method, doc, helper, c, false, rt,
-							signature, t, content, index, contentContentType, expectedContentTypes, plugin);
-				}
-				map.put(signature, proto);
+		final IType rt = returnType instanceof Class c2 ? Types.get(c2) : (IType) returnType;
+		for (final String kw : keywords) {
+			if (GAML.canRegisterOperator(kw, signature)) {
+				boolean isField = nbParam == 2 && (OF.equals(kw) || _DOT.equals(kw)) && signature.get(0).isAgentType();
+				GAML.registerOperator(GAML.getArtefactProtoFactory().createOperatorProto(kw, method,
+						isField ? null : doc, helper, c, isField, rt, signature, t, content, index, contentContentType,
+						expectedContentTypes, plugin));
 			}
 		}
-
 	}
 
 	/**

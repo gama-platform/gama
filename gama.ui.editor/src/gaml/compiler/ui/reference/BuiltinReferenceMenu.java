@@ -50,7 +50,7 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 
 	@Override
 	protected void fillMenu() {
-		final List<ITypeDescription> list = new ArrayList<>(IModelDescription.ROOT[0].getMicroSpecies().values());
+		final List<ITypeDescription> list = new ArrayList<>(IModelDescription.ROOT[0].getOwnMicroSpecies().values());
 		final List<String> speciesList = new ArrayList<>();
 		Collections.sort(list, INamed.COMPARATOR);
 		Menu m = sub("Built-in species");

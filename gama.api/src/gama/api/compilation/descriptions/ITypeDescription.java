@@ -15,6 +15,7 @@ import java.util.Collection;
 import com.google.common.base.Function;
 
 import gama.api.compilation.documentation.IGamlDocumentation;
+import gama.api.data.objects.IMap;
 import gama.api.kernel.skill.ISkill;
 
 /**
@@ -92,7 +93,7 @@ public interface ITypeDescription extends IDescription {
 	 *
 	 * @return the own actions
 	 */
-	Iterable<IActionDescription> getOwnActions();
+	IMap<String, IActionDescription> getOwnActions();
 
 	/**
 	 * @return
@@ -104,7 +105,7 @@ public interface ITypeDescription extends IDescription {
 	 *
 	 * @return the own attributes
 	 */
-	Iterable<IVariableDescription> getOwnAttributes();
+	IMap<String, IVariableDescription> getOwnAttributes();
 
 	/**
 	 * @return

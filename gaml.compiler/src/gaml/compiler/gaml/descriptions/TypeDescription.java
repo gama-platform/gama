@@ -175,8 +175,18 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 * @return the own attributes
 	 */
 	@Override
-	public Iterable<IVariableDescription> getOwnAttributes() {
-		return attributes == null ? Collections.EMPTY_LIST : attributes.values();
+	public IMap<String, IVariableDescription> getOwnAttributes() {
+		return attributes == null ? GamaMapFactory.EMPTY : attributes;
+	}
+
+	/**
+	 * Gets the attributes map.
+	 *
+	 * @return the attributes map
+	 */
+	public IMap<String, IVariableDescription> getAttributesMap() {
+		if (attributes == null) { attributes = GamaMapFactory.create(); }
+		return attributes;
 	}
 
 	/**
@@ -188,13 +198,11 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	public Collection<String> getAttributeNames() {
 		final Collection<String> accumulator =
 				parent != null && parent != this ? parent.getAttributeNames() : new LinkedHashSet<>();
-		if (attributes != null) {
-			attributes.forEachKey(s -> {
-				if (accumulator.contains(s)) { accumulator.remove(s); }
-				accumulator.add(s);
-				return true;
-			});
-		}
+		getOwnAttributes().forEachKey(s -> {
+			if (accumulator.contains(s)) { accumulator.remove(s); }
+			accumulator.add(s);
+			return true;
+		});
 		return accumulator;
 	}
 
@@ -207,7 +215,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 */
 	@Override
 	public IVariableDescription getAttribute(final String vn) {
-		final IVariableDescription attribute = attributes == null ? null : attributes.get(vn);
+		final IVariableDescription attribute = getOwnAttributes().get(vn);
 		if (attribute == null && parent != null && parent != this) return parent.getAttribute(vn);
 		return attribute;
 	}
@@ -220,14 +228,12 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 * @return true, if successful
 	 */
 	public boolean redefinesAttribute(final String vn) {
-		if (!attributes.containsKey(name) || parent == null || parent == this) return false;
-		return parent.hasAttribute(name);
+		return getOwnAttributes().containsKey(vn) && parent != null && parent != this && parent.hasAttribute(vn);
 	}
 
 	@Override
 	public boolean hasAttribute(final String a) {
-		return attributes != null && attributes.containsKey(a)
-				|| parent != null && parent != this && parent.hasAttribute(a);
+		return getOwnAttributes().containsKey(a) || parent != null && parent != this && parent.hasAttribute(a);
 	}
 
 	@Override
@@ -386,8 +392,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 			vd.copyFrom(existing);
 		}
 
-		if (attributes == null) { attributes = GamaMapFactory.create(); }
-		attributes.put(vd.getName(), vd);
+		getAttributesMap().put(vd.getName(), vd);
 	}
 
 	/**
@@ -402,12 +407,10 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 
 		final String inheritedVarName = vd.getName();
 
-		if (attributes != null) {
-			final IVariableDescription existing = attributes.get(inheritedVarName);
-			if (existing != null && assertAttributesAreCompatible(vd, existing)) {
-				if (!existing.isBuiltIn()) { markAttributeRedefinition(vd, existing); }
-				existing.copyFrom(vd);
-			}
+		final IVariableDescription existing = getOwnAttributes().get(inheritedVarName);
+		if (existing != null && assertAttributesAreCompatible(vd, existing)) {
+			if (!existing.isBuiltIn()) { markAttributeRedefinition(vd, existing); }
+			existing.copyFrom(vd);
 		}
 	}
 
@@ -449,17 +452,12 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 * @return true if the verification is correct, false otherwise
 	 */
 	protected boolean verifyAttributeCycles() {
-		if (attributes == null || attributes.size() <= 1) return true;
-		final IVariableDescription shape = attributes.get(SHAPE);
-
-		// AD Not really useful -- kept here for reference
-		// final DirectedAcyclicGraph<VariableDescription, Object> graph = new DirectedAcyclicGraph<>(null, Object::new,
-		// false, false, new FastLookupGraphSpecificsStrategy<VariableDescription, Object>());
-
+		if (getOwnAttributes().size() <= 1) return true;
+		final IVariableDescription shape = getOwnAttributes().get(SHAPE);
 		final DirectedAcyclicGraph<IVariableDescription, Object> graph = new DirectedAcyclicGraph<>(Object.class);
 		final Collection<IVariableDescription> shapeDeps =
 				shape == null ? Collections.EMPTY_SET : shape.getDependencies(INIT_DEPENDENCIES_FACETS, false, true);
-		Collection<IVariableDescription> varSet = attributes.values();
+		Collection<IVariableDescription> varSet = getOwnAttributes().values();
 		for (IVariableDescription var : varSet) {
 			if (shape != null && var.isSyntheticSpeciesContainer() && !add(graph, shape, var, INIT)) return false;
 			final Collection<IVariableDescription> varDeps =
@@ -523,16 +521,12 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 */
 	protected void addAction(final ActionDescription newAction) {
 		final String actionName = newAction.getName();
-		if (actions != null) {
-			final IActionDescription existing = actions.get(actionName);
-			if (existing != null) {
-				assertActionsAreCompatible(newAction, existing, existing.getOriginName());
-				duplicateInfo(newAction, existing);
-			}
-		} else {
-			actions = GamaMapFactory.create();
+		final IActionDescription existing = getOwnActions().get(actionName);
+		if (existing != null) {
+			assertActionsAreCompatible(newAction, existing, existing.getOriginName());
+			duplicateInfo(newAction, existing);
 		}
-		actions.put(actionName, newAction);
+		getActionsMap().put(actionName, newAction);
 	}
 
 	/**
@@ -543,17 +537,14 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 * @return true, if successful
 	 */
 	public boolean redefinesAction(final String theName) {
-		if (!actions.containsKey(theName) || parent == null || parent == this) return false;
-		return parent.hasAction(theName, false);
+		return getOwnActions().containsKey(theName)
+				|| parent != null && parent == this && parent.hasAction(theName, false);
 	}
 
 	@Override
 	public IActionDescription getAction(final String aName) {
-		IActionDescription ownAction = null;
-		if (actions != null) { ownAction = actions.get(aName); }
-		if (ownAction == null && parent != null && parent != this) { 
-			ownAction = parent.getAction(aName); 
-		}
+		IActionDescription ownAction = getOwnActions().get(aName);
+		if (ownAction == null && parent != null && parent != this) { ownAction = parent.getAction(aName); }
 		return ownAction;
 	}
 
@@ -563,8 +554,16 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 * @return the own actions
 	 */
 	@Override
-	public Iterable<IActionDescription> getOwnActions() {
-		return actions == null ? Collections.EMPTY_LIST : actions.values();
+	public IMap<String, IActionDescription> getOwnActions() { return actions == null ? GamaMapFactory.EMPTY : actions; }
+
+	/**
+	 * Gets the actions map.
+	 *
+	 * @return the actions map
+	 */
+	public IMap<String, IActionDescription> getActionsMap() {
+		if (actions == null) { actions = GamaMapFactory.create(); }
+		return actions;
 	}
 
 	/**
@@ -574,8 +573,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 *            the temp
 	 */
 	public void removeAction(final String temp) {
-		if (actions == null) return;
-		actions.remove(temp);
+		getOwnActions().remove(temp);
 
 	}
 
@@ -586,11 +584,8 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 */
 	@Override
 	public Collection<String> getActionNames() {
-		final Collection<String> allNames =
-				new LinkedHashSet(actions == null ? Collections.EMPTY_LIST : actions.keySet());
-		if (parent != null && parent != this) { 
-			allNames.addAll(parent.getActionNames()); 
-		}
+		final Collection<String> allNames = new LinkedHashSet(getOwnActions().keySet());
+		if (parent != null && parent != this) { allNames.addAll(parent.getActionNames()); }
 		return allNames;
 	}
 
@@ -604,12 +599,9 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 
 	@Override
 	public boolean hasAction(final String a, final boolean superInvocation) {
-		if (superInvocation) {
-			if (parent == null || parent == this) return false;
-			return parent.hasAction(a, false);
-		}
-		return actions != null && actions.containsKey(a)
-				|| parent != null && parent != this && parent.hasAction(a, superInvocation);
+		return superInvocation ? parent != null && parent != this && parent.hasAction(a, false)
+				: getOwnActions().containsKey(a)
+						|| parent != null && parent != this && parent.hasAction(a, superInvocation);
 	}
 
 	@Override
@@ -687,7 +679,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 		if (p == null || p == this) return;
 		for (final IActionDescription inheritedAction : p.getActions()) {
 			final String actionName = inheritedAction.getName();
-			final IActionDescription userDeclared = actions == null ? null : actions.get(actionName);
+			final IActionDescription userDeclared = getOwnActions().get(actionName);
 			if (userDeclared != null) {
 				if (!inheritedAction.isBuiltIn() || !userDeclared.isBuiltIn()) {
 					TypeDescription.assertActionsAreCompatible(userDeclared, inheritedAction,
@@ -833,8 +825,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 */
 	@Override
 	public boolean visitOwnAttributes(final DescriptionVisitor<IDescription> visitor) {
-		if (attributes == null) return true;
-		return attributes.forEachValue(visitor);
+		return getOwnAttributes().forEachValue(visitor);
 	}
 
 	/**
@@ -846,8 +837,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 */
 	@Override
 	public boolean visitOwnActions(final DescriptionVisitor<IDescription> visitor) {
-		if (actions == null) return true;
-		return actions.forEachValue(visitor);
+		return getOwnActions().forEachValue(visitor);
 	}
 
 	/**
@@ -858,8 +848,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 * @return true, if successful
 	 */
 	public boolean visitOwnActionsRecursively(final DescriptionVisitor<IDescription> visitor) {
-		if (actions == null) return true;
-		return actions.forEachValue(each -> {
+		return getOwnActions().forEachValue(each -> {
 			if (!visitor.process(each)) return false;
 			return each.visitOwnChildrenRecursively(visitor);
 		});
@@ -867,8 +856,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 
 	@Override
 	public Iterable<IDescription> getOwnChildren() {
-		return Iterables.concat(actions == null ? Collections.EMPTY_LIST : actions.values(),
-				attributes == null ? Collections.EMPTY_LIST : attributes.values());
+		return Iterables.concat(getOwnActions().values(), getOwnAttributes().values());
 	}
 
 	@Override
@@ -887,7 +875,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 * @return the own attribute
 	 */
 	public IVariableDescription getOwnAttribute(final String kw) {
-		return attributes == null ? null : attributes.get(kw);
+		return getOwnAttributes().get(kw);
 	}
 
 	/**
@@ -898,7 +886,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 * @return the own action
 	 */
 	public IActionDescription getOwnAction(final String kw) {
-		return actions == null ? null : actions.get(kw);
+		return getOwnActions().get(kw);
 	}
 
 }

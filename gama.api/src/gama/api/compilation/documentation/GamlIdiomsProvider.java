@@ -74,12 +74,11 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 
 			GamlIdiomsProvider<IVariableDescription> SPECIES_ATTRIBUTES =
 					new GamlIdiomsProvider<>("variables", "Built-in species attribute", Iterables.concat(Iterables
-							.transform(Types.getBuiltInSpecies().values(), ISpeciesDescription::getOwnAttributes)));
+							.transform(Types.getBuiltInSpecies().values(), s -> s.getOwnAttributes().values())));
 
 			GamlIdiomsProvider<IActionDescription> SPECIES_ACTIONS =
-					new GamlIdiomsProvider<>("actions", "Built-in species action", Iterables.concat(Iterables
-							.transform(Types.getBuiltInSpecies().values(), ISpeciesDescription::getOwnActions)));
-
+					new GamlIdiomsProvider<>("actions", "Built-in species action", Iterables.concat(
+							Iterables.transform(Types.getBuiltInSpecies().values(), s -> s.getOwnActions().values())));
 			GamlIdiomsProvider<ISkillDescription> SKILLS =
 					new GamlIdiomsProvider<>("skills", "Skill", GamaSkillRegistry.INSTANCE.getRegisteredSkills());
 
@@ -96,7 +95,8 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 					new GamlIdiomsProvider<>("constant", "Constant & Units", GAML.getUnits().values());
 
 			GamlIdiomsProvider<IArtefactProto> OPERATORS = new GamlIdiomsProvider<>("operators", "Operators",
-					Iterables.concat(Iterables.transform(GAML.OPERATORS.values(), Map::values)));
+					Iterables.concat(Iterables.transform(GAML.getOperatorsNames(),
+							name -> GAML.getOperatorsNamed(name).values())));
 
 			GamlIdiomsProvider<IType<?>> TYPES =
 					new GamlIdiomsProvider<>("types", "Types", Types.builtInTypes.getAllTypes());
