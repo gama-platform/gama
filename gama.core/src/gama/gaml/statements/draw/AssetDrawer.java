@@ -12,7 +12,6 @@ package gama.gaml.statements.draw;
 import java.awt.geom.Rectangle2D;
 
 import gama.api.additions.delegates.IDrawDelegate;
-import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -24,6 +23,7 @@ import gama.api.ui.displays.IAsset;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.utils.IImageProvider;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.Scaling3D;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGisFile;

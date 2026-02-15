@@ -556,7 +556,6 @@ public class Comparison {
 			see = { GT, LT, GTE, LTE, "!=" })
 	public static Boolean equal(final Double a, final Double b) {
 		return a == null ? b == null : isZeroWidth(a, b);
-		// return !(a < b) && !(a > b);
 	}
 
 	/**

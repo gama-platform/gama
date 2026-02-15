@@ -41,7 +41,6 @@ import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.fixedfunc.GLPointerFunc;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IPoint;
@@ -49,6 +48,7 @@ import gama.api.data.objects.IShape;
 import gama.api.data.objects.IShape.Type;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGeometryFile;

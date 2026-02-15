@@ -14,11 +14,11 @@ import org.eclipse.core.resources.IFile;
 import gama.api.GAMA;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.json.IJsonValue;
 import gama.api.data.objects.IEnvelope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.AbstractFileMetaData;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.dev.DEBUG;
 
 /**

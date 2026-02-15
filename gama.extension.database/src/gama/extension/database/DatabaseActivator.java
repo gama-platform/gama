@@ -17,7 +17,7 @@ import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.topology.IProjection;
-import gama.core.geometry.InternalGamaEnvelopeFactory;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.dependencies.GamaBundleActivator;
 import gama.extension.database.utils.sql.SqlConnection;
 import gama.extension.database.utils.sql.SqlUtils;
@@ -49,7 +49,7 @@ public class DatabaseActivator extends GamaBundleActivator {
 		SqlUtils.externalConnectors.put(PostgresConnection.POSTGIS, new PostgresConnector());
 		SqlUtils.externalConnectors.put(SqliteConnection.SQLITE, new SqliteConnector());
 
-		InternalGamaEnvelopeFactory.addEnvelopeComputer((scope, obj) -> {
+		GamaEnvelopeFactory.addEnvelopeComputer((scope, obj) -> {
 
 			if (!(obj instanceof IMap)) return null;
 			final IMap<String, Object> params = (IMap<String, Object>) obj;

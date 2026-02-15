@@ -16,7 +16,6 @@ import gama.annotations.action;
 import gama.annotations.doc;
 import gama.annotations.species;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IGraph;
@@ -28,6 +27,7 @@ import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
 
 /**
  * The Class MinimalAgent.

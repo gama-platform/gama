@@ -12,10 +12,10 @@ package gama.api.utils;
 
 import java.awt.image.BufferedImage;
 
-import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.displays.IAsset;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelopeProvider;
 
 /**

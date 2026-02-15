@@ -21,11 +21,11 @@ import com.jogamp.opengl.glu.GLU;
 
 import gama.api.GAMA;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IPoint;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.SystemInfo;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.prefs.GamaPreferences;

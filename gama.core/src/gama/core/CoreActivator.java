@@ -15,7 +15,6 @@ import org.osgi.framework.BundleContext;
 import gama.api.GAMA;
 import gama.api.additions.GamaBundleLoader;
 import gama.api.additions.registries.AgentConstructorsRegistry;
-import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaFontFactory;
 import gama.api.data.factories.GamaGraphFactory;
 import gama.api.data.factories.GamaMatrixFactory;
@@ -26,7 +25,6 @@ import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.factories.GamaTopologyFactory;
 import gama.core.agent.GamlAgent;
 import gama.core.agent.MinimalAgent;
-import gama.core.geometry.InternalGamaEnvelopeFactory;
 import gama.core.geometry.InternalGamaShapeFactory;
 import gama.core.topology.InternalTopologyFactory;
 import gama.core.topology.grid.GamlGridAgent;
@@ -177,7 +175,7 @@ public class CoreActivator extends GamaBundleActivator {
 		// Geometry and spatial factories
 		// GamaPointFactory.setBuilder(new InternalGamaPointFactory());
 		// GamaCoordinateSequenceFactory.setBuilder(new InternalGamaCoordinateSequenceFactory());
-		GamaEnvelopeFactory.setBuilder(new InternalGamaEnvelopeFactory());
+		// GamaEnvelopeFactory.setBuilder(new InternalGamaEnvelopeFactory());
 		GamaShapeFactory.setBuilder(new InternalGamaShapeFactory());
 		GamaTopologyFactory.setBuilder(new InternalTopologyFactory());
 		GamaPathFactory.setBuilder(new InternalGamaPathFactory());

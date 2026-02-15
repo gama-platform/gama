@@ -17,7 +17,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.util.NumberUtil;
 
-import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;

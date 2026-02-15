@@ -30,7 +30,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IEnvelope;
@@ -44,6 +43,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.IProgressIndicator;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.list.GamaListFactory;
 import gama.core.geometry.GamaGisGeometry;

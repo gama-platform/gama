@@ -24,11 +24,11 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;
 import gama.annotations.support.IConcept;
-import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.list.GamaListFactory;
 
 /**

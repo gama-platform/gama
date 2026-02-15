@@ -16,12 +16,12 @@ import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 
-import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.kernel.topology.ICoordinateReferenceSystem;
 import gama.api.kernel.topology.IProjection;
 import gama.api.kernel.topology.IProjectionFactory;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.GeometryUtils;
 
 /**

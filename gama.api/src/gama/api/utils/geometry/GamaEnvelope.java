@@ -7,20 +7,18 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.geometry;
+package gama.api.utils.geometry;
+
+import static org.locationtech.jts.index.quadtree.IntervalSize.isZeroWidth;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 
-import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
-import gama.api.utils.geometry.AxisAngle;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.gaml.operators.Comparison;
 
 // import org.opengis.geometry.MismatchedDimensionException;
 
@@ -532,8 +530,8 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 	public boolean equals(final Object other) {
 		if (!(other instanceof final GamaEnvelope otherEnvelope)) return false;
 		if (isNull()) return otherEnvelope.isNull();
-		return super.equals(other) && Comparison.equal(minz, otherEnvelope.getMinZ())
-				&& Comparison.equal(maxz, otherEnvelope.getMaxZ());
+		return super.equals(other) && isZeroWidth(minz, otherEnvelope.getMinZ())
+				&& isZeroWidth(maxz, otherEnvelope.getMaxZ());
 	}
 
 	/**
