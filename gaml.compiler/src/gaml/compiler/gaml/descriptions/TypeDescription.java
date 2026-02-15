@@ -39,12 +39,12 @@ import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IMap;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.IType;
+import gama.api.utils.map.GamaMapFactory;
 import gama.dev.DEBUG;
 
 /**

@@ -18,12 +18,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonObject;
 import gama.api.data.json.IJsonValue;
 import gama.api.data.objects.IMap;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.map.GamaMapFactory;
 
 /**
  * Represents an abstract JSON object, a set of name/value pairs, where the names are strings and the values are JSON

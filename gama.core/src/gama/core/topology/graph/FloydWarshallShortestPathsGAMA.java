@@ -21,9 +21,9 @@ import org.jgrapht.alg.util.Pair;
 import org.jgrapht.graph.GraphWalk;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IGraph;
 import gama.api.data.objects.IMap;
+import gama.api.utils.map.GamaMapFactory;
 import gama.core.util.matrix.GamaIntMatrix;
 
 /**

@@ -24,7 +24,6 @@ import org.locationtech.jts.geom.Polygon;
 
 import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.factories.GamaEnvelopeFactory;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
@@ -42,6 +41,7 @@ import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.Scaling3D;
 import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.map.GamaMapFactory;
 import gama.core.util.json.IJsonConstants;
 import gama.core.util.json.JsonGeometryObject;
 import gama.gaml.operators.Maths;

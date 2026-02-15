@@ -35,7 +35,6 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaPairFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
@@ -53,6 +52,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.collections.Collector;
+import gama.api.utils.map.GamaMapFactory;
 import gaml.compiler.gaml.expression.AgentVariableExpression;
 import gaml.compiler.gaml.expression.UnaryOperator;
 

@@ -31,11 +31,11 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IMap;
 import gama.api.gaml.symbols.Facets;
 import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.utils.map.GamaMapFactory;
 
 /**
  * The Class ExperimentDescription.

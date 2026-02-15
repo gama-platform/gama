@@ -24,7 +24,6 @@ import org.locationtech.jts.geom.util.AffineTransformation;
 
 import com.google.common.collect.Ordering;
 
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaPathFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IEnvelope;
@@ -46,6 +45,7 @@ import gama.api.utils.collections.ICollector;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.map.GamaMapFactory;
 import gama.core.topology.continuous.RootTopology;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.spatial.SpatialPunctal;

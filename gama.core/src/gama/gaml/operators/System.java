@@ -35,7 +35,6 @@ import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IFont;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
@@ -51,6 +50,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.color.GamaColor;
 import gama.api.utils.files.FileUtils;
+import gama.api.utils.map.GamaMapFactory;
 import gama.core.experiment.parameters.InputParameter;
 
 /**

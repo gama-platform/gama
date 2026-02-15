@@ -19,7 +19,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 
 import gama.api.compilation.descriptions.IActionDescription;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
 import gama.api.data.objects.IPoint;
@@ -28,6 +27,7 @@ import gama.api.ui.IConsoleListener;
 import gama.api.ui.IDialogFactory;
 import gama.api.ui.IGui;
 import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.map.GamaMapFactory;
 import gama.api.utils.server.ISocketCommand;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.PickWorkspaceDialog;

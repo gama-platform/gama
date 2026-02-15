@@ -14,11 +14,11 @@ import org.locationtech.jts.geom.Geometry;
 
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IField;
 import gama.api.data.objects.IMap;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
+import gama.api.utils.map.GamaMapFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGeometryFile;
 import gama.dev.DEBUG;

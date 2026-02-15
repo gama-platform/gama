@@ -25,7 +25,6 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.factories.IExpressionFactory;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
@@ -50,6 +49,7 @@ import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IExperimentDisplayable;
 import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.map.GamaMapFactory;
 import gama.dev.DEBUG;
 import one.util.streamex.StreamEx;
 

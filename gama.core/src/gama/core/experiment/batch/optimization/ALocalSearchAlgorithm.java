@@ -18,12 +18,12 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.map.GamaMapFactory;
 import gama.core.experiment.batch.BatchAgent;
 import gama.core.experiment.batch.Neighborhood;
 import gama.core.experiment.batch.Neighborhood1Var;

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import gama.api.data.factories.GamaMapFactory;
+import gama.api.utils.map.GamaMapFactory;
 
 /**
  * The Class GamaTree.

@@ -30,7 +30,6 @@ import gama.api.compilation.descriptions.ISpeciesDescription.Platform;
 import gama.api.constants.Generators;
 import gama.api.constants.IKeyword;
 import gama.api.data.factories.GamaFontFactory;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IFont;
 import gama.api.gaml.GAML;
@@ -44,6 +43,7 @@ import gama.api.utils.files.BufferingUtils;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.files.GenericFile;
 import gama.api.utils.files.IGamaFile;
+import gama.api.utils.map.GamaMapFactory;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceBeforeChangeListener;
 
 /**

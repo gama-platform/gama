@@ -20,7 +20,6 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.IConcept;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
@@ -30,6 +29,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.map.GamaMapFactory;
 import gama.gaml.architecture.reflex.ReflexArchitecture;
 
 /**

@@ -20,7 +20,6 @@ import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.prototypes.IArtefactProto;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IMap;
 import gama.api.data.objects.IPair;
 import gama.api.exceptions.GamaRuntimeException;
@@ -33,6 +32,7 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.GamlProperties;
 import gama.api.utils.collections.ICollector;
+import gama.api.utils.map.GamaMapFactory;
 
 /**
  * ListValueExpr.

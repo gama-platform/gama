@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.api.utils.map;
 
-import static gama.api.data.factories.GamaMapFactory.createWithoutCasting;
+import static gama.api.utils.map.GamaMapFactory.createWithoutCasting;
 
 import java.util.Collection;
 import java.util.Map;
@@ -20,7 +20,6 @@ import com.google.common.collect.ForwardingMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaMatrixFactory;
 import gama.api.data.factories.GamaPairFactory;
 import gama.api.data.json.IJson;

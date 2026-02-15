@@ -12,7 +12,6 @@ package gama.api.utils.map;
 
 import java.util.function.Supplier;
 
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IMap;
 import gama.api.gaml.types.IType;
 

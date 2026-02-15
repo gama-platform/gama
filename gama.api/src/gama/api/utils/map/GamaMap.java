@@ -9,7 +9,7 @@
  ********************************************************************************************************/
 package gama.api.utils.map;
 
-import static gama.api.data.factories.GamaMapFactory.createWithoutCasting;
+import static gama.api.utils.map.GamaMapFactory.createWithoutCasting;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -20,7 +20,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaMatrixFactory;
 import gama.api.data.factories.GamaPairFactory;
 import gama.api.data.json.IJson;
@@ -73,7 +72,7 @@ public class GamaMap<K, V> extends LinkedHashMap<K, V> implements IMap<K, V> {
 	 * @param content
 	 *            the content
 	 */
-	public GamaMap(final int capacity, final IType key, final IType content) {
+	protected GamaMap(final int capacity, final IType key, final IType content) {
 		super(capacity);
 		type = Types.MAP.of(key, content);
 	}

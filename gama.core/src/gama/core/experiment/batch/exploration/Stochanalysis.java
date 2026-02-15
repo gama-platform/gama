@@ -32,7 +32,6 @@ import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
@@ -40,6 +39,7 @@ import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.map.GamaMapFactory;
 import gama.core.experiment.parameters.ParametersSet;
 
 /**

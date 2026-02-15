@@ -22,7 +22,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IEnvelope;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
@@ -32,6 +31,7 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.GamaFile;
 import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.map.GamaMapFactory;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;

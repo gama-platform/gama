@@ -31,7 +31,6 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
 import gama.api.compilation.descriptions.ISpeciesDescription;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
@@ -51,6 +50,7 @@ import gama.api.utils.StringUtils;
 import gama.api.utils.files.SaveOptions;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.map.GamaMapFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.topology.gis.SimpleScalingProjection;
 import gama.gaml.statements.SaveStatement;

@@ -16,11 +16,11 @@ import org.eclipse.jface.wizard.Wizard;
 
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IActionDescription;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IMap;
 import gama.api.gaml.GAML;
 import gama.api.gaml.statements.ActionStatement;
 import gama.api.gaml.symbols.Arguments;
+import gama.api.utils.map.GamaMapFactory;
 
 /**
  * The Class GamaWizard.

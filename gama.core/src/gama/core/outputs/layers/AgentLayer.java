@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.IContainer;
@@ -38,6 +37,7 @@ import gama.api.ui.layers.ILayerStatement;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.map.GamaMapFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 import one.util.streamex.StreamEx;

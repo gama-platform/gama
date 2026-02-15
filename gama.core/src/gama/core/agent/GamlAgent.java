@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import gama.api.compilation.descriptions.IModelDescription;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IContainer;
 import gama.api.data.objects.IGraph;
 import gama.api.data.objects.IList;
@@ -31,6 +30,7 @@ import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.map.GamaMapFactory;
 import gama.core.population.MetaPopulation;
 
 /**

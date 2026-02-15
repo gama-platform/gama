@@ -17,7 +17,6 @@ import java.util.Map;
 
 import com.google.common.collect.Iterables;
 
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.json.IJson;
 import gama.api.data.json.IJsonValue;
 import gama.api.data.objects.IContainer;
@@ -38,6 +37,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.map.GamaMapFactory;
 import gama.api.utils.random.IRandom;
 import one.util.streamex.StreamEx;
 

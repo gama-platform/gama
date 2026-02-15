@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.objects.IGraph;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
@@ -25,6 +24,7 @@ import gama.api.data.objects.IShape;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.map.GamaMapFactory;
 import gama.gaml.operators.Containers;
 import gama.gaml.operators.Graphs;
 import gama.gaml.operators.Maths;

@@ -43,7 +43,6 @@ import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.documentation.GamlIdiomsProvider;
 import gama.api.constants.GamlFileExtension;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.data.json.IJsonValue;
 import gama.api.data.objects.IList;
 import gama.api.exceptions.CommandException;
@@ -65,6 +64,7 @@ import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.AgentReference;
+import gama.api.utils.map.GamaMapFactory;
 import gama.dev.DEBUG;
 
 /**

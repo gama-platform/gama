@@ -19,13 +19,13 @@ import java.util.stream.Collectors;
 
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.map.GamaMapFactory;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;

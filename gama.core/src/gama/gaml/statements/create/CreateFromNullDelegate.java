@@ -14,12 +14,12 @@ import java.util.List;
 import java.util.Map;
 
 import gama.api.additions.delegates.ICreateDelegate;
-import gama.api.data.factories.GamaMapFactory;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.map.GamaMapFactory;
 
 /**
  * Class CreateFromDatabaseDelegate.
