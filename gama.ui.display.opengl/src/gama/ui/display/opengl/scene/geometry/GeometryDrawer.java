@@ -20,7 +20,6 @@ import org.locationtech.jts.geom.Polygon;
 
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.ICoordinates;
@@ -29,6 +28,7 @@ import gama.api.data.objects.IPoint;
 import gama.api.data.objects.IShape;
 import gama.api.data.objects.IShape.Type;
 import gama.api.utils.color.GamaColorFactory;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.UnboundedCoordinateSequence;

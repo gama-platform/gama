@@ -24,7 +24,6 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IGraph;
@@ -38,6 +37,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.collections.Collector;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.list.GamaListFactory;
@@ -203,7 +203,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 					} else {
 						pt = c1;
 					}
-					final ICoordinates cc = getGeometryFactory().getCoordinateSequenceFactory().create(coords, false);
+					final ICoordinates cc = GamaCoordinateSequenceFactory.create(coords, false);
 					geom2 = getGeometryFactory().createLineString(cc);
 					// geom2 = geom.reverse();
 					IShape edge2 = GamaShapeFactory.createFrom(geom2);

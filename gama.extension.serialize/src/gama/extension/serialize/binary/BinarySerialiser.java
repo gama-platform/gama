@@ -14,13 +14,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import org.locationtech.jts.geom.CoordinateSequenceFactory;
 import org.locationtech.jts.geom.Geometry;
 
 import gama.api.constants.ISerialisationConstants;
 import gama.api.data.factories.GamaFontFactory;
 import gama.api.data.factories.GamaGeometryFactory;
 import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.factories.ICoordinateSequenceFactory;
 import gama.api.data.objects.IFont;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IMap;
@@ -428,16 +428,15 @@ public class BinarySerialiser implements ISerialisationConstants {
 
 		});
 
-		register(conf, ICoordinateSequenceFactory.class, new FSTIndividualSerialiser<ICoordinateSequenceFactory>() {
+		register(conf, CoordinateSequenceFactory.class, new FSTIndividualSerialiser<CoordinateSequenceFactory>() {
 
 			@Override
-			public void serialise(final FSTObjectOutput out, final ICoordinateSequenceFactory o) throws Exception {
+			public void serialise(final FSTObjectOutput out, final CoordinateSequenceFactory o) throws Exception {
 				out.writeStringUTF("*GCSF*");
 			}
 
 			@Override
-			public ICoordinateSequenceFactory deserialise(final IScope scope, final FSTObjectInput in)
-					throws Exception {
+			public CoordinateSequenceFactory deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
 				in.readStringUTF();
 				return GeometryUtils.getGeometryFactory().getCoordinateSequenceFactory();
 			}

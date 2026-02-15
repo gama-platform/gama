@@ -8,10 +8,11 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.data.factories;
+package gama.api.utils.geometry;
 
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
+import org.locationtech.jts.geom.CoordinateSequenceFactory;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.LineString;
@@ -19,9 +20,9 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.impl.CoordinateArraySequence;
 
+import gama.api.data.factories.IFactory;
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IPoint;
-import gama.api.utils.geometry.InternalGamaCoordinateSequenceFactory;
 
 /**
  * A static factory for creating {@link ICoordinates} instances. This class acts as a global access point and wrapper
@@ -30,11 +31,8 @@ import gama.api.utils.geometry.InternalGamaCoordinateSequenceFactory;
  */
 public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 
-	/**
-	 * The internal factory implementation responsible for the actual object creation. This field should be initialized
-	 * early in the application lifecycle.
-	 */
-	public static ICoordinateSequenceFactory InternalFactory = new InternalGamaCoordinateSequenceFactory();
+	/** The empty. */
+	static ICoordinates EMPTY = new GamaCoordinateSequence(3);
 
 	/**
 	 * A constant coordinate sequence representing a "keystone" identity, typically used for internal comparisons or
@@ -68,7 +66,8 @@ public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 	 * @return a new {@link ICoordinates} instance containing the given coordinates.
 	 */
 	public static ICoordinates create(final Coordinate[] coordinates) {
-		return InternalFactory.create(coordinates);
+		if (coordinates.length == 1) return new UniqueCoordinateSequence(3, coordinates[0]);
+		return new GamaCoordinateSequence(3, coordinates);
 	}
 
 	/**
@@ -78,8 +77,10 @@ public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 	 *            the source coordinate sequence.
 	 * @return a new {@link ICoordinates} instance wrapping or copying the source sequence.
 	 */
-	public static ICoordinates create(final CoordinateSequence coordSeq) {
-		return InternalFactory.create(coordSeq);
+	public static ICoordinates create(final CoordinateSequence cs) {
+		if (cs.size() == 1) return new UniqueCoordinateSequence(cs.getDimension(), (IPoint) cs.getCoordinate(0));
+		if (cs instanceof GamaCoordinateSequence gcs) return gcs.copy();
+		return new GamaCoordinateSequence(cs.getDimension(), cs.toCoordinateArray());
 	}
 
 	/**
@@ -92,7 +93,8 @@ public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 	 * @return a newly created {@link ICoordinates} instance.
 	 */
 	public static ICoordinates create(final int size, final int dimension) {
-		return InternalFactory.create(size, dimension);
+		if (size == 1) return new UniqueCoordinateSequence(dimension, GamaPointFactory.create());
+		return new GamaCoordinateSequence(dimension, size);
 	}
 
 	/**
@@ -100,9 +102,7 @@ public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 	 *
 	 * @return a shared or new empty {@link ICoordinates} instance.
 	 */
-	public static ICoordinates createEmpty() {
-		return InternalFactory.createEmpty();
-	}
+	public static ICoordinates getEmpty() { return EMPTY; }
 
 	/**
 	 * Creates an {@link ICoordinates} sequence from a variable number of {@link IPoint} instances.
@@ -112,7 +112,8 @@ public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 	 * @return a new {@link ICoordinates} instance containing the points.
 	 */
 	public static ICoordinates create(final IPoint... coordinates) {
-		return InternalFactory.create(coordinates);
+		if (coordinates.length == 1) return new UniqueCoordinateSequence(3, coordinates[0]);
+		return new GamaCoordinateSequence(3, true, coordinates);
 	}
 
 	/**
@@ -125,7 +126,8 @@ public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 	 * @return a new {@link ICoordinates} instance.
 	 */
 	public static ICoordinates create(final IPoint[] coordinates, final boolean copy) {
-		return InternalFactory.create(coordinates, copy);
+		if (coordinates.length == 1) return new UniqueCoordinateSequence(3, coordinates[0]);
+		return new GamaCoordinateSequence(3, copy, coordinates);
 	}
 
 	/**
@@ -136,15 +138,8 @@ public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 	 * @return a new {@link ICoordinates} instance.
 	 */
 	public static ICoordinates ofLength(final int i) {
-		return InternalFactory.create(i, 3);
+		return create(i, 3);
 	}
-
-	/**
-	 * Retrieves the underlying factory used for creating coordinate sequences.
-	 *
-	 * @return the current {@link ICoordinateSequenceFactory}.
-	 */
-	public static ICoordinateSequenceFactory getBuilder() { return InternalFactory; }
 
 	/**
 	 * Gets the contour coordinates.
@@ -154,7 +149,7 @@ public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 	 * @return the contour coordinates
 	 */
 	public static ICoordinates pointsOf(final Polygon g) {
-		if (g.isEmpty()) return createEmpty();
+		if (g.isEmpty()) return getEmpty();
 		if (g.getExteriorRing().getCoordinateSequence() instanceof CoordinateArraySequence)
 			return create(g.getExteriorRing().getCoordinates());
 		return (ICoordinates) g.getExteriorRing().getCoordinateSequence();
@@ -168,12 +163,35 @@ public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 	 * @return the contour coordinates
 	 */
 	public static ICoordinates pointsOf(final Geometry g) {
-		return g == null || g.isEmpty() ? createEmpty() : switch (g) {
+		return g == null || g.isEmpty() ? getEmpty() : switch (g) {
 			case Polygon p -> pointsOf(p);
 			case LineString l -> (ICoordinates) l.getCoordinateSequence();
 			case Point pt -> (ICoordinates) pt.getCoordinateSequence();
 			case GeometryCollection gc -> pointsOf(gc.convexHull());
-			default -> createEmpty();
+			default -> getEmpty();
+		};
+	}
+
+	/**
+	 * @return
+	 */
+	public static CoordinateSequenceFactory getJTSCoordinateSequenceFactory() {
+		return new CoordinateSequenceFactory() {
+
+			@Override
+			public CoordinateSequence create(final Coordinate[] coordinates) {
+				return GamaCoordinateSequenceFactory.create(coordinates);
+			}
+
+			@Override
+			public CoordinateSequence create(final CoordinateSequence coordSeq) {
+				return GamaCoordinateSequenceFactory.create(coordSeq);
+			}
+
+			@Override
+			public CoordinateSequence create(final int size, final int dimension) {
+				return GamaCoordinateSequenceFactory.create(size, dimension);
+			}
 		};
 	}
 

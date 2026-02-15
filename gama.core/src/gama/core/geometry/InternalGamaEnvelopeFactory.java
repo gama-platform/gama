@@ -20,7 +20,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 
-import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.factories.IEnvelopeFactory;
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IEnvelope;
@@ -32,6 +31,7 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.PoolUtils;
 import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.IEnvelopeComputer;
 import gama.api.utils.geometry.IEnvelopeProvider;
 

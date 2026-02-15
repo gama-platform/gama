@@ -51,7 +51,6 @@ import org.locationtech.jts.triangulate.VoronoiDiagramBuilder;
 import org.locationtech.jts.triangulate.quadedge.LocateFailureException;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaGeometryFactory;
 import gama.api.data.factories.GamaShapeFactory;

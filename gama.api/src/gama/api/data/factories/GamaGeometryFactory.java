@@ -26,6 +26,7 @@ import org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory;
 
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IPoint;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GamaPointFactory;
 
 /**
@@ -50,7 +51,7 @@ public class GamaGeometryFactory extends GeometryFactory {
 	 * Constructs a new GamaGeometryFactory using the default GAMA coordinate sequence factory.
 	 */
 	public GamaGeometryFactory() {
-		super(GamaCoordinateSequenceFactory.getBuilder());
+		super(GamaCoordinateSequenceFactory.getJTSCoordinateSequenceFactory());
 	}
 
 	/**
@@ -149,8 +150,7 @@ public class GamaGeometryFactory extends GeometryFactory {
 	 * @return the created {@link Polygon}.
 	 */
 	public Polygon createRectangle(final IPoint... points) {
-		final ICoordinateSequenceFactory fact = GamaCoordinateSequenceFactory.getBuilder();
-		final CoordinateSequence cs = fact.create(points);
+		final CoordinateSequence cs = GamaCoordinateSequenceFactory.create(points);
 		final LinearRing geom = createLinearRing(cs);
 		return createPolygon(geom, null);
 	}
@@ -181,12 +181,12 @@ public class GamaGeometryFactory extends GeometryFactory {
 	 */
 	private LinearRing turnClockwise(final LinearRing ring) {
 		if (ring == null || ring.isEmpty()) return ring;
-		return createLinearRing(GamaCoordinateSequenceFactory.getBuilder().create(ring.getCoordinateSequence()));
+		return createLinearRing(GamaCoordinateSequenceFactory.create(ring.getCoordinateSequence()));
 	}
 
 	@Override
-	public ICoordinateSequenceFactory getCoordinateSequenceFactory() {
-		return GamaCoordinateSequenceFactory.getBuilder();
+	public CoordinateSequenceFactory getCoordinateSequenceFactory() {
+		return GamaCoordinateSequenceFactory.getJTSCoordinateSequenceFactory();
 	}
 
 	/**
@@ -199,7 +199,7 @@ public class GamaGeometryFactory extends GeometryFactory {
 	 * @return the created {@link LineString}.
 	 */
 	public LineString createLineString(final IPoint[] coordinates, final boolean copyPoints) {
-		return createLineString(GamaCoordinateSequenceFactory.getBuilder().create(coordinates, copyPoints));
+		return createLineString(GamaCoordinateSequenceFactory.create(coordinates, copyPoints));
 	}
 
 	/**

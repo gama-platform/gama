@@ -42,7 +42,6 @@ import gama.annotations.example;
 import gama.annotations.file;
 import gama.annotations.support.IConcept;
 import gama.api.GAMA;
-import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.objects.IList;
 import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
@@ -52,6 +51,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.IProgressIndicator;
 import gama.api.utils.files.IFileMetadataProvider;
 import gama.api.utils.files.IGamaFileMetaData;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.prefs.GamaPreferences;
@@ -557,7 +557,8 @@ public class GamaShapeFile extends GamaGisFile {
 			// AD See Issue #3094. This constitutes a workaround
 			Query query = new Query();
 			// if (!with3D) { query.setHints(new Hints(Hints.FEATURE_2D, true)); }
-			query.getHints().put(Hints.JTS_COORDINATE_SEQUENCE_FACTORY, GamaCoordinateSequenceFactory.getBuilder());
+			query.getHints().put(Hints.JTS_COORDINATE_SEQUENCE_FACTORY,
+					GamaCoordinateSequenceFactory.getJTSCoordinateSequenceFactory());
 			query.getHints().put(Hints.JTS_GEOMETRY_FACTORY, GeometryUtils.getGeometryFactory());
 			// AD
 			SimpleFeatureCollection collection = source.getFeatures(query);

@@ -34,7 +34,6 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.util.GeometricShapeFactory;
 
-import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.factories.IShapeFactory;
@@ -45,6 +44,7 @@ import gama.api.data.objects.IShape;
 import gama.api.data.objects.IShape.Type;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.list.GamaListFactory;
@@ -134,7 +134,7 @@ public class InternalGamaShapeFactory implements IShapeFactory {
 			cs.setOrdinate(i, 1, p.y);
 			cs.setOrdinate(i, 2, p.z);
 		}
-		cs = CoordinateSequences.ensureValidRing(GamaCoordinateSequenceFactory.getBuilder(), cs);
+		cs = CoordinateSequences.ensureValidRing(GamaCoordinateSequenceFactory.getJTSCoordinateSequenceFactory(), cs);
 		final LinearRing geom = GeometryUtils.getGeometryFactory().createLinearRing(cs);
 		final Polygon p = GeometryUtils.getGeometryFactory().createPolygon(geom, null);
 		// Commented out, see Issue 760, comment #15.
@@ -173,7 +173,8 @@ public class InternalGamaShapeFactory implements IShapeFactory {
 				cs.setOrdinate(i, 1, p.y);
 				cs.setOrdinate(i, 2, p.z);
 			}
-			cs = CoordinateSequences.ensureValidRing(GamaCoordinateSequenceFactory.getBuilder(), cs);
+			cs = CoordinateSequences.ensureValidRing(GamaCoordinateSequenceFactory.getJTSCoordinateSequenceFactory(),
+					cs);
 			final LinearRing geom = GeometryUtils.getGeometryFactory().createLinearRing(cs);
 			final Polygon p = (Polygon) GeometryUtils.getGeometryFactory().createPolygon(geom, null).convexHull();
 			polys[z] = p;

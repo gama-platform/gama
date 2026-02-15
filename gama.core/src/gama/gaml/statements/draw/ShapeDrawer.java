@@ -15,7 +15,6 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.operation.buffer.BufferParameters;
 
 import gama.api.additions.delegates.IDrawDelegate;
-import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.factories.GamaShapeFactory;
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IEnvelope;
@@ -35,6 +34,7 @@ import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.utils.IImageProvider;
 import gama.api.utils.files.IGamaFile;
 import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.Scaling3D;
 import gama.api.utils.prefs.GamaPreferences;

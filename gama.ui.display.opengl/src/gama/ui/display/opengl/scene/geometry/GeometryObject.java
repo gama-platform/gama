@@ -12,10 +12,10 @@ package gama.ui.display.opengl.scene.geometry;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.objects.IPoint;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IDrawingAttributes.DrawerType;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.ui.display.opengl.scene.AbstractObject;
 
 /**

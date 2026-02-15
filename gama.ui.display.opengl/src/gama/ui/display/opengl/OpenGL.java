@@ -30,7 +30,6 @@ import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.gl2.GLUT;
 import com.jogamp.opengl.util.texture.Texture;
 
-import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.factories.GamaEnvelopeFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.ICoordinates;
@@ -42,6 +41,7 @@ import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IDrawingAttributes.DrawerType;
 import gama.api.utils.IImageProvider;
 import gama.api.utils.color.GamaColorFactory;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.Rotation3D;

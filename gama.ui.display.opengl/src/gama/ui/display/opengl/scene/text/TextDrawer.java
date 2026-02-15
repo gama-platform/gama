@@ -52,13 +52,13 @@ import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUtessellator;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import gama.api.data.factories.GamaCoordinateSequenceFactory;
 import gama.api.data.objects.IColor;
 import gama.api.data.objects.ICoordinates;
 import gama.api.data.objects.IFont;
 import gama.api.data.objects.IPoint;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GamaPointFactory;
 import gama.ui.display.opengl.ITesselator;
 import gama.ui.display.opengl.OpenGL;
