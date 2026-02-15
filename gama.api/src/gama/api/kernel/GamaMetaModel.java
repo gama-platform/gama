@@ -9,13 +9,14 @@
  ********************************************************************************************************/
 package gama.api.kernel;
 
+import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Sets.newHashSet;
 import static gama.api.constants.IKeyword.AGENT;
 import static gama.api.constants.IKeyword.EXPERIMENT;
 import static gama.api.constants.IKeyword.MODEL;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,13 +24,14 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
 import gama.api.additions.GamaBundleLoader;
+import gama.api.compilation.descriptions.IDescriptionFactory;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
-import gama.api.compilation.descriptions.ISpeciesDescription.Platform;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.kernel.agent.IAgentConstructor;
+import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.ISpecies;
 
@@ -43,6 +45,10 @@ import gama.api.kernel.species.ISpecies;
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 15 janv. 2024
  */
+
+/**
+ * The Class GamaMetaModel.
+ */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaMetaModel {
 
@@ -50,16 +56,13 @@ public class GamaMetaModel {
 	public final static GamaMetaModel INSTANCE = new GamaMetaModel();
 
 	/** The temp species. */
-	private final Map<String, SpeciesProto> tempSpecies = new HashMap();
+	private final Map<String, SpeciesRecord> tempSpecies = new HashMap();
 
 	/** The species skills. */
 	private final Multimap<String, String> speciesSkills = HashMultimap.create();
 
 	/** The abstract model species. */
-	private ISpecies abstractModelSpecies;
-
-	/** The abstract agent species. */
-	private ISpecies abstractAgentSpecies;
+	private ISpecies abstractModelSpecies, abstractAgentSpecies;
 
 	/** The is initialized. */
 	public volatile boolean isInitialized;
@@ -113,46 +116,9 @@ public class GamaMetaModel {
 	public static ISpeciesDescription.Platform getPlatformSpeciesDescription() { return INSTANCE.platform; }
 
 	/**
-	 * The Class SpeciesProto.
+	 * The Class SpeciesRecord.
 	 */
-	private static class SpeciesProto {
-
-		/** The name. */
-		final String name;
-
-		/** The plugin. */
-		final String plugin;
-
-		/** The clazz. */
-		final Class clazz;
-
-		/** The helper. */
-		final IAgentConstructor helper;
-
-		/** The skills. */
-		final String[] skills;
-
-		/**
-		 * Instantiates a new species proto.
-		 *
-		 * @param name
-		 *            the name
-		 * @param clazz
-		 *            the clazz
-		 * @param helper
-		 *            the helper
-		 * @param skills
-		 *            the skills
-		 */
-		public SpeciesProto(final String name, final Class clazz, final IAgentConstructor helper,
-				final String[] skills) {
-			plugin = GamaBundleLoader.CURRENT_PLUGIN_NAME;
-			this.name = name;
-			this.clazz = clazz;
-			this.helper = helper;
-			this.skills = skills;
-		}
-	}
+	private record SpeciesRecord(String name, String plugin, Class clazz, IAgentConstructor helper, String[] skills) {}
 
 	/**
 	 * Instantiates a new gama meta model.
@@ -173,24 +139,22 @@ public class GamaMetaModel {
 	 */
 	public void addSpecies(final String name, final Class clazz, final IAgentConstructor helper,
 			final String[] skills) {
-		final SpeciesProto proto = new SpeciesProto(name, clazz, helper, skills);
-		tempSpecies.put(name, proto);
+		tempSpecies.put(name, new SpeciesRecord(name, GamaBundleLoader.CURRENT_PLUGIN_NAME, clazz, helper, skills));
 	}
 
 	/**
 	 * Builds the.
 	 */
 	public void build() {
-
 		// We first build "agent" as the root of all other species (incl.
 		// "model")
-		final SpeciesProto ap = tempSpecies.remove(AGENT);
+		final SpeciesRecord ap = tempSpecies.remove(AGENT);
 		// "agent" has no super-species yet
-		agent = buildSpecies(ap, null, null, false, false);
+		agent = buildSpecies(ap, null, null);
 
 		// We then build "model", sub-species of "agent"
-		final SpeciesProto wp = tempSpecies.remove(MODEL);
-		model = (IModelDescription) buildSpecies(wp, null, agent, true, false);
+		final SpeciesRecord wp = tempSpecies.remove(MODEL);
+		model = (IModelDescription) buildSpecies(wp, null, agent);
 
 		// We close the first loop by putting agent "inside" model
 		agent.setEnclosingDescription(model);
@@ -198,20 +162,15 @@ public class GamaMetaModel {
 
 		// We create "experiment" as the root of all experiments, sub-species of
 		// "agent"
-		final SpeciesProto ep = tempSpecies.remove(EXPERIMENT);
-		experiment = (IExperimentDescription) buildSpecies(ep, null, agent, false, true);
+		final SpeciesRecord ep = tempSpecies.remove(EXPERIMENT);
+		experiment = (IExperimentDescription) buildSpecies(ep, null, agent);
 		experiment.finalizeDescription();
-		// Types.builtInTypes.addSpeciesType(experiment);
 
-		// We now can attach "model" as a micro-species of "experiment"
-		// model.setEnclosingDescription(experiment);
+		// We now can attach "experiment" as a child of "model"
 		model.addChild(experiment);
 
 		// We then create all other built-in species and attach them to "model"
-		for (final SpeciesProto proto : tempSpecies.values()) {
-			model.addChild(
-					buildSpecies(proto, model, agent, ISimulationAgent.class.isAssignableFrom(proto.clazz), false));
-		}
+		for (final SpeciesRecord proto : tempSpecies.values()) { model.addChild(buildSpecies(proto, model, agent)); }
 		tempSpecies.clear();
 		model.buildTypes();
 		model.finalizeDescription();
@@ -233,36 +192,50 @@ public class GamaMetaModel {
 	 *            the is experiment
 	 * @return the species description
 	 */
-	public ISpeciesDescription buildSpecies(final SpeciesProto proto, final ISpeciesDescription macro,
-			final ISpeciesDescription parent, final boolean isModel, final boolean isExperiment) {
-		final Class clazz = proto.clazz;
-		final String name = proto.name;
-		final IAgentConstructor helper = proto.helper;
-		final String[] skills = proto.skills;
-		final String plugin = proto.plugin;
-		final Set<String> allSkills = new HashSet(Arrays.asList(skills));
-		allSkills.addAll(speciesSkills.get(name));
-		ISpeciesDescription desc;
-		if (IKeyword.PLATFORM.equals(name)) {
-			desc = GAML.getDescriptionFactory().createPlatformSpeciesDescription(name, clazz, macro, parent, helper,
-					allSkills, plugin);
-			platform = (Platform) desc;
-		} else if (!isModel) {
-			if (isExperiment) {
-				desc = GAML.getDescriptionFactory().createBuiltInExperimentDescription(name, clazz, macro, parent,
-						helper, allSkills, plugin);
-			} else {
-				desc = GAML.getDescriptionFactory().createBuiltInSpeciesDescription(name, clazz, macro, parent, helper,
-						allSkills, plugin);
-			}
-		} else {
-			// if it is a ModelDescription, then the macro represents the parent (except for root)
-			desc = GAML.getDescriptionFactory().createRootModelDescription(name, clazz, macro, parent, helper,
-					allSkills, plugin);
-		}
+	private ISpeciesDescription buildSpecies(final SpeciesRecord proto, final ISpeciesDescription macro,
+			final ISpeciesDescription parent) {
+		Set<String> skills = newHashSet(concat(Arrays.asList(proto.skills), speciesSkills.get(proto.name)));
+		ISpeciesDescription desc = create(macro, parent, proto.clazz, proto.name, proto.helper, proto.plugin, skills);
 		desc.copyJavaAdditions();
 		desc.inheritFromParent();
 		return desc;
+	}
+
+	/**
+	 * Builds the species.
+	 *
+	 * @param macro
+	 *            the macro
+	 * @param parent
+	 *            the parent
+	 * @param clazz
+	 *            the clazz
+	 * @param isModel
+	 *            the is model
+	 * @param isExperiment
+	 *            the is experiment
+	 * @param name
+	 *            the name
+	 * @param helper
+	 *            the helper
+	 * @param plugin
+	 *            the plugin
+	 * @param skills
+	 *            the skills
+	 * @return the i species description
+	 */
+	private ISpeciesDescription create(final ISpeciesDescription macro, final ISpeciesDescription parent,
+			final Class clazz, final String name, final IAgentConstructor helper, final String plugin,
+			final Set<String> skills) {
+		IDescriptionFactory factory = GAML.getDescriptionFactory();
+		if (IKeyword.PLATFORM.equals(name)) return platform =
+				factory.createPlatformSpeciesDescription(name, clazz, macro, parent, helper, skills, plugin);
+		if (ISimulationAgent.class.isAssignableFrom(clazz)) // macro represents the parent here (except for root)
+			return factory.createRootModelDescription(name, clazz, macro, parent, helper, skills, plugin);
+		if (IExperimentAgent.class.isAssignableFrom(clazz))
+			return factory.createBuiltInExperimentDescription(name, clazz, macro, parent, helper, skills, plugin);
+		return factory.createBuiltInSpeciesDescription(name, clazz, macro, parent, helper, skills, plugin);
+
 	}
 
 	/**

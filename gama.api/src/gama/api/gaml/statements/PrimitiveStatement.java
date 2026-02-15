@@ -106,9 +106,7 @@ public class PrimitiveStatement extends ActionStatement {
 
 	@Override
 	public void setEnclosing(final ISymbol enclosing) {
-		if (enclosing instanceof ISpecies) {
-			skill = ((ISpecies) enclosing).getSkillInstanceFor(helper.getSkillClass());
-		}
+		if (enclosing instanceof ISpecies spec) { skill = spec.getSkillInstanceFor(helper.getSkillClass()); }
 	}
 
 	@Override

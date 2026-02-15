@@ -550,7 +550,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 			sd.error("For the moment, grids cannot be defined as micro-species anywhere else than in the model");
 		}
 		getMicroSpeciesMap().put(sd.getName(), sd);
-		// DEBUG.OUT("Adding micro-species " + sd.getName() + " to " + getName());
+		DEBUG.LOG("Adding micro-species " + sd.getName() + " to " + getName());
 		invalidateMinimalAgents();
 	}
 

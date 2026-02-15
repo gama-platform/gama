@@ -45,7 +45,6 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
-import gama.api.gaml.species.AbstractSpecies;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.symbols.Symbol;
@@ -54,6 +53,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.skill.ISkill;
+import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.JavaUtils;
@@ -525,7 +525,7 @@ public class Variable extends Symbol implements IVariable {
 	 * @param species
 	 *            the species
 	 */
-	private void buildHelpers(final AbstractSpecies species) {
+	private void buildHelpers(final ISpecies species) {
 		getter = getDescription().getGetter();
 		if (getter != null) { gSkill = species.getSkillInstanceFor(getter.getSkillClass()); }
 		initer = getDescription().getIniter();
@@ -539,7 +539,7 @@ public class Variable extends Symbol implements IVariable {
 	/**
 	 * // AD 2021: addition of the listeners
 	 */
-	private void addListeners(final AbstractSpecies species) {
+	private void addListeners(final ISpecies species) {
 		ISpeciesDescription sp = species.getDescription();
 		Class base = sp.getJavaBase();
 		if (base == null) return;
@@ -889,7 +889,7 @@ public class Variable extends Symbol implements IVariable {
 
 	@Override
 	public void setEnclosing(final ISymbol enclosing) {
-		if (enclosing instanceof AbstractSpecies) { buildHelpers((AbstractSpecies) enclosing); }
+		if (enclosing instanceof ISpecies spec) { buildHelpers(spec); }
 	}
 
 	@Override

@@ -27,13 +27,13 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaAssertException;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.species.GamlSpecies;
 import gama.api.gaml.statements.AbstractStatementSequence;
 import gama.api.gaml.statements.IStatement;
-import gama.api.gaml.statements.IStatement.Test;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.IType;
+import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
+import one.util.streamex.StreamEx;
 
 /**
  * The Class TestStatement.
@@ -123,14 +123,16 @@ public class TestStatement extends AbstractStatementSequence implements IStateme
 	@Override
 	public void setEnclosing(final ISymbol enclosing) {
 		super.setEnclosing(enclosing);
-		setup = (SetUpStatement) ((GamlSpecies) enclosing).getBehaviors().stream()
-				.filter(SetUpStatement.class::isInstance).findAny().orElse(null);
+		if (enclosing instanceof ISpecies spec) {
+			setup = (SetUpStatement) StreamEx.of(spec.getBehaviors()).findFirst(SetUpStatement.class::isInstance)
+					.orElse(null);
+		}
 	}
 
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> commands) {
 		super.setChildren(commands);
-		commands.forEach(s -> { if (s instanceof AssertStatement) { assertions.add((AssertStatement) s); } });
+		commands.forEach(s -> { if (s instanceof AssertStatement a) { assertions.add(a); } });
 	}
 
 	@Override

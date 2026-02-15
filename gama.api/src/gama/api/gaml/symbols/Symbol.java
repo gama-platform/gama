@@ -202,9 +202,4 @@ public abstract class Symbol implements ISymbol {
 
 	}
 
-	@Override
-	public void setEnclosing(final ISymbol enclosing) {
-		// Nothing to do by default
-	}
-
 }

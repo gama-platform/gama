@@ -11,7 +11,6 @@ package gama.api.gaml.symbols;
 
 import org.eclipse.emf.common.util.URI;
 
-
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
@@ -103,7 +102,7 @@ public interface ISymbol extends INamed, IDisposable {
 	 * @param enclosing
 	 *            the new enclosing
 	 */
-	void setEnclosing(ISymbol enclosing);
+	default void setEnclosing(final ISymbol enclosing) {}
 
 	/**
 	 * @param scope
