@@ -56,7 +56,6 @@ import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.IExecutionContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.IGamlFileInfo;
-import gama.dev.DEBUG;
 
 /**
  * Class GAML. Static support for various GAML constructs and functions
@@ -634,11 +633,6 @@ public class GAML {
 	 * Register.
 	 */
 	public static void registerOperator(final Operator proto) {
-		if ("+".equals(proto.getName())) {
-
-			DEBUG.LOG("Registering + with signature: " + proto.getSignature());
-
-		}
 		getOperatorsRegistryFor(proto.getName()).put(proto.getSignature(), proto);
 	}
 
