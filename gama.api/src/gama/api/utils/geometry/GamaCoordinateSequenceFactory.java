@@ -31,6 +31,9 @@ import gama.api.data.objects.IPoint;
  */
 public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 
+	/** The JTS factory. */
+	static CoordinateSequenceFactory JTSFactory;
+
 	/** The empty. */
 	static ICoordinates EMPTY = new GamaCoordinateSequence(3);
 
@@ -176,23 +179,27 @@ public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
 	 * @return
 	 */
 	public static CoordinateSequenceFactory getJTSCoordinateSequenceFactory() {
-		return new CoordinateSequenceFactory() {
+		if (JTSFactory == null) {
+			JTSFactory = new CoordinateSequenceFactory() {
 
-			@Override
-			public CoordinateSequence create(final Coordinate[] coordinates) {
-				return GamaCoordinateSequenceFactory.create(coordinates);
-			}
+				@Override
+				public CoordinateSequence create(final Coordinate[] coordinates) {
+					return GamaCoordinateSequenceFactory.create(coordinates);
+				}
 
-			@Override
-			public CoordinateSequence create(final CoordinateSequence coordSeq) {
-				return GamaCoordinateSequenceFactory.create(coordSeq);
-			}
+				@Override
+				public CoordinateSequence create(final CoordinateSequence coordSeq) {
+					return GamaCoordinateSequenceFactory.create(coordSeq);
+				}
 
-			@Override
-			public CoordinateSequence create(final int size, final int dimension) {
-				return GamaCoordinateSequenceFactory.create(size, dimension);
-			}
-		};
+				@Override
+				public CoordinateSequence create(final int size, final int dimension) {
+					return GamaCoordinateSequenceFactory.create(size, dimension);
+				}
+			};
+
+		}
+		return JTSFactory;
 	}
 
 }
