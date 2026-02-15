@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
 
 import gama.annotations.no_test;
 import gama.annotations.operator;
@@ -30,27 +31,128 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.GamaPointType;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.InternalGamaPointFactory;
+import gama.api.utils.geometry.GamaPoint;
 
 /**
  * A static factory for creating and managing {@link IPoint} instances. This class handles the creation of 3D points,
  * both mutable and immutable (though GAMA points are generally treated as values). It supports creation from
- * coordinates, coordinates sequences, GAML strings, and other sources. It delegates to an {@link IPointFactory}.
+ * coordinates, coordinates sequences, GAML strings, and other sources.
  */
 public class GamaPointFactory implements IFactory<IPoint> {
 
 	/**
-	 * The internal factory used for creating point instances.
+	 * The Class Immutable.
 	 */
-	private static IPointFactory InternalFactory = new InternalGamaPointFactory();
+	public static class Immutable extends GamaPoint {
 
-	/**
-	 * Configures the internal factory and initializes the NULL_POINT constant.
-	 *
-	 * @param builder
-	 *            the {@link IPointFactory} to be used as the internal builder.
-	 */
-	public static void setBuilder(final IPointFactory builder) { InternalFactory = builder; }
+		/**
+		 * Instantiates a new immutable.
+		 *
+		 * @param x
+		 *            the x
+		 * @param y
+		 *            the y
+		 * @param z
+		 *            the z
+		 */
+		public Immutable(final double x, final double y, final double z) {
+			super(x, y, z);
+		}
+
+		/**
+		 * Sets the location.
+		 *
+		 * @param al
+		 *            the al
+		 * @return the i point
+		 */
+		@Override
+		public Immutable setLocation(final IPoint al) {
+			return this;
+		}
+
+		@Override
+		public Immutable setLocation(final double x, final double y, final double z) {
+			return this;
+		}
+
+		@Override
+		public void setCoordinate(final Coordinate c) {}
+
+		@Override
+		public void setOrdinate(final int i, final double v) {}
+
+		@Override
+		public void setX(final double xx) {}
+
+		@Override
+		public void setY(final double yy) {}
+
+		@Override
+		public void setZ(final double zz) {}
+
+		/**
+		 * Adds the.
+		 *
+		 * @param loc
+		 *            the loc
+		 * @return the i point
+		 */
+		@Override
+		public Immutable add(final IPoint loc) {
+			return this;
+		}
+
+		@Override
+		public Immutable add(final double ax, final double ay, final double az) {
+			return this;
+		}
+
+		/**
+		 * Subtract.
+		 *
+		 * @param loc
+		 *            the loc
+		 * @return the i point
+		 */
+		@Override
+		public Immutable subtract(final IPoint loc) {
+			return this;
+		}
+
+		@Override
+		public Immutable multiplyBy(final double value) {
+			return this;
+		}
+
+		@Override
+		public Immutable divideBy(final double value) {
+			return this;
+		}
+
+		@Override
+		public void setGeometry(final IShape g) {}
+
+		@Override
+		public void setInnerGeometry(final Geometry point) {
+
+		}
+
+		@Override
+		public IPoint normalize() {
+			return this;
+		}
+
+		@Override
+		public void negate() {}
+
+		@Override
+		public void setDepth(final double depth) {}
+
+	}
+
+	/** The Constant NULL_POINT. */
+	private static IPoint NULL_POINT = createImmutable(0, 0, 0);
 
 	/**
 	 * Creates an immutable point with specified coordinates.
@@ -64,7 +166,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 	 * @return an immutable {@link IPoint}.
 	 */
 	public static IPoint createImmutable(final double x, final double y, final double z) {
-		return InternalFactory.createImmutable(x, y, z);
+		return new Immutable(x, y, z);
 	}
 
 	/**
@@ -77,7 +179,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 	 * @return an immutable {@link IPoint}.
 	 */
 	public static IPoint createImmutable(final double x, final double y) {
-		return InternalFactory.createImmutable(x, y, 0);
+		return new Immutable(x, y, 0);
 	}
 
 	/**
@@ -88,7 +190,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 	 * @return an immutable {@link IPoint}.
 	 */
 	public static IPoint createImmutable(final IPoint p) {
-		return InternalFactory.createImmutable(p);
+		return new Immutable(p.getX(), p.getY(), p.getZ());
 	}
 
 	/**
@@ -99,7 +201,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 	 * @return an immutable {@link IPoint}.
 	 */
 	public static IPoint createImmutable(final Coordinate p) {
-		return InternalFactory.createImmutable(p);
+		return new Immutable(p.x, p.y, p.z);
 	}
 
 	/**
@@ -108,7 +210,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 	 * @return a new {@link IPoint}.
 	 */
 	public static IPoint create() {
-		return InternalFactory.create();
+		return new GamaPoint(0, 0, 0);
 	}
 
 	/**
@@ -121,7 +223,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 	 * @return a new {@link IPoint}.
 	 */
 	public static IPoint create(final double x, final double y) {
-		return InternalFactory.create(x, y);
+		return new GamaPoint(x, y, 0);
 	}
 
 	/**
@@ -136,7 +238,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 	 * @return a new {@link IPoint}.
 	 */
 	public static IPoint create(final double x, final double y, final double z) {
-		return InternalFactory.create(x, y, z);
+		return new GamaPoint(x, y, z);
 	}
 
 	/**
@@ -147,7 +249,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 	 * @return a new {@link IPoint}.
 	 */
 	public static IPoint create(final IPoint p) {
-		return InternalFactory.create(p);
+		return new GamaPoint(p.getX(), p.getY(), p.getZ());
 	}
 
 	/**
@@ -158,7 +260,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 	 * @return a new {@link IPoint}.
 	 */
 	public static IPoint create(final Coordinate p) {
-		return InternalFactory.create(p);
+		return new GamaPoint(p.x, p.y, p.z);
 	}
 
 	/**
@@ -174,7 +276,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 		final double x = Cast.asFloat(scope, m.get("x"));
 		final double y = Cast.asFloat(scope, m.get("y"));
 		final double z = Cast.asFloat(scope, m.get("z"));
-		return GamaPointFactory.create(x, y, z);
+		return new GamaPoint(x, y, z);
 	}
 
 	/**
@@ -193,7 +295,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 			return toPoint(scope, Arrays.asList(str.split(",")), false);
 		}
 		Double v = Cast.asFloat(scope, str);
-		if (v != null) return GamaPointFactory.create(v, v, v);
+		if (v != null) return new GamaPoint(v, v, v);
 		throw GamaRuntimeException.error("Cannot cast " + s + " into a point", scope);
 	}
 
@@ -221,7 +323,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 	 *
 	 * @return the null point.
 	 */
-	public static IPoint getNullPoint() { return InternalFactory.getNullPoint(); }
+	public static IPoint getNullPoint() { return NULL_POINT; }
 
 	/**
 	 * GAML operator to create a point from 3 expressions.
@@ -248,7 +350,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 		final double x = Cast.asFloat(scope, xExp.value(scope));
 		final double y = Cast.asFloat(scope, yExp.value(scope));
 		final double z = Cast.asFloat(scope, zExp.value(scope));
-		return GamaPointFactory.create(x, y, z);
+		return new GamaPoint(x, y, z);
 	}
 
 	/**
@@ -272,7 +374,7 @@ public class GamaPointFactory implements IFactory<IPoint> {
 	public static IPoint create(final IScope scope, final IExpression xExp, final IExpression yExp) {
 		final double x = Cast.asFloat(scope, xExp.value(scope));
 		final double y = Cast.asFloat(scope, yExp.value(scope));
-		return GamaPointFactory.create(x, y);
+		return new GamaPoint(x, y, 0);
 	}
 
 	/**
