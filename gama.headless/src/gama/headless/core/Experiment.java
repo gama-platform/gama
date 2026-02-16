@@ -11,7 +11,6 @@
 package gama.headless.core;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -19,6 +18,7 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
 import gama.api.ui.IOutput;
 import gama.core.experiment.ExperimentSpecies;
 import gama.core.experiment.parameters.ParametersSet;

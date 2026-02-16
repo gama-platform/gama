@@ -15,13 +15,13 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.ICoordinates;
-import gama.api.data.objects.IPoint;
 import gama.api.gaml.symbols.Facets;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.layers.ICameraDefinition;
 import gama.api.ui.layers.ILightDefinition;
+import gama.api.utils.geometry.ICoordinates;
 import gama.api.utils.geometry.IRotationDefinition;
 
 /**

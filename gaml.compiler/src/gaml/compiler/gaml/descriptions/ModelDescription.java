@@ -35,7 +35,6 @@ import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IMap;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
@@ -44,8 +43,9 @@ import gama.api.gaml.types.TypesManager;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.kernel.simulation.ISimulationAgent;
-import gama.api.utils.ConsumerWithPruning;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.utils.interfaces.ConsumerWithPruning;
 
 /**
  * Root description for complete GAML models, representing the top-level container of all model elements.

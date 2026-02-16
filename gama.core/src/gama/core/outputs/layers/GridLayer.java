@@ -15,19 +15,19 @@ import java.awt.image.DataBufferInt;
 import java.util.Collections;
 import java.util.Set;
 
-import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IField;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IShape;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IField;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.ILayerStatement;
-import gama.api.utils.IImageProvider;
 import gama.api.utils.collections.Collector;
+import gama.api.utils.interfaces.IImageProvider;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.MeshDrawingAttributes;
 

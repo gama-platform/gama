@@ -20,10 +20,10 @@ import org.eclipse.ui.IStartup;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 
-import gama.api.data.factories.GamaFontFactory;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IFont;
-import gama.api.utils.color.GamaColorFactory;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.font.GamaFontFactory;
+import gama.api.types.font.IFont;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.ui.shared.access.HeapControl;

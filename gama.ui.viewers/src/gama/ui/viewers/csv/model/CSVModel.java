@@ -21,9 +21,9 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 
 import gama.api.GAMA;
-import gama.api.data.csv.AbstractCSVManipulator;
-import gama.api.data.csv.CsvReader;
-import gama.api.data.csv.CsvWriter;
+import gama.api.utils.csv.AbstractCSVManipulator;
+import gama.api.utils.csv.CsvReader;
+import gama.api.utils.csv.CsvWriter;
 import gama.api.utils.files.IGamaFileMetaData;
 import gama.core.util.file.GamaCSVFile.CSVInfo;
 import gama.dev.DEBUG;

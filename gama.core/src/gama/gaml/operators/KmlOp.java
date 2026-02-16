@@ -9,12 +9,12 @@
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IDate;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.date.IDate;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
 import gama.api.utils.files.FileUtils;
 import gama.core.util.file.GamaKmlExport;
 import gama.annotations.doc;

@@ -12,8 +12,8 @@ package gama.core.util.json;
 
 import java.util.Objects;
 
-import gama.api.data.json.IJsonObject;
-import gama.api.data.json.IJsonValue;
+import gama.api.utils.json.IJsonObject;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * Represents a member of a JSON object, a pair of a name and a value.

@@ -15,16 +15,16 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IGraph;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.gaml.types.Types;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IGraph;
+import gama.api.types.graph._Edge;
+import gama.api.types.graph._Vertex;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
 import gama.api.utils.collections.Collector;
-import gama.api.utils.collections._Edge;
-import gama.api.utils.collections._Vertex;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
 
 /**
  * The Class AStar.

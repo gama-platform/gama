@@ -25,15 +25,15 @@ import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.CompressionUtils;
-import gama.api.utils.list.GamaListFactory;
 
 /**
  * Written by drogoul Modified on 10 d�c. 2010

@@ -9,7 +9,7 @@ import java.util.Map;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.kernel.simulation.ITopLevelAgent;
-import gama.api.kernel.topology.ITopology;
+import gama.api.types.topology.ITopology;
 import gama.api.ui.IGui;
 
 /**

@@ -18,19 +18,19 @@ import java.util.StringTokenizer;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPair;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.pair.IPair;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.list.GamaListFactory;
 import gama.dev.DEBUG;
 
 /**
@@ -350,7 +350,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	/**
 	 * Method fillBuffer(). Fills the buffer with the polygons built from the .obj vertices + faces
 	 *
-	 * @see gama.api.utils.files.GamaFile#fillBuffer(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.file.GamaFile#fillBuffer(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {

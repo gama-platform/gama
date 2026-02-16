@@ -24,11 +24,11 @@ import org.geotools.feature.DefaultFeatureCollection;
 import org.geotools.feature.SchemaException;
 import org.geotools.feature.simple.SimpleFeatureBuilder;
 
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.topology.IProjection;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
 import gama.dependencies.geojson.feature.FeatureJSON;
 import gama.dependencies.geojson.geom.GeometryJSON;
 

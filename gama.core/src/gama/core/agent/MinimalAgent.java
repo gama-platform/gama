@@ -16,18 +16,18 @@ import gama.annotations.action;
 import gama.annotations.doc;
 import gama.annotations.species;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IGraph;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.gaml.species.GamlSpecies;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.ISpecies;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IGraph;
+import gama.api.types.topology.ITopology;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  * The Class MinimalAgent.

@@ -11,11 +11,11 @@ package gama.api.ui.layers;
 
 import java.awt.Point;
 
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IGraphics;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  * The class IDisplayLayerBox.

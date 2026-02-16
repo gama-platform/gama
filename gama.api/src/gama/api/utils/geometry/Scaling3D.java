@@ -11,8 +11,8 @@ package gama.api.utils.geometry;
 
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IPoint;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 
 /**
  * The Class Scaling3D.

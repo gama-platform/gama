@@ -28,7 +28,7 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.color.GamaColorFactory;
+import gama.api.types.color.GamaColorFactory;
 
 /**
  * Written by drogoul Modified on 6 févr. 2010

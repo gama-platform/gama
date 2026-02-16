@@ -27,22 +27,22 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
 import gama.annotations.support.Reason;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IMatrix;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IAgentFilter;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
 import gama.api.utils.collections.Collector;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.utils.interfaces.IAgentFilter;
 import gama.core.topology.filter.In;
 import gama.gaml.operators.Containers;
 
@@ -334,7 +334,7 @@ public class SpatialStatistics {
 			double sumNull = 0;
 			int nbNull = 0;
 			for (final Object obj : points.keySet()) {
-				final IPoint pt = GamaPointFactory.toPoint(scope, obj);
+				final IPoint pt = GamaPointFactory.castToPoint(scope, obj);
 				final double dist = scope.getTopology().distanceBetween(scope, geom, pt);
 				if (dist == 0) {
 					nbNull++;

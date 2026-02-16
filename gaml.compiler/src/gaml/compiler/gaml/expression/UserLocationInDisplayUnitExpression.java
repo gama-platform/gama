@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.expression;
 
-import gama.api.data.objects.IPoint;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 
 /**
  * The Class UserLocationUnitExpression.

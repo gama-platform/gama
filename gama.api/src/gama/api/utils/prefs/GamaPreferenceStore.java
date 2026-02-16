@@ -19,20 +19,20 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import gama.api.data.factories.GamaFontFactory;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IDate;
-import gama.api.data.objects.IPoint;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.SystemInfo;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.date.GamaDateFactory;
+import gama.api.types.date.IDate;
+import gama.api.types.file.GenericFile;
+import gama.api.types.file.IGamaFile;
+import gama.api.types.font.GamaFontFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.utils.StringUtils;
-import gama.api.utils.color.GamaColorFactory;
-import gama.api.utils.date.GamaDateFactory;
-import gama.api.utils.files.GenericFile;
-import gama.api.utils.files.IGamaFile;
-import gama.api.utils.geometry.GamaPointFactory;
 import one.util.streamex.StreamEx;
 
 /**
@@ -184,7 +184,7 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 			switch (gp.getTypeId()) {
 				case IType.POINT -> {
 					gp.init(val == null ? (Supplier) gp.getValueProvider()
-							: (Supplier) () -> GamaPointFactory.toPoint(scope, Cast.asString(scope, val), false));
+							: (Supplier) () -> GamaPointFactory.castToPoint(scope, Cast.asString(scope, val), false));
 				}
 				case IType.INT -> gp
 						.init(val == null ? (Supplier) gp.getValueProvider() : (Supplier) () -> Cast.asInt(scope, val));
@@ -201,7 +201,7 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 				case IType.FONT -> gp.init((Supplier) () -> {
 					if (DEFAULT_FONT.equals(val)) return null;
 					return val == null ? (Supplier) gp.getValueProvider()
-							: (Supplier) () -> GamaFontFactory.createFontFrom(scope, Cast.asString(scope, val), false);
+							: (Supplier) () -> GamaFontFactory.castToFont(scope, Cast.asString(scope, val), false);
 				});
 				case IType.DATE -> gp
 						.init(val == null ? (Supplier) gp.getValueProvider() : (Supplier) () -> GamaDateFactory

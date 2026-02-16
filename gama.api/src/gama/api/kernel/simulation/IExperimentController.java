@@ -13,7 +13,7 @@ package gama.api.kernel.simulation;
 import java.io.Closeable;
 
 import gama.api.kernel.species.IExperimentSpecies;
-import gama.api.utils.IDisposable;
+import gama.api.utils.interfaces.IDisposable;
 
 /**
  * Class IExperimentController.

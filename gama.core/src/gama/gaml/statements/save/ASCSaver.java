@@ -18,11 +18,11 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-import gama.api.data.objects.IField;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.matrix.IField;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.SaveOptions;
 import gama.core.topology.gis.ProjectionFactory;

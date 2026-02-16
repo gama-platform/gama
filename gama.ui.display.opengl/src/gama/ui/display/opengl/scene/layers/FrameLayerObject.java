@@ -12,12 +12,12 @@ package gama.ui.display.opengl.scene.layers;
 
 import java.util.List;
 
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IShape;
 import gama.api.kernel.agent.IAgent;
-import gama.api.utils.color.GamaColorFactory;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;

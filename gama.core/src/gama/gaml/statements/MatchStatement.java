@@ -24,16 +24,16 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.misc.IContainer;
 
 /**
  * IfPrototype.
@@ -210,7 +210,7 @@ public class MatchStatement extends AbstractStatementSequence {
 		public boolean matches(final IScope scope, final Object switchValue) throws GamaRuntimeException {
 			final Object val = getValue(scope);
 			if (val instanceof IContainer) return ((IContainer) val).contains(scope, switchValue);
-			return GamaListFactory.toList(scope, val).contains(switchValue);
+			return GamaListFactory.castToList(scope, val).contains(switchValue);
 		}
 
 		@Override
@@ -264,7 +264,7 @@ public class MatchStatement extends AbstractStatementSequence {
 			if (!(switchValue instanceof Number)) throw GamaRuntimeException
 					.error("Can only match if a number is in an interval. " + switchValue + " is not a number", scope);
 			Object val = value.value(scope);
-			if (!(val instanceof IPoint)) { val = GamaPointFactory.toPoint(scope, val); }
+			if (!(val instanceof IPoint)) { val = GamaPointFactory.castToPoint(scope, val); }
 			final double min = ((IPoint) val).getX();
 			final double max = ((IPoint) val).getY();
 			final double in = ((Number) switchValue).doubleValue();

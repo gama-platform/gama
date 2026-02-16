@@ -12,8 +12,8 @@ package gama.api.ui.layers;
 
 import java.awt.image.BufferedImage;
 
-import gama.api.data.objects.IPoint;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IDisplaySurface;
 
 /**

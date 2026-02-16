@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import gama.api.compilation.descriptions.IExperimentDescription;
-import gama.api.data.objects.IList;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.symbols.IParameter.Batch;
@@ -24,6 +23,7 @@ import gama.api.kernel.simulation.IExperimentController;
 import gama.api.kernel.simulation.IExploration;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
 import gama.api.ui.IExperimentDisplayable;
 import gama.api.ui.IOutputManager;
 

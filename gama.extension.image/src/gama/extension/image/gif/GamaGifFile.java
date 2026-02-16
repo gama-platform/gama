@@ -14,10 +14,10 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;
 import gama.annotations.support.IConcept;
-import gama.api.data.objects.IMatrix;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.matrix.IMatrix;
 import gama.extension.image.GamaImageFile;
 import gama.extension.image.ImageCache;
 

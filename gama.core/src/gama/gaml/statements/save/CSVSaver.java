@@ -15,19 +15,19 @@ import java.util.Collection;
 import java.util.Set;
 
 import gama.api.compilation.descriptions.ISpeciesDescription;
-import gama.api.data.csv.AbstractCSVManipulator;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMatrix;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.IMatrix;
 import gama.api.utils.StringUtils;
+import gama.api.utils.csv.AbstractCSVManipulator;
 import gama.api.utils.files.BufferingUtils;
 import gama.api.utils.files.SaveOptions;
-import gama.api.utils.list.GamaListFactory;
 import gama.gaml.statements.SaveStatement;
 
 /**
@@ -88,7 +88,7 @@ public class CSVSaver extends AbstractSaver {
 			sd = null;
 		}
 		final Object value = item.value(scope);
-		final IList values = itemType.isContainer() ? GamaListFactory.toList(scope, value)
+		final IList values = itemType.isContainer() ? GamaListFactory.castToList(scope, value)
 				: GamaListFactory.create(scope, itemType, value);
 		if (values.isEmpty()) return;
 		char del = AbstractCSVManipulator.getDefaultDelimiter();

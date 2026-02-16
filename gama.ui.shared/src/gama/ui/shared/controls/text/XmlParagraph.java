@@ -25,7 +25,7 @@ import org.eclipse.ui.internal.forms.widgets.IHyperlinkSegment;
 import org.eclipse.ui.internal.forms.widgets.Locator;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
-import gama.api.data.objects.IFont;
+import gama.api.types.font.IFont;
 import gama.ui.shared.resources.GamaFonts;
 
 /**

@@ -17,8 +17,6 @@ import gama.annotations.doc;
 import gama.annotations.getter;
 import gama.annotations.setter;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.kernel.agent.IAgent;
@@ -26,6 +24,8 @@ import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.agent.IPopulationFactory;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
 import gama.api.ui.IExperimentDisplayable;
 import gama.api.ui.IOutputManager;
 

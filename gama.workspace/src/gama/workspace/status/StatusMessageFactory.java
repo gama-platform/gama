@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.workspace.status;
 
-import gama.api.data.objects.IColor;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.types.color.IColor;
 import gama.api.ui.IStatusMessage;
 import gama.api.ui.IStatusMessage.StatusType;
 

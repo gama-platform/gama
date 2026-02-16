@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Random;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IPoint;
+import gama.api.types.geometry.IPoint;
 
 /**
  *

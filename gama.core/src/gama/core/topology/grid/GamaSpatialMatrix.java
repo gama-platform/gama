@@ -34,18 +34,6 @@ import org.locationtech.jts.operation.distance.DistanceOp;
 
 import com.google.common.collect.Ordering;
 
-import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.factories.GamaPathFactory;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonValue;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMatrix;
-import gama.api.data.objects.IPath;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
@@ -59,16 +47,28 @@ import gama.api.kernel.topology.ICoordinateReferenceSystem;
 import gama.api.kernel.topology.IGrid;
 import gama.api.kernel.topology.INeighborhood;
 import gama.api.kernel.topology.IProjection;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IAgentFilter;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.GamaPathFactory;
+import gama.api.types.graph.IPath;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
+import gama.api.types.topology.ITopology;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.ICollector;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
-import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.interfaces.IAgentFilter;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 import gama.api.utils.random.IRandom;
 import gama.core.geometry.GamaProxyGeometry;
 import gama.core.util.file.GamaGridFile;
@@ -1875,7 +1875,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		/**
 		 * Method getGeometries()
 		 *
-		 * @see gama.api.data.objects.IShape#getGeometries()
+		 * @see gama.api.types.geometry.IShape#getGeometries()
 		 */
 		@Override
 		public IList<? extends IShape> getGeometries() {
@@ -1896,7 +1896,7 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		/**
 		 * Method isMultiple()
 		 *
-		 * @see gama.api.data.objects.IShape#isMultiple()
+		 * @see gama.api.types.geometry.IShape#isMultiple()
 		 */
 		@Override
 		public boolean isMultiple() { return getReferenceGeometry().isMultiple(); }

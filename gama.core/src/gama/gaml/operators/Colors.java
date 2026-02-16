@@ -35,19 +35,18 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.validation.IOperatorValidator;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.color.GamaColor;
-import gama.api.utils.color.GamaColorFactory;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 import gama.api.utils.random.IRandom;
 import gama.core.util.color.GamaGradient;
 import gama.core.util.color.GamaPalette;
@@ -352,7 +351,7 @@ public class Colors {
 					value = "to_hsb (#cyan)",
 					equals = "[0.5,1.0,1.0]"))
 	@test ("[0.5,1.0,1.0] = to_hsb(rgb('cyan',0)) ")
-	public static IList<Double> toHSB(final GamaColor c) {
+	public static IList<Double> toHSB(final IColor c) {
 		IList<Double> hsb = GamaListFactory.create();
 		float[] v = Color.RGBtoHSB(c.red(), c.green(), c.blue(), null);
 		hsb.add(Float.valueOf(v[0]).doubleValue());
@@ -585,7 +584,7 @@ public class Colors {
 			see = { "rgb", "hsb" })
 	@test ("int(grayscale (rgb(255,0,0))) = -11776948")
 	@test ("grayscale (rgb(255,0,0)) = rgb(76,76,76)")
-	public static IColor grayscale(final GamaColor c) {
+	public static IColor grayscale(final IColor c) {
 		final int grayValue = (int) (0.299 * c.red() + 0.587 * c.green() + 0.114 * c.blue());
 		return GamaColorFactory.createWithRGBA(grayValue, grayValue, grayValue, c.alpha());
 	}
@@ -707,7 +706,7 @@ public class Colors {
 							isExecutable = false) }),
 			see = { "rgb", "hsb" })
 	@test ("blend(#red, #blue) = rgb(127,0,127)")
-	public static IColor blend(final GamaColor color1, final GamaColor color2) {
+	public static IColor blend(final IColor color1, final IColor color2) {
 		return blend(color1, color2, 0.5);
 	}
 
@@ -968,12 +967,12 @@ public class Colors {
 	@doc (
 			value = "returns the definition of a linear gradient between n colors, represented internally as a color map [c1::0,c2::1/n-1, ... cn::n-1/n-1]")
 	@no_test
-	public static GamaGradient gradient(final IScope scope, final IList<GamaColor> colors) {
+	public static GamaGradient gradient(final IScope scope, final IList<IColor> colors) {
 		GamaGradient cm = new GamaGradient();
 		if (colors.size() < 2) throw GamaRuntimeException.error("A gradient must at least propose 2 colors", scope);
 		int nb = colors.size();
 		int i = 1;
-		for (GamaColor c : colors) { cm.put(c, i++ - 1d / nb - 1); }
+		for (IColor c : colors) { cm.put(c, i++ - 1d / nb - 1); }
 		return cm;
 	}
 
@@ -997,7 +996,7 @@ public class Colors {
 			value = "returns the definition of a linear gradient between n colors provided with their positions on a scale between 0 and 1. "
 					+ "A similar color map is returned, in the same color order, with all the positions normalized (so that they are shifted and scaled to fit between 0 and 1). Throws an error if the number of colors is less than 2 or if the positions are not strictly ordered")
 	@no_test
-	public static GamaGradient gradient(final IScope scope, final IMap<GamaColor, Number> colors) {
+	public static GamaGradient gradient(final IScope scope, final IMap<IColor, Number> colors) {
 		if (colors.size() < 2) throw GamaRuntimeException.error("A gradient must at least propose 2 colors", scope);
 
 		GamaGradient cm = new GamaGradient();

@@ -12,12 +12,12 @@ package gama.extension.bdi;
 import gama.annotations.doc;
 import gama.annotations.type;
 import gama.annotations.support.IConcept;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.map.IMap;
 
 /**
  * The Class SanctionType.

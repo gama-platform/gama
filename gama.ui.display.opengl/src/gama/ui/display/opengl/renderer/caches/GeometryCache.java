@@ -11,14 +11,14 @@
 package gama.ui.display.opengl.renderer.caches;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
-import static gama.api.data.objects.IShape.Type.CIRCLE;
-import static gama.api.data.objects.IShape.Type.CONE;
-import static gama.api.data.objects.IShape.Type.CUBE;
-import static gama.api.data.objects.IShape.Type.CYLINDER;
-import static gama.api.data.objects.IShape.Type.POINT;
-import static gama.api.data.objects.IShape.Type.PYRAMID;
-import static gama.api.data.objects.IShape.Type.SPHERE;
-import static gama.api.data.objects.IShape.Type.SQUARE;
+import static gama.api.types.geometry.IShape.Type.CIRCLE;
+import static gama.api.types.geometry.IShape.Type.CONE;
+import static gama.api.types.geometry.IShape.Type.CUBE;
+import static gama.api.types.geometry.IShape.Type.CYLINDER;
+import static gama.api.types.geometry.IShape.Type.POINT;
+import static gama.api.types.geometry.IShape.Type.PYRAMID;
+import static gama.api.types.geometry.IShape.Type.SPHERE;
+import static gama.api.types.geometry.IShape.Type.SQUARE;
 import static gama.api.utils.geometry.GeometryUtils.getTypeOf;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -41,15 +41,15 @@ import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.fixedfunc.GLPointerFunc;
 
 import gama.api.GAMA;
-import gama.api.data.objects.ICoordinates;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
-import gama.api.data.objects.IShape.Type;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.geometry.IShape.Type;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.geometry.ICoordinates;
+import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGeometryFile;
 import gama.core.util.file.GamaObjFile;

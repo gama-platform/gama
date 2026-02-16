@@ -18,10 +18,10 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.simulation.IClock;
+import gama.api.types.color.IColor;
 import gama.api.ui.IExperimentDisplayable;
 import gama.api.ui.IItemList;
 import gama.ui.shared.interfaces.IParameterEditor;

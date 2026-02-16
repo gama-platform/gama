@@ -27,11 +27,6 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonValue;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IShape;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.species.GamlSpecies.SpeciesValidator;
@@ -42,7 +37,12 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 import one.util.streamex.StreamEx;
 
 /**
@@ -423,7 +423,7 @@ public class GamlSpecies extends AbstractSpecies {
 	/**
 	 * Method getSpecies()
 	 *
-	 * @see gama.api.utils.IAgentFilter#getSpecies()
+	 * @see gama.api.utils.interfaces.IAgentFilter#getSpecies()
 	 */
 	@Override
 	public ISpecies getSpecies() { return this; }
@@ -431,7 +431,7 @@ public class GamlSpecies extends AbstractSpecies {
 	/**
 	 * Method getAgents()
 	 *
-	 * @see gama.api.utils.IAgentFilter#getAgents()
+	 * @see gama.api.utils.interfaces.IAgentFilter#getAgents()
 	 */
 	@Override
 	public IContainer<?, ? extends IAgent> getAgents(final IScope scope) {
@@ -446,8 +446,8 @@ public class GamlSpecies extends AbstractSpecies {
 	/**
 	 * Method accept()
 	 *
-	 * @see gama.api.utils.IAgentFilter#accept(gama.api.runtime.scope.IScope, gama.api.data.objects.IShape,
-	 *      gama.api.data.objects.IShape)
+	 * @see gama.api.utils.interfaces.IAgentFilter#accept(gama.api.runtime.scope.IScope, gama.api.types.geometry.IShape,
+	 *      gama.api.types.geometry.IShape)
 	 */
 	@Override
 	public boolean accept(final IScope scope, final IShape source, final IShape a) {
@@ -470,7 +470,7 @@ public class GamlSpecies extends AbstractSpecies {
 	/**
 	 * Method filter()
 	 *
-	 * @see gama.api.utils.IAgentFilter#filter(gama.api.runtime.scope.IScope, gama.api.data.objects.IShape,
+	 * @see gama.api.utils.interfaces.IAgentFilter#filter(gama.api.runtime.scope.IScope, gama.api.types.geometry.IShape,
 	 *      java.util.Collection)
 	 */
 	@Override
@@ -482,7 +482,7 @@ public class GamlSpecies extends AbstractSpecies {
 	/**
 	 * Method getType()
 	 *
-	 * @see gama.api.data.objects.IContainer#getGamlType()
+	 * @see gama.api.types.misc.IContainer#getGamlType()
 	 */
 	@Override
 	public IContainerType<?> getGamlType() {

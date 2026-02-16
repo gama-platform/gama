@@ -10,7 +10,8 @@
 
 package gama.api.utils.geometry;
 
-import gama.api.data.objects.IPoint;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 
 /**
  * A four-element axis angle represented by double-precision floating point x,y,z,angle components. An axis angle is a

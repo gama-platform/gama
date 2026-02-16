@@ -37,8 +37,8 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.enums.ReadyState;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IList;
 import gama.api.gaml.types.Types;
+import gama.api.types.list.IList;
 
 /**
  * The Class CommandExecutor.

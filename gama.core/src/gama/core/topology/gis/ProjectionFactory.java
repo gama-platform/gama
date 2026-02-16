@@ -31,13 +31,13 @@ import org.geotools.api.referencing.cs.CartesianCS;
 import org.geotools.referencing.CRS;
 import org.geotools.referencing.crs.DefaultProjectedCRS;
 
-import gama.api.data.objects.IEnvelope;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.topology.ICoordinateReferenceSystem;
 import gama.api.kernel.topology.IProjection;
 import gama.api.kernel.topology.IProjectionFactory;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.prefs.GamaPreferences;
 import tech.units.indriya.unit.Units;
 

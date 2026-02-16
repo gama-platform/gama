@@ -38,8 +38,6 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.validation.IOperatorValidator;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IDate;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
@@ -47,9 +45,11 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.simulation.IClock;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.date.DurationFormatter;
-import gama.api.utils.date.GamaDateFactory;
-import gama.api.utils.date.GamaDateInterval;
+import gama.api.types.date.DurationFormatter;
+import gama.api.types.date.GamaDateFactory;
+import gama.api.types.date.GamaDateInterval;
+import gama.api.types.date.IDate;
+import gama.api.types.list.IList;
 
 /**
  * The Class Dates.

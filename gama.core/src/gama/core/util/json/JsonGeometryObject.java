@@ -30,18 +30,18 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonArray;
-import gama.api.data.json.IJsonObject;
-import gama.api.data.json.IJsonValue;
-import gama.api.data.objects.ICoordinates;
-import gama.api.data.objects.IShape;
-import gama.api.data.objects.IShape.Type;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.geometry.IShape.Type;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.geometry.ICoordinates;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonArray;
+import gama.api.utils.json.IJsonObject;
+import gama.api.utils.json.IJsonValue;
 import gama.core.topology.gis.ProjectionFactory;
 import one.util.streamex.StreamEx;
 

@@ -19,13 +19,13 @@ import org.geotools.api.feature.type.GeometryType;
 import org.geotools.data.simple.SimpleFeatureCollection;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;

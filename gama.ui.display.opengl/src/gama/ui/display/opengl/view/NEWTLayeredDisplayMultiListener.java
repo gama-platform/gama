@@ -25,7 +25,7 @@ import com.jogamp.newt.event.WindowUpdateEvent;
 import gama.api.runtime.SystemInfo;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.IEventLayerListener;
-import gama.api.utils.IDisposable;
+import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.experiment.views.displays.LayeredDisplayDecorator;
 import gama.ui.experiment.views.displays.LayeredDisplayMultiListener;

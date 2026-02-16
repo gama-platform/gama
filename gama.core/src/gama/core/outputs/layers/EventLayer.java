@@ -11,18 +11,18 @@ package gama.core.outputs.layers;
 
 import gama.api.GAMA;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.IExecutable;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.IEventLayerListener;
 import gama.api.ui.layers.ILayerStatement;
-import gama.api.utils.geometry.GamaPointFactory;
 import gama.dev.DEBUG;
 
 /**

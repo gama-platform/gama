@@ -15,12 +15,6 @@ import java.util.Map;
 
 import com.google.common.base.Predicate;
 
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonObject;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.IVariable;
@@ -28,11 +22,17 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.IGrid;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.IStepable;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IDisposable;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
+import gama.api.types.topology.ITopology;
+import gama.api.utils.interfaces.IDisposable;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonObject;
 
 /**
  * A population is a collection of agents of a species.

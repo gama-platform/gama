@@ -12,10 +12,10 @@ package gaml.compiler.gaml.expression;
 
 import java.time.LocalDateTime;
 
-import gama.api.data.objects.IDate;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.date.GamaDateFactory;
+import gama.api.types.date.GamaDateFactory;
+import gama.api.types.date.IDate;
 
 /**
  * The Class NowUnitExpression.

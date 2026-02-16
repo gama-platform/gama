@@ -18,31 +18,31 @@ import java.util.Set;
 import org.jgrapht.Graphs;
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.api.data.factories.GamaPathFactory;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPath;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.ISpecies;
-import gama.api.kernel.topology.ISpatialGraph;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.GamaPathFactory;
+import gama.api.types.graph.GraphEvent;
+import gama.api.types.graph.IPath;
+import gama.api.types.graph.ISpatialGraph;
+import gama.api.types.graph.VertexRelationship;
+import gama.api.types.graph._Edge;
+import gama.api.types.graph.GraphEvent.GraphEventType;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IContainer;
+import gama.api.types.topology.ITopology;
 import gama.api.utils.StringUtils;
-import gama.api.utils.collections.GraphEvent;
-import gama.api.utils.collections.GraphEvent.GraphEventType;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
-import gama.api.utils.collections.VertexRelationship;
-import gama.api.utils.collections._Edge;
 import gama.core.util.graph.GamaGraph;
 import gama.dev.DEBUG;
 
@@ -423,7 +423,7 @@ public class GamaSpatialGraph extends GamaGraph<IShape, IShape> implements ISpat
 	/**
 	 * Method getSpecies(): returns the species of the edges if any.
 	 *
-	 * @see gama.api.utils.IAgentFilter#getSpecies()
+	 * @see gama.api.utils.interfaces.IAgentFilter#getSpecies()
 	 */
 	@Override
 	public ISpecies getSpecies() { return getEdgeSpecies(); }
@@ -436,7 +436,7 @@ public class GamaSpatialGraph extends GamaGraph<IShape, IShape> implements ISpat
 	/**
 	 * Method getAgents()
 	 *
-	 * @see gama.api.utils.IAgentFilter#getAgents()
+	 * @see gama.api.utils.interfaces.IAgentFilter#getAgents()
 	 */
 	@Override
 	public IContainer<?, ? extends IAgent> getAgents(final IScope scope) {
@@ -451,8 +451,8 @@ public class GamaSpatialGraph extends GamaGraph<IShape, IShape> implements ISpat
 	/**
 	 * Method accept()
 	 *
-	 * @see gama.api.utils.IAgentFilter#accept(gama.api.runtime.scope.IScope, gama.api.data.objects.IShape,
-	 *      gama.api.data.objects.IShape)
+	 * @see gama.api.utils.interfaces.IAgentFilter#accept(gama.api.runtime.scope.IScope, gama.api.types.geometry.IShape,
+	 *      gama.api.types.geometry.IShape)
 	 */
 	@Override
 	public boolean accept(final IScope scope, final IShape source, final IShape a) {
@@ -462,7 +462,7 @@ public class GamaSpatialGraph extends GamaGraph<IShape, IShape> implements ISpat
 	/**
 	 * Method filter()
 	 *
-	 * @see gama.api.utils.IAgentFilter#filter(gama.api.runtime.scope.IScope, gama.api.data.objects.IShape,
+	 * @see gama.api.utils.interfaces.IAgentFilter#filter(gama.api.runtime.scope.IScope, gama.api.types.geometry.IShape,
 	 *      java.util.Collection)
 	 */
 	@Override

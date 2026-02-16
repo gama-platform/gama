@@ -12,8 +12,8 @@ package gama.api.kernel.skill;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.topology.ITopology;
 
 /**
  * The Class Skill.

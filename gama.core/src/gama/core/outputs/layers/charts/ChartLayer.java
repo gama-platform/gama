@@ -12,7 +12,7 @@ package gama.core.outputs.layers.charts;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
-import gama.api.data.objects.IShape;
+import gama.api.types.geometry.IShape;
 import gama.api.ui.displays.IChart;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;

@@ -18,11 +18,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
 import gama.core.util.messaging.GamaMessage;
 import gama.extension.network.common.Connector;
 import gama.extension.network.common.ConnectorMessage;

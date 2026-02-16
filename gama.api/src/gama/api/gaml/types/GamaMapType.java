@@ -14,11 +14,11 @@ import gama.annotations.type;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 
 /**
  * The Class GamaMapType.
@@ -48,7 +48,7 @@ public class GamaMapType extends GamaContainerType<IMap> {
 	@doc ("Casts the operand into a map. In case of an agent, returns its attributes. In case of a string, tries to parse JSON contents and returns a corresponding map.")
 	public IMap cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentType, final boolean copy) throws GamaRuntimeException {
-		return GamaMapFactory.createFrom(scope, obj, keyType, contentType, copy);
+		return GamaMapFactory.castToMap(scope, obj, keyType, contentType, copy);
 	}
 
 	@Override

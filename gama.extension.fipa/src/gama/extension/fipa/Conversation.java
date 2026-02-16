@@ -18,14 +18,14 @@ import gama.annotations.doc;
 import gama.annotations.getter;
 import gama.annotations.variable;
 import gama.annotations.vars;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaList;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.list.GamaList;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 
 /**
  * This class represents the notion of a Conversation which is comprised of several Messages, the order of which follow

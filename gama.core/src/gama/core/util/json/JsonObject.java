@@ -9,10 +9,10 @@
  ********************************************************************************************************/
 package gama.core.util.json;
 
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonObject;
-import gama.api.data.objects.IMap;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.map.IMap;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonObject;
 
 /**
  * Represents a JSON object, a set of name/value pairs, where the names are strings and the values are JSON values.

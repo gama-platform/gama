@@ -33,7 +33,7 @@ import org.eclipse.swt.widgets.Control;
 import gama.api.runtime.SystemInfo;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.IEventLayerListener;
-import gama.api.utils.IDisposable;
+import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.shared.bindings.GamaKeyBindings;
 

@@ -14,7 +14,7 @@ import java.util.Map;
 
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IDisposable;
+import gama.api.utils.interfaces.IDisposable;
 
 /**
  * The Interface IExecutionContext.

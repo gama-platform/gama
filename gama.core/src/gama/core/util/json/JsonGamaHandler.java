@@ -14,10 +14,10 @@ import static gama.api.utils.prefs.GamaPreferences.External.JSON_INFINITY;
 import static gama.api.utils.prefs.GamaPreferences.External.JSON_NAN;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonArray;
-import gama.api.data.json.IJsonValue;
 import gama.api.gaml.types.Types;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonArray;
+import gama.api.utils.json.IJsonValue;
 import gama.api.utils.prefs.GamaPreferences;
 
 /**

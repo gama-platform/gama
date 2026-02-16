@@ -10,11 +10,11 @@
  ********************************************************************************************************/
 package gama.core.util.messaging;
 
-import gama.api.data.objects.IMessage;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaList;
+import gama.api.types.list.GamaList;
+import gama.api.types.message.IMessage;
 
 /**
  * A specialized GamaList that holds messages

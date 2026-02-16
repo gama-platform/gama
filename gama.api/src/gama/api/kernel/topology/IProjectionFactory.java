@@ -14,9 +14,9 @@ import java.util.Map;
 
 import javax.measure.UnitConverter;
 
-import gama.api.data.objects.IEnvelope;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  */

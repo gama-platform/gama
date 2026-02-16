@@ -51,17 +51,16 @@ import org.locationtech.jts.triangulate.VoronoiDiagramBuilder;
 import org.locationtech.jts.triangulate.quadedge.LocateFailureException;
 
 import gama.api.GAMA;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.ICoordinates;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
-import gama.api.data.objects.IShape.Type;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.geometry.IShape.Type;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.api.utils.random.IRandom;
 import gama.dev.DEBUG;
 
@@ -846,14 +845,14 @@ public class GeometryUtils {
 	 */
 	private static IShape.Type geometryType(final List<List<List<IPoint>>> listPoints) {
 		final int size = listPoints.size();
-		if (size == 0) return gama.api.data.objects.IShape.Type.NULL;
+		if (size == 0) return gama.api.types.geometry.IShape.Type.NULL;
 		if (size == 1) return geometryTypeSimp(listPoints.get(0));
 		final IShape.Type type = geometryTypeSimp(listPoints.get(0));
 		return switch (type) {
-			case POINT -> gama.api.data.objects.IShape.Type.MULTIPOINT;
-			case LINESTRING -> gama.api.data.objects.IShape.Type.MULTILINESTRING;
-			case POLYGON -> gama.api.data.objects.IShape.Type.POLYGON;
-			default -> gama.api.data.objects.IShape.Type.NULL;
+			case POINT -> gama.api.types.geometry.IShape.Type.MULTIPOINT;
+			case LINESTRING -> gama.api.types.geometry.IShape.Type.MULTILINESTRING;
+			case POLYGON -> gama.api.types.geometry.IShape.Type.POLYGON;
+			default -> gama.api.types.geometry.IShape.Type.NULL;
 		};
 	}
 
@@ -865,14 +864,14 @@ public class GeometryUtils {
 	 * @return the i shape. type
 	 */
 	private static IShape.Type geometryTypeSimp(final List<List<IPoint>> listPoints) {
-		if (listPoints.isEmpty() || listPoints.get(0).isEmpty()) return gama.api.data.objects.IShape.Type.NULL;
+		if (listPoints.isEmpty() || listPoints.get(0).isEmpty()) return gama.api.types.geometry.IShape.Type.NULL;
 		final List<IPoint> list0 = listPoints.get(0);
 		final int size0 = list0.size();
 		if (size0 == 1 || size0 == 2 && list0.get(0).equals(list0.get(size0 - 1)))
-			return gama.api.data.objects.IShape.Type.POINT;
+			return gama.api.types.geometry.IShape.Type.POINT;
 		if (!list0.get(0).equals(list0.get(listPoints.size() - 1)) || size0 < 3)
-			return gama.api.data.objects.IShape.Type.LINESTRING;
-		return gama.api.data.objects.IShape.Type.POLYGON;
+			return gama.api.types.geometry.IShape.Type.LINESTRING;
+		return gama.api.types.geometry.IShape.Type.POLYGON;
 	}
 
 	/**

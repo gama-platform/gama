@@ -10,16 +10,16 @@
  ********************************************************************************************************/
 package gama.core.util;
 
-import gama.api.data.factories.IPairFactory;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPair;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.pair.IPair;
+import gama.api.types.pair.IPairFactory;
 import gama.core.geometry.DynamicLineString;
 
 /**

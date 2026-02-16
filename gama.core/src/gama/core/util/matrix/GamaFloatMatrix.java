@@ -21,20 +21,20 @@ import org.locationtech.jts.index.quadtree.IntervalSize;
 
 import com.google.common.primitives.Doubles;
 
-import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IField;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMatrix;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IImageProvider;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.interfaces.IImageProvider;
 import gama.api.utils.random.IRandom;
 import one.util.streamex.DoubleStreamEx;
 import one.util.streamex.StreamEx;

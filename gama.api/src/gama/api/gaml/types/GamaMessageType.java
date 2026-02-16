@@ -13,10 +13,10 @@ package gama.api.gaml.types;
 import gama.annotations.doc;
 import gama.annotations.type;
 import gama.annotations.support.ISymbolKind;
-import gama.api.data.factories.GamaMessageFactory;
-import gama.api.data.objects.IMessage;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.message.GamaMessageFactory;
+import gama.api.types.message.IMessage;
 
 /**
  * The Class GamaMessageType.
@@ -55,7 +55,7 @@ public class GamaMessageType extends GamaType<IMessage> {
 	@doc ("Returns a message built from the argument. If the argument is already a message returns it, otherwise returns a message with the current agent as the sender and the argument as the contents ")
 	public IMessage cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
-		return GamaMessageFactory.create(scope, scope.getAgent(), obj); // return staticCast(scope, obj, param);
+		return GamaMessageFactory.castToMessage(scope, scope.getAgent(), obj);
 	}
 
 	@Override

@@ -31,7 +31,7 @@ import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
-import gama.api.utils.INamed;
+import gama.api.utils.interfaces.INamed;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gaml.compiler.gaml.descriptions.StatementDescription;

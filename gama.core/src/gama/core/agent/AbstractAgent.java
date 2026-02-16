@@ -22,17 +22,12 @@ import gama.annotations.doc;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonValue;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.AgentReference;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IMacroAgent;
 import gama.api.kernel.agent.IPopulation;
@@ -41,13 +36,18 @@ import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.AgentReference;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.topology.ITopology;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.BufferingUtils;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 
 /**
  *
@@ -533,7 +533,7 @@ public abstract class AbstractAgent implements IAgent {
 		final String separator = scope.getTypedArgIfExists("separator", IType.STRING, StringUtils.LN);
 
 		scope.getGui().getConsole().debugConsole(scope.getClock().getCycle(),
-				message + separator + "sender: " + GamaMapFactory.createFrom(scope, this) + end, scope.getRoot());
+				message + separator + "sender: " + GamaMapFactory.castToMap(scope, this) + end, scope.getRoot());
 		return message;
 	}
 
@@ -622,7 +622,7 @@ public abstract class AbstractAgent implements IAgent {
 	/**
 	 * Method get()
 	 *
-	 * @see gama.api.data.objects.IContainer.ToGet#get(gama.api.runtime.scope.IScope, java.lang.Object)
+	 * @see gama.api.types.misc.IContainer.ToGet#get(gama.api.runtime.scope.IScope, java.lang.Object)
 	 */
 	@Override
 	public Object get(final IScope scope, final String index) throws GamaRuntimeException {
@@ -633,8 +633,8 @@ public abstract class AbstractAgent implements IAgent {
 	/**
 	 * Method getFromIndicesList()
 	 *
-	 * @see gama.api.data.objects.IContainer.ToGet#getFromIndicesList(gama.api.runtime.scope.IScope,
-	 *      gama.api.data.objects.IList)
+	 * @see gama.api.types.misc.IContainer.ToGet#getFromIndicesList(gama.api.runtime.scope.IScope,
+	 *      gama.api.types.list.IList)
 	 */
 	@Override
 	public Object getFromIndicesList(final IScope scope, final IList<String> indices) throws GamaRuntimeException {

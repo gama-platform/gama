@@ -39,12 +39,12 @@ import de.micromata.opengis.kml.v_2_2_0.Point;
 import de.micromata.opengis.kml.v_2_2_0.Polygon;
 import de.micromata.opengis.kml.v_2_2_0.Scale;
 import de.micromata.opengis.kml.v_2_2_0.Style;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IDate;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.date.IDate;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
 import gama.dev.DEBUG;
 import gama.gaml.operators.spatial.SpatialProjections;
 

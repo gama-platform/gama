@@ -9,9 +9,9 @@
  ********************************************************************************************************/
 package gama.api.kernel.agent;
 
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IList;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.list.IList;
 
 /**
  * The Interface IGridAgent.

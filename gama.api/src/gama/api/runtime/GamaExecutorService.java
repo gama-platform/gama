@@ -18,8 +18,6 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.ForkJoinTask;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.GamaType;
@@ -29,8 +27,10 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.FlowStatus;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.api.utils.benchmark.StopWatch;
-import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.Pref;
 
@@ -222,7 +222,7 @@ public abstract class GamaExecutorService {
 			throws GamaRuntimeException {
 		final IExpression schedule = species.getSchedule();
 		final IList<? extends IAgent> agents =
-				schedule == null ? pop : GamaListFactory.toList(scope, schedule.value(scope));
+				schedule == null ? pop : GamaListFactory.castToList(scope, schedule.value(scope));
 		final int threshold =
 				getParallelism(scope, species.getConcurrency(), species.isGrid() ? Caller.GRID : Caller.SPECIES);
 		return doStep(scope, agents.toArray(new IAgent[agents.size()]), threshold, species);
@@ -250,7 +250,7 @@ public abstract class GamaExecutorService {
 		if (schedule == null) {
 			scheduledAgents = array;
 		} else {
-			final List<IAgent> agents = GamaListFactory.toList(scope, schedule.value(scope));
+			final List<IAgent> agents = GamaListFactory.castToList(scope, schedule.value(scope));
 			scheduledAgents = agents.toArray(new IAgent[agents.size()]);
 		}
 		final int threshold =

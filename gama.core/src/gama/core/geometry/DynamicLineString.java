@@ -25,7 +25,7 @@ import org.locationtech.jts.geom.GeometryFilter;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 
-import gama.api.data.objects.IShape;
+import gama.api.types.geometry.IShape;
 
 /**
  * A dynamical geometry that represents a link between two IShape.

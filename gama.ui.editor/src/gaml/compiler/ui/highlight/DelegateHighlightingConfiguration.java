@@ -23,9 +23,9 @@ import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfiguration;
 import org.eclipse.xtext.ui.editor.syntaxcoloring.IHighlightingConfigurationAcceptor;
 import org.eclipse.xtext.ui.editor.utils.TextStyle;
 
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IFont;
 import gama.api.gaml.types.IType;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
 import gama.api.utils.prefs.GamaPreferences.Theme;
 
 /**

@@ -18,17 +18,17 @@ import gama.annotations.getter;
 import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.IConcept;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.files.GamaFile;
+import gama.api.types.file.GamaFile;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.api.utils.files.IGamlFileInfo;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  * Written by drogoul Modified on 13 nov. 2011

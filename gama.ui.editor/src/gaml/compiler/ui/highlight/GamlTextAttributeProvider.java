@@ -38,8 +38,8 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 
-import gama.api.data.factories.GamaFontFactory;
-import gama.api.data.objects.IFont;
+import gama.api.types.font.GamaFontFactory;
+import gama.api.types.font.IFont;
 import gama.ui.application.workbench.ThemeHelper;
 
 /**

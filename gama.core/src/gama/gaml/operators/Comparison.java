@@ -26,9 +26,9 @@ import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.validation.IOperatorValidator;
 import gama.api.constants.IGamlIssue;
-import gama.api.data.objects.IPoint;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
+import gama.api.types.geometry.IPoint;
 
 /**
  * Written by drogoul Modified on 10 dec. 2010

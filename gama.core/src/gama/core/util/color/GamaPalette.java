@@ -9,10 +9,10 @@
  ********************************************************************************************************/
 package gama.core.util.color;
 
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IList;
 import gama.api.gaml.types.Types;
-import gama.api.utils.list.GamaList;
+import gama.api.types.color.IColor;
+import gama.api.types.list.GamaList;
+import gama.api.types.list.IList;
 
 /**
  * The Class GamaPalette.

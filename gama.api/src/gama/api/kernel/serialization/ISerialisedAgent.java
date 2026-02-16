@@ -12,10 +12,10 @@ package gama.api.kernel.serialization;
 
 import java.util.Map;
 
-import gama.api.data.json.IJsonable;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.json.IJsonable;
 
 /**
  * The Interface ISerialisedAgent.

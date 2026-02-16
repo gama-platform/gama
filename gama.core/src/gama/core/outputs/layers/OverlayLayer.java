@@ -12,9 +12,9 @@ package gama.core.outputs.layers;
 import java.awt.geom.Rectangle2D;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
+import gama.api.types.geometry.IShape;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;

@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.api.gaml.types.ITypesManager;
-import gama.api.utils.ConsumerWithPruning;
+import gama.api.utils.interfaces.ConsumerWithPruning;
 
 /**
  *

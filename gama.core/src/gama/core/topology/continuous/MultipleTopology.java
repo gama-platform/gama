@@ -11,12 +11,12 @@
 package gama.core.topology.continuous;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.misc.IContainer;
+import gama.api.types.topology.ITopology;
 
 /**
  * The class GamaMultipleTopology.
@@ -44,7 +44,7 @@ public class MultipleTopology extends ContinuousTopology {
 	}
 
 	/**
-	 * @see gama.api.data.objects.interfaces.IValue#stringValue()
+	 * @see gama.api.types.misc.interfaces.IValue#stringValue()
 	 */
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {

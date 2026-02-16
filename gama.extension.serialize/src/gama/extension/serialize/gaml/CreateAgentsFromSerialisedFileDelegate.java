@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import gama.api.additions.delegates.ICreateDelegate;
-import gama.api.data.objects.IList;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;
@@ -23,6 +22,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
 import gama.extension.serialize.binary.BinarySerialisation;
 
 /**

@@ -49,7 +49,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import gama.api.data.objects.IFont;
+import gama.api.types.font.IFont;
 import gama.dev.DEBUG;
 import gama.ui.shared.resources.GamaFonts;
 

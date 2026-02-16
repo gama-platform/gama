@@ -13,8 +13,8 @@ package gama.gaml.statements.draw;
 import java.util.List;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IField;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.types.matrix.IField;
 import gama.api.ui.layers.IMeshColorProvider;
 
 /**

@@ -12,10 +12,10 @@ package gama.gaml.statements.draw;
 
 import java.awt.Color;
 
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IField;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPoint;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.IField;
 import gama.api.ui.layers.IMeshColorProvider;
 import gama.api.ui.layers.IMeshSmoothProvider;
 import gama.api.utils.geometry.Scaling3D;

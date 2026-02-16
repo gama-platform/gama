@@ -12,12 +12,12 @@ package gama.api.kernel.topology;
 import java.util.Collection;
 import java.util.Collections;
 
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IShape;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IAgentFilter;
+import gama.api.types.geometry.IShape;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.interfaces.IAgentFilter;
 
 /**
  * Written by drogoul Modified on 23 f�vr. 2011

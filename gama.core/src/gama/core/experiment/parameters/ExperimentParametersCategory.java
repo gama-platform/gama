@@ -19,12 +19,12 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.symbols.Symbol;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.ICategory;
+import gama.api.types.color.IColor;
+import gama.api.utils.interfaces.ICategory;
 import gama.api.utils.prefs.GamaPreferences;
 
 /**

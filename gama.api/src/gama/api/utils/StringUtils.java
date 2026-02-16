@@ -17,8 +17,9 @@ import java.util.Map;
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.utils.interfaces.IGamlable;
 
 /**
  * The class StringUtils.

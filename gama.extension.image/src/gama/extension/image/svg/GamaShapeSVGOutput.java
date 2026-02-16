@@ -34,10 +34,10 @@ import org.locationtech.jts.geom.GeometryCollection;
 
 import com.github.weisj.jsvg.renderer.output.Output;
 
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IShape;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.api.utils.list.GamaListFactory;
 
 /**
  * The Class GamaShapeSVGOutput.

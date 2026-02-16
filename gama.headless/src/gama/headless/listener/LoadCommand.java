@@ -18,8 +18,8 @@ import org.java_websocket.WebSocket;
 
 import gama.api.constants.GamlFileExtension;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaCompilationFailedException;
+import gama.api.types.list.IList;
 import gama.api.utils.server.CommandExecutor;
 import gama.api.utils.server.CommandResponse;
 import gama.api.utils.server.GamaWebSocketServer;

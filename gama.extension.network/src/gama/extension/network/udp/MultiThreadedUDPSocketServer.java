@@ -14,9 +14,9 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketTimeoutException;
 
-import gama.api.data.objects.IList;
 import gama.api.kernel.agent.IAgent;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.dev.DEBUG;
 import gama.extension.network.common.ConnectorMessage;
 import gama.extension.network.common.MessageFactory;

@@ -35,10 +35,6 @@ import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IFont;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IValue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.IParameter;
@@ -47,10 +43,14 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IValue;
 import gama.api.utils.StringUtils;
-import gama.api.utils.color.GamaColor;
 import gama.api.utils.files.FileUtils;
-import gama.api.utils.map.GamaMapFactory;
 import gama.core.experiment.parameters.InputParameter;
 
 /**
@@ -638,7 +638,7 @@ public class System {
 							isExecutable = false) })
 	@no_test
 	public static IMap<String, Object> userInputDialog(final IScope scope, final String title, final IList parameters,
-			final IFont font, final GamaColor color) {
+			final IFont font, final IColor color) {
 		return userInputDialog(scope, title, parameters, font, color, true);
 	}
 
@@ -674,7 +674,7 @@ public class System {
 							isExecutable = false) })
 	@no_test
 	public static IMap<String, Object> userInputDialog(final IScope scope, final String title, final IList parameters,
-			final IFont font, final GamaColor color, final Boolean showTitle) {
+			final IFont font, final IColor color, final Boolean showTitle) {
 		parameters.removeIf(p -> !(p instanceof IParameter));
 		return GamaMapFactory.createWithoutCasting(Types.STRING, Types.NO_TYPE,
 				scope.getGui().openUserInputDialog(scope, title, parameters, font, color, showTitle));

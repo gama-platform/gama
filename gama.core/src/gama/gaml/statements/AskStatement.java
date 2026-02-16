@@ -21,7 +21,6 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IContainer;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
@@ -34,6 +33,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.misc.IContainer;
 
 // A group of commands that can be executed on remote agents.
 

@@ -11,21 +11,21 @@ package gama.core.util.path;
 
 import org.jgrapht.GraphPath;
 
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonValue;
-import gama.api.data.objects.IGraph;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPath;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IGraph;
+import gama.api.types.graph.IPath;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
+import gama.api.types.topology.ITopology;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 import gama.core.topology.graph.GamaSpatialGraph;
 
 // If build from a list of points, creates the corresponding geometry

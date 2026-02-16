@@ -27,9 +27,9 @@ import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.eclipse.ui.internal.console.IOConsoleViewer;
 
-import gama.api.data.objects.IColor;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
 import gama.api.ui.IGamaView;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.application.workbench.ThemeHelper;

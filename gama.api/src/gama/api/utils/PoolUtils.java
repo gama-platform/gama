@@ -15,6 +15,7 @@ import java.util.Set;
 
 import com.google.common.collect.Queues;
 
+import gama.api.utils.interfaces.IDisposable;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 

@@ -14,8 +14,8 @@ package gama.ui.shared.parameters;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Shell;
 
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
 
 /**
  * The Class GamaWizardDialog.

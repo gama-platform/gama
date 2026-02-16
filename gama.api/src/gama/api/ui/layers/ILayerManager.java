@@ -13,11 +13,11 @@ import java.awt.geom.Rectangle2D;
 import java.util.Collections;
 import java.util.List;
 
-import gama.api.data.objects.IShape;
+import gama.api.types.geometry.IShape;
 import gama.api.ui.IItemList;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
-import gama.api.utils.IDisposable;
+import gama.api.utils.interfaces.IDisposable;
 
 /**
  * The class ILayerManager. Manages a fixed set of layers on behalf of a IDisplaySurface

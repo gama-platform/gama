@@ -14,11 +14,11 @@ import gama.annotations.type;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaPairFactory;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPair;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.map.IMap;
+import gama.api.types.pair.GamaPairFactory;
+import gama.api.types.pair.IPair;
 
 /**
  * Written by drogoul Modified on 1 ao�t 2010
@@ -50,7 +50,7 @@ public class GamaPairType extends GamaContainerType<IPair> {
 	@Override
 	public IPair cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentsType, final boolean copy) {
-		return GamaPairFactory.toPair(scope, obj, keyType, contentsType, copy);
+		return GamaPairFactory.castToPair(scope, obj, keyType, contentsType, copy);
 	}
 
 	@Override
@@ -95,7 +95,7 @@ public class GamaPairType extends GamaContainerType<IPair> {
 	@Override
 	public IPair deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
 		IType requested = (IType) map2.remove("requested_type");
-		return GamaPairFactory.toPair(scope, map2, requested.getKeyType(), requested.getContentType(), false);
+		return GamaPairFactory.castToPair(scope, map2, requested.getKeyType(), requested.getContentType(), false);
 	}
 
 }

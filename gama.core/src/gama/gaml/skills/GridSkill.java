@@ -18,14 +18,14 @@ import gama.annotations.vars;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ITypeProvider;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IList;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IGridAgent;
 import gama.api.kernel.skill.Skill;
 import gama.api.kernel.topology.IGrid;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.list.IList;
 
 /**
  * Written by drogoul Modified on 24 juin 2010

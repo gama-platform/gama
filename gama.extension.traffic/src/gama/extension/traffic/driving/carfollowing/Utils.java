@@ -26,9 +26,9 @@ import org.apache.commons.collections4.OrderedBidiMap;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import org.apache.commons.lang3.tuple.Triple;
 
-import gama.api.data.objects.IPoint;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
 import gama.extension.traffic.driving.RoadNodeSkill;
 import gama.extension.traffic.driving.RoadSkill;
 

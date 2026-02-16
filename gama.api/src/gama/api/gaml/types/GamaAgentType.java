@@ -14,11 +14,11 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
 
 /**
  * The type used to represent an agent of a species. Should be used by the species for all the operations relative to

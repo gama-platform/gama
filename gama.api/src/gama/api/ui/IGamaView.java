@@ -9,14 +9,14 @@
  ********************************************************************************************************/
 package gama.api.ui;
 
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IPoint;
 import gama.api.gaml.statements.IStatement;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IDisplaySurface;
-import gama.api.utils.ITopLevelAgentChangeListener;
+import gama.api.utils.interfaces.ITopLevelAgentChangeListener;
 import gama.api.utils.tests.CompoundSummary;
 
 /**

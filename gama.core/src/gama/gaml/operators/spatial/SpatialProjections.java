@@ -24,14 +24,14 @@ import gama.annotations.operator;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.topology.ICoordinateReferenceSystem;
 import gama.api.kernel.topology.IProjection;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.files.IGamaFile;
+import gama.api.types.file.IGamaFile;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
 import gama.core.util.file.GamaGisFile;
 
 /**

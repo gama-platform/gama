@@ -18,8 +18,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import gama.api.data.factories.GamaFontFactory;
-import gama.api.data.objects.IFont;
+import gama.api.types.font.GamaFontFactory;
+import gama.api.types.font.IFont;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**

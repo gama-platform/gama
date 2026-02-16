@@ -15,13 +15,13 @@ import gama.annotations.species;
 import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IGraphAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
 import gama.core.agent.GamlAgent;
 
 // FIXME: Add all the necessary variables and actions ?

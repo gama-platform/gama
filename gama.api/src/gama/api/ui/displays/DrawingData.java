@@ -10,12 +10,6 @@
 package gama.api.ui.displays;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaPairFactory;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IFont;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPair;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.constants.GamlCoreConstants;
 import gama.api.gaml.expressions.IExpression;
@@ -24,12 +18,18 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.pair.GamaPairFactory;
+import gama.api.types.pair.IPair;
 import gama.api.utils.AttributeHolder;
-import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.geometry.AxisAngle;
-import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.Rotation3D;
-import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.prefs.GamaPreferences;
 
 /**
@@ -146,8 +146,8 @@ public class DrawingData extends AttributeHolder {
 	 */
 	private AxisAngle castRotation(final IScope scope, final IExpression exp) throws GamaRuntimeException {
 		if (exp.getGamlType().getGamlType() == Types.PAIR) {
-			final IPair currentRotation = GamaPairFactory.toPair(scope, exp.value(scope), true);
-			return new AxisAngle(GamaPointFactory.toPoint(scope, currentRotation.getValue()),
+			final IPair currentRotation = GamaPairFactory.castToPair(scope, exp.value(scope), true);
+			return new AxisAngle(GamaPointFactory.castToPoint(scope, currentRotation.getValue()),
 					Cast.asFloat(scope, currentRotation.getKey()));
 		}
 		return new AxisAngle(Rotation3D.PLUS_K, Cast.asFloat(scope, exp.value(scope)));
@@ -165,7 +165,7 @@ public class DrawingData extends AttributeHolder {
 	 *             the gama runtime exception
 	 */
 	private IPoint castAnchor(final IScope scope, final IExpression exp) throws GamaRuntimeException {
-		final IPoint p = GamaPointFactory.toPoint(scope, exp.value(scope));
+		final IPoint p = GamaPointFactory.castToPoint(scope, exp.value(scope));
 		p.setX(Math.min(1d, Math.max(p.getX(), 0d)));
 		p.setY(Math.min(1d, Math.max(p.getY(), 0d)));
 		return p;
@@ -184,7 +184,7 @@ public class DrawingData extends AttributeHolder {
 	 */
 	private IList castTexture(final IScope scope, final IExpression exp) throws GamaRuntimeException {
 		if (exp.getGamlType().getGamlType() == Types.LIST)
-			return GamaListFactory.toList(scope, exp.value(scope), Types.STRING, false);
+			return GamaListFactory.castToList(scope, exp.value(scope), Types.STRING, false);
 		return GamaListFactory.wrap(Types.NO_TYPE, exp.value(scope));
 	}
 

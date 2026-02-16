@@ -41,7 +41,7 @@ import org.osgi.framework.Bundle;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import gama.api.data.objects.IColor;
+import gama.api.types.color.IColor;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;

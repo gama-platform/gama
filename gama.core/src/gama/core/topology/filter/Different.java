@@ -12,14 +12,14 @@ package gama.core.topology.filter;
 
 import java.util.Collection;
 
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IShape;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IAgentFilter;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.interfaces.IAgentFilter;
 
 /**
  * The Class Different.
@@ -44,7 +44,7 @@ public class Different implements IAgentFilter {
 	}
 
 	/**
-	 * @see gama.api.utils.IAgentFilter#getShapes()
+	 * @see gama.api.utils.interfaces.IAgentFilter#getShapes()
 	 */
 	@Override
 	public IContainer<?, ? extends IAgent> getAgents(final IScope scope) {
@@ -69,7 +69,7 @@ public class Different implements IAgentFilter {
 	/**
 	 * Method filter()
 	 *
-	 * @see gama.api.utils.IAgentFilter#filter(java.util.Collection)
+	 * @see gama.api.utils.interfaces.IAgentFilter#filter(java.util.Collection)
 	 */
 	@Override
 	public void filter(final IScope scope, final IShape source, final Collection<? extends IShape> internal_results) {

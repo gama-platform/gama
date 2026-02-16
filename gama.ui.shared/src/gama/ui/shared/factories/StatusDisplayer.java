@@ -16,11 +16,11 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.progress.UIJob;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IColor;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.types.color.IColor;
 import gama.api.ui.IStatusControl;
 import gama.api.ui.IStatusDisplayer;
 import gama.api.ui.IStatusMessage;

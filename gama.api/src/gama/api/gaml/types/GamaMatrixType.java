@@ -15,15 +15,15 @@ import gama.annotations.type;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IMatrix;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IMatrix;
 
 /**
  * The Class GamaMatrixType.
@@ -52,7 +52,7 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	@Override
 	public IMatrix cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentsType, final boolean copy) throws GamaRuntimeException {
-		return GamaMatrixFactory.createFrom(scope, obj, param, contentsType, copy);
+		return GamaMatrixFactory.castToMatrix(scope, obj, param, contentsType, copy);
 	}
 
 	@Override

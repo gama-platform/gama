@@ -9,8 +9,8 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
 import gama.api.gaml.expressions.IExpression;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.topology.ITopology;
 
 /**
  * The class SpatialCommon.

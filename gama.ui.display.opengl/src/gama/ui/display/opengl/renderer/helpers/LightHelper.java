@@ -18,11 +18,11 @@ import com.jogamp.opengl.GL2ES1;
 import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IPoint;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.layers.ILightDefinition;
-import gama.api.utils.color.GamaColorFactory;
-import gama.api.utils.geometry.GamaPointFactory;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 

@@ -107,7 +107,7 @@ public abstract class GamlAddition implements IGamlDescription {
 	/**
 	 * Method getName()
 	 *
-	 * @see gama.api.utils.INamed#getName()
+	 * @see gama.api.utils.interfaces.INamed#getName()
 	 */
 	@Override
 	public String getName() { return name; }
@@ -115,7 +115,7 @@ public abstract class GamlAddition implements IGamlDescription {
 	/**
 	 * Method setName()
 	 *
-	 * @see gama.api.utils.INamed#setName(java.lang.String)
+	 * @see gama.api.utils.interfaces.INamed#setName(java.lang.String)
 	 */
 	@Override
 	public void setName(final String newName) {}
@@ -123,7 +123,7 @@ public abstract class GamlAddition implements IGamlDescription {
 	/**
 	 * Method serialize()
 	 *
-	 * @see gama.api.utils.IGamlable#serializeToGaml(boolean)
+	 * @see gama.api.utils.interfaces.IGamlable#serializeToGaml(boolean)
 	 */
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {

@@ -11,7 +11,6 @@
 package gama.api.utils.geometry;
 
 
-import gama.api.data.objects.IEnvelope;
 import gama.api.runtime.scope.IScope;
 
 /**

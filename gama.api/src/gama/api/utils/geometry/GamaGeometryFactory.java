@@ -24,8 +24,8 @@ import org.locationtech.jts.geom.LinearRing;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.impl.CoordinateArraySequenceFactory;
 
-import gama.api.data.objects.ICoordinates;
-import gama.api.data.objects.IPoint;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 
 /**
  * A specific implementation of {@link GeometryFactory} optimized for GAMA. This class provides factory methods for

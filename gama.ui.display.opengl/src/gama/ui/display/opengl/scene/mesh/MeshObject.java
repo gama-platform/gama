@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene.mesh;
 
-import gama.api.data.objects.IField;
+import gama.api.types.matrix.IField;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IDrawingAttributes.DrawerType;
 import gama.ui.display.opengl.scene.AbstractObject;

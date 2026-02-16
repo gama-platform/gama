@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IParameter.Batch;
+import gama.api.types.map.IMap;
 import gama.core.experiment.parameters.ParametersSet;
 
 public final class Betadistribution {

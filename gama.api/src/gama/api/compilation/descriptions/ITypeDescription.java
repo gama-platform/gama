@@ -15,8 +15,8 @@ import java.util.Collection;
 import com.google.common.base.Function;
 
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.data.objects.IMap;
 import gama.api.kernel.skill.ISkill;
+import gama.api.types.map.IMap;
 
 /**
  *

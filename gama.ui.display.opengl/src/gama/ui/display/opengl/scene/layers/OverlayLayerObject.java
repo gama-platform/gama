@@ -16,13 +16,13 @@ import com.jogamp.opengl.GL2ES3;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
 import gama.api.ui.layers.ILayer;
-import gama.api.utils.geometry.GamaPointFactory;
 import gama.core.outputs.layers.OverlayLayerData;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl.OpenGL;
@@ -77,7 +77,7 @@ public class OverlayLayerObject extends LayerObject {
 		final IScope scope = renderer.getSurface().getScope();
 		final IExpression expr = layer.getDefinition().getFacet(IKeyword.SIZE);
 		OverlayLayerData d = (OverlayLayerData) layer.getData();
-		if (expr != null) { size = GamaPointFactory.toPoint(scope, expr.value(scope)); }
+		if (expr != null) { size = GamaPointFactory.castToPoint(scope, expr.value(scope)); }
 		double sx = size.getX();
 		double sy = size.getY();
 		if (sx <= 1) {

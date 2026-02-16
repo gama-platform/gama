@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.utils.GamlProperties;
-import gama.api.utils.INamed;
+import gama.api.utils.interfaces.INamed;
 
 /**
  * The interface IGamlDescription. Represents objects that can be presented in the online documentation.

@@ -425,7 +425,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 	/**
 	 * Method serialize()
 	 *
-	 * @see gama.api.utils.IGamlable#serializeToGaml(boolean)
+	 * @see gama.api.utils.interfaces.IGamlable#serializeToGaml(boolean)
 	 */
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {

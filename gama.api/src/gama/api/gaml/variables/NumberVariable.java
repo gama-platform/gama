@@ -21,8 +21,6 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IDate;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
@@ -30,8 +28,10 @@ import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.InScope;
-import gama.api.utils.date.GamaDateFactory;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.types.date.GamaDateFactory;
+import gama.api.types.date.IDate;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 
 /**
  * The Class IntVariable.
@@ -149,10 +149,10 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 					minVal = scope -> (T) Cast.asFloat(scope, min.value(scope));
 					break;
 				case IType.POINT:
-					minVal = scope -> (T) GamaPointFactory.toPoint(scope, min.value(scope));
+					minVal = scope -> (T) GamaPointFactory.castToPoint(scope, min.value(scope));
 					break;
 				case IType.DATE:
-					minVal = scope -> (T) GamaDateFactory.toDate(scope, min.value(scope));
+					minVal = scope -> (T) GamaDateFactory.castToDate(scope, min.value(scope));
 			}
 		} else {
 			minVal = null;
@@ -166,10 +166,10 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 					maxVal = scope -> (T) Cast.asFloat(scope, max.value(scope));
 					break;
 				case IType.POINT:
-					maxVal = scope -> (T) GamaPointFactory.toPoint(scope, max.value(scope));
+					maxVal = scope -> (T) GamaPointFactory.castToPoint(scope, max.value(scope));
 					break;
 				case IType.DATE:
-					maxVal = scope -> (T) GamaDateFactory.toDate(scope, max.value(scope));
+					maxVal = scope -> (T) GamaDateFactory.castToDate(scope, max.value(scope));
 			}
 		} else {
 			maxVal = null;
@@ -183,7 +183,7 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 					stepVal = scope -> (Step) Cast.asFloat(scope, step.value(scope));
 					break;
 				case IType.POINT:
-					stepVal = scope -> (Step) GamaPointFactory.toPoint(scope, step.value(scope));
+					stepVal = scope -> (Step) GamaPointFactory.castToPoint(scope, step.value(scope));
 					break;
 				case IType.DATE:
 					// Step for dates are durations expressed in seconds ?
@@ -278,12 +278,12 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 		if (f == null) return null;
 		if (min != null) {
 			final IPoint fmin = (IPoint) (minVal == null
-					? GamaPointFactory.toPoint(scope, scope.evaluate(min, agent).getValue()) : minVal.run(scope));
+					? GamaPointFactory.castToPoint(scope, scope.evaluate(min, agent).getValue()) : minVal.run(scope));
 			if (f.smallerThan(fmin)) return fmin;
 		}
 		if (max != null) {
 			final IPoint fmax = (IPoint) (maxVal == null
-					? GamaPointFactory.toPoint(scope, scope.evaluate(max, agent).getValue()) : maxVal.run(scope));
+					? GamaPointFactory.castToPoint(scope, scope.evaluate(max, agent).getValue()) : maxVal.run(scope));
 			if (f.biggerThan(fmax)) return fmax;
 		}
 		return f;
@@ -306,12 +306,12 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 		if (f == null) return null;
 		if (min != null) {
 			final IDate fmin = (IDate) (minVal == null
-					? GamaDateFactory.toDate(scope, scope.evaluate(min, agent).getValue()) : minVal.run(scope));
+					? GamaDateFactory.castToDate(scope, scope.evaluate(min, agent).getValue()) : minVal.run(scope));
 			if (f.compareTo(fmin) < 0) return fmin;
 		}
 		if (max != null) {
 			final IDate fmax = (IDate) (maxVal == null
-					? GamaDateFactory.toDate(scope, scope.evaluate(max, agent).getValue()) : maxVal.run(scope));
+					? GamaDateFactory.castToDate(scope, scope.evaluate(max, agent).getValue()) : maxVal.run(scope));
 			if (f.compareTo(fmax) > 0) return fmax;
 		}
 		return f;

@@ -28,8 +28,6 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IParameter.Batch;
 import gama.api.gaml.symbols.ISymbol;
@@ -37,9 +35,11 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.date.GamaDateFactory;
+import gama.api.types.date.GamaDateFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
 import gama.api.utils.files.FileUtils;
-import gama.api.utils.geometry.GamaPointFactory;
 import gama.core.experiment.parameters.ParametersSet;
 
 /**
@@ -188,12 +188,12 @@ public class SobolExploration extends AExplorationAlgorithm {
 					var_info.add(true);
 					break;
 				case IType.DATE:
-					var_info.add(GamaDateFactory.toDate(scope, parameters.get(j).getMinValue(scope)));
-					var_info.add(GamaDateFactory.toDate(scope, parameters.get(j).getMaxValue(scope)));
+					var_info.add(GamaDateFactory.castToDate(scope, parameters.get(j).getMinValue(scope)));
+					var_info.add(GamaDateFactory.castToDate(scope, parameters.get(j).getMaxValue(scope)));
 					break;
 				case IType.POINT:
-					var_info.add(GamaPointFactory.toPoint(scope, parameters.get(j).getMinValue(scope)));
-					var_info.add(GamaPointFactory.toPoint(scope, parameters.get(j).getMaxValue(scope)));
+					var_info.add(GamaPointFactory.castToPoint(scope, parameters.get(j).getMinValue(scope)));
+					var_info.add(GamaPointFactory.castToPoint(scope, parameters.get(j).getMaxValue(scope)));
 					break;
 				case IType.STRING:
 					if (parameters.get(j).getAmongValue(scope).isEmpty()) throw GamaRuntimeException

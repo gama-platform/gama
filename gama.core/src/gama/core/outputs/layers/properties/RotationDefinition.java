@@ -12,11 +12,11 @@ package gama.core.outputs.layers.properties;
 
 import static gama.api.constants.IKeyword.LOCATION;
 
-import gama.api.data.objects.IPoint;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
 import gama.api.utils.geometry.IRotationDefinition;
 import gama.api.utils.geometry.Rotation3D;
 

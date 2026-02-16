@@ -39,7 +39,6 @@ import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.validation.Assert;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -55,10 +54,11 @@ import gama.api.kernel.skill.ISkill;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.list.GamaListFactory;
 import gama.api.utils.JavaUtils;
 import gama.api.utils.StringUtils;
 import gama.api.utils.benchmark.StopWatch;
-import gama.api.utils.list.GamaListFactory;
 import gama.dev.DEBUG;
 
 /**
@@ -784,7 +784,7 @@ public class Variable extends Symbol implements IVariable {
 	 */
 	protected Object checkAmong(final IAgent agent, final IScope scope, final Object val) throws GamaRuntimeException {
 		if (amongExpression == null) return val;
-		final List among = GamaListFactory.toList(scope, scope.evaluate(amongExpression, agent).getValue());
+		final List among = GamaListFactory.castToList(scope, scope.evaluate(amongExpression, agent).getValue());
 		if (among == null || among.contains(val)) return val;
 		if (among.isEmpty()) return null;
 		throw GamaRuntimeException.error(
@@ -833,7 +833,7 @@ public class Variable extends Symbol implements IVariable {
 	public List getAmongValue(final IScope scope) {
 		if (amongExpression == null) return null;
 		try {
-			return GamaListFactory.toList(scope, amongExpression.value(scope), getType(), false);
+			return GamaListFactory.castToList(scope, amongExpression.value(scope), getType(), false);
 		} catch (final GamaRuntimeException e) {
 			return null;
 		}

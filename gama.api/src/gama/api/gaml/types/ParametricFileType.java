@@ -24,12 +24,12 @@ import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.prototypes.IArtefactProto;
-import gama.api.data.objects.IContainer;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.file.GenericFile;
+import gama.api.types.file.IGamaFile;
+import gama.api.types.misc.IContainer;
 import gama.api.utils.GamlProperties;
-import gama.api.utils.files.GenericFile;
-import gama.api.utils.files.IGamaFile;
 
 /**
  * @author drogoul

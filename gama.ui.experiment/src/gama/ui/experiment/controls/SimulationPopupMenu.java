@@ -36,12 +36,12 @@ import org.eclipse.swt.widgets.ToolItem;
 
 import gama.api.GAMA;
 import gama.api.compilation.documentation.GamlIdiomsProvider;
-import gama.api.data.objects.IColor;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.types.color.IColor;
 import gama.dev.DEBUG;
 import gama.ui.experiment.menus.SimulationsMenu;
 import gama.ui.shared.resources.GamaColors;

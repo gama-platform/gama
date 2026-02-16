@@ -12,12 +12,12 @@ package gama.gaml.operators;
 import gama.annotations.doc;
 import gama.annotations.no_test;
 import gama.annotations.operator;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
 import gama.api.utils.collections.GamaNode;
 
 /**

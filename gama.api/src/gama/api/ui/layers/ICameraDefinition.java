@@ -12,9 +12,9 @@ package gama.api.ui.layers;
 
 import java.util.List;
 
-import gama.api.data.objects.IPoint;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.INamed;
+import gama.api.types.geometry.IPoint;
+import gama.api.utils.interfaces.INamed;
 import gama.annotations.constant;
 import gama.annotations.doc;
 import gama.annotations.support.IOperatorCategory;

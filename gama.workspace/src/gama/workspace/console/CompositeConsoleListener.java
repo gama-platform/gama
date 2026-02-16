@@ -13,8 +13,8 @@ package gama.workspace.console;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import gama.api.data.objects.IColor;
 import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.types.color.IColor;
 import gama.api.ui.IConsoleListener;
 
 /**

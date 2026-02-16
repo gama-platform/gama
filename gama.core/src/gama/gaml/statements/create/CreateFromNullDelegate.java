@@ -19,7 +19,7 @@ import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.map.GamaMapFactory;
 
 /**
  * Class CreateFromDatabaseDelegate.

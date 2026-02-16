@@ -14,12 +14,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IList;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.api.ui.displays.IChartDataSource;
-import gama.api.utils.list.GamaListFactory;
 import gama.dev.DEBUG;
 
 /**
@@ -82,7 +82,7 @@ public class ChartDataSourceList extends ChartDataSource {
 		// type_val = get_data_type(scope, o);
 
 		if (o instanceof IList) {
-			final IList<?> lval = GamaListFactory.toList(scope, o);
+			final IList<?> lval = GamaListFactory.castToList(scope, o);
 
 			if (lval.size() > 0) {
 				for (int i = 0; i < lval.size(); i++) {
@@ -107,9 +107,9 @@ public class ChartDataSourceList extends ChartDataSource {
 	 */
 	private void updateserielist(final IScope scope, final int chartCycle) {
 		final IList<String> legends =
-				legendExp == null ? null : GamaListFactory.toList(scope, legendExp.value(scope));
+				legendExp == null ? null : GamaListFactory.castToList(scope, legendExp.value(scope));
 		if (legends == null) return;
-		final IList<?> values = GamaListFactory.toList(scope, getValue().value(scope));
+		final IList<?> values = GamaListFactory.castToList(scope, getValue().value(scope));
 		final ArrayList<String> previousSeries = currentSeriesNames;
 		currentSeriesNames = new ArrayList<>();
 		boolean somethingChanged = false;
@@ -189,8 +189,8 @@ public class ChartDataSourceList extends ChartDataSource {
 		int type_val = IChartDataSource.DATA_TYPE_NULL;
 		if (this.getValue() != null) {
 			o = this.getValue().value(scope);
-			if (o instanceof IList && GamaListFactory.toList(scope, o).size() > 0) {
-				final Object o2 = GamaListFactory.toList(scope, o).get(0);
+			if (o instanceof IList && GamaListFactory.castToList(scope, o).size() > 0) {
+				final Object o2 = GamaListFactory.castToList(scope, o).get(0);
 				type_val = get_data_type(scope, o2);
 			}
 

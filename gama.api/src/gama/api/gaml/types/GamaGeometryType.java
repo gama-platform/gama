@@ -15,10 +15,10 @@ import gama.annotations.type;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
 
 /**
  * Written by drogoul Modified on 1 ao�t 2010
@@ -64,7 +64,7 @@ public class GamaGeometryType extends GamaType<IShape> {
 			if it is a string, interprets it as a wkt specification; otherwise, returns nil.\s""")
 	public IShape cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
-		return GamaShapeFactory.createFrom(scope, obj, copy);
+		return GamaShapeFactory.castToShape(scope, obj, copy);
 	}
 
 	@Override

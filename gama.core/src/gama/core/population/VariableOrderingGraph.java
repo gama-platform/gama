@@ -5,7 +5,7 @@ import java.util.Map;
 import org.jgrapht.graph.DirectedAcyclicGraph;
 import org.jgrapht.util.SupplierUtil;
 
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.map.GamaMapFactory;
 
 public class VariableOrderingGraph extends DirectedAcyclicGraph<String, Object> {
 

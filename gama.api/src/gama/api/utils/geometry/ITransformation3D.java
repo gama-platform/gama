@@ -12,7 +12,7 @@ package gama.api.utils.geometry;
 
 import org.locationtech.jts.geom.CoordinateFilter;
 
-import gama.api.data.objects.IPoint;
+import gama.api.types.geometry.IPoint;
 
 /**
  * The Interface ITransformation3D.

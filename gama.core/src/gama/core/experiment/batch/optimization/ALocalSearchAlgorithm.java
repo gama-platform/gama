@@ -23,7 +23,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.map.GamaMapFactory;
 import gama.core.experiment.batch.BatchAgent;
 import gama.core.experiment.batch.Neighborhood;
 import gama.core.experiment.batch.Neighborhood1Var;
@@ -102,7 +102,7 @@ public abstract class ALocalSearchAlgorithm extends AOptimizationAlgorithm {
 		solutionInit = new ParametersSet(scope, v, true);
 		initSolExpression = getFacet(INIT_SOL);
 		if (initSolExpression != null) {
-			Map<String, Object> vals = GamaMapFactory.createFrom(scope, initSolExpression.value(scope));
+			Map<String, Object> vals = GamaMapFactory.castToMap(scope, initSolExpression.value(scope));
 			if (vals != null) { initSolution(scope, vals); }
 		}
 	}

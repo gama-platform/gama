@@ -32,14 +32,14 @@ import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 import gama.api.utils.StringUtils;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
 import gama.core.experiment.parameters.ParametersSet;
 
 /**
@@ -706,8 +706,8 @@ public class Stochanalysis {
 	public static String stochasticityAnalysis_From_CSV(final int replicat, final double threshold,
 			final String path_to_data, final int id_output, final IScope scope) {
 		List<Object> STO_simu = readSimulation(path_to_data, id_output, scope);
-		List<Map<String, Object>> MySample = GamaListFactory.toList(scope, STO_simu.get(0));
-		Map<String, List<Double>> Outputs = GamaMapFactory.createFrom(scope, STO_simu.get(1));
+		List<Map<String, Object>> MySample = GamaListFactory.castToList(scope, STO_simu.get(0));
+		Map<String, List<Double>> Outputs = GamaMapFactory.castToMap(scope, STO_simu.get(1));
 		int min_replicat = 1;
 		for (List<Double> val : Outputs.values()) {
 			Map<String, List<Object>> sample = new HashedMap<>();

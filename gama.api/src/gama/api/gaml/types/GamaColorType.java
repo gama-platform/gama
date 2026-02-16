@@ -14,11 +14,11 @@ import gama.annotations.type;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.color.GamaColorFactory;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.map.IMap;
 
 /**
  * Written by drogoul Modified on 1 ao�t 2010
@@ -52,7 +52,7 @@ public class GamaColorType extends GamaType<IColor> {
 	@doc ("Transforms the parameter into a rgb color. A second parameter can be used to express the transparency of the color, either an int (between 0 and 255) or a float (between 0 and 1)")
 	public IColor cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
-		return GamaColorFactory.createFrom(scope, obj, param, copy);
+		return GamaColorFactory.castToColor(scope, obj, param, copy);
 	}
 
 	@Override

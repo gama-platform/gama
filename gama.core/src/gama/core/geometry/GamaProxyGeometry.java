@@ -16,20 +16,20 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  * Class GamaProxyGeometry. A geometry that represents a wrapper to a reference geometry and a translation. All the
@@ -85,7 +85,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method setLocation()
 	 *
-	 * @see gama.api.utils.ILocated#setLocation(gama.core.metamodel.shape.GamaPoint)
+	 * @see gama.api.utils.interfaces.ILocated#setLocation(gama.core.metamodel.shape.GamaPoint)
 	 */
 	@Override
 	public IPoint setLocation(final IPoint loc) {
@@ -96,7 +96,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getLocation()
 	 *
-	 * @see gama.api.utils.ILocated#getLocation()
+	 * @see gama.api.utils.interfaces.ILocated#getLocation()
 	 */
 	@Override
 	public IPoint getLocation() { return absoluteLocation; }
@@ -104,7 +104,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method stringValue()
 	 *
-	 * @see gama.api.data.objects.IValue#stringValue(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IValue#stringValue(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
@@ -121,7 +121,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method copy()
 	 *
-	 * @see gama.api.data.objects.IValue#copy(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IValue#copy(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IShape copy(final IScope scope) throws GamaRuntimeException {
@@ -131,7 +131,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method toGaml()
 	 *
-	 * @see gama.api.utils.IGamlable#toGaml()
+	 * @see gama.api.utils.interfaces.IGamlable#toGaml()
 	 */
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
@@ -142,7 +142,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getAttributes(). Maintain a map of attributes in each translated shape, which is costly.
 	 *
-	 * @see gama.api.utils.IAttributed#getAttributes()
+	 * @see gama.api.utils.interfaces.IAttributed#getAttributes()
 	 */
 	@Override
 	public IMap<String, Object> getAttributes(final boolean createIfNeeded) {
@@ -155,7 +155,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getAgent()
 	 *
-	 * @see gama.api.data.objects.IShape#getAgent()
+	 * @see gama.api.types.geometry.IShape#getAgent()
 	 */
 	@Override
 	public IAgent getAgent() {
@@ -166,7 +166,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method setAgent()
 	 *
-	 * @see gama.api.data.objects.IShape#setAgent(gama.api.kernel.agent.IAgent)
+	 * @see gama.api.types.geometry.IShape#setAgent(gama.api.kernel.agent.IAgent)
 	 */
 	@Override
 	public void setAgent(final IAgent agent) {
@@ -176,7 +176,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getGeometry()
 	 *
-	 * @see gama.api.data.objects.IShape#getGeometry()
+	 * @see gama.api.types.geometry.IShape#getGeometry()
 	 */
 	@Override
 	public IShape getGeometry() {
@@ -186,7 +186,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method setGeometry()
 	 *
-	 * @see gama.api.data.objects.IShape#setGeometry(gama.api.data.objects.IShape)
+	 * @see gama.api.types.geometry.IShape#setGeometry(gama.api.types.geometry.IShape)
 	 */
 	@Override
 	public void setGeometry(final IShape g) {
@@ -196,7 +196,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method isPoint()
 	 *
-	 * @see gama.api.data.objects.IShape#isPoint()
+	 * @see gama.api.types.geometry.IShape#isPoint()
 	 */
 	@Override
 	public boolean isPoint() { return getReferenceGeometry().isPoint(); }
@@ -207,7 +207,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getInnerGeometry()
 	 *
-	 * @see gama.api.data.objects.IShape#getInnerGeometry()
+	 * @see gama.api.types.geometry.IShape#getInnerGeometry()
 	 */
 	@Override
 	public Geometry getInnerGeometry() {
@@ -220,7 +220,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	 * Method getEnvelope(). Computed dynamically. A subclass may choose to cache this (often used) information by
 	 * redefining this method
 	 *
-	 * @see gama.api.data.objects.IShape#getEnvelope()
+	 * @see gama.api.types.geometry.IShape#getEnvelope()
 	 */
 	@Override
 	public IEnvelope getEnvelope() {
@@ -237,7 +237,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method covers()
 	 *
-	 * @see gama.api.data.objects.IShape#covers(gama.api.data.objects.IShape)
+	 * @see gama.api.types.geometry.IShape#covers(gama.api.types.geometry.IShape)
 	 */
 	@Override
 	public boolean covers(final IShape g) {
@@ -248,7 +248,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method crosses()
 	 *
-	 * @see gama.api.data.objects.IShape#crosses(gama.api.data.objects.IShape)
+	 * @see gama.api.types.geometry.IShape#crosses(gama.api.types.geometry.IShape)
 	 */
 	@Override
 	public boolean crosses(final IShape g) {
@@ -258,7 +258,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method euclidianDistanceTo()
 	 *
-	 * @see gama.api.data.objects.IShape#euclidianDistanceTo(gama.api.data.objects.IShape)
+	 * @see gama.api.types.geometry.IShape#euclidianDistanceTo(gama.api.types.geometry.IShape)
 	 */
 	@Override
 	public double euclidianDistanceTo(final IShape g) {
@@ -269,7 +269,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method euclidianDistanceTo()
 	 *
-	 * @see gama.api.data.objects.IShape#euclidianDistanceTo(gama.core.metamodel.shape.GamaPoint)
+	 * @see gama.api.types.geometry.IShape#euclidianDistanceTo(gama.core.metamodel.shape.GamaPoint)
 	 */
 	@Override
 	public double euclidianDistanceTo(final IPoint g) {
@@ -280,7 +280,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method intersects()
 	 *
-	 * @see gama.api.data.objects.IShape#intersects(gama.api.data.objects.IShape)
+	 * @see gama.api.types.geometry.IShape#intersects(gama.api.types.geometry.IShape)
 	 */
 	@Override
 	public boolean intersects(final IShape g) {
@@ -300,7 +300,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getPerimeter()
 	 *
-	 * @see gama.api.data.objects.IShape#getPerimeter()
+	 * @see gama.api.types.geometry.IShape#getPerimeter()
 	 */
 	@Override
 	public double getPerimeter() { return getReferenceGeometry().getPerimeter(); }
@@ -308,7 +308,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method setInnerGeometry()
 	 *
-	 * @see gama.api.data.objects.IShape#setInnerGeometry(org.locationtech.jts.geom.Geometry)
+	 * @see gama.api.types.geometry.IShape#setInnerGeometry(org.locationtech.jts.geom.Geometry)
 	 */
 	@Override
 	public void setInnerGeometry(final Geometry intersection) {}
@@ -316,7 +316,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method dispose()
 	 *
-	 * @see gama.api.data.objects.IShape#dispose()
+	 * @see gama.api.types.geometry.IShape#dispose()
 	 */
 	@Override
 	public void dispose() {
@@ -330,7 +330,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getPoints()
 	 *
-	 * @see gama.api.data.objects.IShape#getPoints()
+	 * @see gama.api.types.geometry.IShape#getPoints()
 	 */
 	@Override
 	public IList<IPoint> getPoints() {
@@ -343,7 +343,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method setDepth()
 	 *
-	 * @see gama.api.data.objects.IShape#setDepth(double)
+	 * @see gama.api.types.geometry.IShape#setDepth(double)
 	 */
 	@Override
 	public void setDepth(final double depth) {
@@ -353,7 +353,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getArea()
 	 *
-	 * @see gama.api.data.objects.IShape#getArea()
+	 * @see gama.api.types.geometry.IShape#getArea()
 	 */
 	@Override
 	public Double getArea() { return getReferenceGeometry().getArea(); }
@@ -361,7 +361,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getVolume()
 	 *
-	 * @see gama.api.data.objects.IShape#getVolume()
+	 * @see gama.api.types.geometry.IShape#getVolume()
 	 */
 	@Override
 	public Double getVolume() { return getReferenceGeometry().getVolume(); }
@@ -369,7 +369,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getHoles()
 	 *
-	 * @see gama.api.data.objects.IShape#getHoles()
+	 * @see gama.api.types.geometry.IShape#getHoles()
 	 */
 	@Override
 	public IList<IShape> getHoles() {
@@ -388,7 +388,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getCentroid()
 	 *
-	 * @see gama.api.data.objects.IShape#getCentroid()
+	 * @see gama.api.types.geometry.IShape#getCentroid()
 	 */
 	@Override
 	public IPoint getCentroid() { return absoluteLocation; }
@@ -396,7 +396,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getExteriorRing()
 	 *
-	 * @see gama.api.data.objects.IShape#getExteriorRing()
+	 * @see gama.api.types.geometry.IShape#getExteriorRing()
 	 */
 	@Override
 	public IShape getExteriorRing(final IScope scope) {
@@ -406,7 +406,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getWidth()
 	 *
-	 * @see gama.api.data.objects.IShape#getWidth()
+	 * @see gama.api.types.geometry.IShape#getWidth()
 	 */
 	@Override
 	public Double getWidth() { return getReferenceGeometry().getWidth(); }
@@ -414,7 +414,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getHeight()
 	 *
-	 * @see gama.api.data.objects.IShape#getHeight()
+	 * @see gama.api.types.geometry.IShape#getHeight()
 	 */
 	@Override
 	public Double getHeight() { return getReferenceGeometry().getHeight(); }
@@ -422,7 +422,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getDepth()
 	 *
-	 * @see gama.api.data.objects.IShape#getDepth()
+	 * @see gama.api.types.geometry.IShape#getDepth()
 	 */
 	@Override
 	public Double getDepth() { return getReferenceGeometry().getDepth(); }
@@ -430,7 +430,7 @@ public abstract class GamaProxyGeometry implements IShape, Cloneable {
 	/**
 	 * Method getGeometricEnvelope()
 	 *
-	 * @see gama.api.data.objects.IShape#getGeometricEnvelope()
+	 * @see gama.api.types.geometry.IShape#getGeometricEnvelope()
 	 */
 	@Override
 	public IShape getGeometricEnvelope() { return GamaShapeFactory.createFrom(getEnvelope().toGeometry()); }

@@ -22,14 +22,14 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatement;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
 
 /**
  * Written by drogoul Modified on 6 févr. 2010
@@ -83,7 +83,7 @@ public class FocusStatement extends AbstractStatement {
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		final IAgent agent = scope.getAgent();
 		if (agent != null && !agent.dead()) {
-			final IShape o = GamaShapeFactory.createFrom(scope, value.value(scope), false);
+			final IShape o = GamaShapeFactory.castToShape(scope, value.value(scope), false);
 			GAMA.getGui().setFocusOn(o);
 		}
 		return value.value(scope);

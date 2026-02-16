@@ -30,10 +30,10 @@ import org.eclipse.ui.forms.HyperlinkSettings;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IFont;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
 import gama.core.experiment.parameters.InputParameter;
 import gama.core.experiment.parameters.TextStatement;
 import gama.dev.DEBUG;

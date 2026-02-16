@@ -25,17 +25,17 @@ import static gama.api.gaml.types.Types.POINT;
 
 import java.awt.Point;
 
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.layers.ILayerData;
 import gama.api.ui.layers.ILayerStatement;
 import gama.api.utils.AttributeHolder;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  * Written by drogoul Modified on 16 nov. 2010

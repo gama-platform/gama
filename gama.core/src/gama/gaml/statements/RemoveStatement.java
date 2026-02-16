@@ -24,14 +24,14 @@ import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IGraph;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractContainerStatement;
 import gama.api.gaml.statements.AbstractContainerStatement.ContainerValidator;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.graph.IGraph;
+import gama.api.types.misc.IContainer;
 import gama.gaml.statements.RemoveStatement.RemoveSerializer;
 
 /**

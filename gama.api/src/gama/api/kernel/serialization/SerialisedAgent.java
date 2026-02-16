@@ -18,9 +18,6 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonObject;
-import gama.api.data.json.IJsonValue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IGridAgent;
@@ -29,6 +26,9 @@ import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonObject;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class SerialisedAgent.

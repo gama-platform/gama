@@ -21,8 +21,8 @@ import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Facets;
-import gama.api.utils.IDisposable;
-import gama.api.utils.INamed;
+import gama.api.utils.interfaces.IDisposable;
+import gama.api.utils.interfaces.INamed;
 
 /**
  * Interface ISyntacticElement. Elements representing statements (or symbols), that support a hierarchical

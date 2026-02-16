@@ -22,12 +22,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
 
-import gama.api.data.objects.IDate;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
-import gama.api.utils.date.GamaDateFactory;
+import gama.api.types.date.GamaDateFactory;
+import gama.api.types.date.IDate;
 import gama.ui.shared.interfaces.EditorListener;
 
 /**

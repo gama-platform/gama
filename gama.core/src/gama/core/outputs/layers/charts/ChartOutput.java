@@ -17,17 +17,17 @@ import java.util.LinkedHashMap;
 import org.jfree.chart.JFreeChart;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IPoint;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.simulation.IClock;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IChart;
 import gama.api.ui.displays.IChartDataSource;
 import gama.api.ui.displays.IDisplaySurface;
-import gama.api.utils.color.GamaColorFactory;
-import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * The Class ChartOutput.

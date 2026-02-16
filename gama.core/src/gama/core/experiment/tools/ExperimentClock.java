@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.core.experiment.tools;
 
-import gama.api.data.objects.IDate;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.date.IDate;
 import gama.core.simulation.SimulationClock;
 
 /**

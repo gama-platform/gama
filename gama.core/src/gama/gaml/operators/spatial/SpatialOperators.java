@@ -40,19 +40,19 @@ import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.api.utils.list.GamaListFactory;
 
 /**
  * The Class Operators.
@@ -155,7 +155,7 @@ public class SpatialOperators {
 	@no_test // test already done in Spatial tests Models
 	public static IShape union(final IScope scope, final IContainer<?, IShape> elements) {
 		try {
-			return GamaShapeFactory.createFrom(scope, elements, false);
+			return GamaShapeFactory.castToShape(scope, elements, false);
 		} catch (final GamaRuntimeException e) {
 			return null;
 		}
@@ -550,10 +550,10 @@ public class SpatialOperators {
 
 			geomVisibleF.removeIf(g -> (isPolygonF || isLineF) && g.isPoint() && isPolygonF && g.isLine());
 			if (geomVisibleF.isEmpty(scope)) return null;
-			IShape result = GamaShapeFactory.createFrom(scope, geomVisibleF, false);
+			IShape result = GamaShapeFactory.castToShape(scope, geomVisibleF, false);
 			if (result == null || result.getInnerGeometry() == null) {
 				geomVisibleF.stream().forEach(g -> SpatialTransformations.enlarged_by(scope, g, 0.1));
-				result = GamaShapeFactory.createFrom(scope, geomVisibleF, false);
+				result = GamaShapeFactory.castToShape(scope, geomVisibleF, false);
 			}
 			if (result == null || result.getInnerGeometry() == null) return null;
 			if (result.getInnerGeometry() instanceof GeometryCollection) {

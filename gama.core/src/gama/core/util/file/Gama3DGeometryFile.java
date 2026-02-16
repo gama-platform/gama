@@ -15,16 +15,16 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IPair;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.pair.IPair;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  * The Class Gama3DGeometryFile.

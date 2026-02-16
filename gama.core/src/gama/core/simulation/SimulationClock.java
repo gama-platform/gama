@@ -14,7 +14,6 @@ import java.time.DateTimeException;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import gama.api.data.objects.IDate;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.GamaDateType;
 import gama.api.kernel.simulation.IClock;
@@ -22,6 +21,7 @@ import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.date.IDate;
 import gama.dev.THREADS;
 import gama.gaml.operators.Dates;
 

@@ -12,8 +12,8 @@ package gama.api.runtime.scope;
 
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
-import gama.api.utils.IDisposable;
 import gama.api.utils.PoolUtils;
+import gama.api.utils.interfaces.IDisposable;
 
 /**
  * The Class AgentExecutionContext.

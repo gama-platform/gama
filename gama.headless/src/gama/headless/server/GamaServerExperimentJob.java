@@ -24,12 +24,12 @@ import javax.imageio.ImageIO;
 import org.java_websocket.WebSocket;
 
 import gama.api.compilation.GamlCompilationError;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaCompilationFailedException;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.species.IModelSpecies;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
 import gama.core.experiment.ExperimentSpecies;
 import gama.headless.core.GamaHeadlessException;
 import gama.headless.core.RichExperiment;

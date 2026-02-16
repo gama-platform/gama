@@ -38,12 +38,12 @@ import org.locationtech.jts.geom.Polygon;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.topology.ICoordinateReferenceSystem;
 import gama.api.kernel.topology.IProjection;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
 
 /**
  * The Class ShapeSaver.

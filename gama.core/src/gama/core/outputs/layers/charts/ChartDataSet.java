@@ -17,15 +17,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.api.ui.displays.IChart;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.FileUtils;
-import gama.api.utils.list.GamaListFactory;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Files;
 
@@ -667,8 +667,8 @@ public class ChartDataSet {
 			}
 
 			if (xval instanceof IList) {
-				final IList<?> xv2 = GamaListFactory.toList(scope, xval);
-				final IList<?> xl2 = GamaListFactory.toList(scope, xlab);
+				final IList<?> xv2 = GamaListFactory.castToList(scope, xval);
+				final IList<?> xl2 = GamaListFactory.castToList(scope, xlab);
 
 				if (this.useXSource && xv2.size() > 0 && xv2.get(0) instanceof Number) {
 					XSeriesValues.clear();

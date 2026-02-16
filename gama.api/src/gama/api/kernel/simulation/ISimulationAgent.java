@@ -12,9 +12,9 @@ package gama.api.kernel.simulation;
 
 import java.util.Map;
 
-import gama.api.data.objects.IDate;
 import gama.api.kernel.topology.IProjectionFactory;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.date.IDate;
 import gama.api.ui.IOutput;
 import gama.api.ui.IOutputManager;
 import gama.api.utils.SimulationLocal;

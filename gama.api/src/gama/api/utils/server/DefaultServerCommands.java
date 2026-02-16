@@ -43,8 +43,6 @@ import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.documentation.GamlIdiomsProvider;
 import gama.api.constants.GamlFileExtension;
 import gama.api.constants.IKeyword;
-import gama.api.data.json.IJsonValue;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.CommandException;
 import gama.api.exceptions.GamaCompilationFailedException;
 import gama.api.exceptions.GamaRuntimeException;
@@ -53,6 +51,7 @@ import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.symbols.IVariable;
+import gama.api.kernel.agent.AgentReference;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentStateListener;
@@ -63,8 +62,9 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.AgentReference;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.utils.json.IJsonValue;
 import gama.dev.DEBUG;
 
 /**
@@ -401,7 +401,7 @@ public class DefaultServerCommands {
 		// TODO Verify that it is not a JSON string...Otherwise, use Json.getNew().parse(...)
 		String json = (String) map.get(ARGS);
 		IJsonValue object = GAMA.getJsonEncoder().parse(json);
-		Map<String, Object> args = GamaMapFactory.createFrom(scope, object.toGamlValue(scope));
+		Map<String, Object> args = GamaMapFactory.castToMap(scope, object.toGamlValue(scope));
 		IExecutionResult er = IExecutionResult.PASSED;
 		IScope newScope = agent.getScope().copy("Ask command of gama-server");
 		try {

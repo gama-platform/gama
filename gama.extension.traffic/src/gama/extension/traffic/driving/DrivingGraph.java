@@ -14,18 +14,18 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.GraphEvent;
+import gama.api.types.graph._Edge;
+import gama.api.types.graph.GraphEvent.GraphEventType;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IContainer;
 import gama.api.utils.StringUtils;
-import gama.api.utils.collections.GraphEvent;
-import gama.api.utils.collections._Edge;
-import gama.api.utils.collections.GraphEvent.GraphEventType;
-import gama.api.utils.geometry.GamaPointFactory;
 import gama.core.topology.graph.GamaSpatialGraph;
 
 /**

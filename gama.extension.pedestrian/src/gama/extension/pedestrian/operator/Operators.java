@@ -16,10 +16,10 @@ import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IShape;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
 
 /**
  * The Class Operators.

@@ -14,24 +14,24 @@ import static java.util.Objects.hash;
 import java.util.Objects;
 
 import gama.annotations.getter;
-import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.factories.GamaPairFactory;
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonValue;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IMatrix;
-import gama.api.data.objects.IPair;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.pair.GamaPairFactory;
+import gama.api.types.pair.IPair;
 import gama.api.utils.StringUtils;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class IPair.
@@ -166,7 +166,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method get()
 	 *
-	 * @see gama.api.data.objects.IContainer#get(gama.api.runtime.scope.IScope, java.lang.Object)
+	 * @see gama.api.types.misc.IContainer#get(gama.api.runtime.scope.IScope, java.lang.Object)
 	 */
 	@Override
 	public Object get(final IScope scope, final Integer index) throws GamaRuntimeException {
@@ -176,8 +176,8 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method getFromIndicesList()
 	 *
-	 * @see gama.api.data.objects.IContainer#getFromIndicesList(gama.api.runtime.scope.IScope,
-	 *      gama.api.data.objects.IList)
+	 * @see gama.api.types.misc.IContainer#getFromIndicesList(gama.api.runtime.scope.IScope,
+	 *      gama.api.types.list.IList)
 	 */
 	@Override
 	public Object getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
@@ -187,7 +187,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method contains()
 	 *
-	 * @see gama.api.data.objects.IContainer#contains(gama.api.runtime.scope.IScope, java.lang.Object)
+	 * @see gama.api.types.misc.IContainer#contains(gama.api.runtime.scope.IScope, java.lang.Object)
 	 */
 	@Override
 	public boolean contains(final IScope scope, final Object o) throws GamaRuntimeException {
@@ -197,7 +197,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method firstValue()
 	 *
-	 * @see gama.api.data.objects.IContainer#firstValue(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#firstValue(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public Object firstValue(final IScope scope) throws GamaRuntimeException {
@@ -207,7 +207,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method lastValue()
 	 *
-	 * @see gama.api.data.objects.IContainer#lastValue(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#lastValue(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public Object lastValue(final IScope scope) throws GamaRuntimeException {
@@ -217,7 +217,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method length()
 	 *
-	 * @see gama.api.data.objects.IContainer#length(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#length(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public int length(final IScope scope) {
@@ -227,7 +227,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method isEmpty()
 	 *
-	 * @see gama.api.data.objects.IContainer#isEmpty(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#isEmpty(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public boolean isEmpty(final IScope scope) {
@@ -237,7 +237,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method reverse()
 	 *
-	 * @see gama.api.data.objects.IContainer#reverse(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#reverse(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IPair reverse(final IScope scope) throws GamaRuntimeException {
@@ -247,7 +247,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method anyValue()
 	 *
-	 * @see gama.api.data.objects.IContainer#anyValue(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#anyValue(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public Object anyValue(final IScope scope) {
@@ -258,7 +258,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method listValue()
 	 *
-	 * @see gama.api.data.objects.IContainer#listValue(gama.api.runtime.scope.IScope, gama.api.gaml.types.IType)
+	 * @see gama.api.types.misc.IContainer#listValue(gama.api.runtime.scope.IScope, gama.api.gaml.types.IType)
 	 */
 	@Override
 	public IList listValue(final IScope scope, final IType contentType, final boolean copy) {
@@ -269,7 +269,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method matrixValue()
 	 *
-	 * @see gama.api.data.objects.IContainer#matrixValue(gama.api.runtime.scope.IScope, gama.api.gaml.types.IType)
+	 * @see gama.api.types.misc.IContainer#matrixValue(gama.api.runtime.scope.IScope, gama.api.gaml.types.IType)
 	 */
 	@Override
 	public IMatrix matrixValue(final IScope scope, final IType contentType, final boolean copy) {
@@ -279,7 +279,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method matrixValue()
 	 *
-	 * @see gama.api.data.objects.IContainer#matrixValue(gama.api.runtime.scope.IScope, gama.api.gaml.types.IType,
+	 * @see gama.api.types.misc.IContainer#matrixValue(gama.api.runtime.scope.IScope, gama.api.gaml.types.IType,
 	 *      gama.core.metamodel.shape.GamaPoint)
 	 */
 	@Override
@@ -290,7 +290,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method mapValue()
 	 *
-	 * @see gama.api.data.objects.IContainer#mapValue(gama.api.runtime.scope.IScope, gama.api.gaml.types.IType,
+	 * @see gama.api.types.misc.IContainer#mapValue(gama.api.runtime.scope.IScope, gama.api.gaml.types.IType,
 	 *      gama.api.gaml.types.IType)
 	 */
 	@Override
@@ -303,7 +303,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method iterable()
 	 *
-	 * @see gama.api.data.objects.IContainer#iterable(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#iterable(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public java.lang.Iterable iterable(final IScope scope) {

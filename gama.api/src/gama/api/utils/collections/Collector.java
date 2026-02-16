@@ -21,10 +21,10 @@ import java.util.stream.Stream;
 
 import com.google.common.collect.Sets;
 
-import gama.api.data.objects.IList;
 import gama.api.gaml.types.Types;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.api.utils.PoolUtils;
-import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.random.IRandom;
 
 /**

@@ -21,16 +21,16 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.IConcept;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPath;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IPath;
+import gama.api.types.map.IMap;
+import gama.api.types.topology.ITopology;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.gaml.operators.Maths;
 
@@ -258,7 +258,7 @@ public class MovingSkill3D extends MovingSkill {
 			}
 			final Object bounds = scope.getArg(IKeyword.BOUNDS, IType.NONE);
 			if (bounds != null) {
-				IShape geom = GamaShapeFactory.createFrom(scope, bounds, false);
+				IShape geom = GamaShapeFactory.castToShape(scope, bounds, false);
 
 				if (geom.getGeometries().size() > 1) {
 					for (final IShape g : geom.getGeometries()) {

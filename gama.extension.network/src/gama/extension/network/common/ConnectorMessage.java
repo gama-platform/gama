@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.extension.network.common;
 
-import gama.api.data.objects.IMessage;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.message.IMessage;
 
 /**
  * The Interface ConnectorMessage.

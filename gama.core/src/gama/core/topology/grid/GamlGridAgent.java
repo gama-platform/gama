@@ -11,15 +11,14 @@
 package gama.core.topology.grid;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IList;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IGridAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.color.GamaColor;
-import gama.api.utils.color.GamaColorFactory;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.core.agent.GamlAgent;
 
 /**
@@ -44,7 +43,7 @@ public class GamlGridAgent extends GamlAgent implements IGridAgent {
 
 	@Override
 	public IColor getColor() {
-		if (getPopulation().getGrid().isHexagon) return (GamaColor) getAttribute(IKeyword.COLOR);
+		if (getPopulation().getGrid().isHexagon) return (IColor) getAttribute(IKeyword.COLOR);
 		return GamaColorFactory.get(getPopulation().getGrid().supportImagePixels[getIndex()]);
 	}
 
@@ -92,7 +91,7 @@ public class GamlGridAgent extends GamlAgent implements IGridAgent {
 
 	@Override
 	public IList<IAgent> getNeighbors(final IScope scope) {
-		return GamaListFactory.toList(scope,
+		return GamaListFactory.castToList(scope,
 				getPopulation().getGrid().getNeighborhood().getNeighborsIn(scope, getIndex(), 1));
 	}
 

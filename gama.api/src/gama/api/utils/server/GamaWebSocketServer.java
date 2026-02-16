@@ -26,10 +26,10 @@ import org.java_websocket.server.WebSocketServer;
 
 import gama.api.GAMA;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.CommandException;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.types.map.IMap;
 import gama.api.ui.IConsoleListener;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;

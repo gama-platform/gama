@@ -36,7 +36,6 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.IConcept;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.GamaMessageType;
@@ -44,7 +43,8 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.core.util.messaging.GamaMailbox;
 import gama.core.util.messaging.GamaMessage;
 import gama.core.util.messaging.MessagingSkill;
@@ -173,14 +173,14 @@ public class FIPASkill extends MessagingSkill {
 
 		final FIPAMessage message = new FIPAMessage(scope);
 
-		final IList receivers = GamaListFactory.toList(scope, scope.getArg(IKeyword.TO, IType.LIST));
+		final IList receivers = GamaListFactory.castToList(scope, scope.getArg(IKeyword.TO, IType.LIST));
 		if (receivers == null || receivers.isEmpty() || receivers.contains(null))
 			throw GamaRuntimeException.error("receivers can not be empty or null", scope);
 		message.setReceivers(receivers);
 
 		message.setSender(getCurrentAgent(scope));
 
-		final IList content = GamaListFactory.toList(scope, scope.getArg(GamaMessage.CONTENTS, IType.LIST));
+		final IList content = GamaListFactory.castToList(scope, scope.getArg(GamaMessage.CONTENTS, IType.LIST));
 		if (content != null) { message.setContents(content); }
 
 		final String performative = Cast.asString(scope, scope.getArg("performative", IType.STRING));
@@ -299,7 +299,7 @@ public class FIPASkill extends MessagingSkill {
 	 * @return the content arg
 	 */
 	private IList getContentArg(final IScope scope) {
-		return GamaListFactory.toList(scope, scope.getArg(GamaMessage.CONTENTS, IType.LIST));
+		return GamaListFactory.castToList(scope, scope.getArg(GamaMessage.CONTENTS, IType.LIST));
 	}
 
 	/**
@@ -310,7 +310,7 @@ public class FIPASkill extends MessagingSkill {
 	 * @return the message arg
 	 */
 	private IList<FIPAMessage> getMessageArg(final IScope scope) {
-		return GamaListFactory.toList(scope, scope.getArg(GamaMessageType.MESSAGE_STR, IType.LIST));
+		return GamaListFactory.castToList(scope, scope.getArg(GamaMessageType.MESSAGE_STR, IType.LIST));
 	}
 
 	/**

@@ -10,11 +10,11 @@
  ********************************************************************************************************/
 package gama.headless.core;
 
-import gama.api.data.objects.IList;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
+import gama.api.types.list.IList;
 import gama.headless.server.GamaServerExperimentJob;
 
 /**

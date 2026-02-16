@@ -17,18 +17,18 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.collect.ImmutableList;
 
-import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMatrix;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
 import gama.api.utils.random.IRandom;
 import gama.core.topology.grid.GamaSpatialMatrix;
 import one.util.streamex.StreamEx;

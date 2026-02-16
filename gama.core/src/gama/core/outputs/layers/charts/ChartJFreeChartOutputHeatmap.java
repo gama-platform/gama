@@ -46,9 +46,9 @@ import org.jfree.data.xy.MatrixSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
 import gama.api.ui.displays.IChartDataSource;
 import gama.api.ui.displays.IDisplaySurface;
 

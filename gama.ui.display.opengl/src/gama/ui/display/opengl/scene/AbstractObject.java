@@ -14,11 +14,11 @@ package gama.ui.display.opengl.scene;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 
-import gama.api.data.objects.IPoint;
-import gama.api.utils.IDisposable;
-import gama.api.utils.IImageProvider;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IDrawingAttributes.DrawerType;
+import gama.api.utils.interfaces.IDisposable;
+import gama.api.utils.interfaces.IImageProvider;
 import gama.ui.display.opengl.OpenGL;
 
 /**

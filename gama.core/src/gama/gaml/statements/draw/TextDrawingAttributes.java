@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IFont;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape.Type;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape.Type;
 import gama.api.ui.layers.IDrawingAttributes.Flag;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.Scaling3D;

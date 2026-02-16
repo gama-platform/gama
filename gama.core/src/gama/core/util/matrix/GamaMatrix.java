@@ -14,12 +14,6 @@ import java.util.List;
 import org.eclipse.core.runtime.ISafeRunnable;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IField;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IMatrix;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
@@ -28,11 +22,17 @@ import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.ISafeConsumer;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
 import gama.api.utils.StringUtils;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.utils.interfaces.ISafeConsumer;
 import gama.api.utils.random.IRandom;
 import gama.dev.FLAGS;
 
@@ -82,7 +82,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 * @return the gama point
 	 */
 	protected IPoint buildIndex(final IScope scope, final Object object) {
-		return GamaPointFactory.toPoint(scope, object, false);
+		return GamaPointFactory.castToPoint(scope, object, false);
 	}
 
 	@Override

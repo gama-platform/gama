@@ -27,10 +27,10 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IColor;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
 
 /**
  * The Class BufferingUtils.

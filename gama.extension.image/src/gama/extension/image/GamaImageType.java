@@ -24,10 +24,6 @@ import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.objects.IField;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.GamaFileType;
 import gama.api.gaml.types.GamaType;
@@ -35,6 +31,10 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IField;
 import gama.core.topology.grid.GamaSpatialMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.extension.image.svg.GamaSVGFile;
@@ -206,7 +206,7 @@ public class GamaImageType extends GamaType<GamaImage> {
 	@Override
 	public GamaImage deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
 		return GamaImage.from(scope,
-				GamaIntMatrix.from(scope, GamaMatrixFactory.createFrom(scope, map2.get("pixels"))));
+				GamaIntMatrix.from(scope, GamaMatrixFactory.castToMatrix(scope, map2.get("pixels"))));
 	}
 
 }

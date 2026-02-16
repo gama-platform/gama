@@ -27,9 +27,6 @@ import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMatrix;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
@@ -39,9 +36,12 @@ import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IDiffusionTarget;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IMatrix;
 import gama.api.utils.SimulationLocal;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.interfaces.IDiffusionTarget;
 import gama.core.topology.grid.FieldDiffuser;
 import gama.extension.maths.pde.diffusion.statements.DiffusionStatement.DiffusionValidator;
 
@@ -262,10 +262,10 @@ public class DiffusionStatement extends AbstractStatement {
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		DiffusionData data = dataSupplier.get(scope);
 
-		final IMatrix<?> rawMask = GamaMatrixFactory.createFrom(scope, getFacetValue(scope, IKeyword.MASK));
+		final IMatrix<?> rawMask = GamaMatrixFactory.castToMatrix(scope, getFacetValue(scope, IKeyword.MASK));
 
 		double[][] diffusionMatrix =
-				translateMatrix(scope, GamaMatrixFactory.createFrom(scope, getFacetValue(scope, IKeyword.MATRIX)));
+				translateMatrix(scope, GamaMatrixFactory.castToMatrix(scope, getFacetValue(scope, IKeyword.MATRIX)));
 
 		final double[][] mask = computeMask(scope, rawMask);
 
@@ -377,7 +377,7 @@ public class DiffusionStatement extends AbstractStatement {
 			if (!(obj instanceof IDiffusionTarget)) {
 				// the diffusion is applied just to a certain part of the grid.
 				// Search the mask.
-				final IList<IAgent> ags = GamaListFactory.toList(scope, obj);
+				final IList<IAgent> ags = GamaListFactory.castToList(scope, obj);
 				if (!ags.isEmpty()) {
 					final ISpecies sp = ags.get(0).getSpecies();
 					if (!sp.isGrid())

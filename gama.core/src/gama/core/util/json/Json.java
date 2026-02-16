@@ -16,16 +16,16 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonArray;
-import gama.api.data.json.IJsonObject;
-import gama.api.data.json.IJsonValue;
-import gama.api.data.json.IJsonable;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.serialization.ISerialisedAgent;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonArray;
+import gama.api.utils.json.IJsonObject;
+import gama.api.utils.json.IJsonValue;
+import gama.api.utils.json.IJsonable;
 
 /**
  * This class serves as the entry point to the minimal-json API. It has been adapted to GAMA by A. Drogoul in 2023 to

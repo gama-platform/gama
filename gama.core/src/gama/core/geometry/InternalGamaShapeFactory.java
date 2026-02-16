@@ -10,17 +10,17 @@
  ********************************************************************************************************/
 package gama.core.geometry;
 
-import static gama.api.data.objects.IShape.Type.BOX;
-import static gama.api.data.objects.IShape.Type.CONE;
-import static gama.api.data.objects.IShape.Type.CUBE;
-import static gama.api.data.objects.IShape.Type.CYLINDER;
-import static gama.api.data.objects.IShape.Type.LINECYLINDER;
-import static gama.api.data.objects.IShape.Type.PLAN;
-import static gama.api.data.objects.IShape.Type.POLYHEDRON;
-import static gama.api.data.objects.IShape.Type.POLYPLAN;
-import static gama.api.data.objects.IShape.Type.PYRAMID;
-import static gama.api.data.objects.IShape.Type.SPHERE;
-import static gama.api.data.objects.IShape.Type.TEAPOT;
+import static gama.api.types.geometry.IShape.Type.BOX;
+import static gama.api.types.geometry.IShape.Type.CONE;
+import static gama.api.types.geometry.IShape.Type.CUBE;
+import static gama.api.types.geometry.IShape.Type.CYLINDER;
+import static gama.api.types.geometry.IShape.Type.LINECYLINDER;
+import static gama.api.types.geometry.IShape.Type.PLAN;
+import static gama.api.types.geometry.IShape.Type.POLYHEDRON;
+import static gama.api.types.geometry.IShape.Type.POLYPLAN;
+import static gama.api.types.geometry.IShape.Type.PYRAMID;
+import static gama.api.types.geometry.IShape.Type.SPHERE;
+import static gama.api.types.geometry.IShape.Type.TEAPOT;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,20 +34,20 @@ import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.util.GeometricShapeFactory;
 
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.factories.IShapeFactory;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
-import gama.api.data.objects.IShape.Type;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.geometry.IShapeFactory;
+import gama.api.types.geometry.IShape.Type;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
-import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.prefs.GamaPreferences;
 
 /**

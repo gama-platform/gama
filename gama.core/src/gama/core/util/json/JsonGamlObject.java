@@ -12,13 +12,13 @@ package gama.core.util.json;
 
 import java.io.IOException;
 
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonObject;
-import gama.api.data.objects.IMap;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.map.IMap;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonObject;
 
 /**
  * The Class JsonGamlObject.

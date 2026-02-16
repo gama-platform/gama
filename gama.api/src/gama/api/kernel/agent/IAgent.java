@@ -19,11 +19,6 @@ import gama.annotations.vars;
 import gama.annotations.support.ITypeProvider;
 import gama.api.compilation.IVarAndActionSupport;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.IType;
@@ -32,11 +27,16 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.IStepable;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.IScoped;
-import gama.api.utils.INamed;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
+import gama.api.types.topology.ITopology;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.interfaces.INamed;
 
 /**
  * Written by drogoul on Apr. 07, Modified on 24 oct. 2010, 05 Apr. 2013
@@ -487,7 +487,7 @@ public interface IAgent extends IShape, INamed, Comparable<IAgent>, IStepable, I
 	/**
 	 * Method isMultiple()
 	 *
-	 * @see gama.api.data.objects.core.metamodel.shape.IShape#isMultiple()
+	 * @see gama.api.types.geometry.core.metamodel.shape.IShape#isMultiple()
 	 */
 	@Override
 	default boolean isMultiple() { return getGeometry().isMultiple(); }

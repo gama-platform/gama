@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.extension.physics.common;
 
-import gama.api.data.objects.IPoint;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 
 /**
  * A class required because all the physics engines out there use different classes for their vectors :( A good

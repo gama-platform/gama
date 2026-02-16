@@ -13,17 +13,17 @@ package gama.core.util.path;
 import static gama.api.utils.geometry.GeometryUtils.getFirstPointOf;
 import static gama.api.utils.geometry.GeometryUtils.getLastPointOf;
 
-import gama.api.data.factories.IPathFactory;
-import gama.api.data.objects.IGraph;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPath;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.gaml.types.Types;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IGraph;
+import gama.api.types.graph.IPath;
+import gama.api.types.graph.IPathFactory;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.topology.ITopology;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.topology.graph.GraphTopology;
 
@@ -232,7 +232,7 @@ public class InternalGamaPathFactory implements IPathFactory {
 				final IList<IShape> list = GamaListFactory.create(Types.GEOMETRY);
 				boolean isEdges = true;
 				for (final Object p : ll) {
-					list.add(GamaPointFactory.toPoint(scope, p));
+					list.add(GamaPointFactory.castToPoint(scope, p));
 					if (isEdges && (!(p instanceof IShape s) || !s.isLine())) { isEdges = false; }
 				}
 				return createFrom(scope, isEdges ? lobj : list, isEdges);

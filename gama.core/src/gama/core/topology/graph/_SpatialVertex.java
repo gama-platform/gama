@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gama.core.topology.graph;
 
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph._Vertex;
 import gama.api.utils.StringUtils;
-import gama.api.utils.collections._Vertex;
 
 /**
  * The Class _SpatialVertex.

@@ -31,13 +31,13 @@ import gama.annotations.type;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
-import gama.api.data.objects.IDate;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.constants.GamlCoreUnits;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.date.GamaDateFactory;
+import gama.api.types.date.IDate;
+import gama.api.types.map.IMap;
 import gama.api.utils.StringUtils;
-import gama.api.utils.date.GamaDateFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.Pref;
 import gama.dev.DEBUG;
@@ -141,7 +141,7 @@ public class GamaDateType extends GamaType<IDate> {
 	@Override
 	public IDate cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
-		return GamaDateFactory.toDate(scope, obj, param, copy);
+		return GamaDateFactory.castToDate(scope, obj, param, copy);
 	}
 
 	@Override

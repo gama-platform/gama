@@ -17,12 +17,12 @@ import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.factories.GamaTopologyFactory;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.topology.GamaTopologyFactory;
+import gama.api.types.topology.ITopology;
 
 /**
  * The type topology.
@@ -73,7 +73,7 @@ public class GamaTopologyType extends GamaType<ITopology> {
 			see = { "geometry" })
 	public ITopology cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
-		return GamaTopologyFactory.createFrom(scope, obj, copy);
+		return GamaTopologyFactory.castToTopology(scope, obj, copy);
 	}
 
 	/**
@@ -100,7 +100,7 @@ public class GamaTopologyType extends GamaType<ITopology> {
 	@Override
 	public ITopology deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
 		return GamaTopologyFactory.createFrom(scope,
-				GamaShapeFactory.createFrom(scope, map2.get("environment"), false));
+				GamaShapeFactory.castToShape(scope, map2.get("environment"), false));
 	}
 
 }

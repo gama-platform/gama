@@ -13,8 +13,6 @@ package gama.headless.server;
 import org.java_websocket.WebSocket;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.simulation.AbstractExperimentController;
@@ -23,6 +21,8 @@ import gama.api.kernel.simulation.IExperimentStateListener;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
 import gama.api.utils.server.CommandResponse;
 import gama.api.utils.server.GamaServerExperimentConfiguration;
 import gama.api.utils.server.GamaServerMessage;

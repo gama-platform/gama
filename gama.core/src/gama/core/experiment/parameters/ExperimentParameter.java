@@ -37,9 +37,6 @@ import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IDate;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -57,10 +54,13 @@ import gama.api.gaml.types.Types;
 import gama.api.gaml.variables.Variable;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.date.GamaDateFactory;
-import gama.api.utils.date.GamaDateInterval;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.date.GamaDateFactory;
+import gama.api.types.date.GamaDateInterval;
+import gama.api.types.date.IDate;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
 import gama.core.experiment.parameters.ExperimentParameter.ExperimentParameterValidator;
 
 /**
@@ -662,22 +662,22 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 				}
 				case IType.POINT -> {
 					final IPoint pStep = stepValue == null ? GamaPointFactory.create(1, 1, 1)
-							: GamaPointFactory.toPoint(scope, stepValue);
+							: GamaPointFactory.castToPoint(scope, stepValue);
 					final IPoint pMin = minValue == null
 							? GamaPointFactory.create(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE)
-							: GamaPointFactory.toPoint(scope, minValue);
+							: GamaPointFactory.castToPoint(scope, minValue);
 					final IPoint pMax = maxValue == null
 							? GamaPointFactory.create(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE)
-							: GamaPointFactory.toPoint(scope, maxValue);
+							: GamaPointFactory.castToPoint(scope, maxValue);
 					yield GAMA.getRandom(scope).between(pMin, pMax, pStep);
 				}
 				case IType.DATE -> {
 					final double dStep = stepValue == null ? GamaDateType.DATES_TIME_STEP.getValue()
 							: Cast.asFloat(scope, stepValue);
 					final IDate dMin = minValue == null ? GamaDateFactory.createFromTemporal(LocalDateTime.now())
-							.minus(Integer.MAX_VALUE, ChronoUnit.SECONDS) : GamaDateFactory.toDate(scope, minValue);
+							.minus(Integer.MAX_VALUE, ChronoUnit.SECONDS) : GamaDateFactory.castToDate(scope, minValue);
 					final IDate dMax = maxValue == null ? GamaDateFactory.createFromTemporal(LocalDateTime.now())
-							.plus(Integer.MAX_VALUE, ChronoUnit.SECONDS) : GamaDateFactory.toDate(scope, maxValue);
+							.plus(Integer.MAX_VALUE, ChronoUnit.SECONDS) : GamaDateFactory.castToDate(scope, maxValue);
 					yield new GamaDateInterval(dMin, dMax, Duration.of((long) dStep, ChronoUnit.SECONDS))
 							.anyValue(scope);
 				}
@@ -723,14 +723,14 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 					break;
 				case IType.POINT:
 					final IPoint pStep = stepValue == null ? GamaPointFactory.create(1, 1, 1)
-							: GamaPointFactory.toPoint(scope, stepValue);
+							: GamaPointFactory.castToPoint(scope, stepValue);
 					final IPoint pMin = minValue == null
 							? GamaPointFactory.create(Double.MIN_VALUE, Double.MIN_VALUE, Double.MIN_VALUE)
-							: GamaPointFactory.toPoint(scope, minValue);
+							: GamaPointFactory.castToPoint(scope, minValue);
 					final IPoint pMax = maxValue == null
 							? GamaPointFactory.create(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE)
-							: GamaPointFactory.toPoint(scope, maxValue);
-					final IPoint pVal = GamaPointFactory.toPoint(scope, value(scope));
+							: GamaPointFactory.castToPoint(scope, maxValue);
+					final IPoint pVal = GamaPointFactory.castToPoint(scope, value(scope));
 					for (int i = -1; i <= 1; i++) {
 						for (int j = -1; j <= 1; j++) {
 							for (int k = -1; k <= 1; k++) {
@@ -760,11 +760,11 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 					final double dStep = stepValue == null ? GamaDateType.DATES_TIME_STEP.getValue()
 							: Cast.asFloat(scope, stepValue);
 					final IDate dMin = minValue == null ? GamaDateFactory.createFromTemporal(LocalDateTime.now())
-							.minus(Integer.MAX_VALUE, ChronoUnit.SECONDS) : GamaDateFactory.toDate(scope, minValue);
+							.minus(Integer.MAX_VALUE, ChronoUnit.SECONDS) : GamaDateFactory.castToDate(scope, minValue);
 					final IDate dMax = maxValue == null ? GamaDateFactory.createFromTemporal(LocalDateTime.now())
-							.plus(Integer.MAX_VALUE, ChronoUnit.SECONDS) : GamaDateFactory.toDate(scope, maxValue);
+							.plus(Integer.MAX_VALUE, ChronoUnit.SECONDS) : GamaDateFactory.castToDate(scope, maxValue);
 					Duration dd = Duration.of((long) dStep, ChronoUnit.SECONDS);
-					final IDate dVal = GamaDateFactory.toDate(scope, value(scope));
+					final IDate dVal = GamaDateFactory.castToDate(scope, value(scope));
 					if (dVal.isGreaterThan(dMin.plus(dd), false)) { neighborValues.add(dVal.minus(dd)); }
 					if (dVal.isSmallerThan(dMax.minus(dd), false)) { neighborValues.add(dVal.plus(dd)); }
 					break;
@@ -849,7 +849,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 	public List getAmongValue(final IScope scope) {
 		try {
 			if (scope != null) { scope.push(this); }
-			if (among != null) return GamaListFactory.toList(scope, among.value(scope));
+			if (among != null) return GamaListFactory.castToList(scope, among.value(scope));
 			return null;
 		} finally {
 			if (scope != null) { scope.pop(this); }

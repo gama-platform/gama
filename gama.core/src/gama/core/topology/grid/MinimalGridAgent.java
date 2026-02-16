@@ -11,18 +11,17 @@
 package gama.core.topology.grid;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IGridAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.color.GamaColor;
-import gama.api.utils.color.GamaColorFactory;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.core.agent.AbstractAgent;
 
 /**
@@ -52,7 +51,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 
 	@Override
 	public IColor getColor() {
-		if (population.getGrid().isHexagon) return (GamaColor) getAttribute(IKeyword.COLOR);
+		if (population.getGrid().isHexagon) return (IColor) getAttribute(IKeyword.COLOR);
 		return GamaColorFactory.get(population.getGrid().supportImagePixels[getIndex()]);
 	}
 
@@ -101,14 +100,14 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 
 	@Override
 	public IList<IAgent> getNeighbors(final IScope scope) {
-		return GamaListFactory.toList(scope,
+		return GamaListFactory.castToList(scope,
 				population.getGrid().getNeighborhood().getNeighborsIn(scope, getIndex(), 1));
 	}
 
 	/**
 	 * Method getPoints()
 	 *
-	 * @see gama.api.data.objects.IShape#getPoints()
+	 * @see gama.api.types.geometry.IShape#getPoints()
 	 */
 	@Override
 	public IList<IPoint> getPoints() { return geometry.getPoints(); }
@@ -121,7 +120,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	/**
 	 * Method getArea()
 	 *
-	 * @see gama.api.data.objects.IShape#getArea()
+	 * @see gama.api.types.geometry.IShape#getArea()
 	 */
 	@Override
 	public Double getArea() { return geometry.getArea(); }
@@ -129,7 +128,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	/**
 	 * Method getVolume()
 	 *
-	 * @see gama.api.data.objects.IShape#getVolume()
+	 * @see gama.api.types.geometry.IShape#getVolume()
 	 */
 	@Override
 	public Double getVolume() { return geometry.getVolume(); }
@@ -137,7 +136,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	/**
 	 * Method getPerimeter()
 	 *
-	 * @see gama.api.data.objects.IShape#getPerimeter()
+	 * @see gama.api.types.geometry.IShape#getPerimeter()
 	 */
 	@Override
 	public double getPerimeter() { return geometry.getPerimeter(); }
@@ -145,7 +144,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	/**
 	 * Method getHoles()
 	 *
-	 * @see gama.api.data.objects.IShape#getHoles()
+	 * @see gama.api.types.geometry.IShape#getHoles()
 	 */
 	@Override
 	public IList<IShape> getHoles() { return geometry.getHoles(); }
@@ -153,7 +152,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	/**
 	 * Method getCentroid()
 	 *
-	 * @see gama.api.data.objects.IShape#getCentroid()
+	 * @see gama.api.types.geometry.IShape#getCentroid()
 	 */
 	@Override
 	public IPoint getCentroid() { return geometry.getCentroid(); }
@@ -161,7 +160,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	/**
 	 * Method getExteriorRing()
 	 *
-	 * @see gama.api.data.objects.IShape#getExteriorRing(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.geometry.IShape#getExteriorRing(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IShape getExteriorRing(final IScope scope) {
@@ -171,7 +170,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	/**
 	 * Method getWidth()
 	 *
-	 * @see gama.api.data.objects.IShape#getWidth()
+	 * @see gama.api.types.geometry.IShape#getWidth()
 	 */
 	@Override
 	public Double getWidth() { return geometry.getWidth(); }
@@ -179,7 +178,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	/**
 	 * Method getHeight()
 	 *
-	 * @see gama.api.data.objects.IShape#getHeight()
+	 * @see gama.api.types.geometry.IShape#getHeight()
 	 */
 	@Override
 	public Double getHeight() { return geometry.getHeight(); }
@@ -187,7 +186,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	/**
 	 * Method getDepth()
 	 *
-	 * @see gama.api.data.objects.IShape#getDepth()
+	 * @see gama.api.types.geometry.IShape#getDepth()
 	 */
 	@Override
 	public Double getDepth() { return geometry.getDepth(); }
@@ -195,7 +194,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	/**
 	 * Method getGeometricEnvelope()
 	 *
-	 * @see gama.api.data.objects.IShape#getGeometricEnvelope()
+	 * @see gama.api.types.geometry.IShape#getGeometricEnvelope()
 	 */
 	@Override
 	public IShape getGeometricEnvelope() { return geometry.getGeometricEnvelope(); }
@@ -206,7 +205,7 @@ public class MinimalGridAgent extends AbstractAgent implements IGridAgent {
 	/**
 	 * Method isMultiple()
 	 *
-	 * @see gama.api.data.objects.IShape#isMultiple()
+	 * @see gama.api.types.geometry.IShape#isMultiple()
 	 */
 	@Override
 	public boolean isMultiple() { return geometry.isMultiple(); }

@@ -12,19 +12,20 @@ package gama.api.kernel.topology;
 import java.util.Map;
 import java.util.Set;
 
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMatrix;
-import gama.api.data.objects.IPath;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IAgentFilter;
-import gama.api.utils.IDiffusionTarget;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IPath;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.topology.ITopology;
+import gama.api.utils.interfaces.IAgentFilter;
+import gama.api.utils.interfaces.IDiffusionTarget;
 
 /**
  * Interface IGrid.

@@ -11,10 +11,10 @@
 package gama.extension.physics.common;
 
 import gama.api.compilation.descriptions.ISpeciesDescription;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.species.ISpecies;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
 
 /**
  * The Interface IBody.

@@ -36,7 +36,7 @@ import org.eclipse.ui.PartInitException;
 import com.google.common.primitives.Ints;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IColor;
+import gama.api.types.color.IColor;
 import gama.api.ui.IGamaView;
 import gama.api.ui.IGui;
 import gama.api.ui.IItemList;

@@ -9,10 +9,10 @@
  ********************************************************************************************************/
 package gama.api.utils.tests;
 
-import gama.api.data.objects.IColor;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IColored;
-import gama.api.utils.color.GamaColorFactory;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.utils.interfaces.IColored;
 
 /**
  * The Enum TestState.

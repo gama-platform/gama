@@ -44,7 +44,7 @@ import gama.api.runtime.SystemInfo;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IDisplayData.Changes;
 import gama.api.ui.displays.IDisplayData.DisplayDataListener;
-import gama.api.utils.IDisposable;
+import gama.api.utils.interfaces.IDisposable;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.dev.STRINGS;

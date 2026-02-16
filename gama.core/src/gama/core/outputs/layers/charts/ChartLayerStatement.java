@@ -29,10 +29,6 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IFont;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
@@ -42,9 +38,13 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.IList;
 import gama.api.ui.IOutput;
-import gama.api.utils.color.GamaColorFactory;
-import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.layers.AbstractLayerStatement;
 
@@ -684,7 +684,7 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		}
 		expr = getFacet(IKeyword.ANCHOR);
 		if (expr != null) {
-			final IPoint pt = GamaPointFactory.toPoint(scope, expr.value(scope));
+			final IPoint pt = GamaPointFactory.castToPoint(scope, expr.value(scope));
 			chartOutput.setSeriesLabelAnchor(scope, pt);
 		}
 

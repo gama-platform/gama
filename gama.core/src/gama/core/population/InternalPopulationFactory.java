@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.core.population;
 
-import gama.api.data.factories.GamaTopologyFactory;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IGridAgent;
 import gama.api.kernel.agent.IMacroAgent;
@@ -18,8 +17,9 @@ import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.agent.IPopulationFactory;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.ISpecies;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.topology.GamaTopologyFactory;
+import gama.api.types.topology.ITopology;
 import gama.core.topology.grid.GamaSpatialMatrix;
 import gama.core.topology.grid.GridPopulation;
 

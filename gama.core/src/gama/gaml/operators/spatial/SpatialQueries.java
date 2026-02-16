@@ -24,18 +24,18 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
 import gama.annotations.support.Reason;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IShape;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IAgentFilter;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
+import gama.api.types.topology.ITopology;
+import gama.api.utils.interfaces.IAgentFilter;
 import gama.core.topology.AbstractTopology;
 import gama.core.topology.filter.Different;
 import gama.core.topology.filter.In;
@@ -934,7 +934,7 @@ public class SpatialQueries {
 		if (filter == null || source == null) return GamaListFactory.getEmptyList();
 		final IType type = filter.getSpecies() == null ? Types.AGENT : scope.getType(filter.getSpecies().getName());
 		return GamaListFactory.wrap(type, scope.getTopology().getAgentsIn(scope,
-				GamaShapeFactory.createFrom(scope, source, false), filter, relation));
+				GamaShapeFactory.castToShape(scope, source, false), filter, relation));
 	}
 
 	/**
@@ -952,7 +952,7 @@ public class SpatialQueries {
 		if (filter == null || source == null) return null;
 		ITopology topology = scope.getTopology();
 		if (topology == null) return null;
-		return topology.getAgentClosestTo(scope, GamaShapeFactory.createFrom(scope, source, false), filter);
+		return topology.getAgentClosestTo(scope, GamaShapeFactory.castToShape(scope, source, false), filter);
 	}
 
 	/**
@@ -973,7 +973,7 @@ public class SpatialQueries {
 		if (filter == null || source == null) return null;
 		final IType type = filter.getSpecies() == null ? Types.AGENT : scope.getType(filter.getSpecies().getName());
 		return GamaListFactory.wrap(type, scope.getTopology().getAgentClosestTo(scope,
-				GamaShapeFactory.createFrom(scope, source, false), filter, number));
+				GamaShapeFactory.castToShape(scope, source, false), filter, number));
 	}
 
 	/**
@@ -989,7 +989,7 @@ public class SpatialQueries {
 	 */
 	private static IAgent _farthest(final IScope scope, final IAgentFilter filter, final Object source) {
 		if (filter == null || source == null) return null;
-		return scope.getTopology().getAgentFarthestTo(scope, GamaShapeFactory.createFrom(scope, source, false), filter);
+		return scope.getTopology().getAgentFarthestTo(scope, GamaShapeFactory.castToShape(scope, source, false), filter);
 	}
 
 	/**
@@ -1029,7 +1029,7 @@ public class SpatialQueries {
 			final Object distance, final ITopology t) {
 		if (filter == null || source == null) return GamaListFactory.getEmptyList();
 		final IType type = filter.getSpecies() == null ? Types.AGENT : scope.getType(filter.getSpecies().getName());
-		return GamaListFactory.wrap(type, t.getNeighborsOf(scope, GamaShapeFactory.createFrom(scope, source, false),
+		return GamaListFactory.wrap(type, t.getNeighborsOf(scope, GamaShapeFactory.castToShape(scope, source, false),
 				Cast.asFloat(scope, distance), filter));
 	}
 

@@ -11,20 +11,20 @@
 package gama.core.outputs.layers;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IField;
-import gama.api.data.objects.IMatrix;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.layers.ILayerStatement;
-import gama.api.utils.IImageProvider;
-import gama.api.utils.color.GamaColorFactory;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.interfaces.IImageProvider;
 
 /**
  * The Class MeshLayerData.
@@ -96,7 +96,7 @@ public class MeshLayerData extends LayerData {
 		size = create(IKeyword.SIZE, (scope, exp) -> {
 			Object result = exp.value(scope);
 			if (result instanceof Number) return GamaPointFactory.create(1, 1, ((Number) result).doubleValue());
-			return GamaPointFactory.toPoint(scope, result);
+			return GamaPointFactory.castToPoint(scope, result);
 		}, Types.POINT, GamaPointFactory.create(1, 1, 1));
 		line = create(IKeyword.BORDER, Types.COLOR, null);
 		elevation = create(IKeyword.SOURCE, (scope, exp) -> {
@@ -143,7 +143,7 @@ public class MeshLayerData extends LayerData {
 	 */
 	private IField buildValues(final IScope scope, final Object from) {
 		if (values == null || shouldComputeValues) {
-			values = GamaMatrixFactory.createFieldFrom(scope, from);
+			values = GamaMatrixFactory.castToField(scope, from);
 			dim.setLocation(values.getCols(scope), values.getRows(scope), 0);
 		}
 		return values;

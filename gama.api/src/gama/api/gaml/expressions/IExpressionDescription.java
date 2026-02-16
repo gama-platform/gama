@@ -16,8 +16,8 @@ import org.eclipse.emf.ecore.EObject;
 
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.gaml.types.IType;
-import gama.api.utils.IDisposable;
-import gama.api.utils.IGamlable;
+import gama.api.utils.interfaces.IDisposable;
+import gama.api.utils.interfaces.IGamlable;
 
 /**
  * The class IExpressionDescription.

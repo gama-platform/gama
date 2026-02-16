@@ -24,10 +24,6 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
@@ -39,7 +35,11 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
 import gama.gaml.operators.spatial.SpatialQueries;
 import gama.gaml.statements.RemoteSequence;
 
@@ -227,7 +227,7 @@ public class PerceiveStatement extends AbstractStatementSequence {
 		}
 		if (inArg instanceof gama.api.gaml.types.GamaGeometryType || inArg instanceof IShape) {
 			IList temp = GamaListFactory.create();
-			final IShape geom = GamaShapeFactory.createFrom(scope, inArg, false);
+			final IShape geom = GamaShapeFactory.castToShape(scope, inArg, false);
 			if (obj instanceof IContainer container) {
 				temp = SpatialQueries.overlapping(scope, container, geom);
 			} else if (obj instanceof IAgent agent && geom.intersects(agent)) { temp.add(obj); }

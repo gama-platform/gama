@@ -21,12 +21,12 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaTopologyFactory;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;
 import gama.api.gaml.types.IType;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.topology.GamaTopologyFactory;
+import gama.api.types.topology.ITopology;
 
 /**
  * "using" is a statement that allows to set the topology to use by its sub-statements. They can gather it by asking the
@@ -97,7 +97,7 @@ public class UsingStatement extends AbstractStatementSequence {
 	@Override
 	public void enterScope(final IScope scope) {
 		super.enterScope(scope);
-		final ITopology topo = GamaTopologyFactory.createFrom(scope, topology.value(scope));
+		final ITopology topo = GamaTopologyFactory.castToTopology(scope, topology.value(scope));
 		if (topo != null) { previous.set(scope.setTopology(topo)); }
 	}
 

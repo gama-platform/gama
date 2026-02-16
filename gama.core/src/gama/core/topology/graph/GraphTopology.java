@@ -20,23 +20,23 @@ import java.util.Set;
 
 import com.google.common.collect.Ordering;
 
-import gama.api.data.factories.GamaPathFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPath;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.topology.ISpatialGraph;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IAgentFilter;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.GamaPathFactory;
+import gama.api.types.graph.IPath;
+import gama.api.types.graph.ISpatialGraph;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
+import gama.api.types.topology.ITopology;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.ICollector;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.interfaces.IAgentFilter;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.topology.AbstractTopology;
 import gama.core.topology.filter.In;
@@ -777,7 +777,7 @@ public class GraphTopology extends AbstractTopology {
 	}
 
 	/**
-	 * @see gama.api.data.objects.interfaces.IValue#stringValue()
+	 * @see gama.api.types.misc.interfaces.IValue#stringValue()
 	 */
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {

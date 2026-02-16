@@ -82,6 +82,21 @@ public interface Constants {
 	 */
 	String ISkillClassName = "gama.api.kernel.skill.ISkill";
 
+	/** The I display surface class name. */
+	String IDisplaySurfaceClassName = "gama.api.ui.displays.IDisplaySurface";
+
+	/** The I experiment agent class name. */
+	String IExperimentAgentClassName = "gama.api.kernel.simulation.IExperimentAgent";
+
+	/** The I gama file class name. */
+	String IGamaFileClassName = "gama.api.types.file.IGamaFile";
+
+	/** The I agent class name. */
+	String IAgentClassName = "gama.api.kernel.agent.IAgent";
+
+	/** The I symbol class name. */
+	String ISymbolClassName = "gama.api.gaml.symbols.ISymbol";
+
 	/** The Constant PRODUCES_DOC. */
 	boolean PRODUCES_DOC = true;
 
@@ -96,21 +111,6 @@ public interface Constants {
 
 	/** The Constant PRODUCES_WARNING. */
 	boolean PRODUCES_WARNING = true;
-
-	/** The I display surface class name. */
-	String IDisplaySurfaceClassName = "gama.api.ui.displays.IDisplaySurface";
-
-	/** The I experiment agent class name. */
-	String IExperimentAgentClassName = "gama.api.kernel.simulation.IExperimentAgent";
-
-	/** The I gama file class name. */
-	String IGamaFileClassName = "gama.api.utils.files.IGamaFile";
-
-	/** The I agent class name. */
-	String IAgentClassName = "gama.api.kernel.agent.IAgent";
-
-	/** The I symbol class name. */
-	String ISymbolClassName = "gama.api.gaml.symbols.ISymbol";
 
 	/**
 	 * Gets the i skill.
@@ -269,20 +269,22 @@ public interface Constants {
 	String[] INDIVIDUAL_IMPORTS = {};
 
 	/** The star imports. */
-	Set<String> COLLECTIVE_IMPORTS = Stream.of("java.util", "java.lang", "gama.api", "gama.api.additions",
+	Set<String> COLLECTIVE_IMPORTS = Stream.of("java.util", "java.lang", "gama.api", "gama.api", "gama.api.additions",
 			"gama.api.additions.delegates", "gama.api.additions.registries", "gama.api.annotations",
 			"gama.api.compilation", "gama.api.compilation.ast", "gama.api.compilation.descriptions",
 			"gama.api.compilation.documentation", "gama.api.compilation.factories", "gama.api.compilation.prototypes",
 			"gama.api.compilation.serialization", "gama.api.compilation.validation", "gama.api.constants",
-			"gama.api.data.csv", "gama.api.data.factories", "gama.api.data.json", "gama.api.data.objects",
 			"gama.api.exceptions", "gama.api.gaml", "gama.api.gaml.constants", "gama.api.gaml.expressions",
 			"gama.api.gaml.species", "gama.api.gaml.statements", "gama.api.gaml.symbols", "gama.api.gaml.types",
 			"gama.api.gaml.variables", "gama.api.kernel", "gama.api.kernel.agent", "gama.api.kernel.serialization",
 			"gama.api.kernel.simulation", "gama.api.kernel.skill", "gama.api.kernel.species",
-			"gama.api.kernel.topology", "gama.api.runtime", "gama.api.runtime.scope", "gama.api.ui",
-			"gama.api.ui.displays", "gama.api.ui.layers", "gama.api.utils", "gama.api.utils.benchmark",
-			"gama.api.utils.collections", "gama.api.utils.files", "gama.api.utils.geometry", "gama.api.utils.list",
-			"gama.api.utils.map", "gama.api.utils.prefs", "gama.api.utils.random", "gama.api.utils.server",
+			"gama.api.kernel.topology", "gama.api.runtime", "gama.api.runtime.scope", "gama.api.types.color",
+			"gama.api.types.date", "gama.api.types.file", "gama.api.types.font", "gama.api.types.geometry",
+			"gama.api.types.graph", "gama.api.types.list", "gama.api.types.map", "gama.api.types.matrix",
+			"gama.api.types.message", "gama.api.types.misc", "gama.api.types.pair", "gama.api.types.topology",
+			"gama.api.ui", "gama.api.ui.displays", "gama.api.ui.layers", "gama.api.utils", "gama.api.utils.benchmark",
+			"gama.api.utils.collections", "gama.api.utils.files", "gama.api.utils.geometry",
+			"gama.api.utils.interfaces", "gama.api.utils.prefs", "gama.api.utils.random", "gama.api.utils.server",
 			"gama.api.utils.tests").map(s -> s + ".").collect(Collectors.toSet());
 
 	/** The static star imports. */

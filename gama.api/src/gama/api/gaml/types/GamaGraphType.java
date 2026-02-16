@@ -14,10 +14,10 @@ import gama.annotations.type;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaGraphFactory;
-import gama.api.data.objects.IGraph;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.graph.GamaGraphFactory;
+import gama.api.types.graph.IGraph;
 
 /**
  * The Class GamaGraphType.
@@ -46,7 +46,7 @@ public class GamaGraphType extends GamaContainerType<IGraph> {
 	@Override
 	public IGraph cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentsType, final boolean copy) throws GamaRuntimeException {
-		return GamaGraphFactory.createFrom(scope, obj, param, copy);
+		return GamaGraphFactory.castToGraph(scope, obj, param, copy);
 	}
 
 	@Override

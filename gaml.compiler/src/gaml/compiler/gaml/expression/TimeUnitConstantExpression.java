@@ -13,9 +13,9 @@ package gaml.compiler.gaml.expression;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
-import gama.api.data.objects.IDate;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.date.IDate;
 
 /**
  * Class UnitConstantExpression.

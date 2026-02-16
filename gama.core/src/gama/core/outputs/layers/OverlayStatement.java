@@ -23,15 +23,15 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.api.ui.IOutput;
-import gama.api.utils.color.GamaColorFactory;
-import gama.api.utils.list.GamaListFactory;
 
 /**
  * The Class OverlayStatement.
@@ -126,7 +126,7 @@ public class OverlayStatement extends GraphicLayerStatement {
 			final int[] rgb = computeColor(scope, color.value(scope));
 			return Arrays.asList(rgb, rgb, rgb);
 		}
-		final IList<?> list = GamaListFactory.toList(scope, color.value(scope));
+		final IList<?> list = GamaListFactory.castToList(scope, color.value(scope));
 		final List<int[]> result = new ArrayList<>();
 		int i = 0;
 		for (final Object o : list) {

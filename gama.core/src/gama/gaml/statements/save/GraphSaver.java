@@ -16,12 +16,12 @@ import java.util.Set;
 
 import org.jgrapht.nio.GraphExporter;
 
-import gama.api.data.factories.GamaGraphFactory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.graph.GamaGraphFactory;
 import gama.api.utils.files.SaveOptions;
 import gama.core.util.graph.GraphExporters;
 
@@ -46,7 +46,7 @@ public class GraphSaver extends AbstractSaver {
 	@SuppressWarnings ("unchecked")
 	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions) {
 		GraphExporter<?, ?> exp = GraphExporters.getGraphWriter(saveOptions.type);
-		final var g = GamaGraphFactory.createFrom(scope, item, null, false);
+		final var g = GamaGraphFactory.castToGraph(scope, item, null, false);
 		if (g != null) {
 			if (exp == null)
 				throw GamaRuntimeException.error("Format is not recognized ('" + saveOptions.type + "')", scope);

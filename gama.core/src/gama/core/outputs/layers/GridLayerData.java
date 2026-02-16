@@ -14,9 +14,6 @@ import java.awt.image.BufferedImage;
 import java.util.Collection;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -24,11 +21,14 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.topology.IGrid;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.layers.ILayerStatement;
-import gama.api.utils.IImageProvider;
-import gama.api.utils.color.GamaColorFactory;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.topology.grid.GridPopulation;
 import gama.core.util.matrix.GamaFloatMatrix;
@@ -106,7 +106,7 @@ public class GridLayerData extends LayerData {
 			if (exp != null) {
 				switch (exp.getGamlType().id()) {
 					case IType.MATRIX:
-						return GamaFloatMatrix.from(scope, GamaMatrixFactory.createFrom(scope, exp.value(scope)))
+						return GamaFloatMatrix.from(scope, GamaMatrixFactory.castToMatrix(scope, exp.value(scope)))
 								.getMatrix();
 					case IType.FLOAT:
 					case IType.INT:

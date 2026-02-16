@@ -10,16 +10,16 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerData;
 import gama.api.ui.layers.ILayerStatement;
-import gama.api.utils.list.GamaListFactory;
 import gama.dev.DEBUG;
 
 /**

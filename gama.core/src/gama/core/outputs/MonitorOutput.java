@@ -26,9 +26,6 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.csv.CsvWriter;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IValue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -36,13 +33,15 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.misc.IValue;
 import gama.api.ui.IExperimentDisplayable;
 import gama.api.ui.IGui;
 import gama.api.ui.IItemList;
-import gama.api.utils.color.GamaColor;
-import gama.api.utils.color.GamaColorFactory;
+import gama.api.utils.csv.CsvWriter;
 import gama.api.utils.files.FileUtils;
-import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.gaml.operators.Files;
 
@@ -143,7 +142,7 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 	 * @param gamaColor
 	 *            the new color
 	 */
-	public void setColor(final GamaColor gamaColor) {
+	public void setColor(final IColor gamaColor) {
 		color = gamaColor;
 		constantColor = gamaColor;
 		colorExpression = GAML.getExpressionFactory().createConst(gamaColor, Types.COLOR);

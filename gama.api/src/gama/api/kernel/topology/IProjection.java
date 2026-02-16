@@ -11,8 +11,8 @@ package gama.api.kernel.topology;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.api.data.objects.IEnvelope;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  * Class IProjection.

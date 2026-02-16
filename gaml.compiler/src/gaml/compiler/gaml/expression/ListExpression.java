@@ -21,16 +21,16 @@ import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.prototypes.IArtefactProto;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IOperator;
 import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.api.utils.GamlProperties;
 import gama.api.utils.collections.ICollector;
-import gama.api.utils.list.GamaListFactory;
 
 /**
  * ListValueExpr.

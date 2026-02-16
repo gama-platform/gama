@@ -42,6 +42,7 @@ import gama.api.exceptions.GamaRuntimeFileException;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.file.GamaFolderFile;
 import gama.api.ui.IStatusMessage;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dependencies.webb.Webb;

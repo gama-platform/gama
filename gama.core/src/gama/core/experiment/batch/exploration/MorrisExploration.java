@@ -34,8 +34,6 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.IParameter.Batch;
@@ -45,8 +43,10 @@ import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExploration;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
 import gama.api.utils.files.FileUtils;
-import gama.api.utils.list.GamaListFactory;
 import gama.core.experiment.parameters.ParameterAdapter;
 import gama.core.experiment.parameters.ParametersSet;
 
@@ -229,11 +229,11 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		List<Object> morris_samplings = MorrisSampling.makeMorrisSampling(nb_levels, this.sample, parameters, scope);
 
 		// Design sample to be used by Morris
-		this.samples = GamaListFactory.toList(scope, morris_samplings.get(0));
+		this.samples = GamaListFactory.castToList(scope, morris_samplings.get(0));
 		momo = new Morris(this.samples, this.nb_levels);
 
 		// Same sample to execute in Gama experiment
-		return GamaListFactory.toList(scope, morris_samplings.get(1));
+		return GamaListFactory.castToList(scope, morris_samplings.get(1));
 	}
 
 	@Override

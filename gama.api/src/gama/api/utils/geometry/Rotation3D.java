@@ -14,7 +14,8 @@ import java.io.Serializable;
 
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.api.data.objects.IPoint;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 
 /**
  * This class implements rotations in a three-dimensional space. A reimplementation of class Rotation of the Apache

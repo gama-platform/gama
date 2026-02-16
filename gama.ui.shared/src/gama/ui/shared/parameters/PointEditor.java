@@ -33,15 +33,15 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.utils.StringUtils;
-import gama.api.utils.geometry.GamaPointFactory;
 import gama.ui.shared.interfaces.EditorListener;
 
 /**
@@ -184,9 +184,9 @@ public class PointEditor extends AbstractEditor<IPoint> implements VerifyListene
 
 	@Override
 	protected boolean modifyValue(final Object val) throws GamaRuntimeException {
-		IPoint i = GamaPointFactory.toPoint(getScope(), val);
-		if (minValue != null && i.smallerThan(GamaPointFactory.toPoint(getScope(), minValue))
-				|| getMaxValue() != null && i.biggerThan(GamaPointFactory.toPoint(getScope(), getMaxValue())))
+		IPoint i = GamaPointFactory.castToPoint(getScope(), val);
+		if (minValue != null && i.smallerThan(GamaPointFactory.castToPoint(getScope(), minValue))
+				|| getMaxValue() != null && i.biggerThan(GamaPointFactory.castToPoint(getScope(), getMaxValue())))
 			return false;
 		return super.modifyValue(i);
 	}

@@ -46,10 +46,10 @@ import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentAgentCreator;
 import gama.api.kernel.simulation.IExperimentAgentCreator.ExperimentAgentDescription;
+import gama.api.types.file.IGamaFile;
 import gama.api.ui.displays.DisplayDescription;
 import gama.api.ui.displays.IDisplayCreator;
 import gama.api.ui.displays.IDisplaySurface;
-import gama.api.utils.files.IGamaFile;
 
 /**
  *

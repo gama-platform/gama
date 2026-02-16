@@ -16,14 +16,14 @@ import java.nio.file.Path;
 
 import gama.api.constants.IKeyword;
 import gama.api.constants.ISerialisationConstants;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.files.GamaFile;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.file.GamaFile;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.utils.geometry.IEnvelope;
 import gama.annotations.doc;
 import gama.annotations.file;
 import gama.annotations.support.IConcept;

@@ -19,8 +19,8 @@ import org.eclipse.ui.navigator.CommonActionProvider;
 import org.eclipse.ui.navigator.ICommonActionExtensionSite;
 
 import gama.api.GAMA;
+import gama.api.types.file.IGamaFile;
 import gama.api.utils.files.FileUtils;
-import gama.api.utils.files.IGamaFile;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.gaml.operators.Files;
 import gama.ui.navigator.view.contents.WrappedExperimentContent;

@@ -15,8 +15,8 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
 
-import gama.api.data.objects.IShape;
 import gama.api.kernel.agent.IAgent;
+import gama.api.types.geometry.IShape;
 
 /**
  * The Class AgentSpliterator.

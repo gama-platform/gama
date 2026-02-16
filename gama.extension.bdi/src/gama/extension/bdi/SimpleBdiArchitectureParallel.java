@@ -25,7 +25,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.list.GamaListFactory;
 import gama.gaml.operators.Maths;
 
 /**
@@ -140,7 +140,7 @@ public class SimpleBdiArchitectureParallel extends SimpleBdiArchitecture {
 	public void preStep(final IScope scope, final IPopulation<? extends IAgent> gamaPopulation) {
 		final IExpression schedule = gamaPopulation.getSpecies().getSchedule();
 		final List<? extends IAgent> agents =
-				schedule == null ? gamaPopulation : GamaListFactory.toList(scope, schedule.value(scope));
+				schedule == null ? gamaPopulation : GamaListFactory.castToList(scope, schedule.value(scope));
 
 		GamaExecutorService.execute(scope, new UpdateLifeTimePredicates(null), agents, parallel);
 		GamaExecutorService.execute(scope, new UpdateEmotionsIntensity(null), agents, parallel);

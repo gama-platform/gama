@@ -10,12 +10,12 @@
  ********************************************************************************************************/
 package gama.extension.physics.gaml;
 
-import gama.api.data.objects.IPoint;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.annotations.action;
 import gama.annotations.arg;
 import gama.annotations.doc;
@@ -268,13 +268,13 @@ public class DynamicBodySkill extends StaticBodySkill {
 			body.setAngularVelocity(null);
 			return this;
 		}
-		IPoint impulse = GamaPointFactory.toPoint(scope, scope.getArg(IMPULSE, IType.POINT));
+		IPoint impulse = GamaPointFactory.castToPoint(scope, scope.getArg(IMPULSE, IType.POINT));
 		if (impulse != null) { body.applyImpulse(impulse); }
 
-		IPoint force = GamaPointFactory.toPoint(scope, scope.getArg(FORCE, IType.POINT));
+		IPoint force = GamaPointFactory.castToPoint(scope, scope.getArg(FORCE, IType.POINT));
 		if (force != null) { body.applyForce(force); }
 
-		IPoint torque = GamaPointFactory.toPoint(scope, scope.getArg(TORQUE, IType.POINT));
+		IPoint torque = GamaPointFactory.castToPoint(scope, scope.getArg(TORQUE, IType.POINT));
 		if (torque != null) { body.applyTorque(torque); }
 
 		return this;

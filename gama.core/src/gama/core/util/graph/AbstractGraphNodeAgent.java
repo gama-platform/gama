@@ -30,8 +30,8 @@ import gama.api.kernel.agent.IGraphAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.collections.IGraphEventProvider;
-import gama.api.utils.collections.VertexRelationship;
+import gama.api.types.graph.IGraphEventProvider;
+import gama.api.types.graph.VertexRelationship;
 import gama.core.agent.GamlAgent;
 import gama.dev.DEBUG;
 

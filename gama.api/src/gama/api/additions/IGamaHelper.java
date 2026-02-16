@@ -13,7 +13,7 @@ import gama.api.compilation.IVarAndActionSupport;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.INamed;
+import gama.api.utils.interfaces.INamed;
 
 /**
  * Written by drogoul Modified on 14 ao�t 2010. Modified on 23 Apr. 2013. A general purpose helper that can be

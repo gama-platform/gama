@@ -13,13 +13,13 @@ package gama.api.additions.delegates;
 import java.util.List;
 import java.util.Map;
 
-import gama.api.data.objects.IList;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
 
 /**
  * Class ICreateDelegate. Allows to create agents from other sources than the ones used in the tradition 'create'

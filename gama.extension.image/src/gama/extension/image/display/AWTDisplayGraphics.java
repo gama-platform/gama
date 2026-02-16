@@ -52,18 +52,18 @@ import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Lineal;
 import org.locationtech.jts.geom.Puntal;
 
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IField;
-import gama.api.data.objects.IShape;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.matrix.IField;
 import gama.api.ui.displays.IAsset;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
-import gama.api.utils.IImageProvider;
-import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.core.outputs.layers.OverlayLayer;
 import gama.core.util.file.GamaGeometryFile;
@@ -228,7 +228,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		final IScope scope = surface.getScope();
 		if (file instanceof IImageProvider im) return drawImage(im.getImage(scope, attributes.useCache()), attributes);
 		if (!(file instanceof GamaGeometryFile)) return null;
-		IShape shape = GamaShapeFactory.createFrom(scope, file, false);
+		IShape shape = GamaShapeFactory.castToShape(scope, file, false);
 		if (shape == null) return null;
 		final AxisAngle rotation = attributes.getRotation();
 		shape = GamaShapeFactory.createFrom(shape).withRotation(rotation).withLocation(attributes.getLocation())

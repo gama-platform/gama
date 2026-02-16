@@ -25,11 +25,11 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.IGamaGetter;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IContainer;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.files.GamaFolderFile;
-import gama.api.utils.files.IGamaFile;
+import gama.api.types.file.GamaFolderFile;
+import gama.api.types.file.IGamaFile;
+import gama.api.types.misc.IContainer;
 
 /**
  * Written by drogoul Modified on 1st Aug. 2010 Modified on 30 Dec. 2013

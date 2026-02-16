@@ -15,10 +15,10 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Polygon;
 
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
 
 // import org.opengis.geometry.MismatchedDimensionException;
 
@@ -31,6 +31,11 @@ import gama.api.data.objects.IShape;
  *
  */
 public class GamaEnvelope extends Envelope implements IEnvelope {
+
+	/**
+	 * Instantiates a new gama envelope.
+	 */
+	GamaEnvelope() {}
 
 	@Override
 	public void dispose() {

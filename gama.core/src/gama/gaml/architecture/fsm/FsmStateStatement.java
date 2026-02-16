@@ -33,7 +33,6 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.validation.Assert;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -43,7 +42,8 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 import gama.gaml.architecture.fsm.FsmStateStatement.StateValidator;
 
 /**

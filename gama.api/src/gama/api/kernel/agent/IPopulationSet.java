@@ -12,9 +12,9 @@ package gama.api.kernel.agent;
 
 import java.util.Collection;
 
-import gama.api.data.objects.IContainer;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IAgentFilter;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.interfaces.IAgentFilter;
 import one.util.streamex.StreamEx;
 
 /**

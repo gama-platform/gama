@@ -25,21 +25,21 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.annotations.depends_on;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
-import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.geometry.IEnvelope;
 import gama.gaml.operators.Maths;
 
 /**
@@ -2383,7 +2383,7 @@ public class SpatialCreation {
 	@no_test
 	public static IShape around(final IScope scope, final Double width, final Object toBeCastedIntoGeometry)
 			throws GamaRuntimeException {
-		final IShape g = GamaShapeFactory.createFrom(scope, toBeCastedIntoGeometry, false);
+		final IShape g = GamaShapeFactory.castToShape(scope, toBeCastedIntoGeometry, false);
 		if (g == null) return circle(scope, width);
 		return SpatialOperators.minus(scope, SpatialTransformations.enlarged_by(scope, g, width), g);
 	}
@@ -2446,7 +2446,7 @@ public class SpatialCreation {
 
 	)
 	public static IShape envelope(final IScope scope, final Object obj) {
-		IEnvelope env = GamaEnvelopeFactory.of(GamaEnvelopeFactory.computeEnvelopeFrom(scope, obj));
+		IEnvelope env = GamaEnvelopeFactory.of(GamaEnvelopeFactory.castToEnvelope(scope, obj));
 		try {
 			if (env.isNull()) { env = GamaEnvelopeFactory.of(0, 100, 0, 100, 0, 100); }
 			return GamaShapeFactory.buildBox(env.getWidth(), env.getHeight(), env.getDepth(), env.center());

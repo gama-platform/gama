@@ -15,10 +15,10 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.GamaSkillRegistry;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.skill.ISkill;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.map.IMap;
 
 /**
  * The type used for representing species objects (since they can be manipulated in a model)

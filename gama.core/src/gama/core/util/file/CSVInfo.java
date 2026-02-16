@@ -19,9 +19,9 @@ import org.eclipse.core.resources.IFile;
 
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.data.csv.CsvReader;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
+import gama.api.utils.csv.CsvReader;
 import gama.api.utils.files.AbstractFileMetaData;
 
 /**

@@ -15,21 +15,19 @@ import org.osgi.framework.BundleContext;
 import gama.api.GAMA;
 import gama.api.additions.GamaBundleLoader;
 import gama.api.additions.registries.AgentConstructorsRegistry;
-import gama.api.data.factories.GamaFontFactory;
-import gama.api.data.factories.GamaGraphFactory;
-import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.factories.GamaMessageFactory;
-import gama.api.data.factories.GamaPairFactory;
-import gama.api.data.factories.GamaPathFactory;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.factories.GamaTopologyFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.graph.GamaGraphFactory;
+import gama.api.types.graph.GamaPathFactory;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.message.GamaMessageFactory;
+import gama.api.types.pair.GamaPairFactory;
+import gama.api.types.topology.GamaTopologyFactory;
 import gama.core.agent.GamlAgent;
 import gama.core.agent.MinimalAgent;
 import gama.core.geometry.InternalGamaShapeFactory;
 import gama.core.topology.InternalTopologyFactory;
 import gama.core.topology.grid.GamlGridAgent;
 import gama.core.topology.grid.MinimalGridAgent;
-import gama.core.util.InternalGamaFontFactory;
 import gama.core.util.InternalGamaPairFactory;
 import gama.core.util.graph.InternalGamaGraphFactory;
 import gama.core.util.json.Json;
@@ -158,9 +156,9 @@ public class CoreActivator extends GamaBundleActivator {
 	 * </p>
 	 *
 	 * <p>
-	 * <strong>Critical Note:</strong> This method must be called before any GAMA data types are instantiated, as the
-	 * platform relies on these factories for object creation. The initialization order within this method is not
-	 * critical as factories are independent.
+	 * <strong>Note:</strong> This method must be called before any GAMA data types are instantiated, as the platform
+	 * relies on these factories for object creation. Most of the factories have now been moved to gama.api, making this
+	 * requirement less important.
 	 * </p>
 	 *
 	 * @see gama.api.data.factories for the abstract factory interfaces
@@ -185,7 +183,7 @@ public class CoreActivator extends GamaBundleActivator {
 		// Only here to load the class and its preferences
 		Dates.initialize();
 		// GamaDateFactory.setBuilder(new InternalGamaDateFactory());
-		GamaFontFactory.setBuilder(new InternalGamaFontFactory());
+		// GamaFontFactory.setBuilder(new InternalGamaFontFactory());
 
 		// Graph and network factories
 		GamaGraphFactory.setBuilder(new InternalGamaGraphFactory());

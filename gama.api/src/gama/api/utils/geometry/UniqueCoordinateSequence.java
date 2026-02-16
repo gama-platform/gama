@@ -17,11 +17,10 @@ import org.locationtech.jts.geom.Envelope;
 
 import com.google.common.collect.Iterators;
 
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonArray;
-import gama.api.data.objects.ICoordinates;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IPoint;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonArray;
 
 /**
  * A 'sequence' of points containing an unique point.

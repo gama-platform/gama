@@ -18,12 +18,12 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.validation.IOperatorValidator;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.map.IMap;
 
 /**
  * Written by drogoul Modified on 1 ao�t 2010
@@ -59,7 +59,7 @@ public class GamaPointType extends GamaType<IPoint> {
 			If it is a map, tries to find 'x', 'y' and 'z' keys in it. If it is a number, returns a point with the x, y and equal to this value""")
 	public IPoint cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
-		return GamaPointFactory.toPoint(scope, obj, copy);
+		return GamaPointFactory.castToPoint(scope, obj, copy);
 	}
 
 	@Override

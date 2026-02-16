@@ -17,12 +17,12 @@ import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vec2;
 import org.locationtech.jts.geom.LineString;
 
-import gama.api.data.objects.IField;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
-import gama.api.data.objects.IShape.Type;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.geometry.IShape.Type;
+import gama.api.types.matrix.IField;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.dev.DEBUG;
 import gama.extension.physics.common.IShapeConverter;

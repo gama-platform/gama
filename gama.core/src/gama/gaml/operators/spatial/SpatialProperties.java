@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.gaml.operators.spatial;
 
-import gama.api.data.objects.IShape;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.operator;

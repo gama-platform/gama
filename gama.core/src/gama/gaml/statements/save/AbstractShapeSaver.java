@@ -31,8 +31,6 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
 import gama.api.compilation.descriptions.ISpeciesDescription;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -46,11 +44,13 @@ import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.IProjection;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.SaveOptions;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.topology.gis.SimpleScalingProjection;
 import gama.gaml.statements.SaveStatement;
@@ -301,7 +301,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 			});
 		} else if (attributes instanceof IExpression exp) {
 			@SuppressWarnings ("unchecked") final List<String> names =
-					GamaListFactory.create(scope, Types.STRING, GamaListFactory.toList(scope, exp.value(scope)));
+					GamaListFactory.create(scope, Types.STRING, GamaListFactory.castToList(scope, exp.value(scope)));
 			if (species != null) {
 				names.forEach(n -> result.put(n,
 						species.hasAttribute(n) ? species.getVarExpr(n, false) : GAML.getExpressionFactory().getNil()));

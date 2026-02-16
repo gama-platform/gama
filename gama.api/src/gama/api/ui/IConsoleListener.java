@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.api.ui;
 
-import gama.api.data.objects.IColor;
 import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.types.color.IColor;
 
 /**
  * The listener interface for receiving IConsole events.

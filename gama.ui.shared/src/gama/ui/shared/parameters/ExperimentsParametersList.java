@@ -18,15 +18,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.api.data.objects.IColor;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
 import gama.api.ui.IExperimentDisplayable;
 import gama.api.ui.IOutputManager;
-import gama.api.utils.ICategory;
+import gama.api.utils.interfaces.ICategory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.experiment.parameters.TextStatement;
 import gama.core.outputs.MonitorOutput;

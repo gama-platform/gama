@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import gama.api.data.objects.IColor;
+import gama.api.types.color.IColor;
 
 /**
  * Written by drogoul Modified on 13 mai 2011

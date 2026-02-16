@@ -27,13 +27,13 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IFont;
-import gama.api.data.objects.IMap;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.utils.WorkbenchHelper;

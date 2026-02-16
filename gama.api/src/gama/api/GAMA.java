@@ -17,8 +17,6 @@ import java.util.prefs.Preferences;
 
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 
-import gama.api.data.json.IJson;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.exceptions.GamaRuntimeFileException;
 import gama.api.gaml.symbols.IParameter;
@@ -36,16 +34,18 @@ import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.IWorkspaceManager;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.InScope;
+import gama.api.types.map.IMap;
 import gama.api.ui.IGui;
 import gama.api.ui.NullGuiHandler;
 import gama.api.ui.layers.ISnapshotMaker;
-import gama.api.utils.ITopLevelAgentChangeListener;
 import gama.api.utils.PoolUtils;
 import gama.api.utils.benchmark.Benchmark;
 import gama.api.utils.benchmark.IBenchmarkable;
 import gama.api.utils.benchmark.StopWatch;
 import gama.api.utils.files.IFileMetadataProvider;
 import gama.api.utils.files.IGamaFileMetaData;
+import gama.api.utils.interfaces.ITopLevelAgentChangeListener;
+import gama.api.utils.json.IJson;
 import gama.api.utils.prefs.ConfigurationPreferenceStore;
 import gama.api.utils.prefs.GamaPreferenceStore;
 import gama.api.utils.prefs.GamaPreferences;

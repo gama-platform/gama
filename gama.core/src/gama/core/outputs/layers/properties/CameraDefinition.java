@@ -11,11 +11,11 @@
 package gama.core.outputs.layers.properties;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IPoint;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.GraphicsScope;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.utils.prefs.GamaPreferences;
 
 /**
@@ -103,7 +103,7 @@ public class CameraDefinition extends AbstractCameraDefinition {
 			double max = Math.max(w, h) * coeff;
 			location = computeLocation(pos, target, w, h, max);
 		} else {
-			location = GamaPointFactory.toPoint(scope, temp);
+			location = GamaPointFactory.castToPoint(scope, temp);
 			// The location should be a point now and we negate it as well
 			location = location.yNegated();
 		}

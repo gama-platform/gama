@@ -32,10 +32,6 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IDate;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.IParameter;
@@ -48,11 +44,15 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExploration;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.date.GamaDateFactory;
+import gama.api.types.date.IDate;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
 import gama.api.utils.StringUtils;
-import gama.api.utils.date.GamaDateFactory;
 import gama.api.utils.files.FileUtils;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.list.GamaListFactory;
 import gama.core.experiment.ExperimentAgent;
 import gama.core.experiment.batch.BatchAgent;
 import gama.core.experiment.batch.optimization.GeneticAlgorithm;
@@ -277,11 +277,11 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	@SuppressWarnings ("unchecked")
 	public int[] getFactorial(final IScope scope, final List<Batch> parameters) {
 
-		IList<Integer> fact = GamaListFactory.toList(scope, getFacet(IExploration.SAMPLE_FACTORIAL).value(scope));
+		IList<Integer> fact = GamaListFactory.castToList(scope, getFacet(IExploration.SAMPLE_FACTORIAL).value(scope));
 		if (fact.size() < parameters.size()) {
 			fact.addAll(Collections.nCopies(parameters.size() - fact.size(), IExploration.DEFAULT_FACTORIAL));
 		} else if (fact.size() > parameters.size()) {
-			fact = GamaListFactory.toList(scope, fact.subList(0, parameters.size()));
+			fact = GamaListFactory.castToList(scope, fact.subList(0, parameters.size()));
 		}
 
 		return IntStreamEx.of(fact).toArray();
@@ -569,8 +569,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 */
 	private List<Object> getDateParameterSwip(final IScope scope, final Batch var) {
 		List<Object> res = new ArrayList<>();
-		IDate dateValue = GamaDateFactory.toDate(scope, var.getMinValue(scope));
-		IDate maxDateValue = GamaDateFactory.toDate(scope, var.getMaxValue(scope));
+		IDate dateValue = GamaDateFactory.castToDate(scope, var.getMinValue(scope));
+		IDate maxDateValue = GamaDateFactory.castToDate(scope, var.getMaxValue(scope));
 		Double stepVal = Cast.asFloat(scope, var.getStepValue(scope));
 		while (dateValue.isSmallerThan(maxDateValue, false)) {
 			if (stepVal > 0) {
@@ -595,14 +595,14 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 */
 	private List<Object> getPointParameterSwip(final IScope scope, final Batch var) {
 		List<Object> res = new ArrayList<>();
-		IPoint pointValue = GamaPointFactory.toPoint(scope, var.getMinValue(scope));
-		IPoint maxPointValue = GamaPointFactory.toPoint(scope, var.getMaxValue(scope));
+		IPoint pointValue = GamaPointFactory.castToPoint(scope, var.getMinValue(scope));
+		IPoint maxPointValue = GamaPointFactory.castToPoint(scope, var.getMaxValue(scope));
 		Double stepV = null;
 
 		IPoint increment = GamaPointFactory.create((maxPointValue.getX() - pointValue.getX()) / 10.0,
 				(maxPointValue.getY() - pointValue.getY()) / 10.0, (maxPointValue.getZ() - pointValue.getZ()) / 10.0);
 		if (var.getStepValue(scope) != null) {
-			increment = GamaPointFactory.toPoint(scope, var.getStepValue(scope), true);
+			increment = GamaPointFactory.castToPoint(scope, var.getStepValue(scope), true);
 
 			if (increment == null) {
 				double d = GamaFloatType.staticCast(scope, var.getStepValue(scope), null, false);
@@ -617,10 +617,10 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		while (pointValue.smallerThanOrEqualTo(maxPointValue)) {
 			if (stepV == null || stepV > 0) {
 				res.add(pointValue);
-				pointValue = pointValue.plus(GamaPointFactory.toPoint(scope, increment));
+				pointValue = pointValue.plus(GamaPointFactory.castToPoint(scope, increment));
 			} else {
 				res.add(maxPointValue);
-				maxPointValue = maxPointValue.plus(GamaPointFactory.toPoint(scope, increment));
+				maxPointValue = maxPointValue.plus(GamaPointFactory.castToPoint(scope, increment));
 			}
 		}
 		return res;

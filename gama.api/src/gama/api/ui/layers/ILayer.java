@@ -16,19 +16,19 @@ import java.util.Set;
 
 import com.google.common.primitives.Ints;
 
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.IList;
 import gama.api.ui.IItemList;
 import gama.api.ui.displays.IChart;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
-import gama.api.utils.INamed;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.interfaces.INamed;
 
 /**
  * Represents the concrete layers that are displayed on IDisplaySurface's and managed by its ILayerManager

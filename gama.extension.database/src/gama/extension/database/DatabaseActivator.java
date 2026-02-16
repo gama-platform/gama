@@ -12,12 +12,12 @@ package gama.extension.database;
 
 import org.osgi.framework.BundleContext;
 
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.topology.IProjection;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
 import gama.dependencies.GamaBundleActivator;
 import gama.extension.database.utils.sql.SqlConnection;
 import gama.extension.database.utils.sql.SqlUtils;

@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gama.api.compilation.descriptions;
 
-import gama.api.data.objects.IMap;
 import gama.api.kernel.skill.IArchitecture;
 import gama.api.kernel.skill.ISkill;
+import gama.api.types.map.IMap;
 
 /**
  *

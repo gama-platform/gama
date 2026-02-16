@@ -15,10 +15,10 @@ import javax.measure.UnitConverter;
 import org.locationtech.jts.geom.CoordinateFilter;
 import org.locationtech.jts.geom.Geometry;
 
-import gama.api.data.objects.IEnvelope;
 import gama.api.kernel.topology.ICoordinateReferenceSystem;
 import gama.api.kernel.topology.IProjectionFactory;
 import gama.api.runtime.scope.IScope;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  * The Class WorldProjection.

@@ -26,15 +26,15 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.IConcept;
 import gama.api.GAMA;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMessage;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.agent.IPopulation.Listener;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.message.IMessage;
 import gama.core.util.messaging.GamaMailbox;
 import gama.core.util.messaging.GamaMessage;
 import gama.core.util.messaging.MessagingSkill;
@@ -504,7 +504,7 @@ public class NetworkSkill extends MessagingSkill {
 	 */
 	@SuppressWarnings ("unchecked")
 	private IList<String> getGroups(final IScope scope, final IAgent agent) {
-		IList<String> groups = GamaListFactory.toList(scope, agent.getAttribute(INetworkSkill.NET_AGENT_GROUPS));
+		IList<String> groups = GamaListFactory.castToList(scope, agent.getAttribute(INetworkSkill.NET_AGENT_GROUPS));
 		if (groups == null) {
 			groups = GamaListFactory.create();
 			agent.setAttribute(INetworkSkill.NET_AGENT_GROUPS, groups);

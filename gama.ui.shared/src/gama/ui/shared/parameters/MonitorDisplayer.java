@@ -13,7 +13,7 @@ package gama.ui.shared.parameters;
 import static gama.api.GAMA.getRuntimeScope;
 import static gama.api.GAMA.reportError;
 import static gama.api.gaml.types.Types.NO_TYPE;
-import static gama.api.utils.list.GamaListFactory.wrap;
+import static gama.api.types.list.GamaListFactory.wrap;
 import static gama.gaml.operators.System.enterValue;
 import static gama.gaml.operators.System.userInputDialog;
 import static gama.ui.shared.menus.GamaMenu.action;
@@ -29,15 +29,14 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IValue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.color.GamaColor;
+import gama.api.types.color.IColor;
+import gama.api.types.misc.IValue;
 import gama.core.experiment.parameters.InputParameter;
 import gama.core.outputs.MonitorOutput;
 import gama.core.outputs.ValuedDisplayOutputFactory;
@@ -113,8 +112,8 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 			separate(m);
 			action(m, "Copy value", ex -> {
 				final Object v = getStatement().getLastValue();
-				WorkbenchHelper.copy(
-						v == null ? "nil" : v instanceof IValue i ? i.serializeToGaml(true) : v.toString());
+				WorkbenchHelper
+						.copy(v == null ? "nil" : v instanceof IValue i ? i.serializeToGaml(true) : v.toString());
 			});
 			final IExpression exp = getStatement().getValue();
 			final IType<?> type = exp == null ? Types.NO_TYPE : exp.getGamlType();
@@ -183,7 +182,7 @@ public class MonitorDisplayer extends AbstractStatementEditor<MonitorOutput> {
 									public boolean isExpression() { return true; }
 								})));
 		getStatement().setName((String) init.get("Title"));
-		getStatement().setColor((GamaColor) init.get("Color"));
+		getStatement().setColor((IColor) init.get("Color"));
 		textBox.setColor(GamaColors.get(getStatement().getColor(getScope())));
 		getStatement().setNewExpression((IExpression) init.get("Expression"));
 		updateWithValueOfParameter(false, false);

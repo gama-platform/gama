@@ -21,17 +21,17 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IShape;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.agent.IPopulationSet;
 import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.ISpatialIndex;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IAgentFilter;
+import gama.api.types.geometry.IShape;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.ICollector;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.interfaces.IAgentFilter;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.topology.grid.GridPopulation;
 

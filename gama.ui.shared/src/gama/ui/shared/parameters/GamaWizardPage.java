@@ -16,10 +16,10 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
-import gama.api.data.objects.IMap;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 import gama.ui.shared.interfaces.EditorListener;
 
 /**

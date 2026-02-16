@@ -15,7 +15,7 @@ import gama.annotations.type;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
-import gama.api.utils.files.GamaFolderFile;
+import gama.api.types.file.GamaFolderFile;
 
 /**
  * Written by taillandier Modified on 10 Apr. 2021

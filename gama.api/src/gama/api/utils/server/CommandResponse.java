@@ -13,8 +13,8 @@ package gama.api.utils.server;
 import java.util.HashMap;
 import java.util.Map;
 
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonValue;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class CommandResponse.

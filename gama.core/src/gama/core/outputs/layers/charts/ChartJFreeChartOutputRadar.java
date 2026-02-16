@@ -23,9 +23,9 @@ import org.jfree.data.category.CategoryDataset;
 import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.Dataset;
 
-import gama.api.data.objects.IColor;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
 import gama.api.ui.displays.IChartDataSource;
 import gama.api.ui.displays.IDisplaySurface;
 

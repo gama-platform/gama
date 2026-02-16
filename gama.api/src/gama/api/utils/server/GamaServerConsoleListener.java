@@ -11,9 +11,9 @@
 package gama.api.utils.server;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IColor;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.types.color.IColor;
 import gama.api.ui.IConsoleListener;
 import gama.api.utils.prefs.GamaPreferences;
 

@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gama.api.ui;
 
-import gama.api.data.objects.IColor;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.simulation.ITopLevelAgent;
-import gama.api.utils.ITopLevelAgentChangeListener;
+import gama.api.types.color.IColor;
+import gama.api.utils.interfaces.ITopLevelAgentChangeListener;
 
 /**
  * The Interface IStatusDisplayer.

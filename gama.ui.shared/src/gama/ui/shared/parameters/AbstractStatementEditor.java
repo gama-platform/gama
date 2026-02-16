@@ -15,11 +15,11 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 
-import gama.api.data.objects.IColor;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IColored;
-import gama.api.utils.INamed;
+import gama.api.types.color.IColor;
+import gama.api.utils.interfaces.IColored;
+import gama.api.utils.interfaces.INamed;
 import gama.core.experiment.parameters.InputParameter;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.EditorListener;

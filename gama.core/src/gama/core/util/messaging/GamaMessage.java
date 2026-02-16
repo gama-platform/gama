@@ -11,16 +11,16 @@ package gama.core.util.messaging;
 
 import gama.annotations.getter;
 import gama.annotations.setter;
-import gama.api.data.factories.IMessageFactory;
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonValue;
-import gama.api.data.objects.IMessage;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.message.IMessage;
+import gama.api.types.message.IMessageFactory;
 import gama.api.utils.StringUtils;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class GamaMessageProxy.

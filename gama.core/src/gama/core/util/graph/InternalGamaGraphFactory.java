@@ -12,18 +12,18 @@ package gama.core.util.graph;
 
 import java.util.Map;
 
-import gama.api.data.factories.GamaPairFactory;
-import gama.api.data.factories.IGraphFactory;
-import gama.api.data.objects.IGraph;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPair;
 import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.graph.IGraph;
+import gama.api.types.graph.IGraphFactory;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
+import gama.api.types.pair.GamaPairFactory;
+import gama.api.types.pair.IPair;
 import gama.core.topology.graph.GamaSpatialGraph;
 
 /**

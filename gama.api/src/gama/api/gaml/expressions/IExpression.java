@@ -17,7 +17,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITyped;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IDisposable;
+import gama.api.utils.interfaces.IDisposable;
 
 /**
  * Interface IExpression. Represents the functional part of the facets in GAML, produced by compiling an

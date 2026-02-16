@@ -17,12 +17,12 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.compilation.prototypes.IArtefactProto.Operator;
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonValue;
-import gama.api.data.json.IJsonable;
-import gama.api.data.objects.IMap;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.map.IMap;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
+import gama.api.utils.json.IJsonable;
 
 /**
  * Written by drogoul Modified on 9 juin 2010

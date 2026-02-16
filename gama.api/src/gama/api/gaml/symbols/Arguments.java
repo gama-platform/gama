@@ -18,7 +18,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.BiConsumerWithPruning;
+import gama.api.utils.interfaces.BiConsumerWithPruning;
 
 /**
  * Argument list for GAML statements and expressions, extending Facets with caller context and ordering.

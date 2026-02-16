@@ -9,22 +9,22 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.exceptions.GamaRuntimeFileException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.GamaFileType;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.file.IGamaFile;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.ILayerData;
 import gama.api.ui.layers.ILayerStatement;
-import gama.api.utils.IImageProvider;
-import gama.api.utils.files.IGamaFile;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.interfaces.IImageProvider;
 import gama.gaml.statements.draw.AssetDrawingAttributes;
 
 /**

@@ -16,10 +16,10 @@ import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaPathFactory;
-import gama.api.data.objects.IPath;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.graph.GamaPathFactory;
+import gama.api.types.graph.IPath;
 
 /**
  * The Class GamaPathType.
@@ -57,7 +57,7 @@ public class GamaPathType extends GamaType<IPath> {
 	@Override
 	public IPath cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
-		return GamaPathFactory.createFrom(scope, obj, param, copy);
+		return GamaPathFactory.castToPath(scope, obj, param, copy);
 	}
 
 	@Override

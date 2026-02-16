@@ -25,9 +25,9 @@ import javax.imageio.ImageIO;
 import org.jfree.chart.JFreeChart;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IChart;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.ILayer;

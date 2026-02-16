@@ -11,13 +11,13 @@
 package gama.core.outputs.layers.properties;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IPoint;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.layers.ILightDefinition;
-import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 

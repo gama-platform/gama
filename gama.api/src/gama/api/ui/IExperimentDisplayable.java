@@ -13,8 +13,8 @@ package gama.api.ui;
 import com.google.common.primitives.Ints;
 
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IColored;
-import gama.api.utils.INamed;
+import gama.api.utils.interfaces.IColored;
+import gama.api.utils.interfaces.INamed;
 
 /**
  * The Interface IExperimentDisplayable.

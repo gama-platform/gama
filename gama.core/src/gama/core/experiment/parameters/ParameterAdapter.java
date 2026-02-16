@@ -13,14 +13,13 @@ package gama.core.experiment.parameters;
 import java.util.List;
 import java.util.Set;
 
-import gama.api.data.objects.IColor;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
 import gama.api.utils.StringUtils;
-import gama.api.utils.color.GamaColor;
 import gama.dev.COUNTER;
 
 /**
@@ -215,7 +214,7 @@ public abstract class ParameterAdapter implements IParameter.Batch {
 	}
 
 	@Override
-	public GamaColor getColor(final IScope scope) {
+	public IColor getColor(final IScope scope) {
 		return null;
 	}
 

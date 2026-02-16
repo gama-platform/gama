@@ -18,8 +18,8 @@ import java.util.Map;
 
 import gama.api.GAMA;
 import gama.api.additions.delegates.IEventLayerDelegate;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.types.geometry.IShape;
 import gama.api.ui.IOutput;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
@@ -129,7 +129,7 @@ public class LayerManager implements ILayerManager {
 	/**
 	 * Method focusOn()
 	 *
-	 * @see gama.api.ui.layers.ILayerManager#focusOn(gama.api.data.objects.IShape)
+	 * @see gama.api.ui.layers.ILayerManager#focusOn(gama.api.types.geometry.IShape)
 	 */
 	@Override
 	public Rectangle2D focusOn(final IShape geometry, final IDisplaySurface s) {

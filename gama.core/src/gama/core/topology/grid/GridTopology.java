@@ -14,24 +14,24 @@ import java.util.Map;
 import java.util.Set;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPath;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.agent.IPopulationSet;
 import gama.api.kernel.topology.IGrid;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IAgentFilter;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IPath;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.topology.ITopology;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.collections.ICollector;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.interfaces.IAgentFilter;
 import gama.core.topology.AbstractTopology;
 import gama.core.topology.filter.Different;
 import gama.core.topology.filter.DifferentList;
@@ -190,7 +190,7 @@ public class GridTopology extends AbstractTopology {
 	}
 
 	/**
-	 * @see gama.api.data.objects.interfaces.IValue#stringValue()
+	 * @see gama.api.types.misc.interfaces.IValue#stringValue()
 	 */
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
@@ -266,7 +266,7 @@ public class GridTopology extends AbstractTopology {
 	}
 
 	/**
-	 * @see gama.api.kernel.topology.environment.ITopology#isValidLocation(gama.core.util.GamaPoint)
+	 * @see gama.api.types.topology.environment.ITopology#isValidLocation(gama.core.util.GamaPoint)
 	 */
 	@Override
 	public boolean isValidLocation(final IScope scope, final IPoint p) {

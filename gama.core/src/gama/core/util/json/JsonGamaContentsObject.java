@@ -10,13 +10,13 @@
  ********************************************************************************************************/
 package gama.core.util.json;
 
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonObject;
-import gama.api.data.json.IJsonValue;
+import gama.api.kernel.agent.AgentReference;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.AgentReference;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonObject;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class JsonGamaContentsObject.

@@ -32,11 +32,11 @@ import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITyped;
-import gama.api.utils.BiConsumerWithPruning;
-import gama.api.utils.ConsumerWithPruning;
-import gama.api.utils.IDisposable;
 import gama.api.utils.benchmark.IBenchmarkable;
 import gama.api.utils.collections.ICollector;
+import gama.api.utils.interfaces.BiConsumerWithPruning;
+import gama.api.utils.interfaces.ConsumerWithPruning;
+import gama.api.utils.interfaces.IDisposable;
 
 /**
  * Written by drogoul Modified on 31 ao�t 2010.

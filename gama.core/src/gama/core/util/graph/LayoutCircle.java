@@ -12,10 +12,10 @@ package gama.core.util.graph;
 import java.util.Collections;
 import java.util.List;
 
-import gama.api.data.objects.IGraph;
-import gama.api.data.objects.IShape;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IGraph;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.spatial.SpatialPunctal;
 

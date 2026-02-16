@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.api.data.objects.IPoint;
 import gama.api.gaml.symbols.ISymbol;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.layers.ICameraDefinition;
-import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  *

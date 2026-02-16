@@ -35,10 +35,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.dialogs.WorkbenchPreferenceDialog;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IPoint;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.Pref;
 import gama.dev.BANNER_CATEGORY;

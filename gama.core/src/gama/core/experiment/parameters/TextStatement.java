@@ -21,17 +21,17 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaFontFactory;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IFont;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatement;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.font.GamaFontFactory;
+import gama.api.types.font.IFont;
 import gama.api.ui.IExperimentDisplayable;
-import gama.api.utils.color.GamaColorFactory;
 
 /**
  * Written by drogoul Modified on 6 févr. 2010
@@ -148,7 +148,7 @@ public class TextStatement extends AbstractStatement implements IExperimentDispl
 	 */
 	public IFont getFont(final IScope scope) {
 		if (font == null) return null;
-		return GamaFontFactory.createFontFrom(scope, font.value(scope), false);
+		return GamaFontFactory.castToFont(scope, font.value(scope), false);
 	}
 
 	@Override

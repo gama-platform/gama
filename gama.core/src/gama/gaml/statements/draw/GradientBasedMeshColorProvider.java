@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
-import gama.api.data.objects.IColor;
+import gama.api.types.color.IColor;
 import gama.api.ui.layers.IMeshColorProvider;
 import gama.core.util.color.GamaGradient;
 import gama.dev.DEBUG;

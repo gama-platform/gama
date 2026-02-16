@@ -39,8 +39,8 @@ import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
+import gama.api.types.map.GamaMapFactory;
 import gama.api.ui.IOutputManager;
-import gama.api.utils.map.GamaMapFactory;
 
 /**
  * The Class GamlModelSpecies.

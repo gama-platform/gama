@@ -15,12 +15,12 @@ import java.util.Map;
 
 import org.jgrapht.Graph;
 
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
 import gama.gaml.operators.Containers;
 import gama.gaml.operators.spatial.SpatialPunctal;
 

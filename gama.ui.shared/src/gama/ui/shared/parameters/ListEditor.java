@@ -12,11 +12,11 @@ package gama.ui.shared.parameters;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 
-import gama.api.data.objects.IList;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
+import gama.api.types.list.IList;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.utils.WorkbenchHelper;
 

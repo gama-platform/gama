@@ -38,10 +38,10 @@ import org.jfree.chart.ui.VerticalAlignment;
 import org.jfree.data.general.Dataset;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
 import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.gaml.operators.Colors;
 

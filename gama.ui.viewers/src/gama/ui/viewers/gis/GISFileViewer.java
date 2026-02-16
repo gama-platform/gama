@@ -29,7 +29,7 @@ import org.geotools.map.Layer;
 import org.geotools.map.MapContent;
 import org.geotools.renderer.lite.StreamingRenderer;
 
-import gama.api.data.objects.IShape;
+import gama.api.types.geometry.IShape;
 import gama.api.utils.StringUtils;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;

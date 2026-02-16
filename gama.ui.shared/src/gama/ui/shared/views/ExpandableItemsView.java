@@ -22,7 +22,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IColor;
+import gama.api.types.color.IColor;
 import gama.api.ui.IItemList;
 import gama.ui.shared.controls.ParameterExpandBar;
 import gama.ui.shared.controls.ParameterExpandItem;

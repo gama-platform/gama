@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package gama.core.util.color;
 
@@ -10,12 +10,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IMap;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.color.GamaColor;
-import gama.api.utils.map.GamaMap;
+import gama.api.types.color.IColor;
+import gama.api.types.map.GamaMap;
+import gama.api.types.map.IMap;
 
 /**
  * The Class GamaScale.
@@ -43,9 +42,9 @@ public class GamaScale extends GamaMap<Double, IColor> {
 	 *            the values
 	 */
 	void sort(final Map<Double, IColor> values) {
-		List<Map.Entry<Double, GamaColor>> entries = new ArrayList(values.entrySet());
-		Collections.sort(entries, Comparator.comparing(Entry<Double, GamaColor>::getKey));
-		for (Map.Entry<Double, GamaColor> entry : entries) { put(entry.getKey(), entry.getValue()); }
+		List<Map.Entry<Double, IColor>> entries = new ArrayList(values.entrySet());
+		Collections.sort(entries, Comparator.comparing(Entry<Double, IColor>::getKey));
+		for (Map.Entry<Double, IColor> entry : entries) { put(entry.getKey(), entry.getValue()); }
 	}
 
 }

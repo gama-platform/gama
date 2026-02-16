@@ -14,7 +14,7 @@ import java.util.Set;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.kernel.agent.IAgent;
-import gama.api.utils.IDisposable;
+import gama.api.utils.interfaces.IDisposable;
 
 /**
  * The Interface ITypesManager.

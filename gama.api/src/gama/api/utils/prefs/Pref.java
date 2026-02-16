@@ -19,12 +19,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import gama.api.data.objects.IColor;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
 import gama.api.utils.StringUtils;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.dev.COUNTER;

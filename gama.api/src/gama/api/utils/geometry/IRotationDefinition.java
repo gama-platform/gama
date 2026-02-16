@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.api.utils.geometry;
 
-import gama.api.data.objects.IPoint;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
 
 /**
  *

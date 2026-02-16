@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gama.extension.network.serial;
 
-import gama.api.data.factories.GamaMessageFactory;
-import gama.api.data.objects.IMessage;
 import gama.api.kernel.agent.IAgent;
+import gama.api.types.message.GamaMessageFactory;
+import gama.api.types.message.IMessage;
 import gama.core.util.messaging.GamaMailbox;
 import gama.core.util.messaging.MessagingSkill;
 import gama.dev.DEBUG;

@@ -15,12 +15,12 @@ import gama.annotations.setter;
 import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
 
 /**
  * The Interface IMacroAgent.

@@ -14,12 +14,12 @@ import java.io.IOException;
 import java.util.Map;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonObject;
-import gama.api.data.objects.IMap;
 import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.map.IMap;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonObject;
 
 /**
  * The Class JsonGamlObject.

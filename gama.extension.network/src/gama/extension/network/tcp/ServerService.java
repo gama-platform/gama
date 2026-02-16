@@ -21,9 +21,9 @@ import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
-import gama.api.data.objects.IList;
 import gama.api.kernel.agent.IAgent;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.dev.DEBUG;
 import gama.extension.network.common.IConnector;
 import gama.extension.network.common.MessageFactory;
@@ -121,7 +121,7 @@ public class ServerService extends Thread implements SocketService, IListener {
 				DEBUG.OUT(clientSocket + " connected");
 
 				if (!clientSocket.isClosed() && !clientSocket.isInputShutdown()) {
-					final IList<String> list_net_agents = GamaListFactory.toList(myAgent.getScope(),
+					final IList<String> list_net_agents = GamaListFactory.castToList(myAgent.getScope(),
 							myAgent.getAttribute(INetworkSkill.NET_AGENT_GROUPS));
 					if (list_net_agents != null && !list_net_agents.contains(socketStr)) {
 						list_net_agents.addValue(myAgent.getScope(), socketStr);

@@ -16,15 +16,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
-import gama.api.data.objects.IDate;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IParameter.Batch;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.date.GamaDateFactory;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.types.date.GamaDateFactory;
+import gama.api.types.date.IDate;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.core.experiment.parameters.ParametersSet;
 
 /**
@@ -86,16 +86,16 @@ public abstract class SamplingUtils {
 				set.put(var.getName(), sampleFValue);
 				return set;
 			case IType.DATE:
-				IDate dateValue = GamaDateFactory.toDate(scope, var.getMinValue(scope));
-				IDate maxDateValue = GamaDateFactory.toDate(scope, var.getMaxValue(scope));
+				IDate dateValue = GamaDateFactory.castToDate(scope, var.getMinValue(scope));
+				IDate maxDateValue = GamaDateFactory.castToDate(scope, var.getMaxValue(scope));
 				IDate sampleDValue = dateValue.plus(
 						dateValue.getTemporal().until(maxDateValue, ChronoUnit.SECONDS) * ValFromSampling,
 						ChronoUnit.SECONDS);
 				set.put(var.getName(), sampleDValue);
 				return set;
 			case IType.POINT:
-				IPoint pointValue = GamaPointFactory.toPoint(scope, var.getMinValue(scope));
-				IPoint maxPointValue = GamaPointFactory.toPoint(scope, var.getMaxValue(scope));
+				IPoint pointValue = GamaPointFactory.castToPoint(scope, var.getMinValue(scope));
+				IPoint maxPointValue = GamaPointFactory.castToPoint(scope, var.getMaxValue(scope));
 				double samplePXValue = pointValue.getX() + ValFromSampling * (maxPointValue.getX() - pointValue.getX());
 				double samplePYValue = pointValue.getY() + ValFromSampling * (maxPointValue.getY() - pointValue.getY());
 				double samplePZValue = pointValue.getZ() + ValFromSampling * (maxPointValue.getZ() - pointValue.getZ());

@@ -18,15 +18,12 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 
-import gama.api.data.factories.IFactory;
-import gama.api.data.objects.ICoordinates;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.gaml.types.GamaFileType;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.IList;
 import gama.api.utils.PoolUtils;
 
 /**
@@ -34,7 +31,7 @@ import gama.api.utils.PoolUtils;
  * boxes) from various geometries, shapes, and coordinate inputs. It delegates the creation to an
  * {@link IEnvelopeFactory} implementation.
  */
-public class GamaEnvelopeFactory implements IFactory<IEnvelope> {
+public class GamaEnvelopeFactory {
 
 	/** The envelope computers. */
 	private static List<IEnvelopeComputer> envelopeComputers = new ArrayList<>();
@@ -521,24 +518,23 @@ public class GamaEnvelopeFactory implements IFactory<IEnvelope> {
 	 *            the obj
 	 * @return the i envelope
 	 */
-	public static IEnvelope computeEnvelopeFrom(final IScope scope, final Object obj) {
-
+	public static IEnvelope castToEnvelope(final IScope scope, final Object obj) {
 		switch (obj) {
 			case IEnvelopeProvider ep:
 				return ep.computeEnvelope(scope);
 			case ISpecies s:
-				return computeEnvelopeFrom(scope, s.getPopulation(scope));
+				return castToEnvelope(scope, s.getPopulation(scope));
 			case Number n:
 				double size = n.doubleValue();
 				return of(0, size, 0, size, 0, size);
 			case Envelope e:
 				return of(e);
 			case String s:
-				return computeEnvelopeFrom(scope, GamaFileType.createFile(scope, s, false, null));
+				return castToEnvelope(scope, GamaFileType.createFile(scope, s, false, null));
 			case IList l: {
 				IEnvelope result = null;
 				for (final Object bounds : l) {
-					final IEnvelope env = computeEnvelopeFrom(scope, bounds);
+					final IEnvelope env = castToEnvelope(scope, bounds);
 					if (result == null) {
 						result = of(env);
 					} else {

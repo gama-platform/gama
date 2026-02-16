@@ -15,12 +15,12 @@ import java.awt.image.BufferedImage;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IField;
-import gama.api.data.objects.IPoint;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.matrix.IField;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
+import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.random.IRandom;
 
 /**

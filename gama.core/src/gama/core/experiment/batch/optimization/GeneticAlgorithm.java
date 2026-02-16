@@ -38,7 +38,7 @@ import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.map.GamaMapFactory;
 import gama.core.experiment.batch.BatchAgent;
 import gama.core.experiment.batch.Neighborhood;
 import gama.core.experiment.batch.Neighborhood1Var;

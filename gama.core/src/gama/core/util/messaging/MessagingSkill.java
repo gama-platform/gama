@@ -21,13 +21,13 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.IConcept;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMessage;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.skill.Skill;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.message.IMessage;
 
 /**
  * The Class MessagingSkill.

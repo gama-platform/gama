@@ -17,10 +17,10 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL2ES3;
 import com.jogamp.opengl.util.texture.Texture;
 
-import gama.api.data.objects.ICoordinates;
-import gama.api.data.objects.IPoint;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.geometry.ICoordinates;
 import gama.core.util.file.GamaObjFile;
 import gama.extension.image.GamaImageFile;
 import gama.ui.display.opengl.OpenGL;

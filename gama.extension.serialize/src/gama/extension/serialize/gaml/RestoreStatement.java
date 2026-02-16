@@ -31,7 +31,7 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.files.IGamaFile;
+import gama.api.types.file.IGamaFile;
 import gama.extension.serialize.binary.BinarySerialisation;
 
 /**

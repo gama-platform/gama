@@ -19,8 +19,6 @@ import gama.annotations.vars;
 import gama.annotations.support.ITypeProvider;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.ISymbol;
@@ -33,6 +31,8 @@ import gama.api.kernel.skill.IArchitecture;
 import gama.api.kernel.skill.ISkill;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
 import gama.api.ui.IExperimentDisplayable;
 
 /**

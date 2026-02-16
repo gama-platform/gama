@@ -11,7 +11,6 @@ package gama.core.outputs.layers;
 
 import java.awt.geom.Rectangle2D;
 
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
@@ -21,10 +20,11 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.ILayerStatement;
-import gama.api.utils.list.GamaListFactory;
 import one.util.streamex.StreamEx;
 
 /**

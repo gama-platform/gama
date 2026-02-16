@@ -12,7 +12,7 @@ package gama.gaml.statements.draw;
 
 import java.util.Map;
 
-import gama.api.data.objects.IColor;
+import gama.api.types.color.IColor;
 import gama.api.ui.layers.IMeshColorProvider;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.color.GamaScale;

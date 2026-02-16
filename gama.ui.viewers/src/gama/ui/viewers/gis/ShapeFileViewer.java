@@ -47,7 +47,7 @@ import org.geotools.styling.SLD;
 import org.geotools.styling.StyleBuilder;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IColor;
+import gama.api.types.color.IColor;
 import gama.core.topology.gis.ProjectionFactory;
 import gama.core.util.file.ShapeInfo;
 import gama.dev.DEBUG;

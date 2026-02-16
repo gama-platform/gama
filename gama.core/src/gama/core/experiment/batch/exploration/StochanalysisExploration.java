@@ -30,8 +30,6 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.symbols.IParameter.Batch;
@@ -39,8 +37,10 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 import gama.api.utils.files.FileUtils;
-import gama.api.utils.map.GamaMapFactory;
 import gama.core.experiment.parameters.ParametersSet;
 
 /**

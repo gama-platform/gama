@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.MenuItem;
 
 import com.google.common.base.Objects;
 
-import gama.api.data.objects.IColor;
+import gama.api.types.color.IColor;
 import gama.api.ui.IItemList;
 import gama.dev.DEBUG;
 import gama.ui.shared.resources.GamaIcon;

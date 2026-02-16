@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gama.api.utils.server;
 
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonObject;
-import gama.api.data.json.IJsonValue;
-import gama.api.data.json.IJsonable;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonObject;
+import gama.api.utils.json.IJsonValue;
+import gama.api.utils.json.IJsonable;
 
 /**
  * The Class GamaServerMessage.

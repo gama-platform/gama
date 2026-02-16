@@ -22,10 +22,6 @@ import com.google.common.base.Objects;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.ICoordinates;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IPoint;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -34,15 +30,19 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
 import gama.api.ui.displays.IDisplayData;
 import gama.api.ui.layers.ICameraDefinition;
 import gama.api.ui.layers.ILightDefinition;
-import gama.api.utils.color.GamaColorFactory;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
-import gama.api.utils.geometry.GamaPointFactory;
+import gama.api.utils.geometry.ICoordinates;
+import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.IRotationDefinition;
-import gama.api.utils.list.GamaListFactory;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.core.experiment.ExperimentAgent;
@@ -576,7 +576,7 @@ public class LayeredDisplayData implements IDisplayData {
 		final IExpression keystone_exp = facets.getExpr(IKeyword.KEYSTONE);
 		if (keystone_exp != null) {
 			@SuppressWarnings ("unchecked") final List<IPoint> val = GamaListFactory.create(scope, Types.POINT,
-					GamaListFactory.toList(scope, keystone_exp.value(scope)));
+					GamaListFactory.castToList(scope, keystone_exp.value(scope)));
 			if (val.size() >= 4) { setKeystone(val); }
 		}
 
@@ -648,7 +648,7 @@ public class LayeredDisplayData implements IDisplayData {
 	private void updateAutoSave(final IScope scope, final IExpression auto) throws GamaRuntimeException {
 		if (auto == null) return;
 		if (auto.getGamlType().equals(Types.POINT)) {
-			IPoint result = GamaPointFactory.toPoint(scope, auto.value(scope));
+			IPoint result = GamaPointFactory.castToPoint(scope, auto.value(scope));
 			setAutosave(result != null);
 			setImageDimension(result);
 		} else if (auto.getGamlType().equals(Types.STRING)) {

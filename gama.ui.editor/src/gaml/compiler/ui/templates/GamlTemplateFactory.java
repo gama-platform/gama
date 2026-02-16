@@ -29,8 +29,8 @@ import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
-import gama.api.utils.INamed;
 import gama.api.utils.StringUtils;
+import gama.api.utils.interfaces.INamed;
 import gaml.compiler.gaml.descriptions.StatementDescription;
 
 /**

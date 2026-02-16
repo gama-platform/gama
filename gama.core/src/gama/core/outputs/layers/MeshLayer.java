@@ -11,13 +11,13 @@ package gama.core.outputs.layers;
 
 import java.util.Collections;
 
-import gama.api.data.objects.IField;
+import gama.api.types.matrix.IField;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.ui.layers.ILayerData;
 import gama.api.ui.layers.ILayerStatement;
-import gama.api.utils.IImageProvider;
 import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.interfaces.IImageProvider;
 import gama.gaml.statements.draw.MeshDrawingAttributes;
 
 /**

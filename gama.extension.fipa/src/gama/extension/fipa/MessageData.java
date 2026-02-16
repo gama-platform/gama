@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.extension.fipa;
 
-import gama.api.data.objects.IList;
 import gama.api.kernel.agent.IAgent;
+import gama.api.types.list.IList;
 
 /**
  * The Message class represents the piece of information transfered between agents capable of communicating.

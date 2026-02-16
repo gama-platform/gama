@@ -25,9 +25,9 @@ import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription.DescriptionVisitor;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
-import gama.api.data.objects.IMap;
 import gama.api.kernel.skill.ISkill;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 
 /**
  * The Class GamaSkillRegistry.

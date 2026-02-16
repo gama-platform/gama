@@ -36,10 +36,10 @@ import org.eclipse.swt.widgets.ToolItem;
 import com.google.common.collect.Iterables;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IList;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.SystemInfo;
+import gama.api.types.list.IList;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerStatement;

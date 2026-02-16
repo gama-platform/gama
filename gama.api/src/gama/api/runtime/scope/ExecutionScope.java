@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.Map;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.IStatement;
@@ -37,11 +36,12 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.IExecutionContext;
 import gama.api.runtime.IStepable;
+import gama.api.types.list.IList;
+import gama.api.types.topology.ITopology;
 import gama.api.ui.IGui;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.utils.StringUtils;
@@ -781,7 +781,7 @@ public class ExecutionScope implements IScope {
 	/**
 	 * Method setTopology()
 	 *
-	 * @see gama.api.runtime.scope.IScope#setTopology(gama.api.kernel.topology.ITopology)
+	 * @see gama.api.runtime.scope.IScope#setTopology(gama.api.types.topology.ITopology)
 	 */
 	@Override
 	public ITopology setTopology(final ITopology topo) {

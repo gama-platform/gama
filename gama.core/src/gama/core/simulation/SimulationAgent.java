@@ -30,12 +30,6 @@ import gama.annotations.support.ITypeProvider;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IDate;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.ISymbol;
@@ -52,21 +46,26 @@ import gama.api.kernel.simulation.IExperimentController;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.IProjectionFactory;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.GamaExecutorService.Caller;
+import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.ExecutionScope;
 import gama.api.runtime.scope.IScope;
-import gama.api.runtime.IExecutable;
+import gama.api.types.color.IColor;
+import gama.api.types.date.IDate;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.topology.ITopology;
 import gama.api.ui.IOutput;
 import gama.api.ui.IOutputManager;
 import gama.api.ui.IStatusMessage;
-import gama.api.utils.IReference;
 import gama.api.utils.SimulationLocal;
-import gama.api.utils.color.GamaColor;
 import gama.api.utils.files.BufferingUtils;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.interfaces.IReference;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.random.IRandom;
 import gama.api.utils.random.RandomUtils;
@@ -371,7 +370,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 *            the new color
 	 */
 	@setter (IKeyword.COLOR)
-	public void setColor(final GamaColor color) { this.color = color; }
+	public void setColor(final IColor color) { this.color = color; }
 
 	@Override
 	public void schedule(final IScope scope) {

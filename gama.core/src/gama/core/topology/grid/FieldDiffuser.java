@@ -24,7 +24,7 @@ import com.google.common.collect.MultimapBuilder;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IDiffusionTarget;
+import gama.api.utils.interfaces.IDiffusionTarget;
 import gama.dev.DEBUG;
 
 /**

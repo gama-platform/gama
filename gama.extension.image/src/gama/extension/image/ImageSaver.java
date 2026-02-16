@@ -22,7 +22,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
 
-import gama.api.data.objects.IField;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
@@ -30,7 +29,8 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.IProjection;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.color.GamaColorFactory;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.matrix.IField;
 import gama.api.utils.files.SaveOptions;
 import gama.core.topology.gis.ProjectionFactory;
 import gama.core.topology.grid.GridPopulation;

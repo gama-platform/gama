@@ -25,7 +25,7 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.map.GamaMapFactory;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;

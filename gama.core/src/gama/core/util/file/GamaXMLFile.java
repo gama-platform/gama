@@ -22,16 +22,16 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.files.GamaFile;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.file.GamaFile;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.utils.geometry.IEnvelope;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;
@@ -96,7 +96,7 @@ public class GamaXMLFile extends GamaFile<IMap<String, String>, String> {
 	/**
 	 * Method computeEnvelope()
 	 *
-	 * @see gama.api.utils.files.IGamaFile#computeEnvelope(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.file.IGamaFile#computeEnvelope(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IEnvelope computeEnvelope(final IScope scope) {
@@ -106,7 +106,7 @@ public class GamaXMLFile extends GamaFile<IMap<String, String>, String> {
 	/**
 	 * Method fillBuffer()
 	 *
-	 * @see gama.api.utils.files.GamaFile#fillBuffer(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.file.GamaFile#fillBuffer(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {

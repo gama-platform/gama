@@ -11,13 +11,13 @@
 package gaml.compiler.gaml.expression;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IPoint;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
-import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * The Class CameraPositionUnitExpression.

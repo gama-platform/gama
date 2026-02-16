@@ -18,17 +18,17 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IField;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.matrix.IField;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.ILayer;
 import gama.api.ui.layers.ILayerData;
 import gama.api.utils.geometry.AxisAngle;
-import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.Scaling3D;
 import gama.core.outputs.layers.FramedLayerData;
@@ -208,7 +208,7 @@ public class LayerObject {
 		if (expr != null) {
 			final boolean containsPixels = expr.containsPixels();
 			IPoint offset = list.offset;
-			offset.setLocation(GamaPointFactory.toPoint(scope, expr.value(scope)));
+			offset.setLocation(GamaPointFactory.castToPoint(scope, expr.value(scope)));
 			if (Math.abs(offset.getX()) <= 1 && !containsPixels) {
 				offset.setX(offset.getX() * renderer.getEnvWidth());
 			}
@@ -324,7 +324,7 @@ public class LayerObject {
 			IPoint size = GamaPointFactory.create(renderer.getEnvWidth(), renderer.getEnvHeight());
 			final IScope scope = renderer.getSurface().getScope();
 			final IExpression expr = layer.getDefinition().getFacet(IKeyword.SIZE);
-			if (expr != null) { size = GamaPointFactory.toPoint(scope, expr.value(scope)); }
+			if (expr != null) { size = GamaPointFactory.castToPoint(scope, expr.value(scope)); }
 			double sx = size.getX();
 			double sy = size.getY();
 			if (sx <= 1) { sx *= renderer.getEnvWidth(); }

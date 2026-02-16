@@ -18,12 +18,6 @@ import static gama.api.constants.IKeyword.NEIGHBORS;
 import static gama.api.constants.IKeyword.WIDTH;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.factories.ITopologyFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
@@ -31,10 +25,16 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.IGrid;
-import gama.api.kernel.topology.ISpatialGraph;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.ISpatialGraph;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
+import gama.api.types.topology.ITopology;
+import gama.api.types.topology.ITopologyFactory;
+import gama.api.utils.geometry.IEnvelope;
 import gama.core.topology.continuous.ContinuousTopology;
 import gama.core.topology.continuous.MultipleTopology;
 import gama.core.topology.graph.GraphTopology;
@@ -104,7 +104,7 @@ public class InternalTopologyFactory implements ITopologyFactory {
 			case ISpecies is -> createFrom(scope, scope.getAgent().getPopulationFor(is), copy);
 			case IShape is -> createFrom(scope, is);
 			case IContainer ic -> createFrom(scope, ic);
-			default -> createFrom(scope, GamaShapeFactory.createFrom(scope, obj, copy), copy);
+			default -> createFrom(scope, GamaShapeFactory.castToShape(scope, obj, copy), copy);
 		};
 	}
 
@@ -168,7 +168,7 @@ public class InternalTopologyFactory implements ITopologyFactory {
 		final boolean isHexagon = exp != null && Cast.asInt(scope, exp.value(scope)) == 6;
 		exp = species.getFacet(FILES);
 		IList<GamaGridFile> files = null;
-		if (exp != null) { files = GamaListFactory.toList(scope, exp.value(scope)); }
+		if (exp != null) { files = GamaListFactory.castToList(scope, exp.value(scope)); }
 		ITopology result;
 		if (files != null && !files.isEmpty()) {
 			result = new GridTopology(scope, host, files, isTorus, usesVN, useIndividualShapes, useNeighborsCache,

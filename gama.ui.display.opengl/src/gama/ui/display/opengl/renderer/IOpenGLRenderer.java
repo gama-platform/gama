@@ -12,7 +12,7 @@ package gama.ui.display.opengl.renderer;
 
 import com.jogamp.opengl.GLEventListener;
 
-import gama.api.data.objects.IPoint;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.displays.IDisplayData;
 import gama.api.ui.displays.IGraphics;
 import gama.ui.display.opengl.OpenGL;

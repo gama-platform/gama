@@ -11,12 +11,12 @@ package gama.core.topology.graph;
 
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph._Edge;
 import gama.api.utils.StringUtils;
-import gama.api.utils.collections._Edge;
-import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * The Class _SpatialEdge.

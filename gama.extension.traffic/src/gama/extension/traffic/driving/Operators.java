@@ -16,9 +16,9 @@ import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ITypeProvider;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IGraph;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.graph.IGraph;
+import gama.api.types.misc.IContainer;
 import gama.core.topology.graph.GamaSpatialGraph;
 
 /**

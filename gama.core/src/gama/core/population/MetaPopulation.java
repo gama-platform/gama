@@ -17,14 +17,6 @@ import java.util.Map;
 
 import com.google.common.collect.Iterables;
 
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonValue;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IMatrix;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
@@ -34,10 +26,18 @@ import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.agent.IPopulationSet;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
 import gama.api.utils.StringUtils;
 import gama.api.utils.collections.Collector;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 import gama.api.utils.random.IRandom;
 import one.util.streamex.StreamEx;
 
@@ -120,7 +120,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method getAgents()
 	 *
-	 * @see gama.api.utils.IAgentFilter#getAgents()
+	 * @see gama.api.utils.interfaces.IAgentFilter#getAgents()
 	 */
 	@Override
 	public IContainer<?, ? extends IAgent> getAgents(final IScope scope) {
@@ -133,8 +133,8 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method accept()
 	 *
-	 * @see gama.api.utils.IAgentFilter#accept(gama.api.runtime.scope.IScope, gama.api.data.objects.IShape,
-	 *      gama.api.data.objects.IShape)
+	 * @see gama.api.utils.interfaces.IAgentFilter#accept(gama.api.runtime.scope.IScope, gama.api.types.geometry.IShape,
+	 *      gama.api.types.geometry.IShape)
 	 */
 	@Override
 	public boolean accept(final IScope scope, final IShape source, final IShape a) {
@@ -146,7 +146,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method filter()
 	 *
-	 * @see gama.api.utils.IAgentFilter#filter(gama.api.runtime.scope.IScope, gama.api.data.objects.IShape,
+	 * @see gama.api.utils.interfaces.IAgentFilter#filter(gama.api.runtime.scope.IScope, gama.api.types.geometry.IShape,
 	 *      java.util.Collection)
 	 */
 	@Override
@@ -159,7 +159,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method stringValue()
 	 *
-	 * @see gama.api.data.objects.IValue#stringValue(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IValue#stringValue(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
@@ -169,7 +169,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method copy()
 	 *
-	 * @see gama.api.data.objects.IValue#copy(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IValue#copy(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public MetaPopulation copy(final IScope scope) throws GamaRuntimeException {
@@ -181,7 +181,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method toGaml()
 	 *
-	 * @see gama.api.utils.IGamlable#toGaml()
+	 * @see gama.api.utils.interfaces.IGamlable#toGaml()
 	 */
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
@@ -199,7 +199,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method get()
 	 *
-	 * @see gama.api.data.objects.IContainer#get(gama.api.runtime.scope.IScope, java.lang.Object)
+	 * @see gama.api.types.misc.IContainer#get(gama.api.runtime.scope.IScope, java.lang.Object)
 	 */
 	@Override
 	public IAgent get(final IScope scope, final Integer index) throws GamaRuntimeException {
@@ -209,7 +209,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method getFromIndicesList()
 	 *
-	 * @see gama.api.data.objects.IContainer#getFromIndicesList(gama.api.runtime.scope.IScope, gama.api.data.objects.IList)
+	 * @see gama.api.types.misc.IContainer#getFromIndicesList(gama.api.runtime.scope.IScope, gama.api.types.list.IList)
 	 */
 	@Override
 	public IAgent getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
@@ -219,7 +219,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method contains()
 	 *
-	 * @see gama.api.data.objects.IContainer#contains(gama.api.runtime.scope.IScope, java.lang.Object)
+	 * @see gama.api.types.misc.IContainer#contains(gama.api.runtime.scope.IScope, java.lang.Object)
 	 */
 	@Override
 	public boolean contains(final IScope scope, final Object o) throws GamaRuntimeException {
@@ -237,7 +237,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method first()
 	 *
-	 * @see gama.api.data.objects.IContainer#first(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#first(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IAgent firstValue(final IScope scope) throws GamaRuntimeException {
@@ -248,7 +248,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method last()
 	 *
-	 * @see gama.api.data.objects.IContainer#last(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#last(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IAgent lastValue(final IScope scope) throws GamaRuntimeException {
@@ -259,7 +259,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method length()
 	 *
-	 * @see gama.api.data.objects.IContainer#length(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#length(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public int length(final IScope scope) {
@@ -271,7 +271,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method isEmpty()
 	 *
-	 * @see gama.api.data.objects.IContainer#isEmpty(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#isEmpty(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public boolean isEmpty(final IScope scope) {
@@ -282,7 +282,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method reverse()
 	 *
-	 * @see gama.api.data.objects.IContainer#reverse(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#reverse(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IContainer reverse(final IScope scope) throws GamaRuntimeException {
@@ -292,7 +292,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method any()
 	 *
-	 * @see gama.api.data.objects.IContainer#any(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#any(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IAgent anyValue(final IScope scope) {
@@ -305,7 +305,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method listValue()
 	 *
-	 * @see gama.api.data.objects.IContainer#listValue(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#listValue(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IList<? extends IAgent> listValue(final IScope scope, final IType contentsType, final boolean copy)
@@ -317,7 +317,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method matrixValue()
 	 *
-	 * @see gama.api.data.objects.IContainer#matrixValue(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#matrixValue(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IMatrix matrixValue(final IScope scope, final IType contentsType, final boolean copy)
@@ -328,7 +328,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method matrixValue()
 	 *
-	 * @see gama.api.data.objects.IContainer#matrixValue(gama.api.runtime.scope.IScope, gama.core.metamodel.shape.GamaPoint)
+	 * @see gama.api.types.misc.IContainer#matrixValue(gama.api.runtime.scope.IScope, gama.core.metamodel.shape.GamaPoint)
 	 */
 	@Override
 	public IMatrix matrixValue(final IScope scope, final IType contentsType, final IPoint preferredSize,
@@ -339,7 +339,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method mapValue()
 	 *
-	 * @see gama.api.data.objects.IContainer#mapValue(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#mapValue(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public IMap mapValue(final IScope scope, final IType keyType, final IType contentsType, final boolean copy)
@@ -350,7 +350,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method iterable()
 	 *
-	 * @see gama.api.data.objects.IContainer#iterable(gama.api.runtime.scope.IScope)
+	 * @see gama.api.types.misc.IContainer#iterable(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	public java.lang.Iterable<? extends IAgent> iterable(final IScope scope) {
@@ -363,7 +363,7 @@ public class MetaPopulation implements IContainer.ToGet<Integer, IAgent>, IPopul
 	/**
 	 * Method getSpecies()
 	 *
-	 * @see gama.api.utils.IAgentFilter#getSpecies()
+	 * @see gama.api.utils.interfaces.IAgentFilter#getSpecies()
 	 */
 	@Override
 	public ISpecies getSpecies() {

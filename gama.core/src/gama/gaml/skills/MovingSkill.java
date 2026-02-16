@@ -35,37 +35,37 @@ import gama.annotations.vars;
 import gama.annotations.support.IConcept;
 import gama.api.GAMA;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaPathFactory;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.factories.GamaTopologyFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IGraph;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPath;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.skill.Skill;
 import gama.api.kernel.species.ISpecies;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IAgentFilter;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.GamaPathFactory;
+import gama.api.types.graph.IGraph;
+import gama.api.types.graph.IPath;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IContainer;
+import gama.api.types.topology.GamaTopologyFactory;
+import gama.api.types.topology.ITopology;
 import gama.api.utils.collections.Collector;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.utils.interfaces.IAgentFilter;
 import gama.core.topology.filter.In;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.topology.graph.GraphTopology;
 import gama.core.topology.grid.GamaSpatialMatrix;
 import gama.core.topology.grid.GridTopology;
+import gama.core.util.path.GamaPath;
 import gama.core.util.path.GamaSpatialPath;
 import gama.gaml.operators.Maths;
-import gama.gaml.operators.Random;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialPunctal;
 import gama.gaml.operators.spatial.SpatialRelations;
@@ -114,88 +114,6 @@ import gama.gaml.operators.spatial.SpatialRelations;
 		concept = { IConcept.SKILL, IConcept.AGENT_MOVEMENT })
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class MovingSkill extends Skill {
-
-	/** The Constant CACHE_KEY_TOPOLOGY. */
-	// Performance optimization: Cache frequently accessed values to avoid repeated lookups
-	private static final String CACHE_KEY_TOPOLOGY = "__cached_topology__";
-
-	/** The Constant CACHE_KEY_GRAPH. */
-	private static final String CACHE_KEY_GRAPH = "__cached_graph__";
-
-	/** The Constant DISTANCE_PRECISION_THRESHOLD. */
-	private static final double DISTANCE_PRECISION_THRESHOLD = 0.01;
-
-	/** The Constant REUSABLE_SHAPE_LIST. */
-	// Object pooling for memory optimization - reusable collections
-	private static final ThreadLocal<List<IShape>> REUSABLE_SHAPE_LIST = ThreadLocal.withInitial(ArrayList::new);
-
-	/** The Constant REUSABLE_DOUBLE_LIST. */
-	private static final ThreadLocal<List<Double>> REUSABLE_DOUBLE_LIST = ThreadLocal.withInitial(ArrayList::new);
-
-	/**
-	 * Gets the topology with caching for improved performance.
-	 *
-	 * @param agent
-	 *            the agent
-	 * @return the cached or computed topology
-	 */
-	@Override
-	protected ITopology getTopology(final IAgent agent) {
-		if (agent == null) return null;
-
-		ITopology cachedTopology = (ITopology) agent.getAttribute(CACHE_KEY_TOPOLOGY);
-		if (cachedTopology == null) {
-			cachedTopology = agent.getTopology();
-			agent.setAttribute(CACHE_KEY_TOPOLOGY, cachedTopology);
-		}
-		return cachedTopology;
-	}
-
-	/**
-	 * Optimized distance calculation between two points. Uses Euclidean distance with early termination for
-	 * performance.
-	 *
-	 * @param point1
-	 *            the first point
-	 * @param point2
-	 *            the second point
-	 * @return the distance between points
-	 */
-	protected static double calculateOptimizedDistance(final IPoint point1, final IPoint point2) {
-		if (point1 == null || point2 == null) return Double.MAX_VALUE;
-
-		// Quick check for identical points
-		if (point1 == point2 || point1.equalsWithTolerance(point2, DISTANCE_PRECISION_THRESHOLD)) return 0.0;
-
-		return point1.euclidianDistanceTo(point2);
-	}
-
-	/**
-	 * Optimized distance calculation between a point and segment. Performance-optimized version with reduced object
-	 * allocations.
-	 *
-	 * @param point
-	 *            the point
-	 * @param segmentStart
-	 *            the segment start
-	 * @param segmentEnd
-	 *            the segment end
-	 * @return the distance from point to segment
-	 */
-	protected static double calculatePointToSegmentDistance(final IPoint point, final IPoint segmentStart,
-			final IPoint segmentEnd) {
-		if (point == null || segmentStart == null || segmentEnd == null) return Double.MAX_VALUE;
-
-		return Distance.pointToSegment(point.toCoordinate(), segmentStart.toCoordinate(), segmentEnd.toCoordinate());
-	}
-
-	/**
-	 * Clears thread-local object pools to prevent memory leaks. Should be called after intensive operations.
-	 */
-	protected static void clearObjectPools() {
-		REUSABLE_SHAPE_LIST.get().clear();
-		REUSABLE_DOUBLE_LIST.get().clear();
-	}
 
 	/**
 	 * Gets the heading.
@@ -537,7 +455,7 @@ public class MovingSkill extends Skill {
 	 */
 	protected ITopology computeTopology(final IScope scope, final IAgent agent) throws GamaRuntimeException {
 		final Object on = scope.getArg("on", IType.NONE);
-		final ITopology topo = GamaTopologyFactory.createFrom(scope, on);
+		final ITopology topo = GamaTopologyFactory.castToTopology(scope, on, false);
 		if (topo == null) return scope.getTopology();
 		return topo;
 	}
@@ -616,7 +534,7 @@ public class MovingSkill extends Skill {
 			}
 			final Object bounds = scope.getArg(IKeyword.BOUNDS, IType.NONE);
 			if (bounds != null) {
-				IShape geom = GamaShapeFactory.createFrom(scope, bounds, false);
+				IShape geom = GamaShapeFactory.castToShape(scope, bounds, false);
 
 				if (geom.getGeometries().size() > 1) {
 					for (final IShape g : geom.getGeometries()) {
@@ -694,7 +612,7 @@ public class MovingSkill extends Skill {
 		} else {
 			final Object bounds = scope.getArg(IKeyword.BOUNDS, IType.NONE);
 			if (bounds != null) {
-				final IShape geom = GamaShapeFactory.createFrom(scope, bounds, false);
+				final IShape geom = GamaShapeFactory.castToShape(scope, bounds, false);
 				if (geom != null && geom.getInnerGeometry() != null) {
 					loc = computeLocationForward(scope, dist, loc, geom);
 				}
@@ -750,7 +668,7 @@ public class MovingSkill extends Skill {
 		final double dist = computeDistance(scope, agent);
 		final Boolean returnPath = scope.getBoolArg("return_path");
 		final IMap weigths = (IMap) computeMoveWeights(scope);
-		final IPath path = scope.hasArg("path") ? (IPath) scope.getArg("path", IType.PATH) : null;
+		final GamaPath path = scope.hasArg("path") ? (GamaPath) scope.getArg("path", IType.PATH) : null;
 		if (path != null && !path.getEdgeList().isEmpty()) {
 			if (returnPath != null && returnPath) {
 				final IPath pathFollowed = moveToNextLocAlongPath(scope, agent, path, dist, weigths);
@@ -814,64 +732,103 @@ public class MovingSkill extends Skill {
 					returns = "optional: the path followed by the agent.",
 					examples = {
 							@example ("do goto target: (one_of road).location speed: speed * 2 on: road_network;") }))
-	/**
-	 * Prim goto - Optimized version with decomposed methods for better performance. Performance improvements: - Uses
-	 * context objects to reduce parameter passing overhead - Implements intelligent path caching and reuse - Optimized
-	 * container handling and early validation - Reduced memory allocations through object pooling
-	 *
-	 * @param scope
-	 *            the scope
-	 * @return the path followed by the agent or null
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
-	 */
 	public IPath primGoto(final IScope scope) throws GamaRuntimeException {
 		final IAgent agent = getCurrentAgent(scope);
 		final IPoint source = agent.getLocation().copy(scope);
-		final double maxDistance = computeDistance(scope, agent);
-		final boolean returnPath =
+		final double maxDist = computeDistance(scope, agent);
+		IShape goal = computeTarget(scope, agent);
+		final Boolean returnPath =
 				scope.hasArg("return_path") ? (Boolean) scope.getArg("return_path", IType.NONE) : false;
+		IContainer on = null;
 
-		// Create optimization context to reduce parameter passing overhead
-		final GotoContext context = new GotoContext(agent, source, maxDistance, returnPath);
-		context.goal = computeTarget(scope, agent);
-		context.weights = (IMap) computeMoveWeights(scope);
+		Object onV = scope.getArg("on", IType.NONE);
+		Object rt;
+		if (onV instanceof IShape && ((IShape) onV).isLine()) {
+			rt = onV;
+		} else {
+			if (onV instanceof ISpecies) {
+				on = ((ISpecies) onV).listValue(scope, Types.AGENT, false);
+			} else if (onV instanceof final IList ags) {
 
-		// Resolve target topology and containers efficiently
-		resolveGotoTarget(scope, context);
+				on = GamaListFactory.create(Types.AGENT);
+				if (!ags.isEmpty() && ags.get(0) instanceof IAgent) {
+					((IList) on).addAll(ags);
+					onV = ((IAgent) ags.get(0)).getSpecies();
+				}
+			} else if (onV instanceof IMap) {
+				on = GamaMapFactory.wrap(Types.AGENT, Types.NO_TYPE, (IMap) onV);
+				onV = ((IAgent) ((IMap) onV).getKeys().get(scope, 0)).getSpecies();
+			}
+			rt = GamaTopologyFactory.castToTopology(scope, onV instanceof IMap i ? i.keySet() : onV);
+		}
 
-		// Early validation to avoid expensive computation for invalid operations
-		if (!validateGotoOperation(scope, context)) return context.path; // May be null or empty path
+		if (on != null && on.isEmpty(scope)) { on = null; }
+		final IShape edge = rt instanceof IShape i ? i : null;
+		final ITopology topo = rt instanceof ITopology i ? i : scope.getTopology();
+		if (goal == null || topo == null) {
+			notMoving(agent);
+			if (returnPath)
+				return GamaPathFactory.createFrom(scope, topo, source, source, GamaListFactory.getEmptyList(), false);
+			return null;
+		}
+		if (topo instanceof GridTopology) {
+			// source =
+			// ((GamaSpatialMatrix)topo.getPlaces()).getAgentAt(source).getLocation();
+			goal = ((GamaSpatialMatrix) topo.getPlaces()).getAgentAt(goal.getLocation()).getLocation();
+		}
+		if (source.equals(goal.getLocation())) {
+			notMoving(agent);
+			if (returnPath)
+				return GamaPathFactory.createFrom(scope, topo, source, source, GamaListFactory.getEmptyList(), false);
 
-		// Compute path with intelligent caching
-		computeGotoPath(scope, context);
-
-		// Handle case where no valid path exists
-		if (context.path == null) {
-			notMoving(context.agent);
-			if (context.returnPath) return GamaPathFactory.createFrom(scope, context.topology, context.source,
-					context.source, GamaListFactory.<IShape> create(Types.GEOMETRY), false);
 			return null;
 		}
 
-		// Store computed path for future use (performance optimization)
-		context.agent.setAttribute("current_path", context.path);
+		Boolean recomputePath = (Boolean) scope.getArg("recompute_path", IType.NONE);
+		if (recomputePath == null) { recomputePath = true; }
+		IPath path = (GamaPath) agent.getAttribute("current_path");
+		if (recomputePath && topo instanceof GridTopology) {
+			agent.setAttribute("current_path", null);
+			path = null;
+		}
+		if (path == null || path.getTopology(scope) != null && !path.getTopology(scope).equals(topo)
+				|| !((IShape) path.getEndVertex()).getLocation().equals(goal.getLocation())
+				|| !((IShape) path.getStartVertex()).getLocation().equals(source.getLocation())) {
 
-		// Execute movement with optimized algorithms
-		if (context.returnPath) {
-			final IPath pathFollowed =
-					moveToNextLocAlongPath(scope, context.agent, context.path, context.maxDistance, context.weights);
-			if (pathFollowed == null) return GamaPathFactory.createFrom(scope, context.topology, context.source,
-					context.source, GamaListFactory.<IShape> create(Types.GEOMETRY), false);
-			return pathFollowed;
+			if (edge != null) {
+				final IList<IShape> edges = GamaListFactory.create(Types.GEOMETRY);
+				edges.add(edge);
+				path = new GamaSpatialPath(source.getGeometry(), goal, edges, true);
+			} else if (topo instanceof GridTopology) {
+				if (on instanceof IList) {
+					path = ((GridTopology) topo).pathBetween(scope, source, goal, (IList) on);
+				} else if (on instanceof IMap) {
+					path = ((GridTopology) topo).pathBetween(scope, source, goal, (IMap) on);
+				}
+
+			} else {
+				path = topo.pathBetween(scope, agent, goal);
+			}
+		} else if (topo instanceof GraphTopology
+				&& (((GraphTopology) topo).getPlaces() != path.getGraph() || recomputePath && ((GraphTopology) topo)
+						.getPlaces().getPathComputer().getVersion() != path.getGraphVersion())) {
+			path = topo.pathBetween(scope, agent, goal);
+		}
+		if (path == null) {
+			notMoving(agent);
+			if (returnPath) return GamaPathFactory.createFrom(scope, topo, source, source,
+					GamaListFactory.<IShape> create(Types.GEOMETRY), false);
+			return null;
 		}
 
-		// Use simplified movement for better performance when path return is not needed
-		moveToNextLocAlongPathSimplified(scope, context.agent, context.path, context.maxDistance, context.weights);
-
-		// Clear object pools to prevent memory leaks in long-running simulations
-		clearObjectPools();
-
+		final IMap weigths = (IMap) computeMoveWeights(scope);
+		if (returnPath) {
+			final IPath pathFollowed = moveToNextLocAlongPath(scope, agent, path, maxDist, weigths);
+			if (pathFollowed == null) return GamaPathFactory.createFrom(scope, topo, source, source,
+					GamaListFactory.<IShape> create(Types.GEOMETRY), false);
+			return pathFollowed;
+		}
+		moveToNextLocAlongPathSimplified(scope, agent, path, maxDist, weigths);
 		return null;
 	}
 
@@ -1268,7 +1225,7 @@ public class MovingSkill extends Skill {
 								final Double val = (Double) probaEdge.get(r);
 								distribution.add(val == null ? 0.0 : val);
 							}
-							edge = nextRoads.get(Random.opRndChoice(scope, distribution));
+							edge = nextRoads.get(scope.getRandom().choiceIn(distribution));
 						}
 					}
 					index = graph.getEdges().indexOf(edge);
@@ -1382,11 +1339,13 @@ public class MovingSkill extends Skill {
 		}
 		if (currentLocation.equals(falseTarget)) {
 
-			currentLocation = GamaPointFactory.toPoint(scope, path.getEndVertex());
+			currentLocation = GamaPointFactory.castToPoint(scope, path.getEndVertex());
 			index++;
 		}
 		path.setIndexSegementOf(agent, indexSegment);
 		path.setIndexOf(agent, index);
+		agent.setAttribute(IKeyword.REAL_SPEED, travelledDist / scope.getClock().getStepInSeconds());
+
 		setCurrentEdge(agent, path);
 		setLocation(agent, currentLocation);
 		setHeading(agent, computedHeading);
@@ -1530,7 +1489,7 @@ public class MovingSkill extends Skill {
 		}
 		if (currentLocation.equals(falseTarget)) {
 
-			currentLocation = GamaPointFactory.toPoint(scope, path.getEndVertex());
+			currentLocation = GamaPointFactory.castToPoint(scope, path.getEndVertex(), false);
 			index++;
 		}
 		path.setIndexSegementOf(agent, indexSegment);
@@ -1579,251 +1538,4 @@ public class MovingSkill extends Skill {
 		if (computedPt != null && computedPt.intersects(geom)) return computedPt;
 		return getCurrentAgent(scope).getLocation(scope);
 	}
-
-	/**
-	 * Context class to encapsulate goto parameters and state for better performance. Reduces parameter passing overhead
-	 * and improves code readability.
-	 */
-	protected static class GotoContext {
-
-		/** The agent. */
-		public final IAgent agent;
-
-		/** The source. */
-		public final IPoint source;
-
-		/** The max distance. */
-		public final double maxDistance;
-
-		/** The return path. */
-		public final boolean returnPath;
-
-		/** The goal. */
-		public IShape goal;
-
-		/** The container. */
-		public IContainer container;
-
-		/** The edge. */
-		public IShape edge;
-
-		/** The topology. */
-		public ITopology topology;
-
-		/** The path. */
-		public IPath path;
-
-		/** The weights. */
-		public IMap weights;
-
-		/**
-		 * Instantiates a new goto context.
-		 *
-		 * @param agent
-		 *            the agent
-		 * @param source
-		 *            the source
-		 * @param maxDistance
-		 *            the max distance
-		 * @param returnPath
-		 *            the return path
-		 */
-		public GotoContext(final IAgent agent, final IPoint source, final double maxDistance,
-				final boolean returnPath) {
-			this.agent = agent;
-			this.source = source;
-			this.maxDistance = maxDistance;
-			this.returnPath = returnPath;
-		}
-	}
-
-	/**
-	 * Resolves the "on" parameter for goto operations. Performance: Optimized to handle different container types
-	 * efficiently
-	 *
-	 * @param scope
-	 *            the simulation scope
-	 * @param context
-	 *            the goto context
-	 */
-	protected void resolveGotoTarget(final IScope scope, final GotoContext context) {
-		final Object onValue = scope.getArg("on", IType.NONE);
-
-		if (onValue instanceof IShape && ((IShape) onValue).isLine()) {
-			context.edge = (IShape) onValue;
-			context.topology = scope.getTopology();
-			return;
-		}
-
-		// Handle different container types
-		if (onValue instanceof ISpecies) {
-			context.container = ((ISpecies) onValue).listValue(scope, Types.AGENT, false);
-		} else if (onValue instanceof final IList sourceList) {
-			if (!sourceList.isEmpty() && sourceList.get(0) instanceof IAgent) {
-				context.container = GamaListFactory.create(Types.AGENT);
-				((IList) context.container).addAll(sourceList);
-			}
-		} else if (onValue instanceof IMap) {
-			context.container = GamaMapFactory.wrap(Types.AGENT, Types.NO_TYPE, (IMap) onValue);
-		}
-
-		// Create topology from resolved container
-		final Object topologySource = onValue instanceof IMap i ? i.keySet() : onValue;
-		context.topology = GamaTopologyFactory.createFrom(scope, topologySource);
-		if (context.topology == null) { context.topology = scope.getTopology(); }
-
-		// Clear empty containers for performance
-		if (context.container != null && context.container.isEmpty(scope)) { context.container = null; }
-	}
-
-	/**
-	 * Validates the goto operation parameters and handles early termination cases. Memory optimization: Returns empty
-	 * paths for invalid cases without heavy computation
-	 *
-	 * @param scope
-	 *            the simulation scope
-	 * @param context
-	 *            the goto context
-	 * @return true if operation should continue, false if it should terminate early
-	 */
-	protected boolean validateGotoOperation(final IScope scope, final GotoContext context) {
-		if (context.goal == null || context.topology == null) {
-			notMoving(context.agent);
-			if (context.returnPath) {
-				context.path = GamaPathFactory.createFrom(scope, context.topology, context.source, context.source,
-						GamaListFactory.getEmptyList(), false);
-			}
-			return false;
-		}
-
-		// Handle grid topology special case
-		if (context.topology instanceof GridTopology) {
-			context.goal = ((GamaSpatialMatrix) context.topology.getPlaces()).getAgentAt(context.goal.getLocation())
-					.getLocation();
-		}
-
-		// Check if already at target
-		if (context.source.equals(context.goal.getLocation())) {
-			notMoving(context.agent);
-			if (context.returnPath) {
-				context.path = GamaPathFactory.createFrom(scope, context.topology, context.source, context.source,
-						GamaListFactory.getEmptyList(), false);
-			}
-			return false;
-		}
-
-		return true;
-	}
-
-	/**
-	 * Computes or reuses the path for goto operations with intelligent caching. Performance: Avoids expensive path
-	 * recomputation when possible
-	 *
-	 * @param scope
-	 *            the simulation scope
-	 * @param context
-	 *            the goto context
-	 */
-	protected void computeGotoPath(final IScope scope, final GotoContext context) {
-		final Boolean recomputePath =
-				scope.hasArg("recompute_path") ? (Boolean) scope.getArg("recompute_path", IType.NONE) : true;
-
-		// Get current path from agent
-		IPath currentPath = (IPath) context.agent.getAttribute("current_path");
-
-		// Force recomputation for grid topology
-		if (recomputePath && context.topology instanceof GridTopology) {
-			context.agent.setAttribute("current_path", null);
-			currentPath = null;
-		}
-
-		// Check if current path is still valid
-		final boolean pathInvalid =
-				currentPath == null || !isPathValid(scope, currentPath, context.topology, context.source, context.goal);
-
-		if (pathInvalid) {
-			context.path = createNewPath(scope, context);
-		} else if (shouldRecomputeForGraphTopology(context.topology, currentPath, recomputePath)) {
-			context.path = context.topology.pathBetween(scope, context.agent, context.goal);
-		} else {
-			context.path = currentPath;
-		}
-	}
-
-	/**
-	 * Checks if a path is still valid for the current operation. Performance: Avoids expensive path recalculation when
-	 * current path is usable
-	 *
-	 * @param scope
-	 *            the simulation scope
-	 * @param path
-	 *            the path to validate
-	 * @param topology
-	 *            the current topology
-	 * @param source
-	 *            the source point
-	 * @param goal
-	 *            the goal shape
-	 * @return true if path is valid, false otherwise
-	 */
-	private boolean isPathValid(final IScope scope, final IPath path, final ITopology topology, final IPoint source,
-			final IShape goal) {
-
-		if (path.getTopology(scope) != null && !path.getTopology(scope).equals(topology)
-				|| !((IShape) path.getEndVertex()).getLocation().equals(goal.getLocation())
-				|| !((IShape) path.getStartVertex()).getLocation().equals(source.getLocation()))
-			return false;
-
-		return true;
-	}
-
-	/**
-	 * Creates a new path based on the goto context. Memory optimization: Uses optimized path creation based on topology
-	 * type
-	 *
-	 * @param scope
-	 *            the simulation scope
-	 * @param context
-	 *            the goto context
-	 * @return the created path
-	 */
-	private IPath createNewPath(final IScope scope, final GotoContext context) {
-		if (context.edge != null) {
-			final List<IShape> edges = REUSABLE_SHAPE_LIST.get();
-			edges.clear();
-			edges.add(context.edge);
-			return new GamaSpatialPath(context.source.getGeometry(), context.goal,
-					GamaListFactory.wrap(Types.GEOMETRY, edges), true);
-		}
-
-		if (context.topology instanceof final GridTopology gridTopo) {
-			if (context.container instanceof IList)
-				return gridTopo.pathBetween(scope, context.source, context.goal, (IList) context.container);
-			if (context.container instanceof IMap)
-				return gridTopo.pathBetween(scope, context.source, context.goal, (IMap) context.container);
-		}
-
-		return context.topology.pathBetween(scope, context.agent, context.goal);
-	}
-
-	/**
-	 * Checks if path should be recomputed for graph topology. Performance: Optimizes graph path recomputation decisions
-	 *
-	 * @param topology
-	 *            the topology
-	 * @param path
-	 *            the current path
-	 * @param recomputePath
-	 *            recomputation flag
-	 * @return true if path should be recomputed
-	 */
-	private boolean shouldRecomputeForGraphTopology(final ITopology topology, final IPath path,
-			final boolean recomputePath) {
-
-		if (!(topology instanceof final GraphTopology graphTopo)) return false;
-
-		return graphTopo.getPlaces() != path.getGraph()
-				|| recomputePath && graphTopo.getPlaces().getPathComputer().getVersion() != path.getGraphVersion();
-	}
-
 }

@@ -15,7 +15,7 @@ import org.eclipse.swt.widgets.Control;
 
 import gama.api.GAMA;
 import gama.api.runtime.SystemInfo;
-import gama.api.utils.IDisposable;
+import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.experiment.views.displays.LayeredDisplayView;
 

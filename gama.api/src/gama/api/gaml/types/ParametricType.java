@@ -19,12 +19,12 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.prototypes.IArtefactProto;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IMap;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IContainer;
 import gama.api.utils.GamlProperties;
 import gama.dev.DEBUG;
 

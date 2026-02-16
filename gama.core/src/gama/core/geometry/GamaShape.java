@@ -22,26 +22,26 @@ import org.locationtech.jts.geom.MultiLineString;
 import org.locationtech.jts.geom.MultiPolygon;
 import org.locationtech.jts.geom.Polygon;
 
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.json.IJson;
-import gama.api.data.json.IJsonValue;
-import gama.api.data.objects.ICoordinates;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.ICoordinates;
+import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.Scaling3D;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 import gama.core.util.json.IJsonConstants;
 import gama.core.util.json.JsonGeometryObject;
 import gama.gaml.operators.Maths;
@@ -582,7 +582,7 @@ public class GamaShape implements IShape {
 	/**
 	 * Method getGeometricalType()
 	 *
-	 * @see gama.api.data.objects.IShape#getGeometricalType()
+	 * @see gama.api.types.geometry.IShape#getGeometricalType()
 	 */
 	@Override
 	public Type getGeometricalType() {

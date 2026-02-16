@@ -21,13 +21,6 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.IConcept;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IPath;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.statements.IStatement;
@@ -36,11 +29,18 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.species.ISpecies;
-import gama.api.kernel.topology.ISpatialGraph;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IPath;
+import gama.api.types.graph.ISpatialGraph;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IContainer;
 import gama.core.topology.graph.GraphTopology;
 import gama.gaml.operators.Maths;
 import gama.gaml.operators.Random;
@@ -1063,7 +1063,7 @@ public class PedestrianSkill extends MovingSkill {
 		IShape bounds = null;
 		if (scope.hasArg(IKeyword.BOUNDS)) {
 			final Object obj = scope.getArg(IKeyword.BOUNDS, IType.NONE);
-			bounds = GamaShapeFactory.createFrom(scope, obj, false);
+			bounds = GamaShapeFactory.castToShape(scope, obj, false);
 		}
 		IList<ISpecies> speciesList = getObstacleSpecies(agent);
 		IContainer<Integer, IAgent> obstacles = null;
@@ -1073,7 +1073,7 @@ public class PedestrianSkill extends MovingSkill {
 			obstacles = GamaListFactory.create(Types.AGENT);
 			for (ISpecies species : speciesList) {
 
-				((IList<IAgent>) obstacles).addAll(GamaListFactory.toList(scope, species));
+				((IList<IAgent>) obstacles).addAll(GamaListFactory.castToList(scope, species));
 			}
 		}
 
@@ -1085,7 +1085,7 @@ public class PedestrianSkill extends MovingSkill {
 			pedestrians = GamaListFactory.create(Types.AGENT);
 			for (ISpecies species : speciesList) {
 
-				((IList<IAgent>) pedestrians).addAll(GamaListFactory.toList(scope, species));
+				((IList<IAgent>) pedestrians).addAll(GamaListFactory.castToList(scope, species));
 			}
 		}
 
@@ -1589,7 +1589,7 @@ public class PedestrianSkill extends MovingSkill {
 			} else {
 				obstacles = GamaListFactory.create(Types.AGENT);
 				for (ISpecies species : speciesList) {
-					((IList<IAgent>) obstacles).addAll(GamaListFactory.toList(scope, species));
+					((IList<IAgent>) obstacles).addAll(GamaListFactory.castToList(scope, species));
 				}
 			}
 

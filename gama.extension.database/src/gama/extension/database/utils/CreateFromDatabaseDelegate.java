@@ -16,8 +16,6 @@ import java.util.Map;
 import org.locationtech.jts.geom.Geometry;
 
 import gama.api.additions.delegates.ICreateDelegate;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.objects.IList;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.IStatement;
@@ -25,7 +23,9 @@ import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
 import gama.extension.database.utils.sql.SqlConnection;
 
 /**

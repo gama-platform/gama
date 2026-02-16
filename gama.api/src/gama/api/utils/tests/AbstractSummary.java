@@ -15,10 +15,10 @@ import java.util.Map;
 import org.eclipse.emf.common.util.URI;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IColor;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IColored;
-import gama.api.utils.INamed;
+import gama.api.types.color.IColor;
+import gama.api.utils.interfaces.IColored;
+import gama.api.utils.interfaces.INamed;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.COUNTER;
 import one.util.streamex.StreamEx;

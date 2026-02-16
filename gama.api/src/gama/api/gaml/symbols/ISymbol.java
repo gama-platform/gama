@@ -14,8 +14,8 @@ import org.eclipse.emf.common.util.URI;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IDisposable;
-import gama.api.utils.INamed;
+import gama.api.utils.interfaces.IDisposable;
+import gama.api.utils.interfaces.INamed;
 
 /**
  * Written by drogoul Modified on 19 mars 2010

@@ -42,12 +42,6 @@ import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaShapeFactory;
-import gama.api.data.factories.GamaTopologyFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.IStatement;
@@ -60,17 +54,23 @@ import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.kernel.agent.IMacroAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.ISpecies;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.FlowStatus;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.IAgentFilter;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaList;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.misc.IContainer;
+import gama.api.types.topology.GamaTopologyFactory;
+import gama.api.types.topology.ITopology;
 import gama.api.utils.benchmark.StopWatch;
-import gama.api.utils.geometry.GamaPointFactory;
-import gama.api.utils.list.GamaList;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.utils.interfaces.IAgentFilter;
 import gama.core.topology.filter.In;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.util.graph.AbstractGraphNodeAgent;
@@ -152,7 +152,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 		public Object executeOn(final IScope scope) throws GamaRuntimeException {
 			final IPopulation<T> pop = GamaPopulation.this;
 			final Set<IAgent> targets =
-					new HashSet<IAgent>(GamaListFactory.toList(scope, listOfTargetAgents.value(scope)));
+					new HashSet<IAgent>(GamaListFactory.castToList(scope, listOfTargetAgents.value(scope)));
 			final List<IAgent> toKill = new ArrayList<>();
 			for (final IAgent agent : pop.iterable(scope)) {
 				final IAgent target = Cast.asAgent(scope, agent.getAttribute(TARGET));
@@ -712,7 +712,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 		final boolean fixed = species.isGraph() || species.isGrid();
 		if (expr != null) {
 			if (!fixed) {
-				topology = GamaTopologyFactory.createFrom(scope, scope.evaluate(expr, host).getValue(), false);
+				topology = GamaTopologyFactory.castToTopology(scope, scope.evaluate(expr, host).getValue(), false);
 				return;
 			}
 			throw GamaRuntimeException.warning(
@@ -876,7 +876,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	/**
 	 * Method getAgents()
 	 *
-	 * @see gama.api.utils.IAgentFilter#getAgents()
+	 * @see gama.api.utils.interfaces.IAgentFilter#getAgents()
 	 */
 	@Override
 	public IContainer<?, ? extends IAgent> getAgents(final IScope scope) {
@@ -898,8 +898,8 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	/**
 	 * Method accept()
 	 *
-	 * @see gama.api.utils.IAgentFilter#accept(gama.api.runtime.scope.IScope, gama.api.data.objects.IShape,
-	 *      gama.api.data.objects.IShape)
+	 * @see gama.api.utils.interfaces.IAgentFilter#accept(gama.api.runtime.scope.IScope, gama.api.types.geometry.IShape,
+	 *      gama.api.types.geometry.IShape)
 	 */
 	@Override
 	public boolean accept(final IScope scope, final IShape source, final IShape a) {
@@ -914,7 +914,7 @@ public class GamaPopulation<T extends IAgent> extends GamaList<T> implements IPo
 	/**
 	 * Method filter()
 	 *
-	 * @see gama.api.utils.IAgentFilter#filter(gama.api.runtime.scope.IScope, gama.api.data.objects.IShape,
+	 * @see gama.api.utils.interfaces.IAgentFilter#filter(gama.api.runtime.scope.IScope, gama.api.types.geometry.IShape,
 	 *      java.util.Collection)
 	 */
 	@Override

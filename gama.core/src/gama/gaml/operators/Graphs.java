@@ -53,19 +53,6 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaGraphFactory;
-import gama.api.data.factories.GamaPathFactory;
-import gama.api.data.factories.GamaTopologyFactory;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IGraph;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IMap;
-import gama.api.data.objects.IMatrix;
-import gama.api.data.objects.IPair;
-import gama.api.data.objects.IPath;
-import gama.api.data.objects.IPoint;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
@@ -73,20 +60,33 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IGridAgent;
 import gama.api.kernel.species.ISpecies;
-import gama.api.kernel.topology.IPathComputer;
-import gama.api.kernel.topology.ISpatialGraph;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.EdgeToAdd;
+import gama.api.types.graph.GamaGraphFactory;
+import gama.api.types.graph.GamaPathFactory;
+import gama.api.types.graph.GraphObjectToAdd;
+import gama.api.types.graph.IGraph;
+import gama.api.types.graph.IGraphEventProvider;
+import gama.api.types.graph.IPath;
+import gama.api.types.graph.IPathComputer;
+import gama.api.types.graph.ISpatialGraph;
+import gama.api.types.graph.NodeToAdd;
+import gama.api.types.graph.VertexRelationship;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
+import gama.api.types.pair.IPair;
+import gama.api.types.topology.GamaTopologyFactory;
 import gama.api.utils.collections.Collector;
-import gama.api.utils.collections.EdgeToAdd;
-import gama.api.utils.collections.GraphObjectToAdd;
 import gama.api.utils.collections.ICollector;
-import gama.api.utils.collections.IGraphEventProvider;
-import gama.api.utils.collections.NodeToAdd;
-import gama.api.utils.collections.VertexRelationship;
-import gama.api.utils.geometry.GamaPointFactory;
 import gama.api.utils.geometry.GeometryUtils;
-import gama.api.utils.list.GamaListFactory;
-import gama.api.utils.map.GamaMapFactory;
+import gama.api.utils.geometry.IEnvelope;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.util.graph.EdgesToAdd;
 import gama.core.util.graph.GamaGraph;
@@ -1170,7 +1170,7 @@ public class Graphs {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
 		final IMap mapResult = GamaMapFactory.create(graph.getGamlType().getKeyType(), Types.INT);
-		final IList vertices = GamaListFactory.toList(scope, graph.vertexSet());
+		final IList vertices = GamaListFactory.castToList(scope, graph.vertexSet());
 		for (final Object v : vertices) { mapResult.put(v, 0); }
 		final boolean directed = graph.isDirected();
 		for (int i = 0; i < vertices.size(); i++) {
@@ -1223,7 +1223,7 @@ public class Graphs {
 
 		final IMap mapResult = GamaMapFactory.create(graph.getGamlType().getContentType(), Types.INT);
 		for (final Object v : graph.edgeSet()) { mapResult.put(v, 0); }
-		final IList vertices = GamaListFactory.toList(scope, graph.vertexSet());
+		final IList vertices = GamaListFactory.castToList(scope, graph.vertexSet());
 		final boolean directed = graph.isDirected();
 		for (int i = 0; i < vertices.size(); i++) {
 			for (int j = directed ? 0 : i + 1; j < vertices.size(); j++) {
@@ -2260,7 +2260,7 @@ public class Graphs {
 	public static IList<IPath> kPathsBetween(final IScope scope, final IGraphEventProvider graph, final IPair sourTarg,
 			final int k) throws GamaRuntimeException {
 
-		return GamaTopologyFactory.createFrom(scope, graph, false).kPathsBetween(scope, (IShape) sourTarg.getKey(),
+		return GamaTopologyFactory.castToTopology(scope, graph, false).kPathsBetween(scope, (IShape) sourTarg.getKey(),
 				(IShape) sourTarg.getValue(), k);
 	}
 
@@ -2328,7 +2328,7 @@ public class Graphs {
 	@no_test
 	public static IPath as_path(final IScope scope, final IList<IShape> edgesNodes, final IGraph graph)
 			throws GamaRuntimeException {
-		final IPath path = GamaPathFactory.createFrom(scope, edgesNodes, null, false);
+		final IPath path = GamaPathFactory.castToPath(scope, edgesNodes, null, false);
 		path.setGraph(graph);
 		return path;
 	}

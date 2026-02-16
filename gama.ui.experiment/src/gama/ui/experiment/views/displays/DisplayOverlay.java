@@ -34,8 +34,8 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPartSite;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IEnvelope;
 import gama.api.ui.displays.IDisplaySurface;
+import gama.api.utils.geometry.IEnvelope;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;

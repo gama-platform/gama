@@ -19,10 +19,10 @@ import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
 import gama.api.GAMA;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IField;
-import gama.api.data.objects.IMatrix;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
 import gama.api.utils.MathUtils;
 
 /**

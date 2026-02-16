@@ -16,10 +16,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FontDialog;
 
-import gama.api.data.factories.GamaFontFactory;
-import gama.api.data.objects.IFont;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.kernel.agent.IAgent;
+import gama.api.types.font.GamaFontFactory;
+import gama.api.types.font.IFont;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.resources.GamaFonts;

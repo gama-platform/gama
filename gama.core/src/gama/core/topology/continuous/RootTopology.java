@@ -9,13 +9,13 @@
  ********************************************************************************************************/
 package gama.core.topology.continuous;
 
-import gama.api.data.objects.IEnvelope;
-import gama.api.data.objects.IShape;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.topology.ISpatialIndex;
-import gama.api.kernel.topology.ITopology;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
+import gama.api.types.topology.ITopology;
+import gama.api.utils.geometry.IEnvelope;
 import gama.core.topology.CompoundSpatialIndex;
 
 /**

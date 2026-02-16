@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.api.data.objects.IPoint;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.layers.ICameraDefinition;
-import gama.api.utils.geometry.GamaPointFactory;
 
 /**
  * The Class GenericCameraDefinition. A simple holder of position, target and lens of the camera. All coordinates are

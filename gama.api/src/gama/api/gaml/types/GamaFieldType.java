@@ -14,11 +14,11 @@ import gama.annotations.type;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.constants.IKeyword;
-import gama.api.data.factories.GamaMatrixFactory;
-import gama.api.data.objects.IField;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IField;
 
 /**
  * The Class GamaFieldType.
@@ -69,7 +69,7 @@ public class GamaFieldType extends GamaMatrixType {
 	@Override
 	public IField cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentsType, final boolean copy) throws GamaRuntimeException {
-		return GamaMatrixFactory.createFieldFrom(scope, obj, param, contentsType, copy);
+		return GamaMatrixFactory.castToField(scope, obj, param, contentsType, copy);
 	}
 
 	@Override

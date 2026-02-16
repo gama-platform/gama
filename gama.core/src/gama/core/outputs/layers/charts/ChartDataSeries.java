@@ -14,13 +14,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IColor;
-import gama.api.data.objects.IList;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.color.GamaColorFactory;
-import gama.api.utils.list.GamaListFactory;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 
 /**
  * The Class ChartDataSeries.
@@ -372,7 +372,7 @@ public class ChartDataSeries {
 		if (!uselist) return o;
 
 		if (o instanceof IList) {
-			final IList ol = GamaListFactory.toList(scope, o);
+			final IList ol = GamaListFactory.castToList(scope, o);
 			if (ol.size() < listvalue) return null;
 			return ol.get(listvalue);
 
@@ -422,7 +422,7 @@ public class ChartDataSeries {
 			final Object o = getlistvalue(scope, barvalues, IKeyword.COLOR, listvalue);
 			if (o != null) {
 				if (o instanceof IList) {
-					final IList ol = GamaListFactory.toList(scope, o);
+					final IList ol = GamaListFactory.castToList(scope, o);
 					if (ol.size() == 1) { this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(0))); }
 					if (ol.size() == 2) {
 						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(1)));
@@ -487,7 +487,7 @@ public class ChartDataSeries {
 			final Object o = getlistvalue(scope, barvalues, IKeyword.COLOR, listvalue);
 			if (o != null) {
 				if (o instanceof IList) {
-					final IList ol = GamaListFactory.toList(scope, o);
+					final IList ol = GamaListFactory.castToList(scope, o);
 					if (ol.size() == 1) { this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(0))); }
 					if (ol.size() == 2) {
 						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(1)));
@@ -568,7 +568,7 @@ public class ChartDataSeries {
 			final Object o = getlistvalue(scope, barvalues, ChartDataStatement.YERR_VALUES, listvalue);
 			if (o != null) {
 				if (o instanceof IList) {
-					final IList ol = GamaListFactory.toList(scope, o);
+					final IList ol = GamaListFactory.castToList(scope, o);
 					if (ol.size() > 1) {
 						this.yerrvaluesmin.add(Cast.asFloat(scope, ol.get(0)));
 						this.yerrvaluesmax.add(Cast.asFloat(scope, ol.get(1)));
@@ -589,7 +589,7 @@ public class ChartDataSeries {
 			final Object o = getlistvalue(scope, barvalues, ChartDataStatement.XERR_VALUES, listvalue);
 			if (o != null) {
 				if (o instanceof IList) {
-					final IList ol = GamaListFactory.toList(scope, o);
+					final IList ol = GamaListFactory.castToList(scope, o);
 					if (ol.size() > 1) {
 						this.xerrvaluesmin.add(Cast.asFloat(scope, ol.get(0)));
 						this.xerrvaluesmax.add(Cast.asFloat(scope, ol.get(1)));
@@ -661,7 +661,7 @@ public class ChartDataSeries {
 			final Object o = getlistvalue(scope, barvalues, IKeyword.COLOR, listvalue);
 			if (o != null) {
 				if (o instanceof IList) {
-					final IList ol = GamaListFactory.toList(scope, o);
+					final IList ol = GamaListFactory.castToList(scope, o);
 					if (ol.size() == 1) { this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(0))); }
 					if (ol.size() == 2) {
 						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(1)));
@@ -692,7 +692,7 @@ public class ChartDataSeries {
 			final Object o = getlistvalue(scope, barvalues, ChartDataStatement.YERR_VALUES, listvalue);
 			if (o != null) {
 				if (o instanceof IList) {
-					final IList ol = GamaListFactory.toList(scope, o);
+					final IList ol = GamaListFactory.castToList(scope, o);
 					if (ol.size() > 1) {
 						this.yerrvaluesmin.add(Cast.asFloat(scope, ol.get(0)));
 						this.yerrvaluesmax.add(Cast.asFloat(scope, ol.get(1)));

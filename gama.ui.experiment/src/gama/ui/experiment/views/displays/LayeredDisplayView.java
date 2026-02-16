@@ -27,16 +27,16 @@ import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 
 import gama.api.GAMA;
-import gama.api.data.objects.IPoint;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.runtime.GeneralSynchronizer;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
 import gama.api.ui.IGamaView;
 import gama.api.ui.IOutput;
 import gama.api.ui.IStatusMessage;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.ILayerManager;
-import gama.api.utils.IDisposable;
+import gama.api.utils.interfaces.IDisposable;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.dev.DEBUG;

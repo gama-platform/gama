@@ -20,10 +20,10 @@ import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.types.IType;
-import gama.api.utils.BiConsumerWithPruning;
-import gama.api.utils.IDisposable;
-import gama.api.utils.IGamlable;
 import gama.api.utils.StringUtils;
+import gama.api.utils.interfaces.BiConsumerWithPruning;
+import gama.api.utils.interfaces.IDisposable;
+import gama.api.utils.interfaces.IGamlable;
 import gama.dev.DEBUG;
 
 /**

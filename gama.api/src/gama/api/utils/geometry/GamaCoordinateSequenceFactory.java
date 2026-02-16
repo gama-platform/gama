@@ -20,16 +20,15 @@ import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.impl.CoordinateArraySequence;
 
-import gama.api.data.factories.IFactory;
-import gama.api.data.objects.ICoordinates;
-import gama.api.data.objects.IPoint;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 
 /**
  * A static factory for creating {@link ICoordinates} instances. This class acts as a global access point and wrapper
  * around an {@link ICoordinateSequenceFactory}, delegating all creation requests to it. It ensures that coordinate
  * sequences are created consistently across the platform.
  */
-public class GamaCoordinateSequenceFactory implements IFactory<ICoordinates> {
+public class GamaCoordinateSequenceFactory {
 
 	/** The JTS factory. */
 	static CoordinateSequenceFactory JTSFactory;

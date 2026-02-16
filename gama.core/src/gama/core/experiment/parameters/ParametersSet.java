@@ -17,8 +17,8 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
-import gama.api.utils.files.IGamaFile;
-import gama.api.utils.map.GamaMap;
+import gama.api.types.file.IGamaFile;
+import gama.api.types.map.GamaMap;
 
 /**
  * The Class ParametersSet.

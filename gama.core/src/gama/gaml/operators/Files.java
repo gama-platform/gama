@@ -34,19 +34,19 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
 import gama.api.constants.IKeyword;
-import gama.api.data.objects.IContainer;
-import gama.api.data.objects.IList;
-import gama.api.data.objects.IShape;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.file.GamaFolderFile;
+import gama.api.types.file.IGamaFile;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
 import gama.api.utils.files.BufferingUtils;
 import gama.api.utils.files.FileUtils;
-import gama.api.utils.files.GamaFolderFile;
-import gama.api.utils.files.IGamaFile;
 
 /**
  * Written by drogoul Modified on 20 dec. 2010
