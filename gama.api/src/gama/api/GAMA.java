@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.preferences.ConfigurationScope;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.exceptions.GamaRuntimeFileException;
+import gama.api.gaml.GAML;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.kernel.PlatformAgent;
@@ -473,6 +474,7 @@ public class GAMA {
 		for (final IExperimentController controller : new ArrayList<>(controllers)) { closeController(controller); }
 		getGui().closeSimulationViews(null, andOpenModelingPerspective, immediately);
 		PoolUtils.writeStats();
+		GAML.getExpressionFactory().writeStats();
 		changeCurrentTopLevelAgent(getPlatformAgent(), false);
 	}
 
@@ -579,9 +581,8 @@ public class GAMA {
 	public static boolean reportError(final IScope scope, final GamaRuntimeException g,
 			final boolean shouldStopSimulation) {
 		boolean warning = g.isWarning();
-		final boolean shouldStop =
-				(warning && GamaPreferences.Runtime.CORE_WARNINGS_AS_ERRORS.getValue() || !warning && shouldStopSimulation)
-						&& GamaPreferences.Runtime.CORE_STOP_AT_FIRST_ERROR.getValue();
+		final boolean shouldStop = (warning && GamaPreferences.Runtime.CORE_WARNINGS_AS_ERRORS.getValue()
+				|| !warning && shouldStopSimulation) && GamaPreferences.Runtime.CORE_STOP_AT_FIRST_ERROR.getValue();
 		if (g.isReported()) return !shouldStop;
 		final IExperimentController controller = getFrontmostController();
 		if (controller == null || controller.getExperiment() == null || controller.isDisposing()

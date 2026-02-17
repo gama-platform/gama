@@ -214,7 +214,7 @@ public class MonitorOutput extends AbstractValuedDisplayOutput implements IExper
 				lastValue = null;
 			}
 			if (constantColor == null && colorExpression != null) {
-				color = GamaColorFactory.createFrom(scope, colorExpression.value(scope));
+				color = GamaColorFactory.castToColor(scope, colorExpression.value(scope));
 			}
 		} finally {
 			scope.setCurrentSymbol(null);

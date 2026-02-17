@@ -42,7 +42,7 @@ public class GamaGradient extends GamaMap<IColor, Double> {
 	 */
 	public void set(final IScope scope, final IMap<Object, Object> values) {
 		for (Map.Entry<Object, Object> entry : values.entrySet()) {
-			this.put(GamaColorFactory.createFrom(scope, entry.getKey()), Cast.asFloat(scope, entry.getValue()));
+			this.put(GamaColorFactory.castToColor(scope, entry.getKey()), Cast.asFloat(scope, entry.getValue()));
 		}
 	}
 

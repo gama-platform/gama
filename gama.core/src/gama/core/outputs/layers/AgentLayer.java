@@ -80,7 +80,7 @@ public class AgentLayer extends AbstractLayer {
 				IColor color;
 				if (hasColor) {
 					final Object value = agent.getDirectVarValue(scope, IKeyword.COLOR);
-					color = GamaColorFactory.createFrom(scope, value);
+					color = GamaColorFactory.castToColor(scope, value);
 				} else {
 					color = GamaColorFactory.get(GamaPreferences.Displays.CORE_COLOR.getValue().getRGB());
 				}

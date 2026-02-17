@@ -22,22 +22,8 @@ public class AgentExecutionContext implements IDisposable {
 
 	/** The Constant POOL. */
 	// Disactivated for the moment
-	private static PoolUtils.ObjectPool<AgentExecutionContext> POOL;
-
-	/** The Constant POOL_ACTIVE. */
-	private static final boolean POOL_ACTIVE = false;
-
-	/**
-	 * Gets the pool.
-	 *
-	 * @return the pool
-	 */
-	private static PoolUtils.ObjectPool<AgentExecutionContext> getPOOL() {
-		if (POOL == null) {
-			POOL = PoolUtils.create("Agent Execution Context", true, AgentExecutionContext::new, null, null);
-		}
-		return POOL;
-	}
+	private static PoolUtils.ObjectPool<AgentExecutionContext> POOL =
+			PoolUtils.create("Agent Execution Context", true, AgentExecutionContext::new, null, null);
 
 	/**
 	 * Creates the.
@@ -49,13 +35,7 @@ public class AgentExecutionContext implements IDisposable {
 	 * @return the agent execution context
 	 */
 	public static AgentExecutionContext create(final IAgent agent, final AgentExecutionContext outer) {
-
-		final AgentExecutionContext result;
-		if (POOL_ACTIVE) {
-			result = getPOOL().get();
-		} else {
-			result = new AgentExecutionContext();
-		}
+		final AgentExecutionContext result = POOL.get();
 		result.agent = agent;
 		result.outer = outer;
 		return result;
@@ -95,7 +75,7 @@ public class AgentExecutionContext implements IDisposable {
 	public void dispose() {
 		agent = null;
 		outer = null;
-		if (POOL_ACTIVE) { getPOOL().release(this); }
+		POOL.release(this);
 	}
 
 	/**

@@ -88,7 +88,7 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 				int v = Cast.asInt(scope, exp.value(scope));
 				return GamaColorFactory.createWithRGBA(v, v, v, 255);
 			}
-			return GamaColorFactory.createFrom(scope, exp.value(scope));
+			return GamaColorFactory.castToColor(scope, exp.value(scope));
 		}, Types.COLOR, GamaColorFactory.createWithRGBA(i, i, i, 255));
 
 	}

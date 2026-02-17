@@ -147,7 +147,7 @@ public class OverlayStatement extends GraphicLayerStatement {
 	 * @return the int[]
 	 */
 	private static int[] computeColor(final IScope scope, final Object color) {
-		final IColor c = GamaColorFactory.createFrom(scope, color);
+		final IColor c = GamaColorFactory.castToColor(scope, color);
 		return new int[] { c.red(), c.green(), c.blue() };
 	}
 

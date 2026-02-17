@@ -420,4 +420,9 @@ public interface IExpressionFactory {
 	 */
 	IExpression getExpressionDenoting(final IDescription desc);
 
+	/**
+	 *
+	 */
+	void writeStats();
+
 }

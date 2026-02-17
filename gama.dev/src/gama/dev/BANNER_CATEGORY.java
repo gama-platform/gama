@@ -34,6 +34,8 @@ public enum BANNER_CATEGORY {
 	JAI,
 
 	/** The compil. */
-	COMPIL;
+	COMPIL,
+	/** The pool. */
+	POOL;
 
 }

@@ -245,54 +245,23 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	}
 
 	/**
-	 * Returns the current cache statistics for monitoring purposes.
-	 *
-	 * @return a map containing cache names and their sizes and statistics
-	 */
-	public Map<String, Object> getCacheStatistics() {
-		Map<String, Object> stats = new java.util.concurrent.ConcurrentHashMap<>();
-
-		// Collect statistics from the operator cache (nested cache structure)
-		CacheStats operatorStats = operatorCache.stats();
-		stats.put("operatorCache_size", operatorCache.size()); // Current number of cached entries
-		stats.put("operatorCache_hitRate", operatorStats.hitRate()); // % of lookups that found cached value
-		stats.put("operatorCache_missRate", operatorStats.missRate()); // % of lookups that didn't find cached value
-		stats.put("operatorCache_evictionCount", operatorStats.evictionCount()); // Number of evicted entries
-
-		// Collect statistics from the exact operator match cache
-		CacheStats exactOperatorStats = exactOperatorCache.stats();
-		stats.put("exactOperatorCache_size", exactOperatorCache.size());
-		stats.put("exactOperatorCache_hitRate", exactOperatorStats.hitRate());
-		stats.put("exactOperatorCache_missRate", exactOperatorStats.missRate());
-		stats.put("exactOperatorCache_evictionCount", exactOperatorStats.evictionCount());
-
-		// Collect statistics from the signature matching cache
-		CacheStats signatureMatchStats = signatureMatchCache.stats();
-		stats.put("signatureMatchCache_size", signatureMatchCache.size());
-		stats.put("signatureMatchCache_hitRate", signatureMatchStats.hitRate());
-		stats.put("signatureMatchCache_missRate", signatureMatchStats.missRate());
-		stats.put("signatureMatchCache_evictionCount", signatureMatchStats.evictionCount());
-
-		return stats;
-	}
-
-	/**
 	 * Returns a simplified view of cache performance metrics for quick monitoring.
 	 *
 	 * @return formatted string containing cache hit rates and sizes
 	 */
-	public String getCachePerformanceSummary() {
+	@Override
+	public void writeStats() {
 		CacheStats operatorStats = operatorCache.stats();
 		CacheStats exactOperatorStats = exactOperatorCache.stats();
 		CacheStats signatureMatchStats = signatureMatchCache.stats();
 
-		return String.format("""
+		DEBUG.LOG(String.format("""
 				Cache Performance Summary:
 				- Operator Cache: %d entries, %.2f%% hit rate
 				- Exact Operator Cache: %d entries, %.2f%% hit rate
 				- Signature Match Cache: %d entries, %.2f%% hit rate""", operatorCache.size(),
 				operatorStats.hitRate() * 100, exactOperatorCache.size(), exactOperatorStats.hitRate() * 100,
-				signatureMatchCache.size(), signatureMatchStats.hitRate() * 100);
+				signatureMatchCache.size(), signatureMatchStats.hitRate() * 100));
 	}
 
 	static {

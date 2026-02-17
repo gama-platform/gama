@@ -95,7 +95,7 @@ public class StatusStatement extends AbstractStatement {
 			final Object o = message.value(scope);
 			final String msg = o == null ? null : Cast.asString(scope, o);
 			scope.getGui().getStatus().setStatus(msg, null,
-					color == null ? null : GamaColorFactory.createFrom(scope, color.value(scope)));
+					color == null ? null : GamaColorFactory.castToColor(scope, color.value(scope)));
 		}
 		return mes;
 	}

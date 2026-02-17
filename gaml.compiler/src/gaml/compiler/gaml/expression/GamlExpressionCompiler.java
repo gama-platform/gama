@@ -190,6 +190,12 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	/** Session-level cache for type lookups to avoid repeated expensive queries */
 	private final Map<String, IType> typeCache = new HashMap<>();
 
+	/** Cached EGaml singleton instance to avoid repeated getInstance() calls */
+	private static final EGaml EGAML = EGaml.getInstance();
+
+	/** Cached NumberFormat for US locale to reduce object allocation in double parsing */
+	private static final NumberFormat US_NUMBER_FORMAT = NumberFormat.getInstance(Locale.US);
+
 	/** The current expression description. Used to disable reentrant parsing (Issue 782) */
 	private IExpressionDescription currentExpressionDescription;
 
@@ -201,9 +207,8 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 * eviction (LRU when cache exceeds MAX_CACHE_SIZE) - Time-based eviction (entries expire after CACHE_EXPIRE_MINUTES
 	 * of inactivity) - Thread-safe concurrent access - Automatic cache statistics and monitoring
 	 */
-	private static final Cache<String, IExpression> constantSyntheticExpressions =
-			CacheBuilder.newBuilder().maximumSize(MAX_CACHE_SIZE)
-					.expireAfterAccess(CACHE_EXPIRE_MINUTES, TimeUnit.MINUTES).recordStats().build();
+	private static final Cache<String, IExpression> constantSyntheticExpressions = CacheBuilder.newBuilder()
+			.maximumSize(MAX_CACHE_SIZE).expireAfterAccess(CACHE_EXPIRE_MINUTES, TimeUnit.MINUTES).build();
 
 	/**
 	 * The current parsing context (IDescription) in which the compiler operates. If none is given, the global context
@@ -316,8 +321,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		final IArtefactProto proto = expr.getGamlType().getGetter(op);
 		if (proto != null) {
 			// It can only be a field as 'actions' are not defined on simple objects
-			final TypeFieldExpression fieldExpr =
-					(TypeFieldExpression) GAML.getExpressionFactory().createOperator(proto, getContext(), e, expr);
+			final IExpression fieldExpr = getFactory().createOperator(proto, getContext(), e, expr);
 			if (getContext() != null) { getContext().document(e, expr); }
 			return fieldExpr;
 		}
@@ -340,7 +344,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 			// We are in a remote context, so 'my' refers to the calling agent
 			final IExpression myself = desc.getVarExpr(MYSELF, false);
 			final IDescription species = myself.getGamlType().getSpecies();
-			final IExpression var = species.getVarExpr(EGaml.getInstance().getKeyOf(e), true);
+			final IExpression var = species.getVarExpr(EGAML.getKeyOf(e), true);
 			return getFactory().createOperator(_DOT, (IDescription) desc, e, myself, var);
 		}
 		// Otherwise, we ignore 'my' since it refers to 'self'
@@ -375,27 +379,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	/**
 	 * Helper class to hold resolved type parameters.
 	 */
-	private static class TypeParameters {
-
-		/** The key type. */
-		final IType keyType;
-
-		/** The content type. */
-		final IType contentType;
-
-		/**
-		 * Instantiates a new type parameters.
-		 *
-		 * @param keyType
-		 *            the key type
-		 * @param contentType
-		 *            the content type
-		 */
-		TypeParameters(final IType keyType, final IType contentType) {
-			this.keyType = keyType;
-			this.contentType = contentType;
-		}
-	}
+	private static record TypeParameters(IType keyType, IType contentType) {}
 
 	/**
 	 * Extracts and resolves type parameters from a type expression. Extracted to reduce complexity in casting().
@@ -447,7 +431,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		if (object == null) return null;
 
 		// Get primary type name
-		String primary = EGaml.getInstance().getKeyOf(object);
+		String primary = EGAML.getKeyOf(object);
 		if (primary == null) {
 			primary = object.getRef().getName();
 		} else if (ISyntacticFactory.SPECIES_VAR.equals(primary)) { primary = SPECIES; }
@@ -574,7 +558,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 
 		// Handle n-ary operators
 		if (rightMember instanceof ExpressionList el) {
-			final List<Expression> list = EGaml.getInstance().getExprsOf(el);
+			final List<Expression> list = EGAML.getExprsOf(el);
 			final int size = list.size();
 			if (size > 1) {
 				final IExpression[] compiledArgs = new IExpression[size + 1];
@@ -608,11 +592,11 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 
 		// Find the name of 'each' if redefined
 		if (rightMember instanceof ExpressionList params) {
-			final List<Expression> exprs = EGaml.getInstance().getExprsOf(params);
+			final List<Expression> exprs = EGAML.getExprsOf(params);
 			if (!exprs.isEmpty()) {
 				final Expression arg = exprs.get(0);
 				if (arg instanceof Parameter p) {
-					argName = EGaml.getInstance().getKeyOf(p);
+					argName = EGAML.getKeyOf(p);
 					rightMember = p.getRight();
 				} else {
 					rightMember = arg;
@@ -684,11 +668,14 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	private IExpression binary(final String op, final Expression e1, final Expression right) {
 		return switch (op) {
 			// if the expression is " var of agents ", we must compile it apart
-			case OF -> compileFieldExpr(right, e1);
+			// Note: OF operator reverses the order - "var of agents" means agents.var
+			case OF -> compileFieldAccess(right, e1, null);
+			// if the operator is ".", it's field access: owner.field
+			case _DOT -> compileFieldAccess(e1, right, null);
 			// if the operator is "as", the right-hand expression should be a
 			// casting type
 			case AS -> {
-				final String type = EGaml.getInstance().getKeyOf(right);
+				final String type = EGAML.getKeyOf(right);
 				IType t = getType(type);
 				if (t != null) { yield casting(t, compile(e1), right); }
 				getContext().error(
@@ -699,7 +686,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 			// if the operator is "is", the right-hand expression should be a type
 			case IS -> {
 				final IExpression left = compile(e1);
-				final String type = EGaml.getInstance().getKeyOf(right);
+				final String type = EGAML.getKeyOf(right);
 				if (isTypeName(type)) {
 					yield getFactory().createOperator(IS, getContext(), right.eContainer(), left,
 							getFactory().createConst(type, Types.STRING));
@@ -795,98 +782,85 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	}
 
 	/**
-	 * Compiles field access expressions for named experiments within model contexts. This method handles the special
-	 * case where experiments are accessed by their plain names within model species expressions.
-	 *
-	 * @param leftExpr
-	 *            the left-hand expression (typically a model reference)
-	 * @param name
-	 *            the name of the experiment to access
-	 * @return the compiled experiment field expression, or null if invalid
-	 */
-	private IExpression compileNamedExperimentFieldExpr(final Expression leftExpr, final String name) {
-		final IExpression owner = compile(leftExpr);
-		if (owner == null) return null;
-		final IType type = owner.getGamlType();
-		if (type.isParametricFormOf(Types.SPECIES)) {
-			final ISpeciesDescription sd = type.getContentType().getSpecies();
-			if (sd instanceof IModelDescription md && md.hasExperiment(name))
-				return getFactory().createConst(name, GamaType.from(md.getExperiment(name)));
-		}
-		getContext().error("Only experiments can be accessed using their plain name", IGamlIssue.UNKNOWN_FIELD);
-		return null;
-	}
-
-	/**
-	 * Compiles field access expressions (e.g., agent.field, object.method) handling both simple type fields and agent
-	 * variable/action access. This method supports:
+	 * Unified entry point for all field access compilation. This method handles field access in all its forms:
 	 * <ul>
-	 * <li>Type field access for simple objects (e.g., point.x, color.red)</li>
-	 * <li>Agent variable access (e.g., agent.speed, agent.location)</li>
-	 * <li>Agent action calls (e.g., agent.move(), agent.die())</li>
-	 * <li>Special cases for matrix dot product and experiment access</li>
+	 * <li>Dot notation: owner.field (e.g., agent.speed, point.x)</li>
+	 * <li>OF operator: field of owner (e.g., speed of agent)</li>
+	 * <li>Named experiments: model."experiment_name"</li>
+	 * <li>Type fields for simple objects (e.g., color.red)</li>
+	 * <li>Agent variables and actions (e.g., agent.move())</li>
+	 * <li>Special cases for matrices, experiments, and simulations</li>
 	 * </ul>
 	 *
-	 * @param leftExpr
+	 * @param ownerExpr
 	 *            the expression representing the owner object/agent
 	 * @param fieldExpr
-	 *            the expression representing the field or method being accessed
+	 *            the expression representing the field or method being accessed (can be null for string-named fields)
+	 * @param fieldName
+	 *            the name of the field (used when fieldExpr is null or for string literals)
 	 * @return the compiled field access expression, or null if compilation fails
 	 */
-	private IExpression compileFieldExpr(final Expression leftExpr, final Expression fieldExpr) {
-		// If the owner cannot be determined (or leads to a previous error) we quit
-		final IExpression owner = compile(leftExpr);
+	private IExpression compileFieldAccess(final Expression ownerExpr, final Expression fieldExpr,
+			final String fieldName) {
+
+		// Compile the owner expression
+		final IExpression owner = compile(ownerExpr);
 		if (owner == null) return null;
 
-		// We gather the name of the "field"
-		final String var = EGaml.getInstance().getKeyOf(fieldExpr);
+		// Determine the field name to access
+		final String var = fieldName != null ? fieldName : EGAML.getKeyOf(fieldExpr);
 		final IType type = owner.getGamlType();
 
-		// hqnghi 28-05-14 search input variable from model, not experiment
+		// Special case: Named experiment access on species<model> type
+		if (fieldName != null && type.isParametricFormOf(Types.SPECIES)) {
+			final ISpeciesDescription sd = type.getContentType().getSpecies();
+			if (sd instanceof IModelDescription md && md.hasExperiment(fieldName))
+				return getFactory().createConst(fieldName, GamaType.from(md.getExperiment(fieldName)));
+		}
+
+		// Special case: Experiment access from parametric species type (hqnghi 28-05-14)
 		if (type instanceof ParametricType pt && pt.getGamlType().id() == IType.SPECIES
-				&& pt.getContentType().getSpecies() instanceof ModelDescription md && md.hasExperiment(var))
+				&& pt.getContentType().getSpecies() instanceof IModelDescription md && md.hasExperiment(var))
 			return getFactory().createConst(var, GamaType.from(md.getExperiment(var)));
-		// end-hqnghi
 
-		// If the owner has no species, handle as simple type field access
+		// Dispatch based on whether owner has a species
 		final ITypeDescription species = type.getSpecies();
-		if (species == null) return compileSimpleTypeField(leftExpr, fieldExpr, var, type);
+		if (species == null) // Simple type field access (no agent involved)
+			return compileSimpleTypeField(ownerExpr, fieldExpr, var, type, owner);
 
-		// We are now dealing with an agent - handle variable or action access
+		// Agent field or action access
 		return compileAgentFieldOrAction(fieldExpr, owner, var, species);
 	}
 
 	/**
-	 * Compiles field access for simple (non-agent) types. Extracted to reduce complexity in compileFieldExpr().
+	 * Compiles field access for simple (non-agent) types. Handles type fields like point.x, color.red, etc.
 	 *
-	 * @param leftExpr
-	 *            the owner expression AST node
+	 * @param ownerExpr
+	 *            the owner expression AST node (for error reporting)
 	 * @param fieldExpr
-	 *            the field expression AST node
+	 *            the field expression AST node (can be null for string-named fields)
 	 * @param fieldName
 	 *            the field name
 	 * @param ownerType
 	 *            the owner type
+	 * @param compiledOwner
+	 *            the already compiled owner expression
 	 * @return the compiled field expression, or null if invalid
 	 */
-	private IExpression compileSimpleTypeField(final Expression leftExpr, final Expression fieldExpr,
-			final String fieldName, final IType ownerType) {
+	private IExpression compileSimpleTypeField(final Expression ownerExpr, final Expression fieldExpr,
+			final String fieldName, final IType ownerType, final IExpression compiledOwner) {
 		// It can only be a field as 'actions' are not defined on simple objects, except for matrices, where it can
 		// also represent the dot product
 		final IArtefactProto proto = ownerType.getGetter(fieldName);
 		if (proto == null) {
-			// Special case for matrices
-			if (ownerType.id() == IType.MATRIX) return binary(".", compile(leftExpr), fieldExpr);
-
+			// Special case for matrices - fall back to binary dot operator
+			if (ownerType.id() == IType.MATRIX && fieldExpr != null) return binary(".", compiledOwner, fieldExpr);
 			getContext().error("Unknown field '" + fieldName + "' for type " + ownerType, IGamlIssue.UNKNOWN_FIELD,
-					leftExpr, fieldName, ownerType.toString());
+					ownerExpr, fieldName, ownerType.toString());
 			return null;
 		}
-
-		final IExpression owner = compile(leftExpr);
-		final TypeFieldExpression expr =
-				(TypeFieldExpression) getFactory().createOperator(proto, getContext(), fieldExpr, owner);
-		if (getContext() != null) { getContext().document(fieldExpr, expr); }
+		final IExpression expr = getFactory().createOperator(proto, getContext(), fieldExpr, compiledOwner);
+		if (getContext() != null && fieldExpr != null) { getContext().document(fieldExpr, expr); }
 		return expr;
 	}
 
@@ -1101,9 +1075,8 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 * @return the list of parameter expressions, or null on error
 	 */
 	private List<Expression> extractParameters(final EObject o, final IDescription command) {
-		final EGaml egaml = EGaml.getInstance();
-		if (o instanceof Array array) return egaml.getExprsOf(array.getExprs());
-		if (o instanceof ExpressionList) return egaml.getExprsOf(o);
+		if (o instanceof Array array) return EGAML.getExprsOf(array.getExprs());
+		if (o instanceof ExpressionList) return EGAML.getExprsOf(o);
 		command.error("Arguments must be written [a1::v1, a2::v2], (a1:v1, a2:v2) or (v1, v2)");
 		return null;
 	}
@@ -1160,15 +1133,13 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	private ArgInfo extractArgumentInfo(final Expression exp, final boolean completeArgs,
 			final List<String> expectedArgs, final int positionalIndex, final IActionDescription action,
 			final IDescription command) {
-		final EGaml egaml = EGaml.getInstance();
-
 		// Try named argument formats
-		if (exp instanceof ArgumentPair p) return new ArgInfo(egaml.getKeyOfArgumentPair(p), p.getRight(), false);
+		if (exp instanceof ArgumentPair p) return new ArgInfo(EGAML.getKeyOfArgumentPair(p), p.getRight(), false);
 
-		if (exp instanceof Parameter p) return new ArgInfo(egaml.getKeyOfParameter(p), p.getRight(), false);
+		if (exp instanceof Parameter p) return new ArgInfo(EGAML.getKeyOfParameter(p), p.getRight(), false);
 
 		if (exp instanceof BinaryOperator bo && "::".equals(bo.getOp()))
-			return new ArgInfo(egaml.getKeyOf(bo.getLeft()), bo.getRight(), false);
+			return new ArgInfo(EGAML.getKeyOf(bo.getLeft()), bo.getRight(), false);
 
 		// Handle positional arguments
 		if (completeArgs) {
@@ -1194,7 +1165,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	@Override
 	public IExpression caseSkillRef(final SkillRef object) {
-		return skill(EGaml.getInstance().getKeyOf(object));
+		return skill(EGAML.getKeyOf(object));
 	}
 
 	/**
@@ -1208,7 +1179,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	@Override
 	public IExpression caseActionRef(final ActionRef object) {
-		final String s = EGaml.getInstance().getKeyOf(object);
+		final String s = EGAML.getKeyOf(object);
 		final ISpeciesDescription sd = getContext().getSpeciesContext();
 		// Look in the species and its ancestors
 		IActionDescription ad = sd.getAction(s);
@@ -1249,7 +1220,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	@Override
 	public IExpression caseVariableRef(final VariableRef object) {
-		final String s = EGaml.getInstance().getNameOfRef(object);
+		final String s = EGAML.getNameOfRef(object);
 		if (s == null) return caseVarDefinition(object.getRef());
 		return caseVar(s, object);
 	}
@@ -1280,7 +1251,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	@Override
 	public IExpression caseEquationRef(final EquationRef object) {
-		return getFactory().createConst(EGaml.getInstance().getNameOfRef(object), Types.STRING);
+		return getFactory().createConst(EGAML.getNameOfRef(object), Types.STRING);
 	}
 
 	/**
@@ -1293,7 +1264,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	@Override
 	public IExpression caseUnitName(final UnitName object) {
-		final String s = EGaml.getInstance().getNameOfRef(object);
+		final String s = EGAML.getNameOfRef(object);
 		IExpression exp = caseUnitName(s);
 		if (exp == null) {
 			getContext().error(s + " is not a unit or constant name.", IGamlIssue.NOT_A_UNIT, object, (String[]) null);
@@ -1366,7 +1337,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	@Override
 	public IExpression caseReservedLiteral(final ReservedLiteral object) {
-		return caseVar(EGaml.getInstance().getKeyOf(object), object);
+		return caseVar(EGAML.getKeyOf(object), object);
 	}
 
 	/**
@@ -1395,7 +1366,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	@Override
 	public IExpression caseArgumentPair(final ArgumentPair object) {
-		return binary("::", caseVar(EGaml.getInstance().getKeyOf(object), object), object.getRight());
+		return binary("::", caseVar(EGAML.getKeyOf(object), object), object.getRight());
 	}
 
 	/**
@@ -1423,7 +1394,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	@Override
 	public IExpression caseUnary(final Unary object) {
-		return unary(EGaml.getInstance().getKeyOf(object), object.getRight());
+		return unary(EGAML.getKeyOf(object), object.getRight());
 	}
 
 	/**
@@ -1436,8 +1407,10 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	public IExpression caseDot(final Access object) {
 		final Expression right = object.getRight();
-		if (right instanceof StringLiteral sl) return compileNamedExperimentFieldExpr(object.getLeft(), sl.getOp());
-		if (right != null) return compileFieldExpr(object.getLeft(), right);
+		// Special case: string literal on right side for named experiment access
+		if (right instanceof StringLiteral sl) return compileFieldAccess(object.getLeft(), null, sl.getOp());
+		// Regular field access
+		if (right != null) return compileFieldAccess(object.getLeft(), right, null);
 		return null;
 	}
 
@@ -1463,7 +1436,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 		final IType contType = container.getGamlType();
 		final boolean isMatrix = Types.MATRIX.isAssignableFrom(contType);
 		final IType keyType = contType.getKeyType();
-		final List<? extends Expression> list = EGaml.getInstance().getExprsOf(object.getRight());
+		final List<? extends Expression> list = EGAML.getExprsOf(object.getRight());
 		try (final Collector.AsList<IExpression> result = Collector.getList()) {
 			final int size = list.size();
 
@@ -1532,10 +1505,10 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	@Override
 	public IExpression caseArray(final Array object) {
-		final List<? extends Expression> list = EGaml.getInstance().getExprsOf(object.getExprs());
+		final List<? extends Expression> list = EGAML.getExprsOf(object.getExprs());
 		// Awkward expression, but necessary to fix Issue #2612
-		final boolean allPairs = !list.isEmpty() && Iterables.all(list,
-				each -> each instanceof ArgumentPair || "::".equals(EGaml.getInstance().getKeyOf(each)));
+		final boolean allPairs = !list.isEmpty()
+				&& Iterables.all(list, each -> each instanceof ArgumentPair || "::".equals(EGAML.getKeyOf(each)));
 		final Iterable<IExpression> result = Iterables.transform(list, this::compile);
 		if (Iterables.any(result, t -> t == null)) return null;
 		return allPairs ? getFactory().createMap(result) : getFactory().createList(result);
@@ -1571,7 +1544,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	@Override
 	public IExpression caseExpressionList(final ExpressionList object) {
-		final List<Expression> list = EGaml.getInstance().getExprsOf(object);
+		final List<Expression> list = EGAML.getExprsOf(object);
 		if (list.isEmpty()) return null;
 		if (list.size() > 1) {
 			getContext().warning(
@@ -1596,12 +1569,12 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	@Override
 	public IExpression caseFunction(final Function object) {
 		if (object == null) return null;
-		final String op = EGaml.getInstance().getKeyOf(object.getLeft());
+		final String op = EGAML.getKeyOf(object.getLeft());
 		IExpression result = tryCastingFunction(op, object);
 		if (result != null) return result;
 		result = tryActionCall(op, object);
 		if (result != null) return result;
-		final List<Expression> args = EGaml.getInstance().getExprsOf(object.getRight());
+		final List<Expression> args = EGAML.getExprsOf(object.getRight());
 		return switch (args.size()) {
 			case 0 -> {
 				getContext().error("Unknown operator or action: " + op, IGamlIssue.UNKNOWN_ACTION, object);
@@ -1696,11 +1669,10 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	@Override
 	public IExpression caseIntLiteral(final IntLiteral object) {
 		try {
-			final Integer val = Integer.parseInt(EGaml.getInstance().getKeyOf(object), 10);
+			final Integer val = Integer.parseInt(EGAML.getKeyOf(object), 10);
 			return getFactory().createConst(val, Types.INT);
 		} catch (final NumberFormatException e) {
-			getContext().error("Malformed integer: " + EGaml.getInstance().getKeyOf(object), IGamlIssue.UNKNOWN_NUMBER,
-					object);
+			getContext().error("Malformed integer: " + EGAML.getKeyOf(object), IGamlIssue.UNKNOWN_NUMBER, object);
 			return null;
 		}
 	}
@@ -1716,20 +1688,19 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	@Override
 	public IExpression caseDoubleLiteral(final DoubleLiteral object) {
 
-		String s = EGaml.getInstance().getKeyOf(object);
+		String s = EGAML.getKeyOf(object);
 
 		if (s == null) return null;
 		try {
 			return getFactory().createConst(Double.parseDouble(s), Types.FLOAT);
 		} catch (final NumberFormatException e) {
 			try {
-				final NumberFormat nf = NumberFormat.getInstance(Locale.US);
 				// More robust, but slower parsing used in case
 				// Double.parseDouble() cannot handle it
 				// See Issue 1025. Exponent notation is capitalized, and '+' is
 				// removed beforehand
 				s = s.replace('e', 'E').replace("+", "");
-				return getFactory().createConst(nf.parse(s).doubleValue(), Types.FLOAT);
+				return getFactory().createConst(US_NUMBER_FORMAT.parse(s).doubleValue(), Types.FLOAT);
 			} catch (final ParseException ex) {
 				getContext().error("Malformed float: " + s, IGamlIssue.UNKNOWN_NUMBER, object);
 				return null;
@@ -1748,7 +1719,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	@Override
 	public IExpression caseStringLiteral(final StringLiteral object) {
-		return getFactory().createConst(EGaml.getInstance().getKeyOf(object), Types.STRING);
+		return getFactory().createConst(EGAML.getKeyOf(object), Types.STRING);
 	}
 
 	/**
@@ -1761,7 +1732,7 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	 */
 	@Override
 	public IExpression caseBooleanLiteral(final BooleanLiteral object) {
-		final String s = EGaml.getInstance().getKeyOf(object);
+		final String s = EGAML.getKeyOf(object);
 		if (s == null) return null;
 		return TRUE.equalsIgnoreCase(s) ? getFactory().getTrue() : getFactory().getFalse();
 	}
@@ -2154,34 +2125,5 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	public static void clearExpressionCache() {
 		constantSyntheticExpressions.invalidateAll();
 	}
-
-	/**
-	 * Returns the current size of the expression cache.
-	 *
-	 * @return the number of cached expressions
-	 */
-	public static long getCacheSize() { return constantSyntheticExpressions.size(); }
-
-	/**
-	 * Returns the maximum allowed cache size.
-	 *
-	 * @return the maximum cache size
-	 */
-	public static long getMaxCacheSize() { return MAX_CACHE_SIZE; }
-
-	/**
-	 * Returns cache statistics including hit rate, miss rate, and eviction count. This provides insight into cache
-	 * performance for monitoring and optimization.
-	 *
-	 * @return the cache statistics object with performance metrics
-	 */
-	public static com.google.common.cache.CacheStats getCacheStats() { return constantSyntheticExpressions.stats(); }
-
-	/**
-	 * Returns the cache expiration time in minutes.
-	 *
-	 * @return the number of minutes after which unused cache entries expire
-	 */
-	public static int getCacheExpireMinutes() { return CACHE_EXPIRE_MINUTES; }
 
 }

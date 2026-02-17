@@ -53,7 +53,8 @@ final class TypePair {
 	public boolean equals(final Object obj) {
 		if (this == obj) return true;
 		if (!(obj instanceof final TypePair other)) return false;
-		return other.hashCode == hashCode;
+		return other.type1 == type1 && other.type2 == type2;
+		// return other.hashCode == hashCode;
 	}
 
 	@Override

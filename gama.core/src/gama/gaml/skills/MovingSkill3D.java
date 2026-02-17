@@ -253,7 +253,17 @@ public class MovingSkill3D extends MovingSkill {
 				if (scope.hasArg("proba_edges")) {
 					probaDeplacement = (IMap<IShape, Double>) scope.getVarValue("proba_edges");
 				}
-				moveToNextLocAlongPathSimplified(scope, agent, graph, dist, probaDeplacement);
+				PathMovementHelper.MovementResult result = 
+						PathMovementHelper.moveAlongGraph(scope, agent, graph, dist, probaDeplacement);
+				if (result != null) {
+					agent.setAttribute(IKeyword.REAL_SPEED, result.travelledDistance / scope.getClock().getStepInSeconds());
+					agent.setAttribute(MovementAttributes.INDEX_ON_PATH, result.finalIndex);
+					setCurrentEdge(agent, graph);
+					agent.setAttribute(MovementAttributes.INDEX_ON_PATH_SEGMENT, result.finalIndexSegment);
+					agent.setAttribute(MovementAttributes.REVERSE, result.finalReverse);
+					setLocation(agent, result.finalLocation);
+					setHeading(agent, result.computedHeading);
+				}
 				return true;
 			}
 			final Object bounds = scope.getArg(IKeyword.BOUNDS, IType.NONE);

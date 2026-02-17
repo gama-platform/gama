@@ -53,7 +53,7 @@ public class GisLayer extends AbstractLayer {
 	public void privateDraw(final IGraphicsScope scope, final IGraphics g) {
 		final IColor color =
 				colorExpression == null ? GamaColorFactory.get(GamaPreferences.Displays.CORE_COLOR.getValue().getRGB())
-						: GamaColorFactory.createFrom(scope, colorExpression.value(scope));
+						: GamaColorFactory.castToColor(scope, colorExpression.value(scope));
 		final List<IShape> shapes = buildGisLayer(scope);
 		if (shapes != null) {
 			for (final IShape geom : shapes) {

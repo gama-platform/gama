@@ -212,7 +212,9 @@ public class GraphTopology extends AbstractTopology {
 					}
 				}
 				if (edgeT == null) {
-					edgeT = scope.getSimulation().getAgent().getTopology().getAgentClosestTo(scope, target, filter);
+					ITopology t = scope.getSimulation().getAgent().getTopology();
+					if (t == null) { t = scope.getTopology(); }
+					if (t != null) { edgeT = t.getAgentClosestTo(scope, target, filter); }
 				}
 
 				if (edgeT == null) return null;

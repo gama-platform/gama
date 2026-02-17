@@ -556,7 +556,7 @@ public class LayeredDisplayData implements IDisplayData {
 				setToolbarVisible(Cast.asBool(scope, toolbar.value(scope)));
 			} else {
 				setToolbarVisible(true);
-				toolbarColor = GamaColorFactory.createFrom(scope, toolbar.value(scope));
+				toolbarColor = GamaColorFactory.castToColor(scope, toolbar.value(scope));
 			}
 		}
 		final IExpression fps = facets.getExpr("show_fps");
@@ -608,7 +608,7 @@ public class LayeredDisplayData implements IDisplayData {
 
 		final IExpression color = facets.getExpr(IKeyword.BACKGROUND);
 		if (color != null) {
-			setBackgroundColor(GamaColorFactory.createFrom(scope, color.value(scope)));
+			setBackgroundColor(GamaColorFactory.castToColor(scope, color.value(scope)));
 			constantBackground = color.isConst();
 		}
 
@@ -616,7 +616,7 @@ public class LayeredDisplayData implements IDisplayData {
 		if (light != null) {
 			IColor intensity;
 			if (light.getGamlType().equals(Types.COLOR)) {
-				intensity = GamaColorFactory.createFrom(scope, light.value(scope));
+				intensity = GamaColorFactory.castToColor(scope, light.value(scope));
 			} else {
 				final int meanValue = Cast.asInt(scope, light.value(scope));
 				intensity = GamaColorFactory.createWithRGBA(meanValue, meanValue, meanValue, 255);
@@ -711,7 +711,7 @@ public class LayeredDisplayData implements IDisplayData {
 		if (!constantBackground) {
 
 			final IExpression color = facets.getExpr(IKeyword.BACKGROUND);
-			if (color != null) { setBackgroundColor(GamaColorFactory.createFrom(scope, color.value(scope))); }
+			if (color != null) { setBackgroundColor(GamaColorFactory.castToColor(scope, color.value(scope))); }
 
 		}
 

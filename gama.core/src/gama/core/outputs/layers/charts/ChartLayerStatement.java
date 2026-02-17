@@ -654,12 +654,12 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 
 		IColor colorvalue = GamaColorFactory.BLACK;
 		IExpression color = getFacet(IKeyword.AXES);
-		if (color != null) { colorvalue = GamaColorFactory.createFrom(scope, color.value(scope)); }
+		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
 		chartOutput.setAxesColorValue(scope, colorvalue);
 
 		colorvalue = GamaColorFactory.BLACK;
 		color = getFacet(ChartLayerStatement.TICKLINECOLOR);
-		if (color != null) { colorvalue = GamaColorFactory.createFrom(scope, color.value(scope)); }
+		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
 		chartOutput.setTickColorValue(scope, colorvalue);
 
 		string1 = getFacet(ChartLayerStatement.XTICKVALUEVISIBLE);
@@ -689,28 +689,28 @@ public class ChartLayerStatement extends AbstractLayerStatement {
 		}
 
 		color = getFacet(IKeyword.COLOR);
-		if (color != null) { colorvalue = GamaColorFactory.createFrom(scope, color.value(scope)); }
+		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
 		chartOutput.setColorValue(scope, colorvalue);
 		colorvalue = GamaColorFactory.WHITE;
 		color = getFacet(IKeyword.BACKGROUND);
-		if (color != null) { colorvalue = GamaColorFactory.createFrom(scope, color.value(scope)); }
+		if (color != null) { colorvalue = GamaColorFactory.castToColor(scope, color.value(scope)); }
 		chartOutput.setBackgroundColorValue(scope, colorvalue);
 
 		color = getFacet(LABELTEXTCOLOR);
 		if (color != null) {
-			colorvalue = GamaColorFactory.createFrom(scope, color.value(scope));
+			colorvalue = GamaColorFactory.castToColor(scope, color.value(scope));
 			chartOutput.setLabelTextColorValue(scope, colorvalue);
 		}
 
 		color = getFacet(LABELBACKGROUNDCOLOR);
 		if (color != null) {
-			colorvalue = GamaColorFactory.createFrom(scope, color.value(scope));
+			colorvalue = GamaColorFactory.castToColor(scope, color.value(scope));
 			chartOutput.setLabelBackgroundColorValue(scope, colorvalue);
 		}
 
 		color = getFacet(IKeyword.BACKGROUND);
 		if (color != null) {
-			colorvalue = GamaColorFactory.createFrom(scope, color.value(scope));
+			colorvalue = GamaColorFactory.castToColor(scope, color.value(scope));
 			chartOutput.setBackgroundColorValue(scope, colorvalue);
 		}
 		IFont font = null;

@@ -423,18 +423,18 @@ public class ChartDataSeries {
 			if (o != null) {
 				if (o instanceof IList) {
 					final IList ol = GamaListFactory.castToList(scope, o);
-					if (ol.size() == 1) { this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(0))); }
+					if (ol.size() == 1) { this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(0))); }
 					if (ol.size() == 2) {
-						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(1)));
-						this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
+						this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(1)));
+						this.setMyMincolor(GamaColorFactory.castToColor(scope, ol.get(0)));
 					}
 					if (ol.size() > 2) {
-						this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
-						this.setMyMedcolor(GamaColorFactory.createFrom(scope, ol.get(1)));
-						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(2)));
+						this.setMyMincolor(GamaColorFactory.castToColor(scope, ol.get(0)));
+						this.setMyMedcolor(GamaColorFactory.castToColor(scope, ol.get(1)));
+						this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(2)));
 					}
 				} else {
-					final IColor col = GamaColorFactory.createFrom(scope, o);
+					final IColor col = GamaColorFactory.castToColor(scope, o);
 					this.setMycolor(col);
 
 				}
@@ -488,18 +488,18 @@ public class ChartDataSeries {
 			if (o != null) {
 				if (o instanceof IList) {
 					final IList ol = GamaListFactory.castToList(scope, o);
-					if (ol.size() == 1) { this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(0))); }
+					if (ol.size() == 1) { this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(0))); }
 					if (ol.size() == 2) {
-						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(1)));
-						this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
+						this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(1)));
+						this.setMyMincolor(GamaColorFactory.castToColor(scope, ol.get(0)));
 					}
 					if (ol.size() > 2) {
-						this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
-						this.setMyMedcolor(GamaColorFactory.createFrom(scope, ol.get(1)));
-						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(2)));
+						this.setMyMincolor(GamaColorFactory.castToColor(scope, ol.get(0)));
+						this.setMyMedcolor(GamaColorFactory.castToColor(scope, ol.get(1)));
+						this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(2)));
 					}
 				} else {
-					final IColor col = GamaColorFactory.createFrom(scope, o);
+					final IColor col = GamaColorFactory.castToColor(scope, o);
 					this.setMycolor(col);
 
 				}
@@ -662,18 +662,18 @@ public class ChartDataSeries {
 			if (o != null) {
 				if (o instanceof IList) {
 					final IList ol = GamaListFactory.castToList(scope, o);
-					if (ol.size() == 1) { this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(0))); }
+					if (ol.size() == 1) { this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(0))); }
 					if (ol.size() == 2) {
-						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(1)));
-						this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
+						this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(1)));
+						this.setMyMincolor(GamaColorFactory.castToColor(scope, ol.get(0)));
 					}
 					if (ol.size() > 2) {
-						this.setMyMincolor(GamaColorFactory.createFrom(scope, ol.get(0)));
-						this.setMyMedcolor(GamaColorFactory.createFrom(scope, ol.get(1)));
-						this.setMycolor(GamaColorFactory.createFrom(scope, ol.get(2)));
+						this.setMyMincolor(GamaColorFactory.castToColor(scope, ol.get(0)));
+						this.setMyMedcolor(GamaColorFactory.castToColor(scope, ol.get(1)));
+						this.setMycolor(GamaColorFactory.castToColor(scope, ol.get(2)));
 					}
 				} else {
-					final IColor col = GamaColorFactory.createFrom(scope, o);
+					final IColor col = GamaColorFactory.castToColor(scope, o);
 					this.setMycolor(col);
 
 				}

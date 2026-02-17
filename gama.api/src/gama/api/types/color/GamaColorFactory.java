@@ -9,6 +9,7 @@
  *
  ********************************************************************************************************/
 package gama.api.types.color;
+
 import java.awt.Color;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +29,6 @@ import gama.api.types.misc.IContainer;
  * to an {@link IColorFactory} implementation.
  */
 public class GamaColorFactory {
-	
 
 	/**
 	 * A map storing named colors accessible by their lowercase names.
@@ -40,12 +40,10 @@ public class GamaColorFactory {
 	 */
 	static Map<Integer, IColor> INT_REGISTRY = Collections.synchronizedMap(new HashMap<>());
 
-
 	/**
 	 * Common color constants used throughout the platform.
 	 */
-	public static IColor  BLACK, WHITE, RED, GREEN, BLUE, YELLOW, LIGHT_GRAY, GRAY;
-
+	public static IColor BLACK, WHITE, RED, GREEN, BLUE, YELLOW, LIGHT_GRAY, GRAY;
 
 	/**
 	 * The Class NamedGamaColor.
@@ -108,7 +106,6 @@ public class GamaColorFactory {
 		WHITE = get("white");
 		BLACK = get("black");
 	}
-	
 
 	/**
 	 * Retrieves a color from its integer RGB encoding.
@@ -205,7 +202,7 @@ public class GamaColorFactory {
 	 * @return the corresponding {@link IColor} instance.
 	 */
 	public static IColor createWithDoubleAlpha(final int r, final int g, final int b, final double t) {
-		return createWithRGBA((r), (g), (b), normalize(t));
+		return createWithRGBA(r, g, b, normalize(t));
 	}
 
 	/**
@@ -287,10 +284,10 @@ public class GamaColorFactory {
 	public static IColor createFromAWTColor(final Color c) {
 		return get(c.getRGB());
 	}
-	
+
 	/**
-	 * Retrieves a named color. Returns an IColor corresponding to a named color or a string representation of a color. Examples: 'red',
-	 * '#FF0000', 'rgb(255,0,0)'.
+	 * Retrieves a named color. Returns an IColor corresponding to a named color or a string representation of a color.
+	 * Examples: 'red', '#FF0000', 'rgb(255,0,0)'.
 	 *
 	 * @param rgb
 	 *            the name of the color (e.g., "red", "blue").
@@ -362,79 +359,89 @@ public class GamaColorFactory {
 				return createWithRGBA(Cast.asInt(scope, m.get("red")), Cast.asInt(scope, m.get("green")),
 						Cast.asInt(scope, m.get("blue")), Cast.asInt(scope, m.get("alpha")));
 			}
-			default -> {
+			case IContainer<?, ?> c -> {
+				return castToColor(scope, c.listValue(scope, Types.NO_TYPE, false), param, copy);
 			}
-		}
-		if (obj instanceof IContainer<?,?> c)
-			return castToColor(scope, c.listValue(scope, Types.NO_TYPE, false), param, copy);
-		if (obj instanceof String) {
-			final String s = ((String) obj).toLowerCase();
-			IColor c = NAME_REGISTRY.get(s);
-			if (c == null) {
-				try {
-					c = createFromAWTColor(Color.decode(s));
-				} catch (final NumberFormatException e) {
-					c = null;
-					if (s != null && s.contains("rgb")) {
-						String sClean = s.replace(" ", "").replace("rgb", "").replace("(", "").replace(")", "");
-						String[] sval = sClean.split(",");
-						if (sval.length >= 3) {
-							Integer r = Integer.valueOf(sval[0]);
-							Integer g = Integer.valueOf(sval[1]);
-							Integer b = Integer.valueOf(sval[2]);
-							Integer alpha = sval.length == 4 ? Integer.valueOf(sval[3]) : null;
-							if (r != null && b != null && g != null) {
-								c = createWithRGBA(r, g, b, alpha == null ? 255 : alpha);
+			case String str -> {
+				final String s = str.toLowerCase();
+				IColor c = NAME_REGISTRY.get(s);
+				if (c == null) {
+					try {
+						c = createFromAWTColor(Color.decode(s));
+					} catch (final NumberFormatException e) {
+						c = null;
+						if (s != null && s.contains("rgb")) {
+							String sClean = s.replace(" ", "").replace("rgb", "").replace("(", "").replace(")", "");
+							String[] sval = sClean.split(",");
+							if (sval.length >= 3) {
+								Integer r = Integer.valueOf(sval[0]);
+								Integer g = Integer.valueOf(sval[1]);
+								Integer b = Integer.valueOf(sval[2]);
+								Integer alpha = sval.length == 4 ? Integer.valueOf(sval[3]) : null;
+								if (r != null && b != null && g != null) {
+									c = createWithRGBA(r, g, b, alpha == null ? 255 : alpha);
+								}
 							}
 						}
+						if (c == null) throw GamaRuntimeException.error("'" + s + "' is not a valid color name", scope);
 					}
-					if (c == null) throw GamaRuntimeException.error("'" + s + "' is not a valid color name", scope);
+					NAME_REGISTRY.put(s, c);
 				}
-				NAME_REGISTRY.put(s, c);
+				switch (param) {
+					case Integer i -> {
+						return createWithAlpha(c, i);
+					}
+					case Double d -> {
+						return createWithAlpha(c, d);
+					}
+					case null, default -> {
+						return c;
+					}
+				}
+
 			}
-			switch (param) {
-				case null -> {
-					return c;
-				}
-				case Integer i -> {
-					return createWithAlpha(c, i);
-				}
-				case Double d -> {
-					return createWithAlpha(c, d);
-				}
-				default -> {
-				}
+			case Boolean cond -> {
+				return cond ? createFromAWTColor(Color.black) : createFromAWTColor(Color.white);
+			}
+			default -> {
+				final int i = Cast.asInt(scope, obj);
+				if (param instanceof Integer in) return createWithAlpha(i, in);
+				if (param instanceof Double d) return createWithAlpha(i, Double.valueOf(d * 255).intValue());
+				return get(i);
 			}
 		}
-		if (obj instanceof Boolean cond)
-			return cond ? createFromAWTColor(Color.black) : createFromAWTColor(Color.white);
-		final int i = Cast.asInt(scope, obj);
-		if (param instanceof Integer in) return createWithAlpha(i, in);
-		if (param instanceof Double d) return createWithAlpha(i, Double.valueOf(d * 255).intValue());
-		return get(i);
 	}
 
 	/**
 	 * Convenience method to create a color from an object within a scope.
-	 * 
+	 *
 	 * @param scope
 	 *            the execution scope.
 	 * @param value
 	 *            the value to convert to a color.
 	 * @return the created {@link IColor} instance.
 	 */
-	public static IColor createFrom(IScope scope, Object value) {
+	public static IColor castToColor(final IScope scope, final Object value) {
 		return castToColor(scope, value, null, false);
 	}
 
-	public static IColor createByMerging(IColor c1, IColor c2) { 
+	/**
+	 * Creates a new GamaColor object.
+	 *
+	 * @param c1
+	 *            the c 1
+	 * @param c2
+	 *            the c 2
+	 * @return the i color
+	 */
+	public static IColor createByMerging(final IColor c1, final IColor c2) {
 		int r = (c1.red() + c2.red()) / 2;
 		int g = (c1.green() + c2.green()) / 2;
 		int b = (c1.blue() + c2.blue()) / 2;
 		int a = (c1.alpha() + c2.alpha()) / 2;
 		return createWithRGBA(r, g, b, a);
 	}
-	
+
 	/**
 	 * Normalize.
 	 *

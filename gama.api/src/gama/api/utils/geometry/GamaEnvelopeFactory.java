@@ -37,19 +37,8 @@ public class GamaEnvelopeFactory {
 	private static List<IEnvelopeComputer> envelopeComputers = new ArrayList<>();
 
 	/** The Constant POOL. */
-	private static PoolUtils.ObjectPool<IEnvelope> POOL;
-
-	/**
-	 * Gets the pool.
-	 *
-	 * @return the pool
-	 */
-	private static PoolUtils.ObjectPool<IEnvelope> getPool() {
-		if (POOL == null) {
-			POOL = PoolUtils.create("Envelope 3D", true, GamaEnvelope::new, (from, to) -> to.set(from), null);
-		}
-		return POOL;
-	}
+	private static PoolUtils.ObjectPool<IEnvelope> POOL =
+			PoolUtils.create("Envelope", true, GamaEnvelope::new, (from, to) -> to.set(from), null);
 
 	/**
 	 * The Class Immutable.
@@ -320,7 +309,7 @@ public class GamaEnvelopeFactory {
 	 * @return a new empty envelope.
 	 */
 	public static IEnvelope create() {
-		return getPool().get();
+		return POOL.get();
 	}
 
 	/**
@@ -506,7 +495,7 @@ public class GamaEnvelopeFactory {
 	 *            the envelope to release.
 	 */
 	public static void release(final IEnvelope envelope3d) {
-		getPool().release(envelope3d);
+		POOL.release(envelope3d);
 	}
 
 	/**

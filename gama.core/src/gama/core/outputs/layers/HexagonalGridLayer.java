@@ -58,7 +58,7 @@ public class HexagonalGridLayer extends AgentLayer {
 			final IGraphics g = sc.getGraphics();
 			try {
 				if (agent == sc.getGui().getHighlightedAgent()) { g.beginHighlight(); }
-				final IColor color = GamaColorFactory.createFrom(sc, agent.getDirectVarValue(sc, IKeyword.COLOR));
+				final IColor color = GamaColorFactory.castToColor(sc, agent.getDirectVarValue(sc, IKeyword.COLOR));
 				final IShape ag = agent.getGeometry();
 				final IShape ag2 = ag.copy(sc);
 				final DrawingAttributes attributes = new ShapeDrawingAttributes(ag2, agent, color, borderColor);

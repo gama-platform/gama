@@ -274,7 +274,7 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 	public IColor getColor(final IScope scope) {
 		final IExpression exp = getFacet(IKeyword.COLOR);
 		if (exp == null) return null;
-		return GamaColorFactory.createFrom(scope, exp.value(scope));
+		return GamaColorFactory.castToColor(scope, exp.value(scope));
 	}
 
 	/**

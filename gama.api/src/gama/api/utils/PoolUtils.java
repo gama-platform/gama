@@ -12,11 +12,12 @@ package gama.api.utils;
 import java.util.LinkedHashSet;
 import java.util.Queue;
 import java.util.Set;
-
-import com.google.common.collect.Queues;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicLong;
 
 import gama.api.utils.interfaces.IDisposable;
 import gama.api.utils.prefs.GamaPreferences;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 
 /**
@@ -28,9 +29,9 @@ public class PoolUtils {
 	static Set<ObjectPool> POOLS = new LinkedHashSet<>();
 
 	/** The pool. */
-	static public boolean POOL = GamaPreferences.Experimental.USE_POOLING.getValue();
+	static public boolean POOL = true; // GamaPreferences.Experimental.USE_POOLING.getValue();
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 		GamaPreferences.Experimental.USE_POOLING.onChange(v -> {
 			POOLS.forEach(ObjectPool::dispose);
 			POOL = v;
@@ -41,12 +42,13 @@ public class PoolUtils {
 	 * Write stats.
 	 */
 	public static void writeStats() {
-		if (!DEBUG.IS_ON()) return;
 		DEBUG.SECTION("Pool statistics");
 		POOLS.forEach(p -> {
-			long percentage = p.accessed == 0 ? 100 : 100 - (long) (p.created * 100d / p.accessed);
-			DEBUG.OUT(p.name, 30, "instances created " + p.created + " / instances asked " + p.accessed + " = "
-					+ percentage + "% of coverage");
+			long accessedCount = p.accessed.get();
+			long createdCount = p.created.get();
+			long percentage = accessedCount == 0 ? 100 : 100 - (long) (createdCount * 100d / accessedCount);
+			DEBUG.OUT(p.name, 30, "current size " + p.objects.size() + " / instances created " + createdCount
+					+ " / instances asked " + accessedCount + " = " + percentage + "% of coverage");
 		});
 	}
 
@@ -112,7 +114,13 @@ public class PoolUtils {
 		private String name;
 
 		/** The created. */
-		private long accessed, released, created;
+		private final AtomicLong accessed = new AtomicLong(0);
+
+		/** The released. */
+		private final AtomicLong released = new AtomicLong(0);
+
+		/** The created. */
+		private final AtomicLong created = new AtomicLong(0);
 
 		/** The factory. */
 		private final ObjectFactory<T> factory;
@@ -127,7 +135,7 @@ public class PoolUtils {
 		private final Queue<T> objects;
 
 		/** The active. */
-		public boolean active;
+		public volatile boolean active;
 
 		/**
 		 * Instantiates a new object pool.
@@ -143,7 +151,7 @@ public class PoolUtils {
 			this.factory = factory;
 			this.copy = copy;
 			this.cleaner = cleaner;
-			objects = Queues.synchronizedDeque(Queues.newArrayDeque());
+			objects = new ConcurrentLinkedQueue<>();
 		}
 
 		/**
@@ -152,12 +160,12 @@ public class PoolUtils {
 		 * @return the t
 		 */
 		public T get() {
-			if (!POOL || !active) return factory.createNew();
-			accessed++;
+			if (!active) return factory.createNew();
+			accessed.incrementAndGet();
 
 			T result = objects.poll();
 			if (result == null) {
-				created++;
+				created.incrementAndGet();
 				result = factory.createNew();
 			}
 			return result;
@@ -177,21 +185,35 @@ public class PoolUtils {
 		}
 
 		/**
-		 * Release.
+		 * Release a single object back to the pool (optimized fast path).
+		 *
+		 * @param t
+		 *            the object to release
+		 */
+		public void release(final T t) {
+			if (t == null) return;
+			if (cleaner != null) { cleaner.clean(t); }
+			if (active) {
+				released.incrementAndGet();
+				objects.offer(t);
+			}
+		}
+
+		/**
+		 * Release multiple objects back to the pool.
 		 *
 		 * @param tt
-		 *            the tt
+		 *            the objects to release
 		 */
 		public void release(@SuppressWarnings ("unchecked") final T... tt) {
 			if (tt == null) return;
-			for (T t : tt) {
-				if (cleaner != null) { cleaner.clean(t); }
-				if (POOL && active) {
-					released++;
-					objects.offer(t);
-				}
+			// Fast path for single object
+			if (tt.length == 1) {
+				release(tt[0]);
+				return;
 			}
-
+			// Batch release for multiple objects
+			for (T t : tt) { release(t); }
 		}
 
 		@Override
@@ -220,13 +242,11 @@ public class PoolUtils {
 
 	public static <T> ObjectPool<T> create(final String name, final boolean active, final ObjectFactory<T> factory,
 			final ObjectCopy<T> copy, final ObjectCleaner<T> cleaner) {
-		DEBUG.OUT("Adding object pool: " + name);
+		DEBUG.BANNER(BANNER_CATEGORY.POOL, "Object pool added", "for", name);
 		final ObjectPool<T> result = new ObjectPool<>(factory, copy, cleaner);
-		result.active = active;
+		result.active = POOL && active;
 		result.name = name;
-		// if (DEBUG.IS_ON()) {
 		POOLS.add(result);
-		// }
 		return result;
 	}
 

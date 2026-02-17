@@ -34,6 +34,7 @@ import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.documentation.IDocManager;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
+import gama.api.utils.PoolUtils;
 import gama.api.utils.collections.Collector;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
@@ -41,9 +42,9 @@ import one.util.streamex.StreamEx;
 
 /**
  * The ValidationContext class manages compilation errors, warnings, and information messages during GAML model
- * validation and compilation. It collects and categorizes errors from both the current resource and imported
- * resources, while also handling documentation generation.
- * 
+ * validation and compilation. It collects and categorizes errors from both the current resource and imported resources,
+ * while also handling documentation generation.
+ *
  * <p>
  * This context distinguishes between:
  * <ul>
@@ -53,16 +54,19 @@ import one.util.streamex.StreamEx;
  * <li>Warnings and info messages: non-critical issues that can be filtered based on preferences</li>
  * </ul>
  * </p>
- * 
+ *
  * <p>
- * Thread-safety: This class uses concurrent collections for thread-safe access to expressions requiring
- * documentation.
+ * Thread-safety: This class uses concurrent collections for thread-safe access to expressions requiring documentation.
  * </p>
- * 
+ *
  * @author GAMA Development Team
  * @since GAMA 1.0
  */
 public class ValidationContext extends Collector.AsList<GamlCompilationError> implements IValidationContext {
+
+	/** The pool. */
+	public static PoolUtils.ObjectPool<ValidationContext> POOL =
+			PoolUtils.create("ValidationContext", true, ValidationContext::new, null, ValidationContext::cleanup);
 
 	static {
 		DEBUG.OFF();
@@ -72,7 +76,7 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 	 * A null object pattern instance for cases where no validation context is needed. This avoids null checks
 	 * throughout the codebase.
 	 */
-	public static IValidationContext NULL = new ValidationContext(null, false, IDocManager.NULL);
+	public static IValidationContext NULL = create(null, false, IDocManager.NULL);
 
 	/**
 	 * Maximum number of errors to report. This prevents memory issues when a file has an excessive number of errors.
@@ -86,10 +90,10 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 	boolean shouldDocument;
 
 	/**
-	 * The URI of the resource being validated. Used to distinguish between errors in the current resource and errors
-	 * in imported resources.
+	 * The URI of the resource being validated. Used to distinguish between errors in the current resource and errors in
+	 * imported resources.
 	 */
-	final URI resourceURI;
+	URI resourceURI;
 
 	/**
 	 * Collection of errors that originated from imported resources rather than the current resource. Only error-level
@@ -123,7 +127,7 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 	 * Delegate responsible for generating and managing documentation for GAML elements. This delegate is called to
 	 * document the model and individual expressions when {@link #shouldDocument} is true.
 	 */
-	private final IDocManager docDelegate;
+	private IDocManager docDelegate;
 
 	/**
 	 * Map of EObjects to their corresponding GAML descriptions for documentation purposes. Uses a ConcurrentHashMap to
@@ -133,8 +137,27 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 	private final Map<EObject, IGamlDescription> expressionsToDocument = new ConcurrentHashMap<>();
 
 	/**
+	 * Creates the.
+	 *
+	 * @param uri
+	 *            the uri
+	 * @param syntax
+	 *            the syntax
+	 * @param delegate
+	 *            the delegate
+	 * @return the validation context
+	 */
+	public static ValidationContext create(final URI uri, final boolean syntax, final IDocManager delegate) {
+		ValidationContext result = POOL.get();
+		result.resourceURI = uri;
+		result.hasSyntaxErrors = syntax;
+		result.docDelegate = delegate == null ? IDocManager.NULL : delegate;
+		return result;
+	}
+
+	/**
 	 * Instantiates a new validation context for a specific resource.
-	 * 
+	 *
 	 * <p>
 	 * This constructor initializes a validation context with the specified resource URI, syntax error status, and
 	 * documentation delegate. The context will collect and manage compilation errors, warnings, and information
@@ -151,15 +174,11 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 	 *            the documentation manager delegate responsible for generating documentation. If null, a null object
 	 *            pattern delegate ({@link IDocManager#NULL}) will be used instead.
 	 */
-	public ValidationContext(final URI uri, final boolean syntax, final IDocManager delegate) {
-		this.resourceURI = uri;
-		this.hasSyntaxErrors = syntax;
-		this.docDelegate = delegate == null ? IDocManager.NULL : delegate;
-	}
+	protected ValidationContext() {}
 
 	/**
 	 * Adds a compilation error, warning, or info message to this validation context.
-	 * 
+	 *
 	 * <p>
 	 * This method applies filtering based on user preferences and the error severity. Warnings are suppressed if
 	 * preferences or {@link #noWarning} is set. Info messages are suppressed if preferences or {@link #noInfo} is set.
@@ -175,20 +194,16 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 		// Filter out warnings if disabled
 		if (error.isWarning()) {
 			if (!GamaPreferences.Modeling.WARNINGS_ENABLED.getValue() || noWarning) return false;
-		} else if (error.isInfo() && (!GamaPreferences.Modeling.INFO_ENABLED.getValue() || noInfo)) {
-			return false;
-		}
-		
+		} else if (error.isInfo() && (!GamaPreferences.Modeling.INFO_ENABLED.getValue() || noInfo)) return false;
+
 		final URI uri = error.getURI();
 		final boolean sameResource = uri == null || uri.equals(resourceURI);
-		
+
 		if (sameResource) return super.add(error);
-		
+
 		// Only collect errors from imported resources, not warnings or info
 		if (error.isError()) {
-			if (importedErrors == null) { 
-				importedErrors = new LinkedHashSet<>(); 
-			}
+			if (importedErrors == null) { importedErrors = new LinkedHashSet<>(); }
 			return importedErrors.add(error);
 		}
 		return false;
@@ -196,7 +211,7 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 
 	/**
 	 * Checks whether syntax errors were detected during parsing of the current resource.
-	 * 
+	 *
 	 * <p>
 	 * Syntax errors are typically detected by the parser before validation begins. When syntax errors exist, further
 	 * validation may be skipped or produce unreliable results.
@@ -212,7 +227,7 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 	/**
 	 * Checks whether any errors exist in this validation context, including syntax errors, internal errors, and
 	 * imported errors.
-	 * 
+	 *
 	 * <p>
 	 * This method returns true if any of the following conditions are met:
 	 * <ul>
@@ -231,7 +246,7 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 
 	/**
 	 * Checks whether any error-level issues exist in the current resource being validated.
-	 * 
+	 *
 	 * <p>
 	 * This method only checks for errors in the current resource, not imported resources. It filters the internal
 	 * collection to find any error-level issues.
@@ -246,7 +261,7 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 
 	/**
 	 * Checks whether any errors exist in resources imported by the current resource.
-	 * 
+	 *
 	 * <p>
 	 * Imported errors are collected separately from internal errors and only include error-level issues, not warnings
 	 * or info messages.
@@ -305,8 +320,8 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 	}
 
 	/**
-	 * Returns an iterator over all errors in this context, including both internal and imported errors. The iterator
-	 * is limited to {@link #MAX_SIZE} errors to prevent memory issues.
+	 * Returns an iterator over all errors in this context, including both internal and imported errors. The iterator is
+	 * limited to {@link #MAX_SIZE} errors to prevent memory issues.
 	 *
 	 * @return an iterator over all errors (internal and imported), limited to MAX_SIZE
 	 */
@@ -478,4 +493,19 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 	 */
 	@Override
 	public URI getURI() { return resourceURI; }
+
+	/**
+	 * Cleanup.
+	 */
+	public void cleanup() {
+		// sets all variables to their initial state
+		noWarning = false;
+		noInfo = false;
+		noExperiment = false;
+		shouldDocument = true;
+		docDelegate = null;
+		resourceURI = null;
+		expressionsToDocument.clear();
+		importedErrors = null;
+	}
 }

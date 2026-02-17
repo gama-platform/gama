@@ -96,7 +96,7 @@ public class HighlightStatement extends AbstractStatement {
 		if (agent != null && !agent.dead()) {
 			final IAgent o = Cast.asAgent(scope, value.value(scope));
 			if (color != null) {
-				final IColor c = GamaColorFactory.createFrom(scope, color.value(scope));
+				final IColor c = GamaColorFactory.castToColor(scope, color.value(scope));
 				if (c != null) { GamaPreferences.Displays.CORE_HIGHLIGHT.set(c); }
 			}
 			GAMA.getGui().setHighlightedAgent(o);

@@ -199,7 +199,7 @@ public class DrawingData extends AttributeHolder {
 	 */
 	private IColor castColor(final IScope scope, final IExpression exp) {
 		return switch (exp.getGamlType().id()) {
-			case IType.COLOR -> GamaColorFactory.createFrom(scope, exp.value(scope));
+			case IType.COLOR -> GamaColorFactory.castToColor(scope, exp.value(scope));
 			default -> null;
 		};
 	}

@@ -154,7 +154,7 @@ public class TextStatement extends AbstractStatement implements IExperimentDispl
 	@Override
 	public IColor getColor(final IScope scope) {
 		IColor rgb = null;
-		if (color != null) { rgb = GamaColorFactory.createFrom(scope, color.value(scope)); }
+		if (color != null) { rgb = GamaColorFactory.castToColor(scope, color.value(scope)); }
 		return rgb;
 	}
 
@@ -167,7 +167,7 @@ public class TextStatement extends AbstractStatement implements IExperimentDispl
 	 */
 	public IColor getBackground(final IScope scope) {
 		IColor rgb = null;
-		if (background != null) { rgb = GamaColorFactory.createFrom(scope, background.value(scope)); }
+		if (background != null) { rgb = GamaColorFactory.castToColor(scope, background.value(scope)); }
 		return rgb;
 	}
 
