@@ -153,9 +153,17 @@ public class GamaMetaModel {
 		// We now can attach "experiment" as a child of "model"
 		model.addChild(experiment);
 
+		// We create "platform" as the root of all platforms, sub-species of "agent"
+		final SpeciesRecord pp = INSTANCE.tempSpecies.remove(IKeyword.PLATFORM);
+		ISpeciesDescription.Platform platform = (ISpeciesDescription.Platform) INSTANCE.buildSpecies(pp, null, agent);
+		// Necessary to be able to use 'gama' in models
+		platform.finalizeDescription();
+		model.addChild(platform);
+
 		// We then create all other built-in species and attach them to "model"
 		for (final SpeciesRecord proto : INSTANCE.tempSpecies.values()) {
-			model.addChild(INSTANCE.buildSpecies(proto, model, agent));
+			ISpeciesDescription desc = INSTANCE.buildSpecies(proto, model, agent);
+			if (!(desc instanceof IModelDescription)) { model.addChild(desc); }
 		}
 		INSTANCE.tempSpecies.clear();
 		model.buildTypes();

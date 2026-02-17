@@ -598,8 +598,11 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		if (spec.equals(getName()) || importedModelNames != null && importedModelNames.contains(spec)) return this;
 		if (IKeyword.EXPERIMENT.equals(spec) && gama.api.GAMA.getExperiment() != null)
 			return gama.api.GAMA.getExperiment().getDescription();
-		if (getTypesManager() != null) return getTypesManager().get(spec).getSpecies();
-		return getOwnMicroSpecies().get(spec);
+		ISpeciesDescription result = null;
+		if (getTypesManager() != null) { result = getTypesManager().get(spec).getSpecies(); }
+		if (result == null) { result = getOwnMicroSpecies().get(spec); }
+		if (result == null) { result = GamaMetaModel.getSpeciesDescription(spec); }
+		return result;
 	}
 
 	@Override
