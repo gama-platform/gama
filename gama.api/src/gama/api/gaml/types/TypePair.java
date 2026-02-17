@@ -20,14 +20,14 @@ package gama.api.gaml.types;
  */
 final class TypePair {
 
+	/** Pre-computed hash code for performance */
+	private final int hashCode;
+
 	/** The first type in the pair */
 	private final IType<?> type1;
 
 	/** The second type in the pair */
 	private final IType<?> type2;
-
-	/** Pre-computed hash code for performance */
-	private final int hashCode;
 
 	/**
 	 * Creates a new TypePair for caching binary type operations.
@@ -53,9 +53,7 @@ final class TypePair {
 	public boolean equals(final Object obj) {
 		if (this == obj) return true;
 		if (!(obj instanceof final TypePair other)) return false;
-		// Use identity comparison for parametric types
-		// Simple types are singletons, so identity works there too
-		return type1 == other.type1 && type2 == other.type2;
+		return other.hashCode == hashCode;
 	}
 
 	@Override

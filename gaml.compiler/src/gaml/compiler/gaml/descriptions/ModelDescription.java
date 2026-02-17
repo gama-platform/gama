@@ -355,8 +355,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 			final Iterable<? extends IDescription> children, final Facets facets,
 			final IValidationContext validationContext, final Set<String> imports, final IAgentConstructor helper,
 			final Set<String> skills) {
-		super(IKeyword.MODEL, clazz, macro == null ? GamaMetaModel.getSpeciesDescription(IKeyword.EXPERIMENT) : macro,
-				parent, children, source, facets, skills);
+		super(IKeyword.MODEL, clazz, macro, parent, children, source, facets, skills);
 		setName(name);
 		types = parent instanceof ModelDescription m ? new TypesManager(m.types) : Types.builtInTypes;
 		modelFilePath = modelPath;

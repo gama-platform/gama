@@ -520,19 +520,30 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	@Override
 	public IDescription addChild(final IDescription child) {
 		final IDescription desc = super.addChild(child);
-		if (desc == null) return null;
-		if (desc instanceof StatementDescription statement) {
-			final String kw = desc.getKeyword();
-			if (IKeyword.PRIMITIVE.equals(kw) || IKeyword.ACTION.equals(kw)) {
-				addAction((ActionDescription) statement);
-			} else if (IKeyword.ASPECT.equals(kw)) {
-				addAspect(statement);
-			} else {
-				addBehavior(statement);
-			}
-		} else if (desc instanceof VariableDescription) {
-			addOwnAttribute((VariableDescription) desc);
-		} else if (desc instanceof SpeciesDescription) { addMicroSpecies((SpeciesDescription) desc); }
+		switch (desc) {
+			case null:
+				return null;
+			case ActionDescription action:
+				addAction(action);
+				break;
+			case StatementDescription statement:
+				final String kw = desc.getKeyword();
+				if (IKeyword.ASPECT.equals(kw)) {
+					addAspect(statement);
+				} else {
+					addBehavior(statement);
+				}
+				break;
+			case VariableDescription variable:
+				addOwnAttribute(variable);
+				break;
+			case SpeciesDescription species:
+				addMicroSpecies(species);
+				break;
+			default:
+				break;
+
+		}
 		return desc;
 	}
 

@@ -1033,8 +1033,7 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	// @Override
 	public IDescription addChild(final IDescription child) {
-		if (child == null) return null;
-		child.setEnclosingDescription(this);
+		if (child != null) { child.setEnclosingDescription(this); }
 		return child;
 	}
 
