@@ -11,6 +11,7 @@
 package gama.api.runtime;
 
 import java.util.Spliterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
@@ -38,17 +39,13 @@ public class ParallelAgentExecuter extends ParallelAgentRunner<Object> {
 
 	@Override
 	public Object executeOn(final IScope scope) throws GamaRuntimeException {
-		final Boolean[] mutableBoolean = { Boolean.TRUE };
-		// final AccumulatingExecutionResult result = new AccumulatingExecutionResult();
+		final AtomicBoolean result = new AtomicBoolean(true);
 		agents.forEachRemaining(each -> {
-			if (mutableBoolean[0].booleanValue()) {
-				// if (result.passed()) {
-				mutableBoolean[0] = scope.execute(executable, each, null).passed();
-				// result.accept(scope.execute(executable, each, null));
+			if (result.get()) {
+				result.set(scope.execute(executable, each, null).passed());
 			}
 		});
-		return mutableBoolean[0];
-		// return result.passed() ? result.getValue() : null;
+		return result.get();
 	}
 
 	@Override

@@ -14,8 +14,12 @@ import static gama.api.utils.prefs.GamaPreferences.create;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
 import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.concurrent.TimeUnit;
 
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
@@ -85,6 +89,9 @@ public abstract class GamaExecutorService {
 	/** The agent parallel executor. */
 	public static volatile ForkJoinPool AGENT_PARALLEL_EXECUTOR;
 
+	/** Cache for parallelism decisions on constant expressions to avoid repeated evaluations */
+	private static final ConcurrentHashMap<String, Integer> PARALLELISM_CACHE = new ConcurrentHashMap<>();
+
 	/** The Constant CONCURRENCY_SIMULATIONS. */
 	public static final Pref<Boolean> CONCURRENCY_SIMULATIONS =
 			create("pref_parallel_simulations", "Allow experiments to run simulations in parallel", true, IType.BOOL,
@@ -139,12 +146,28 @@ public abstract class GamaExecutorService {
 	 *            the new concurrency level
 	 */
 	public static void setConcurrencyLevel(final int nb) {
-		if (AGENT_PARALLEL_EXECUTOR != null) { AGENT_PARALLEL_EXECUTOR.shutdown(); }
-		AGENT_PARALLEL_EXECUTOR = new ForkJoinPool(nb) {
-			@Override
-			public UncaughtExceptionHandler getUncaughtExceptionHandler() { return EXCEPTION_HANDLER; }
+		if (AGENT_PARALLEL_EXECUTOR != null) {
+			AGENT_PARALLEL_EXECUTOR.shutdown();
+			try {
+				// Wait for tasks to complete with timeout
+				if (!AGENT_PARALLEL_EXECUTOR.awaitTermination(5, TimeUnit.SECONDS)) {
+					AGENT_PARALLEL_EXECUTOR.shutdownNow();
+				}
+			} catch (InterruptedException e) {
+				AGENT_PARALLEL_EXECUTOR.shutdownNow();
+				Thread.currentThread().interrupt();
+			}
+		}
+
+		// Create custom thread factory for better thread management
+		final ForkJoinWorkerThreadFactory factory = pool -> {
+			final ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+			worker.setName("GAMA-Agent-Worker-" + worker.getPoolIndex());
+			return worker;
 		};
 
+		// Use async mode for better throughput with independent tasks
+		AGENT_PARALLEL_EXECUTOR = new ForkJoinPool(nb, factory, EXCEPTION_HANDLER, true);
 	}
 
 	/**
@@ -173,6 +196,19 @@ public abstract class GamaExecutorService {
 	 *         threshold of n
 	 */
 	public static int getParallelism(final IScope scope, final IExpression concurrency, final Caller caller) {
+		// Cache constant expressions to avoid repeated evaluations
+		if (concurrency != null && concurrency.isConst()) {
+			final String cacheKey = concurrency.serializeToGaml(false) + "_" + caller.name();
+			return PARALLELISM_CACHE.computeIfAbsent(cacheKey, k -> computeParallelism(scope, concurrency, caller));
+		}
+		return computeParallelism(scope, concurrency, caller);
+	}
+
+	/**
+	 * Computes the parallelism level based on the expression and caller type. Extracted to support caching in
+	 * getParallelism.
+	 */
+	private static int computeParallelism(final IScope scope, final IExpression concurrency, final Caller caller) {
 		switch (GamaType.of(concurrency).id()) {
 			case IType.BOOL: {
 				Boolean c = (Boolean) concurrency.value(scope);
@@ -225,7 +261,7 @@ public abstract class GamaExecutorService {
 				schedule == null ? pop : GamaListFactory.castToList(scope, schedule.value(scope));
 		final int threshold =
 				getParallelism(scope, species.getConcurrency(), species.isGrid() ? Caller.GRID : Caller.SPECIES);
-		return doStep(scope, agents.toArray(new IAgent[agents.size()]), threshold, species);
+		return doStep(scope, agents.toArray(new IAgent[0]), threshold, species);
 	}
 
 	/**
@@ -251,7 +287,7 @@ public abstract class GamaExecutorService {
 			scheduledAgents = array;
 		} else {
 			final List<IAgent> agents = GamaListFactory.castToList(scope, schedule.value(scope));
-			scheduledAgents = agents.toArray(new IAgent[agents.size()]);
+			scheduledAgents = agents.toArray(new IAgent[0]);
 		}
 		final int threshold =
 				getParallelism(scope, species.getConcurrency(), species.isGrid() ? Caller.GRID : Caller.SPECIES);
@@ -351,7 +387,7 @@ public abstract class GamaExecutorService {
 	 */
 	public static void execute(final IScope scope, final IExecutable executable, final List<? extends IAgent> list,
 			final IExpression parallel) throws GamaRuntimeException {
-		execute(scope, executable, list.toArray(new IAgent[list.size()]), parallel);
+		execute(scope, executable, list.toArray(new IAgent[0]), parallel);
 	}
 
 	/**
