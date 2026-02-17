@@ -48,7 +48,6 @@ import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.symbols.IModelFactory;
-import gama.api.gaml.types.Types;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.utils.prefs.GamaPreferences;
@@ -902,7 +901,7 @@ public class ModelFactory implements IModelFactory {
 	 */
 	ISpeciesDescription lookupSpecies(final String name, final Map<String, ISpeciesDescription> cache) {
 		ISpeciesDescription result = cache.get(name);
-		if (result == null) { result = Types.getBuiltInSpecies().get(name); }
+		if (result == null) { result = GamaMetaModel.getSpeciesDescription(name); }
 		return result;
 	}
 

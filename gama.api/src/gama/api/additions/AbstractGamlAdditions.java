@@ -104,7 +104,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 *            the skills
 	 */
 	public void _species(final String name, final Class clazz, final IAgentConstructor helper, final String... skills) {
-		GamaMetaModel.INSTANCE.addSpecies(name, clazz, helper, skills);
+		GamaMetaModel.addSpecies(name, clazz, helper, skills);
 	}
 
 	/**
@@ -174,7 +174,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 				GAML.getDescriptionFactory().createBuiltInSkillDescription(name, clazz, children, CURRENT_PLUGIN_NAME);
 
 		GamaSkillRegistry.INSTANCE.register(sd, clazz);
-		for (final String spec : species) { GamaMetaModel.INSTANCE.addSpeciesSkill(spec, name); }
+		for (final String spec : species) { GamaMetaModel.addSpeciesSkill(spec, name); }
 	}
 
 	/**

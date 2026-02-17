@@ -16,6 +16,7 @@ import static gama.api.constants.IKeyword.EXPERIMENT;
 import static gama.api.constants.IKeyword.MODEL;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -53,7 +54,7 @@ import gama.api.kernel.species.ISpecies;
 public class GamaMetaModel {
 
 	/** The Constant INSTANCE. */
-	public final static GamaMetaModel INSTANCE = new GamaMetaModel();
+	private final static GamaMetaModel INSTANCE = new GamaMetaModel();
 
 	/** The temp species. */
 	private final Map<String, SpeciesRecord> tempSpecies = new HashMap();
@@ -92,9 +93,10 @@ public class GamaMetaModel {
 	 * @param skills
 	 *            the skills
 	 */
-	public void addSpecies(final String name, final Class clazz, final IAgentConstructor helper,
+	public static void addSpecies(final String name, final Class clazz, final IAgentConstructor helper,
 			final String[] skills) {
-		tempSpecies.put(name, new SpeciesRecord(name, GamaBundleLoader.CURRENT_PLUGIN_NAME, clazz, helper, skills));
+		INSTANCE.tempSpecies.put(name,
+				new SpeciesRecord(name, GamaBundleLoader.CURRENT_PLUGIN_NAME, clazz, helper, skills));
 	}
 
 	/**
@@ -129,35 +131,36 @@ public class GamaMetaModel {
 	/**
 	 * Builds the.
 	 */
-	public void build() {
+	public static void build() {
 		// We first build "agent" as the root of all other species (incl.
 		// "model")
-		final SpeciesRecord ap = tempSpecies.remove(AGENT);
+		final SpeciesRecord ap = INSTANCE.tempSpecies.remove(AGENT);
 		// "agent" has no super-species yet
-		ISpeciesDescription agent = buildSpecies(ap, null, null);
+		ISpeciesDescription agent = INSTANCE.buildSpecies(ap, null, null);
 
 		// We then build "model", sub-species of "agent"
-		final SpeciesRecord wp = tempSpecies.remove(MODEL);
-		IModelDescription model = (IModelDescription) buildSpecies(wp, null, null);
+		final SpeciesRecord wp = INSTANCE.tempSpecies.remove(MODEL);
+		IModelDescription model = (IModelDescription) INSTANCE.buildSpecies(wp, null, null);
 		// We close the first loop by putting agent "inside" model
 		agent.setEnclosingDescription(model);
 		model.addChild(agent);
 
-		// We create "experiment" as the root of all experiments, sub-species of
-		// "agent"
-		final SpeciesRecord ep = tempSpecies.remove(EXPERIMENT);
-		IExperimentDescription experiment = (IExperimentDescription) buildSpecies(ep, null, agent);
+		// We create "experiment" as the root of all experiments, sub-species of "agent"
+		final SpeciesRecord ep = INSTANCE.tempSpecies.remove(EXPERIMENT);
+		IExperimentDescription experiment = (IExperimentDescription) INSTANCE.buildSpecies(ep, null, agent);
 		experiment.finalizeDescription();
 
 		// We now can attach "experiment" as a child of "model"
 		model.addChild(experiment);
 
 		// We then create all other built-in species and attach them to "model"
-		for (final SpeciesRecord proto : tempSpecies.values()) { model.addChild(buildSpecies(proto, model, agent)); }
-		tempSpecies.clear();
+		for (final SpeciesRecord proto : INSTANCE.tempSpecies.values()) {
+			model.addChild(INSTANCE.buildSpecies(proto, model, agent));
+		}
+		INSTANCE.tempSpecies.clear();
 		model.buildTypes();
 		model.finalizeDescription();
-		isInitialized = true;
+		INSTANCE.isInitialized = true;
 	}
 
 	/**
@@ -230,8 +233,15 @@ public class GamaMetaModel {
 	 * @param name
 	 *            the name
 	 */
-	public void addSpeciesSkill(final String spec, final String name) {
-		speciesSkills.put(spec, name);
+	public static void addSpeciesSkill(final String spec, final String name) {
+		INSTANCE.speciesSkills.put(spec, name);
+	}
+
+	/**
+	 * @return
+	 */
+	public static Collection<ISpeciesDescription> getAllSpeciesDescriptions() {
+		return INSTANCE.builtInSpeciesDescriptions.values();
 	}
 
 }

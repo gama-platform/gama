@@ -325,7 +325,7 @@ public class GamaBundleLoader {
 			// CRUCIAL INITIALIZATIONS
 			// We init the meta-model of GAMA (i.e. abstract agent, model, experiment species)
 			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Building metamodel", "done in",
-					() -> { GamaMetaModel.INSTANCE.build(); });
+					() -> { GamaMetaModel.build(); });
 
 			// We init the type hierarchy, the units and the agent representing the GAMA platform
 			Types.init();

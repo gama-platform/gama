@@ -703,6 +703,11 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		return this;
 	}
 
+	@Override
+	public void setEnclosingDescription(final IDescription enclosingDescription) {
+		super.setEnclosingDescription(enclosingDescription);
+	}
+
 	/**
 	 * @return
 	 */

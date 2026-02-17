@@ -12,7 +12,6 @@
 package gaml.compiler.gaml.scoping;
 
 import static com.google.common.collect.Iterables.addAll;
-import static gama.api.gaml.types.Types.getBuiltInSpecies;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -52,6 +51,7 @@ import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.factories.IExpressionFactory;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
+import gama.api.kernel.GamaMetaModel;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.EGaml;
@@ -272,7 +272,7 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 			return true;
 		};
 
-		for (final ITypeDescription s : getBuiltInSpecies().values()) { s.visitOwnActions(visitor); }
+		for (final ITypeDescription s : GamaMetaModel.getAllSpeciesDescriptions()) { s.visitOwnActions(visitor); }
 		GamaSkillRegistry.INSTANCE.visitSkills(desc -> {
 			((ISkillDescription) desc).visitOwnActions(visitor);
 			return true;
@@ -298,7 +298,7 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 			return true;
 		};
 
-		for (final ITypeDescription desc : Types.getBuiltInSpecies().values()) {
+		for (final ITypeDescription desc : GamaMetaModel.getAllSpeciesDescriptions()) {
 			desc.visitOwnAttributes(varVisitor);
 			desc.visitOwnActions(actionVisitor);
 

@@ -13,11 +13,9 @@ import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Iterables.transform;
 
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,13 +23,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.google.common.collect.Iterables;
 
 import gama.api.additions.registries.ArtefactProtoRegistry;
-import gama.api.compilation.descriptions.IModelDescription;
-import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.dev.DEBUG;
-import one.util.streamex.StreamEx;
 
 /**
  * The Class Types.
@@ -51,9 +46,6 @@ public class Types {
 
 	/** The manager responsible for storing and retrieving built-in types. */
 	public final static ITypesManager builtInTypes = new TypesManager(null);
-
-	/** A simplified cache of built-in species (as types) */
-	private static volatile Map<String, ISpeciesDescription> builtInSpeciesMap;
 
 	/** The constant representing the absence of a type (GamaNoType). */
 	public final static IType NO_TYPE = new GamaNoType(builtInTypes);
@@ -357,23 +349,6 @@ public class Types {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Retrieves a map of all built-in species descriptions.
-	 *
-	 * @return a map where keys are species names and values are their descriptions.
-	 */
-	public static Map<String, ? extends ISpeciesDescription> getBuiltInSpecies() {
-		if (builtInSpeciesMap != null) return builtInSpeciesMap;
-		synchronized (Types.class) {
-			if (builtInSpeciesMap != null) return builtInSpeciesMap;
-			final IModelDescription root = IModelDescription.ROOT[0];
-			List<ISpeciesDescription> result = new ArrayList<>();
-			root.getAllSpecies(result);
-			builtInSpeciesMap = StreamEx.of(result).toMap(ISpeciesDescription::getName, sd -> sd);
-		}
-		return builtInSpeciesMap;
 	}
 
 	/**
