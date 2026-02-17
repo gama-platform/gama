@@ -127,9 +127,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 		if (result != null) return result;
 		synchronized (this) {
 			result = element;
-			if (result == null) {
-				element = result = GamlResourceServices.buildSyntacticContents(this);
-			}
+			if (result == null) { element = result = GamlResourceServices.buildSyntacticContents(this); }
 		}
 		return result;
 	}
@@ -386,7 +384,8 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 		switch (severity) {
 			case ERROR -> getErrors().add(diagnostic);
 			case WARNING -> getWarnings().add(diagnostic);
-			default -> {}
+			default -> {
+			}
 		}
 	}
 

@@ -124,36 +124,58 @@ public class GamlResourceIndexer {
 	}
 
 	/**
-	 * Synchronized method to avoid concurrent errors in the graph in case of a parallel resource loader
+	 * Updates the import graph for a given resource with finer-grained synchronization.
+	 * Only graph modification operations are synchronized to reduce contention.
 	 */
-	public static synchronized EObject updateImports(final GamlResource r) {
+	public static EObject updateImports(final GamlResource r) {
 		final URI baseURI = r.getURI();
+		
+		// Read current edges outside of sync block (graph reads are thread-safe)
 		final Map<URI, String> existingEdges = index.outgoingEdgesOf(baseURI);
+		
 		if (r.getContents().isEmpty()) return null;
 		final EObject contents = r.getContents().get(0);
 		if (contents == null) return null;
+		
+		// Parse new imports outside of sync block (no graph access)
 		final Map<URI, String> newEdges = getImportsAsAbsoluteURIS(baseURI, contents);
+		
+		// Prepare data for validation outside sync block
 		for (Map.Entry<URI, String> entry : newEdges.entrySet()) {
 			URI uri = entry.getKey();
 			if (baseURI.equals(uri)) { continue; }
 			String label = entry.getValue();
+			
 			if (!existingEdges.containsKey(uri)) {
+				// Validate URI before graph modification
 				if (!EcoreUtil2.isValidUri(r, uri)) return findImport(contents, baseURI, uri);
-				final boolean alreadyThere = index.imports.containsVertex(uri);
-				final URI to = uri;
-				final String label1 = label;
-				index.addEdge(baseURI, to, label1);
+				
+				// Only synchronize graph modifications
+				final boolean alreadyThere;
+				synchronized (index) {
+					alreadyThere = index.imports.containsVertex(uri);
+					index.addEdge(baseURI, uri, label);
+				}
+				
 				if (!alreadyThere) {
 					// This call should trigger the recursive call to updateImports()
+					// No need to synchronize - resource loading is handled separately
 					r.getResourceSet().getResource(uri, true);
 				}
 			} else {
-				index.addEdge(baseURI, uri, existingEdges.remove(uri));
+				// Re-add existing edge with same label
+				synchronized (index) {
+					index.addEdge(baseURI, uri, existingEdges.remove(uri));
+				}
 			}
 		}
-		index.removeAllEdges(baseURI, existingEdges);
+		
+		// Remove obsolete edges in one synchronized block
+		synchronized (index) {
+			index.removeAllEdges(baseURI, existingEdges);
+		}
+		
 		return null;
-
 	}
 
 	/**
