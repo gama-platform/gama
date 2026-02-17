@@ -25,12 +25,13 @@ import com.google.common.collect.Lists;
 import gama.api.additions.registries.GamaSkillRegistry;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.prototypes.IArtefactProto;
+import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
+import gama.api.kernel.GamaMetaModel;
 import gama.api.utils.interfaces.INamed;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
@@ -50,7 +51,8 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 
 	@Override
 	protected void fillMenu() {
-		final List<ITypeDescription> list = new ArrayList<>(IModelDescription.ROOT[0].getOwnMicroSpecies().values());
+		final List<ITypeDescription> list =
+				new ArrayList<>(GamaMetaModel.getSpeciesDescription(IKeyword.MODEL).getOwnMicroSpecies().values());
 		final List<String> speciesList = new ArrayList<>();
 		Collections.sort(list, INamed.COMPARATOR);
 		Menu m = sub("Built-in species");

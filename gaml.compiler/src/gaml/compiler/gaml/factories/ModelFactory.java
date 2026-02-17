@@ -11,7 +11,6 @@
 package gaml.compiler.gaml.factories;
 
 import static com.google.common.collect.Iterables.get;
-import static gama.api.compilation.descriptions.IModelDescription.ROOT;
 import static gama.api.constants.IKeyword.FREQUENCY;
 import static gama.api.constants.IKeyword.GLOBAL;
 import static gama.api.constants.IKeyword.NAME;
@@ -157,15 +156,13 @@ public class ModelFactory implements IModelFactory {
 	public IModelDescription createBuiltInSpeciesDescription(final String name, final Class clazz,
 			final ISpeciesDescription macro, final ISpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> skills, final String plugin) {
-		if (IKeyword.MODEL.equals(name)) {
-			IModelDescription.ROOT[0] = new ModelDescription(name, clazz, "", "", null, macro, parent, null, null,
-					ValidationContext.NULL, Collections.emptySet(), helper);
-			return IModelDescription.ROOT[0];
-		}
+		if (IKeyword.MODEL.equals(name)) return new ModelDescription(name, clazz, "", "", null, macro, parent, null,
+				null, ValidationContext.NULL, Collections.emptySet(), helper);
 		// We are creating a built-in model species
 		// For the moment we suppose its parent is the root (macro)
-		final IModelDescription model = new ModelDescription(name, clazz, "", "", null, null, IModelDescription.ROOT[0],
-				null, null, ValidationContext.NULL, Collections.emptySet(), helper, skills);
+		final IModelDescription model = new ModelDescription(name, clazz, "", "", null, null,
+				GamaMetaModel.getSpeciesDescription(IKeyword.MODEL), null, null, ValidationContext.NULL,
+				Collections.emptySet(), helper, skills);
 		IModelDescription.BUILT_IN_MODELS.put(name, model);
 		return model;
 	}
@@ -421,7 +418,7 @@ public class ModelFactory implements IModelFactory {
 			final IValidationContext collector, final Iterable<ISyntacticElement> models,
 			final ISyntacticElement source, final Facets globalFacets, final String modelName,
 			final Set<String> absoluteAlternatePathAsStrings) {
-		IModelDescription parent = ROOT[0];
+		IModelDescription parent = (IModelDescription) GamaMetaModel.getSpeciesDescription(IKeyword.MODEL);
 		if (globalFacets != null && globalFacets.containsKey(PARENT)) {
 			String parentModel = globalFacets.getLabel(PARENT);
 			IModelDescription parentBuiltInModels = IModelDescription.BUILT_IN_MODELS.get(parentModel);

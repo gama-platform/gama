@@ -414,7 +414,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	// hqnghi does it need to verify parent of micro-model??
 	@Override
 	protected boolean verifyParent() {
-		if (parent == IModelDescription.ROOT[0]) return true;
+		if (parent == GamaMetaModel.getSpeciesDescription(IKeyword.MODEL)) return true;
 		return super.verifyParent();
 	}
 

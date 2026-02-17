@@ -31,9 +31,6 @@ public interface IModelDescription extends ISpeciesDescription {
 	// TODO Move elsewhere
 	String MODEL_SUFFIX = "_model";
 
-	/** The root. */
-	IModelDescription ROOT[] = new IModelDescription[1];
-
 	/**
 	 * @return
 	 */
