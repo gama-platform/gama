@@ -1311,8 +1311,8 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 
 	@Override
 	public boolean visitOwnChildren(final DescriptionVisitor<IDescription> visitor) {
-		return super.visitOwnChildren(visitor) && !getOwnMicroSpecies().forEachValue(visitor)
-				&& !getOwnBehaviors().forEachValue(visitor) && !getOwnAspects().forEachValue(visitor);
+		return super.visitOwnChildren(visitor) && getOwnMicroSpecies().forEachValue(visitor)
+				&& getOwnBehaviors().forEachValue(visitor) && getOwnAspects().forEachValue(visitor);
 	}
 
 	@Override
@@ -1321,8 +1321,8 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 			if (!visitor.process(each)) return false;
 			return each.visitOwnChildrenRecursively(visitor);
 		};
-		return super.visitOwnChildrenRecursively(visitor) && !getOwnMicroSpecies().forEachValue(recursiveVisitor)
-				&& !getOwnBehaviors().forEachValue(recursiveVisitor) && !getOwnAspects().forEachValue(recursiveVisitor);
+		return super.visitOwnChildrenRecursively(visitor) && getOwnMicroSpecies().forEachValue(recursiveVisitor)
+				&& getOwnBehaviors().forEachValue(recursiveVisitor) && getOwnAspects().forEachValue(recursiveVisitor);
 	}
 
 	@Override

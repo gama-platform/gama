@@ -23,6 +23,7 @@ import com.google.common.base.Predicate;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.descriptions.IGamlDescription;
 import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.documentation.IDocManager;
 
 /**
  *
@@ -107,6 +108,11 @@ public interface IValidationContext extends Iterable<GamlCompilationError> {
 	 * Clear.
 	 */
 	void clear();
+
+	/**
+	 * Cleanup.
+	 */
+	void cleanup();
 
 	/**
 	 * Method iterator()
@@ -219,5 +225,12 @@ public interface IValidationContext extends Iterable<GamlCompilationError> {
 	 * @date 10 janv. 2024
 	 */
 	URI getURI();
+
+	/**
+	 * @param uri
+	 * @param syntax
+	 * @param object
+	 */
+	void initWith(URI uri, boolean syntax, IDocManager object);
 
 }

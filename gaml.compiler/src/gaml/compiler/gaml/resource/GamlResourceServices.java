@@ -90,7 +90,7 @@ public class GamlResourceServices {
 	 * Registry of validation contexts indexed by URI. Contexts accumulate errors and warnings during resource
 	 * validation.
 	 */
-	private static final Map<URI, ValidationContext> resourceErrors = GamaMapFactory.createUnordered();
+	private static final Map<URI, IValidationContext> resourceErrors = GamaMapFactory.createUnordered();
 
 	/**
 	 * Cache of parsed syntactic contents indexed by URI. Uses concurrent map for thread-safe access. Note: Currently
@@ -268,8 +268,8 @@ public class GamlResourceServices {
 	 *            the GAML resource whose validation context should be discarded
 	 */
 	public static void discardValidationContext(final GamlResource r) {
-		ValidationContext toRelease = resourceErrors.remove(r.getURI());
-		if (toRelease != null) { ValidationContext.POOL.release(toRelease); }
+		IValidationContext toRelease = resourceErrors.remove(r.getURI());
+		// if (toRelease != null) { ValidationContext.POOL.release(toRelease); }
 	}
 
 	/**

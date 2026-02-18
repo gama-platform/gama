@@ -65,8 +65,8 @@ import one.util.streamex.StreamEx;
 public class ValidationContext extends Collector.AsList<GamlCompilationError> implements IValidationContext {
 
 	/** The pool. */
-	public static PoolUtils.ObjectPool<ValidationContext> POOL =
-			PoolUtils.create("ValidationContext", true, ValidationContext::new, null, ValidationContext::cleanup);
+	public static PoolUtils.ObjectPool<IValidationContext> POOL =
+			PoolUtils.create("Validation context", true, ValidationContext::new, null, IValidationContext::cleanup);
 
 	static {
 		DEBUG.OFF();
@@ -147,12 +147,24 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 	 *            the delegate
 	 * @return the validation context
 	 */
-	public static ValidationContext create(final URI uri, final boolean syntax, final IDocManager delegate) {
-		ValidationContext result = POOL.get();
-		result.resourceURI = uri;
-		result.hasSyntaxErrors = syntax;
-		result.docDelegate = delegate == null ? IDocManager.NULL : delegate;
+	public static IValidationContext create(final URI uri, final boolean syntax, final IDocManager delegate) {
+		IValidationContext result = POOL.get();
+		result.initWith(uri, syntax, delegate == null ? IDocManager.NULL : delegate);
 		return result;
+	}
+
+	/**
+	 * Cleanup.
+	 */
+	@Override
+	public void cleanup() {
+		clear();
+		// sets all variables to their initial state
+		noWarning = noInfo = noExperiment = shouldDocument = hasSyntaxErrors = false;
+		docDelegate = null;
+		resourceURI = null;
+		importedErrors = null;
+		expressionsToDocument.clear();
 	}
 
 	/**
@@ -494,18 +506,11 @@ public class ValidationContext extends Collector.AsList<GamlCompilationError> im
 	@Override
 	public URI getURI() { return resourceURI; }
 
-	/**
-	 * Cleanup.
-	 */
-	public void cleanup() {
-		// sets all variables to their initial state
-		noWarning = false;
-		noInfo = false;
-		noExperiment = false;
-		shouldDocument = true;
-		docDelegate = null;
-		resourceURI = null;
-		expressionsToDocument.clear();
-		importedErrors = null;
+	@Override
+	public void initWith(final URI uri, final boolean syntax, final IDocManager object) {
+		this.resourceURI = uri;
+		this.hasSyntaxErrors = syntax;
+		this.docDelegate = object;
 	}
+
 }

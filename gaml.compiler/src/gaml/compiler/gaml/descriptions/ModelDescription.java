@@ -46,6 +46,7 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.utils.interfaces.ConsumerWithPruning;
+import gaml.compiler.gaml.validation.ValidationContext;
 
 /**
  * Root description for complete GAML models, representing the top-level container of all model elements.
@@ -481,6 +482,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		if (isBuiltIn()) return;
 		super.dispose();
 		experiments = null;
+		if (validationContext != null) { ValidationContext.POOL.release(validationContext); }
 		types.dispose();
 
 	}
