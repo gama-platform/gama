@@ -221,7 +221,10 @@ public class GamlExpressionCompiler extends GamlSwitch<IExpression> implements I
 	public IExpression compile(final IExpressionDescription s, final IDescription parsingContext) {
 		// Cf. Issue 782. Returns the expression if an expression needs its
 		// compiled version to be compiled.
-		if (s.isConst() || s == getCurrentExpressionDescription()) return s.getExpression();
+		if (s.isConst() || s == getCurrentExpressionDescription()) {
+			parsingContext.document(s.getTarget(), parsingContext);
+			return s.getExpression();
+		}
 
 		setCurrentExpressionDescription(s);
 
