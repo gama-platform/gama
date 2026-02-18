@@ -35,6 +35,7 @@ import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
@@ -784,7 +785,7 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public void document(final EObject e, final IGamlDescription desc) {
-		final IValidationContext c = getValidationContext();
+		final IDocumentationContext c = getDocumentationContext();
 		if (c != null) { c.setGamlDocumentation(e, desc); }
 	}
 
@@ -1432,6 +1433,18 @@ public abstract class SymbolDescription implements IDescription {
 		final IModelDescription model = getModelDescription();
 		if (model == null) return null;
 		return model.getValidationContext();
+	}
+
+	/**
+	 * Gets the documentation context.
+	 *
+	 * @return the documentation context
+	 */
+	@Override
+	public IDocumentationContext getDocumentationContext() {
+		final IModelDescription model = getModelDescription();
+		if (model == null) return null;
+		return model.getDocumentationContext();
 	}
 
 	/**

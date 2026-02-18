@@ -14,6 +14,7 @@ import java.util.Map;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.factories.ISymbolDescriptionFactory;
+import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 
 /**
@@ -37,7 +38,7 @@ public interface IModelFactory extends ISymbolDescriptionFactory.Species {
 	 * @return the created IModelDescription
 	 */
 	IModelDescription createModelDescription(final String projectPath, final String modelPath,
-			final Iterable<ISyntacticElement> models, final IValidationContext collector,
+			final Iterable<ISyntacticElement> models, final IValidationContext collector, IDocumentationContext doc,
 			final Map<String, IModelDescription> mm);
 
 }

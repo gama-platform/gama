@@ -38,11 +38,31 @@ import gama.dev.DEBUG;
 /**
  * The Class TypesManager.
  */
+
+/**
+ * The Class TypesManager.
+ */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class TypesManager implements ITypesManager {
 
 	static {
 		DEBUG.OFF();
+	}
+
+	/**
+	 * Creates the pair key.
+	 *
+	 * @param type1
+	 *            the type 1
+	 * @param type2
+	 *            the type 2
+	 * @return the long
+	 */
+	public static Long createPairKey(final IType<?> type1, final IType<?> type2) {
+		int t1 = type1.hashCode();
+		int t2 = type2.hashCode();
+		long key = (long) t1 << 32 | t2 & 0xFFFFFFFFL;
+		return key;
 	}
 
 	/** The current index. */
@@ -58,16 +78,16 @@ public class TypesManager implements ITypesManager {
 	private final Set<IType<?>> uniqueTypes = ConcurrentHashMap.newKeySet();
 
 	/** Cache for isAssignableFrom operations - stores Boolean results */
-	private final Cache<TypePair, Boolean> assignabilityCache = newBuilder().expireAfterAccess(5, MINUTES).build();
+	private final Cache<Long, Boolean> assignabilityCache = newBuilder().expireAfterAccess(5, MINUTES).build();
 
 	/** Cache for findCommonSupertypeWith operations - stores IType results */
-	private final Cache<TypePair, IType<?>> commonSupertypeCache = newBuilder().expireAfterAccess(5, MINUTES).build();
+	private final Cache<Long, IType<?>> commonSupertypeCache = newBuilder().expireAfterAccess(5, MINUTES).build();
 
 	/** Cache for distanceTo operations - stores Integer results */
-	private final Cache<TypePair, Integer> distanceCache = newBuilder().expireAfterAccess(5, MINUTES).build();
+	private final Cache<Long, Integer> distanceCache = newBuilder().expireAfterAccess(5, MINUTES).build();
 
 	/** Cache for isTranslatableInto operations - stores Boolean results */
-	private final Cache<TypePair, Boolean> translatabilityCache = newBuilder().expireAfterAccess(5, MINUTES).build();
+	private final Cache<Long, Boolean> translatabilityCache = newBuilder().expireAfterAccess(5, MINUTES).build();
 
 	/**
 	 * Instantiates a new types manager.
@@ -330,7 +350,7 @@ public class TypesManager implements ITypesManager {
 	public boolean checkAssignability(final IType<?> from, final IType<?> to) {
 		if (from == null || to == null) return false;
 		if (from == to) return true;
-		final TypePair key = new TypePair(from, to);
+		final Long key = createPairKey(from, to);
 		try {
 			return assignabilityCache.get(key, () -> from.computeIsAssignableFrom(to));
 		} catch (ExecutionException e) {
@@ -353,7 +373,7 @@ public class TypesManager implements ITypesManager {
 	public IType<?> computeCommonSupertype(final IType<?> type1, final IType<?> type2) {
 		if (type1 == null || type2 == null) return Types.NO_TYPE;
 		if (type1 == type2) return type1;
-		final TypePair key = new TypePair(type1, type2);
+		final Long key = createPairKey(type1, type2);
 		try {
 			return commonSupertypeCache.get(key, () -> type1.computeFindCommonSupertypeWith(type2));
 		} catch (ExecutionException e) {
@@ -375,7 +395,7 @@ public class TypesManager implements ITypesManager {
 	public int computeDistance(final IType<?> from, final IType<?> to) {
 		if (from == null || to == null) return Integer.MAX_VALUE;
 		if (from == to) return 0;
-		final TypePair key = new TypePair(from, to);
+		final Long key = createPairKey(from, to);
 		try {
 			return distanceCache.get(key, () -> from.computeDistanceTo(to));
 		} catch (ExecutionException e) {
@@ -397,7 +417,7 @@ public class TypesManager implements ITypesManager {
 	public boolean checkTranslatability(final IType<?> from, final IType<?> to) {
 		if (from == null || to == null) return false;
 		if (from == to) return true;
-		final TypePair key = new TypePair(from, to);
+		final Long key = createPairKey(from, to);
 		try {
 			return translatabilityCache.get(key, () -> from.computeIsTranslatableInto(to));
 		} catch (ExecutionException e) {

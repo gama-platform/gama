@@ -32,6 +32,7 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
@@ -46,7 +47,6 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.utils.interfaces.ConsumerWithPruning;
-import gaml.compiler.gaml.validation.ValidationContext;
 
 /**
  * Root description for complete GAML models, representing the top-level container of all model elements.
@@ -252,6 +252,9 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	/** The validation context. */
 	private final IValidationContext validationContext;
 
+	/** The documentation context. */
+	private final IDocumentationContext documentationContext;
+
 	/** The document. */
 	// protected volatile boolean document;
 
@@ -354,17 +357,17 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	public ModelDescription(final String name, final Class clazz, final String projectPath, final String modelPath,
 			final EObject source, final ISpeciesDescription macro, final ISpeciesDescription parent,
 			final Iterable<? extends IDescription> children, final Facets facets,
-			final IValidationContext validationContext, final Set<String> imports, final IAgentConstructor helper,
-			final Set<String> skills) {
+			final IValidationContext validationContext, final IDocumentationContext documentationContext,
+			final Set<String> imports, final IAgentConstructor helper, final Set<String> skills) {
 		super(IKeyword.MODEL, clazz, macro, parent, children, source, facets, skills);
 		setName(name);
 		types = parent instanceof ModelDescription m ? new TypesManager(m.types) : Types.builtInTypes;
 		modelFilePath = modelPath;
 		modelProjectPath = projectPath;
 		this.validationContext = validationContext;
+		this.documentationContext = documentationContext;
 		this.alternatePaths = imports;
 		if (helper != null) { setAgentConstructor(helper); }
-
 	}
 
 	/**
@@ -398,9 +401,10 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	public ModelDescription(final String name, final Class clazz, final String projectPath, final String modelPath,
 			final EObject source, final ISpeciesDescription macro, final ISpeciesDescription parent,
 			final Iterable<? extends IDescription> children, final Facets facets,
-			final IValidationContext validationContext, final Set<String> imports, final IAgentConstructor helper) {
-		this(name, clazz, projectPath, modelPath, source, macro, parent, children, facets, validationContext, imports,
-				helper, Collections.EMPTY_SET);
+			final IValidationContext validationContext, final IDocumentationContext documentationContext,
+			final Set<String> imports, final IAgentConstructor helper) {
+		this(name, clazz, projectPath, modelPath, source, macro, parent, children, facets, validationContext,
+				documentationContext, imports, helper, Collections.EMPTY_SET);
 	}
 
 	@Override
@@ -482,7 +486,10 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		if (isBuiltIn()) return;
 		super.dispose();
 		experiments = null;
-		if (validationContext != null) { ValidationContext.POOL.release(validationContext); }
+		// if (validationContext != null) {
+		// validationContext.dispose();
+		// validationContext = null;
+		// }
 		types.dispose();
 
 	}
@@ -646,6 +653,9 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	@Override
 	public IValidationContext getValidationContext() { return validationContext; }
 
+	@Override
+	public IDocumentationContext getDocumentationContext() { return documentationContext; }
+
 	/**
 	 * Gets the experiment.
 	 *
@@ -702,7 +712,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	public ModelDescription validate() {
 		if (!isSet(Flag.Validated)) {
 			super.validate();
-			validationContext.doDocument(this);
+			if (documentationContext != null) { documentationContext.doDocument(this); }
 		}
 		return this;
 	}

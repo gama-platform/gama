@@ -502,7 +502,7 @@ public class Pref<T> implements IParameter {
 	 *            the new value
 	 */
 	protected void afterChange(final T newValue) {
-		valueProvider = null;
+		// valueProvider = null;
 		for (final IPreferenceChangeListener<T> listener : listeners) { listener.afterValueChange(newValue); }
 	}
 

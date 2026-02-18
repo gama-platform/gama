@@ -18,17 +18,15 @@ import java.util.Map;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 
-import com.google.common.base.Predicate;
-
 import gama.api.compilation.GamlCompilationError;
-import gama.api.compilation.descriptions.IGamlDescription;
-import gama.api.compilation.descriptions.IModelDescription;
-import gama.api.compilation.documentation.IDocManager;
 
 /**
  *
  */
 public interface IValidationContext extends Iterable<GamlCompilationError> {
+
+	/** The Constant IMPORTED_FROM. */
+	String IMPORTED_FROM = "imported from";
 
 	/**
 	 * Adds the.
@@ -38,15 +36,6 @@ public interface IValidationContext extends Iterable<GamlCompilationError> {
 	 * @return true, if successful
 	 */
 	boolean add(GamlCompilationError error);
-
-	/** The Constant IS_INFO. */
-	Predicate<GamlCompilationError> IS_INFO = GamlCompilationError::isInfo;
-	/** The Constant IS_WARNING. */
-	Predicate<GamlCompilationError> IS_WARNING = GamlCompilationError::isWarning;
-	/** The Constant IS_ERROR. */
-	Predicate<GamlCompilationError> IS_ERROR = GamlCompilationError::isError;
-	/** The Constant IMPORTED_FROM. */
-	String IMPORTED_FROM = "imported from";
 
 	/**
 	 * Checks for internal syntax errors.
@@ -110,11 +99,6 @@ public interface IValidationContext extends Iterable<GamlCompilationError> {
 	void clear();
 
 	/**
-	 * Cleanup.
-	 */
-	void cleanup();
-
-	/**
 	 * Method iterator()
 	 *
 	 * @see java.lang.Iterable#iterator()
@@ -143,28 +127,6 @@ public interface IValidationContext extends Iterable<GamlCompilationError> {
 	 * Reset info and warning.
 	 */
 	void resetInfoAndWarning();
-
-	/**
-	 * Do document.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param description
-	 *            the description
-	 * @date 31 déc. 2023
-	 */
-	void doDocument(IModelDescription description);
-
-	/**
-	 * Sets the gaml documentation.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param e
-	 *            the e
-	 * @param d
-	 *            the d
-	 * @date 31 déc. 2023
-	 */
-	void setGamlDocumentation(EObject e, IGamlDescription d);
 
 	/**
 	 * Checks for error on.
@@ -197,27 +159,6 @@ public interface IValidationContext extends Iterable<GamlCompilationError> {
 	boolean verifyPlugins(List<String> list);
 
 	/**
-	 * Should document. True by default
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param document
-	 * @return true, if successful
-	 * @date 30 déc. 2023
-	 */
-	boolean shouldDocument();
-
-	/**
-	 * Should document. Do nothing by default.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param document
-	 *            the document
-	 * @return true, if successful
-	 * @date 30 déc. 2023
-	 */
-	void shouldDocument(boolean document);
-
-	/**
 	 * Gets the uri.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -225,12 +166,5 @@ public interface IValidationContext extends Iterable<GamlCompilationError> {
 	 * @date 10 janv. 2024
 	 */
 	URI getURI();
-
-	/**
-	 * @param uri
-	 * @param syntax
-	 * @param object
-	 */
-	void initWith(URI uri, boolean syntax, IDocManager object);
 
 }

@@ -24,6 +24,7 @@ import com.google.common.collect.Sets;
 
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 import gaml.compiler.gaml.factories.ModelFactory;
 
@@ -94,13 +95,13 @@ public class ImportedResources {
 	 * @return the map
 	 */
 	public Map<String, IModelDescription> computeMicroModels(final String project, final String model,
-			final IValidationContext context) {
+			final IValidationContext context, final IDocumentationContext doc) {
 		if (micromodels == null) return null;
 		Map<String, IModelDescription> result = Maps.newHashMap();
 
 		for (final String aliasName : micromodels.keySet()) {
 			final IModelDescription mic = ModelFactory.getInstance().createModelDescription(project, model,
-					transform(micromodels.get(aliasName), GamlResource.TO_SYNTACTIC_CONTENTS), context, null);
+					transform(micromodels.get(aliasName), GamlResource.TO_SYNTACTIC_CONTENTS), context, doc, null);
 			mic.setAlias(aliasName);
 			result.put(aliasName, mic);
 		}

@@ -24,6 +24,7 @@ import gama.api.compilation.serialization.ModelSerializer;
 import gama.api.compilation.serialization.SpeciesSerializer;
 import gama.api.compilation.serialization.StatementSerializer;
 import gama.api.compilation.serialization.VarSerializer;
+import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
@@ -423,6 +424,13 @@ public interface IDescription
 	 * @return the validation context
 	 */
 	IValidationContext getValidationContext();
+
+	/**
+	 * Gets the documentation context.
+	 *
+	 * @return the documentation context
+	 */
+	IDocumentationContext getDocumentationContext();
 
 	/**
 	 * Copy.

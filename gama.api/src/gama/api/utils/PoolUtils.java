@@ -192,8 +192,8 @@ public class PoolUtils {
 		 */
 		public void release(final T t) {
 			if (t == null) return;
-			if (cleaner != null) { cleaner.clean(t); }
 			if (active) {
+				if (cleaner != null) { cleaner.clean(t); }
 				released.incrementAndGet();
 				objects.offer(t);
 			}

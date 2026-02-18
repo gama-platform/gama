@@ -34,6 +34,7 @@ import gama.api.GAMA;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IKeyword;
 import gama.api.types.map.GamaMapFactory;
@@ -42,6 +43,7 @@ import gama.dev.DEBUG;
 import gaml.compiler.gaml.documentation.GamlResourceDocumenter;
 import gaml.compiler.gaml.indexer.GamlResourceIndexer;
 import gaml.compiler.gaml.parsing.GamlSyntacticConverter;
+import gaml.compiler.gaml.validation.DocumentationContext;
 import gaml.compiler.gaml.validation.IGamlBuilderListener;
 import gaml.compiler.gaml.validation.ValidationContext;
 
@@ -91,6 +93,9 @@ public class GamlResourceServices {
 	 * validation.
 	 */
 	private static final Map<URI, IValidationContext> resourceErrors = GamaMapFactory.createUnordered();
+
+	/** The Constant resourceDocumentation. */
+	private static final Map<URI, IDocumentationContext> resourceDocumentation = GamaMapFactory.createUnordered();
 
 	/**
 	 * Cache of parsed syntactic contents indexed by URI. Uses concurrent map for thread-safe access. Note: Currently
@@ -225,12 +230,20 @@ public class GamlResourceServices {
 			final Map.Entry<URI, IGamlBuilderListener> entry = it.next();
 			if (entry.getValue() == listener) {
 				getResourceDocumenter().invalidate(entry.getKey());
-				IValidationContext vc = getValidationContext(entry.getKey());
-				if (vc != null) { vc.shouldDocument(false); }
+				// IDocumentationContext vc = getDocumentationContext(entry.getKey());
+				// if (vc != null) { vc.shouldDocument(false); }
 				it.remove();
 				return;
 			}
 		}
+	}
+
+	/**
+	 * @param key
+	 * @return
+	 */
+	static IDocumentationContext getDocumentationContext(final URI key) {
+		return resourceDocumentation.get(key);
 	}
 
 	/**
@@ -244,7 +257,11 @@ public class GamlResourceServices {
 	public static IValidationContext getOrCreateValidationContext(final GamlResource r) {
 		final URI newURI = r.getURI();
 		if (!resourceErrors.containsKey(newURI)) {
-			resourceErrors.put(newURI, ValidationContext.create(newURI, r.hasErrors(), getResourceDocumenter()));
+			resourceErrors.put(newURI, ValidationContext.create(newURI, r.hasErrors()));
+		}
+		if (!resourceDocumentation.containsKey(newURI)) {
+			resourceDocumentation.put(newURI, isEdited(newURI)
+					? DocumentationContext.create(newURI, getResourceDocumenter()) : DocumentationContext.NULL);
 		}
 		final IValidationContext result = resourceErrors.get(newURI);
 		return result;
@@ -268,8 +285,7 @@ public class GamlResourceServices {
 	 *            the GAML resource whose validation context should be discarded
 	 */
 	public static void discardValidationContext(final GamlResource r) {
-		IValidationContext toRelease = resourceErrors.remove(r.getURI());
-		// if (toRelease != null) { ValidationContext.POOL.release(toRelease); }
+		resourceErrors.remove(r.getURI());
 	}
 
 	/**

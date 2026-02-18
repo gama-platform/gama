@@ -267,15 +267,14 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 				cd.info("The actual species will be determined at runtime. This can lead to errors if it cannot be instantiated",
 						WRONG_TYPE, SPECIES);
 			}
-
-			if (sd instanceof IModelDescription && !(cd.getSpeciesContext() instanceof IExperimentDescription)) {
+			final ISpeciesDescription callerSpecies = cd.getSpeciesContext();
+			if (sd instanceof IModelDescription && !(callerSpecies instanceof IExperimentDescription)) {
 				cd.error("Simulations can only be created within experiments", WRONG_CONTEXT, SPECIES);
 				return;
 			}
 
-			final ISpeciesDescription callerSpecies = cd.getSpeciesContext();
 			final ISpeciesDescription macro = sd.getMacroSpecies();
-			if (macro == null) {
+			if (macro == null && !(sd instanceof IModelDescription)) {
 				cd.error("The macro-species of " + speciesExpr + " cannot be determined");
 				return;
 				// hqnghi special case : create instances of model from
@@ -284,7 +283,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 			if (macro instanceof IModelDescription && callerSpecies instanceof IModelDescription) {
 
 				// end-hqnghi
-			} else if (callerSpecies != macro && !callerSpecies.hasMacroSpecies(macro)
+			} else if (macro != null && callerSpecies != macro && !callerSpecies.hasMacroSpecies(macro)
 					&& !callerSpecies.hasParent(macro)) {
 				cd.error("No instance of " + macro.getName() + " available for creating instances of " + sd.getName());
 				return;

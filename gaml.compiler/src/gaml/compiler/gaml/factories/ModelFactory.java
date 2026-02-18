@@ -41,6 +41,7 @@ import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.prototypes.IArtefactProto;
+import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
@@ -53,6 +54,7 @@ import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.ast.SyntacticFactory;
 import gaml.compiler.gaml.descriptions.ModelDescription;
+import gaml.compiler.gaml.validation.DocumentationContext;
 import gaml.compiler.gaml.validation.ValidationContext;
 
 /**
@@ -157,12 +159,12 @@ public class ModelFactory implements IModelFactory {
 			final ISpeciesDescription macro, final ISpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> skills, final String plugin) {
 		if (IKeyword.MODEL.equals(name)) return new ModelDescription(name, clazz, "", "", null, macro, parent, null,
-				null, ValidationContext.NULL, Collections.emptySet(), helper);
+				null, ValidationContext.NULL, DocumentationContext.NULL, Collections.emptySet(), helper);
 		// We are creating a built-in model species
 		// For the moment we suppose its parent is the root (macro)
 		final IModelDescription model = new ModelDescription(name, clazz, "", "", null, null,
 				GamaMetaModel.getSpeciesDescription(IKeyword.MODEL), null, null, ValidationContext.NULL,
-				Collections.emptySet(), helper, skills);
+				DocumentationContext.NULL, Collections.emptySet(), helper, skills);
 		IModelDescription.BUILT_IN_MODELS.put(name, model);
 		return model;
 	}
@@ -229,7 +231,7 @@ public class ModelFactory implements IModelFactory {
 	@Override
 	public IModelDescription createModelDescription(final String projectPath, final String modelPath,
 			final Iterable<ISyntacticElement> models, final IValidationContext collector,
-			final Map<String, IModelDescription> mm) {
+			final IDocumentationContext doc, final Map<String, IModelDescription> mm) {
 		// DEBUG.OUT("ModelAssembler running in thread " + Thread.currentThread().getName());
 		// DEBUG.OUT("All models passed to ModelAssembler: "
 		// + Iterables.transform(allModels, @Nullable ISyntacticElement::getName));
@@ -263,7 +265,7 @@ public class ModelFactory implements IModelFactory {
 		// DEBUG.OUT("In building " + modelName);
 		Set<String> absoluteAlternatePathAsStrings = buildWorkingPaths(mm, models);
 
-		final IModelDescription model = buildPrimaryModel(projectPath, modelPath, collector, models, source,
+		final IModelDescription model = buildPrimaryModel(projectPath, modelPath, collector, doc, models, source,
 				globalFacets, modelName, absoluteAlternatePathAsStrings);
 
 		// hqnghi add micro-models
@@ -415,18 +417,18 @@ public class ModelFactory implements IModelFactory {
 	 * @return the newly created primary model description
 	 */
 	private IModelDescription buildPrimaryModel(final String projectPath, final String modelPath,
-			final IValidationContext collector, final Iterable<ISyntacticElement> models,
-			final ISyntacticElement source, final Facets globalFacets, final String modelName,
-			final Set<String> absoluteAlternatePathAsStrings) {
+			final IValidationContext collector, final IDocumentationContext documentationContext,
+			final Iterable<ISyntacticElement> models, final ISyntacticElement source, final Facets globalFacets,
+			final String modelName, final Set<String> absoluteAlternatePathAsStrings) {
 		IModelDescription parent = (IModelDescription) GamaMetaModel.getSpeciesDescription(IKeyword.MODEL);
 		if (globalFacets != null && globalFacets.containsKey(PARENT)) {
 			String parentModel = globalFacets.getLabel(PARENT);
 			IModelDescription parentBuiltInModels = IModelDescription.BUILT_IN_MODELS.get(parentModel);
 			if (parentBuiltInModels != null) { parent = parentBuiltInModels; }
 		}
-		final IModelDescription model =
-				new ModelDescription(modelName, null, projectPath, modelPath, source.getElement(), null, parent, null,
-						globalFacets, collector, absoluteAlternatePathAsStrings, parent.getAgentConstructor());
+		final IModelDescription model = new ModelDescription(modelName, null, projectPath, modelPath,
+				source.getElement(), null, parent, null, globalFacets, collector, documentationContext,
+				absoluteAlternatePathAsStrings, parent.getAgentConstructor());
 		final Collection<String> allModelNames = Iterables.size(models) == 1 ? null : ImmutableSet
 				.copyOf(Iterables.transform(Iterables.skip(models, 1), each -> buildModelName(each.getName())));
 		model.setImportedModelNames(allModelNames);

@@ -37,6 +37,7 @@ import com.google.common.base.Function;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.gaml.GAML;
 import gama.api.runtime.IExecutionContext;
@@ -72,6 +73,15 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 */
 	public IValidationContext getValidationContext() {
 		return GamlResourceServices.getOrCreateValidationContext(this);
+	}
+
+	/**
+	 * Gets the documentation context.
+	 *
+	 * @return the documentation context
+	 */
+	public IDocumentationContext getDocumentationContext() {
+		return GamlResourceServices.getDocumentationContext(this.getURI());
 	}
 
 	/**
@@ -150,13 +160,14 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 		final String model = GamlResourceServices.getModelPathOf(this);
 		final String project = GamlResourceServices.getProjectPathOf(this);
 		final IValidationContext context = getValidationContext();
-		context.shouldDocument(GamlResourceServices.isEdited(this));
+		final IDocumentationContext doc = getDocumentationContext();
+		// doc.shouldDocument(GamlResourceServices.isEdited(this));
 		// Creating a new INSTANCE solves sync problem
 		if (resources == null) return ModelFactory.getInstance().createModelDescription(project, model,
-				singleton(getSyntacticContents()), context, null);
+				singleton(getSyntacticContents()), context, doc, null);
 		Iterable<ISyntacticElement> imports = resources.computeDirectImports(getSyntacticContents());
-		return ModelFactory.getInstance().createModelDescription(project, model, imports, context,
-				resources.computeMicroModels(project, model, context));
+		return ModelFactory.getInstance().createModelDescription(project, model, imports, context, doc,
+				resources.computeMicroModels(project, model, context, doc));
 	}
 
 	/**
