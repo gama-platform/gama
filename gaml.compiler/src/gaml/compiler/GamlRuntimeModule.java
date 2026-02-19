@@ -25,9 +25,7 @@ import org.eclipse.xtext.validation.IResourceValidator;
 
 import com.google.inject.Binder;
 
-import gama.api.gaml.expressions.IExpressionCompiler;
 import gama.dev.DEBUG;
-import gaml.compiler.gaml.expression.GamlExpressionCompiler;
 import gaml.compiler.gaml.linking.GamlLinkingErrorMessageProvider;
 import gaml.compiler.gaml.linking.GamlLinkingService;
 import gaml.compiler.gaml.naming.GamlNameConverter;
@@ -54,9 +52,8 @@ public class GamlRuntimeModule extends gaml.compiler.AbstractGamlRuntimeModule {
 
 	// Disabled for the moment
 	// public static Pref<Boolean> ENABLE_FAST_COMPIL = GamaPreferences
-	//// .create("pref_optimize_fast_compilation",
-	//// "Enable faster validation (but less accurate error reporting in nagivator)", false, IType.BOOL)
-	//// .in(GamaPreferences.Modeling.NAME, GamaPreferences.Modeling.OPTIONS).hidden();
+	//// .create("pref_optimize_fast_compilation", "Enable faster validation (but less accurate error reporting in
+	/// nagivator)", false, IType.BOOL) .in(GamaPreferences.Modeling.NAME, GamaPreferences.Modeling.OPTIONS).hidden();
 
 	/**
 	 * Static initialize.
@@ -102,10 +99,10 @@ public class GamlRuntimeModule extends gaml.compiler.AbstractGamlRuntimeModule {
 	 *
 	 * @return the class<? extends I expression compiler>
 	 */
-	@SuppressWarnings ("rawtypes")
-	public Class<? extends IExpressionCompiler> bindIGamlExpressionCompiler() {
-		return GamlExpressionCompiler.class;
-	}
+	// @SuppressWarnings ("rawtypes")
+	// public Class<? extends IExpressionCompiler> bindIGamlExpressionCompiler() {
+	// return GamlExpressionCompiler.class;
+	// }
 
 	@Override
 	@SingletonBinding ()

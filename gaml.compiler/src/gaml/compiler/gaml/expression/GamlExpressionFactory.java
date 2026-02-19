@@ -36,7 +36,6 @@ import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
-import gama.api.gaml.expressions.IExpressionCompiler;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.statements.IStatement;
@@ -51,6 +50,7 @@ import gama.api.runtime.scope.InScope;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.descriptions.ConstantExpressionDescription;
 import gaml.compiler.gaml.prototypes.OperatorProto;
+import gaml.compiler.gaml.resource.GamlSyntheticResourcesServices;
 
 /**
  * A factory for creating GamlExpression objects with optimized performance, memory management, and comprehensive
@@ -221,18 +221,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	/**
 	 * Instantiates a new GamlExpressionFactory with proper initialization.
 	 */
-	private GamlExpressionFactory() {
-		// Initialize caches with reasonable initial capacities
-		initializeCaches();
-	}
-
-	/**
-	 * Initializes internal caches for performance optimization.
-	 */
-	private void initializeCaches() {
-		// The caches are already initialized as static fields
-		// This method is reserved for future initialization logic
-	}
+	private GamlExpressionFactory() {}
 
 	/**
 	 * Clears all internal caches to free memory. This should be called when the factory is no longer needed or during
@@ -269,70 +258,10 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	}
 
 	/**
-	 * Functional interface for providing expression compiler instances. This interface allows dependency injection of
-	 * parser implementations while maintaining thread-local storage for parser instances.
-	 */
-	public interface ParserProvider {
-
-		/**
-		 * Returns an expression compiler instance. Implementations should return a new or appropriately configured
-		 * compiler instance for the current context.
-		 *
-		 * @return a new IExpressionCompiler instance, never null
-		 */
-		IExpressionCompiler get();
-	}
-
-	/** Thread-local storage for expression compiler instances to ensure thread safety. */
-	static ThreadLocal<IExpressionCompiler> parser;
-
-	/**
-	 * Registers a parser provider for creating expression compiler instances. This method sets up thread-local storage
-	 * to ensure each thread gets its own parser instance, which is crucial for thread safety in multi-threaded
-	 * environments.
-	 *
-	 * @param f
-	 *            the parser provider that will supply compiler instances, must not be null
-	 */
-	public static void registerParserProvider(final ParserProvider f) {
-		parser = new ThreadLocal() {
-			@Override
-			protected IExpressionCompiler initialValue() {
-				return f.get();
-			}
-		};
-	}
-
-	/**
-	 * Retrieves the thread-local expression compiler instance. Each thread maintains its own parser instance to ensure
-	 * thread safety during concurrent compilation operations.
-	 *
-	 * @return the expression compiler for the current thread, never null
-	 * @throws IllegalStateException
-	 *             if no parser provider has been registered
-	 */
-	// @Override
-	private IExpressionCompiler getParser() { return parser.get(); }
-
-	/**
-	 * Resets and cleans up the thread-local parser instance. This method properly disposes of parser resources and
-	 * removes the thread-local reference to prevent memory leaks. Should be called when the current thread is done with
-	 * expression compilation.
-	 */
-	@Override
-	public void resetParser() {
-		if (parser != null && parser.get() != null) {
-			parser.get().dispose();
-			parser.remove();
-		}
-	}
-
-	/**
 	 * Cleans up all resources associated with this factory, including parser resources and caches. Should be called
 	 * during application shutdown to prevent memory leaks.
 	 */
 	public void cleanup() {
-		resetParser();
 		clearCaches();
 	}
 
@@ -509,7 +438,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 */
 	@Override
 	public IExpression createExpr(final IExpressionDescription ied, final IDescription context) {
-		return getParser().compile(ied, context);
+		return GamlExpressionCompiler.getInstance().compile(ied, context);
 	}
 
 	/**
@@ -525,7 +454,8 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	@Override
 	public IExpression createExpr(final String s, final IDescription context) {
 		if (s == null || s.isEmpty()) return null;
-		return getParser().compile(GAML.getExpressionDescriptionFactory().createStringBased(s), context);
+		return GamlExpressionCompiler.getInstance().compile(GAML.getExpressionDescriptionFactory().createStringBased(s),
+				context);
 	}
 
 	/**
@@ -544,7 +474,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	public IExpression createExpr(final String s, final IDescription context,
 			final IExecutionContext additionalContext) {
 		if (s == null || s.isEmpty()) return null;
-		return getParser().compile(s, context, additionalContext);
+		return GamlExpressionCompiler.getInstance().compile(s, context, additionalContext);
 	}
 
 	/**
@@ -563,7 +493,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	public Arguments createArgumentMap(final IActionDescription action, final IExpressionDescription args,
 			final IDescription context) {
 		if (args == null) return null;
-		return getParser().parseArguments(action, args.getTarget(), context, false);
+		return GamlExpressionCompiler.getInstance().compileArguments(action, args.getTarget(), context, false);
 	}
 
 	/**
@@ -1051,7 +981,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				context, Collections.EMPTY_LIST, IKeyword.TYPE, IKeyword.UNKNOWN, IKeyword.NAME, TEMPORARY_ACTION_NAME);
 
 		// Parse the action code into statements and add them as children
-		final List<IDescription> children = getParser().compileBlock(action, context, tempContext);
+		final List<IDescription> children = GamlSyntheticResourcesServices.compileBlock(action, context, tempContext);
 		for (final IDescription child : children) { desc.addChild(child); }
 
 		// Validate and compile the action
@@ -1063,7 +993,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		agent.getSpecies().addTemporaryAction(a);
 
 		// Return an expression that calls this temporary action
-		return getParser().compile(TEMPORARY_ACTION_NAME + "()", context, null);
+		return GamlExpressionCompiler.getInstance().compile(TEMPORARY_ACTION_NAME + "()", context, null);
 	}
 
 	/**

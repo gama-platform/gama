@@ -19,7 +19,6 @@ import gama.api.gaml.GAML;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.descriptions.DescriptionFactory;
-import gaml.compiler.gaml.expression.GamlExpressionCompiler;
 import gaml.compiler.gaml.expression.GamlExpressionFactory;
 import gaml.compiler.gaml.factories.ExperimentFactory;
 import gaml.compiler.gaml.factories.ExpressionDescriptionFactory;
@@ -35,25 +34,28 @@ import gaml.compiler.gaml.validation.GamlModelBuilder;
 import gaml.compiler.gaml.validation.GamlTextValidator;
 
 /**
- * The GAML Compiler bundle activator that initializes and registers all the core components
- * required for GAML language compilation and validation.
- * 
- * <p>This activator is responsible for bootstrapping the GAML compiler infrastructure when the
- * bundle starts, including registering various factories, parsers, and services that enable
- * GAML model compilation, expression parsing, and validation.</p>
- * 
- * <p>The class implements the OSGi {@link BundleActivator} interface to participate in the
- * bundle lifecycle and ensure proper initialization of GAML compiler components.</p>
- * 
+ * The GAML Compiler bundle activator that initializes and registers all the core components required for GAML language
+ * compilation and validation.
+ *
+ * <p>
+ * This activator is responsible for bootstrapping the GAML compiler infrastructure when the bundle starts, including
+ * registering various factories, parsers, and services that enable GAML model compilation, expression parsing, and
+ * validation.
+ * </p>
+ *
+ * <p>
+ * The class implements the OSGi {@link BundleActivator} interface to participate in the bundle lifecycle and ensure
+ * proper initialization of GAML compiler components.
+ * </p>
+ *
  * @author GAMA Development Team
  * @since 2.0
  */
 public class GamlActivator implements BundleActivator {
 
 	/**
-	 * Static initialization block that disables debug output during class loading.
-	 * This ensures that the GAML compiler initialization process doesn't generate
-	 * unnecessary debug messages during bundle startup.
+	 * Static initialization block that disables debug output during class loading. This ensures that the GAML compiler
+	 * initialization process doesn't generate unnecessary debug messages during bundle startup.
 	 */
 	static {
 		DEBUG.OFF();
@@ -61,21 +63,28 @@ public class GamlActivator implements BundleActivator {
 
 	/**
 	 * Starts the GAML compiler bundle and initializes all necessary components.
-	 * 
-	 * <p>This method performs the following key initialization tasks:</p>
+	 *
+	 * <p>
+	 * This method performs the following key initialization tasks:
+	 * </p>
 	 * <ul>
-	 *   <li>Registers artifact prototype factory for GAML artefacts</li>
-	 *   <li>Registers description factory for model element descriptions</li>
-	 *   <li>Registers symbol factories for experiments, models, platforms, species, statements, variables, and skills</li>
-	 *   <li>Configures expression parsing and compilation infrastructure</li>
-	 *   <li>Sets up GAML content providers and model builders</li>
-	 *   <li>Initializes text validation services</li>
+	 * <li>Registers artifact prototype factory for GAML artefacts</li>
+	 * <li>Registers description factory for model element descriptions</li>
+	 * <li>Registers symbol factories for experiments, models, platforms, species, statements, variables, and
+	 * skills</li>
+	 * <li>Configures expression parsing and compilation infrastructure</li>
+	 * <li>Sets up GAML content providers and model builders</li>
+	 * <li>Initializes text validation services</li>
 	 * </ul>
-	 * 
-	 * <p>All initialization is performed within a timed block for performance monitoring.</p>
-	 * 
-	 * @param context the bundle context provided by the OSGi framework
-	 * @throws Exception if any initialization step fails
+	 *
+	 * <p>
+	 * All initialization is performed within a timed block for performance monitoring.
+	 * </p>
+	 *
+	 * @param context
+	 *            the bundle context provided by the OSGi framework
+	 * @throws Exception
+	 *             if any initialization step fails
 	 */
 	@Override
 	public void start(final BundleContext context) throws Exception {
@@ -83,12 +92,15 @@ public class GamlActivator implements BundleActivator {
 
 		TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAMA, "Initialization of " + context.getBundle().getSymbolicName(),
 				"done in", () -> {
+					// Register the stateless singleton expression compiler
+					// GamlExpressionFactory.registerParser(GamlExpressionCompiler.getInstance());
+
 					// Register factory for creating GAML artefact prototypes
 					GAML.registerArtefactProtoFactory(ArtefactProtoFactory.getInstance());
-					
+
 					// Register factory for creating model element descriptions
 					GAML.registerDescriptionFactory(DescriptionFactory.getInstance());
-					
+
 					// Register symbol factories for different GAML language constructs
 					GAML.registerSymbolFactory(ExperimentFactory.getInstance());
 					GAML.registerSymbolFactory(ModelFactory.getInstance());
@@ -97,12 +109,11 @@ public class GamlActivator implements BundleActivator {
 					GAML.registerSymbolFactory(StatementFactory.getInstance());
 					GAML.registerSymbolFactory(VariableFactory.getInstance());
 					GAML.registerSymbolFactory(SkillFactory.getInstance());
-					
+
 					// Configure expression compilation and parsing infrastructure
-					GamlExpressionFactory.registerParserProvider(GamlExpressionCompiler::new);
 					GAML.registerExpressionFactory(GamlExpressionFactory.getInstance());
 					GAML.registerExpressionDescriptionFactory(ExpressionDescriptionFactory.getInstance());
-					
+
 					// Register GAML-specific services for content processing and validation
 					GAML.registerGamlContentProvider(GamlResourceServices::getOrCreateSyntacticContents);
 					GAML.registerGamlModelBuilder(GamlModelBuilder.getInstance());
@@ -114,13 +125,16 @@ public class GamlActivator implements BundleActivator {
 
 	/**
 	 * Stops the GAML compiler bundle.
-	 * 
-	 * <p>This method is called when the bundle is being stopped and provides an opportunity
-	 * to perform cleanup operations. Currently, no specific cleanup is required for the
-	 * GAML compiler bundle.</p>
-	 * 
-	 * @param context the bundle context provided by the OSGi framework
-	 * @throws Exception if any cleanup operation fails
+	 *
+	 * <p>
+	 * This method is called when the bundle is being stopped and provides an opportunity to perform cleanup operations.
+	 * Currently, no specific cleanup is required for the GAML compiler bundle.
+	 * </p>
+	 *
+	 * @param context
+	 *            the bundle context provided by the OSGi framework
+	 * @throws Exception
+	 *             if any cleanup operation fails
 	 */
 	@Override
 	public void stop(final BundleContext context) throws Exception {}

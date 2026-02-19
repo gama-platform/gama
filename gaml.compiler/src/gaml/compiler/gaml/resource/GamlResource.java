@@ -39,7 +39,6 @@ import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
-import gama.api.gaml.GAML;
 import gama.api.runtime.IExecutionContext;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.factories.ModelFactory;
@@ -156,7 +155,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 * @return the model description
 	 */
 	private IModelDescription buildModelDescription(final ImportedResources resources) {
-		GAML.getExpressionFactory().resetParser();
+		// GAML.getExpressionFactory().resetParser();
 		final String model = GamlResourceServices.getModelPathOf(this);
 		final String project = GamlResourceServices.getProjectPathOf(this);
 		final IValidationContext context = getValidationContext();

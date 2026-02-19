@@ -41,7 +41,7 @@ public interface IDocumentationContext {
 	 *            the d
 	 * @date 31 déc. 2023
 	 */
-	void setGamlDocumentation(EObject e, IGamlDescription d);
+	void document(EObject e, IGamlDescription d);
 
 	/**
 	 * Gets the uri.

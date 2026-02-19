@@ -267,13 +267,6 @@ public interface IExpressionFactory {
 	IExpression createTypeExpression(IType type);
 
 	/**
-	 * Resets and cleans up the thread-local parser instance. This method properly disposes of parser resources and
-	 * removes the thread-local reference to prevent memory leaks. Should be called when the current thread is done with
-	 * expression compilation.
-	 */
-	void resetParser();
-
-	/**
 	 * Creates a unit constant expression with the specified parameters. Unit expressions represent measurement units in
 	 * GAML (e.g., meters, seconds).
 	 *

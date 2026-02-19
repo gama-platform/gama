@@ -150,7 +150,7 @@ public class DocumentationContext implements IDocumentationContext {
 	 * @date 31 déc. 2023
 	 */
 	@Override
-	public void setGamlDocumentation(final EObject e, final IGamlDescription d) {
+	public void document(final EObject e, final IGamlDescription d) {
 		// Called by SymbolDescription to document individual expressions -- they are kept in a Map<EObject,
 		// IGamlDescription> and done when the whole model is documented
 		if (e != null && d != null) {

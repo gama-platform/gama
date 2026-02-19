@@ -723,7 +723,7 @@ public interface IDescription
 	 * @param desc
 	 *            the desc
 	 */
-	void document(EObject s, IGamlDescription desc);
+	// void document(EObject s, IGamlDescription desc);
 
 	/**
 	 * Gets the facets.

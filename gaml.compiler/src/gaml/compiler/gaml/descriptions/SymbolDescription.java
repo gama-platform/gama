@@ -27,7 +27,6 @@ import gama.api.additions.registries.ArtefactProtoRegistry;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.IGamlDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
@@ -775,19 +774,19 @@ public abstract class SymbolDescription implements IDescription {
 		c.add(new GamlCompilationError(s, code, e, type, data));
 	}
 
-	/**
-	 * Associates documentation with an EMF object in the current context.
-	 *
-	 * @param e
-	 *            the EMF object to document
-	 * @param desc
-	 *            the documentation to associate with the object
-	 */
-	@Override
-	public void document(final EObject e, final IGamlDescription desc) {
-		final IDocumentationContext c = getDocumentationContext();
-		if (c != null) { c.setGamlDocumentation(e, desc); }
-	}
+	// /**
+	// * Associates documentation with an EMF object in the current context.
+	// *
+	// * @param e
+	// * the EMF object to document
+	// * @param desc
+	// * the documentation to associate with the object
+	// */
+	// @Override
+	// public void document(final EObject e, final IGamlDescription desc) {
+	// final IDocumentationContext c = getDocumentationContext();
+	// if (c != null) { c.document(e, desc); }
+	// }
 
 	/**
 	 * Reports a general error with this description.
