@@ -106,6 +106,12 @@ public interface IExpressionFactory {
 	IExpression createSpeciesConstant(final IType type);
 
 	/**
+	 * @param name
+	 * @return
+	 */
+	IExpression createSkillConstant(String name);
+
+	/**
 	 * Creates an expression from an expression description within a given context. This method delegates to the parser
 	 * to compile the expression description into an executable expression object.
 	 *

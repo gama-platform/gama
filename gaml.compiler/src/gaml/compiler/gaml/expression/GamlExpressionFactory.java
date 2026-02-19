@@ -401,6 +401,17 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	}
 
 	/**
+	 * Creates a new GamlExpression object.
+	 *
+	 * @param name
+	 *            the name
+	 * @return the i expression
+	 */
+	public IExpression createSkillConstant(final String name) {
+		return new SkillConstantExpression(name, Types.SKILL);
+	}
+
+	/**
 	 * Creates a constant expression with the specified value, type, and optional name. This method handles special
 	 * cases for different types and optimizes for common values.
 	 *

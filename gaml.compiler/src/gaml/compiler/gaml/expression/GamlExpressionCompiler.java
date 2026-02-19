@@ -46,7 +46,7 @@ import gaml.compiler.gaml.resource.GamlSyntheticResourcesServices;
  *
  * <h2>Stateless Architecture:</h2>
  * <p>
- * This class is designed to be stateless. All mutable compilation state is maintained in {@link CompilationContext}
+ * This class is designed to be stateless. All mutable compilation state is maintained in {@link ExpressionCompilationContext}
  * instances that are created per compilation session and passed through method calls. This design enables:
  * </p>
  * <ul>
@@ -63,19 +63,19 @@ import gaml.compiler.gaml.resource.GamlSyntheticResourcesServices;
  * <ul>
  * <li>High-performance Guava cache with automated eviction for context-independent expressions</li>
  * <li>Size-based eviction (LRU) and time-based expiration to prevent memory leaks</li>
- * <li>Session-level caches in CompilationContext for species, skills, and types</li>
+ * <li>Session-level caches in ExpressionCompilationContext for species, skills, and types</li>
  * <li>Efficient data structures for iterator context management</li>
  * </ul>
  *
  * <h2>Thread Safety:</h2>
  * <p>
  * This class is fully thread-safe as a stateless singleton. Each compilation request creates its own
- * {@link CompilationContext} which is not shared across threads.
+ * {@link ExpressionCompilationContext} which is not shared across threads.
  * </p>
  *
  * <h2>Usage Pattern:</h2>
  * <p>
- * Typically invoked through an IExpressionFactory (the default being GAML.getExpressionFactory()). A CompilationContext
+ * Typically invoked through an IExpressionFactory (the default being GAML.getExpressionFactory()). A ExpressionCompilationContext
  * is created per compilation request and maintains compilation state including current species, types manager, and
  * validation context.
  * </p>
@@ -85,7 +85,7 @@ import gaml.compiler.gaml.resource.GamlSyntheticResourcesServices;
  * @see IExpressionCompiler
  * @see IExpression
  * @see IExpressionFactory
- * @see CompilationContext
+ * @see ExpressionCompilationContext
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
@@ -121,7 +121,7 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 
 	@Override
 	public IExpression compile(final IExpressionDescription s, final IDescription parsingContext) {
-		try (CompilationContext ctx = new CompilationContext(parsingContext)) {
+		try (ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext)) {
 			// Cf. Issue 782. Returns the expression if an expression needs its
 			// compiled version to be compiled.
 			// if (s == ctx.getCurrentExpressionDescription()) return s.getExpression();
@@ -160,7 +160,7 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 		IExpression result = CONSTANT_SYNTHETIC_EXPRESSIONS.getIfPresent(expression);
 		if (result != null) return result;
 		final EObject o = GamlSyntheticResourcesServices.getEObjectOf(expression, tempContext, parsingContext);
-		try (CompilationContext ctx = new CompilationContext(parsingContext)) {
+		try (ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext)) {
 			result = compile(o, ctx);
 		}
 		// Cache context-independent expressions - Guava handles eviction automatically
@@ -177,9 +177,9 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 	 *            the compilation context
 	 * @return the compiled expression, or null if compilation fails
 	 */
-	private IExpression compile(final EObject s, final CompilationContext ctx) {
+	private IExpression compile(final EObject s, final ExpressionCompilationContext ctx) {
 		// Create a switch instance with the context and delegate to it
-		final GamlExpressionCompilationSwitch compilationSwitch = new GamlExpressionCompilationSwitch(ctx);
+		final ExpressionCompilationSwitch compilationSwitch = new ExpressionCompilationSwitch(ctx);
 		return compilationSwitch.compile(s);
 	}
 
@@ -189,8 +189,8 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 	@Override
 	public Arguments compileArguments(final IActionDescription action, final EObject o, final IDescription command,
 			final boolean compileArgValues) {
-		try (final CompilationContext ctx = new CompilationContext(command)) {
-			return new GamlExpressionCompilationSwitch(ctx).parseArguments(action, o, command, compileArgValues);
+		try (final ExpressionCompilationContext ctx = new ExpressionCompilationContext(command)) {
+			return new ExpressionCompilationSwitch(ctx).parseArguments(action, o, command, compileArgValues);
 		}
 	}
 

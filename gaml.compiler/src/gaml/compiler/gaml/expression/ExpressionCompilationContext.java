@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * CompilationContext.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * ExpressionCompilationContext.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -23,7 +23,7 @@ import gama.api.gaml.types.Types;
 import gaml.compiler.gaml.validation.DocumentationContext;
 
 /**
- * CompilationContext encapsulates all mutable state required during expression compilation. This class is designed to
+ * ExpressionCompilationContext encapsulates all mutable state required during expression compilation. This class is designed to
  * be created per compilation session and passed through the compilation process, enabling the GamlExpressionCompiler to
  * be stateless.
  *
@@ -40,20 +40,20 @@ import gaml.compiler.gaml.validation.DocumentationContext;
  *
  * <h2>Lifecycle:</h2>
  * <p>
- * A new CompilationContext is created for each top-level compilation request and is discarded after the compilation
+ * A new ExpressionCompilationContext is created for each top-level compilation request and is discarded after the compilation
  * completes. The context is not meant to be reused across multiple independent compilations.
  * </p>
  *
  * <h2>Thread Safety:</h2>
  * <p>
- * This class is NOT thread-safe. Each thread should have its own CompilationContext instance. However, since contexts
+ * This class is NOT thread-safe. Each thread should have its own ExpressionCompilationContext instance. However, since contexts
  * are short-lived (one per compilation), this is not a concern in practice.
  * </p>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @since GAMA 2.0
  */
-public final class CompilationContext implements Closeable {
+public final class ExpressionCompilationContext implements Closeable {
 
 	/**
 	 * The iterator contexts stack for managing 'each' variables in iterator operations. Using ArrayDeque for better
@@ -86,7 +86,7 @@ public final class CompilationContext implements Closeable {
 	 * @param initialContext
 	 *            the initial description context for compilation
 	 */
-	public CompilationContext(final IDescription context) {
+	public ExpressionCompilationContext(final IDescription context) {
 		this.currentContext = context;
 		this.currentTypesManager = findTypesManager(context);
 		this.documentationContext = findDocumentationContext(context);
