@@ -117,7 +117,7 @@ public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 
 		countOfModelsValidated[0]++;
 		errors.stream().filter(GamlCompilationError::isError).forEach(e -> {
-			DEBUG.OUT("Error in " + e.getURI() + ":\n " + e.toString() + " \n " + e.getSource().toString() + "\n");
+			DEBUG.OUT("Error in " + e.uri() + ":\n " + e.toString() + " \n " + e.source().toString() + "\n");
 			returnCode[0]++;
 		});
 

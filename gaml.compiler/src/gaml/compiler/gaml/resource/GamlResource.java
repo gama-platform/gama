@@ -180,9 +180,9 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	public void invalidate(final GamlResource r, final String s) {
 		GamlCompilationError error = null;
 		if (GamlResourceServices.equals(r.getURI(), getURI())) {
-			error = new GamlCompilationError(s, GENERAL, r.getContents().get(0), GamlCompilationError.Type.Error);
+			error = GamlCompilationError.create(s, GENERAL, r.getContents().get(0), GamlCompilationError.Type.Error);
 		} else {
-			error = new GamlCompilationError(s, GENERAL, r.getURI(), GamlCompilationError.Type.Error);
+			error = GamlCompilationError.create(s, GENERAL, r.getURI(), GamlCompilationError.Type.Error);
 		}
 		getValidationContext().add(error);
 		updateWith(null, true);

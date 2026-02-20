@@ -52,16 +52,16 @@ public class GamaCompilationFailedException extends GamaRuntimeException {
 		for (var error : errorList) {
 			if (atLeastSecond) { sb.append(","); }
 			sb.append("{");
-			sb.append("\"type\":\"").append(error.getErrorType().name()).append("\",");
-			sb.append("\"message\":\"").append(error.getMessage()).append("\",");
-			sb.append("\"code\":\"").append(error.getCode()).append("\",");
-			sb.append("\"data\":[\"")
-					.append(String.join("\",\"", error.getData() != null ? error.getData() : new String[0]))
+			sb.append("\"type\":\"").append(error.errorType().name()).append("\",");
+			sb.append("\"message\":\"").append(error.message()).append("\",");
+			sb.append("\"code\":\"").append(error.code()).append("\",");
+			sb.append("\"data\":[\"").append(String.join("\",\"", error.data() != null ? error.data() : new String[0]))
 					.append("\"],");
-			sb.append("\"source\":\"").append((error.getURI() != null ? error.getURI().toFileString() : "")
-					.replace("\\", "\\\\").replace("\"", "\\\"")).append("\",");
-			sb.append("\"uri\":\"").append(error.getURI()).append("\"");
-			int[] loc = GAML.getLocationInFileInfo(error.getSource());
+			sb.append("\"source\":\"").append(
+					(error.uri() != null ? error.uri().toFileString() : "").replace("\\", "\\\\").replace("\"", "\\\""))
+					.append("\",");
+			sb.append("\"uri\":\"").append(error.uri()).append("\"");
+			int[] loc = GAML.getLocationInFileInfo(error.source());
 			sb.append(",\"starting_at_line\":").append(loc[0]).append(",");
 			sb.append("\"offset\":").append(loc[1]).append("");
 			// }

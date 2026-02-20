@@ -16,7 +16,8 @@ import org.eclipse.emf.ecore.EObject;
 /**
  * The Class GamlCompilationError. Represents the errors produced by the validation/compilation of IDescription's.
  */
-public class GamlCompilationError {
+public record GamlCompilationError(String message, String code, EObject source, URI uri, Type errorType,
+		String... data) {
 
 	/**
 	 * The Enum Type.
@@ -30,24 +31,6 @@ public class GamlCompilationError {
 		/** The Error. */
 		Error
 	}
-
-	/** The message. */
-	protected final String message;
-
-	/** The code. */
-	protected String code;
-
-	/** The data. */
-	protected final String[] data;
-
-	/** The source. */
-	protected EObject source;
-
-	/** The uri. */
-	protected final URI uri;
-
-	/** The error type. */
-	protected final Type errorType;
 
 	/**
 	 * Instantiates a new gaml compilation error.
@@ -65,15 +48,9 @@ public class GamlCompilationError {
 	 * @param data
 	 *            the data
 	 */
-	public GamlCompilationError(final String string, final String code, final EObject object, final Type type,
-			final String... data) {
-
-		message = string;
-		errorType = type;
-		this.code = code;
-		this.data = data;
-		source = object;
-		uri = object.eResource().getURI();
+	public static GamlCompilationError create(final String message, final String code, final EObject source,
+			final Type type, final String... data) {
+		return new GamlCompilationError(message, code, source, source.eResource().getURI(), type, data);
 	}
 
 	/**
@@ -92,44 +69,10 @@ public class GamlCompilationError {
 	 * @param data
 	 *            the data
 	 */
-	public GamlCompilationError(final String string, final String code, final URI uri, final Type type,
+	public static GamlCompilationError create(final String message, final String code, final URI uri, final Type type,
 			final String... data) {
-
-		message = string;
-		errorType = type;
-		this.code = code;
-		this.data = data;
-		source = null;
-		this.uri = uri;
+		return new GamlCompilationError(message, code, null, uri, type, data);
 	}
-
-	/**
-	 * Gets the data.
-	 *
-	 * @return the data
-	 */
-	public String[] getData() { return data; }
-
-	/**
-	 * Gets the uri.
-	 *
-	 * @return the uri
-	 */
-	public URI getURI() { return uri; }
-
-	/**
-	 * Gets the error type.
-	 *
-	 * @return the error type
-	 */
-	public Type getErrorType() { return errorType; }
-
-	/**
-	 * Gets the code.
-	 *
-	 * @return the code
-	 */
-	public String getCode() { return code; }
 
 	@Override
 	public String toString() {
@@ -151,13 +94,6 @@ public class GamlCompilationError {
 	public boolean isInfo() { return errorType == Type.Info; }
 
 	/**
-	 * Gets the statement.
-	 *
-	 * @return the statement
-	 */
-	public EObject getSource() { return source; }
-
-	/**
 	 * Checks if is error.
 	 *
 	 * @return true, if is error
@@ -176,10 +112,4 @@ public class GamlCompilationError {
 		return message.hashCode() + (source == null ? 0 : source.hashCode());
 	}
 
-	/**
-	 * Gets the message.
-	 *
-	 * @return the message
-	 */
-	public String getMessage() { return message; }
 }

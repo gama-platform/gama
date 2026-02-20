@@ -163,7 +163,7 @@ public class GamlModelBuilder implements IGamlModelBuilder {
 				if (errors != null) {
 					final String err_ =
 							r.getErrors() != null && r.getErrors().size() > 0 ? r.getErrors().get(0).toString() : "";
-					errors.add(new GamlCompilationError("Syntax errors: " + err_, IGamlIssue.GENERAL,
+					errors.add(GamlCompilationError.create("Syntax errors: " + err_, IGamlIssue.GENERAL,
 							r.getContents().get(0), GamlCompilationError.Type.Error));
 				}
 				return null;

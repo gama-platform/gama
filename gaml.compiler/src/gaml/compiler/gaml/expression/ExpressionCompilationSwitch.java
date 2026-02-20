@@ -286,35 +286,35 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			return t;
 		}
 
-		if (t.isAgentType() && t.getSpecies().isModel()) {
-			final IType modelSpeciesType = resolveModelSpeciesType(object, t);
-			if (modelSpeciesType != null) return modelSpeciesType;
-		}
+		// if (t.isAgentType() && t.getSpecies().isModel()) {
+		// final IType modelSpeciesType = resolveModelSpeciesType(object, t);
+		// if (modelSpeciesType != null) return modelSpeciesType;
+		// }
 
 		context.getDocumentationContext().document(object, t);
 		if (t.isAgentType()) return t;
 
 		return resolveParametricType(object, t);
 	}
-
-	/**
-	 * Resolves nested species types within model type managers.
-	 */
-	private IType resolveModelSpeciesType(final TypeRef object, final IType modelType) {
-		final TypeInfo parameter = object.getParameter();
-		if (parameter == null) return modelType;
-
-		final TypeRef first = (TypeRef) parameter.getFirst();
-		if (first == null) return modelType;
-
-		final IDescription savedContext = context.getContext();
-		try {
-			context.setContext(modelType.getSpecies().getModelDescription());
-			return fromTypeRef(first);
-		} finally {
-			context.setContext(savedContext);
-		}
-	}
+	//
+	// /**
+	// * Resolves nested species types within model type managers.
+	// */
+	// private IType resolveModelSpeciesType(final TypeRef object, final IType modelType) {
+	// final TypeInfo parameter = object.getParameter();
+	// if (parameter == null) return modelType;
+	//
+	// final TypeRef first = (TypeRef) parameter.getFirst();
+	// if (first == null) return modelType;
+	//
+	// final IDescription savedContext = context.getContext();
+	// try {
+	// context.setContext(modelType.getSpecies().getModelDescription());
+	// return fromTypeRef(first);
+	// } finally {
+	// context.setContext(savedContext);
+	// }
+	// }
 
 	/**
 	 * Resolves parametric type information from TypeRef.

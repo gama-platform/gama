@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * ExpressionCompilationContext.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
- * (v.2025-03).
+ * ExpressionCompilationContext.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -23,9 +23,9 @@ import gama.api.gaml.types.Types;
 import gaml.compiler.gaml.validation.DocumentationContext;
 
 /**
- * ExpressionCompilationContext encapsulates all mutable state required during expression compilation. This class is designed to
- * be created per compilation session and passed through the compilation process, enabling the GamlExpressionCompiler to
- * be stateless.
+ * ExpressionCompilationContext encapsulates all mutable state required during expression compilation. This class is
+ * designed to be created per compilation session and passed through the compilation process, enabling the
+ * GamlExpressionCompiler to be stateless.
  *
  * <h2>Purpose:</h2>
  * <p>
@@ -40,14 +40,14 @@ import gaml.compiler.gaml.validation.DocumentationContext;
  *
  * <h2>Lifecycle:</h2>
  * <p>
- * A new ExpressionCompilationContext is created for each top-level compilation request and is discarded after the compilation
- * completes. The context is not meant to be reused across multiple independent compilations.
+ * A new ExpressionCompilationContext is created for each top-level compilation request and is discarded after the
+ * compilation completes. The context is not meant to be reused across multiple independent compilations.
  * </p>
  *
  * <h2>Thread Safety:</h2>
  * <p>
- * This class is NOT thread-safe. Each thread should have its own ExpressionCompilationContext instance. However, since contexts
- * are short-lived (one per compilation), this is not a concern in practice.
+ * This class is NOT thread-safe. Each thread should have its own ExpressionCompilationContext instance. However, since
+ * contexts are short-lived (one per compilation), this is not a concern in practice.
  * </p>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -62,20 +62,15 @@ public final class ExpressionCompilationContext implements Closeable {
 	private final Deque<IVarExpression> iteratorContexts = new ArrayDeque<>();
 
 	/**
-	 * The current expression description being compiled. Used to disable reentrant parsing (Issue 782).
-	 */
-	// private IExpressionDescription currentExpressionDescription;
-
-	/**
 	 * The current types manager for type resolution in the current compilation context.
 	 */
-	private ITypesManager currentTypesManager;
+	private final ITypesManager currentTypesManager;
 
 	/**
 	 * The current parsing context (IDescription) in which the compiler operates. If none is given, the global context
 	 * of the current simulation is used.
 	 */
-	private IDescription currentContext;
+	private final IDescription currentContext;
 
 	/** The documentation context. */
 	private final IDocumentationContext documentationContext;
@@ -133,23 +128,6 @@ public final class ExpressionCompilationContext implements Closeable {
 	 * @return the current types manager
 	 */
 	public ITypesManager getTypesManager() { return currentTypesManager; }
-	//
-	// /**
-	// * Gets the current expression description being compiled.
-	// *
-	// * @return the current expression description, or null if none
-	// */
-	// public IExpressionDescription getCurrentExpressionDescription() { return currentExpressionDescription; }
-	//
-	// /**
-	// * Sets the current expression description being compiled.
-	// *
-	// * @param description
-	// * the expression description to set
-	// */
-	// public void setCurrentExpressionDescription(final IExpressionDescription description) {
-	// this.currentExpressionDescription = description;
-	// }
 
 	/**
 	 * Pushes an iterator variable onto the iterator context stack.
@@ -198,20 +176,6 @@ public final class ExpressionCompilationContext implements Closeable {
 	@Override
 	public void close() {
 		iteratorContexts.clear();
-	}
-
-	/**
-	 * Sets the context.
-	 *
-	 * @param context
-	 *            the context
-	 * @return the i description
-	 */
-	public IDescription setContext(final IDescription context) {
-		IDescription previous = currentContext;
-		this.currentContext = context;
-		this.currentTypesManager = findTypesManager(context);
-		return previous;
 	}
 
 	/**

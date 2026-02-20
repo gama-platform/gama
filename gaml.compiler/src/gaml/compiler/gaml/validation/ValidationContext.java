@@ -32,8 +32,6 @@ import com.google.common.collect.Iterables;
 import gama.api.GAMA;
 import gama.api.additions.GamaBundleLoader;
 import gama.api.compilation.GamlCompilationError;
-import gama.api.compilation.descriptions.IGamlDescription;
-import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.documentation.IDocManager;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
@@ -128,13 +126,6 @@ public class ValidationContext implements IValidationContext {
 	final URI resourceURI;
 
 	/**
-	 * Map of EObjects to their corresponding GAML descriptions for documentation purposes. Uses a ConcurrentHashMap to
-	 * support thread-safe concurrent access during parallel validation. Entries are accumulated during validation and
-	 * processed when {@link #doDocument(IModelDescription)} is called.
-	 */
-	private Map<EObject, IGamlDescription> expressionsToDocument;
-
-	/**
 	 * Creates the.
 	 *
 	 * @param uri
@@ -193,7 +184,7 @@ public class ValidationContext implements IValidationContext {
 		if (error.isWarning() && (state.contains(Flag.NO_WARNING) || !WARNINGS_ENABLED.getValue())) return false;
 		if (error.isInfo() && (state.contains(Flag.NO_INFO) || !INFO_ENABLED.getValue())) return false;
 
-		final URI uri = error.getURI();
+		final URI uri = error.uri();
 		final boolean sameResource = uri == null || uri.equals(resourceURI);
 
 		if (sameResource) {
@@ -374,8 +365,8 @@ public class ValidationContext implements IValidationContext {
 	public Map<String, URI> getImportedErrorsAsStrings() {
 		if (importedErrors == null) return Collections.emptyMap();
 		Map<String, URI> result = new LinkedHashMap<>();
-		importedErrors.forEach(e -> result.put(
-				e.toString() + " (" + IMPORTED_FROM + " " + URI.decode(e.getURI().lastSegment()) + ")", e.getURI()));
+		importedErrors.forEach(e -> result
+				.put(e.toString() + " (" + IMPORTED_FROM + " " + URI.decode(e.uri().lastSegment()) + ")", e.uri()));
 		return result;
 	}
 
@@ -422,7 +413,7 @@ public class ValidationContext implements IValidationContext {
 	public boolean hasErrorOn(final EObject... objects) {
 		if (errors == null) return false;
 		final List<EObject> list = Arrays.asList(objects);
-		return StreamEx.of(errors).anyMatch(p -> list.contains(p.getSource()));
+		return StreamEx.of(errors).anyMatch(p -> list.contains(p.source()));
 	}
 
 	/**
@@ -453,7 +444,7 @@ public class ValidationContext implements IValidationContext {
 		for (String s : list) {
 			if (!GamaBundleLoader.gamlPluginExists(s)) {
 				if (!GAMA.isInHeadLessMode() || !GamaBundleLoader.isDisplayPlugin(s)) {
-					add(new GamlCompilationError("Missing plugin: " + s, IGamlIssue.MISSING_PLUGIN, resourceURI,
+					add(GamlCompilationError.create("Missing plugin: " + s, IGamlIssue.MISSING_PLUGIN, resourceURI,
 							GamaBundleLoader.isDisplayPlugin(s) ? GamlCompilationError.Type.Error
 									: GamlCompilationError.Type.Warning));
 				}

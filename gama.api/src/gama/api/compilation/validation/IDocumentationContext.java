@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.api.compilation.validation;
 
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.api.compilation.descriptions.IGamlDescription;
@@ -42,14 +41,5 @@ public interface IDocumentationContext {
 	 * @date 31 déc. 2023
 	 */
 	void document(EObject e, IGamlDescription d);
-
-	/**
-	 * Gets the uri.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the uri
-	 * @date 10 janv. 2024
-	 */
-	URI getURI();
 
 }

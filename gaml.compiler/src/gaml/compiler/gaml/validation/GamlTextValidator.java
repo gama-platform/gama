@@ -81,15 +81,15 @@ public class GamlTextValidator implements IGamlTextValidator {
 			if (resource.hasErrors()) {
 				for (Resource.Diagnostic d : resource.getErrors()) {
 					GamlCompilationError error = switch (d) {
-						case EObjectDiagnosticImpl ed -> new GamlCompilationError(ed.getMessage(), SYNTACTIC_ERROR,
+						case EObjectDiagnosticImpl ed -> GamlCompilationError.create(ed.getMessage(), SYNTACTIC_ERROR,
 								ed.getProblematicObject(), WARNING.equals(ed.getSeverity()) ? Warning
 										: INFO.equals(ed.getSeverity()) ? Info : Error,
 								ed.getData());
-						case XtextLinkingDiagnostic ld -> new GamlCompilationError(ld.getMessage(), LINKING_ERROR,
+						case XtextLinkingDiagnostic ld -> GamlCompilationError.create(ld.getMessage(), LINKING_ERROR,
 								ld.getUriToProblem(), Error, ld.getData());
-						case XtextSyntaxDiagnostic sd -> new GamlCompilationError(sd.getMessage(), SYNTACTIC_ERROR,
+						case XtextSyntaxDiagnostic sd -> GamlCompilationError.create(sd.getMessage(), SYNTACTIC_ERROR,
 								sd.getUriToProblem(), Error, sd.getData());
-						case null, default -> new GamlCompilationError(d.getMessage(), SYNTACTIC_ERROR,
+						case null, default -> GamlCompilationError.create(d.getMessage(), SYNTACTIC_ERROR,
 								resource.getURI(), Error);
 					};
 					errors.add(error);

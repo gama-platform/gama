@@ -159,14 +159,4 @@ public class DocumentationContext implements IDocumentationContext {
 		}
 	}
 
-	/**
-	 * Gets the uri.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the uri
-	 * @date 10 janv. 2024
-	 */
-	@Override
-	public URI getURI() { return resourceURI; }
-
 }

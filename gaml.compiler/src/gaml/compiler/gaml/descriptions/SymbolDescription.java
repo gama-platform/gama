@@ -771,7 +771,7 @@ public abstract class SymbolDescription implements IDescription {
 			DEBUG.ERR((type == GamlCompilationError.Type.Warning ? "Warning" : "Error") + ": " + s);
 			return;
 		}
-		c.add(new GamlCompilationError(s, code, e, type, data));
+		c.add(GamlCompilationError.create(s, code, e, type, data));
 	}
 
 	// /**

@@ -702,11 +702,11 @@ public class ModelFactory implements IModelFactory {
 
 				if (existingURI.equals(currentURI)) {
 					// Same file - this is an error
-					collector.add(new GamlCompilationError("Experiment " + experimentName + " is declared twice",
+					collector.add(GamlCompilationError.create("Experiment " + experimentName + " is declared twice",
 							IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), GamlCompilationError.Type.Error));
 				} else {
 					// Different file - this is informational (experiment supersedes the previous one)
-					collector.add(new GamlCompilationError(
+					collector.add(GamlCompilationError.create(
 							"Experiment " + experimentName + " supersedes the one declared in "
 									+ existingURI.lastSegment(),
 							IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), GamlCompilationError.Type.Info));
@@ -772,10 +772,10 @@ public class ModelFactory implements IModelFactory {
 
 		// Report duplicate species declarations on both occurrences
 		if (existingNode != null) {
-			final GamlCompilationError error = new GamlCompilationError("Species " + name + " is declared twice",
+			final GamlCompilationError error = GamlCompilationError.create("Species " + name + " is declared twice",
 					IGamlIssue.DUPLICATE_DEFINITION, sse.getElement(), GamlCompilationError.Type.Error);
 			collector.add(error);
-			collector.add(new GamlCompilationError("Species " + name + " is declared twice",
+			collector.add(GamlCompilationError.create("Species " + name + " is declared twice",
 					IGamlIssue.DUPLICATE_DEFINITION, existingNode.getElement(), GamlCompilationError.Type.Error));
 		}
 
