@@ -22,11 +22,55 @@ import gama.api.gaml.statements.IStatement;
 import gama.api.runtime.scope.IScope;
 
 /**
- * Class IEventLayerDelegate. Represents a delegate to the EventLayers that accepts other inputs than keyboard inputs
- *
+ * Delegate interface for extending GAMA's event layer system with custom event sources.
+ * 
+ * <p>This interface allows plugins to provide custom event sources beyond the standard
+ * keyboard and mouse events. Event layer delegates can handle events from external devices,
+ * network sources, or other input mechanisms, and trigger GAML code in response.</p>
+ * 
+ * <h2>Event Layer Mechanism</h2>
+ * <p>In GAMA, event layers are special display layers that respond to user or system events.
+ * When an event layer is defined in a GAML model, the platform:</p>
+ * <ol>
+ *   <li>Queries registered delegates via {@link #getEvents()} to find which events they handle</li>
+ *   <li>When an event occurs, calls {@link #acceptSource(IScope, Object)} to identify the appropriate delegate</li>
+ *   <li>Calls {@link #createFrom(IScope, Object, IStatement.Event)} to process the event</li>
+ * </ol>
+ * 
+ * <h2>Standard Event Constants</h2>
+ * <p>This interface defines standard mouse and keyboard event constants that are used
+ * throughout the GAMA platform. Custom delegates can define their own event constants
+ * for specialized input types.</p>
+ * 
+ * <h2>Usage Example</h2>
+ * <pre>{@code
+ * public class GamepadEventDelegate implements IEventLayerDelegate {
+ *     private static final Set<String> GAMEPAD_EVENTS = Set.of("gamepad_button", "gamepad_axis");
+ *     
+ *     @Override
+ *     public Set<String> getEvents() {
+ *         return GAMEPAD_EVENTS;
+ *     }
+ *     
+ *     @Override
+ *     public boolean acceptSource(IScope scope, Object source) {
+ *         return source instanceof GamepadEvent;
+ *     }
+ *     
+ *     @Override
+ *     public boolean createFrom(IScope scope, Object source, IStatement.Event statement) {
+ *         GamepadEvent event = (GamepadEvent) source;
+ *         // Process the event and execute the statement
+ *         return statement.executeOn(scope);
+ *     }
+ * }
+ * }</pre>
+ * 
  * @author drogoul
  * @since 27 mai 2015
- *
+ * 
+ * @see ICreateDelegate
+ * @see IDrawDelegate
  */
 public interface IEventLayerDelegate {
 
@@ -181,31 +225,50 @@ public interface IEventLayerDelegate {
 					ARROW_RIGHT, ARROW_UP, ALT_MODIFIER, CONTROL_MODIFIER, CMD_MODIFIER, SHIFT_MODIFIER));
 
 	/**
-	 * Gets the events.
+	 * Returns the set of event names that this delegate can handle.
+	 * 
+	 * <p>This method is called during event layer initialization to determine which
+	 * events this delegate is responsible for. The returned set should contain string
+	 * identifiers for all events that this delegate can process.</p>
+	 * 
+	 * <p>Event names should be unique across all delegates to avoid conflicts. Standard
+	 * mouse and keyboard events are predefined as constants in this interface.</p>
 	 *
-	 * @return the events
+	 * @return the set of event name strings handled by this delegate
 	 */
 	Set<String> getEvents();
 
 	/**
-	 * Returns whether or not this delegate accepts the input source.
+	 * Determines whether this delegate can handle events from the specified source.
+	 * 
+	 * <p>This method is called when an event occurs to find the appropriate delegate
+	 * to process it. The first registered delegate that returns true will be selected.</p>
 	 *
-	 * @param scope
-	 * @param source
-	 *
-	 * @return
+	 * @param scope the current execution scope
+	 * @param source the event source object (e.g., MouseEvent, KeyEvent, or custom event type)
+	 * @return true if this delegate can handle events from this source, false otherwise
 	 */
 	boolean acceptSource(IScope scope, Object source);
 
 	/**
-	 * Fills the list of maps with the initial values read from the source. Returns true if all the inits have been
-	 * correctly filled
+	 * Processes an event and executes the associated event layer statement.
+	 * 
+	 * <p>This method is called when an event handled by this delegate occurs. It should
+	 * extract relevant information from the source, potentially update the scope with
+	 * event-specific variables, and trigger the execution of the event statement.</p>
+	 * 
+	 * <p>Common tasks include:</p>
+	 * <ul>
+	 *   <li>Extracting event data (coordinates, key codes, etc.)</li>
+	 *   <li>Setting temporary variables in the scope for access in GAML code</li>
+	 *   <li>Executing the event statement's body</li>
+	 * </ul>
 	 *
-	 * @param scope
-	 * @param source
-	 * @return
+	 * @param scope the current execution scope
+	 * @param source the event source object containing event details
+	 * @param statement the event statement to execute in response to this event
+	 * @return true if the event was successfully processed, false otherwise
 	 */
-
 	boolean createFrom(IScope scope, Object source, IStatement.Event statement);
 
 }

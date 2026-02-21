@@ -108,20 +108,20 @@ public record GamlCompilationError(String message, String code, EObject source, 
 	}
 
 	/**
-	 * Instantiates a new gaml compilation error.
+	 * Creates a new compilation error from an EObject source.
+	 * 
+	 * <p>
+	 * This factory method creates a compilation error associated with a specific EMF EObject
+	 * in the parsed model. The URI is automatically extracted from the EObject's resource.
+	 * </p>
 	 *
-	 * @param string
-	 *            the string
-	 * @param code
-	 *            the code
-	 * @param object
-	 *            the object
-	 * @param warning
-	 *            the warning
-	 * @param info
-	 *            the info
-	 * @param data
-	 *            the data
+	 * @param message the human-readable error message describing the issue
+	 * @param code the error code identifier (typically from {@code IGamlIssue})
+	 * @param source the EMF EObject where the error occurred (must not be null and must have a resource)
+	 * @param type the severity level (Error, Warning, or Info)
+	 * @param data optional additional context data (variable length array)
+	 * @return a new {@link GamlCompilationError} instance
+	 * @throws NullPointerException if source or its resource is null
 	 */
 	public static GamlCompilationError create(final String message, final String code, final EObject source,
 			final Type type, final String... data) {
@@ -129,20 +129,20 @@ public record GamlCompilationError(String message, String code, EObject source, 
 	}
 
 	/**
-	 * Instantiates a new gaml compilation error.
+	 * Creates a new compilation error from a URI only.
+	 * 
+	 * <p>
+	 * This factory method creates a compilation error associated with a resource URI
+	 * but without a specific EObject source. This is useful for file-level errors
+	 * (e.g., file not found, parse errors) where no specific AST element exists.
+	 * </p>
 	 *
-	 * @param string
-	 *            the string
-	 * @param code
-	 *            the code
-	 * @param uri
-	 *            the uri
-	 * @param warning
-	 *            the warning
-	 * @param info
-	 *            the info
-	 * @param data
-	 *            the data
+	 * @param message the human-readable error message describing the issue
+	 * @param code the error code identifier (typically from {@code IGamlIssue})
+	 * @param uri the URI of the resource containing the error
+	 * @param type the severity level (Error, Warning, or Info)
+	 * @param data optional additional context data (variable length array)
+	 * @return a new {@link GamlCompilationError} instance with null source
 	 */
 	public static GamlCompilationError create(final String message, final String code, final URI uri, final Type type,
 			final String... data) {
@@ -155,23 +155,38 @@ public record GamlCompilationError(String message, String code, EObject source, 
 	}
 
 	/**
-	 * Checks if is warning.
+	 * Checks if this error is a warning.
+	 * 
+	 * <p>
+	 * Warnings indicate potential issues that don't prevent compilation or execution
+	 * but may lead to unexpected behavior or performance problems.
+	 * </p>
 	 *
-	 * @return true, if is warning
+	 * @return true if this is a warning, false otherwise
 	 */
 	public boolean isWarning() { return errorType == Type.Warning; }
 
 	/**
-	 * Checks if is info.
+	 * Checks if this error is informational.
+	 * 
+	 * <p>
+	 * Info messages provide helpful information to the user but don't indicate
+	 * any problems with the model.
+	 * </p>
 	 *
-	 * @return true, if is info
+	 * @return true if this is an informational message, false otherwise
 	 */
 	public boolean isInfo() { return errorType == Type.Info; }
 
 	/**
-	 * Checks if is error.
+	 * Checks if this is a compilation error.
+	 * 
+	 * <p>
+	 * Errors indicate critical issues that prevent model compilation or execution.
+	 * Models with errors cannot be run until the issues are resolved.
+	 * </p>
 	 *
-	 * @return true, if is error
+	 * @return true if this is an error, false otherwise
 	 */
 	public boolean isError() { return errorType == Type.Error; }
 

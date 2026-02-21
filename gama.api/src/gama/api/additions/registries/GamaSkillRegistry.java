@@ -30,45 +30,100 @@ import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 
 /**
- * The Class GamaSkillRegistry.
+ * Registry for agent skills and control architectures in GAMA.
+ * 
+ * <p>This singleton registry maintains all skill and control architecture definitions available
+ * in the GAMA platform. Skills are collections of attributes and actions that can be added to
+ * agent species to extend their capabilities. Control architectures are special skills that
+ * define how agents schedule and execute their actions.</p>
+ * 
+ * <h2>Skills vs. Control Architectures</h2>
+ * <ul>
+ *   <li><b>Skills</b> - Reusable capabilities (e.g., moving, communicating) added via the 'skills:' facet</li>
+ *   <li><b>Control Architectures</b> - Execution strategies (e.g., fsm, reflex, user_only) specified via 'control:'</li>
+ * </ul>
+ * 
+ * <p>The distinction is made via {@link ISkillDescription#isControl()}.</p>
+ * 
+ * <h2>Skill Registration</h2>
+ * <p>Skills are registered during platform initialization by scanning for classes annotated with
+ * {@code @skill}. Each skill is associated with:</p>
+ * <ul>
+ *   <li>A unique name used in GAML models</li>
+ *   <li>A Java class implementing {@link ISkill}</li>
+ *   <li>Attributes (variables) provided by the skill</li>
+ *   <li>Actions (methods) provided by the skill</li>
+ * </ul>
+ * 
+ * <h2>Skill Lookup</h2>
+ * <p>Skills can be retrieved by:</p>
+ * <ul>
+ *   <li>Name - as used in GAML models</li>
+ *   <li>Java class - for implementation-level access</li>
+ * </ul>
+ * 
+ * <h2>Singleton Pattern</h2>
+ * <p>The registry uses a singleton pattern accessible via {@link #INSTANCE}. All methods
+ * are instance methods called on this singleton.</p>
+ * 
+ * <h2>Usage Example</h2>
+ * <pre>{@code
+ * // Get a skill by name
+ * ISkillDescription moving = GamaSkillRegistry.INSTANCE.get("moving");
+ * 
+ * // Get all skill names
+ * Collection<String> skillNames = GamaSkillRegistry.INSTANCE.getSkillNames();
+ * 
+ * // Get all architecture names
+ * Collection<String> archNames = GamaSkillRegistry.INSTANCE.getArchitectureNames();
+ * 
+ * // Get attributes provided by a skill
+ * Iterable<? extends IVariableDescription> vars = 
+ *     GamaSkillRegistry.INSTANCE.getVariablesForSkill("moving");
+ * 
+ * // Get actions provided by a skill
+ * Iterable<? extends IActionDescription> actions = 
+ *     GamaSkillRegistry.INSTANCE.getActionsForSkill("moving");
+ * }</pre>
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
+ * 
+ * @see ISkillDescription
+ * @see ISkill
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaSkillRegistry {
 
-	/** The Constant INSTANCE. */
+	/** The singleton instance. */
 	public final static GamaSkillRegistry INSTANCE = new GamaSkillRegistry();
 
-	/** The skills. */
+	/** Map of skill names to their descriptions. */
 	private final IMap<String, ISkillDescription> skills = GamaMapFactory.createUnordered();
 
-	/** The class skill names. */
+	/** Map of skill implementation classes to their GAML names. */
 	private final Map<Class, String> classSkillNames = new HashMap<>();
 
-	/** The architecture names. */
+	/** Cached list of architecture (control) names. */
 	private List<String> architectureNames = null;
 
-	/** The skill names. */
+	/** Cached list of regular skill names. */
 	private List<String> skillNames = null;
 
 	/**
-	 * Instantiates a new gama skill registry.
+	 * Private constructor for singleton pattern.
 	 */
 	private GamaSkillRegistry() {}
 
 	/**
-	 * Register.
+	 * Registers a skill description in the registry.
+	 * 
+	 * <p>This method is called during platform initialization to register skills
+	 * discovered through annotation processing.</p>
 	 *
-	 * @param name
-	 *            the name
-	 * @param support
-	 *            the support
-	 * @param plugin
-	 *            the plugin
-	 * @param children
-	 *            the children
-	 * @param species
-	 *            the species
-	 * @return the skill description
+	 * @param sd the skill description to register
+	 * @param support the Java class implementing the skill
+	 * @return the registered skill description (same as input)
 	 */
 	public ISkillDescription register(final ISkillDescription sd, final Class<? extends ISkill> support) {
 		String name = sd.getName();
@@ -79,22 +134,20 @@ public class GamaSkillRegistry {
 	}
 
 	/**
-	 * Gets the.
+	 * Retrieves a skill description by its GAML name.
 	 *
-	 * @param name
-	 *            the name
-	 * @return the skill description
+	 * @param name the skill name as used in GAML models
+	 * @return the skill description, or null if not found
 	 */
 	public ISkillDescription get(final String name) {
 		return skills.get(name);
 	}
 
 	/**
-	 * Gets the.
+	 * Retrieves a skill description by its implementation class.
 	 *
-	 * @param clazz
-	 *            the clazz
-	 * @return the skill description
+	 * @param clazz the skill implementation class
+	 * @return the skill description, or null if not found
 	 */
 	public ISkillDescription get(final Class clazz) {
 		final String name = classSkillNames.get(clazz);
@@ -149,16 +202,19 @@ public class GamaSkillRegistry {
 	}
 
 	/**
-	 * Gets the all skill names.
+	 * Returns all skill names (both regular skills and control architectures).
 	 *
-	 * @return the all skill names
+	 * @return collection of all registered skill names
 	 */
 	public Collection<String> getAllSkillNames() { return skills.keySet(); }
 
 	/**
-	 * Gets the skill names.
+	 * Returns the names of all regular skills (excluding control architectures).
+	 * 
+	 * <p>This method caches the result for performance. Regular skills are those
+	 * where {@link ISkillDescription#isControl()} returns false.</p>
 	 *
-	 * @return the skill names
+	 * @return collection of skill names suitable for use in 'skills:' facets
 	 */
 	public Collection<String> getSkillNames() {
 		if (skillNames != null) return skillNames;
@@ -172,9 +228,12 @@ public class GamaSkillRegistry {
 	}
 
 	/**
-	 * Gets the architecture names.
+	 * Returns the names of all control architectures.
+	 * 
+	 * <p>This method caches the result for performance. Control architectures are
+	 * skills where {@link ISkillDescription#isControl()} returns true.</p>
 	 *
-	 * @return the architecture names
+	 * @return collection of architecture names suitable for use in 'control:' facets
 	 */
 	public Collection<String> getArchitectureNames() {
 		if (architectureNames != null) return architectureNames;

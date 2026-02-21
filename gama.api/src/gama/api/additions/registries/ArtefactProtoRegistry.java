@@ -34,7 +34,64 @@ import gama.api.constants.IKeyword;
 import gama.api.gaml.types.IType;
 
 /**
- *
+ * Central registry for GAML language artefact prototypes (statements, variables, and facets).
+ * 
+ * <p>This registry maintains the metadata and prototypes for all GAML language constructs,
+ * including statements (like 'create', 'ask', 'loop'), variable declarations (like 'int', 'float',
+ * 'species'), and their facets (like 'name:', 'type:', 'from:'). It serves as the primary
+ * reference for the GAML compiler and parser.</p>
+ * 
+ * <h2>Artefact Types</h2>
+ * <p>The registry manages three main categories of artefacts:</p>
+ * <ul>
+ *   <li><b>Statement Prototypes</b> - Definitions of GAML statements (commands, control structures)</li>
+ *   <li><b>Variable Prototypes</b> - Definitions of variable declaration keywords and types</li>
+ *   <li><b>Facet Prototypes</b> - Definitions of statement and variable facets (named parameters)</li>
+ * </ul>
+ * 
+ * <h2>Prototype Organization</h2>
+ * <p>Prototypes are organized by:</p>
+ * <ul>
+ *   <li><b>Keyword</b> - The GAML keyword that triggers the artefact (stored in keyword maps)</li>
+ *   <li><b>Kind</b> - The semantic category of the artefact (stored in kind map)</li>
+ *   <li><b>Variable Type</b> - For variables, organized by type ID (stored in type-to-keyword multimap)</li>
+ * </ul>
+ * 
+ * <h2>Special Keyword Sets</h2>
+ * <p>The registry maintains several sets of keywords with special semantic meaning:</p>
+ * <ul>
+ *   <li>{@link #BREAKABLE_STATEMENTS} - Statements that can contain 'break'</li>
+ *   <li>{@link #CONTINUABLE_STATEMENTS} - Statements that can contain 'continue'</li>
+ *   <li>{@link #BINARY_PROTO_NAMES} - Binary operator keywords</li>
+ *   <li>{@link #PROTOS_WITHOUT_PARENTHESES} - Operators that don't require parentheses</li>
+ *   <li>{@link #NON_SERIALIZABLE_FACETS} - Facets excluded from serialization</li>
+ * </ul>
+ * 
+ * <h2>Dynamic Type Registration</h2>
+ * <p>As species are defined in GAML models, they are dynamically registered as valid type
+ * keywords using {@link #addSpeciesNameAsType(String)}, allowing them to be used in
+ * variable declarations.</p>
+ * 
+ * <h2>Usage Example</h2>
+ * <pre>{@code
+ * // Retrieve a statement prototype
+ * IArtefactProto.Symbol createProto = ArtefactProtoRegistry.getStatementProto("create");
+ * 
+ * // Check if a keyword is a statement
+ * boolean isStatement = ArtefactProtoRegistry.isStatementProto("loop");
+ * 
+ * // Get the omissible facet for a statement
+ * String omissible = ArtefactProtoRegistry.getOmissibleFacetForSymbol("create");
+ * 
+ * // Register a species as a type
+ * ArtefactProtoRegistry.addSpeciesNameAsType("my_species");
+ * }</pre>
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
+ * 
+ * @see IArtefactProto
+ * @see gama.api.compilation.descriptions.IDescription
  */
 public class ArtefactProtoRegistry {
 
@@ -44,30 +101,30 @@ public class ArtefactProtoRegistry {
 	/** The Constant CONTINUABLE_STATEMENTS. */
 	public static final Set<String> CONTINUABLE_STATEMENTS = new HashSet<>();
 
-	/** The Constant ID_FACETS. */
+	/** Facet types that represent identifiers or labels. */
 	public static final List<Integer> ID_FACETS =
 			Arrays.asList(IType.LABEL, IType.ID, IType.NEW_TEMP_ID, IType.NEW_VAR_ID);
 
-	/** The Constant NON_SERIALIZABLE_FACETS. */
+	/** Facets that should not be included in serialization. */
 	public static final Set<String> NON_SERIALIZABLE_FACETS =
 			new HashSet<>(Arrays.asList(IKeyword.INTERNAL_FUNCTION, IKeyword.WITH));
 
 	/**
-	 * The Constant SPECIES_VAR. From SyntacticFactory
+	 * Special keyword for species variable declarations (from SyntacticFactory).
 	 */
 	public static final String SPECIES_VAR = "species_var";
 
-	/** The statement keywords protos. */
+	/** Map of statement keywords to their prototype definitions. */
 	public static final Map<String, IArtefactProto.Symbol> STATEMENT_KEYWORDS_PROTOS = new HashMap<>();
 
-	/** The var keywords protos. */
+	/** Map of variable declaration keywords to their prototype definitions. */
 	public static final Map<String, IArtefactProto.Symbol> VAR_KEYWORDS_PROTOS = new HashMap<>();
 
-	/** The Constant VARTYPE2KEYWORDS. */
+	/** Multimap from variable kind (type ID) to the keywords that declare that kind. */
 	public final static SetMultimap<Integer, String> VARKIND2KEYWORDS =
 			Multimaps.newSetMultimap(new ConcurrentHashMap<>(), ConcurrentHashMap::newKeySet);
 
-	/** The kinds protos. */
+	/** Map of artefact kinds to their prototype definitions. */
 	public static final Map<Integer, IArtefactProto.Symbol> KINDS_PROTOS = new HashMap<>();
 
 	/** Cache for statement protos. */
@@ -77,12 +134,14 @@ public class ArtefactProtoRegistry {
 	private static volatile Iterable<? extends IArtefactProto.Facet> cachedFacetsProtos = null;
 
 	/**
-	 * Adds the new type name.
+	 * Registers a new type name as a valid variable declaration keyword.
+	 * 
+	 * <p>This method is called when new types are defined (e.g., through species declarations)
+	 * to make them available as variable declaration keywords in GAML. For example, after
+	 * declaring a species "my_agent", this allows writing "my_agent x;".</p>
 	 *
-	 * @param s
-	 *            the s
-	 * @param kind
-	 *            the kind
+	 * @param s the type name to register
+	 * @param kind the kind ID for this type (from {@link IType})
 	 */
 	public static void addNewTypeName(final String s, final int kind) {
 		addNewVarKeyword(s, kind);
@@ -97,10 +156,10 @@ public class ArtefactProtoRegistry {
 		}
 	}
 
-	/** The no mandatory parenthesis. */
+	/** Operators that can be used without parentheses in GAML expressions. */
 	public static final Set<String> PROTOS_WITHOUT_PARENTHESES = ImmutableSet.of("-", "!");
 
-	/** The BINARY_PROTO_NAMES. */
+	/** Binary operator keywords in GAML. */
 	public static final Set<String> BINARY_PROTO_NAMES = ImmutableSet.of(IKeyword.EQUALS, IKeyword.PLUS, IKeyword.MINUS,
 			IKeyword.DIVIDE, IKeyword.TIMES, "^", "<", ">", "<=", ">=", "?", "!=", ":", ".", "where", "select",
 			"collect", "first_with", "last_with", "overlapping", "at_distance", "in", "inside", "among", "contains",

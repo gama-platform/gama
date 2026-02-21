@@ -31,33 +31,95 @@ import gama.api.ui.displays.IDisplayCreator;
 import gama.dev.DEBUG;
 
 /**
- *
+ * Central registry for GAMA platform additions and extensions.
+ * 
+ * <p>This registry manages all pluggable extensions to the GAMA platform, including:</p>
+ * <ul>
+ *   <li><b>Draw Delegates</b> - Custom rendering for specific data types in displays</li>
+ *   <li><b>Create Delegates</b> - Custom agent creation from various sources</li>
+ *   <li><b>Save Delegates</b> - Custom file format support for saving data</li>
+ *   <li><b>Event Layer Delegates</b> - Custom event sources for interactive displays</li>
+ *   <li><b>Display Creators</b> - Custom display implementations (Java2D, OpenGL, etc.)</li>
+ * </ul>
+ * 
+ * <h2>Delegate Registration</h2>
+ * <p>Delegates are typically registered during platform initialization by extension plugins.
+ * The registry uses type-based selection to find the most appropriate delegate for a given
+ * operation.</p>
+ * 
+ * <h2>Type-Based Selection</h2>
+ * <p>Many delegates are selected based on GAML type compatibility:</p>
+ * <ul>
+ *   <li><b>Draw Delegates</b> - Selected by the type being drawn</li>
+ *   <li><b>Save Delegates</b> - Selected by file extension and data type, using type distance for best match</li>
+ *   <li><b>Create Delegates</b> - Selected by calling {@code acceptSource()} on each delegate</li>
+ * </ul>
+ * 
+ * <h2>File Type Synonyms</h2>
+ * <p>The registry maintains a bidirectional map of file extension synonyms (e.g., "jpg" ↔ "jpeg")
+ * to ensure consistent file type handling across all save delegates.</p>
+ * 
+ * <h2>Thread Safety</h2>
+ * <p>The registry is populated during platform initialization and is read-only during normal
+ * operation, making it safe for concurrent access from multiple simulations.</p>
+ * 
+ * <h2>Usage Example</h2>
+ * <pre>{@code
+ * // Get a save delegate for CSV files
+ * ISaveDelegate delegate = GamaAdditionRegistry.getSaveDelegate("csv", Types.LIST);
+ * if (delegate != null) {
+ *     delegate.save(scope, data, file, options);
+ * }
+ * 
+ * // Get all create delegates
+ * for (ICreateDelegate delegate : GamaAdditionRegistry.getCreateDelegates()) {
+ *     if (delegate.acceptSource(scope, source)) {
+ *         delegate.createFrom(scope, inits, max, source, init, statement);
+ *         break;
+ *     }
+ * }
+ * 
+ * // Get a display creator
+ * IDisplayCreator creator = GamaAdditionRegistry.getDisplay("java2D");
+ * }</pre>
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
+ * 
+ * @see IDrawDelegate
+ * @see ICreateDelegate
+ * @see ISaveDelegate
+ * @see IEventLayerDelegate
  */
 public class GamaAdditionRegistry {
 
-	/** The Constant DRAW_DELEGATES. */
+	/** Map of GAML types to their draw delegates. */
 	private static final Map<IType, IDrawDelegate> DRAW_DELEGATES = new HashMap<>();
 
-	/** The delegates. */
+	/** List of all registered create delegates. */
 	private static final List<ICreateDelegate> CREATE_DELEGATES = new ArrayList<>();
 
-	/** The delegate types. */
+	/** List of types handled by create delegates (for type validation). */
 	private static final List<IType> CREATE_DELEGATE_TYPES = new ArrayList<>();
 
-	/** The delegates. */
+	/** List of all registered event layer delegates. */
 	private static final List<IEventLayerDelegate> EVENT_LAYER_DELEGATES = new ArrayList<>();
 
-	/** The Constant DELEGATES_BY_GAML_TYPE. */
+	/** Map of file types to save delegates, organized by data type. */
 	private static final Map<String, Map<IType, ISaveDelegate>> SAVE_DELEGATES = new HashMap<>();
 
-	/** The Constant SYNONYMS. */
+	/** Bidirectional map of file type synonyms (e.g., "txt" ↔ "text"). */
 	private static final SetMultimap<String, String> SAVE_SYNONYMS = TreeMultimap.create();
 
-	/** The displays. */
+	/** Map of display type names to their creator implementations. */
 	private static final Map<String, IDisplayCreator> DISPLAYS = new LinkedHashMap<>();
 
 	/**
-	 * @param createExecutableExtension
+	 * Registers a draw delegate for a specific GAML type.
+	 * 
+	 * <p>The delegate will be used when drawing objects of the specified type in displays.</p>
+	 *
+	 * @param delegate the draw delegate to register
 	 */
 	public static void addDelegate(final IDrawDelegate delegate) {
 		final IType t = delegate.typeDrawn();
@@ -65,7 +127,11 @@ public class GamaAdditionRegistry {
 	}
 
 	/**
-	 * @param createExecutableExtension
+	 * Registers a create delegate for custom agent creation sources.
+	 * 
+	 * <p>The delegate will be consulted when a 'create' statement includes a 'from:' facet.</p>
+	 *
+	 * @param delegate the create delegate to register
 	 */
 	public static void addDelegate(final ICreateDelegate delegate) {
 		CREATE_DELEGATES.add(delegate);
@@ -86,7 +152,11 @@ public class GamaAdditionRegistry {
 	}
 
 	/**
-	 * @param createExecutableExtension
+	 * Registers an event layer delegate for custom event sources.
+	 * 
+	 * <p>The delegate will be consulted when event layers are processed in displays.</p>
+	 *
+	 * @param delegate the event layer delegate to register
 	 */
 	public static void addDelegate(final IEventLayerDelegate delegate) {
 		EVENT_LAYER_DELEGATES.add(delegate);
@@ -143,13 +213,22 @@ public class GamaAdditionRegistry {
 	}
 
 	/**
-	 * Gets the save delegate.
+	 * Retrieves the most appropriate save delegate for a file format and data type.
+	 * 
+	 * <p>This method selects the delegate with the closest type match to the requested
+	 * data type among all delegates that support the specified file format. Type distance
+	 * is calculated using {@link IType#distanceTo(IType)}.</p>
+	 * 
+	 * <p>The selection process:</p>
+	 * <ol>
+	 *   <li>Find all delegates supporting the file format</li>
+	 *   <li>Filter delegates that accept the data type via {@link ISaveDelegate#handlesDataType(IType)}</li>
+	 *   <li>Select the delegate with minimum type distance</li>
+	 * </ol>
 	 *
-	 * @param fileFormat
-	 *            the file format
-	 * @param dataType
-	 *            the data type
-	 * @return the save delegate
+	 * @param fileFormat the file extension (e.g., "csv", "json", "shp")
+	 * @param dataType the GAML type of the data to save
+	 * @return the best matching save delegate, or null if none found
 	 */
 	public static ISaveDelegate getSaveDelegate(final String fileFormat, final IType dataType) {
 		Map<IType, ISaveDelegate> map = SAVE_DELEGATES.get(fileFormat);
