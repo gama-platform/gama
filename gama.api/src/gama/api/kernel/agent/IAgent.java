@@ -39,17 +39,160 @@ import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.interfaces.INamed;
 
 /**
- * Written by drogoul on Apr. 07, Modified on 24 oct. 2010, 05 Apr. 2013
- *
- * @todo Description
- *
- */
-
-/**
- * The Interface IAgent.
- *
- * @author Alexis Drogoul (alexis.drogoul@ird.fr)
- * @date 7 oct. 2023
+ * Core interface for all agents in GAMA simulations.
+ * 
+ * <p>IAgent is the fundamental abstraction in GAMA's agent-based modeling framework. It represents
+ * an individual entity with attributes, behaviors, location, and lifecycle. All agents in GAMA,
+ * including simulations, experiments, and the platform agent, implement this interface.</p>
+ * 
+ * <h2>Agent Characteristics</h2>
+ * 
+ * <p>Agents have the following key characteristics:</p>
+ * <ul>
+ *   <li><b>Identity:</b> Unique index within their population</li>
+ *   <li><b>Name:</b> String identifier (not necessarily unique)</li>
+ *   <li><b>Species:</b> Type definition with shared behaviors</li>
+ *   <li><b>Attributes:</b> Named variables with values</li>
+ *   <li><b>Location:</b> Position in space</li>
+ *   <li><b>Shape:</b> Geometric representation</li>
+ *   <li><b>Host:</b> Container agent (for hierarchical models)</li>
+ *   <li><b>Population:</b> Collection of agents of the same species</li>
+ * </ul>
+ * 
+ * <h2>Agent Lifecycle</h2>
+ * 
+ * <ol>
+ *   <li><b>Creation:</b> Agent constructed via {@link IAgentConstructor}</li>
+ *   <li><b>Initialization:</b> {@link #init(IScope)} called to set initial state</li>
+ *   <li><b>Scheduling:</b> {@link #schedule(IScope)} adds agent to scheduler</li>
+ *   <li><b>Stepping:</b> {@link #step(IScope)} called each cycle</li>
+ *   <li><b>Death:</b> {@link #primDie(IScope)} removes agent from simulation</li>
+ *   <li><b>Disposal:</b> Resources released</li>
+ * </ol>
+ * 
+ * <h2>Built-in Attributes</h2>
+ * 
+ * <p>All agents have these attributes by default:</p>
+ * <ul>
+ *   <li><b>name:</b> Agent's name (string)</li>
+ *   <li><b>index:</b> Unique identifier within population (int, read-only)</li>
+ *   <li><b>location:</b> Position in space (point)</li>
+ *   <li><b>shape:</b> Geometric representation (geometry)</li>
+ *   <li><b>host:</b> Parent agent containing this agent's population</li>
+ *   <li><b>peers:</b> Other agents in the same population</li>
+ * </ul>
+ * 
+ * <h2>Hierarchical Structure</h2>
+ * 
+ * <p>Agents can be organized hierarchically:</p>
+ * <pre>
+ * World/Simulation (top-level)
+ *   ├── City agents
+ *   │   └── Building agents (micro-species)
+ *   └── Person agents
+ * </pre>
+ * 
+ * <h2>Usage Examples</h2>
+ * 
+ * <h3>Accessing Agent Attributes in GAML</h3>
+ * <pre>{@code
+ * species Person {
+ *     int age <- 20;
+ *     point target;
+ *     
+ *     reflex info {
+ *         write "Agent " + name + " (index: " + index + ")";
+ *         write "Location: " + location;
+ *         write "Age: " + age;
+ *     }
+ * }
+ * }</pre>
+ * 
+ * <h3>Accessing Agent Attributes in Java</h3>
+ * <pre>{@code
+ * IAgent agent = ...;
+ * 
+ * // Get attribute values
+ * Object age = agent.getAttribute("age");
+ * IPoint location = agent.getLocation(scope);
+ * IShape shape = agent.getGeometry(scope);
+ * String name = agent.getName();
+ * 
+ * // Set attribute values
+ * agent.setAttribute("age", 25);
+ * agent.setLocation(scope, new GamaPoint(10, 20));
+ * 
+ * // Get species and population
+ * ISpecies species = agent.getSpecies();
+ * IPopulation<? extends IAgent> pop = agent.getPopulation();
+ * }</pre>
+ * 
+ * <h3>Agent Hierarchy</h3>
+ * <pre>{@code
+ * // In GAML
+ * species City {
+ *     species District {
+ *         // District agents live inside City agents
+ *     }
+ * }
+ * 
+ * // In Java
+ * IAgent city = ...;
+ * IMacroAgent macroCity = (IMacroAgent) city;
+ * IPopulation<? extends IAgent> districts = 
+ *     macroCity.getMicroPopulation("District");
+ * }</pre>
+ * 
+ * <h3>Agent Lifecycle</h3>
+ * <pre>{@code
+ * // Create agents
+ * IPopulation<IAgent> population = ...;
+ * List<IAgent> newAgents = population.createAgents(scope, 10);
+ * 
+ * // Initialize agent
+ * IAgent agent = newAgents.get(0);
+ * agent.init(scope);
+ * 
+ * // Schedule for execution
+ * agent.schedule(scope);
+ * 
+ * // Step agent
+ * agent.step(scope);
+ * 
+ * // Check if dead
+ * if (!agent.dead()) {
+ *     // Agent is still alive
+ * }
+ * 
+ * // Kill agent
+ * agent.primDie(scope);
+ * }</pre>
+ * 
+ * <h3>Geometric Operations</h3>
+ * <pre>{@code
+ * IAgent agent1 = ...;
+ * IAgent agent2 = ...;
+ * 
+ * // Distance calculation
+ * double dist = agent1.euclidianDistanceTo(agent2);
+ * 
+ * // Spatial relationships
+ * boolean intersects = agent1.intersects(agent2);
+ * boolean covers = agent1.covers(agent2);
+ * 
+ * // Geometric properties
+ * double area = agent1.getArea();
+ * double perimeter = agent1.getPerimeter();
+ * IPoint centroid = agent1.getCentroid();
+ * }</pre>
+ * 
+ * @see IMacroAgent for agents containing populations
+ * @see ISpecies for agent type definitions
+ * @see IPopulation for agent collections
+ * @see IShape for geometric operations
+ * 
+ * @author Alexis Drogoul
+ * @since GAMA 1.0
  */
 @vars ({ @variable (
 		name = IKeyword.NAME,

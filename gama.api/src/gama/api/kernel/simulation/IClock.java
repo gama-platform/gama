@@ -13,7 +13,155 @@ import gama.api.types.date.GamaDateFactory;
 import gama.api.types.date.IDate;
 
 /**
- * The Interface IClock. Defines the methods required for a clock used in simulations.
+ * The Interface IClock.
+ * 
+ * <p>
+ * Defines the time-keeping mechanism for GAMA simulations. The clock manages both discrete time (cycles) and
+ * continuous time (elapsed seconds), as well as performance metrics (step duration, average duration).
+ * </p>
+ * 
+ * <h3>Core Concepts</h3>
+ * <ul>
+ * <li><b>Cycle:</b> Discrete simulation step counter (0, 1, 2, ...)</li>
+ * <li><b>Step:</b> Duration of one cycle in model time (seconds)</li>
+ * <li><b>Time Elapsed:</b> Cumulative model time since simulation start</li>
+ * <li><b>Duration:</b> Real-world time taken to execute a cycle (milliseconds)</li>
+ * </ul>
+ * 
+ * <h3>Time Model</h3>
+ * <p>
+ * GAMA simulations use a hybrid time model:
+ * </p>
+ * <ul>
+ * <li><b>Discrete:</b> Cycles increment by 1 each step (0, 1, 2, 3, ...)</li>
+ * <li><b>Continuous:</b> Time advances by step duration each cycle</li>
+ * <li><b>Configurable:</b> Step duration can be changed during simulation</li>
+ * </ul>
+ * 
+ * <h3>Usage in GAML</h3>
+ * 
+ * <h4>1. Accessing Cycle and Time</h4>
+ * 
+ * <pre>
+ * <code>
+ * global {
+ *     reflex monitor {
+ *         write "Cycle: " + cycle;              // Discrete time
+ *         write "Time: " + time + " seconds";   // Continuous time
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h4>2. Configuring Step Duration</h4>
+ * 
+ * <pre>
+ * <code>
+ * experiment myExperiment {
+ *     float step <- 0.1 #s;  // Each cycle = 0.1 seconds of model time
+ * }
+ * 
+ * // Or variable step:
+ * global {
+ *     reflex change_step when: cycle = 100 {
+ *         step <- 1 #s;  // Change to 1 second per cycle
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h4>3. Monitoring Performance</h4>
+ * 
+ * <pre>
+ * <code>
+ * global {
+ *     reflex monitor_performance {
+ *         write "Last cycle took: " + duration + " ms";
+ *         write "Average: " + average_duration + " ms";
+ *         write "Total: " + total_duration + " ms";
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h4>4. Time-Based Conditions</h4>
+ * 
+ * <pre>
+ * <code>
+ * species animal {
+ *     reflex eat when: every(10 #cycle) {
+ *         // Execute every 10 cycles
+ *     }
+ *     
+ *     reflex sleep when: mod(cycle, 24) = 0 {
+ *         // Execute when cycle is multiple of 24
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h3>Java Usage</h3>
+ * 
+ * <pre>
+ * <code>
+ * IClock clock = simulation.getClock();
+ * 
+ * // Access time information
+ * int currentCycle = clock.getCycle();
+ * double timeElapsed = clock.getTimeElapsedInSeconds();
+ * double stepDuration = clock.getStepInSeconds();
+ * 
+ * // Advance simulation
+ * clock.incrementCycle();
+ * clock.step();
+ * 
+ * // Performance metrics
+ * long lastDuration = clock.getDuration();          // Last cycle in ms
+ * double avgDuration = clock.getAverageDuration();  // Average in ms
+ * long totalDuration = clock.getTotalDuration();    // Total in ms
+ * 
+ * // Control
+ * clock.setStep(1.0);  // 1 second per cycle
+ * clock.reset();       // Reset all counters
+ * </code>
+ * </pre>
+ * 
+ * <h3>Clock Lifecycle</h3>
+ * <ol>
+ * <li><b>Initialization:</b> Clock starts at cycle 0, time 0</li>
+ * <li><b>Begin Cycle:</b> beginCycle() marks the start of a simulation step</li>
+ * <li><b>Execution:</b> Simulation step executes (agents, reflexes, etc.)</li>
+ * <li><b>End Cycle:</b> Duration is recorded, cycle increments, time advances</li>
+ * <li><b>Repeat:</b> Process repeats for each cycle</li>
+ * </ol>
+ * 
+ * <h3>Performance Tracking</h3>
+ * <ul>
+ * <li><b>Duration:</b> Time taken for the most recent cycle</li>
+ * <li><b>Average Duration:</b> Moving average of cycle durations</li>
+ * <li><b>Total Duration:</b> Cumulative time since simulation start</li>
+ * <li><b>Delay:</b> Optional artificial delay to slow down simulation</li>
+ * </ul>
+ * 
+ * <h3>Special Features</h3>
+ * <ul>
+ * <li><b>NULL_CLOCK:</b> Placeholder clock that does nothing (for platform agent)</li>
+ * <li><b>setCycleNoCheck:</b> Used for simulation restoration without validation</li>
+ * <li><b>waitDelay:</b> Implements minimum/maximum cycle duration constraints</li>
+ * </ul>
+ * 
+ * <h3>Implementation Notes</h3>
+ * <ul>
+ * <li>All methods have default no-op implementations for NULL_CLOCK</li>
+ * <li>Step duration cannot be negative</li>
+ * <li>Cycle cannot be set to negative values</li>
+ * <li>Duration tracking uses System.nanoTime() for precision</li>
+ * </ul>
+ * 
+ * @see ISimulationAgent
+ * @see ITopLevelAgent
+ * @author drogoul
+ * @since GAMA 1.0
  */
 
 public interface IClock {

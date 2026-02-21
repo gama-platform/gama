@@ -24,7 +24,57 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 
 /**
- * The Class ContainerVariable.
+ * Represents a container variable declaration in GAMA, specifically for list, map, matrix, and other container types.
+ * 
+ * <p>ContainerVariable extends {@link Variable} to provide specialized handling for container types
+ * that require type parameters. It supports the 'of' facet to specify the content type and the 'index'
+ * facet to specify the key type (for maps and matrices).</p>
+ * 
+ * <h2>Container Types</h2>
+ * <ul>
+ *   <li><b>list&lt;T&gt;</b> - Ordered collection of elements of type T</li>
+ *   <li><b>map&lt;K,V&gt;</b> - Key-value pairs with keys of type K and values of type V</li>
+ *   <li><b>matrix&lt;T&gt;</b> - 2D array with elements of type T</li>
+ *   <li><b>container&lt;T&gt;</b> - Generic container of elements of type T</li>
+ * </ul>
+ * 
+ * <h2>Usage Examples</h2>
+ * 
+ * <h3>List Variable</h3>
+ * <pre>{@code
+ * species MySpecies {
+ *     list<int> numbers <- [1, 2, 3, 4, 5];
+ *     list<agent> neighbors <- [];
+ * }
+ * }</pre>
+ * 
+ * <h3>Map Variable</h3>
+ * <pre>{@code
+ * species MySpecies {
+ *     map<string, int> scores <- ["Alice"::100, "Bob"::95];
+ *     map<point, float> grid_values <- map([]);
+ * }
+ * }</pre>
+ * 
+ * <h3>Matrix Variable</h3>
+ * <pre>{@code
+ * global {
+ *     matrix<float> elevation_data <- matrix_file("elevation.asc");
+ * }
+ * }</pre>
+ * 
+ * <h3>Container with Update</h3>
+ * <pre>{@code
+ * species MySpecies {
+ *     list<agent> visible_agents update: agents at_distance 10;
+ * }
+ * }</pre>
+ * 
+ * @see Variable for base variable functionality
+ * @see NumberVariable for numeric variables with constraints
+ * 
+ * @author Alexis Drogoul
+ * @since GAMA 1.0
  */
 @facets (
 		value = { @facet (
@@ -102,14 +152,22 @@ import gama.annotations.support.ISymbolKind;
 public class ContainerVariable extends Variable {
 
 	/**
-	 * The Class ContainerVarValidator.
+	 * Validator for container variable descriptions.
+	 * 
+	 * <p>This validator extends {@link Variable.VarValidator} to apply the same validation
+	 * rules as regular variables. Container-specific validation (e.g., checking 'of' and 'index'
+	 * facet compatibility) is handled during type resolution.</p>
+	 * 
+	 * @see Variable.VarValidator
 	 */
 	public static class ContainerVarValidator extends VarValidator {
 
 		/**
-		 * Method validate()
-		 *
-		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
+		 * Validates a container variable description by delegating to the parent validator.
+		 * 
+		 * @param vd the variable description to validate
+		 * 
+		 * @see Variable.VarValidator#validate(IDescription)
 		 */
 		@Override
 		public void validate(final IDescription vd) {
@@ -118,10 +176,15 @@ public class ContainerVariable extends Variable {
 	}
 
 	/**
-	 * Instantiates a new container variable.
-	 *
-	 * @param sd
-	 *            the sd
+	 * Constructs a new ContainerVariable from its description.
+	 * 
+	 * <p>This constructor calls the parent {@link Variable} constructor which extracts
+	 * all standard facets. The container-specific 'of' and 'index' facets are processed
+	 * during type resolution to build the parameterized container type.</p>
+	 * 
+	 * @param sd the variable description containing facets including 'of' and 'index'
+	 * 
+	 * @see Variable#Variable(IDescription)
 	 */
 	public ContainerVariable(final IDescription sd) {
 		super(sd);

@@ -36,10 +36,300 @@ import gama.api.types.misc.IContainer;
 import gama.api.ui.IExperimentDisplayable;
 
 /**
- * Written by drogoul Modified on 25 avr. 2010
- *
- * @todo Description
- *
+ * The Interface ISpecies.
+ * 
+ * <p>
+ * Represents a species definition in GAMA - the fundamental organizing concept for agents. A species is like a class
+ * in object-oriented programming: it defines the structure (attributes), behaviors (actions, reflexes), appearance
+ * (aspects), and control logic (architecture) for a category of agents. Each agent belongs to exactly one species.
+ * </p>
+ * 
+ * <h3>Core Concept</h3>
+ * <p>
+ * In GAMA, a species is:
+ * </p>
+ * <ul>
+ * <li><b>A Template:</b> Defines what attributes and behaviors agents of this type have</li>
+ * <li><b>A Population Container:</b> Groups all agents of the same type</li>
+ * <li><b>A Namespace:</b> Scopes variables, actions, and aspects</li>
+ * <li><b>A Type:</b> Used for type checking and declarations</li>
+ * <li><b>An Inheritance Hierarchy:</b> Can extend other species</li>
+ * </ul>
+ * 
+ * <h3>Species Components</h3>
+ * <table border="1">
+ * <tr>
+ * <th>Component</th>
+ * <th>Purpose</th>
+ * <th>Example</th>
+ * </tr>
+ * <tr>
+ * <td>Attributes (Variables)</td>
+ * <td>Agent state</td>
+ * <td>int age, float energy</td>
+ * </tr>
+ * <tr>
+ * <td>Actions</td>
+ * <td>Callable behaviors</td>
+ * <td>action eat, action move_to</td>
+ * </tr>
+ * <tr>
+ * <td>Reflexes</td>
+ * <td>Automatic behaviors</td>
+ * <td>reflex update_energy</td>
+ * </tr>
+ * <tr>
+ * <td>Aspects</td>
+ * <td>Visual representation</td>
+ * <td>aspect default, aspect 3d</td>
+ * </tr>
+ * <tr>
+ * <td>Architecture</td>
+ * <td>Behavior control</td>
+ * <td>control: fsm</td>
+ * </tr>
+ * <tr>
+ * <td>Skills</td>
+ * <td>Reusable capabilities</td>
+ * <td>skills: [moving]</td>
+ * </tr>
+ * </table>
+ * 
+ * <h3>Usage in GAML</h3>
+ * 
+ * <h4>1. Basic Species Definition</h4>
+ * 
+ * <pre>
+ * <code>
+ * species person {
+ *     // Attributes
+ *     int age <- rnd(80);
+ *     float energy <- 100.0;
+ *     
+ *     // Reflex (automatic behavior)
+ *     reflex age_and_tire {
+ *         age <- age + 1;
+ *         energy <- energy - 0.1;
+ *     }
+ *     
+ *     // Action (callable behavior)
+ *     action eat(float amount) {
+ *         energy <- min(100.0, energy + amount);
+ *     }
+ *     
+ *     // Aspect (visualization)
+ *     aspect default {
+ *         draw circle(1) color: #blue;
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h4>2. Species Inheritance</h4>
+ * 
+ * <pre>
+ * <code>
+ * species animal {
+ *     float energy <- 100.0;
+ *     
+ *     action move {
+ *         energy <- energy - 1.0;
+ *     }
+ * }
+ * 
+ * species predator parent: animal {
+ *     // Inherits 'energy' and 'move'
+ *     float hunt_skill <- rnd(1.0);
+ *     
+ *     action hunt(animal prey) {
+ *         // Predator-specific behavior
+ *     }
+ * }
+ * 
+ * species prey parent: animal {
+ *     // Also inherits from animal
+ *     float flee_speed <- rnd(10.0);
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h4>3. Multi-Level Species (Micro-Species)</h4>
+ * 
+ * <pre>
+ * <code>
+ * species city {
+ *     // Micro-species defined inside city
+ *     species building {
+ *         int floors <- rnd(1, 20);
+ *         
+ *         // Nested micro-species
+ *         species room {
+ *             string type <- one_of(["office", "apartment"]);
+ *         }
+ *     }
+ *     
+ *     init {
+ *         create building number: 50 {
+ *             create room number: floors * 4;
+ *         }
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h4>4. Species with Skills and Architecture</h4>
+ * 
+ * <pre>
+ * <code>
+ * species robot skills: [moving] control: fsm {
+ *     // Skills provide attributes and actions
+ *     float speed <- 5.0;  // From 'moving' skill
+ *     
+ *     // FSM architecture uses states instead of reflexes
+ *     state searching initial: true {
+ *         transition to: moving when: target != nil;
+ *     }
+ *     
+ *     state moving {
+ *         do goto target: target;  // Action from 'moving' skill
+ *         transition to: working when: location = target;
+ *     }
+ *     
+ *     state working {
+ *         do work;
+ *         transition to: searching when: task_done;
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h4>5. Grid Species</h4>
+ * 
+ * <pre>
+ * <code>
+ * grid cell width: 100 height: 100 {
+ *     // Special grid species
+ *     rgb color <- #white;
+ *     float value <- 0.0;
+ *     
+ *     reflex diffuse {
+ *         value <- mean(neighbors collect each.value);
+ *     }
+ *     
+ *     aspect default {
+ *         draw shape color: rgb(255 * value, 0, 0);
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h3>Java Usage</h3>
+ * 
+ * <pre>
+ * <code>
+ * ISpecies species = ...;
+ * 
+ * // Basic information
+ * String name = species.getName();
+ * ISpecies parent = species.getParentSpecies();
+ * boolean isGrid = species.isGrid();
+ * 
+ * // Hierarchy
+ * List&lt;ISpecies&gt; hierarchy = species.getSelfWithParents();
+ * IList&lt;ISpecies&gt; subSpecies = species.getSubSpecies(scope);
+ * boolean extends = species.extendsSpecies(otherSpecies);
+ * 
+ * // Micro-species
+ * IList&lt;ISpecies&gt; microSpecies = species.getMicroSpecies();
+ * ISpecies microSpec = species.getMicroSpecies("building");
+ * boolean hasMicro = species.hasMicroSpecies();
+ * 
+ * // Attributes (variables)
+ * IVariable var = species.getVar("age");
+ * Collection&lt;String&gt; varNames = species.getVarNames();
+ * IList&lt;String&gt; attributes = species.getAttributeNames(scope);
+ * boolean hasVar = species.hasVar("energy");
+ * 
+ * // Actions
+ * IStatement.WithArgs action = species.getAction("eat");
+ * IList&lt;String&gt; actionNames = species.getActionNames(scope);
+ * Collection&lt;? extends IStatement&gt; actions = species.getActions();
+ * 
+ * // Aspects
+ * IExecutable aspect = species.getAspect("default");
+ * IList&lt;String&gt; aspectNames = species.getAspectNames();
+ * boolean hasAspect = species.hasAspect("3d");
+ * 
+ * // Architecture and skills
+ * IArchitecture arch = species.getArchitecture();
+ * String archName = species.getArchitectureName();
+ * 
+ * // Population
+ * IPopulation&lt;? extends IAgent&gt; pop = species.getPopulation(scope);
+ * 
+ * // Scheduling
+ * IExpression frequency = species.getFrequency();
+ * IExpression schedule = species.getSchedule();
+ * IExpression concurrency = species.getConcurrency();
+ * </code>
+ * </pre>
+ * 
+ * <h3>Species Hierarchy</h3>
+ * <ul>
+ * <li><b>agent:</b> The root species (all species inherit from agent)</li>
+ * <li><b>experiment:</b> Special species for experiments</li>
+ * <li><b>model:</b> The global/world species</li>
+ * <li><b>User-defined:</b> All species defined in GAML models</li>
+ * </ul>
+ * 
+ * <h3>Special Species Types</h3>
+ * <ul>
+ * <li><b>Grid Species:</b> Declared with 'grid', agents arranged in 2D matrix</li>
+ * <li><b>Graph Species:</b> Agents that can be nodes/edges in graphs</li>
+ * <li><b>Mirror Species:</b> Mirror external data sources</li>
+ * <li><b>Micro-Species:</b> Nested species that exist within macro-agents</li>
+ * </ul>
+ * 
+ * <h3>Introspection</h3>
+ * <p>
+ * Species are themselves accessible as GAML values:
+ * </p>
+ * 
+ * <pre>
+ * <code>
+ * global {
+ *     init {
+ *         // Access species as a value
+ *         species person_spec <- person;
+ *         
+ *         // Get species information
+ *         write "Person has " + length(person_spec.attributes) + " attributes";
+ *         write "Actions: " + person_spec.actions;
+ *         write "Parent: " + person_spec.parent;
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h3>Implementation Notes</h3>
+ * <ul>
+ * <li>Species implements ISymbol (has a description and belongs to a model)</li>
+ * <li>Species implements IContainer.Addressable (agents indexed by integer)</li>
+ * <li>Species implements IPopulationSet (collection of agents)</li>
+ * <li>Each species has exactly one parent (except 'agent' which is root)</li>
+ * <li>Species can have multiple sub-species (children)</li>
+ * <li>Attributes, actions, and aspects are inherited from parent</li>
+ * <li>Architecture is not inherited (must be explicitly set)</li>
+ * </ul>
+ * 
+ * @see IAgent
+ * @see IPopulation
+ * @see IArchitecture
+ * @see ISkill
+ * @see IVariable
+ * @author drogoul
+ * @since GAMA 1.0
+ * @date 25 avr. 2010
  */
 @vars ({ @variable (
 		name = ISpecies.ACTIONS,

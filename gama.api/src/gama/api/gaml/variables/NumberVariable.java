@@ -34,7 +34,76 @@ import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 
 /**
- * The Class IntVariable.
+ * Represents a numeric variable declaration with automatic value clamping based on min, max, and step constraints.
+ * 
+ * <p>NumberVariable extends {@link Variable} to provide specialized handling for numeric types (int, float, point, date)
+ * that can be constrained to a specific range. Values are automatically clamped when they fall outside
+ * the defined min/max bounds, ensuring data integrity without throwing errors.</p>
+ * 
+ * <h2>Supported Types</h2>
+ * <ul>
+ *   <li><b>int</b> - Integer values with integer min/max/step</li>
+ *   <li><b>float</b> - Floating-point values with float min/max/step</li>
+ *   <li><b>point</b> - 2D/3D coordinates with point min/max/step</li>
+ *   <li><b>date</b> - Temporal values with date min/max and duration step</li>
+ * </ul>
+ * 
+ * <h2>Clamping Behavior</h2>
+ * <p>When a value is set that falls outside the min/max range:
+ * <ul>
+ *   <li>Values below min are set to min</li>
+ *   <li>Values above max are set to max</li>
+ *   <li>No exception is thrown; the clamping is silent</li>
+ * </ul>
+ * 
+ * <h2>Usage Examples</h2>
+ * 
+ * <h3>Integer with Range</h3>
+ * <pre>{@code
+ * species MySpecies {
+ *     int speed <- 5 min: 0 max: 10;  // speed is always between 0 and 10
+ * }
+ * }</pre>
+ * 
+ * <h3>Float Parameter with Step</h3>
+ * <pre>{@code
+ * experiment MyExperiment type: gui {
+ *     parameter "Temperature" var: temp min: 0.0 max: 50.0 step: 0.5;
+ * }
+ * }</pre>
+ * 
+ * <h3>Point with Bounds</h3>
+ * <pre>{@code
+ * species MySpecies {
+ *     point position <- {50, 50} min: {0, 0} max: {100, 100};
+ * }
+ * }</pre>
+ * 
+ * <h3>Date with Range</h3>
+ * <pre>{@code
+ * global {
+ *     date start_date <- date("2020-01-01");
+ *     date end_date <- date("2020-12-31");
+ *     date current <- date("2020-06-01") min: start_date max: end_date;
+ * }
+ * }</pre>
+ * 
+ * <h3>Dynamic Range (Evaluated Each Time)</h3>
+ * <pre>{@code
+ * species MySpecies {
+ *     float energy <- 100.0 max: max_energy;  // max can change dynamically
+ *     float max_energy <- 100.0;
+ * }
+ * }</pre>
+ * 
+ * @param <T> the comparable type for min/max values (Integer, Double, IPoint, IDate)
+ * @param <Step> the comparable type for step values
+ * 
+ * @see Variable for base variable functionality
+ * @see ContainerVariable for container variables
+ * 
+ * @author Alexis Drogoul
+ * @since GAMA 1.0
  */
 @facets (
 		value = { @facet (
@@ -127,12 +196,19 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	private InScope<Step> stepVal;
 
 	/**
-	 * Instantiates a new number variable.
-	 *
-	 * @param sd
-	 *            the sd
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 * Constructs a new NumberVariable from its description.
+	 * 
+	 * <p>This constructor extracts the min, max, and step facets and pre-compiles them
+	 * if they are constant expressions. Pre-compilation improves performance by avoiding
+	 * repeated evaluation of constant bounds during runtime.</p>
+	 * 
+	 * <p>The constructor sets up type-specific clamping functions based on the variable's
+	 * declared type (int, float, point, or date).</p>
+	 * 
+	 * @param sd the variable description containing min, max, and step facets
+	 * @throws GamaRuntimeException if the variable type is not supported for numeric constraints
+	 * 
+	 * @see Variable#Variable(IDescription)
 	 */
 	@SuppressWarnings ("unchecked")
 	public NumberVariable(final IDescription sd) throws GamaRuntimeException {
@@ -194,6 +270,33 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 		}
 	}
 
+	/**
+	 * Coerces a value to this variable's type and clamps it to the min/max range.
+	 * 
+	 * <p>This method overrides {@link Variable#coerce} to add automatic value clamping.
+	 * After type conversion, the value is checked against min and max constraints
+	 * and silently clamped if it falls outside the valid range.</p>
+	 * 
+	 * <p>The clamping is type-specific:
+	 * <ul>
+	 *   <li>int: Uses integer comparison</li>
+	 *   <li>float: Uses floating-point comparison</li>
+	 *   <li>point: Uses component-wise comparison via smallerThan/biggerThan</li>
+	 *   <li>date: Uses temporal comparison</li>
+	 * </ul>
+	 * 
+	 * @param agent the agent owning this variable
+	 * @param scope the current execution scope
+	 * @param v the value to coerce and clamp
+	 * @return the coerced and clamped value
+	 * @throws GamaRuntimeException if the value cannot be converted or the type is unsupported
+	 * 
+	 * @see Variable#coerce(IAgent, IScope, Object)
+	 * @see #checkMinMax(IAgent, IScope, Integer)
+	 * @see #checkMinMax(IAgent, IScope, Double)
+	 * @see #checkMinMax(IAgent, IScope, IPoint)
+	 * @see #checkMinMax(IAgent, IScope, IDate)
+	 */
 	@Override
 	public Object coerce(final IAgent agent, final IScope scope, final Object v) throws GamaRuntimeException {
 		final Object val = super.coerce(agent, scope, v);
@@ -208,17 +311,19 @@ public class NumberVariable<T extends Comparable, Step extends Comparable> exten
 	}
 
 	/**
-	 * Check min max.
-	 *
-	 * @param agent
-	 *            the agent
-	 * @param scope
-	 *            the scope
-	 * @param f
-	 *            the f
-	 * @return the integer
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 * Clamps an integer value to the defined min/max range.
+	 * 
+	 * <p>If the value is less than min, returns min. If the value is greater than max,
+	 * returns max. Otherwise returns the value unchanged.</p>
+	 * 
+	 * <p>Min and max expressions are evaluated each time if they are non-constant,
+	 * allowing for dynamic bounds.</p>
+	 * 
+	 * @param agent the agent owning this variable
+	 * @param scope the current execution scope
+	 * @param f the integer value to clamp
+	 * @return the clamped integer value
+	 * @throws GamaRuntimeException if min/max evaluation fails
 	 */
 	protected Integer checkMinMax(final IAgent agent, final IScope scope, final Integer f) throws GamaRuntimeException {
 		if (min != null) {

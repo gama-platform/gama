@@ -32,8 +32,171 @@ import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class SerialisedAgent.
- *
+ * 
+ * <p>
+ * The main implementation of ISerialisedAgent, providing complete serialization and deserialization capabilities for
+ * GAMA agents. This record class encapsulates an agent's state in a portable, immutable representation that can be
+ * stored, transmitted, or used to restore agent state.
+ * </p>
+ * 
+ * <h3>Structure</h3>
+ * <p>
+ * SerialisedAgent is a Java record with four components:
+ * </p>
+ * <ul>
+ * <li><b>index:</b> The agent's unique index within its population</li>
+ * <li><b>species:</b> The name of the agent's species</li>
+ * <li><b>attributes:</b> Map of serializable attribute names and values</li>
+ * <li><b>innerPopulations:</b> Nested populations for macro-agents</li>
+ * </ul>
+ * 
+ * <h3>Attribute Filtering</h3>
+ * <p>
+ * Not all agent attributes are serialized. The following are excluded:
+ * </p>
+ * <ul>
+ * <li><b>NON_SERIALISABLE:</b> members, agents, location, host, peers, experiment, world_agent, time, duration,
+ * index</li>
+ * <li><b>GRID_NON_SERIALISABLE:</b> grid_x, grid_y, neighbors (for grid agents)</li>
+ * <li><b>Populations:</b> When serializePopulations=true, population attributes are stored separately in
+ * innerPopulations</li>
+ * </ul>
+ * 
+ * <h3>Special Handling</h3>
+ * 
+ * <h4>Simulation Agents</h4>
+ * <p>
+ * Simulation agents have additional state serialized:
+ * </p>
+ * <ul>
+ * <li>Random number generator seed and algorithm</li>
+ * <li>Current cycle number</li>
+ * <li>Resource usage statistics</li>
+ * <li>Optionally: simulation history (controlled by SERIALISE_HISTORY attribute)</li>
+ * </ul>
+ * 
+ * <h4>Grid Agents</h4>
+ * <p>
+ * Grid agents exclude grid-specific attributes (grid_x, grid_y, neighbors) as these are implicit in the grid
+ * structure.
+ * </p>
+ * 
+ * <h4>Macro Agents</h4>
+ * <p>
+ * Macro-agents with micro-populations have those populations serialized recursively into innerPopulations map.
+ * </p>
+ * 
+ * <h3>Usage Examples</h3>
+ * 
+ * <h4>1. Basic Serialization</h4>
+ * 
+ * <pre>
+ * <code>
+ * // Serialize an agent
+ * IAgent agent = ...;
+ * SerialisedAgent serialized = SerialisedAgent.of(agent, false);
+ * 
+ * // Access components
+ * int index = serialized.index();
+ * String species = serialized.species();
+ * Map&lt;String, Object&gt; attrs = serialized.attributes();
+ * </code>
+ * </pre>
+ * 
+ * <h4>2. Serialization with Populations</h4>
+ * 
+ * <pre>
+ * <code>
+ * // Serialize macro-agent with its populations
+ * IMacroAgent macroAgent = ...;
+ * SerialisedAgent serialized = SerialisedAgent.of(macroAgent, true);
+ * 
+ * // Access inner populations
+ * Map&lt;String, ISerialisedPopulation&gt; innerPops = serialized.innerPopulations();
+ * </code>
+ * </pre>
+ * 
+ * <h4>3. Restoration into Population</h4>
+ * 
+ * <pre>
+ * <code>
+ * // Restore agent as new member of population
+ * IPopulation&lt;IAgent&gt; targetPop = ...;
+ * IAgent restored = serialized.restoreInto(scope, targetPop);
+ * </code>
+ * </pre>
+ * 
+ * <h4>4. Restoration onto Existing Agent</h4>
+ * 
+ * <pre>
+ * <code>
+ * // Update existing agent with serialized state
+ * IAgent existingAgent = population.getAgent(index);
+ * serialized.restoreAs(scope, existingAgent);
+ * </code>
+ * </pre>
+ * 
+ * <h4>5. JSON Serialization</h4>
+ * 
+ * <pre>
+ * <code>
+ * // Convert to JSON
+ * IJson json = ...;
+ * IJsonValue jsonValue = serialized.serializeToJson(json);
+ * 
+ * // JSON structure:
+ * // {
+ * //   "species": "person",
+ * //   "index": 42,
+ * //   "attributes": { "name": "John", "age": 30 },
+ * //   "populations": { "children": [...] }
+ * // }
+ * </code>
+ * </pre>
+ * 
+ * <h4>6. Creating from Manual Data</h4>
+ * 
+ * <pre>
+ * <code>
+ * // Create serialized agent from components
+ * Map&lt;String, Object&gt; attrs = new HashMap&lt;&gt;();
+ * attrs.put("name", "Alice");
+ * attrs.put("age", 25);
+ * 
+ * SerialisedAgent serialized = SerialisedAgent.of(5, "person", attrs);
+ * </code>
+ * </pre>
+ * 
+ * <h3>Restoration Process</h3>
+ * <ol>
+ * <li><b>Create/Locate Agent:</b> Either create new agent or find existing by index</li>
+ * <li><b>Restore Attributes:</b> Set all attribute values directly (bypass updates)</li>
+ * <li><b>Restore Populations:</b> For macro-agents, recursively restore inner populations</li>
+ * <li><b>Update Simulation State:</b> For simulations, restore RNG, cycle, and usage</li>
+ * </ol>
+ * 
+ * <h3>Best Practices</h3>
+ * <ul>
+ * <li>Use serializePopulations=true only when needed (increases size/complexity)</li>
+ * <li>Be aware that transient/computed values are not preserved</li>
+ * <li>Test serialization round-trips for complex agent types</li>
+ * <li>Consider implementing custom serialization for complex custom types</li>
+ * <li>Use SERIALISE_HISTORY flag carefully as history can be large</li>
+ * </ul>
+ * 
+ * @param index
+ *            The agent's unique index within its population
+ * @param species
+ *            The name of the agent's species
+ * @param attributes
+ *            Map of serializable attribute names to values
+ * @param innerPopulations
+ *            Map of population names to serialized populations (for macro-agents)
+ * @see ISerialisedAgent
+ * @see ISerialisedPopulation
+ * @see IAgent
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+ * @since GAMA 1.9
  * @date 31 juil. 2023
  */
 public record SerialisedAgent(int index, String species, Map<String, Object> attributes,

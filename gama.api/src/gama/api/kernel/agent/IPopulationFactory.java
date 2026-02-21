@@ -15,7 +15,60 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 
 /**
- * A factory for creating IPopulation objects.
+ * The Interface IPopulationFactory.
+ * 
+ * <p>
+ * A factory interface for creating different types of agent populations in GAMA. This factory provides methods to
+ * create regular populations, grid populations, and experiment populations based on species specifications.
+ * </p>
+ * 
+ * <h3>Purpose</h3>
+ * <p>
+ * The factory pattern is used to:
+ * </p>
+ * <ul>
+ * <li>Abstract the creation logic for different population types</li>
+ * <li>Allow custom population implementations to be plugged in</li>
+ * <li>Centralize population creation and configuration</li>
+ * <li>Support different population strategies (regular, grid, experiment)</li>
+ * </ul>
+ * 
+ * <h3>Population Types</h3>
+ * <ul>
+ * <li><b>Regular Population:</b> Standard collection of agents with no special structure</li>
+ * <li><b>Grid Population:</b> Specialized population for grid-based agents with spatial indexing</li>
+ * <li><b>Experiment Population:</b> Population managing experiment instances</li>
+ * </ul>
+ * 
+ * <h3>Java Usage</h3>
+ * 
+ * <pre>
+ * <code>
+ * // Get the factory
+ * IPopulationFactory factory = ...; // obtained from platform
+ * 
+ * // Create a regular population
+ * IPopulation&lt;IAgent&gt; agentPop = factory.createRegularPopulation(scope, host, species);
+ * 
+ * // Create a grid population
+ * IPopulation&lt;IGridAgent&gt; gridPop = factory.createGridPopulation(scope, host, gridSpecies);
+ * 
+ * // Create an experiment population
+ * IPopulation.Experiment expPop = factory.createExperimentPopulation(scope, experimentSpecies);
+ * </code>
+ * </pre>
+ * 
+ * <h3>Implementation Notes</h3>
+ * <p>
+ * The default createPopulation() method automatically delegates to the appropriate specialized method based on whether
+ * the species is a grid species or not. Custom implementations can override this behavior.
+ * </p>
+ * 
+ * @see IPopulation
+ * @see ISpecies
+ * @see IMacroAgent
+ * @author drogoul
+ * @since GAMA 1.0
  */
 public interface IPopulationFactory {
 

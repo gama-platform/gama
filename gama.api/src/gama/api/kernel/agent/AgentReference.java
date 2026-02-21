@@ -23,17 +23,71 @@ import gama.api.utils.json.IJsonable;
 import one.util.streamex.StreamEx;
 
 /**
- * The Class AgentReference. A unique way to reference agents inside experiments.
+ * A unique way to reference agents across simulations within experiments.
+ * 
+ * <p>AgentReference provides a stable string-based identifier for agents that persists
+ * across simulation snapshots, saves, and remote communications. Each reference encodes
+ * the full hierarchical path from the experiment through the simulation to the target agent.</p>
  *
- * The reference of an agent will be :
+ * <h2>Reference Format</h2>
+ * <ul>
+ *   <li><b>Simulation:</b> {@code "simulation[n]"} - where n is the simulation index</li>
+ *   <li><b>Top-level agent:</b> {@code "simulation[n].species_name[m]"} - where m is the agent index</li>
+ *   <li><b>Nested agent:</b> {@code "simulation[n].species[m].nested_species[x]"} - hierarchical path</li>
+ * </ul>
  *
- * - "simulation[n]" if it is a simulation and its index is n
- *
- * - "simulation[n].species_name[m]" if it is instance of species_name, its index is m and it belongs to the simulation
- * with index n. Nested species follow the same pattern, e.g. "simulation[n].specie_name[m].nested_species_name[x]"
- *
- * Assumes (1) the experiment is unique in the scope; (2) the first species name (the simulation) is not relevant (can
- * be called "simulation" if needed)
+ * <h2>Assumptions</h2>
+ * <ol>
+ *   <li>The experiment is unique in the scope</li>
+ *   <li>The first species name refers to the simulation</li>
+ *   <li>Agent indices are stable within their populations</li>
+ * </ol>
+ * 
+ * <h2>Usage Examples</h2>
+ * 
+ * <h3>Creating References</h3>
+ * <pre>{@code
+ * // From an agent instance
+ * IAgent myAgent = ...;
+ * AgentReference ref = AgentReference.of(myAgent);
+ * String refString = ref.toString();  // e.g., "simulation[0].people[42]"
+ * 
+ * // From a reference string
+ * AgentReference ref = AgentReference.of("simulation[0].people[42]");
+ * 
+ * // From arrays
+ * AgentReference ref = AgentReference.of(
+ *     new String[]{"simulation", "people"},
+ *     new Integer[]{0, 42}
+ * );
+ * }</pre>
+ * 
+ * <h3>Resolving References</h3>
+ * <pre>{@code
+ * AgentReference ref = AgentReference.of("simulation[0].people[42]");
+ * IAgent agent = ref.getReferencedAgent(scope);
+ * if (agent != null && !agent.dead()) {
+ *     // Use the agent
+ * }
+ * }</pre>
+ * 
+ * <h3>JSON Serialization</h3>
+ * <pre>{@code
+ * AgentReference ref = AgentReference.of(myAgent);
+ * IJson json = IJson.create();
+ * ref.toJson(json);
+ * String jsonString = json.toString();  // {"reference": "simulation[0].people[42]"}
+ * }</pre>
+ * 
+ * @param species array of species names in the hierarchical path
+ * @param index array of agent indices corresponding to each species
+ * @param cached_ref the precomputed string representation
+ * 
+ * @see IAgent
+ * @see IPopulation
+ * 
+ * @author Alexis Drogoul
+ * @since GAMA 1.9
  */
 public record AgentReference(String[] species, Integer[] index, String cached_ref) implements IJsonable {
 
@@ -41,13 +95,13 @@ public record AgentReference(String[] species, Integer[] index, String cached_re
 	public static final AgentReference NULL = new AgentReference(new String[0], new Integer[0], null);
 
 	/**
-	 * Of.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param agt
-	 *            the agt
-	 * @return the agent reference
-	 * @date 1 nov. 2023
+	 * Creates an agent reference from an agent instance.
+	 * 
+	 * <p>This method constructs the reference by traversing the agent's host hierarchy
+	 * upward to the experiment, collecting species names and indices along the way.</p>
+	 * 
+	 * @param agt the agent to create a reference for, or null
+	 * @return the agent reference, or {@link #NULL} if the agent is null
 	 */
 	public static AgentReference of(final IAgent agt) {
 		if (agt == null) return NULL;
@@ -55,13 +109,15 @@ public record AgentReference(String[] species, Integer[] index, String cached_re
 	}
 
 	/**
-	 * Of.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param ref
-	 *            the ref
-	 * @return the agent reference
-	 * @date 5 nov. 2023
+	 * Parses a reference string to create an AgentReference.
+	 * 
+	 * <p>The string format should be: {@code "species1[idx1].species2[idx2]..."}
+	 * where each segment represents a level in the agent hierarchy.</p>
+	 * 
+	 * @param ref the reference string to parse
+	 * @return the parsed agent reference
+	 * 
+	 * @throws NumberFormatException if indices cannot be parsed as integers
 	 */
 	public static AgentReference of(final String ref) {
 		String[] tokens = ref.split("[\\[\\]\\.]");
@@ -104,11 +160,25 @@ public record AgentReference(String[] species, Integer[] index, String cached_re
 	}
 
 	/**
-	 * Gets the referenced agent.
-	 *
-	 * @param sim
-	 *            the sim
-	 * @return the referenced agent
+	 * Resolves this reference to retrieve the actual agent instance.
+	 * 
+	 * <p>This method navigates through the simulation hierarchy using the stored
+	 * species names and indices to locate the referenced agent. It starts from
+	 * the experiment's simulation population and descends through nested populations.</p>
+	 * 
+	 * <p><b>Important:</b> The returned agent may be dead. Callers should check
+	 * {@link IAgent#dead()} before using the agent.</p>
+	 * 
+	 * @param scope the current execution scope (must contain a valid experiment)
+	 * @return the referenced agent, or null if:
+	 *         <ul>
+	 *           <li>The scope or experiment is null</li>
+	 *           <li>Any population in the path doesn't exist</li>
+	 *           <li>Any index in the path is invalid</li>
+	 *         </ul>
+	 * 
+	 * @see IAgent#dead()
+	 * @see IPopulation#getOrCreateAgent(IScope, int)
 	 */
 	public IAgent getReferencedAgent(final IScope scope) {
 		if (scope == null) return null;

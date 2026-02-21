@@ -24,8 +24,147 @@ import gama.api.types.misc.IContainer;
 
 /**
  * The Interface IMacroAgent.
+ * 
+ * <p>
+ * Represents an agent that can host and manage populations of other agents (micro-agents) in GAMA. A macro-agent acts
+ * as a container for micro-species, allowing for hierarchical multi-level modeling where agents can contain other
+ * agents.
+ * </p>
+ * 
+ * <h3>Core Concepts</h3>
+ * <ul>
+ * <li><b>Host-Member Relationship:</b> Macro-agents host populations of micro-agents (members)</li>
+ * <li><b>Multi-Level Modeling:</b> Enables nested agent structures and hierarchical simulations</li>
+ * <li><b>Dynamic Populations:</b> Can capture, release, and migrate agents between populations</li>
+ * <li><b>Species Management:</b> Manages multiple micro-species simultaneously</li>
+ * </ul>
+ * 
+ * <h3>Key Operations</h3>
+ * <ul>
+ * <li><b>Capture:</b> Take external agents and make them members of the macro-agent</li>
+ * <li><b>Release:</b> Free micro-agents back to their parent population</li>
+ * <li><b>Migration:</b> Move agents between different micro-species within the same host</li>
+ * </ul>
+ * 
+ * <h3>Usage in GAML</h3>
+ * 
+ * <h4>1. Basic Multi-Level Model</h4>
+ * 
+ * <pre>
+ * <code>
+ * species city {
+ *     species building {
+ *         species room {
+ *             // Three-level hierarchy: city -> building -> room
+ *         }
+ *     }
+ * }
+ * 
+ * global {
+ *     init {
+ *         create city number: 3 {
+ *             create building number: 10;
+ *         }
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h4>2. Capturing Agents</h4>
+ * 
+ * <pre>
+ * <code>
+ * species building {
+ *     species tenant;
+ *     
+ *     reflex capture_nearby_people {
+ *         list&lt;person&gt; nearby_people <- person at_distance 10.0;
+ *         capture nearby_people as: tenant;
+ *         // People are now members of this building
+ *     }
+ * }
+ * 
+ * species person skills: [moving] {
+ *     // Can be captured by buildings
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h4>3. Releasing Agents</h4>
+ * 
+ * <pre>
+ * <code>
+ * species building {
+ *     species tenant;
+ *     
+ *     reflex release_tenants when: flip(0.1) {
+ *         release list(tenant);
+ *         // Tenants become regular person agents again
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h4>4. Accessing Members</h4>
+ * 
+ * <pre>
+ * <code>
+ * species company {
+ *     species employee;
+ *     species manager;
+ *     
+ *     reflex manage {
+ *         // Access all direct members
+ *         ask members {
+ *             do work;
+ *         }
+ *         
+ *         // Access specific micro-population
+ *         ask employee {
+ *             salary <- salary * 1.1;
+ *         }
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h4>5. Migrating Between Micro-Species</h4>
+ * 
+ * <pre>
+ * <code>
+ * species organization {
+ *     species employee;
+ *     species manager;
+ *     
+ *     reflex promote {
+ *         list&lt;employee&gt; candidates <- employee where (each.experience > 5);
+ *         if !empty(candidates) {
+ *             release candidates as: manager in: self;
+ *             // Employees become managers within the same organization
+ *         }
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h3>Implementation Notes</h3>
+ * <p>
+ * When implementing IMacroAgent:
+ * </p>
+ * <ul>
+ * <li>Micro-species must be declared as nested species in GAML</li>
+ * <li>Captured agents change their species and host reference</li>
+ * <li>Released agents return to their original parent population</li>
+ * <li>The 'members' attribute provides access to all direct micro-agents</li>
+ * <li>The 'agents' attribute includes all direct and indirect micro-agents</li>
+ * </ul>
+ * 
+ * @see IAgent
+ * @see IPopulation
+ * @see gama.api.kernel.species.ISpecies
+ * @author drogoul
+ * @since GAMA 1.0
  */
-
 @vars ({ @variable (
 		name = IKeyword.MEMBERS,
 		// Changed from IType.LIST; see issue #3264
