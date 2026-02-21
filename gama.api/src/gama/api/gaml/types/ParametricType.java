@@ -29,11 +29,36 @@ import gama.api.utils.GamlProperties;
 import gama.dev.DEBUG;
 
 /**
- * Class ParametricType. A class that allows to build composed types with a content type and a key type
+ * Represents a parameterized container type in GAML.
+ * <p>
+ * Parametric types extend base container types (like list, map, matrix) with specific key and content
+ * type parameters. For example:
+ * <ul>
+ * <li>{@code list<int>} - a list parameterized with integer content</li>
+ * <li>{@code map<string, float>} - a map with string keys and float values</li>
+ * <li>{@code matrix<bool>} - a matrix of booleans</li>
+ * </ul>
+ * </p>
+ * <p>
+ * Parametric types provide:
+ * <ul>
+ * <li>Type-safe containers with known element types</li>
+ * <li>Better compile-time type checking</li>
+ * <li>Proper type coercion and casting</li>
+ * <li>Enhanced documentation and IDE support</li>
+ * </ul>
+ * </p>
+ * <p>
+ * This class wraps a base container type with key and content type parameters,
+ * delegating most operations to the base type while maintaining type parameter information.
+ * Instances are immutable.
+ * </p>
  *
  * @author drogoul
- * @since 19 janv. 2014
- *
+ * @since GAMA 1.0
+ * @see IContainerType
+ * @see GamaContainerType
+ * @see IType
  */
 public class ParametricType implements IContainerType<IContainer<?, ?>> {
 
@@ -41,33 +66,35 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 		DEBUG.OFF();
 	}
 
-	/** The type. */
+	/** The base container type (e.g., list, map, matrix). */
 	private final IContainerType<IContainer<?, ?>> type;
 
-	/** The contents type. */
+	/** The content/value type parameter. */
 	private final IType<?> contentsType;
 
-	/** The key type. */
+	/** The key/index type parameter. */
 	private final IType<?> keyType;
 
-	/** The expression. */
+	/** The type expression representing this parametric type. */
 	private final IExpression expression;
 
-	/** The types manager inherited from the base type */
+	/** The types manager inherited from the base type and parameters. */
 	private final ITypesManager typesManager;
 
-	/** The name. */
+	/** The cached name of this parametric type. */
 	private String name;
 
 	/**
-	 * Instantiates a new parametric type.
+	 * Constructs a new parametric type.
+	 * <p>
+	 * The types manager is determined by finding the most specific manager among the base type
+	 * and the parameter types, ensuring proper type resolution in multi-model contexts.
+	 * </p>
 	 *
-	 * @param t
-	 *            the t
-	 * @param kt
-	 *            the kt
-	 * @param ct
-	 *            the ct
+	 * @param manager the types manager context
+	 * @param t the base container type
+	 * @param kt the key type parameter
+	 * @param ct the content type parameter
 	 */
 	protected ParametricType(final ITypesManager manager, final IContainerType<IContainer<?, ?>> t, final IType<?> kt,
 			final IType<?> ct) {
@@ -80,12 +107,37 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 				ct.getTypesManager());
 	}
 
+	/**
+	 * Returns the number of type parameters for this type.
+	 * <p>
+	 * Delegates to the base container type.
+	 * </p>
+	 * 
+	 * @return the number of type parameters
+	 */
 	@Override
 	public int getNumberOfParameters() { return type.getNumberOfParameters(); }
 
+	/**
+	 * Indicates whether this is a compound type.
+	 * <p>
+	 * Parametric types are always compound as they have accessible components.
+	 * </p>
+	 * 
+	 * @return true
+	 */
 	@Override
 	public boolean isCompoundType() { return true; }
 
+	/**
+	 * Checks equality with another object.
+	 * <p>
+	 * Two parametric types are equal if their base type, key type, and content type are all equal.
+	 * </p>
+	 * 
+	 * @param other the object to compare with
+	 * @return true if equal, false otherwise
+	 */
 	@Override
 	public boolean equals(final Object other) {
 		if (other instanceof ParametricType) return type.equals(((ParametricType) other).getGamlType())
@@ -94,6 +146,14 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 		return false;
 	}
 
+	/**
+	 * Computes the hash code for this parametric type.
+	 * <p>
+	 * Based on the hash codes of the base type, key type, and content type.
+	 * </p>
+	 * 
+	 * @return the hash code
+	 */
 	@Override
 	public int hashCode() {
 		return 31 * (31 * (31 + type.hashCode()) + keyType.hashCode()) + contentsType.hashCode();

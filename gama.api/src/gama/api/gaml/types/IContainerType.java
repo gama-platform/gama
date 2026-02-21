@@ -18,96 +18,116 @@ import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
 
 /**
- * Class IContainerType.
+ * Interface for GAML container types.
+ * <p>
+ * Container types represent collections of values with keys/indices. This interface extends
+ * {@link IType} with additional methods specific to containers, including parameterization
+ * by key and content types. Container types are used for lists, maps, matrices, graphs, and
+ * other collection-based data structures.
+ * </p>
+ * <p>
+ * Container types support:
+ * <ul>
+ * <li>Parameterization by key type and content type (e.g., {@code list<int>}, {@code map<string,float>})</li>
+ * <li>Type-safe casting with type parameters</li>
+ * <li>JSON serialization including type parameters</li>
+ * </ul>
+ * </p>
  *
+ * @param <T> the specific container class this type represents
+ * 
  * @author drogoul
- * @since 28 janv. 2014
- *
+ * @since GAMA 1.0
+ * @see IType
+ * @see IContainer
+ * @see GamaContainerType
  */
-
 public interface IContainerType<T extends IContainer<?, ?>> extends IType<T> {
 
 	/**
-	 * Gets the gaml type.
+	 * Gets the GAML type representation of this container type.
 	 *
-	 * @return the gaml type
+	 * @return this container type
 	 */
 	@Override
 	IContainerType<T> getGamlType();
 
 	/**
-	 * Type if casting.
+	 * Determines the container type resulting from casting an expression to this type.
+	 * <p>
+	 * This method analyzes the expression's type to determine the appropriate parameterized
+	 * container type after casting.
+	 * </p>
 	 *
-	 * @param exp
-	 *            the exp
-	 * @return the i container type
+	 * @param exp the expression to analyze
+	 * @return the resulting container type after casting
 	 */
 	@Override
 	IContainerType<?> typeIfCasting(final IExpression exp);
 
 	/**
-	 * Cast.
+	 * Casts an object to this container type.
 	 *
-	 * @param scope
-	 *            the scope
-	 * @param obj
-	 *            the obj
-	 * @param param
-	 *            the param
-	 * @param copy
-	 *            the copy
-	 * @return the t
+	 * @param scope the execution scope
+	 * @param obj the object to cast
+	 * @param param optional casting parameter
+	 * @param copy whether to copy the result
+	 * @return the casted container
 	 */
 	@Override
 	T cast(IScope scope, Object obj, Object param, boolean copy);
 
 	/**
-	 * Cast.
+	 * Casts an object to this container type with specified key and content types.
+	 * <p>
+	 * This method allows for type-safe casting where the key and content types of the
+	 * resulting container can be specified explicitly.
+	 * </p>
 	 *
-	 * @param scope
-	 *            the scope
-	 * @param obj
-	 *            the obj
-	 * @param param
-	 *            the param
-	 * @param keyType
-	 *            the key type
-	 * @param contentType
-	 *            the content type
-	 * @param copy
-	 *            the copy
-	 * @return the t
+	 * @param scope the execution scope
+	 * @param obj the object to cast
+	 * @param param optional casting parameter
+	 * @param keyType the desired key type for the container
+	 * @param contentType the desired content type for the container
+	 * @param copy whether to copy the result
+	 * @return the casted container with the specified types
 	 */
 	@Override
 	T cast(IScope scope, Object obj, Object param, IType<?> keyType, IType<?> contentType, boolean copy);
 
 	/**
-	 * Allows to build a parametric type
+	 * Creates a parameterized version of this container type with a specified content type.
+	 * <p>
+	 * This method is used to build type expressions like {@code list<int>} from a base
+	 * {@code list} type. The key type is inherited from this type.
+	 * </p>
 	 *
-	 * @param subs
-	 * @return
+	 * @param sub1 the content type parameter
+	 * @return a new parameterized container type
 	 */
 	IContainerType<?> of(IType<?> sub1);
 
 	/**
-	 * Of.
+	 * Creates a parameterized version of this container type with specified key and content types.
+	 * <p>
+	 * This method is used to build type expressions like {@code map<string,float>} from a base
+	 * {@code map} type, specifying both key and content types.
+	 * </p>
 	 *
-	 * @param sub1
-	 *            the sub 1
-	 * @param sub2
-	 *            the sub 2
-	 * @return the i container type
+	 * @param sub1 the key type parameter
+	 * @param sub2 the content type parameter
+	 * @return a new parameterized container type
 	 */
 	IContainerType<?> of(IType<?> sub1, IType<?> sub2);
 
 	/**
-	 * Serialize to json.
+	 * Serializes this container type to JSON format.
+	 * <p>
+	 * The JSON representation includes the type name and its key and content type parameters.
+	 * </p>
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param json
-	 *            the json
-	 * @return the json value
-	 * @date 4 nov. 2023
+	 * @param json the JSON context
+	 * @return a JSON representation of this container type
 	 */
 	@Override
 	default IJsonValue serializeToJson(final IJson json) {

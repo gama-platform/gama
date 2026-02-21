@@ -22,7 +22,17 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.map.IMap;
 
 /**
- * The Class GamaActionType.
+ * Represents the GAML type for actions and aspects of species.
+ * <p>
+ * This type wraps {@link IStatementDescription} objects that represent executable behaviors (actions) or
+ * visual representations (aspects) defined in agent species. Action types cannot be cast to constants
+ * and are drawable in the UI.
+ * </p>
+ * 
+ * @author GAMA Development Team
+ * @see IDescription
+ * @see IStatementDescription
+ * @since GAMA 1.0
  */
 @type (
 		name = IKeyword.ACTION,
@@ -34,16 +44,22 @@ import gama.api.types.map.IMap;
 public class GamaActionType extends GamaType<IDescription> {
 
 	/**
-	 * @param typesManager
-	 * @param varKind
-	 * @param id
-	 * @param name
-	 * @param support
+	 * Constructs a new GamaActionType.
+	 * 
+	 * @param typesManager the types manager responsible for type resolution and management
 	 */
 	public GamaActionType(final ITypesManager typesManager) {
 		super(typesManager);
 	}
 
+	/**
+	 * Indicates whether values of this type can be cast to constants.
+	 * <p>
+	 * Action types cannot be cast to constants as they represent dynamic behavioral constructs.
+	 * </p>
+	 * 
+	 * @return false, as actions cannot be constants
+	 */
 	@Override
 	public boolean canCastToConst() {
 		return false;
@@ -63,15 +79,35 @@ public class GamaActionType extends GamaType<IDescription> {
 		return null;
 	}
 
+	/**
+	 * Returns the default value for this type.
+	 * 
+	 * @return null, as action types have no meaningful default value
+	 */
 	@Override
 	public IDescription getDefault() {
 
 		return null;
 	}
 
+	/**
+	 * Indicates whether values of this type can be drawn/visualized.
+	 * 
+	 * @return true, as actions can be visualized in the UI
+	 */
 	@Override
 	public boolean isDrawable() { return true; }
 
+	/**
+	 * Deserializes an action description from a JSON map.
+	 * <p>
+	 * Extracts the "name" field from the JSON map and casts it to an action description.
+	 * </p>
+	 * 
+	 * @param scope the execution scope
+	 * @param map2 the JSON map containing the serialized action data
+	 * @return the deserialized action description, or null if not found
+	 */
 	@Override
 	public IDescription deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
 		return cast(scope, map2.get("name"), null, false);

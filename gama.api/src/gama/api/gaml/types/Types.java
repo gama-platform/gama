@@ -99,14 +99,36 @@ public class Types {
 		CLASSES_TYPES_CORRESPONDANCE.put(clazz, type);
 	}
 
+
 	/**
-	 * Caches a type instance into the corresponding static field based on its ID. This method is called during type
-	 * initialization.
+	 * Caches a type instance into the corresponding static field based on its type ID.
+	 * 
+	 * <p>
+	 * This method is called during type initialization (by {@link TypesManager#addRegularType}) to populate the static
+	 * type references for fast access. Instead of looking up types by name every time, code can use the static
+	 * references directly (e.g., {@code Types.INT}, {@code Types.STRING}).
+	 * </p>
+	 * 
+	 * <p>
+	 * The switch statement maps each built-in type ID to its corresponding static field. Only built-in types with IDs
+	 * less than {@link IType#BEGINNING_OF_CUSTOM_TYPES} are cached this way.
+	 * </p>
+	 * 
+	 * <p>
+	 * Example usage during GAMA initialization:
+	 * </p>
+	 * 
+	 * <pre>
+	 * {@code
+	 * // Type system initialization creates types and caches them
+	 * GamaIntegerType intType = new GamaIntegerType();
+	 * Types.cache(intType);
+	 * // Now Types.INT is available
+	 * }
+	 * </pre>
 	 *
-	 * @param id
-	 *            the type ID (see {@link IType})
 	 * @param instance
-	 *            the type instance
+	 *            the type instance to cache (must be a built-in type)
 	 */
 	public static void cache(final IType instance) {
 		switch (instance.id()) {
@@ -311,8 +333,49 @@ public class Types {
 	}
 
 	/**
-	 * Initializes the type hierarchy of built-in types. This computes the parent-child relationships between types
-	 * based on their underlying Java classes and sets up the fields for each type.
+	 * Initializes the type hierarchy of built-in types by computing parent-child relationships.
+	 * 
+	 * <p>
+	 * This method builds the type inheritance tree using a graph-based algorithm:
+	 * </p>
+	 * <ol>
+	 * <li>Creates a directed graph where edges connect parent types to child types (based on Java class
+	 * hierarchy)</li>
+	 * <li>Uses topological traversal starting from NO_TYPE (the root) to establish parent relationships</li>
+	 * <li>Sets the parent for each type using {@link IType#setParent}</li>
+	 * <li>Registers type names in the artefact proto registry</li>
+	 * <li>Initializes field getters for each type using reflection on their Java support classes</li>
+	 * </ol>
+	 * 
+	 * <p>
+	 * The algorithm ensures that each type is parented to its most specific supertype in the GAMA type system, not
+	 * necessarily its direct Java parent class.
+	 * </p>
+	 * 
+	 * <p>
+	 * Example hierarchy established:
+	 * </p>
+	 * 
+	 * <pre>
+	 * NO_TYPE (root)
+	 *   ├─ int
+	 *   ├─ float
+	 *   ├─ bool
+	 *   ├─ string
+	 *   ├─ container
+	 *   │   ├─ list
+	 *   │   ├─ map
+	 *   │   ├─ matrix
+	 *   │   └─ graph
+	 *   ├─ geometry
+	 *   │   └─ point
+	 *   └─ agent
+	 * </pre>
+	 * 
+	 * <p>
+	 * This method should be called once during GAMA platform initialization, after all built-in types have been
+	 * registered.
+	 * </p>
 	 */
 	public static void init() {
 		// We build a graph-type multimap structure
@@ -353,26 +416,80 @@ public class Types {
 
 	/**
 	 * Checks if two types represent a combination of int and float (in any order).
+	 * 
+	 * <p>
+	 * This is a special case in type checking because int and float are both numeric types but have different
+	 * representations. Many operations need to detect when one operand is int and the other is float to perform proper
+	 * numeric promotion.
+	 * </p>
+	 * 
+	 * <p>
+	 * Used primarily in:
+	 * </p>
+	 * <ul>
+	 * <li>Operator overload resolution</li>
+	 * <li>Type coercion for arithmetic operations</li>
+	 * <li>Common supertype computation (result is float)</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * Examples:
+	 * </p>
+	 * 
+	 * <pre>
+	 * {@code
+	 * Types.intFloatCase(Types.INT, Types.FLOAT)   // true
+	 * Types.intFloatCase(Types.FLOAT, Types.INT)   // true (order doesn't matter)
+	 * Types.intFloatCase(Types.INT, Types.INT)     // false
+	 * Types.intFloatCase(Types.INT, Types.STRING)  // false
+	 * }
+	 * </pre>
 	 *
 	 * @param t1
 	 *            the first type
 	 * @param t2
 	 *            the second type
-	 * @return true if one is INT and the other is FLOAT
+	 * @return true if one type is INT and the other is FLOAT (in any order)
 	 */
 	public static boolean intFloatCase(final IType t1, final IType t2) {
 		return t1 == FLOAT && t2 == INT || t2 == FLOAT && t1 == INT;
 	}
 
 	/**
-	 * Tests whether an expression is compatible with a container receiver (list or map) when the expression is empty,
-	 * handling nested empty lists recursively.
+	 * Tests whether an expression is compatible with a container receiver when the expression is empty.
+	 * 
+	 * <p>
+	 * This is a special case in GAML's type system that handles empty literal containers. An empty list {@code []} or
+	 * empty map {@code map([])} can be assigned to any list or map variable regardless of its parametric content type.
+	 * </p>
+	 * 
+	 * <p>
+	 * The method handles nested empty containers recursively. For example, an empty list of lists {@code [[], []]}
+	 * should be assignable to {@code list<list<int>>}.
+	 * </p>
+	 * 
+	 * <p>
+	 * Examples:
+	 * </p>
+	 * 
+	 * <pre>
+	 * {@code
+	 * // In GAML:
+	 * list<int> numbers <- [];  // valid (empty list case)
+	 * map<string,float> data <- map([]);  // valid (empty map case)
+	 * list<list<int>> matrix <- [[], []];  // valid (nested empty list case)
+	 * 
+	 * // Detection:
+	 * isEmptyContainerCase(Types.LIST.of(Types.INT), emptyListExpr)  // true
+	 * isEmptyContainerCase(Types.INT, emptyListExpr)  // false
+	 * }
+	 * </pre>
 	 *
 	 * @param receiverType
-	 *            the type of the variable receiving the value
+	 *            the type of the variable receiving the value (e.g., list<int>)
 	 * @param expr2
-	 *            the expression being assigned
-	 * @return true if the expression represents an empty container compatible with the receiver
+	 *            the expression being assigned (must be a container expression)
+	 * @return true if the expression is an empty container compatible with the receiver type
 	 */
 	public static boolean isEmptyContainerCase(final IType receiverType, final IExpression expr2) {
 		final IType receiver = receiverType.getGamlType();
@@ -390,31 +507,111 @@ public class Types {
 	}
 
 	/**
-	 * Retrieves all fields (attributes/actions) defined across all known types.
+	 * Retrieves all field prototypes (attributes, pseudo-attributes, and operators) defined across all known types.
+	 * 
+	 * <p>
+	 * This method aggregates all field getters from every type registered in the built-in types manager. Fields
+	 * include:
+	 * </p>
+	 * <ul>
+	 * <li>Attributes (e.g., {@code myPoint.x}, {@code myAgent.location})</li>
+	 * <li>Pseudo-attributes (e.g., {@code myList.length}, {@code myGeometry.area})</li>
+	 * <li>Unary operators accessed via dot notation</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * Used primarily for:
+	 * </p>
+	 * <ul>
+	 * <li>Documentation generation (listing all available fields)</li>
+	 * <li>IDE auto-completion</li>
+	 * <li>Validation of field access expressions</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * Example usage:
+	 * </p>
+	 * 
+	 * <pre>
+	 * {@code
+	 * // Get all fields for documentation
+	 * for (IArtefactProto field : Types.getAllFields()) {
+	 *     System.out.println(field.getName() + " on " + field.getDefiningType());
+	 * }
+	 * }
+	 * </pre>
 	 *
-	 * @return an iterable of all IArtefactProto instances representing fields.
+	 * @return an iterable of all field operator prototypes from all types
+	 * 
+	 * @see IType#getFieldGetters()
 	 */
 	public static Iterable<IArtefactProto> getAllFields() {
 		return concat(transform(builtInTypes.getAllTypes(), each -> each.getFieldGetters().values()));
 	}
 
 	/**
-	 * Checks if a type with the given name exists.
+	 * Checks if a type with the given name exists in the built-in types registry.
+	 * 
+	 * <p>
+	 * This is a convenience method that delegates to {@link ITypesManager#containsType(String)} on the built-in types
+	 * manager. It only checks built-in types, not model-specific species types.
+	 * </p>
+	 * 
+	 * <p>
+	 * Examples:
+	 * </p>
+	 * 
+	 * <pre>
+	 * {@code
+	 * Types.hasType("int")        // true
+	 * Types.hasType("list")       // true
+	 * Types.hasType("mySpecies")  // false (unless it's a built-in species)
+	 * Types.hasType("unknown")    // false
+	 * }
+	 * </pre>
 	 *
 	 * @param name
-	 *            the name of the type
-	 * @return true if the type exists, false otherwise
+	 *            the type name to check
+	 * @return true if the type exists in the built-in types registry
+	 * 
+	 * @see ITypesManager#containsType(String)
 	 */
 	public static boolean hasType(final String name) {
 		return builtInTypes.containsType(name);
 	}
 
 	/**
-	 * @param types
-	 * @param typesManager
-	 * @param typesManager2
-	 * @param typesManager3
-	 * @return
+	 * Finds the most specific (non-built-in) types manager among the provided managers.
+	 * 
+	 * <p>
+	 * This utility method selects the first types manager that is not the built-in types manager. It's used to
+	 * determine which manager should be used for type operations when multiple managers are in scope.
+	 * </p>
+	 * 
+	 * <p>
+	 * The rationale is that model-specific or experiment-specific types managers are more specific than the built-in
+	 * types manager and should take precedence.
+	 * </p>
+	 * 
+	 * <p>
+	 * Example usage in compilation context:
+	 * </p>
+	 * 
+	 * <pre>
+	 * {@code
+	 * // Get the most specific manager from model, experiment, and built-in
+	 * ITypesManager manager = Types.findMoreSpecificTypesManagerAmong(
+	 *     experimentTypes, modelTypes, Types.builtInTypes
+	 * );
+	 * // Returns experimentTypes if not null and not builtInTypes,
+	 * // otherwise modelTypes if not null and not builtInTypes,
+	 * // otherwise builtInTypes
+	 * }
+	 * </pre>
+	 *
+	 * @param typesManagers
+	 *            variable number of types managers to choose from
+	 * @return the first non-built-in manager, or builtInTypes if all are built-in
 	 */
 	public static ITypesManager findMoreSpecificTypesManagerAmong(final ITypesManager... typesManagers) {
 		for (ITypesManager tm : typesManagers) { if (tm != builtInTypes) return tm; }

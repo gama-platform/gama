@@ -32,8 +32,80 @@ import gama.api.types.file.IGamaFile;
 import gama.api.types.misc.IContainer;
 
 /**
- * Written by drogoul Modified on 1st Aug. 2010 Modified on 30 Dec. 2013
- *
+ * Generic supertype representing files in GAML - the foundation for all file I/O operations.
+ * <p>
+ * The file type system in GAMA is extensible and supports numerous file formats through specialized subtypes. Each
+ * file type is associated with specific file extensions and provides type-safe operations for reading and writing
+ * data. Files act as containers, with their contents accessible through GAML operations.
+ * </p>
+ * 
+ * <h2>Key Features:</h2>
+ * <ul>
+ * <li>Extensible type system for multiple file formats</li>
+ * <li>Extension-based file type detection</li>
+ * <li>Container interface for file contents</li>
+ * <li>Read and write operations</li>
+ * <li>Type-specific parsing and serialization</li>
+ * <li>Support for both files and directories</li>
+ * </ul>
+ * 
+ * <h2>Built-in File Types:</h2>
+ * <ul>
+ * <li>Text files (.txt, .text, .data)</li>
+ * <li>CSV files (.csv)</li>
+ * <li>Shapefiles (.shp) - GIS vector data</li>
+ * <li>Image files (.jpg, .png, .gif, .bmp, etc.)</li>
+ * <li>Grid files (.asc, .tif) - raster data</li>
+ * <li>Graph files (.dot, .graphml, etc.)</li>
+ * <li>JSON files (.json)</li>
+ * <li>XML files (.xml)</li>
+ * <li>Property files (.properties)</li>
+ * <li>GAML model files (.gaml)</li>
+ * <li>And many more...</li>
+ * </ul>
+ * 
+ * <h2>Usage Examples:</h2>
+ * 
+ * <pre>
+ * {@code
+ * // Load a shapefile
+ * file shape_file <- file("../includes/roads.shp");
+ * geometry roads <- shape_file;
+ * 
+ * // Read CSV data
+ * file data_file <- csv_file("data.csv", true);  // true = has header
+ * matrix data <- matrix(data_file);
+ * 
+ * // Save to file
+ * save agent_list to: "output.csv" type: csv;
+ * 
+ * // Image file
+ * file img <- image_file("background.png");
+ * 
+ * // Generic file (auto-detects type)
+ * file my_file <- file("data.json");
+ * 
+ * // Check file properties
+ * bool exists <- my_file.exists;
+ * string path <- my_file.path;
+ * 
+ * // Folder/directory
+ * file folder <- folder("../includes");
+ * list<file> contents <- folder.contents;
+ * }
+ * </pre>
+ * 
+ * <h2>Extension System:</h2>
+ * <p>
+ * New file types can be registered through the plugin system using the {@link #addFileTypeDefinition} method. Each
+ * file type is associated with file extensions, a content type, and a builder for creating file instances.
+ * </p>
+ * 
+ * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+ * @see GamaContainerType
+ * @see IGamaFile
+ * @see ParametricFileType
+ * @since GAMA 1.0
  */
 @type (
 		name = IKeyword.FILE,
@@ -46,37 +118,50 @@ import gama.api.types.misc.IContainer;
 public class GamaFileType extends GamaContainerType<IGamaFile> {
 
 	/**
+	 * Constructs a new file type.
+	 * 
 	 * @param typesManager
-	 * @param varKind
-	 * @param id
-	 * @param name
-	 * @param support
+	 *            the types manager responsible for type resolution and management
 	 */
 	public GamaFileType(final ITypesManager typesManager) {
 		super(typesManager);
 	}
 
-	/** The extensions to full type. */
+	/** Maps file extensions to their corresponding ParametricFileType. */
 	public static final Map<String, ParametricFileType> extensionsToFullType = new HashMap<>();
 
-	/** The aliases to full type. */
+	/** Maps file type aliases to their corresponding ParametricFileType. */
 	static final Map<String, ParametricFileType> aliasesToFullType = new HashMap<>();
 
-	/** The aliases to extensions. */
+	/** Maps file type aliases to their supported file extensions. */
 	static final Multimap<String, String> aliasesToExtensions = HashMultimap.<String, String> create();
 
-	/** The current file type index. */
+	/** Counter for assigning unique type IDs to file types. */
 	private static int currentFileTypeIndex = 0;
 
 	/**
-	 * Adds a new file type definition.
-	 *
-	 * @param string
-	 *            a string representing the type of the file in GAML
+	 * Registers a new file type definition in the type system.
+	 * <p>
+	 * This method is used by plugins to register support for additional file formats. Each file type is associated
+	 * with a type alias, supported extensions, and a builder for creating file instances.
+	 * </p>
+	 * 
+	 * @param alias
+	 *            the type alias used in GAML (e.g., "csv", "shapefile", "image")
+	 * @param bufferType
+	 *            the container type used to store file contents internally
+	 * @param keyType
+	 *            the type of keys used to index file contents (e.g., int for lists)
+	 * @param contentType
+	 *            the type of elements stored in the file
 	 * @param clazz
-	 *            the class that supports this file type
-	 * @param s
-	 *            an array of allowed extensions for files of this type
+	 *            the Java class implementing this file type
+	 * @param builder
+	 *            a getter/factory for creating instances of this file type
+	 * @param extensions
+	 *            array of file extensions associated with this type (without leading dots)
+	 * @param plugin
+	 *            the plugin ID that defines this file type
 	 */
 	public static void addFileTypeDefinition(final String alias, final IType<?> bufferType, final IType<?> keyType,
 			final IType<?> contentType, final Class clazz, final IGamaGetter<IGamaFile<?, ?>> builder,
@@ -100,11 +185,11 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 	}
 
 	/**
-	 * Gets the type from alias.
-	 *
+	 * Retrieves the file type associated with a type alias.
+	 * 
 	 * @param alias
-	 *            the alias
-	 * @return the type from alias
+	 *            the file type alias (e.g., "csv", "shapefile")
+	 * @return the ParametricFileType for the alias, or the generic file type if not found
 	 */
 	public static ParametricFileType getTypeFromAlias(final String alias) {
 		final ParametricFileType ft = aliasesToFullType.get(alias);
@@ -113,11 +198,11 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 	}
 
 	/**
-	 * Gets the type from file name.
-	 *
+	 * Determines the file type from a filename based on its extension.
+	 * 
 	 * @param fileName
-	 *            the file name
-	 * @return the type from file name
+	 *            the file name or path
+	 * @return the ParametricFileType matching the file extension, or the generic file type if not recognized
 	 */
 	public static ParametricFileType getTypeFromFileName(final String fileName) {
 		final IPath p = new Path(fileName);
@@ -128,16 +213,14 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 	}
 
 	/**
-	 * Verifies if the path has the correct extension with respect to the type of the file.
-	 *
-	 * @param type
-	 *            a string representing the type of the file
+	 * Verifies if a file path has the correct extension for a given file type.
+	 * 
+	 * @param alias
+	 *            the file type alias
 	 * @param path
-	 *            an absolute or relative file path
-	 * @return true if the extension of the path belongs to the extensions of the file type, false if the type is
-	 *         unknown or if the extension does not belong to its extensions
+	 *            the file path to check
+	 * @return true if the path's extension matches one of the type's registered extensions, false otherwise
 	 */
-
 	public static boolean verifyExtension(final String alias, final String path) {
 		final ParametricFileType ft = getTypeFromAlias(alias);
 		final ParametricFileType ft2 = getTypeFromFileName(path);
@@ -145,28 +228,32 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 	}
 
 	/**
-	 * Manages extension.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * Checks if a given file extension is managed by a registered file type.
+	 * 
 	 * @param ext
-	 *            the ext
-	 * @return true, if successful
-	 * @date 7 janv. 2024
+	 *            the file extension (without leading dot)
+	 * @return true if the extension is registered, false otherwise
 	 */
 	public static boolean managesExtension(final String ext) {
 		return extensionsToFullType.containsKey(ext);
 	}
 
 	/**
-	 * Creates the file.
-	 *
+	 * Creates a file instance from a path, optionally including folders.
+	 * <p>
+	 * If the path points to a directory and includingFolders is true, returns a GamaFolderFile. Otherwise, determines
+	 * the file type from the extension and creates an appropriate file instance.
+	 * </p>
+	 * 
 	 * @param scope
-	 *            the scope
+	 *            the current execution scope
 	 * @param path
-	 *            the path
+	 *            the file path
+	 * @param includingFolders
+	 *            whether to create folder files for directories
 	 * @param contents
-	 *            the contents
-	 * @return the i gama file
+	 *            optional initial contents for the file
+	 * @return the created file instance, or null if path is a directory and includingFolders is false
 	 */
 	public static IGamaFile createFile(final IScope scope, final String path, final boolean includingFolders,
 			final IContainer.Modifiable contents) {
@@ -178,6 +265,31 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 		return ft.createFile(scope, path, contents);
 	}
 
+	/**
+	 * Casts an object to a file.
+	 * <p>
+	 * Supports casting from:
+	 * <ul>
+	 * <li>IGamaFile - returns the file itself</li>
+	 * <li>String - creates a file from the path (auto-detecting type from extension)</li>
+	 * <li>String with container parameter - creates a file and initializes with the container contents</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param scope
+	 *            the current execution scope
+	 * @param obj
+	 *            the object to cast to a file
+	 * @param param
+	 *            optional parameter (can be initial contents as a container)
+	 * @param keyType
+	 *            the key type (not used for file casting)
+	 * @param contentType
+	 *            the content type (not used for file casting)
+	 * @param copy
+	 *            whether to create a copy (not used for file casting)
+	 * @return the file representation of the object, or the default (null) if casting fails
+	 */
 	@Override
 	public IGamaFile cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentType, final boolean copy) {
@@ -193,11 +305,30 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 		return getDefault();
 	}
 
+	/**
+	 * Indicates whether files can be cast to constant values.
+	 * <p>
+	 * Files cannot be constant as they represent external resources that may change.
+	 * </p>
+	 * 
+	 * @return false, files are not constant
+	 */
 	@Override
 	public boolean canCastToConst() {
 		return false;
 	}
 
+	/**
+	 * Determines the specific file type when casting an expression.
+	 * <p>
+	 * If the expression is constant and context-independent, analyzes its value to determine the specific file type
+	 * based on the file extension.
+	 * </p>
+	 * 
+	 * @param exp
+	 *            the expression being cast to a file type
+	 * @return the specific ParametricFileType if determinable, otherwise the generic file type
+	 */
 	@Override
 	public IContainerType typeIfCasting(final IExpression exp) {
 		if (exp.isConst() && exp.isContextIndependant()) {
@@ -208,7 +339,9 @@ public class GamaFileType extends GamaContainerType<IGamaFile> {
 	}
 
 	/**
-	 * @return
+	 * Provides a new unique type ID for file type registration.
+	 * 
+	 * @return a unique type ID for a new file type
 	 */
 	public static int provideNewIndex() {
 		return IType.BEGINNING_OF_FILE_TYPES + ++currentFileTypeIndex;

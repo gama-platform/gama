@@ -23,10 +23,26 @@ import gama.api.types.file.IGamaFile;
 import gama.api.types.misc.IContainer;
 
 /**
- * Written by drogoul Modified on 1 ao�t 2010
- *
- * @todo Description
- *
+ * Represents the GAML boolean type.
+ * <p>
+ * This type wraps Java boolean and Boolean values, representing logical true/false values in GAML.
+ * The type provides intelligent casting from various types:
+ * <ul>
+ * <li>null → false</li>
+ * <li>Boolean → itself</li>
+ * <li>IAgent → false if dead, true if alive</li>
+ * <li>IGamaFile → true if exists, false otherwise</li>
+ * <li>IContainer → false if empty, true otherwise</li>
+ * <li>File → true if exists, false otherwise</li>
+ * <li>Integer → false if 0, true otherwise</li>
+ * <li>Double → false if 0.0, true otherwise</li>
+ * <li>String → true if equals "true", false otherwise</li>
+ * <li>Other → false</li>
+ * </ul>
+ * </p>
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
  */
 @SuppressWarnings ("unchecked")
 @type (
@@ -39,11 +55,9 @@ import gama.api.types.misc.IContainer;
 public class GamaBoolType extends GamaType<Boolean> {
 
 	/**
-	 * @param typesManager
-	 * @param varKind
-	 * @param id
-	 * @param name
-	 * @param support
+	 * Constructs a new GamaBoolType.
+	 * 
+	 * @param typesManager the types manager for type resolution
 	 */
 	public GamaBoolType(final ITypesManager typesManager) {
 		super(typesManager);
@@ -57,17 +71,27 @@ public class GamaBoolType extends GamaType<Boolean> {
 	}
 
 	/**
-	 * Static cast.
+	 * Performs static casting to boolean for various object types.
+	 * <p>
+	 * This method implements the core casting logic used by both instance and static contexts.
+	 * It uses pattern matching to handle different input types intelligently:
+	 * <ul>
+	 * <li>null returns false</li>
+	 * <li>Boolean values are returned as-is</li>
+	 * <li>Agents return false if dead, true if alive</li>
+	 * <li>Files return true if they exist</li>
+	 * <li>Containers return false if empty</li>
+	 * <li>Numbers return false if zero, true otherwise</li>
+	 * <li>Strings return true only if they equal "true"</li>
+	 * <li>All other types return false</li>
+	 * </ul>
+	 * </p>
 	 *
-	 * @param scope
-	 *            the scope
-	 * @param obj
-	 *            the obj
-	 * @param param
-	 *            the param
-	 * @param copy
-	 *            the copy
-	 * @return the boolean
+	 * @param scope the execution scope (may be null for some casting operations)
+	 * @param obj the object to cast to boolean
+	 * @param param optional casting parameter (currently unused)
+	 * @param copy whether to copy the result (not applicable for booleans)
+	 * @return the boolean value resulting from the cast
 	 */
 	@SuppressWarnings ("rawtypes")
 	public static Boolean staticCast(final IScope scope, final Object obj, final Object param, final boolean copy) {
@@ -85,9 +109,19 @@ public class GamaBoolType extends GamaType<Boolean> {
 		};
 	}
 
+	/**
+	 * Returns the default value for the boolean type.
+	 * 
+	 * @return false, the default boolean value
+	 */
 	@Override
 	public Boolean getDefault() { return false; }
 
+	/**
+	 * Indicates whether boolean values can be cast to constants.
+	 * 
+	 * @return true, as boolean values can be compile-time constants
+	 */
 	@Override
 	public boolean canCastToConst() {
 		return true;

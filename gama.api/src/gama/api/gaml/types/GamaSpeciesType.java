@@ -24,12 +24,97 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 
 /**
- * The type used for representing species objects (since they can be manipulated in a model)
- *
- * Written by drogoul Modified on 1 aout 2010
- *
- * @todo Description
- *
+ * Meta-type representing species in GAML - the templates for creating agents.
+ * <p>
+ * Species are the fundamental building blocks of agent-based models in GAMA. A species defines the blueprint for
+ * creating agents, specifying their attributes, behaviors, and relationships. The species type allows species
+ * themselves to be manipulated as first-class objects in GAML, enabling meta-programming and dynamic model
+ * construction.
+ * </p>
+ * 
+ * <h2>Key Features:</h2>
+ * <ul>
+ * <li>Template for agent creation</li>
+ * <li>Defines agent attributes and behaviors</li>
+ * <li>Supports inheritance hierarchies</li>
+ * <li>Can be treated as container of agents (population)</li>
+ * <li>Provides access to population-level operations</li>
+ * <li>Drawable for visualizing all agents of a species</li>
+ * <li>Dynamic species manipulation</li>
+ * </ul>
+ * 
+ * <h2>Species as Containers:</h2>
+ * <p>
+ * Species act as containers of their agent instances (population). They provide:
+ * <ul>
+ * <li>Access to all agents of that species</li>
+ * <li>Population-level queries and operations</li>
+ * <li>Topology for spatial operations among agents</li>
+ * </ul>
+ * </p>
+ * 
+ * <h2>Usage Examples:</h2>
+ * 
+ * <pre>
+ * {@code
+ * // Define a species
+ * species person {
+ *     int age;
+ *     string name;
+ *     
+ *     reflex aging {
+ *         age <- age + 1;
+ *     }
+ * }
+ * 
+ * // Species as type for variables
+ * species my_species <- person;
+ * 
+ * // Access species from agent
+ * species agent_species <- species(self);
+ * species str_species <- species("person");
+ * 
+ * // Species as container (population access)
+ * int population_size <- length(person);
+ * list<person> all_persons <- person as list;
+ * person random_person <- one_of(person);
+ * 
+ * // Create agents from species
+ * create my_species number: 10;
+ * 
+ * // Species inheritance
+ * species child parent: person {
+ *     // Inherits age, name, and aging reflex
+ *     int grade;
+ * }
+ * 
+ * // Check species type
+ * bool is_person <- agent1.species = person;
+ * 
+ * // Dynamic species reference
+ * list<species> all_species <- [person, child, vehicle];
+ * loop sp over: all_species {
+ *     create sp number: 5;
+ * }
+ * }
+ * </pre>
+ * 
+ * <h2>Meta-programming:</h2>
+ * <p>
+ * The species type enables powerful meta-programming capabilities:
+ * <ul>
+ * <li>Dynamic species selection and instantiation</li>
+ * <li>Runtime inspection of species properties</li>
+ * <li>Generic algorithms operating on any species</li>
+ * <li>Model generation and modification</li>
+ * </ul>
+ * </p>
+ * 
+ * @author GAMA Development Team
+ * @see GamaContainerType
+ * @see gama.api.kernel.species.ISpecies
+ * @see gama.api.kernel.agent.IAgent
+ * @since GAMA 1.0
  */
 @type (
 		name = IKeyword.SPECIES,
@@ -42,16 +127,41 @@ import gama.api.runtime.scope.IScope;
 public class GamaSpeciesType extends GamaContainerType<ISpecies> {
 
 	/**
+	 * Constructs a new species type.
+	 * 
 	 * @param typesManager
-	 * @param varKind
-	 * @param id
-	 * @param name
-	 * @param support
+	 *            the types manager responsible for type resolution and management
 	 */
 	public GamaSpeciesType(final ITypesManager typesManager) {
 		super(typesManager);
 	}
 
+	/**
+	 * Casts an object to a species.
+	 * <p>
+	 * This method supports casting from various source types:
+	 * <ul>
+	 * <li>null - returns null</li>
+	 * <li>ISpecies - returns the species itself</li>
+	 * <li>IAgent - returns the agent's species</li>
+	 * <li>String - looks up and returns the species with that name in the current model</li>
+	 * <li>IPopulationSet - returns the species of that population</li>
+	 * <li>Other types - returns null</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param scope
+	 *            the current execution scope
+	 * @param obj
+	 *            the object to cast to a species
+	 * @param param
+	 *            optional parameter (not used for species casting)
+	 * @param copy
+	 *            whether to create a copy (not applicable for species)
+	 * @return the species if found, null otherwise
+	 * @throws GamaRuntimeException
+	 *             if the casting operation encounters an error
+	 */
 	@Override
 	@doc (
 			value = "casting of the operand to a species.",
@@ -88,6 +198,27 @@ public class GamaSpeciesType extends GamaContainerType<ISpecies> {
 		return species;
 	}
 
+	/**
+	 * Casts an object to a species with type parameters.
+	 * <p>
+	 * This variant handles parametric casting where the content type may specify an agent type. If the result is null
+	 * but contentType is an agent type, attempts to find a species with that type's name.
+	 * </p>
+	 * 
+	 * @param scope
+	 *            the current execution scope
+	 * @param obj
+	 *            the object to cast to a species
+	 * @param param
+	 *            optional parameter
+	 * @param keyType
+	 *            the key type (not used)
+	 * @param contentType
+	 *            the content type - if agent type, used to find species by name
+	 * @param copy
+	 *            whether to create a copy
+	 * @return the species if found, null otherwise
+	 */
 	@Override
 	public ISpecies cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentType, final boolean copy) {
@@ -97,20 +228,66 @@ public class GamaSpeciesType extends GamaContainerType<ISpecies> {
 		return result;
 	}
 
-	// TODO Verify that we dont need to declare the other cast method
-
+	/**
+	 * Returns the default value for species type.
+	 * <p>
+	 * The default species is null, as there is no meaningful default species.
+	 * </p>
+	 * 
+	 * @return null
+	 */
 	@Override
 	public ISpecies getDefault() { return null; }
 
+	/**
+	 * Returns the content type of species.
+	 * <p>
+	 * Species are containers of agents, so their content type is agent.
+	 * </p>
+	 * 
+	 * @return the agent type
+	 */
 	@Override
 	public IType getContentType() { return Types.get(AGENT); }
 
+	/**
+	 * Returns the key type for species containers.
+	 * <p>
+	 * Species populations are indexed by integer (agent index).
+	 * </p>
+	 * 
+	 * @return the integer type
+	 */
 	@Override
 	public IType getKeyType() { return Types.INT; }
 
+	/**
+	 * Indicates whether species can be drawn/visualized.
+	 * <p>
+	 * Species are drawable - drawing a species displays all its agents.
+	 * </p>
+	 * 
+	 * @return true, species can be visualized
+	 */
 	@Override
 	public boolean isDrawable() { return true; }
 
+	/**
+	 * Determines the content type when casting an expression to a species.
+	 * <p>
+	 * Analyzes the expression type to determine what agent type the species will contain:
+	 * <ul>
+	 * <li>For agent types: returns the agent type itself</li>
+	 * <li>For species: returns the species' content type</li>
+	 * <li>For strings: returns generic agent type</li>
+	 * <li>Otherwise: returns the expression's type</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param exp
+	 *            the expression being cast to a species
+	 * @return the agent type that the species will contain
+	 */
 	@Override
 	public IType contentsTypeIfCasting(final IExpression exp) {
 		final IType itemType = exp.getGamlType();
@@ -124,6 +301,14 @@ public class GamaSpeciesType extends GamaContainerType<ISpecies> {
 		return exp.getGamlType();
 	}
 
+	/**
+	 * Indicates whether species can be cast to constant values.
+	 * <p>
+	 * Species cannot be constant as they represent dynamic populations.
+	 * </p>
+	 * 
+	 * @return false, species are not constant
+	 */
 	@Override
 	public boolean canCastToConst() {
 		return false;

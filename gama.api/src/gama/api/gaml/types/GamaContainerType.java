@@ -21,10 +21,24 @@ import gama.api.types.list.IList;
 import gama.api.types.misc.IContainer;
 
 /**
- * Written by drogoul Modified on 11 nov. 2011
- *
- * A generic type for containers. Tentative.
- *
+ * Represents the generic GAML container type.
+ * <p>
+ * This is the super-type of all container types in GAML (list, graph, matrix, map, etc.).
+ * It provides a generic framework for types that hold collections of values with keys/indices.
+ * Container types are compound types with variable length and support parameterization by
+ * key type and content type.
+ * </p>
+ * <p>
+ * When casting to a container type, if the object is already a container it is returned as-is,
+ * otherwise it is cast to a list.
+ * </p>
+ * 
+ * @param <T> the specific container class this type represents
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
+ * @see IContainer
+ * @see IContainerType
  */
 @type (
 		name = IKeyword.CONTAINER,
@@ -36,11 +50,9 @@ import gama.api.types.misc.IContainer;
 public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> implements IContainerType<T> {
 
 	/**
-	 * @param typesManager
-	 * @param varKind
-	 * @param id
-	 * @param name
-	 * @param support
+	 * Constructs a new GamaContainerType.
+	 * 
+	 * @param typesManager the types manager for type resolution
 	 */
 	public GamaContainerType(final ITypesManager typesManager) {
 		super(typesManager);
@@ -56,9 +68,33 @@ public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> i
 		// Types.NO_TYPE, Types.NO_TYPE));
 	}
 
+	/**
+	 * Returns the number of type parameters for this container type.
+	 * <p>
+	 * Container types have one type parameter (the content type).
+	 * </p>
+	 * 
+	 * @return 1, indicating one type parameter
+	 */
 	@Override
 	public int getNumberOfParameters() { return 1; }
 
+	/**
+	 * Casts an object to this container type with specific key and content types.
+	 * <p>
+	 * By default, if the object is already a container it is returned as-is,
+	 * otherwise it is cast to a list.
+	 * </p>
+	 *
+	 * @param scope the execution scope
+	 * @param obj the object to cast
+	 * @param param optional casting parameter
+	 * @param keyType the key type for the container
+	 * @param contentType the content type for the container
+	 * @param copy whether to copy the result
+	 * @return the casted container
+	 * @throws GamaRuntimeException if casting fails
+	 */
 	@SuppressWarnings ("unchecked")
 	@Override
 	public T cast(final IScope scope, final Object obj, final Object param, final IType<?> keyType,
@@ -68,21 +104,56 @@ public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> i
 				: (IList<?>) Types.get(LIST).cast(scope, obj, null, copy));
 	}
 
+	/**
+	 * Returns the default value for this type.
+	 * 
+	 * @return null, as containers have no default value
+	 */
 	@Override
 	public T getDefault() { return null; }
 
+	/**
+	 * Gets the GAML type representation of this type.
+	 * 
+	 * @return this container type
+	 */
 	@Override
 	public IContainerType<T> getGamlType() { return this; }
 
+	/**
+	 * Indicates whether this is a container type.
+	 * 
+	 * @return true, as this is a container type
+	 */
 	@Override
 	public boolean isContainer() { return true; }
 
+	/**
+	 * Indicates whether this is a compound type.
+	 * 
+	 * @return true, as containers have accessible elements
+	 */
 	@Override
 	public boolean isCompoundType() { return true; }
 
+	/**
+	 * Indicates whether this type has a fixed length.
+	 * 
+	 * @return false, as container sizes can vary
+	 */
 	@Override
 	public boolean isFixedLength() { return false; }
 
+	/**
+	 * Determines the content type if casting an expression to this type.
+	 * <p>
+	 * If the expression is a container, agent, or compound type, returns its content type.
+	 * Otherwise, returns the expression's type itself.
+	 * </p>
+	 * 
+	 * @param exp the expression to analyze
+	 * @return the expected content type after casting
+	 */
 	@Override
 	public IType<?> contentsTypeIfCasting(final IExpression exp) {
 		final IType<?> itemType = exp.getGamlType();
@@ -91,16 +162,37 @@ public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> i
 		return itemType;
 	}
 
+	/**
+	 * Determines the container type if casting an expression to this type.
+	 * 
+	 * @param exp the expression to analyze
+	 * @return the container type after casting
+	 */
 	@Override
 	public IContainerType<?> typeIfCasting(final IExpression exp) {
 		return (IContainerType<?>) super.typeIfCasting(exp);
 	}
 
+	/**
+	 * Indicates whether container values can be cast to constants.
+	 * 
+	 * @return false, as containers generally cannot be compile-time constants
+	 */
 	@Override
 	public boolean canCastToConst() {
 		return false;
 	}
 
+	/**
+	 * Creates a parameterized version of this container type with a specified content type.
+	 * <p>
+	 * The key type is preserved from this type. If the content type is NO_TYPE and the key type
+	 * is also NO_TYPE, returns this type unchanged.
+	 * </p>
+	 * 
+	 * @param sub1 the content type parameter
+	 * @return a new parameterized container type
+	 */
 	@SuppressWarnings ("unchecked")
 	@Override
 	public IContainerType<?> of(final IType<?> sub1) {
@@ -114,6 +206,17 @@ public class GamaContainerType<T extends IContainer<?, ?>> extends GamaType<T> i
 
 	}
 
+	/**
+	 * Creates a parameterized version of this container type with specified key and content types.
+	 * <p>
+	 * This method allows full parameterization of both the key and content types. Missing type
+	 * parameters (NO_TYPE) are filled in from this type's existing key/content types.
+	 * </p>
+	 * 
+	 * @param sub1 the key type parameter
+	 * @param sub2 the content type parameter
+	 * @return a new parameterized container type
+	 */
 	@SuppressWarnings ("unchecked")
 	@Override
 	public IContainerType<?> of(final IType<?> sub1, final IType<?> sub2) {

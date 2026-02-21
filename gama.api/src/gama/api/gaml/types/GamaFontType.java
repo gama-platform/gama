@@ -23,10 +23,21 @@ import gama.api.types.font.IFont;
 import gama.api.types.map.IMap;
 
 /**
- * Written by drogoul Modified on 1 ao�t 2010
- *
- * @todo Description
- *
+ * Represents the GAML font type.
+ * <p>
+ * This type wraps {@link IFont} objects representing fonts that can be used in draw statements
+ * and text layers. A font is characterized by:
+ * <ul>
+ * <li>Face name (e.g., 'Helvetica', 'Arial')</li>
+ * <li>Size in points (e.g., 12)</li>
+ * <li>Style (#bold, #italic, or a combination)</li>
+ * </ul>
+ * Fonts can be created from numbers (size), strings (face name), or explicit font specifications.
+ * </p>
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
+ * @see IFont
  */
 @SuppressWarnings ("unchecked")
 @type (
@@ -39,15 +50,12 @@ import gama.api.types.map.IMap;
 public class GamaFontType extends GamaType<IFont> {
 
 	/**
-	 * @param typesManager
-	 * @param varKind
-	 * @param id
-	 * @param name
-	 * @param support
+	 * Constructs a new GamaFontType.
+	 * 
+	 * @param typesManager the types manager for type resolution
 	 */
 	public GamaFontType(final ITypesManager typesManager) {
 		super(typesManager);
-		// TODO Auto-generated constructor stub
 	}
 
 	@doc (
@@ -64,14 +72,34 @@ public class GamaFontType extends GamaType<IFont> {
 		return GamaFontFactory.castToFont(scope, obj, copy);
 	}
 
+	/**
+	 * Returns the default font value.
+	 * 
+	 * @return the default system font
+	 */
 	@Override
 	public IFont getDefault() { return GamaFontFactory.getDefaultFont(); }
 
+	/**
+	 * Indicates whether font values can be cast to constants.
+	 * 
+	 * @return true, as fonts can be compile-time constants
+	 */
 	@Override
 	public boolean canCastToConst() {
 		return true;
 	}
 
+	/**
+	 * Deserializes a font from a JSON map.
+	 * <p>
+	 * The map should contain "name" (face name), "style" (font style flags), and "size" (point size).
+	 * </p>
+	 * 
+	 * @param scope the execution scope
+	 * @param map2 the JSON map containing font data
+	 * @return the deserialized font
+	 */
 	@Override
 	public IFont deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
 		return GamaFontFactory.createFont(Cast.asString(scope, map2.get("name")), Cast.asInt(scope, map2.get("style")),

@@ -20,10 +20,25 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.misc.IValue;
 
 /**
- * Written by drogoul Modified on 1 ao�t 2010
- *
- * @todo Description
- *
+ * Represents the GAML float type.
+ * <p>
+ * This type wraps Java Double/double values, representing floating-point numbers in GAML.
+ * Float is the primary numeric type for decimal values and supports automatic conversion
+ * from various types:
+ * <ul>
+ * <li>null → 0.0</li>
+ * <li>Double → itself</li>
+ * <li>Any Number → doubleValue()</li>
+ * <li>String → parsed as double (handles "Infinity" and "NaN")</li>
+ * <li>Boolean → 1.0 for true, 0.0 for false</li>
+ * <li>IValue → floatValue()</li>
+ * <li>Other → 0.0</li>
+ * </ul>
+ * Float is the common supertype of all numeric types in GAML.
+ * </p>
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
  */
 @SuppressWarnings ("unchecked")
 @type (
@@ -36,11 +51,9 @@ import gama.api.types.misc.IValue;
 public class GamaFloatType extends GamaType<Double> {
 
 	/**
-	 * @param typesManager
-	 * @param varKind
-	 * @param id
-	 * @param name
-	 * @param support
+	 * Constructs a new GamaFloatType.
+	 * 
+	 * @param typesManager the types manager for type resolution
 	 */
 	public GamaFloatType(final ITypesManager typesManager) {
 		super(typesManager);
@@ -54,17 +67,17 @@ public class GamaFloatType extends GamaType<Double> {
 	}
 
 	/**
-	 * Static cast.
+	 * Performs static casting to double for various object types.
+	 * <p>
+	 * This method handles conversion from multiple types using pattern matching,
+	 * providing sensible defaults for unsupported types.
+	 * </p>
 	 *
-	 * @param scope
-	 *            the scope
-	 * @param obj
-	 *            the obj
-	 * @param param
-	 *            the param
-	 * @param copy
-	 *            the copy
-	 * @return the double
+	 * @param scope the execution scope (may be null for some operations)
+	 * @param obj the object to cast to double
+	 * @param param optional casting parameter (currently unused)
+	 * @param copy whether to copy the result (not applicable for primitives)
+	 * @return the double value resulting from the cast
 	 */
 	public static Double staticCast(final IScope scope, final Object obj, final Object param, final boolean copy) {
 		return switch (obj) {
@@ -79,11 +92,14 @@ public class GamaFloatType extends GamaType<Double> {
 	}
 
 	/**
-	 * Cast from string.
+	 * Casts a string to a double.
+	 * <p>
+	 * Handles special cases including quoted strings and parsing errors.
+	 * Returns 0.0 if parsing fails.
+	 * </p>
 	 *
-	 * @param s
-	 *            the s
-	 * @return the double
+	 * @param s the string to parse
+	 * @return the parsed double value, or 0.0 if parsing fails
 	 */
 	private static Double castFromString(final String s) {
 		try {
@@ -96,30 +112,73 @@ public class GamaFloatType extends GamaType<Double> {
 		}
 	}
 
+	/**
+	 * Returns the default value for the float type.
+	 * 
+	 * @return 0.0, the default float value
+	 */
 	@Override
 	public Double getDefault() { return 0d; }
 
+	/**
+	 * Checks if this type can be translated into another type.
+	 * <p>
+	 * Float can be translated to any numeric type or NO_TYPE.
+	 * </p>
+	 * 
+	 * @param type the target type
+	 * @return true if translation is possible, false otherwise
+	 */
 	@Override
 	public boolean computeIsTranslatableInto(final IType<?> type) {
 		return type.isNumber() || type == Types.NO_TYPE;
 	}
 
+	/**
+	 * Coerces this type with another type during type checking.
+	 * <p>
+	 * Float is the dominant numeric type and coerces other types to itself.
+	 * </p>
+	 * 
+	 * @param type the other type to coerce with
+	 * @param context the compilation context
+	 * @return this type if coercion is needed, null if types are identical
+	 */
 	@Override
 	public IType<?> coerce(final IType<?> type, final IDescription context) {
 		if (type == this) return null;
 		return this;
 	}
 
+	/**
+	 * Finds the common supertype between this type and another type.
+	 * <p>
+	 * For numeric types, float is the common supertype. For non-numeric types, returns NO_TYPE.
+	 * </p>
+	 * 
+	 * @param type the other type
+	 * @return this type if the other is numeric, NO_TYPE otherwise
+	 */
 	@Override
 	public IType<? super Double> computeFindCommonSupertypeWith(final IType<?> type) {
 		return type.isNumber() ? this : Types.NO_TYPE;
 	}
 
+	/**
+	 * Indicates whether float values can be cast to constants.
+	 * 
+	 * @return true, as float values can be compile-time constants
+	 */
 	@Override
 	public boolean canCastToConst() {
 		return true;
 	}
 
+	/**
+	 * Indicates whether this is a numeric type.
+	 * 
+	 * @return true, as float is a numeric type
+	 */
 	@Override
 	public boolean isNumber() { return true; }
 }

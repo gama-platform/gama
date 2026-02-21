@@ -21,10 +21,24 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.misc.IValue;
 
 /**
- * Written by drogoul Modified on 1 ao�t 2010
- *
- * @todo Description
- *
+ * Represents the GAML integer type.
+ * <p>
+ * This type wraps Java Integer/int/Long values, representing whole numbers in GAML.
+ * Integer supports conversion from various types:
+ * <ul>
+ * <li>null → 0</li>
+ * <li>Integer → itself</li>
+ * <li>Any Number → intValue()</li>
+ * <li>String → parsed (supports hex with # prefix, custom radix via param)</li>
+ * <li>Boolean → 1 for true, 0 for false</li>
+ * <li>IValue → intValue()</li>
+ * <li>Other → 0</li>
+ * </ul>
+ * Integers can be coerced to floats when necessary.
+ * </p>
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
  */
 @type (
 		name = IKeyword.INT,
@@ -36,11 +50,9 @@ import gama.api.types.misc.IValue;
 public class GamaIntegerType extends GamaType<Integer> {
 
 	/**
-	 * @param typesManager
-	 * @param varKind
-	 * @param id
-	 * @param name
-	 * @param support
+	 * Constructs a new GamaIntegerType.
+	 * 
+	 * @param typesManager the types manager for type resolution
 	 */
 	public GamaIntegerType(final ITypesManager typesManager) {
 		super(typesManager);
@@ -57,17 +69,16 @@ public class GamaIntegerType extends GamaType<Integer> {
 	}
 
 	/**
-	 * Static cast.
+	 * Performs static casting to integer for various object types.
+	 * <p>
+	 * This method handles conversion from multiple types using pattern matching.
+	 * </p>
 	 *
-	 * @param scope
-	 *            the scope
-	 * @param obj
-	 *            the obj
-	 * @param param
-	 *            the param
-	 * @param copy
-	 *            the copy
-	 * @return the integer
+	 * @param scope the execution scope (may be null for some operations)
+	 * @param obj the object to cast to integer
+	 * @param param optional radix parameter for string parsing (default 10)
+	 * @param copy whether to copy the result (not applicable for primitives)
+	 * @return the integer value resulting from the cast
 	 */
 	public static Integer staticCast(final IScope scope, final Object obj, final Object param, final boolean copy) {
 		return switch (obj) {
@@ -82,13 +93,21 @@ public class GamaIntegerType extends GamaType<Integer> {
 	}
 
 	/**
-	 * Cast from string.
+	 * Casts a string to an integer.
+	 * <p>
+	 * Handles multiple formats:
+	 * <ul>
+	 * <li>Strings starting with '#' are parsed as hexadecimal</li>
+	 * <li>Strings with whitespace have it removed before parsing</li>
+	 * <li>Can use custom radix if provided via param</li>
+	 * <li>Falls back to parsing as double then truncating if integer parsing fails</li>
+	 * <li>Returns 0 if all parsing fails</li>
+	 * </ul>
+	 * </p>
 	 *
-	 * @param s
-	 *            the s
-	 * @param param
-	 *            the param
-	 * @return the integer
+	 * @param s the string to parse
+	 * @param param optional radix parameter (Integer)
+	 * @return the parsed integer value, or 0 if parsing fails
 	 */
 	private static Integer castFromString(final String s, final Object param) {
 		String n = s.replaceAll("\\p{Zs}", "");
@@ -108,14 +127,38 @@ public class GamaIntegerType extends GamaType<Integer> {
 		}
 	}
 
+	/**
+	 * Returns the default value for the integer type.
+	 * 
+	 * @return 0, the default integer value
+	 */
 	@Override
 	public Integer getDefault() { return 0; }
 
+	/**
+	 * Checks if this type can be translated into another type.
+	 * <p>
+	 * Integer can be translated to any numeric type or NO_TYPE.
+	 * </p>
+	 * 
+	 * @param type the target type
+	 * @return true if translation is possible, false otherwise
+	 */
 	@Override
 	public boolean computeIsTranslatableInto(final IType<?> type) {
 		return type.isNumber() || type == Types.NO_TYPE;
 	}
 
+	/**
+	 * Coerces this type with another type during type checking.
+	 * <p>
+	 * Integer coerces to itself for same-type comparisons.
+	 * </p>
+	 * 
+	 * @param type the other type to coerce with
+	 * @param context the compilation context
+	 * @return this type if coercion is needed, null if types are identical
+	 */
 	@Override
 	public IType<?> coerce(final IType<?> type, final IDescription context) {
 		if (type == this) return null;
@@ -123,7 +166,18 @@ public class GamaIntegerType extends GamaType<Integer> {
 	}
 
 	/**
-	 * Generics information removed here to allow returning IType<Double>
+	 * Finds the common supertype between this type and another type.
+	 * <p>
+	 * For numeric types:
+	 * <ul>
+	 * <li>int + int = int</li>
+	 * <li>int + float = float</li>
+	 * <li>int + other = NO_TYPE</li>
+	 * </ul>
+	 * </p>
+	 * 
+	 * @param type the other type
+	 * @return this type if the other is also int, float if the other is float, NO_TYPE otherwise
 	 */
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	@Override
@@ -131,11 +185,21 @@ public class GamaIntegerType extends GamaType<Integer> {
 		return type == this ? this : type.id() == IType.FLOAT ? type : Types.NO_TYPE;
 	}
 
+	/**
+	 * Indicates whether integer values can be cast to constants.
+	 * 
+	 * @return true, as integer values can be compile-time constants
+	 */
 	@Override
 	public boolean canCastToConst() {
 		return true;
 	}
 
+	/**
+	 * Indicates whether this is a numeric type.
+	 * 
+	 * @return true, as integer is a numeric type
+	 */
 	@Override
 	public boolean isNumber() { return true; }
 

@@ -18,8 +18,17 @@ import gama.api.constants.IKeyword;
 import gama.api.types.file.GamaFolderFile;
 
 /**
- * Written by taillandier Modified on 10 Apr. 2021
- *
+ * Represents the GAML directory (folder) type.
+ * <p>
+ * This is a specialized file type specifically for directories/folders. Directory objects contain
+ * the list of file names within the folder. They are container types with STRING content (file names)
+ * indexed by integers.
+ * </p>
+ * 
+ * @author taillandier
+ * @since GAMA 2021
+ * @see GamaFileType
+ * @see GamaFolderFile
  */
 @type (
 		name = IKeyword.DIRECTORY,
@@ -31,19 +40,33 @@ import gama.api.types.file.GamaFolderFile;
 public class GamaDirectoryType extends GamaFileType {
 
 	/**
-	 * @param typesManager
-	 * @param varKind
-	 * @param id
-	 * @param name
-	 * @param support
+	 * Constructs a new GamaDirectoryType.
+	 * 
+	 * @param typesManager the types manager for type resolution
 	 */
 	public GamaDirectoryType(final ITypesManager typesManager) {
 		super(typesManager);
 	}
 
+	/**
+	 * Gets the content type for directories.
+	 * <p>
+	 * Directories contain strings (file names).
+	 * </p>
+	 * 
+	 * @return the STRING type
+	 */
 	@Override
 	public IType<?> getContentType() { return Types.STRING; }
 
+	/**
+	 * Gets the key type for directories.
+	 * <p>
+	 * Directory contents are indexed by integers.
+	 * </p>
+	 * 
+	 * @return the INT type
+	 */
 	@Override
 	public IType<?> getKeyType() { return Types.INT; }
 

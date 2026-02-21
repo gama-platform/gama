@@ -21,7 +21,24 @@ import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IField;
 
 /**
- * The Class GamaFieldType.
+ * Represents the GAML field type.
+ * <p>
+ * Fields are two-dimensional matrices holding float values. They provide a lightweight alternative
+ * to grids for models with large raster data, as they hold spatialized discrete values without
+ * needing to build agents. Key features:
+ * <ul>
+ * <li>Can be created from grids, raster/DEM files, matrices, or manual definitions</li>
+ * <li>Values are accessible by agents using their current location</li>
+ * <li>Can be the target of the 'diffuse' statement</li>
+ * <li>Can be displayed using the 'mesh' layer definition</li>
+ * <li>By default cover the whole environment like grids</li>
+ * </ul>
+ * </p>
+ * 
+ * @author GAMA Development Team
+ * @since GAMA 1.8
+ * @see IField
+ * @see GamaMatrixType
  */
 @type (
 		name = IKeyword.FIELD,
@@ -40,46 +57,63 @@ import gama.api.types.matrix.IField;
 public class GamaFieldType extends GamaMatrixType {
 
 	/**
-	 * @param typesManager
-	 * @param varKind
-	 * @param id
-	 * @param name
-	 * @param support
+	 * Constructs a new GamaFieldType.
+	 * 
+	 * @param typesManager the types manager for type resolution
 	 */
 	public GamaFieldType(final ITypesManager typesManager) {
 		super(typesManager);
 	}
 
 	/**
-	 * Static cast.
+	 * Casts an object to a field with specified types.
+	 * <p>
+	 * Fields are specialized matrices that hold float values in a two-dimensional spatial grid.
+	 * This method handles conversion from various sources including matrices, files, and grids.
+	 * </p>
 	 *
-	 * @param scope
-	 *            the scope
-	 * @param obj
-	 *            the obj
-	 * @param param
-	 *            the param
-	 * @param contentType
-	 *            the content type
-	 * @param copy
-	 *            the copy
-	 * @return the i field
+	 * @param scope the execution scope
+	 * @param obj the object to cast
+	 * @param param optional casting parameter
+	 * @param keyType the key type (not used for fields, as they use spatial coordinates)
+	 * @param contentsType the content type (should be float)
+	 * @param copy whether to copy the result
+	 * @return the field instance
+	 * @throws GamaRuntimeException if casting fails
 	 */
-
 	@Override
 	public IField cast(final IScope scope, final Object obj, final Object param, final IType keyType,
 			final IType contentsType, final boolean copy) throws GamaRuntimeException {
 		return GamaMatrixFactory.castToField(scope, obj, param, contentsType, copy);
 	}
 
+	/**
+	 * Determines the content type when casting an expression to a field.
+	 * <p>
+	 * Fields always contain float values.
+	 * </p>
+	 * 
+	 * @param exp the expression to analyze
+	 * @return the FLOAT type
+	 */
 	@Override
 	public IType contentsTypeIfCasting(final IExpression exp) {
 		return Types.FLOAT;
 	}
 
+	/**
+	 * Gets the content type for fields.
+	 * 
+	 * @return the FLOAT type, as fields hold float values
+	 */
 	@Override
 	public IType<?> getContentType() { return Types.FLOAT; }
 
+	/**
+	 * Indicates whether field values can be drawn/visualized.
+	 * 
+	 * @return true, as fields can be visualized using mesh layers
+	 */
 	@Override
 	public boolean isDrawable() { return true; }
 

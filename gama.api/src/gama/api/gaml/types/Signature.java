@@ -23,35 +23,63 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 
 /**
- * The Class Signature. Immutable sequence of parameter types used to match operator/method signatures in GAML. Provides
- * helpers to build signatures from expressions, Java reflection or plain classes, to compare desired/actual parameters,
- * and to compute coercion/distance when selecting operators.
+ * Represents an immutable sequence of parameter types for operator/method signature matching in GAML.
+ * <p>
+ * Signatures are used throughout the GAML compilation and execution system to:
+ * <ul>
+ * <li>Match operator calls to their implementations</li>
+ * <li>Validate method/constructor parameter types</li>
+ * <li>Compute type coercion and distance when selecting overloaded operators</li>
+ * <li>Build var-arg signatures for operators accepting arbitrary numbers of arguments</li>
+ * </ul>
+ * </p>
+ * <p>
+ * This class provides factory methods to build signatures from various sources:
+ * <ul>
+ * <li>GAML expressions (via {@link #createSimplified(IExpression...)})</li>
+ * <li>Java reflection (via constructor accepting {@link Executable})</li>
+ * <li>Plain type arrays</li>
+ * </ul>
+ * </p>
+ * <p>
+ * Signatures are immutable and support iteration over their types.
+ * </p>
+ *
+ * @author GAMA Development Team
+ * @since GAMA 1.0
+ * @see IType
+ * @see IExpression
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-
 public record Signature(IType... list) implements Iterable<IType> {
 
-	/** The empty types. */
+	/** Empty type array constant for efficiency. */
 	static IType[] EMPTY_TYPES = {};
 
 	/**
-	 * Builds a var-arg signature by wrapping the common type of {@code sig} elements into a list type. Useful when an
-	 * operator accepts an arbitrary number of homogeneous arguments.
+	 * Builds a var-arg signature by wrapping the common type of elements into a list type.
+	 * <p>
+	 * This is useful when an operator accepts an arbitrary number of homogeneous arguments.
+	 * For example, {@code my_operator(1, 2, 3, 4)} with int arguments would produce a signature
+	 * of {@code list<int>}.
+	 * </p>
 	 *
-	 * @param sig
-	 *            signature to convert to var-arg form
-	 * @return a new signature containing a single list type
+	 * @param sig the signature to convert to var-arg form
+	 * @return a new signature containing a single list type parameterized by the common type
 	 */
 	public static Signature varArgFrom(final Signature sig) {
 		return new Signature(Types.LIST.of(GamaType.findCommonType(sig.list)));
 	}
 
 	/**
-	 * Creates a simplified signature from expressions by stripping any parametric information (keeps base GAML types).
+	 * Creates a simplified signature from expressions by stripping parametric type information.
+	 * <p>
+	 * This method extracts the base GAML types from expressions, removing any type parameters.
+	 * For example, a {@code list<int>} expression becomes simply {@code list}.
+	 * </p>
 	 *
-	 * @param args
-	 *            expressions to infer types from
-	 * @return a non-parametric signature mirroring {@code args} order
+	 * @param args the expressions to infer types from
+	 * @return a non-parametric signature mirroring the argument order
 	 */
 	public static Signature createSimplified(final IExpression... args) {
 		IType[] copy = new IType[args.length];
@@ -60,33 +88,47 @@ public record Signature(IType... list) implements Iterable<IType> {
 	}
 
 	/**
-	 * Builds a signature from a Java executable (method or constructor), ignoring {@link IScope} parameters and
-	 * inserting the receiver type for instance methods.
+	 * Constructs a signature from a Java executable (method or constructor).
+	 * <p>
+	 * This constructor analyzes the parameter types of the executable, automatically:
+	 * <ul>
+	 * <li>Ignoring {@link IScope} parameters (framework plumbing)</li>
+	 * <li>Inserting the receiver type for instance methods (non-static)</li>
+	 * <li>Mapping Java classes to their corresponding GAML types</li>
+	 * </ul>
+	 * </p>
 	 *
-	 * @param method
-	 *            Java executable to analyse
+	 * @param method the Java method or constructor to analyze
 	 */
 	public Signature(final Executable method) {
 		this(extractTypesFrom(method));
 	}
 
 	/**
-	 * Convenience ctor for unary signatures.
+	 * Constructs a unary signature with a single type.
+	 * <p>
+	 * Convenience constructor for operators with one parameter.
+	 * </p>
 	 *
-	 * @param t
-	 *            single type in the signature
+	 * @param t the single type in the signature
 	 */
 	public Signature(final IType t) {
 		this(new IType[] { t });
 	}
 
 	/**
-	 * Extracts the sequence of GAML types corresponding to a Java executable parameters. Skips {@link IScope}, and
-	 * prepends the declaring class when the method is non-static.
+	 * Extracts the sequence of GAML types from a Java executable's parameters.
+	 * <p>
+	 * This method handles the mapping from Java reflection to GAML types, including:
+	 * <ul>
+	 * <li>Skipping {@link IScope} parameters</li>
+	 * <li>Prepending the declaring class type for instance methods</li>
+	 * <li>Resolving Java classes to GAML types</li>
+	 * </ul>
+	 * </p>
 	 *
-	 * @param method
-	 *            Java executable to inspect
-	 * @return ordered array of argument types (may be empty)
+	 * @param method the Java executable to inspect
+	 * @return ordered array of GAML types (may be empty if no applicable parameters)
 	 */
 	private static IType[] extractTypesFrom(final Executable method) {
 		if (method == null) return EMPTY_TYPES;

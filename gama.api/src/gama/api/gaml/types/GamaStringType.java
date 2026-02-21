@@ -21,13 +21,23 @@ import gama.api.types.misc.IValue;
 import gama.api.utils.interfaces.INamed;
 
 /**
- *
- *
- *
- * Written by drogoul Modified on 3 juin 2010
- *
- * @todo Description
- *
+ * Represents the GAML string type.
+ * <p>
+ * Strings are ordered lists of characters and the universal conversion type in GAML.
+ * Almost any object can be converted to a string representation. The type supports
+ * intelligent casting:
+ * <ul>
+ * <li>null → null</li>
+ * <li>String → itself</li>
+ * <li>IValue → stringValue()</li>
+ * <li>INamed → getName()</li>
+ * <li>Other → toString()</li>
+ * </ul>
+ * String values can be cast to constants and are drawable.
+ * </p>
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
  */
 @SuppressWarnings ("unchecked")
 @type (
@@ -40,11 +50,9 @@ import gama.api.utils.interfaces.INamed;
 public class GamaStringType extends GamaType<String> {
 
 	/**
-	 * @param typesManager
-	 * @param varKind
-	 * @param id
-	 * @param name
-	 * @param support
+	 * Constructs a new GamaStringType.
+	 * 
+	 * @param typesManager the types manager for type resolution
 	 */
 	public GamaStringType(final ITypesManager typesManager) {
 		super(typesManager);
@@ -58,17 +66,23 @@ public class GamaStringType extends GamaType<String> {
 	}
 
 	/**
-	 * Static cast.
+	 * Performs static casting to string for various object types.
+	 * <p>
+	 * This method provides intelligent string conversion for different types:
+	 * <ul>
+	 * <li>null returns null</li>
+	 * <li>Strings are returned unchanged</li>
+	 * <li>IValue objects use their stringValue() method</li>
+	 * <li>INamed objects return their name</li>
+	 * <li>All other objects use toString()</li>
+	 * </ul>
+	 * </p>
 	 *
-	 * @param scope
-	 *            the scope
-	 * @param obj
-	 *            the obj
-	 * @param copy
-	 *            the copy
-	 * @return the string
-	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 * @param scope the execution scope
+	 * @param obj the object to cast to string
+	 * @param copy whether to copy the result (not applicable for strings)
+	 * @return the string representation, or null if obj is null
+	 * @throws GamaRuntimeException if casting fails
 	 */
 	public static String staticCast(final IScope scope, final Object obj, final boolean copy)
 			throws GamaRuntimeException {
@@ -81,14 +95,29 @@ public class GamaStringType extends GamaType<String> {
 		};
 	}
 
+	/**
+	 * Returns the default value for the string type.
+	 * 
+	 * @return null, the default string value
+	 */
 	@Override
 	public String getDefault() { return null; }
 
+	/**
+	 * Indicates whether string values can be cast to constants.
+	 * 
+	 * @return true, as strings can be compile-time constants
+	 */
 	@Override
 	public boolean canCastToConst() {
 		return true;
 	}
 
+	/**
+	 * Indicates whether string values can be drawn/visualized.
+	 * 
+	 * @return true, as strings can be displayed as text
+	 */
 	@Override
 	public boolean isDrawable() { return true; }
 
