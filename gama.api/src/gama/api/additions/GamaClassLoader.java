@@ -84,8 +84,7 @@ public class GamaClassLoader extends ClassLoader {
 			}
 
 			@Override
-			protected synchronized Class loadClass(final String name, final boolean resolve)
-					throws ClassNotFoundException {
+			protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
 				return findClass(name);
 			}
 
@@ -117,7 +116,7 @@ public class GamaClassLoader extends ClassLoader {
 	}
 
 	@Override
-	protected synchronized Class loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
+	protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
 		return findClass(name);
 	}
 

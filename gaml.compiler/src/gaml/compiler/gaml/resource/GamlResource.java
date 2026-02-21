@@ -45,14 +45,29 @@ import gaml.compiler.gaml.factories.ModelFactory;
 import gaml.compiler.gaml.indexer.GamlResourceIndexer;
 
 /**
- * The Class GamlResource.
- */
-/*
- *
- * The class GamlResource.
+ * The Class GamlResource - Represents a GAML source file resource with validation and compilation capabilities.
+ * 
+ * <p>This class extends Xtext's {@link LazyLinkingResource} to provide GAML-specific resource management,
+ * including syntactic and semantic validation, model description building, and documentation generation.</p>
+ * 
+ * <p><b>Key Responsibilities:</b></p>
+ * <ul>
+ *   <li>Parse GAML source files into syntactic elements</li>
+ *   <li>Build model descriptions from syntactic elements and imports</li>
+ *   <li>Validate models and collect syntactic and semantic errors</li>
+ *   <li>Manage resource lifecycle (loading, linking, unloading)</li>
+ *   <li>Coordinate with documentation and indexing services</li>
+ * </ul>
+ * 
+ * <p><b>Thread Safety:</b> The {@code element} field is volatile and uses double-checked locking
+ * in {@link #getSyntacticContents()} for safe lazy initialization in concurrent environments.
+ * Other operations may not be thread-safe and should be externally synchronized if used concurrently.</p>
+ * 
+ * <p><b>Lifecycle:</b> Resources go through parsing → linking → validation → documentation phases.
+ * Use {@link #validate()} to trigger full validation. The resource maintains caches that are
+ * invalidated when the source changes.</p>
  *
  * @author drogoul
- *
  * @since 24 avr. 2012
  */
 public class GamlResource extends LazyLinkingResource implements IDiagnosticConsumer {
@@ -61,6 +76,15 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	static {
 		DEBUG.OFF();
 	}
+
+	/** Cache key for linking context. */
+	private static final String LINKING_CACHE_KEY = "linking";
+	
+	/** Error message for import location failure. */
+	private static final String ERROR_IMPORT_LOCATION = "Impossible to locate import";
+	
+	/** Error message template for validation failure. */
+	private static final String ERROR_VALIDATION_FAILED = "Impossible to validate %s (check the logs)";
 
 	/** The element. */
 	volatile ISyntacticElement element;
@@ -111,7 +135,8 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 */
 	@Override
 	public String toString() {
-		return "GamlResource[" + getURI().lastSegment() + "]";
+		final URI uri = getURI();
+		return "GamlResource[" + (uri != null ? uri.lastSegment() : "unknown") + "]";
 	}
 
 	/**
@@ -155,13 +180,10 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 * @return the model description
 	 */
 	private IModelDescription buildModelDescription(final ImportedResources resources) {
-		// GAML.getExpressionFactory().resetParser();
 		final String model = GamlResourceServices.getModelPathOf(this);
 		final String project = GamlResourceServices.getProjectPathOf(this);
 		final IValidationContext context = getValidationContext();
 		final IDocumentationContext doc = getDocumentationContext();
-		// doc.shouldDocument(GamlResourceServices.isEdited(this));
-		// Creating a new INSTANCE solves sync problem
 		if (resources == null) return ModelFactory.getInstance().createModelDescription(project, model,
 				singleton(getSyntacticContents()), context, doc, null);
 		Iterable<ISyntacticElement> imports = resources.computeDirectImports(getSyntacticContents());
@@ -178,12 +200,9 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 *            the s
 	 */
 	public void invalidate(final GamlResource r, final String s) {
-		GamlCompilationError error = null;
-		if (GamlResourceServices.equals(r.getURI(), getURI())) {
-			error = GamlCompilationError.create(s, GENERAL, r.getContents().get(0), GamlCompilationError.Type.Error);
-		} else {
-			error = GamlCompilationError.create(s, GENERAL, r.getURI(), GamlCompilationError.Type.Error);
-		}
+		final GamlCompilationError error = GamlResourceServices.equals(r.getURI(), getURI())
+				? GamlCompilationError.create(s, GENERAL, r.getContents().get(0), GamlCompilationError.Type.Error)
+				: GamlCompilationError.create(s, GENERAL, r.getURI(), GamlCompilationError.Type.Error);
 		getValidationContext().add(error);
 		updateWith(null, true);
 	}
@@ -195,21 +214,12 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 */
 	public IModelDescription buildCompleteDescription() {
 		final ImportedResources imports = GamlResourceIndexer.validateImportsOf(this);
-		final boolean hasErrors = hasErrors() || hasSemanticErrors();
-		if (hasErrors) return null;
+		if (hasAnyErrors()) return null;
 		final IModelDescription model = buildModelDescription(imports);
-		// If, for whatever reason, the description is null, we stop the
-		// semantic validation
+		// If, for whatever reason, the description is null, we stop the semantic validation
 		if (model == null) {
-			invalidate(this, "Impossible to validate " + URI.decode(getURI().lastSegment()) + " (check the logs)");
+			invalidate(this, String.format(ERROR_VALIDATION_FAILED, URI.decode(getURI().lastSegment())));
 		}
-		// Map<URI, URI> doubleImports = collectMultipleImportsOf(this);
-		// doubleImports.forEach((imported, importer) -> {
-		// String s = imported.lastSegment() + " is already imported by " + importer.lastSegment();
-		// EObject o = getImportObject(getContents().get(0), getURI(), imported);
-		// GamlCompilationError error = new GamlCompilationError(s, GENERAL, o, false, true);
-		// getValidationContext().add(error);
-		// });
 		return model;
 	}
 
@@ -224,7 +234,6 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 *
 	 */
 	public void validate() {
-		// DEBUG.LOG("Resource validating itself");
 		final IModelDescription model = buildCompleteDescription();
 		if (model == null) {
 			updateWith(null, true);
@@ -240,7 +249,6 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 			} else {
 				model.dispose();
 			}
-			// }
 		}
 	}
 
@@ -257,8 +265,6 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	@Override
 	protected void updateInternalState(final IParseResult oldParseResult, final IParseResult newParseResult) {
 		if (oldParseResult != newParseResult) {
-			// if (oldParseResult != newParseResult) { DEBUG.OUT("===> Creating a new contents for " +
-			// uri.lastSegment()); }
 			super.updateInternalState(oldParseResult, newParseResult);
 			setElement(null);
 		}
@@ -307,7 +313,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 */
 	public void loadSynthetic(final InputStream is, final IExecutionContext additionalLinkingContext) {
 		final OnChangeEvictingCache r = getCache();
-		r.getOrCreate(this).set("linking", additionalLinkingContext);
+		r.getOrCreate(this).set(LINKING_CACHE_KEY, additionalLinkingContext);
 		getCache().execWithoutCacheClear(this, new IUnitOfWork.Void<GamlResource>() {
 
 			@Override
@@ -316,7 +322,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 				resolveAll(GamlResource.this);
 			}
 		});
-		r.getOrCreate(this).set("linking", null);
+		r.getOrCreate(this).set(LINKING_CACHE_KEY, null);
 
 	}
 
@@ -342,7 +348,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 		final EObject faulty = updateImports(this);
 		if (faulty != null) {
 			getErrors()
-					.add(new XtextLinkingDiagnostic(getNode(faulty), "Impossible to locate import", IMPORT_ERROR, ""));
+					.add(new XtextLinkingDiagnostic(getNode(faulty), ERROR_IMPORT_LOCATION, IMPORT_ERROR, ""));
 			return;
 		}
 		EObject model = getParseResult().getRootASTElement();
@@ -356,6 +362,15 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 */
 	public boolean hasErrors() {
 		return !getErrors().isEmpty() || getParseResult().hasSyntaxErrors();
+	}
+
+	/**
+	 * Checks for any errors (syntactic or semantic).
+	 *
+	 * @return true, if this resource has any errors
+	 */
+	public boolean hasAnyErrors() {
+		return hasErrors() || hasSemanticErrors();
 	}
 
 	/**
@@ -382,8 +397,6 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 */
 	@Override
 	public void clearCache() {
-		// DEBUG.LINE();
-		// DEBUG.TITLE("CLEARING CACHE OF " + uri.lastSegment());
 		GamlResourceServices.getResourceDocumenter().invalidate(getURI());
 		super.clearCache();
 	}

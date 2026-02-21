@@ -52,12 +52,93 @@ import gama.api.ui.displays.IDisplayCreator;
 import gama.api.ui.displays.IDisplaySurface;
 
 /**
- *
- * The class AbstractGamlAdditions. Default base implementation for plugins' gaml additions.
- *
- * @author drogoul
+ * The AbstractGamlAdditions class provides the base implementation for GAML language extensions.
+ * 
+ * <p>This abstract class serves as the foundation for plugin developers to contribute new
+ * GAML language elements to the GAMA platform. It implements the {@link IGamlAdditions} interface
+ * and provides utility methods for registering various types of additions including operators,
+ * types, skills, statements, displays, and experiments.</p>
+ * 
+ * <h2>Purpose</h2>
+ * 
+ * <p>This class enables plugins to extend GAML with:</p>
+ * <ul>
+ *   <li><strong>Operators:</strong> New functions and expressions via Java methods</li>
+ *   <li><strong>Types:</strong> Custom data types with associated operations</li>
+ *   <li><strong>Skills:</strong> Reusable agent behaviors</li>
+ *   <li><strong>Statements:</strong> New control structures and actions</li>
+ *   <li><strong>Species:</strong> Built-in agent types</li>
+ *   <li><strong>Variables:</strong> Special variable types</li>
+ *   <li><strong>Displays:</strong> Custom visualization implementations</li>
+ *   <li><strong>Experiments:</strong> Custom experiment types</li>
+ *   <li><strong>File Types:</strong> Support for new file formats</li>
+ * </ul>
+ * 
+ * <h2>Usage Pattern</h2>
+ * 
+ * <p>To create GAML additions:</p>
+ * <ol>
+ *   <li>Extend this class in your plugin</li>
+ *   <li>Use Java annotations (@operator, @skill, @action, etc.) on methods and classes</li>
+ *   <li>The annotations are automatically processed during plugin initialization</li>
+ *   <li>Additions become available in GAML models</li>
+ * </ol>
+ * 
+ * <h2>Example Implementation</h2>
+ * 
+ * <pre>{@code
+ * public class MyGamlAdditions extends AbstractGamlAdditions {
+ *     
+ *     // Add a new operator
+ *     @operator(value = "my_operator", can_be_const = true)
+ *     @doc("Performs a custom operation")
+ *     public static Object myOperator(IScope scope, Object arg) {
+ *         // Implementation
+ *         return result;
+ *     }
+ *     
+ *     // Add a new skill
+ *     @skill(name = "my_skill")
+ *     @doc("Provides custom capabilities")
+ *     public static class MySkill extends Skill {
+ *         @action(name = "my_action")
+ *         public Object performAction(IScope scope) {
+ *             // Implementation
+ *             return null;
+ *         }
+ *     }
+ * }
+ * }</pre>
+ * 
+ * <h2>Registration Methods</h2>
+ * 
+ * <p>This class provides protected methods for manual registration:</p>
+ * <ul>
+ *   <li>{@code _display()} - Register custom display types</li>
+ *   <li>{@code _experiment()} - Register custom experiment types</li>
+ *   <li>{@code _species()} - Register built-in species</li>
+ *   <li>{@code _file()} - Register file type handlers</li>
+ *   <li>{@code _skill()} - Register skill implementations</li>
+ *   <li>{@code _type()} - Register custom types</li>
+ * </ul>
+ * 
+ * <h2>Inheritance</h2>
+ * 
+ * <p>Extends {@link UtilsForGamlAdditions} which provides utility methods for working with
+ * types, signatures, and artefact registration.</p>
+ * 
+ * <h2>Thread Safety</h2>
+ * 
+ * <p>Addition registration occurs during platform initialization before concurrent access,
+ * so thread safety is not a concern during the registration phase.</p>
+ * 
+ * @author Alexis Drogoul
  * @since 17 mai 2012
- *
+ * @version 2025-03
+ * 
+ * @see IGamlAdditions
+ * @see UtilsForGamlAdditions
+ * @see gama.api.additions.registries.GamaAdditionRegistry
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implements IGamlAdditions {

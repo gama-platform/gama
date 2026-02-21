@@ -44,101 +44,128 @@ import gaml.compiler.gaml.factories.PlatformFactory;
 
 /**
  * Central factory for creating description objects from GAML syntactic elements.
- * 
- * <p>DescriptionFactory serves as the primary entry point for converting the Abstract Syntax Tree
- * (ISyntacticElement) produced by the parser into semantic description objects (IDescription subclasses).
- * It implements the Factory Method and Singleton patterns to provide centralized, thread-safe
- * description creation.</p>
- * 
- * <p><strong>Architectural Role:</strong></p>
+ *
+ * <p>
+ * DescriptionFactory serves as the primary entry point for converting the Abstract Syntax Tree (ISyntacticElement)
+ * produced by the parser into semantic description objects (IDescription subclasses). It implements the Factory Method
+ * and Singleton patterns to provide centralized, thread-safe description creation.
+ * </p>
+ *
+ * <p>
+ * <strong>Architectural Role:</strong>
+ * </p>
+ *
  * <pre>
  * Parser → ISyntacticElement (AST)
  *   → DescriptionFactory.create() ← THIS CLASS
  *   → Specialized ISymbolDescriptionFactory
  *   → SymbolDescription subclass
  * </pre>
- * 
- * <p><strong>Key Responsibilities:</strong></p>
+ *
+ * <p>
+ * <strong>Key Responsibilities:</strong>
+ * </p>
  * <ul>
- *   <li><strong>Factory Dispatch:</strong> Routes creation requests to specialized factories based on keyword</li>
- *   <li><strong>AST Traversal:</strong> Recursively creates descriptions from syntactic element trees</li>
- *   <li><strong>Species Building:</strong> Constructs complex species hierarchies with proper inheritance</li>
- *   <li><strong>Model Assembly:</strong> Assembles complete model descriptions from parts</li>
- *   <li><strong>Validation Coordination:</strong> Triggers validation after description creation</li>
+ * <li><strong>Factory Dispatch:</strong> Routes creation requests to specialized factories based on keyword</li>
+ * <li><strong>AST Traversal:</strong> Recursively creates descriptions from syntactic element trees</li>
+ * <li><strong>Species Building:</strong> Constructs complex species hierarchies with proper inheritance</li>
+ * <li><strong>Model Assembly:</strong> Assembles complete model descriptions from parts</li>
+ * <li><strong>Validation Coordination:</strong> Triggers validation after description creation</li>
  * </ul>
- * 
- * <p><strong>Factory Registry:</strong></p>
- * <p>Delegates to specialized factories registered in {@code GAML.DESCRIPTION_FACTORIES}:</p>
+ *
+ * <p>
+ * <strong>Factory Registry:</strong>
+ * </p>
+ * <p>
+ * Delegates to specialized factories registered in {@code GAML.DESCRIPTION_FACTORIES}:
+ * </p>
  * <ul>
- *   <li><strong>StatementFactory:</strong> Creates statement descriptions (if, loop, create, etc.)</li>
- *   <li><strong>VariableFactory:</strong> Creates variable descriptions (int, float, string, etc.)</li>
- *   <li><strong>SpeciesFactory:</strong> Creates species descriptions (species, grid)</li>
- *   <li><strong>ExperimentFactory:</strong> Creates experiment descriptions</li>
- *   <li><strong>ActionFactory:</strong> Creates action descriptions</li>
- *   <li><strong>TypeFactory:</strong> Creates type descriptions</li>
+ * <li><strong>StatementFactory:</strong> Creates statement descriptions (if, loop, create, etc.)</li>
+ * <li><strong>VariableFactory:</strong> Creates variable descriptions (int, float, string, etc.)</li>
+ * <li><strong>SpeciesFactory:</strong> Creates species descriptions (species, grid)</li>
+ * <li><strong>ExperimentFactory:</strong> Creates experiment descriptions</li>
+ * <li><strong>ActionFactory:</strong> Creates action descriptions</li>
+ * <li><strong>TypeFactory:</strong> Creates type descriptions</li>
  * </ul>
- * 
- * <p><strong>Creation Process:</strong></p>
+ *
+ * <p>
+ * <strong>Creation Process:</strong>
+ * </p>
  * <ol>
- *   <li>Receive syntactic element from parser</li>
- *   <li>Determine symbol kind from keyword (species, action, statement, etc.)</li>
- *   <li>Lookup specialized factory from registry</li>
- *   <li>Delegate creation to specialized factory</li>
- *   <li>Recursively process children if any</li>
- *   <li>Link descriptions into hierarchy (set parent/enclosing relationships)</li>
- *   <li>Return completed description</li>
+ * <li>Receive syntactic element from parser</li>
+ * <li>Determine symbol kind from keyword (species, action, statement, etc.)</li>
+ * <li>Lookup specialized factory from registry</li>
+ * <li>Delegate creation to specialized factory</li>
+ * <li>Recursively process children if any</li>
+ * <li>Link descriptions into hierarchy (set parent/enclosing relationships)</li>
+ * <li>Return completed description</li>
  * </ol>
- * 
- * <p><strong>Thread Safety:</strong></p>
- * <p>Methods are synchronized to ensure thread-safe creation. However, GAML compilation is
- * typically single-threaded, so this synchronization may be overly conservative. Consider
- * profiling to determine if finer-grained locking or lock removal would improve performance.</p>
- * 
- * <p><strong>Performance Considerations:</strong></p>
+ *
+ * <p>
+ * <strong>Thread Safety:</strong>
+ * </p>
+ * <p>
+ * Methods are synchronized to ensure thread-safe creation. However, GAML compilation is typically single-threaded, so
+ * this synchronization may be overly conservative. Consider profiling to determine if finer-grained locking or lock
+ * removal would improve performance.
+ * </p>
+ *
+ * <p>
+ * <strong>Performance Considerations:</strong>
+ * </p>
  * <ul>
- *   <li><strong>Factory Lookup:</strong> O(1) lookup from ArtefactProtoRegistry</li>
- *   <li><strong>Creation Time:</strong> O(n) where n is the number of symbols in the AST</li>
- *   <li><strong>Memory:</strong> Transient - factory itself is lightweight singleton</li>
- *   <li><strong>Bottleneck:</strong> Recursive child processing can be expensive for deep hierarchies</li>
+ * <li><strong>Factory Lookup:</strong> O(1) lookup from ArtefactProtoRegistry</li>
+ * <li><strong>Creation Time:</strong> O(n) where n is the number of symbols in the AST</li>
+ * <li><strong>Memory:</strong> Transient - factory itself is lightweight singleton</li>
+ * <li><strong>Bottleneck:</strong> Recursive child processing can be expensive for deep hierarchies</li>
  * </ul>
- * 
- * <p><strong>Design Patterns:</strong></p>
+ *
+ * <p>
+ * <strong>Design Patterns:</strong>
+ * </p>
  * <ul>
- *   <li><strong>Singleton:</strong> Single factory instance for entire compilation process</li>
- *   <li><strong>Factory Method:</strong> create() methods delegate to specialized factories</li>
- *   <li><strong>Registry:</strong> Factories registered by symbol kind for extensibility</li>
- *   <li><strong>Template Method:</strong> Common creation logic with specialized steps</li>
+ * <li><strong>Singleton:</strong> Single factory instance for entire compilation process</li>
+ * <li><strong>Factory Method:</strong> create() methods delegate to specialized factories</li>
+ * <li><strong>Registry:</strong> Factories registered by symbol kind for extensibility</li>
+ * <li><strong>Template Method:</strong> Common creation logic with specialized steps</li>
  * </ul>
- * 
- * <p><strong>Usage Example:</strong></p>
+ *
+ * <p>
+ * <strong>Usage Example:</strong>
+ * </p>
+ *
  * <pre>{@code
  * ISyntacticElement speciesElement = ...; // From parser
  * IDescription parentDesc = ...;           // Enclosing model/species
- * 
+ *
  * // Create species description
  * IDescription speciesDesc = DescriptionFactory.getInstance()
  *     .create(speciesElement, parentDesc, null);
- * 
+ *
  * // Description is now ready for validation and compilation
  * speciesDesc.validate();
  * ISymbol symbol = speciesDesc.compile();
  * }</pre>
- * 
- * <p><strong>Optimization Opportunities:</strong></p>
+ *
+ * <p>
+ * <strong>Optimization Opportunities:</strong>
+ * </p>
  * <ol>
- *   <li><strong>Factory Caching:</strong> Cache factory lookups for common keywords</li>
- *   <li><strong>Batch Processing:</strong> Process multiple elements in batches to reduce overhead</li>
- *   <li><strong>Lazy Children:</strong> Defer child creation until needed</li>
- *   <li><strong>Object Pooling:</strong> Pool description objects for reuse</li>
- *   <li><strong>Lock Optimization:</strong> Profile synchronization overhead and optimize</li>
+ * <li><strong>Factory Caching:</strong> Cache factory lookups for common keywords</li>
+ * <li><strong>Batch Processing:</strong> Process multiple elements in batches to reduce overhead</li>
+ * <li><strong>Lazy Children:</strong> Defer child creation until needed</li>
+ * <li><strong>Object Pooling:</strong> Pool description objects for reuse</li>
+ * <li><strong>Lock Optimization:</strong> Profile synchronization overhead and optimize</li>
  * </ol>
- * 
- * <p><strong>Special Handling:</strong></p>
+ *
+ * <p>
+ * <strong>Special Handling:</strong>
+ * </p>
  * <ul>
- *   <li><strong>Species:</strong> Complex creation with inheritance, skills, and control architecture</li>
- *   <li><strong>Experiments:</strong> Special model assembly with experiment-specific context</li>
- *   <li><strong>Actions:</strong> Argument processing and return type inference</li>
- *   <li><strong>Variables:</strong> Type inference from multiple facets</li>
+ * <li><strong>Species:</strong> Complex creation with inheritance, skills, and control architecture</li>
+ * <li><strong>Experiments:</strong> Special model assembly with experiment-specific context</li>
+ * <li><strong>Actions:</strong> Argument processing and return type inference</li>
+ * <li><strong>Variables:</strong> Type inference from multiple facets</li>
  * </ul>
  *
  * @author drogoul
@@ -214,7 +241,7 @@ public class DescriptionFactory implements IDescriptionFactory {
 	// NOTE: synchronized keyword may be overly conservative if factory registries are already thread-safe.
 	// Consider using more fine-grained locking or removing if compilation is single-threaded.
 	@Override
-	public synchronized IDescription create(final ISymbolDescriptionFactory factory, final String keyword,
+	public /* synchronized */ IDescription create(final ISymbolDescriptionFactory factory, final String keyword,
 			final IDescription superDesc, final Iterable<IDescription> children, final Facets facets) {
 		return create(SyntacticFactory.getInstance().create(keyword, facets, children != null), superDesc, children);
 	}
@@ -233,7 +260,7 @@ public class DescriptionFactory implements IDescriptionFactory {
 	 * @return the i description
 	 */
 	@Override
-	public synchronized IDescription create(final String keyword, final IDescription superDesc,
+	public /* synchronized */ IDescription create(final String keyword, final IDescription superDesc,
 			final Iterable<IDescription> children, final Facets facets) {
 		return create(getFactory(keyword), keyword, superDesc, children, facets);
 	}
@@ -250,7 +277,7 @@ public class DescriptionFactory implements IDescriptionFactory {
 	 * @return the i description
 	 */
 	@Override
-	public synchronized IDescription create(final String keyword, final IDescription superDesc,
+	public /* synchronized */ IDescription create(final String keyword, final IDescription superDesc,
 			final Iterable<IDescription> children) {
 		return create(getFactory(keyword), keyword, superDesc, children, null);
 	}
@@ -269,7 +296,7 @@ public class DescriptionFactory implements IDescriptionFactory {
 	 * @return the i description
 	 */
 	@Override
-	public synchronized IDescription create(final String keyword, final IDescription superDesc,
+	public /* synchronized */ IDescription create(final String keyword, final IDescription superDesc,
 			final Iterable<IDescription> children, final String... facets) {
 		return create(getFactory(keyword), keyword, superDesc, children, new Facets(facets));
 	}
@@ -286,7 +313,7 @@ public class DescriptionFactory implements IDescriptionFactory {
 	 * @return the i description
 	 */
 	@Override
-	public synchronized IDescription create(final String keyword, final IDescription superDescription,
+	public /* synchronized */ IDescription create(final String keyword, final IDescription superDescription,
 			final String... facets) {
 		return create(keyword, superDescription, null, facets);
 	}
@@ -301,7 +328,7 @@ public class DescriptionFactory implements IDescriptionFactory {
 	 * @return the i description
 	 */
 	@Override
-	public synchronized IDescription create(final String keyword, final String... facets) {
+	public /* synchronized */ IDescription create(final String keyword, final String... facets) {
 		return create(keyword, GAML.getModelContext(), facets);
 	}
 
