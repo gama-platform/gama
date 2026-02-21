@@ -18,7 +18,115 @@ import gama.api.types.date.GamaDateFactory;
 import gama.api.types.date.IDate;
 
 /**
- * The Interface GamlCoreUnits. Contains the list of GAML units
+ * Interface defining all unit constants available in the GAML modeling language. This interface provides a
+ * comprehensive set of measurement units for physical quantities and date/time formatting that can be used directly
+ * in GAML models.
+ * 
+ * <p>
+ * Unit constants defined here enable dimensional analysis and automatic unit conversion in GAML expressions. They are
+ * accessed using the '#' prefix (e.g., {@code 100 #km}, {@code 5 #minute}, {@code 2.5 #kg}) and allow modelers to
+ * express quantities in natural, human-readable units that are automatically converted to base SI units.
+ * </p>
+ * 
+ * <h3>Unit Categories:</h3>
+ * <ul>
+ * <li><b>Length Units:</b> Metric (m, cm, mm, km, µm, nm) and Imperial (mile, yard, foot, inch) distance units with
+ * automatic conversion to meters (base unit)</li>
+ * <li><b>Time Units:</b> From milliseconds to years (msec, sec, minute, h, day, week, month, year) with conversion to
+ * seconds (base unit), plus discrete cycle units for simulation steps</li>
+ * <li><b>Weight Units:</b> Metric (kg, gram, ton) and Imperial (ounce, pound, stone, shortton, longton) mass units
+ * with conversion to kilograms (base unit)</li>
+ * <li><b>Volume Units:</b> Cubic meters and liter-based units (m3, l, cl, dl, hl) with conversion to cubic meters
+ * (base unit)</li>
+ * <li><b>Surface Units:</b> Square meters and derived units (m2, sqin, sqft, sqmi) with conversion to square meters
+ * (base unit)</li>
+ * <li><b>Date/Time Formats:</b> ISO 8601 format specifiers (iso_local, iso_zoned, iso_offset, iso_simple) and custom
+ * format support for date parsing and serialization</li>
+ * <li><b>Special Date Values:</b> The epoch constant representing the Unix epoch (1970-01-01T00:00Z)</li>
+ * </ul>
+ * 
+ * <h3>Unit Conversion:</h3>
+ * <p>
+ * All units are defined as conversion factors relative to their base unit. For example:
+ * </p>
+ * <ul>
+ * <li>{@code 1 #km = 1000 #m}</li>
+ * <li>{@code 1 #minute = 60 #sec}</li>
+ * <li>{@code 1 #ton = 1000 #kg}</li>
+ * </ul>
+ * <p>
+ * This allows GAMA to automatically handle unit conversions when performing calculations, ensuring dimensional
+ * consistency across operations.
+ * </p>
+ * 
+ * <h3>Usage Examples:</h3>
+ * 
+ * <pre>
+ * // Length units
+ * float distance <- 5 #km + 200 #m; // Results in 5200.0 meters
+ * float height <- 6 #foot;          // Converted to 1.8288 meters
+ * 
+ * // Time units
+ * float step_duration <- 10 #minute;
+ * float simulation_time <- 1 #day + 12 #h; // Results in 129600.0 seconds
+ * 
+ * // Weight units
+ * float mass <- 75 #kg;
+ * float weight <- 150 #pound; // Converted to ~68.04 kg
+ * 
+ * // Date/time operations
+ * date start <- date("2024-01-01", #iso_simple);
+ * date end <- start + 30 #day;
+ * 
+ * // Volume and surface
+ * float tank_volume <- 50 #l;        // 0.05 cubic meters
+ * float plot_area <- 100 #m2;
+ * float field_area <- 2 #sqmi;       // Converted to square meters
+ * </pre>
+ * 
+ * <h3>Time Units - Special Considerations:</h3>
+ * <p>
+ * Time units fall into two categories:
+ * </p>
+ * <ul>
+ * <li><b>Exact Duration Units:</b> sec, minute, h, day, week, msec - have fixed, precise conversions</li>
+ * <li><b>Calendar-Based Units:</b> month, year - have approximate durations (30 days, 365 days) that vary based on
+ * the current date context due to varying month lengths and leap years</li>
+ * </ul>
+ * 
+ * <h3>Date Format Constants:</h3>
+ * <p>
+ * The format constants ({@code iso_local}, {@code iso_zoned}, etc.) are used with GAML date functions for parsing and
+ * formatting dates:
+ * </p>
+ * 
+ * <pre>
+ * // Parsing dates
+ * date d1 <- date("2024-03-15T14:30:00", #iso_local);
+ * date d2 <- date("2024-03-15T14:30:00+01:00", #iso_zoned);
+ * 
+ * // Custom format
+ * date d3 <- date("15/03/2024 14:30", "dd/MM/yyyy HH:mm");
+ * </pre>
+ * 
+ * <h3>Alternative Names:</h3>
+ * <p>
+ * Many units provide alternative names for convenience (e.g., "meter"/"meters" for "m", "second"/"seconds"/"s" for
+ * "sec"). This allows modelers to use the most natural form for their context.
+ * </p>
+ * 
+ * <h3>Implementation Notes:</h3>
+ * <p>
+ * This interface is not meant to be implemented by user code. It serves as a declaration point for unit constants that
+ * are automatically discovered and registered by the {@link CoreConstantsSupplier} during GAMA initialization. The
+ * annotation-based metadata ensures proper documentation and IDE support.
+ * </p>
+ * 
+ * @author GAMA Development Team
+ * @see GamlCoreConstants
+ * @see CoreConstantsSupplier
+ * @see gama.annotations.constant
+ * @since GAMA 1.0
  */
 public interface GamlCoreUnits {
 

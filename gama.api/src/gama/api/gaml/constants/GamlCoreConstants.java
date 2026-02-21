@@ -20,7 +20,85 @@ import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 
 /**
- * The Interface GamlCoreConstants.
+ * Interface defining all core constants available in the GAML modeling language. This interface serves as a central
+ * repository for built-in constants that are automatically available in all GAML models without requiring imports or
+ * declarations.
+ * 
+ * <p>
+ * Constants defined in this interface are accessible in GAML using the '#' prefix (e.g., {@code #pi}, {@code #e},
+ * {@code #infinity}). They cover various domains including:
+ * </p>
+ * 
+ * <h3>Constant Categories:</h3>
+ * <ul>
+ * <li><b>Mathematical Constants:</b> Fundamental mathematical values such as pi, e, infinity, NaN, and conversion
+ * factors between radians and degrees</li>
+ * <li><b>Numeric Limits:</b> Minimum and maximum values for floating-point and integer types</li>
+ * <li><b>Graph Algorithms:</b> Identifiers for shortest path algorithms (Dijkstra, AStar, FloydWarshall, etc.) and
+ * K-shortest path algorithms</li>
+ * <li><b>Geometric Constants:</b> Buffer end cap styles (round, flat, square) for geometric operations</li>
+ * <li><b>Layout Constants:</b> Display layout modes (none, stack, split, horizontal, vertical)</li>
+ * <li><b>Font Styles:</b> Font face styles (bold, italic, plain) using AWT Font constants</li>
+ * <li><b>Display Units:</b> Dynamic graphical units including mouse location, camera properties, zoom level, display
+ * dimensions, and pixel size</li>
+ * <li><b>Text Anchors:</b> Predefined anchor points for text positioning (center, top_left, bottom_right, etc.)</li>
+ * <li><b>Runtime State:</b> Current error message and current date (now)</li>
+ * </ul>
+ * 
+ * <h3>Annotation-Based Documentation:</h3>
+ * <p>
+ * Each constant is annotated with {@code @constant} and {@code @doc} annotations that provide:
+ * </p>
+ * <ul>
+ * <li>The constant name as used in GAML (value attribute)</li>
+ * <li>Alternative names (altNames attribute)</li>
+ * <li>Categorization for documentation and IDE support</li>
+ * <li>Associated concepts for semantic grouping</li>
+ * <li>Comprehensive documentation describing purpose and usage</li>
+ * </ul>
+ * 
+ * <h3>Usage Examples:</h3>
+ * 
+ * <pre>
+ * // Mathematical constants
+ * float circumference <- 2 * #pi * radius;
+ * float angle_deg <- angle_rad * #to_deg;
+ * 
+ * // Shortest path algorithms
+ * path shortest <- compute_path(graph: road_network, algorithm: #Dijkstra);
+ * path alternative <- compute_path(graph: road_network, algorithm: #AStar);
+ * 
+ * // Font styles
+ * draw "Title" font: font("Arial", 24, #bold + #italic);
+ * 
+ * // Display properties
+ * geometry click_location <- {#user_location.x, #user_location.y};
+ * float pixel_size <- #pixels;
+ * 
+ * // Text anchors
+ * draw "Label" anchor: #top_left;
+ * draw "Center" anchor: #center;
+ * </pre>
+ * 
+ * <h3>Dynamic Constants:</h3>
+ * <p>
+ * Some constants like {@code user_location}, {@code camera_location}, {@code zoom}, {@code pixels}, and
+ * {@code display_width} are dynamic and return different values depending on the current execution context,
+ * particularly within display and graphics contexts. They provide runtime information about the simulation state and
+ * user interaction.
+ * </p>
+ * 
+ * <h3>Implementation Notes:</h3>
+ * <p>
+ * This interface is not meant to be implemented by user code. It serves solely as a declaration point for constants
+ * that are automatically discovered and registered by the {@link CoreConstantsSupplier} during GAMA initialization.
+ * </p>
+ * 
+ * @author GAMA Development Team
+ * @see GamlCoreUnits
+ * @see CoreConstantsSupplier
+ * @see gama.annotations.constant
+ * @since GAMA 1.0
  */
 public interface GamlCoreConstants {
 
