@@ -17,6 +17,8 @@ import java.net.URLDecoder;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
@@ -75,7 +77,7 @@ public class GamlResourceServices {
 	}
 
 	/** Counter for generating unique synthetic resource URIs. Thread-safe through atomic operations. */
-	private static volatile int resourceCount = 0;
+	private static final AtomicInteger resourceCount = new AtomicInteger(0);
 
 	/** Singleton documenter for generating GAML resource documentation. */
 	private static final GamlResourceDocumenter documenter = new GamlResourceDocumenter();
@@ -85,23 +87,21 @@ public class GamlResourceServices {
 
 	/**
 	 * Registry of resource listeners indexed by URI. Listeners receive validation events when resources are processed.
+	 * Thread-safe concurrent map for multi-threaded editor operations.
 	 */
-	private static final Map<URI, IGamlBuilderListener> resourceListeners = GamaMapFactory.createUnordered();
+	private static final Map<URI, IGamlBuilderListener> resourceListeners = new ConcurrentHashMap<>();
 
 	/**
 	 * Registry of validation contexts indexed by URI. Contexts accumulate errors and warnings during resource
-	 * validation.
+	 * validation. Thread-safe concurrent map for multi-threaded validation operations.
 	 */
-	private static final Map<URI, IValidationContext> resourceErrors = GamaMapFactory.createUnordered();
-
-	/** The Constant resourceDocumentation. */
-	private static final Map<URI, IDocumentationContext> resourceDocumentation = GamaMapFactory.createUnordered();
+	private static final Map<URI, IValidationContext> resourceErrorCollectors = new ConcurrentHashMap<>();
 
 	/**
-	 * Cache of parsed syntactic contents indexed by URI. Uses concurrent map for thread-safe access. Note: Currently
-	 * unused in favor of direct parsing.
+	 * Registry of documentation contexts indexed by URI. Contexts manage documentation generation for resources.
+	 * Thread-safe concurrent map for multi-threaded documentation operations.
 	 */
-	private static final Map<URI, ISyntacticElement> cachedResourceContents = GamaMapFactory.concurrentMap();
+	private static final Map<URI, IDocumentationContext> resourceDocCollectors = new ConcurrentHashMap<>();
 
 	/**
 	 * Shared resource set pool for temporary resource operations. Lazily initialized and synchronized for thread
@@ -118,9 +118,7 @@ public class GamlResourceServices {
 	/**
 	 * Private constructor to prevent instantiation of this utility class.
 	 */
-	private GamlResourceServices() {
-		throw new UnsupportedOperationException("Utility class should not be instantiated");
-	}
+	private GamlResourceServices() {}
 
 	/**
 	 * Properly encodes and partially verifies the URI passed as parameter. In the case of a URI that does not use the
@@ -243,7 +241,7 @@ public class GamlResourceServices {
 	 * @return
 	 */
 	static IDocumentationContext getDocumentationContext(final URI key) {
-		return resourceDocumentation.get(key);
+		return resourceDocCollectors.get(key);
 	}
 
 	/**
@@ -256,15 +254,11 @@ public class GamlResourceServices {
 	 */
 	public static IValidationContext getOrCreateValidationContext(final GamlResource r) {
 		final URI newURI = r.getURI();
-		if (!resourceErrors.containsKey(newURI)) {
-			resourceErrors.put(newURI, ValidationContext.create(newURI, r.hasErrors()));
-		}
-		if (!resourceDocumentation.containsKey(newURI)) {
-			resourceDocumentation.put(newURI, isEdited(newURI)
-					? DocumentationContext.create(newURI, getResourceDocumenter()) : DocumentationContext.NULL);
-		}
-		final IValidationContext result = resourceErrors.get(newURI);
-		return result;
+		// Use computeIfAbsent for atomic check-and-create operation
+		resourceErrorCollectors.computeIfAbsent(newURI, uri -> ValidationContext.create(uri, r.hasErrors()));
+		resourceDocCollectors.computeIfAbsent(newURI, uri -> isEdited(uri)
+				? DocumentationContext.create(uri, getResourceDocumenter()) : DocumentationContext.NULL);
+		return resourceErrorCollectors.get(newURI);
 	}
 
 	/**
@@ -275,7 +269,7 @@ public class GamlResourceServices {
 	 * @return the validation context, or null if none exists
 	 */
 	public static IValidationContext getValidationContext(final URI newURI) {
-		return resourceErrors.get(newURI);
+		return resourceErrorCollectors.get(newURI);
 	}
 
 	/**
@@ -285,7 +279,7 @@ public class GamlResourceServices {
 	 *            the GAML resource whose validation context should be discarded
 	 */
 	public static void discardValidationContext(final GamlResource r) {
-		resourceErrors.remove(r.getURI());
+		resourceErrorCollectors.remove(r.getURI());
 	}
 
 	/**
@@ -391,7 +385,8 @@ public class GamlResourceServices {
 			}
 		}
 		if (rs == null) { rs = getPoolSet(); }
-		final URI uri = URI.createURI(IKeyword.SYNTHETIC_RESOURCES_PREFIX + resourceCount++ + ".gaml", false);
+		final URI uri =
+				URI.createURI(IKeyword.SYNTHETIC_RESOURCES_PREFIX + resourceCount.getAndIncrement() + ".gaml", false);
 		final GamlResource result = (GamlResource) rs.createResource(uri);
 		final IMap<URI, String> imports = GamaMapFactory.create();
 		imports.put(uri, null);
@@ -500,18 +495,6 @@ public class GamlResourceServices {
 	}
 
 	/**
-	 * Invalidates and removes the cached syntactic contents for the specified URI. Properly disposes of the syntactic
-	 * element if it exists.
-	 *
-	 * @param uri
-	 *            the URI whose syntactic contents should be invalidated
-	 */
-	public static void invalidateSyntacticContents(final URI uri) {
-		ISyntacticElement existing = cachedResourceContents.remove(uri);
-		if (existing != null) { existing.dispose(); }
-	}
-
-	/**
 	 * Clears all resources from a resource set, temporarily disabling notifications for performance. Ensures the
 	 * original notification state is restored even if an exception occurs.
 	 *
@@ -523,9 +506,9 @@ public class GamlResourceServices {
 		try {
 			resourceSet.eSetDeliver(false);
 			resourceSet.getResources().clear();
-		} catch (final Exception e) {}
-
-		finally {
+		} catch (final Exception e) {
+			DEBUG.ERR("Failed to clear resource set", e);
+		} finally {
 			resourceSet.eSetDeliver(wasDeliver);
 		}
 	}
