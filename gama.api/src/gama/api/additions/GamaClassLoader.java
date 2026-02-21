@@ -51,11 +51,12 @@ public class GamaClassLoader extends ClassLoader {
 	private GamaClassLoader() {}
 
 	/**
-	 * Adds the bundle.
+	 * Adds a bundle to the class loader registry. Creates a custom ClassLoader for the given OSGi bundle that
+	 * delegates class loading, resource loading, and resource enumeration to the bundle. The loader is stored
+	 * using the bundle's symbolic name as the key.
 	 *
 	 * @param bundle
-	 *            the bundle
-	 * @return the class loader
+	 *            the OSGi bundle to register with this class loader
 	 */
 	public void addBundle(final Bundle bundle) {
 		bundleLoaders.put(bundle.getSymbolicName(), new ClassLoader(null) {
@@ -91,6 +92,17 @@ public class GamaClassLoader extends ClassLoader {
 		});
 	}
 
+	/**
+	 * Finds and loads the class with the specified binary name by iterating through all registered bundle loaders.
+	 * This method is called by the ClassLoader when a class needs to be loaded. It attempts to load the class
+	 * from each registered bundle loader in sequence until one succeeds.
+	 *
+	 * @param name
+	 *            the binary name of the class to find
+	 * @return the resulting Class object
+	 * @throws ClassNotFoundException
+	 *             if the class could not be found in any registered loader
+	 */
 	@Override
 	protected Class findClass(final String name) throws ClassNotFoundException {
 		for (ClassLoader loader2 : bundleLoaders.values()) {
@@ -101,6 +113,15 @@ public class GamaClassLoader extends ClassLoader {
 		throw new ClassNotFoundException(name + " not found in any registered loader");
 	}
 
+	/**
+	 * Finds the resource with the specified name by searching through all registered bundle loaders.
+	 * This method iterates over each bundle loader and attempts to retrieve the resource.
+	 * The first successfully found resource is returned.
+	 *
+	 * @param name
+	 *            the name of the resource to find
+	 * @return a URL for reading the resource, or null if the resource could not be found
+	 */
 	@Override
 	protected URL findResource(final String name) {
 		for (ClassLoader loader2 : bundleLoaders.values()) {
@@ -110,11 +131,32 @@ public class GamaClassLoader extends ClassLoader {
 		return null;
 	}
 
+	/**
+	 * Gets the resource with the specified name by delegating to the findResource method.
+	 * This is an override of the ClassLoader's getResource method to ensure proper resource lookup
+	 * through all registered bundle loaders.
+	 *
+	 * @param name
+	 *            the name of the resource
+	 * @return a URL for reading the resource, or null if the resource could not be found
+	 */
 	@Override
 	public URL getResource(final String name) {
 		return findResource(name);
 	}
 
+	/**
+	 * Loads the class with the specified binary name. This method delegates to findClass to load
+	 * the class from the registered bundle loaders.
+	 *
+	 * @param name
+	 *            the binary name of the class
+	 * @param resolve
+	 *            if true, then resolve the class (currently not used in this implementation)
+	 * @return the resulting Class object
+	 * @throws ClassNotFoundException
+	 *             if the class was not found
+	 */
 	@Override
 	protected Class<?> loadClass(final String name, final boolean resolve) throws ClassNotFoundException {
 		return findClass(name);
