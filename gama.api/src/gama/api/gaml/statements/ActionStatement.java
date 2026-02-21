@@ -32,9 +32,76 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 
 /**
- * The Class ActionCommand.
- *
- * @author drogoul
+ * Implementation of GAML action statements.
+ * 
+ * <p>
+ * Actions are reusable, parameterized procedures that can be defined in species, models, or experiments. They function
+ * similarly to methods in object-oriented programming, accepting parameters and optionally returning values.
+ * </p>
+ * 
+ * <h2>Features</h2>
+ * <ul>
+ * <li><b>Parameters:</b> Actions can accept typed parameters with optional default values</li>
+ * <li><b>Return Values:</b> Actions can return values of any type</li>
+ * <li><b>Invocation:</b> Actions are called using the 'do' statement</li>
+ * <li><b>Inheritance:</b> Actions can be overridden in child species</li>
+ * <li><b>Virtual Actions:</b> Abstract actions that must be implemented by child species</li>
+ * </ul>
+ * 
+ * <h2>Declaration Syntax</h2>
+ * <pre>
+ * {@code
+ * // Simple action with no parameters or return value
+ * action simple_action {
+ *     write "Executing simple action";
+ * }
+ * 
+ * // Action with parameters
+ * action move_to(point target, float speed) {
+ *     location <- location + (target - location) * speed;
+ * }
+ * 
+ * // Action with return value
+ * float distance_to(agent other) {
+ *     return self distance_to other;
+ * }
+ * 
+ * // Virtual action (must be implemented by subclasses)
+ * int virtual calculate_fitness;
+ * }
+ * </pre>
+ * 
+ * <h2>Invocation</h2>
+ * <pre>
+ * {@code
+ * // Call without parameters
+ * do simple_action;
+ * 
+ * // Call with parameters
+ * do move_to(target: my_target, speed: 0.5);
+ * 
+ * // Call with return value
+ * float dist <- distance_to(other_agent);
+ * }
+ * </pre>
+ * 
+ * <h2>Argument Handling</h2>
+ * <p>
+ * The action maintains two sets of arguments:
+ * </p>
+ * <ul>
+ * <li><b>Formal arguments:</b> Parameter declarations with types and defaults</li>
+ * <li><b>Runtime arguments:</b> Actual values provided during invocation</li>
+ * </ul>
+ * <p>
+ * Runtime arguments are complemented with formal arguments to fill in any missing values from defaults.
+ * </p>
+ * 
+ * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+ * @since GAMA 1.0
+ * @see AbstractStatementSequenceWithArgs
+ * @see IStatement.Action
+ * @see Arguments
  */
 @symbol (
 		name = IKeyword.ACTION,
@@ -149,7 +216,12 @@ import gama.api.runtime.scope.IScope;
 public class ActionStatement extends AbstractStatementSequenceWithArgs implements IStatement.Action {
 
 	/**
-	 * The Class ActionSerializer.
+	 * Custom serializer for action statements.
+	 * 
+	 * <p>
+	 * This serializer generates proper GAML syntax for actions, including the return type as the keyword (instead of
+	 * 'action') when a return type is specified.
+	 * </p>
 	 */
 	public static class ActionSerializer extends StatementSerializer {
 
@@ -179,16 +251,18 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 
 	}
 
-	/** The formal args. */
+	/** The formal parameter declarations for this action. */
 	Arguments formalArgs = new Arguments();
 
 	/**
-	 * The Constructor.
+	 * Constructs a new action statement.
+	 * 
+	 * <p>
+	 * Initializes the action with its description and extracts the action name from the NAME facet.
+	 * </p>
 	 *
-	 * @param actionDesc
-	 *            the action desc
-	 * @param sim
-	 *            the sim
+	 * @param desc
+	 *            the action description
 	 */
 	public ActionStatement(final IDescription desc) {
 		super(desc);
@@ -196,6 +270,16 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 
 	}
 
+	/**
+	 * Exits the action's scope and clears the return status.
+	 * 
+	 * <p>
+	 * Actions always clear the action-halted status to ensure return statements don't affect outer scopes.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the execution scope
+	 */
 	@Override
 	public void leaveScope(final IScope scope) {
 		// Clears any _action_halted status present
@@ -203,6 +287,19 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 		super.leaveScope(scope);
 	}
 
+	/**
+	 * Sets the runtime argument values, complementing them with formal arguments.
+	 * 
+	 * <p>
+	 * This method fills in any missing runtime arguments with values from the formal argument definitions (including
+	 * default values).
+	 * </p>
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param args
+	 *            the runtime arguments
+	 */
 	@Override
 	public void setRuntimeArgs(final IScope scope, final Arguments args) {
 		super.setRuntimeArgs(scope, args);
@@ -210,10 +307,14 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 	}
 
 	/**
-	 * Sets the formal args.
+	 * Sets the formal parameter declarations for this action.
+	 * 
+	 * <p>
+	 * Formal arguments define the parameters this action accepts, including their names, types, and default values.
+	 * </p>
 	 *
 	 * @param args
-	 *            the new formal args
+	 *            the formal argument declarations
 	 */
 	@Override
 	public void setFormalArgs(final Arguments args) {

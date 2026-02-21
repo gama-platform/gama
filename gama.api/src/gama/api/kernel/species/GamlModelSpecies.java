@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.gaml.species;
+package gama.api.kernel.species;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -36,16 +36,68 @@ import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.GamaMetaModel;
-import gama.api.kernel.species.IExperimentSpecies;
-import gama.api.kernel.species.IModelSpecies;
-import gama.api.kernel.species.ISpecies;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.ui.IOutputManager;
 
 /**
- * The Class GamlModelSpecies.
+ * Represents the top-level model species in a GAMA simulation.
+ * 
+ * <p>
+ * The model species is a special species that serves as the root container for all other species and experiments in a
+ * GAML model. It represents the "world" or global context of the simulation. There is typically one instance of the
+ * model species per simulation, accessible via the {@code world} keyword in GAML.
+ * </p>
+ * 
+ * <h2>Key Characteristics</h2>
+ * <ul>
+ * <li><b>Root Container:</b> Contains all other species as micro-species</li>
+ * <li><b>Experiment Host:</b> Manages all experiment definitions associated with the model</li>
+ * <li><b>File Context:</b> Provides access to model file paths and project structure</li>
+ * <li><b>Species Registry:</b> Maintains a registry of all species defined in the model</li>
+ * </ul>
+ * 
+ * <h2>Model vs. Regular Species</h2>
+ * <p>
+ * Unlike regular species, the model species:
+ * </p>
+ * <ul>
+ * <li>Cannot have a parent species (it's the root)</li>
+ * <li>Cannot be a micro-species of another species</li>
+ * <li>Has exactly one instance per simulation (the world agent)</li>
+ * <li>Manages experiments that can create multiple simulations</li>
+ * <li>Provides global scheduling and topology</li>
+ * </ul>
+ * 
+ * <h2>Example GAML Model</h2>
+ * <pre>
+ * {@code
+ * model prey_predator
+ * 
+ * global {
+ *     int nb_preys <- 100;
+ *     int nb_predators <- 20;
+ *     
+ *     init {
+ *         create prey number: nb_preys;
+ *         create predator number: nb_predators;
+ *     }
+ * }
+ * 
+ * species prey { ... }
+ * species predator { ... }
+ * 
+ * experiment main type: gui {
+ *     // experiment definition
+ * }
+ * }
+ * </pre>
+ * 
+ * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+ * @since GAMA 1.0
+ * @see GamlSpecies
+ * @see IModelSpecies
+ * @see IExperimentSpecies
  */
-
 @symbol (
 		name = { IKeyword.MODEL },
 		kind = ISymbolKind.MODEL,
@@ -117,20 +169,25 @@ import gama.api.ui.IOutputManager;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 
-	/** The experiments. */
+	/** Map of experiments keyed by their internal name. */
 	protected final Map<String, IExperimentSpecies> experiments = new HashMap<>();
 
-	/** The titled experiments. */
+	/** Map of experiments keyed by their title (display name). */
 	protected final Map<String, IExperimentSpecies> titledExperiments = new HashMap<>();
 
-	/** The all species. */
+	/** Cached map of all species in the model (includes all micro-species recursively). */
 	protected Map<String, ISpecies> allSpecies;
 
 	/**
-	 * Instantiates a new gaml model species.
+	 * Constructs a new model species from its description.
+	 * 
+	 * <p>
+	 * The model species represents the global/world agent of a GAMA simulation and serves as the root container for
+	 * all other species and experiments.
+	 * </p>
 	 *
 	 * @param description
-	 *            the description
+	 *            the model description
 	 */
 	public GamlModelSpecies(final IDescription description) {
 		super(description);
@@ -153,10 +210,15 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 	public String getProjectPath() { return getDescription().getModelProjectPath(); }
 
 	/**
-	 * Adds the experiment.
+	 * Adds an experiment species to this model.
+	 * 
+	 * <p>
+	 * Experiments are stored in two maps: one by internal name and one by title. This allows retrieval by either
+	 * identifier. The experiment is also registered as belonging to this model.
+	 * </p>
 	 *
 	 * @param exp
-	 *            the exp
+	 *            the experiment species to add
 	 */
 	protected void addExperiment(final IExperimentSpecies exp) {
 		if (exp == null) return;
@@ -165,6 +227,22 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 		exp.setModel(this);
 	}
 
+	/**
+	 * Gets an experiment by name or title.
+	 * 
+	 * <p>
+	 * This method provides flexible experiment retrieval by trying multiple strategies:
+	 * </p>
+	 * <ol>
+	 * <li>Look up by internal name</li>
+	 * <li>If not found, look up by title</li>
+	 * <li>If not found and the string is numeric, get the n-th experiment by index</li>
+	 * </ol>
+	 *
+	 * @param s
+	 *            the experiment name, title, or numeric index
+	 * @return the experiment species, or null if not found
+	 */
 	@Override
 	public IExperimentSpecies getExperiment(final String s) {
 		// First we try to get it using its "internal" name
@@ -242,6 +320,26 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 		return getSpecies(speciesName);
 	}
 
+	/**
+	 * Gets all species defined in this model.
+	 * 
+	 * <p>
+	 * This method builds a comprehensive map of all species by recursively traversing the species hierarchy. The
+	 * traversal uses a depth-first approach starting from the model itself and descending through all micro-species.
+	 * The result is cached for performance.
+	 * </p>
+	 * 
+	 * <p>
+	 * The map includes:
+	 * </p>
+	 * <ul>
+	 * <li>The model species itself (global/world)</li>
+	 * <li>All direct micro-species</li>
+	 * <li>All nested micro-species recursively</li>
+	 * </ul>
+	 *
+	 * @return a map of all species keyed by name
+	 */
 	@Override
 	public Map<String, ISpecies> getAllSpecies() {
 		if (allSpecies == null) {
@@ -263,6 +361,23 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 		return allSpecies;
 	}
 
+	/**
+	 * Organizes children symbols, separating experiments and outputs from regular species content.
+	 * 
+	 * <p>
+	 * This override handles the special case of model species which can contain experiments and default output
+	 * managers. The method:
+	 * </p>
+	 * <ol>
+	 * <li>Separates experiments and output managers from other children</li>
+	 * <li>Passes regular children (variables, actions, etc.) to the parent implementation</li>
+	 * <li>Registers experiments with the model</li>
+	 * <li>Distributes default output managers to all experiments</li>
+	 * </ol>
+	 *
+	 * @param children
+	 *            the child symbols to organize
+	 */
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {
 		final List forExperiment = new ArrayList<>();

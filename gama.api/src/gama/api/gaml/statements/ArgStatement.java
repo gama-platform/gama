@@ -25,7 +25,73 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 
 /**
- * The Class ArgStatement.
+ * Placeholder statement for argument declarations in actions.
+ * 
+ * <p>
+ * ArgStatement represents a parameter declaration in an action definition. It doesn't execute any runtime code but
+ * provides metadata about arguments including their name, type, default value, and whether they're optional.
+ * </p>
+ * 
+ * <h2>Usage Contexts</h2>
+ * 
+ * <h3>In Action Declarations</h3>
+ * <p>
+ * Defines formal parameters for actions:
+ * </p>
+ * <pre>
+ * {@code
+ * action move_to {
+ *     arg target type: point;
+ *     arg speed type: float default: 1.0;
+ *     arg ignore_obstacles type: bool optional: true;
+ *     // Action body...
+ * }
+ * }
+ * </pre>
+ * 
+ * <h3>In Action Invocations (do statements)</h3>
+ * <p>
+ * Provides actual values for parameters:
+ * </p>
+ * <pre>
+ * {@code
+ * do move_to {
+ *     arg target value: {100, 100};
+ *     arg speed value: 2.0;
+ * }
+ * }
+ * </pre>
+ * 
+ * <h2>Facets</h2>
+ * <ul>
+ * <li><b>name:</b> The parameter name</li>
+ * <li><b>type:</b> The parameter type (in declarations)</li>
+ * <li><b>of:</b> Content type for container parameters</li>
+ * <li><b>index:</b> Key type for map parameters</li>
+ * <li><b>optional:</b> Whether the parameter is optional (default: false)</li>
+ * <li><b>default:</b> Default value if not provided</li>
+ * <li><b>value:</b> Actual value (in invocations)</li>
+ * </ul>
+ * 
+ * <h2>Modern Syntax</h2>
+ * <p>
+ * Note that modern GAML syntax uses the shorter form without explicit 'arg' keywords:
+ * </p>
+ * <pre>
+ * {@code
+ * // Declaration
+ * action move_to(point target, float speed <- 1.0) { ... }
+ * 
+ * // Invocation
+ * do move_to(target: {100, 100}, speed: 2.0);
+ * }
+ * </pre>
+ * 
+ * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+ * @since GAMA 1.0
+ * @see ActionStatement
+ * @see AbstractPlaceHolderStatement
+ * @see Arguments
  */
 @facets (
 		value = { @facet (
@@ -120,12 +186,15 @@ import gama.annotations.support.ISymbolKind;
 public class ArgStatement extends AbstractPlaceHolderStatement {
 
 	/**
-	 * Instantiates a new arg statement.
+	 * Constructs a new argument declaration statement.
+	 * 
+	 * <p>
+	 * This is a placeholder statement that provides metadata but executes no runtime code.
+	 * </p>
 	 *
 	 * @param desc
-	 *            the desc
+	 *            the argument description containing type and default value information
 	 */
-	// A placeholder for arguments of actions
 	public ArgStatement(final IDescription desc) {
 		super(desc);
 	}

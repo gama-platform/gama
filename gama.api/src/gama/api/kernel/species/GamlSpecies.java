@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.gaml.species;
+package gama.api.kernel.species;
 
 import java.util.Collection;
 
@@ -29,13 +29,12 @@ import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
-import gama.api.gaml.species.GamlSpecies.SpeciesValidator;
 import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
-import gama.api.kernel.species.ISpecies;
+import gama.api.kernel.species.GamlSpecies.SpeciesValidator;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IShape;
 import gama.api.types.list.GamaListFactory;
@@ -46,9 +45,92 @@ import gama.api.utils.json.IJsonValue;
 import one.util.streamex.StreamEx;
 
 /**
- * The Class GamlSpecies. A species specified by GAML attributes
- *
- * @author drogoul
+ * Concrete implementation of a GAML species with full metadata and validation.
+ * 
+ * <p>
+ * This class represents a standard species definition in GAML, providing the complete implementation for agent type
+ * specifications including scheduling, concurrency, mirroring, and specialized topologies (grid, graph). It extends
+ * {@link AbstractSpecies} with GAML-specific features and annotations.
+ * </p>
+ * 
+ * <h2>Core Features</h2>
+ * <ul>
+ * <li><b>Scheduling:</b> Control when and how agents are executed (frequency, custom schedules)</li>
+ * <li><b>Concurrency:</b> Enable parallel execution of agents for performance</li>
+ * <li><b>Mirroring:</b> Automatically synchronize with another species' population</li>
+ * <li><b>Grid Topology:</b> Spatial lattice organization with neighbor relationships</li>
+ * <li><b>Graph Topology:</b> Network structure with edges between agents</li>
+ * <li><b>Skills:</b> Reusable behavior modules (moving, communication, etc.)</li>
+ * <li><b>Control Architecture:</b> Behavior execution patterns (reflex, FSM, BDI, etc.)</li>
+ * </ul>
+ * 
+ * <h2>Species Types</h2>
+ * 
+ * <h3>Regular Species</h3>
+ * <p>
+ * Standard agent populations with custom behaviors:
+ * </p>
+ * <pre>
+ * {@code
+ * species animal skills: [moving] {
+ *     float energy <- 100.0;
+ *     
+ *     reflex move {
+ *         do wander;
+ *     }
+ * }
+ * }
+ * </pre>
+ * 
+ * <h3>Grid Species</h3>
+ * <p>
+ * Spatially organized agents in a regular lattice:
+ * </p>
+ * <pre>
+ * {@code
+ * grid cell width: 50 height: 50 neighbors: 8 {
+ *     rgb color <- #white;
+ *     
+ *     reflex update {
+ *         color <- mean(neighbors collect each.color);
+ *     }
+ * }
+ * }
+ * </pre>
+ * 
+ * <h3>Mirror Species</h3>
+ * <p>
+ * Species that automatically tracks another species' population:
+ * </p>
+ * <pre>
+ * {@code
+ * species node_agent mirrors: list(agent) {
+ *     // Each node automatically has a 'target' attribute
+ *     // pointing to the mirrored agent
+ *     aspect default {
+ *         draw circle(target.size);
+ *     }
+ * }
+ * }
+ * </pre>
+ * 
+ * <h2>Scheduling Control</h2>
+ * <p>
+ * Species can control execution frequency and which agents are scheduled:
+ * </p>
+ * <pre>
+ * {@code
+ * species predator frequency: 2 schedules: shuffle(predator) {
+ *     // Only scheduled every 2 cycles, in random order
+ * }
+ * }
+ * </pre>
+ * 
+ * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+ * @since GAMA 1.0
+ * @see AbstractSpecies
+ * @see ISpecies
+ * @see GamlModelSpecies
  */
 @symbol (
 		name = { IKeyword.SPECIES, IKeyword.GLOBAL, IKeyword.GRID },
@@ -227,14 +309,28 @@ import one.util.streamex.StreamEx;
 public class GamlSpecies extends AbstractSpecies {
 
 	/**
-	 * The Class SpeciesValidator.
+	 * Validator for species descriptions.
+	 * 
+	 * <p>
+	 * This validator ensures the consistency and correctness of species definitions, particularly for grid species. It
+	 * validates:
+	 * </p>
+	 * <ul>
+	 * <li>Dimension facets (width, height, cell_width, cell_height) are properly paired and non-conflicting</li>
+	 * <li>Grid-specific facets are only used on grid species</li>
+	 * <li>File loading facets don't conflict with dimension facets</li>
+	 * <li>Frequency settings don't make variables/behaviors unreachable</li>
+	 * <li>Torus topology is only defined on global species</li>
+	 * <li>Species names don't conflict with existing unary operators</li>
+	 * </ul>
 	 */
 	public static class SpeciesValidator implements IDescriptionValidator<IDescription> {
 
 		/**
-		 * Method validate()
+		 * Validates the species description for correctness and consistency.
 		 *
-		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
+		 * @param desc
+		 *            the species description to validate
 		 */
 		@Override
 		public void validate(final IDescription desc) {
@@ -284,11 +380,15 @@ public class GamlSpecies extends AbstractSpecies {
 		}
 
 		/**
-		 * Process neighbors.
+		 * Processes and validates the neighbors facet for grid species.
+		 * 
+		 * <p>
+		 * The neighbors facet specifies the neighborhood type for grid cells (typically 4, 6, or 8).
+		 * </p>
 		 *
 		 * @param sd
-		 *            the sd
-		 * @return the i expression
+		 *            the species description
+		 * @return the neighbors expression, or null if not specified
 		 */
 		private IExpression processNeighbors(final ISpeciesDescription sd) {
 
@@ -298,10 +398,15 @@ public class GamlSpecies extends AbstractSpecies {
 		}
 
 		/**
-		 * Verify torus.
+		 * Validates that the torus facet is only defined on global species.
+		 * 
+		 * <p>
+		 * Torus topology creates a wrapped world where agents crossing one edge appear on the opposite edge. This
+		 * should only be defined at the model level.
+		 * </p>
 		 *
 		 * @param desc
-		 *            the desc
+		 *            the species description
 		 */
 		private void verifyTorus(final IDescription desc) {
 			// If torus is declared on a species other than "global", emit a
@@ -315,20 +420,26 @@ public class GamlSpecies extends AbstractSpecies {
 		}
 
 		/**
-		 * Verify files.
+		 * Validates file loading facets for grid species.
+		 * 
+		 * <p>
+		 * Grid species can load initial values from image or raster files. This method ensures:
+		 * </p>
+		 * <ul>
+		 * <li>The 'file' and 'files' facets are not used simultaneously</li>
+		 * <li>File facets don't conflict with explicit dimension facets</li>
+		 * </ul>
 		 *
-		 * @param desc
-		 *            the desc
-		 * @param width
-		 *            the width
-		 * @param height
-		 *            the height
 		 * @param sd
-		 *            the sd
+		 *            the species description
+		 * @param width
+		 *            the width expression
+		 * @param height
+		 *            the height expression
 		 * @param cellWidth
-		 *            the cell width
+		 *            the cell width expression
 		 * @param cellHeight
-		 *            the cell height
+		 *            the cell height expression
 		 */
 		private void verifyFiles(final ISpeciesDescription sd, final IExpression width, final IExpression height,
 				final IExpression cellWidth, final IExpression cellHeight) {
@@ -348,12 +459,15 @@ public class GamlSpecies extends AbstractSpecies {
 		}
 
 		/**
-		 * Verify frequency.
+		 * Validates the frequency facet and warns about unreachable code.
+		 * 
+		 * <p>
+		 * If a species has a frequency of 0 (never scheduled), any variables with update expressions or behaviors will
+		 * never be executed. This method warns the modeler about such dead code.
+		 * </p>
 		 *
-		 * @param desc
-		 *            the desc
 		 * @param sd
-		 *            the sd
+		 *            the species description
 		 */
 		private void verifyFrequency(final ISpeciesDescription sd) {
 			final IExpression freq = sd.getFacetExpr(FREQUENCY);
@@ -373,20 +487,25 @@ public class GamlSpecies extends AbstractSpecies {
 		}
 	}
 
-	/** The concurrency. */
+	/** Expression defining the level of concurrency for agent execution (boolean or integer threshold). */
 	protected IExpression concurrency;
 
-	/** The schedule. */
+	/** Expression defining which agents should be scheduled for execution. */
 	private final IExpression schedule;
 
-	/** The frequency. */
+	/** Expression defining how often this species should be scheduled (in cycles). */
 	private final IExpression frequency;
 
 	/**
-	 * Instantiates a new gaml species.
+	 * Constructs a new GAML species from its description.
+	 * 
+	 * <p>
+	 * This constructor initializes the species with scheduling and concurrency controls. For mirror species, it
+	 * automatically creates a default schedule expression that filters out agents whose mirrored targets are dead.
+	 * </p>
 	 *
 	 * @param desc
-	 *            the desc
+	 *            the species description
 	 */
 	public GamlSpecies(final IDescription desc) {
 		super(desc);

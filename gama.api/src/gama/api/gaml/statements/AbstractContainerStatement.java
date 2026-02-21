@@ -32,24 +32,93 @@ import gama.api.types.graph.IGraph;
 import gama.api.types.misc.IContainer;
 
 /**
- * Written by drogoul Modified on 24 ao�t 2010
- *
- * @todo Description
- *
+ * Abstract base class for statements that manipulate containers (add, remove, put).
+ * 
+ * <p>
+ * This class provides the foundation for container manipulation statements in GAML, handling the complex validation
+ * and execution logic for adding, removing, or updating elements in lists, maps, matrices, and graphs.
+ * </p>
+ * 
+ * <h2>Supported Operations</h2>
+ * <ul>
+ * <li><b>add:</b> Adds elements to a container</li>
+ * <li><b>remove:</b> Removes elements from a container</li>
+ * <li><b>put:</b> Sets elements at specific positions/keys</li>
+ * </ul>
+ * 
+ * <h2>Container Types</h2>
+ * <p>
+ * Works with all GAML container types:
+ * </p>
+ * <ul>
+ * <li>Lists: ordered collections</li>
+ * <li>Maps: key-value associations</li>
+ * <li>Matrices: 2D arrays</li>
+ * <li>Graphs: nodes and edges</li>
+ * <li>Agent attributes: dynamic property maps</li>
+ * </ul>
+ * 
+ * <h2>Validation</h2>
+ * <p>
+ * The {@link ContainerValidator} performs extensive compile-time validation:
+ * </p>
+ * <ul>
+ * <li>Type compatibility between items and container content type</li>
+ * <li>Type compatibility between indices and container key type</li>
+ * <li>Proper usage of 'all:' facet for batch operations</li>
+ * <li>Detection of attempts to modify fixed-length containers</li>
+ * <li>Special handling for graph operations (edges, nodes)</li>
+ * </ul>
+ * 
+ * <h2>Example GAML Usage</h2>
+ * <pre>
+ * {@code
+ * // Add to list
+ * add new_agent to: agent_list;
+ * 
+ * // Remove from list
+ * remove first(agent_list) from: agent_list;
+ * 
+ * // Put in map
+ * put "value" at: "key" in: my_map;
+ * 
+ * // Add all from another container
+ * add all: other_list to: my_list;
+ * 
+ * // Add edge to graph
+ * add edge: (node1, node2) to: my_graph weight: 5.0;
+ * }
+ * </pre>
+ * 
+ * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+ * @since GAMA 1.0
+ * @see AbstractStatement
+ * @see IContainer
  */
 @validator (ContainerValidator.class)
 @SuppressWarnings ({ "rawtypes" })
 public abstract class AbstractContainerStatement extends AbstractStatement {
 
 	/**
-	 * The Class ContainerValidator.
+	 * Validator for container manipulation statements.
+	 * 
+	 * <p>
+	 * Performs complex validation including type checking, facet compatibility verification, and special case
+	 * handling for graphs and agent variables.
+	 * </p>
 	 */
 	public static class ContainerValidator implements IDescriptionValidator {
 
 		/**
-		 * Method validate()
+		 * Validates a container manipulation statement description.
+		 * 
+		 * <p>
+		 * This method normalizes facets, checks type compatibility, and emits warnings for potentially problematic
+		 * usages.
+		 * </p>
 		 *
-		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
+		 * @param cd
+		 *            the statement description to validate
 		 */
 		@Override
 		public void validate(final IDescription cd) {
@@ -113,11 +182,16 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 		}
 
 		/**
-		 * Find all.
+		 * Normalizes the 'all:' facet.
+		 * 
+		 * <p>
+		 * If 'all:' receives a container value instead of a boolean, that value is moved to 'item:' and 'all:' is set
+		 * to true.
+		 * </p>
 		 *
 		 * @param cd
-		 *            the cd
-		 * @return the i expression
+		 *            the statement description
+		 * @return the normalized 'all:' expression
 		 */
 		private IExpression findAll(final IDescription cd) {
 			// If a container/value is passed to ALL, then it is copied to ITEM
@@ -133,11 +207,15 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 		}
 
 		/**
-		 * Find index.
+		 * Normalizes index/key facets.
+		 * 
+		 * <p>
+		 * Merges 'at:', 'key:', and 'index:' facets into a single 'at:' facet for uniform handling.
+		 * </p>
 		 *
 		 * @param cd
-		 *            the cd
-		 * @return the i expression
+		 *            the statement description
+		 * @return the normalized index expression
 		 */
 		private IExpression findIndex(final IDescription cd) {
 			final IExpressionDescription indexDesc = cd.getFacet(AT, KEY, INDEX);
@@ -150,11 +228,15 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 		}
 
 		/**
-		 * Find list.
+		 * Normalizes container target facets.
+		 * 
+		 * <p>
+		 * Merges 'to:', 'from:', and 'in:' facets into a single 'to:' facet for uniform handling.
+		 * </p>
 		 *
 		 * @param cd
-		 *            the cd
-		 * @return the i expression
+		 *            the statement description
+		 * @return the normalized container expression
 		 */
 		private IExpression findList(final IDescription cd) {
 			final IExpressionDescription listDesc = cd.getFacet(TO, FROM, IN);
@@ -167,11 +249,20 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 		}
 
 		/**
-		 * Find item.
+		 * Normalizes item facets and handles special graph operations.
+		 * 
+		 * <p>
+		 * This method:
+		 * </p>
+		 * <ul>
+		 * <li>Merges 'item:', 'edge:', 'vertex:', and 'node:' facets</li>
+		 * <li>Transforms edge/node facets into proper edge()/node() operator calls</li>
+		 * <li>Handles weight facets for graph operations</li>
+		 * </ul>
 		 *
 		 * @param cd
-		 *            the cd
-		 * @return the i expression
+		 *            the statement description
+		 * @return the normalized item expression
 		 */
 		private IExpression findItem(final IDescription cd) {
 			// 17/02/14: We change the facets to simplify the writing of
@@ -277,33 +368,43 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 		}
 	}
 
-	/** The all. */
-	protected IExpression item, index, list, all;
+	/** Expression for the item(s) to add/remove/put. */
+	protected IExpression item;
+	
+	/** Expression for the index/key where to perform the operation. */
+	protected IExpression index;
+	
+	/** Expression for the container to modify. */
+	protected IExpression list;
+	
+	/** Expression indicating batch operation mode. */
+	protected IExpression all;
 
-	/** The as all indexes. */
+	/** Indicates if all items from a container should be processed (true when all: receives a container). */
 	protected final boolean asAll;
 
-	/** The as all values. */
+	/** Indicates if items should be treated as a collection of values to add/remove individually. */
 	protected final boolean asAllValues;
 
-	/** The as all indexes. */
+	/** Indicates if indices should be treated as a collection of indices. */
 	protected final boolean asAllIndexes;
-	// Identifies whether or not the container is directly modified by the
-	/** The is graph. */
-	// statement or if it is a shape or an agent
-	final boolean isDirect, isGraph;
 
-	// The "real" container type
-	// final IContainerType containerType;
-
-	// private static final IType attributesType = Types.MAP.of(Types.STRING,
-	// Types.NO_TYPE);
+	/** Indicates if the container expression directly yields a modifiable container (vs. an agent/shape). */
+	final boolean isDirect;
+	
+	/** Indicates if the container is a graph (requires special handling for edges/nodes). */
+	final boolean isGraph;
 
 	/**
-	 * Instantiates a new abstract container statement.
+	 * Constructs a new container manipulation statement.
+	 * 
+	 * <p>
+	 * This constructor extracts and normalizes all facets, determines operation mode flags, and identifies the
+	 * container type for specialized handling.
+	 * </p>
 	 *
 	 * @param desc
-	 *            the desc
+	 *            the statement description
 	 */
 	public AbstractContainerStatement(final IDescription desc) {
 		super(desc);

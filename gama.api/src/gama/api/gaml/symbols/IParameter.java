@@ -18,282 +18,464 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.IExperimentDisplayable;
 
 /**
- * Written by drogoul Modified on 4 juin 2010
- *
- * @todo Description
- *
+ * The interface for GAML parameters - variables that can be configured and controlled from experiment interfaces.
+ * 
+ * <p>
+ * Parameters are special variables that can be displayed and modified in experiment user interfaces, allowing users to
+ * explore different model configurations without modifying code. They support various UI widgets (sliders, choosers,
+ * text fields, file pickers, etc.) based on their type and constraints.
+ * </p>
+ * 
+ * <h2>Parameter Features</h2>
+ * <ul>
+ * <li><strong>UI Integration</strong> - Automatic generation of UI controls in experiment panels</li>
+ * <li><strong>Constraints</strong> - Support for min/max values, step sizes, and discrete value sets</li>
+ * <li><strong>Change Notifications</strong> - Listeners can observe and react to parameter value changes</li>
+ * <li><strong>Editability Control</strong> - Parameters can be marked as read-only or editable</li>
+ * <li><strong>Inter-parameter Dependencies</strong> - Parameters can enable/disable/refresh other parameters</li>
+ * </ul>
+ * 
+ * <h2>UI Widget Types</h2>
+ * <p>
+ * The UI widget is determined by the parameter's type and facets:
+ * </p>
+ * <ul>
+ * <li><strong>Slider</strong> - Numeric parameters with min/max/step</li>
+ * <li><strong>Chooser</strong> - Parameters with an 'among' list of discrete values</li>
+ * <li><strong>Switch</strong> - Boolean parameters (True/False toggle)</li>
+ * <li><strong>File Picker</strong> - File/directory parameters with extension filters</li>
+ * <li><strong>Text Field</strong> - General input for strings and other types</li>
+ * </ul>
+ * 
+ * <h2>Batch Experiments</h2>
+ * <p>
+ * The {@link Batch} inner interface extends parameters for use in batch/exploration experiments, adding support for
+ * parameter space exploration, random initialization, and neighbor generation for optimization algorithms.
+ * </p>
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
+ * @see IVariable
+ * @see IExperimentDisplayable
  */
 public interface IParameter extends IExperimentDisplayable {
 
 	/**
-	 * The listener interface for receiving parameterChange events. The class that is interested in processing a
-	 * parameterChange event implements this interface, and the object created with that class is registered with a
-	 * component using the component's <code>addParameterChangeListener<code> method. When the parameterChange event
-	 * occurs, that object's appropriate method is invoked.
-	 *
-	 * @see ParameterChangeEvent
+	 * Listener interface for observing parameter value changes.
+	 * 
+	 * <p>
+	 * Classes implementing this interface can register with a parameter to be notified whenever the parameter's value
+	 * changes. This is useful for UI updates, logging, validation, or triggering dependent computations.
+	 * </p>
+	 * 
+	 * <p>
+	 * Listeners are typically registered using {@link #addChangedListener(ParameterChangeListener)}.
+	 * </p>
 	 */
 	public interface ParameterChangeListener {
 
 		/**
-		 * Changed.
+		 * Called when the parameter value has changed.
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the execution scope in which the change occurred
 		 * @param newValue
-		 *            the new value
+		 *            the new parameter value
 		 */
 		void changed(IScope scope, Object newValue);
 	}
 
-	/** The empty strings. */
+	/** Empty string array constant for parameters without special UI options. */
 	String[] EMPTY_STRINGS = {};
 
-	/** The empty strings. */
+	/** String array for boolean switch parameters (True/False). */
 	String[] SWITCH_STRINGS = { "True", "False" };
 
 	/**
-	 * Sets the value.
+	 * Sets the value of this parameter.
+	 * 
+	 * <p>
+	 * This method performs type checking and validation before setting the value. It also triggers change notifications
+	 * to registered listeners and executes any on_change actions defined for the parameter.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param value
-	 *            the value
+	 *            the new parameter value
 	 */
 	void setValue(IScope scope, Object value);
 
 	/**
-	 * Sets the value no check no notification.
+	 * Sets the parameter value without validation or notifications.
+	 * 
+	 * <p>
+	 * This method bypasses type checking and does not trigger listeners or on_change actions. It should only be used in
+	 * special circumstances where the overhead of normal validation is not needed, such as during initialization or
+	 * batch loading.
+	 * </p>
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @param value
-	 *            the new value no check no notification
-	 * @date 13 août 2023
+	 *            the new value to set directly
 	 */
 	void setValueNoCheckNoNotification(Object value);
 
 	/**
-	 * Value.
+	 * Gets the current value of this parameter.
+	 * 
+	 * <p>
+	 * For regular parameters, this returns the stored value. For computed parameters, this may evaluate an expression.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the object
+	 *            the execution scope
+	 * @return the current parameter value
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if reading the value fails
 	 */
 	Object value(IScope scope) throws GamaRuntimeException;
 
 	/**
-	 * Gets the type.
+	 * Gets the type of this parameter.
+	 * 
+	 * <p>
+	 * The type determines how the parameter value is validated, displayed, and what UI widget is appropriate.
+	 * </p>
 	 *
-	 * @return the type
+	 * @return the GAML type of this parameter
 	 */
 	@SuppressWarnings ("rawtypes")
 	IType getType();
 
 	/**
-	 * Serialize.
+	 * Serializes this parameter to GAML source code.
 	 *
 	 * @param includingBuiltIn
-	 *            the including built in
-	 * @return the string
+	 *            whether to include built-in parameters in the serialization
+	 * @return the GAML source code representation
 	 */
 	@Override
 	String serializeToGaml(boolean includingBuiltIn);
 
 	/**
-	 * Gets the initial value.
+	 * Gets the initial value for this parameter.
+	 * 
+	 * <p>
+	 * This is the value specified in the 'init' facet, evaluated in the provided scope. For batch experiments, this may
+	 * be a starting point for exploration.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the initial value
+	 *            the execution scope
+	 * @return the initial value, or null if not defined
 	 */
 	Object getInitialValue(IScope scope);
 
 	/**
-	 * Gets the min value.
+	 * Gets the minimum allowed value for this parameter.
+	 * 
+	 * <p>
+	 * For numeric parameters, this defines the lower bound for UI widgets like sliders and for validation. Specified
+	 * using the 'min' facet.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the min value
+	 *            the execution scope
+	 * @return the minimum value, or null if not constrained
 	 */
 	Object getMinValue(IScope scope);
 
 	/**
-	 * Gets the max value.
+	 * Gets the maximum allowed value for this parameter.
+	 * 
+	 * <p>
+	 * For numeric parameters, this defines the upper bound for UI widgets like sliders and for validation. Specified
+	 * using the 'max' facet.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the max value
+	 *            the execution scope
+	 * @return the maximum value, or null if not constrained
 	 */
 	Object getMaxValue(IScope scope);
 
 	/**
-	 * Gets the among value.
+	 * Gets the list of allowed discrete values for this parameter.
+	 * 
+	 * <p>
+	 * When specified using the 'among' facet, this parameter can only take values from this list. The UI will typically
+	 * display a chooser/dropdown widget.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the among value
+	 *            the execution scope
+	 * @return the list of allowed values, or null if not constrained
 	 */
 	@SuppressWarnings ("rawtypes")
 	List getAmongValue(IScope scope);
 
 	/**
-	 * Checks if is editable.
+	 * Checks if this parameter can be edited in the UI.
+	 * 
+	 * <p>
+	 * Non-editable parameters are displayed but cannot be modified by the user. This is useful for showing computed
+	 * values or read-only information.
+	 * </p>
 	 *
-	 * @return true, if is editable
+	 * @return true if the parameter can be edited, false otherwise
 	 */
 	boolean isEditable();
 
 	/**
-	 * Accepts slider.
+	 * Checks if this parameter can be displayed with a slider widget.
+	 * 
+	 * <p>
+	 * Typically true for numeric parameters that have min and max values defined. The 'slider' facet can also force or
+	 * prevent slider display.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return true, if successful
+	 *            the execution scope for evaluating constraints
+	 * @return true if a slider is appropriate, false otherwise
 	 */
 	boolean acceptsSlider(IScope scope);
 
 	/**
-	 * Gets the step value.
+	 * Gets the step size for slider or stepper widgets.
+	 * 
+	 * <p>
+	 * Defines the increment/decrement amount when using slider or arrow controls. Specified using the 'step' facet.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the step value
+	 *            the execution scope
+	 * @return the step value, or null for default behavior
 	 */
 	Comparable getStepValue(IScope scope);
 
 	/**
-	 * Checks if is defined.
+	 * Checks if this parameter has been defined (given a value).
+	 * 
+	 * <p>
+	 * This is used to distinguish between parameters that have never been set and those set to null or a default value.
+	 * </p>
 	 *
-	 * @return true, if is defined
+	 * @return true if the parameter has been defined, false otherwise
 	 */
 	boolean isDefined();
 
 	/**
-	 * Gets the disablement. Only valid for boolean parameters. The list of parameter names that setting this parameter
-	 * to true will enable
+	 * Gets the list of parameter names that this parameter enables when set to true.
+	 * 
+	 * <p>
+	 * Only valid for boolean parameters. When this parameter is set to true, the listed parameters become enabled in
+	 * the UI. This is specified using the 'enables' facet.
+	 * </p>
 	 *
-	 * @return the enablement
+	 * @return array of parameter names to enable, or empty array if none
 	 */
 	default String[] getEnablement() { return EMPTY_STRINGS; }
 
 	/**
-	 * Gets the disablement. Only valid for boolean parameters. The list of parameter names that setting this parameter
-	 * to true will disable
+	 * Gets the list of parameter names that this parameter disables when set to true.
+	 * 
+	 * <p>
+	 * Only valid for boolean parameters. When this parameter is set to true, the listed parameters become disabled in
+	 * the UI. This is specified using the 'disables' facet.
+	 * </p>
 	 *
-	 * @return the disablement
+	 * @return array of parameter names to disable, or empty array if none
 	 */
 	default String[] getDisablement() { return EMPTY_STRINGS; }
 
 	/**
-	 * Gets the refreshment. The list of parameter names that a change of value of this parameter will refresh
-	 * (recomputing the value and the lists of possible values)
+	 * Gets the list of parameter names that should be refreshed when this parameter changes.
+	 * 
+	 * <p>
+	 * When this parameter's value changes, the listed parameters will have their values recomputed and their UI
+	 * representations updated. This is useful for dependent parameters. Specified using the 'refreshes' facet.
+	 * </p>
 	 *
-	 * @return the refreshment
+	 * @return array of parameter names to refresh, or empty array if none
 	 */
 	default String[] getRefreshment() { return EMPTY_STRINGS; }
 
 	/**
-	 * Gets the file extensions.
+	 * Gets the allowed file extensions for file/directory parameters.
+	 * 
+	 * <p>
+	 * For parameters with type 'file', this specifies which file types can be selected in the file picker dialog.
+	 * Extensions should be in the format "txt", "shp", "csv", etc. (without the dot).
+	 * </p>
 	 *
-	 * @return the file extensions
+	 * @return array of file extensions, or empty array for all files
 	 */
 	default String[] getFileExtensions() { return EMPTY_STRINGS; }
 
 	/**
-	 * Adds the changed listener.
+	 * Adds a listener to be notified when this parameter's value changes.
+	 * 
+	 * <p>
+	 * The listener's {@link ParameterChangeListener#changed(IScope, Object)} method will be called whenever the
+	 * parameter value is modified.
+	 * </p>
 	 *
 	 * @param listener
-	 *            the listener
+	 *            the listener to register
 	 */
 	default void addChangedListener(final ParameterChangeListener listener) {
 		// Nothing to do by default
 	}
 
 	/**
-	 * The Interface Batch.
+	 * Extended interface for parameters used in batch and exploration experiments.
+	 * 
+	 * <p>
+	 * Batch parameters support parameter space exploration, enabling systematic or stochastic search through parameter
+	 * combinations. They are used in calibration, optimization, and sensitivity analysis experiments.
+	 * </p>
+	 * 
+	 * <h3>Key Features</h3>
+	 * <ul>
+	 * <li>Category-based organization for exploration algorithms</li>
+	 * <li>Random initialization for stochastic exploration</li>
+	 * <li>Neighbor generation for local search and hill climbing</li>
+	 * <li>Exploration enablement control</li>
+	 * </ul>
 	 */
 	public interface Batch extends IParameter {
 
 		/**
-		 * Value.
+		 * Gets the current value without requiring a scope.
+		 * 
+		 * <p>
+		 * Batch experiments may need to access parameter values outside of normal execution contexts, particularly when
+		 * generating parameter combinations or during exploration setup.
+		 * </p>
 		 *
-		 * @return the object
+		 * @return the current parameter value
 		 */
 		Object value();
 
 		/**
-		 * Sets the category.
+		 * Sets the exploration category for this parameter.
+		 * 
+		 * <p>
+		 * Categories are used by exploration algorithms to group parameters and control exploration strategies. Common
+		 * categories include those explored together or with specific algorithms.
+		 * </p>
 		 *
 		 * @param cat
-		 *            the new category
+		 *            the category name
 		 */
 		void setCategory(String cat);
 
 		/**
-		 * Reinit randomly.
+		 * Reinitializes this parameter with a random value.
+		 * 
+		 * <p>
+		 * Used in stochastic exploration algorithms to generate random starting points or to restart exploration from
+		 * different initial conditions. The random value respects the parameter's constraints (min, max, among, etc.).
+		 * </p>
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the execution scope
 		 */
 		void reinitRandomly(IScope scope);
 
 		/**
-		 * Neighbor values.
+		 * Generates neighboring values for this parameter.
+		 * 
+		 * <p>
+		 * Used in local search and hill-climbing algorithms to explore the neighborhood around the current value. The
+		 * definition of "neighbor" depends on the parameter type:
+		 * </p>
+		 * <ul>
+		 * <li>Numeric: values within a step distance</li>
+		 * <li>Discrete: adjacent values in the 'among' list</li>
+		 * <li>Boolean: the opposite value</li>
+		 * </ul>
 		 *
 		 * @param scope
-		 *            the scope
-		 * @return the sets the
+		 *            the execution scope
+		 * @return the set of neighbor values
 		 * @throws GamaRuntimeException
-		 *             the gama runtime exception
+		 *             if neighbor generation fails
 		 */
 		Set<Object> neighborValues(IScope scope) throws GamaRuntimeException;
 
 		/**
-		 * Sets the editable.
+		 * Sets whether this parameter can be edited during batch execution.
 		 *
 		 * @param b
-		 *            the new editable
+		 *            true to allow editing, false to make read-only
 		 */
 		void setEditable(boolean b);
 
 		/**
-		 * Can be explored.
+		 * Checks if this parameter can be explored (included in parameter space exploration).
+		 * 
+		 * <p>
+		 * Some parameters may be fixed during exploration or excluded from the search space. This method indicates
+		 * whether exploration algorithms should vary this parameter.
+		 * </p>
 		 *
-		 * @return true, if successful
+		 * @return true if the parameter can be explored, false if it should remain fixed
 		 */
 		boolean canBeExplored();
 
 	}
 
 	/**
-	 * Only valid for file parameters. Tells whether it is to be restricted to the workspace or nos
+	 * Checks if file/directory selection should be restricted to the workspace.
+	 * 
+	 * <p>
+	 * Only valid for file and directory parameters. When true, the file picker dialog will only allow selection of
+	 * files within the current GAMA workspace, preventing access to arbitrary filesystem locations.
+	 * </p>
 	 *
-	 * @return true, if is workspace
+	 * @return true if restricted to workspace, false to allow any location
 	 */
 	default boolean isWorkspace() { return false; }
 
 	/**
+	 * Sets whether this parameter has been defined (given a value).
+	 * 
+	 * <p>
+	 * This is used internally to track parameter initialization state. A defined parameter has had a value set, even if
+	 * that value is null.
+	 * </p>
+	 *
 	 * @param b
+	 *            true to mark as defined, false to mark as undefined
 	 */
 	void setDefined(boolean b);
 
 	/**
-	 * Gets the labels.
+	 * Gets the display labels for parameter values.
+	 * 
+	 * <p>
+	 * For parameters with discrete values, this provides human-readable labels for each value. For boolean parameters,
+	 * this defaults to ["True", "False"]. Can be customized to show more descriptive text in the UI.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the labels
+	 *            the execution scope
+	 * @return array of labels corresponding to parameter values
 	 */
 	default String[] getLabels(final IScope scope) {
 		return SWITCH_STRINGS;
 	}
 
 	/**
-	 * Allows to know if the value of the parameter should be interpreted or kept as an expression
+	 * Checks if the parameter value should be kept as an expression rather than evaluated.
+	 * 
+	 * <p>
+	 * Some parameters may need to store the expression itself rather than its evaluated result. This is useful for
+	 * meta-programming scenarios or when the expression needs to be evaluated in different contexts.
+	 * </p>
 	 *
-	 * @return
+	 * @return true if the value is kept as an expression, false if it should be evaluated
 	 */
 	default boolean isExpression() { return false; }
 

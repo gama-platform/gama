@@ -33,9 +33,59 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 
 /**
- * The Class ActionCommand.
- *
- * @author drogoul
+ * Implementation of primitive actions - actions defined in Java rather than GAML.
+ * 
+ * <p>
+ * Primitive actions are built-in operations provided by GAMA's core or plugins. Unlike regular actions defined in
+ * GAML, primitives are implemented in Java for performance and access to internal APIs. They are typically defined in
+ * skills and can be invoked like regular actions.
+ * </p>
+ * 
+ * <h2>Key Differences from Regular Actions</h2>
+ * <ul>
+ * <li>Implemented in Java using {@link IGamaHelper} instead of GAML statements</li>
+ * <li>Can access low-level GAMA APIs not available in GAML</li>
+ * <li>Generally faster due to native execution</li>
+ * <li>Defined using Java annotations in skill classes</li>
+ * <li>Don't require compilation validation (use NullValidator)</li>
+ * </ul>
+ * 
+ * <h2>Example Java Implementation</h2>
+ * <pre>
+ * {@code
+ * @action(name = "wander", args = {
+ *     @arg(name = "amplitude", type = IType.INT, optional = true)
+ * })
+ * public Object primWander(IScope scope) {
+ *     // Java implementation
+ *     return null;
+ * }
+ * }
+ * </pre>
+ * 
+ * <h2>Example GAML Usage</h2>
+ * <pre>
+ * {@code
+ * species animal skills: [moving] {
+ *     reflex move {
+ *         // 'wander' is a primitive action from the moving skill
+ *         do wander amplitude: 120;
+ *     }
+ * }
+ * }
+ * </pre>
+ * 
+ * <h2>Skill Association</h2>
+ * <p>
+ * Primitives are associated with skills. When executed, the primitive finds the appropriate skill instance from the
+ * species hierarchy and uses it as the execution context.
+ * </p>
+ * 
+ * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+ * @since GAMA 1.0
+ * @see ActionStatement
+ * @see ISkill
+ * @see IGamaHelper
  */
 @symbol (
 		name = IKeyword.PRIMITIVE,
@@ -70,28 +120,49 @@ import gama.api.runtime.scope.IScope;
 @SuppressWarnings ({ "rawtypes" })
 public class PrimitiveStatement extends ActionStatement {
 
-	// Declaring a null validator because primites dont need to be checked
-
-	/** The skill. */
+	/** The skill instance that provides this primitive action (null if it's the agent itself). */
 	private ISkill skill = null;
 
-	/** The helper. */
+	/** The Java helper that implements the primitive's logic. */
 	private final IGamaHelper helper;
 
 	/**
-	 * Instantiates a new primitive statement.
+	 * Constructs a new primitive statement.
+	 * 
+	 * <p>
+	 * The helper is extracted from the description and will be used to execute the primitive's Java code.
+	 * </p>
 	 *
 	 * @param desc
-	 *            the desc
+	 *            the primitive description
 	 */
 	public PrimitiveStatement(final IDescription desc) {
 		super(desc);
 		helper = getDescription().getHelper();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 * 
+	 * @return the action description with helper information
+	 */
 	@Override
 	public IActionDescription getDescription() { return (IActionDescription) description; }
 
+	/**
+	 * Executes the primitive by invoking its Java helper.
+	 * 
+	 * <p>
+	 * Arguments are pushed onto the scope stack, then the helper is invoked with either the agent or the skill as
+	 * context depending on whether a skill provides this primitive.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @return the result of the helper execution
+	 * @throws GamaRuntimeException
+	 *             if execution fails
+	 */
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		scope.stackArguments(actualArgs.get());
@@ -99,16 +170,42 @@ public class PrimitiveStatement extends ActionStatement {
 		return helper.run(scope, agent, skill == null ? agent : skill);
 	}
 
+	/**
+	 * Sets the runtime arguments without complementing with formal arguments.
+	 * 
+	 * <p>
+	 * Primitives handle their arguments directly via the helper, so no complementing is needed.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the execution scope
+	 * @param args
+	 *            the runtime arguments
+	 */
 	@Override
 	public void setRuntimeArgs(final IScope scope, final Arguments args) {
 		actualArgs.set(args);
 	}
 
+	/**
+	 * Identifies and caches the skill instance that provides this primitive.
+	 * 
+	 * <p>
+	 * When the enclosing symbol (species) is set, this method searches for the skill class that defines this primitive
+	 * and caches its instance for use during execution.
+	 * </p>
+	 *
+	 * @param enclosing
+	 *            the enclosing species
+	 */
 	@Override
 	public void setEnclosing(final ISymbol enclosing) {
 		if (enclosing instanceof ISpecies spec) { skill = spec.getSkillInstanceFor(helper.getSkillClass()); }
 	}
 
+	/**
+	 * Disposes of this primitive statement and clears the skill reference.
+	 */
 	@Override
 	public void dispose() {
 		skill = null;

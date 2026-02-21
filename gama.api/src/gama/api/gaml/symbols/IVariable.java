@@ -20,7 +20,40 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
 
 /**
+ * The interface for GAML variable symbols, representing attributes and state of agents.
+ * 
+ * <p>
+ * Variables in GAML represent the attributes, properties, and state of agents. They can be simple variables,
+ * parameters (modifiable from experiments), functions (computed values), or micro-populations (collections of agents).
+ * Variables extend both {@link ISymbol} (compilation structure) and {@link IParameter} (runtime behavior).
+ * </p>
+ * 
+ * <h2>Variable Types</h2>
+ * <ul>
+ * <li><strong>Regular variables</strong> - Standard attributes with init/update expressions</li>
+ * <li><strong>Parameters</strong> - Variables that can be set from experiment interfaces</li>
+ * <li><strong>Functions</strong> - Read-only computed values (no storage)</li>
+ * <li><strong>Micro-populations</strong> - Collections of child agents within a host agent</li>
+ * </ul>
+ * 
+ * <h2>Listener System</h2>
+ * <p>
+ * Variables support a listener mechanism for observing value changes. Listeners can be registered globally by class or
+ * by variable name, allowing plugins and extensions to react to state changes. The listener maps are thread-safe using
+ * {@link ConcurrentHashMap}.
+ * </p>
+ * 
+ * <h2>Update Semantics</h2>
+ * <ul>
+ * <li><strong>Updatable</strong> - Variables with an 'update' facet are automatically recomputed each cycle</li>
+ * <li><strong>Not modifiable</strong> - Variables declared with 'const' cannot be changed after initialization</li>
+ * <li><strong>Notification</strong> - Changes trigger listener callbacks and on_change actions</li>
+ * </ul>
+ * 
  * @author drogoul
+ * @since GAMA 1.0
+ * @see ISymbol
+ * @see IParameter
  */
 public interface IVariable extends ISymbol, IParameter {
 
@@ -87,109 +120,162 @@ public interface IVariable extends ISymbol, IParameter {
 	}
 
 	/**
-	 * Checks if is updatable.
+	 * Checks if this variable is updatable (has an 'update' facet).
+	 * 
+	 * <p>
+	 * Updatable variables are automatically recomputed each simulation cycle by evaluating their update expression.
+	 * This is typically used for variables whose values depend on changing conditions.
+	 * </p>
 	 *
-	 * @return true, if is updatable
+	 * @return true if the variable has an update expression, false otherwise
 	 */
 	boolean isUpdatable();
 
 	/**
-	 * Checks if is parameter.
+	 * Checks if this variable is a parameter (can be modified from experiment UI).
+	 * 
+	 * <p>
+	 * Parameters are special variables that can be set and modified from the experiment interface, allowing users to
+	 * explore different model configurations without changing the code.
+	 * </p>
 	 *
-	 * @return true, if is parameter
+	 * @return true if this is a parameter, false otherwise
 	 */
 	boolean isParameter();
 
 	/**
-	 * Checks if is function.
+	 * Checks if this variable is a function (computed value with no storage).
+	 * 
+	 * <p>
+	 * Function variables don't store values; they compute and return a value each time they're accessed. They are
+	 * declared using the 'function' keyword instead of 'var'.
+	 * </p>
 	 *
-	 * @return true, if is function
+	 * @return true if this is a function, false otherwise
 	 */
 	boolean isFunction();
 
 	/**
-	 * Checks if is micro population.
+	 * Checks if this variable represents a micro-population.
+	 * 
+	 * <p>
+	 * Micro-populations are collections of agents contained within a host agent. For example, a city agent might have
+	 * a micro-population of building agents. They are typically declared implicitly by species containment.
+	 * </p>
 	 *
-	 * @return true, if is micro population
+	 * @return true if this is a micro-population, false otherwise
 	 */
 	boolean isMicroPopulation();
 
 	/**
-	 * Initialize with.
+	 * Initializes this variable for a specific agent with a given value.
+	 * 
+	 * <p>
+	 * This method is called during agent creation to set the initial value of the variable. The value is typically the
+	 * result of evaluating the 'init' facet expression, but can also come from parameter settings or default values.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param gamaObject
-	 *            the gama object
+	 *            the agent being initialized
 	 * @param object
-	 *            the object
+	 *            the initial value to set
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if initialization fails
 	 */
 	void initializeWith(IScope scope, IAgent gamaObject, Object object) throws GamaRuntimeException;
 
 	/**
-	 * Can be called on this variable to indicate that the value it represents has been changed outside. For instance,
-	 * if agent.setLocation(...) has been invoked, the value of location will change, but no listeners (see
-	 * GamaAnnotations.listener.class) will be notified and the action attached to the on_change: facet will not be run
-	 * as well. In the core, this represents a small set of variables (location, shape, name...) that can be modified
-	 * outside of the models. Plugins may have more variables, although they are expected to produce listeners instead
-	 * (e.g. listening to the changes of the location of an agent can be important for some). As soon as a variable is
-	 * asked to produce notifications this way, it automatically blocks internal notifications (so as to avoid double
-	 * notifications, one from the agent whose location is manipulated and one from the variable itself if it is
-	 * modified in a model).
+	 * Notifies that the value of this variable has changed externally.
+	 * 
+	 * <p>
+	 * This method should be called when the variable's value is changed outside the normal assignment mechanism. For
+	 * instance, if {@code agent.setLocation(...)} is invoked directly, this method ensures that listeners are notified
+	 * and the 'on_change' facet action is executed.
+	 * </p>
+	 * 
+	 * <p>
+	 * Variables that use this notification mechanism automatically block internal notifications to avoid double
+	 * notifications (one from the direct manipulation and one from the variable assignment).
+	 * </p>
+	 * 
+	 * <p>
+	 * This is particularly important for variables like location, shape, and name that can be modified by both model
+	 * code and internal engine operations. Plugins may have additional variables requiring this mechanism.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the current scope
+	 *            the current execution scope
 	 * @param agent
-	 *            the agent concerned by this change
+	 *            the agent whose variable changed
 	 * @param oldValue
-	 *            previous value of the variable. Not used for the moment
+	 *            the previous value (currently not used but reserved for future use)
 	 * @param newValue
-	 *            new value, once it has been set
+	 *            the new value after the change
 	 */
 	void notifyOfValueChange(final IScope scope, final IAgent agent, final Object oldValue, final Object newValue);
 
 	/**
-	 * Sets the val.
+	 * Sets the value of this variable for a specific agent.
+	 * 
+	 * <p>
+	 * This is the primary method for changing variable values. It handles type checking, validation, notification of
+	 * listeners, and execution of on_change actions.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param agent
-	 *            the agent
+	 *            the agent whose variable to set
 	 * @param v
-	 *            the v
+	 *            the new value
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if the assignment fails (e.g., type mismatch, not modifiable)
 	 */
 	void setVal(IScope scope, IAgent agent, Object v) throws GamaRuntimeException;
 
 	/**
-	 * Value.
+	 * Gets the current value of this variable for a specific agent.
+	 * 
+	 * <p>
+	 * For regular variables, this returns the stored value. For functions, this evaluates the function expression. For
+	 * updatable variables, this may trigger an update if needed.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param agent
-	 *            the agent
-	 * @return the object
+	 *            the agent whose variable to read
+	 * @return the current value
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if reading the value fails
 	 */
 	Object value(IScope scope, IAgent agent) throws GamaRuntimeException;
 
 	/**
-	 * Gets the updated value.
+	 * Gets the updated value of this variable in the current scope.
+	 * 
+	 * <p>
+	 * For updatable variables, this evaluates the update expression. This is called during the update phase of the
+	 * simulation cycle.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @return the updated value
 	 */
 	Object getUpdatedValue(final IScope scope);
 
 	/**
-	 * Checks if is not modifiable.
+	 * Checks if this variable is not modifiable (declared as 'const' or read-only).
+	 * 
+	 * <p>
+	 * Non-modifiable variables can only be set during initialization and cannot be changed afterwards. Attempts to
+	 * modify them will result in an error.
+	 * </p>
 	 *
-	 * @return true, if is not modifiable
+	 * @return true if the variable cannot be modified, false otherwise
 	 */
 	boolean isNotModifiable();
 

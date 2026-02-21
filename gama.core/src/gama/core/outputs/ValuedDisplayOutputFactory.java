@@ -15,11 +15,11 @@ import java.util.Collection;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
-import gama.api.gaml.species.GamlModelSpecies;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IMacroAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.species.GamlModelSpecies;
 import gama.api.kernel.species.ISpecies;
 import gama.core.experiment.ExperimentAgent;
 
