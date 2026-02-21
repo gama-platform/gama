@@ -7,7 +7,16 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * The Enum GeneratorNames.
+ * Enumeration of random number generators available in GAMA.
+ * <p>
+ * This enum defines the different random number generators that can be used in GAMA simulations,
+ * each with specific characteristics regarding performance, thread-safety, and determinism.
+ * The choice of generator can significantly impact simulation behavior, especially in parallel
+ * or multi-threaded contexts.
+ * </p>
+ * 
+ * @author GAMA Development Team
+ * @since GAMA 1.0
  */
 public enum Generators {
 	/** The mersenne. */
@@ -27,30 +36,29 @@ public enum Generators {
 	private final String name;
 
 	/**
-	 * Environment.
+	 * Constructs a generator with the specified name and documentation.
 	 *
-	 * @param envUrl
-	 *            the env url
+	 * @param name the name of the generator
+	 * @param doc the documentation describing the generator's behavior
 	 */
 	Generators(final String name, final String doc) {
 		this.name = name;
 	}
 
 	/**
-	 * Gets the url.
+	 * Gets the name of this generator.
 	 *
-	 * @return the url
+	 * @return the generator name
 	 */
 	public String getName() { return name; }
 
 	// ****** Reverse Lookup ************//
 
 	/**
-	 * Gets the
+	 * Gets the generator enum value corresponding to the given name.
 	 *
-	 * @param url
-	 *            the url
-	 * @return the optional
+	 * @param url the generator name to look up
+	 * @return the matching Generators enum value, or null if not found
 	 */
 	public static Generators get(final String url) {
 		return Arrays.stream(values()).filter(env -> env.name.equals(url)).findFirst().orElse(null);

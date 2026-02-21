@@ -15,7 +15,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
 /**
- * The Interface SerialisedAgentConstants.
+ * Interface defining constants used for serialization and deserialization of GAMA agents and simulations.
+ * <p>
+ * This interface provides constants for:
+ * </p>
+ * <ul>
+ * <li>File format identifiers (JSON, binary)</li>
+ * <li>File type identifiers (agent files, simulation files)</li>
+ * <li>Compression flags</li>
+ * <li>Object type identifiers used in binary serialization</li>
+ * <li>Character encoding settings for byte array conversions</li>
+ * </ul>
+ * <p>
+ * These constants are used by the serialization framework to save and restore agent states
+ * and simulation snapshots, enabling features like simulation persistence and agent migration.
+ * </p>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 21 août 2023

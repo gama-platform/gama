@@ -10,11 +10,19 @@
 package gama.api.constants;
 
 /**
- * The class IGamlIssue.
+ * Interface defining constants for GAML compilation and validation issue codes.
+ * <p>
+ * This interface provides a centralized location for all issue codes that can be raised during
+ * GAML model compilation, validation, and execution. These codes are used by the GAMA compiler
+ * and IDE to identify and categorize different types of errors, warnings, and issues in GAML models.
+ * </p>
+ * <p>
+ * Issue codes are organized by category (e.g., missing elements, type mismatches, unknown references)
+ * and follow a consistent naming pattern "gaml.[category].[detail].issue".
+ * </p>
  *
  * @author drogoul
  * @since 26 avr. 2012
- *
  */
 public interface IGamlIssue {
 

@@ -10,11 +10,26 @@
 package gama.api.constants;
 
 /**
- * The class IKeyword. Defines most of the keywords used in GAMA and GAML.
+ * Interface defining all keywords and constants used in the GAML language.
+ * <p>
+ * This interface serves as a central repository for all GAML language keywords, including:
+ * </p>
+ * <ul>
+ * <li>Statement keywords (e.g., "if", "loop", "create")</li>
+ * <li>Facet names (e.g., "name", "type", "value")</li>
+ * <li>Built-in constants (e.g., "true", "false", "nil")</li>
+ * <li>Display and visualization keywords</li>
+ * <li>File format identifiers</li>
+ * <li>Optimization method names</li>
+ * <li>And many other language-level constants</li>
+ * </ul>
+ * <p>
+ * These constants are used throughout the GAMA platform for parsing, compiling, and executing
+ * GAML models, ensuring consistency in keyword recognition and usage.
+ * </p>
  *
  * @author drogoul
  * @since 13 dec. 2011
- *
  */
 public interface IKeyword {
 

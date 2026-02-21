@@ -13,7 +13,18 @@ package gama.api.exceptions;
 import gama.api.runtime.scope.IScope;
 
 /**
- * The Class FlushBufferException.
+ * Exception thrown when an operation requires flushing the output buffer.
+ * <p>
+ * This exception is used internally to signal that buffered output (such as console messages
+ * or status updates) should be immediately flushed to the output stream. It can represent
+ * either an error condition or a warning that requires immediate user attention.
+ * </p>
+ * <p>
+ * The exception carries the scope context in which the flush was triggered, allowing
+ * proper contextualization of the output.
+ * </p>
+ * 
+ * @author GAMA Development Team
  */
 public class FlushBufferException extends GamaRuntimeException {
 

@@ -19,14 +19,130 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.simulation.IExploration;
 
 /**
- * The Class BatchValidator.
+ * Validator for batch experiment descriptions and their exploration methods.
+ * 
+ * <p>This validator ensures that batch experiments are properly configured with valid exploration
+ * methods and appropriate parameters. It validates experiment types, exploration methods, sampling
+ * configurations, and parameter requirements for different exploration strategies.</p>
+ * 
+ * <h2>Validation Scope</h2>
+ * 
+ * <p>The validator performs comprehensive checks on:</p>
+ * <ul>
+ *   <li><strong>Experiment Type:</strong> Verifies the experiment type is recognized (batch, gui, etc.)</li>
+ *   <li><strong>Batch-Specific Features:</strong> Ensures batch-only features aren't used in other experiments</li>
+ *   <li><strong>Exploration Methods:</strong> Validates method-specific parameter requirements</li>
+ *   <li><strong>Sampling Configuration:</strong> Checks sample sizes, levels, and iterations</li>
+ *   <li><strong>Output Configuration:</strong> Validates batch output settings</li>
+ * </ul>
+ * 
+ * <h2>Supported Exploration Methods</h2>
+ * 
+ * <h3>Morris Sampling:</h3>
+ * <ul>
+ *   <li><strong>Required:</strong> Even sample size (default: 132)</li>
+ *   <li><strong>Optional:</strong> {@code nb_levels} (default: 4, must be positive)</li>
+ *   <li><strong>Use Case:</strong> Sensitivity analysis with elementary effects</li>
+ * </ul>
+ * 
+ * <h3>Saltelli Sampling:</h3>
+ * <ul>
+ *   <li><strong>Required:</strong> Sample size (default: 132)</li>
+ *   <li><strong>Ignored:</strong> {@code nb_levels} (not needed for Saltelli)</li>
+ *   <li><strong>Use Case:</strong> Sobol sensitivity analysis</li>
+ * </ul>
+ * 
+ * <h3>LHS (Latin Hypercube Sampling):</h3>
+ * <ul>
+ *   <li><strong>Required:</strong> Sample size (default: 132)</li>
+ *   <li><strong>Use Case:</strong> Efficient parameter space exploration</li>
+ * </ul>
+ * 
+ * <h3>Orthogonal Sampling:</h3>
+ * <ul>
+ *   <li><strong>Required:</strong> Sample size (default: 132) and iterations (default: 5)</li>
+ *   <li><strong>Use Case:</strong> Orthogonal array-based exploration</li>
+ * </ul>
+ * 
+ * <h3>Uniform Sampling:</h3>
+ * <ul>
+ *   <li><strong>Required:</strong> Sample size (default: 132)</li>
+ *   <li><strong>Use Case:</strong> Uniform random sampling</li>
+ * </ul>
+ * 
+ * <h3>Factorial Design:</h3>
+ * <ul>
+ *   <li><strong>Required:</strong> Sample size (default: 132)</li>
+ *   <li><strong>Optional:</strong> {@code sample_factorial} for explicit design specification</li>
+ *   <li><strong>Use Case:</strong> Full or fractional factorial experiments</li>
+ * </ul>
+ * 
+ * <h2>Error and Warning Conditions</h2>
+ * 
+ * <h3>Errors ({@link IGamlIssue}):</h3>
+ * <ul>
+ *   <li>Invalid experiment type</li>
+ *   <li>Non-batch experiment with exploration method</li>
+ *   <li>Invalid sample size (&lt; 1)</li>
+ *   <li>Invalid levels for Morris (&lt;= 0)</li>
+ *   <li>Odd sample size for Morris (must be even)</li>
+ *   <li>Unknown exploration method</li>
+ *   <li>{@code batch_var_outputs} is not a list</li>
+ * </ul>
+ * 
+ * <h3>Warnings ({@link IGamlIssue}):</h3>
+ * <ul>
+ *   <li>{@link IGamlIssue#CONFLICTING_FACETS} - Batch experiments with 'record' facet (ignored)</li>
+ *   <li>{@link IGamlIssue#MISSING_FACET} - Missing recommended parameters (sample size, levels, etc.)</li>
+ *   <li>Missing {@code batch_output} file specification</li>
+ *   <li>Missing {@code until} stopping condition (may cause endless runs)</li>
+ *   <li>Sobol method suggestion (when "sobol" is used instead of "saltelli")</li>
+ * </ul>
+ * 
+ * <h2>Usage Example</h2>
+ * 
+ * <pre>{@code
+ * // Valid batch experiment
+ * experiment my_batch type: batch {
+ *     method morris sample_size: 100 nb_levels: 4;
+ *     parameter "param1" var: p1 min: 0 max: 10;
+ *     until: cycle > 1000;
+ * }
+ * 
+ * // Invalid - will trigger error
+ * experiment bad_gui type: gui {
+ *     method morris;  // Error: gui experiments cannot define exploration methods
+ * }
+ * }</pre>
+ * 
+ * @author Alexis Drogoul
+ * @since GAMA 1.0
+ * @version 2025-03
+ * 
+ * @see IDescriptionValidator
+ * @see IExperimentDescription
+ * @see IExploration
  */
 public class BatchValidator implements IDescriptionValidator {
 
 	/**
-	 * Method validate()
+	 * Validates a batch experiment description and its exploration configuration.
+	 * 
+	 * <p>This method performs multi-level validation:</p>
+	 * <ol>
+	 *   <li>Validates the experiment type is recognized</li>
+	 *   <li>Checks for conflicting features (non-batch with methods, batch with record)</li>
+	 *   <li>Validates exploration method configuration if present</li>
+	 *   <li>Ensures batch experiments have stopping conditions</li>
+	 * </ol>
+	 * 
+	 * <p>The validation process adapts based on the experiment type and configured features,
+	 * providing specific guidance for each exploration method's requirements.</p>
 	 *
-	 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
+	 * @param desc the experiment description to validate (must not be null)
+	 * 
+	 * @see IExperimentDescription#getExperimentTypes
+	 * @see IExploration
 	 */
 	@Override
 	public void validate(final IDescription desc) {

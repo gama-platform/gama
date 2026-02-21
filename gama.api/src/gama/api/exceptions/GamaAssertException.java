@@ -13,7 +13,19 @@ package gama.api.exceptions;
 import gama.api.runtime.scope.IScope;
 
 /**
- * The Class GamaAssertException.
+ * Exception thrown when an assertion fails in a GAML model.
+ * <p>
+ * This exception is raised when the {@code assert} statement in GAML evaluates to false,
+ * indicating that an expected condition was not met during model execution. It can be
+ * configured to generate either an error or a warning, depending on the severity of
+ * the assertion failure.
+ * </p>
+ * <p>
+ * Assert exceptions are useful for model validation and debugging, allowing modelers
+ * to specify invariants and preconditions that should hold during simulation.
+ * </p>
+ * 
+ * @author GAMA Development Team
  */
 public class GamaAssertException extends GamaRuntimeException {
 

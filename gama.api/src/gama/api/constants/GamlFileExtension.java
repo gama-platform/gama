@@ -11,7 +11,14 @@
 package gama.api.constants;
 
 /**
- * The Class GamlFileExtension.
+ * Utility class providing constants and helper methods for GAML file extensions.
+ * <p>
+ * This class defines the standard file extensions used in the GAMA platform for different types of GAML files,
+ * and provides utility methods to check if a file name matches any of these extensions.
+ * </p>
+ * 
+ * @author GAMA Development Team
+ * @since GAMA 1.0
  */
 public class GamlFileExtension {
 

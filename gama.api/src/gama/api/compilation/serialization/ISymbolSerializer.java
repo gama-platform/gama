@@ -19,7 +19,119 @@ import gama.api.utils.GamlProperties;
 import gama.api.utils.StringUtils;
 
 /**
- *
+ * Interface for serializing GAML symbols back to source code.
+ * 
+ * <p>
+ * This interface defines the contract for converting semantic descriptions ({@link IDescription}) back into
+ * syntactically valid GAML source code. Serializers are used for code generation, model transformation,
+ * refactoring, and saving programmatically created models.
+ * </p>
+ * 
+ * <h2>Purpose</h2>
+ * 
+ * <p>
+ * Symbol serializers enable:
+ * </p>
+ * <ul>
+ *   <li><strong>Code Generation:</strong> Converting descriptions back to GAML source text</li>
+ *   <li><strong>Model Transformation:</strong> Supporting refactoring and model manipulation</li>
+ *   <li><strong>Persistence:</strong> Saving programmatically created models to files</li>
+ *   <li><strong>Documentation:</strong> Generating code examples in help text</li>
+ *   <li><strong>Metadata Collection:</strong> Extracting plugin and statement dependencies</li>
+ * </ul>
+ * 
+ * <h2>Serialization Process</h2>
+ * 
+ * <p>
+ * Serialization follows a structured process:
+ * </p>
+ * <ol>
+ *   <li><strong>Keyword:</strong> Output the symbol's keyword (species, action, if, etc.)</li>
+ *   <li><strong>Facets:</strong> Serialize all facets (properties/parameters)</li>
+ *   <li><strong>Children:</strong> Recursively serialize nested elements</li>
+ * </ol>
+ * 
+ * <h2>Specialized Serializers</h2>
+ * 
+ * <p>
+ * Different symbol types may use specialized serializers:
+ * </p>
+ * <ul>
+ *   <li>{@link ModelSerializer} - For model descriptions</li>
+ *   <li>{@link SpeciesSerializer} - For species descriptions</li>
+ *   <li>{@link StatementSerializer} - For statements</li>
+ *   <li>{@link VarSerializer} - For variable declarations</li>
+ * </ul>
+ * 
+ * <h2>Usage Example</h2>
+ * 
+ * <h3>Serializing a Description:</h3>
+ * <pre>{@code
+ * IDescription desc = ...; // species, action, or statement description
+ * ISymbolSerializer serializer = desc.getSerializer();
+ * 
+ * // Serialize to string
+ * String gamlCode = serializer.serialize(desc, false);
+ * // Result: "species my_agent parent: agent { ... }"
+ * 
+ * // Include built-in elements
+ * String fullCode = serializer.serialize(desc, true);
+ * }</pre>
+ * 
+ * <h3>Building GAML Incrementally:</h3>
+ * <pre>{@code
+ * StringBuilder sb = new StringBuilder();
+ * ISymbolSerializer serializer = new StatementSerializer();
+ * 
+ * // Serialize multiple descriptions
+ * for (IDescription child : model.getChildren()) {
+ *     serializer.serialize(child, sb, false);
+ *     sb.append("\n");
+ * }
+ * }</pre>
+ * 
+ * <h3>Collecting Metadata:</h3>
+ * <pre>{@code
+ * GamlProperties metadata = new GamlProperties();
+ * serializer.collectMetaInformation(desc, metadata);
+ * 
+ * // Extract plugin dependencies
+ * Set<String> plugins = metadata.get(GamlProperties.PLUGINS);
+ * 
+ * // Extract used statements
+ * Set<String> statements = metadata.get(GamlProperties.STATEMENTS);
+ * }</pre>
+ * 
+ * <h2>Built-in Elements</h2>
+ * 
+ * <p>
+ * The {@code includingBuiltIn} parameter controls whether platform-provided elements are serialized:
+ * </p>
+ * <ul>
+ *   <li><strong>true:</strong> Include built-in attributes, actions, and species</li>
+ *   <li><strong>false:</strong> Only user-defined elements (typical for saving models)</li>
+ * </ul>
+ * 
+ * <h2>Facet Serialization</h2>
+ * 
+ * <p>
+ * Facets are serialized with special handling:
+ * </p>
+ * <ul>
+ *   <li><strong>Omissible Facets:</strong> Can appear without the key name</li>
+ *   <li><strong>Label Facets:</strong> May need quoting depending on ID status</li>
+ *   <li><strong>Non-Serializable:</strong> Some internal facets are skipped</li>
+ * </ul>
+ * 
+ * @author Alexis Drogoul
+ * @since GAMA 1.0
+ * @version 2025-03
+ * 
+ * @see IDescription
+ * @see ModelSerializer
+ * @see SpeciesSerializer
+ * @see StatementSerializer
+ * @see VarSerializer
  */
 public interface ISymbolSerializer extends IKeyword {
 

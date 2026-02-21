@@ -16,21 +16,31 @@ import gama.api.compilation.GamlCompilationError;
 import gama.api.gaml.GAML;
 
 /**
- * The Class GamaCompilationFailedException.
+ * Exception thrown when a GAML model fails to compile.
+ * <p>
+ * This exception is raised when the GAML compiler encounters one or more errors that prevent
+ * the model from being successfully compiled. It aggregates all compilation errors into a list,
+ * allowing for comprehensive error reporting to the user.
+ * </p>
+ * <p>
+ * The exception provides methods to access the individual compilation errors and to serialize
+ * the error information to JSON format for integration with external tools or web interfaces.
+ * </p>
+ * 
+ * @author GAMA Development Team
  */
 public class GamaCompilationFailedException extends GamaRuntimeException {
 
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1392647532622819498L;
 
-	/** The error list. */
+	/** The list of compilation errors that prevented successful compilation. */
 	public final List<GamlCompilationError> errorList;
 
 	/**
-	 * Instantiates a new gama compilation failed exception.
+	 * Instantiates a new compilation failed exception with the given error list.
 	 *
-	 * @param errorList
-	 *            the error list
+	 * @param errorList the list of compilation errors encountered
 	 */
 	public GamaCompilationFailedException(final List<GamlCompilationError> errorList) {
 		super(null, "The model couldn't be compiled because of compilation errors", true);
@@ -38,9 +48,13 @@ public class GamaCompilationFailedException extends GamaRuntimeException {
 	}
 
 	/**
-	 * To json string.
+	 * Converts this exception and its error list to a JSON string representation.
+	 * <p>
+	 * The JSON format includes the exception type, message, and a detailed array of all
+	 * compilation errors with their types, messages, codes, source locations, and line numbers.
+	 * </p>
 	 *
-	 * @return the string
+	 * @return a JSON string representation of the compilation errors
 	 */
 	public String toJsonString() {
 		StringBuilder sb = new StringBuilder("{");

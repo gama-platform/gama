@@ -1,12 +1,18 @@
 /**
- * 
+ * Exception thrown when a command execution fails in the GAMA server/headless context.
+ * <p>
+ * This exception encapsulates a {@link CommandResponse} object that contains detailed
+ * information about the failed command, including the experiment ID and error details.
+ * It is primarily used in headless or server mode to communicate command execution failures
+ * back to the client.
+ * </p>
  */
 package gama.api.exceptions;
 
 import gama.api.utils.server.CommandResponse;
 
 /**
- * The Class CommandException.
+ * Exception representing a failed command execution in GAMA.
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 5 déc. 2023
