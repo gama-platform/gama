@@ -14,7 +14,7 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
-import gama.api.runtime.IExecutionContext;
+import gama.api.runtime.scope.IExecutionContext;
 import gama.api.utils.collections.Collector;
 import gaml.compiler.gaml.StringEvaluator;
 import gaml.compiler.gaml.ast.SyntacticModelElement;

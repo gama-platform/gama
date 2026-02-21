@@ -22,7 +22,7 @@ import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Signature;
 import gama.api.kernel.agent.IAgent;
-import gama.api.runtime.IExecutionContext;
+import gama.api.runtime.scope.IExecutionContext;
 import gama.api.runtime.scope.InScope;
 
 /**

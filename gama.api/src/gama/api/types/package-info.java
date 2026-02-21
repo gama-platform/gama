@@ -108,7 +108,7 @@
  * <h3>Spatial Types:</h3>
  * <pre>{@code
  * // Create geometry
- * IShape circle = GamaGeometryType.buildCircle(10.0, new GamaPoint(0, 0));
+ * IShape circle = GamaShapeFactory.buildCircle(10.0, new GamaPoint(0, 0));
  * 
  * // Spatial operations
  * double area = circle.getArea();

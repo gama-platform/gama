@@ -28,7 +28,7 @@ import org.eclipse.xtext.scoping.IScope;
 
 import com.google.inject.Inject;
 
-import gama.api.runtime.IExecutionContext;
+import gama.api.runtime.scope.IExecutionContext;
 import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;

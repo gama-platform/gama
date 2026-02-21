@@ -29,14 +29,19 @@ import gama.api.runtime.scope.IScope;
 public class FlushBufferException extends GamaRuntimeException {
 
 	/**
-	 * Instantiates a new flush buffer exception.
+	 * Constructs a new flush buffer exception.
+	 * <p>
+	 * This exception signals that buffered output should be immediately flushed to the output
+	 * stream. It is used to ensure critical messages (errors or warnings) are displayed to
+	 * the user without delay, rather than being held in a buffer.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope in which the flush was triggered, may be null
 	 * @param s
-	 *            the s
+	 *            the message to be flushed and displayed
 	 * @param warning
-	 *            the warning
+	 *            true if this represents a warning, false if it's an error
 	 */
 	public FlushBufferException(final IScope scope, final String s, final boolean warning) {
 		super(scope, s, warning);

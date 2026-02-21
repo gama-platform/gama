@@ -53,7 +53,7 @@ import gama.api.gaml.types.Signature;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IExperimentSpecies;
-import gama.api.runtime.IExecutionContext;
+import gama.api.runtime.scope.IExecutionContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.IGamlFileInfo;
 

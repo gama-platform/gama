@@ -25,7 +25,7 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionCompiler;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Arguments;
-import gama.api.runtime.IExecutionContext;
+import gama.api.runtime.scope.IExecutionContext;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.descriptions.StringBasedExpressionDescription;
 import gaml.compiler.gaml.resource.GamlSyntheticResourcesServices;

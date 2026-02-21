@@ -27,7 +27,6 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.IExecutable;
-import gama.api.runtime.IExecutionContext;
 import gama.api.runtime.IStepable;
 import gama.api.types.list.IList;
 import gama.api.types.topology.ITopology;

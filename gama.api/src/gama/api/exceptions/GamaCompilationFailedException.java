@@ -34,7 +34,14 @@ public class GamaCompilationFailedException extends GamaRuntimeException {
 	/** The Constant serialVersionUID. */
 	private static final long serialVersionUID = 1392647532622819498L;
 
-	/** The list of compilation errors that prevented successful compilation. */
+	/** 
+	 * The list of compilation errors that prevented successful compilation.
+	 * <p>
+	 * Each error in this list contains detailed information including the error type, message,
+	 * source code location (file URI, line number, offset), and any associated data. This list
+	 * is immutable after construction to preserve the compilation error state.
+	 * </p>
+	 */
 	public final List<GamlCompilationError> errorList;
 
 	/**

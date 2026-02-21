@@ -19,7 +19,7 @@
  * 
  * <h3>Execution Context:</h3>
  * <ul>
- *   <li>{@link gama.api.runtime.IExecutionContext} - Execution context for operations</li>
+ *   <li>{@link gama.api.runtime.scope.IExecutionContext} - Execution context for operations</li>
  *   <li>{@link gama.api.runtime.scope.IScope} - Runtime scope providing access to agents and variables</li>
  * </ul>
  * 
@@ -91,6 +91,6 @@
  * 
  * @see gama.api.runtime.scope.IScope
  * @see gama.api.runtime.GamaExecutorService
- * @see gama.api.runtime.IExecutionContext
+ * @see gama.api.runtime.scope.IExecutionContext
  */
 package gama.api.runtime;

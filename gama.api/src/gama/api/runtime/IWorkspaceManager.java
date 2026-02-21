@@ -18,7 +18,57 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.emf.common.util.URI;
 
 /**
- *
+ * Manages the GAMA workspace, which contains user projects, models, and configuration settings.
+ * 
+ * <p>
+ * IWorkspaceManager provides access to Eclipse workspace functionality adapted for GAMA's needs. It handles workspace
+ * location selection, validation, initialization, and provides utility methods for accessing workspace resources and
+ * configuration.
+ * </p>
+ * 
+ * <p>
+ * Key responsibilities:
+ * </p>
+ * <ul>
+ * <li>Manage workspace location and path</li>
+ * <li>Validate workspace directories for GAMA compatibility</li>
+ * <li>Provide access to workspace resources (projects, files)</li>
+ * <li>Store and retrieve workspace preferences (remember location, recent workspaces)</li>
+ * <li>Handle workspace rebuild and clearing operations</li>
+ * <li>Manage GAMA library models location</li>
+ * </ul>
+ * 
+ * <p>
+ * The workspace is identified by a {@link #WORKSPACE_IDENTIFIER} file that marks a directory as a valid GAMA
+ * workspace. This prevents users from accidentally selecting incorrect directories and helps maintain workspace
+ * integrity.
+ * </p>
+ * 
+ * <p>
+ * Usage example:
+ * </p>
+ * 
+ * <pre>
+ * IWorkspaceManager manager = GAMA.getWorkspaceManager();
+ * 
+ * // Get workspace location
+ * String location = manager.getWorkspaceLocation();
+ * 
+ * // Access workspace root to find projects
+ * IWorkspaceRoot root = manager.getRoot();
+ * 
+ * // Validate a potential workspace directory
+ * String error = manager.checkWorkspaceDirectory("/path/to/workspace", true, false, false);
+ * if (error != null) {
+ * 	// Handle invalid workspace
+ * }
+ * 
+ * // Get GAMA library models
+ * URI libraryURI = URI.createURI(IWorkspaceManager.GAMA_LIBRARY_MODELS);
+ * </pre>
+ * 
+ * @see IWorkspace
+ * @see IWorkspaceRoot
  */
 public interface IWorkspaceManager {
 

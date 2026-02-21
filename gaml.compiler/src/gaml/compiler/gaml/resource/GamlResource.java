@@ -39,7 +39,7 @@ import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
-import gama.api.runtime.IExecutionContext;
+import gama.api.runtime.scope.IExecutionContext;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.factories.ModelFactory;
 import gaml.compiler.gaml.indexer.GamlResourceIndexer;

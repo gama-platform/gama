@@ -8,16 +8,63 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.runtime;
+package gama.api.runtime.scope;
 
 import java.util.Map;
 
 import gama.api.gaml.symbols.ISymbol;
-import gama.api.runtime.scope.IScope;
 import gama.api.utils.interfaces.IDisposable;
 
 /**
- * The Interface IExecutionContext.
+ * Represents an execution context in GAMA, providing a hierarchical scope for variable management during statement
+ * execution.
+ * 
+ * <p>
+ * IExecutionContext manages the local variables and temporary variables for a specific execution context, typically
+ * associated with a GAML statement or action. Contexts can be nested, forming a chain where inner contexts can access
+ * variables from outer contexts through the {@link #getOuterContext()} relationship.
+ * </p>
+ * 
+ * <p>
+ * Two types of variables are managed:
+ * </p>
+ * <ul>
+ * <li><b>Local variables:</b> Defined only in the current context (e.g., action parameters, loop variables). These
+ * don't propagate to outer contexts.</li>
+ * <li><b>Temporary variables:</b> Can be accessed recursively through the context chain, allowing inner contexts to
+ * read/write variables from outer contexts.</li>
+ * </ul>
+ * 
+ * <p>
+ * Context hierarchy example:
+ * </p>
+ * 
+ * <pre>
+ * Experiment context (depth 0)
+ *   └─> Simulation context (depth 1)
+ *       └─> Agent action context (depth 2)
+ *           └─> Loop statement context (depth 3)
+ * </pre>
+ * 
+ * <p>
+ * Usage example:
+ * </p>
+ * 
+ * <pre>
+ * IExecutionContext context = scope.getExecutionContext();
+ * 
+ * // Set a local variable (only in this context)
+ * context.putLocalVar("i", 0);
+ * 
+ * // Set a temporary variable (accessible to child contexts)
+ * context.setTempVar("result", value);
+ * 
+ * // Create a child context for a nested statement
+ * IExecutionContext childContext = context.createChildContext(statement);
+ * </pre>
+ * 
+ * @see IScope
+ * @see ExecutionContext
  */
 public interface IExecutionContext extends IDisposable {
 

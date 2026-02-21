@@ -19,10 +19,159 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.server.IServerConfiguration;
 
 /**
- * The Class AbstractExperimentController.
- *
+ * Abstract base class for experiment controllers in GAMA.
+ * 
+ * <p>
+ * This class provides the core infrastructure for controlling experiment execution through a command-based
+ * architecture. It manages the experiment lifecycle, command processing, synchronization, and state management in a
+ * thread-safe manner.
+ * </p>
+ * 
+ * <h3>Architecture Overview</h3>
+ * <p>
+ * The controller uses a dual-thread architecture:
+ * </p>
+ * <ul>
+ * <li><b>Command Thread:</b> Processes user commands from a blocking queue</li>
+ * <li><b>Execution Thread:</b> Runs the simulation steps (subclass responsibility)</li>
+ * </ul>
+ * 
+ * <h3>Command Processing</h3>
+ * <p>
+ * Commands can be processed in two modes:
+ * </p>
+ * <ul>
+ * <li><b>Asynchronous:</b> Commands are queued and return immediately</li>
+ * <li><b>Synchronous:</b> Commands execute directly and block until completion</li>
+ * </ul>
+ * 
+ * <h3>Supported Commands</h3>
+ * <table border="1">
+ * <tr>
+ * <th>Command</th>
+ * <th>Description</th>
+ * <th>Async/Sync</th>
+ * </tr>
+ * <tr>
+ * <td>_OPEN</td>
+ * <td>Initialize and open the experiment</td>
+ * <td>Both</td>
+ * </tr>
+ * <tr>
+ * <td>_START</td>
+ * <td>Start continuous execution</td>
+ * <td>Both</td>
+ * </tr>
+ * <tr>
+ * <td>_PAUSE</td>
+ * <td>Pause execution</td>
+ * <td>Both</td>
+ * </tr>
+ * <tr>
+ * <td>_STEP</td>
+ * <td>Execute a single step</td>
+ * <td>Both</td>
+ * </tr>
+ * <tr>
+ * <td>_BACK</td>
+ * <td>Step backward (if supported)</td>
+ * <td>Both</td>
+ * </tr>
+ * <tr>
+ * <td>_RELOAD</td>
+ * <td>Reload the experiment</td>
+ * <td>Both</td>
+ * </tr>
+ * <tr>
+ * <td>_CLOSE</td>
+ * <td>Close and dispose the experiment</td>
+ * <td>Async only</td>
+ * </tr>
+ * </table>
+ * 
+ * <h3>State Management</h3>
+ * <p>
+ * The controller maintains several volatile flags for thread-safe state management:
+ * </p>
+ * <ul>
+ * <li><b>experimentAlive:</b> Whether the experiment is still running</li>
+ * <li><b>paused:</b> Whether execution is currently paused</li>
+ * <li><b>acceptingCommands:</b> Whether new commands are being accepted</li>
+ * <li><b>disposing:</b> Whether the controller is being disposed</li>
+ * </ul>
+ * 
+ * <h3>Synchronization Mechanism</h3>
+ * <p>
+ * Uses {@link GeneralSynchronizer} objects to coordinate threads:
+ * </p>
+ * <ul>
+ * <li><b>lock:</b> Controls pause/resume of execution</li>
+ * <li><b>previouslock:</b> Used for step-by-step execution synchronization</li>
+ * </ul>
+ * 
+ * <h3>Usage in Subclasses</h3>
+ * <p>
+ * Subclasses must implement {@link #processUserCommand(ExperimentCommand)} to handle commands according to their
+ * execution model:
+ * </p>
+ * <ul>
+ * <li>{@link DefaultExperimentController} - For GUI-based experiments with interactive control</li>
+ * <li>{@link HeadlessExperimentController} - For batch/headless execution without UI</li>
+ * </ul>
+ * 
+ * <h3>Example Subclass Implementation</h3>
+ * 
+ * <pre>
+ * <code>
+ * public class MyController extends AbstractExperimentController {
+ *     
+ *     protected boolean processUserCommand(ExperimentCommand command) {
+ *         switch (command) {
+ *             case _START:
+ *                 paused = false;
+ *                 lock.release();
+ *                 return true;
+ *             case _PAUSE:
+ *                 paused = true;
+ *                 return true;
+ *             // ... handle other commands
+ *         }
+ *         return false;
+ *     }
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h3>Thread Safety</h3>
+ * <p>
+ * This class is designed for concurrent access:
+ * </p>
+ * <ul>
+ * <li>State flags are declared volatile</li>
+ * <li>Command queue is thread-safe (ArrayBlockingQueue)</li>
+ * <li>Synchronizers provide proper memory barriers</li>
+ * <li>Offer pattern prevents blocking on queue full</li>
+ * </ul>
+ * 
+ * <h3>Lifecycle</h3>
+ * <ol>
+ * <li><b>Construction:</b> Command thread starts, accepting commands</li>
+ * <li><b>Operation:</b> Commands queued and processed continuously</li>
+ * <li><b>Disposal:</b> Flags set, threads signaled, resources released</li>
+ * </ol>
+ * 
+ * <h3>Server Configuration</h3>
+ * <p>
+ * Supports server-based experiments through {@link IServerConfiguration}, allowing remote control and headless
+ * operation in server environments.
+ * </p>
+ * 
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 24 oct. 2023
+ * @see IExperimentController
+ * @see DefaultExperimentController
+ * @see HeadlessExperimentController
+ * @see ExperimentCommand
  */
 public abstract class AbstractExperimentController implements IExperimentController {
 

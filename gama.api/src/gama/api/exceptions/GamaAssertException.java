@@ -30,11 +30,19 @@ import gama.api.runtime.scope.IScope;
 public class GamaAssertException extends GamaRuntimeException {
 
 	/**
-	 * Instantiates a new gama assert exception.
+	 * Constructs a new GAML assert exception.
+	 * <p>
+	 * This exception is raised when an {@code assert} statement in GAML code evaluates to false,
+	 * indicating a failed assertion. It can be configured to produce either an error or a warning
+	 * depending on the assertion severity.
+	 * </p>
 	 *
-	 * @param scope the scope
-	 * @param s the s
-	 * @param warning the warning
+	 * @param scope 
+	 *            the execution scope in which the assertion failed, may be null
+	 * @param s 
+	 *            the assertion failure message describing what condition was not met
+	 * @param warning 
+	 *            true if this should be treated as a warning, false for an error
 	 */
 	public GamaAssertException(final IScope scope, final String s, final boolean warning) {
 		super(scope, s, warning);

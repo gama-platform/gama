@@ -46,7 +46,7 @@ import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.PlatformAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
-import gama.api.runtime.IExecutionContext;
+import gama.api.runtime.scope.IExecutionContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IGamaView;
 import gama.api.utils.StringUtils;

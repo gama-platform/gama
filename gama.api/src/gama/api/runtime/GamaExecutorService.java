@@ -39,12 +39,75 @@ import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.prefs.Pref;
 
 /**
- * The Class GamaExecutorService.
+ * Central service for managing concurrent execution of agents in GAMA simulations.
+ * 
+ * <p>
+ * GamaExecutorService provides a unified framework for parallel execution of agent-based operations using Java's
+ * Fork/Join framework. It manages thread pools, concurrency preferences, and provides utilities for executing agent
+ * steps and actions in parallel when beneficial.
+ * </p>
+ * 
+ * <p>
+ * Key features:
+ * </p>
+ * <ul>
+ * <li>Manages a custom {@link ForkJoinPool} optimized for agent-based simulations</li>
+ * <li>Provides configurable concurrency levels for species, grids, and simulations</li>
+ * <li>Implements threshold-based parallelism to avoid overhead on small populations</li>
+ * <li>Caches parallelism decisions for constant expressions to improve performance</li>
+ * <li>Handles out-of-memory errors gracefully with user notifications</li>
+ * <li>Supports both sequential and parallel execution strategies based on population size</li>
+ * </ul>
+ * 
+ * <p>
+ * Concurrency preferences control when parallel execution is enabled:
+ * </p>
+ * <ul>
+ * <li>{@link #CONCURRENCY_SPECIES}: Enable parallel execution for species populations</li>
+ * <li>{@link #CONCURRENCY_GRID}: Enable parallel execution for grid agents</li>
+ * <li>{@link #CONCURRENCY_SIMULATIONS}: Enable parallel execution of multiple simulations</li>
+ * <li>{@link #CONCURRENCY_THRESHOLD}: Minimum population size for parallel execution</li>
+ * <li>{@link #THREADS_NUMBER}: Maximum number of threads to use</li>
+ * </ul>
+ * 
+ * <p>
+ * Usage example:
+ * </p>
+ * 
+ * <pre>
+ * // Execute all agents in a population
+ * GamaExecutorService.step(scope, agentList, species);
+ * 
+ * // Execute a specific action on all agents
+ * GamaExecutorService.execute(scope, executable, agentArray, parallelExpression);
+ * 
+ * // Configure concurrency level
+ * GamaExecutorService.setConcurrencyLevel(8); // Use 8 threads
+ * </pre>
+ * 
+ * @see ParallelAgentRunner
+ * @see AgentSpliterator
+ * @see ForkJoinPool
  */
 public abstract class GamaExecutorService {
 
 	/**
-	 * The Class GamaMemoryExceptionHandler.
+	 * Custom exception handler for managing out-of-memory errors during simulation execution.
+	 * 
+	 * <p>
+	 * This handler intercepts {@link OutOfMemoryError} exceptions thrown by worker threads in the executor service. It
+	 * implements intelligent error handling with rate limiting to avoid overwhelming the user with repeated warnings.
+	 * </p>
+	 * 
+	 * <p>
+	 * Behavior:
+	 * </p>
+	 * <ul>
+	 * <li>Detects heap memory exhaustion and offers to close experiments</li>
+	 * <li>Rate-limits warnings to once per minute</li>
+	 * <li>Provides user-friendly error messages with links to troubleshooting documentation</li>
+	 * <li>Handles both heap and non-heap memory issues appropriately</li>
+	 * </ul>
 	 */
 	static class GamaMemoryExceptionHandler implements UncaughtExceptionHandler {
 

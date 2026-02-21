@@ -15,7 +15,7 @@ import org.eclipse.emf.ecore.EObject;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.gaml.symbols.Arguments;
-import gama.api.runtime.IExecutionContext;
+import gama.api.runtime.scope.IExecutionContext;
 
 /**
  * Interface for GAML expression compilers that transform GAML language constructs into executable expressions. This

@@ -21,7 +21,162 @@ import gama.api.ui.IStatusMessage;
 import gama.api.utils.tests.ITestAgent;
 
 /**
- * The Class ExperimentController.
+ * Default controller for GUI-based experiment execution in GAMA.
+ * 
+ * <p>
+ * This controller manages interactive experiments where users can control execution through the GAMA user interface.
+ * It implements a dual-thread architecture with one thread processing user commands and another executing simulation
+ * steps.
+ * </p>
+ * 
+ * <h3>Architecture</h3>
+ * <p>
+ * The controller uses two concurrent threads:
+ * </p>
+ * <ul>
+ * <li><b>Command Thread:</b> Processes user commands (_OPEN, _START, _PAUSE, _STEP, _BACK, _RELOAD, _CLOSE)</li>
+ * <li><b>Execution Thread:</b> Continuously executes simulation steps when not paused</li>
+ * </ul>
+ * 
+ * <h3>Execution Model</h3>
+ * <p>
+ * The execution thread runs in a loop controlled by the {@code experimentAlive} flag:
+ * </p>
+ * 
+ * <pre>
+ * <code>
+ * while (experimentAlive) {
+ *     if (paused) {
+ *         lock.acquire();  // Block until released by START or STEP
+ *     }
+ *     step();  // Execute one simulation step
+ * }
+ * </code>
+ * </pre>
+ * 
+ * <h3>Command Processing</h3>
+ * <table border="1">
+ * <tr>
+ * <th>Command</th>
+ * <th>Action</th>
+ * <th>State Change</th>
+ * </tr>
+ * <tr>
+ * <td>_OPEN</td>
+ * <td>Opens experiment, initializes simulation</td>
+ * <td>NONE → NOTREADY → (RUNNING or PAUSED)</td>
+ * </tr>
+ * <tr>
+ * <td>_START</td>
+ * <td>Releases execution lock, continuous stepping</td>
+ * <td>PAUSED → RUNNING</td>
+ * </tr>
+ * <tr>
+ * <td>_PAUSE</td>
+ * <td>Sets paused flag</td>
+ * <td>RUNNING → PAUSED</td>
+ * </tr>
+ * <tr>
+ * <td>_STEP</td>
+ * <td>Executes one step then pauses</td>
+ * <td>PAUSED → (step) → PAUSED</td>
+ * </tr>
+ * <tr>
+ * <td>_BACK</td>
+ * <td>Steps backward in recorded states</td>
+ * <td>Maintains PAUSED</td>
+ * </tr>
+ * <tr>
+ * <td>_RELOAD</td>
+ * <td>Reloads experiment, preserving running state</td>
+ * <td>Any → NOTREADY → previous state</td>
+ * </tr>
+ * <tr>
+ * <td>_CLOSE</td>
+ * <td>Closes experiment</td>
+ * <td>Any → NONE</td>
+ * </tr>
+ * </table>
+ * 
+ * <h3>State Synchronization</h3>
+ * <p>
+ * Two synchronizers coordinate execution:
+ * </p>
+ * <ul>
+ * <li><b>lock:</b> Acquired when paused, released to start/step. Controls execution thread blocking.</li>
+ * <li><b>previouslock:</b> Ensures step completion. Acquired during STEP, released after step completes.</li>
+ * </ul>
+ * 
+ * <h3>Usage Example</h3>
+ * 
+ * <pre>
+ * <code>
+ * // Create and start controller
+ * IExperimentSpecies experiment = ...;
+ * DefaultExperimentController controller = new DefaultExperimentController(experiment);
+ * 
+ * // Open the experiment
+ * controller.processOpen(true);  // Synchronous
+ * 
+ * // Start execution
+ * controller.processStart(false);  // Asynchronous - returns immediately
+ * 
+ * // Pause after some time
+ * controller.processPause(true);
+ * 
+ * // Execute single step
+ * controller.processStep(true);
+ * 
+ * // Reload experiment
+ * controller.processReload(true);
+ * 
+ * // Close when done
+ * controller.close();
+ * </code>
+ * </pre>
+ * 
+ * <h3>Error Handling</h3>
+ * <p>
+ * When exceptions occur during command processing:
+ * </p>
+ * <ol>
+ * <li>Exception is wrapped in {@link GamaRuntimeException} if needed</li>
+ * <li>Error is displayed in GUI status bar</li>
+ * <li>Experiment is closed via {@link #notifyExceptionAndCloseExperiment(Throwable)}</li>
+ * <li>State updated to NONE</li>
+ * </ol>
+ * 
+ * <h3>Lifecycle</h3>
+ * <ol>
+ * <li><b>Construction:</b> Both threads start, execution thread blocks on lock</li>
+ * <li><b>Scheduling:</b> Agent scheduled, scope initialized, auto-run if configured</li>
+ * <li><b>Execution:</b> Steps execute based on commands and pause state</li>
+ * <li><b>Disposal:</b> Threads signaled to stop, resources cleaned up</li>
+ * </ol>
+ * 
+ * <h3>Thread Safety</h3>
+ * <ul>
+ * <li>Command queue limited to 10 items to prevent memory issues</li>
+ * <li>Uncaught exceptions handled by {@link GamaExecutorService.EXCEPTION_HANDLER}</li>
+ * <li>Lock acquired in constructor to ensure controlled start</li>
+ * <li>Volatile flags for state coordination</li>
+ * </ul>
+ * 
+ * <h3>Test Integration</h3>
+ * <p>
+ * Automatically starts execution for {@link ITestAgent} instances, enabling automated test runs.
+ * </p>
+ * 
+ * <h3>Server Mode</h3>
+ * <p>
+ * Supports server configuration for remote/headless operation while maintaining GUI controller semantics.
+ * </p>
+ * 
+ * @see AbstractExperimentController
+ * @see IExperimentController
+ * @see IExperimentAgent
+ * @see IExperimentStateListener.State
+ * @author GAMA Team
  */
 public class DefaultExperimentController extends AbstractExperimentController {
 
