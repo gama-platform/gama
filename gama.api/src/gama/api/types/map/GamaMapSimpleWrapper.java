@@ -42,12 +42,197 @@ import gama.api.utils.json.IJsonObject;
 import gama.api.utils.json.IJsonValue;
 
 /**
- * The Class GamaMapSimpleWrapper.
- *
+ * An abstract base class for simple map wrappers that do not track specific key and value types.
+ * 
+ * <p>
+ * {@code GamaMapSimpleWrapper} extends {@link ForwardingMap} to provide a minimal {@link IMap} implementation that
+ * uses generic {@link Types#NO_TYPE} for both keys and values. This is useful for wrapping maps where type information
+ * is not important or not available, such as utility maps or internal data structures.
+ * </p>
+ * 
+ * <h2>Key Features</h2>
+ * <ul>
+ * <li><b>Abstract Base Class</b>: Intended for subclassing, not direct instantiation</li>
+ * <li><b>Type-Agnostic</b>: Returns {@code Types.MAP} without specific key/value types</li>
+ * <li><b>No Type Casting</b>: {@code buildValue} and {@code buildIndex} perform no conversions</li>
+ * <li><b>Minimal Overhead</b>: Simplest possible IMap wrapper implementation</li>
+ * <li><b>ForwardingMap-based</b>: Delegates to underlying map via Guava pattern</li>
+ * </ul>
+ * 
+ * <h2>Comparison with GamaMapWrapper</h2>
+ * <table border="1">
+ * <tr>
+ * <th>Feature</th>
+ * <th>GamaMapSimpleWrapper</th>
+ * <th>GamaMapWrapper</th>
+ * </tr>
+ * <tr>
+ * <td>Type Tracking</td>
+ * <td>None (uses NO_TYPE)</td>
+ * <td>Full (key type + value type)</td>
+ * </tr>
+ * <tr>
+ * <td>Type Casting</td>
+ * <td>No casting</td>
+ * <td>Optional casting via buildValue/buildIndex</td>
+ * </tr>
+ * <tr>
+ * <td>Ordering Tracking</td>
+ * <td>No</td>
+ * <td>Yes (isOrdered flag)</td>
+ * </tr>
+ * <tr>
+ * <td>Use Case</td>
+ * <td>Internal/utility maps</td>
+ * <td>User-facing GAML maps</td>
+ * </tr>
+ * <tr>
+ * <td>Memory Overhead</td>
+ * <td>Minimal</td>
+ * <td>Small (type info + flag)</td>
+ * </tr>
+ * </table>
+ * 
+ * <h2>Usage Pattern</h2>
+ * <p>
+ * Extend this class to create simple map wrappers:
+ * </p>
+ * 
+ * <pre>
+ * public class MySimpleMap extends GamaMapSimpleWrapper&lt;String, Object&gt; {
+ *     private final Map&lt;String, Object&gt; data = new HashMap&lt;&gt;();
+ *     
+ *     &#64;Override
+ *     protected Map&lt;String, Object&gt; delegate() {
+ *         return data;
+ *     }
+ * }
+ * 
+ * // Usage
+ * IMap&lt;String, Object&gt; map = new MySimpleMap();
+ * map.put("key", value); // No type checking
+ * </pre>
+ * 
+ * <h2>Type Methods</h2>
+ * <p>
+ * Type-related methods have minimal implementations:
+ * </p>
+ * <ul>
+ * <li>{@code getGamlType()} - Returns {@code Types.MAP} (unparameterized)</li>
+ * <li>{@code buildValue(scope, object)} - Returns object unchanged (no casting)</li>
+ * <li>{@code buildIndex(scope, object)} - Returns object unchanged (no casting)</li>
+ * </ul>
+ * 
+ * <pre>
+ * IMap&lt;?, ?&gt; simpleMap = new MySimpleMap();
+ * IContainerType type = simpleMap.getGamlType();
+ * // type.getKeyType() returns Types.NO_TYPE
+ * // type.getContentType() returns Types.NO_TYPE
+ * </pre>
+ * 
+ * <h2>GAML Pseudo-Variables</h2>
+ * <p>
+ * Provides basic implementations:
+ * </p>
+ * 
+ * <pre>
+ * IList&lt;?&gt; keys = simpleMap.getKeys();      // Wraps keySet() with NO_TYPE
+ * IList&lt;?&gt; values = simpleMap.getValues();  // Wraps values() with NO_TYPE
+ * IPairList pairs = simpleMap.getPairs();    // Creates GamaPairList
+ * </pre>
+ * 
+ * <h2>Container Operations</h2>
+ * <p>
+ * Implements standard IContainer operations with minimal type handling:
+ * </p>
+ * <ul>
+ * <li>{@code addValue} - Adds pair or key-value mapping</li>
+ * <li>{@code removeValue} - Removes by key</li>
+ * <li>{@code contains} - Checks for key existence</li>
+ * <li>{@code copy} - Creates shallow copy via {@code createWithoutCasting}</li>
+ * </ul>
+ * 
+ * <h2>Iteration Methods</h2>
+ * <p>
+ * Provides pruning-capable iteration:
+ * </p>
+ * 
+ * <pre>
+ * simpleMap.forEachPair((key, value) -&gt; {
+ *     if (condition(key, value)) return false; // Stop
+ *     process(key, value);
+ *     return true; // Continue
+ * });
+ * </pre>
+ * 
+ * <h2>When to Use</h2>
+ * <p>
+ * Use {@code GamaMapSimpleWrapper} when:
+ * </p>
+ * <ul>
+ * <li>Creating internal utility maps that don't need type tracking</li>
+ * <li>Wrapping maps for non-GAML purposes</li>
+ * <li>Type information is unavailable or irrelevant</li>
+ * <li>Minimizing memory overhead is critical</li>
+ * <li>Type safety is ensured externally</li>
+ * </ul>
+ * 
+ * <p>
+ * <b>Do not use</b> when:
+ * </p>
+ * <ul>
+ * <li>GAML type checking is required</li>
+ * <li>Type conversion/casting is needed</li>
+ * <li>Full IMap contract must be satisfied</li>
+ * <li>Ordering information needs to be tracked</li>
+ * </ul>
+ * 
+ * <h2>Performance Characteristics</h2>
+ * <p>
+ * Inherits performance from the delegated map plus minimal wrapper overhead:
+ * </p>
+ * <ul>
+ * <li><b>No type casting overhead</b></li>
+ * <li><b>No type validation overhead</b></li>
+ * <li><b>Direct delegation</b> for all Map operations</li>
+ * <li><b>Minimal memory</b> - no type fields stored</li>
+ * </ul>
+ * 
+ * <h2>Thread Safety</h2>
+ * <p>
+ * Not thread-safe unless the delegated map is thread-safe.
+ * </p>
+ * 
+ * <h2>Equality</h2>
+ * <p>
+ * Uses {@link GamaMapFactory#equals} for comparison, same as other IMap implementations.
+ * </p>
+ * 
+ * <h2>Abstract Method</h2>
+ * <p>
+ * Subclasses must implement:
+ * </p>
+ * <ul>
+ * <li>{@code protected Map<K, V> delegate()} - Returns the wrapped map</li>
+ * </ul>
+ * 
+ * <h2>Implementation Notes</h2>
+ * <ul>
+ * <li>Does not override {@code isOrdered()} - subclasses should override if needed</li>
+ * <li>Serialization uses default implementations from delegated methods</li>
+ * <li>No constructor defined - subclasses define their own</li>
+ * </ul>
+ * 
  * @param <K>
  *            the key type
  * @param <V>
  *            the value type
+ * 
+ * @see GamaMapWrapper for type-tracking wrapper
+ * @see IMap
+ * @see ForwardingMap
+ * 
+ * @author drogoul
  */
 @SuppressWarnings ("unchecked")
 public abstract class GamaMapSimpleWrapper<K, V> extends ForwardingMap<K, V> implements IMap<K, V> {

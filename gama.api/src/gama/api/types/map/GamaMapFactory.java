@@ -27,11 +27,144 @@ import gama.api.types.list.IList;
 import gama.api.types.misc.IContainer;
 
 /**
- * A static factory for creating and managing {@link IMap} instances. This class serves as a frontend for map creation,
- * delegating to an {@link IMapFactory}. It supports creation of ordered/unordered maps, thread-safe maps, and wrapping
- * of existing Java Maps.
+ * A static factory for creating and managing {@link IMap} instances in the GAMA platform.
+ * 
+ * <p>
+ * {@code GamaMapFactory} serves as the central point for creating all {@link IMap} implementations. It delegates to
+ * concrete classes ({@link GamaMap}, {@link GamaMapWrapper}, etc.) and provides various creation strategies including
+ * ordered/unordered maps, thread-safe maps, and zero-copy wrapping of existing Java Maps.
+ * </p>
+ * 
+ * <h2>Factory Method Categories</h2>
+ * <ul>
+ * <li><b>Core creation methods</b> - {@link #create()}, {@link #create(IType, IType)} - Create new empty maps</li>
+ * <li><b>Scope-aware methods</b> - {@link #create(IScope, IType, IType, Object...)} - Cast elements according to GAML
+ * contracts</li>
+ * <li><b>Wrapping methods</b> - {@link #wrap(IType, IType, Map)} - Zero-copy wrappers for existing maps</li>
+ * <li><b>Thread-safe methods</b> - {@link #synchronizedMap(IMap)}, {@link #concurrentMap()} - Thread-safe map
+ * creation</li>
+ * <li><b>Conversion methods</b> - {@link #toMap(IScope, Object)} - Convert arbitrary objects to maps</li>
+ * </ul>
+ * 
+ * <h2>Usage Examples</h2>
+ * 
+ * <h3>Basic Creation</h3>
+ * 
+ * <pre>
+ * // Empty map with default types
+ * IMap&lt;?, ?&gt; genericMap = GamaMapFactory.create();
+ * 
+ * // Empty map with specific types
+ * IMap&lt;String, Integer&gt; scores = GamaMapFactory.create(Types.STRING, Types.INT);
+ * 
+ * // Map with initial capacity
+ * IMap&lt;Integer, String&gt; lookup = GamaMapFactory.create(Types.INT, Types.STRING, 1000);
+ * </pre>
+ * 
+ * <h3>Creation from Data</h3>
+ * 
+ * <pre>
+ * // From key-value pairs (requires scope for type casting)
+ * IMap&lt;String, Integer&gt; map = GamaMapFactory.create(scope, Types.STRING, Types.INT, 
+ *     "alice", 95, "bob", 87, "charlie", 92);
+ * 
+ * // From another container
+ * IList&lt;?&gt; pairs = ...; // List of pairs
+ * IMap&lt;?, ?&gt; fromList = GamaMapFactory.create(scope, Types.NO_TYPE, Types.NO_TYPE, pairs);
+ * </pre>
+ * 
+ * <h3>Wrapping Existing Maps</h3>
+ * 
+ * <pre>
+ * // Wrap a Java map (zero-copy, bidirectional)
+ * Map&lt;String, Double&gt; javaMap = new LinkedHashMap&lt;&gt;();
+ * javaMap.put("pi", 3.14159);
+ * IMap&lt;String, Double&gt; gamaMap = GamaMapFactory.wrap(Types.STRING, Types.FLOAT, javaMap);
+ * 
+ * // Changes are bidirectional
+ * javaMap.put("e", 2.71828);
+ * assert gamaMap.containsKey("e"); // true
+ * </pre>
+ * 
+ * <h3>Thread-Safe Maps</h3>
+ * 
+ * <pre>
+ * // Synchronized wrapper (for single-threaded writes, multi-threaded reads)
+ * IMap&lt;String, Integer&gt; original = GamaMapFactory.create(Types.STRING, Types.INT);
+ * IMap&lt;String, Integer&gt; synced = GamaMapFactory.synchronizedMap(original);
+ * 
+ * // Concurrent map (for multi-threaded reads and writes)
+ * IMap&lt;?, ?&gt; concurrent = GamaMapFactory.concurrentMap();
+ * 
+ * // Synchronized standard Java map
+ * Map&lt;String, Integer&gt; syncedJava = GamaMapFactory.synchronizedOrderedMap();
+ * </pre>
+ * 
+ * <h3>Special Cases</h3>
+ * 
+ * <pre>
+ * // Empty immutable map
+ * IMap EMPTY = GamaMapFactory.EMPTY;
+ * 
+ * // Create without type casting (for performance)
+ * IMap&lt;String, Integer&gt; fastMap = GamaMapFactory.createWithoutCasting(Types.STRING, Types.INT, existingMap);
+ * </pre>
+ * 
+ * <h2>Type Casting Behavior</h2>
+ * <p>
+ * Methods accepting an {@link IScope} strictly adhere to GAML container contracts:
+ * </p>
+ * <ul>
+ * <li><b>With scope</b>: Keys and values are cast to declared types when {@code FLAGS.CAST_CONTAINER_CONTENTS} is
+ * enabled</li>
+ * <li><b>Without scope</b>: No type casting - assumes data is already correctly typed</li>
+ * <li><b>createWithoutCasting</b>: Explicitly skips type casting for performance</li>
+ * </ul>
+ * 
+ * <h2>Ordering Guarantees</h2>
+ * <ul>
+ * <li>{@link GamaMap} - Always ordered (uses LinkedHashMap)</li>
+ * <li>{@link GamaMapWrapper} - Preserves wrapped map's ordering behavior</li>
+ * <li>{@link #concurrentMap()} - Not ordered (uses ConcurrentHashMap)</li>
+ * </ul>
+ * 
+ * <h2>Equality Testing</h2>
+ * <p>
+ * Provides {@link #equals(IMap, IMap)} for comparing maps:
+ * </p>
+ * <ul>
+ * <li>Compares sizes first</li>
+ * <li>Then compares all key-value pairs</li>
+ * <li>Ignores type information and iteration order</li>
+ * </ul>
+ * 
+ * <h2>Performance Considerations</h2>
+ * <ul>
+ * <li><b>Wrapping vs. Copying</b>: {@code wrap()} methods are zero-copy but changes affect original; {@code create()}
+ * methods always create independent copies</li>
+ * <li><b>Casting Overhead</b>: Scope-aware methods have casting overhead; use {@code createWithoutCasting()} when
+ * types are guaranteed</li>
+ * <li><b>Capacity Hints</b>: Provide initial capacity when size is known to avoid resizing</li>
+ * <li><b>Thread Safety</b>: {@code synchronizedMap()} adds synchronization overhead; {@code concurrentMap()} is more
+ * efficient for high concurrency</li>
+ * </ul>
+ * 
+ * <h2>Implementation Notes</h2>
+ * <ul>
+ * <li>All creation methods are static - no factory instance needed</li>
+ * <li>DEFAULT_SIZE = 10 for maps created without capacity hints</li>
+ * <li>EMPTY map is immutable and shared - do not modify</li>
+ * <li>Supports conversion from pairs, lists, and other containers</li>
+ * </ul>
+ * 
+ * @see IMap
+ * @see GamaMap
+ * @see GamaMapWrapper
+ * @see GamaMapSimpleWrapper
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
  */
-
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaMapFactory {
 

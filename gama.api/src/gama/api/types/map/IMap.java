@@ -35,12 +35,174 @@ import gama.api.utils.interfaces.BiConsumerWithPruning;
 import gama.api.utils.interfaces.ConsumerWithPruning;
 
 /**
- * The Interface IMap.
- *
+ * The main interface for type-safe, key-value maps in the GAMA modeling platform.
+ * 
+ * <p>
+ * {@code IMap} extends Java's {@link Map} interface while integrating with GAMA's type system and runtime
+ * capabilities. It provides:
+ * </p>
+ * <ul>
+ * <li><b>Dual Type Tracking</b>: Maintains both key and value types via {@link IContainerType}</li>
+ * <li><b>Ordered Access</b>: Optionally preserves insertion order (implementation-dependent)</li>
+ * <li><b>GAML Integration</b>: Pseudo-variables (keys, values, pairs), operators, and serialization</li>
+ * <li><b>Scope-Aware Operations</b>: Operations accept {@link IScope} for proper context</li>
+ * <li><b>Specialized Iteration</b>: Pruning-capable forEach methods for efficient traversal</li>
+ * </ul>
+ * 
+ * <h2>Core Features</h2>
+ * 
+ * <h3>1. GAML Pseudo-Variables</h3>
+ * <p>
+ * Maps expose three pseudo-attributes accessible in GAML:
+ * </p>
+ * 
+ * <pre>
+ * // In GAML
+ * map&lt;string, int&gt; myMap &lt;- ["a"::1, "b"::2, "c"::3];
+ * list&lt;string&gt; k &lt;- myMap.keys;   // ["a", "b", "c"]
+ * list&lt;int&gt; v &lt;- myMap.values;     // [1, 2, 3]
+ * list&lt;pair&gt; p &lt;- myMap.pairs;     // [a::1, b::2, c::3]
+ * </pre>
+ * 
+ * <pre>
+ * // In Java
+ * IMap&lt;String, Integer&gt; map = GamaMapFactory.create(Types.STRING, Types.INT);
+ * map.put("a", 1);
+ * 
+ * IList&lt;String&gt; keys = map.getKeys();        // List of keys
+ * IList&lt;Integer&gt; values = map.getValues();   // List of values
+ * IPairList pairs = map.getPairs();           // List of Map.Entry objects
+ * </pre>
+ * 
+ * <h3>2. Reverse Operation</h3>
+ * <p>
+ * The {@code reverse} operator swaps keys and values:
+ * </p>
+ * 
+ * <pre>
+ * IMap&lt;String, Integer&gt; original = GamaMapFactory.create(Types.STRING, Types.INT);
+ * original.put("a", 1);
+ * original.put("b", 2);
+ * 
+ * IMap&lt;Integer, String&gt; reversed = original.reverse(scope);
+ * // reversed: {1 -&gt; "a", 2 -&gt; "b"}
+ * </pre>
+ * 
+ * <h3>3. Type Building</h3>
+ * <p>
+ * The interface provides methods to convert keys and values according to the map's types:
+ * </p>
+ * <ul>
+ * <li>{@link #buildValue(IScope, Object)} - Casts values to the content type</li>
+ * <li>{@link #buildIndex(IScope, Object)} - Casts keys to the key type</li>
+ * </ul>
+ * 
+ * <h3>4. Efficient Iteration with Pruning</h3>
+ * <p>
+ * Specialized forEach methods support early termination:
+ * </p>
+ * 
+ * <pre>
+ * // Stop iteration when condition is met
+ * map.forEachPair((key, value) -&gt; {
+ *     if (value &gt; 100) return false; // Stop iteration
+ *     processEntry(key, value);
+ *     return true; // Continue iteration
+ * });
+ * </pre>
+ * 
+ * <h2>Ordering</h2>
+ * <p>
+ * The {@link #isOrdered()} method indicates whether the map preserves insertion order:
+ * </p>
+ * <ul>
+ * <li><b>Ordered</b>: {@link GamaMap} (uses LinkedHashMap) - keys/values/pairs maintain insertion order</li>
+ * <li><b>Unordered</b>: Maps wrapping HashMap - iteration order is unpredictable</li>
+ * </ul>
+ * 
+ * <pre>
+ * IMap&lt;String, Integer&gt; orderedMap = GamaMapFactory.create(Types.STRING, Types.INT);
+ * // orderedMap.isOrdered() returns true
+ * 
+ * Map&lt;String, Integer&gt; hashMap = new HashMap&lt;&gt;();
+ * IMap&lt;String, Integer&gt; unorderedMap = GamaMapFactory.wrap(Types.STRING, Types.INT, hashMap);
+ * // unorderedMap.isOrdered() may return false (implementation-dependent)
+ * </pre>
+ * 
+ * <h2>Usage in GAML</h2>
+ * <p>
+ * Maps are fundamental container types in GAML:
+ * </p>
+ * 
+ * <pre>
+ * // Creation
+ * map&lt;string, int&gt; scores &lt;- ["Alice"::95, "Bob"::87, "Charlie"::92];
+ * 
+ * // Access
+ * int aliceScore &lt;- scores["Alice"];
+ * 
+ * // Modification
+ * scores["David"] &lt;- 88;
+ * remove key: "Bob" from: scores;
+ * 
+ * // Iteration
+ * loop key over: scores.keys {
+ *     write key + ": " + scores[key];
+ * }
+ * </pre>
+ * 
+ * <h2>IPairList Interface</h2>
+ * <p>
+ * Nested interface that combines {@link Set} and {@link IList} for entry pairs:
+ * </p>
+ * <ul>
+ * <li>Returned by {@link #getPairs()}</li>
+ * <li>Implements both Set&lt;Map.Entry&gt; and IList&lt;Map.Entry&gt;</li>
+ * <li>Preserves order (in ordered maps)</li>
+ * </ul>
+ * 
+ * <h2>Default Implementations</h2>
+ * <p>
+ * Most implementing classes ({@link GamaMap}, {@link GamaMapWrapper}) provide standard behavior. The interface itself
+ * does not provide default implementations for most methods, delegating to concrete classes.
+ * </p>
+ * 
+ * <h2>Performance Considerations</h2>
+ * <p>
+ * Performance depends on the underlying implementation:
+ * </p>
+ * <ul>
+ * <li><b>GamaMap (LinkedHashMap)</b>: O(1) access, ordered iteration</li>
+ * <li><b>HashMap-based</b>: O(1) access, unordered iteration (slightly faster)</li>
+ * <li><b>TreeMap-based</b>: O(log n) access, sorted iteration</li>
+ * </ul>
+ * 
+ * <h2>Thread Safety</h2>
+ * <p>
+ * Like standard Java Maps, {@code IMap} implementations are typically <b>not thread-safe</b>. Use
+ * {@link GamaMapFactory#synchronizedMap} for thread-safe access.
+ * </p>
+ * 
+ * <h2>Implementation Notes</h2>
+ * <ul>
+ * <li><b>Null Keys/Values</b>: Support depends on underlying implementation (LinkedHashMap allows null values, not
+ * null keys)</li>
+ * <li><b>Value at Index</b>: {@link #valueAt(int)} provides indexed access to values (in insertion order for ordered
+ * maps)</li>
+ * <li><b>Type Casting</b>: Controlled by {@code FLAGS.CAST_CONTAINER_CONTENTS}</li>
+ * </ul>
+ * 
  * @param <K>
  *            the key type
  * @param <V>
  *            the value type
+ * 
+ * @see GamaMapFactory for creating IMap instances
+ * @see GamaMap for the primary implementation
+ * @see IContainer for parent container interfaces
+ * @see Map for Java Map interface
+ * 
+ * @author drogoul
  */
 @vars ({ @variable (
 		name = IMap.KEYS,

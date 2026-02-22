@@ -23,9 +23,89 @@ import gama.api.runtime.scope.IScope;
 import one.util.streamex.StreamEx;
 
 /**
- * Written by drogoul Modified on 21 nov. 2008
- *
- * @todo Description
+ * The primary concrete implementation of {@link IList} for the GAMA platform.
+ * 
+ * <p>
+ * {@code GamaList} extends {@link ArrayList} to provide a type-safe, GAML-integrated list implementation. It tracks
+ * its content type through an {@link IContainerType} and ensures proper type handling for all operations.
+ * </p>
+ * 
+ * <h2>Key Features</h2>
+ * <ul>
+ * <li><b>ArrayList-based</b>: Inherits all performance characteristics of ArrayList (fast random access, dynamic
+ * resizing)</li>
+ * <li><b>Type Tracking</b>: Maintains an {@link IContainerType} describing the element type</li>
+ * <li><b>Efficient Cloning</b>: Supports shallow copying while preserving or changing content type</li>
+ * <li><b>Custom Equality</b>: Uses {@link GamaListFactory#equals} for GAMA-aware equality checks</li>
+ * </ul>
+ * 
+ * <h2>Usage</h2>
+ * <p>
+ * <b>Do not instantiate directly</b>. Use {@link GamaListFactory} instead:
+ * </p>
+ * 
+ * <pre>
+ * // Create an empty list
+ * IList&lt;Integer&gt; numbers = GamaListFactory.create(Types.INT);
+ * 
+ * // Create from elements
+ * IList&lt;String&gt; strings = GamaListFactory.create(scope, Types.STRING, "a", "b", "c");
+ * 
+ * // Create with initial capacity
+ * IList&lt;Double&gt; values = GamaListFactory.create(Types.FLOAT, 100);
+ * </pre>
+ * 
+ * <h2>Type Handling</h2>
+ * <p>
+ * The list maintains a {@link IContainerType} that defines its element type. When the content type is changed (via
+ * {@link #listValue} or {@link #cloneWithContentType}), a new type is created:
+ * </p>
+ * 
+ * <pre>
+ * IList&lt;Object&gt; original = GamaListFactory.create(Types.INT);
+ * // Change content type to FLOAT
+ * IList&lt;Double&gt; converted = original.listValue(scope, Types.FLOAT, true);
+ * </pre>
+ * 
+ * <h2>Performance Characteristics</h2>
+ * <ul>
+ * <li><b>Random Access</b>: O(1) - inherited from ArrayList</li>
+ * <li><b>Add/Remove at end</b>: O(1) amortized - inherited from ArrayList</li>
+ * <li><b>Add/Remove at index</b>: O(n) - inherited from ArrayList</li>
+ * <li><b>Type Casting</b>: Additional overhead when {@code FLAGS.CAST_CONTAINER_CONTENTS} is enabled</li>
+ * </ul>
+ * 
+ * <h2>Equality and Hashing</h2>
+ * <p>
+ * Overrides {@link #equals(Object)} to use {@link GamaListFactory#equals}, which compares:
+ * </p>
+ * <ul>
+ * <li>List sizes</li>
+ * <li>Element equality (element by element)</li>
+ * <li>Does NOT compare content types</li>
+ * </ul>
+ * 
+ * <h2>Thread Safety</h2>
+ * <p>
+ * Like ArrayList, {@code GamaList} is <b>not thread-safe</b>. For concurrent access, wrap with
+ * {@link Collections#synchronizedList} or use concurrent collections.
+ * </p>
+ * 
+ * <h2>Implementation Notes</h2>
+ * <ul>
+ * <li><b>Protected Constructor</b>: Ensures creation only through GamaListFactory</li>
+ * <li><b>Mutable Type</b>: The type field is mutable to support efficient type changes during cloning</li>
+ * <li><b>Streaming</b>: Provides {@link #stream(IScope)} for StreamEx integration</li>
+ * </ul>
+ * 
+ * @param <E>
+ *            the element type
+ * 
+ * @see GamaListFactory for creation methods
+ * @see IList for the interface contract
+ * @see ArrayList for underlying implementation details
+ * 
+ * @author drogoul
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaList<E> extends ArrayList<E> implements IList<E> {

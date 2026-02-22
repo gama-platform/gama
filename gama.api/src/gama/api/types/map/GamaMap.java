@@ -43,9 +43,174 @@ import gama.api.utils.json.IJsonValue;
 import gama.dev.FLAGS;
 
 /**
- * The Class GamaMap. Use GamaMapFactory to create GamaMaps
+ * The primary concrete implementation of {@link IMap} for the GAMA platform.
+ * 
+ * <p>
+ * {@code GamaMap} extends {@link LinkedHashMap} to provide a type-safe, ordered, GAML-integrated map implementation.
+ * It tracks both key and value types through an {@link IContainerType} and ensures proper type handling for all
+ * operations.
+ * </p>
+ * 
+ * <h2>Key Features</h2>
+ * <ul>
+ * <li><b>LinkedHashMap-based</b>: Preserves insertion order for keys, values, and pairs</li>
+ * <li><b>Dual Type Tracking</b>: Maintains both key type and value type via {@link IContainerType}</li>
+ * <li><b>Ordered Iteration</b>: {@link #isOrdered()} returns {@code true} - consistent iteration order</li>
+ * <li><b>GAML Integration</b>: Full support for GAML operators and pseudo-variables</li>
+ * <li><b>Custom Equality</b>: Uses {@link GamaMapFactory#equals} for GAMA-aware equality checks</li>
+ * </ul>
+ * 
+ * <h2>Usage</h2>
+ * <p>
+ * <b>Do not instantiate directly</b>. Use {@link GamaMapFactory} instead:
+ * </p>
+ * 
+ * <pre>
+ * // Create an empty map
+ * IMap&lt;String, Integer&gt; scores = GamaMapFactory.create(Types.STRING, Types.INT);
+ * 
+ * // Create from key-value pairs
+ * IMap&lt;String, Double&gt; prices = GamaMapFactory.create(scope, Types.STRING, Types.FLOAT, 
+ *     "apple", 1.5, "banana", 0.8, "orange", 2.0);
+ * 
+ * // Create with initial capacity
+ * IMap&lt;Integer, String&gt; lookup = GamaMapFactory.create(Types.INT, Types.STRING, 1000);
+ * </pre>
+ * 
+ * <h2>Ordered Behavior</h2>
+ * <p>
+ * Inherits insertion-order preservation from {@link LinkedHashMap}:
+ * </p>
+ * 
+ * <pre>
+ * IMap&lt;String, Integer&gt; map = GamaMapFactory.create(Types.STRING, Types.INT);
+ * map.put("first", 1);
+ * map.put("second", 2);
+ * map.put("third", 3);
+ * 
+ * // Iteration order matches insertion order
+ * IList&lt;String&gt; keys = map.getKeys();
+ * // keys = ["first", "second", "third"]
+ * 
+ * IList&lt;Integer&gt; values = map.getValues();
+ * // values = [1, 2, 3]
+ * </pre>
+ * 
+ * <h2>Type Handling</h2>
+ * <p>
+ * The map maintains an {@link IContainerType} with both key and value types. Type conversions use
+ * {@link #buildIndex(IScope, Object)} for keys and {@link #buildValue(IScope, Object)} for values:
+ * </p>
+ * 
+ * <pre>
+ * IMap&lt;Integer, String&gt; map = GamaMapFactory.create(Types.INT, Types.STRING);
+ * 
+ * // Automatic type casting (when FLAGS.CAST_CONTAINER_CONTENTS is enabled)
+ * map.setValueAtIndex(scope, "42", 100);  // "42" casted to Integer, 100 to String
+ * // Result: map contains {42 -&gt; "100"}
+ * </pre>
+ * 
+ * <h2>GAML Pseudo-Variables</h2>
+ * <p>
+ * Supports the standard map pseudo-variables:
+ * </p>
+ * <ul>
+ * <li><b>keys</b>: {@link #getKeys()} - Returns {@link IList} of keys in insertion order</li>
+ * <li><b>values</b>: {@link #getValues()} - Returns {@link IList} of values in insertion order</li>
+ * <li><b>pairs</b>: {@link #getPairs()} - Returns {@link IPairList} of Map.Entry objects</li>
+ * </ul>
+ * 
+ * <h2>Performance Characteristics</h2>
+ * <p>
+ * Inherits performance from {@link LinkedHashMap}:
+ * </p>
+ * <ul>
+ * <li><b>get/put/remove</b>: O(1) average case</li>
+ * <li><b>Iteration</b>: O(n) - faster than HashMap due to maintained order</li>
+ * <li><b>containsKey/containsValue</b>: O(1) for keys, O(n) for values</li>
+ * <li><b>Memory overhead</b>: Slightly higher than HashMap (maintains doubly-linked list)</li>
+ * </ul>
+ * 
+ * <h2>Specialized Iteration</h2>
+ * <p>
+ * Provides pruning-capable iteration methods for efficiency:
+ * </p>
+ * 
+ * <pre>
+ * // Iterate over pairs with early termination
+ * map.forEachPair((key, value) -&gt; {
+ *     if (someCondition(key, value)) return false; // Stop iteration
+ *     process(key, value);
+ *     return true; // Continue iteration
+ * });
+ * 
+ * // Iterate over values only
+ * map.forEachValue(value -&gt; {
+ *     processValue(value);
+ *     return true; // Continue
+ * });
+ * </pre>
+ * 
+ * <h2>Equality and Hashing</h2>
+ * <p>
+ * Overrides {@link #equals(Object)} to use {@link GamaMapFactory#equals}, which compares:
+ * </p>
+ * <ul>
+ * <li>Map sizes</li>
+ * <li>All key-value pairs (must match exactly)</li>
+ * <li>Does NOT compare key/value types</li>
+ * <li>Does NOT require same iteration order (just same mappings)</li>
+ * </ul>
+ * 
+ * <h2>Null Handling</h2>
+ * <p>
+ * Following {@link LinkedHashMap} behavior:
+ * </p>
+ * <ul>
+ * <li><b>Null keys</b>: Not supported (will throw NullPointerException)</li>
+ * <li><b>Null values</b>: Supported</li>
+ * </ul>
+ * 
+ * <h2>Thread Safety</h2>
+ * <p>
+ * Like LinkedHashMap, {@code GamaMap} is <b>not thread-safe</b>. For concurrent access:
+ * </p>
+ * <ul>
+ * <li>Use {@link GamaMapFactory#synchronizedMap(IMap)} for synchronized wrapper</li>
+ * <li>Use {@link GamaMapFactory#concurrentMap()} for concurrent map</li>
+ * <li>Provide external synchronization</li>
+ * </ul>
+ * 
+ * <h2>JSON Serialization</h2>
+ * <p>
+ * Implements {@link #serializeToJson(IJson)} for JSON export:
+ * </p>
+ * 
+ * <pre>
+ * IMap&lt;String, Integer&gt; map = ...;
+ * IJsonValue json = map.serializeToJson(jsonContext);
+ * // Results in: {"key1": value1, "key2": value2, ...}
+ * </pre>
+ * 
+ * <h2>Implementation Notes</h2>
+ * <ul>
+ * <li>Protected constructor ensures creation only through {@link GamaMapFactory}</li>
+ * <li>Mutable type field allows efficient type changes in some scenarios</li>
+ * <li>Constants KEYS, VALUES, PAIRS match pseudo-variable names</li>
+ * <li>Implements {@link #buildIndexes} for bulk key conversion</li>
+ * </ul>
+ * 
+ * @param <K>
+ *            the key type
+ * @param <V>
+ *            the value type
+ * 
+ * @see GamaMapFactory for creation methods
+ * @see IMap for the interface contract
+ * @see LinkedHashMap for underlying implementation details
+ * 
+ * @author drogoul
  */
-
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaMap<K, V> extends LinkedHashMap<K, V> implements IMap<K, V> {
 

@@ -25,12 +25,178 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 
 /**
- * A wrapper that tries to wrap a Collection into an IList. Not all operations are meaningful (those with indices in
- * particular) and some are really costly (listIterators). Wrapped can not be a List.
- *
- * @author drogoul
- *
+ * A wrapper that adapts a non-List {@link Collection} (Set, Queue, etc.) into a GAMA {@link IList}.
+ * 
+ * <p>
+ * {@code GamaListCollectionWrapper} provides a {@link List} interface over collections that don't natively support
+ * indexed access. This is useful for integrating arbitrary Java collections into GAMA's type system, though with
+ * performance trade-offs for index-based operations.
+ * </p>
+ * 
+ * <h2>Key Features</h2>
+ * <ul>
+ * <li><b>Collection Adaptation</b>: Converts any Collection to IList interface</li>
+ * <li><b>Zero-Copy Design</b>: Wraps existing collections without data duplication</li>
+ * <li><b>Bidirectional Updates</b>: Non-indexed operations (add, remove by value) affect the wrapped collection</li>
+ * <li><b>Type Tracking</b>: Maintains {@link IContainerType} for GAML integration</li>
+ * <li><b>ForwardingCollection-based</b>: Inherits delegation pattern from Guava</li>
+ * </ul>
+ * 
+ * <h2>Usage</h2>
+ * <p>
+ * <b>Do not instantiate directly</b>. Used internally by {@link GamaListFactory} when wrapping non-List collections:
+ * </p>
+ * 
+ * <pre>
+ * // Wrap a Set (order may vary)
+ * Set&lt;String&gt; set = new HashSet&lt;&gt;(Arrays.asList("a", "b", "c"));
+ * IList&lt;String&gt; list = GamaListFactory.wrap(Types.STRING, set);
+ * 
+ * // Indexed access works but may be slow
+ * String first = list.get(0); // O(n) - iterates to index
+ * 
+ * // Non-indexed operations are efficient
+ * list.add("d"); // O(1) for HashSet
+ * list.remove("a"); // O(1) for HashSet
+ * </pre>
+ * 
+ * <h2>When to Use</h2>
+ * <p>
+ * Use {@code GamaListCollectionWrapper} when:
+ * </p>
+ * <ul>
+ * <li>You have a Set, Queue, or other non-List Collection</li>
+ * <li>You need IList interface for GAMA integration</li>
+ * <li>Indexed access is rare or performance is not critical</li>
+ * <li>The collection's iteration order is acceptable as the "list order"</li>
+ * </ul>
+ * 
+ * <p>
+ * <b>Do not use</b> when:
+ * </p>
+ * <ul>
+ * <li>Frequent indexed access is required (convert to ArrayList instead)</li>
+ * <li>Stable ordering by index is critical (use ordered collections)</li>
+ * <li>Performance is critical for get/set operations</li>
+ * </ul>
+ * 
+ * <h2>Performance Characteristics</h2>
+ * <p>
+ * Performance depends heavily on the wrapped collection type:
+ * </p>
+ * 
+ * <table border="1">
+ * <tr>
+ * <th>Operation</th>
+ * <th>Complexity</th>
+ * <th>Notes</th>
+ * </tr>
+ * <tr>
+ * <td>get(index)</td>
+ * <td>O(n)</td>
+ * <td>Uses Guava's Iterables.get - iterates to index</td>
+ * </tr>
+ * <tr>
+ * <td>set(index, element)</td>
+ * <td>O(n)</td>
+ * <td>Gets element at index, adds new element (order not guaranteed)</td>
+ * </tr>
+ * <tr>
+ * <td>add(element)</td>
+ * <td>O(1) or O(log n)</td>
+ * <td>Delegates to collection's add (HashSet: O(1), TreeSet: O(log n))</td>
+ * </tr>
+ * <tr>
+ * <td>remove(element)</td>
+ * <td>O(1) or O(n)</td>
+ * <td>Delegates to collection's remove</td>
+ * </tr>
+ * <tr>
+ * <td>size()</td>
+ * <td>O(1)</td>
+ * <td>Direct delegation</td>
+ * </tr>
+ * <tr>
+ * <td>contains(element)</td>
+ * <td>O(1) or O(n)</td>
+ * <td>Delegates to collection's contains</td>
+ * </tr>
+ * </table>
+ * 
+ * <h2>Index-Based Operations</h2>
+ * <p>
+ * <b>Warning:</b> Index-based operations are <b>not meaningful</b> for most non-List collections:
+ * </p>
+ * <ul>
+ * <li><b>Unordered Sets</b>: Index order is arbitrary and may change</li>
+ * <li><b>Queues</b>: Index order may not reflect queue ordering</li>
+ * <li><b>set(index, element)</b>: Doesn't replace at index; adds element and removes old one</li>
+ * <li><b>add(index, element)</b>: Ignores index parameter; just adds to collection</li>
+ * </ul>
+ * 
+ * <h2>Supported Operations</h2>
+ * <p>
+ * <b>Fully Supported (delegated to Collection):</b>
+ * </p>
+ * <ul>
+ * <li>add(element), addAll - collection operations</li>
+ * <li>remove(element), removeAll, retainAll - collection operations</li>
+ * <li>contains, containsAll - membership tests</li>
+ * <li>size, isEmpty, clear - size operations</li>
+ * <li>iterator - iteration</li>
+ * </ul>
+ * 
+ * <p>
+ * <b>Supported with Performance Penalty:</b>
+ * </p>
+ * <ul>
+ * <li>get(index) - O(n) iteration to index</li>
+ * <li>indexOf, lastIndexOf - O(n) search</li>
+ * </ul>
+ * 
+ * <p>
+ * <b>Supported but Semantics Differ:</b>
+ * </p>
+ * <ul>
+ * <li>set(index, element) - doesn't truly replace at index</li>
+ * <li>add(index, element) - ignores index</li>
+ * <li>remove(index) - gets element at index then removes it</li>
+ * </ul>
+ * 
+ * <p>
+ * <b>Not Properly Supported:</b>
+ * </p>
+ * <ul>
+ * <li>listIterator - costly to implement correctly</li>
+ * <li>subList - would require maintaining index consistency</li>
+ * </ul>
+ * 
+ * <h2>Thread Safety</h2>
+ * <p>
+ * Not thread-safe unless the wrapped collection is thread-safe.
+ * </p>
+ * 
+ * <h2>Equality</h2>
+ * <p>
+ * Uses {@link GamaListFactory#equals} for comparison, which compares elements in iteration order.
+ * </p>
+ * 
+ * <h2>Best Practices</h2>
+ * <ul>
+ * <li>If you frequently need indexed access, convert to a proper List first</li>
+ * <li>Use only for temporary GAMA integration of collections</li>
+ * <li>Prefer iteration over indexed access</li>
+ * <li>Be aware that "list order" is just iteration order</li>
+ * </ul>
+ * 
  * @param <E>
+ *            the element type
+ * 
+ * @see GamaListFactory
+ * @see IList
+ * @see ForwardingCollection
+ * 
+ * @author drogoul
  */
 public class GamaListCollectionWrapper<E> extends ForwardingCollection<E> implements IList<E> {
 

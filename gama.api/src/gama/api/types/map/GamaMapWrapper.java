@@ -43,12 +43,176 @@ import gama.api.utils.json.IJsonValue;
 import gama.dev.FLAGS;
 
 /**
- * The Class GamaMapWrapper.
- *
+ * A zero-copy wrapper that adapts a standard Java {@link Map} into a GAMA {@link IMap}.
+ * 
+ * <p>
+ * {@code GamaMapWrapper} uses Guava's {@link ForwardingMap} to delegate all {@link Map} operations to an existing Java
+ * map while adding GAMA-specific type tracking (both key and value types) and container behaviors. This enables
+ * seamless integration of Java maps into the GAMA type system without copying data.
+ * </p>
+ * 
+ * <h2>Key Features</h2>
+ * <ul>
+ * <li><b>Zero-Copy Design</b>: Wraps existing maps without data duplication</li>
+ * <li><b>Bidirectional Updates</b>: Changes to the wrapper affect the wrapped map and vice versa</li>
+ * <li><b>Dual Type Tracking</b>: Maintains both key type and value type via {@link IContainerType}</li>
+ * <li><b>Order Preservation</b>: Tracks whether the wrapped map is ordered</li>
+ * <li><b>ForwardingMap-based</b>: Inherits reliable delegation pattern from Guava</li>
+ * </ul>
+ * 
+ * <h2>Usage</h2>
+ * <p>
+ * <b>Do not instantiate directly</b>. Use {@link GamaMapFactory#wrap} instead:
+ * </p>
+ * 
+ * <pre>
+ * // Wrap an existing Java map
+ * Map&lt;String, Integer&gt; javaMap = new LinkedHashMap&lt;&gt;();
+ * javaMap.put("a", 1);
+ * javaMap.put("b", 2);
+ * 
+ * IMap&lt;String, Integer&gt; gamaMap = GamaMapFactory.wrap(Types.STRING, Types.INT, javaMap);
+ * 
+ * // Both references point to the same data
+ * javaMap.put("c", 3);
+ * assert gamaMap.size() == 3; // true
+ * 
+ * gamaMap.put("d", 4);
+ * assert javaMap.size() == 4; // true
+ * </pre>
+ * 
+ * <h2>When to Use</h2>
+ * <p>
+ * Use {@code GamaMapWrapper} when:
+ * </p>
+ * <ul>
+ * <li>You have an existing Java map that needs GAMA integration</li>
+ * <li>You want to avoid copying large maps</li>
+ * <li>Bidirectional updates are desired or acceptable</li>
+ * <li>The wrapped map is already of the correct types (no casting needed)</li>
+ * <li>You need to preserve the original map's implementation characteristics</li>
+ * </ul>
+ * 
+ * <p>
+ * <b>Do not use</b> when:
+ * </p>
+ * <ul>
+ * <li>You need an independent copy (use {@link GamaMapFactory#create} instead)</li>
+ * <li>The original map should remain immutable</li>
+ * <li>Thread safety is required and the wrapped map is not thread-safe</li>
+ * <li>Type casting is needed (use scope-aware factory methods)</li>
+ * </ul>
+ * 
+ * <h2>Ordering Behavior</h2>
+ * <p>
+ * The {@code isOrdered} flag tracks whether the wrapped map preserves insertion order:
+ * </p>
+ * 
+ * <pre>
+ * // Ordered wrapper
+ * Map&lt;String, Integer&gt; linkedMap = new LinkedHashMap&lt;&gt;();
+ * IMap&lt;String, Integer&gt; orderedWrapper = GamaMapFactory.wrap(Types.STRING, Types.INT, linkedMap);
+ * assert orderedWrapper.isOrdered(); // true (if wrapper was created with isOrdered=true)
+ * 
+ * // Unordered wrapper
+ * Map&lt;String, Integer&gt; hashMap = new HashMap&lt;&gt;();
+ * IMap&lt;String, Integer&gt; unorderedWrapper = GamaMapFactory.wrap(
+ *     Types.STRING, Types.INT, false, hashMap);
+ * assert !unorderedWrapper.isOrdered(); // true
+ * </pre>
+ * 
+ * <h2>Performance Characteristics</h2>
+ * <p>
+ * Inherits all performance characteristics of the wrapped map:
+ * </p>
+ * <ul>
+ * <li><b>LinkedHashMap</b>: O(1) operations, ordered iteration</li>
+ * <li><b>HashMap</b>: O(1) operations, unordered iteration (slightly faster)</li>
+ * <li><b>TreeMap</b>: O(log n) operations, sorted iteration</li>
+ * <li><b>ConcurrentHashMap</b>: O(1) operations, thread-safe, unordered</li>
+ * <li><b>No overhead</b>: Direct delegation without additional processing</li>
+ * </ul>
+ * 
+ * <h2>GAML Pseudo-Variables</h2>
+ * <p>
+ * Provides access to keys, values, and pairs:
+ * </p>
+ * 
+ * <pre>
+ * IList&lt;String&gt; keys = wrapper.getKeys();      // Returns list of keys
+ * IList&lt;Integer&gt; values = wrapper.getValues(); // Returns list of values
+ * IPairList pairs = wrapper.getPairs();         // Returns list of Map.Entry
+ * </pre>
+ * 
+ * <h2>Type Safety</h2>
+ * <p>
+ * The wrapper tracks key and value types but does <b>not enforce</b> them on the wrapped map. If the wrapped map is
+ * modified directly with incompatible types, the wrapper will not prevent this:
+ * </p>
+ * 
+ * <pre>
+ * Map rawMap = new HashMap();
+ * IMap&lt;String, Integer&gt; wrapper = GamaMapFactory.wrap(Types.STRING, Types.INT, rawMap);
+ * 
+ * // Direct modification bypasses type safety
+ * rawMap.put(123, "wrong"); // No error, but violates contract
+ * </pre>
+ * 
+ * <h2>Conversion Methods</h2>
+ * <p>
+ * Supports conversion to other GAMA container types:
+ * </p>
+ * <ul>
+ * <li>{@code listValue()} - Converts to IList (elements become pairs)</li>
+ * <li>{@code matrixValue()} - Converts to IMatrix</li>
+ * <li>{@code mapValue()} - Creates a new map with different types</li>
+ * </ul>
+ * 
+ * <h2>Serialization</h2>
+ * <p>
+ * Supports both GAML and JSON serialization:
+ * </p>
+ * 
+ * <pre>
+ * String gaml = wrapper.serializeToGaml(false);    // "map(['a'::1, 'b'::2])"
+ * IJsonValue json = wrapper.serializeToJson(ctx);  // {"a": 1, "b": 2}
+ * </pre>
+ * 
+ * <h2>Thread Safety</h2>
+ * <p>
+ * Not thread-safe unless the wrapped map is thread-safe. For concurrent access:
+ * </p>
+ * <ul>
+ * <li>Wrap a {@link Collections#synchronizedMap}</li>
+ * <li>Wrap a {@link ConcurrentHashMap}</li>
+ * <li>Use {@link GamaMapFactory#synchronizedMap(IMap)}</li>
+ * </ul>
+ * 
+ * <h2>Equality</h2>
+ * <p>
+ * Uses {@link GamaMapFactory#equals} for comparison, which compares map contents but not types or ordering.
+ * </p>
+ * 
+ * <h2>Implementation Notes</h2>
+ * <ul>
+ * <li>Package-private constructor ensures creation only through {@link GamaMapFactory}</li>
+ * <li>Uses final field for wrapped map (immutable wrapper structure)</li>
+ * <li>Mutable {@code ordered} flag to track ordering behavior</li>
+ * <li>Minimal memory overhead: just type references + ordering flag</li>
+ * <li>Provides {@code buildValue} and {@code buildIndex} for type conversions</li>
+ * </ul>
+ * 
  * @param <K>
  *            the key type
  * @param <V>
  *            the value type
+ * 
+ * @see GamaMapFactory#wrap(IType, IType, Map)
+ * @see IMap
+ * @see ForwardingMap
+ * @see GamaMapSimpleWrapper
+ * 
+ * @author drogoul
  */
 @SuppressWarnings ("unchecked")
 public class GamaMapWrapper<K, V> extends ForwardingMap<K, V> implements IMap<K, V> {
