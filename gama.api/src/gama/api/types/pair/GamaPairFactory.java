@@ -16,9 +16,32 @@ import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 
 /**
+ * The Class GamaPairFactory.
+ * 
  * A static factory for creating and managing {@link IPair} instances. This class serves as a frontend for pair
- * creation, delegating to an {@link IPairFactory}. It allows creating pairs with specific types or inferred types, and
- * converting objects to pairs.
+ * creation, delegating to an {@link IPairFactory} implementation. It provides a unified API for creating pairs with
+ * specific types or inferred types, and converting objects to pairs.
+ * 
+ * <p>
+ * This factory supports multiple creation patterns:
+ * <ul>
+ * <li>Direct creation from two values: {@link #createWith(Object, Object)}</li>
+ * <li>Type-safe creation: {@link #createWith(Object, Object, IType, IType)}</li>
+ * <li>Conversion from objects: {@link #castToPair(IScope, Object)}</li>
+ * <li>Default/null pairs: {@link #createDefault()}, {@link #createNull()}</li>
+ * </ul>
+ * </p>
+ * 
+ * <p>
+ * The actual implementation is delegated to an {@link IPairFactory} that must be set using
+ * {@link #setBuilder(IPairFactory)} before using the factory methods.
+ * </p>
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
+ * 
+ * @see IPair
+ * @see IPairFactory
  */
 public class GamaPairFactory {
 

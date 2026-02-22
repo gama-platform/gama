@@ -19,17 +19,63 @@ import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.layers.ILayerStatement;
 
 /**
- * This interface represents the objects, declared in a model, which perform various types of computations and return
- * information supposed to be displayed during simulations. Outputs are not in charge of displaying/outputting
- * information on a concrete support, only computing it. They however control whatever concrete support they represent
- * (opening, closing, pausing, updating and refreshing it).
+ * Interface for simulation outputs in GAMA.
+ * 
+ * <p>This interface represents objects declared in GAML models that perform computations
+ * and generate information to be displayed during simulations. Outputs are not directly
+ * responsible for displaying information on screen - they only compute data and control
+ * the lifecycle of their associated display surfaces or views.</p>
+ * 
+ * <h2>Output Types:</h2>
+ * <p>GAMA supports various output types:</p>
+ * <ul>
+ *   <li><strong>Display:</strong> Graphical displays (2D/3D visualizations)</li>
+ *   <li><strong>Monitor:</strong> Variable value displays</li>
+ *   <li><strong>Inspect:</strong> Agent inspection views</li>
+ *   <li><strong>File:</strong> File export outputs</li>
+ *   <li><strong>Layout:</strong> UI layout configurations</li>
+ * </ul>
+ * 
+ * <h2>Output Lifecycle:</h2>
+ * <p>Outputs follow a specific lifecycle:</p>
+ * <ol>
+ *   <li><strong>Created:</strong> Output is instantiated from GAML</li>
+ *   <li><strong>Opened:</strong> {@link #open()} creates the concrete display surface</li>
+ *   <li><strong>Running:</strong> {@link #step(IScope)} computes data each cycle</li>
+ *   <li><strong>Paused:</strong> {@link #setPaused(boolean)} temporarily halts updates</li>
+ *   <li><strong>Closed:</strong> {@link #close()} releases resources</li>
+ * </ol>
+ * 
+ * <h2>Computation vs Display:</h2>
+ * <p>Since 2018, outputs have had reduced computational responsibilities:</p>
+ * <ul>
+ *   <li>{@link #step(IScope)} - Performs GAML-defined computations</li>
+ *   <li>{@link #update()} - Refreshes the concrete display (delegated to surface)</li>
+ * </ul>
+ * 
+ * <h2>Refresh Control:</h2>
+ * <p>Outputs can control when they refresh using:</p>
+ * <ul>
+ *   <li>Refresh rate (every N cycles)</li>
+ *   <li>Pause state</li>
+ *   <li>Scope interruption state</li>
+ *   <li>{@link #isRefreshable()} combines these factors</li>
+ * </ul>
+ * 
+ * <h2>Usage Example:</h2>
+ * <pre>{@code
+ * IOutput output = experiment.getOutputManager().getOutputWithId("my_display");
+ * output.open();
+ * output.step(scope);      // Compute data
+ * output.update();         // Refresh display
+ * output.setPaused(true);  // Pause updates
+ * output.close();          // Release resources
+ * }</pre>
  *
- * @update Since 2018, the role of ouputs in the computation has been reduced, so as to not weigh too much on the
- *         simulation thread. More computations are now taken in charge by the concrete implementations of the output
- *
- * @author Alexis Drogoul, IRD
- * @revised in Dec. 2015 to simplify and document the interface of outputs
- * @revised in Mar. 2024 to simplify the hierarchy of outputs (no more display outputs)
+ * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+ * @since GAMA 1.0
+ * @revised December 2015 - Simplified and documented interface
+ * @revised March 2024 - Simplified hierarchy (no more separate display outputs)
  */
 public interface IOutput extends ISymbol, IStepable, IScoped {
 

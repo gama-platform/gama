@@ -19,7 +19,28 @@ import gama.api.types.misc.IContainer;
 import gama.api.types.misc.IContainer.ToGet;
 
 /**
- *
+ * The Interface IPair.
+ * 
+ * Represents a pair (or tuple) of two values: a key and a value. This interface extends both {@link IContainer} and
+ * {@link Map.Entry}, allowing it to be used as a container and as a map entry. Pairs are used throughout GAMA to
+ * represent two-element associations, coordinates, or simple key-value relationships.
+ * 
+ * <p>
+ * The interface provides access to both elements through different naming conventions:
+ * <ul>
+ * <li>As a pair: {@link #first()} and {@link #last()}</li>
+ * <li>As a map entry: {@link #getKey()} and {@link #getValue()}</li>
+ * <li>As named attributes: "key" and "value" variables</li>
+ * </ul>
+ * </p>
+ * 
+ * @param <K>
+ *            the type of the key (first element)
+ * @param <V>
+ *            the type of the value (second element)
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
  */
 @vars ({ @variable (
 		name = IPair.KEY,
@@ -32,26 +53,31 @@ import gama.api.types.misc.IContainer.ToGet;
 public interface IPair<K, V>
 		extends IContainer<Integer, Object>, IContainer.ToGet<Integer, Object>, Map.Entry<K, V> {
 
-	/** The Constant KEY. */
+	/** The constant name for the key attribute. */
 	String KEY = "key";
 
-	/** The Constant VALUE. */
+	/** The constant name for the value attribute. */
 	String VALUE = "value";
 
 	/**
-	 * @return
+	 * Returns the first element of the pair (the key).
+	 * 
+	 * @return the key (first element) of this pair, which can be null
 	 */
 	K first();
 
 	/**
-	 * Second.
+	 * Returns the second element of the pair (the value).
 	 *
-	 * @return the v
+	 * @return the value (second element) of this pair, which can be null
 	 */
 	V last();
 
 	/**
+	 * Sets the key (first element) of this pair.
+	 * 
 	 * @param key
+	 *            the new key to set (can be null)
 	 */
 	void setKey(Object key);
 

@@ -14,7 +14,26 @@ import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 
 /**
- *
+ * The Interface IPairFactory.
+ * 
+ * Factory interface for creating {@link IPair} instances. This interface defines the contract for implementations that
+ * create pairs from various sources, including direct values, objects to be converted, and default/empty pairs.
+ * 
+ * <p>
+ * Implementations of this interface are responsible for:
+ * <ul>
+ * <li>Creating pairs from two separate values</li>
+ * <li>Converting objects (lists, maps, points, etc.) to pairs</li>
+ * <li>Handling type casting and conversion</li>
+ * <li>Providing default empty pairs</li>
+ * </ul>
+ * </p>
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
+ * 
+ * @see IPair
+ * @see GamaPairFactory
  */
 public interface IPairFactory {
 

@@ -19,7 +19,31 @@ import gama.api.types.graph.ISpatialGraph;
 import gama.api.types.misc.IContainer;
 
 /**
- *
+ * The Class GamaTopologyFactory.
+ * 
+ * A static factory for creating and managing {@link ITopology} instances. This class serves as the main entry point
+ * for topology creation in GAMA, delegating to an {@link ITopologyFactory} implementation. It provides a unified API
+ * for creating different types of topologies and converting objects to topologies.
+ * 
+ * <p>
+ * This factory supports creating various topology types:
+ * <ul>
+ * <li>Continuous topologies: defined by a shape, allowing free movement within boundaries</li>
+ * <li>Grid topologies: discrete space divided into cells represented by agents</li>
+ * <li>Graph topologies: connectivity defined by a spatial graph structure</li>
+ * </ul>
+ * </p>
+ * 
+ * <p>
+ * The actual implementation is delegated to an {@link ITopologyFactory} that must be set using
+ * {@link #setBuilder(ITopologyFactory)} before using the factory methods.
+ * </p>
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
+ * 
+ * @see ITopology
+ * @see ITopologyFactory
  */
 public class GamaTopologyFactory {
 
@@ -27,36 +51,36 @@ public class GamaTopologyFactory {
 	private static ITopologyFactory InternalFactory;
 
 	/**
-	 * Sets the builder.
+	 * Configures the internal factory implementation.
 	 *
 	 * @param factory
-	 *            the new builder
+	 *            the {@link ITopologyFactory} to be used as the internal builder
 	 */
 	public static void setBuilder(final ITopologyFactory factory) { InternalFactory = factory; }
 
 	/**
-	 * From.
+	 * Creates a topology from a shape. This is an alias for {@link #createContinuous(IScope, IShape)}.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param obj
-	 *            the obj
-	 * @return the i topology
+	 *            the shape defining the topology boundaries
+	 * @return the created continuous topology
 	 */
 	public static ITopology createFrom(final IScope scope, final IShape obj) {
 		return createContinuous(scope, obj);
 	}
 
 	/**
-	 * Creates the.
+	 * Creates a topology from a container of shapes.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param obj
-	 *            the obj
-	 * @return the i topology
+	 *            the container of shapes
+	 * @return the created topology
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if creation fails
 	 */
 	public static ITopology createFrom(final IScope scope, final IContainer<?, IShape> obj)
 			throws GamaRuntimeException {
@@ -64,17 +88,17 @@ public class GamaTopologyFactory {
 	}
 
 	/**
-	 * Static cast.
+	 * Casts an object to a topology with control over copying.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param obj
-	 *            the obj
+	 *            the object to convert
 	 * @param copy
-	 *            the copy
-	 * @return the i topology
+	 *            whether to create a copy of the object
+	 * @return the created topology
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if casting fails
 	 */
 	@SuppressWarnings ("rawtypes")
 	public static ITopology castToTopology(final IScope scope, final Object obj, final boolean copy)
@@ -83,17 +107,15 @@ public class GamaTopologyFactory {
 	}
 
 	/**
-	 * Static cast.
+	 * Casts an object to a topology without copying.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param obj
-	 *            the obj
-	 * @param copy
-	 *            the copy
-	 * @return the i topology
+	 *            the object to convert
+	 * @return the created topology
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if casting fails
 	 */
 	@SuppressWarnings ("rawtypes")
 	public static ITopology castToTopology(final IScope scope, final Object obj) throws GamaRuntimeException {
@@ -101,49 +123,50 @@ public class GamaTopologyFactory {
 	}
 
 	/**
-	 * Creates a new GamaTopology object.
+	 * Creates a continuous topology with the specified host shape.
+	 * 
+	 * A continuous topology allows agents to move freely within the boundaries defined by the host shape.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param host
-	 *            the host
-	 * @return the i topology
+	 *            the shape defining the continuous space boundaries
+	 * @return the created continuous topology
 	 */
 	public static ITopology createContinuous(final IScope scope, final IShape host) {
 		return InternalFactory.createFrom(scope, host);
 	}
 
 	/**
-	 * Creates a new GamaTopology object.
-	 *
-	 * @return the i topology
-	 */
-
-	/**
-	 * Builds the grid topology.
+	 * Creates a grid topology from a species.
+	 * 
+	 * A grid topology divides the space into discrete cells, where each cell is typically represented by an agent of
+	 * the specified species.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param species
-	 *            the species
+	 *            the species whose agents form the grid cells
 	 * @param host
-	 *            the host
-	 * @return the i topology
+	 *            the agent hosting this topology
+	 * @return the created grid topology
 	 */
 	public static ITopology createGrid(final IScope scope, final ISpecies species, final IAgent host) {
 		return InternalFactory.createGrid(scope, species, host);
 	}
 
 	/**
-	 * Creates a new GamaTopology object.
+	 * Creates a graph-based topology.
+	 * 
+	 * A graph topology uses a spatial graph to define connectivity and paths between locations.
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the execution scope
 	 * @param host
-	 *            the host
+	 *            the shape defining the topology boundaries
 	 * @param graph
-	 *            the graph
-	 * @return the i topology
+	 *            the spatial graph defining the topology structure
+	 * @return the created graph topology
 	 */
 	public static ITopology createGraph(final IScope scope, final IShape host, final ISpatialGraph graph) {
 		return InternalFactory.createGraph(scope, host, graph);
