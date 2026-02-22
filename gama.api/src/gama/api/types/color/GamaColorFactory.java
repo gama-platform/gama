@@ -41,32 +41,44 @@ public class GamaColorFactory {
 	static Map<Integer, IColor> INT_REGISTRY = Collections.synchronizedMap(new HashMap<>());
 
 	/**
-	 * Common color constants used throughout the platform.
+	 * Common predefined color constants for quick access.
+	 * <p>
+	 * These constants provide fast access to frequently used colors without name lookup.
+	 * </p>
 	 */
 	public static IColor BLACK, WHITE, RED, GREEN, BLUE, YELLOW, LIGHT_GRAY, GRAY;
 
 	/**
-	 * The Class NamedGamaColor.
+	 * A special subclass of {@link GamaColor} that represents named colors (e.g., CSS color names).
+	 * <p>
+	 * Named colors have special serialization behavior:
+	 * </p>
+	 * <ul>
+	 * <li>{@link #toString()} returns "color[name]"</li>
+	 * <li>{@link #serializeToGaml(boolean)} returns "#name"</li>
+	 * <li>{@link #stringValue(IScope)} returns just the name</li>
+	 * </ul>
+	 * <p>
+	 * This allows colors defined with names like "red" or "blue" to maintain their semantic meaning when serialized.
+	 * </p>
 	 */
 	public static class NamedGamaColor extends GamaColor {
 
+		/** The color's name (e.g., "red", "blue", "lightgray"). */
+		final String name;
+
 		/**
-		 * Instantiates a new named gama color.
+		 * Creates a new named color.
 		 *
-		 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 		 * @param name
-		 *            the name.
+		 *            the name of the color (e.g., "red", "forestgreen")
 		 * @param rgba
-		 *            the rgba
-		 * @date 20 août 2023
+		 *            array containing [red, green, blue, alpha] components (0-255)
 		 */
 		NamedGamaColor(final String name, final int... rgba) {
 			super(rgba[0], rgba[1], rgba[2], rgba[3]);
 			this.name = name;
 		}
-
-		/** The name. */
-		final String name;
 
 		@Override
 		public String toString() {
@@ -86,10 +98,15 @@ public class GamaColorFactory {
 	}
 
 	/**
-	 * Updates the internal factory builder and initializes default colors.
-	 *
-	 * @param builder
-	 *            the {@link IColorFactory} to be used as the internal builder.
+	 * Static initialization block that registers all CSS color names and initializes common color constants.
+	 * <p>
+	 * This block:
+	 * </p>
+	 * <ol>
+	 * <li>Iterates through the {@link ColorCSS} array containing color names and RGBA values</li>
+	 * <li>Registers each color in the NAME_REGISTRY for lookup by name</li>
+	 * <li>Initializes common color constants (GRAY, LIGHT_GRAY, etc.) for fast access</li>
+	 * </ol>
 	 */
 	static {
 		for (int i = 0; i < ColorCSS.array.length; i += 2) {
@@ -286,12 +303,15 @@ public class GamaColorFactory {
 	}
 
 	/**
-	 * Retrieves a named color. Returns an IColor corresponding to a named color or a string representation of a color.
-	 * Examples: 'red', '#FF0000', 'rgb(255,0,0)'.
+	 * Retrieves a named color by its CSS color name.
+	 * <p>
+	 * Common CSS color names include: "red", "blue", "green", "black", "white", "gray", "lightgray", "yellow",
+	 * "forestgreen", "steelblue", etc.
+	 * </p>
 	 *
 	 * @param rgb
-	 *            the name of the color (e.g., "red", "blue").
-	 * @return the corresponding {@link IColor} instance, or null if not found.
+	 *            the name of the color (case-insensitive)
+	 * @return the corresponding {@link IColor} instance, or null if the name is not recognized
 	 */
 
 	public static IColor get(final String rgb) {
@@ -299,13 +319,24 @@ public class GamaColorFactory {
 	}
 
 	/**
-	 * Register or retrieve a color with a given name and optional component values.
+	 * Registers a color with a specific name and RGBA components, or retrieves it if already registered.
+	 * <p>
+	 * This method is used during initialization to populate the NAME_REGISTRY with CSS color names. If the color is
+	 * already registered, it returns the existing instance. Otherwise, it creates a new {@link NamedGamaColor},
+	 * registers it in both NAME_REGISTRY and INT_REGISTRY, and returns it.
+	 * </p>
 	 *
 	 * @param name
-	 *            the name of the color.
-	 * @param t
-	 *            optional integer components (e.g. R, G, B, A).
-	 * @return the {@link IColor} instance.
+	 *            the name of the color (e.g., "red", "forestgreen")
+	 * @param r
+	 *            the red component (0-255)
+	 * @param g
+	 *            the green component (0-255)
+	 * @param b
+	 *            the blue component (0-255)
+	 * @param a
+	 *            the alpha component (0-255)
+	 * @return the registered {@link IColor} instance
 	 */
 	private static IColor register(final String name, final int r, final int g, final int b, final int a) {
 		IColor c = NAME_REGISTRY.get(name);
@@ -319,18 +350,39 @@ public class GamaColorFactory {
 
 	/**
 	 * Converts an arbitrary object into an {@link IColor}.
+	 * <p>
+	 * This is the primary conversion method that handles multiple input types and formats. It supports:
+	 * </p>
+	 * <ul>
+	 * <li><strong>null:</strong> Returns null</li>
+	 * <li><strong>IColor:</strong> Returns the color as-is, or with modified alpha if param is provided</li>
+	 * <li><strong>List:</strong> Interprets as [R, G, B] or [R, G, B, A] with values 0-255</li>
+	 * <li><strong>Map:</strong> Expects keys "red", "green", "blue", "alpha" with integer values</li>
+	 * <li><strong>IContainer:</strong> Converts to list then processes as list</li>
+	 * <li><strong>String:</strong> Supports:
+	 * <ul>
+	 * <li>CSS color names: "red", "blue", "forestgreen", etc.</li>
+	 * <li>Hex colors: "#FF0000", "#F00"</li>
+	 * <li>RGB notation: "rgb(255, 0, 0)" or "rgb(255, 0, 0, 128)"</li>
+	 * </ul>
+	 * </li>
+	 * <li><strong>Boolean:</strong> true = black, false = white</li>
+	 * <li><strong>Integer:</strong> Interprets as packed RGBA value</li>
+	 * <li><strong>Other types:</strong> Attempts to cast to integer then interpret as RGB</li>
+	 * </ul>
 	 *
 	 * @param scope
-	 *            the current execution scope.
+	 *            the current execution scope for error reporting
 	 * @param obj
-	 *            the object to convert (can be a Color, List, Map, String, etc.).
+	 *            the object to convert (can be a Color, List, Map, String, Integer, Boolean, etc.)
 	 * @param param
-	 *            an optional parameter (e.g., for alpha value modification).
+	 *            optional parameter for alpha value modification (Integer 0-255 or Double 0.0-1.0)
 	 * @param copy
-	 *            whether to create a copy if the object is already a color.
-	 * @return the resulting {@link IColor} instance, or null if conversion fails.
+	 *            whether to create a copy if the object is already a color (currently unused)
+	 * @return the resulting {@link IColor} instance, or null if input is null
 	 * @throws GamaRuntimeException
-	 *             if the object cannot be converted to a valid color.
+	 *             if the object cannot be converted to a valid color (e.g., invalid color name or malformed RGB
+	 *             string)
 	 */
 	public static IColor castToColor(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
@@ -426,13 +478,16 @@ public class GamaColorFactory {
 	}
 
 	/**
-	 * Creates a new GamaColor object.
+	 * Creates a new color by merging (averaging) two existing colors.
+	 * <p>
+	 * All components (red, green, blue, and alpha) are averaged between the two source colors.
+	 * </p>
 	 *
 	 * @param c1
-	 *            the c 1
+	 *            the first color to merge
 	 * @param c2
-	 *            the c 2
-	 * @return the i color
+	 *            the second color to merge
+	 * @return a new IColor representing the average of both input colors
 	 */
 	public static IColor createByMerging(final IColor c1, final IColor c2) {
 		int r = (c1.red() + c2.red()) / 2;
@@ -443,11 +498,14 @@ public class GamaColorFactory {
 	}
 
 	/**
-	 * Normalize.
+	 * Normalizes a double value in the range 0.0-1.0 to an integer in the range 0-255.
+	 * <p>
+	 * Values below 0.0 are clamped to 0, values above 1.0 are clamped to 255.
+	 * </p>
 	 *
 	 * @param number
-	 *            the transp
-	 * @return the int
+	 *            the value to normalize (typically 0.0-1.0 for alpha or color components)
+	 * @return an integer in the range 0-255
 	 */
 	// returns a value between 0 and 255 from a double between 0 and 1
 	private static int normalize(final double number) {
@@ -455,11 +513,14 @@ public class GamaColorFactory {
 	}
 
 	/**
-	 * Normalize.
+	 * Normalizes an integer color component to the valid range 0-255.
+	 * <p>
+	 * Values below 0 are clamped to 0, values above 255 are clamped to 255.
+	 * </p>
 	 *
 	 * @param number
-	 *            the rgb comp
-	 * @return the int
+	 *            the color component value to normalize
+	 * @return the normalized value in the range 0-255
 	 */
 	private static int normalize(final int number) {
 		return number < 0 ? 0 : number > 255 ? 255 : number;
