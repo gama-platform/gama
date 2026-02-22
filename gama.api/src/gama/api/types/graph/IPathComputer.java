@@ -20,8 +20,84 @@ import gama.api.types.list.IList;
 import gama.api.types.matrix.IMatrix;
 
 /**
- * @param <V>
- * @param <E>
+ * Interface for computing paths in a graph using various algorithms.
+ * 
+ * <p>
+ * IPathComputer provides methods for finding shortest paths and k-shortest paths in graphs.
+ * It supports multiple pathfinding algorithms and can cache computed paths for efficiency.
+ * Each graph has an associated path computer that handles all pathfinding operations.
+ * </p>
+ * 
+ * <h2>Shortest Path Algorithms</h2>
+ * <p>
+ * The following algorithms are available via {@link ShortestPathAlgorithmEnum}:
+ * <ul>
+ * <li><b>Dijkstra</b>: Classic algorithm for non-negative weights, good general-purpose choice</li>
+ * <li><b>A*</b>: Heuristic-guided search, faster when target is known and heuristic is good</li>
+ * <li><b>BellmanFord</b>: Handles negative weights, slower than Dijkstra</li>
+ * <li><b>FloydWarshall</b>: All-pairs shortest paths, good for dense graphs</li>
+ * <li><b>BidirectionalDijkstra</b>: Searches from both source and target simultaneously</li>
+ * <li><b>NBAStar</b>: New Bidirectional A* algorithm</li>
+ * <li><b>NBAStarApprox</b>: Approximate version of NBAStar</li>
+ * <li><b>DeltaStepping</b>: Parallel shortest path algorithm</li>
+ * <li><b>CHBidirectionalDijkstra</b>: Contraction Hierarchies bidirectional Dijkstra</li>
+ * <li><b>TransitNodeRouting</b>: Fast routing for large road networks</li>
+ * </ul>
+ * </p>
+ * 
+ * <h2>K-Shortest Paths Algorithms</h2>
+ * <p>
+ * For finding multiple alternative paths via {@link KShortestPathAlgorithmEnum}:
+ * <ul>
+ * <li><b>Yen</b>: Finds k simple shortest paths (no loops)</li>
+ * <li><b>Bhandari</b>: Finds k edge-disjoint shortest paths</li>
+ * </ul>
+ * </p>
+ * 
+ * <h2>Path Caching</h2>
+ * <p>
+ * The path computer can cache computed shortest paths for repeated queries:
+ * <ul>
+ * <li>Use {@link #setSaveComputedShortestPaths(boolean)} to enable/disable caching</li>
+ * <li>Cached paths are returned instantly without recomputation</li>
+ * <li>Cache is invalidated when the graph structure changes</li>
+ * <li>Paths can be saved to/loaded from a matrix for persistence</li>
+ * </ul>
+ * </p>
+ * 
+ * <h2>Version Management</h2>
+ * <p>
+ * The path computer maintains a version number that is incremented when the graph
+ * changes. This allows paths to detect if they were computed on an outdated graph
+ * structure.
+ * </p>
+ * 
+ * <h2>Usage Example</h2>
+ * <pre>
+ * IGraph graph = ...;
+ * IPathComputer computer = graph.getPathComputer();
+ * 
+ * // Configure algorithm
+ * computer.setShortestPathAlgorithm("Dijkstra");
+ * computer.setSaveComputedShortestPaths(true);
+ * 
+ * // Compute paths
+ * IPath path = computer.computeShortestPathBetween(scope, source, target);
+ * IList kPaths = computer.computeKShortestPathsBetween(scope, source, target, 5);
+ * 
+ * // Save/load cached paths
+ * IMatrix pathMatrix = computer.saveShortestPaths(scope);
+ * computer.loadShortestPaths(scope, pathMatrix);
+ * </pre>
+ * 
+ * @param <V> the type of vertices in the graph
+ * @param <E> the type of edges in the graph
+ * 
+ * @see IGraph
+ * @see IPath
+ * @see ShortestPathAlgorithmEnum
+ * @see KShortestPathAlgorithmEnum
+ * @author drogoul
  */
 public interface IPathComputer<V, E> {
 

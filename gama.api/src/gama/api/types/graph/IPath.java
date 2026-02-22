@@ -25,11 +25,90 @@ import gama.api.types.misc.IValue;
 import gama.api.types.topology.ITopology;
 
 /**
- * The class IPath.
- *
+ * Interface representing a path through a graph.
+ * 
+ * <p>
+ * An IPath represents a sequence of vertices connected by edges in a graph. It encapsulates
+ * both the structural information (vertices and edges that make up the path) and metadata
+ * (weight, distance, geometry) about the path.
+ * </p>
+ * 
+ * <h2>Path Components</h2>
+ * <p>
+ * A path consists of:
+ * <ul>
+ * <li><b>Vertices</b>: An ordered list of vertices from source to target</li>
+ * <li><b>Edges</b>: The edges connecting consecutive vertices</li>
+ * <li><b>Source</b>: The starting vertex of the path</li>
+ * <li><b>Target</b>: The ending vertex of the path</li>
+ * <li><b>Graph</b>: Reference to the graph containing the path</li>
+ * </ul>
+ * </p>
+ * 
+ * <h2>Path Metrics</h2>
+ * <ul>
+ * <li><b>Weight</b>: Sum of edge/vertex weights along the path (used by pathfinding algorithms)</li>
+ * <li><b>Distance</b>: Geometric/spatial length of the path (for spatial graphs)</li>
+ * <li><b>Length</b>: Number of edges in the path</li>
+ * </ul>
+ * 
+ * <h2>Spatial Properties</h2>
+ * <p>
+ * For spatial graphs, paths have geometric representations:
+ * <ul>
+ * <li><b>Shape</b>: The geometric line formed by the path</li>
+ * <li><b>Segments</b>: Individual geometric segments (edge geometries)</li>
+ * <li><b>Topology</b>: The spatial topology for distance computations</li>
+ * </ul>
+ * </p>
+ * 
+ * <h2>Agent Tracking</h2>
+ * <p>
+ * Paths can track agents moving along them, storing their current position (vertex index
+ * and segment index). This is useful for simulating movement along network paths.
+ * </p>
+ * 
+ * <h2>GAML Variables</h2>
+ * <p>
+ * This interface exposes several attributes accessible from GAML:
+ * <ul>
+ * <li><code>source</code>: Starting vertex</li>
+ * <li><code>target</code>: Ending vertex</li>
+ * <li><code>graph</code>: The underlying graph</li>
+ * <li><code>vertices</code>: List of vertices in order</li>
+ * <li><code>edges</code>: List of edges in order</li>
+ * <li><code>shape</code>: Geometric representation</li>
+ * <li><code>segments</code>: List of segment geometries</li>
+ * <li><code>weight</code>: Total path weight</li>
+ * <li><code>distance</code>: Total path distance</li>
+ * </ul>
+ * </p>
+ * 
+ * <h2>Usage Example</h2>
+ * <pre>
+ * IGraph graph = ...;
+ * IPath path = graph.computeShortestPathBetween(scope, source, target);
+ * 
+ * // Access path properties
+ * IList vertices = path.getVertexList();
+ * IList edges = path.getEdgeList();
+ * double weight = path.getWeight();
+ * double distance = path.getDistance(scope);
+ * 
+ * // For spatial paths
+ * IShape geometry = path.getGeometry();
+ * IList segments = path.getEdgeGeometry();
+ * </pre>
+ * 
+ * @param <V> the type of vertices in the path
+ * @param <E> the type of edges in the path
+ * @param <G> the type of the graph containing the path
+ * 
+ * @see IGraph
+ * @see GamaPathFactory
+ * @see IPathComputer
  * @author drogoul
- * @since 14 d�c. 2011
- *
+ * @since 14 déc. 2011
  */
 @vars ({ @variable (
 		name = IKeyword.TARGET,

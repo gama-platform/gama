@@ -16,11 +16,85 @@ import gama.api.types.list.IList;
 import gama.api.types.topology.ITopology;
 
 /**
- * A factory for creating Path objects.
- */
-
-/**
- * A factory for creating GamaPath objects.
+ * Static factory for creating {@link IPath} instances.
+ * 
+ * <p>
+ * GamaPathFactory provides a unified entry point for creating paths in GAMA. It supports
+ * creating paths from various inputs including vertex lists, edge lists, and topologies.
+ * The factory delegates to an {@link IPathFactory} implementation that must be configured
+ * before use.
+ * </p>
+ * 
+ * <h2>Path Creation Methods</h2>
+ * <p>
+ * The factory provides several ways to create paths:
+ * </p>
+ * 
+ * <h3>From Graph and Vertices</h3>
+ * <ul>
+ * <li>Create a path by specifying a list of vertices in order</li>
+ * <li>Edges are inferred from consecutive vertices in the graph</li>
+ * <li>Useful when you know the vertex sequence but not the specific edges</li>
+ * </ul>
+ * 
+ * <h3>From Graph and Edges</h3>
+ * <ul>
+ * <li>Create a path by specifying start, target, and a list of edges</li>
+ * <li>Edges must form a valid path from start to target</li>
+ * <li>Optionally modify edges to ensure path validity</li>
+ * <li>Typical output from pathfinding algorithms</li>
+ * </ul>
+ * 
+ * <h3>From Topology (Spatial Paths)</h3>
+ * <ul>
+ * <li>Create paths in spatial topologies with geometric shapes</li>
+ * <li>Vertices and edges are {@link IShape} objects with locations</li>
+ * <li>Path has geometric properties (length, shape, segments)</li>
+ * <li>Used for agent movement in spatial environments</li>
+ * </ul>
+ * 
+ * <h3>From Generic Objects (Casting)</h3>
+ * <ul>
+ * <li>Convert various objects to paths (lists, geometries, etc.)</li>
+ * <li>Flexible conversion with optional parameters</li>
+ * <li>Used by GAML type casting system</li>
+ * </ul>
+ * 
+ * <h2>Factory Configuration</h2>
+ * <p>
+ * Before use, an {@link IPathFactory} implementation must be registered using
+ * {@link #setBuilder(IPathFactory)}. This is typically done during system initialization.
+ * </p>
+ * 
+ * <h2>Usage Examples</h2>
+ * 
+ * <h3>Creating a path from vertices:</h3>
+ * <pre>
+ * IGraph graph = ...;
+ * IList vertices = GamaListFactory.create(scope, Types.NO_TYPE);
+ * vertices.add(v1); vertices.add(v2); vertices.add(v3);
+ * IPath path = GamaPathFactory.createFrom(graph, vertices);
+ * </pre>
+ * 
+ * <h3>Creating a path from edges:</h3>
+ * <pre>
+ * IGraph graph = ...;
+ * IList edges = ...; // from pathfinding algorithm
+ * IPath path = GamaPathFactory.createFrom(graph, source, target, edges);
+ * </pre>
+ * 
+ * <h3>Creating a spatial path:</h3>
+ * <pre>
+ * ITopology topology = ...;
+ * IList shapeNodes = ...;
+ * IPath path = GamaPathFactory.createFrom(scope, topology, shapeNodes, weight);
+ * </pre>
+ * 
+ * @see IPath
+ * @see IPathFactory
+ * @see IGraph
+ * @see ITopology
+ * @author drogoul
  */
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 public class GamaPathFactory {

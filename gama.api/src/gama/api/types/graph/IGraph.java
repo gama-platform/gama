@@ -32,11 +32,87 @@ import gama.api.types.misc.IContainer.Modifiable;
 import gama.api.types.pair.IPair;
 
 /**
- * Written by drogoul Modified on 24 nov. 2011
- *
- * An interface for the different kinds of graphs encountered in GAML. Vertices are the keys (actually, pairs of nodes),
- * while edges are the values
- *
+ * The main interface for graph data structures in GAMA.
+ * 
+ * <p>
+ * IGraph defines the complete API for working with graphs in the GAMA modeling platform.
+ * It extends both JGraphT's {@link Graph} interface and GAMA's container interfaces
+ * ({@link IContainer.Modifiable} and {@link IContainer.Addressable}), providing a rich
+ * set of operations for graph manipulation, traversal, and analysis.
+ * </p>
+ * 
+ * <h2>Graph Types</h2>
+ * <p>
+ * This interface supports various types of graphs:
+ * <ul>
+ * <li><b>Directed vs. Undirected</b>: Controlled via {@link #isDirected()} and {@link #setDirected(boolean)}</li>
+ * <li><b>Weighted vs. Unweighted</b>: Vertices and edges can have associated weights</li>
+ * <li><b>Spatial</b>: See {@link ISpatialGraph} for graphs with geometric properties</li>
+ * <li><b>Simple vs. Multigraph</b>: Support for multiple edges between vertices</li>
+ * </ul>
+ * </p>
+ * 
+ * <h2>Core Operations</h2>
+ * <ul>
+ * <li><b>Vertex Operations</b>: Add, remove, query vertices and their weights</li>
+ * <li><b>Edge Operations</b>: Add, remove, query edges and their weights</li>
+ * <li><b>Path Finding</b>: Compute shortest paths using various algorithms (Dijkstra, A*, etc.)</li>
+ * <li><b>Graph Analysis</b>: Check connectivity, find cycles, compute spanning trees</li>
+ * <li><b>Traversal</b>: Access neighbors, predecessors, successors of vertices</li>
+ * </ul>
+ * 
+ * <h2>Weight Management</h2>
+ * <p>
+ * Both vertices and edges can have associated weights (doubles). Weights are used by
+ * pathfinding algorithms and other graph operations. The default vertex weight is
+ * {@link #DEFAULT_VERTEX_WEIGHT}.
+ * </p>
+ * 
+ * <h2>Event Notifications</h2>
+ * <p>
+ * As a {@link IGraphEventProvider}, graphs notify registered listeners of modifications
+ * such as vertex/edge additions, removals, and changes.
+ * </p>
+ * 
+ * <h2>GAML Variables</h2>
+ * <p>
+ * This interface exposes several attributes accessible from GAML:
+ * <ul>
+ * <li><code>vertices</code>: List of all vertices</li>
+ * <li><code>edges</code>: List of all edges</li>
+ * <li><code>spanning_tree</code>: Minimal spanning tree edges</li>
+ * <li><code>circuit</code>: Hamiltonian cycle approximation</li>
+ * <li><code>connected</code>: Whether the graph is connected</li>
+ * </ul>
+ * </p>
+ * 
+ * <h2>Usage Example</h2>
+ * <pre>
+ * // Create a graph from edges
+ * IList edges = ...;
+ * IGraph graph = GamaGraphFactory.createFromList(scope, edges, true);
+ * 
+ * // Add vertices and edges
+ * graph.addVertex(vertex1);
+ * graph.addEdge(vertex1, vertex2, edge12);
+ * 
+ * // Find shortest path
+ * IPath path = graph.computeShortestPathBetween(scope, source, target);
+ * 
+ * // Check properties
+ * boolean isConnected = graph.getConnected();
+ * IList spanningTree = graph.getSpanningTree(scope);
+ * </pre>
+ * 
+ * @param <Vertex> the type of vertices in the graph
+ * @param <Edge> the type of edges in the graph
+ * 
+ * @see ISpatialGraph
+ * @see IPath
+ * @see GamaGraphFactory
+ * @see IPathComputer
+ * @author drogoul
+ * @since 24 nov. 2011
  */
 @vars ({ @variable (
 		name = "spanning_tree",

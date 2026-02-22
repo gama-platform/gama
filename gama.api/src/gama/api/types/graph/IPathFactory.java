@@ -15,7 +15,70 @@ import gama.api.types.list.IList;
 import gama.api.types.topology.ITopology;
 
 /**
- *
+ * Interface for path factory implementations.
+ * 
+ * <p>
+ * This interface defines the contract for creating {@link IPath} instances from various
+ * inputs. Implementations provide the actual path construction logic and are registered
+ * with {@link GamaPathFactory} to make them available throughout GAMA.
+ * </p>
+ * 
+ * <h2>Path Creation Strategies</h2>
+ * 
+ * <h3>Graph-Based Paths</h3>
+ * <ul>
+ * <li><b>From Vertices</b>: Create paths by specifying an ordered list of vertices.
+ *     The edges are inferred from consecutive vertices in the graph.</li>
+ * <li><b>From Edges</b>: Create paths by specifying start, target, and an ordered list
+ *     of edges. The edges must form a valid path from start to target.</li>
+ * <li><b>Edge Modification</b>: Optionally modify edges to ensure path validity
+ *     (e.g., reversing edges in undirected graphs).</li>
+ * </ul>
+ * 
+ * <h3>Topology-Based Paths (Spatial)</h3>
+ * <ul>
+ * <li><b>From Shapes</b>: Create spatial paths where vertices and edges are geometric
+ *     shapes with locations and geometries.</li>
+ * <li><b>From Shape List</b>: Create paths from lists of shape objects, interpreting
+ *     them as either edges or nodes based on a flag.</li>
+ * <li><b>With Weight</b>: Create paths with explicit weight values for optimization.</li>
+ * </ul>
+ * 
+ * <h3>Generic Creation</h3>
+ * <ul>
+ * <li><b>From Objects</b>: Flexible creation from various source types with optional
+ *     parameters and copy semantics.</li>
+ * <li>Used by GAML's type casting system to convert objects to paths.</li>
+ * </ul>
+ * 
+ * <h2>Implementation Requirements</h2>
+ * <p>
+ * Implementations must:
+ * <ul>
+ * <li>Create valid paths that reference existing graph elements</li>
+ * <li>Compute path metrics (weight, distance, length) correctly</li>
+ * <li>Handle both graph-based and topology-based paths</li>
+ * <li>Support spatial paths with geometric properties when applicable</li>
+ * <li>Validate path connectivity (edges connect consecutive vertices)</li>
+ * </ul>
+ * </p>
+ * 
+ * <h2>Path Validity</h2>
+ * <p>
+ * Created paths should satisfy:
+ * <ul>
+ * <li>All vertices exist in the graph or topology</li>
+ * <li>All edges exist in the graph or topology</li>
+ * <li>Edges connect consecutive vertices in the vertex list</li>
+ * <li>Start and target vertices match the first and last vertices</li>
+ * </ul>
+ * </p>
+ * 
+ * @see GamaPathFactory
+ * @see IPath
+ * @see IGraph
+ * @see ITopology
+ * @author drogoul
  */
 public interface IPathFactory {
 
