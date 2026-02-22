@@ -33,108 +33,282 @@ import gama.api.types.matrix.IMatrix;
 import one.util.streamex.StreamEx;
 
 /**
- * Written by drogoul Modified on 3 juin 2010
- *
- * @todo Description
- *
+ * The fundamental interface for all collection-like structures in GAMA.
+ * 
+ * <p>
+ * IContainer provides a unified abstraction over diverse collection types including lists, maps, matrices, graphs,
+ * populations (species), files, and pairs. This uniformity allows GAML operators to work consistently across different
+ * container types.
+ * </p>
+ * 
+ * <h2>Type Parameters</h2>
+ * <ul>
+ * <li><strong>KeyType:</strong> The type used to address/index elements (int for lists, point for matrices, any type
+ * for maps)</li>
+ * <li><strong>ValueType:</strong> The type of elements stored in the container</li>
+ * </ul>
+ * 
+ * <h2>Core Capabilities</h2>
+ * <p>
+ * All containers support:
+ * </p>
+ * <ul>
+ * <li><strong>Containment checking:</strong> contains(), containsKey()</li>
+ * <li><strong>Size queries:</strong> length(), isEmpty()</li>
+ * <li><strong>Element access:</strong> firstValue(), lastValue(), anyValue()</li>
+ * <li><strong>Iteration:</strong> iterable(), stream(), parallelStream()</li>
+ * <li><strong>Conversion:</strong> listValue(), mapValue(), matrixValue()</li>
+ * <li><strong>Manipulation:</strong> reverse(), copy()</li>
+ * </ul>
+ * 
+ * <h2>Nested Interfaces</h2>
+ * <p>
+ * IContainer defines specialized capabilities through nested interfaces:
+ * </p>
+ * <ul>
+ * <li><strong>{@link ToGet}:</strong> Support for element retrieval by key/index</li>
+ * <li><strong>{@link ToSet}:</strong> Support for element addition, modification, and removal</li>
+ * <li><strong>{@link Addressable}:</strong> Combines IContainer with ToGet (readable containers)</li>
+ * <li><strong>{@link Modifiable}:</strong> Combines IContainer with ToSet (writable containers)</li>
+ * </ul>
+ * 
+ * <h2>Container Types</h2>
+ * <p>
+ * Different GAMA types implement IContainer with different key/value semantics:
+ * </p>
+ * <ul>
+ * <li><strong>Lists:</strong> KeyType=Integer, ordered sequences indexed from 0</li>
+ * <li><strong>Maps:</strong> KeyType=any, unordered key-value associations</li>
+ * <li><strong>Matrices:</strong> KeyType=IPoint, 2D grids indexed by {column, row}</li>
+ * <li><strong>Graphs:</strong> KeyType=node, ValueType=edge (or vice versa)</li>
+ * <li><strong>Populations:</strong> KeyType=Integer/String, ValueType=IAgent</li>
+ * <li><strong>Files:</strong> Delegate to their content container</li>
+ * <li><strong>Pairs:</strong> KeyType=key type, ValueType=value type (single entry)</li>
+ * </ul>
+ * 
+ * <h2>Conversion Operations</h2>
+ * <p>
+ * Every container can be converted to other container types:
+ * </p>
+ * <ul>
+ * <li><strong>To list:</strong> listValue() - preserves order where applicable</li>
+ * <li><strong>To map:</strong> mapValue() - creates key-value pairs</li>
+ * <li><strong>To matrix:</strong> matrixValue() - reshapes into 2D grid</li>
+ * </ul>
+ * 
+ * <h2>Streaming and Iteration</h2>
+ * <p>
+ * Containers support Java 8 streams for functional-style operations:
+ * </p>
+ * <ul>
+ * <li>{@link #stream(IScope)} - Sequential stream of values</li>
+ * <li>{@link #parallelStream(IScope)} - Parallel stream for concurrent processing</li>
+ * <li>{@link #iterable(IScope)} - Java iterable for for-each loops</li>
+ * </ul>
+ * 
+ * <h2>Usage Examples</h2>
+ * 
+ * <pre>
+ * // Querying containers
+ * IContainer&lt;?, ?&gt; container = ...;
+ * int size = container.length(scope);
+ * boolean empty = container.isEmpty(scope);
+ * boolean hasElement = container.contains(scope, someValue);
+ * 
+ * // Accessing elements
+ * Object first = container.firstValue(scope);
+ * Object last = container.lastValue(scope);
+ * Object random = container.anyValue(scope);
+ * 
+ * // Converting between types
+ * IList&lt;?&gt; list = container.listValue(scope, Types.NO_TYPE, false);
+ * IMap&lt;?, ?&gt; map = container.mapValue(scope, Types.NO_TYPE, Types.NO_TYPE, false);
+ * IMatrix&lt;?&gt; matrix = container.matrixValue(scope, Types.NO_TYPE, false);
+ * 
+ * // Streaming
+ * container.stream(scope)
+ *          .filter(v -&gt; condition(v))
+ *          .map(v -&gt; transform(v))
+ *          .forEach(v -&gt; process(v));
+ * 
+ * // Modifiable containers
+ * if (container instanceof IContainer.Modifiable) {
+ *     IContainer.Modifiable&lt;?, ?, ?, ?&gt; modifiable = (IContainer.Modifiable&lt;?, ?, ?, ?&gt;) container;
+ *     modifiable.addValue(scope, newValue);
+ * }
+ * </pre>
+ * 
+ * @param <KeyType>
+ *            the type used to address elements in the container
+ * @param <ValueType>
+ *            the type of elements stored in the container
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
  */
 public interface IContainer<KeyType, ValueType> extends IValue {
 
 	/**
-	 * Returns a copy of this container
+	 * Returns a copy of this container.
+	 * 
+	 * <p>
+	 * The copy semantics depend on the container type:
+	 * </p>
+	 * <ul>
+	 * <li><strong>Lists, maps, matrices:</strong> create a new container with the same elements (shallow copy)</li>
+	 * <li><strong>Graphs:</strong> create a new graph with copies of vertices and edges</li>
+	 * <li><strong>Populations:</strong> typically return the same population (agents cannot be copied)</li>
+	 * </ul>
 	 *
 	 * @param scope
-	 *            the current GAMA scope
-	 * @return a copy of this value. The definition of copy (whether shallow or deep, etc.) depends on the subclasses
+	 *            the current GAMA execution scope
+	 * @return a copy of this container
 	 * @throws GamaRuntimeException
+	 *             if copying fails
 	 */
 	@Override
 	IContainer<KeyType, ValueType> copy(IScope scope) throws GamaRuntimeException;
 
 	/**
-	 * Gets the gaml type.
+	 * Gets the GAMA container type of this container.
+	 * 
+	 * <p>
+	 * Returns a {@link IContainerType} which includes information about both the container kind (list, map, matrix,
+	 * etc.) and the types of keys and values it contains.
+	 * </p>
 	 *
-	 * @return the gaml type
+	 * @return the GAMA container type
 	 */
 	@Override
 	IContainerType<?> getGamlType();
 
 	/**
-	 * List value.
+	 * Converts this container to a list.
+	 * 
+	 * <p>
+	 * The conversion semantics depend on the container type:
+	 * </p>
+	 * <ul>
+	 * <li><strong>Lists:</strong> return this or a copy</li>
+	 * <li><strong>Maps:</strong> return list of values (in insertion order)</li>
+	 * <li><strong>Matrices:</strong> return list of all elements in row-major order</li>
+	 * <li><strong>Graphs:</strong> return list of edges or vertices</li>
+	 * <li><strong>Populations:</strong> return list of agents</li>
+	 * </ul>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the current GAMA execution scope
 	 * @param contentType
-	 *            the content type
+	 *            the desired element type of the resulting list
 	 * @param copy
-	 *            the copy
-	 * @return the i list
+	 *            whether to force a copy even if this is already a list
+	 * @return a list containing the container's elements
 	 */
 	IList<ValueType> listValue(IScope scope, IType<?> contentType, boolean copy);
 
 	/**
-	 * Matrix value.
+	 * Converts this container to a matrix.
+	 * 
+	 * <p>
+	 * The conversion semantics depend on the container type:
+	 * </p>
+	 * <ul>
+	 * <li><strong>Matrices:</strong> return this or a copy</li>
+	 * <li><strong>Lists:</strong> create a matrix with default dimensions</li>
+	 * <li><strong>Maps:</strong> create a matrix from values</li>
+	 * <li><strong>Images/Fields:</strong> return the underlying matrix data</li>
+	 * </ul>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the current GAMA execution scope
 	 * @param contentType
-	 *            the content type
+	 *            the desired element type of the resulting matrix
 	 * @param copy
-	 *            the copy
-	 * @return the i matrix
+	 *            whether to force a copy even if this is already a matrix
+	 * @return a matrix containing the container's elements
 	 */
 	IMatrix<?> matrixValue(IScope scope, IType<?> contentType, boolean copy);
 
 	/**
-	 * Matrix value.
+	 * Converts this container to a matrix with specific dimensions.
+	 * 
+	 * <p>
+	 * Elements are taken from this container and arranged into a matrix of the specified size. If there are fewer
+	 * elements than cells, remaining cells are filled with default values. If there are more elements, excess elements
+	 * are ignored.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the current GAMA execution scope
 	 * @param contentType
-	 *            the content type
+	 *            the desired element type of the resulting matrix
 	 * @param size
-	 *            the size
+	 *            the dimensions {columns, rows} of the resulting matrix
 	 * @param copy
-	 *            the copy
-	 * @return the i matrix
+	 *            whether to force a copy
+	 * @return a matrix of the specified size containing elements from this container
 	 */
 	IMatrix<?> matrixValue(IScope scope, IType<?> contentType, IPoint size, boolean copy);
 
 	/**
-	 * Map value.
+	 * Converts this container to a map.
+	 * 
+	 * <p>
+	 * The conversion semantics depend on the container type:
+	 * </p>
+	 * <ul>
+	 * <li><strong>Maps:</strong> return this or a copy</li>
+	 * <li><strong>Lists:</strong> create a map with indices as keys and elements as values</li>
+	 * <li><strong>Matrices:</strong> create a map with points as keys and cell values as values</li>
+	 * <li><strong>Pairs:</strong> create a single-entry map</li>
+	 * </ul>
 	 *
 	 * @param <D>
-	 *            the generic type
+	 *            the type of map values
 	 * @param <C>
-	 *            the generic type
+	 *            the type of map keys
 	 * @param scope
-	 *            the scope
+	 *            the current GAMA execution scope
 	 * @param keyType
-	 *            the key type
+	 *            the desired key type of the resulting map
 	 * @param contentType
-	 *            the content type
+	 *            the desired value type of the resulting map
 	 * @param copy
-	 *            the copy
-	 * @return the i map
+	 *            whether to force a copy even if this is already a map
+	 * @return a map representing this container's data
 	 */
 	<D, C> IMap<C, D> mapValue(IScope scope, IType<C> keyType, IType<D> contentType, boolean copy);
 
 	/**
-	 * Iterable.
+	 * Returns an iterable over the container's values.
+	 * 
+	 * <p>
+	 * This method allows containers to be used in Java for-each loops and other iteration contexts. The order of
+	 * iteration depends on the container type (insertion order for maps, index order for lists, etc.).
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the iterable<? extends value type>
+	 *            the current GAMA execution scope
+	 * @return an iterable over the container's values
 	 */
 	java.lang.Iterable<? extends ValueType> iterable(final IScope scope);
 
 	/**
-	 * Internal method to get a correct stream in order to reuse the algorithms of the Java Collections Framework. The
-	 * intent is to reduce to the minimum the amount of computation needed in that case. The default is to return the
-	 * stream of the underlying collection when the container is already a collection. Must be redefined in subclasses.
+	 * Returns a sequential stream of the container's values.
+	 * 
+	 * <p>
+	 * This method provides access to Java 8 stream operations for functional-style processing. The stream is optimized
+	 * to minimize overhead - for containers that are already Java collections, it returns their native stream.
+	 * </p>
+	 * 
+	 * <p>
+	 * The default implementation handles both Collection-based containers and other types by converting to a list if
+	 * necessary.
+	 * </p>
 	 *
 	 * @param scope
-	 * @return
+	 *            the current GAMA execution scope
+	 * @return a StreamEx (enhanced stream) over the container's values
 	 */
 	@SuppressWarnings ("unchecked")
 	default StreamEx<ValueType> stream(final IScope scope) {
@@ -146,198 +320,295 @@ public interface IContainer<KeyType, ValueType> extends IValue {
 	}
 
 	/**
-	 * Parallel stream.
+	 * Returns a parallel stream of the container's values.
+	 * 
+	 * <p>
+	 * This method creates a stream that can process elements concurrently, which can significantly improve performance
+	 * for large containers and CPU-intensive operations. The stream uses GAMA's agent parallel executor for proper
+	 * thread management.
+	 * </p>
+	 * 
+	 * <p>
+	 * <strong>Note:</strong> Be cautious when using parallel streams with operations that modify shared state or use
+	 * random number generators, as these may not be thread-safe.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the stream ex
+	 *            the current GAMA execution scope
+	 * @return a parallel StreamEx over the container's values
 	 */
 	default StreamEx<ValueType> parallelStream(final IScope scope) {
 		return stream(scope).parallel(GamaExecutorService.AGENT_PARALLEL_EXECUTOR);
 	}
 
 	/**
-	 * The Interface ToGet.
+	 * Interface for containers that support element retrieval by key or index.
+	 * 
+	 * <p>
+	 * This interface defines the read operations for addressable containers. Implementations can retrieve individual
+	 * elements using a key/index, or multiple elements using a list of keys/indices.
+	 * </p>
 	 *
 	 * @param <KeyType>
-	 *            the generic type
+	 *            the type used to address elements
 	 * @param <ValueType>
-	 *            the generic type
+	 *            the type of elements returned
 	 */
 	public interface ToGet<KeyType, ValueType> {
 
 		/**
-		 * Gets the.
+		 * Gets the element at the specified key/index.
+		 * 
+		 * <p>
+		 * The behavior depends on the container type:
+		 * </p>
+		 * <ul>
+		 * <li><strong>Lists:</strong> index must be an integer in [0, length)</li>
+		 * <li><strong>Maps:</strong> index is a key in the map</li>
+		 * <li><strong>Matrices:</strong> index is a point {col, row}</li>
+		 * </ul>
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the current GAMA execution scope
 		 * @param index
-		 *            the index
-		 * @return the value type
+		 *            the key or index of the element to retrieve
+		 * @return the element at the specified index, or null if not found
 		 * @throws GamaRuntimeException
-		 *             the gama runtime exception
+		 *             if the index is invalid or out of bounds
 		 */
 		ValueType get(IScope scope, KeyType index) throws GamaRuntimeException;
 
 		/**
-		 * Method sent from GAML with a list containing the index or indices. It is the responsibility of the container
-		 * to extract the index and return the value associated (if any)
+		 * Gets multiple elements using a list of keys/indices.
+		 * 
+		 * <p>
+		 * This method is called from GAML when accessing a container with a list of indices. The container is
+		 * responsible for extracting each index and returning the corresponding value.
+		 * </p>
 		 *
 		 * @param scope
+		 *            the current GAMA execution scope
 		 * @param indices
-		 * @return
+		 *            the list of keys/indices to retrieve
+		 * @return the value(s) at those indices (semantics depend on implementation)
 		 * @throws GamaRuntimeException
+		 *             if any index is invalid
 		 */
-
 		ValueType getFromIndicesList(IScope scope, IList<KeyType> indices) throws GamaRuntimeException;
 
 	}
-	
-	public interface Addressable<Key, Value, AddressableKey, AddressableValue>
-	extends IContainer<Key, Value>, IContainer.ToGet<AddressableKey, AddressableValue> {}
-	
-	public interface Modifiable<K, V, KeyToAdd, ValueToAdd> extends IContainer<K, V>,
-	IContainer.ToSet<KeyToAdd, ValueToAdd> {
-
-}
-
 
 	/**
-	 * The Interface ToSet.
+	 * Interface combining IContainer with read capabilities.
+	 * 
+	 * <p>
+	 * Addressable containers can be read from using keys/indices. This interface simply combines {@link IContainer}
+	 * with {@link ToGet}, potentially with different type parameters for the addressing operations.
+	 * </p>
+	 *
+	 * @param <Key>
+	 *            the container's key type
+	 * @param <Value>
+	 *            the container's value type
+	 * @param <AddressableKey>
+	 *            the type used for addressing (may differ from Key)
+	 * @param <AddressableValue>
+	 *            the type returned by addressing (may differ from Value)
+	 */
+	public interface Addressable<Key, Value, AddressableKey, AddressableValue>
+			extends IContainer<Key, Value>, IContainer.ToGet<AddressableKey, AddressableValue> {}
+
+	/**
+	 * Interface combining IContainer with write capabilities.
+	 * 
+	 * <p>
+	 * Modifiable containers support adding, setting, and removing elements. This interface simply combines
+	 * {@link IContainer} with {@link ToSet}, potentially with different type parameters for the modification
+	 * operations.
+	 * </p>
+	 *
+	 * @param <K>
+	 *            the container's key type
+	 * @param <V>
+	 *            the container's value type
+	 * @param <KeyToAdd>
+	 *            the type used when adding/setting elements (may differ from K)
+	 * @param <ValueToAdd>
+	 *            the type of values to add/set (may differ from V)
+	 */
+	public interface Modifiable<K, V, KeyToAdd, ValueToAdd>
+			extends IContainer<K, V>, IContainer.ToSet<KeyToAdd, ValueToAdd> {
+
+	}
+
+	/**
+	 * Interface for containers that support element modification and removal.
+	 * 
+	 * <p>
+	 * This interface defines all write operations for mutable containers: adding elements (with or without an index),
+	 * setting elements at specific indices, and removing elements (by value, by index, or in bulk).
+	 * </p>
 	 *
 	 * @param <KeyType>
-	 *            the generic type
+	 *            the type used to address elements
 	 * @param <ValueType>
-	 *            the generic type
+	 *            the type of elements to add/set
 	 */
 	public interface ToSet<KeyType, ValueType> {
 
-		// AD 3/7/21: Removed to let this function be handled by the containers themselves
-		// boolean checkBounds(IScope scope, Object index, boolean forAdding);
-
 		/**
-		 * Adds the value.
+		 * Adds a value to the container.
+		 * 
+		 * <p>
+		 * The exact behavior depends on the container type:
+		 * </p>
+		 * <ul>
+		 * <li><strong>Lists:</strong> appends to the end</li>
+		 * <li><strong>Sets:</strong> adds if not present</li>
+		 * <li><strong>Maps:</strong> requires a key (see addValueAtIndex)</li>
+		 * </ul>
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the current GAMA execution scope
 		 * @param value
-		 *            the value
+		 *            the value to add
 		 */
-		// The simple method, that simply contains the object to add
 		void addValue(IScope scope, final ValueType value);
 
 		/**
-		 * Adds the value at index.
+		 * Adds a value at a specific index/key.
+		 * 
+		 * <p>
+		 * The behavior depends on the container type:
+		 * </p>
+		 * <ul>
+		 * <li><strong>Lists:</strong> inserts at the index, shifting subsequent elements</li>
+		 * <li><strong>Maps:</strong> adds a new key-value pair (or replaces if key exists)</li>
+		 * <li><strong>Matrices:</strong> sets the cell at the point index</li>
+		 * </ul>
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the current GAMA execution scope
 		 * @param index
-		 *            the index
+		 *            the index/key where to add the value
 		 * @param value
-		 *            the value
+		 *            the value to add
 		 */
-		// The same but with an index
 		void addValueAtIndex(IScope scope, final Object index, final ValueType value);
 
 		/**
-		 * Sets the value at index.
+		 * Sets the value at a specific index/key.
+		 * 
+		 * <p>
+		 * Unlike {@link #addValueAtIndex(IScope, Object, Object)}, this typically requires that the index already
+		 * exists (for lists) or replaces an existing value (for maps/matrices).
+		 * </p>
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the current GAMA execution scope
 		 * @param index
-		 *            the index
+		 *            the index/key to set
 		 * @param value
-		 *            the value
+		 *            the new value
 		 */
-		// Set, that takes a mandatory index
 		void setValueAtIndex(IScope scope, final Object index, final ValueType value);
 
-		// Then, methods for "all" operations
-		// Adds the values if possible, without replacing existing ones
 		/**
-		 * Adds the values.
+		 * Adds all values from another container.
+		 * 
+		 * <p>
+		 * This method adds elements without replacing existing ones. For lists, elements are appended. For maps, new
+		 * pairs are added.
+		 * </p>
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the current GAMA execution scope
 		 * @param index
-		 *            the index
+		 *            optional index/key hint for where to add (may be null)
 		 * @param values
-		 *            the values
+		 *            the container of values to add
 		 */
-		// AD July 2020: Addition of the index (see #2985)
 		void addValues(IScope scope, Object index, IContainer<?, ?> values);
 
 		/**
-		 * Adds the values.
+		 * Adds all values from another container (convenience method without index).
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the current GAMA execution scope
 		 * @param values
-		 *            the values
+		 *            the container of values to add
 		 */
 		default void addValues(final IScope scope, final IContainer<?, ?> values) {
 			addValues(scope, null, values);
 		}
 
-		// Adds this value to all slots (if this operation is available),
 		/**
-		 * Sets the all values.
+		 * Sets all elements in the container to a single value.
+		 * 
+		 * <p>
+		 * For matrices and grids, this fills all cells. For lists, this may replace all elements or set a default
+		 * value.
+		 * </p>
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the current GAMA execution scope
 		 * @param value
-		 *            the value
+		 *            the value to set everywhere
 		 */
-		// otherwise replaces the values with this one
 		void setAllValues(IScope scope, ValueType value);
 
 		/**
-		 * Removes the value.
+		 * Removes the first occurrence of a value from the container.
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the current GAMA execution scope
 		 * @param value
-		 *            the value
+		 *            the value to remove
 		 */
 		void removeValue(IScope scope, Object value);
 
 		/**
-		 * Removes the index.
+		 * Removes the element at a specific index/key.
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the current GAMA execution scope
 		 * @param index
-		 *            the index
+		 *            the index/key to remove
 		 */
 		void removeIndex(IScope scope, Object index);
 
 		/**
-		 * Removes the indexes.
+		 * Removes all elements at the specified indices/keys.
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the current GAMA execution scope
 		 * @param index
-		 *            the index
+		 *            container of indices/keys to remove
 		 */
 		void removeIndexes(IScope scope, IContainer<?, ?> index);
 
 		/**
-		 * Removes the values.
+		 * Removes all elements matching values in the provided container.
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the current GAMA execution scope
 		 * @param values
-		 *            the values
+		 *            container of values to remove
 		 */
 		void removeValues(IScope scope, IContainer<?, ?> values);
 
 		/**
-		 * Removes the all occurrences of value.
+		 * Removes all occurrences of a specific value.
+		 * 
+		 * <p>
+		 * Unlike {@link #removeValue(IScope, Object)} which removes only the first occurrence, this removes all
+		 * occurrences.
+		 * </p>
 		 *
 		 * @param scope
-		 *            the scope
+		 *            the current GAMA execution scope
 		 * @param value
-		 *            the value
+		 *            the value to remove completely
 		 */
 		void removeAllOccurrencesOfValue(IScope scope, Object value);
 

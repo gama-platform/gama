@@ -19,7 +19,33 @@ import gama.api.types.list.IList;
 import gama.api.utils.interfaces.IFieldMatrixProvider;
 
 /**
- *
+ * The internal factory interface for creating matrix and field instances.
+ * 
+ * <p>
+ * This interface defines the contract that concrete matrix factory implementations must fulfill. It is used internally
+ * by {@link GamaMatrixFactory} to delegate the actual creation of matrix and field objects. This design allows for
+ * pluggable implementations while maintaining a consistent public API.
+ * </p>
+ * 
+ * <p>
+ * Implementations of this interface are responsible for:
+ * </p>
+ * <ul>
+ * <li>Creating empty matrices of specific types and dimensions</li>
+ * <li>Converting various data sources (lists, matrices, values) into matrices</li>
+ * <li>Initializing matrix contents from expressions (with optional parallel evaluation)</li>
+ * <li>Creating specialized field instances</li>
+ * <li>Handling type conversions and resizing operations</li>
+ * </ul>
+ * 
+ * <p>
+ * This interface should not be used directly by user code. Instead, use the static methods in
+ * {@link GamaMatrixFactory}.
+ * </p>
+ * 
+ * @see GamaMatrixFactory
+ * @author drogoul
+ * @since GAMA 1.0
  */
 public interface IMatrixFactory {
 
@@ -215,9 +241,18 @@ public interface IMatrixFactory {
 	IField createField(IScope scope, int cols, int rows);
 
 	/**
+	 * Creates a field from an external data provider.
+	 * 
+	 * <p>
+	 * This method is used to create fields from objects that can provide field data, such as images or other raster
+	 * data sources. The provider must implement {@link IFieldMatrixProvider}.
+	 * </p>
+	 *
 	 * @param scope
+	 *            the current GAMA execution scope
 	 * @param provider
-	 * @return
+	 *            the data provider containing field information
+	 * @return a field created from the provider's data
 	 */
 	IField createFieldFromProvider(IScope scope, IFieldMatrixProvider provider);
 

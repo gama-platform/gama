@@ -40,11 +40,66 @@ import gama.api.utils.random.IRandom;
 import one.util.streamex.StreamEx;
 
 /**
- * Written by drogoul Modified on 15 dec. 2010
- *
- * @todo Description
- *
+ * The fundamental interface for two-dimensional matrices in GAMA.
+ * 
+ * <p>
+ * A matrix is a two-dimensional addressable and modifiable container that stores elements in a grid structure indexed
+ * by {column, row} coordinates (represented as {@link IPoint} instances). Matrices support element-wise mathematical
+ * operations, conversions to other container types, and specialized operations for data manipulation.
+ * </p>
+ * 
+ * <h2>Key Characteristics</h2>
+ * <ul>
+ * <li><strong>Generic content:</strong> Can store any GAMA type (integers, floats, objects, agents, geometries,
+ * etc.)</li>
+ * <li><strong>Column-row indexing:</strong> Elements are accessed using {column, row} points, with columns
+ * corresponding to x-coordinates and rows to y-coordinates</li>
+ * <li><strong>Fixed dimensions:</strong> Once created, matrix dimensions are typically fixed (though copy operations
+ * can resize)</li>
+ * <li><strong>Modifiable and addressable:</strong> Supports both reading and writing operations at specific
+ * indices</li>
+ * </ul>
+ * 
+ * <h2>Available Variables</h2>
+ * <ul>
+ * <li><strong>dimension</strong> (point) - Returns the dimensions as a point {columns, rows}</li>
+ * <li><strong>rows</strong> (int) - The number of rows in the matrix</li>
+ * <li><strong>columns</strong> (int) - The number of columns in the matrix</li>
+ * </ul>
+ * 
+ * <h2>Supported Operations</h2>
+ * <ul>
+ * <li><strong>Element access:</strong> get(), set(), row_at(), column_at()</li>
+ * <li><strong>Mathematical operations:</strong> +, -, *, / (with matrices or scalars)</li>
+ * <li><strong>Conversions:</strong> as_list(), rows_list(), columns_list()</li>
+ * <li><strong>Manipulation:</strong> reverse(), copy(), shuffleWith()</li>
+ * <li><strong>Queries:</strong> contains(), containsKey(), firstValue(), lastValue(), isEmpty()</li>
+ * </ul>
+ * 
+ * <h2>Usage Examples</h2>
+ * 
+ * <pre>
+ * // Access matrix elements
+ * T value = matrix.get(scope, col, row);
+ * matrix.set(scope, col, row, newValue);
+ * 
+ * // Get rows and columns
+ * IList&lt;T&gt; row = matrix.getRow(2);
+ * IList&lt;T&gt; column = matrix.getColumn(1);
+ * 
+ * // Mathematical operations
+ * IMatrix result = matrix1.plus(scope, matrix2);
+ * IMatrix scaled = matrix.times(2.5);
+ * 
+ * // Convert to list
+ * IList&lt;T&gt; list = matrix.asList(scope);
+ * </pre>
+ * 
  * @param <T>
+ *            the type of elements stored in the matrix
+ * 
+ * @author drogoul
+ * @since GAMA 1.0
  */
 @vars ({ @variable (
 		name = IMatrix.DIMENSION,
