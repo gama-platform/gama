@@ -268,49 +268,13 @@ public interface Constants {
 	/** The explicit imports. */
 	String[] INDIVIDUAL_IMPORTS = {};
 
-	/** The star imports. Loaded dynamically from gama-api-packages.txt file. */
-	Set<String> COLLECTIVE_IMPORTS = loadCollectiveImports();
-
-	/**
-	 * Load collective imports from the gama-api-packages.txt file.
-	 * 
-	 * <p>
-	 * This method dynamically loads the gama.api packages from the resource file, similar to how OPERATORS_XSL is
-	 * loaded in ExamplesToTests. It combines java.* packages with all gama.api.* packages read from the file.
-	 * </p>
-	 * 
-	 * @return the set of collective imports with trailing dots
+	/** 
+	 * Fallback package imports - only used if import tracking completely fails (should never happen).
+	 * Since we now track ALL class imports automatically, this is just a safety net.
+	 * No longer reads from gama-api-packages.txt file.
 	 */
-	static Set<String> loadCollectiveImports() {
-		final Set<String> imports = Stream.of("java.util", "java.lang")
-				.map(s -> s + ".")
-				.collect(Collectors.toSet());
-		
-		try (final java.io.BufferedReader reader = new java.io.BufferedReader(
-				new java.io.InputStreamReader(
-					Constants.class.getClassLoader()
-						.getResourceAsStream("gama/processor/resources/gama-api-packages.txt")))) {
-			
-			reader.lines()
-					.filter(line -> !line.trim().isEmpty())
-					.filter(line -> line.startsWith("gama.api"))
-					.map(line -> line + ".")
-					.forEach(imports::add);
-			
-		} catch (final Exception e) {
-			// If file cannot be loaded, fall back to hardcoded list
-			System.err.println("Warning: Could not load gama-api-packages.txt, using fallback imports");
-			e.printStackTrace();
-			
-			// Fallback to basic imports
-			Stream.of("gama.api", "gama.api.kernel.agent", "gama.api.kernel.simulation", 
-					"gama.api.runtime.scope", "gama.api.gaml.expressions", "gama.api.gaml.types")
-					.map(s -> s + ".")
-					.forEach(imports::add);
-		}
-		
-		return imports;
-	}
+	Set<String> COLLECTIVE_IMPORTS = Stream.of("java.util.", "java.lang.")
+			.collect(Collectors.toSet());
 
 	/** The static star imports. */
 	Set<String> STATIC_COLLECTIVE_IMPORTS = Stream.of("gama.api.gaml.types.Cast", "gama.api.constants.IKeyword")

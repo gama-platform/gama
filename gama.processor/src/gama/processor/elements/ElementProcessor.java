@@ -53,20 +53,23 @@ import gama.processor.ProcessorContext;
 
 /**
  * The ElementProcessor is the abstract base class for all annotation processors in the GAMA processor system.
- * 
- * <p>This class provides the fundamental infrastructure for processing annotations during the compilation phase
- * and generating the necessary runtime registration code. Each concrete processor extends this class to handle
- * a specific type of annotation (e.g., {@code @action}, {@code @operator}, {@code @symbol}, etc.).
- * 
- * <p>The processor system works by:
+ *
+ * <p>
+ * This class provides the fundamental infrastructure for processing annotations during the compilation phase and
+ * generating the necessary runtime registration code. Each concrete processor extends this class to handle a specific
+ * type of annotation (e.g., {@code @action}, {@code @operator}, {@code @symbol}, etc.).
+ *
+ * <p>
+ * The processor system works by:
  * <ol>
  * <li>Scanning source code for elements annotated with specific annotations</li>
  * <li>Validating the annotated elements and their annotations</li>
  * <li>Generating helper code that registers these elements with the GAMA runtime</li>
  * <li>Collecting and organizing the generated code by source root</li>
  * </ol>
- * 
- * <p>Key features provided by this base class:
+ *
+ * <p>
+ * Key features provided by this base class:
  * <ul>
  * <li><strong>Element Processing:</strong> Core logic for finding and processing annotated elements</li>
  * <li><strong>Code Generation:</strong> Utilities for generating Java code strings and type conversions</li>
@@ -74,35 +77,40 @@ import gama.processor.ProcessorContext;
  * <li><strong>Caching:</strong> Name caching and efficient string building for performance</li>
  * <li><strong>Error Handling:</strong> Comprehensive error reporting with source location information</li>
  * </ul>
- * 
+ *
  * <h3>Implementing a New Processor:</h3>
- * <p>To create a new annotation processor, extend this class and implement the abstract methods:
- * <pre>{@code
- * public class MyProcessor extends ElementProcessor<MyAnnotation> {
- *     @Override
- *     protected Class<MyAnnotation> getAnnotationClass() {
- *         return MyAnnotation.class;
- *     }
- *     
- *     @Override
- *     public void createElement(StringBuilder sb, Element e, MyAnnotation annotation) {
- *         // Generate registration code
- *         sb.append("// Generated code for ").append(e.getSimpleName());
- *     }
+ * <p>
+ * To create a new annotation processor, extend this class and implement the abstract methods:
+ *
+ * <pre>
+ * {
+ * 	&#64;code
+ * 	public class MyProcessor extends ElementProcessor<MyAnnotation> {
+ * 		&#64;Override
+ * 		protected Class<MyAnnotation> getAnnotationClass() { return MyAnnotation.class; }
+ *
+ * 		@Override
+ * 		public void createElement(StringBuilder sb, Element e, MyAnnotation annotation) {
+ * 			// Generate registration code
+ * 			sb.append("// Generated code for ").append(e.getSimpleName());
+ * 		}
+ * 	}
  * }
- * }</pre>
- * 
+ * </pre>
+ *
  * <h3>Code Generation Utilities:</h3>
- * <p>The class provides numerous utility methods for code generation:
+ * <p>
+ * The class provides numerous utility methods for code generation:
  * <ul>
  * <li>{@link #toJavaString(String)} - Converts strings to Java string literals</li>
  * <li>{@link #toClassObject(String)} - Generates Class&lt;?&gt; references</li>
  * <li>{@link #rawNameOf(TypeMirror)} - Extracts raw type names</li>
  * <li>{@link #checkPrim(String)} - Handles primitive type mapping</li>
  * </ul>
- * 
- * @param <T> the type of annotation this processor handles
- * 
+ *
+ * @param <T>
+ *            the type of annotation this processor handles
+ *
  * @author GAMA Development Team
  * @since 1.0
  * @see IProcessor
@@ -111,64 +119,65 @@ import gama.processor.ProcessorContext;
 public abstract class ElementProcessor<T extends Annotation> implements IProcessor<T>, Constants {
 
 	/**
-	 * Cache for frequently used type names to improve performance during code generation.
-	 * Maps full qualified class names to their processed forms.
+	 * Cache for frequently used type names to improve performance during code generation. Maps full qualified class
+	 * names to their processed forms.
 	 */
 	protected static final Map<String, String> NAME_CACHE = new HashMap<>();
 
 	/**
-	 * Reusable StringBuilder for string concatenation operations.
-	 * Used by the {@link #concat(String...)} method to avoid creating multiple temporary objects.
+	 * Reusable StringBuilder for string concatenation operations. Used by the {@link #concat(String...)} method to
+	 * avoid creating multiple temporary objects.
 	 */
 	static final StringBuilder CONCAT = new StringBuilder();
 
 	/**
-	 * Map containing the serialized code elements organized by source root.
-	 * Each entry represents generated code for a specific source root in the compilation.
+	 * Map containing the serialized code elements organized by source root. Each entry represents generated code for a
+	 * specific source root in the compilation.
 	 */
 	protected final SortedMap<String, StringBuilder> serializedElements = new TreeMap<>();
 
 	/**
-	 * Pattern for matching class parameter declarations (e.g., "&lt;String, Integer&gt;").
-	 * Used to clean generic type information from class names during code generation.
+	 * Pattern for matching class parameter declarations (e.g., "&lt;String, Integer&gt;"). Used to clean generic type
+	 * information from class names during code generation.
 	 */
 	static final Pattern CLASS_PARAM = Pattern.compile("<.*?>");
 
 	/**
-	 * Pattern for matching double quotes in strings.
-	 * Used for escaping quotes in generated Java string literals.
+	 * Pattern for matching double quotes in strings. Used for escaping quotes in generated Java string literals.
 	 */
 	static final Pattern SINGLE_QUOTE = Pattern.compile("\"");
 
 	/**
-	 * Replacement string for escaped quotes in Java string literals.
-	 * Used with {@link #SINGLE_QUOTE} pattern to properly escape strings.
+	 * Replacement string for escaped quotes in Java string literals. Used with {@link #SINGLE_QUOTE} pattern to
+	 * properly escape strings.
 	 */
 	static final String QUOTE_MATCHER = Matcher.quoteReplacement("\\\"");
 
 	/**
-	 * The name of the initialization method to be generated.
-	 * Set during processing and used in the final code generation phase.
+	 * The name of the initialization method to be generated. Set during processing and used in the final code
+	 * generation phase.
 	 */
 	protected String initializationMethodName;
 
 	/**
-	 * The current processing context providing access to type utilities and error reporting.
-	 * Set during the {@link #process(ProcessorContext)} method execution.
+	 * The current processing context providing access to type utilities and error reporting. Set during the
+	 * {@link #process(ProcessorContext)} method execution.
 	 */
 	protected ProcessorContext context;
 
 	/**
 	 * Efficiently concatenates an array of strings using a shared StringBuilder.
-	 * 
-	 * <p>This method provides a performance-optimized way to concatenate multiple strings
-	 * by reusing a static StringBuilder instance. The buffer is cleared after each use
-	 * to ensure no memory leaks.
-	 * 
-	 * <p>This is preferred over String concatenation or String.join() for performance
-	 * reasons in the code generation context where many string operations are performed.
-	 * 
-	 * @param array the array of strings to concatenate
+	 *
+	 * <p>
+	 * This method provides a performance-optimized way to concatenate multiple strings by reusing a static
+	 * StringBuilder instance. The buffer is cleared after each use to ensure no memory leaks.
+	 *
+	 * <p>
+	 * This is preferred over String concatenation or String.join() for performance reasons in the code generation
+	 * context where many string operations are performed.
+	 *
+	 * @param array
+	 *            the array of strings to concatenate
 	 * @return the concatenated string
 	 */
 	protected final static String concat(final String... array) {
@@ -207,8 +216,9 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 
 	/**
 	 * Processes all elements annotated with this processor's annotation type.
-	 * 
-	 * <p>This is the main entry point for annotation processing. The method:
+	 *
+	 * <p>
+	 * This is the main entry point for annotation processing. The method:
 	 * <ol>
 	 * <li>Sets up the processing context</li>
 	 * <li>Cleans up any previous processing results for the current roots</li>
@@ -216,12 +226,15 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 	 * <li>Processes each element by calling {@link #createElement(StringBuilder, Element, Annotation)}</li>
 	 * <li>Collects the generated code in {@link #serializedElements}</li>
 	 * </ol>
-	 * 
-	 * <p>Error handling is built-in: if any element processing fails, an error is reported
-	 * through the context but processing continues for other elements.
-	 * 
-	 * @param context the processing context providing type information and error reporting
-	 * @throws ProcessingException if critical processing errors occur
+	 *
+	 * <p>
+	 * Error handling is built-in: if any element processing fails, an error is reported through the context but
+	 * processing continues for other elements.
+	 *
+	 * @param context
+	 *            the processing context providing type information and error reporting
+	 * @throws ProcessingException
+	 *             if critical processing errors occur
 	 */
 	@Override
 	public void process(final ProcessorContext context) {
@@ -627,10 +640,35 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 		String type = context.getTypeUtils().erasure(t).toString();
 		// As a workaround for ECJ/javac discrepancies regarding erasure
 		type = CLASS_PARAM.matcher(type).replaceAll("");
-		// Reduction by considering the imports written in the header
-		int lastDot = type.lastIndexOf('.') + 1;
-		String path = type.substring(0, lastDot);
-		if (context.containsImport(path)) { type = type.substring(lastDot); }
+		return rawNameOf(type);
+	}
+
+	/**
+	 * Raw name of.
+	 *
+	 * @param type
+	 *            the type
+	 * @return the string
+	 */
+	String rawNameOf(String type) {
+		String key = type;
+		String cachedName = NAME_CACHE.get(key);
+		if (cachedName != null) return cachedName;
+		// As a workaround for ECJ/javac discrepancies regarding erasure
+		type = CLASS_PARAM.matcher(type).replaceAll("");
+		
+		// Check if this is a fully qualified class name (has a package)
+		int lastDot = type.lastIndexOf('.');
+		if (lastDot > 0) {
+			// Always record the full class name for import tracking
+			// This tracks ALL classes, not just those in COLLECTIVE_IMPORTS
+			context.recordImportUsage(type);
+			
+			// Now shorten ALL class names (not just COLLECTIVE_IMPORTS)
+			// Since we're importing exact classes, we can use the short name
+			type = type.substring(lastDot + 1);
+		}
+		
 		NAME_CACHE.put(key, type);
 		return type;
 	}
@@ -831,50 +869,54 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 
 	/**
 	 * Registers a package for dynamic import in the generated GamlAdditions class.
-	 * 
-	 * <p>This utility method allows processors to register packages that should be imported
-	 * in the generated code, enabling the use of simple class names instead of fully
-	 * qualified names. The package will be added as a wildcard import.
-	 * 
-	 * <p>Example usage:
+	 *
+	 * <p>
+	 * This utility method allows processors to register packages that should be imported in the generated code,
+	 * enabling the use of simple class names instead of fully qualified names. The package will be added as a wildcard
+	 * import.
+	 *
+	 * <p>
+	 * Example usage:
+	 *
 	 * <pre>{@code
 	 * // Register a plugin-specific package for import
 	 * registerPackageForImport("com.example.myplugin.operators");
-	 * 
+	 *
 	 * // Now the generated code can use simple class names:
 	 * // MyOperator.doSomething() instead of com.example.myplugin.operators.MyOperator.doSomething()
 	 * }</pre>
-	 * 
-	 * @param packageName the package name to register for import (without trailing dot or asterisk)
+	 *
+	 * @param packageName
+	 *            the package name to register for import (without trailing dot or asterisk)
 	 */
 	protected final void registerPackageForImport(final String packageName) {
-		if (context != null) {
-			context.addDynamicCollectiveImport(packageName);
-		}
+		if (context != null) { context.addDynamicCollectiveImport(packageName); }
 	}
 
 	/**
 	 * Registers a static import for dynamic import in the generated GamlAdditions class.
-	 * 
-	 * <p>This utility method allows processors to register static imports that should be imported
-	 * in the generated code, enabling the use of static method names without class qualification.
-	 * The class will be added as a static wildcard import.
-	 * 
-	 * <p>Example usage:
+	 *
+	 * <p>
+	 * This utility method allows processors to register static imports that should be imported in the generated code,
+	 * enabling the use of static method names without class qualification. The class will be added as a static wildcard
+	 * import.
+	 *
+	 * <p>
+	 * Example usage:
+	 *
 	 * <pre>{@code
 	 * // Register a utility class for static import
 	 * registerStaticImport("com.example.myplugin.utils.HelperClass");
-	 * 
+	 *
 	 * // Now the generated code can use static methods directly:
 	 * // helperMethod() instead of HelperClass.helperMethod()
 	 * }</pre>
-	 * 
-	 * @param className the fully qualified class name to register for static import
+	 *
+	 * @param className
+	 *            the fully qualified class name to register for static import
 	 */
 	protected final void registerStaticImport(final String className) {
-		if (context != null) {
-			context.addDynamicStaticImport(className);
-		}
+		if (context != null) { context.addDynamicStaticImport(className); }
 	}
 
 }

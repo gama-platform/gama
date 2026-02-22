@@ -158,6 +158,17 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 	public List<String> roots;
 
 	/**
+	 * Reference to the parent GamaProcessor instance. Used to record import usage in the persistent cache.
+	 * This enables tracking which imports are actually used across compilation rounds.
+	 */
+	private GamaProcessor processor;
+	
+	/**
+	 * Counter for tracking how many imports are recorded (for debugging).
+	 */
+	private int importTrackingCount = 0;
+
+	/**
 	 * Set of plugin-specific packages discovered during annotation processing. These packages will be added to the
 	 * collective imports for the current plugin.
 	 */
@@ -616,6 +627,11 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 	 * If plugin detection fails, a warning is emitted but processing can continue with default naming schemes.
 	 */
 	void initCurrentPlugin() {
+		// Only initialize if not already done
+		if (shortcut != null) {
+			return;
+		}
+		
 		try {
 			final FileObject temp = getFiler().createSourceFile("gaml.additions.package-info", (Element[]) null);
 			emit(Kind.NOTE, "GAML Processor: creating " + temp.toUri(), (Element) null);
@@ -623,6 +639,7 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 					.replace("/gaml/gaml/additions/package-info.java", "");
 			currentPlugin = plugin2.substring(plugin2.lastIndexOf('/') + 1);
 			shortcut = currentPlugin.substring(currentPlugin.lastIndexOf('.') + 1);
+			emit(Kind.NOTE, "GAML Processor: Plugin identified as '" + currentPlugin + "' (shortcut: '" + shortcut + "')", (Element) null);
 		} catch (IOException e) {
 			emitWarning("Exception raised while reading the current plugin name " + e.getMessage(), e);
 		}
@@ -849,6 +866,49 @@ public class ProcessorContext implements ProcessingEnvironment, RoundEnvironment
 	 */
 	public boolean isIType(final TypeMirror type) {
 		return delegate.getTypeUtils().isSubtype(type, getIType());
+	}
+
+	/**
+	 * Sets the reference to the parent GamaProcessor.
+	 * This allows the context to record import usage in the persistent cache.
+	 *
+	 * @param processor the GamaProcessor instance
+	 */
+	public void setProcessor(final GamaProcessor processor) {
+		this.processor = processor;
+	}
+
+	/**
+	 * Records that a class is being used in the generated code.
+	 * This method updates the persistent cache in GamaProcessor, ensuring that
+	 * imports are preserved across incremental compilation rounds.
+	 * 
+	 * This now tracks the EXACT class name (not just the package) for precise imports.
+	 * 
+	 * Note: Static imports are NOT tracked - they're always included as they're
+	 * fundamental to the generated code (IKeyword constants, Cast methods).
+	 *
+	 * @param fullyQualifiedClassName the fully qualified class name (e.g., "gama.api.kernel.agent.IAgent")
+	 */
+	public void recordImportUsage(final String fullyQualifiedClassName) {
+		if (processor != null && fullyQualifiedClassName != null && !fullyQualifiedClassName.isEmpty()) {
+			processor.getUsedImports().add(fullyQualifiedClassName);
+			importTrackingCount++;
+			// Debug: log first few imports
+			if (importTrackingCount <= 5) {
+				emit(javax.tools.Diagnostic.Kind.NOTE, "Tracking import #" + importTrackingCount + 
+					" for plugin '" + (shortcut != null ? shortcut : "NULL") + "': " + fullyQualifiedClassName, (Element) null);
+			}
+		}
+	}
+	
+	/**
+	 * Gets the import tracking count for debugging purposes.
+	 *
+	 * @return the number of times recordImportUsage was called
+	 */
+	public int getImportTrackingCount() {
+		return importTrackingCount;
 	}
 
 	/**

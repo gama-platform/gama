@@ -12,6 +12,11 @@ package gama.processor;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -125,6 +130,16 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 	long complete = 0;
 
 	/**
+	 * Persistent cache of used imports per plugin. This map accumulates across compilation rounds,
+	 * ensuring that incremental builds preserve imports from previously generated code.
+	 * The key is the plugin shortcut (e.g., "api", "core"), and the value is the set of fully qualified class names.
+	 * Note: Static imports are NOT tracked - they remain constant as they're fundamental to generated code.
+	 * 
+	 * Changed from tracking package.* wildcards to tracking exact class names for cleaner imports.
+	 */
+	private static final Map<String, Set<String>> usedImportsPerPlugin = new HashMap<>();
+
+	/**
 	 * Initializes the annotation processor with the processing environment.
 	 *
 	 * <p>
@@ -138,6 +153,7 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 	public synchronized void init(final ProcessingEnvironment pe) {
 		super.init(pe);
 		context = new ProcessorContext(pe);
+		context.setProcessor(this);
 	}
 
 	/**
@@ -181,6 +197,12 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 		// (Element) null);
 
 		if (context.getRoots().size() > 0) {
+			// Initialize plugin info early so shortcut is available during processing
+			// This is needed for import tracking during process()
+			if (context.shortcut == null) {
+				context.initCurrentPlugin();
+			}
+			
 			try {
 				begin = System.currentTimeMillis();
 				processors.forEach((s, p) -> p.process(context));
@@ -293,13 +315,49 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 	 *            the StringBuilder to append the header code to
 	 */
 	protected void writeImmutableHeader(final StringBuilder sb) {
-		// Use dynamic imports that include plugin-specific packages
+		// Static imports are always included - they're fundamental to generated code
+		// (IKeyword constants like TRUE, FALSE, CONST, NAME and Cast methods)
 		for (final String element : context.getAllStaticCollectiveImports()) {
 			sb.append(ln).append("import static ").append(element).append("*;");
 		}
-		for (final String element : context.getAllCollectiveImports()) {
-			sb.append(ln).append("import ").append(element).append("*;");
+		
+		// Get the set of actually used imports for this plugin (accumulated across all rounds)
+		// These are now fully qualified class names, not package wildcards
+		// Note: Method bodies are built BEFORE this is called, so imports are already tracked
+		Set<String> usedImports = usedImportsPerPlugin.get(context.shortcut);
+		
+		// Debug output
+		context.emit(Kind.NOTE, "Import tracking for plugin '" + context.shortcut + "': " + 
+			(usedImports == null ? "null" : usedImports.size() + " class imports"), (Element) null);
+		
+		if (usedImports == null || usedImports.isEmpty()) {
+			// This should rarely happen - only if no types were used at all
+			// Fall back to package wildcard imports for safety
+			context.emit(Kind.WARNING, "No imports tracked - falling back to all COLLECTIVE_IMPORTS", (Element) null);
+			for (final String element : context.getAllCollectiveImports()) {
+				sb.append(ln).append("import ").append(element).append("*;");
+			}
+		} else {
+			// Sort imports for readability and consistency
+			// Group by package and sort within each group
+			List<String> sortedImports = new ArrayList<>(usedImports);
+			sortedImports.sort(String::compareTo);
+			
+			// Write exact class imports (not package.*)
+			for (final String className : sortedImports) {
+				// Skip java.lang classes - they don't need imports
+				if (!className.startsWith("java.lang.") || className.lastIndexOf('.') > 9) {
+					sb.append(ln).append("import ").append(className).append(";");
+				}
+			}
 		}
+		
+		// Write individual imports (always included)
+		for (final String element : INDIVIDUAL_IMPORTS) { 
+			sb.append(ln).append("import ").append(element).append(";"); 
+		}
+		
+		// Write individual imports (always included)
 		for (final String element : INDIVIDUAL_IMPORTS) { sb.append(ln).append("import ").append(element).append(";"); }
 		sb.append(ln).append("@SuppressWarnings({ \"rawtypes\", \"unchecked\", \"unused\" })");
 		sb.append(ln).append(ln).append("public class GamlAdditions extends gama.api.additions.AbstractGamlAdditions")
@@ -365,13 +423,25 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 	 */
 	public StringBuilder writeJavaBody() {
 		final StringBuilder sb = new StringBuilder();
+		
+		context.emit(Kind.NOTE, "Starting writeJavaBody for plugin '" + context.shortcut + "'", (Element) null);
+		
+		// First, build all the method bodies - this will track which imports are used via rawNameOf()
+		final StringBuilder methodBodies = new StringBuilder();
+		writeMutableHeader(methodBodies);
+		processors.values().forEach(p -> { if (p.outputToJava() && p.hasElements()) { p.writeJavaBody(methodBodies); } });
+		methodBodies.append(ln).append('}');
+		
+		context.emit(Kind.NOTE, "Method bodies built, " + context.getImportTrackingCount() + " imports tracked", (Element) null);
+		
+		// Now that imports have been tracked, write the header with only the tracked imports
 		sb.append("package ").append(PACKAGE_NAME).append(".").append(context.shortcut).append(';');
 		sb.append(ln);
 		writeImmutableHeader(sb);
-		writeMutableHeader(sb);
-		processors.values().forEach(p -> { if (p.outputToJava() && p.hasElements()) { p.writeJavaBody(sb); } });
-
-		sb.append(ln).append('}');
+		
+		// Finally, append the pre-built method bodies
+		sb.append(methodBodies);
+		
 		return sb;
 	}
 
@@ -389,6 +459,21 @@ public class GamaProcessor extends AbstractProcessor implements Constants {
 	@Override
 	public TypeMirror getType(final String classQualifiedName) {
 		return context.getType(classQualifiedName);
+	}
+
+	/**
+	 * Gets or creates the set of used imports for the current plugin.
+	 * This set is persistent across compilation rounds and contains fully qualified class names.
+	 *
+	 * @return the set of used imports (fully qualified class names) for the current plugin
+	 */
+	public Set<String> getUsedImports() {
+		if (context.shortcut == null) {
+			context.emit(Kind.WARNING, "getUsedImports called with null shortcut!", (Element) null);
+			// Return a temporary set that won't be cached
+			return new LinkedHashSet<>();
+		}
+		return usedImportsPerPlugin.computeIfAbsent(context.shortcut, k -> new LinkedHashSet<>());
 	}
 
 }
