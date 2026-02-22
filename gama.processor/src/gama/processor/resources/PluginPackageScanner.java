@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.processor;
+package gama.processor.resources;
 
 import java.io.File;
 import java.io.IOException;
@@ -480,15 +480,73 @@ public class PluginPackageScanner {
 	// ================================================================================================
 
 	/**
-	 * Main method to run all examples. Pass workspace path as first argument.
+	 * Main method to generate gama.api packages list file.
+	 * 
+	 * <p>
+	 * Scans the workspace, extracts all packages from the gama.api plugin that start with "gama.api", and writes them
+	 * to a text file in the gama.processor.resources package. The output file contains only package names, one per
+	 * line, with no comments.
+	 * </p>
 	 *
 	 * @param args
-	 *            command line arguments
+	 *            command line arguments (optional: workspace path as first argument)
 	 */
 	public static void main(final String[] args) {
-		PluginPackageScanner scanner = new PluginPackageScanner("/Users/drogoul/Git/gama");
-		scanner.scanWorkspace();
-		scanner.getPackagesForPlugin("gama.api").stream().sorted()
-				.forEach(pkg -> System.out.println("\"" + pkg + "\","));
+		try {
+			// Determine workspace path
+			String workspacePath = args.length > 0 ? args[0] : "/Users/drogoul/Git/gama";
+			
+			// Create scanner and scan workspace
+			PluginPackageScanner scanner = new PluginPackageScanner(workspacePath);
+			scanner.scanWorkspace();
+			
+			// Get packages for gama.api and filter to only include those starting with "gama.api"
+			Set<String> apiPackages = scanner.getPackagesForPlugin("gama.api").stream()
+					.filter(pkg -> pkg.startsWith("gama.api"))
+					.collect(java.util.stream.Collectors.toSet());
+			
+			// Determine output file path
+			File processorSourceDir = new File("src/gama/processor/resources");
+			if (!processorSourceDir.exists()) {
+				processorSourceDir.mkdirs();
+			}
+			
+			File outputFile = new File(processorSourceDir, "gama-api-packages.txt");
+			
+			// Write packages to file - no comments, just package names
+			try (java.io.PrintWriter writer = new java.io.PrintWriter(
+					new java.io.FileWriter(outputFile))) {
+				
+				// Write packages in sorted order, one per line, no comments
+				apiPackages.stream()
+						.sorted()
+						.forEach(writer::println);
+				
+				writer.flush();
+			}
+			
+			// Print success message
+			System.out.println("✅ Successfully wrote " + apiPackages.size() + 
+					" packages to: " + outputFile.getAbsolutePath());
+			System.out.println();
+			System.out.println("Preview (first 10 packages):");
+			apiPackages.stream()
+					.sorted()
+					.limit(10)
+					.forEach(pkg -> System.out.println("  - " + pkg));
+			
+			if (apiPackages.size() > 10) {
+				System.out.println("  ... and " + (apiPackages.size() - 10) + " more");
+			}
+			
+		} catch (IOException e) {
+			System.err.println("❌ Error writing packages file: " + e.getMessage());
+			e.printStackTrace();
+			System.exit(1);
+		} catch (Exception e) {
+			System.err.println("❌ Error: " + e.getMessage());
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 }

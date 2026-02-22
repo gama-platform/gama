@@ -268,24 +268,49 @@ public interface Constants {
 	/** The explicit imports. */
 	String[] INDIVIDUAL_IMPORTS = {};
 
-	/** The star imports. */
-	Set<String> COLLECTIVE_IMPORTS = Stream.of("java.util", "java.lang", "gama.api", "gama.api", "gama.api.additions",
-			"gama.api.additions.delegates", "gama.api.additions.registries", "gama.api.annotations",
-			"gama.api.compilation", "gama.api.compilation.ast", "gama.api.compilation.descriptions",
-			"gama.api.compilation.documentation", "gama.api.compilation.factories", "gama.api.compilation.prototypes",
-			"gama.api.compilation.serialization", "gama.api.compilation.validation", "gama.api.constants",
-			"gama.api.exceptions", "gama.api.gaml", "gama.api.gaml.constants", "gama.api.gaml.expressions",
-			"gama.api.gaml.statements", "gama.api.gaml.symbols", "gama.api.gaml.types", "gama.api.gaml.variables",
-			"gama.api.kernel", "gama.api.kernel.agent", "gama.api.kernel.serialization", "gama.api.kernel.simulation",
-			"gama.api.kernel.skill", "gama.api.kernel.species", "gama.api.kernel.topology", "gama.api.runtime",
-			"gama.api.runtime.scope", "gama.api.types.color", "gama.api.types.date", "gama.api.types.file",
-			"gama.api.types.font", "gama.api.types.geometry", "gama.api.types.graph", "gama.api.types.list",
-			"gama.api.types.map", "gama.api.types.matrix", "gama.api.types.message", "gama.api.types.misc",
-			"gama.api.types.pair", "gama.api.types.topology", "gama.api.ui", "gama.api.ui.displays",
-			"gama.api.ui.layers", "gama.api.utils", "gama.api.utils.benchmark", "gama.api.utils.collections",
-			"gama.api.utils.files", "gama.api.utils.geometry", "gama.api.utils.interfaces", "gama.api.utils.prefs",
-			"gama.api.utils.random", "gama.api.utils.server", "gama.api.utils.tests").map(s -> s + ".")
-			.collect(Collectors.toSet());
+	/** The star imports. Loaded dynamically from gama-api-packages.txt file. */
+	Set<String> COLLECTIVE_IMPORTS = loadCollectiveImports();
+
+	/**
+	 * Load collective imports from the gama-api-packages.txt file.
+	 * 
+	 * <p>
+	 * This method dynamically loads the gama.api packages from the resource file, similar to how OPERATORS_XSL is
+	 * loaded in ExamplesToTests. It combines java.* packages with all gama.api.* packages read from the file.
+	 * </p>
+	 * 
+	 * @return the set of collective imports with trailing dots
+	 */
+	static Set<String> loadCollectiveImports() {
+		final Set<String> imports = Stream.of("java.util", "java.lang")
+				.map(s -> s + ".")
+				.collect(Collectors.toSet());
+		
+		try (final java.io.BufferedReader reader = new java.io.BufferedReader(
+				new java.io.InputStreamReader(
+					Constants.class.getClassLoader()
+						.getResourceAsStream("gama/processor/resources/gama-api-packages.txt")))) {
+			
+			reader.lines()
+					.filter(line -> !line.trim().isEmpty())
+					.filter(line -> line.startsWith("gama.api"))
+					.map(line -> line + ".")
+					.forEach(imports::add);
+			
+		} catch (final Exception e) {
+			// If file cannot be loaded, fall back to hardcoded list
+			System.err.println("Warning: Could not load gama-api-packages.txt, using fallback imports");
+			e.printStackTrace();
+			
+			// Fallback to basic imports
+			Stream.of("gama.api", "gama.api.kernel.agent", "gama.api.kernel.simulation", 
+					"gama.api.runtime.scope", "gama.api.gaml.expressions", "gama.api.gaml.types")
+					.map(s -> s + ".")
+					.forEach(imports::add);
+		}
+		
+		return imports;
+	}
 
 	/** The static star imports. */
 	Set<String> STATIC_COLLECTIVE_IMPORTS = Stream.of("gama.api.gaml.types.Cast", "gama.api.constants.IKeyword")
