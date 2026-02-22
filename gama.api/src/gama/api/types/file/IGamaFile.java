@@ -28,12 +28,112 @@ import gama.api.ui.displays.IAsset;
 import gama.api.utils.geometry.IEnvelopeProvider;
 
 /**
- * Written by drogoul Modified on 14 nov. 2011
- *
- * @todo Description
- *
- * @param <K>
- * @param <V>
+ * The root interface for all file types in the GAMA modeling platform.
+ * 
+ * <p>
+ * {@code IGamaFile} provides a unified abstraction for accessing and manipulating files within GAMA models.
+ * It extends both {@link gama.api.types.misc.IContainer.Addressable} and
+ * {@link gama.api.types.misc.IContainer.Modifiable} to enable file contents to be treated as addressable
+ * and modifiable containers, allowing natural integration with GAML's container operations.
+ * </p>
+ * 
+ * <h2>Type Parameters</h2>
+ * <ul>
+ * <li>{@code C} - The container type used to store file contents (e.g., IList, IMatrix, IMap)</li>
+ * <li>{@code Contents} - The type of individual elements within the container</li>
+ * </ul>
+ * 
+ * <h2>Key Responsibilities</h2>
+ * <ul>
+ * <li><b>File Metadata:</b> Provides access to file properties (name, path, extension, existence)</li>
+ * <li><b>Content Access:</b> Manages lazy loading and buffering of file contents</li>
+ * <li><b>Container Semantics:</b> Exposes file data as GAML containers for iteration and manipulation</li>
+ * <li><b>I/O Operations:</b> Supports both reading and writing file data</li>
+ * <li><b>Attributes:</b> Provides access to file-specific metadata (e.g., CSV headers, shapefile fields)</li>
+ * </ul>
+ * 
+ * <h2>File Attributes</h2>
+ * <p>
+ * All files expose the following attributes accessible in GAML via dot notation:
+ * </p>
+ * <ul>
+ * <li>{@code name} - The file name without path</li>
+ * <li>{@code path} - The absolute file path</li>
+ * <li>{@code extension} - The file extension (without dot)</li>
+ * <li>{@code exists} - Whether the file exists in the file system</li>
+ * <li>{@code readable} - Whether the file can be read</li>
+ * <li>{@code writable} - Whether the file can be written</li>
+ * <li>{@code isfolder} - Whether this represents a folder/directory</li>
+ * <li>{@code attributes} - File-specific attributes (varies by file type)</li>
+ * <li>{@code contents} - The file contents as a container</li>
+ * </ul>
+ * 
+ * <h2>Lifecycle</h2>
+ * <ol>
+ * <li><b>Creation:</b> File object is created with a path (local or URL)</li>
+ * <li><b>Validation:</b> Path is resolved and validated</li>
+ * <li><b>Lazy Loading:</b> Contents are not loaded until first access</li>
+ * <li><b>Buffering:</b> Once loaded, contents remain in memory (buffer)</li>
+ * <li><b>Writing:</b> Modified contents can be flushed back to disk</li>
+ * </ol>
+ * 
+ * <h2>Specialized File Types</h2>
+ * <p>
+ * GAMA provides specialized interfaces and implementations for specific file types:
+ * </p>
+ * <ul>
+ * <li>{@link Drawable} - Marker interface for files that can be displayed visually</li>
+ * <li>{@link WithGeometry} - Files containing geospatial data (e.g., shapefiles, GeoJSON)</li>
+ * </ul>
+ * 
+ * <h2>Usage Example</h2>
+ * <pre>{@code
+ * // In Java - working with a file
+ * IGamaFile<IList<String>, String> file = new GenericFile(scope, "data.txt");
+ * 
+ * // Check if file exists
+ * if (file.exists(scope)) {
+ *     // Get contents as a list
+ *     IList<String> lines = file.getContents(scope);
+ *     
+ *     // Iterate over lines
+ *     for (String line : lines) {
+ *         System.out.println(line);
+ *     }
+ *     
+ *     // Modify and save
+ *     lines.add("New line");
+ *     file.setContents(lines);
+ *     // Flush to disk via save operation
+ * }
+ * 
+ * // In GAML - natural container syntax
+ * file my_file <- file("data.txt");
+ * loop line over: my_file {
+ *     write line;
+ * }
+ * }</pre>
+ * 
+ * <h2>Implementation Notes</h2>
+ * <ul>
+ * <li>Implementations should handle both local file paths and URLs</li>
+ * <li>Path resolution must account for relative paths and model locations</li>
+ * <li>Buffering should be lazy to avoid unnecessary I/O</li>
+ * <li>Error handling should provide clear feedback about file issues</li>
+ * </ul>
+ * 
+ * @param <C>
+ *            the container type for storing file contents (must be both Addressable and Modifiable)
+ * @param <Contents>
+ *            the type of individual elements within the container
+ * 
+ * @see gama.api.types.file.GamaFile
+ * @see gama.api.types.file.GenericFile
+ * @see gama.api.types.misc.IContainer
+ * @see gama.api.gaml.types.GamaFileType
+ * 
+ * @author Alexis Drogoul
+ * @since GAMA 1.0
  */
 @vars ({ @variable (
 		name = IKeyword.NAME,
@@ -79,20 +179,58 @@ public interface IGamaFile<C extends IContainer.Modifiable, Contents>
 		extends IContainer.Addressable, IContainer.Modifiable, IEnvelopeProvider, IAsset {
 
 	/**
-	 * A tagging interface for drawable files
+	 * Marker interface for file types that can be rendered visually in displays.
+	 * 
+	 * <p>
+	 * Files implementing this interface can be directly used in GAML display statements
+	 * (e.g., image files, 3D mesh files). This allows them to be drawn or rendered in
+	 * graphical displays without additional conversion.
+	 * </p>
+	 * 
+	 * @see gama.api.ui.displays.IAsset
 	 */
 	interface Drawable {
 
 	}
 
 	/**
-	 * The Interface Geometry.
+	 * Specialized interface for files containing geospatial/geometric data.
+	 * 
+	 * <p>
+	 * Files implementing this interface contain shape/geometry information and can provide
+	 * their contents as a list of {@link IShape} objects. This includes file types like:
+	 * </p>
+	 * <ul>
+	 * <li>Shapefiles (.shp)</li>
+	 * <li>GeoJSON files (.geojson, .json)</li>
+	 * <li>KML/KMZ files</li>
+	 * <li>OSM (OpenStreetMap) files</li>
+	 * <li>GeoTIFF files (with vector data)</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * These files are both {@link Drawable} (can be displayed) and provide geometric
+	 * operations through the {@link IShape} interface.
+	 * </p>
+	 * 
+	 * @see gama.api.types.geometry.IShape
+	 * @see gama.api.utils.geometry.IEnvelopeProvider
 	 */
 	interface WithGeometry extends IGamaFile<IList<IShape>, IShape>, Drawable {
 
 		/**
+		 * Returns the combined geometry of all shapes in this file.
+		 * 
+		 * <p>
+		 * This method computes and returns a single {@link IShape} that represents
+		 * the union or collection of all geometric features contained in the file.
+		 * For files with multiple features, this is typically a multi-geometry or
+		 * geometry collection.
+		 * </p>
+		 *
 		 * @param scope
-		 * @return
+		 *            the current execution scope
+		 * @return a shape representing all geometries in the file, or null if the file contains no geometries
 		 */
 		IShape getGeometry(IScope scope);
 
@@ -105,39 +243,77 @@ public interface IGamaFile<C extends IContainer.Modifiable, Contents>
 	String KEY_TEMPORARY_OUTPUT = "key_temporary_output";
 
 	/**
-	 * Sets the writable.
+	 * Sets whether this file should be treated as writable.
+	 * 
+	 * <p>
+	 * This method controls whether the file can accept modifications and be saved back to disk.
+	 * Setting a file as writable enables operations like {@link #setContents(IContainer)} and
+	 * allows the file to be used as an output destination in save operations.
+	 * </p>
+	 * 
+	 * <p>
+	 * Note: This affects the file object's behavior, not the actual file system permissions.
+	 * A file that is writable in the object sense may still fail to write if the underlying
+	 * file system permissions don't allow it.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the current execution scope
 	 * @param w
-	 *            the w
+	 *            true to mark this file as writable, false otherwise
 	 */
 	void setWritable(IScope scope, final boolean w);
 
 	/**
-	 * Sets the contents.
+	 * Sets the contents of this file.
+	 * 
+	 * <p>
+	 * Replaces the current buffered contents with the provided container. This operation
+	 * updates the in-memory representation but does not immediately write to disk. To persist
+	 * changes, the file must be flushed using appropriate save operations.
+	 * </p>
+	 * 
+	 * <p>
+	 * The file must be writable for this operation to succeed. The provided container should
+	 * match the expected type for this file (e.g., IList for text files, IMatrix for grid files).
+	 * </p>
 	 *
 	 * @param cont
-	 *            the new contents
+	 *            the new contents to set
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if the file is not writable or the contents are invalid
 	 */
 	void setContents(final C cont) throws GamaRuntimeException;
 
 	/**
-	 * Copy.
+	 * Creates a copy of this file.
+	 * 
+	 * <p>
+	 * Returns a new file instance with the same path and properties as this file.
+	 * The buffer contents are shared or copied depending on the implementation.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the i gama file
+	 *            the current execution scope
+	 * @return a new file instance that is a copy of this one
 	 */
 	@Override
 	IGamaFile copy(IScope scope);
 
 	/**
-	 * Gets the buffer.
+	 * Gets the internal buffer containing the file's loaded contents.
+	 * 
+	 * <p>
+	 * Returns the cached container holding the file contents. If the file hasn't been
+	 * loaded yet, this may return null. Use {@link #getContents(IScope)} to ensure
+	 * the file is loaded before accessing contents.
+	 * </p>
+	 * 
+	 * <p>
+	 * Direct buffer access should be used cautiously as it bypasses lazy loading mechanisms.
+	 * </p>
 	 *
-	 * @return the buffer
+	 * @return the buffer container, or null if not yet loaded
 	 */
 	C getBuffer();
 

@@ -32,30 +32,91 @@ import gama.api.utils.json.IJsonValue;
 import gama.api.utils.prefs.GamaPreferences;
 
 /**
- * A mutable point in 3D, deriving from JTS Coordinate, that serves muliple purposes (location of agents, of geometries
- * -- through GamaCoordinateSequence --, vectors -- see Rotation3D and AxisAngle, etc.)
- *
- * @author drogoul 11 oct. 07
+ * A mutable 3D point implementation extending JTS Coordinate.
+ * 
+ * <p>GamaPoint is the primary implementation of {@link IPoint}, serving multiple purposes in GAMA:</p>
+ * <ul>
+ *   <li>Location of agents in the simulation space</li>
+ *   <li>Vertices of geometric shapes (via GamaCoordinateSequence)</li>
+ *   <li>Vectors for transformations (rotations, translations)</li>
+ *   <li>Direction vectors (see Rotation3D and AxisAngle)</li>
+ * </ul>
+ * 
+ * <p>This class extends JTS {@link Coordinate}, enabling seamless integration with the Java Topology Suite
+ * while adding GAMA-specific functionality including 3D support, type system integration, and rich operators.</p>
+ * 
+ * <h2>Mutability</h2>
+ * <p><b>Important:</b> GamaPoint instances are MUTABLE. Operations like {@link #add(IPoint)}, {@link #subtract(IPoint)},
+ * {@link #multiplyBy(double)}, and {@link #divideBy(double)} modify the point in place and return {@code this}
+ * for method chaining.</p>
+ * 
+ * <p>If you need to preserve the original point, create a copy first:</p>
+ * <pre>
+ * IPoint original = GamaPointFactory.create(10, 20, 5);
+ * IPoint modified = original.copy(scope).add(offset);  // original unchanged
+ * </pre>
+ * 
+ * <p>For immutable points, use {@link GamaPointFactory.Immutable} instead.</p>
+ * 
+ * <h2>Tolerance</h2>
+ * <p>Equality comparisons and geometric predicates use a configurable tolerance value defined in
+ * {@link #TOLERANCE}. This handles floating-point precision issues common in geometric calculations.
+ * The tolerance is controlled via preferences and can be updated at runtime.</p>
+ * 
+ * <h2>Coordinate Handling</h2>
+ * <ul>
+ *   <li><b>X, Y coordinates:</b> Standard double precision floating-point values</li>
+ *   <li><b>Z coordinate:</b> Automatically converts {@link Double#NaN} to 0.0 for robustness</li>
+ *   <li><b>2D operations:</b> Most 2D comparisons ignore the z-coordinate</li>
+ * </ul>
+ * 
+ * <h2>Thread Safety</h2>
+ * <p>GamaPoint is NOT thread-safe. Concurrent modifications from multiple threads will lead to race conditions.
+ * If a point must be shared across threads, either:</p>
+ * <ul>
+ *   <li>Use {@link GamaPointFactory.Immutable} for read-only sharing</li>
+ *   <li>Create separate copies for each thread</li>
+ *   <li>Provide external synchronization</li>
+ * </ul>
+ * 
+ * <h2>Performance Considerations</h2>
+ * <p>GamaPoint instances are lightweight objects suitable for frequent creation and manipulation. The mutable
+ * design allows efficient in-place updates without allocation overhead. However, be mindful of the mutability
+ * when storing points in collections or passing them to methods.</p>
+ * 
+ * <h2>Integration with JTS</h2>
+ * <p>Since GamaPoint extends {@link Coordinate}, it can be used directly in JTS geometry operations.
+ * This enables GAMA to leverage JTS's robust geometric algorithms while maintaining type safety and
+ * additional functionality.</p>
+ * 
+ * @author drogoul
+ * @see IPoint
+ * @see GamaPointFactory
+ * @see org.locationtech.jts.geom.Coordinate
+ * @since GAMA 1.0 (October 11, 2007)
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 
 public class GamaPoint extends Coordinate implements IPoint {
 
-	/** The tolerance. */
+	/** The tolerance for geometric comparisons and equality tests. Configurable via preferences. */
 	public static double TOLERANCE = GamaPreferences.Experimental.TOLERANCE_POINTS.getValue();
 	static {
 		GamaPreferences.Experimental.TOLERANCE_POINTS.onChange(v -> TOLERANCE = v);
 	}
 
 	/**
-	 * Instantiates a new gama point.
+	 * Constructs a new GamaPoint with the specified coordinates.
+	 * 
+	 * <p>This constructor is package-private. Use {@link GamaPointFactory} to create points:</p>
+	 * <pre>
+	 * IPoint point = GamaPointFactory.create(x, y, z);
+	 * </pre>
 	 *
-	 * @param x
-	 *            the x
-	 * @param y
-	 *            the y
-	 * @param z
-	 *            the z
+	 * @param x the x-coordinate
+	 * @param y the y-coordinate
+	 * @param z the z-coordinate
+	 * @see GamaPointFactory#create(double, double, double)
 	 */
 	GamaPoint(final double x, final double y, final double z) {
 		this.x = x;

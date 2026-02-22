@@ -28,7 +28,110 @@ import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.IEnvelope;
 
 /**
- * The Class GenericFile.
+ * Represents a generic text file with line-based content access.
+ * 
+ * <p>
+ * {@code GenericFile} is the default file type used when no specific file type can be determined
+ * from the file extension. It treats files as collections of text lines, providing access to
+ * file contents as a list of strings. Each element in the list represents one line from the file.
+ * </p>
+ * 
+ * <h2>Key Features</h2>
+ * <ul>
+ * <li><b>Line-based reading:</b> File contents are split into lines automatically</li>
+ * <li><b>Binary detection:</b> Attempts to detect binary files and warns users</li>
+ * <li><b>Simple access:</b> Contents exposed as {@code IList<String>} for easy iteration</li>
+ * <li><b>Generic fallback:</b> Used when no specialized file type matches the extension</li>
+ * </ul>
+ * 
+ * <h2>Content Structure</h2>
+ * <p>
+ * The file contents are represented as:
+ * </p>
+ * <ul>
+ * <li><b>Container type:</b> {@code IList<String>} - an ordered list of lines</li>
+ * <li><b>Element type:</b> {@code String} - each line as a text string</li>
+ * <li><b>Line breaks:</b> Platform-specific line endings are handled automatically</li>
+ * <li><b>Empty lines:</b> Preserved in the list (represented as empty strings)</li>
+ * </ul>
+ * 
+ * <h2>Binary File Detection</h2>
+ * <p>
+ * GenericFile attempts to detect binary files using a heuristic approach:
+ * </p>
+ * <ul>
+ * <li>Reads the first 1024 bytes of the file</li>
+ * <li>Checks for control characters (bytes < 0x09)</li>
+ * <li>Calculates the ratio of non-ASCII to ASCII characters</li>
+ * <li>Issues a warning if the file appears to be binary</li>
+ * </ul>
+ * 
+ * <h2>Usage Examples</h2>
+ * 
+ * <h3>In GAML</h3>
+ * <pre>{@code
+ * // Read a generic text file
+ * file my_file <- file("data.txt");
+ * 
+ * // Iterate over lines
+ * loop line over: my_file {
+ *     write line;
+ * }
+ * 
+ * // Access specific lines
+ * string first_line <- my_file[0];
+ * int line_count <- length(my_file);
+ * }</pre>
+ * 
+ * <h3>In Java</h3>
+ * <pre>{@code
+ * // Create and read a generic file
+ * GenericFile file = new GenericFile(scope, "data.txt");
+ * IList<String> lines = file.getContents(scope);
+ * 
+ * // Process lines
+ * for (String line : lines) {
+ *     System.out.println(line);
+ * }
+ * 
+ * // Add new lines
+ * lines.add("New line");
+ * file.setContents(lines);
+ * }</pre>
+ * 
+ * <h2>When to Use</h2>
+ * <p>
+ * Use GenericFile for:
+ * </p>
+ * <ul>
+ * <li>Plain text files without specific structure</li>
+ * <li>Log files</li>
+ * <li>Configuration files</li>
+ * <li>Any text file when structure-specific parsing isn't needed</li>
+ * <li>Files with unknown or unsupported extensions</li>
+ * </ul>
+ * 
+ * <h2>Limitations</h2>
+ * <ul>
+ * <li>No parsing of structured formats (use CSV, JSON, XML file types for those)</li>
+ * <li>No column/field separation (entire line is one string)</li>
+ * <li>Binary files generate warnings but no structured data</li>
+ * <li>Very large files are loaded entirely into memory</li>
+ * </ul>
+ * 
+ * <h2>Writing Support</h2>
+ * <p>
+ * GenericFile supports basic writing through the standard {@code save} operation,
+ * though the {@link #flushBuffer(IScope, Facets)} method is currently a no-op.
+ * For writing text files, consider using GAML's save statement with explicit format.
+ * </p>
+ * 
+ * @see GamaFile
+ * @see IGamaFile
+ * @see gama.api.types.list.IList
+ * 
+ * @author Alexis Drogoul
+ * @since GAMA 1.0
  */
 public class GenericFile extends GamaFile<IList<String>, String> {
 
@@ -103,10 +206,44 @@ public class GenericFile extends GamaFile<IList<String>, String> {
 	}
 
 	/**
-	 * Guess whether given file is binary. Just checks for anything under 0x09.
+	 * Detects whether the file contains binary data using heuristic analysis.
+	 * 
+	 * <p>
+	 * This method attempts to determine if a file is binary by examining its first 1024 bytes
+	 * (or fewer if the file is smaller). The detection uses two criteria:
+	 * </p>
+	 * <ol>
+	 * <li><b>Control character check:</b> Any byte below 0x09 (except valid whitespace) indicates binary</li>
+	 * <li><b>Non-ASCII ratio:</b> If more than 95% of characters are non-ASCII, the file is likely binary</li>
+	 * </ol>
+	 * 
+	 * <p>
+	 * Valid text characters include:
+	 * </p>
+	 * <ul>
+	 * <li>Tab (0x09)</li>
+	 * <li>Line feed (0x0A)</li>
+	 * <li>Form feed (0x0C)</li>
+	 * <li>Carriage return (0x0D)</li>
+	 * <li>Printable ASCII (0x20-0x7E)</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * <b>Note:</b> This is a heuristic method and may produce false positives/negatives for:
+	 * </p>
+	 * <ul>
+	 * <li>Files with extended character encodings (UTF-16, UTF-32)</li>
+	 * <li>Very short files</li>
+	 * <li>Text files with many special characters</li>
+	 * </ul>
 	 *
-	 * @throws IOException
+	 * @param scope
+	 *            the current execution scope (for error reporting)
+	 * @return true if the file appears to be binary, false if it appears to be text
 	 * @throws FileNotFoundException
+	 *             if the file does not exist
+	 * @throws IOException
+	 *             if an I/O error occurs while reading the file
 	 */
 	public boolean isBinaryFile(final IScope scope) throws FileNotFoundException, IOException {
 		File f = getFile(scope);

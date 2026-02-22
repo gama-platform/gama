@@ -17,7 +17,53 @@ import gama.api.runtime.scope.IScope;
 import gama.api.utils.geometry.IEnvelope;
 
 /**
- *
+ * Interface defining the contract for shape creation in GAMA.
+ * 
+ * <p>This interface specifies the methods that must be implemented by shape factory implementations.
+ * It serves as a plugin point for custom geometry implementations, allowing different backends to
+ * provide shape creation while maintaining a consistent API.</p>
+ * 
+ * <p>The primary implementation is provided by the core GAMA geometry system and accessed through
+ * {@link GamaShapeFactory}, which delegates to an internal factory implementing this interface.</p>
+ * 
+ * <h2>Factory Responsibilities</h2>
+ * <p>Implementations must provide methods for:</p>
+ * <ul>
+ *   <li><b>Basic creation:</b> Empty shapes, shapes from JTS geometries, envelopes</li>
+ *   <li><b>Primitive shapes:</b> Triangles, squares, circles, rectangles, hexagons, etc.</li>
+ *   <li><b>Complex shapes:</b> Polygons, multi-polygons, polyhedra, 3D shapes</li>
+ *   <li><b>Line shapes:</b> Lines, polylines, arcs, arrows</li>
+ *   <li><b>Curves:</b> Bezier curves, cubic curves</li>
+ * </ul>
+ * 
+ * <h2>Design Pattern</h2>
+ * <p>This interface follows the Abstract Factory pattern, allowing GAMA to switch between different
+ * geometric implementations if needed. The actual factory is set via {@link GamaShapeFactory#setBuilder(IShapeFactory)}.</p>
+ * 
+ * <h2>Thread Safety</h2>
+ * <p>Factory implementations should be thread-safe for concurrent shape creation. However, the created
+ * shapes themselves are typically NOT thread-safe.</p>
+ * 
+ * <h2>Usage</h2>
+ * <p>Client code should NOT use this interface directly. Instead, use {@link GamaShapeFactory}:</p>
+ * <pre>
+ * // Correct usage
+ * IShape shape = GamaShapeFactory.buildCircle(10.0, center);
+ * 
+ * // Don't do this
+ * IShapeFactory factory = ...; // Direct factory access
+ * IShape shape = factory.buildCircle(10.0, center);
+ * </pre>
+ * 
+ * <h2>Constants</h2>
+ * <ul>
+ *   <li>{@link #theta} - Predefined angle (~0.423 radians or ~24.2°) used in arrow head calculations</li>
+ * </ul>
+ * 
+ * @author drogoul
+ * @see GamaShapeFactory
+ * @see IShape
+ * @since GAMA 1.7
  */
 public interface IShapeFactory {
 

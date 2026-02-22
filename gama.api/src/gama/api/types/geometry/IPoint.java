@@ -45,138 +45,278 @@ import gama.api.utils.json.IJsonValue;
 				type = IType.FLOAT,
 				doc = { @doc ("Returns the z ordinate of this point") }) })
 /**
- * Interface for 3D points.
+ * Interface for 3D point values in GAMA.
+ * 
+ * <p>An {@code IPoint} represents a position in 3D Cartesian space with x, y, and z coordinates. Points are
+ * fundamental building blocks in GAMA for representing locations of agents, vertices of geometries, and vectors
+ * for transformations.</p>
+ * 
+ * <p>This interface extends {@link IShape}, making points a special case of geometric shapes. It also extends
+ * {@link Comparable} for ordering points and {@link Cloneable} for creating copies.</p>
+ * 
+ * <h2>Coordinate System</h2>
+ * <p>Points use a right-handed 3D Cartesian coordinate system:</p>
+ * <ul>
+ *   <li><b>X-axis:</b> Horizontal (typically west-east)</li>
+ *   <li><b>Y-axis:</b> Vertical (typically south-north)</li>
+ *   <li><b>Z-axis:</b> Depth/elevation (typically down-up)</li>
+ * </ul>
+ * 
+ * <h2>Operations</h2>
+ * <p>IPoint supports rich arithmetic and comparison operations:</p>
+ * 
+ * <h3>Arithmetic Operations</h3>
+ * <ul>
+ *   <li><b>Addition:</b> {@code p1 + p2}, {@code p + scalar}</li>
+ *   <li><b>Subtraction:</b> {@code p1 - p2}, {@code p - scalar}</li>
+ *   <li><b>Multiplication:</b> {@code p * scalar}</li>
+ *   <li><b>Division:</b> {@code p / scalar}</li>
+ * </ul>
+ * 
+ * <h3>Comparison Operations</h3>
+ * <ul>
+ *   <li>{@link #smallerThan(IPoint)} - Component-wise less than</li>
+ *   <li>{@link #biggerThan(IPoint)} - Component-wise greater than</li>
+ *   <li>{@link #smallerThanOrEqualTo(IPoint)} - Component-wise less than or equal</li>
+ *   <li>{@link #biggerThanOrEqualTo(IPoint)} - Component-wise greater than or equal</li>
+ * </ul>
+ * 
+ * <h2>Mutability</h2>
+ * <p>Most {@code IPoint} implementations (e.g., {@link GamaPoint}) are mutable. Coordinates can be modified
+ * using setter methods. For immutable points, use {@link GamaPointFactory.Immutable}.</p>
+ * 
+ * <p><b>Warning:</b> When using mutable points, be aware that modifying a point affects all references to it.
+ * Use {@link #copy(gama.api.runtime.scope.IScope)} to create independent copies when needed.</p>
+ * 
+ * <h2>Usage Examples</h2>
+ * 
+ * <h3>GAML Usage</h3>
+ * <pre>
+ * // Create points
+ * point p1 &lt;- {10.0, 20.0};        // 2D point (z=0)
+ * point p2 &lt;- {10.0, 20.0, 5.0};   // 3D point
+ * 
+ * // Access coordinates
+ * float x &lt;- p1.x;
+ * float y &lt;- p1.y;
+ * float z &lt;- p1.z;
+ * 
+ * // Arithmetic
+ * point sum &lt;- p1 + p2;
+ * point scaled &lt;- p1 * 2.0;
+ * 
+ * // Comparison
+ * bool is_smaller &lt;- p1 &lt; p2;
+ * </pre>
+ * 
+ * <h3>Java Usage</h3>
+ * <pre>
+ * // Create points
+ * IPoint p1 = GamaPointFactory.create(10.0, 20.0, 5.0);
+ * 
+ * // Access coordinates
+ * double x = p1.getX();
+ * double y = p1.getY();
+ * double z = p1.getZ();
+ * 
+ * // Modify (if mutable)
+ * p1.setLocation(15.0, 25.0, 10.0);
+ * 
+ * // Arithmetic
+ * IPoint sum = p1.add(p2);  // Modifies p1!
+ * IPoint copy = p1.copy(scope);  // Create independent copy
+ * </pre>
+ * 
+ * <h2>Thread Safety</h2>
+ * <p>Mutable {@code IPoint} implementations are NOT thread-safe. If a point must be shared across threads,
+ * either:</p>
+ * <ul>
+ *   <li>Use immutable points ({@link GamaPointFactory.Immutable})</li>
+ *   <li>Create copies for each thread</li>
+ *   <li>Provide external synchronization</li>
+ * </ul>
+ * 
+ * <h2>Tolerance</h2>
+ * <p>Equality comparisons use a configurable tolerance value (see {@link GamaPoint#TOLERANCE}) to handle
+ * floating-point precision issues. Two points are considered equal if their coordinates differ by less than
+ * the tolerance.</p>
+ * 
+ * <h2>JTS Integration</h2>
+ * <p>Points are compatible with JTS {@link Coordinate} objects. The primary implementation {@link GamaPoint}
+ * extends {@code Coordinate} directly, allowing seamless integration with JTS geometry operations.</p>
+ * 
+ * @author drogoul
+ * @see GamaPoint
+ * @see GamaPointFactory
+ * @see IShape
+ * @see org.locationtech.jts.geom.Coordinate
+ * @since GAMA 1.0
  */
 
 public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Coordinate> {
 
 	/**
-	 * Smaller than.
+	 * Tests whether this point is component-wise smaller than another point.
+	 * 
+	 * <p>Returns {@code true} if and only if {@code this.x < other.x AND this.y < other.y}.
+	 * The z-coordinate is not considered in this comparison.</p>
+	 * 
+	 * <p>This is a strict comparison - if any coordinate is equal or greater, returns false.</p>
 	 *
-	 * @param other
-	 *            the other
-	 * @return true, if successful
+	 * @param other the point to compare against
+	 * @return true if this point is strictly smaller in both x and y, false otherwise
 	 */
 	boolean smallerThan(IPoint other);
 
 	/**
-	 * Smaller than or equal to.
+	 * Tests whether this point is component-wise smaller than or equal to another point.
+	 * 
+	 * <p>Returns {@code true} if and only if {@code this.x <= other.x AND this.y <= other.y}.
+	 * The z-coordinate is not considered in this comparison.</p>
 	 *
-	 * @param other
-	 *            the other
-	 * @return true, if successful
+	 * @param other the point to compare against
+	 * @return true if this point is smaller or equal in both x and y, false otherwise
 	 */
 	boolean smallerThanOrEqualTo(IPoint other);
 
 	/**
-	 * Bigger than.
+	 * Tests whether this point is component-wise bigger than another point.
+	 * 
+	 * <p>Returns {@code true} if and only if {@code this.x > other.x AND this.y > other.y}.
+	 * The z-coordinate is not considered in this comparison.</p>
+	 * 
+	 * <p>This is a strict comparison - if any coordinate is equal or smaller, returns false.</p>
 	 *
-	 * @param other
-	 *            the other
-	 * @return true, if successful
+	 * @param other the point to compare against
+	 * @return true if this point is strictly bigger in both x and y, false otherwise
 	 */
 	boolean biggerThan(IPoint other);
 
 	/**
-	 * Bigger than or equal to.
+	 * Tests whether this point is component-wise bigger than or equal to another point.
+	 * 
+	 * <p>Returns {@code true} if and only if {@code this.x >= other.x AND this.y >= other.y}.
+	 * The z-coordinate is not considered in this comparison.</p>
 	 *
-	 * @param other
-	 *            the other
-	 * @return true, if successful
+	 * @param other the point to compare against
+	 * @return true if this point is bigger or equal in both x and y, false otherwise
 	 */
 	boolean biggerThanOrEqualTo(IPoint other);
 
 	/**
-	 * Sets the location.
+	 * Sets the location of this point to the specified coordinates.
+	 * 
+	 * <p>This method modifies the point in place and returns {@code this} for method chaining.</p>
+	 * 
+	 * <p><b>Note:</b> For immutable points, this method returns the point unchanged.</p>
 	 *
-	 * @param x
-	 *            the x
-	 * @param y
-	 *            the y
-	 * @param z
-	 *            the z
-	 * @return the gama point
+	 * @param x the new x-coordinate
+	 * @param y the new y-coordinate
+	 * @param z the new z-coordinate
+	 * @return this point (modified)
 	 */
 	IPoint setLocation(double x, double y, double z);
 
 	/**
-	 * Sets the coordinate.
+	 * Sets the location of this point from a JTS Coordinate.
+	 * 
+	 * <p>Copies the x, y, and z coordinates from the provided coordinate to this point.
+	 * Modifies the point in place.</p>
+	 * 
+	 * <p><b>Note:</b> For immutable points, this method has no effect.</p>
 	 *
-	 * @param c
-	 *            the new coordinate
+	 * @param c the coordinate to copy from
 	 */
 	void setCoordinate(Coordinate c);
 
 	/**
-	 * Sets the ordinate.
+	 * Sets a specific ordinate (coordinate) of this point.
+	 * 
+	 * <p>The ordinate index follows JTS conventions:</p>
+	 * <ul>
+	 *   <li>0 or {@link Coordinate#X} - X-coordinate</li>
+	 *   <li>1 or {@link Coordinate#Y} - Y-coordinate</li>
+	 *   <li>2 or {@link Coordinate#Z} - Z-coordinate</li>
+	 * </ul>
+	 * 
+	 * <p><b>Note:</b> For immutable points, this method has no effect.</p>
 	 *
-	 * @param i
-	 *            the i
-	 * @param v
-	 *            the v
+	 * @param i the ordinate index (0=x, 1=y, 2=z)
+	 * @param v the new value for the ordinate
 	 */
 	void setOrdinate(int i, double v);
 
 	/**
-	 * Sets the x.
+	 * Sets the x-coordinate of this point.
+	 * 
+	 * <p><b>Note:</b> For immutable points, this method has no effect.</p>
 	 *
-	 * @param xx
-	 *            the new x
+	 * @param xx the new x-coordinate
 	 */
 	void setX(double xx);
 
 	/**
-	 * Sets the y.
+	 * Sets the y-coordinate of this point.
+	 * 
+	 * <p><b>Note:</b> For immutable points, this method has no effect.</p>
 	 *
-	 * @param yy
-	 *            the new y
+	 * @param yy the new y-coordinate
 	 */
 	void setY(double yy);
 
 	/**
-	 * Sets the z.
+	 * Sets the z-coordinate of this point.
+	 * 
+	 * <p>If the provided value is {@link Double#NaN}, it is automatically converted to 0.0.</p>
+	 * 
+	 * <p><b>Note:</b> For immutable points, this method has no effect.</p>
 	 *
-	 * @param zz
-	 *            the new z
+	 * @param zz the new z-coordinate (NaN is converted to 0.0)
 	 */
 	void setZ(double zz);
 
 	/**
-	 * Gets the x.
+	 * Returns the x-coordinate of this point.
 	 *
-	 * @return the x
+	 * @return the x-coordinate as a double
 	 */
 	@getter (IKeyword.X)
 	double getX();
 
 	/**
-	 * Gets the y.
+	 * Returns the y-coordinate of this point.
 	 *
-	 * @return the y
+	 * @return the y-coordinate as a double
 	 */
 	@getter (IKeyword.Y)
 	double getY();
 
 	/**
-	 * Gets the z.
+	 * Returns the z-coordinate of this point.
+	 * 
+	 * <p>For 2D points, this typically returns 0.0.</p>
 	 *
-	 * @return the z
+	 * @return the z-coordinate as a double
 	 */
 	@getter (IKeyword.Z)
 	double getZ();
 
 	/**
-	 * Checks if is point.
+	 * Returns whether this shape is a point.
+	 * 
+	 * <p>For {@code IPoint} instances, this always returns {@code true}.</p>
 	 *
-	 * @return true, if is point
+	 * @return true
 	 */
 	@Override
 	boolean isPoint();
 
 	/**
-	 * Checks if is line.
+	 * Returns whether this shape is a line.
+	 * 
+	 * <p>For {@code IPoint} instances, this always returns {@code false}.</p>
 	 *
-	 * @return true, if is line
+	 * @return false
 	 */
 	@Override
 	boolean isLine();
@@ -218,64 +358,90 @@ public interface IPoint extends IShape, IIntersectable, Cloneable, Comparable<Co
 	String stringValue(IScope scope);
 
 	/**
-	 * Adds the.
+	 * Adds another point to this point.
+	 * 
+	 * <p><b>Warning:</b> This method modifies the point in place and returns {@code this}.
+	 * It does NOT create a new point. Use {@link #copy(gama.api.runtime.scope.IScope)} first if you need
+	 * to preserve the original point.</p>
+	 * 
+	 * <p>The operation is: {@code this.x += loc.x; this.y += loc.y; this.z += loc.z}</p>
 	 *
-	 * @param loc
-	 *            the loc
-	 * @return the gama point
+	 * @param loc the point to add
+	 * @return this point (modified)
 	 */
 	IPoint add(IPoint loc);
 
 	/**
-	 * Adds the.
+	 * Adds specified offsets to this point's coordinates.
+	 * 
+	 * <p><b>Warning:</b> This method modifies the point in place and returns {@code this}.
+	 * It does NOT create a new point.</p>
+	 * 
+	 * <p>The operation is: {@code this.x += ax; this.y += ay; this.z += az}</p>
 	 *
-	 * @param ax
-	 *            the ax
-	 * @param ay
-	 *            the ay
-	 * @param az
-	 *            the az
-	 * @return the gama point
+	 * @param ax the offset to add to x-coordinate
+	 * @param ay the offset to add to y-coordinate
+	 * @param az the offset to add to z-coordinate
+	 * @return this point (modified)
 	 */
 	IPoint add(double ax, double ay, double az);
 
 	/**
-	 * Subtract.
+	 * Subtracts another point from this point.
+	 * 
+	 * <p><b>Warning:</b> This method modifies the point in place and returns {@code this}.
+	 * It does NOT create a new point. Use {@link #copy(gama.api.runtime.scope.IScope)} first if you need
+	 * to preserve the original point.</p>
+	 * 
+	 * <p>The operation is: {@code this.x -= loc.x; this.y -= loc.y; this.z -= loc.z}</p>
 	 *
-	 * @param loc
-	 *            the loc
-	 * @return the gama point
+	 * @param loc the point to subtract
+	 * @return this point (modified)
 	 */
 	IPoint subtract(IPoint loc);
 
 	/**
-	 * Multiply by.
+	 * Multiplies this point's coordinates by a scalar value.
+	 * 
+	 * <p><b>Warning:</b> This method modifies the point in place and returns {@code this}.
+	 * It does NOT create a new point.</p>
+	 * 
+	 * <p>The operation is: {@code this.x *= value; this.y *= value; this.z *= value}</p>
 	 *
-	 * @param value
-	 *            the value
-	 * @return the gama point
+	 * @param value the scalar to multiply by
+	 * @return this point (modified)
 	 */
 	IPoint multiplyBy(double value);
 
 	/**
-	 * Divide by.
+	 * Divides this point's coordinates by a scalar value.
+	 * 
+	 * <p><b>Warning:</b> This method modifies the point in place and returns {@code this}.
+	 * It does NOT create a new point.</p>
+	 * 
+	 * <p>The operation is: {@code this.x /= value; this.y /= value; this.z /= value}</p>
+	 * 
+	 * <p><b>Note:</b> Division by zero will result in infinite or NaN values.</p>
 	 *
-	 * @param value
-	 *            the value
-	 * @return the gama point
+	 * @param value the scalar to divide by
+	 * @return this point (modified)
 	 */
 	IPoint divideBy(double value);
 
 	/**
-	 * Equals with tolerance.
+	 * Tests equality with tolerance.
+	 * 
+	 * <p>Returns {@code true} if the Euclidean distance between this point and {@code c} is less than
+	 * the specified tolerance. This is useful for comparing points with floating-point coordinates where
+	 * exact equality is unreliable.</p>
+	 * 
+	 * <p>The comparison uses: {@code distance(this, c) < tolerance}</p>
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @param c
-	 *            the c
-	 * @param tolerance
-	 *            the tolerance
-	 * @return true, if successful
-	 * @date 17 sept. 2023
+	 * @param c the point to compare against
+	 * @param tolerance the maximum distance for considering points equal
+	 * @return true if points are within tolerance, false otherwise
+	 * @since GAMA 1.9 (September 17, 2023)
+	 * @author Alexis Drogoul
 	 */
 	boolean equalsWithTolerance(IPoint c, double tolerance);
 

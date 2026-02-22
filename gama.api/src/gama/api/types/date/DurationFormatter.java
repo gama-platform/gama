@@ -23,7 +23,52 @@ import java.time.temporal.TemporalQuery;
 import gama.api.gaml.types.GamaDateType;
 
 /**
- * The Class DurationFormatter.
+ * Formats {@link Duration} objects as human-readable strings with intelligent unit selection.
+ * 
+ * <p>
+ * This formatter automatically selects the most appropriate time units to display a duration,
+ * ranging from years and months down to seconds. The output format adapts based on the magnitude
+ * of the duration, ensuring readability while maintaining precision.
+ * </p>
+ * 
+ * <h2>Formatting Rules</h2>
+ * <ul>
+ * <li>If duration includes years: displays as "Xy Mm Dd HH:mm:ss"</li>
+ * <li>If duration includes 2+ months: displays as "M months d days HH:mm:ss"</li>
+ * <li>If duration includes 1 month: displays as "M month d day(s) HH:mm:ss"</li>
+ * <li>If duration includes 2+ days: displays as "d days HH:mm:ss"</li>
+ * <li>If duration includes 1 day: displays as "d day HH:mm:ss"</li>
+ * <li>Otherwise: displays as "HH:mm:ss"</li>
+ * </ul>
+ * 
+ * <h2>Usage</h2>
+ * <pre>{@code
+ * // Format a duration
+ * Duration d1 = Duration.ofHours(25);
+ * String s1 = DurationFormatter.INSTANCE.toString(d1);
+ * // Result: "1 day 01:00:00"
+ * 
+ * Duration d2 = Duration.ofDays(45).plusHours(12).plusMinutes(30);
+ * String s2 = DurationFormatter.INSTANCE.toString(d2);
+ * // Result: "1 month 15 days 12:30:00"
+ * 
+ * Duration d3 = Duration.ofMinutes(90);
+ * String s3 = DurationFormatter.INSTANCE.toString(d3);
+ * // Result: "01:30:00"
+ * }</pre>
+ * 
+ * <h2>Implementation Note</h2>
+ * <p>
+ * This class implements {@link TemporalAccessor} to integrate with Java's date/time formatting
+ * system. It converts durations to a temporal representation relative to the GAMA starting date
+ * to enable proper formatting with standard DateTimeFormatter patterns.
+ * </p>
+ * 
+ * @see java.time.Duration
+ * @see java.time.format.DateTimeFormatter
+ * @see gama.api.gaml.types.GamaDateType
+ * 
+ * @author Alexis Drogoul
  */
 public class DurationFormatter implements TemporalAccessor {
 
@@ -55,11 +100,24 @@ public class DurationFormatter implements TemporalAccessor {
 	private Temporal temporal;
 
 	/**
-	 * To string.
+	 * Converts a duration to a human-readable string representation.
+	 * 
+	 * <p>
+	 * The method intelligently selects the most appropriate format based on the duration's magnitude.
+	 * Longer durations will include years and months, while shorter ones display only days, hours,
+	 * minutes, and seconds. Singular vs. plural forms are used appropriately (e.g., "1 day" vs "2 days").
+	 * </p>
 	 *
 	 * @param duration
-	 *            the duration
-	 * @return the string
+	 *            the duration to format (must not be null)
+	 * @return a human-readable string representation of the duration (e.g., "2 days 12:30:45")
+	 * 
+	 * @example
+	 * <pre>{@code
+	 * Duration d = Duration.ofHours(50);
+	 * String formatted = DurationFormatter.INSTANCE.toString(d);
+	 * // Returns: "2 days 02:00:00"
+	 * }</pre>
 	 */
 	public String toString(final Duration duration) {
 		this.temporal = duration.addTo(GamaDateType.DATES_STARTING_DATE.getValue())
@@ -70,9 +128,14 @@ public class DurationFormatter implements TemporalAccessor {
 	}
 
 	/**
-	 * Gets the formatter.
+	 * Selects the appropriate DateTimeFormatter based on the duration's magnitude.
+	 * 
+	 * <p>
+	 * The selection logic prioritizes larger units (years, then months, then days) and adjusts
+	 * for singular vs. plural forms to produce grammatically correct output.
+	 * </p>
 	 *
-	 * @return the formatter
+	 * @return the most appropriate DateTimeFormatter for this duration
 	 */
 	private DateTimeFormatter getFormatter() {
 		if (getLong(YEAR) > 0) return YMDHMS;

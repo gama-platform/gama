@@ -53,10 +53,115 @@ import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
 
 /**
- * The Class GamaDate. Immutable class that holds a date (based on JSR-310)
- *
- * @author Taillandier
+ * Immutable implementation of the {@link IDate} interface for GAMA.
+ * 
+ * <p>
+ * {@code GamaDate} provides a thread-safe, immutable wrapper around Java's JSR-310 temporal classes
+ * ({@link java.time.LocalDateTime}, {@link java.time.ZonedDateTime}, {@link java.time.OffsetDateTime}).
+ * All temporal operations return new instances rather than modifying the existing date.
+ * </p>
+ * 
+ * <h2>Implementation Details</h2>
+ * 
+ * <h3>Immutability</h3>
+ * <p>
+ * Once created, a GamaDate instance cannot be modified. All operations that appear to change
+ * the date (plus, minus, with) create and return new instances. This ensures thread safety
+ * and prevents accidental modifications.
+ * </p>
+ * 
+ * <h3>Time Zone Handling</h3>
+ * <p>
+ * GamaDate intelligently handles time zones:
+ * </p>
+ * <ul>
+ * <li>If the source temporal has zone information (ZonedDateTime), it is preserved</li>
+ * <li>If only an offset is available (OffsetDateTime), a zone is created from the offset</li>
+ * <li>If no zone information exists, the default system zone is used</li>
+ * </ul>
+ * 
+ * <h3>Partial Dates</h3>
+ * <p>
+ * GamaDate can handle partial temporal information:
+ * </p>
+ * <ul>
+ * <li>Dates without time (uses 00:00:00 as the time)</li>
+ * <li>Times without dates (uses the simulation starting date or epoch)</li>
+ * </ul>
+ * 
+ * <h2>Creation</h2>
+ * <p>
+ * GamaDate instances should be created using {@link GamaDateFactory} methods:
+ * </p>
+ * <pre>{@code
+ * // From ISO string
+ * IDate date = GamaDateFactory.createFromISOString("2024-03-15T14:30:00Z");
+ * 
+ * // From temporal object
+ * IDate date = GamaDateFactory.createFromTemporal(LocalDateTime.now());
+ * 
+ * // From string with pattern
+ * IDate date = GamaDateFactory.createWith(scope, "15/03/2024", "dd/MM/yyyy");
+ * 
+ * // From double (seconds since starting date)
+ * IDate date = GamaDateFactory.createFromDouble(scope, 86400.0); // 1 day
+ * }</pre>
+ * 
+ * <h2>String Parsing</h2>
+ * <p>
+ * GamaDate supports flexible string parsing with automatic format detection and custom patterns:
+ * </p>
+ * <pre>{@code
+ * // ISO format (automatic)
+ * new GamaDate(scope, "2024-03-15T14:30:00Z");
+ * 
+ * // Custom pattern
+ * new GamaDate(scope, "15/03/2024 14:30", "dd/MM/yyyy HH:mm");
+ * 
+ * // With locale
+ * new GamaDate(scope, "March 15, 2024", "MMMM d, yyyy", "en_US");
+ * }</pre>
+ * 
+ * <h2>Common Operations</h2>
+ * 
+ * <h3>Arithmetic</h3>
+ * <pre>{@code
+ * // Add time
+ * IDate tomorrow = date.plus(1, ChronoUnit.DAYS);
+ * IDate nextWeek = date.plus(Duration.ofDays(7));
+ * IDate nextMonth = date.plus(1, ChronoUnit.MONTHS);
+ * 
+ * // Subtract time
+ * IDate yesterday = date.minus(1, ChronoUnit.DAYS);
+ * IDate lastHour = date.minusMillis(3600000);
+ * 
+ * // Field modification
+ * IDate noon = date.with(ChronoField.HOUR_OF_DAY, 12);
+ * IDate firstOfMonth = date.with(ChronoField.DAY_OF_MONTH, 1);
+ * }</pre>
+ * 
+ * <h3>Comparison</h3>
+ * <pre>{@code
+ * boolean before = date1.isBefore(date2);
+ * boolean after = date1.isAfter(date2);
+ * int comparison = date1.compareTo(date2);
+ * }</pre>
+ * 
+ * <h3>Formatting</h3>
+ * <pre>{@code
+ * String iso = date.toISOString();
+ * String formatted = date.toString("yyyy-MM-dd HH:mm:ss", "en");
+ * String gaml = date.serializeToGaml(false);
+ * }</pre>
+ * 
+ * @see IDate
+ * @see GamaDateFactory
+ * @see java.time.LocalDateTime
+ * @see java.time.ZonedDateTime
+ * 
+ * @author Patrick Taillandier
  * @author Alexis Drogoul
+ * @since GAMA 1.7
  */
 
 class GamaDate implements IDate {

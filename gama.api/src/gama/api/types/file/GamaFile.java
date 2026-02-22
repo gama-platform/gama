@@ -44,10 +44,132 @@ import gama.dependencies.webb.WebbException;
 import one.util.streamex.StreamEx;
 
 /**
- * Written by drogoul Modified on 7 août 2010
- *
- * @todo Description
- *
+ * Abstract base class for all file types in the GAMA modeling platform.
+ * 
+ * <p>
+ * {@code GamaFile} provides the foundational implementation for file handling in GAMA, including:
+ * </p>
+ * <ul>
+ * <li>Path resolution (relative, absolute, and URL-based)</li>
+ * <li>Lazy loading and buffering of file contents</li>
+ * <li>Read/write operations with proper error handling</li>
+ * <li>Integration with GAML's type system and container operations</li>
+ * </ul>
+ * 
+ * <h2>Type Parameters</h2>
+ * <ul>
+ * <li>{@code Container} - The container type used to hold file contents. Must be both
+ * {@link gama.api.types.misc.IContainer.Addressable} (support indexed/keyed access) and
+ * {@link gama.api.types.misc.IContainer.Modifiable} (support modifications)</li>
+ * <li>{@code Contents} - The type of individual elements stored in the container</li>
+ * </ul>
+ * 
+ * <h2>Path Resolution</h2>
+ * <p>
+ * GamaFile handles various path formats:
+ * </p>
+ * <ul>
+ * <li><b>Relative paths:</b> Resolved relative to the model file's location</li>
+ * <li><b>Absolute paths:</b> Used directly from the file system</li>
+ * <li><b>HTTP/HTTPS URLs:</b> Downloaded to temporary local storage</li>
+ * <li><b>Platform-independent:</b> Path separators are normalized across operating systems</li>
+ * </ul>
+ * 
+ * <h2>Buffering Strategy</h2>
+ * <p>
+ * File contents are loaded lazily using a buffering mechanism:
+ * </p>
+ * <ol>
+ * <li>When a file is created, only the path is stored</li>
+ * <li>On first access to contents, {@link #fillBuffer(IScope)} is called</li>
+ * <li>The loaded contents are cached in the buffer</li>
+ * <li>Subsequent accesses return the cached buffer</li>
+ * <li>Modified contents can be flushed back using {@link #flushBuffer(IScope, Facets)}</li>
+ * </ol>
+ * 
+ * <h2>Implementing a New File Type</h2>
+ * <p>
+ * To create a new file type, subclass {@code GamaFile} and:
+ * </p>
+ * <ol>
+ * <li>Specify appropriate type parameters for {@code Container} and {@code Contents}</li>
+ * <li>Implement {@link #fillBuffer(IScope)} to load file contents into the buffer</li>
+ * <li>Optionally implement {@link #flushBuffer(IScope, Facets)} to support file writing</li>
+ * <li>Implement {@link #getAttributes(IScope)} to return file-specific metadata</li>
+ * <li>Annotate the class with {@link gama.annotations.file} for GAML registration</li>
+ * </ol>
+ * 
+ * <h2>Example Implementation</h2>
+ * <pre>{@code
+ * {@literal @}file(
+ *     name = "my_format",
+ *     extensions = {"myf", "myformat"},
+ *     buffer_content = IType.LIST,
+ *     buffer_index = IType.INT,
+ *     buffer_type = IType.STRING
+ * )
+ * public class MyFormatFile extends GamaFile<IList<String>, String> {
+ *     
+ *     public MyFormatFile(IScope scope, String path) {
+ *         super(scope, path);
+ *     }
+ *     
+ *     {@literal @}Override
+ *     protected void fillBuffer(IScope scope) throws GamaRuntimeException {
+ *         IList<String> data = GamaListFactory.create(Types.STRING);
+ *         // Read file and populate data
+ *         setBuffer(data);
+ *     }
+ *     
+ *     {@literal @}Override
+ *     protected void flushBuffer(IScope scope, Facets facets) 
+ *             throws GamaRuntimeException {
+ *         // Write buffer contents to file
+ *     }
+ *     
+ *     {@literal @}Override
+ *     public IList<String> getAttributes(IScope scope) {
+ *         // Return file-specific attributes
+ *         return GamaListFactory.create(Types.STRING);
+ *     }
+ * }
+ * }</pre>
+ * 
+ * <h2>URL Support</h2>
+ * <p>
+ * Files can be loaded from HTTP/HTTPS URLs. When a URL is detected:
+ * </p>
+ * <ol>
+ * <li>The file is downloaded to a temporary location</li>
+ * <li>The local path is updated to point to the temporary file</li>
+ * <li>Subsequent operations work on the local copy</li>
+ * <li>For output operations, the local file is retained for upload</li>
+ * </ol>
+ * 
+ * <h2>Error Handling</h2>
+ * <p>
+ * File operations may throw {@link GamaRuntimeException} for:
+ * </p>
+ * <ul>
+ * <li>File not found or inaccessible</li>
+ * <li>Invalid file format or corrupted data</li>
+ * <li>I/O errors during read/write operations</li>
+ * <li>Network errors when fetching from URLs</li>
+ * <li>Invalid path specifications</li>
+ * </ul>
+ * 
+ * @param <Container>
+ *            the container type for buffering file contents
+ * @param <Contents>
+ *            the element type contained within the container
+ * 
+ * @see IGamaFile
+ * @see gama.api.types.file.GenericFile
+ * @see gama.api.types.misc.IContainer
+ * @see gama.annotations.file
+ * 
+ * @author Alexis Drogoul
+ * @since GAMA 1.0
  */
 
 @SuppressWarnings ({ "rawtypes", "unchecked" })
@@ -86,30 +208,46 @@ public abstract class GamaFile<Container extends IContainer.Addressable & IConta
 	private Container buffer;
 
 	/**
-	 * Instantiates a new gama file.
+	 * Constructs a new GamaFile for reading.
+	 * 
+	 * <p>
+	 * Creates a file instance that will be used primarily for reading operations.
+	 * The path is resolved relative to the model location if not absolute.
+	 * If the path starts with "http", the file will be downloaded from the URL.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the current execution scope (used for path resolution and error reporting)
 	 * @param pn
-	 *            the pn
+	 *            the path or URL to the file (must not be null)
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if the path is null or if path resolution fails
 	 */
 	public GamaFile(final IScope scope, final String pn) throws GamaRuntimeException {
 		this(scope, pn, true);
 	}
 
 	/**
-	 * Instantiates a new gama file.
+	 * Constructs a new GamaFile with explicit read/write mode.
+	 * 
+	 * <p>
+	 * This constructor allows specifying whether the file is intended for reading or writing.
+	 * For output files (forReading = false), additional temporary paths may be created.
+	 * URL-based files are handled differently depending on the mode:
+	 * </p>
+	 * <ul>
+	 * <li><b>Reading mode:</b> File is downloaded to a local temporary location</li>
+	 * <li><b>Writing mode:</b> A temporary local file is created for later upload</li>
+	 * </ul>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the current execution scope
 	 * @param pn
-	 *            the pn
+	 *            the path or URL to the file
 	 * @param forReading
-	 *            the for reading
+	 *            true if the file is for reading, false if for writing
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if the path is null, invalid, or cannot be resolved
 	 */
 	protected GamaFile(final IScope scope, final String pn, boolean forReading) throws GamaRuntimeException {
 		// See #3684 -- we temporarily consider files as output files if we are invoked by 'save'
@@ -280,12 +418,50 @@ public abstract class GamaFile<Container extends IContainer.Addressable & IConta
 	}
 
 	/**
-	 * Fill buffer.
+	 * Loads the file contents into the internal buffer.
+	 * 
+	 * <p>
+	 * This method is called lazily when file contents are first accessed. Subclasses must
+	 * implement this method to read the file from disk (or other source) and populate the
+	 * buffer with appropriate data. The loaded contents should be set using {@link #setBuffer(IContainer)}.
+	 * </p>
+	 * 
+	 * <p>
+	 * Implementation guidelines:
+	 * </p>
+	 * <ul>
+	 * <li>Check if buffer is already filled before loading to avoid redundant reads</li>
+	 * <li>Use the File object from {@link #getFile(IScope)} for reading</li>
+	 * <li>Handle file format parsing and validation</li>
+	 * <li>Set the buffer using {@link #setBuffer(IContainer)} before returning</li>
+	 * <li>Throw {@link GamaRuntimeException} for any read or parse errors</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * Example implementation:
+	 * </p>
+	 * <pre>{@code
+	 * {@literal @}Override
+	 * protected void fillBuffer(IScope scope) throws GamaRuntimeException {
+	 *     if (getBuffer() != null) return; // Already loaded
+	 *     
+	 *     IList<String> lines = GamaListFactory.create(Types.STRING);
+	 *     try (BufferedReader reader = new BufferedReader(new FileReader(getFile(scope)))) {
+	 *         String line;
+	 *         while ((line = reader.readLine()) != null) {
+	 *             lines.add(line);
+	 *         }
+	 *     } catch (IOException e) {
+	 *         throw GamaRuntimeException.create(e, scope);
+	 *     }
+	 *     setBuffer(lines);
+	 * }
+	 * }</pre>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the current execution scope (for error reporting and context)
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if the file cannot be read, parsed, or if any I/O error occurs
 	 */
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {
 		throw GamaRuntimeException.error("Loading is not yet impletemented for files of type "
@@ -294,14 +470,49 @@ public abstract class GamaFile<Container extends IContainer.Addressable & IConta
 	}
 
 	/**
-	 * Flush buffer.
+	 * Writes the buffered contents back to the file.
+	 * 
+	 * <p>
+	 * This method is called when a file needs to be saved (e.g., via GAML's {@code save} statement).
+	 * Subclasses should implement this method to write the buffer contents to disk in the appropriate
+	 * format. The buffer contents can be accessed via {@link #getBuffer()}.
+	 * </p>
+	 * 
+	 * <p>
+	 * Implementation guidelines:
+	 * </p>
+	 * <ul>
+	 * <li>Get the buffer contents using {@link #getBuffer()}</li>
+	 * <li>Use the File object from {@link #getFile(IScope)} for writing</li>
+	 * <li>Format the data according to the file type specifications</li>
+	 * <li>Use facets to customize the save operation (e.g., header, delimiter for CSV)</li>
+	 * <li>Ensure proper resource cleanup (close streams in finally blocks or use try-with-resources)</li>
+	 * <li>Throw {@link FlushBufferException} or {@link GamaRuntimeException} for write errors</li>
+	 * </ul>
+	 * 
+	 * <p>
+	 * Example implementation:
+	 * </p>
+	 * <pre>{@code
+	 * {@literal @}Override
+	 * protected void flushBuffer(IScope scope, Facets facets) throws GamaRuntimeException {
+	 *     try (BufferedWriter writer = new BufferedWriter(new FileWriter(getFile(scope)))) {
+	 *         for (String line : (IList<String>) getBuffer()) {
+	 *             writer.write(line);
+	 *             writer.newLine();
+	 *         }
+	 *     } catch (IOException e) {
+	 *         throw new FlushBufferException(scope, e, false);
+	 *     }
+	 * }
+	 * }</pre>
 	 *
 	 * @param scope
-	 *            the scope
+	 *            the current execution scope
 	 * @param facets
-	 *            the facets
+	 *            additional parameters for customizing the save operation (can be null)
 	 * @throws GamaRuntimeException
-	 *             the gama runtime exception
+	 *             if the file cannot be written or if any I/O error occurs
 	 */
 	protected void flushBuffer(final IScope scope, final Facets facets) throws GamaRuntimeException {
 		throw new FlushBufferException(scope,
