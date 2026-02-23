@@ -5,57 +5,84 @@ import org.eclipse.xtext.xtext.generator.*
 import org.eclipse.xtext.xtext.ui.generator.*
 import java.util.*
 
-var baseName = "gaml.compiler"
+var rootPath = "/Users/drogoul/Git/gama"
+
 var uiProjectName = "gama.ui.editor"
-var runtimeProject = baseName
-var ideProjectName = "${uiProjectName}"
+var runtimeProjectName = "gaml.compiler"
+
+
 
 Workflow {
 	bean = StandaloneSetup {
 		scanClassPath = true
-		platformUri = "../${runtimeProject}/.."
+		platformUri = rootPath
+	projectMapping = { 
+        projectName = "gaml.grammar" 
+        path = "${rootPath}/gaml.grammar" 
+    }
+    projectMapping = { 
+        projectName = "gaml.compiler" 
+        path = "${rootPath}/gaml.compiler" 
+    }
+    projectMapping = { 
+        projectName = "gama.ui.editor" 
+        path = "${rootPath}/gama.ui.editor" 
+    }
+	}
+	
+	bean = gaml.grammar.PathDebugger {
+        path = rootPath
+    }
+
+	component = DirectoryCleaner {
+		directory = "${rootPath}/gaml.compiler/src-gen"
 	}
 
 	component = DirectoryCleaner {
-		directory = "${runtimeProject}/src-gen"
-	}
-
-	component = DirectoryCleaner {
-		directory = "${ideProjectName}/src-gen"
+		directory = "${rootPath}/gama.ui.editor"
 	}
 
 	component = XtextGenerator {
 		configuration = {
 			project = model.project.StandardProjectConfig {
 				baseName = "gaml.compiler.gaml"
-				rootPath = ".."
-				
+				rootPath = rootPath
+				web = {
+					enabled = false
+				}
 				runtime = {
-					name = runtimeProject
+					enabled = true
+					root = "${rootPath}/gaml.compiler"
+					name = runtimeProjectName
 				}
 				runtimeTest = {
 					enabled = false
 				}
 				eclipsePlugin = {
 					enabled = true
-					name = ideProjectName
+					root = "${rootPath}/gama.ui.editor"
+					name = uiProjectName
 				}
 				genericIde = {
 					enabled = true
-					name = ideProjectName
+					root = "${rootPath}/gama.ui.editor"
+					name = uiProjectName
 				}
 				eclipsePluginTest = {
 					enabled = false
 				}
 				createEclipseMetaData = true
+				
 			}
 			code = {
 				preferXtendStubs = false
 				encoding = 'UTF-8'
 			}
+			
 		}
 		language = StandardLanguage {
-			name = "gaml.compiler.gaml.Gaml"
+			grammarUri = "platform:/resource/gaml.grammar/Gaml.xtext"
+			name = "gaml.grammar.Gaml"
 			fileExtensions = "gaml,experiment"
 			validator = {
 				generateXtendStub = false
@@ -82,6 +109,7 @@ Workflow {
 			serializer = {
 				generateXtendStub = false
 			}
+			
 		}
 
 	}
