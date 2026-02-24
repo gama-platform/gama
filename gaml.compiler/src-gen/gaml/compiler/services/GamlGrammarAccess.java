@@ -2772,23 +2772,141 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	public class ExpressionElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Expression");
-		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final RuleCall cArgumentPairParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cPairParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cArgumentPairParserRuleCall = (RuleCall)rule.eContents().get(1);
 		
 		///**
 		// * Expressions
 		// */
+		///**
+		// * Expressions
+		// */
 		//Expression:
-		//    ArgumentPair | Pair;
+		//    // The entry point simply points to ArgumentPair.
+		//    ArgumentPair;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//ArgumentPair | Pair
+		//// The entry point simply points to ArgumentPair.
+		//ArgumentPair
+		public RuleCall getArgumentPairParserRuleCall() { return cArgumentPairParserRuleCall; }
+	}
+	public class ArgumentPairElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.ArgumentPair");
+		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
+		private final Group cGroup_0 = (Group)cAlternatives.eContents().get(0);
+		private final Group cGroup_0_0 = (Group)cGroup_0.eContents().get(0);
+		private final Action cArgumentPairAction_0_0_0 = (Action)cGroup_0_0.eContents().get(0);
+		private final Alternatives cAlternatives_0_0_1 = (Alternatives)cGroup_0_0.eContents().get(1);
+		private final Group cGroup_0_0_1_0 = (Group)cAlternatives_0_0_1.eContents().get(0);
+		private final Assignment cOpAssignment_0_0_1_0_0 = (Assignment)cGroup_0_0_1_0.eContents().get(0);
+		private final RuleCall cOpValid_IDParserRuleCall_0_0_1_0_0_0 = (RuleCall)cOpAssignment_0_0_1_0_0.eContents().get(0);
+		private final Keyword cColonColonKeyword_0_0_1_0_1 = (Keyword)cGroup_0_0_1_0.eContents().get(1);
+		private final Group cGroup_0_0_1_1 = (Group)cAlternatives_0_0_1.eContents().get(1);
+		private final Assignment cOpAssignment_0_0_1_1_0 = (Assignment)cGroup_0_0_1_1.eContents().get(0);
+		private final Alternatives cOpAlternatives_0_0_1_1_0_0 = (Alternatives)cOpAssignment_0_0_1_1_0.eContents().get(0);
+		private final RuleCall cOpDefinitionFacetKeyParserRuleCall_0_0_1_1_0_0_0 = (RuleCall)cOpAlternatives_0_0_1_1_0_0.eContents().get(0);
+		private final RuleCall cOpTypeFacetKeyParserRuleCall_0_0_1_1_0_0_1 = (RuleCall)cOpAlternatives_0_0_1_1_0_0.eContents().get(1);
+		private final RuleCall cOpSpecialFacetKeyParserRuleCall_0_0_1_1_0_0_2 = (RuleCall)cOpAlternatives_0_0_1_1_0_0.eContents().get(2);
+		private final RuleCall cOpActionFacetKeyParserRuleCall_0_0_1_1_0_0_3 = (RuleCall)cOpAlternatives_0_0_1_1_0_0.eContents().get(3);
+		private final RuleCall cOpVarFacetKeyParserRuleCall_0_0_1_1_0_0_4 = (RuleCall)cOpAlternatives_0_0_1_1_0_0.eContents().get(4);
+		private final Keyword cColonKeyword_0_0_1_1_1 = (Keyword)cGroup_0_0_1_1.eContents().get(1);
+		private final Assignment cRightAssignment_0_0_2 = (Assignment)cGroup_0_0.eContents().get(2);
+		private final RuleCall cRightPairParserRuleCall_0_0_2_0 = (RuleCall)cRightAssignment_0_0_2.eContents().get(0);
+		private final RuleCall cPairParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		
+		//ArgumentPair returns Expression:
+		//    // OPTION 1 : Il y a un opérateur.
+		//    // L'action {ArgumentPair} dit à Xtext : "Crée un nœud ArgumentPair dans l'AST ici"
+		//    => (
+		//        {ArgumentPair}
+		//        (op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
+		//        right=Pair
+		//    )
+		//    |
+		//    // OPTION 2 : Pas d'opérateur.
+		//    // On délègue directement à Pair. Aucun nœud ArgumentPair inutile n'est créé !
+		//    Pair;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//// OPTION 1 : Il y a un opérateur.
+		//// L'action {ArgumentPair} dit à Xtext : "Crée un nœud ArgumentPair dans l'AST ici"
+		//=> (
+		//    {ArgumentPair}
+		//    (op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
+		//    right=Pair
+		//)
+		//|
+		//// OPTION 2 : Pas d'opérateur.
+		//// On délègue directement à Pair. Aucun nœud ArgumentPair inutile n'est créé !
+		//Pair
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
-		//ArgumentPair
-		public RuleCall getArgumentPairParserRuleCall_0() { return cArgumentPairParserRuleCall_0; }
+		//// OPTION 1 : Il y a un opérateur.
+		//// L'action {ArgumentPair} dit à Xtext : "Crée un nœud ArgumentPair dans l'AST ici"
+		//=> (
+		//    {ArgumentPair}
+		//    (op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
+		//    right=Pair
+		//)
+		public Group getGroup_0() { return cGroup_0; }
 		
+		//{ArgumentPair}
+		//(op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
+		//right=Pair
+		public Group getGroup_0_0() { return cGroup_0_0; }
+		
+		//{ArgumentPair}
+		public Action getArgumentPairAction_0_0_0() { return cArgumentPairAction_0_0_0; }
+		
+		//(op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
+		public Alternatives getAlternatives_0_0_1() { return cAlternatives_0_0_1; }
+		
+		//op=Valid_ID '::'
+		public Group getGroup_0_0_1_0() { return cGroup_0_0_1_0; }
+		
+		//op=Valid_ID
+		public Assignment getOpAssignment_0_0_1_0_0() { return cOpAssignment_0_0_1_0_0; }
+		
+		//Valid_ID
+		public RuleCall getOpValid_IDParserRuleCall_0_0_1_0_0_0() { return cOpValid_IDParserRuleCall_0_0_1_0_0_0; }
+		
+		//'::'
+		public Keyword getColonColonKeyword_0_0_1_0_1() { return cColonColonKeyword_0_0_1_0_1; }
+		
+		//op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':'
+		public Group getGroup_0_0_1_1() { return cGroup_0_0_1_1; }
+		
+		//op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey)
+		public Assignment getOpAssignment_0_0_1_1_0() { return cOpAssignment_0_0_1_1_0; }
+		
+		//(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey)
+		public Alternatives getOpAlternatives_0_0_1_1_0_0() { return cOpAlternatives_0_0_1_1_0_0; }
+		
+		//DefinitionFacetKey
+		public RuleCall getOpDefinitionFacetKeyParserRuleCall_0_0_1_1_0_0_0() { return cOpDefinitionFacetKeyParserRuleCall_0_0_1_1_0_0_0; }
+		
+		//TypeFacetKey
+		public RuleCall getOpTypeFacetKeyParserRuleCall_0_0_1_1_0_0_1() { return cOpTypeFacetKeyParserRuleCall_0_0_1_1_0_0_1; }
+		
+		//SpecialFacetKey
+		public RuleCall getOpSpecialFacetKeyParserRuleCall_0_0_1_1_0_0_2() { return cOpSpecialFacetKeyParserRuleCall_0_0_1_1_0_0_2; }
+		
+		//ActionFacetKey
+		public RuleCall getOpActionFacetKeyParserRuleCall_0_0_1_1_0_0_3() { return cOpActionFacetKeyParserRuleCall_0_0_1_1_0_0_3; }
+		
+		//VarFacetKey
+		public RuleCall getOpVarFacetKeyParserRuleCall_0_0_1_1_0_0_4() { return cOpVarFacetKeyParserRuleCall_0_0_1_1_0_0_4; }
+		
+		//':'
+		public Keyword getColonKeyword_0_0_1_1_1() { return cColonKeyword_0_0_1_1_1; }
+		
+		//right=Pair
+		public Assignment getRightAssignment_0_0_2() { return cRightAssignment_0_0_2; }
+		
+		//Pair
+		public RuleCall getRightPairParserRuleCall_0_0_2_0() { return cRightPairParserRuleCall_0_0_2_0; }
+		
+		//// OPTION 2 : Pas d'opérateur.
+		//// On délègue directement à Pair. Aucun nœud ArgumentPair inutile n'est créé !
 		//Pair
 		public RuleCall getPairParserRuleCall_1() { return cPairParserRuleCall_1; }
 	}
@@ -2842,88 +2960,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		
 		//Unit
 		public RuleCall getUnitParserRuleCall_9() { return cUnitParserRuleCall_9; }
-	}
-	public class ArgumentPairElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.ArgumentPair");
-		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Group cGroup_0 = (Group)cGroup.eContents().get(0);
-		private final Alternatives cAlternatives_0_0 = (Alternatives)cGroup_0.eContents().get(0);
-		private final Group cGroup_0_0_0 = (Group)cAlternatives_0_0.eContents().get(0);
-		private final Assignment cOpAssignment_0_0_0_0 = (Assignment)cGroup_0_0_0.eContents().get(0);
-		private final RuleCall cOpValid_IDParserRuleCall_0_0_0_0_0 = (RuleCall)cOpAssignment_0_0_0_0.eContents().get(0);
-		private final Keyword cColonColonKeyword_0_0_0_1 = (Keyword)cGroup_0_0_0.eContents().get(1);
-		private final Group cGroup_0_0_1 = (Group)cAlternatives_0_0.eContents().get(1);
-		private final Assignment cOpAssignment_0_0_1_0 = (Assignment)cGroup_0_0_1.eContents().get(0);
-		private final Alternatives cOpAlternatives_0_0_1_0_0 = (Alternatives)cOpAssignment_0_0_1_0.eContents().get(0);
-		private final RuleCall cOpDefinitionFacetKeyParserRuleCall_0_0_1_0_0_0 = (RuleCall)cOpAlternatives_0_0_1_0_0.eContents().get(0);
-		private final RuleCall cOpTypeFacetKeyParserRuleCall_0_0_1_0_0_1 = (RuleCall)cOpAlternatives_0_0_1_0_0.eContents().get(1);
-		private final RuleCall cOpSpecialFacetKeyParserRuleCall_0_0_1_0_0_2 = (RuleCall)cOpAlternatives_0_0_1_0_0.eContents().get(2);
-		private final RuleCall cOpActionFacetKeyParserRuleCall_0_0_1_0_0_3 = (RuleCall)cOpAlternatives_0_0_1_0_0.eContents().get(3);
-		private final RuleCall cOpVarFacetKeyParserRuleCall_0_0_1_0_0_4 = (RuleCall)cOpAlternatives_0_0_1_0_0.eContents().get(4);
-		private final Keyword cColonKeyword_0_0_1_1 = (Keyword)cGroup_0_0_1.eContents().get(1);
-		private final Assignment cRightAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final RuleCall cRightPairParserRuleCall_1_0 = (RuleCall)cRightAssignment_1.eContents().get(0);
-		
-		//ArgumentPair:
-		//    => (op=(Valid_ID) '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':'
-		//    )? right=Pair;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//=> (op=(Valid_ID) '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':'
-		//)? right=Pair
-		public Group getGroup() { return cGroup; }
-		
-		//=> (op=(Valid_ID) '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':'
-		//)?
-		public Group getGroup_0() { return cGroup_0; }
-		
-		//op=(Valid_ID) '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':'
-		public Alternatives getAlternatives_0_0() { return cAlternatives_0_0; }
-		
-		//op=(Valid_ID) '::'
-		public Group getGroup_0_0_0() { return cGroup_0_0_0; }
-		
-		//op=(Valid_ID)
-		public Assignment getOpAssignment_0_0_0_0() { return cOpAssignment_0_0_0_0; }
-		
-		//(Valid_ID)
-		public RuleCall getOpValid_IDParserRuleCall_0_0_0_0_0() { return cOpValid_IDParserRuleCall_0_0_0_0_0; }
-		
-		//'::'
-		public Keyword getColonColonKeyword_0_0_0_1() { return cColonColonKeyword_0_0_0_1; }
-		
-		//op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':'
-		public Group getGroup_0_0_1() { return cGroup_0_0_1; }
-		
-		//op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey)
-		public Assignment getOpAssignment_0_0_1_0() { return cOpAssignment_0_0_1_0; }
-		
-		//(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey)
-		public Alternatives getOpAlternatives_0_0_1_0_0() { return cOpAlternatives_0_0_1_0_0; }
-		
-		//DefinitionFacetKey
-		public RuleCall getOpDefinitionFacetKeyParserRuleCall_0_0_1_0_0_0() { return cOpDefinitionFacetKeyParserRuleCall_0_0_1_0_0_0; }
-		
-		//TypeFacetKey
-		public RuleCall getOpTypeFacetKeyParserRuleCall_0_0_1_0_0_1() { return cOpTypeFacetKeyParserRuleCall_0_0_1_0_0_1; }
-		
-		//SpecialFacetKey
-		public RuleCall getOpSpecialFacetKeyParserRuleCall_0_0_1_0_0_2() { return cOpSpecialFacetKeyParserRuleCall_0_0_1_0_0_2; }
-		
-		//ActionFacetKey
-		public RuleCall getOpActionFacetKeyParserRuleCall_0_0_1_0_0_3() { return cOpActionFacetKeyParserRuleCall_0_0_1_0_0_3; }
-		
-		//VarFacetKey
-		public RuleCall getOpVarFacetKeyParserRuleCall_0_0_1_0_0_4() { return cOpVarFacetKeyParserRuleCall_0_0_1_0_0_4; }
-		
-		//':'
-		public Keyword getColonKeyword_0_0_1_1() { return cColonKeyword_0_0_1_1; }
-		
-		//right=Pair
-		public Assignment getRightAssignment_1() { return cRightAssignment_1; }
-		
-		//Pair
-		public RuleCall getRightPairParserRuleCall_1_0() { return cRightPairParserRuleCall_1_0; }
 	}
 	public class PairElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Pair");
@@ -4784,8 +4820,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	private final VarFacetElements pVarFacet;
 	private final BlockElements pBlock;
 	private final ExpressionElements pExpression;
-	private final BinaryOperatorElements pBinaryOperator;
 	private final ArgumentPairElements pArgumentPair;
+	private final BinaryOperatorElements pBinaryOperator;
 	private final PairElements pPair;
 	private final IfElements pIf;
 	private final OrElements pOr;
@@ -4909,8 +4945,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		this.pVarFacet = new VarFacetElements();
 		this.pBlock = new BlockElements();
 		this.pExpression = new ExpressionElements();
-		this.pBinaryOperator = new BinaryOperatorElements();
 		this.pArgumentPair = new ArgumentPairElements();
+		this.pBinaryOperator = new BinaryOperatorElements();
 		this.pPair = new PairElements();
 		this.pIf = new IfElements();
 		this.pOr = new OrElements();
@@ -5723,14 +5759,38 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	///**
 	// * Expressions
 	// */
+	///**
+	// * Expressions
+	// */
 	//Expression:
-	//    ArgumentPair | Pair;
+	//    // The entry point simply points to ArgumentPair.
+	//    ArgumentPair;
 	public ExpressionElements getExpressionAccess() {
 		return pExpression;
 	}
 	
 	public ParserRule getExpressionRule() {
 		return getExpressionAccess().getRule();
+	}
+	
+	//ArgumentPair returns Expression:
+	//    // OPTION 1 : Il y a un opérateur.
+	//    // L'action {ArgumentPair} dit à Xtext : "Crée un nœud ArgumentPair dans l'AST ici"
+	//    => (
+	//        {ArgumentPair}
+	//        (op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
+	//        right=Pair
+	//    )
+	//    |
+	//    // OPTION 2 : Pas d'opérateur.
+	//    // On délègue directement à Pair. Aucun nœud ArgumentPair inutile n'est créé !
+	//    Pair;
+	public ArgumentPairElements getArgumentPairAccess() {
+		return pArgumentPair;
+	}
+	
+	public ParserRule getArgumentPairRule() {
+		return getArgumentPairAccess().getRule();
 	}
 	
 	//BinaryOperator returns Expression:
@@ -5741,17 +5801,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	public ParserRule getBinaryOperatorRule() {
 		return getBinaryOperatorAccess().getRule();
-	}
-	
-	//ArgumentPair:
-	//    => (op=(Valid_ID) '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':'
-	//    )? right=Pair;
-	public ArgumentPairElements getArgumentPairAccess() {
-		return pArgumentPair;
-	}
-	
-	public ParserRule getArgumentPairRule() {
-		return getArgumentPairAccess().getRule();
 	}
 	
 	//Pair returns Expression:

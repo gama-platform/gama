@@ -274,15 +274,31 @@ Block:
 /**
  * Expressions
  */
+/**
+ * Expressions
+ */
 Expression:
-	ArgumentPair | Pair;
+	// The entry point simply points to ArgumentPair.
+	ArgumentPair;
+
+ArgumentPair returns Expression:
+	// OPTION 1 : Il y a un opérateur. 
+	// L'action {ArgumentPair} dit à Xtext : "Crée un nœud ArgumentPair dans l'AST ici"
+	=> (
+		{ArgumentPair}
+		(op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':') 
+		right=Pair
+	)
+	
+	| 
+	
+	// OPTION 2 : Pas d'opérateur. 
+	// On délègue directement à Pair. Aucun nœud ArgumentPair inutile n'est créé !
+	Pair;
 
 BinaryOperator returns Expression:
 	Or | And | Cast | Comparison | Addition | Multiplication | Exponentiation | Binary | Pair | Unit;
 
-ArgumentPair:
-	=> (op=(Valid_ID) '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':'
-	)? right=Pair;
 
 Pair returns Expression:
 	If

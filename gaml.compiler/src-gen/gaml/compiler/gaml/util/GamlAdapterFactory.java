@@ -256,11 +256,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createExpressionAdapter();
       }
       @Override
-      public Adapter caseArgumentPair(ArgumentPair object)
-      {
-        return createArgumentPairAdapter();
-      }
-      @Override
       public Adapter caseExpressionList(ExpressionList object)
       {
         return createExpressionListAdapter();
@@ -349,6 +344,11 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
       public Adapter caseS_Var(S_Var object)
       {
         return createS_VarAdapter();
+      }
+      @Override
+      public Adapter caseArgumentPair(ArgumentPair object)
+      {
+        return createArgumentPairAdapter();
       }
       @Override
       public Adapter caseBinaryOperator(BinaryOperator object)
@@ -1003,21 +1003,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.ArgumentPair <em>Argument Pair</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see gaml.compiler.gaml.ArgumentPair
-   * @generated
-   */
-  public Adapter createArgumentPairAdapter()
-  {
-    return null;
-  }
-
-  /**
    * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.ExpressionList <em>Expression List</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -1283,6 +1268,21 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createS_VarAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.ArgumentPair <em>Argument Pair</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.ArgumentPair
+   * @generated
+   */
+  public Adapter createArgumentPairAdapter()
   {
     return null;
   }

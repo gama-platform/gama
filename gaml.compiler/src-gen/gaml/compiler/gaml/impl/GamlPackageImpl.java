@@ -351,13 +351,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass argumentPairEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   private EClass expressionListEClass = null;
 
   /**
@@ -478,6 +471,13 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass s_VarEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass argumentPairEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -1410,39 +1410,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getArgumentPair()
-  {
-    return argumentPairEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getArgumentPair_Op()
-  {
-    return (EAttribute)argumentPairEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getArgumentPair_Right()
-  {
-    return (EReference)argumentPairEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EClass getExpressionList()
   {
     return expressionListEClass;
@@ -1699,6 +1666,39 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EClass getS_Var()
   {
     return s_VarEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getArgumentPair()
+  {
+    return argumentPairEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getArgumentPair_Op()
+  {
+    return (EAttribute)argumentPairEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EReference getArgumentPair_Right()
+  {
+    return (EReference)argumentPairEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -2385,10 +2385,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     expressionEClass = createEClass(EXPRESSION);
 
-    argumentPairEClass = createEClass(ARGUMENT_PAIR);
-    createEAttribute(argumentPairEClass, ARGUMENT_PAIR__OP);
-    createEReference(argumentPairEClass, ARGUMENT_PAIR__RIGHT);
-
     expressionListEClass = createEClass(EXPRESSION_LIST);
     createEReference(expressionListEClass, EXPRESSION_LIST__EXPRS);
 
@@ -2430,6 +2426,10 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_ActionEClass = createEClass(SACTION);
 
     s_VarEClass = createEClass(SVAR);
+
+    argumentPairEClass = createEClass(ARGUMENT_PAIR);
+    createEAttribute(argumentPairEClass, ARGUMENT_PAIR__OP);
+    createEReference(argumentPairEClass, ARGUMENT_PAIR__RIGHT);
 
     binaryOperatorEClass = createEClass(BINARY_OPERATOR);
     createEReference(binaryOperatorEClass, BINARY_OPERATOR__LEFT);
@@ -2569,7 +2569,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_OtherLayerEClass.getESuperTypes().add(this.getStatement());
     argumentDefinitionEClass.getESuperTypes().add(this.getVarDefinition());
     facetEClass.getESuperTypes().add(this.getVarDefinition());
-    argumentPairEClass.getESuperTypes().add(this.getExpression());
     expressionListEClass.getESuperTypes().add(this.getExpression());
     variableRefEClass.getESuperTypes().add(this.getExpression());
     equationDefinitionEClass.getESuperTypes().add(this.getGamlDefinition());
@@ -2587,6 +2586,7 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     stringLiteralEClass.getESuperTypes().add(this.getTerminalExpression());
     s_ActionEClass.getESuperTypes().add(this.getS_Definition());
     s_VarEClass.getESuperTypes().add(this.getS_Definition());
+    argumentPairEClass.getESuperTypes().add(this.getExpression());
     binaryOperatorEClass.getESuperTypes().add(this.getExpression());
     ifEClass.getESuperTypes().add(this.getExpression());
     unitEClass.getESuperTypes().add(this.getExpression());
@@ -2710,10 +2710,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     initEClass(expressionEClass, Expression.class, "Expression", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
-    initEClass(argumentPairEClass, ArgumentPair.class, "ArgumentPair", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getArgumentPair_Op(), ecorePackage.getEString(), "op", null, 0, 1, ArgumentPair.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getArgumentPair_Right(), this.getExpression(), null, "right", null, 0, 1, ArgumentPair.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
     initEClass(expressionListEClass, ExpressionList.class, "ExpressionList", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getExpressionList_Exprs(), this.getExpression(), null, "exprs", null, 0, -1, ExpressionList.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
@@ -2755,6 +2751,10 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(s_ActionEClass, S_Action.class, "S_Action", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_VarEClass, S_Var.class, "S_Var", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(argumentPairEClass, ArgumentPair.class, "ArgumentPair", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getArgumentPair_Op(), ecorePackage.getEString(), "op", null, 0, 1, ArgumentPair.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getArgumentPair_Right(), this.getExpression(), null, "right", null, 0, 1, ArgumentPair.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(binaryOperatorEClass, BinaryOperator.class, "BinaryOperator", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getBinaryOperator_Left(), this.getExpression(), null, "left", null, 0, 1, BinaryOperator.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

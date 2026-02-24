@@ -101,7 +101,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.ARGUMENT_DEFINITION: return createArgumentDefinition();
       case GamlPackage.FACET: return createFacet();
       case GamlPackage.EXPRESSION: return createExpression();
-      case GamlPackage.ARGUMENT_PAIR: return createArgumentPair();
       case GamlPackage.EXPRESSION_LIST: return createExpressionList();
       case GamlPackage.VARIABLE_REF: return createVariableRef();
       case GamlPackage.TYPE_INFO: return createTypeInfo();
@@ -120,6 +119,7 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.STRING_LITERAL: return createStringLiteral();
       case GamlPackage.SACTION: return createS_Action();
       case GamlPackage.SVAR: return createS_Var();
+      case GamlPackage.ARGUMENT_PAIR: return createArgumentPair();
       case GamlPackage.BINARY_OPERATOR: return createBinaryOperator();
       case GamlPackage.IF: return createIf();
       case GamlPackage.UNIT: return createUnit();
@@ -581,18 +581,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
    * @generated
    */
   @Override
-  public ArgumentPair createArgumentPair()
-  {
-    ArgumentPairImpl argumentPair = new ArgumentPairImpl();
-    return argumentPair;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public ExpressionList createExpressionList()
   {
     ExpressionListImpl expressionList = new ExpressionListImpl();
@@ -801,6 +789,18 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     S_VarImpl s_Var = new S_VarImpl();
     return s_Var;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public ArgumentPair createArgumentPair()
+  {
+    ArgumentPairImpl argumentPair = new ArgumentPairImpl();
+    return argumentPair;
   }
 
   /**

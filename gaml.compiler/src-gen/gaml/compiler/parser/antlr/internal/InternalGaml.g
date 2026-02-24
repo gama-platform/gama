@@ -5011,53 +5011,14 @@ ruleExpression returns [EObject current=null]
 @after {
 	leaveRule();
 }:
-	(
-		(
-			((
-				(
-					(
-						(
-							ruleValid_ID
-						)
-					)
-					'::'
-				)
-				    |
-				(
-					(
-						(
-							(
-								ruleDefinitionFacetKey
-								    |ruleTypeFacetKey
-								    |ruleSpecialFacetKey
-								    |ruleActionFacetKey
-								    |ruleVarFacetKey
-							)
-						)
-					)
-					':'
-				)
-			)
-			)=>
-			{
-				newCompositeNode(grammarAccess.getExpressionAccess().getArgumentPairParserRuleCall_0());
-			}
-			this_ArgumentPair_0=ruleArgumentPair
-			{
-				$current = $this_ArgumentPair_0.current;
-				afterParserOrEnumRuleCall();
-			}
-		)
-		    |
-		{
-			newCompositeNode(grammarAccess.getExpressionAccess().getPairParserRuleCall_1());
-		}
-		this_Pair_1=rulePair
-		{
-			$current = $this_Pair_1.current;
-			afterParserOrEnumRuleCall();
-		}
-	)
+	{
+		newCompositeNode(grammarAccess.getExpressionAccess().getArgumentPairParserRuleCall());
+	}
+	this_ArgumentPair_0=ruleArgumentPair
+	{
+		$current = $this_ArgumentPair_0.current;
+		afterParserOrEnumRuleCall();
+	}
 ;
 
 // Entry rule entryRuleArgumentPair
@@ -5079,65 +5040,55 @@ ruleArgumentPair returns [EObject current=null]
 		(
 			((
 				(
-					(
-						(
-							ruleValid_ID
-						)
-					)
-					'::'
 				)
-				    |
 				(
 					(
 						(
 							(
-								ruleDefinitionFacetKey
-								    |ruleTypeFacetKey
-								    |ruleSpecialFacetKey
-								    |ruleActionFacetKey
-								    |ruleVarFacetKey
+								ruleValid_ID
 							)
 						)
+						'::'
 					)
-					':'
+					    |
+					(
+						(
+							(
+								(
+									ruleDefinitionFacetKey
+									    |ruleTypeFacetKey
+									    |ruleSpecialFacetKey
+									    |ruleActionFacetKey
+									    |ruleVarFacetKey
+								)
+							)
+						)
+						':'
+					)
+				)
+				(
+					(
+						rulePair
+					)
 				)
 			)
 			)=>
 			(
 				(
-					(
-						(
-							{
-								newCompositeNode(grammarAccess.getArgumentPairAccess().getOpValid_IDParserRuleCall_0_0_0_0_0());
-							}
-							lv_op_0_0=ruleValid_ID
-							{
-								if ($current==null) {
-									$current = createModelElementForParent(grammarAccess.getArgumentPairRule());
-								}
-								set(
-									$current,
-									"op",
-									lv_op_0_0,
-									"gaml.compiler.Gaml.Valid_ID");
-								afterParserOrEnumRuleCall();
-							}
-						)
-					)
-					otherlv_1='::'
 					{
-						newLeafNode(otherlv_1, grammarAccess.getArgumentPairAccess().getColonColonKeyword_0_0_0_1());
+						$current = forceCreateModelElement(
+							grammarAccess.getArgumentPairAccess().getArgumentPairAction_0_0_0(),
+							$current);
 					}
 				)
-				    |
 				(
 					(
 						(
 							(
 								{
-									newCompositeNode(grammarAccess.getArgumentPairAccess().getOpDefinitionFacetKeyParserRuleCall_0_0_1_0_0_0());
+									newCompositeNode(grammarAccess.getArgumentPairAccess().getOpValid_IDParserRuleCall_0_0_1_0_0_0());
 								}
-								lv_op_2_1=ruleDefinitionFacetKey
+								lv_op_1_0=ruleValid_ID
 								{
 									if ($current==null) {
 										$current = createModelElementForParent(grammarAccess.getArgumentPairRule());
@@ -5145,103 +5096,140 @@ ruleArgumentPair returns [EObject current=null]
 									set(
 										$current,
 										"op",
-										lv_op_2_1,
-										"gaml.compiler.Gaml.DefinitionFacetKey");
-									afterParserOrEnumRuleCall();
-								}
-								    |
-								{
-									newCompositeNode(grammarAccess.getArgumentPairAccess().getOpTypeFacetKeyParserRuleCall_0_0_1_0_0_1());
-								}
-								lv_op_2_2=ruleTypeFacetKey
-								{
-									if ($current==null) {
-										$current = createModelElementForParent(grammarAccess.getArgumentPairRule());
-									}
-									set(
-										$current,
-										"op",
-										lv_op_2_2,
-										"gaml.compiler.Gaml.TypeFacetKey");
-									afterParserOrEnumRuleCall();
-								}
-								    |
-								{
-									newCompositeNode(grammarAccess.getArgumentPairAccess().getOpSpecialFacetKeyParserRuleCall_0_0_1_0_0_2());
-								}
-								lv_op_2_3=ruleSpecialFacetKey
-								{
-									if ($current==null) {
-										$current = createModelElementForParent(grammarAccess.getArgumentPairRule());
-									}
-									set(
-										$current,
-										"op",
-										lv_op_2_3,
-										"gaml.compiler.Gaml.SpecialFacetKey");
-									afterParserOrEnumRuleCall();
-								}
-								    |
-								{
-									newCompositeNode(grammarAccess.getArgumentPairAccess().getOpActionFacetKeyParserRuleCall_0_0_1_0_0_3());
-								}
-								lv_op_2_4=ruleActionFacetKey
-								{
-									if ($current==null) {
-										$current = createModelElementForParent(grammarAccess.getArgumentPairRule());
-									}
-									set(
-										$current,
-										"op",
-										lv_op_2_4,
-										"gaml.compiler.Gaml.ActionFacetKey");
-									afterParserOrEnumRuleCall();
-								}
-								    |
-								{
-									newCompositeNode(grammarAccess.getArgumentPairAccess().getOpVarFacetKeyParserRuleCall_0_0_1_0_0_4());
-								}
-								lv_op_2_5=ruleVarFacetKey
-								{
-									if ($current==null) {
-										$current = createModelElementForParent(grammarAccess.getArgumentPairRule());
-									}
-									set(
-										$current,
-										"op",
-										lv_op_2_5,
-										"gaml.compiler.Gaml.VarFacetKey");
+										lv_op_1_0,
+										"gaml.compiler.Gaml.Valid_ID");
 									afterParserOrEnumRuleCall();
 								}
 							)
 						)
+						otherlv_2='::'
+						{
+							newLeafNode(otherlv_2, grammarAccess.getArgumentPairAccess().getColonColonKeyword_0_0_1_0_1());
+						}
 					)
-					otherlv_3=':'
-					{
-						newLeafNode(otherlv_3, grammarAccess.getArgumentPairAccess().getColonKeyword_0_0_1_1());
-					}
+					    |
+					(
+						(
+							(
+								(
+									{
+										newCompositeNode(grammarAccess.getArgumentPairAccess().getOpDefinitionFacetKeyParserRuleCall_0_0_1_1_0_0_0());
+									}
+									lv_op_3_1=ruleDefinitionFacetKey
+									{
+										if ($current==null) {
+											$current = createModelElementForParent(grammarAccess.getArgumentPairRule());
+										}
+										set(
+											$current,
+											"op",
+											lv_op_3_1,
+											"gaml.compiler.Gaml.DefinitionFacetKey");
+										afterParserOrEnumRuleCall();
+									}
+									    |
+									{
+										newCompositeNode(grammarAccess.getArgumentPairAccess().getOpTypeFacetKeyParserRuleCall_0_0_1_1_0_0_1());
+									}
+									lv_op_3_2=ruleTypeFacetKey
+									{
+										if ($current==null) {
+											$current = createModelElementForParent(grammarAccess.getArgumentPairRule());
+										}
+										set(
+											$current,
+											"op",
+											lv_op_3_2,
+											"gaml.compiler.Gaml.TypeFacetKey");
+										afterParserOrEnumRuleCall();
+									}
+									    |
+									{
+										newCompositeNode(grammarAccess.getArgumentPairAccess().getOpSpecialFacetKeyParserRuleCall_0_0_1_1_0_0_2());
+									}
+									lv_op_3_3=ruleSpecialFacetKey
+									{
+										if ($current==null) {
+											$current = createModelElementForParent(grammarAccess.getArgumentPairRule());
+										}
+										set(
+											$current,
+											"op",
+											lv_op_3_3,
+											"gaml.compiler.Gaml.SpecialFacetKey");
+										afterParserOrEnumRuleCall();
+									}
+									    |
+									{
+										newCompositeNode(grammarAccess.getArgumentPairAccess().getOpActionFacetKeyParserRuleCall_0_0_1_1_0_0_3());
+									}
+									lv_op_3_4=ruleActionFacetKey
+									{
+										if ($current==null) {
+											$current = createModelElementForParent(grammarAccess.getArgumentPairRule());
+										}
+										set(
+											$current,
+											"op",
+											lv_op_3_4,
+											"gaml.compiler.Gaml.ActionFacetKey");
+										afterParserOrEnumRuleCall();
+									}
+									    |
+									{
+										newCompositeNode(grammarAccess.getArgumentPairAccess().getOpVarFacetKeyParserRuleCall_0_0_1_1_0_0_4());
+									}
+									lv_op_3_5=ruleVarFacetKey
+									{
+										if ($current==null) {
+											$current = createModelElementForParent(grammarAccess.getArgumentPairRule());
+										}
+										set(
+											$current,
+											"op",
+											lv_op_3_5,
+											"gaml.compiler.Gaml.VarFacetKey");
+										afterParserOrEnumRuleCall();
+									}
+								)
+							)
+						)
+						otherlv_4=':'
+						{
+							newLeafNode(otherlv_4, grammarAccess.getArgumentPairAccess().getColonKeyword_0_0_1_1_1());
+						}
+					)
+				)
+				(
+					(
+						{
+							newCompositeNode(grammarAccess.getArgumentPairAccess().getRightPairParserRuleCall_0_0_2_0());
+						}
+						lv_right_5_0=rulePair
+						{
+							if ($current==null) {
+								$current = createModelElementForParent(grammarAccess.getArgumentPairRule());
+							}
+							set(
+								$current,
+								"right",
+								lv_right_5_0,
+								"gaml.compiler.Gaml.Pair");
+							afterParserOrEnumRuleCall();
+						}
+					)
 				)
 			)
-		)?
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getArgumentPairAccess().getRightPairParserRuleCall_1_0());
-				}
-				lv_right_4_0=rulePair
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getArgumentPairRule());
-					}
-					set(
-						$current,
-						"right",
-						lv_right_4_0,
-						"gaml.compiler.Gaml.Pair");
-					afterParserOrEnumRuleCall();
-				}
-			)
 		)
+		    |
+		{
+			newCompositeNode(grammarAccess.getArgumentPairAccess().getPairParserRuleCall_1());
+		}
+		this_Pair_6=rulePair
+		{
+			$current = $this_Pair_6.current;
+			afterParserOrEnumRuleCall();
+		}
 	)
 ;
 

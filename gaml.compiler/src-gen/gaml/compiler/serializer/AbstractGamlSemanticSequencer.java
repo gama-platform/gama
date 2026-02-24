@@ -129,6 +129,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 					return; 
 				}
 				else if (rule == grammarAccess.getExpressionRule()
+						|| rule == grammarAccess.getArgumentPairRule()
 						|| rule == grammarAccess.getBinaryOperatorRule()
 						|| rule == grammarAccess.getPairRule()) {
 					sequence_Addition_And_Binary_Cast_Comparison_Exponentiation_Multiplication_Or_Pair(context, (BinaryOperator) semanticObject); 
@@ -379,6 +380,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns Access
+	 *     ArgumentPair returns Access
 	 *     BinaryOperator returns Access
 	 *     Pair returns Access
 	 *     Pair.BinaryOperator_1_0 returns Access
@@ -582,6 +584,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns BinaryOperator
+	 *     ArgumentPair returns BinaryOperator
 	 *     BinaryOperator returns BinaryOperator
 	 *     Pair returns BinaryOperator
 	 *
@@ -731,7 +734,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *             op=SpecialFacetKey | 
 	 *             op=ActionFacetKey | 
 	 *             op=VarFacetKey
-	 *         )? 
+	 *         ) 
 	 *         right=Pair
 	 *     )
 	 * </pre>
@@ -927,6 +930,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns ExpressionList
+	 *     ArgumentPair returns ExpressionList
 	 *     BinaryOperator returns ExpressionList
 	 *     Pair returns ExpressionList
 	 *     Pair.BinaryOperator_1_0 returns ExpressionList
@@ -1169,6 +1173,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns Function
+	 *     ArgumentPair returns Function
 	 *     BinaryOperator returns Function
 	 *     Pair returns Function
 	 *     Pair.BinaryOperator_1_0 returns Function
@@ -1212,6 +1217,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns If
+	 *     ArgumentPair returns If
 	 *     BinaryOperator returns If
 	 *     Pair returns If
 	 *     Pair.BinaryOperator_1_0 returns If
@@ -1330,6 +1336,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns Array
+	 *     ArgumentPair returns Array
 	 *     BinaryOperator returns Array
 	 *     Pair returns Array
 	 *     Pair.BinaryOperator_1_0 returns Array
@@ -1371,6 +1378,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns Point
+	 *     ArgumentPair returns Point
 	 *     BinaryOperator returns Point
 	 *     Pair returns Point
 	 *     Pair.BinaryOperator_1_0 returns Point
@@ -1732,6 +1740,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns StringLiteral
+	 *     ArgumentPair returns StringLiteral
 	 *     BinaryOperator returns StringLiteral
 	 *     Pair returns StringLiteral
 	 *     Pair.BinaryOperator_1_0 returns StringLiteral
@@ -1781,6 +1790,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns BooleanLiteral
+	 *     ArgumentPair returns BooleanLiteral
 	 *     BinaryOperator returns BooleanLiteral
 	 *     Pair returns BooleanLiteral
 	 *     Pair.BinaryOperator_1_0 returns BooleanLiteral
@@ -1829,6 +1839,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns DoubleLiteral
+	 *     ArgumentPair returns DoubleLiteral
 	 *     BinaryOperator returns DoubleLiteral
 	 *     Pair returns DoubleLiteral
 	 *     Pair.BinaryOperator_1_0 returns DoubleLiteral
@@ -1877,6 +1888,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns IntLiteral
+	 *     ArgumentPair returns IntLiteral
 	 *     BinaryOperator returns IntLiteral
 	 *     Pair returns IntLiteral
 	 *     Pair.BinaryOperator_1_0 returns IntLiteral
@@ -1925,6 +1937,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns ReservedLiteral
+	 *     ArgumentPair returns ReservedLiteral
 	 *     BinaryOperator returns ReservedLiteral
 	 *     Pair returns ReservedLiteral
 	 *     Pair.BinaryOperator_1_0 returns ReservedLiteral
@@ -2038,6 +2051,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns Unary
+	 *     ArgumentPair returns Unary
 	 *     BinaryOperator returns Unary
 	 *     Pair returns Unary
 	 *     Pair.BinaryOperator_1_0 returns Unary
@@ -2117,6 +2131,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns Unit
+	 *     ArgumentPair returns Unit
 	 *     BinaryOperator returns Unit
 	 *     Pair returns Unit
 	 *     Pair.BinaryOperator_1_0 returns Unit
@@ -2210,6 +2225,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Expression returns VariableRef
+	 *     ArgumentPair returns VariableRef
 	 *     BinaryOperator returns VariableRef
 	 *     Pair returns VariableRef
 	 *     Pair.BinaryOperator_1_0 returns VariableRef
