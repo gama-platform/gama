@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * PathDebugger.java, in gaml.grammar, is part of the source code of the GAMA modeling and simulation platform
+ * PathLogger.java, in gaml.grammar, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -16,9 +16,9 @@ import java.nio.file.Paths;
 import gama.dev.DEBUG;
 
 /**
- * The Class PathDebugger.
+ * The Class PathLogger.
  */
-public class PathDebugger {
+public class PathLogger {
 
 	/**
 	 * Sets the path.
