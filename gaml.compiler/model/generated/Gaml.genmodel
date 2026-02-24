@@ -67,7 +67,6 @@
     <genClasses ecoreClass="Gaml.ecore#//S_Assignment">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//S_Assignment/value"/>
     </genClasses>
-    <genClasses ecoreClass="Gaml.ecore#//S_DirectAssignment"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Equations">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//S_Equations/equations"/>
     </genClasses>

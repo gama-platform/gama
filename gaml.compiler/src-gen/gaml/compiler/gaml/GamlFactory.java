@@ -240,15 +240,6 @@ public interface GamlFactory extends EFactory
   S_Assignment createS_Assignment();
 
   /**
-   * Returns a new object of class '<em>SDirect Assignment</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SDirect Assignment</em>'.
-   * @generated
-   */
-  S_DirectAssignment createS_DirectAssignment();
-
-  /**
    * Returns a new object of class '<em>SEquations</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

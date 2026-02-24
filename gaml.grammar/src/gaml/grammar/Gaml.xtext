@@ -122,12 +122,9 @@ S_Var returns S_Definition:
 /*
  * ASSIGNMENTS
  */
+
 S_Assignment:
-	S_DirectAssignment;
-
-S_DirectAssignment:
 	(expr=Expression key=(_AssignmentKey) value=Expression (facets+=Facet)*) ';';
-
 
 S_Equations:
 	key=_EquationsKey name=Valid_ID (facets+=Facet)* ('{' (equations+=S_Equation ';')* '}' | ';');

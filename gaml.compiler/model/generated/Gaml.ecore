@@ -78,7 +78,6 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="S_DirectAssignment" eSuperTypes="#//S_Assignment"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Equations" eSuperTypes="#//Statement #//EquationDefinition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="equations" upperBound="-1"
         eType="#//S_Assignment" containment="true"/>

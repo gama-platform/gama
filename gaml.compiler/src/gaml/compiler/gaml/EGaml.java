@@ -239,7 +239,7 @@ public class EGaml {
 	 */
 	public Expression getExpressionAtKey(final EObject s, final String name) {
 		if (s == null || name == null) return null;
-		if (VALUE.equals(name) && s instanceof S_DirectAssignment) return ((S_DirectAssignment) s).getValue();
+		if (VALUE.equals(name) && s instanceof S_Assignment) return ((S_Assignment) s).getValue();
 		final List<Facet> list = getFacetsOf(s);
 
 		for (final Facet f : list) {

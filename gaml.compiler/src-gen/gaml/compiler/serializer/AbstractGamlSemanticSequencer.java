@@ -33,7 +33,6 @@ import gaml.compiler.gaml.ReservedLiteral;
 import gaml.compiler.gaml.S_Action;
 import gaml.compiler.gaml.S_Assignment;
 import gaml.compiler.gaml.S_Definition;
-import gaml.compiler.gaml.S_DirectAssignment;
 import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Equations;
@@ -266,13 +265,18 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_FacetsAndBlock_S_Action(context, (S_Action) semanticObject); 
 				return; 
 			case GamlPackage.SASSIGNMENT:
-				sequence_S_Equation(context, (S_Assignment) semanticObject); 
-				return; 
+				if (rule == grammarAccess.getStatementRule()
+						|| rule == grammarAccess.getS_AssignmentRule()) {
+					sequence_S_Assignment(context, (S_Assignment) semanticObject); 
+					return; 
+				}
+				else if (rule == grammarAccess.getS_EquationRule()) {
+					sequence_S_Equation(context, (S_Assignment) semanticObject); 
+					return; 
+				}
+				else break;
 			case GamlPackage.SDEFINITION:
 				sequence_FacetsAndBlock_S_Definition(context, (S_Definition) semanticObject); 
-				return; 
-			case GamlPackage.SDIRECT_ASSIGNMENT:
-				sequence_S_DirectAssignment(context, (S_DirectAssignment) semanticObject); 
 				return; 
 			case GamlPackage.SDISPLAY:
 				sequence_S_Display(context, (S_Display) semanticObject); 
@@ -1502,15 +1506,14 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Statement returns S_DirectAssignment
-	 *     S_Assignment returns S_DirectAssignment
-	 *     S_DirectAssignment returns S_DirectAssignment
+	 *     Statement returns S_Assignment
+	 *     S_Assignment returns S_Assignment
 	 *
 	 * Constraint:
 	 *     (expr=Expression key=_AssignmentKey value=Expression facets+=Facet*)
 	 * </pre>
 	 */
-	protected void sequence_S_DirectAssignment(ISerializationContext context, S_DirectAssignment semanticObject) {
+	protected void sequence_S_Assignment(ISerializationContext context, S_Assignment semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	

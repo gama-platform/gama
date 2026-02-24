@@ -296,16 +296,6 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case GamlPackage.SDIRECT_ASSIGNMENT:
-      {
-        S_DirectAssignment s_DirectAssignment = (S_DirectAssignment)theEObject;
-        T result = caseS_DirectAssignment(s_DirectAssignment);
-        if (result == null) result = caseS_Assignment(s_DirectAssignment);
-        if (result == null) result = caseStatement(s_DirectAssignment);
-        if (result == null) result = caseFacetsAndBlock(s_DirectAssignment);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
       case GamlPackage.SEQUATIONS:
       {
         S_Equations s_Equations = (S_Equations)theEObject;
@@ -1122,22 +1112,6 @@ public class GamlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseS_Assignment(S_Assignment object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>SDirect Assignment</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>SDirect Assignment</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseS_DirectAssignment(S_DirectAssignment object)
   {
     return null;
   }

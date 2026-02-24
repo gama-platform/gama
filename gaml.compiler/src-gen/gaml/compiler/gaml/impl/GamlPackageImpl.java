@@ -41,7 +41,6 @@ import gaml.compiler.gaml.S_Action;
 import gaml.compiler.gaml.S_Assignment;
 import gaml.compiler.gaml.S_Declaration;
 import gaml.compiler.gaml.S_Definition;
-import gaml.compiler.gaml.S_DirectAssignment;
 import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Equations;
@@ -263,13 +262,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass s_AssignmentEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass s_DirectAssignmentEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -1198,17 +1190,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EReference getS_Assignment_Value()
   {
     return (EReference)s_AssignmentEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getS_DirectAssignment()
-  {
-    return s_DirectAssignmentEClass;
   }
 
   /**
@@ -2391,8 +2372,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_AssignmentEClass = createEClass(SASSIGNMENT);
     createEReference(s_AssignmentEClass, SASSIGNMENT__VALUE);
 
-    s_DirectAssignmentEClass = createEClass(SDIRECT_ASSIGNMENT);
-
     s_EquationsEClass = createEClass(SEQUATIONS);
     createEReference(s_EquationsEClass, SEQUATIONS__EQUATIONS);
 
@@ -2600,7 +2579,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_DefinitionEClass.getESuperTypes().add(this.getS_Declaration());
     s_DefinitionEClass.getESuperTypes().add(this.getActionDefinition());
     s_AssignmentEClass.getESuperTypes().add(this.getStatement());
-    s_DirectAssignmentEClass.getESuperTypes().add(this.getS_Assignment());
     s_EquationsEClass.getESuperTypes().add(this.getStatement());
     s_EquationsEClass.getESuperTypes().add(this.getEquationDefinition());
     s_SolveEClass.getESuperTypes().add(this.getStatement());
@@ -2721,8 +2699,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     initEClass(s_AssignmentEClass, S_Assignment.class, "S_Assignment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getS_Assignment_Value(), this.getExpression(), null, "value", null, 0, 1, S_Assignment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-    initEClass(s_DirectAssignmentEClass, S_DirectAssignment.class, "S_DirectAssignment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_EquationsEClass, S_Equations.class, "S_Equations", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getS_Equations_Equations(), this.getS_Assignment(), null, "equations", null, 0, -1, S_Equations.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

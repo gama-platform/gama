@@ -2250,42 +2250,17 @@ ruleS_Assignment returns [EObject current=null]
 @after {
 	leaveRule();
 }:
-	{
-		newCompositeNode(grammarAccess.getS_AssignmentAccess().getS_DirectAssignmentParserRuleCall());
-	}
-	this_S_DirectAssignment_0=ruleS_DirectAssignment
-	{
-		$current = $this_S_DirectAssignment_0.current;
-		afterParserOrEnumRuleCall();
-	}
-;
-
-// Entry rule entryRuleS_DirectAssignment
-entryRuleS_DirectAssignment returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getS_DirectAssignmentRule()); }
-	iv_ruleS_DirectAssignment=ruleS_DirectAssignment
-	{ $current=$iv_ruleS_DirectAssignment.current; }
-	EOF;
-
-// Rule S_DirectAssignment
-ruleS_DirectAssignment returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
 	(
 		(
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getS_DirectAssignmentAccess().getExprExpressionParserRuleCall_0_0_0());
+						newCompositeNode(grammarAccess.getS_AssignmentAccess().getExprExpressionParserRuleCall_0_0_0());
 					}
 					lv_expr_0_0=ruleExpression
 					{
 						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getS_DirectAssignmentRule());
+							$current = createModelElementForParent(grammarAccess.getS_AssignmentRule());
 						}
 						set(
 							$current,
@@ -2299,12 +2274,12 @@ ruleS_DirectAssignment returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getS_DirectAssignmentAccess().getKey_AssignmentKeyParserRuleCall_0_1_0());
+						newCompositeNode(grammarAccess.getS_AssignmentAccess().getKey_AssignmentKeyParserRuleCall_0_1_0());
 					}
 					lv_key_1_0=rule_AssignmentKey
 					{
 						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getS_DirectAssignmentRule());
+							$current = createModelElementForParent(grammarAccess.getS_AssignmentRule());
 						}
 						set(
 							$current,
@@ -2318,12 +2293,12 @@ ruleS_DirectAssignment returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getS_DirectAssignmentAccess().getValueExpressionParserRuleCall_0_2_0());
+						newCompositeNode(grammarAccess.getS_AssignmentAccess().getValueExpressionParserRuleCall_0_2_0());
 					}
 					lv_value_2_0=ruleExpression
 					{
 						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getS_DirectAssignmentRule());
+							$current = createModelElementForParent(grammarAccess.getS_AssignmentRule());
 						}
 						set(
 							$current,
@@ -2337,12 +2312,12 @@ ruleS_DirectAssignment returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getS_DirectAssignmentAccess().getFacetsFacetParserRuleCall_0_3_0());
+						newCompositeNode(grammarAccess.getS_AssignmentAccess().getFacetsFacetParserRuleCall_0_3_0());
 					}
 					lv_facets_3_0=ruleFacet
 					{
 						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getS_DirectAssignmentRule());
+							$current = createModelElementForParent(grammarAccess.getS_AssignmentRule());
 						}
 						add(
 							$current,
@@ -2356,7 +2331,7 @@ ruleS_DirectAssignment returns [EObject current=null]
 		)
 		otherlv_4=';'
 		{
-			newLeafNode(otherlv_4, grammarAccess.getS_DirectAssignmentAccess().getSemicolonKeyword_1());
+			newLeafNode(otherlv_4, grammarAccess.getS_AssignmentAccess().getSemicolonKeyword_1());
 		}
 	)
 ;

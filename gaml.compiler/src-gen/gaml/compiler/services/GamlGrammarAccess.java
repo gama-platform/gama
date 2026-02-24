@@ -1190,20 +1190,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	public class S_AssignmentElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_Assignment");
-		private final RuleCall cS_DirectAssignmentParserRuleCall = (RuleCall)rule.eContents().get(1);
-		
-		///*
-		// * ASSIGNMENTS
-		// */
-		//S_Assignment:
-		//    S_DirectAssignment;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//S_DirectAssignment
-		public RuleCall getS_DirectAssignmentParserRuleCall() { return cS_DirectAssignmentParserRuleCall; }
-	}
-	public class S_DirectAssignmentElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_DirectAssignment");
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final Group cGroup_0 = (Group)cGroup.eContents().get(0);
 		private final Assignment cExprAssignment_0_0 = (Assignment)cGroup_0.eContents().get(0);
@@ -1216,7 +1202,10 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cFacetsFacetParserRuleCall_0_3_0 = (RuleCall)cFacetsAssignment_0_3.eContents().get(0);
 		private final Keyword cSemicolonKeyword_1 = (Keyword)cGroup.eContents().get(1);
 		
-		//S_DirectAssignment:
+		///*
+		// * ASSIGNMENTS
+		// */
+		//S_Assignment:
 		//    (expr=Expression key=(_AssignmentKey) value=Expression (facets+=Facet)*) ';';
 		@Override public ParserRule getRule() { return rule; }
 		
@@ -4802,7 +4791,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	private final S_ActionElements pS_Action;
 	private final S_VarElements pS_Var;
 	private final S_AssignmentElements pS_Assignment;
-	private final S_DirectAssignmentElements pS_DirectAssignment;
 	private final S_EquationsElements pS_Equations;
 	private final S_EquationElements pS_Equation;
 	private final S_SolveElements pS_Solve;
@@ -4932,7 +4920,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		this.pS_Action = new S_ActionElements();
 		this.pS_Var = new S_VarElements();
 		this.pS_Assignment = new S_AssignmentElements();
-		this.pS_DirectAssignment = new S_DirectAssignmentElements();
 		this.pS_Equations = new S_EquationsElements();
 		this.pS_Equation = new S_EquationElements();
 		this.pS_Solve = new S_SolveElements();
@@ -5359,23 +5346,13 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	// * ASSIGNMENTS
 	// */
 	//S_Assignment:
-	//    S_DirectAssignment;
+	//    (expr=Expression key=(_AssignmentKey) value=Expression (facets+=Facet)*) ';';
 	public S_AssignmentElements getS_AssignmentAccess() {
 		return pS_Assignment;
 	}
 	
 	public ParserRule getS_AssignmentRule() {
 		return getS_AssignmentAccess().getRule();
-	}
-	
-	//S_DirectAssignment:
-	//    (expr=Expression key=(_AssignmentKey) value=Expression (facets+=Facet)*) ';';
-	public S_DirectAssignmentElements getS_DirectAssignmentAccess() {
-		return pS_DirectAssignment;
-	}
-	
-	public ParserRule getS_DirectAssignmentRule() {
-		return getS_DirectAssignmentAccess().getRule();
 	}
 	
 	//S_Equations:
