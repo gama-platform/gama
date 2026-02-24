@@ -59,25 +59,28 @@ S_Experiment:
 /**
  * Statements
  */
-
 Statement:
-	// 1. Unambiguous rules: these start with unique, strict keywords (like 'display', 'do', 'if').
-	// Placing them first prevents the parser from doing unnecessary backtracking.
-	S_Display |
-	S_Do | 
-	S_Return | 
-	S_Solve | 
-	S_If | 
-	S_Try | 
-	S_Equations | 
-	=> S_Assignment | 
-	S_General |
+	// 1. STRICT FAST TRACK (No overlap with Valid_ID)
+	S_Display | S_Return | S_Solve | S_If | S_Try | 
 	
-	// 2. Ambiguous rules: these might start with a simple identifier (ID).
-	// We use the syntactic predicate (=>) only here, as a last resort.
-
+	// 2. KEYWORD FAST TRACK
+	// The => forces the parser to prioritize them and silences Valid_ID warnings.
+	=> S_Equations | => S_Do | => S_Loop | => S_Action | => S_Var | => S_Species | => S_Reflex |
+	
+	// 3. AMBIGUITY RESOLUTION (Assignments)
+	=> S_Assignment | 
+	
+	// 4. THE GAML PILLARS
+	// ADDING '=>' HERE IS THE MAGIC FIX!
+	// It forces the parser to check for a mandatory expression first.
+	=> S_General |   // (Note: use S_General here if you renamed it!)
+	
+	// Declarations come next
 	=> S_Declaration | 
-
+	=> S_Definition | 
+	
+	// 5. THE UNIVERSAL FALLBACK
+	// If everything above fails, S_Other catches it perfectly.
 	S_Other;
 
 S_General returns Statement:
@@ -96,7 +99,7 @@ S_Try:
 	key='try' block=Block (->'catch' catch=Block)?;
 
 S_Other:
-	key=ID FacetsAndBlock;
+	key=Valid_ID FacetsAndBlock;
 
 S_Return:
 	key='return' (firstFacet="value:")? expr=Expression? ';';
@@ -369,7 +372,7 @@ Unary returns Expression:
 	right=Unary));
 
 Access returns Expression:
-	Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary ))))*
+	Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary))))*
 ;
 
 Primary returns Expression:

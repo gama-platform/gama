@@ -1013,98 +1013,179 @@ ruleStatement returns [EObject current=null]
 		}
 		    |
 		{
-			newCompositeNode(grammarAccess.getStatementAccess().getS_DoParserRuleCall_1());
+			newCompositeNode(grammarAccess.getStatementAccess().getS_ReturnParserRuleCall_1());
 		}
-		this_S_Do_1=ruleS_Do
+		this_S_Return_1=ruleS_Return
 		{
-			$current = $this_S_Do_1.current;
+			$current = $this_S_Return_1.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
 		{
-			newCompositeNode(grammarAccess.getStatementAccess().getS_ReturnParserRuleCall_2());
+			newCompositeNode(grammarAccess.getStatementAccess().getS_SolveParserRuleCall_2());
 		}
-		this_S_Return_2=ruleS_Return
+		this_S_Solve_2=ruleS_Solve
 		{
-			$current = $this_S_Return_2.current;
+			$current = $this_S_Solve_2.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
 		{
-			newCompositeNode(grammarAccess.getStatementAccess().getS_SolveParserRuleCall_3());
+			newCompositeNode(grammarAccess.getStatementAccess().getS_IfParserRuleCall_3());
 		}
-		this_S_Solve_3=ruleS_Solve
+		this_S_If_3=ruleS_If
 		{
-			$current = $this_S_Solve_3.current;
+			$current = $this_S_If_3.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
 		{
-			newCompositeNode(grammarAccess.getStatementAccess().getS_IfParserRuleCall_4());
+			newCompositeNode(grammarAccess.getStatementAccess().getS_TryParserRuleCall_4());
 		}
-		this_S_If_4=ruleS_If
+		this_S_Try_4=ruleS_Try
 		{
-			$current = $this_S_If_4.current;
+			$current = $this_S_Try_4.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
-		{
-			newCompositeNode(grammarAccess.getStatementAccess().getS_TryParserRuleCall_5());
-		}
-		this_S_Try_5=ruleS_Try
-		{
-			$current = $this_S_Try_5.current;
-			afterParserOrEnumRuleCall();
-		}
+		(
+			(ruleS_Equations)=>
+			{
+				newCompositeNode(grammarAccess.getStatementAccess().getS_EquationsParserRuleCall_5());
+			}
+			this_S_Equations_5=ruleS_Equations
+			{
+				$current = $this_S_Equations_5.current;
+				afterParserOrEnumRuleCall();
+			}
+		)
 		    |
-		{
-			newCompositeNode(grammarAccess.getStatementAccess().getS_EquationsParserRuleCall_6());
-		}
-		this_S_Equations_6=ruleS_Equations
-		{
-			$current = $this_S_Equations_6.current;
-			afterParserOrEnumRuleCall();
-		}
+		(
+			(ruleS_Do)=>
+			{
+				newCompositeNode(grammarAccess.getStatementAccess().getS_DoParserRuleCall_6());
+			}
+			this_S_Do_6=ruleS_Do
+			{
+				$current = $this_S_Do_6.current;
+				afterParserOrEnumRuleCall();
+			}
+		)
+		    |
+		(
+			(ruleS_Loop)=>
+			{
+				newCompositeNode(grammarAccess.getStatementAccess().getS_LoopParserRuleCall_7());
+			}
+			this_S_Loop_7=ruleS_Loop
+			{
+				$current = $this_S_Loop_7.current;
+				afterParserOrEnumRuleCall();
+			}
+		)
+		    |
+		(
+			(ruleS_Action)=>
+			{
+				newCompositeNode(grammarAccess.getStatementAccess().getS_ActionParserRuleCall_8());
+			}
+			this_S_Action_8=ruleS_Action
+			{
+				$current = $this_S_Action_8.current;
+				afterParserOrEnumRuleCall();
+			}
+		)
+		    |
+		(
+			(ruleS_Var)=>
+			{
+				newCompositeNode(grammarAccess.getStatementAccess().getS_VarParserRuleCall_9());
+			}
+			this_S_Var_9=ruleS_Var
+			{
+				$current = $this_S_Var_9.current;
+				afterParserOrEnumRuleCall();
+			}
+		)
+		    |
+		(
+			(ruleS_Species)=>
+			{
+				newCompositeNode(grammarAccess.getStatementAccess().getS_SpeciesParserRuleCall_10());
+			}
+			this_S_Species_10=ruleS_Species
+			{
+				$current = $this_S_Species_10.current;
+				afterParserOrEnumRuleCall();
+			}
+		)
+		    |
+		(
+			(ruleS_Reflex)=>
+			{
+				newCompositeNode(grammarAccess.getStatementAccess().getS_ReflexParserRuleCall_11());
+			}
+			this_S_Reflex_11=ruleS_Reflex
+			{
+				$current = $this_S_Reflex_11.current;
+				afterParserOrEnumRuleCall();
+			}
+		)
 		    |
 		(
 			(ruleS_Assignment)=>
 			{
-				newCompositeNode(grammarAccess.getStatementAccess().getS_AssignmentParserRuleCall_7());
+				newCompositeNode(grammarAccess.getStatementAccess().getS_AssignmentParserRuleCall_12());
 			}
-			this_S_Assignment_7=ruleS_Assignment
+			this_S_Assignment_12=ruleS_Assignment
 			{
-				$current = $this_S_Assignment_7.current;
+				$current = $this_S_Assignment_12.current;
 				afterParserOrEnumRuleCall();
 			}
 		)
 		    |
-		{
-			newCompositeNode(grammarAccess.getStatementAccess().getS_GeneralParserRuleCall_8());
-		}
-		this_S_General_8=ruleS_General
-		{
-			$current = $this_S_General_8.current;
-			afterParserOrEnumRuleCall();
-		}
+		(
+			(ruleS_General)=>
+			{
+				newCompositeNode(grammarAccess.getStatementAccess().getS_GeneralParserRuleCall_13());
+			}
+			this_S_General_13=ruleS_General
+			{
+				$current = $this_S_General_13.current;
+				afterParserOrEnumRuleCall();
+			}
+		)
 		    |
 		(
 			(ruleS_Declaration)=>
 			{
-				newCompositeNode(grammarAccess.getStatementAccess().getS_DeclarationParserRuleCall_9());
+				newCompositeNode(grammarAccess.getStatementAccess().getS_DeclarationParserRuleCall_14());
 			}
-			this_S_Declaration_9=ruleS_Declaration
+			this_S_Declaration_14=ruleS_Declaration
 			{
-				$current = $this_S_Declaration_9.current;
+				$current = $this_S_Declaration_14.current;
+				afterParserOrEnumRuleCall();
+			}
+		)
+		    |
+		(
+			(ruleS_Definition)=>
+			{
+				newCompositeNode(grammarAccess.getStatementAccess().getS_DefinitionParserRuleCall_15());
+			}
+			this_S_Definition_15=ruleS_Definition
+			{
+				$current = $this_S_Definition_15.current;
 				afterParserOrEnumRuleCall();
 			}
 		)
 		    |
 		{
-			newCompositeNode(grammarAccess.getStatementAccess().getS_OtherParserRuleCall_10());
+			newCompositeNode(grammarAccess.getStatementAccess().getS_OtherParserRuleCall_16());
 		}
-		this_S_Other_10=ruleS_Other
+		this_S_Other_16=ruleS_Other
 		{
-			$current = $this_S_Other_10.current;
+			$current = $this_S_Other_16.current;
 			afterParserOrEnumRuleCall();
 		}
 	)
@@ -1597,19 +1678,20 @@ ruleS_Other returns [EObject current=null]
 	(
 		(
 			(
-				lv_key_0_0=RULE_ID
 				{
-					newLeafNode(lv_key_0_0, grammarAccess.getS_OtherAccess().getKeyIDTerminalRuleCall_0_0());
+					newCompositeNode(grammarAccess.getS_OtherAccess().getKeyValid_IDParserRuleCall_0_0());
 				}
+				lv_key_0_0=ruleValid_ID
 				{
 					if ($current==null) {
-						$current = createModelElement(grammarAccess.getS_OtherRule());
+						$current = createModelElementForParent(grammarAccess.getS_OtherRule());
 					}
-					setWithLastConsumed(
+					set(
 						$current,
 						"key",
 						lv_key_0_0,
-						"gaml.compiler.Gaml.ID");
+						"gaml.compiler.Gaml.Valid_ID");
+					afterParserOrEnumRuleCall();
 				}
 			)
 		)

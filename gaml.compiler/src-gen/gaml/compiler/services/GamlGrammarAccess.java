@@ -523,91 +523,126 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Statement");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final RuleCall cS_DisplayParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final RuleCall cS_DoParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		private final RuleCall cS_ReturnParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
-		private final RuleCall cS_SolveParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
-		private final RuleCall cS_IfParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
-		private final RuleCall cS_TryParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
-		private final RuleCall cS_EquationsParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
-		private final RuleCall cS_AssignmentParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
-		private final RuleCall cS_GeneralParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
-		private final RuleCall cS_DeclarationParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
-		private final RuleCall cS_OtherParserRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
+		private final RuleCall cS_ReturnParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cS_SolveParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cS_IfParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
+		private final RuleCall cS_TryParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
+		private final RuleCall cS_EquationsParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
+		private final RuleCall cS_DoParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
+		private final RuleCall cS_LoopParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
+		private final RuleCall cS_ActionParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
+		private final RuleCall cS_VarParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
+		private final RuleCall cS_SpeciesParserRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
+		private final RuleCall cS_ReflexParserRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
+		private final RuleCall cS_AssignmentParserRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
+		private final RuleCall cS_GeneralParserRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
+		private final RuleCall cS_DeclarationParserRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
+		private final RuleCall cS_DefinitionParserRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
+		private final RuleCall cS_OtherParserRuleCall_16 = (RuleCall)cAlternatives.eContents().get(16);
 		
 		///**
 		// * Statements
 		// */
 		//Statement:
-		//    // 1. Unambiguous rules: these start with unique, strict keywords (like 'display', 'do', 'if').
-		//    // Placing them first prevents the parser from doing unnecessary backtracking.
-		//    S_Display |
-		//    S_Do |
-		//    S_Return |
-		//    S_Solve |
-		//    S_If |
-		//    S_Try |
-		//    S_Equations |
+		//    // 1. STRICT FAST TRACK (No overlap with Valid_ID)
+		//    S_Display | S_Return | S_Solve | S_If | S_Try |
+		//    // 2. KEYWORD FAST TRACK
+		//    // The => forces the parser to prioritize them and silences Valid_ID warnings.
+		//    => S_Equations | => S_Do | => S_Loop | => S_Action | => S_Var | => S_Species | => S_Reflex |
+		//    // 3. AMBIGUITY RESOLUTION (Assignments)
 		//    => S_Assignment |
-		//    S_General |
-		//    // 2. Ambiguous rules: these might start with a simple identifier (ID).
-		//    // We use the syntactic predicate (=>) only here, as a last resort.
+		//    // 4. THE GAML PILLARS
+		//    // ADDING '=>' HERE IS THE MAGIC FIX!
+		//    // It forces the parser to check for a mandatory expression first.
+		//    => S_General |   // (Note: use S_General here if you renamed it!)
+		//    // Declarations come next
 		//    => S_Declaration |
+		//    => S_Definition |
+		//    // 5. THE UNIVERSAL FALLBACK
+		//    // If everything above fails, S_Other catches it perfectly.
 		//    S_Other;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//// 1. Unambiguous rules: these start with unique, strict keywords (like 'display', 'do', 'if').
-		//// Placing them first prevents the parser from doing unnecessary backtracking.
-		//S_Display |
-		//S_Do |
-		//S_Return |
-		//S_Solve |
-		//S_If |
-		//S_Try |
-		//S_Equations |
+		//// 1. STRICT FAST TRACK (No overlap with Valid_ID)
+		//S_Display | S_Return | S_Solve | S_If | S_Try |
+		//// 2. KEYWORD FAST TRACK
+		//// The => forces the parser to prioritize them and silences Valid_ID warnings.
+		//=> S_Equations | => S_Do | => S_Loop | => S_Action | => S_Var | => S_Species | => S_Reflex |
+		//// 3. AMBIGUITY RESOLUTION (Assignments)
 		//=> S_Assignment |
-		//S_General |
-		//// 2. Ambiguous rules: these might start with a simple identifier (ID).
-		//// We use the syntactic predicate (=>) only here, as a last resort.
+		//// 4. THE GAML PILLARS
+		//// ADDING '=>' HERE IS THE MAGIC FIX!
+		//// It forces the parser to check for a mandatory expression first.
+		//=> S_General |   // (Note: use S_General here if you renamed it!)
+		//// Declarations come next
 		//=> S_Declaration |
+		//=> S_Definition |
+		//// 5. THE UNIVERSAL FALLBACK
+		//// If everything above fails, S_Other catches it perfectly.
 		//S_Other
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
-		//// 1. Unambiguous rules: these start with unique, strict keywords (like 'display', 'do', 'if').
-		//// Placing them first prevents the parser from doing unnecessary backtracking.
+		//// 1. STRICT FAST TRACK (No overlap with Valid_ID)
 		//S_Display
 		public RuleCall getS_DisplayParserRuleCall_0() { return cS_DisplayParserRuleCall_0; }
 		
-		//S_Do
-		public RuleCall getS_DoParserRuleCall_1() { return cS_DoParserRuleCall_1; }
-		
 		//S_Return
-		public RuleCall getS_ReturnParserRuleCall_2() { return cS_ReturnParserRuleCall_2; }
+		public RuleCall getS_ReturnParserRuleCall_1() { return cS_ReturnParserRuleCall_1; }
 		
 		//S_Solve
-		public RuleCall getS_SolveParserRuleCall_3() { return cS_SolveParserRuleCall_3; }
+		public RuleCall getS_SolveParserRuleCall_2() { return cS_SolveParserRuleCall_2; }
 		
 		//S_If
-		public RuleCall getS_IfParserRuleCall_4() { return cS_IfParserRuleCall_4; }
+		public RuleCall getS_IfParserRuleCall_3() { return cS_IfParserRuleCall_3; }
 		
 		//S_Try
-		public RuleCall getS_TryParserRuleCall_5() { return cS_TryParserRuleCall_5; }
+		public RuleCall getS_TryParserRuleCall_4() { return cS_TryParserRuleCall_4; }
 		
-		//S_Equations
-		public RuleCall getS_EquationsParserRuleCall_6() { return cS_EquationsParserRuleCall_6; }
+		//// 2. KEYWORD FAST TRACK
+		//// The => forces the parser to prioritize them and silences Valid_ID warnings.
+		//=> S_Equations
+		public RuleCall getS_EquationsParserRuleCall_5() { return cS_EquationsParserRuleCall_5; }
 		
+		//=> S_Do
+		public RuleCall getS_DoParserRuleCall_6() { return cS_DoParserRuleCall_6; }
+		
+		//=> S_Loop
+		public RuleCall getS_LoopParserRuleCall_7() { return cS_LoopParserRuleCall_7; }
+		
+		//=> S_Action
+		public RuleCall getS_ActionParserRuleCall_8() { return cS_ActionParserRuleCall_8; }
+		
+		//=> S_Var
+		public RuleCall getS_VarParserRuleCall_9() { return cS_VarParserRuleCall_9; }
+		
+		//=> S_Species
+		public RuleCall getS_SpeciesParserRuleCall_10() { return cS_SpeciesParserRuleCall_10; }
+		
+		//=> S_Reflex
+		public RuleCall getS_ReflexParserRuleCall_11() { return cS_ReflexParserRuleCall_11; }
+		
+		//// 3. AMBIGUITY RESOLUTION (Assignments)
 		//=> S_Assignment
-		public RuleCall getS_AssignmentParserRuleCall_7() { return cS_AssignmentParserRuleCall_7; }
+		public RuleCall getS_AssignmentParserRuleCall_12() { return cS_AssignmentParserRuleCall_12; }
 		
-		//S_General
-		public RuleCall getS_GeneralParserRuleCall_8() { return cS_GeneralParserRuleCall_8; }
+		//// 4. THE GAML PILLARS
+		//// ADDING '=>' HERE IS THE MAGIC FIX!
+		//// It forces the parser to check for a mandatory expression first.
+		//=> S_General
+		public RuleCall getS_GeneralParserRuleCall_13() { return cS_GeneralParserRuleCall_13; }
 		
-		//// 2. Ambiguous rules: these might start with a simple identifier (ID).
-		//// We use the syntactic predicate (=>) only here, as a last resort.
-		//=> S_Declaration
-		public RuleCall getS_DeclarationParserRuleCall_9() { return cS_DeclarationParserRuleCall_9; }
+		//// (Note: use S_General here if you renamed it!)
+		// // Declarations come next
+		// => S_Declaration
+		public RuleCall getS_DeclarationParserRuleCall_14() { return cS_DeclarationParserRuleCall_14; }
 		
+		//=> S_Definition
+		public RuleCall getS_DefinitionParserRuleCall_15() { return cS_DefinitionParserRuleCall_15; }
+		
+		//// 5. THE UNIVERSAL FALLBACK
+		//// If everything above fails, S_Other catches it perfectly.
 		//S_Other
-		public RuleCall getS_OtherParserRuleCall_10() { return cS_OtherParserRuleCall_10; }
+		public RuleCall getS_OtherParserRuleCall_16() { return cS_OtherParserRuleCall_16; }
 	}
 	public class S_GeneralElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_General");
@@ -844,21 +879,21 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_Other");
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final Assignment cKeyAssignment_0 = (Assignment)cGroup.eContents().get(0);
-		private final RuleCall cKeyIDTerminalRuleCall_0_0 = (RuleCall)cKeyAssignment_0.eContents().get(0);
+		private final RuleCall cKeyValid_IDParserRuleCall_0_0 = (RuleCall)cKeyAssignment_0.eContents().get(0);
 		private final RuleCall cFacetsAndBlockParserRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
 		
 		//S_Other:
-		//    key=ID FacetsAndBlock;
+		//    key=Valid_ID FacetsAndBlock;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//key=ID FacetsAndBlock
+		//key=Valid_ID FacetsAndBlock
 		public Group getGroup() { return cGroup; }
 		
-		//key=ID
+		//key=Valid_ID
 		public Assignment getKeyAssignment_0() { return cKeyAssignment_0; }
 		
-		//ID
-		public RuleCall getKeyIDTerminalRuleCall_0_0() { return cKeyIDTerminalRuleCall_0_0; }
+		//Valid_ID
+		public RuleCall getKeyValid_IDParserRuleCall_0_0() { return cKeyValid_IDParserRuleCall_0_0; }
 		
 		//FacetsAndBlock
 		public RuleCall getFacetsAndBlockParserRuleCall_1() { return cFacetsAndBlockParserRuleCall_1; }
@@ -3532,23 +3567,23 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cRightPrimaryParserRuleCall_1_1_1_1_0 = (RuleCall)cRightAssignment_1_1_1_1.eContents().get(0);
 		
 		//Access returns Expression:
-		//    Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary ))))*
+		//    Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary))))*
 		//;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary ))))*
+		//Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary))))*
 		public Group getGroup() { return cGroup; }
 		
 		//Primary
 		public RuleCall getPrimaryParserRuleCall_0() { return cPrimaryParserRuleCall_0; }
 		
-		//({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary ))))*
+		//({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary))))*
 		public Group getGroup_1() { return cGroup_1; }
 		
 		//{Access.left=current}
 		public Action getAccessLeftAction_1_0() { return cAccessLeftAction_1_0; }
 		
-		//((op='[' right=ExpressionList? ']') | (op="." right=(Primary )))
+		//((op='[' right=ExpressionList? ']') | (op="." right=(Primary)))
 		public Alternatives getAlternatives_1_1() { return cAlternatives_1_1; }
 		
 		//(op='[' right=ExpressionList? ']')
@@ -3569,7 +3604,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//']'
 		public Keyword getRightSquareBracketKeyword_1_1_0_2() { return cRightSquareBracketKeyword_1_1_0_2; }
 		
-		//(op="." right=(Primary ))
+		//(op="." right=(Primary))
 		public Group getGroup_1_1_1() { return cGroup_1_1_1; }
 		
 		//op="."
@@ -3578,10 +3613,10 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//"."
 		public Keyword getOpFullStopKeyword_1_1_1_0_0() { return cOpFullStopKeyword_1_1_1_0_0; }
 		
-		//right=(Primary )
+		//right=(Primary)
 		public Assignment getRightAssignment_1_1_1_1() { return cRightAssignment_1_1_1_1; }
 		
-		//(Primary )
+		//(Primary)
 		public RuleCall getRightPrimaryParserRuleCall_1_1_1_1_0() { return cRightPrimaryParserRuleCall_1_1_1_1_0; }
 	}
 	public class PrimaryElements extends AbstractParserRuleElementFinder {
@@ -5038,20 +5073,22 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	// * Statements
 	// */
 	//Statement:
-	//    // 1. Unambiguous rules: these start with unique, strict keywords (like 'display', 'do', 'if').
-	//    // Placing them first prevents the parser from doing unnecessary backtracking.
-	//    S_Display |
-	//    S_Do |
-	//    S_Return |
-	//    S_Solve |
-	//    S_If |
-	//    S_Try |
-	//    S_Equations |
+	//    // 1. STRICT FAST TRACK (No overlap with Valid_ID)
+	//    S_Display | S_Return | S_Solve | S_If | S_Try |
+	//    // 2. KEYWORD FAST TRACK
+	//    // The => forces the parser to prioritize them and silences Valid_ID warnings.
+	//    => S_Equations | => S_Do | => S_Loop | => S_Action | => S_Var | => S_Species | => S_Reflex |
+	//    // 3. AMBIGUITY RESOLUTION (Assignments)
 	//    => S_Assignment |
-	//    S_General |
-	//    // 2. Ambiguous rules: these might start with a simple identifier (ID).
-	//    // We use the syntactic predicate (=>) only here, as a last resort.
+	//    // 4. THE GAML PILLARS
+	//    // ADDING '=>' HERE IS THE MAGIC FIX!
+	//    // It forces the parser to check for a mandatory expression first.
+	//    => S_General |   // (Note: use S_General here if you renamed it!)
+	//    // Declarations come next
 	//    => S_Declaration |
+	//    => S_Definition |
+	//    // 5. THE UNIVERSAL FALLBACK
+	//    // If everything above fails, S_Other catches it perfectly.
 	//    S_Other;
 	public StatementElements getStatementAccess() {
 		return pStatement;
@@ -5112,7 +5149,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//S_Other:
-	//    key=ID FacetsAndBlock;
+	//    key=Valid_ID FacetsAndBlock;
 	public S_OtherElements getS_OtherAccess() {
 		return pS_Other;
 	}
@@ -5828,7 +5865,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//Access returns Expression:
-	//    Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary ))))*
+	//    Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary))))*
 	//;
 	public AccessElements getAccessAccess() {
 		return pAccess;

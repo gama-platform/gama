@@ -14,6 +14,6 @@ package gaml.compiler.gaml;
  * @model
  * @generated
  */
-public interface S_Reflex extends S_Declaration
+public interface S_Reflex extends Statement, S_Declaration
 {
 } // S_Reflex

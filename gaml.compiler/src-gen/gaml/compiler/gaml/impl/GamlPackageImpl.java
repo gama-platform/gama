@@ -2523,6 +2523,7 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_ExperimentEClass.getESuperTypes().add(this.getFacetsAndBlock());
     s_ExperimentEClass.getESuperTypes().add(this.getVarDefinition());
     s_DoEClass.getESuperTypes().add(this.getStatement());
+    s_LoopEClass.getESuperTypes().add(this.getStatement());
     s_LoopEClass.getESuperTypes().add(this.getS_Declaration());
     s_IfEClass.getESuperTypes().add(this.getStatement());
     s_TryEClass.getESuperTypes().add(this.getStatement());
@@ -2530,7 +2531,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_ReturnEClass.getESuperTypes().add(this.getStatement());
     s_DeclarationEClass.getESuperTypes().add(this.getStatement());
     s_DeclarationEClass.getESuperTypes().add(this.getVarDefinition());
+    s_ReflexEClass.getESuperTypes().add(this.getStatement());
     s_ReflexEClass.getESuperTypes().add(this.getS_Declaration());
+    s_DefinitionEClass.getESuperTypes().add(this.getStatement());
     s_DefinitionEClass.getESuperTypes().add(this.getS_Declaration());
     s_DefinitionEClass.getESuperTypes().add(this.getActionDefinition());
     s_AssignmentEClass.getESuperTypes().add(this.getStatement());

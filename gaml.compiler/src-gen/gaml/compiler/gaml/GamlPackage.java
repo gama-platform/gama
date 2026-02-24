@@ -849,79 +849,6 @@ public interface GamlPackage extends EPackage
   int SDO_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 0;
 
   /**
-   * The meta object id for the '{@link gaml.compiler.gaml.impl.S_DeclarationImpl <em>SDeclaration</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see gaml.compiler.gaml.impl.S_DeclarationImpl
-   * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_Declaration()
-   * @generated
-   */
-  int SDECLARATION = 20;
-
-  /**
-   * The feature id for the '<em><b>Facets</b></em>' containment reference list.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SDECLARATION__FACETS = STATEMENT__FACETS;
-
-  /**
-   * The feature id for the '<em><b>Block</b></em>' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SDECLARATION__BLOCK = STATEMENT__BLOCK;
-
-  /**
-   * The feature id for the '<em><b>Key</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SDECLARATION__KEY = STATEMENT__KEY;
-
-  /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SDECLARATION__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
-   * The feature id for the '<em><b>Expr</b></em>' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SDECLARATION__EXPR = STATEMENT__EXPR;
-
-  /**
-   * The feature id for the '<em><b>Name</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SDECLARATION__NAME = STATEMENT_FEATURE_COUNT + 0;
-
-  /**
-   * The number of structural features of the '<em>SDeclaration</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SDECLARATION_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 1;
-
-  /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.S_LoopImpl <em>SLoop</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -938,7 +865,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SLOOP__FACETS = SDECLARATION__FACETS;
+  int SLOOP__FACETS = STATEMENT__FACETS;
 
   /**
    * The feature id for the '<em><b>Block</b></em>' containment reference.
@@ -947,7 +874,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SLOOP__BLOCK = SDECLARATION__BLOCK;
+  int SLOOP__BLOCK = STATEMENT__BLOCK;
 
   /**
    * The feature id for the '<em><b>Key</b></em>' attribute.
@@ -956,7 +883,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SLOOP__KEY = SDECLARATION__KEY;
+  int SLOOP__KEY = STATEMENT__KEY;
 
   /**
    * The feature id for the '<em><b>First Facet</b></em>' attribute.
@@ -965,7 +892,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SLOOP__FIRST_FACET = SDECLARATION__FIRST_FACET;
+  int SLOOP__FIRST_FACET = STATEMENT__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
@@ -974,7 +901,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SLOOP__EXPR = SDECLARATION__EXPR;
+  int SLOOP__EXPR = STATEMENT__EXPR;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -983,7 +910,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SLOOP__NAME = SDECLARATION__NAME;
+  int SLOOP__NAME = STATEMENT_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>SLoop</em>' class.
@@ -992,7 +919,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SLOOP_FEATURE_COUNT = SDECLARATION_FEATURE_COUNT + 0;
+  int SLOOP_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.S_IfImpl <em>SIf</em>}' class.
@@ -1269,6 +1196,79 @@ public interface GamlPackage extends EPackage
   int SRETURN_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 0;
 
   /**
+   * The meta object id for the '{@link gaml.compiler.gaml.impl.S_DeclarationImpl <em>SDeclaration</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see gaml.compiler.gaml.impl.S_DeclarationImpl
+   * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_Declaration()
+   * @generated
+   */
+  int SDECLARATION = 20;
+
+  /**
+   * The feature id for the '<em><b>Facets</b></em>' containment reference list.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SDECLARATION__FACETS = STATEMENT__FACETS;
+
+  /**
+   * The feature id for the '<em><b>Block</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SDECLARATION__BLOCK = STATEMENT__BLOCK;
+
+  /**
+   * The feature id for the '<em><b>Key</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SDECLARATION__KEY = STATEMENT__KEY;
+
+  /**
+   * The feature id for the '<em><b>First Facet</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SDECLARATION__FIRST_FACET = STATEMENT__FIRST_FACET;
+
+  /**
+   * The feature id for the '<em><b>Expr</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SDECLARATION__EXPR = STATEMENT__EXPR;
+
+  /**
+   * The feature id for the '<em><b>Name</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SDECLARATION__NAME = STATEMENT_FEATURE_COUNT + 0;
+
+  /**
+   * The number of structural features of the '<em>SDeclaration</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SDECLARATION_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 1;
+
+  /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.S_ReflexImpl <em>SReflex</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1285,7 +1285,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SREFLEX__FACETS = SDECLARATION__FACETS;
+  int SREFLEX__FACETS = STATEMENT__FACETS;
 
   /**
    * The feature id for the '<em><b>Block</b></em>' containment reference.
@@ -1294,7 +1294,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SREFLEX__BLOCK = SDECLARATION__BLOCK;
+  int SREFLEX__BLOCK = STATEMENT__BLOCK;
 
   /**
    * The feature id for the '<em><b>Key</b></em>' attribute.
@@ -1303,7 +1303,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SREFLEX__KEY = SDECLARATION__KEY;
+  int SREFLEX__KEY = STATEMENT__KEY;
 
   /**
    * The feature id for the '<em><b>First Facet</b></em>' attribute.
@@ -1312,7 +1312,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SREFLEX__FIRST_FACET = SDECLARATION__FIRST_FACET;
+  int SREFLEX__FIRST_FACET = STATEMENT__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
@@ -1321,7 +1321,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SREFLEX__EXPR = SDECLARATION__EXPR;
+  int SREFLEX__EXPR = STATEMENT__EXPR;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -1330,7 +1330,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SREFLEX__NAME = SDECLARATION__NAME;
+  int SREFLEX__NAME = STATEMENT_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>SReflex</em>' class.
@@ -1339,7 +1339,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SREFLEX_FEATURE_COUNT = SDECLARATION_FEATURE_COUNT + 0;
+  int SREFLEX_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.S_DefinitionImpl <em>SDefinition</em>}' class.
@@ -1358,7 +1358,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SDEFINITION__FACETS = SDECLARATION__FACETS;
+  int SDEFINITION__FACETS = STATEMENT__FACETS;
 
   /**
    * The feature id for the '<em><b>Block</b></em>' containment reference.
@@ -1367,7 +1367,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SDEFINITION__BLOCK = SDECLARATION__BLOCK;
+  int SDEFINITION__BLOCK = STATEMENT__BLOCK;
 
   /**
    * The feature id for the '<em><b>Key</b></em>' attribute.
@@ -1376,7 +1376,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SDEFINITION__KEY = SDECLARATION__KEY;
+  int SDEFINITION__KEY = STATEMENT__KEY;
 
   /**
    * The feature id for the '<em><b>First Facet</b></em>' attribute.
@@ -1385,7 +1385,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SDEFINITION__FIRST_FACET = SDECLARATION__FIRST_FACET;
+  int SDEFINITION__FIRST_FACET = STATEMENT__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
@@ -1394,7 +1394,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SDEFINITION__EXPR = SDECLARATION__EXPR;
+  int SDEFINITION__EXPR = STATEMENT__EXPR;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -1403,7 +1403,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SDEFINITION__NAME = SDECLARATION__NAME;
+  int SDEFINITION__NAME = STATEMENT_FEATURE_COUNT + 0;
 
   /**
    * The feature id for the '<em><b>Tkey</b></em>' containment reference.
@@ -1412,7 +1412,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SDEFINITION__TKEY = SDECLARATION_FEATURE_COUNT + 0;
+  int SDEFINITION__TKEY = STATEMENT_FEATURE_COUNT + 1;
 
   /**
    * The feature id for the '<em><b>Args</b></em>' containment reference.
@@ -1421,7 +1421,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SDEFINITION__ARGS = SDECLARATION_FEATURE_COUNT + 1;
+  int SDEFINITION__ARGS = STATEMENT_FEATURE_COUNT + 2;
 
   /**
    * The number of structural features of the '<em>SDefinition</em>' class.
@@ -1430,7 +1430,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int SDEFINITION_FEATURE_COUNT = SDECLARATION_FEATURE_COUNT + 2;
+  int SDEFINITION_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 3;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.S_AssignmentImpl <em>SAssignment</em>}' class.

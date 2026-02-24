@@ -1101,7 +1101,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_Other returns S_Other
 	 *
 	 * Constraint:
-	 *     (key=ID facets+=Facet* block=Block?)
+	 *     (key=Valid_ID facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_Other(ISerializationContext context, S_Other semanticObject) {
