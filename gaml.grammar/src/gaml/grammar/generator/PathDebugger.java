@@ -8,9 +8,10 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gaml.grammar;
+package gaml.grammar.generator;
 
 import java.io.File;
+import java.nio.file.Paths;
 
 import gama.dev.DEBUG;
 
@@ -29,7 +30,7 @@ public class PathDebugger {
 		File file = new File(path);
 		DEBUG.LINE();
 		DEBUG.TITLE("Generating the GAML ARTIFACTS");
-		System.out.println("Absolute path: " + file.getAbsolutePath());
+		DEBUG.TITLE("Root: " + Paths.get(file.getAbsolutePath()).toUri().normalize().getRawPath());
 		DEBUG.LINE();
 	}
 }

@@ -16,7 +16,7 @@ var srcGen = "sr-gen"
 
 Workflow {
 		
-	bean = gaml.grammar.PathDebugger {
+	bean = gaml.grammar.generator.PathDebugger {
         path = rootPath
     }
 	bean = StandaloneSetup {
