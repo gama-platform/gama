@@ -62,9 +62,6 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getFunctionFacetAccess().getAlternatives_1(), "rule__FunctionFacet__Alternatives_1");
 			builder.put(grammarAccess.getTypeFacetAccess().getAlternatives_1(), "rule__TypeFacet__Alternatives_1");
 			builder.put(grammarAccess.getActionFacetAccess().getAlternatives_1(), "rule__ActionFacet__Alternatives_1");
-			builder.put(grammarAccess.getArgumentPairAccess().getAlternatives(), "rule__ArgumentPair__Alternatives");
-			builder.put(grammarAccess.getArgumentPairAccess().getAlternatives_0_0_1(), "rule__ArgumentPair__Alternatives_0_0_1");
-			builder.put(grammarAccess.getArgumentPairAccess().getOpAlternatives_0_0_1_1_0_0(), "rule__ArgumentPair__OpAlternatives_0_0_1_1_0_0");
 			builder.put(grammarAccess.getBinaryOperatorAccess().getAlternatives(), "rule__BinaryOperator__Alternatives");
 			builder.put(grammarAccess.getCastAccess().getAlternatives_1_1(), "rule__Cast__Alternatives_1_1");
 			builder.put(grammarAccess.getComparisonAccess().getOpAlternatives_1_0_1_0(), "rule__Comparison__OpAlternatives_1_0_1_0");
@@ -153,10 +150,6 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getVarFacetAccess().getGroup(), "rule__VarFacet__Group__0");
 			builder.put(grammarAccess.getBlockAccess().getGroup(), "rule__Block__Group__0");
 			builder.put(grammarAccess.getBlockAccess().getGroup_2(), "rule__Block__Group_2__0");
-			builder.put(grammarAccess.getArgumentPairAccess().getGroup_0(), "rule__ArgumentPair__Group_0__0");
-			builder.put(grammarAccess.getArgumentPairAccess().getGroup_0_0(), "rule__ArgumentPair__Group_0_0__0");
-			builder.put(grammarAccess.getArgumentPairAccess().getGroup_0_0_1_0(), "rule__ArgumentPair__Group_0_0_1_0__0");
-			builder.put(grammarAccess.getArgumentPairAccess().getGroup_0_0_1_1(), "rule__ArgumentPair__Group_0_0_1_1__0");
 			builder.put(grammarAccess.getPairAccess().getGroup(), "rule__Pair__Group__0");
 			builder.put(grammarAccess.getPairAccess().getGroup_1(), "rule__Pair__Group_1__0");
 			builder.put(grammarAccess.getIfAccess().getGroup(), "rule__If__Group__0");
@@ -349,9 +342,6 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getVarFacetAccess().getKeyAssignment_0(), "rule__VarFacet__KeyAssignment_0");
 			builder.put(grammarAccess.getVarFacetAccess().getExprAssignment_1(), "rule__VarFacet__ExprAssignment_1");
 			builder.put(grammarAccess.getBlockAccess().getStatementsAssignment_2_0(), "rule__Block__StatementsAssignment_2_0");
-			builder.put(grammarAccess.getArgumentPairAccess().getOpAssignment_0_0_1_0_0(), "rule__ArgumentPair__OpAssignment_0_0_1_0_0");
-			builder.put(grammarAccess.getArgumentPairAccess().getOpAssignment_0_0_1_1_0(), "rule__ArgumentPair__OpAssignment_0_0_1_1_0");
-			builder.put(grammarAccess.getArgumentPairAccess().getRightAssignment_0_0_2(), "rule__ArgumentPair__RightAssignment_0_0_2");
 			builder.put(grammarAccess.getPairAccess().getOpAssignment_1_1(), "rule__Pair__OpAssignment_1_1");
 			builder.put(grammarAccess.getPairAccess().getRightAssignment_1_2(), "rule__Pair__RightAssignment_1_2");
 			builder.put(grammarAccess.getIfAccess().getOpAssignment_1_1(), "rule__If__OpAssignment_1_1");

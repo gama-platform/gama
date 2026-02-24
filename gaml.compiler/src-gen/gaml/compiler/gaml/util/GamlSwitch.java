@@ -572,14 +572,6 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case GamlPackage.ARGUMENT_PAIR:
-      {
-        ArgumentPair argumentPair = (ArgumentPair)theEObject;
-        T result = caseArgumentPair(argumentPair);
-        if (result == null) result = caseExpression(argumentPair);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
       case GamlPackage.BINARY_OPERATOR:
       {
         BinaryOperator binaryOperator = (BinaryOperator)theEObject;
@@ -1608,22 +1600,6 @@ public class GamlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseS_Var(S_Var object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>Argument Pair</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Argument Pair</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseArgumentPair(ArgumentPair object)
   {
     return null;
   }

@@ -37,7 +37,6 @@ import gama.api.utils.files.FileUtils;
 import gama.api.utils.files.IGamaFileMetaData;
 import gama.gaml.statements.DoStatement;
 import gaml.compiler.gaml.ActionRef;
-import gaml.compiler.gaml.ArgumentPair;
 import gaml.compiler.gaml.Array;
 import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.ExpressionList;
@@ -280,34 +279,34 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		return null;
 	}
 
-	@Override
-	public IGamlDescription caseArgumentPair(final ArgumentPair pair) {
-		if (pair.eContainer() instanceof ExpressionList el && el.eContainer() instanceof Array array
-				&& array.eContainer() instanceof Facet facet) {
-			// CASE do run_thread with: [interval::2#s];
-			if (facet.eContainer() instanceof S_Do sdo && sdo.getExpr() instanceof VariableRef vr) {
-				String key = pair.getOp();
-				if (!DoStatement.DO_FACETS.contains(key)) {
-					String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(vr);
-					IGamlDescription action = documenter.getGamlDocumentation(vr);
-					String doc = action == null ? "" : action.getDocumentation().get(key).toString();
-					return new Result(title, doc);
-				}
-			} else
-			// CASE create xxx with: [var::yyy]
-			if (facet.eContainer() instanceof Statement sdo && IKeyword.CREATE.equals(sdo.getKey())) {
-				String key = pair.getOp();
-				IGamlDescription species = documenter.getGamlDocumentation(sdo.getExpr());
-				if (species != null) {
-					String title = "Attribute " + key + " defined in " + species.getTitle();
-					String doc = species.getDocumentation().get(key).toString();
-					return new Result(title, doc);
-				}
-
-			}
-		}
-		return null;
-	}
+	// @Override
+	// public IGamlDescription caseArgumentPair(final ArgumentPair pair) {
+	// if (pair.eContainer() instanceof ExpressionList el && el.eContainer() instanceof Array array
+	// && array.eContainer() instanceof Facet facet) {
+	// // CASE do run_thread with: [interval::2#s];
+	// if (facet.eContainer() instanceof S_Do sdo && sdo.getExpr() instanceof VariableRef vr) {
+	// String key = pair.getOp();
+	// if (!DoStatement.DO_FACETS.contains(key)) {
+	// String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(vr);
+	// IGamlDescription action = documenter.getGamlDocumentation(vr);
+	// String doc = action == null ? "" : action.getDocumentation().get(key).toString();
+	// return new Result(title, doc);
+	// }
+	// } else
+	// // CASE create xxx with: [var::yyy]
+	// if (facet.eContainer() instanceof Statement sdo && IKeyword.CREATE.equals(sdo.getKey())) {
+	// String key = pair.getOp();
+	// IGamlDescription species = documenter.getGamlDocumentation(sdo.getExpr());
+	// if (species != null) {
+	// String title = "Attribute " + key + " defined in " + species.getTitle();
+	// String doc = species.getDocumentation().get(key).toString();
+	// return new Result(title, doc);
+	// }
+	//
+	// }
+	// }
+	// return null;
+	// }
 
 	@Override
 	public IGamlDescription caseVariableRef(final VariableRef var) {

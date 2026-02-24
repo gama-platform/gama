@@ -9,7 +9,6 @@ import gaml.compiler.gaml.ActionDefinition;
 import gaml.compiler.gaml.ActionFakeDefinition;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.ArgumentDefinition;
-import gaml.compiler.gaml.ArgumentPair;
 import gaml.compiler.gaml.Array;
 import gaml.compiler.gaml.BinaryOperator;
 import gaml.compiler.gaml.Block;
@@ -479,13 +478,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass s_VarEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass argumentPairEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -1693,39 +1685,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getArgumentPair()
-  {
-    return argumentPairEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getArgumentPair_Op()
-  {
-    return (EAttribute)argumentPairEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getArgumentPair_Right()
-  {
-    return (EReference)argumentPairEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EClass getBinaryOperator()
   {
     return binaryOperatorEClass;
@@ -2448,10 +2407,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     s_VarEClass = createEClass(SVAR);
 
-    argumentPairEClass = createEClass(ARGUMENT_PAIR);
-    createEAttribute(argumentPairEClass, ARGUMENT_PAIR__OP);
-    createEReference(argumentPairEClass, ARGUMENT_PAIR__RIGHT);
-
     binaryOperatorEClass = createEClass(BINARY_OPERATOR);
     createEReference(binaryOperatorEClass, BINARY_OPERATOR__LEFT);
     createEAttribute(binaryOperatorEClass, BINARY_OPERATOR__OP);
@@ -2608,7 +2563,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     stringLiteralEClass.getESuperTypes().add(this.getTerminalExpression());
     s_ActionEClass.getESuperTypes().add(this.getS_Definition());
     s_VarEClass.getESuperTypes().add(this.getS_Definition());
-    argumentPairEClass.getESuperTypes().add(this.getExpression());
     binaryOperatorEClass.getESuperTypes().add(this.getExpression());
     ifEClass.getESuperTypes().add(this.getExpression());
     unitEClass.getESuperTypes().add(this.getExpression());
@@ -2775,10 +2729,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(s_ActionEClass, S_Action.class, "S_Action", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_VarEClass, S_Var.class, "S_Var", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(argumentPairEClass, ArgumentPair.class, "ArgumentPair", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getArgumentPair_Op(), ecorePackage.getEString(), "op", null, 0, 1, ArgumentPair.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getArgumentPair_Right(), this.getExpression(), null, "right", null, 0, 1, ArgumentPair.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(binaryOperatorEClass, BinaryOperator.class, "BinaryOperator", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getBinaryOperator_Left(), this.getExpression(), null, "left", null, 0, 1, BinaryOperator.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

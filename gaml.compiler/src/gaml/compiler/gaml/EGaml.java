@@ -347,7 +347,6 @@ public class EGaml {
 		return switch (id) {
 			case GamlPackage.UNARY -> ((Unary) object).getOp();
 			case GamlPackage.BINARY_OPERATOR -> ((BinaryOperator) object).getOp();
-			case GamlPackage.ARGUMENT_PAIR -> getKeyOfArgumentPair((ArgumentPair) object);
 			case GamlPackage.PARAMETER -> getKeyOfParameter((Parameter) object);
 			case GamlPackage.MODEL -> IKeyword.MODEL;
 			case GamlPackage.STATEMENT -> getKeyOfStatement((Statement) object);
@@ -364,19 +363,6 @@ public class EGaml {
 				yield eSuperTypes.isEmpty() ? null : getKeyOf(object, eSuperTypes.get(0));
 			}
 		};
-	}
-
-	/**
-	 * Gets the key of argument pair, removing trailing colon if present.
-	 *
-	 * @param object
-	 *            the argument pair object
-	 * @return the key of argument pair
-	 */
-	public String getKeyOfArgumentPair(final ArgumentPair object) {
-		String s = object.getOp();
-		if (s == null) return null;
-		return s.endsWith(COLON) ? s.substring(0, s.length() - 1) : s;
 	}
 
 	/**

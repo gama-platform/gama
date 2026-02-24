@@ -519,15 +519,6 @@ public interface GamlFactory extends EFactory
   S_Var createS_Var();
 
   /**
-   * Returns a new object of class '<em>Argument Pair</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Argument Pair</em>'.
-   * @generated
-   */
-  ArgumentPair createArgumentPair();
-
-  /**
    * Returns a new object of class '<em>Binary Operator</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

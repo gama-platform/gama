@@ -16,7 +16,6 @@ import org.eclipse.xtext.naming.QualifiedName;
 
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.constants.IKeyword;
-import gaml.compiler.gaml.ArgumentPair;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.S_Reflex;
@@ -33,7 +32,7 @@ public class GamlQualifiedNameProvider extends IQualifiedNameProvider.AbstractIm
 	private final static String NULL = "";
 
 	/** The Constant SWITCH. */
-	private final static GamlSwitch<String> SWITCH = new GamlSwitch<String>() {
+	private final static GamlSwitch<String> SWITCH = new GamlSwitch<>() {
 
 		@Override
 		public String caseS_Reflex(final S_Reflex s) {
@@ -59,11 +58,6 @@ public class GamlQualifiedNameProvider extends IQualifiedNameProvider.AbstractIm
 		@Override
 		public String caseGamlDefinition(final GamlDefinition object) {
 			return object.getName();
-		}
-
-		@Override
-		public String caseArgumentPair(final ArgumentPair object) {
-			return object.getOp();
 		}
 
 	};

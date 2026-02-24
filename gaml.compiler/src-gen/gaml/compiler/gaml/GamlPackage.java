@@ -2840,43 +2840,6 @@ public interface GamlPackage extends EPackage
   int SVAR_FEATURE_COUNT = SDEFINITION_FEATURE_COUNT + 0;
 
   /**
-   * The meta object id for the '{@link gaml.compiler.gaml.impl.ArgumentPairImpl <em>Argument Pair</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see gaml.compiler.gaml.impl.ArgumentPairImpl
-   * @see gaml.compiler.gaml.impl.GamlPackageImpl#getArgumentPair()
-   * @generated
-   */
-  int ARGUMENT_PAIR = 55;
-
-  /**
-   * The feature id for the '<em><b>Op</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int ARGUMENT_PAIR__OP = EXPRESSION_FEATURE_COUNT + 0;
-
-  /**
-   * The feature id for the '<em><b>Right</b></em>' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int ARGUMENT_PAIR__RIGHT = EXPRESSION_FEATURE_COUNT + 1;
-
-  /**
-   * The number of structural features of the '<em>Argument Pair</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int ARGUMENT_PAIR_FEATURE_COUNT = EXPRESSION_FEATURE_COUNT + 2;
-
-  /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.BinaryOperatorImpl <em>Binary Operator</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -2884,7 +2847,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getBinaryOperator()
    * @generated
    */
-  int BINARY_OPERATOR = 56;
+  int BINARY_OPERATOR = 55;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -2930,7 +2893,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getIf()
    * @generated
    */
-  int IF = 57;
+  int IF = 56;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -2985,7 +2948,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getUnit()
    * @generated
    */
-  int UNIT = 58;
+  int UNIT = 57;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -3031,7 +2994,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getUnary()
    * @generated
    */
-  int UNARY = 59;
+  int UNARY = 58;
 
   /**
    * The feature id for the '<em><b>Op</b></em>' attribute.
@@ -3068,7 +3031,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getAccess()
    * @generated
    */
-  int ACCESS = 60;
+  int ACCESS = 59;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -3114,7 +3077,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getArray()
    * @generated
    */
-  int ARRAY = 61;
+  int ARRAY = 60;
 
   /**
    * The feature id for the '<em><b>Exprs</b></em>' containment reference.
@@ -3142,7 +3105,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getPoint()
    * @generated
    */
-  int POINT = 62;
+  int POINT = 61;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -3197,7 +3160,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getFunction()
    * @generated
    */
-  int FUNCTION = 63;
+  int FUNCTION = 62;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -3243,7 +3206,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getParameter()
    * @generated
    */
-  int PARAMETER = 64;
+  int PARAMETER = 63;
 
   /**
    * The feature id for the '<em><b>Built In Facet Key</b></em>' attribute.
@@ -3289,7 +3252,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getUnitName()
    * @generated
    */
-  int UNIT_NAME = 65;
+  int UNIT_NAME = 64;
 
   /**
    * The feature id for the '<em><b>Ref</b></em>' reference.
@@ -3317,7 +3280,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getTypeRef()
    * @generated
    */
-  int TYPE_REF = 66;
+  int TYPE_REF = 65;
 
   /**
    * The feature id for the '<em><b>Ref</b></em>' reference.
@@ -3354,7 +3317,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getSkillRef()
    * @generated
    */
-  int SKILL_REF = 67;
+  int SKILL_REF = 66;
 
   /**
    * The feature id for the '<em><b>Ref</b></em>' reference.
@@ -3382,7 +3345,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getActionRef()
    * @generated
    */
-  int ACTION_REF = 68;
+  int ACTION_REF = 67;
 
   /**
    * The feature id for the '<em><b>Ref</b></em>' reference.
@@ -3410,7 +3373,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getEquationRef()
    * @generated
    */
-  int EQUATION_REF = 69;
+  int EQUATION_REF = 68;
 
   /**
    * The feature id for the '<em><b>Ref</b></em>' reference.
@@ -3438,7 +3401,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getIntLiteral()
    * @generated
    */
-  int INT_LITERAL = 70;
+  int INT_LITERAL = 69;
 
   /**
    * The feature id for the '<em><b>Op</b></em>' attribute.
@@ -3466,7 +3429,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getDoubleLiteral()
    * @generated
    */
-  int DOUBLE_LITERAL = 71;
+  int DOUBLE_LITERAL = 70;
 
   /**
    * The feature id for the '<em><b>Op</b></em>' attribute.
@@ -3494,7 +3457,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getBooleanLiteral()
    * @generated
    */
-  int BOOLEAN_LITERAL = 72;
+  int BOOLEAN_LITERAL = 71;
 
   /**
    * The feature id for the '<em><b>Op</b></em>' attribute.
@@ -3522,7 +3485,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getReservedLiteral()
    * @generated
    */
-  int RESERVED_LITERAL = 73;
+  int RESERVED_LITERAL = 72;
 
   /**
    * The feature id for the '<em><b>Op</b></em>' attribute.
@@ -4499,38 +4462,6 @@ public interface GamlPackage extends EPackage
    * @generated
    */
   EClass getS_Var();
-
-  /**
-   * Returns the meta object for class '{@link gaml.compiler.gaml.ArgumentPair <em>Argument Pair</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for class '<em>Argument Pair</em>'.
-   * @see gaml.compiler.gaml.ArgumentPair
-   * @generated
-   */
-  EClass getArgumentPair();
-
-  /**
-   * Returns the meta object for the attribute '{@link gaml.compiler.gaml.ArgumentPair#getOp <em>Op</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Op</em>'.
-   * @see gaml.compiler.gaml.ArgumentPair#getOp()
-   * @see #getArgumentPair()
-   * @generated
-   */
-  EAttribute getArgumentPair_Op();
-
-  /**
-   * Returns the meta object for the containment reference '{@link gaml.compiler.gaml.ArgumentPair#getRight <em>Right</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the containment reference '<em>Right</em>'.
-   * @see gaml.compiler.gaml.ArgumentPair#getRight()
-   * @see #getArgumentPair()
-   * @generated
-   */
-  EReference getArgumentPair_Right();
 
   /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.BinaryOperator <em>Binary Operator</em>}'.
@@ -5932,32 +5863,6 @@ public interface GamlPackage extends EPackage
      * @generated
      */
     EClass SVAR = eINSTANCE.getS_Var();
-
-    /**
-     * The meta object literal for the '{@link gaml.compiler.gaml.impl.ArgumentPairImpl <em>Argument Pair</em>}' class.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @see gaml.compiler.gaml.impl.ArgumentPairImpl
-     * @see gaml.compiler.gaml.impl.GamlPackageImpl#getArgumentPair()
-     * @generated
-     */
-    EClass ARGUMENT_PAIR = eINSTANCE.getArgumentPair();
-
-    /**
-     * The meta object literal for the '<em><b>Op</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute ARGUMENT_PAIR__OP = eINSTANCE.getArgumentPair_Op();
-
-    /**
-     * The meta object literal for the '<em><b>Right</b></em>' containment reference feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EReference ARGUMENT_PAIR__RIGHT = eINSTANCE.getArgumentPair_Right();
 
     /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.BinaryOperatorImpl <em>Binary Operator</em>}' class.

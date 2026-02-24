@@ -2799,7 +2799,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	public class ExpressionElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Expression");
-		private final RuleCall cArgumentPairParserRuleCall = (RuleCall)rule.eContents().get(1);
+		private final RuleCall cPairParserRuleCall = (RuleCall)rule.eContents().get(1);
 		
 		///**
 		// * Expressions
@@ -2808,122 +2808,13 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		// * Expressions
 		// */
 		//Expression:
-		//    // The entry point simply points to ArgumentPair.
-		//    ArgumentPair;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//// The entry point simply points to ArgumentPair.
-		//ArgumentPair
-		public RuleCall getArgumentPairParserRuleCall() { return cArgumentPairParserRuleCall; }
-	}
-	public class ArgumentPairElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.ArgumentPair");
-		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
-		private final Group cGroup_0 = (Group)cAlternatives.eContents().get(0);
-		private final Group cGroup_0_0 = (Group)cGroup_0.eContents().get(0);
-		private final Action cArgumentPairAction_0_0_0 = (Action)cGroup_0_0.eContents().get(0);
-		private final Alternatives cAlternatives_0_0_1 = (Alternatives)cGroup_0_0.eContents().get(1);
-		private final Group cGroup_0_0_1_0 = (Group)cAlternatives_0_0_1.eContents().get(0);
-		private final Assignment cOpAssignment_0_0_1_0_0 = (Assignment)cGroup_0_0_1_0.eContents().get(0);
-		private final RuleCall cOpValid_IDParserRuleCall_0_0_1_0_0_0 = (RuleCall)cOpAssignment_0_0_1_0_0.eContents().get(0);
-		private final Keyword cColonColonKeyword_0_0_1_0_1 = (Keyword)cGroup_0_0_1_0.eContents().get(1);
-		private final Group cGroup_0_0_1_1 = (Group)cAlternatives_0_0_1.eContents().get(1);
-		private final Assignment cOpAssignment_0_0_1_1_0 = (Assignment)cGroup_0_0_1_1.eContents().get(0);
-		private final Alternatives cOpAlternatives_0_0_1_1_0_0 = (Alternatives)cOpAssignment_0_0_1_1_0.eContents().get(0);
-		private final RuleCall cOpDefinitionFacetKeyParserRuleCall_0_0_1_1_0_0_0 = (RuleCall)cOpAlternatives_0_0_1_1_0_0.eContents().get(0);
-		private final RuleCall cOpTypeFacetKeyParserRuleCall_0_0_1_1_0_0_1 = (RuleCall)cOpAlternatives_0_0_1_1_0_0.eContents().get(1);
-		private final RuleCall cOpSpecialFacetKeyParserRuleCall_0_0_1_1_0_0_2 = (RuleCall)cOpAlternatives_0_0_1_1_0_0.eContents().get(2);
-		private final RuleCall cOpActionFacetKeyParserRuleCall_0_0_1_1_0_0_3 = (RuleCall)cOpAlternatives_0_0_1_1_0_0.eContents().get(3);
-		private final RuleCall cOpVarFacetKeyParserRuleCall_0_0_1_1_0_0_4 = (RuleCall)cOpAlternatives_0_0_1_1_0_0.eContents().get(4);
-		private final Keyword cColonKeyword_0_0_1_1_1 = (Keyword)cGroup_0_0_1_1.eContents().get(1);
-		private final Assignment cRightAssignment_0_0_2 = (Assignment)cGroup_0_0.eContents().get(2);
-		private final RuleCall cRightPairParserRuleCall_0_0_2_0 = (RuleCall)cRightAssignment_0_0_2.eContents().get(0);
-		private final RuleCall cPairParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		
-		//ArgumentPair returns Expression:
-		//    => (
-		//        {ArgumentPair}
-		//        (op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
-		//        right=Pair
-		//    )
-		//    |
+		//    // The entry point simply points to Pair.
 		//    Pair;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//=> (
-		//    {ArgumentPair}
-		//    (op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
-		//    right=Pair
-		//)
-		//|
+		//// The entry point simply points to Pair.
 		//Pair
-		public Alternatives getAlternatives() { return cAlternatives; }
-		
-		//=> (
-		//    {ArgumentPair}
-		//    (op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
-		//    right=Pair
-		//)
-		public Group getGroup_0() { return cGroup_0; }
-		
-		//{ArgumentPair}
-		//(op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
-		//right=Pair
-		public Group getGroup_0_0() { return cGroup_0_0; }
-		
-		//{ArgumentPair}
-		public Action getArgumentPairAction_0_0_0() { return cArgumentPairAction_0_0_0; }
-		
-		//(op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
-		public Alternatives getAlternatives_0_0_1() { return cAlternatives_0_0_1; }
-		
-		//op=Valid_ID '::'
-		public Group getGroup_0_0_1_0() { return cGroup_0_0_1_0; }
-		
-		//op=Valid_ID
-		public Assignment getOpAssignment_0_0_1_0_0() { return cOpAssignment_0_0_1_0_0; }
-		
-		//Valid_ID
-		public RuleCall getOpValid_IDParserRuleCall_0_0_1_0_0_0() { return cOpValid_IDParserRuleCall_0_0_1_0_0_0; }
-		
-		//'::'
-		public Keyword getColonColonKeyword_0_0_1_0_1() { return cColonColonKeyword_0_0_1_0_1; }
-		
-		//op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':'
-		public Group getGroup_0_0_1_1() { return cGroup_0_0_1_1; }
-		
-		//op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey)
-		public Assignment getOpAssignment_0_0_1_1_0() { return cOpAssignment_0_0_1_1_0; }
-		
-		//(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey)
-		public Alternatives getOpAlternatives_0_0_1_1_0_0() { return cOpAlternatives_0_0_1_1_0_0; }
-		
-		//DefinitionFacetKey
-		public RuleCall getOpDefinitionFacetKeyParserRuleCall_0_0_1_1_0_0_0() { return cOpDefinitionFacetKeyParserRuleCall_0_0_1_1_0_0_0; }
-		
-		//TypeFacetKey
-		public RuleCall getOpTypeFacetKeyParserRuleCall_0_0_1_1_0_0_1() { return cOpTypeFacetKeyParserRuleCall_0_0_1_1_0_0_1; }
-		
-		//SpecialFacetKey
-		public RuleCall getOpSpecialFacetKeyParserRuleCall_0_0_1_1_0_0_2() { return cOpSpecialFacetKeyParserRuleCall_0_0_1_1_0_0_2; }
-		
-		//ActionFacetKey
-		public RuleCall getOpActionFacetKeyParserRuleCall_0_0_1_1_0_0_3() { return cOpActionFacetKeyParserRuleCall_0_0_1_1_0_0_3; }
-		
-		//VarFacetKey
-		public RuleCall getOpVarFacetKeyParserRuleCall_0_0_1_1_0_0_4() { return cOpVarFacetKeyParserRuleCall_0_0_1_1_0_0_4; }
-		
-		//':'
-		public Keyword getColonKeyword_0_0_1_1_1() { return cColonKeyword_0_0_1_1_1; }
-		
-		//right=Pair
-		public Assignment getRightAssignment_0_0_2() { return cRightAssignment_0_0_2; }
-		
-		//Pair
-		public RuleCall getRightPairParserRuleCall_0_0_2_0() { return cRightPairParserRuleCall_0_0_2_0; }
-		
-		//Pair
-		public RuleCall getPairParserRuleCall_1() { return cPairParserRuleCall_1; }
+		public RuleCall getPairParserRuleCall() { return cPairParserRuleCall; }
 	}
 	public class BinaryOperatorElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.BinaryOperator");
@@ -4835,7 +4726,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	private final VarFacetElements pVarFacet;
 	private final BlockElements pBlock;
 	private final ExpressionElements pExpression;
-	private final ArgumentPairElements pArgumentPair;
 	private final BinaryOperatorElements pBinaryOperator;
 	private final PairElements pPair;
 	private final IfElements pIf;
@@ -4964,7 +4854,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		this.pVarFacet = new VarFacetElements();
 		this.pBlock = new BlockElements();
 		this.pExpression = new ExpressionElements();
-		this.pArgumentPair = new ArgumentPairElements();
 		this.pBinaryOperator = new BinaryOperatorElements();
 		this.pPair = new PairElements();
 		this.pIf = new IfElements();
@@ -5829,30 +5718,14 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	// * Expressions
 	// */
 	//Expression:
-	//    // The entry point simply points to ArgumentPair.
-	//    ArgumentPair;
+	//    // The entry point simply points to Pair.
+	//    Pair;
 	public ExpressionElements getExpressionAccess() {
 		return pExpression;
 	}
 	
 	public ParserRule getExpressionRule() {
 		return getExpressionAccess().getRule();
-	}
-	
-	//ArgumentPair returns Expression:
-	//    => (
-	//        {ArgumentPair}
-	//        (op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
-	//        right=Pair
-	//    )
-	//    |
-	//    Pair;
-	public ArgumentPairElements getArgumentPairAccess() {
-		return pArgumentPair;
-	}
-	
-	public ParserRule getArgumentPairRule() {
-		return getArgumentPairAccess().getRule();
 	}
 	
 	//BinaryOperator returns Expression:

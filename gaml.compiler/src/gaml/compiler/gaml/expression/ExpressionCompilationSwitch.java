@@ -68,7 +68,6 @@ import gama.api.gaml.types.Types;
 import gama.api.utils.collections.Collector;
 import gaml.compiler.gaml.Access;
 import gaml.compiler.gaml.ActionRef;
-import gaml.compiler.gaml.ArgumentPair;
 import gaml.compiler.gaml.Array;
 import gaml.compiler.gaml.BinaryOperator;
 import gaml.compiler.gaml.BooleanLiteral;
@@ -780,10 +779,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	private ArgInfo extractArgumentInfo(final Expression exp, final boolean completeArgs,
 			final List<String> expectedArgs, final int positionalIndex, final IActionDescription action,
 			final IDescription command) {
-		if (exp instanceof ArgumentPair p) return new ArgInfo(EGAML.getKeyOfArgumentPair(p), p.getRight(), false);
 
 		if (exp instanceof Parameter p) return new ArgInfo(EGAML.getKeyOfParameter(p), p.getRight(), false);
-
 		if (exp instanceof BinaryOperator bo && "::".equals(bo.getOp()))
 			return new ArgInfo(EGAML.getKeyOf(bo.getLeft()), bo.getRight(), false);
 
@@ -893,8 +890,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	@Override
 	public IExpression caseArray(final Array object) {
 		final List<? extends Expression> list = EGAML.getExprsOf(object.getExprs());
-		final boolean allPairs = !list.isEmpty()
-				&& Iterables.all(list, each -> each instanceof ArgumentPair || "::".equals(EGAML.getKeyOf(each)));
+		final boolean allPairs = !list.isEmpty() && Iterables.all(list, each -> "::".equals(EGAML.getKeyOf(each)));
 		final Iterable<IExpression> result = Iterables.transform(list, this::compile);
 		if (Iterables.any(result, t -> t == null)) return null;
 		return allPairs ? FACTORY.createMap(result) : FACTORY.createList(result);
@@ -1161,11 +1157,6 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		final IExpression alt =
 				FACTORY.createOperator(":", context.getContext(), object, compile(object.getRight()), ifFalse);
 		return FACTORY.createOperator("?", context.getContext(), object, compile(object.getLeft()), alt);
-	}
-
-	@Override
-	public IExpression caseArgumentPair(final ArgumentPair object) {
-		return binary("::", caseVar(EGAML.getKeyOf(object), object), object.getRight());
 	}
 
 	/**

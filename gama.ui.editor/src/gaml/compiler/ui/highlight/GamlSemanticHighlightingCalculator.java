@@ -45,7 +45,6 @@ import com.google.inject.Inject;
 
 import gama.api.utils.StringUtils;
 import gaml.compiler.gaml.ArgumentDefinition;
-import gaml.compiler.gaml.ArgumentPair;
 import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.GamlDefinition;
@@ -157,9 +156,6 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 			case GamlPackage.BINARY_OPERATOR:
 			case GamlPackage.FUNCTION:
 				setStyle(object, OPERATOR_ID, eGamlInstance.getKeyOf(object), true);
-				break;
-			case GamlPackage.ARGUMENT_PAIR:
-				setStyle(object, VARIABLE_ID, ((ArgumentPair) object).getOp(), false);
 				break;
 			case GamlPackage.VARIABLE_REF:
 				setStyle(VARIABLE_ID, NodeModelUtils.getNode(object));
