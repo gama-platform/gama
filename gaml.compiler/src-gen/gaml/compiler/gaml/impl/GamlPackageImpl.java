@@ -59,7 +59,6 @@ import gaml.compiler.gaml.S_Solve;
 import gaml.compiler.gaml.S_Species;
 import gaml.compiler.gaml.S_SpeciesLayer;
 import gaml.compiler.gaml.S_Try;
-import gaml.compiler.gaml.S_Var;
 import gaml.compiler.gaml.SkillFakeDefinition;
 import gaml.compiler.gaml.SkillRef;
 import gaml.compiler.gaml.StandaloneBlock;
@@ -471,13 +470,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass s_ActionEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass s_VarEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -1674,17 +1666,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getS_Var()
-  {
-    return s_VarEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EClass getBinaryOperator()
   {
     return binaryOperatorEClass;
@@ -2405,8 +2386,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     s_ActionEClass = createEClass(SACTION);
 
-    s_VarEClass = createEClass(SVAR);
-
     binaryOperatorEClass = createEClass(BINARY_OPERATOR);
     createEReference(binaryOperatorEClass, BINARY_OPERATOR__LEFT);
     createEAttribute(binaryOperatorEClass, BINARY_OPERATOR__OP);
@@ -2565,7 +2544,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     terminalExpressionEClass.getESuperTypes().add(this.getExpression());
     stringLiteralEClass.getESuperTypes().add(this.getTerminalExpression());
     s_ActionEClass.getESuperTypes().add(this.getS_Definition());
-    s_VarEClass.getESuperTypes().add(this.getS_Definition());
     binaryOperatorEClass.getESuperTypes().add(this.getExpression());
     ifEClass.getESuperTypes().add(this.getExpression());
     unitEClass.getESuperTypes().add(this.getExpression());
@@ -2730,8 +2708,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(stringLiteralEClass, StringLiteral.class, "StringLiteral", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_ActionEClass, S_Action.class, "S_Action", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(s_VarEClass, S_Var.class, "S_Var", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(binaryOperatorEClass, BinaryOperator.class, "BinaryOperator", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getBinaryOperator_Left(), this.getExpression(), null, "left", null, 0, 1, BinaryOperator.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

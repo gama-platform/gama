@@ -51,7 +51,6 @@ import gaml.compiler.gaml.S_Solve;
 import gaml.compiler.gaml.S_Species;
 import gaml.compiler.gaml.S_SpeciesLayer;
 import gaml.compiler.gaml.S_Try;
-import gaml.compiler.gaml.S_Var;
 import gaml.compiler.gaml.SkillFakeDefinition;
 import gaml.compiler.gaml.SkillRef;
 import gaml.compiler.gaml.StandaloneBlock;
@@ -324,9 +323,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				return; 
 			case GamlPackage.STRY:
 				sequence_S_Try(context, (S_Try) semanticObject); 
-				return; 
-			case GamlPackage.SVAR:
-				sequence_S_Var(context, (S_Var) semanticObject); 
 				return; 
 			case GamlPackage.SKILL_FAKE_DEFINITION:
 				sequence_SkillFakeDefinition(context, (SkillFakeDefinition) semanticObject); 
@@ -1579,24 +1575,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_S_Try(ISerializationContext context, S_Try semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     Statement returns S_Var
-	 *     S_Declaration returns S_Var
-	 *     S_Var returns S_Var
-	 *     GamlDefinition returns S_Var
-	 *     VarDefinition returns S_Var
-	 *
-	 * Constraint:
-	 *     (key=_VarOrConstKey firstFacet='name:'? name=Valid_ID facets+=Facet*)
-	 * </pre>
-	 */
-	protected void sequence_S_Var(ISerializationContext context, S_Var semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	

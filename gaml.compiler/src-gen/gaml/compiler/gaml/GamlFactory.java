@@ -510,15 +510,6 @@ public interface GamlFactory extends EFactory
   S_Action createS_Action();
 
   /**
-   * Returns a new object of class '<em>SVar</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SVar</em>'.
-   * @generated
-   */
-  S_Var createS_Var();
-
-  /**
    * Returns a new object of class '<em>Binary Operator</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

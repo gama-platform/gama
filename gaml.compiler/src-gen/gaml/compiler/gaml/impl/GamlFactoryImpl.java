@@ -119,7 +119,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.TERMINAL_EXPRESSION: return createTerminalExpression();
       case GamlPackage.STRING_LITERAL: return createStringLiteral();
       case GamlPackage.SACTION: return createS_Action();
-      case GamlPackage.SVAR: return createS_Var();
       case GamlPackage.BINARY_OPERATOR: return createBinaryOperator();
       case GamlPackage.IF: return createIf();
       case GamlPackage.UNIT: return createUnit();
@@ -789,18 +788,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     S_ActionImpl s_Action = new S_ActionImpl();
     return s_Action;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public S_Var createS_Var()
-  {
-    S_VarImpl s_Var = new S_VarImpl();
-    return s_Var;
   }
 
   /**

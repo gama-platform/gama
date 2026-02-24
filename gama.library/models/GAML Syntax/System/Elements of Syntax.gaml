@@ -75,18 +75,18 @@ global skills: [moving] control: fsm {
 	/**
 	  * ACTIONS
 	  */
-	// Actions can also be declared in different ways. Classic:
-	action dummy1 type: list of: int {
-		arg a type: int default: 100;
-		arg b type: float;
-		return [a, int(b)];
-	}
-	// Semi-classic (prefixed by the type)
-	list dummy2 of: int {
-		arg a type: int default: 100;
-		arg b type: float;
-		return [a, int(b)];
-	}
+//	// Actions can also be declared in different ways. Classic:
+//	action dummy1 type: list of: int {
+//		arg a type: int default: 100;
+//		arg b type: float;
+//		return [a, int(b)];
+//	}
+//	// Semi-classic (prefixed by the type)
+//	list dummy2 of: int {
+//		arg a type: int default: 100;
+//		arg b type: float;
+//		return [a, int(b)];
+//	}
 	//Compact
 	list<int> dummy1 (int a <- 100, float b) {
 		return [a, int(b)];

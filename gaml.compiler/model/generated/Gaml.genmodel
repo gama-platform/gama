@@ -121,7 +121,6 @@
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//StringLiteral"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Action"/>
-    <genClasses ecoreClass="Gaml.ecore#//S_Var"/>
     <genClasses ecoreClass="Gaml.ecore#//BinaryOperator">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//BinaryOperator/left"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//BinaryOperator/op"/>

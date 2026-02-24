@@ -65,7 +65,7 @@ Statement:
 	
 	// 2. KEYWORD FAST TRACK
 	// The => forces the parser to prioritize them and silences Valid_ID warnings.
-	=> S_Equations | => S_Do | => S_Loop | => S_Action | => S_Var | => S_Species | => S_Reflex |
+	=> S_Equations | => S_Do | => S_Loop | => S_Action | => S_Species | => S_Reflex |
 	
 	// 3. AMBIGUITY RESOLUTION (Assignments)
 	=> S_Assignment | 
@@ -108,7 +108,7 @@ S_Return:
  * DECLARATIONS
  */
 S_Declaration:
-	->S_Definition | S_Species | S_Reflex | S_Action | S_Var | S_Loop;
+	->S_Definition | S_Species | S_Reflex | S_Action | S_Loop;
 
 S_Reflex:
 	key=_ReflexKey ((firstFacet="name:")? name=Valid_ID)? ("when" ":" expr=Expression)? block=Block;
@@ -118,9 +118,6 @@ S_Definition:
 
 S_Action returns S_Definition:
 	{S_Action} key="action" (firstFacet='name:')? name=Valid_ID ('(' (args=ActionArguments) ')')? FacetsAndBlock;
-
-S_Var returns S_Definition:
-	{S_Var} key=_VarOrConstKey (firstFacet="name:")? name=Valid_ID (facets+=Facet)* ';';
 
 /*
  * ASSIGNMENTS

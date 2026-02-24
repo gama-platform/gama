@@ -141,7 +141,6 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StringLiteral" eSuperTypes="#//TerminalExpression"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Action" eSuperTypes="#//S_Definition"/>
-  <eClassifiers xsi:type="ecore:EClass" name="S_Var" eSuperTypes="#//S_Definition"/>
   <eClassifiers xsi:type="ecore:EClass" name="BinaryOperator" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Expression"
         containment="true"/>

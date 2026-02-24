@@ -531,14 +531,13 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cS_DoParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
 		private final RuleCall cS_LoopParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
 		private final RuleCall cS_ActionParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
-		private final RuleCall cS_VarParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
-		private final RuleCall cS_SpeciesParserRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
-		private final RuleCall cS_ReflexParserRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
-		private final RuleCall cS_AssignmentParserRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
-		private final RuleCall cS_GeneralParserRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
-		private final RuleCall cS_DeclarationParserRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
-		private final RuleCall cS_DefinitionParserRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
-		private final RuleCall cS_OtherParserRuleCall_16 = (RuleCall)cAlternatives.eContents().get(16);
+		private final RuleCall cS_SpeciesParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
+		private final RuleCall cS_ReflexParserRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
+		private final RuleCall cS_AssignmentParserRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
+		private final RuleCall cS_GeneralParserRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
+		private final RuleCall cS_DeclarationParserRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
+		private final RuleCall cS_DefinitionParserRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
+		private final RuleCall cS_OtherParserRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
 		
 		///**
 		// * Statements
@@ -548,7 +547,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//    S_Display | S_Return | S_Solve | S_If | S_Try |
 		//    // 2. KEYWORD FAST TRACK
 		//    // The => forces the parser to prioritize them and silences Valid_ID warnings.
-		//    => S_Equations | => S_Do | => S_Loop | => S_Action | => S_Var | => S_Species | => S_Reflex |
+		//    => S_Equations | => S_Do | => S_Loop | => S_Action | => S_Species | => S_Reflex |
 		//    // 3. AMBIGUITY RESOLUTION (Assignments)
 		//    => S_Assignment |
 		//    // 4. THE GAML PILLARS
@@ -567,7 +566,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//S_Display | S_Return | S_Solve | S_If | S_Try |
 		//// 2. KEYWORD FAST TRACK
 		//// The => forces the parser to prioritize them and silences Valid_ID warnings.
-		//=> S_Equations | => S_Do | => S_Loop | => S_Action | => S_Var | => S_Species | => S_Reflex |
+		//=> S_Equations | => S_Do | => S_Loop | => S_Action | => S_Species | => S_Reflex |
 		//// 3. AMBIGUITY RESOLUTION (Assignments)
 		//=> S_Assignment |
 		//// 4. THE GAML PILLARS
@@ -612,37 +611,34 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//=> S_Action
 		public RuleCall getS_ActionParserRuleCall_8() { return cS_ActionParserRuleCall_8; }
 		
-		//=> S_Var
-		public RuleCall getS_VarParserRuleCall_9() { return cS_VarParserRuleCall_9; }
-		
 		//=> S_Species
-		public RuleCall getS_SpeciesParserRuleCall_10() { return cS_SpeciesParserRuleCall_10; }
+		public RuleCall getS_SpeciesParserRuleCall_9() { return cS_SpeciesParserRuleCall_9; }
 		
 		//=> S_Reflex
-		public RuleCall getS_ReflexParserRuleCall_11() { return cS_ReflexParserRuleCall_11; }
+		public RuleCall getS_ReflexParserRuleCall_10() { return cS_ReflexParserRuleCall_10; }
 		
 		//// 3. AMBIGUITY RESOLUTION (Assignments)
 		//=> S_Assignment
-		public RuleCall getS_AssignmentParserRuleCall_12() { return cS_AssignmentParserRuleCall_12; }
+		public RuleCall getS_AssignmentParserRuleCall_11() { return cS_AssignmentParserRuleCall_11; }
 		
 		//// 4. THE GAML PILLARS
 		//// ADDING '=>' HERE IS THE MAGIC FIX!
 		//// It forces the parser to check for a mandatory expression first.
 		//=> S_General
-		public RuleCall getS_GeneralParserRuleCall_13() { return cS_GeneralParserRuleCall_13; }
+		public RuleCall getS_GeneralParserRuleCall_12() { return cS_GeneralParserRuleCall_12; }
 		
 		//// (Note: use S_General here if you renamed it!)
 		// // Declarations come next
 		// => S_Declaration
-		public RuleCall getS_DeclarationParserRuleCall_14() { return cS_DeclarationParserRuleCall_14; }
+		public RuleCall getS_DeclarationParserRuleCall_13() { return cS_DeclarationParserRuleCall_13; }
 		
 		//=> S_Definition
-		public RuleCall getS_DefinitionParserRuleCall_15() { return cS_DefinitionParserRuleCall_15; }
+		public RuleCall getS_DefinitionParserRuleCall_14() { return cS_DefinitionParserRuleCall_14; }
 		
 		//// 5. THE UNIVERSAL FALLBACK
 		//// If everything above fails, S_Other catches it perfectly.
 		//S_Other
-		public RuleCall getS_OtherParserRuleCall_16() { return cS_OtherParserRuleCall_16; }
+		public RuleCall getS_OtherParserRuleCall_15() { return cS_OtherParserRuleCall_15; }
 	}
 	public class S_GeneralElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_General");
@@ -944,17 +940,16 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cS_SpeciesParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
 		private final RuleCall cS_ReflexParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
 		private final RuleCall cS_ActionParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
-		private final RuleCall cS_VarParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
-		private final RuleCall cS_LoopParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
+		private final RuleCall cS_LoopParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
 		
 		///*
 		// * DECLARATIONS
 		// */
 		//S_Declaration:
-		//    ->S_Definition | S_Species | S_Reflex | S_Action | S_Var | S_Loop;
+		//    ->S_Definition | S_Species | S_Reflex | S_Action | S_Loop;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//->S_Definition | S_Species | S_Reflex | S_Action | S_Var | S_Loop
+		//->S_Definition | S_Species | S_Reflex | S_Action | S_Loop
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//->S_Definition
@@ -969,11 +964,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//S_Action
 		public RuleCall getS_ActionParserRuleCall_3() { return cS_ActionParserRuleCall_3; }
 		
-		//S_Var
-		public RuleCall getS_VarParserRuleCall_4() { return cS_VarParserRuleCall_4; }
-		
 		//S_Loop
-		public RuleCall getS_LoopParserRuleCall_5() { return cS_LoopParserRuleCall_5; }
+		public RuleCall getS_LoopParserRuleCall_4() { return cS_LoopParserRuleCall_4; }
 	}
 	public class S_ReflexElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_Reflex");
@@ -1171,57 +1163,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		
 		//FacetsAndBlock
 		public RuleCall getFacetsAndBlockParserRuleCall_5() { return cFacetsAndBlockParserRuleCall_5; }
-	}
-	public class S_VarElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_Var");
-		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Action cS_VarAction_0 = (Action)cGroup.eContents().get(0);
-		private final Assignment cKeyAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final RuleCall cKey_VarOrConstKeyParserRuleCall_1_0 = (RuleCall)cKeyAssignment_1.eContents().get(0);
-		private final Assignment cFirstFacetAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final Keyword cFirstFacetNameKeyword_2_0 = (Keyword)cFirstFacetAssignment_2.eContents().get(0);
-		private final Assignment cNameAssignment_3 = (Assignment)cGroup.eContents().get(3);
-		private final RuleCall cNameValid_IDParserRuleCall_3_0 = (RuleCall)cNameAssignment_3.eContents().get(0);
-		private final Assignment cFacetsAssignment_4 = (Assignment)cGroup.eContents().get(4);
-		private final RuleCall cFacetsFacetParserRuleCall_4_0 = (RuleCall)cFacetsAssignment_4.eContents().get(0);
-		private final Keyword cSemicolonKeyword_5 = (Keyword)cGroup.eContents().get(5);
-		
-		//S_Var returns S_Definition:
-		//    {S_Var} key=_VarOrConstKey (firstFacet="name:")? name=Valid_ID (facets+=Facet)* ';';
-		@Override public ParserRule getRule() { return rule; }
-		
-		//{S_Var} key=_VarOrConstKey (firstFacet="name:")? name=Valid_ID (facets+=Facet)* ';'
-		public Group getGroup() { return cGroup; }
-		
-		//{S_Var}
-		public Action getS_VarAction_0() { return cS_VarAction_0; }
-		
-		//key=_VarOrConstKey
-		public Assignment getKeyAssignment_1() { return cKeyAssignment_1; }
-		
-		//_VarOrConstKey
-		public RuleCall getKey_VarOrConstKeyParserRuleCall_1_0() { return cKey_VarOrConstKeyParserRuleCall_1_0; }
-		
-		//(firstFacet="name:")?
-		public Assignment getFirstFacetAssignment_2() { return cFirstFacetAssignment_2; }
-		
-		//"name:"
-		public Keyword getFirstFacetNameKeyword_2_0() { return cFirstFacetNameKeyword_2_0; }
-		
-		//name=Valid_ID
-		public Assignment getNameAssignment_3() { return cNameAssignment_3; }
-		
-		//Valid_ID
-		public RuleCall getNameValid_IDParserRuleCall_3_0() { return cNameValid_IDParserRuleCall_3_0; }
-		
-		//(facets+=Facet)*
-		public Assignment getFacetsAssignment_4() { return cFacetsAssignment_4; }
-		
-		//Facet
-		public RuleCall getFacetsFacetParserRuleCall_4_0() { return cFacetsFacetParserRuleCall_4_0; }
-		
-		//';'
-		public Keyword getSemicolonKeyword_5() { return cSemicolonKeyword_5; }
 	}
 	public class S_AssignmentElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_Assignment");
@@ -4670,7 +4611,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	private final S_ReflexElements pS_Reflex;
 	private final S_DefinitionElements pS_Definition;
 	private final S_ActionElements pS_Action;
-	private final S_VarElements pS_Var;
 	private final S_AssignmentElements pS_Assignment;
 	private final S_EquationsElements pS_Equations;
 	private final S_EquationElements pS_Equation;
@@ -4797,7 +4737,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		this.pS_Reflex = new S_ReflexElements();
 		this.pS_Definition = new S_DefinitionElements();
 		this.pS_Action = new S_ActionElements();
-		this.pS_Var = new S_VarElements();
 		this.pS_Assignment = new S_AssignmentElements();
 		this.pS_Equations = new S_EquationsElements();
 		this.pS_Equation = new S_EquationElements();
@@ -5077,7 +5016,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	//    S_Display | S_Return | S_Solve | S_If | S_Try |
 	//    // 2. KEYWORD FAST TRACK
 	//    // The => forces the parser to prioritize them and silences Valid_ID warnings.
-	//    => S_Equations | => S_Do | => S_Loop | => S_Action | => S_Var | => S_Species | => S_Reflex |
+	//    => S_Equations | => S_Do | => S_Loop | => S_Action | => S_Species | => S_Reflex |
 	//    // 3. AMBIGUITY RESOLUTION (Assignments)
 	//    => S_Assignment |
 	//    // 4. THE GAML PILLARS
@@ -5172,7 +5111,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	// * DECLARATIONS
 	// */
 	//S_Declaration:
-	//    ->S_Definition | S_Species | S_Reflex | S_Action | S_Var | S_Loop;
+	//    ->S_Definition | S_Species | S_Reflex | S_Action | S_Loop;
 	public S_DeclarationElements getS_DeclarationAccess() {
 		return pS_Declaration;
 	}
@@ -5209,16 +5148,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	public ParserRule getS_ActionRule() {
 		return getS_ActionAccess().getRule();
-	}
-	
-	//S_Var returns S_Definition:
-	//    {S_Var} key=_VarOrConstKey (firstFacet="name:")? name=Valid_ID (facets+=Facet)* ';';
-	public S_VarElements getS_VarAccess() {
-		return pS_Var;
-	}
-	
-	public ParserRule getS_VarRule() {
-		return getS_VarAccess().getRule();
 	}
 	
 	///*
