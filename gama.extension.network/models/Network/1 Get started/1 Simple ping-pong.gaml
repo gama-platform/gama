@@ -21,11 +21,11 @@ global {
 		write "The default broket is for test only, limit the number of connections otherwise connection will be refused." color: #red;
 		write "To connect to your local/remote server, change the parameters of the connect statement" color: #blue;
 		//create Ping agent
-		create PING_PONG with: [name:: "ping", dest::"pong"] {
+		create PING_PONG with: (name: "ping", dest:"pong") {
 			do connect with_name: name;
 		}
 		//create Pong agent
-		create PING_PONG with: [name:: "pong", dest::"ping"] {
+		create PING_PONG with: (name: "pong", dest:"ping") {
 			do connect with_name: name;
 			do send to: dest contents: "This message is sent by " + name + " to " + dest;
 		}

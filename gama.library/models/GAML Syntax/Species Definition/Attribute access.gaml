@@ -72,7 +72,7 @@ global {
 		// either explicity, using the with: facet
 		// or implicitely, when the attribute has the same name as the shapefile attribute.
 		// The shape of the agent is initialized from the geometry of the shapefile.
-		create building_from_shapefile from: buildings_simple0_shape_file with: [building_nature::string(read("NATURE"))];
+		create building_from_shapefile from: buildings_simple0_shape_file with: (building_nature:string(read("NATURE")));
 			
 		ask building_from_shapefile {
 			write sample(self.building_nature);

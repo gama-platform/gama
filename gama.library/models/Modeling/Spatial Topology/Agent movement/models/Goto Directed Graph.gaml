@@ -14,7 +14,7 @@ global {
 	graph the_graph; 
 	
 	init {
-		create road from: road_file with:[direction::int(read("DIRECTION"))] {
+		create road from: road_file with:(direction:int(read("DIRECTION"))) {
 			switch direction {
 				match 0 {color <- #green;}
 				match 1 {color <- #red;

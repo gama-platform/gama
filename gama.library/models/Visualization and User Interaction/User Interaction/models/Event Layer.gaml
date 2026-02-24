@@ -22,7 +22,7 @@ global
 		{
 			colour <- #darkgreen;
 		}
-       create dummy number:1 returns: temp with: [dummyRadius :: radius];
+       create dummy number:1 returns: temp with: (dummyRadius : radius);
        pointClicked <- first(temp);
    }
 

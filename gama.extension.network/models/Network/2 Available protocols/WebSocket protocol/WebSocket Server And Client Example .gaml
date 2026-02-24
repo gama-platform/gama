@@ -94,7 +94,7 @@ experiment "WebSocket Server and Client" type: gui {
 	float minimum_cycle_duration <- 0.25;
 
 	init {
-		create simulation with: [type:: "client"];
+		create simulation with: (type: "client");
 	}
 
 	output {

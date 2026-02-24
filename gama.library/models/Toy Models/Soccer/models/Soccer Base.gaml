@@ -22,11 +22,11 @@ species soccer_game {
 	
 	init {
 		// create the entities ball and the 2 goals
-		create ball_sp with:[location::world.location] returns:var_ball;
+		create ball_sp with:(location:world.location) returns:var_ball;
 		ball <- first(var_ball);
-		create goal_sp with:[location::{world.location.x,120},position::"front"] returns:var_goal1;
+		create goal_sp with:(location:{world.location.x,120},position:"front") returns:var_goal1;
 		front_goal <- first(var_goal1);
-		create goal_sp with:[location::{world.location.x,0},position::"back"] returns:var_goal2;
+		create goal_sp with:(location:{world.location.x,0},position:"back") returns:var_goal2;
 		back_goal <- first(var_goal2);
 	}
 	
@@ -378,7 +378,7 @@ species goal_sp {
 	string position; // can be "front" or "back".
 	
 	init {
-		create goal_keeper with:[position::position];
+		create goal_keeper with:(position:position);
 	}
 	
 	aspect goal {

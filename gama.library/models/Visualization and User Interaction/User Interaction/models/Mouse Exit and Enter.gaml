@@ -11,8 +11,8 @@ model MouseExitandEnter
 global {
 	bool closed <- false;
 	init {
-		create eyes with: [location::{25,30}];
-		create eyes with: [location::{65,30}];
+		create eyes with: (location:{25,30});
+		create eyes with: (location:{65,30});
 	}
 }
 

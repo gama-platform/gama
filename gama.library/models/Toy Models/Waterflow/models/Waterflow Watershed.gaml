@@ -18,7 +18,7 @@ global {
 	float rain <- rnd(10.0) update: every(20#cycle) ? rnd(10.0) : 0.0;
 	
 	init {
-		create watershed from: watershed_shape_file with: [id_watershed::int(read("ID_ZH")), id_watershed_outlet::int(read("ID_ND_EXUT")),order::int(read("order"))];
+		create watershed from: watershed_shape_file with: (id_watershed:int(read("ID_ZH")), id_watershed_outlet:int(read("ID_ND_EXUT")),order:int(read("order")));
 		
 		ask watershed {
 			do init_watershed;

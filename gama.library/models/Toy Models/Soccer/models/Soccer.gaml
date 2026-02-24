@@ -65,15 +65,15 @@ global {
 	
 	init {
 		loop pos over:redPlayerPosition {
-			create player with:[team::"red", location::pos];
+			create player with:(team:"red", location:pos);
 		}
 		loop pos over:bluePlayerPosition {
-			create player with:[team::"blue", location::pos];
+			create player with:(team:"blue", location:pos);
 		}
-		create ball with:[location::location] returns:ball_agt;
+		create ball with:(location:location) returns:ball_agt;
 		ball_agent<-ball_agt at 0;
-		create goal with:[location::{0,location.y}, team::"blue"];
-		create goal with:[location::{120,location.y}, team::"red"];
+		create goal with:(location:{0,location.y}, team:"blue");
+		create goal with:(location:{120,location.y}, team:"red");
 	}
 	
 	reflex update {
@@ -169,10 +169,10 @@ species player skills:[moving] {
 	init {
 		init_pos <- location;
 		previous_pos <- location;
-		create area with:[location::init_pos, team::self.team, position::init_pos] returns:def_pos;
+		create area with:(location:init_pos, team:self.team, position:init_pos) returns:def_pos;
 		defensive_pos <- def_pos at 0;
 		point offensivePos <- {(team="red") ? init_pos.x-60 : init_pos.x+60,init_pos.y};
-		create area with:[location::offensivePos, team::self.team, position::offensivePos] returns:off_pos;
+		create area with:(location:offensivePos, team:self.team, position:offensivePos) returns:off_pos;
 		offensive_pos <- off_pos at 0;
 	}
 	
@@ -257,7 +257,7 @@ species player skills:[moving] {
 		else {
 			targetPos <- (ball_agent.ball_direction closest_points_with self) at 0;
 		}
-		do goto with:[target::targetPos, speed::running_speed_without_ball];
+		do goto with:(target:targetPos, speed:running_speed_without_ball);
 		
 		status <- "run to the ball";
 		
@@ -296,7 +296,7 @@ species player skills:[moving] {
 				goal_pos <- location;
 			}
 		}
-		do goto with:[target::goal_pos, speed::running_speed_with_ball];
+		do goto with:(target:goal_pos, speed:running_speed_with_ball);
 		ball_agent.location <- location;
 	}
 	
@@ -336,7 +336,7 @@ species player skills:[moving] {
 		// try to mark an ennemy player
 		status <- "mark ennemy player";
 		if (not (marked_player = nil)) {
-			do goto with:[target::marked_player.location+((team="red")?{2+rnd(5.0),rnd(2.0)-1} : {-2-rnd(5.0),rnd(2.0)-1}), speed::running_speed_without_ball];
+			do goto with:(target:marked_player.location+((team="red")?{2+rnd(5.0),rnd(2.0)-1} : {-2-rnd(5.0),rnd(2.0)-1}), speed:running_speed_without_ball);
 		}
 	}
 	

@@ -10,16 +10,31 @@ Examples
     with: [with_viz::true, step::1#s, name::"Simulation step=1s"]
         →  with: (with_viz:true, step:1#s, name:"Simulation step=1s")
 
+    with: [agents::ag, values::[1,2,3]]
+        →  with: (agents:ag, values:[1,2,3])
+
+    # Multi-line form is also handled:
+    create iris from: csv_file("f.csv", true) with:
+        [sepal_length::float(get("sl")),
+         sepal_width::float(get("sw"))
+        ];
+        →
+    create iris from: csv_file("f.csv", true) with:
+        (sepal_length:float(get("sl")),
+         sepal_width:float(get("sw"))
+        );
+
 Rules applied
 -------------
 1. The opening ``[`` immediately following ``with:`` (with optional
-   whitespace) is replaced by ``(``.
-2. The closing ``]`` that ends the list is replaced by ``)``.
-3. Every ``::`` inside the list is replaced by ``:``.
+   whitespace, including newlines) is replaced by ``(``.
+2. The matching closing ``]`` (respecting nested brackets and quoted
+   strings, across multiple lines) is replaced by ``)``.
+3. Every ``::`` that sits directly inside the outermost list (i.e. not
+   inside a nested ``[...]`` or a quoted string) is replaced by ``:``.
 
-The script handles the common case where the entire ``with: [...]`` expression
-sits on a single line.  Multi-line ``with:`` blocks are not transformed (a
-warning is printed instead so you can handle them manually).
+Nested ``[...]`` expressions and their contents are left completely
+untouched.
 
 Usage
 -----
@@ -39,68 +54,160 @@ import re
 import sys
 
 # ---------------------------------------------------------------------------
-# Regex
+# Regex — only used to locate the start of a  with: [  construct.
+# \s already matches newlines, so multi-line "with:\n   [" is handled.
 # ---------------------------------------------------------------------------
 
-# Matches the full  with: [ ... ]  construct on a single line.
-# Group 1 → everything before the opening bracket (i.e. "with:\s*")
-# Group 2 → the content inside the brackets (may contain any chars except ])
-# We use a non-greedy match so we stop at the first ']'.
-_PATTERN = re.compile(r'(with:\s*)\[([^\]]*)\]')
+# Finds "with:" followed by optional whitespace (including newlines) and "[".
+_WITH_PREFIX = re.compile(r'with:\s*(?=\[)')
+
+
+def _find_matching_bracket(text: str, start: int) -> int:
+    """Return the index of the ``]`` that closes the ``[`` at *start*.
+
+    The search respects:
+    - Nested ``[...]`` brackets (depth tracking).
+    - Double-quoted strings (characters inside quotes are ignored).
+    - Newlines (the search continues across line boundaries).
+
+    Parameters
+    ----------
+    text:
+        The full source text (may span multiple lines).
+    start:
+        Index of the opening ``[`` character.
+
+    Returns
+    -------
+    int
+        Index of the matching ``]``, or ``-1`` if not found.
+    """
+    depth = 0
+    in_string = False
+    i = start
+    while i < len(text):
+        ch = text[i]
+        if in_string:
+            if ch == '\\':
+                i += 2          # skip escaped character
+                continue
+            if ch == '"':
+                in_string = False
+        else:
+            if ch == '"':
+                in_string = True
+            elif ch == '[':
+                depth += 1
+            elif ch == ']':
+                depth -= 1
+                if depth == 0:
+                    return i
+        i += 1
+    return -1
 
 
 def _transform_content(content: str) -> str:
-    """Replace every ``::`` inside a ``with:`` list with ``:``.
+    """Replace ``::`` that sit at the top level of *content* with ``:``.
+
+    Characters inside nested ``[...]`` brackets or double-quoted strings
+    are left completely untouched.
 
     Parameters
     ----------
     content:
-        The raw text between the ``[`` and ``]`` delimiters.
+        The raw text between the outermost ``[`` and ``]`` delimiters
+        (i.e. not including those delimiters themselves).
 
     Returns
     -------
     str
-        The same text with all ``::`` occurrences replaced by ``:``.
+        The transformed content.
     """
-    return content.replace('::', ':')
+    result = []
+    depth = 0
+    in_string = False
+    i = 0
+    while i < len(content):
+        ch = content[i]
+        if in_string:
+            if ch == '\\':
+                result.append(ch)
+                result.append(content[i + 1])
+                i += 2
+                continue
+            if ch == '"':
+                in_string = False
+            result.append(ch)
+        else:
+            if ch == '"':
+                in_string = True
+                result.append(ch)
+            elif ch == '[':
+                depth += 1
+                result.append(ch)
+            elif ch == ']':
+                depth -= 1
+                result.append(ch)
+            elif ch == ':' and depth == 0 and i + 1 < len(content) and content[i + 1] == ':':
+                # Top-level "::" → replace with single ":"
+                result.append(':')
+                i += 2
+                continue
+            else:
+                result.append(ch)
+        i += 1
+    return ''.join(result)
 
 
-def _replace_match(match: re.Match) -> str:
-    """Build the replacement string for a single regex match.
+def _transform_text(text: str) -> str:
+    """Return *text* with all ``with: [...]`` patterns replaced.
+
+    Uses a bracket-aware parser so that nested ``[...]`` inside the list
+    are preserved intact, and multi-line ``with: [...]`` blocks are handled
+    correctly.
 
     Parameters
     ----------
-    match:
-        A :class:`re.Match` object produced by ``_PATTERN``.
+    text:
+        The full source text of a file (may span multiple lines).
 
     Returns
     -------
     str
-        The transformed ``with: (...)`` expression.
+        The transformed text (unchanged if no pattern matched).
     """
-    prefix = match.group(1)          # e.g. "with: "
-    content = match.group(2)         # everything between [ and ]
-    return f'{prefix}({_transform_content(content)})'
+    result = []
+    pos = 0
+    for m in _WITH_PREFIX.finditer(text):
+        # Skip any match that falls inside an already-consumed region
+        # (e.g. a "with:" that appears as a value inside a previous [...]).
+        if m.start() < pos:
+            continue
+        bracket_start = m.end()          # index of the '['
+        bracket_end = _find_matching_bracket(text, bracket_start)
+        if bracket_end == -1:
+            # No matching ']' found — leave untouched
+            continue
+        # Append everything up to and including "with: "
+        result.append(text[pos:bracket_start])
+        # Opening '(' instead of '['
+        result.append('(')
+        # Transformed content (nested brackets preserved, top-level :: → :)
+        content = text[bracket_start + 1:bracket_end]
+        result.append(_transform_content(content))
+        # Closing ')' instead of ']'
+        result.append(')')
+        pos = bracket_end + 1
 
-
-def _transform_line(line: str) -> str:
-    """Return *line* with all matching ``with: [...]`` patterns replaced.
-
-    Parameters
-    ----------
-    line:
-        A single line of source text.
-
-    Returns
-    -------
-    str
-        The transformed line (unchanged if no pattern matched).
-    """
-    return _PATTERN.sub(_replace_match, line)
+    result.append(text[pos:])
+    return ''.join(result)
 
 
 def _process_file(path: str, dry_run: bool) -> bool:
     """Process a single file.
+
+    Reads the entire file as one string so that multi-line ``with: [...]``
+    constructs are handled correctly.
 
     Parameters
     ----------
@@ -116,27 +223,33 @@ def _process_file(path: str, dry_run: bool) -> bool:
     """
     try:
         with open(path, 'r', encoding='utf-8', errors='replace') as fh:
-            original_lines = fh.readlines()
+            original = fh.read()
     except OSError as exc:
         print(f'  [ERROR] Cannot read {path}: {exc}', file=sys.stderr)
         return False
 
-    new_lines = [_transform_line(line) for line in original_lines]
+    updated = _transform_text(original)
 
-    if new_lines == original_lines:
+    if updated == original:
         return False
 
     print(f'  {"[dry-run] " if dry_run else ""}Updating: {path}')
-    for i, (old, new) in enumerate(zip(original_lines, new_lines), start=1):
+    # Show a compact diff: print changed lines with their line numbers
+    orig_lines = original.splitlines(keepends=True)
+    new_lines = updated.splitlines(keepends=True)
+    for i, (old, new) in enumerate(zip(orig_lines, new_lines), start=1):
         if old != new:
             print(f'    line {i}:')
             print(f'      - {old.rstrip()}')
             print(f'      + {new.rstrip()}')
+    # Handle files where the number of lines changed (multiline replacements)
+    if len(new_lines) != len(orig_lines):
+        print(f'    (line count changed: {len(orig_lines)} → {len(new_lines)})')
 
     if not dry_run:
         try:
             with open(path, 'w', encoding='utf-8') as fh:
-                fh.writelines(new_lines)
+                fh.write(updated)
         except OSError as exc:
             print(f'  [ERROR] Cannot write {path}: {exc}', file=sys.stderr)
             return False
@@ -179,16 +292,16 @@ def main(argv=None):
     parser = argparse.ArgumentParser(
         description=(
             'Replace "with: [key::val, ...]" with "with: (key:val, ...)" '
-            'in GAML files.'
+            'in GAML files, leaving nested [...] untouched.'
         )
     )
     parser.add_argument('root', help='Root directory to search recursively.')
     parser.add_argument('--dry-run', action='store_true',
                         help='Preview changes without modifying any file.')
     parser.add_argument('--ext', action='append', dest='extensions',
-                        default=['.gaml'],
+                        default=['.gaml', '.experiment'],
                         metavar='EXT',
-                        help='File extension to process (default: .gaml). '
+                        help='File extension to process (default: .gaml, .experiment). '
                              'Repeat for multiple extensions.')
     args = parser.parse_args(argv)
 

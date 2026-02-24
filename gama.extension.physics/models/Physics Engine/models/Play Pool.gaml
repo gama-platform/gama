@@ -66,7 +66,7 @@ global parent: physical_world {
 
 		];
 		
-		create wall with: [inside::true] from: [
+		create wall with: (inside:true) from: [
 			box(width+3*section/2, section/2, section) at_location {width / 2, height + section/2, 0}, // down
 			box(width+3*section/2, section/2, section) at_location {width / 2,  -section/2, 0}, // up
 			box(section/2, height +  section, section) at_location {-section/2, height / 2, 0}, // left

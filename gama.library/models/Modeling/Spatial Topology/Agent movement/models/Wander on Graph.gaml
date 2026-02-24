@@ -16,19 +16,19 @@ global {
 	map<road,float> proba_use_road;
 	
 	init {
-		create road with: [shape::line([{10,10}, {40,10}])];
-		create road with: [shape::line([{40,10}, {40,40}])];
-		create road with: [shape::line([{40,10}, {80,10}])];
-		create road with: [shape::line([{80,10}, {80,40}])];
-		create road with: [shape::line([{40,40}, {80,40}])];
-		create road with: [shape::line([{80,40}, {80,80}])];
-		create road with: [shape::line([{80,80}, {10,80}])];
-		create road with: [shape::line([{80,80}, {50,50}])];
-		create road with: [shape::line([{50,50}, {10,80}])];
-		create road with: [shape::line([{10,80}, {10,10}])];
+		create road with: (shape:line([{10,10}, {40,10}]));
+		create road with: (shape:line([{40,10}, {40,40}]));
+		create road with: (shape:line([{40,10}, {80,10}]));
+		create road with: (shape:line([{80,10}, {80,40}]));
+		create road with: (shape:line([{40,40}, {80,40}]));
+		create road with: (shape:line([{80,40}, {80,80}]));
+		create road with: (shape:line([{80,80}, {10,80}]));
+		create road with: (shape:line([{80,80}, {50,50}]));
+		create road with: (shape:line([{50,50}, {10,80}]));
+		create road with: (shape:line([{10,80}, {10,10}]));
 		
 		
-		create people number: 50 with: [location::any_location_in(one_of(road))];
+		create people number: 50 with: (location:any_location_in(one_of(road)));
 		
 		//directed graph build from the road agents
 		network <- directed(as_edge_graph(road));

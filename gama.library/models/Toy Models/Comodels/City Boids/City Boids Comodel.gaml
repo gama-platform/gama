@@ -18,18 +18,18 @@ global
 	init
 	{	
 		//create experiment from micro-model Boids
-		create Boids."Adapter of Boids" with: [
-			shape::square(width_and_height_of_environment), 
-			width_and_height_of_environment::width_and_height_of_environment, 
-			z_max::100,
-			number_of_agents::50
-		];
+		create Boids."Adapter of Boids" with: (
+			shape:square(width_and_height_of_environment), 
+			width_and_height_of_environment:width_and_height_of_environment, 
+			z_max:100,
+			number_of_agents:50
+		);
 		//create experiment form micro-model Procedural City
 		create City."Adapter" 
-		with:[
-			 number_of_building::Boids."Adapter of Boids"[0].simulation.number_of_agents*2,
-			width_and_height_of_environment::width_and_height_of_environment
-		];
+		with:(
+			 number_of_building:Boids."Adapter of Boids"[0].simulation.number_of_agents*2,
+			width_and_height_of_environment:width_and_height_of_environment
+		);
 	}
 
 	reflex simulate_micro_models

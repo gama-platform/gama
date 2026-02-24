@@ -36,7 +36,7 @@ global {
 		
 		create DB_accessor {
 			create buildings from: select(PARAMS, QUERY)
-							 with:[ nature::"type", shape::"geom"];
+							 with:( nature:"type", shape:"geom");
 		 }
 		 write "Buildings created: "+length(buildings) ;
 	}

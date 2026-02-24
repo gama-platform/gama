@@ -40,7 +40,7 @@ global {
 	}
 
 	reflex generate_pedestrians when: every(4 #cycle) {
-		create pedestrian number: 30 with: [color::pedestrian_color] {
+		create pedestrian number: 30 with: (color:pedestrian_color) {
 			do init_location({0, rnd(environment_height)});
 		}
 	}

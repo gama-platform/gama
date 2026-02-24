@@ -267,7 +267,7 @@ global {
 				list<geometry> geom_markers <- generate_geoms(cells_type);
 							
 				//create the marker agents
-				create marker from: geom_markers with: [type::type];
+				create marker from: geom_markers with: (type:type);
 				float min_area <- marker mean_of each.shape.area;
 								
 				ask marker {	

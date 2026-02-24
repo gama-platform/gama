@@ -116,7 +116,7 @@ global torus: torus_environment {
 			loop one_key over: (potentialBoidsNeighboursMap.keys) {
 				list<boids> micro_agents <- potentialBoidsNeighboursMap at one_key;
 				if ((length(micro_agents)) > 1) {
-					create flock number: 1 with: [color::rgb([rnd(255), rnd(255), rnd(255)])] {
+					create flock number: 1 with: (color:rgb([rnd(255), rnd(255), rnd(255)])) {
 						capture micro_agents as: boids_delegation;
 					}
 

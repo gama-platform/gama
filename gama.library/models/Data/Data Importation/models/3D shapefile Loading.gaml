@@ -12,7 +12,7 @@ global {
 	file shape_file_gis_3d_objects <- shape_file('../includes/Mobilier.shp', true);
 	geometry shape <- envelope(shape_file_gis_3d_objects);
 	init {
-		create gis_3d_object from: shape_file_gis_3d_objects with:[location::location];
+		create gis_3d_object from: shape_file_gis_3d_objects with:(location:location);
 	}
 }
 

@@ -40,7 +40,7 @@ global {
 		write first(DB_accessor).select (PARAMS, SQLquery_idPoint);
 
 		create idPoint from: first(DB_accessor).select(PARAMS, SQLquery_idPoint)
-		with: [name:: "idPointgrille", RRmm::"RR", Tmin::"Tmin", Tmax::"Tmax", Rglot::"Rglot", ETPmm::"ETPmm"];
+		with: (name: "idPointgrille", RRmm:"RR", Tmin:"Tmin", Tmax:"Tmax", Rglot:"Rglot", ETPmm:"ETPmm");
 	}
 
 	reflex endSimu when: (cycle = 10) {

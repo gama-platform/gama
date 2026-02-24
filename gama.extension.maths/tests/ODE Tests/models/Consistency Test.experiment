@@ -123,7 +123,7 @@ experiment consistency_test type: test {
 
 experiment with_visualization type: gui {
 	action _init_ {
-		create consistencyTest_model with: [with_viz::true];
+		create consistencyTest_model with: (with_viz:true);
 	}
 	output {
 		display "Numerical solutions" refresh: every(1 #cycle)  type: 2d {

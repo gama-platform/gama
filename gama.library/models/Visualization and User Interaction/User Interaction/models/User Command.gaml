@@ -23,14 +23,14 @@ global {
 	//These commands are displayed in the world layer
 	//User command to create an agent according to the location where the user right click
 	user_command "Create an agent" {
-   		create cell number: nbAgent with: [location::#user_location]  {
+   		create cell number: nbAgent with: (location:#user_location)  {
    			color <-#green;
    		} 
 	}
 	//User command to create a given number of agents according
 	user_command "Create agents" {
 		 map input_values <- user_input_dialog([enter("Number" , nbAgent), choose("shape", string, "circle", ["circle", "square"])]);
-     	 create cell number: int(input_values at "Number") with: [color:: #pink, is_square:: string(input_values at "shape") = "square"];
+     	 create cell number: int(input_values at "Number") with: (color: #pink, is_square: string(input_values at "shape") = "square");
 	}
 	
 }

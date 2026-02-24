@@ -406,7 +406,7 @@ species cloud {
 		if (target_group != nil) {
 			float direction_target <- self towards (target_group);
 			ask group_delegation {
-				do move2 with: [with_heading::float(direction_target), with_speed::float(cloud_speed)];
+				do move2 with: (with_heading:float(direction_target), with_speed:float(cloud_speed));
 			}
 
 		}

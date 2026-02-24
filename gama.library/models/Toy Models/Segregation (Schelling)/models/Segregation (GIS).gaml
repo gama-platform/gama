@@ -26,7 +26,7 @@ global {
 	//Action to initialize people agents
 	action initialize_people { 
 		//Create all the places with a surface given within the shapefile
-		create space from: shape_file_name with: [surface :: float(read("AREA"))];
+		create space from: shape_file_name with: (surface : float(read("AREA")));
 		all_places  <- shuffle(space);
 		//Compute the number of people to create considering the density of people
 		number_of_people <- int( density_of_people * sum (all_places collect (each.capacity))); 

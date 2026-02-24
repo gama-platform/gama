@@ -16,7 +16,7 @@ global {
 	
 	init {
 		//creation of the building agents from the shapefile: the height and type attributes of the building agents are initialized according to the HEIGHT and NATURE attributes of the shapefile
-		create building from: shape_file_buildings with:[height::float(get("HEIGHT")), type::string(get("NATURE"))];
+		create building from: shape_file_buildings with:(height:float(get("HEIGHT")), type:string(get("NATURE")));
 	}
 }
 

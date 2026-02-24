@@ -132,8 +132,8 @@ experiment "Test Restitution !" type: gui {
 		bool prev1 <- gama.pref_append_simulation_name;
  		gama.pref_append_simulation_name <- true;
 		gama.pref_experiment_expand_params <- true;
-		create simulation with: [seed:: 1.0, use_native :: true];
-		create simulation with: [seed:: 1.0, use_native :: false];
+		create simulation with: (seed: 1.0, use_native : true);
+		create simulation with: (seed: 1.0, use_native : false);
 		gama.pref_experiment_expand_params <- prev0;
 		gama.pref_append_simulation_name <- prev1;
 	}

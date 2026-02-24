@@ -49,6 +49,6 @@ experiment "Run global thread" autorun: true;
 
 experiment "Run several threads" autorun: true {
 	action _init_ {
-		create simulation with: [create_agents:: true];
+		create simulation with: (create_agents: true);
 	}
 }

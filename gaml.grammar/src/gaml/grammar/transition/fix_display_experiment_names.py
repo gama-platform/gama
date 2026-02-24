@@ -178,9 +178,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument('--dry-run', action='store_true',
                         help='Preview changes without modifying any file.')
     parser.add_argument('--ext', action='append', dest='extensions',
-                        default=['.gaml'],
+                        default=['.gaml', '.experiment'],
                         metavar='EXT',
-                        help='File extension to process (default: .gaml). '
+                        help='File extension to process (default: .gaml, .experiment). '
                              'Repeat for multiple extensions.')
     args = parser.parse_args(argv)
 

@@ -138,16 +138,16 @@ global {
 		}
 	}
 	action create_dummy_agents {
-		create dummy with: [location :: {5,5}];
-		create dummy with: [location :: {8,9}];
-		create dummy with: [location :: {14,6}];
-		create dummy with: [location :: {35,55}];
-		create dummy with: [location :: {25,75}];
-		create dummy with: [location :: {56,80}];
-		create dummy with: [location :: {10,70}];
-		create dummy with: [location :: {80,8}];
-		create dummy with: [location :: {34,78}];
-		create dummy with: [location :: {67,32}];
+		create dummy with: (location : {5,5});
+		create dummy with: (location : {8,9});
+		create dummy with: (location : {14,6});
+		create dummy with: (location : {35,55});
+		create dummy with: (location : {25,75});
+		create dummy with: (location : {56,80});
+		create dummy with: (location : {10,70});
+		create dummy with: (location : {80,8});
+		create dummy with: (location : {34,78});
+		create dummy with: (location : {67,32});
 		loop i from: 0 to: length(dummy) - 1 {
 			ask dummy[i] {id <- string(i);}
 		}

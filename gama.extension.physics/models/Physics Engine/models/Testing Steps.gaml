@@ -110,10 +110,10 @@ experiment "Test it !" type: gui {
  		gama.pref_append_simulation_name <- true;
 		gama.pref_experiment_expand_params <- true; 
 		bool native <- user_confirm("Native", "Compare using native library ? ");
-		create simulation with: [seed:: 1.0, use_native :: native, step::1/60];
-		create simulation with: [seed:: 1.0, use_native :: native, step::1/30];
-		create simulation with: [seed:: 1.0, use_native :: native, step::1/15];
-		create simulation with: [seed:: 1.0, use_native :: native, step::1/10];
+		create simulation with: (seed: 1.0, use_native : native, step:1/60);
+		create simulation with: (seed: 1.0, use_native : native, step:1/30);
+		create simulation with: (seed: 1.0, use_native : native, step:1/15);
+		create simulation with: (seed: 1.0, use_native : native, step:1/10);
 		gama.pref_experiment_expand_params <- prev0;
 		gama.pref_append_simulation_name <- prev1;
 	}

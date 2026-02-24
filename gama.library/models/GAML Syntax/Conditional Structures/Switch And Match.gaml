@@ -24,7 +24,7 @@ global {
 	int win_sign;
 	
 	init {
-		create rps_bot with:[strategy::[1,1,1]];
+		create rps_bot with:(strategy:[1,1,1]);
 	}
 	
 	/*

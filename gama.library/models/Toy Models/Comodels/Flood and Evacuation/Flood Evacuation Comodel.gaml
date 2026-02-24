@@ -27,7 +27,7 @@ global
 		create Flooding."Adapter";
 	
 		//create the Evacuation micro-model's experiment
-		create Evacuation."Adapter of Evacuation" number:length(offset);// with:[nb_people::1];
+		create Evacuation."Adapter of Evacuation" number:length(offset);// with:(nb_people:1);
 		ask Evacuation."Adapter of Evacuation"
 		{
 			centroid <- myself.offset[int(self)];

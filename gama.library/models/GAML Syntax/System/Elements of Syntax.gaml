@@ -194,7 +194,7 @@ global skills: [moving] control: fsm {
 	reflex calling_actions {
 	// IN IMPERATIVE MODE (i.e. in a statement)
 	// The classic way
-		do dummy1 with: [a::10, b::100.0];
+		do dummy1 with: (a:10, b:100.0);
 
 		// Another by distributing the arguments
 		do dummy1 a: 10 b: 100.0;

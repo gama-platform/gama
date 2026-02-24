@@ -267,8 +267,8 @@ experiment "3 Simulations" type: gui  parent:base{
 
 	// We create 2 supplementary simulations using the species name 'ants_model' (automatically created from the name of the model + '_model')
 	init {
-		create ants_model with: [ants_number::200, evaporation_per_cycle::100, diffusion_rate::0.2];
-		create ants_model with: [ants_number::10, evaporation_per_cycle::72, diffusion_rate::0.6];
+		create ants_model with: (ants_number:200, evaporation_per_cycle:100, diffusion_rate:0.2);
+		create ants_model with: (ants_number:10, evaporation_per_cycle:72, diffusion_rate:0.6);
 	}
 
 

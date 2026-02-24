@@ -17,8 +17,8 @@ model LVInfluenceoftheIntegrationMethod
 
 global {
 	init {
-		create LVRK4 with: [x::2.0, y::2.0];
-		create LVEuler with: [x::2.0, y::2.0];
+		create LVRK4 with: (x:2.0, y:2.0);
+		create LVEuler with: (x:2.0, y:2.0);
 	}
 
 }
