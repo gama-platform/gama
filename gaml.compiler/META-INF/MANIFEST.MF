@@ -10,7 +10,11 @@ Require-Bundle: org.eclipse.xtext,
  gama.dependencies,
  org.eclipse.xtext.xtext.generator;resolution:=optional,
  gama.api;bundle-version="0.0.0",
- org.eclipse.osgi;bundle-version="[3.24.0,4.0.0)"
+ org.eclipse.osgi;bundle-version="[3.24.0,4.0.0)",
+ org.eclipse.emf.ecore,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.41.0",
+ org.eclipse.emf.common,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
 Export-Package: gaml.compiler,
  gaml.compiler.gaml,
  gaml.compiler.gaml.descriptions,
@@ -40,4 +44,5 @@ Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gaml.compiler
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gaml.compiler.GamlActivator
-Import-Package: gama.workspace.metadata
+Import-Package: gama.workspace.metadata,
+ org.apache.log4j

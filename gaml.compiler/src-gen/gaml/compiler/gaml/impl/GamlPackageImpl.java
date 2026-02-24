@@ -23,6 +23,7 @@ import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Facet;
+import gaml.compiler.gaml.FacetsAndBlock;
 import gaml.compiler.gaml.Function;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlFactory;
@@ -47,13 +48,16 @@ import gaml.compiler.gaml.S_Equations;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
 import gaml.compiler.gaml.S_If;
+import gaml.compiler.gaml.S_ImageLayer;
 import gaml.compiler.gaml.S_Loop;
 import gaml.compiler.gaml.S_Other;
+import gaml.compiler.gaml.S_OtherLayer;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
 import gaml.compiler.gaml.S_Set;
 import gaml.compiler.gaml.S_Solve;
 import gaml.compiler.gaml.S_Species;
+import gaml.compiler.gaml.S_SpeciesLayer;
 import gaml.compiler.gaml.S_Try;
 import gaml.compiler.gaml.S_Var;
 import gaml.compiler.gaml.SkillFakeDefinition;
@@ -74,8 +78,6 @@ import gaml.compiler.gaml.UnitName;
 import gaml.compiler.gaml.VarDefinition;
 import gaml.compiler.gaml.VarFakeDefinition;
 import gaml.compiler.gaml.VariableRef;
-import gaml.compiler.gaml.imageDisplayStatement;
-import gaml.compiler.gaml.speciesOrGridDisplayStatement;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
@@ -154,6 +156,13 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass headlessExperimentEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass facetsAndBlockEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -293,14 +302,21 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass speciesOrGridDisplayStatementEClass = null;
+  private EClass s_SpeciesLayerEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass imageDisplayStatementEClass = null;
+  private EClass s_ImageLayerEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass s_OtherLayerEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -590,7 +606,7 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   private EClass reservedLiteralEClass = null;
 
   /**
-   * Creates an INSTANCE of the model <b>Package</b>, registered with
+   * Creates an instance of the model <b>Package</b>, registered with
    * {@link org.eclipse.emf.ecore.EPackage.Registry EPackage.Registry} by the package
    * package URI value.
    * <p>Note: the correct way to create the package is via the static
@@ -877,7 +893,7 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EAttribute getHeadlessExperiment_Key()
+  public EAttribute getHeadlessExperiment_Name()
   {
     return (EAttribute)headlessExperimentEClass.getEStructuralFeatures().get(0);
   }
@@ -888,7 +904,7 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EAttribute getHeadlessExperiment_FirstFacet()
+  public EAttribute getHeadlessExperiment_ImportURI()
   {
     return (EAttribute)headlessExperimentEClass.getEStructuralFeatures().get(1);
   }
@@ -899,9 +915,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EAttribute getHeadlessExperiment_Name()
+  public EClass getFacetsAndBlock()
   {
-    return (EAttribute)headlessExperimentEClass.getEStructuralFeatures().get(2);
+    return facetsAndBlockEClass;
   }
 
   /**
@@ -910,9 +926,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EAttribute getHeadlessExperiment_ImportURI()
+  public EReference getFacetsAndBlock_Facets()
   {
-    return (EAttribute)headlessExperimentEClass.getEStructuralFeatures().get(3);
+    return (EReference)facetsAndBlockEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -921,9 +937,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EReference getHeadlessExperiment_Facets()
+  public EReference getFacetsAndBlock_Block()
   {
-    return (EReference)headlessExperimentEClass.getEStructuralFeatures().get(4);
+    return (EReference)facetsAndBlockEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -932,9 +948,20 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EReference getHeadlessExperiment_Block()
+  public EAttribute getFacetsAndBlock_Key()
   {
-    return (EReference)headlessExperimentEClass.getEStructuralFeatures().get(5);
+    return (EAttribute)facetsAndBlockEClass.getEStructuralFeatures().get(2);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getFacetsAndBlock_FirstFacet()
+  {
+    return (EAttribute)facetsAndBlockEClass.getEStructuralFeatures().get(3);
   }
 
   /**
@@ -954,53 +981,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EAttribute getStatement_Key()
-  {
-    return (EAttribute)statementEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getStatement_FirstFacet()
-  {
-    return (EAttribute)statementEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EReference getStatement_Expr()
   {
-    return (EReference)statementEClass.getEStructuralFeatures().get(2);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getStatement_Facets()
-  {
-    return (EReference)statementEClass.getEStructuralFeatures().get(3);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getStatement_Block()
-  {
-    return (EReference)statementEClass.getEStructuralFeatures().get(4);
+    return (EReference)statementEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -1284,9 +1267,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getspeciesOrGridDisplayStatement()
+  public EClass getS_SpeciesLayer()
   {
-    return speciesOrGridDisplayStatementEClass;
+    return s_SpeciesLayerEClass;
   }
 
   /**
@@ -1295,9 +1278,20 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getimageDisplayStatement()
+  public EClass getS_ImageLayer()
   {
-    return imageDisplayStatementEClass;
+    return s_ImageLayerEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getS_OtherLayer()
+  {
+    return s_OtherLayerEClass;
   }
 
   /**
@@ -2316,19 +2310,17 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     createEReference(experimentFileStructureEClass, EXPERIMENT_FILE_STRUCTURE__EXP);
 
     headlessExperimentEClass = createEClass(HEADLESS_EXPERIMENT);
-    createEAttribute(headlessExperimentEClass, HEADLESS_EXPERIMENT__KEY);
-    createEAttribute(headlessExperimentEClass, HEADLESS_EXPERIMENT__FIRST_FACET);
     createEAttribute(headlessExperimentEClass, HEADLESS_EXPERIMENT__NAME);
     createEAttribute(headlessExperimentEClass, HEADLESS_EXPERIMENT__IMPORT_URI);
-    createEReference(headlessExperimentEClass, HEADLESS_EXPERIMENT__FACETS);
-    createEReference(headlessExperimentEClass, HEADLESS_EXPERIMENT__BLOCK);
+
+    facetsAndBlockEClass = createEClass(FACETS_AND_BLOCK);
+    createEReference(facetsAndBlockEClass, FACETS_AND_BLOCK__FACETS);
+    createEReference(facetsAndBlockEClass, FACETS_AND_BLOCK__BLOCK);
+    createEAttribute(facetsAndBlockEClass, FACETS_AND_BLOCK__KEY);
+    createEAttribute(facetsAndBlockEClass, FACETS_AND_BLOCK__FIRST_FACET);
 
     statementEClass = createEClass(STATEMENT);
-    createEAttribute(statementEClass, STATEMENT__KEY);
-    createEAttribute(statementEClass, STATEMENT__FIRST_FACET);
     createEReference(statementEClass, STATEMENT__EXPR);
-    createEReference(statementEClass, STATEMENT__FACETS);
-    createEReference(statementEClass, STATEMENT__BLOCK);
 
     s_GlobalEClass = createEClass(SGLOBAL);
 
@@ -2373,9 +2365,11 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_DisplayEClass = createEClass(SDISPLAY);
     createEAttribute(s_DisplayEClass, SDISPLAY__NAME);
 
-    speciesOrGridDisplayStatementEClass = createEClass(SPECIES_OR_GRID_DISPLAY_STATEMENT);
+    s_SpeciesLayerEClass = createEClass(SSPECIES_LAYER);
 
-    imageDisplayStatementEClass = createEClass(IMAGE_DISPLAY_STATEMENT);
+    s_ImageLayerEClass = createEClass(SIMAGE_LAYER);
+
+    s_OtherLayerEClass = createEClass(SOTHER_LAYER);
 
     actionArgumentsEClass = createEClass(ACTION_ARGUMENTS);
     createEReference(actionArgumentsEClass, ACTION_ARGUMENTS__ARGS);
@@ -2541,11 +2535,16 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     modelEClass.getESuperTypes().add(this.getVarDefinition());
     importEClass.getESuperTypes().add(this.getVarDefinition());
     experimentFileStructureEClass.getESuperTypes().add(this.getEntry());
+    headlessExperimentEClass.getESuperTypes().add(this.getFacetsAndBlock());
+    statementEClass.getESuperTypes().add(this.getFacetsAndBlock());
     s_GlobalEClass.getESuperTypes().add(this.getStatement());
+    s_GlobalEClass.getESuperTypes().add(this.getFacetsAndBlock());
     s_SpeciesEClass.getESuperTypes().add(this.getStatement());
+    s_SpeciesEClass.getESuperTypes().add(this.getFacetsAndBlock());
     s_SpeciesEClass.getESuperTypes().add(this.getS_Declaration());
     s_SpeciesEClass.getESuperTypes().add(this.getTypeDefinition());
     s_ExperimentEClass.getESuperTypes().add(this.getStatement());
+    s_ExperimentEClass.getESuperTypes().add(this.getFacetsAndBlock());
     s_ExperimentEClass.getESuperTypes().add(this.getVarDefinition());
     s_DoEClass.getESuperTypes().add(this.getStatement());
     s_LoopEClass.getESuperTypes().add(this.getS_Declaration());
@@ -2565,8 +2564,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_EquationsEClass.getESuperTypes().add(this.getEquationDefinition());
     s_SolveEClass.getESuperTypes().add(this.getStatement());
     s_DisplayEClass.getESuperTypes().add(this.getStatement());
-    speciesOrGridDisplayStatementEClass.getESuperTypes().add(this.getStatement());
-    imageDisplayStatementEClass.getESuperTypes().add(this.getStatement());
+    s_SpeciesLayerEClass.getESuperTypes().add(this.getStatement());
+    s_ImageLayerEClass.getESuperTypes().add(this.getStatement());
+    s_OtherLayerEClass.getESuperTypes().add(this.getStatement());
     argumentDefinitionEClass.getESuperTypes().add(this.getVarDefinition());
     facetEClass.getESuperTypes().add(this.getVarDefinition());
     argumentPairEClass.getESuperTypes().add(this.getExpression());
@@ -2635,19 +2635,17 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEReference(getExperimentFileStructure_Exp(), this.getHeadlessExperiment(), null, "exp", null, 0, 1, ExperimentFileStructure.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(headlessExperimentEClass, HeadlessExperiment.class, "HeadlessExperiment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getHeadlessExperiment_Key(), ecorePackage.getEString(), "key", null, 0, 1, HeadlessExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getHeadlessExperiment_FirstFacet(), ecorePackage.getEString(), "firstFacet", null, 0, 1, HeadlessExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getHeadlessExperiment_Name(), ecorePackage.getEString(), "name", null, 0, 1, HeadlessExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getHeadlessExperiment_ImportURI(), ecorePackage.getEString(), "importURI", null, 0, 1, HeadlessExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getHeadlessExperiment_Facets(), this.getFacet(), null, "facets", null, 0, -1, HeadlessExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getHeadlessExperiment_Block(), this.getBlock(), null, "block", null, 0, 1, HeadlessExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(facetsAndBlockEClass, FacetsAndBlock.class, "FacetsAndBlock", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getFacetsAndBlock_Facets(), this.getFacet(), null, "facets", null, 0, -1, FacetsAndBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getFacetsAndBlock_Block(), this.getBlock(), null, "block", null, 0, 1, FacetsAndBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getFacetsAndBlock_Key(), ecorePackage.getEString(), "key", null, 0, 1, FacetsAndBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getFacetsAndBlock_FirstFacet(), ecorePackage.getEString(), "firstFacet", null, 0, 1, FacetsAndBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(statementEClass, Statement.class, "Statement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getStatement_Key(), ecorePackage.getEString(), "key", null, 0, 1, Statement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getStatement_FirstFacet(), ecorePackage.getEString(), "firstFacet", null, 0, 1, Statement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getStatement_Expr(), this.getExpression(), null, "expr", null, 0, 1, Statement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getStatement_Facets(), this.getFacet(), null, "facets", null, 0, -1, Statement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getStatement_Block(), this.getBlock(), null, "block", null, 0, 1, Statement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(s_GlobalEClass, S_Global.class, "S_Global", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
@@ -2692,9 +2690,11 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(s_DisplayEClass, S_Display.class, "S_Display", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getS_Display_Name(), ecorePackage.getEString(), "name", null, 0, 1, S_Display.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(speciesOrGridDisplayStatementEClass, speciesOrGridDisplayStatement.class, "speciesOrGridDisplayStatement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEClass(s_SpeciesLayerEClass, S_SpeciesLayer.class, "S_SpeciesLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
-    initEClass(imageDisplayStatementEClass, imageDisplayStatement.class, "imageDisplayStatement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEClass(s_ImageLayerEClass, S_ImageLayer.class, "S_ImageLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(s_OtherLayerEClass, S_OtherLayer.class, "S_OtherLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(actionArgumentsEClass, ActionArguments.class, "ActionArguments", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getActionArguments_Args(), this.getArgumentDefinition(), null, "args", null, 0, -1, ActionArguments.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

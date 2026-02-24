@@ -4,25 +4,25 @@
 package gaml.compiler.gaml.impl;
 
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.imageDisplayStatement;
+import gaml.compiler.gaml.S_ImageLayer;
 
 import org.eclipse.emf.ecore.EClass;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>image Display Statement</b></em>'.
+ * An implementation of the model object '<em><b>SImage Layer</b></em>'.
  * <!-- end-user-doc -->
  *
  * @generated
  */
-public class imageDisplayStatementImpl extends StatementImpl implements imageDisplayStatement
+public class S_ImageLayerImpl extends StatementImpl implements S_ImageLayer
 {
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected imageDisplayStatementImpl()
+  protected S_ImageLayerImpl()
   {
     super();
   }
@@ -35,7 +35,7 @@ public class imageDisplayStatementImpl extends StatementImpl implements imageDis
   @Override
   protected EClass eStaticClass()
   {
-    return GamlPackage.Literals.IMAGE_DISPLAY_STATEMENT;
+    return GamlPackage.Literals.SIMAGE_LAYER;
   }
 
-} //imageDisplayStatementImpl
+} //S_ImageLayerImpl

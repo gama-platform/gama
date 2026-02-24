@@ -31,7 +31,7 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
   protected static GamlPackage modelPackage;
 
   /**
-   * Creates an INSTANCE of the adapter factory.
+   * Creates an instance of the adapter factory.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -47,7 +47,7 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
   /**
    * Returns whether this factory is applicable for the type of the object.
    * <!-- begin-user-doc -->
-   * This implementation returns <code>true</code> if the object is either the model's package or is an INSTANCE object of the model.
+   * This implementation returns <code>true</code> if the object is either the model's package or is an instance object of the model.
    * <!-- end-user-doc -->
    * @return whether this factory is applicable for the type of the object.
    * @generated
@@ -119,6 +119,11 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
       public Adapter caseHeadlessExperiment(HeadlessExperiment object)
       {
         return createHeadlessExperimentAdapter();
+      }
+      @Override
+      public Adapter caseFacetsAndBlock(FacetsAndBlock object)
+      {
+        return createFacetsAndBlockAdapter();
       }
       @Override
       public Adapter caseStatement(Statement object)
@@ -216,14 +221,19 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createS_DisplayAdapter();
       }
       @Override
-      public Adapter casespeciesOrGridDisplayStatement(speciesOrGridDisplayStatement object)
+      public Adapter caseS_SpeciesLayer(S_SpeciesLayer object)
       {
-        return createspeciesOrGridDisplayStatementAdapter();
+        return createS_SpeciesLayerAdapter();
       }
       @Override
-      public Adapter caseimageDisplayStatement(imageDisplayStatement object)
+      public Adapter caseS_ImageLayer(S_ImageLayer object)
       {
-        return createimageDisplayStatementAdapter();
+        return createS_ImageLayerAdapter();
+      }
+      @Override
+      public Adapter caseS_OtherLayer(S_OtherLayer object)
+      {
+        return createS_OtherLayerAdapter();
       }
       @Override
       public Adapter caseActionArguments(ActionArguments object)
@@ -588,6 +598,21 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.FacetsAndBlock <em>Facets And Block</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.FacetsAndBlock
+   * @generated
+   */
+  public Adapter createFacetsAndBlockAdapter()
+  {
+    return null;
+  }
+
+  /**
    * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.Statement <em>Statement</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -873,31 +898,46 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.speciesOrGridDisplayStatement <em>species Or Grid Display Statement</em>}'.
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_SpeciesLayer <em>SSpecies Layer</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see gaml.compiler.gaml.speciesOrGridDisplayStatement
+   * @see gaml.compiler.gaml.S_SpeciesLayer
    * @generated
    */
-  public Adapter createspeciesOrGridDisplayStatementAdapter()
+  public Adapter createS_SpeciesLayerAdapter()
   {
     return null;
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.imageDisplayStatement <em>image Display Statement</em>}'.
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_ImageLayer <em>SImage Layer</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see gaml.compiler.gaml.imageDisplayStatement
+   * @see gaml.compiler.gaml.S_ImageLayer
    * @generated
    */
-  public Adapter createimageDisplayStatementAdapter()
+  public Adapter createS_ImageLayerAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_OtherLayer <em>SOther Layer</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.S_OtherLayer
+   * @generated
+   */
+  public Adapter createS_OtherLayerAdapter()
   {
     return null;
   }

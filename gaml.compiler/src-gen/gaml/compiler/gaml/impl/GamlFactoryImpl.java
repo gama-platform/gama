@@ -45,7 +45,7 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   }
 
   /**
-   * Creates an INSTANCE of the factory.
+   * Creates an instance of the factory.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -74,6 +74,7 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.PRAGMA: return createPragma();
       case GamlPackage.EXPERIMENT_FILE_STRUCTURE: return createExperimentFileStructure();
       case GamlPackage.HEADLESS_EXPERIMENT: return createHeadlessExperiment();
+      case GamlPackage.FACETS_AND_BLOCK: return createFacetsAndBlock();
       case GamlPackage.STATEMENT: return createStatement();
       case GamlPackage.SGLOBAL: return createS_Global();
       case GamlPackage.SSPECIES: return createS_Species();
@@ -93,8 +94,9 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.SEQUATIONS: return createS_Equations();
       case GamlPackage.SSOLVE: return createS_Solve();
       case GamlPackage.SDISPLAY: return createS_Display();
-      case GamlPackage.SPECIES_OR_GRID_DISPLAY_STATEMENT: return createspeciesOrGridDisplayStatement();
-      case GamlPackage.IMAGE_DISPLAY_STATEMENT: return createimageDisplayStatement();
+      case GamlPackage.SSPECIES_LAYER: return createS_SpeciesLayer();
+      case GamlPackage.SIMAGE_LAYER: return createS_ImageLayer();
+      case GamlPackage.SOTHER_LAYER: return createS_OtherLayer();
       case GamlPackage.ACTION_ARGUMENTS: return createActionArguments();
       case GamlPackage.ARGUMENT_DEFINITION: return createArgumentDefinition();
       case GamlPackage.FACET: return createFacet();
@@ -247,6 +249,18 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     HeadlessExperimentImpl headlessExperiment = new HeadlessExperimentImpl();
     return headlessExperiment;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public FacetsAndBlock createFacetsAndBlock()
+  {
+    FacetsAndBlockImpl facetsAndBlock = new FacetsAndBlockImpl();
+    return facetsAndBlock;
   }
 
   /**
@@ -483,10 +497,10 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
    * @generated
    */
   @Override
-  public speciesOrGridDisplayStatement createspeciesOrGridDisplayStatement()
+  public S_SpeciesLayer createS_SpeciesLayer()
   {
-    speciesOrGridDisplayStatementImpl speciesOrGridDisplayStatement = new speciesOrGridDisplayStatementImpl();
-    return speciesOrGridDisplayStatement;
+    S_SpeciesLayerImpl s_SpeciesLayer = new S_SpeciesLayerImpl();
+    return s_SpeciesLayer;
   }
 
   /**
@@ -495,10 +509,22 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
    * @generated
    */
   @Override
-  public imageDisplayStatement createimageDisplayStatement()
+  public S_ImageLayer createS_ImageLayer()
   {
-    imageDisplayStatementImpl imageDisplayStatement = new imageDisplayStatementImpl();
-    return imageDisplayStatement;
+    S_ImageLayerImpl s_ImageLayer = new S_ImageLayerImpl();
+    return s_ImageLayer;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public S_OtherLayer createS_OtherLayer()
+  {
+    S_OtherLayerImpl s_OtherLayer = new S_OtherLayerImpl();
+    return s_OtherLayer;
   }
 
   /**

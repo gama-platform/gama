@@ -40,13 +40,16 @@ import gaml.compiler.gaml.S_Equations;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
 import gaml.compiler.gaml.S_If;
+import gaml.compiler.gaml.S_ImageLayer;
 import gaml.compiler.gaml.S_Loop;
 import gaml.compiler.gaml.S_Other;
+import gaml.compiler.gaml.S_OtherLayer;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
 import gaml.compiler.gaml.S_Set;
 import gaml.compiler.gaml.S_Solve;
 import gaml.compiler.gaml.S_Species;
+import gaml.compiler.gaml.S_SpeciesLayer;
 import gaml.compiler.gaml.S_Try;
 import gaml.compiler.gaml.S_Var;
 import gaml.compiler.gaml.SkillFakeDefinition;
@@ -64,8 +67,6 @@ import gaml.compiler.gaml.UnitFakeDefinition;
 import gaml.compiler.gaml.UnitName;
 import gaml.compiler.gaml.VarFakeDefinition;
 import gaml.compiler.gaml.VariableRef;
-import gaml.compiler.gaml.imageDisplayStatement;
-import gaml.compiler.gaml.speciesOrGridDisplayStatement;
 import gaml.compiler.services.GamlGrammarAccess;
 import java.util.Set;
 import org.eclipse.emf.ecore.EObject;
@@ -169,12 +170,12 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 					sequence_Block(context, (Block) semanticObject); 
 					return; 
 				}
-				else if (rule == grammarAccess.getModelBlockRule()) {
-					sequence_ModelBlock(context, (Block) semanticObject); 
+				else if (rule == grammarAccess.getDisplayBlockRule()) {
+					sequence_DisplayBlock(context, (Block) semanticObject); 
 					return; 
 				}
-				else if (rule == grammarAccess.getDisplayBlockRule()) {
-					sequence_displayBlock(context, (Block) semanticObject); 
+				else if (rule == grammarAccess.getModelBlockRule()) {
+					sequence_ModelBlock(context, (Block) semanticObject); 
 					return; 
 				}
 				else break;
@@ -232,7 +233,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_Function(context, (Function) semanticObject); 
 				return; 
 			case GamlPackage.HEADLESS_EXPERIMENT:
-				sequence_HeadlessExperiment(context, (HeadlessExperiment) semanticObject); 
+				sequence_FacetsAndBlock_HeadlessExperiment(context, (HeadlessExperiment) semanticObject); 
 				return; 
 			case GamlPackage.IF:
 				sequence_If(context, (If) semanticObject); 
@@ -259,13 +260,13 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_TerminalExpression(context, (ReservedLiteral) semanticObject); 
 				return; 
 			case GamlPackage.SACTION:
-				sequence_S_Action(context, (S_Action) semanticObject); 
+				sequence_FacetsAndBlock_S_Action(context, (S_Action) semanticObject); 
 				return; 
 			case GamlPackage.SASSIGNMENT:
 				sequence_S_Equation(context, (S_Assignment) semanticObject); 
 				return; 
 			case GamlPackage.SDEFINITION:
-				sequence_S_Definition(context, (S_Definition) semanticObject); 
+				sequence_FacetsAndBlock_S_Definition(context, (S_Definition) semanticObject); 
 				return; 
 			case GamlPackage.SDIRECT_ASSIGNMENT:
 				sequence_S_DirectAssignment(context, (S_DirectAssignment) semanticObject); 
@@ -274,25 +275,31 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_S_Display(context, (S_Display) semanticObject); 
 				return; 
 			case GamlPackage.SDO:
-				sequence_S_Do(context, (S_Do) semanticObject); 
+				sequence_FacetsAndBlock_S_Do(context, (S_Do) semanticObject); 
 				return; 
 			case GamlPackage.SEQUATIONS:
 				sequence_S_Equations(context, (S_Equations) semanticObject); 
 				return; 
 			case GamlPackage.SEXPERIMENT:
-				sequence_S_Experiment(context, (S_Experiment) semanticObject); 
+				sequence_FacetsAndBlock_S_Experiment(context, (S_Experiment) semanticObject); 
 				return; 
 			case GamlPackage.SGLOBAL:
-				sequence_S_Global(context, (S_Global) semanticObject); 
+				sequence_FacetsAndBlock_S_Global(context, (S_Global) semanticObject); 
 				return; 
 			case GamlPackage.SIF:
 				sequence_S_If(context, (S_If) semanticObject); 
+				return; 
+			case GamlPackage.SIMAGE_LAYER:
+				sequence_S_ImageLayer(context, (S_ImageLayer) semanticObject); 
 				return; 
 			case GamlPackage.SLOOP:
 				sequence_S_Loop(context, (S_Loop) semanticObject); 
 				return; 
 			case GamlPackage.SOTHER:
-				sequence_S_Other(context, (S_Other) semanticObject); 
+				sequence_FacetsAndBlock_S_Other(context, (S_Other) semanticObject); 
+				return; 
+			case GamlPackage.SOTHER_LAYER:
+				sequence_S_OtherLayer(context, (S_OtherLayer) semanticObject); 
 				return; 
 			case GamlPackage.SREFLEX:
 				sequence_S_Reflex(context, (S_Reflex) semanticObject); 
@@ -304,10 +311,13 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_S_Set(context, (S_Set) semanticObject); 
 				return; 
 			case GamlPackage.SSOLVE:
-				sequence_S_Solve(context, (S_Solve) semanticObject); 
+				sequence_FacetsAndBlock_S_Solve(context, (S_Solve) semanticObject); 
 				return; 
 			case GamlPackage.SSPECIES:
-				sequence_S_Species(context, (S_Species) semanticObject); 
+				sequence_FacetsAndBlock_S_Species(context, (S_Species) semanticObject); 
+				return; 
+			case GamlPackage.SSPECIES_LAYER:
+				sequence_S_SpeciesLayer(context, (S_SpeciesLayer) semanticObject); 
 				return; 
 			case GamlPackage.STRY:
 				sequence_S_Try(context, (S_Try) semanticObject); 
@@ -325,7 +335,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_StandaloneBlock(context, (StandaloneBlock) semanticObject); 
 				return; 
 			case GamlPackage.STATEMENT:
-				sequence_S_1Expr_Facets_BlockOrEnd(context, (Statement) semanticObject); 
+				sequence_FacetsAndBlock_S_1Expr_Facets_BlockOrEnd(context, (Statement) semanticObject); 
 				return; 
 			case GamlPackage.STRING_EVALUATOR:
 				sequence_StringEvaluator(context, (StringEvaluator) semanticObject); 
@@ -359,12 +369,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				return; 
 			case GamlPackage.VARIABLE_REF:
 				sequence_VariableRef(context, (VariableRef) semanticObject); 
-				return; 
-			case GamlPackage.IMAGE_DISPLAY_STATEMENT:
-				sequence_imageDisplayStatement(context, (imageDisplayStatement) semanticObject); 
-				return; 
-			case GamlPackage.SPECIES_OR_GRID_DISPLAY_STATEMENT:
-				sequence_speciesOrGridDisplayStatement(context, (speciesOrGridDisplayStatement) semanticObject); 
 				return; 
 			}
 		if (errorAcceptor != null)
@@ -845,6 +849,20 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
+	 *     DisplayBlock returns Block
+	 *
+	 * Constraint:
+	 *     statements+=S_Layer*
+	 * </pre>
+	 */
+	protected void sequence_DisplayBlock(ISerializationContext context, Block semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
 	 *     GamlDefinition returns EquationFakeDefinition
 	 *     EquationDefinition returns EquationFakeDefinition
 	 *     EquationFakeDefinition returns EquationFakeDefinition
@@ -950,6 +968,192 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
+	 *     HeadlessExperiment returns HeadlessExperiment
+	 *
+	 * Constraint:
+	 *     (
+	 *         key=_ExperimentKey 
+	 *         firstFacet='name:'? 
+	 *         (name=Valid_ID | name=STRING) 
+	 *         importURI=STRING? 
+	 *         facets+=Facet* 
+	 *         block=Block?
+	 *     )
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_HeadlessExperiment(ISerializationContext context, HeadlessExperiment semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     Statement returns Statement
+	 *     S_1Expr_Facets_BlockOrEnd returns Statement
+	 *
+	 * Constraint:
+	 *     (key=_1Expr_Facets_BlockOrEnd_Key firstFacet=FirstFacetKey? expr=Expression facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_1Expr_Facets_BlockOrEnd(ISerializationContext context, Statement semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     Statement returns S_Action
+	 *     S_Declaration returns S_Action
+	 *     S_Action returns S_Action
+	 *     GamlDefinition returns S_Action
+	 *     VarDefinition returns S_Action
+	 *     ActionDefinition returns S_Action
+	 *
+	 * Constraint:
+	 *     (
+	 *         key='action' 
+	 *         firstFacet='name:'? 
+	 *         name=Valid_ID 
+	 *         args=ActionArguments? 
+	 *         facets+=Facet* 
+	 *         block=Block?
+	 *     )
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_Action(ISerializationContext context, S_Action semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     Statement returns S_Definition
+	 *     S_Declaration returns S_Definition
+	 *     S_Definition returns S_Definition
+	 *     GamlDefinition returns S_Definition
+	 *     VarDefinition returns S_Definition
+	 *     ActionDefinition returns S_Definition
+	 *
+	 * Constraint:
+	 *     (
+	 *         tkey=TypeRef 
+	 *         firstFacet='name:'? 
+	 *         (name=Valid_ID | name=STRING) 
+	 *         args=ActionArguments? 
+	 *         facets+=Facet* 
+	 *         block=Block?
+	 *     )
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_Definition(ISerializationContext context, S_Definition semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     Statement returns S_Do
+	 *     S_Do returns S_Do
+	 *
+	 * Constraint:
+	 *     (key=_DoKey firstFacet='action:'? expr=AbstractRef facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_Do(ISerializationContext context, S_Do semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     S_Section returns S_Experiment
+	 *     S_Experiment returns S_Experiment
+	 *     GamlDefinition returns S_Experiment
+	 *     VarDefinition returns S_Experiment
+	 *
+	 * Constraint:
+	 *     (key=_ExperimentKey firstFacet='name:'? (name=Valid_ID | name=STRING) facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_Experiment(ISerializationContext context, S_Experiment semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     S_Section returns S_Global
+	 *     S_Global returns S_Global
+	 *
+	 * Constraint:
+	 *     (key='global' facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_Global(ISerializationContext context, S_Global semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     Statement returns S_Other
+	 *     S_Other returns S_Other
+	 *
+	 * Constraint:
+	 *     (key=ID facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_Other(ISerializationContext context, S_Other semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     Statement returns S_Solve
+	 *     S_Solve returns S_Solve
+	 *
+	 * Constraint:
+	 *     (key=_SolveKey firstFacet='equation:'? expr=EquationRef facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_Solve(ISerializationContext context, S_Solve semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     S_Section returns S_Species
+	 *     S_Species returns S_Species
+	 *     Statement returns S_Species
+	 *     S_Declaration returns S_Species
+	 *     GamlDefinition returns S_Species
+	 *     TypeDefinition returns S_Species
+	 *     VarDefinition returns S_Species
+	 *     ActionDefinition returns S_Species
+	 *
+	 * Constraint:
+	 *     (key=_SpeciesKey firstFacet='name:'? name=ID facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_Species(ISerializationContext context, S_Species semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
 	 *     FunctionFacet returns Facet
 	 *
 	 * Constraint:
@@ -1000,27 +1204,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_Function(ISerializationContext context, Function semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     HeadlessExperiment returns HeadlessExperiment
-	 *
-	 * Constraint:
-	 *     (
-	 *         key=_ExperimentKey 
-	 *         firstFacet='name:'? 
-	 *         (name=Valid_ID | name=STRING) 
-	 *         importURI=STRING? 
-	 *         facets+=Facet* 
-	 *         block=Block?
-	 *     )
-	 * </pre>
-	 */
-	protected void sequence_HeadlessExperiment(ISerializationContext context, HeadlessExperiment semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -1228,80 +1411,9 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Statement returns Statement
-	 *     S_1Expr_Facets_BlockOrEnd returns Statement
-	 *     displayStatement returns Statement
-	 *
-	 * Constraint:
-	 *     (key=_1Expr_Facets_BlockOrEnd_Key firstFacet=FirstFacetKey? expr=Expression facets+=Facet* block=Block?)
-	 * </pre>
-	 */
-	protected void sequence_S_1Expr_Facets_BlockOrEnd(ISerializationContext context, Statement semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     Statement returns S_Action
-	 *     S_Declaration returns S_Action
-	 *     S_Action returns S_Action
-	 *     displayStatement returns S_Action
-	 *     GamlDefinition returns S_Action
-	 *     VarDefinition returns S_Action
-	 *     ActionDefinition returns S_Action
-	 *
-	 * Constraint:
-	 *     (
-	 *         key='action' 
-	 *         firstFacet='name:'? 
-	 *         name=Valid_ID 
-	 *         args=ActionArguments? 
-	 *         facets+=Facet* 
-	 *         block=Block?
-	 *     )
-	 * </pre>
-	 */
-	protected void sequence_S_Action(ISerializationContext context, S_Action semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     Statement returns S_Definition
-	 *     S_Declaration returns S_Definition
-	 *     S_Definition returns S_Definition
-	 *     displayStatement returns S_Definition
-	 *     GamlDefinition returns S_Definition
-	 *     VarDefinition returns S_Definition
-	 *     ActionDefinition returns S_Definition
-	 *
-	 * Constraint:
-	 *     (
-	 *         tkey=TypeRef 
-	 *         firstFacet='name:'? 
-	 *         (name=Valid_ID | name=STRING) 
-	 *         args=ActionArguments? 
-	 *         facets+=Facet* 
-	 *         block=Block?
-	 *     )
-	 * </pre>
-	 */
-	protected void sequence_S_Definition(ISerializationContext context, S_Definition semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
 	 *     Statement returns S_DirectAssignment
 	 *     S_Assignment returns S_DirectAssignment
 	 *     S_DirectAssignment returns S_DirectAssignment
-	 *     displayStatement returns S_DirectAssignment
 	 *
 	 * Constraint:
 	 *     (expr=Expression key=_AssignmentKey value=Expression facets+=Facet*)
@@ -1317,29 +1429,12 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * Contexts:
 	 *     Statement returns S_Display
 	 *     S_Display returns S_Display
-	 *     displayStatement returns S_Display
 	 *
 	 * Constraint:
-	 *     (key='display' firstFacet='name:'? (name=Valid_ID | name=STRING) facets+=Facet* block=displayBlock)
+	 *     (key='display' firstFacet='name:'? (name=Valid_ID | name=STRING) facets+=Facet* block=DisplayBlock)
 	 * </pre>
 	 */
 	protected void sequence_S_Display(ISerializationContext context, S_Display semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     Statement returns S_Do
-	 *     S_Do returns S_Do
-	 *     displayStatement returns S_Do
-	 *
-	 * Constraint:
-	 *     (key=_DoKey firstFacet='action:'? expr=AbstractRef facets+=Facet* block=Block?)
-	 * </pre>
-	 */
-	protected void sequence_S_Do(ISerializationContext context, S_Do semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -1363,7 +1458,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * Contexts:
 	 *     Statement returns S_Equations
 	 *     S_Equations returns S_Equations
-	 *     displayStatement returns S_Equations
 	 *     GamlDefinition returns S_Equations
 	 *     EquationDefinition returns S_Equations
 	 *
@@ -1379,41 +1473,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     S_Section returns S_Experiment
-	 *     S_Experiment returns S_Experiment
-	 *     GamlDefinition returns S_Experiment
-	 *     VarDefinition returns S_Experiment
-	 *
-	 * Constraint:
-	 *     (key=_ExperimentKey firstFacet='name:'? (name=Valid_ID | name=STRING) facets+=Facet* block=Block?)
-	 * </pre>
-	 */
-	protected void sequence_S_Experiment(ISerializationContext context, S_Experiment semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     S_Section returns S_Global
-	 *     S_Global returns S_Global
-	 *
-	 * Constraint:
-	 *     (key='global' facets+=Facet* block=Block?)
-	 * </pre>
-	 */
-	protected void sequence_S_Global(ISerializationContext context, S_Global semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
 	 *     Statement returns S_If
 	 *     S_If returns S_If
-	 *     displayStatement returns S_If
 	 *
 	 * Constraint:
 	 *     (key='if' firstFacet='condition:'? expr=Expression block=Block (else=S_If | else=Block)?)
@@ -1427,10 +1488,24 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
+	 *     S_Layer returns S_ImageLayer
+	 *     S_ImageLayer returns S_ImageLayer
+	 *
+	 * Constraint:
+	 *     (key=_ImageLayerKey expr=Expression facets+=Facet*)
+	 * </pre>
+	 */
+	protected void sequence_S_ImageLayer(ISerializationContext context, S_ImageLayer semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
 	 *     Statement returns S_Loop
 	 *     S_Loop returns S_Loop
 	 *     S_Declaration returns S_Loop
-	 *     displayStatement returns S_Loop
 	 *     GamlDefinition returns S_Loop
 	 *     VarDefinition returns S_Loop
 	 *
@@ -1446,15 +1521,14 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Statement returns S_Other
-	 *     S_Other returns S_Other
-	 *     displayStatement returns S_Other
+	 *     S_Layer returns S_OtherLayer
+	 *     S_OtherLayer returns S_OtherLayer
 	 *
 	 * Constraint:
-	 *     (key=ID facets+=Facet* block=Block?)
+	 *     (key=_LayerKey firstFacet=FirstFacetKey? expr=Expression facets+=Facet* block=DisplayBlock?)
 	 * </pre>
 	 */
-	protected void sequence_S_Other(ISerializationContext context, S_Other semanticObject) {
+	protected void sequence_S_OtherLayer(ISerializationContext context, S_OtherLayer semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -1465,7 +1539,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Statement returns S_Reflex
 	 *     S_Declaration returns S_Reflex
 	 *     S_Reflex returns S_Reflex
-	 *     displayStatement returns S_Reflex
 	 *     GamlDefinition returns S_Reflex
 	 *     VarDefinition returns S_Reflex
 	 *
@@ -1483,7 +1556,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * Contexts:
 	 *     Statement returns S_Return
 	 *     S_Return returns S_Return
-	 *     displayStatement returns S_Return
 	 *
 	 * Constraint:
 	 *     (key='return' firstFacet='value:'? expr=Expression?)
@@ -1500,7 +1572,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Statement returns S_Set
 	 *     S_Assignment returns S_Set
 	 *     S_Set returns S_Set
-	 *     displayStatement returns S_Set
 	 *
 	 * Constraint:
 	 *     (key='set' expr=Expression value=Expression)
@@ -1508,8 +1579,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 */
 	protected void sequence_S_Set(ISerializationContext context, S_Set semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.STATEMENT__KEY) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.STATEMENT__KEY));
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.FACETS_AND_BLOCK__KEY) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.FACETS_AND_BLOCK__KEY));
 			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.STATEMENT__EXPR) == ValueTransient.YES)
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.STATEMENT__EXPR));
 			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.SASSIGNMENT__VALUE) == ValueTransient.YES)
@@ -1526,37 +1597,14 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Statement returns S_Solve
-	 *     S_Solve returns S_Solve
-	 *     displayStatement returns S_Solve
+	 *     S_Layer returns S_SpeciesLayer
+	 *     S_SpeciesLayer returns S_SpeciesLayer
 	 *
 	 * Constraint:
-	 *     (key=_SolveKey firstFacet='equation:'? expr=EquationRef facets+=Facet* block=Block?)
+	 *     (key=_SpeciesKey expr=Expression facets+=Facet* block=DisplayBlock?)
 	 * </pre>
 	 */
-	protected void sequence_S_Solve(ISerializationContext context, S_Solve semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     S_Section returns S_Species
-	 *     S_Species returns S_Species
-	 *     Statement returns S_Species
-	 *     S_Declaration returns S_Species
-	 *     displayStatement returns S_Species
-	 *     GamlDefinition returns S_Species
-	 *     TypeDefinition returns S_Species
-	 *     VarDefinition returns S_Species
-	 *     ActionDefinition returns S_Species
-	 *
-	 * Constraint:
-	 *     (key=_SpeciesKey firstFacet='name:'? name=ID facets+=Facet* block=Block?)
-	 * </pre>
-	 */
-	protected void sequence_S_Species(ISerializationContext context, S_Species semanticObject) {
+	protected void sequence_S_SpeciesLayer(ISerializationContext context, S_SpeciesLayer semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -1566,7 +1614,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * Contexts:
 	 *     Statement returns S_Try
 	 *     S_Try returns S_Try
-	 *     displayStatement returns S_Try
 	 *
 	 * Constraint:
 	 *     (key='try' block=Block catch=Block?)
@@ -1583,7 +1630,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Statement returns S_Var
 	 *     S_Declaration returns S_Var
 	 *     S_Var returns S_Var
-	 *     displayStatement returns S_Var
 	 *     GamlDefinition returns S_Var
 	 *     VarDefinition returns S_Var
 	 *
@@ -2206,50 +2252,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
 		feeder.accept(grammarAccess.getVariableRefAccess().getRefVarDefinitionValid_IDParserRuleCall_1_0_1(), semanticObject.eGet(GamlPackage.Literals.VARIABLE_REF__REF, false));
 		feeder.finish();
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     displayBlock returns Block
-	 *
-	 * Constraint:
-	 *     statements+=displayStatement*
-	 * </pre>
-	 */
-	protected void sequence_displayBlock(ISerializationContext context, Block semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     displayStatement returns imageDisplayStatement
-	 *     imageDisplayStatement returns imageDisplayStatement
-	 *
-	 * Constraint:
-	 *     (key=_ImageLayerKey expr=Expression facets+=Facet*)
-	 * </pre>
-	 */
-	protected void sequence_imageDisplayStatement(ISerializationContext context, imageDisplayStatement semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     displayStatement returns speciesOrGridDisplayStatement
-	 *     speciesOrGridDisplayStatement returns speciesOrGridDisplayStatement
-	 *
-	 * Constraint:
-	 *     (key=_SpeciesKey expr=Expression facets+=Facet* block=displayBlock?)
-	 * </pre>
-	 */
-	protected void sequence_speciesOrGridDisplayStatement(ISerializationContext context, speciesOrGridDisplayStatement semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	

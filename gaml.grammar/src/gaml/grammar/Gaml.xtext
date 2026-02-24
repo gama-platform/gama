@@ -31,8 +31,15 @@ ExperimentFileStructure:
 	exp=HeadlessExperiment;
 
 HeadlessExperiment:
-	key=_ExperimentKey (firstFacet="name:")? name=(Valid_ID | STRING) ('model:' importURI=STRING)? (facets+=Facet)*
-	(block=Block | ';');
+	key=_ExperimentKey (firstFacet="name:")? name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock;
+
+/**
+ * REUSABLE FRAGMENTS
+ * Fragments act as macros to avoid code duplication without cluttering the AST.
+ */
+fragment FacetsAndBlock:
+	// Captures zero or more facets, followed by either a code block or a semicolon.
+	(facets+=Facet)* (block=Block | ';');
 
 /**
  * Global statements
@@ -41,36 +48,41 @@ S_Section returns Statement:
 	S_Global | S_Species | S_Experiment;
 
 S_Global:
-	key="global" (facets+=Facet)* (block=Block | ';');
+	key="global" FacetsAndBlock;
 
 S_Species:
-	key=_SpeciesKey (firstFacet='name:')? name=ID (facets+=Facet)* (block=Block | ';');
+	key=_SpeciesKey (firstFacet='name:')? name=ID FacetsAndBlock;
 
 S_Experiment:
-	key=_ExperimentKey (firstFacet="name:")? name=(Valid_ID | STRING) (facets+=Facet)* (block=Block | ';');
+	key=_ExperimentKey (firstFacet="name:")? name=(Valid_ID | STRING) FacetsAndBlock;
 
 /**
  * Statements
- * Optimized: keyword-based statements first, then ID-based statements
  */
+
 Statement:
+	// 1. Unambiguous rules: these start with unique, strict keywords (like 'display', 'do', 'if').
+	// Placing them first prevents the parser from doing unnecessary backtracking.
 	S_Display |
-	S_If |
-	S_Try |
-	S_Return |
-	S_Do |
-	S_Solve |
-	S_Equations |
+	S_Do | 
+	S_Return | 
+	S_Solve | 
+	S_If | 
+	S_Try | 
+	S_Equations | 
 	S_1Expr_Facets_BlockOrEnd |
-	S_Declaration |
-	S_Assignment |
+	
+	// 2. Ambiguous rules: these might start with a simple identifier (ID).
+	// We use the syntactic predicate (=>) only here, as a last resort.
+	=> S_Declaration | 
+	=> S_Assignment | 
 	S_Other;
 
 S_1Expr_Facets_BlockOrEnd returns Statement:
-	key=_1Expr_Facets_BlockOrEnd_Key (firstFacet=FirstFacetKey)? (expr=Expression) (facets+=Facet)* (block=Block | ";");
+	key=_1Expr_Facets_BlockOrEnd_Key (firstFacet=FirstFacetKey)? (expr=Expression) FacetsAndBlock;
 
 S_Do:
-	key=_DoKey (firstFacet="action:")? expr=AbstractRef (facets+=Facet)* (block=Block | ';');
+	key=_DoKey (firstFacet="action:")? expr=AbstractRef FacetsAndBlock;
 
 S_Loop:
 	key="loop" (name=ID)? (facets+=Facet)* block=Block;
@@ -82,7 +94,7 @@ S_Try:
 	key='try' block=Block (->'catch' catch=Block)?;
 
 S_Other:
-	key=ID (facets+=Facet)* (block=Block | ';');
+	key=ID FacetsAndBlock;
 
 S_Return:
 	key='return' (firstFacet="value:")? expr=Expression? ';';
@@ -97,12 +109,10 @@ S_Reflex:
 	key=_ReflexKey ((firstFacet="name:")? name=Valid_ID)? ("when" ":" expr=Expression)? block=Block;
 
 S_Definition:
-	tkey=(TypeRef) (firstFacet="name:")? name=(Valid_ID | STRING) ('(' (args=ActionArguments) ')')? (facets+=Facet)*
-	(block=Block | ';');
+	tkey=(TypeRef) (firstFacet="name:")? name=(Valid_ID | STRING) ('(' (args=ActionArguments) ')')? FacetsAndBlock;
 
 S_Action returns S_Definition:
-	{S_Action} key="action" (firstFacet='name:')? name=Valid_ID ('(' (args=ActionArguments) ')')? (facets+=Facet)*
-	(block=Block | ';');
+	{S_Action} key="action" (firstFacet='name:')? name=Valid_ID ('(' (args=ActionArguments) ')')? FacetsAndBlock;
 
 S_Var returns S_Definition:
 	{S_Var} key=_VarOrConstKey (firstFacet="name:")? name=Valid_ID (facets+=Facet)* ';';
@@ -126,25 +136,38 @@ S_Equation returns S_Assignment:
 	expr=(Function | VariableRef) key="=" value=Expression;
 
 S_Solve:
-	key=_SolveKey (firstFacet="equation:")? expr=EquationRef (facets+=Facet)* (block=Block | ';');
+	key=_SolveKey (firstFacet="equation:")? expr=EquationRef FacetsAndBlock;
 
 /**
  * DISPLAYS
  */
 S_Display:
-	key="display" (firstFacet="name:")? name=(Valid_ID | STRING) (facets+=Facet)* block=displayBlock;
+	key="display" (firstFacet="name:")? name=(Valid_ID | STRING) (facets+=Facet)* block=DisplayBlock;
 
-displayBlock returns Block:
-	{Block} '{' (statements+=displayStatement)* '}';
+DisplayBlock returns Block:
+	{Block} '{' (statements+=S_Layer)* '}';
 
-displayStatement returns Statement:
-	=>speciesOrGridDisplayStatement | (=>imageDisplayStatement | Statement);
+/**
+ * Display Statements
+ */
 
-speciesOrGridDisplayStatement:
-	key=_SpeciesKey expr=Expression (facets+=Facet)* (block=displayBlock | ";");
+S_Layer returns Statement:
+	// Both "species" and "grid" can also be the start of a regular S_Species Statement.
+	S_SpeciesLayer | 
+	// 2. The keyword "image" can also be a Valid_ID in a regular S_Other Statement.
+	S_ImageLayer | 
+	// 3. Fallback to any generic layer statement.
+	S_OtherLayer;
+
+S_SpeciesLayer:
+	key=_SpeciesKey expr=Expression (facets+=Facet)* (block=DisplayBlock | ";");
 	
-imageDisplayStatement:
-	key = _ImageLayerKey  expr=Expression (facets+=Facet)* ";";
+S_ImageLayer:
+	key =_ImageLayerKey  expr=Expression (facets+=Facet)* ";";
+	
+S_OtherLayer:
+	key =_LayerKey (firstFacet=FirstFacetKey)? (expr=Expression) (facets+=Facet)* (block=DisplayBlock | ";")
+;
 
 /**
  * Statement keys
@@ -258,7 +281,8 @@ BinaryOperator returns Expression:
 	Or | And | Cast | Comparison | Addition | Multiplication | Exponentiation | Binary | Pair | Unit;
 
 ArgumentPair:
-	=> (op=(Valid_ID) '::')? right=Pair;
+	=> (op=(Valid_ID) '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':'
+	)? right=Pair;
 
 Pair returns Expression:
 	If
@@ -338,7 +362,7 @@ AbstractRef returns Expression:
 	=>Function | VariableRef;
 
 Function returns Expression:
-	{Function} (left=ActionRef) (type=TypeInfo)? => '(' right=ExpressionList? ')';
+	{Function} (left=ActionRef) (type=TypeInfo)? '(' right=ExpressionList? ')';
 
 ExpressionList:
 	(exprs+=Expression (',' exprs+=Expression)*) | (exprs+=Parameter (',' exprs+=Parameter)*);
@@ -405,7 +429,8 @@ EquationFakeDefinition:
 	'**equation*' name=Valid_ID;
 
 Valid_ID:
-	_SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _EquationsKey | ID | _ExperimentKey;
+	_SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _1Expr_Facets_BlockOrEnd_Key | _EquationsKey | ID |
+	_ExperimentKey;
 
 /**
  * Terminals
@@ -422,20 +447,26 @@ StringLiteral:
 
 terminal KEYWORD:
 	'each' | 'self' | 'myself' | 'nil' | 'super';
-
+	
 terminal INTEGER:
 	'0' | ('1'..'9' ('0'..'9')*);
+
+terminal DOUBLE:
+	// First part is a basic integer
+	('0' | ('1'..'9' ('0'..'9')*)) 
+	(
+		// OPTION 1 : there is a decimal point
+		('.' ('0'..'9')+) (('E' | 'e') ('+' | '-')? ('0'..'9')+)? 
+		|
+		// OPTION 2 : there is an exponent
+		(('E' | 'e') ('+' | '-')? ('0'..'9')+)
+	);
 
 terminal BOOLEAN:
 	'true' | 'false';
 
 terminal ID:
 	"2d" | "3d" | "2D" | "3D" | (('a'..'z' | 'A'..'Z' | '_' | '$') ('a'..'z' | 'A'..'Z' | '_' | '$' | '0'..'9')*);
-
-terminal DOUBLE:
-	'1'..'9' ('0'..'9')* ('.' '0'..'9'+)? (('E' | 'e') ('+' | '-')? '0'..'9'+)? | '0' ('.' '0'..'9'+)? (('E' | 'e') ('+'
-	|
-	'-')? '0'..'9'+)?;
 
 terminal STRING:
 	'"' ('\\' ('b' | 't' | 'n' | 'f' | 'r' | 'u' | '"' | '\\') | !('\\' | '"'))* '"' | "'" ('\\' ('b' | 't' | 'n' | 'f'

@@ -50,6 +50,7 @@ import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
+import gaml.compiler.gaml.S_SpeciesLayer;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.StringLiteral;
 import gaml.compiler.gaml.TypeRef;
@@ -57,7 +58,6 @@ import gaml.compiler.gaml.UnitFakeDefinition;
 import gaml.compiler.gaml.UnitName;
 import gaml.compiler.gaml.VarDefinition;
 import gaml.compiler.gaml.VariableRef;
-import gaml.compiler.gaml.speciesOrGridDisplayStatement;
 import gaml.compiler.gaml.resource.GamlResourceServices;
 import gaml.compiler.gaml.util.GamlSwitch;
 import gaml.compiler.ui.editor.GamlHyperlinkDetector;
@@ -267,7 +267,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		if (facetName.endsWith(":")) { facetName = facetName.substring(0, facetName.length() - 1); }
 		final EObject cont = facet.eContainer();
 		String key = EGaml.getInstance().getKeyOf(cont);
-		if (cont instanceof speciesOrGridDisplayStatement ds) {
+		if (cont instanceof S_SpeciesLayer ds) {
 			String layerName = ds.getKey();
 			if (IKeyword.SPECIES.equals(layerName)) {
 				key = IKeyword.SPECIES_LAYER;

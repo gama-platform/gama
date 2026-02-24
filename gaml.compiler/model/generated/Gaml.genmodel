@@ -33,19 +33,17 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//ExperimentFileStructure/exp"/>
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//HeadlessExperiment">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//HeadlessExperiment/key"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//HeadlessExperiment/firstFacet"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//HeadlessExperiment/name"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//HeadlessExperiment/importURI"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//HeadlessExperiment/facets"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//HeadlessExperiment/block"/>
+    </genClasses>
+    <genClasses ecoreClass="Gaml.ecore#//FacetsAndBlock">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//FacetsAndBlock/facets"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//FacetsAndBlock/block"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//FacetsAndBlock/key"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//FacetsAndBlock/firstFacet"/>
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//Statement">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//Statement/key"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//Statement/firstFacet"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//Statement/expr"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//Statement/facets"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//Statement/block"/>
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//S_Global"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Species"/>
@@ -78,8 +76,9 @@
     <genClasses ecoreClass="Gaml.ecore#//S_Display">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//S_Display/name"/>
     </genClasses>
-    <genClasses ecoreClass="Gaml.ecore#//speciesOrGridDisplayStatement"/>
-    <genClasses ecoreClass="Gaml.ecore#//imageDisplayStatement"/>
+    <genClasses ecoreClass="Gaml.ecore#//S_SpeciesLayer"/>
+    <genClasses ecoreClass="Gaml.ecore#//S_ImageLayer"/>
+    <genClasses ecoreClass="Gaml.ecore#//S_OtherLayer"/>
     <genClasses ecoreClass="Gaml.ecore#//ActionArguments">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//ActionArguments/args"/>
     </genClasses>

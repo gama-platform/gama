@@ -34,7 +34,7 @@ public class GamlSwitch<T> extends Switch<T>
   protected static GamlPackage modelPackage;
 
   /**
-   * Creates an INSTANCE of the switch.
+   * Creates an instance of the switch.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -141,6 +141,14 @@ public class GamlSwitch<T> extends Switch<T>
       {
         HeadlessExperiment headlessExperiment = (HeadlessExperiment)theEObject;
         T result = caseHeadlessExperiment(headlessExperiment);
+        if (result == null) result = caseFacetsAndBlock(headlessExperiment);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case GamlPackage.FACETS_AND_BLOCK:
+      {
+        FacetsAndBlock facetsAndBlock = (FacetsAndBlock)theEObject;
+        T result = caseFacetsAndBlock(facetsAndBlock);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -148,6 +156,7 @@ public class GamlSwitch<T> extends Switch<T>
       {
         Statement statement = (Statement)theEObject;
         T result = caseStatement(statement);
+        if (result == null) result = caseFacetsAndBlock(statement);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -156,6 +165,7 @@ public class GamlSwitch<T> extends Switch<T>
         S_Global s_Global = (S_Global)theEObject;
         T result = caseS_Global(s_Global);
         if (result == null) result = caseStatement(s_Global);
+        if (result == null) result = caseFacetsAndBlock(s_Global);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -166,6 +176,7 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = caseS_Declaration(s_Species);
         if (result == null) result = caseTypeDefinition(s_Species);
         if (result == null) result = caseStatement(s_Species);
+        if (result == null) result = caseFacetsAndBlock(s_Species);
         if (result == null) result = caseVarDefinition(s_Species);
         if (result == null) result = caseActionDefinition(s_Species);
         if (result == null) result = caseGamlDefinition(s_Species);
@@ -178,6 +189,7 @@ public class GamlSwitch<T> extends Switch<T>
         T result = caseS_Experiment(s_Experiment);
         if (result == null) result = caseStatement(s_Experiment);
         if (result == null) result = caseVarDefinition(s_Experiment);
+        if (result == null) result = caseFacetsAndBlock(s_Experiment);
         if (result == null) result = caseGamlDefinition(s_Experiment);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -187,6 +199,7 @@ public class GamlSwitch<T> extends Switch<T>
         S_Do s_Do = (S_Do)theEObject;
         T result = caseS_Do(s_Do);
         if (result == null) result = caseStatement(s_Do);
+        if (result == null) result = caseFacetsAndBlock(s_Do);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -197,6 +210,7 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = caseS_Declaration(s_Loop);
         if (result == null) result = caseStatement(s_Loop);
         if (result == null) result = caseVarDefinition(s_Loop);
+        if (result == null) result = caseFacetsAndBlock(s_Loop);
         if (result == null) result = caseGamlDefinition(s_Loop);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -206,6 +220,7 @@ public class GamlSwitch<T> extends Switch<T>
         S_If s_If = (S_If)theEObject;
         T result = caseS_If(s_If);
         if (result == null) result = caseStatement(s_If);
+        if (result == null) result = caseFacetsAndBlock(s_If);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -214,6 +229,7 @@ public class GamlSwitch<T> extends Switch<T>
         S_Try s_Try = (S_Try)theEObject;
         T result = caseS_Try(s_Try);
         if (result == null) result = caseStatement(s_Try);
+        if (result == null) result = caseFacetsAndBlock(s_Try);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -222,6 +238,7 @@ public class GamlSwitch<T> extends Switch<T>
         S_Other s_Other = (S_Other)theEObject;
         T result = caseS_Other(s_Other);
         if (result == null) result = caseStatement(s_Other);
+        if (result == null) result = caseFacetsAndBlock(s_Other);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -230,6 +247,7 @@ public class GamlSwitch<T> extends Switch<T>
         S_Return s_Return = (S_Return)theEObject;
         T result = caseS_Return(s_Return);
         if (result == null) result = caseStatement(s_Return);
+        if (result == null) result = caseFacetsAndBlock(s_Return);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -239,6 +257,7 @@ public class GamlSwitch<T> extends Switch<T>
         T result = caseS_Declaration(s_Declaration);
         if (result == null) result = caseStatement(s_Declaration);
         if (result == null) result = caseVarDefinition(s_Declaration);
+        if (result == null) result = caseFacetsAndBlock(s_Declaration);
         if (result == null) result = caseGamlDefinition(s_Declaration);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -250,6 +269,7 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = caseS_Declaration(s_Reflex);
         if (result == null) result = caseStatement(s_Reflex);
         if (result == null) result = caseVarDefinition(s_Reflex);
+        if (result == null) result = caseFacetsAndBlock(s_Reflex);
         if (result == null) result = caseGamlDefinition(s_Reflex);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -262,6 +282,7 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = caseActionDefinition(s_Definition);
         if (result == null) result = caseStatement(s_Definition);
         if (result == null) result = caseVarDefinition(s_Definition);
+        if (result == null) result = caseFacetsAndBlock(s_Definition);
         if (result == null) result = caseGamlDefinition(s_Definition);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -271,6 +292,7 @@ public class GamlSwitch<T> extends Switch<T>
         S_Assignment s_Assignment = (S_Assignment)theEObject;
         T result = caseS_Assignment(s_Assignment);
         if (result == null) result = caseStatement(s_Assignment);
+        if (result == null) result = caseFacetsAndBlock(s_Assignment);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -280,6 +302,7 @@ public class GamlSwitch<T> extends Switch<T>
         T result = caseS_DirectAssignment(s_DirectAssignment);
         if (result == null) result = caseS_Assignment(s_DirectAssignment);
         if (result == null) result = caseStatement(s_DirectAssignment);
+        if (result == null) result = caseFacetsAndBlock(s_DirectAssignment);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -289,6 +312,7 @@ public class GamlSwitch<T> extends Switch<T>
         T result = caseS_Set(s_Set);
         if (result == null) result = caseS_Assignment(s_Set);
         if (result == null) result = caseStatement(s_Set);
+        if (result == null) result = caseFacetsAndBlock(s_Set);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -298,6 +322,7 @@ public class GamlSwitch<T> extends Switch<T>
         T result = caseS_Equations(s_Equations);
         if (result == null) result = caseStatement(s_Equations);
         if (result == null) result = caseEquationDefinition(s_Equations);
+        if (result == null) result = caseFacetsAndBlock(s_Equations);
         if (result == null) result = caseGamlDefinition(s_Equations);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -307,6 +332,7 @@ public class GamlSwitch<T> extends Switch<T>
         S_Solve s_Solve = (S_Solve)theEObject;
         T result = caseS_Solve(s_Solve);
         if (result == null) result = caseStatement(s_Solve);
+        if (result == null) result = caseFacetsAndBlock(s_Solve);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -315,22 +341,34 @@ public class GamlSwitch<T> extends Switch<T>
         S_Display s_Display = (S_Display)theEObject;
         T result = caseS_Display(s_Display);
         if (result == null) result = caseStatement(s_Display);
+        if (result == null) result = caseFacetsAndBlock(s_Display);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case GamlPackage.SPECIES_OR_GRID_DISPLAY_STATEMENT:
+      case GamlPackage.SSPECIES_LAYER:
       {
-        speciesOrGridDisplayStatement speciesOrGridDisplayStatement = (speciesOrGridDisplayStatement)theEObject;
-        T result = casespeciesOrGridDisplayStatement(speciesOrGridDisplayStatement);
-        if (result == null) result = caseStatement(speciesOrGridDisplayStatement);
+        S_SpeciesLayer s_SpeciesLayer = (S_SpeciesLayer)theEObject;
+        T result = caseS_SpeciesLayer(s_SpeciesLayer);
+        if (result == null) result = caseStatement(s_SpeciesLayer);
+        if (result == null) result = caseFacetsAndBlock(s_SpeciesLayer);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case GamlPackage.IMAGE_DISPLAY_STATEMENT:
+      case GamlPackage.SIMAGE_LAYER:
       {
-        imageDisplayStatement imageDisplayStatement = (imageDisplayStatement)theEObject;
-        T result = caseimageDisplayStatement(imageDisplayStatement);
-        if (result == null) result = caseStatement(imageDisplayStatement);
+        S_ImageLayer s_ImageLayer = (S_ImageLayer)theEObject;
+        T result = caseS_ImageLayer(s_ImageLayer);
+        if (result == null) result = caseStatement(s_ImageLayer);
+        if (result == null) result = caseFacetsAndBlock(s_ImageLayer);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case GamlPackage.SOTHER_LAYER:
+      {
+        S_OtherLayer s_OtherLayer = (S_OtherLayer)theEObject;
+        T result = caseS_OtherLayer(s_OtherLayer);
+        if (result == null) result = caseStatement(s_OtherLayer);
+        if (result == null) result = caseFacetsAndBlock(s_OtherLayer);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -516,6 +554,7 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = caseActionDefinition(s_Action);
         if (result == null) result = caseStatement(s_Action);
         if (result == null) result = caseVarDefinition(s_Action);
+        if (result == null) result = caseFacetsAndBlock(s_Action);
         if (result == null) result = caseGamlDefinition(s_Action);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -529,6 +568,7 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = caseActionDefinition(s_Var);
         if (result == null) result = caseStatement(s_Var);
         if (result == null) result = caseVarDefinition(s_Var);
+        if (result == null) result = caseFacetsAndBlock(s_Var);
         if (result == null) result = caseGamlDefinition(s_Var);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -686,13 +726,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Entry</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Entry</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Entry</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Entry</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -702,13 +742,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Standalone Block</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Standalone Block</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Standalone Block</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Standalone Block</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -718,13 +758,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>String Evaluator</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>String Evaluator</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>String Evaluator</em>'.
+   * @return the result of interpreting the object as an instance of '<em>String Evaluator</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -734,13 +774,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Model</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Model</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Model</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Model</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -750,13 +790,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Block</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Block</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Block</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Block</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -766,13 +806,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Import</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Import</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Import</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Import</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -782,13 +822,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Pragma</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Pragma</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Pragma</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Pragma</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -798,13 +838,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Experiment File Structure</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Experiment File Structure</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Experiment File Structure</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Experiment File Structure</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -814,13 +854,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Headless Experiment</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Headless Experiment</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Headless Experiment</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Headless Experiment</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -830,13 +870,29 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Statement</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Facets And Block</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Statement</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Facets And Block</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseFacetsAndBlock(FacetsAndBlock object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Statement</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Statement</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -846,13 +902,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SGlobal</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SGlobal</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SGlobal</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SGlobal</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -862,13 +918,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SSpecies</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SSpecies</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SSpecies</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SSpecies</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -878,13 +934,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SExperiment</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SExperiment</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SExperiment</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SExperiment</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -894,13 +950,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SDo</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SDo</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SDo</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SDo</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -910,13 +966,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SLoop</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SLoop</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SLoop</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SLoop</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -926,13 +982,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SIf</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SIf</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SIf</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SIf</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -942,13 +998,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>STry</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>STry</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>STry</em>'.
+   * @return the result of interpreting the object as an instance of '<em>STry</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -958,13 +1014,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SOther</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SOther</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SOther</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SOther</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -974,13 +1030,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SReturn</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SReturn</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SReturn</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SReturn</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -990,13 +1046,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SDeclaration</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SDeclaration</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SDeclaration</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SDeclaration</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1006,13 +1062,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SReflex</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SReflex</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SReflex</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SReflex</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1022,13 +1078,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SDefinition</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SDefinition</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SDefinition</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SDefinition</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1038,13 +1094,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SAssignment</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SAssignment</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SAssignment</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SAssignment</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1054,13 +1110,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SDirect Assignment</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SDirect Assignment</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SDirect Assignment</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SDirect Assignment</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1070,13 +1126,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SSet</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SSet</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SSet</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SSet</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1086,13 +1142,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SEquations</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SEquations</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SEquations</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SEquations</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1102,13 +1158,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SSolve</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SSolve</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SSolve</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SSolve</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1118,13 +1174,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SDisplay</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SDisplay</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SDisplay</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SDisplay</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1134,45 +1190,61 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>species Or Grid Display Statement</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SSpecies Layer</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>species Or Grid Display Statement</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SSpecies Layer</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T casespeciesOrGridDisplayStatement(speciesOrGridDisplayStatement object)
+  public T caseS_SpeciesLayer(S_SpeciesLayer object)
   {
     return null;
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>image Display Statement</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SImage Layer</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>image Display Statement</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SImage Layer</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseimageDisplayStatement(imageDisplayStatement object)
+  public T caseS_ImageLayer(S_ImageLayer object)
   {
     return null;
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Action Arguments</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SOther Layer</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Action Arguments</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SOther Layer</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseS_OtherLayer(S_OtherLayer object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Action Arguments</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Action Arguments</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1182,13 +1254,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Argument Definition</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Argument Definition</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Argument Definition</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Argument Definition</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1198,13 +1270,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Facet</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Facet</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Facet</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Facet</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1214,13 +1286,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Expression</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Expression</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Expression</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Expression</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1230,13 +1302,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Argument Pair</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Argument Pair</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Argument Pair</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Argument Pair</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1246,13 +1318,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Expression List</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Expression List</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Expression List</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Expression List</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1262,13 +1334,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Variable Ref</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Variable Ref</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Variable Ref</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Variable Ref</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1278,13 +1350,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Type Info</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Type Info</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Type Info</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Type Info</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1294,13 +1366,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Definition</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Definition</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Definition</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Definition</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1310,13 +1382,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Equation Definition</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Equation Definition</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Equation Definition</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Equation Definition</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1326,13 +1398,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Type Definition</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Type Definition</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Type Definition</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Type Definition</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1342,13 +1414,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Var Definition</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Var Definition</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Var Definition</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Var Definition</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1358,13 +1430,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Action Definition</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Action Definition</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Action Definition</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Action Definition</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1374,13 +1446,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Unit Fake Definition</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Unit Fake Definition</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Unit Fake Definition</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Unit Fake Definition</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1390,13 +1462,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Type Fake Definition</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Type Fake Definition</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Type Fake Definition</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Type Fake Definition</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1406,13 +1478,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Action Fake Definition</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Action Fake Definition</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Action Fake Definition</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Action Fake Definition</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1422,13 +1494,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Skill Fake Definition</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Skill Fake Definition</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Skill Fake Definition</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Skill Fake Definition</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1438,13 +1510,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Var Fake Definition</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Var Fake Definition</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Var Fake Definition</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Var Fake Definition</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1454,13 +1526,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Equation Fake Definition</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Equation Fake Definition</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Equation Fake Definition</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Equation Fake Definition</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1470,13 +1542,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Terminal Expression</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Terminal Expression</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Terminal Expression</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Terminal Expression</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1486,13 +1558,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>String Literal</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>String Literal</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>String Literal</em>'.
+   * @return the result of interpreting the object as an instance of '<em>String Literal</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1502,13 +1574,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SAction</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SAction</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SAction</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SAction</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1518,13 +1590,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>SVar</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>SVar</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>SVar</em>'.
+   * @return the result of interpreting the object as an instance of '<em>SVar</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1534,13 +1606,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Binary Operator</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Binary Operator</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Binary Operator</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Binary Operator</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1550,13 +1622,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>If</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>If</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>If</em>'.
+   * @return the result of interpreting the object as an instance of '<em>If</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1566,13 +1638,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Unit</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Unit</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Unit</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Unit</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1582,13 +1654,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Unary</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Unary</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Unary</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Unary</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1598,13 +1670,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Access</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Access</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Access</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Access</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1614,13 +1686,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Array</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Array</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Array</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Array</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1630,13 +1702,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Point</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Point</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Point</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Point</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1646,13 +1718,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Function</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Function</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Function</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Function</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1662,13 +1734,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Parameter</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Parameter</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Parameter</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Parameter</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1678,13 +1750,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Unit Name</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Unit Name</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Unit Name</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Unit Name</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1694,13 +1766,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Type Ref</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Type Ref</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Type Ref</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Type Ref</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1710,13 +1782,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Skill Ref</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Skill Ref</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Skill Ref</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Skill Ref</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1726,13 +1798,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Action Ref</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Action Ref</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Action Ref</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Action Ref</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1742,13 +1814,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Equation Ref</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Equation Ref</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Equation Ref</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Equation Ref</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1758,13 +1830,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Int Literal</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Int Literal</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Int Literal</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Int Literal</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1774,13 +1846,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Double Literal</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Double Literal</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Double Literal</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Double Literal</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1790,13 +1862,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Boolean Literal</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Boolean Literal</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Boolean Literal</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Boolean Literal</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1806,13 +1878,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>Reserved Literal</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Reserved Literal</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>Reserved Literal</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Reserved Literal</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
@@ -1822,13 +1894,13 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an INSTANCE of '<em>EObject</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>EObject</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch, but this is the last case anyway.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an INSTANCE of '<em>EObject</em>'.
+   * @return the result of interpreting the object as an instance of '<em>EObject</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject)
    * @generated
    */

@@ -12,6 +12,8 @@ package gaml.grammar;
 
 import java.io.File;
 
+import gama.dev.DEBUG;
+
 /**
  * The Class PathDebugger.
  */
@@ -25,10 +27,9 @@ public class PathDebugger {
 	 */
 	public void setPath(final String path) {
 		File file = new File(path);
-		System.out.println("### MWE2 DEBUG ###");
-		System.out.println("Relative path: " + path);
+		DEBUG.LINE();
+		DEBUG.TITLE("Generating the GAML ARTIFACTS");
 		System.out.println("Absolute path: " + file.getAbsolutePath());
-		System.out.println("Exists: " + file.exists());
-		System.out.println("##################");
+		DEBUG.LINE();
 	}
 }

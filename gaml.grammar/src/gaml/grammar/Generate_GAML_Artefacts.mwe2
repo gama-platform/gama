@@ -5,41 +5,43 @@ import org.eclipse.xtext.xtext.generator.*
 import org.eclipse.xtext.xtext.ui.generator.*
 import java.util.*
 
-var rootPath = "/Users/drogoul/Git/gama"
+var rootPath = ".."
 
 var uiProjectName = "gama.ui.editor"
 var runtimeProjectName = "gaml.compiler"
+var grammarProjectName = "gaml.compiler"
+var srcGen = "sr-gen"
 
 
 
 Workflow {
-	bean = StandaloneSetup {
-		scanClassPath = true
-		platformUri = rootPath
-	projectMapping = { 
-        projectName = "gaml.grammar" 
-        path = "${rootPath}/gaml.grammar" 
-    }
-    projectMapping = { 
-        projectName = "gaml.compiler" 
-        path = "${rootPath}/gaml.compiler" 
-    }
-    projectMapping = { 
-        projectName = "gama.ui.editor" 
-        path = "${rootPath}/gama.ui.editor" 
-    }
-	}
-	
+		
 	bean = gaml.grammar.PathDebugger {
         path = rootPath
     }
+	bean = StandaloneSetup {
+		scanClassPath = false
+	projectMapping = { 
+        projectName = "${grammarProjectName}" 
+        path = "${rootPath}/${grammarProjectName}" 
+    }
+    projectMapping = { 
+        projectName = "${runtimeProjectName}" 
+        path = "${rootPath}/${runtimeProjectName}" 
+    }
+    projectMapping = { 
+        projectName = "${uiProjectName}" 
+        path = "${rootPath}/${uiProjectName}" 
+    }
+	}
+
 
 	component = DirectoryCleaner {
-		directory = "${rootPath}/gaml.compiler/src-gen"
+		directory = "${rootPath}/${runtimeProjectName}/${srcGen}"
 	}
 
 	component = DirectoryCleaner {
-		directory = "${rootPath}/gama.ui.editor"
+		directory = "${rootPath}/${uiProjectName}/${srcGen}"
 	}
 
 	component = XtextGenerator {
@@ -52,7 +54,7 @@ Workflow {
 				}
 				runtime = {
 					enabled = true
-					root = "${rootPath}/gaml.compiler"
+					root = "${rootPath}/${runtimeProjectName}"
 					name = runtimeProjectName
 				}
 				runtimeTest = {
@@ -60,12 +62,12 @@ Workflow {
 				}
 				eclipsePlugin = {
 					enabled = true
-					root = "${rootPath}/gama.ui.editor"
+					root = "${rootPath}/${uiProjectName}"
 					name = uiProjectName
 				}
 				genericIde = {
 					enabled = true
-					root = "${rootPath}/gama.ui.editor"
+					root = "${rootPath}/${uiProjectName}"
 					name = uiProjectName
 				}
 				eclipsePluginTest = {
@@ -81,7 +83,7 @@ Workflow {
 			
 		}
 		language = StandardLanguage {
-			grammarUri = "platform:/resource/gaml.grammar/Gaml.xtext"
+			grammarUri = "platform:/resource/gaml.grammar/src/gaml/grammar/Gaml.xtext"
 			name = "gaml.grammar.Gaml"
 			fileExtensions = "gaml,experiment"
 			validator = {

@@ -98,9 +98,11 @@ public class ErrorToDiagnoticTranslator {
 		if (object instanceof GamlDefinition && data != null && data.length > 0 && IKeyword.NAME.equals(data[0])) {
 			feature = GamlPackage.Literals.GAML_DEFINITION__NAME;
 		} else if (object instanceof Statement) {
+
 			final StatementImpl s = (StatementImpl) object;
-			if (s.eIsSet(GamlPackage.Literals.STATEMENT__KEY)) {
-				feature = GamlPackage.Literals.STATEMENT__KEY;
+			// Not sure about this access to key ? Used to STATEMENT__KEY, but this feature seems to have disappeared
+			if (s.eIsSet(GamlPackage.Literals.FACETS_AND_BLOCK__KEY)) {
+				feature = GamlPackage.Literals.FACETS_AND_BLOCK__KEY;
 			} else if (s.eIsSet(GamlPackage.Literals.SDEFINITION__TKEY)) {
 				feature = GamlPackage.Literals.SDEFINITION__TKEY;
 			}

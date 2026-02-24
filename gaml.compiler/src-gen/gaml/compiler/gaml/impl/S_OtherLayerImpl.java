@@ -4,25 +4,25 @@
 package gaml.compiler.gaml.impl;
 
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.speciesOrGridDisplayStatement;
+import gaml.compiler.gaml.S_OtherLayer;
 
 import org.eclipse.emf.ecore.EClass;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>species Or Grid Display Statement</b></em>'.
+ * An implementation of the model object '<em><b>SOther Layer</b></em>'.
  * <!-- end-user-doc -->
  *
  * @generated
  */
-public class speciesOrGridDisplayStatementImpl extends StatementImpl implements speciesOrGridDisplayStatement
+public class S_OtherLayerImpl extends StatementImpl implements S_OtherLayer
 {
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected speciesOrGridDisplayStatementImpl()
+  protected S_OtherLayerImpl()
   {
     super();
   }
@@ -35,7 +35,7 @@ public class speciesOrGridDisplayStatementImpl extends StatementImpl implements 
   @Override
   protected EClass eStaticClass()
   {
-    return GamlPackage.Literals.SPECIES_OR_GRID_DISPLAY_STATEMENT;
+    return GamlPackage.Literals.SOTHER_LAYER;
   }
 
-} //speciesOrGridDisplayStatementImpl
+} //S_OtherLayerImpl

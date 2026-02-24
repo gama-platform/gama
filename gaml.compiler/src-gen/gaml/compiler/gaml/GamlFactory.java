@@ -16,7 +16,7 @@ import org.eclipse.emf.ecore.EFactory;
 public interface GamlFactory extends EFactory
 {
   /**
-   * The singleton INSTANCE of the factory.
+   * The singleton instance of the factory.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
@@ -103,6 +103,15 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   HeadlessExperiment createHeadlessExperiment();
+
+  /**
+   * Returns a new object of class '<em>Facets And Block</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Facets And Block</em>'.
+   * @generated
+   */
+  FacetsAndBlock createFacetsAndBlock();
 
   /**
    * Returns a new object of class '<em>Statement</em>'.
@@ -276,22 +285,31 @@ public interface GamlFactory extends EFactory
   S_Display createS_Display();
 
   /**
-   * Returns a new object of class '<em>species Or Grid Display Statement</em>'.
+   * Returns a new object of class '<em>SSpecies Layer</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>species Or Grid Display Statement</em>'.
+   * @return a new object of class '<em>SSpecies Layer</em>'.
    * @generated
    */
-  speciesOrGridDisplayStatement createspeciesOrGridDisplayStatement();
+  S_SpeciesLayer createS_SpeciesLayer();
 
   /**
-   * Returns a new object of class '<em>image Display Statement</em>'.
+   * Returns a new object of class '<em>SImage Layer</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>image Display Statement</em>'.
+   * @return a new object of class '<em>SImage Layer</em>'.
    * @generated
    */
-  imageDisplayStatement createimageDisplayStatement();
+  S_ImageLayer createS_ImageLayer();
+
+  /**
+   * Returns a new object of class '<em>SOther Layer</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>SOther Layer</em>'.
+   * @generated
+   */
+  S_OtherLayer createS_OtherLayer();
 
   /**
    * Returns a new object of class '<em>Action Arguments</em>'.
