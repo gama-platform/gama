@@ -376,6 +376,7 @@ public abstract class SymbolDescription implements IDescription {
 			final Facets facets) {
 		this.keyword = keyword;
 		this.facets = facets;
+
 		element = source;
 		setIf(Flag.BuiltIn, element == null);
 		// See #385 -- we need to remove the NO_TYPE_INFERENCE facet from the list of facets if it is present, after
@@ -459,7 +460,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return true if the description has facets not included in the set, false otherwise
 	 */
 	protected boolean hasFacetsNotIn(final Set<String> others) {
-		if (facets == null) return false;
+		if (!hasFacets()) return false;
 		return !visitFacets((facetName, exp) -> others.contains(facetName));
 	}
 
@@ -1553,7 +1554,7 @@ public abstract class SymbolDescription implements IDescription {
 		final List<String> mandatory = proto.getMandatoryFacets();
 		if (mandatory != null) {
 			for (final String facet : mandatory) {
-				if (!facets.containsKey(facet)) {
+				if (!hasFacets() || !facets.containsKey(facet)) {
 					error("Missing facet " + facet, IGamlIssue.MISSING_FACET, getUnderlyingElement(), facet, "nil");
 					return false;
 				}

@@ -96,6 +96,9 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.SDISPLAY: return createS_Display();
       case GamlPackage.SSPECIES_LAYER: return createS_SpeciesLayer();
       case GamlPackage.SIMAGE_LAYER: return createS_ImageLayer();
+      case GamlPackage.SGRAPHICS_LAYER: return createS_GraphicsLayer();
+      case GamlPackage.SEVENT_LAYER: return createS_EventLayer();
+      case GamlPackage.SOVERLAY_LAYER: return createS_OverlayLayer();
       case GamlPackage.SOTHER_LAYER: return createS_OtherLayer();
       case GamlPackage.ACTION_ARGUMENTS: return createActionArguments();
       case GamlPackage.ARGUMENT_DEFINITION: return createArgumentDefinition();
@@ -513,6 +516,42 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     S_ImageLayerImpl s_ImageLayer = new S_ImageLayerImpl();
     return s_ImageLayer;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public S_GraphicsLayer createS_GraphicsLayer()
+  {
+    S_GraphicsLayerImpl s_GraphicsLayer = new S_GraphicsLayerImpl();
+    return s_GraphicsLayer;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public S_EventLayer createS_EventLayer()
+  {
+    S_EventLayerImpl s_EventLayer = new S_EventLayerImpl();
+    return s_EventLayer;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public S_OverlayLayer createS_OverlayLayer()
+  {
+    S_OverlayLayerImpl s_OverlayLayer = new S_OverlayLayerImpl();
+    return s_OverlayLayer;
   }
 
   /**

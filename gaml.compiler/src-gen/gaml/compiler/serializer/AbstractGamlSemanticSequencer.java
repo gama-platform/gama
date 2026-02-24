@@ -37,13 +37,16 @@ import gaml.compiler.gaml.S_DirectAssignment;
 import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Equations;
+import gaml.compiler.gaml.S_EventLayer;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
+import gaml.compiler.gaml.S_GraphicsLayer;
 import gaml.compiler.gaml.S_If;
 import gaml.compiler.gaml.S_ImageLayer;
 import gaml.compiler.gaml.S_Loop;
 import gaml.compiler.gaml.S_Other;
 import gaml.compiler.gaml.S_OtherLayer;
+import gaml.compiler.gaml.S_OverlayLayer;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
 import gaml.compiler.gaml.S_Set;
@@ -281,11 +284,17 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 			case GamlPackage.SEQUATIONS:
 				sequence_S_Equations(context, (S_Equations) semanticObject); 
 				return; 
+			case GamlPackage.SEVENT_LAYER:
+				sequence_FacetsAndBlock_S_EventLayer(context, (S_EventLayer) semanticObject); 
+				return; 
 			case GamlPackage.SEXPERIMENT:
 				sequence_FacetsAndBlock_S_Experiment(context, (S_Experiment) semanticObject); 
 				return; 
 			case GamlPackage.SGLOBAL:
 				sequence_FacetsAndBlock_S_Global(context, (S_Global) semanticObject); 
+				return; 
+			case GamlPackage.SGRAPHICS_LAYER:
+				sequence_FacetsAndBlock_S_GraphicsLayer(context, (S_GraphicsLayer) semanticObject); 
 				return; 
 			case GamlPackage.SIF:
 				sequence_S_If(context, (S_If) semanticObject); 
@@ -300,7 +309,10 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_FacetsAndBlock_S_Other(context, (S_Other) semanticObject); 
 				return; 
 			case GamlPackage.SOTHER_LAYER:
-				sequence_S_OtherLayer(context, (S_OtherLayer) semanticObject); 
+				sequence_FacetsAndBlock_S_OtherLayer(context, (S_OtherLayer) semanticObject); 
+				return; 
+			case GamlPackage.SOVERLAY_LAYER:
+				sequence_FacetsAndBlock_S_OverlayLayer(context, (S_OverlayLayer) semanticObject); 
 				return; 
 			case GamlPackage.SREFLEX:
 				sequence_S_Reflex(context, (S_Reflex) semanticObject); 
@@ -318,7 +330,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_FacetsAndBlock_S_Species(context, (S_Species) semanticObject); 
 				return; 
 			case GamlPackage.SSPECIES_LAYER:
-				sequence_S_SpeciesLayer(context, (S_SpeciesLayer) semanticObject); 
+				sequence_FacetsAndBlock_S_SpeciesLayer(context, (S_SpeciesLayer) semanticObject); 
 				return; 
 			case GamlPackage.STRY:
 				sequence_S_Try(context, (S_Try) semanticObject); 
@@ -1075,6 +1087,21 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
+	 *     S_Layer returns S_EventLayer
+	 *     S_EventLayer returns S_EventLayer
+	 *
+	 * Constraint:
+	 *     (key=_EventLayerKey expr=Expression facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_EventLayer(ISerializationContext context, S_EventLayer semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
 	 *     S_Section returns S_Experiment
 	 *     S_Experiment returns S_Experiment
 	 *     GamlDefinition returns S_Experiment
@@ -1107,6 +1134,36 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
+	 *     S_Layer returns S_GraphicsLayer
+	 *     S_GraphicsLayer returns S_GraphicsLayer
+	 *
+	 * Constraint:
+	 *     (key=_GraphicsLayerKey expr=Expression facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_GraphicsLayer(ISerializationContext context, S_GraphicsLayer semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     S_Layer returns S_OtherLayer
+	 *     S_OtherLayer returns S_OtherLayer
+	 *
+	 * Constraint:
+	 *     (key=_LayerKey firstFacet=FirstFacetKey? expr=Expression facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_OtherLayer(ISerializationContext context, S_OtherLayer semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
 	 *     Statement returns S_Other
 	 *     S_Other returns S_Other
 	 *
@@ -1122,6 +1179,21 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
+	 *     S_Layer returns S_OverlayLayer
+	 *     S_OverlayLayer returns S_OverlayLayer
+	 *
+	 * Constraint:
+	 *     (key=_OverlayLayerKey facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_OverlayLayer(ISerializationContext context, S_OverlayLayer semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
 	 *     Statement returns S_Solve
 	 *     S_Solve returns S_Solve
 	 *
@@ -1130,6 +1202,21 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_Solve(ISerializationContext context, S_Solve semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     S_Layer returns S_SpeciesLayer
+	 *     S_SpeciesLayer returns S_SpeciesLayer
+	 *
+	 * Constraint:
+	 *     (key=_SpeciesKey expr=Expression facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_SpeciesLayer(ISerializationContext context, S_SpeciesLayer semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -1286,7 +1373,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     VarDefinition returns Model
 	 *
 	 * Constraint:
-	 *     (pragmas+=Pragma* name=ID imports+=Import* block=ModelBlock)
+	 *     (pragmas+=Pragma* name=Valid_ID imports+=Import* block=ModelBlock)
 	 * </pre>
 	 */
 	protected void sequence_Model(ISerializationContext context, Model semanticObject) {
@@ -1529,21 +1616,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     S_Layer returns S_OtherLayer
-	 *     S_OtherLayer returns S_OtherLayer
-	 *
-	 * Constraint:
-	 *     (key=_LayerKey firstFacet=FirstFacetKey? expr=Expression facets+=Facet* block=DisplayBlock?)
-	 * </pre>
-	 */
-	protected void sequence_S_OtherLayer(ISerializationContext context, S_OtherLayer semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
 	 *     Statement returns S_Reflex
 	 *     S_Declaration returns S_Reflex
 	 *     S_Reflex returns S_Reflex
@@ -1599,21 +1671,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 		feeder.accept(grammarAccess.getS_SetAccess().getExprExpressionParserRuleCall_1_0(), semanticObject.getExpr());
 		feeder.accept(grammarAccess.getS_SetAccess().getValueExpressionParserRuleCall_3_0(), semanticObject.getValue());
 		feeder.finish();
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     S_Layer returns S_SpeciesLayer
-	 *     S_SpeciesLayer returns S_SpeciesLayer
-	 *
-	 * Constraint:
-	 *     (key=_SpeciesKey expr=Expression facets+=Facet* block=DisplayBlock?)
-	 * </pre>
-	 */
-	protected void sequence_S_SpeciesLayer(ISerializationContext context, S_SpeciesLayer semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	

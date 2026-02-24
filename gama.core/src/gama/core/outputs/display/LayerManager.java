@@ -29,7 +29,6 @@ import gama.api.ui.layers.ILayerManager;
 import gama.api.ui.layers.ILayerStatement;
 import gama.core.outputs.layers.AgentLayer;
 import gama.core.outputs.layers.EventLayer;
-import gama.core.outputs.layers.EventLayerStatement;
 import gama.core.outputs.layers.GisLayer;
 import gama.core.outputs.layers.GraphicLayer;
 import gama.core.outputs.layers.GridLayer;
@@ -78,7 +77,7 @@ public class LayerManager implements ILayerManager {
 	private final ILayer[] layers;
 
 	/** The event layers. */
-	private final Map<String, EventLayerStatement> eventLayers = new HashMap<>();
+	private final Map<String, ILayerStatement.Event> eventLayers = new HashMap<>();
 
 	/** The surface. */
 	final IDisplaySurface surface;
@@ -99,7 +98,7 @@ public class LayerManager implements ILayerManager {
 		OverlayLayer overlay = null;
 		final List<ILayer> layers = new ArrayList<>();
 		for (final ILayerStatement layer : output.getLayers()) {
-			if (layer instanceof EventLayerStatement el) { eventLayers.put(el.getName(), el); }
+			if (layer instanceof ILayerStatement.Event el) { eventLayers.put(el.getTrigger(), el); }
 			if (layer.isToCreate()) {
 				final ILayer result = createLayer(output, layer);
 				if (result instanceof OverlayLayer) {

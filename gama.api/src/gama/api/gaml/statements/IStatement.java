@@ -22,14 +22,14 @@ import gama.api.utils.tests.WithTestSummary;
 
 /**
  * Base interface for all GAML statements.
- * 
+ *
  * <p>
  * A statement represents an executable unit in GAML that can perform actions, modify state, or control execution flow.
  * Statements are the building blocks of agent behaviors, actions, and control structures in GAMA simulations.
  * </p>
- * 
+ *
  * <h2>Statement Categories</h2>
- * 
+ *
  * <h3>Control Flow</h3>
  * <ul>
  * <li>{@code if/else} - Conditional execution</li>
@@ -37,28 +37,29 @@ import gama.api.utils.tests.WithTestSummary;
  * <li>{@code switch/match} - Multi-way branching</li>
  * <li>{@code return} - Exit from actions</li>
  * </ul>
- * 
+ *
  * <h3>Agent Operations</h3>
  * <ul>
  * <li>{@code create} - Instantiate new agents</li>
  * <li>{@code ask} - Execute code in other agents' context</li>
  * <li>{@code do} - Invoke actions</li>
  * </ul>
- * 
+ *
  * <h3>Data Operations</h3>
  * <ul>
  * <li>{@code add/remove/put} - Container manipulation</li>
  * <li>{@code save} - Data persistence</li>
  * <li>{@code write} - Console output</li>
  * </ul>
- * 
+ *
  * <h2>Execution Model</h2>
  * <p>
  * Statements are executed within a scope that provides context including the current agent, global variables, and
  * temporary variables. The execution can return a value and may throw runtime exceptions.
  * </p>
- * 
+ *
  * <h2>Example Usage</h2>
+ *
  * <pre>
  * {@code
  * reflex move {
@@ -71,7 +72,7 @@ import gama.api.utils.tests.WithTestSummary;
  * }
  * }
  * </pre>
- * 
+ *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @since GAMA 1.0
  * @see IExecutable
@@ -89,7 +90,7 @@ public interface IStatement extends ISymbol, IExecutable {
 
 	/**
 	 * Interface for user-accessible commands in experiments.
-	 * 
+	 *
 	 * <p>
 	 * User commands are actions that can be triggered from the UI, typically appearing as buttons or menu items in
 	 * experiment interfaces.
@@ -101,7 +102,7 @@ public interface IStatement extends ISymbol, IExecutable {
 
 	/**
 	 * Interface for aspect statements that define visual representations.
-	 * 
+	 *
 	 * <p>
 	 * Aspects contain drawing statements that specify how agents should be rendered in displays.
 	 * </p>
@@ -112,7 +113,7 @@ public interface IStatement extends ISymbol, IExecutable {
 
 	/**
 	 * Interface for action statements that define reusable behaviors.
-	 * 
+	 *
 	 * <p>
 	 * Actions are named sequences of statements that can accept parameters and return values, similar to methods in
 	 * object-oriented programming.
@@ -124,7 +125,7 @@ public interface IStatement extends ISymbol, IExecutable {
 
 	/**
 	 * Interface for statements that accept arguments.
-	 * 
+	 *
 	 * <p>
 	 * This interface is implemented by actions and other parameterized statements. It provides methods for managing
 	 * both formal arguments (parameter declarations) and runtime arguments (actual values passed during execution).
@@ -134,10 +135,10 @@ public interface IStatement extends ISymbol, IExecutable {
 
 		/**
 		 * Sets the formal argument declarations for this statement.
-		 * 
+		 *
 		 * <p>
-		 * Formal arguments define the parameters that this statement accepts, including their names, types, and
-		 * default values.
+		 * Formal arguments define the parameters that this statement accepts, including their names, types, and default
+		 * values.
 		 * </p>
 		 *
 		 * @param args
@@ -147,7 +148,7 @@ public interface IStatement extends ISymbol, IExecutable {
 
 		/**
 		 * Sets the runtime argument values for execution.
-		 * 
+		 *
 		 * <p>
 		 * This method is called before execution to provide the actual values for the statement's parameters.
 		 * </p>
@@ -164,7 +165,7 @@ public interface IStatement extends ISymbol, IExecutable {
 
 	/**
 	 * Marker interface for statements that support break/continue.
-	 * 
+	 *
 	 * <p>
 	 * Breakable statements are control structures (like loops) that can be interrupted by {@code break} or
 	 * {@code continue} statements.
@@ -176,7 +177,7 @@ public interface IStatement extends ISymbol, IExecutable {
 
 	/**
 	 * Interface for test statements used in model validation.
-	 * 
+	 *
 	 * <p>
 	 * Test statements allow automated testing of model behavior. They execute assertions and collect results into a
 	 * test summary.
@@ -188,7 +189,7 @@ public interface IStatement extends ISymbol, IExecutable {
 
 	/**
 	 * Interface for create statements that instantiate agents.
-	 * 
+	 *
 	 * <p>
 	 * Create statements generate new agents and can initialize their attributes using expressions or user-provided
 	 * maps.
@@ -217,7 +218,7 @@ public interface IStatement extends ISymbol, IExecutable {
 
 	/**
 	 * Marker interface for save statements that persist data.
-	 * 
+	 *
 	 * <p>
 	 * Save statements write data to files in various formats (CSV, shapefile, image, etc.).
 	 * </p>
@@ -228,7 +229,7 @@ public interface IStatement extends ISymbol, IExecutable {
 
 	/**
 	 * Marker interface for draw statements used in aspects.
-	 * 
+	 *
 	 * <p>
 	 * Draw statements render graphical elements (shapes, text, images) in displays.
 	 * </p>
@@ -238,19 +239,8 @@ public interface IStatement extends ISymbol, IExecutable {
 	}
 
 	/**
-	 * Marker interface for event handling statements.
-	 * 
-	 * <p>
-	 * Event statements respond to user interactions (mouse clicks, key presses) in displays.
-	 * </p>
-	 */
-	public interface Event extends ISymbol {
-
-	}
-
-	/**
 	 * Checks if this statement is empty (contains no executable code).
-	 * 
+	 *
 	 * <p>
 	 * Empty statements can be optimized away or used as placeholders.
 	 * </p>

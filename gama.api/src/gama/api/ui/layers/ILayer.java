@@ -28,6 +28,7 @@ import gama.api.ui.displays.IDisplaySurface;
 import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.interfaces.IDisposable;
 import gama.api.utils.interfaces.INamed;
 
 /**
@@ -38,7 +39,7 @@ import gama.api.utils.interfaces.INamed;
  *
  *
  */
-public interface ILayer extends INamed, Comparable<ILayer> {
+public interface ILayer extends INamed, Comparable<ILayer>, IDisposable {
 
 	/**
 	 * The Interface Chart.

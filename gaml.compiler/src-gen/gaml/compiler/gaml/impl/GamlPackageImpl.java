@@ -45,13 +45,16 @@ import gaml.compiler.gaml.S_DirectAssignment;
 import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Equations;
+import gaml.compiler.gaml.S_EventLayer;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
+import gaml.compiler.gaml.S_GraphicsLayer;
 import gaml.compiler.gaml.S_If;
 import gaml.compiler.gaml.S_ImageLayer;
 import gaml.compiler.gaml.S_Loop;
 import gaml.compiler.gaml.S_Other;
 import gaml.compiler.gaml.S_OtherLayer;
+import gaml.compiler.gaml.S_OverlayLayer;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
 import gaml.compiler.gaml.S_Set;
@@ -310,6 +313,27 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass s_ImageLayerEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass s_GraphicsLayerEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass s_EventLayerEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass s_OverlayLayerEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -1281,6 +1305,39 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EClass getS_ImageLayer()
   {
     return s_ImageLayerEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getS_GraphicsLayer()
+  {
+    return s_GraphicsLayerEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getS_EventLayer()
+  {
+    return s_EventLayerEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getS_OverlayLayer()
+  {
+    return s_OverlayLayerEClass;
   }
 
   /**
@@ -2369,6 +2426,12 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     s_ImageLayerEClass = createEClass(SIMAGE_LAYER);
 
+    s_GraphicsLayerEClass = createEClass(SGRAPHICS_LAYER);
+
+    s_EventLayerEClass = createEClass(SEVENT_LAYER);
+
+    s_OverlayLayerEClass = createEClass(SOVERLAY_LAYER);
+
     s_OtherLayerEClass = createEClass(SOTHER_LAYER);
 
     actionArgumentsEClass = createEClass(ACTION_ARGUMENTS);
@@ -2566,6 +2629,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_DisplayEClass.getESuperTypes().add(this.getStatement());
     s_SpeciesLayerEClass.getESuperTypes().add(this.getStatement());
     s_ImageLayerEClass.getESuperTypes().add(this.getStatement());
+    s_GraphicsLayerEClass.getESuperTypes().add(this.getStatement());
+    s_EventLayerEClass.getESuperTypes().add(this.getStatement());
+    s_OverlayLayerEClass.getESuperTypes().add(this.getStatement());
     s_OtherLayerEClass.getESuperTypes().add(this.getStatement());
     argumentDefinitionEClass.getESuperTypes().add(this.getVarDefinition());
     facetEClass.getESuperTypes().add(this.getVarDefinition());
@@ -2693,6 +2759,12 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(s_SpeciesLayerEClass, S_SpeciesLayer.class, "S_SpeciesLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_ImageLayerEClass, S_ImageLayer.class, "S_ImageLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(s_GraphicsLayerEClass, S_GraphicsLayer.class, "S_GraphicsLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(s_EventLayerEClass, S_EventLayer.class, "S_EventLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(s_OverlayLayerEClass, S_OverlayLayer.class, "S_OverlayLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_OtherLayerEClass, S_OtherLayer.class, "S_OtherLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 

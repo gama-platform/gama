@@ -232,7 +232,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getGamlDefinition()
    * @generated
    */
-  int GAML_DEFINITION = 39;
+  int GAML_DEFINITION = 42;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -260,7 +260,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getVarDefinition()
    * @generated
    */
-  int VAR_DEFINITION = 42;
+  int VAR_DEFINITION = 45;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -1999,6 +1999,198 @@ public interface GamlPackage extends EPackage
   int SIMAGE_LAYER_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 0;
 
   /**
+   * The meta object id for the '{@link gaml.compiler.gaml.impl.S_GraphicsLayerImpl <em>SGraphics Layer</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see gaml.compiler.gaml.impl.S_GraphicsLayerImpl
+   * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_GraphicsLayer()
+   * @generated
+   */
+  int SGRAPHICS_LAYER = 31;
+
+  /**
+   * The feature id for the '<em><b>Facets</b></em>' containment reference list.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SGRAPHICS_LAYER__FACETS = STATEMENT__FACETS;
+
+  /**
+   * The feature id for the '<em><b>Block</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SGRAPHICS_LAYER__BLOCK = STATEMENT__BLOCK;
+
+  /**
+   * The feature id for the '<em><b>Key</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SGRAPHICS_LAYER__KEY = STATEMENT__KEY;
+
+  /**
+   * The feature id for the '<em><b>First Facet</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SGRAPHICS_LAYER__FIRST_FACET = STATEMENT__FIRST_FACET;
+
+  /**
+   * The feature id for the '<em><b>Expr</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SGRAPHICS_LAYER__EXPR = STATEMENT__EXPR;
+
+  /**
+   * The number of structural features of the '<em>SGraphics Layer</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SGRAPHICS_LAYER_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 0;
+
+  /**
+   * The meta object id for the '{@link gaml.compiler.gaml.impl.S_EventLayerImpl <em>SEvent Layer</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see gaml.compiler.gaml.impl.S_EventLayerImpl
+   * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_EventLayer()
+   * @generated
+   */
+  int SEVENT_LAYER = 32;
+
+  /**
+   * The feature id for the '<em><b>Facets</b></em>' containment reference list.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SEVENT_LAYER__FACETS = STATEMENT__FACETS;
+
+  /**
+   * The feature id for the '<em><b>Block</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SEVENT_LAYER__BLOCK = STATEMENT__BLOCK;
+
+  /**
+   * The feature id for the '<em><b>Key</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SEVENT_LAYER__KEY = STATEMENT__KEY;
+
+  /**
+   * The feature id for the '<em><b>First Facet</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SEVENT_LAYER__FIRST_FACET = STATEMENT__FIRST_FACET;
+
+  /**
+   * The feature id for the '<em><b>Expr</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SEVENT_LAYER__EXPR = STATEMENT__EXPR;
+
+  /**
+   * The number of structural features of the '<em>SEvent Layer</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SEVENT_LAYER_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 0;
+
+  /**
+   * The meta object id for the '{@link gaml.compiler.gaml.impl.S_OverlayLayerImpl <em>SOverlay Layer</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see gaml.compiler.gaml.impl.S_OverlayLayerImpl
+   * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_OverlayLayer()
+   * @generated
+   */
+  int SOVERLAY_LAYER = 33;
+
+  /**
+   * The feature id for the '<em><b>Facets</b></em>' containment reference list.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SOVERLAY_LAYER__FACETS = STATEMENT__FACETS;
+
+  /**
+   * The feature id for the '<em><b>Block</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SOVERLAY_LAYER__BLOCK = STATEMENT__BLOCK;
+
+  /**
+   * The feature id for the '<em><b>Key</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SOVERLAY_LAYER__KEY = STATEMENT__KEY;
+
+  /**
+   * The feature id for the '<em><b>First Facet</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SOVERLAY_LAYER__FIRST_FACET = STATEMENT__FIRST_FACET;
+
+  /**
+   * The feature id for the '<em><b>Expr</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SOVERLAY_LAYER__EXPR = STATEMENT__EXPR;
+
+  /**
+   * The number of structural features of the '<em>SOverlay Layer</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SOVERLAY_LAYER_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 0;
+
+  /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.S_OtherLayerImpl <em>SOther Layer</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -2006,7 +2198,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_OtherLayer()
    * @generated
    */
-  int SOTHER_LAYER = 31;
+  int SOTHER_LAYER = 34;
 
   /**
    * The feature id for the '<em><b>Facets</b></em>' containment reference list.
@@ -2070,7 +2262,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getActionArguments()
    * @generated
    */
-  int ACTION_ARGUMENTS = 32;
+  int ACTION_ARGUMENTS = 35;
 
   /**
    * The feature id for the '<em><b>Args</b></em>' containment reference list.
@@ -2098,7 +2290,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getArgumentDefinition()
    * @generated
    */
-  int ARGUMENT_DEFINITION = 33;
+  int ARGUMENT_DEFINITION = 36;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -2144,7 +2336,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getFacet()
    * @generated
    */
-  int FACET = 34;
+  int FACET = 37;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -2199,7 +2391,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getExpression()
    * @generated
    */
-  int EXPRESSION = 35;
+  int EXPRESSION = 38;
 
   /**
    * The number of structural features of the '<em>Expression</em>' class.
@@ -2218,7 +2410,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getExpressionList()
    * @generated
    */
-  int EXPRESSION_LIST = 36;
+  int EXPRESSION_LIST = 39;
 
   /**
    * The feature id for the '<em><b>Exprs</b></em>' containment reference list.
@@ -2246,7 +2438,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getVariableRef()
    * @generated
    */
-  int VARIABLE_REF = 37;
+  int VARIABLE_REF = 40;
 
   /**
    * The feature id for the '<em><b>Ref</b></em>' reference.
@@ -2274,7 +2466,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getTypeInfo()
    * @generated
    */
-  int TYPE_INFO = 38;
+  int TYPE_INFO = 41;
 
   /**
    * The feature id for the '<em><b>First</b></em>' containment reference.
@@ -2311,7 +2503,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getEquationDefinition()
    * @generated
    */
-  int EQUATION_DEFINITION = 40;
+  int EQUATION_DEFINITION = 43;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -2339,7 +2531,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getTypeDefinition()
    * @generated
    */
-  int TYPE_DEFINITION = 41;
+  int TYPE_DEFINITION = 44;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -2367,7 +2559,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getActionDefinition()
    * @generated
    */
-  int ACTION_DEFINITION = 43;
+  int ACTION_DEFINITION = 46;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -2395,7 +2587,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getUnitFakeDefinition()
    * @generated
    */
-  int UNIT_FAKE_DEFINITION = 44;
+  int UNIT_FAKE_DEFINITION = 47;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -2423,7 +2615,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getTypeFakeDefinition()
    * @generated
    */
-  int TYPE_FAKE_DEFINITION = 45;
+  int TYPE_FAKE_DEFINITION = 48;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -2451,7 +2643,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getActionFakeDefinition()
    * @generated
    */
-  int ACTION_FAKE_DEFINITION = 46;
+  int ACTION_FAKE_DEFINITION = 49;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -2479,7 +2671,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getSkillFakeDefinition()
    * @generated
    */
-  int SKILL_FAKE_DEFINITION = 47;
+  int SKILL_FAKE_DEFINITION = 50;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -2507,7 +2699,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getVarFakeDefinition()
    * @generated
    */
-  int VAR_FAKE_DEFINITION = 48;
+  int VAR_FAKE_DEFINITION = 51;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -2535,7 +2727,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getEquationFakeDefinition()
    * @generated
    */
-  int EQUATION_FAKE_DEFINITION = 49;
+  int EQUATION_FAKE_DEFINITION = 52;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -2563,7 +2755,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getTerminalExpression()
    * @generated
    */
-  int TERMINAL_EXPRESSION = 50;
+  int TERMINAL_EXPRESSION = 53;
 
   /**
    * The feature id for the '<em><b>Op</b></em>' attribute.
@@ -2591,7 +2783,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getStringLiteral()
    * @generated
    */
-  int STRING_LITERAL = 51;
+  int STRING_LITERAL = 54;
 
   /**
    * The feature id for the '<em><b>Op</b></em>' attribute.
@@ -2619,7 +2811,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_Action()
    * @generated
    */
-  int SACTION = 52;
+  int SACTION = 55;
 
   /**
    * The feature id for the '<em><b>Facets</b></em>' containment reference list.
@@ -2710,7 +2902,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_Var()
    * @generated
    */
-  int SVAR = 53;
+  int SVAR = 56;
 
   /**
    * The feature id for the '<em><b>Facets</b></em>' containment reference list.
@@ -2801,7 +2993,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getArgumentPair()
    * @generated
    */
-  int ARGUMENT_PAIR = 54;
+  int ARGUMENT_PAIR = 57;
 
   /**
    * The feature id for the '<em><b>Op</b></em>' attribute.
@@ -2838,7 +3030,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getBinaryOperator()
    * @generated
    */
-  int BINARY_OPERATOR = 55;
+  int BINARY_OPERATOR = 58;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -2884,7 +3076,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getIf()
    * @generated
    */
-  int IF = 56;
+  int IF = 59;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -2939,7 +3131,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getUnit()
    * @generated
    */
-  int UNIT = 57;
+  int UNIT = 60;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -2985,7 +3177,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getUnary()
    * @generated
    */
-  int UNARY = 58;
+  int UNARY = 61;
 
   /**
    * The feature id for the '<em><b>Op</b></em>' attribute.
@@ -3022,7 +3214,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getAccess()
    * @generated
    */
-  int ACCESS = 59;
+  int ACCESS = 62;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -3068,7 +3260,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getArray()
    * @generated
    */
-  int ARRAY = 60;
+  int ARRAY = 63;
 
   /**
    * The feature id for the '<em><b>Exprs</b></em>' containment reference.
@@ -3096,7 +3288,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getPoint()
    * @generated
    */
-  int POINT = 61;
+  int POINT = 64;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -3151,7 +3343,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getFunction()
    * @generated
    */
-  int FUNCTION = 62;
+  int FUNCTION = 65;
 
   /**
    * The feature id for the '<em><b>Left</b></em>' containment reference.
@@ -3197,7 +3389,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getParameter()
    * @generated
    */
-  int PARAMETER = 63;
+  int PARAMETER = 66;
 
   /**
    * The feature id for the '<em><b>Built In Facet Key</b></em>' attribute.
@@ -3243,7 +3435,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getUnitName()
    * @generated
    */
-  int UNIT_NAME = 64;
+  int UNIT_NAME = 67;
 
   /**
    * The feature id for the '<em><b>Ref</b></em>' reference.
@@ -3271,7 +3463,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getTypeRef()
    * @generated
    */
-  int TYPE_REF = 65;
+  int TYPE_REF = 68;
 
   /**
    * The feature id for the '<em><b>Ref</b></em>' reference.
@@ -3308,7 +3500,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getSkillRef()
    * @generated
    */
-  int SKILL_REF = 66;
+  int SKILL_REF = 69;
 
   /**
    * The feature id for the '<em><b>Ref</b></em>' reference.
@@ -3336,7 +3528,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getActionRef()
    * @generated
    */
-  int ACTION_REF = 67;
+  int ACTION_REF = 70;
 
   /**
    * The feature id for the '<em><b>Ref</b></em>' reference.
@@ -3364,7 +3556,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getEquationRef()
    * @generated
    */
-  int EQUATION_REF = 68;
+  int EQUATION_REF = 71;
 
   /**
    * The feature id for the '<em><b>Ref</b></em>' reference.
@@ -3392,7 +3584,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getIntLiteral()
    * @generated
    */
-  int INT_LITERAL = 69;
+  int INT_LITERAL = 72;
 
   /**
    * The feature id for the '<em><b>Op</b></em>' attribute.
@@ -3420,7 +3612,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getDoubleLiteral()
    * @generated
    */
-  int DOUBLE_LITERAL = 70;
+  int DOUBLE_LITERAL = 73;
 
   /**
    * The feature id for the '<em><b>Op</b></em>' attribute.
@@ -3448,7 +3640,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getBooleanLiteral()
    * @generated
    */
-  int BOOLEAN_LITERAL = 71;
+  int BOOLEAN_LITERAL = 74;
 
   /**
    * The feature id for the '<em><b>Op</b></em>' attribute.
@@ -3476,7 +3668,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getReservedLiteral()
    * @generated
    */
-  int RESERVED_LITERAL = 72;
+  int RESERVED_LITERAL = 75;
 
   /**
    * The feature id for the '<em><b>Op</b></em>' attribute.
@@ -4081,6 +4273,36 @@ public interface GamlPackage extends EPackage
    * @generated
    */
   EClass getS_ImageLayer();
+
+  /**
+   * Returns the meta object for class '{@link gaml.compiler.gaml.S_GraphicsLayer <em>SGraphics Layer</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>SGraphics Layer</em>'.
+   * @see gaml.compiler.gaml.S_GraphicsLayer
+   * @generated
+   */
+  EClass getS_GraphicsLayer();
+
+  /**
+   * Returns the meta object for class '{@link gaml.compiler.gaml.S_EventLayer <em>SEvent Layer</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>SEvent Layer</em>'.
+   * @see gaml.compiler.gaml.S_EventLayer
+   * @generated
+   */
+  EClass getS_EventLayer();
+
+  /**
+   * Returns the meta object for class '{@link gaml.compiler.gaml.S_OverlayLayer <em>SOverlay Layer</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>SOverlay Layer</em>'.
+   * @see gaml.compiler.gaml.S_OverlayLayer
+   * @generated
+   */
+  EClass getS_OverlayLayer();
 
   /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.S_OtherLayer <em>SOther Layer</em>}'.
@@ -5540,6 +5762,36 @@ public interface GamlPackage extends EPackage
      * @generated
      */
     EClass SIMAGE_LAYER = eINSTANCE.getS_ImageLayer();
+
+    /**
+     * The meta object literal for the '{@link gaml.compiler.gaml.impl.S_GraphicsLayerImpl <em>SGraphics Layer</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see gaml.compiler.gaml.impl.S_GraphicsLayerImpl
+     * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_GraphicsLayer()
+     * @generated
+     */
+    EClass SGRAPHICS_LAYER = eINSTANCE.getS_GraphicsLayer();
+
+    /**
+     * The meta object literal for the '{@link gaml.compiler.gaml.impl.S_EventLayerImpl <em>SEvent Layer</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see gaml.compiler.gaml.impl.S_EventLayerImpl
+     * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_EventLayer()
+     * @generated
+     */
+    EClass SEVENT_LAYER = eINSTANCE.getS_EventLayer();
+
+    /**
+     * The meta object literal for the '{@link gaml.compiler.gaml.impl.S_OverlayLayerImpl <em>SOverlay Layer</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see gaml.compiler.gaml.impl.S_OverlayLayerImpl
+     * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_OverlayLayer()
+     * @generated
+     */
+    EClass SOVERLAY_LAYER = eINSTANCE.getS_OverlayLayer();
 
     /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.S_OtherLayerImpl <em>SOther Layer</em>}' class.

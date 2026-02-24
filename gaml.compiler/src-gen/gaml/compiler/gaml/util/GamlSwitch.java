@@ -363,6 +363,33 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case GamlPackage.SGRAPHICS_LAYER:
+      {
+        S_GraphicsLayer s_GraphicsLayer = (S_GraphicsLayer)theEObject;
+        T result = caseS_GraphicsLayer(s_GraphicsLayer);
+        if (result == null) result = caseStatement(s_GraphicsLayer);
+        if (result == null) result = caseFacetsAndBlock(s_GraphicsLayer);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case GamlPackage.SEVENT_LAYER:
+      {
+        S_EventLayer s_EventLayer = (S_EventLayer)theEObject;
+        T result = caseS_EventLayer(s_EventLayer);
+        if (result == null) result = caseStatement(s_EventLayer);
+        if (result == null) result = caseFacetsAndBlock(s_EventLayer);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case GamlPackage.SOVERLAY_LAYER:
+      {
+        S_OverlayLayer s_OverlayLayer = (S_OverlayLayer)theEObject;
+        T result = caseS_OverlayLayer(s_OverlayLayer);
+        if (result == null) result = caseStatement(s_OverlayLayer);
+        if (result == null) result = caseFacetsAndBlock(s_OverlayLayer);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case GamlPackage.SOTHER_LAYER:
       {
         S_OtherLayer s_OtherLayer = (S_OtherLayer)theEObject;
@@ -1217,6 +1244,54 @@ public class GamlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseS_ImageLayer(S_ImageLayer object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>SGraphics Layer</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>SGraphics Layer</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseS_GraphicsLayer(S_GraphicsLayer object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>SEvent Layer</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>SEvent Layer</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseS_EventLayer(S_EventLayer object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>SOverlay Layer</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>SOverlay Layer</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseS_OverlayLayer(S_OverlayLayer object)
   {
     return null;
   }

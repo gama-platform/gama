@@ -231,6 +231,21 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createS_ImageLayerAdapter();
       }
       @Override
+      public Adapter caseS_GraphicsLayer(S_GraphicsLayer object)
+      {
+        return createS_GraphicsLayerAdapter();
+      }
+      @Override
+      public Adapter caseS_EventLayer(S_EventLayer object)
+      {
+        return createS_EventLayerAdapter();
+      }
+      @Override
+      public Adapter caseS_OverlayLayer(S_OverlayLayer object)
+      {
+        return createS_OverlayLayerAdapter();
+      }
+      @Override
       public Adapter caseS_OtherLayer(S_OtherLayer object)
       {
         return createS_OtherLayerAdapter();
@@ -923,6 +938,51 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createS_ImageLayerAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_GraphicsLayer <em>SGraphics Layer</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.S_GraphicsLayer
+   * @generated
+   */
+  public Adapter createS_GraphicsLayerAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_EventLayer <em>SEvent Layer</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.S_EventLayer
+   * @generated
+   */
+  public Adapter createS_EventLayerAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_OverlayLayer <em>SOverlay Layer</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.S_OverlayLayer
+   * @generated
+   */
+  public Adapter createS_OverlayLayerAdapter()
   {
     return null;
   }

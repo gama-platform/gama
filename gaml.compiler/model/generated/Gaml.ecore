@@ -90,6 +90,9 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="S_SpeciesLayer" eSuperTypes="#//Statement"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_ImageLayer" eSuperTypes="#//Statement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="S_GraphicsLayer" eSuperTypes="#//Statement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="S_EventLayer" eSuperTypes="#//Statement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="S_OverlayLayer" eSuperTypes="#//Statement"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_OtherLayer" eSuperTypes="#//Statement"/>
   <eClassifiers xsi:type="ecore:EClass" name="ActionArguments">
     <eStructuralFeatures xsi:type="ecore:EReference" name="args" upperBound="-1" eType="#//ArgumentDefinition"

@@ -13,7 +13,10 @@ package gama.api.ui.layers;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.ISymbol;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.IExecutable;
 import gama.api.runtime.IStepable;
+import gama.api.runtime.scope.IScope;
 import gama.api.ui.IOutput;
 
 /**
@@ -24,6 +27,37 @@ import gama.api.ui.IOutput;
  *
  */
 public interface ILayerStatement extends IStepable, ISymbol, Comparable<ILayerStatement> {
+
+	/**
+	 * Marker interface for event handling statements.
+	 *
+	 * <p>
+	 * Event statements respond to user interactions (mouse clicks, key presses) in displays.
+	 * </p>
+	 */
+	public interface Event extends ILayerStatement {
+
+		/** The trigger. */
+		String TRIGGER = "trigger";
+
+		/**
+		 * @return
+		 */
+		String getTrigger();
+
+		/**
+		 * @param executionScope
+		 * @return
+		 */
+		IAgent getExecuter(IScope executionScope);
+
+		/**
+		 * @param executionScope
+		 * @return
+		 */
+		IExecutable getExecutable(IScope executionScope);
+
+	}
 
 	/**
 	 * The Enum LayerType.

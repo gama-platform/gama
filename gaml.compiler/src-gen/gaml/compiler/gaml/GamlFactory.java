@@ -303,6 +303,33 @@ public interface GamlFactory extends EFactory
   S_ImageLayer createS_ImageLayer();
 
   /**
+   * Returns a new object of class '<em>SGraphics Layer</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>SGraphics Layer</em>'.
+   * @generated
+   */
+  S_GraphicsLayer createS_GraphicsLayer();
+
+  /**
+   * Returns a new object of class '<em>SEvent Layer</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>SEvent Layer</em>'.
+   * @generated
+   */
+  S_EventLayer createS_EventLayer();
+
+  /**
+   * Returns a new object of class '<em>SOverlay Layer</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>SOverlay Layer</em>'.
+   * @generated
+   */
+  S_OverlayLayer createS_OverlayLayer();
+
+  /**
    * Returns a new object of class '<em>SOther Layer</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

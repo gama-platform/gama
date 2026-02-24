@@ -13,7 +13,7 @@ StringEvaluator:
 	toto=ID "<-" expr=Expression;
 
 Model:
-	(pragmas+=Pragma)* 'model' name=ID (imports+=Import)* block=ModelBlock;
+	(pragmas+=Pragma)* 'model' name=Valid_ID (imports+=Import)* block=ModelBlock;
 
 ModelBlock returns Block:
 	{Block} (statements+=(S_Section))*;
@@ -70,12 +70,14 @@ Statement:
 	S_If | 
 	S_Try | 
 	S_Equations | 
+	=> S_Assignment | 
 	S_1Expr_Facets_BlockOrEnd |
 	
 	// 2. Ambiguous rules: these might start with a simple identifier (ID).
 	// We use the syntactic predicate (=>) only here, as a last resort.
+
 	=> S_Declaration | 
-	=> S_Assignment | 
+
 	S_Other;
 
 S_1Expr_Facets_BlockOrEnd returns Statement:
@@ -156,17 +158,37 @@ S_Layer returns Statement:
 	S_SpeciesLayer | 
 	// 2. The keyword "image" can also be a Valid_ID in a regular S_Other Statement.
 	S_ImageLayer | 
-	// 3. Fallback to any generic layer statement.
+	// 3. "graphics" layers accept any statements in their blocks
+	S_GraphicsLayer | 
+	// 4. "event" layers accept any statements in their blocks
+	S_EventLayer |
+	// 5. "overlay" layers accept any statements in their blocks and do not take an expression
+	S_OverlayLayer | 
+	// 6. Fallback to any generic layer statement.
 	S_OtherLayer;
 
 S_SpeciesLayer:
-	key=_SpeciesKey expr=Expression (facets+=Facet)* (block=DisplayBlock | ";");
+	key=_SpeciesKey expr=Expression FacetsAndBlock
+;
 	
 S_ImageLayer:
-	key =_ImageLayerKey  expr=Expression (facets+=Facet)* ";";
+	key =_ImageLayerKey  expr=Expression (facets+=Facet)* ";"
+;
+	
+S_GraphicsLayer:
+	key=_GraphicsLayerKey expr=Expression FacetsAndBlock
+;
+
+S_EventLayer:
+	key=_EventLayerKey expr=Expression FacetsAndBlock
+;
+
+S_OverlayLayer:
+	key=_OverlayLayerKey FacetsAndBlock
+;
 	
 S_OtherLayer:
-	key =_LayerKey (firstFacet=FirstFacetKey)? (expr=Expression) (facets+=Facet)* (block=DisplayBlock | ";")
+	key =_LayerKey (firstFacet=FirstFacetKey)? (expr=Expression) FacetsAndBlock
 ;
 
 /**
@@ -183,18 +205,23 @@ _SpeciesKey:
 	
 _ImageLayerKey: "image";
 
+_GraphicsLayerKey: "graphics";
+
+_EventLayerKey: "event";
+
+_OverlayLayerKey: "overlay";
+
 _ExperimentKey:
 	"experiment";
 
 _1Expr_Facets_BlockOrEnd_Key:
 	_LayerKey | "ask" | "release" | "capture" | "create" | "write" | "error" | "warn" | "exception" | "save" | "assert"
-	| "inspect" | "browse" | "restore" |
-	"draw" | "using" | "switch" | "put" | "add" | "remove" | "match" | "match_between" | "match_one" | "parameter" |
+	| "inspect" | "browse" | "restore" | "draw" | "using" | "switch" | "put" | "add" | "remove" | "match" | "match_between" | "match_one" | "parameter" |
 	"status" | "highlight" | "focus_on" | "layout";
 
 _LayerKey:
-	"light" | "camera" | "text" | "image_layer" | "data" | "chart" | "agents" | "graphics" | "display_population" |
-	"display_grid" | "event" | "overlay" | "datalist" | "mesh";
+	"light" | "camera" | "text" | "image_layer" | "data" | "chart" | "agents" | "display_population" |
+	"display_grid" | "datalist" | "mesh" | "rotation";
 
 _DoKey:
 	"do" | "invoke";
@@ -282,8 +309,6 @@ Expression:
 	ArgumentPair;
 
 ArgumentPair returns Expression:
-	// OPTION 1 : Il y a un opérateur. 
-	// L'action {ArgumentPair} dit à Xtext : "Crée un nœud ArgumentPair dans l'AST ici"
 	=> (
 		{ArgumentPair}
 		(op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':') 
@@ -292,8 +317,6 @@ ArgumentPair returns Expression:
 	
 	| 
 	
-	// OPTION 2 : Pas d'opérateur. 
-	// On délègue directement à Pair. Aucun nœud ArgumentPair inutile n'est créé !
 	Pair;
 
 BinaryOperator returns Expression:
@@ -445,8 +468,8 @@ EquationFakeDefinition:
 	'**equation*' name=Valid_ID;
 
 Valid_ID:
-	_SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _1Expr_Facets_BlockOrEnd_Key | _EquationsKey | ID |
-	_ExperimentKey;
+	_SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _1Expr_Facets_BlockOrEnd_Key | _EquationsKey | 
+	_ExperimentKey | ID ;
 
 /**
  * Terminals

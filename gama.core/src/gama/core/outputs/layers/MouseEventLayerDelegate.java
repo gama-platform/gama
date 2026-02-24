@@ -15,8 +15,8 @@ import java.util.Set;
 
 import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.constants.IKeyword;
-import gama.api.gaml.statements.IStatement;
 import gama.api.runtime.scope.IScope;
+import gama.api.ui.layers.ILayerStatement;
 
 /**
  * The Class MouseEventLayerDelegate.
@@ -29,7 +29,7 @@ public class MouseEventLayerDelegate implements IEventLayerDelegate {
 	}
 
 	@Override
-	public boolean createFrom(final IScope scope, final Object source, final IStatement.Event statement) {
+	public boolean createFrom(final IScope scope, final Object source, final ILayerStatement.Event statement) {
 		return true;
 	}
 

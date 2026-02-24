@@ -111,17 +111,17 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cPragmasPragmaParserRuleCall_0_0 = (RuleCall)cPragmasAssignment_0.eContents().get(0);
 		private final Keyword cModelKeyword_1 = (Keyword)cGroup.eContents().get(1);
 		private final Assignment cNameAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cNameIDTerminalRuleCall_2_0 = (RuleCall)cNameAssignment_2.eContents().get(0);
+		private final RuleCall cNameValid_IDParserRuleCall_2_0 = (RuleCall)cNameAssignment_2.eContents().get(0);
 		private final Assignment cImportsAssignment_3 = (Assignment)cGroup.eContents().get(3);
 		private final RuleCall cImportsImportParserRuleCall_3_0 = (RuleCall)cImportsAssignment_3.eContents().get(0);
 		private final Assignment cBlockAssignment_4 = (Assignment)cGroup.eContents().get(4);
 		private final RuleCall cBlockModelBlockParserRuleCall_4_0 = (RuleCall)cBlockAssignment_4.eContents().get(0);
 		
 		//Model:
-		//    (pragmas+=Pragma)* 'model' name=ID (imports+=Import)* block=ModelBlock;
+		//    (pragmas+=Pragma)* 'model' name=Valid_ID (imports+=Import)* block=ModelBlock;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//(pragmas+=Pragma)* 'model' name=ID (imports+=Import)* block=ModelBlock
+		//(pragmas+=Pragma)* 'model' name=Valid_ID (imports+=Import)* block=ModelBlock
 		public Group getGroup() { return cGroup; }
 		
 		//(pragmas+=Pragma)*
@@ -133,11 +133,11 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//'model'
 		public Keyword getModelKeyword_1() { return cModelKeyword_1; }
 		
-		//name=ID
+		//name=Valid_ID
 		public Assignment getNameAssignment_2() { return cNameAssignment_2; }
 		
-		//ID
-		public RuleCall getNameIDTerminalRuleCall_2_0() { return cNameIDTerminalRuleCall_2_0; }
+		//Valid_ID
+		public RuleCall getNameValid_IDParserRuleCall_2_0() { return cNameValid_IDParserRuleCall_2_0; }
 		
 		//(imports+=Import)*
 		public Assignment getImportsAssignment_3() { return cImportsAssignment_3; }
@@ -529,9 +529,9 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cS_IfParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
 		private final RuleCall cS_TryParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
 		private final RuleCall cS_EquationsParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
-		private final RuleCall cS_1Expr_Facets_BlockOrEndParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
-		private final RuleCall cS_DeclarationParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
-		private final RuleCall cS_AssignmentParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
+		private final RuleCall cS_AssignmentParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
+		private final RuleCall cS_1Expr_Facets_BlockOrEndParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
+		private final RuleCall cS_DeclarationParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
 		private final RuleCall cS_OtherParserRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
 		
 		///**
@@ -547,11 +547,11 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//    S_If |
 		//    S_Try |
 		//    S_Equations |
+		//    => S_Assignment |
 		//    S_1Expr_Facets_BlockOrEnd |
 		//    // 2. Ambiguous rules: these might start with a simple identifier (ID).
 		//    // We use the syntactic predicate (=>) only here, as a last resort.
 		//    => S_Declaration |
-		//    => S_Assignment |
 		//    S_Other;
 		@Override public ParserRule getRule() { return rule; }
 		
@@ -564,11 +564,11 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//S_If |
 		//S_Try |
 		//S_Equations |
+		//=> S_Assignment |
 		//S_1Expr_Facets_BlockOrEnd |
 		//// 2. Ambiguous rules: these might start with a simple identifier (ID).
 		//// We use the syntactic predicate (=>) only here, as a last resort.
 		//=> S_Declaration |
-		//=> S_Assignment |
 		//S_Other
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
@@ -595,16 +595,16 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//S_Equations
 		public RuleCall getS_EquationsParserRuleCall_6() { return cS_EquationsParserRuleCall_6; }
 		
+		//=> S_Assignment
+		public RuleCall getS_AssignmentParserRuleCall_7() { return cS_AssignmentParserRuleCall_7; }
+		
 		//S_1Expr_Facets_BlockOrEnd
-		public RuleCall getS_1Expr_Facets_BlockOrEndParserRuleCall_7() { return cS_1Expr_Facets_BlockOrEndParserRuleCall_7; }
+		public RuleCall getS_1Expr_Facets_BlockOrEndParserRuleCall_8() { return cS_1Expr_Facets_BlockOrEndParserRuleCall_8; }
 		
 		//// 2. Ambiguous rules: these might start with a simple identifier (ID).
 		//// We use the syntactic predicate (=>) only here, as a last resort.
 		//=> S_Declaration
-		public RuleCall getS_DeclarationParserRuleCall_8() { return cS_DeclarationParserRuleCall_8; }
-		
-		//=> S_Assignment
-		public RuleCall getS_AssignmentParserRuleCall_9() { return cS_AssignmentParserRuleCall_9; }
+		public RuleCall getS_DeclarationParserRuleCall_9() { return cS_DeclarationParserRuleCall_9; }
 		
 		//S_Other
 		public RuleCall getS_OtherParserRuleCall_10() { return cS_OtherParserRuleCall_10; }
@@ -1563,7 +1563,10 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final RuleCall cS_SpeciesLayerParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
 		private final RuleCall cS_ImageLayerParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
-		private final RuleCall cS_OtherLayerParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cS_GraphicsLayerParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cS_EventLayerParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
+		private final RuleCall cS_OverlayLayerParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
+		private final RuleCall cS_OtherLayerParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
 		
 		///**
 		// * Display Statements
@@ -1573,7 +1576,13 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//    S_SpeciesLayer |
 		//    // 2. The keyword "image" can also be a Valid_ID in a regular S_Other Statement.
 		//    S_ImageLayer |
-		//    // 3. Fallback to any generic layer statement.
+		//    // 3. "graphics" layers accept any statements in their blocks
+		//    S_GraphicsLayer |
+		//    // 4. "event" layers accept any statements in their blocks
+		//    S_EventLayer |
+		//    // 5. "overlay" layers accept any statements in their blocks and do not take an expression
+		//    S_OverlayLayer |
+		//    // 6. Fallback to any generic layer statement.
 		//    S_OtherLayer;
 		@Override public ParserRule getRule() { return rule; }
 		
@@ -1581,7 +1590,13 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//S_SpeciesLayer |
 		//// 2. The keyword "image" can also be a Valid_ID in a regular S_Other Statement.
 		//S_ImageLayer |
-		//// 3. Fallback to any generic layer statement.
+		//// 3. "graphics" layers accept any statements in their blocks
+		//S_GraphicsLayer |
+		//// 4. "event" layers accept any statements in their blocks
+		//S_EventLayer |
+		//// 5. "overlay" layers accept any statements in their blocks and do not take an expression
+		//S_OverlayLayer |
+		//// 6. Fallback to any generic layer statement.
 		//S_OtherLayer
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
@@ -1593,9 +1608,21 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//S_ImageLayer
 		public RuleCall getS_ImageLayerParserRuleCall_1() { return cS_ImageLayerParserRuleCall_1; }
 		
-		//// 3. Fallback to any generic layer statement.
+		//// 3. "graphics" layers accept any statements in their blocks
+		//S_GraphicsLayer
+		public RuleCall getS_GraphicsLayerParserRuleCall_2() { return cS_GraphicsLayerParserRuleCall_2; }
+		
+		//// 4. "event" layers accept any statements in their blocks
+		//S_EventLayer
+		public RuleCall getS_EventLayerParserRuleCall_3() { return cS_EventLayerParserRuleCall_3; }
+		
+		//// 5. "overlay" layers accept any statements in their blocks and do not take an expression
+		//S_OverlayLayer
+		public RuleCall getS_OverlayLayerParserRuleCall_4() { return cS_OverlayLayerParserRuleCall_4; }
+		
+		//// 6. Fallback to any generic layer statement.
 		//S_OtherLayer
-		public RuleCall getS_OtherLayerParserRuleCall_2() { return cS_OtherLayerParserRuleCall_2; }
+		public RuleCall getS_OtherLayerParserRuleCall_5() { return cS_OtherLayerParserRuleCall_5; }
 	}
 	public class S_SpeciesLayerElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_SpeciesLayer");
@@ -1604,18 +1631,14 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cKey_SpeciesKeyParserRuleCall_0_0 = (RuleCall)cKeyAssignment_0.eContents().get(0);
 		private final Assignment cExprAssignment_1 = (Assignment)cGroup.eContents().get(1);
 		private final RuleCall cExprExpressionParserRuleCall_1_0 = (RuleCall)cExprAssignment_1.eContents().get(0);
-		private final Assignment cFacetsAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cFacetsFacetParserRuleCall_2_0 = (RuleCall)cFacetsAssignment_2.eContents().get(0);
-		private final Alternatives cAlternatives_3 = (Alternatives)cGroup.eContents().get(3);
-		private final Assignment cBlockAssignment_3_0 = (Assignment)cAlternatives_3.eContents().get(0);
-		private final RuleCall cBlockDisplayBlockParserRuleCall_3_0_0 = (RuleCall)cBlockAssignment_3_0.eContents().get(0);
-		private final Keyword cSemicolonKeyword_3_1 = (Keyword)cAlternatives_3.eContents().get(1);
+		private final RuleCall cFacetsAndBlockParserRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
 		
 		//S_SpeciesLayer:
-		//    key=_SpeciesKey expr=Expression (facets+=Facet)* (block=DisplayBlock | ";");
+		//    key=_SpeciesKey expr=Expression FacetsAndBlock
+		//;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//key=_SpeciesKey expr=Expression (facets+=Facet)* (block=DisplayBlock | ";")
+		//key=_SpeciesKey expr=Expression FacetsAndBlock
 		public Group getGroup() { return cGroup; }
 		
 		//key=_SpeciesKey
@@ -1630,23 +1653,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//Expression
 		public RuleCall getExprExpressionParserRuleCall_1_0() { return cExprExpressionParserRuleCall_1_0; }
 		
-		//(facets+=Facet)*
-		public Assignment getFacetsAssignment_2() { return cFacetsAssignment_2; }
-		
-		//Facet
-		public RuleCall getFacetsFacetParserRuleCall_2_0() { return cFacetsFacetParserRuleCall_2_0; }
-		
-		//(block=DisplayBlock | ";")
-		public Alternatives getAlternatives_3() { return cAlternatives_3; }
-		
-		//block=DisplayBlock
-		public Assignment getBlockAssignment_3_0() { return cBlockAssignment_3_0; }
-		
-		//DisplayBlock
-		public RuleCall getBlockDisplayBlockParserRuleCall_3_0_0() { return cBlockDisplayBlockParserRuleCall_3_0_0; }
-		
-		//";"
-		public Keyword getSemicolonKeyword_3_1() { return cSemicolonKeyword_3_1; }
+		//FacetsAndBlock
+		public RuleCall getFacetsAndBlockParserRuleCall_2() { return cFacetsAndBlockParserRuleCall_2; }
 	}
 	public class S_ImageLayerElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_ImageLayer");
@@ -1660,7 +1668,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Keyword cSemicolonKeyword_3 = (Keyword)cGroup.eContents().get(3);
 		
 		//S_ImageLayer:
-		//    key =_ImageLayerKey  expr=Expression (facets+=Facet)* ";";
+		//    key =_ImageLayerKey  expr=Expression (facets+=Facet)* ";"
+		//;
 		@Override public ParserRule getRule() { return rule; }
 		
 		//key =_ImageLayerKey  expr=Expression (facets+=Facet)* ";"
@@ -1687,6 +1696,94 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//";"
 		public Keyword getSemicolonKeyword_3() { return cSemicolonKeyword_3; }
 	}
+	public class S_GraphicsLayerElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_GraphicsLayer");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Assignment cKeyAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final RuleCall cKey_GraphicsLayerKeyParserRuleCall_0_0 = (RuleCall)cKeyAssignment_0.eContents().get(0);
+		private final Assignment cExprAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cExprExpressionParserRuleCall_1_0 = (RuleCall)cExprAssignment_1.eContents().get(0);
+		private final RuleCall cFacetsAndBlockParserRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
+		
+		//S_GraphicsLayer:
+		//    key=_GraphicsLayerKey expr=Expression FacetsAndBlock
+		//;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//key=_GraphicsLayerKey expr=Expression FacetsAndBlock
+		public Group getGroup() { return cGroup; }
+		
+		//key=_GraphicsLayerKey
+		public Assignment getKeyAssignment_0() { return cKeyAssignment_0; }
+		
+		//_GraphicsLayerKey
+		public RuleCall getKey_GraphicsLayerKeyParserRuleCall_0_0() { return cKey_GraphicsLayerKeyParserRuleCall_0_0; }
+		
+		//expr=Expression
+		public Assignment getExprAssignment_1() { return cExprAssignment_1; }
+		
+		//Expression
+		public RuleCall getExprExpressionParserRuleCall_1_0() { return cExprExpressionParserRuleCall_1_0; }
+		
+		//FacetsAndBlock
+		public RuleCall getFacetsAndBlockParserRuleCall_2() { return cFacetsAndBlockParserRuleCall_2; }
+	}
+	public class S_EventLayerElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_EventLayer");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Assignment cKeyAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final RuleCall cKey_EventLayerKeyParserRuleCall_0_0 = (RuleCall)cKeyAssignment_0.eContents().get(0);
+		private final Assignment cExprAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cExprExpressionParserRuleCall_1_0 = (RuleCall)cExprAssignment_1.eContents().get(0);
+		private final RuleCall cFacetsAndBlockParserRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
+		
+		//S_EventLayer:
+		//    key=_EventLayerKey expr=Expression FacetsAndBlock
+		//;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//key=_EventLayerKey expr=Expression FacetsAndBlock
+		public Group getGroup() { return cGroup; }
+		
+		//key=_EventLayerKey
+		public Assignment getKeyAssignment_0() { return cKeyAssignment_0; }
+		
+		//_EventLayerKey
+		public RuleCall getKey_EventLayerKeyParserRuleCall_0_0() { return cKey_EventLayerKeyParserRuleCall_0_0; }
+		
+		//expr=Expression
+		public Assignment getExprAssignment_1() { return cExprAssignment_1; }
+		
+		//Expression
+		public RuleCall getExprExpressionParserRuleCall_1_0() { return cExprExpressionParserRuleCall_1_0; }
+		
+		//FacetsAndBlock
+		public RuleCall getFacetsAndBlockParserRuleCall_2() { return cFacetsAndBlockParserRuleCall_2; }
+	}
+	public class S_OverlayLayerElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_OverlayLayer");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Assignment cKeyAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final RuleCall cKey_OverlayLayerKeyParserRuleCall_0_0 = (RuleCall)cKeyAssignment_0.eContents().get(0);
+		private final RuleCall cFacetsAndBlockParserRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		
+		//S_OverlayLayer:
+		//    key=_OverlayLayerKey FacetsAndBlock
+		//;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//key=_OverlayLayerKey FacetsAndBlock
+		public Group getGroup() { return cGroup; }
+		
+		//key=_OverlayLayerKey
+		public Assignment getKeyAssignment_0() { return cKeyAssignment_0; }
+		
+		//_OverlayLayerKey
+		public RuleCall getKey_OverlayLayerKeyParserRuleCall_0_0() { return cKey_OverlayLayerKeyParserRuleCall_0_0; }
+		
+		//FacetsAndBlock
+		public RuleCall getFacetsAndBlockParserRuleCall_1() { return cFacetsAndBlockParserRuleCall_1; }
+	}
 	public class S_OtherLayerElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_OtherLayer");
 		private final Group cGroup = (Group)rule.eContents().get(1);
@@ -1696,19 +1793,14 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cFirstFacetFirstFacetKeyParserRuleCall_1_0 = (RuleCall)cFirstFacetAssignment_1.eContents().get(0);
 		private final Assignment cExprAssignment_2 = (Assignment)cGroup.eContents().get(2);
 		private final RuleCall cExprExpressionParserRuleCall_2_0 = (RuleCall)cExprAssignment_2.eContents().get(0);
-		private final Assignment cFacetsAssignment_3 = (Assignment)cGroup.eContents().get(3);
-		private final RuleCall cFacetsFacetParserRuleCall_3_0 = (RuleCall)cFacetsAssignment_3.eContents().get(0);
-		private final Alternatives cAlternatives_4 = (Alternatives)cGroup.eContents().get(4);
-		private final Assignment cBlockAssignment_4_0 = (Assignment)cAlternatives_4.eContents().get(0);
-		private final RuleCall cBlockDisplayBlockParserRuleCall_4_0_0 = (RuleCall)cBlockAssignment_4_0.eContents().get(0);
-		private final Keyword cSemicolonKeyword_4_1 = (Keyword)cAlternatives_4.eContents().get(1);
+		private final RuleCall cFacetsAndBlockParserRuleCall_3 = (RuleCall)cGroup.eContents().get(3);
 		
 		//S_OtherLayer:
-		//    key =_LayerKey (firstFacet=FirstFacetKey)? (expr=Expression) (facets+=Facet)* (block=DisplayBlock | ";")
+		//    key =_LayerKey (firstFacet=FirstFacetKey)? (expr=Expression) FacetsAndBlock
 		//;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//key =_LayerKey (firstFacet=FirstFacetKey)? (expr=Expression) (facets+=Facet)* (block=DisplayBlock | ";")
+		//key =_LayerKey (firstFacet=FirstFacetKey)? (expr=Expression) FacetsAndBlock
 		public Group getGroup() { return cGroup; }
 		
 		//key =_LayerKey
@@ -1729,23 +1821,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//Expression
 		public RuleCall getExprExpressionParserRuleCall_2_0() { return cExprExpressionParserRuleCall_2_0; }
 		
-		//(facets+=Facet)*
-		public Assignment getFacetsAssignment_3() { return cFacetsAssignment_3; }
-		
-		//Facet
-		public RuleCall getFacetsFacetParserRuleCall_3_0() { return cFacetsFacetParserRuleCall_3_0; }
-		
-		//(block=DisplayBlock | ";")
-		public Alternatives getAlternatives_4() { return cAlternatives_4; }
-		
-		//block=DisplayBlock
-		public Assignment getBlockAssignment_4_0() { return cBlockAssignment_4_0; }
-		
-		//DisplayBlock
-		public RuleCall getBlockDisplayBlockParserRuleCall_4_0_0() { return cBlockDisplayBlockParserRuleCall_4_0_0; }
-		
-		//";"
-		public Keyword getSemicolonKeyword_4_1() { return cSemicolonKeyword_4_1; }
+		//FacetsAndBlock
+		public RuleCall getFacetsAndBlockParserRuleCall_3() { return cFacetsAndBlockParserRuleCall_3; }
 	}
 	public class _EquationsKeyElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml._EquationsKey");
@@ -1801,6 +1878,36 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//"image"
 		public Keyword getImageKeyword() { return cImageKeyword; }
 	}
+	public class _GraphicsLayerKeyElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml._GraphicsLayerKey");
+		private final Keyword cGraphicsKeyword = (Keyword)rule.eContents().get(1);
+		
+		//_GraphicsLayerKey: "graphics";
+		@Override public ParserRule getRule() { return rule; }
+		
+		//"graphics"
+		public Keyword getGraphicsKeyword() { return cGraphicsKeyword; }
+	}
+	public class _EventLayerKeyElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml._EventLayerKey");
+		private final Keyword cEventKeyword = (Keyword)rule.eContents().get(1);
+		
+		//_EventLayerKey: "event";
+		@Override public ParserRule getRule() { return rule; }
+		
+		//"event"
+		public Keyword getEventKeyword() { return cEventKeyword; }
+	}
+	public class _OverlayLayerKeyElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml._OverlayLayerKey");
+		private final Keyword cOverlayKeyword = (Keyword)rule.eContents().get(1);
+		
+		//_OverlayLayerKey: "overlay";
+		@Override public ParserRule getRule() { return rule; }
+		
+		//"overlay"
+		public Keyword getOverlayKeyword() { return cOverlayKeyword; }
+	}
 	public class _ExperimentKeyElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml._ExperimentKey");
 		private final Keyword cExperimentKeyword = (Keyword)rule.eContents().get(1);
@@ -1846,14 +1953,12 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		
 		//_1Expr_Facets_BlockOrEnd_Key:
 		//    _LayerKey | "ask" | "release" | "capture" | "create" | "write" | "error" | "warn" | "exception" | "save" | "assert"
-		//    | "inspect" | "browse" | "restore" |
-		//    "draw" | "using" | "switch" | "put" | "add" | "remove" | "match" | "match_between" | "match_one" | "parameter" |
+		//    | "inspect" | "browse" | "restore" | "draw" | "using" | "switch" | "put" | "add" | "remove" | "match" | "match_between" | "match_one" | "parameter" |
 		//    "status" | "highlight" | "focus_on" | "layout";
 		@Override public ParserRule getRule() { return rule; }
 		
 		//_LayerKey | "ask" | "release" | "capture" | "create" | "write" | "error" | "warn" | "exception" | "save" | "assert"
-		//| "inspect" | "browse" | "restore" |
-		//"draw" | "using" | "switch" | "put" | "add" | "remove" | "match" | "match_between" | "match_one" | "parameter" |
+		//| "inspect" | "browse" | "restore" | "draw" | "using" | "switch" | "put" | "add" | "remove" | "match" | "match_between" | "match_one" | "parameter" |
 		//"status" | "highlight" | "focus_on" | "layout"
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
@@ -1951,21 +2056,19 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Keyword cDataKeyword_4 = (Keyword)cAlternatives.eContents().get(4);
 		private final Keyword cChartKeyword_5 = (Keyword)cAlternatives.eContents().get(5);
 		private final Keyword cAgentsKeyword_6 = (Keyword)cAlternatives.eContents().get(6);
-		private final Keyword cGraphicsKeyword_7 = (Keyword)cAlternatives.eContents().get(7);
-		private final Keyword cDisplay_populationKeyword_8 = (Keyword)cAlternatives.eContents().get(8);
-		private final Keyword cDisplay_gridKeyword_9 = (Keyword)cAlternatives.eContents().get(9);
-		private final Keyword cEventKeyword_10 = (Keyword)cAlternatives.eContents().get(10);
-		private final Keyword cOverlayKeyword_11 = (Keyword)cAlternatives.eContents().get(11);
-		private final Keyword cDatalistKeyword_12 = (Keyword)cAlternatives.eContents().get(12);
-		private final Keyword cMeshKeyword_13 = (Keyword)cAlternatives.eContents().get(13);
+		private final Keyword cDisplay_populationKeyword_7 = (Keyword)cAlternatives.eContents().get(7);
+		private final Keyword cDisplay_gridKeyword_8 = (Keyword)cAlternatives.eContents().get(8);
+		private final Keyword cDatalistKeyword_9 = (Keyword)cAlternatives.eContents().get(9);
+		private final Keyword cMeshKeyword_10 = (Keyword)cAlternatives.eContents().get(10);
+		private final Keyword cRotationKeyword_11 = (Keyword)cAlternatives.eContents().get(11);
 		
 		//_LayerKey:
-		//    "light" | "camera" | "text" | "image_layer" | "data" | "chart" | "agents" | "graphics" | "display_population" |
-		//    "display_grid" | "event" | "overlay" | "datalist" | "mesh";
+		//    "light" | "camera" | "text" | "image_layer" | "data" | "chart" | "agents" | "display_population" |
+		//    "display_grid" | "datalist" | "mesh" | "rotation";
 		@Override public ParserRule getRule() { return rule; }
 		
-		//"light" | "camera" | "text" | "image_layer" | "data" | "chart" | "agents" | "graphics" | "display_population" |
-		//"display_grid" | "event" | "overlay" | "datalist" | "mesh"
+		//"light" | "camera" | "text" | "image_layer" | "data" | "chart" | "agents" | "display_population" |
+		//"display_grid" | "datalist" | "mesh" | "rotation"
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//"light"
@@ -1989,26 +2092,20 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//"agents"
 		public Keyword getAgentsKeyword_6() { return cAgentsKeyword_6; }
 		
-		//"graphics"
-		public Keyword getGraphicsKeyword_7() { return cGraphicsKeyword_7; }
-		
 		//"display_population"
-		public Keyword getDisplay_populationKeyword_8() { return cDisplay_populationKeyword_8; }
+		public Keyword getDisplay_populationKeyword_7() { return cDisplay_populationKeyword_7; }
 		
 		//"display_grid"
-		public Keyword getDisplay_gridKeyword_9() { return cDisplay_gridKeyword_9; }
-		
-		//"event"
-		public Keyword getEventKeyword_10() { return cEventKeyword_10; }
-		
-		//"overlay"
-		public Keyword getOverlayKeyword_11() { return cOverlayKeyword_11; }
+		public Keyword getDisplay_gridKeyword_8() { return cDisplay_gridKeyword_8; }
 		
 		//"datalist"
-		public Keyword getDatalistKeyword_12() { return cDatalistKeyword_12; }
+		public Keyword getDatalistKeyword_9() { return cDatalistKeyword_9; }
 		
 		//"mesh"
-		public Keyword getMeshKeyword_13() { return cMeshKeyword_13; }
+		public Keyword getMeshKeyword_10() { return cMeshKeyword_10; }
+		
+		//"rotation"
+		public Keyword getRotationKeyword_11() { return cRotationKeyword_11; }
 	}
 	public class _DoKeyElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml._DoKey");
@@ -2814,34 +2911,24 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cPairParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
 		
 		//ArgumentPair returns Expression:
-		//    // OPTION 1 : Il y a un opérateur.
-		//    // L'action {ArgumentPair} dit à Xtext : "Crée un nœud ArgumentPair dans l'AST ici"
 		//    => (
 		//        {ArgumentPair}
 		//        (op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
 		//        right=Pair
 		//    )
 		//    |
-		//    // OPTION 2 : Pas d'opérateur.
-		//    // On délègue directement à Pair. Aucun nœud ArgumentPair inutile n'est créé !
 		//    Pair;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//// OPTION 1 : Il y a un opérateur.
-		//// L'action {ArgumentPair} dit à Xtext : "Crée un nœud ArgumentPair dans l'AST ici"
 		//=> (
 		//    {ArgumentPair}
 		//    (op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
 		//    right=Pair
 		//)
 		//|
-		//// OPTION 2 : Pas d'opérateur.
-		//// On délègue directement à Pair. Aucun nœud ArgumentPair inutile n'est créé !
 		//Pair
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
-		//// OPTION 1 : Il y a un opérateur.
-		//// L'action {ArgumentPair} dit à Xtext : "Crée un nœud ArgumentPair dans l'AST ici"
 		//=> (
 		//    {ArgumentPair}
 		//    (op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
@@ -2905,8 +2992,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//Pair
 		public RuleCall getRightPairParserRuleCall_0_0_2_0() { return cRightPairParserRuleCall_0_0_2_0; }
 		
-		//// OPTION 2 : Pas d'opérateur.
-		//// On délègue directement à Pair. Aucun nœud ArgumentPair inutile n'est créé !
 		//Pair
 		public RuleCall getPairParserRuleCall_1() { return cPairParserRuleCall_1; }
 	}
@@ -4606,16 +4691,16 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall c_VarOrConstKeyParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
 		private final RuleCall c_1Expr_Facets_BlockOrEnd_KeyParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
 		private final RuleCall c_EquationsKeyParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
-		private final RuleCall cIDTerminalRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
-		private final RuleCall c_ExperimentKeyParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
+		private final RuleCall c_ExperimentKeyParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
+		private final RuleCall cIDTerminalRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
 		
 		//Valid_ID:
-		//    _SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _1Expr_Facets_BlockOrEnd_Key | _EquationsKey | ID |
-		//    _ExperimentKey;
+		//    _SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _1Expr_Facets_BlockOrEnd_Key | _EquationsKey |
+		//    _ExperimentKey | ID ;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//_SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _1Expr_Facets_BlockOrEnd_Key | _EquationsKey | ID |
-		//_ExperimentKey
+		//_SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _1Expr_Facets_BlockOrEnd_Key | _EquationsKey |
+		//_ExperimentKey | ID
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//_SpeciesKey
@@ -4639,11 +4724,11 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//_EquationsKey
 		public RuleCall get_EquationsKeyParserRuleCall_6() { return c_EquationsKeyParserRuleCall_6; }
 		
-		//ID
-		public RuleCall getIDTerminalRuleCall_7() { return cIDTerminalRuleCall_7; }
-		
 		//_ExperimentKey
-		public RuleCall get_ExperimentKeyParserRuleCall_8() { return c_ExperimentKeyParserRuleCall_8; }
+		public RuleCall get_ExperimentKeyParserRuleCall_7() { return c_ExperimentKeyParserRuleCall_7; }
+		
+		//ID
+		public RuleCall getIDTerminalRuleCall_8() { return cIDTerminalRuleCall_8; }
 	}
 	public class TerminalExpressionElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.TerminalExpression");
@@ -4790,11 +4875,17 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	private final S_LayerElements pS_Layer;
 	private final S_SpeciesLayerElements pS_SpeciesLayer;
 	private final S_ImageLayerElements pS_ImageLayer;
+	private final S_GraphicsLayerElements pS_GraphicsLayer;
+	private final S_EventLayerElements pS_EventLayer;
+	private final S_OverlayLayerElements pS_OverlayLayer;
 	private final S_OtherLayerElements pS_OtherLayer;
 	private final _EquationsKeyElements p_EquationsKey;
 	private final _SolveKeyElements p_SolveKey;
 	private final _SpeciesKeyElements p_SpeciesKey;
 	private final _ImageLayerKeyElements p_ImageLayerKey;
+	private final _GraphicsLayerKeyElements p_GraphicsLayerKey;
+	private final _EventLayerKeyElements p_EventLayerKey;
+	private final _OverlayLayerKeyElements p_OverlayLayerKey;
 	private final _ExperimentKeyElements p_ExperimentKey;
 	private final _1Expr_Facets_BlockOrEnd_KeyElements p_1Expr_Facets_BlockOrEnd_Key;
 	private final _LayerKeyElements p_LayerKey;
@@ -4915,11 +5006,17 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		this.pS_Layer = new S_LayerElements();
 		this.pS_SpeciesLayer = new S_SpeciesLayerElements();
 		this.pS_ImageLayer = new S_ImageLayerElements();
+		this.pS_GraphicsLayer = new S_GraphicsLayerElements();
+		this.pS_EventLayer = new S_EventLayerElements();
+		this.pS_OverlayLayer = new S_OverlayLayerElements();
 		this.pS_OtherLayer = new S_OtherLayerElements();
 		this.p_EquationsKey = new _EquationsKeyElements();
 		this.p_SolveKey = new _SolveKeyElements();
 		this.p_SpeciesKey = new _SpeciesKeyElements();
 		this.p_ImageLayerKey = new _ImageLayerKeyElements();
+		this.p_GraphicsLayerKey = new _GraphicsLayerKeyElements();
+		this.p_EventLayerKey = new _EventLayerKeyElements();
+		this.p_OverlayLayerKey = new _OverlayLayerKeyElements();
 		this.p_ExperimentKey = new _ExperimentKeyElements();
 		this.p_1Expr_Facets_BlockOrEnd_Key = new _1Expr_Facets_BlockOrEnd_KeyElements();
 		this.p_LayerKey = new _LayerKeyElements();
@@ -5052,7 +5149,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//Model:
-	//    (pragmas+=Pragma)* 'model' name=ID (imports+=Import)* block=ModelBlock;
+	//    (pragmas+=Pragma)* 'model' name=Valid_ID (imports+=Import)* block=ModelBlock;
 	public ModelElements getModelAccess() {
 		return pModel;
 	}
@@ -5186,11 +5283,11 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	//    S_If |
 	//    S_Try |
 	//    S_Equations |
+	//    => S_Assignment |
 	//    S_1Expr_Facets_BlockOrEnd |
 	//    // 2. Ambiguous rules: these might start with a simple identifier (ID).
 	//    // We use the syntactic predicate (=>) only here, as a last resort.
 	//    => S_Declaration |
-	//    => S_Assignment |
 	//    S_Other;
 	public StatementElements getStatementAccess() {
 		return pStatement;
@@ -5417,7 +5514,13 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	//    S_SpeciesLayer |
 	//    // 2. The keyword "image" can also be a Valid_ID in a regular S_Other Statement.
 	//    S_ImageLayer |
-	//    // 3. Fallback to any generic layer statement.
+	//    // 3. "graphics" layers accept any statements in their blocks
+	//    S_GraphicsLayer |
+	//    // 4. "event" layers accept any statements in their blocks
+	//    S_EventLayer |
+	//    // 5. "overlay" layers accept any statements in their blocks and do not take an expression
+	//    S_OverlayLayer |
+	//    // 6. Fallback to any generic layer statement.
 	//    S_OtherLayer;
 	public S_LayerElements getS_LayerAccess() {
 		return pS_Layer;
@@ -5428,7 +5531,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//S_SpeciesLayer:
-	//    key=_SpeciesKey expr=Expression (facets+=Facet)* (block=DisplayBlock | ";");
+	//    key=_SpeciesKey expr=Expression FacetsAndBlock
+	//;
 	public S_SpeciesLayerElements getS_SpeciesLayerAccess() {
 		return pS_SpeciesLayer;
 	}
@@ -5438,7 +5542,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//S_ImageLayer:
-	//    key =_ImageLayerKey  expr=Expression (facets+=Facet)* ";";
+	//    key =_ImageLayerKey  expr=Expression (facets+=Facet)* ";"
+	//;
 	public S_ImageLayerElements getS_ImageLayerAccess() {
 		return pS_ImageLayer;
 	}
@@ -5447,8 +5552,41 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		return getS_ImageLayerAccess().getRule();
 	}
 	
+	//S_GraphicsLayer:
+	//    key=_GraphicsLayerKey expr=Expression FacetsAndBlock
+	//;
+	public S_GraphicsLayerElements getS_GraphicsLayerAccess() {
+		return pS_GraphicsLayer;
+	}
+	
+	public ParserRule getS_GraphicsLayerRule() {
+		return getS_GraphicsLayerAccess().getRule();
+	}
+	
+	//S_EventLayer:
+	//    key=_EventLayerKey expr=Expression FacetsAndBlock
+	//;
+	public S_EventLayerElements getS_EventLayerAccess() {
+		return pS_EventLayer;
+	}
+	
+	public ParserRule getS_EventLayerRule() {
+		return getS_EventLayerAccess().getRule();
+	}
+	
+	//S_OverlayLayer:
+	//    key=_OverlayLayerKey FacetsAndBlock
+	//;
+	public S_OverlayLayerElements getS_OverlayLayerAccess() {
+		return pS_OverlayLayer;
+	}
+	
+	public ParserRule getS_OverlayLayerRule() {
+		return getS_OverlayLayerAccess().getRule();
+	}
+	
 	//S_OtherLayer:
-	//    key =_LayerKey (firstFacet=FirstFacetKey)? (expr=Expression) (facets+=Facet)* (block=DisplayBlock | ";")
+	//    key =_LayerKey (firstFacet=FirstFacetKey)? (expr=Expression) FacetsAndBlock
 	//;
 	public S_OtherLayerElements getS_OtherLayerAccess() {
 		return pS_OtherLayer;
@@ -5500,6 +5638,33 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		return get_ImageLayerKeyAccess().getRule();
 	}
 	
+	//_GraphicsLayerKey: "graphics";
+	public _GraphicsLayerKeyElements get_GraphicsLayerKeyAccess() {
+		return p_GraphicsLayerKey;
+	}
+	
+	public ParserRule get_GraphicsLayerKeyRule() {
+		return get_GraphicsLayerKeyAccess().getRule();
+	}
+	
+	//_EventLayerKey: "event";
+	public _EventLayerKeyElements get_EventLayerKeyAccess() {
+		return p_EventLayerKey;
+	}
+	
+	public ParserRule get_EventLayerKeyRule() {
+		return get_EventLayerKeyAccess().getRule();
+	}
+	
+	//_OverlayLayerKey: "overlay";
+	public _OverlayLayerKeyElements get_OverlayLayerKeyAccess() {
+		return p_OverlayLayerKey;
+	}
+	
+	public ParserRule get_OverlayLayerKeyRule() {
+		return get_OverlayLayerKeyAccess().getRule();
+	}
+	
 	//_ExperimentKey:
 	//    "experiment";
 	public _ExperimentKeyElements get_ExperimentKeyAccess() {
@@ -5512,8 +5677,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	//_1Expr_Facets_BlockOrEnd_Key:
 	//    _LayerKey | "ask" | "release" | "capture" | "create" | "write" | "error" | "warn" | "exception" | "save" | "assert"
-	//    | "inspect" | "browse" | "restore" |
-	//    "draw" | "using" | "switch" | "put" | "add" | "remove" | "match" | "match_between" | "match_one" | "parameter" |
+	//    | "inspect" | "browse" | "restore" | "draw" | "using" | "switch" | "put" | "add" | "remove" | "match" | "match_between" | "match_one" | "parameter" |
 	//    "status" | "highlight" | "focus_on" | "layout";
 	public _1Expr_Facets_BlockOrEnd_KeyElements get_1Expr_Facets_BlockOrEnd_KeyAccess() {
 		return p_1Expr_Facets_BlockOrEnd_Key;
@@ -5524,8 +5688,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//_LayerKey:
-	//    "light" | "camera" | "text" | "image_layer" | "data" | "chart" | "agents" | "graphics" | "display_population" |
-	//    "display_grid" | "event" | "overlay" | "datalist" | "mesh";
+	//    "light" | "camera" | "text" | "image_layer" | "data" | "chart" | "agents" | "display_population" |
+	//    "display_grid" | "datalist" | "mesh" | "rotation";
 	public _LayerKeyElements get_LayerKeyAccess() {
 		return p_LayerKey;
 	}
@@ -5774,16 +5938,12 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//ArgumentPair returns Expression:
-	//    // OPTION 1 : Il y a un opérateur.
-	//    // L'action {ArgumentPair} dit à Xtext : "Crée un nœud ArgumentPair dans l'AST ici"
 	//    => (
 	//        {ArgumentPair}
 	//        (op=Valid_ID '::' | op=(DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | ActionFacetKey | VarFacetKey) ':')
 	//        right=Pair
 	//    )
 	//    |
-	//    // OPTION 2 : Pas d'opérateur.
-	//    // On délègue directement à Pair. Aucun nœud ArgumentPair inutile n'est créé !
 	//    Pair;
 	public ArgumentPairElements getArgumentPairAccess() {
 		return pArgumentPair;
@@ -6200,8 +6360,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//Valid_ID:
-	//    _SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _1Expr_Facets_BlockOrEnd_Key | _EquationsKey | ID |
-	//    _ExperimentKey;
+	//    _SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _1Expr_Facets_BlockOrEnd_Key | _EquationsKey |
+	//    _ExperimentKey | ID ;
 	public Valid_IDElements getValid_IDAccess() {
 		return pValid_ID;
 	}

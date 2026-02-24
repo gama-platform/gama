@@ -78,6 +78,9 @@
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//S_SpeciesLayer"/>
     <genClasses ecoreClass="Gaml.ecore#//S_ImageLayer"/>
+    <genClasses ecoreClass="Gaml.ecore#//S_GraphicsLayer"/>
+    <genClasses ecoreClass="Gaml.ecore#//S_EventLayer"/>
+    <genClasses ecoreClass="Gaml.ecore#//S_OverlayLayer"/>
     <genClasses ecoreClass="Gaml.ecore#//S_OtherLayer"/>
     <genClasses ecoreClass="Gaml.ecore#//ActionArguments">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//ActionArguments/args"/>

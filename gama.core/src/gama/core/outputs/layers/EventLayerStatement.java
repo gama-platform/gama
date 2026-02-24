@@ -43,6 +43,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.IOutput;
+import gama.api.ui.layers.ILayerStatement;
 import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 
 /**
@@ -60,7 +61,7 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 		symbols = { IKeyword.DISPLAY })
 @facets (
 		value = { @facet (
-				name = IKeyword.NAME,
+				name = ILayerStatement.Event.TRIGGER,
 				type = { IType.STRING },
 				optional = false,
 				doc = @doc ("the type of event captured: basic events include #mouse_up, #mouse_down, #mouse_move, #mouse_exit, #mouse_enter, #mouse_menu, #mouse_drag, #arrow_down, #arrow_up, #arrow_left, #arrow_right, #escape, #tab, #enter, #page_up, #page_down or a character")),
@@ -74,7 +75,7 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 						type = IType.ACTION,
 						optional = true,
 						doc = @doc ("The identifier of the action to be executed in the context of the simulation. This action needs to be defined in 'global' or in the current experiment, without any arguments. The location of the mouse in the world can be retrieved in this action with the pseudo-constant #user_location")) },
-		omissible = IKeyword.NAME)
+		omissible = ILayerStatement.Event.TRIGGER)
 @validator (EventLayerValidator.class)
 @doc (
 		value = "`" + IKeyword.EVENT
@@ -134,7 +135,7 @@ import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
 										isExecutable = false) }) },
 		see = { IKeyword.DISPLAY, IKeyword.AGENTS, IKeyword.CHART, "graphics", IKeyword.GRID_LAYER,
 				IKeyword.IMAGE_LAYER, IKeyword.OVERLAY, IKeyword.SPECIES_LAYER, })
-public class EventLayerStatement extends AbstractLayerStatement implements IStatement.Event {
+public class EventLayerStatement extends AbstractLayerStatement implements ILayerStatement.Event {
 
 	/**
 	 * The Class EventLayerValidator.
@@ -143,10 +144,10 @@ public class EventLayerStatement extends AbstractLayerStatement implements IStat
 
 		@Override
 		public void validate(final IStatementDescription description) {
-			IExpressionDescription nameDesc = description.getFacet(NAME);
+			IExpressionDescription nameDesc = description.getFacet(TRIGGER);
 			final String name = nameDesc != null ? nameDesc.getExpression().literalValue() : null;
 			if (name == null) {
-				description.error("Impossible to find this action", IGamlIssue.UNKNOWN_ACTION, ACTION);
+				description.error("Impossible to find this trigger", IGamlIssue.UNKNOWN_ACTION, ACTION);
 				return;
 			}
 			if (name.length() > 1) { // If it is not a char
@@ -198,6 +199,9 @@ public class EventLayerStatement extends AbstractLayerStatement implements IStat
 	/** The action name. */
 	private String actionName;
 
+	/** The trigger. */
+	private final String trigger;
+
 	/** The action. */
 	private ActionStatement action;
 
@@ -217,6 +221,7 @@ public class EventLayerStatement extends AbstractLayerStatement implements IStat
 			final IActionDescription sd = description.getSpeciesContext().getAction(actionName);
 			executesInSimulation = sd == null;
 		}
+		trigger = description.getLitteral(TRIGGER);
 
 		type = getFacet(IKeyword.TYPE);
 	}
@@ -228,6 +233,7 @@ public class EventLayerStatement extends AbstractLayerStatement implements IStat
 	 *            the scope
 	 * @return the executer
 	 */
+	@Override
 	public IAgent getExecuter(final IScope scope) {
 		return executesInSimulation ? scope.getSimulation() : scope.getExperiment();
 	}
@@ -248,6 +254,7 @@ public class EventLayerStatement extends AbstractLayerStatement implements IStat
 	 *            the scope
 	 * @return the executable
 	 */
+	@Override
 	public IExecutable getExecutable(final IScope scope) {
 		if (action != null) return action;
 		IAgent agent = getExecuter(scope);
@@ -279,7 +286,7 @@ public class EventLayerStatement extends AbstractLayerStatement implements IStat
 
 	@Override
 	public String toString() {
-		return "Event layer: " + this.getFacet(IKeyword.NAME).literalValue();
+		return "Event layer: " + this.getFacet(TRIGGER).literalValue();
 	}
 
 	/**
@@ -315,4 +322,15 @@ public class EventLayerStatement extends AbstractLayerStatement implements IStat
 			action.setChildren(statements);
 		}
 	}
+
+	/**
+	 * Gets the trigger.
+	 *
+	 * @return the trigger
+	 */
+	@Override
+	public String getTrigger() { // TODO Auto-generated method stub
+		return trigger;
+	}
+
 }

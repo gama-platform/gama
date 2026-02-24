@@ -260,19 +260,20 @@ ruleModel returns [EObject current=null]
 		}
 		(
 			(
-				lv_name_2_0=RULE_ID
 				{
-					newLeafNode(lv_name_2_0, grammarAccess.getModelAccess().getNameIDTerminalRuleCall_2_0());
+					newCompositeNode(grammarAccess.getModelAccess().getNameValid_IDParserRuleCall_2_0());
 				}
+				lv_name_2_0=ruleValid_ID
 				{
 					if ($current==null) {
-						$current = createModelElement(grammarAccess.getModelRule());
+						$current = createModelElementForParent(grammarAccess.getModelRule());
 					}
-					setWithLastConsumed(
+					set(
 						$current,
 						"name",
 						lv_name_2_0,
-						"gaml.compiler.Gaml.ID");
+						"gaml.compiler.Gaml.Valid_ID");
+					afterParserOrEnumRuleCall();
 				}
 			)
 		)
@@ -1065,35 +1066,35 @@ ruleStatement returns [EObject current=null]
 			afterParserOrEnumRuleCall();
 		}
 		    |
+		(
+			(ruleS_Assignment)=>
+			{
+				newCompositeNode(grammarAccess.getStatementAccess().getS_AssignmentParserRuleCall_7());
+			}
+			this_S_Assignment_7=ruleS_Assignment
+			{
+				$current = $this_S_Assignment_7.current;
+				afterParserOrEnumRuleCall();
+			}
+		)
+		    |
 		{
-			newCompositeNode(grammarAccess.getStatementAccess().getS_1Expr_Facets_BlockOrEndParserRuleCall_7());
+			newCompositeNode(grammarAccess.getStatementAccess().getS_1Expr_Facets_BlockOrEndParserRuleCall_8());
 		}
-		this_S_1Expr_Facets_BlockOrEnd_7=ruleS_1Expr_Facets_BlockOrEnd
+		this_S_1Expr_Facets_BlockOrEnd_8=ruleS_1Expr_Facets_BlockOrEnd
 		{
-			$current = $this_S_1Expr_Facets_BlockOrEnd_7.current;
+			$current = $this_S_1Expr_Facets_BlockOrEnd_8.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
 		(
 			(ruleS_Declaration)=>
 			{
-				newCompositeNode(grammarAccess.getStatementAccess().getS_DeclarationParserRuleCall_8());
+				newCompositeNode(grammarAccess.getStatementAccess().getS_DeclarationParserRuleCall_9());
 			}
-			this_S_Declaration_8=ruleS_Declaration
+			this_S_Declaration_9=ruleS_Declaration
 			{
-				$current = $this_S_Declaration_8.current;
-				afterParserOrEnumRuleCall();
-			}
-		)
-		    |
-		(
-			(ruleS_Assignment)=>
-			{
-				newCompositeNode(grammarAccess.getStatementAccess().getS_AssignmentParserRuleCall_9());
-			}
-			this_S_Assignment_9=ruleS_Assignment
-			{
-				$current = $this_S_Assignment_9.current;
+				$current = $this_S_Declaration_9.current;
 				afterParserOrEnumRuleCall();
 			}
 		)
@@ -2955,11 +2956,38 @@ ruleS_Layer returns [EObject current=null]
 		}
 		    |
 		{
-			newCompositeNode(grammarAccess.getS_LayerAccess().getS_OtherLayerParserRuleCall_2());
+			newCompositeNode(grammarAccess.getS_LayerAccess().getS_GraphicsLayerParserRuleCall_2());
 		}
-		this_S_OtherLayer_2=ruleS_OtherLayer
+		this_S_GraphicsLayer_2=ruleS_GraphicsLayer
 		{
-			$current = $this_S_OtherLayer_2.current;
+			$current = $this_S_GraphicsLayer_2.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			newCompositeNode(grammarAccess.getS_LayerAccess().getS_EventLayerParserRuleCall_3());
+		}
+		this_S_EventLayer_3=ruleS_EventLayer
+		{
+			$current = $this_S_EventLayer_3.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			newCompositeNode(grammarAccess.getS_LayerAccess().getS_OverlayLayerParserRuleCall_4());
+		}
+		this_S_OverlayLayer_4=ruleS_OverlayLayer
+		{
+			$current = $this_S_OverlayLayer_4.current;
+			afterParserOrEnumRuleCall();
+		}
+		    |
+		{
+			newCompositeNode(grammarAccess.getS_LayerAccess().getS_OtherLayerParserRuleCall_5());
+		}
+		this_S_OtherLayer_5=ruleS_OtherLayer
+		{
+			$current = $this_S_OtherLayer_5.current;
 			afterParserOrEnumRuleCall();
 		}
 	)
@@ -3019,51 +3047,17 @@ ruleS_SpeciesLayer returns [EObject current=null]
 				}
 			)
 		)
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getS_SpeciesLayerAccess().getFacetsFacetParserRuleCall_2_0());
-				}
-				lv_facets_2_0=ruleFacet
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getS_SpeciesLayerRule());
-					}
-					add(
-						$current,
-						"facets",
-						lv_facets_2_0,
-						"gaml.compiler.Gaml.Facet");
-					afterParserOrEnumRuleCall();
-				}
-			)
-		)*
-		(
-			(
-				(
-					{
-						newCompositeNode(grammarAccess.getS_SpeciesLayerAccess().getBlockDisplayBlockParserRuleCall_3_0_0());
-					}
-					lv_block_3_0=ruleDisplayBlock
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getS_SpeciesLayerRule());
-						}
-						set(
-							$current,
-							"block",
-							lv_block_3_0,
-							"gaml.compiler.Gaml.DisplayBlock");
-						afterParserOrEnumRuleCall();
-					}
-				)
-			)
-			    |
-			otherlv_4=';'
-			{
-				newLeafNode(otherlv_4, grammarAccess.getS_SpeciesLayerAccess().getSemicolonKeyword_3_1());
+		{
+			if ($current==null) {
+				$current = createModelElement(grammarAccess.getS_SpeciesLayerRule());
 			}
-		)
+			newCompositeNode(grammarAccess.getS_SpeciesLayerAccess().getFacetsAndBlockParserRuleCall_2());
+		}
+		this_FacetsAndBlock_2=ruleFacetsAndBlock[$current]
+		{
+			$current = $this_FacetsAndBlock_2.current;
+			afterParserOrEnumRuleCall();
+		}
 	)
 ;
 
@@ -3147,6 +3141,191 @@ ruleS_ImageLayer returns [EObject current=null]
 	)
 ;
 
+// Entry rule entryRuleS_GraphicsLayer
+entryRuleS_GraphicsLayer returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getS_GraphicsLayerRule()); }
+	iv_ruleS_GraphicsLayer=ruleS_GraphicsLayer
+	{ $current=$iv_ruleS_GraphicsLayer.current; }
+	EOF;
+
+// Rule S_GraphicsLayer
+ruleS_GraphicsLayer returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getS_GraphicsLayerAccess().getKey_GraphicsLayerKeyParserRuleCall_0_0());
+				}
+				lv_key_0_0=rule_GraphicsLayerKey
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getS_GraphicsLayerRule());
+					}
+					set(
+						$current,
+						"key",
+						lv_key_0_0,
+						"gaml.compiler.Gaml._GraphicsLayerKey");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getS_GraphicsLayerAccess().getExprExpressionParserRuleCall_1_0());
+				}
+				lv_expr_1_0=ruleExpression
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getS_GraphicsLayerRule());
+					}
+					set(
+						$current,
+						"expr",
+						lv_expr_1_0,
+						"gaml.compiler.Gaml.Expression");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+		{
+			if ($current==null) {
+				$current = createModelElement(grammarAccess.getS_GraphicsLayerRule());
+			}
+			newCompositeNode(grammarAccess.getS_GraphicsLayerAccess().getFacetsAndBlockParserRuleCall_2());
+		}
+		this_FacetsAndBlock_2=ruleFacetsAndBlock[$current]
+		{
+			$current = $this_FacetsAndBlock_2.current;
+			afterParserOrEnumRuleCall();
+		}
+	)
+;
+
+// Entry rule entryRuleS_EventLayer
+entryRuleS_EventLayer returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getS_EventLayerRule()); }
+	iv_ruleS_EventLayer=ruleS_EventLayer
+	{ $current=$iv_ruleS_EventLayer.current; }
+	EOF;
+
+// Rule S_EventLayer
+ruleS_EventLayer returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getS_EventLayerAccess().getKey_EventLayerKeyParserRuleCall_0_0());
+				}
+				lv_key_0_0=rule_EventLayerKey
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getS_EventLayerRule());
+					}
+					set(
+						$current,
+						"key",
+						lv_key_0_0,
+						"gaml.compiler.Gaml._EventLayerKey");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getS_EventLayerAccess().getExprExpressionParserRuleCall_1_0());
+				}
+				lv_expr_1_0=ruleExpression
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getS_EventLayerRule());
+					}
+					set(
+						$current,
+						"expr",
+						lv_expr_1_0,
+						"gaml.compiler.Gaml.Expression");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+		{
+			if ($current==null) {
+				$current = createModelElement(grammarAccess.getS_EventLayerRule());
+			}
+			newCompositeNode(grammarAccess.getS_EventLayerAccess().getFacetsAndBlockParserRuleCall_2());
+		}
+		this_FacetsAndBlock_2=ruleFacetsAndBlock[$current]
+		{
+			$current = $this_FacetsAndBlock_2.current;
+			afterParserOrEnumRuleCall();
+		}
+	)
+;
+
+// Entry rule entryRuleS_OverlayLayer
+entryRuleS_OverlayLayer returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getS_OverlayLayerRule()); }
+	iv_ruleS_OverlayLayer=ruleS_OverlayLayer
+	{ $current=$iv_ruleS_OverlayLayer.current; }
+	EOF;
+
+// Rule S_OverlayLayer
+ruleS_OverlayLayer returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getS_OverlayLayerAccess().getKey_OverlayLayerKeyParserRuleCall_0_0());
+				}
+				lv_key_0_0=rule_OverlayLayerKey
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getS_OverlayLayerRule());
+					}
+					set(
+						$current,
+						"key",
+						lv_key_0_0,
+						"gaml.compiler.Gaml._OverlayLayerKey");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+		{
+			if ($current==null) {
+				$current = createModelElement(grammarAccess.getS_OverlayLayerRule());
+			}
+			newCompositeNode(grammarAccess.getS_OverlayLayerAccess().getFacetsAndBlockParserRuleCall_1());
+		}
+		this_FacetsAndBlock_1=ruleFacetsAndBlock[$current]
+		{
+			$current = $this_FacetsAndBlock_1.current;
+			afterParserOrEnumRuleCall();
+		}
+	)
+;
+
 // Entry rule entryRuleS_OtherLayer
 entryRuleS_OtherLayer returns [EObject current=null]:
 	{ newCompositeNode(grammarAccess.getS_OtherLayerRule()); }
@@ -3220,51 +3399,17 @@ ruleS_OtherLayer returns [EObject current=null]
 				}
 			)
 		)
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getS_OtherLayerAccess().getFacetsFacetParserRuleCall_3_0());
-				}
-				lv_facets_3_0=ruleFacet
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getS_OtherLayerRule());
-					}
-					add(
-						$current,
-						"facets",
-						lv_facets_3_0,
-						"gaml.compiler.Gaml.Facet");
-					afterParserOrEnumRuleCall();
-				}
-			)
-		)*
-		(
-			(
-				(
-					{
-						newCompositeNode(grammarAccess.getS_OtherLayerAccess().getBlockDisplayBlockParserRuleCall_4_0_0());
-					}
-					lv_block_4_0=ruleDisplayBlock
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getS_OtherLayerRule());
-						}
-						set(
-							$current,
-							"block",
-							lv_block_4_0,
-							"gaml.compiler.Gaml.DisplayBlock");
-						afterParserOrEnumRuleCall();
-					}
-				)
-			)
-			    |
-			otherlv_5=';'
-			{
-				newLeafNode(otherlv_5, grammarAccess.getS_OtherLayerAccess().getSemicolonKeyword_4_1());
+		{
+			if ($current==null) {
+				$current = createModelElement(grammarAccess.getS_OtherLayerRule());
 			}
-		)
+			newCompositeNode(grammarAccess.getS_OtherLayerAccess().getFacetsAndBlockParserRuleCall_3());
+		}
+		this_FacetsAndBlock_3=ruleFacetsAndBlock[$current]
+		{
+			$current = $this_FacetsAndBlock_3.current;
+			afterParserOrEnumRuleCall();
+		}
 	)
 ;
 
@@ -3361,6 +3506,72 @@ rule_ImageLayerKey returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRule
 	{
 		$current.merge(kw);
 		newLeafNode(kw, grammarAccess.get_ImageLayerKeyAccess().getImageKeyword());
+	}
+;
+
+// Entry rule entryRule_GraphicsLayerKey
+entryRule_GraphicsLayerKey returns [String current=null]:
+	{ newCompositeNode(grammarAccess.get_GraphicsLayerKeyRule()); }
+	iv_rule_GraphicsLayerKey=rule_GraphicsLayerKey
+	{ $current=$iv_rule_GraphicsLayerKey.current.getText(); }
+	EOF;
+
+// Rule _GraphicsLayerKey
+rule_GraphicsLayerKey returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	kw='graphics'
+	{
+		$current.merge(kw);
+		newLeafNode(kw, grammarAccess.get_GraphicsLayerKeyAccess().getGraphicsKeyword());
+	}
+;
+
+// Entry rule entryRule_EventLayerKey
+entryRule_EventLayerKey returns [String current=null]:
+	{ newCompositeNode(grammarAccess.get_EventLayerKeyRule()); }
+	iv_rule_EventLayerKey=rule_EventLayerKey
+	{ $current=$iv_rule_EventLayerKey.current.getText(); }
+	EOF;
+
+// Rule _EventLayerKey
+rule_EventLayerKey returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	kw='event'
+	{
+		$current.merge(kw);
+		newLeafNode(kw, grammarAccess.get_EventLayerKeyAccess().getEventKeyword());
+	}
+;
+
+// Entry rule entryRule_OverlayLayerKey
+entryRule_OverlayLayerKey returns [String current=null]:
+	{ newCompositeNode(grammarAccess.get_OverlayLayerKeyRule()); }
+	iv_rule_OverlayLayerKey=rule_OverlayLayerKey
+	{ $current=$iv_rule_OverlayLayerKey.current.getText(); }
+	EOF;
+
+// Rule _OverlayLayerKey
+rule_OverlayLayerKey returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	kw='overlay'
+	{
+		$current.merge(kw);
+		newLeafNode(kw, grammarAccess.get_OverlayLayerKeyAccess().getOverlayKeyword());
 	}
 ;
 
@@ -3635,46 +3846,34 @@ rule_LayerKey returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken
 			newLeafNode(kw, grammarAccess.get_LayerKeyAccess().getAgentsKeyword_6());
 		}
 		    |
-		kw='graphics'
-		{
-			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_LayerKeyAccess().getGraphicsKeyword_7());
-		}
-		    |
 		kw='display_population'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_LayerKeyAccess().getDisplay_populationKeyword_8());
+			newLeafNode(kw, grammarAccess.get_LayerKeyAccess().getDisplay_populationKeyword_7());
 		}
 		    |
 		kw='display_grid'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_LayerKeyAccess().getDisplay_gridKeyword_9());
-		}
-		    |
-		kw='event'
-		{
-			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_LayerKeyAccess().getEventKeyword_10());
-		}
-		    |
-		kw='overlay'
-		{
-			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_LayerKeyAccess().getOverlayKeyword_11());
+			newLeafNode(kw, grammarAccess.get_LayerKeyAccess().getDisplay_gridKeyword_8());
 		}
 		    |
 		kw='datalist'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_LayerKeyAccess().getDatalistKeyword_12());
+			newLeafNode(kw, grammarAccess.get_LayerKeyAccess().getDatalistKeyword_9());
 		}
 		    |
 		kw='mesh'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_LayerKeyAccess().getMeshKeyword_13());
+			newLeafNode(kw, grammarAccess.get_LayerKeyAccess().getMeshKeyword_10());
+		}
+		    |
+		kw='rotation'
+		{
+			$current.merge(kw);
+			newLeafNode(kw, grammarAccess.get_LayerKeyAccess().getRotationKeyword_11());
 		}
 	)
 ;
@@ -7889,23 +8088,23 @@ ruleValid_ID returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken(
 			afterParserOrEnumRuleCall();
 		}
 		    |
-		this_ID_7=RULE_ID
 		{
-			$current.merge(this_ID_7);
+			newCompositeNode(grammarAccess.getValid_IDAccess().get_ExperimentKeyParserRuleCall_7());
 		}
+		this__ExperimentKey_7=rule_ExperimentKey
 		{
-			newLeafNode(this_ID_7, grammarAccess.getValid_IDAccess().getIDTerminalRuleCall_7());
-		}
-		    |
-		{
-			newCompositeNode(grammarAccess.getValid_IDAccess().get_ExperimentKeyParserRuleCall_8());
-		}
-		this__ExperimentKey_8=rule_ExperimentKey
-		{
-			$current.merge(this__ExperimentKey_8);
+			$current.merge(this__ExperimentKey_7);
 		}
 		{
 			afterParserOrEnumRuleCall();
+		}
+		    |
+		this_ID_8=RULE_ID
+		{
+			$current.merge(this_ID_8);
+		}
+		{
+			newLeafNode(this_ID_8, grammarAccess.getValid_IDAccess().getIDTerminalRuleCall_8());
 		}
 	)
 ;
