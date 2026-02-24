@@ -4476,44 +4476,40 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.VarDefinition");
 		private final Alternatives cAlternatives = (Alternatives)rule.eContents().get(1);
 		private final RuleCall cS_DeclarationParserRuleCall_0 = (RuleCall)cAlternatives.eContents().get(0);
-		private final Alternatives cAlternatives_1 = (Alternatives)cAlternatives.eContents().get(1);
-		private final RuleCall cModelParserRuleCall_1_0 = (RuleCall)cAlternatives_1.eContents().get(0);
-		private final RuleCall cArgumentDefinitionParserRuleCall_1_1 = (RuleCall)cAlternatives_1.eContents().get(1);
-		private final RuleCall cDefinitionFacetParserRuleCall_1_2 = (RuleCall)cAlternatives_1.eContents().get(2);
-		private final RuleCall cVarFakeDefinitionParserRuleCall_1_3 = (RuleCall)cAlternatives_1.eContents().get(3);
-		private final RuleCall cImportParserRuleCall_1_4 = (RuleCall)cAlternatives_1.eContents().get(4);
-		private final RuleCall cS_ExperimentParserRuleCall_1_5 = (RuleCall)cAlternatives_1.eContents().get(5);
+		private final RuleCall cModelParserRuleCall_1 = (RuleCall)cAlternatives.eContents().get(1);
+		private final RuleCall cArgumentDefinitionParserRuleCall_2 = (RuleCall)cAlternatives.eContents().get(2);
+		private final RuleCall cDefinitionFacetParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
+		private final RuleCall cVarFakeDefinitionParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
+		private final RuleCall cImportParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
+		private final RuleCall cS_ExperimentParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
 		
 		//VarDefinition:
-		//    =>S_Declaration | (Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment);
+		//    =>S_Declaration | Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//=>S_Declaration | (Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment)
+		//=>S_Declaration | Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//=>S_Declaration
 		public RuleCall getS_DeclarationParserRuleCall_0() { return cS_DeclarationParserRuleCall_0; }
 		
-		//(Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment)
-		public Alternatives getAlternatives_1() { return cAlternatives_1; }
-		
 		//Model
-		public RuleCall getModelParserRuleCall_1_0() { return cModelParserRuleCall_1_0; }
+		public RuleCall getModelParserRuleCall_1() { return cModelParserRuleCall_1; }
 		
 		//ArgumentDefinition
-		public RuleCall getArgumentDefinitionParserRuleCall_1_1() { return cArgumentDefinitionParserRuleCall_1_1; }
+		public RuleCall getArgumentDefinitionParserRuleCall_2() { return cArgumentDefinitionParserRuleCall_2; }
 		
 		//DefinitionFacet
-		public RuleCall getDefinitionFacetParserRuleCall_1_2() { return cDefinitionFacetParserRuleCall_1_2; }
+		public RuleCall getDefinitionFacetParserRuleCall_3() { return cDefinitionFacetParserRuleCall_3; }
 		
 		//VarFakeDefinition
-		public RuleCall getVarFakeDefinitionParserRuleCall_1_3() { return cVarFakeDefinitionParserRuleCall_1_3; }
+		public RuleCall getVarFakeDefinitionParserRuleCall_4() { return cVarFakeDefinitionParserRuleCall_4; }
 		
 		//Import
-		public RuleCall getImportParserRuleCall_1_4() { return cImportParserRuleCall_1_4; }
+		public RuleCall getImportParserRuleCall_5() { return cImportParserRuleCall_5; }
 		
 		//S_Experiment
-		public RuleCall getS_ExperimentParserRuleCall_1_5() { return cS_ExperimentParserRuleCall_1_5; }
+		public RuleCall getS_ExperimentParserRuleCall_6() { return cS_ExperimentParserRuleCall_6; }
 	}
 	public class ActionDefinitionElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.ActionDefinition");
@@ -6279,7 +6275,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//VarDefinition:
-	//    =>S_Declaration | (Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment);
+	//    =>S_Declaration | Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment;
 	public VarDefinitionElements getVarDefinitionAccess() {
 		return pVarDefinition;
 	}
