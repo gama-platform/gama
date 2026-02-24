@@ -305,7 +305,7 @@ Expression:
 
 
 BinaryOperator returns Expression:
-	Or | And | Cast | Comparison | Addition | Multiplication | Exponentiation | Binary | Pair | Unit;
+	Or | And | Cast | Comparison | Addition | Multiplication | Binary | Pair | Unit;
 
 
 Pair returns Expression:
@@ -351,12 +351,9 @@ Addition returns Expression:
 	right=Multiplication)*;
 
 Multiplication returns Expression:
-	Exponentiation
-	(({BinaryOperator.left=current} op=('*' | '/')) right=Exponentiation)*;
-
-Exponentiation returns Expression:
 	Binary
-	(({BinaryOperator.left=current} op=('^')) right=Binary)*;
+	(({BinaryOperator.left=current} op=('*' | '/' | '^')) right=Binary)*;
+
 
 Binary returns Expression:
 	Unit

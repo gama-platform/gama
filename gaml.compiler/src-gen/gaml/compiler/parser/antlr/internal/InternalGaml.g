@@ -5731,11 +5731,11 @@ ruleMultiplication returns [EObject current=null]
 }:
 	(
 		{
-			newCompositeNode(grammarAccess.getMultiplicationAccess().getExponentiationParserRuleCall_0());
+			newCompositeNode(grammarAccess.getMultiplicationAccess().getBinaryParserRuleCall_0());
 		}
-		this_Exponentiation_0=ruleExponentiation
+		this_Binary_0=ruleBinary
 		{
-			$current = $this_Exponentiation_0.current;
+			$current = $this_Binary_0.current;
 			afterParserOrEnumRuleCall();
 		}
 		(
@@ -5771,6 +5771,17 @@ ruleMultiplication returns [EObject current=null]
 								}
 								setWithLastConsumed($current, "op", lv_op_2_2, null);
 							}
+							    |
+							lv_op_2_3='^'
+							{
+								newLeafNode(lv_op_2_3, grammarAccess.getMultiplicationAccess().getOpCircumflexAccentKeyword_1_0_1_0_2());
+							}
+							{
+								if ($current==null) {
+									$current = createModelElement(grammarAccess.getMultiplicationRule());
+								}
+								setWithLastConsumed($current, "op", lv_op_2_3, null);
+							}
 						)
 					)
 				)
@@ -5778,83 +5789,12 @@ ruleMultiplication returns [EObject current=null]
 			(
 				(
 					{
-						newCompositeNode(grammarAccess.getMultiplicationAccess().getRightExponentiationParserRuleCall_1_1_0());
-					}
-					lv_right_3_0=ruleExponentiation
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getMultiplicationRule());
-						}
-						set(
-							$current,
-							"right",
-							lv_right_3_0,
-							"gaml.compiler.Gaml.Exponentiation");
-						afterParserOrEnumRuleCall();
-					}
-				)
-			)
-		)*
-	)
-;
-
-// Entry rule entryRuleExponentiation
-entryRuleExponentiation returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getExponentiationRule()); }
-	iv_ruleExponentiation=ruleExponentiation
-	{ $current=$iv_ruleExponentiation.current; }
-	EOF;
-
-// Rule Exponentiation
-ruleExponentiation returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		{
-			newCompositeNode(grammarAccess.getExponentiationAccess().getBinaryParserRuleCall_0());
-		}
-		this_Binary_0=ruleBinary
-		{
-			$current = $this_Binary_0.current;
-			afterParserOrEnumRuleCall();
-		}
-		(
-			(
-				(
-					{
-						$current = forceCreateModelElementAndSet(
-							grammarAccess.getExponentiationAccess().getBinaryOperatorLeftAction_1_0_0(),
-							$current);
-					}
-				)
-				(
-					(
-						lv_op_2_0='^'
-						{
-							newLeafNode(lv_op_2_0, grammarAccess.getExponentiationAccess().getOpCircumflexAccentKeyword_1_0_1_0());
-						}
-						{
-							if ($current==null) {
-								$current = createModelElement(grammarAccess.getExponentiationRule());
-							}
-							setWithLastConsumed($current, "op", lv_op_2_0, "^");
-						}
-					)
-				)
-			)
-			(
-				(
-					{
-						newCompositeNode(grammarAccess.getExponentiationAccess().getRightBinaryParserRuleCall_1_1_0());
+						newCompositeNode(grammarAccess.getMultiplicationAccess().getRightBinaryParserRuleCall_1_1_0());
 					}
 					lv_right_3_0=ruleBinary
 					{
 						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getExponentiationRule());
+							$current = createModelElementForParent(grammarAccess.getMultiplicationRule());
 						}
 						set(
 							$current,
