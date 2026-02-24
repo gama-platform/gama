@@ -49,7 +49,6 @@ import gaml.compiler.gaml.S_OtherLayer;
 import gaml.compiler.gaml.S_OverlayLayer;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
-import gaml.compiler.gaml.S_Set;
 import gaml.compiler.gaml.S_Solve;
 import gaml.compiler.gaml.S_Species;
 import gaml.compiler.gaml.S_SpeciesLayer;
@@ -319,9 +318,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				return; 
 			case GamlPackage.SRETURN:
 				sequence_S_Return(context, (S_Return) semanticObject); 
-				return; 
-			case GamlPackage.SSET:
-				sequence_S_Set(context, (S_Set) semanticObject); 
 				return; 
 			case GamlPackage.SSOLVE:
 				sequence_FacetsAndBlock_S_Solve(context, (S_Solve) semanticObject); 
@@ -1643,34 +1639,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 */
 	protected void sequence_S_Return(ISerializationContext context, S_Return semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     Statement returns S_Set
-	 *     S_Assignment returns S_Set
-	 *     S_Set returns S_Set
-	 *
-	 * Constraint:
-	 *     (key='set' expr=Expression value=Expression)
-	 * </pre>
-	 */
-	protected void sequence_S_Set(ISerializationContext context, S_Set semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.FACETS_AND_BLOCK__KEY) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.FACETS_AND_BLOCK__KEY));
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.STATEMENT__EXPR) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.STATEMENT__EXPR));
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.SASSIGNMENT__VALUE) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.SASSIGNMENT__VALUE));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getS_SetAccess().getKeySetKeyword_0_0(), semanticObject.getKey());
-		feeder.accept(grammarAccess.getS_SetAccess().getExprExpressionParserRuleCall_1_0(), semanticObject.getExpr());
-		feeder.accept(grammarAccess.getS_SetAccess().getValueExpressionParserRuleCall_3_0(), semanticObject.getValue());
-		feeder.finish();
 	}
 	
 	

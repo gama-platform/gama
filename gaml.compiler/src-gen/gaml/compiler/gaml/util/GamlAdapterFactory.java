@@ -201,11 +201,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createS_DirectAssignmentAdapter();
       }
       @Override
-      public Adapter caseS_Set(S_Set object)
-      {
-        return createS_SetAdapter();
-      }
-      @Override
       public Adapter caseS_Equations(S_Equations object)
       {
         return createS_EquationsAdapter();
@@ -848,21 +843,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createS_DirectAssignmentAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_Set <em>SSet</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see gaml.compiler.gaml.S_Set
-   * @generated
-   */
-  public Adapter createS_SetAdapter()
   {
     return null;
   }

@@ -107,11 +107,7 @@ global skills: [moving] control: fsm {
 		// is equivalent to the more compact one:
 		int t2 <- length(a1);
 
-		// Assigning a value to variables is also sporting a new syntax 
-		set t2 value: 100;
-		// ... can be replaced by 
-		set t2 <- 100;
-		// ... or even by
+		// ... and vars can be set directly 
 		t2 <- 100;
 
 		// Species can now act as direct containers of their agents..

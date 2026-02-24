@@ -2250,25 +2250,14 @@ ruleS_Assignment returns [EObject current=null]
 @after {
 	leaveRule();
 }:
-	(
-		{
-			newCompositeNode(grammarAccess.getS_AssignmentAccess().getS_DirectAssignmentParserRuleCall_0());
-		}
-		this_S_DirectAssignment_0=ruleS_DirectAssignment
-		{
-			$current = $this_S_DirectAssignment_0.current;
-			afterParserOrEnumRuleCall();
-		}
-		    |
-		{
-			newCompositeNode(grammarAccess.getS_AssignmentAccess().getS_SetParserRuleCall_1());
-		}
-		this_S_Set_1=ruleS_Set
-		{
-			$current = $this_S_Set_1.current;
-			afterParserOrEnumRuleCall();
-		}
-	)
+	{
+		newCompositeNode(grammarAccess.getS_AssignmentAccess().getS_DirectAssignmentParserRuleCall());
+	}
+	this_S_DirectAssignment_0=ruleS_DirectAssignment
+	{
+		$current = $this_S_DirectAssignment_0.current;
+		afterParserOrEnumRuleCall();
+	}
 ;
 
 // Entry rule entryRuleS_DirectAssignment
@@ -2368,92 +2357,6 @@ ruleS_DirectAssignment returns [EObject current=null]
 		otherlv_4=';'
 		{
 			newLeafNode(otherlv_4, grammarAccess.getS_DirectAssignmentAccess().getSemicolonKeyword_1());
-		}
-	)
-;
-
-// Entry rule entryRuleS_Set
-entryRuleS_Set returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getS_SetRule()); }
-	iv_ruleS_Set=ruleS_Set
-	{ $current=$iv_ruleS_Set.current; }
-	EOF;
-
-// Rule S_Set
-ruleS_Set returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		(
-			(
-				lv_key_0_0='set'
-				{
-					newLeafNode(lv_key_0_0, grammarAccess.getS_SetAccess().getKeySetKeyword_0_0());
-				}
-				{
-					if ($current==null) {
-						$current = createModelElement(grammarAccess.getS_SetRule());
-					}
-					setWithLastConsumed($current, "key", lv_key_0_0, "set");
-				}
-			)
-		)
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getS_SetAccess().getExprExpressionParserRuleCall_1_0());
-				}
-				lv_expr_1_0=ruleExpression
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getS_SetRule());
-					}
-					set(
-						$current,
-						"expr",
-						lv_expr_1_0,
-						"gaml.compiler.Gaml.Expression");
-					afterParserOrEnumRuleCall();
-				}
-			)
-		)
-		(
-			otherlv_2='value:'
-			{
-				newLeafNode(otherlv_2, grammarAccess.getS_SetAccess().getValueKeyword_2_0());
-			}
-			    |
-			otherlv_3='<-'
-			{
-				newLeafNode(otherlv_3, grammarAccess.getS_SetAccess().getLessThanSignHyphenMinusKeyword_2_1());
-			}
-		)
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getS_SetAccess().getValueExpressionParserRuleCall_3_0());
-				}
-				lv_value_4_0=ruleExpression
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getS_SetRule());
-					}
-					set(
-						$current,
-						"value",
-						lv_value_4_0,
-						"gaml.compiler.Gaml.Expression");
-					afterParserOrEnumRuleCall();
-				}
-			)
-		)
-		otherlv_5=';'
-		{
-			newLeafNode(otherlv_5, grammarAccess.getS_SetAccess().getSemicolonKeyword_4());
 		}
 	)
 ;

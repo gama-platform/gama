@@ -90,7 +90,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.SDEFINITION: return createS_Definition();
       case GamlPackage.SASSIGNMENT: return createS_Assignment();
       case GamlPackage.SDIRECT_ASSIGNMENT: return createS_DirectAssignment();
-      case GamlPackage.SSET: return createS_Set();
       case GamlPackage.SEQUATIONS: return createS_Equations();
       case GamlPackage.SSOLVE: return createS_Solve();
       case GamlPackage.SDISPLAY: return createS_Display();
@@ -444,18 +443,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     S_DirectAssignmentImpl s_DirectAssignment = new S_DirectAssignmentImpl();
     return s_DirectAssignment;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public S_Set createS_Set()
-  {
-    S_SetImpl s_Set = new S_SetImpl();
-    return s_Set;
   }
 
   /**
