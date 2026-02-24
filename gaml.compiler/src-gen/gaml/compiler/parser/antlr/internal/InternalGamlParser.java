@@ -2925,7 +2925,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleStatement"
-    // InternalGaml.g:998:1: ruleStatement returns [EObject current=null] : (this_S_Display_0= ruleS_Display | this_S_Do_1= ruleS_Do | this_S_Return_2= ruleS_Return | this_S_Solve_3= ruleS_Solve | this_S_If_4= ruleS_If | this_S_Try_5= ruleS_Try | this_S_Equations_6= ruleS_Equations | ( ( ruleS_Assignment )=>this_S_Assignment_7= ruleS_Assignment ) | this_S_1Expr_Facets_BlockOrEnd_8= ruleS_1Expr_Facets_BlockOrEnd | ( ( ruleS_Declaration )=>this_S_Declaration_9= ruleS_Declaration ) | this_S_Other_10= ruleS_Other ) ;
+    // InternalGaml.g:998:1: ruleStatement returns [EObject current=null] : (this_S_Display_0= ruleS_Display | this_S_Do_1= ruleS_Do | this_S_Return_2= ruleS_Return | this_S_Solve_3= ruleS_Solve | this_S_If_4= ruleS_If | this_S_Try_5= ruleS_Try | this_S_Equations_6= ruleS_Equations | ( ( ruleS_Assignment )=>this_S_Assignment_7= ruleS_Assignment ) | this_S_General_8= ruleS_General | ( ( ruleS_Declaration )=>this_S_Declaration_9= ruleS_Declaration ) | this_S_Other_10= ruleS_Other ) ;
     public final EObject ruleStatement() throws RecognitionException {
         EObject current = null;
 
@@ -2945,7 +2945,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
         EObject this_S_Assignment_7 = null;
 
-        EObject this_S_1Expr_Facets_BlockOrEnd_8 = null;
+        EObject this_S_General_8 = null;
 
         EObject this_S_Declaration_9 = null;
 
@@ -2956,10 +2956,10 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalGaml.g:1004:2: ( (this_S_Display_0= ruleS_Display | this_S_Do_1= ruleS_Do | this_S_Return_2= ruleS_Return | this_S_Solve_3= ruleS_Solve | this_S_If_4= ruleS_If | this_S_Try_5= ruleS_Try | this_S_Equations_6= ruleS_Equations | ( ( ruleS_Assignment )=>this_S_Assignment_7= ruleS_Assignment ) | this_S_1Expr_Facets_BlockOrEnd_8= ruleS_1Expr_Facets_BlockOrEnd | ( ( ruleS_Declaration )=>this_S_Declaration_9= ruleS_Declaration ) | this_S_Other_10= ruleS_Other ) )
-            // InternalGaml.g:1005:2: (this_S_Display_0= ruleS_Display | this_S_Do_1= ruleS_Do | this_S_Return_2= ruleS_Return | this_S_Solve_3= ruleS_Solve | this_S_If_4= ruleS_If | this_S_Try_5= ruleS_Try | this_S_Equations_6= ruleS_Equations | ( ( ruleS_Assignment )=>this_S_Assignment_7= ruleS_Assignment ) | this_S_1Expr_Facets_BlockOrEnd_8= ruleS_1Expr_Facets_BlockOrEnd | ( ( ruleS_Declaration )=>this_S_Declaration_9= ruleS_Declaration ) | this_S_Other_10= ruleS_Other )
+            // InternalGaml.g:1004:2: ( (this_S_Display_0= ruleS_Display | this_S_Do_1= ruleS_Do | this_S_Return_2= ruleS_Return | this_S_Solve_3= ruleS_Solve | this_S_If_4= ruleS_If | this_S_Try_5= ruleS_Try | this_S_Equations_6= ruleS_Equations | ( ( ruleS_Assignment )=>this_S_Assignment_7= ruleS_Assignment ) | this_S_General_8= ruleS_General | ( ( ruleS_Declaration )=>this_S_Declaration_9= ruleS_Declaration ) | this_S_Other_10= ruleS_Other ) )
+            // InternalGaml.g:1005:2: (this_S_Display_0= ruleS_Display | this_S_Do_1= ruleS_Do | this_S_Return_2= ruleS_Return | this_S_Solve_3= ruleS_Solve | this_S_If_4= ruleS_If | this_S_Try_5= ruleS_Try | this_S_Equations_6= ruleS_Equations | ( ( ruleS_Assignment )=>this_S_Assignment_7= ruleS_Assignment ) | this_S_General_8= ruleS_General | ( ( ruleS_Declaration )=>this_S_Declaration_9= ruleS_Declaration ) | this_S_Other_10= ruleS_Other )
             {
-            // InternalGaml.g:1005:2: (this_S_Display_0= ruleS_Display | this_S_Do_1= ruleS_Do | this_S_Return_2= ruleS_Return | this_S_Solve_3= ruleS_Solve | this_S_If_4= ruleS_If | this_S_Try_5= ruleS_Try | this_S_Equations_6= ruleS_Equations | ( ( ruleS_Assignment )=>this_S_Assignment_7= ruleS_Assignment ) | this_S_1Expr_Facets_BlockOrEnd_8= ruleS_1Expr_Facets_BlockOrEnd | ( ( ruleS_Declaration )=>this_S_Declaration_9= ruleS_Declaration ) | this_S_Other_10= ruleS_Other )
+            // InternalGaml.g:1005:2: (this_S_Display_0= ruleS_Display | this_S_Do_1= ruleS_Do | this_S_Return_2= ruleS_Return | this_S_Solve_3= ruleS_Solve | this_S_If_4= ruleS_If | this_S_Try_5= ruleS_Try | this_S_Equations_6= ruleS_Equations | ( ( ruleS_Assignment )=>this_S_Assignment_7= ruleS_Assignment ) | this_S_General_8= ruleS_General | ( ( ruleS_Declaration )=>this_S_Declaration_9= ruleS_Declaration ) | this_S_Other_10= ruleS_Other )
             int alt17=11;
             alt17 = dfa17.predict(input);
             switch (alt17) {
@@ -3146,21 +3146,21 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 9 :
-                    // InternalGaml.g:1081:3: this_S_1Expr_Facets_BlockOrEnd_8= ruleS_1Expr_Facets_BlockOrEnd
+                    // InternalGaml.g:1081:3: this_S_General_8= ruleS_General
                     {
                     if ( state.backtracking==0 ) {
 
-                      			newCompositeNode(grammarAccess.getStatementAccess().getS_1Expr_Facets_BlockOrEndParserRuleCall_8());
+                      			newCompositeNode(grammarAccess.getStatementAccess().getS_GeneralParserRuleCall_8());
                       		
                     }
                     pushFollow(FOLLOW_2);
-                    this_S_1Expr_Facets_BlockOrEnd_8=ruleS_1Expr_Facets_BlockOrEnd();
+                    this_S_General_8=ruleS_General();
 
                     state._fsp--;
                     if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      			current = this_S_1Expr_Facets_BlockOrEnd_8;
+                      			current = this_S_General_8;
                       			afterParserOrEnumRuleCall();
                       		
                     }
@@ -3241,28 +3241,28 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
     // $ANTLR end "ruleStatement"
 
 
-    // $ANTLR start "entryRuleS_1Expr_Facets_BlockOrEnd"
-    // InternalGaml.g:1114:1: entryRuleS_1Expr_Facets_BlockOrEnd returns [EObject current=null] : iv_ruleS_1Expr_Facets_BlockOrEnd= ruleS_1Expr_Facets_BlockOrEnd EOF ;
-    public final EObject entryRuleS_1Expr_Facets_BlockOrEnd() throws RecognitionException {
+    // $ANTLR start "entryRuleS_General"
+    // InternalGaml.g:1114:1: entryRuleS_General returns [EObject current=null] : iv_ruleS_General= ruleS_General EOF ;
+    public final EObject entryRuleS_General() throws RecognitionException {
         EObject current = null;
 
-        EObject iv_ruleS_1Expr_Facets_BlockOrEnd = null;
+        EObject iv_ruleS_General = null;
 
 
         try {
-            // InternalGaml.g:1114:66: (iv_ruleS_1Expr_Facets_BlockOrEnd= ruleS_1Expr_Facets_BlockOrEnd EOF )
-            // InternalGaml.g:1115:2: iv_ruleS_1Expr_Facets_BlockOrEnd= ruleS_1Expr_Facets_BlockOrEnd EOF
+            // InternalGaml.g:1114:50: (iv_ruleS_General= ruleS_General EOF )
+            // InternalGaml.g:1115:2: iv_ruleS_General= ruleS_General EOF
             {
             if ( state.backtracking==0 ) {
-               newCompositeNode(grammarAccess.getS_1Expr_Facets_BlockOrEndRule()); 
+               newCompositeNode(grammarAccess.getS_GeneralRule()); 
             }
             pushFollow(FOLLOW_1);
-            iv_ruleS_1Expr_Facets_BlockOrEnd=ruleS_1Expr_Facets_BlockOrEnd();
+            iv_ruleS_General=ruleS_General();
 
             state._fsp--;
             if (state.failed) return current;
             if ( state.backtracking==0 ) {
-               current =iv_ruleS_1Expr_Facets_BlockOrEnd; 
+               current =iv_ruleS_General; 
             }
             match(input,EOF,FOLLOW_2); if (state.failed) return current;
 
@@ -3278,12 +3278,12 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "entryRuleS_1Expr_Facets_BlockOrEnd"
+    // $ANTLR end "entryRuleS_General"
 
 
-    // $ANTLR start "ruleS_1Expr_Facets_BlockOrEnd"
-    // InternalGaml.g:1121:1: ruleS_1Expr_Facets_BlockOrEnd returns [EObject current=null] : ( ( (lv_key_0_0= rule_1Expr_Facets_BlockOrEnd_Key ) ) ( (lv_firstFacet_1_0= ruleFirstFacetKey ) )? ( (lv_expr_2_0= ruleExpression ) ) this_FacetsAndBlock_3= ruleFacetsAndBlock[$current] ) ;
-    public final EObject ruleS_1Expr_Facets_BlockOrEnd() throws RecognitionException {
+    // $ANTLR start "ruleS_General"
+    // InternalGaml.g:1121:1: ruleS_General returns [EObject current=null] : ( ( (lv_key_0_0= rule_GeneralKey ) ) ( (lv_firstFacet_1_0= ruleFirstFacetKey ) )? ( (lv_expr_2_0= ruleExpression ) ) this_FacetsAndBlock_3= ruleFacetsAndBlock[$current] ) ;
+    public final EObject ruleS_General() throws RecognitionException {
         EObject current = null;
 
         AntlrDatatypeRuleToken lv_key_0_0 = null;
@@ -3299,38 +3299,38 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalGaml.g:1127:2: ( ( ( (lv_key_0_0= rule_1Expr_Facets_BlockOrEnd_Key ) ) ( (lv_firstFacet_1_0= ruleFirstFacetKey ) )? ( (lv_expr_2_0= ruleExpression ) ) this_FacetsAndBlock_3= ruleFacetsAndBlock[$current] ) )
-            // InternalGaml.g:1128:2: ( ( (lv_key_0_0= rule_1Expr_Facets_BlockOrEnd_Key ) ) ( (lv_firstFacet_1_0= ruleFirstFacetKey ) )? ( (lv_expr_2_0= ruleExpression ) ) this_FacetsAndBlock_3= ruleFacetsAndBlock[$current] )
+            // InternalGaml.g:1127:2: ( ( ( (lv_key_0_0= rule_GeneralKey ) ) ( (lv_firstFacet_1_0= ruleFirstFacetKey ) )? ( (lv_expr_2_0= ruleExpression ) ) this_FacetsAndBlock_3= ruleFacetsAndBlock[$current] ) )
+            // InternalGaml.g:1128:2: ( ( (lv_key_0_0= rule_GeneralKey ) ) ( (lv_firstFacet_1_0= ruleFirstFacetKey ) )? ( (lv_expr_2_0= ruleExpression ) ) this_FacetsAndBlock_3= ruleFacetsAndBlock[$current] )
             {
-            // InternalGaml.g:1128:2: ( ( (lv_key_0_0= rule_1Expr_Facets_BlockOrEnd_Key ) ) ( (lv_firstFacet_1_0= ruleFirstFacetKey ) )? ( (lv_expr_2_0= ruleExpression ) ) this_FacetsAndBlock_3= ruleFacetsAndBlock[$current] )
-            // InternalGaml.g:1129:3: ( (lv_key_0_0= rule_1Expr_Facets_BlockOrEnd_Key ) ) ( (lv_firstFacet_1_0= ruleFirstFacetKey ) )? ( (lv_expr_2_0= ruleExpression ) ) this_FacetsAndBlock_3= ruleFacetsAndBlock[$current]
+            // InternalGaml.g:1128:2: ( ( (lv_key_0_0= rule_GeneralKey ) ) ( (lv_firstFacet_1_0= ruleFirstFacetKey ) )? ( (lv_expr_2_0= ruleExpression ) ) this_FacetsAndBlock_3= ruleFacetsAndBlock[$current] )
+            // InternalGaml.g:1129:3: ( (lv_key_0_0= rule_GeneralKey ) ) ( (lv_firstFacet_1_0= ruleFirstFacetKey ) )? ( (lv_expr_2_0= ruleExpression ) ) this_FacetsAndBlock_3= ruleFacetsAndBlock[$current]
             {
-            // InternalGaml.g:1129:3: ( (lv_key_0_0= rule_1Expr_Facets_BlockOrEnd_Key ) )
-            // InternalGaml.g:1130:4: (lv_key_0_0= rule_1Expr_Facets_BlockOrEnd_Key )
+            // InternalGaml.g:1129:3: ( (lv_key_0_0= rule_GeneralKey ) )
+            // InternalGaml.g:1130:4: (lv_key_0_0= rule_GeneralKey )
             {
-            // InternalGaml.g:1130:4: (lv_key_0_0= rule_1Expr_Facets_BlockOrEnd_Key )
-            // InternalGaml.g:1131:5: lv_key_0_0= rule_1Expr_Facets_BlockOrEnd_Key
+            // InternalGaml.g:1130:4: (lv_key_0_0= rule_GeneralKey )
+            // InternalGaml.g:1131:5: lv_key_0_0= rule_GeneralKey
             {
             if ( state.backtracking==0 ) {
 
-              					newCompositeNode(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getKey_1Expr_Facets_BlockOrEnd_KeyParserRuleCall_0_0());
+              					newCompositeNode(grammarAccess.getS_GeneralAccess().getKey_GeneralKeyParserRuleCall_0_0());
               				
             }
             pushFollow(FOLLOW_5);
-            lv_key_0_0=rule_1Expr_Facets_BlockOrEnd_Key();
+            lv_key_0_0=rule_GeneralKey();
 
             state._fsp--;
             if (state.failed) return current;
             if ( state.backtracking==0 ) {
 
               					if (current==null) {
-              						current = createModelElementForParent(grammarAccess.getS_1Expr_Facets_BlockOrEndRule());
+              						current = createModelElementForParent(grammarAccess.getS_GeneralRule());
               					}
               					set(
               						current,
               						"key",
               						lv_key_0_0,
-              						"gaml.compiler.Gaml._1Expr_Facets_BlockOrEnd_Key");
+              						"gaml.compiler.Gaml._GeneralKey");
               					afterParserOrEnumRuleCall();
               				
             }
@@ -3352,7 +3352,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     {
                     if ( state.backtracking==0 ) {
 
-                      					newCompositeNode(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getFirstFacetFirstFacetKeyParserRuleCall_1_0());
+                      					newCompositeNode(grammarAccess.getS_GeneralAccess().getFirstFacetFirstFacetKeyParserRuleCall_1_0());
                       				
                     }
                     pushFollow(FOLLOW_5);
@@ -3363,7 +3363,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       					if (current==null) {
-                      						current = createModelElementForParent(grammarAccess.getS_1Expr_Facets_BlockOrEndRule());
+                      						current = createModelElementForParent(grammarAccess.getS_GeneralRule());
                       					}
                       					set(
                       						current,
@@ -3390,7 +3390,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             {
             if ( state.backtracking==0 ) {
 
-              					newCompositeNode(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getExprExpressionParserRuleCall_2_0());
+              					newCompositeNode(grammarAccess.getS_GeneralAccess().getExprExpressionParserRuleCall_2_0());
               				
             }
             pushFollow(FOLLOW_18);
@@ -3401,7 +3401,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             if ( state.backtracking==0 ) {
 
               					if (current==null) {
-              						current = createModelElementForParent(grammarAccess.getS_1Expr_Facets_BlockOrEndRule());
+              						current = createModelElementForParent(grammarAccess.getS_GeneralRule());
               					}
               					set(
               						current,
@@ -3420,9 +3420,9 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             if ( state.backtracking==0 ) {
 
               			if (current==null) {
-              				current = createModelElement(grammarAccess.getS_1Expr_Facets_BlockOrEndRule());
+              				current = createModelElement(grammarAccess.getS_GeneralRule());
               			}
-              			newCompositeNode(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getFacetsAndBlockParserRuleCall_3());
+              			newCompositeNode(grammarAccess.getS_GeneralAccess().getFacetsAndBlockParserRuleCall_3());
               		
             }
             pushFollow(FOLLOW_2);
@@ -3457,7 +3457,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "ruleS_1Expr_Facets_BlockOrEnd"
+    // $ANTLR end "ruleS_General"
 
 
     // $ANTLR start "entryRuleS_Do"
@@ -9829,28 +9829,28 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
     // $ANTLR end "rule_ExperimentKey"
 
 
-    // $ANTLR start "entryRule_1Expr_Facets_BlockOrEnd_Key"
-    // InternalGaml.g:3479:1: entryRule_1Expr_Facets_BlockOrEnd_Key returns [String current=null] : iv_rule_1Expr_Facets_BlockOrEnd_Key= rule_1Expr_Facets_BlockOrEnd_Key EOF ;
-    public final String entryRule_1Expr_Facets_BlockOrEnd_Key() throws RecognitionException {
+    // $ANTLR start "entryRule_GeneralKey"
+    // InternalGaml.g:3479:1: entryRule_GeneralKey returns [String current=null] : iv_rule_GeneralKey= rule_GeneralKey EOF ;
+    public final String entryRule_GeneralKey() throws RecognitionException {
         String current = null;
 
-        AntlrDatatypeRuleToken iv_rule_1Expr_Facets_BlockOrEnd_Key = null;
+        AntlrDatatypeRuleToken iv_rule_GeneralKey = null;
 
 
         try {
-            // InternalGaml.g:3479:68: (iv_rule_1Expr_Facets_BlockOrEnd_Key= rule_1Expr_Facets_BlockOrEnd_Key EOF )
-            // InternalGaml.g:3480:2: iv_rule_1Expr_Facets_BlockOrEnd_Key= rule_1Expr_Facets_BlockOrEnd_Key EOF
+            // InternalGaml.g:3479:51: (iv_rule_GeneralKey= rule_GeneralKey EOF )
+            // InternalGaml.g:3480:2: iv_rule_GeneralKey= rule_GeneralKey EOF
             {
             if ( state.backtracking==0 ) {
-               newCompositeNode(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyRule()); 
+               newCompositeNode(grammarAccess.get_GeneralKeyRule()); 
             }
             pushFollow(FOLLOW_1);
-            iv_rule_1Expr_Facets_BlockOrEnd_Key=rule_1Expr_Facets_BlockOrEnd_Key();
+            iv_rule_GeneralKey=rule_GeneralKey();
 
             state._fsp--;
             if (state.failed) return current;
             if ( state.backtracking==0 ) {
-               current =iv_rule_1Expr_Facets_BlockOrEnd_Key.getText(); 
+               current =iv_rule_GeneralKey.getText(); 
             }
             match(input,EOF,FOLLOW_2); if (state.failed) return current;
 
@@ -9866,12 +9866,12 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "entryRule_1Expr_Facets_BlockOrEnd_Key"
+    // $ANTLR end "entryRule_GeneralKey"
 
 
-    // $ANTLR start "rule_1Expr_Facets_BlockOrEnd_Key"
-    // InternalGaml.g:3486:1: rule_1Expr_Facets_BlockOrEnd_Key returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()] : (this__LayerKey_0= rule_LayerKey | kw= 'ask' | kw= 'release' | kw= 'capture' | kw= 'create' | kw= 'write' | kw= 'error' | kw= 'warn' | kw= 'exception' | kw= 'save' | kw= 'assert' | kw= 'inspect' | kw= 'browse' | kw= 'restore' | kw= 'draw' | kw= 'using' | kw= 'switch' | kw= 'put' | kw= 'add' | kw= 'remove' | kw= 'match' | kw= 'match_between' | kw= 'match_one' | kw= 'parameter' | kw= 'status' | kw= 'highlight' | kw= 'focus_on' | kw= 'layout' ) ;
-    public final AntlrDatatypeRuleToken rule_1Expr_Facets_BlockOrEnd_Key() throws RecognitionException {
+    // $ANTLR start "rule_GeneralKey"
+    // InternalGaml.g:3486:1: rule_GeneralKey returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()] : (this__LayerKey_0= rule_LayerKey | kw= 'ask' | kw= 'release' | kw= 'capture' | kw= 'create' | kw= 'write' | kw= 'error' | kw= 'warn' | kw= 'exception' | kw= 'save' | kw= 'assert' | kw= 'inspect' | kw= 'browse' | kw= 'restore' | kw= 'draw' | kw= 'using' | kw= 'switch' | kw= 'put' | kw= 'add' | kw= 'remove' | kw= 'match' | kw= 'match_between' | kw= 'match_one' | kw= 'parameter' | kw= 'status' | kw= 'highlight' | kw= 'focus_on' | kw= 'layout' ) ;
+    public final AntlrDatatypeRuleToken rule_GeneralKey() throws RecognitionException {
         AntlrDatatypeRuleToken current = new AntlrDatatypeRuleToken();
 
         Token kw=null;
@@ -10053,7 +10053,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     {
                     if ( state.backtracking==0 ) {
 
-                      			newCompositeNode(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().get_LayerKeyParserRuleCall_0());
+                      			newCompositeNode(grammarAccess.get_GeneralKeyAccess().get_LayerKeyParserRuleCall_0());
                       		
                     }
                     pushFollow(FOLLOW_2);
@@ -10081,7 +10081,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAskKeyword_1());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getAskKeyword_1());
                       		
                     }
 
@@ -10094,7 +10094,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getReleaseKeyword_2());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getReleaseKeyword_2());
                       		
                     }
 
@@ -10107,7 +10107,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getCaptureKeyword_3());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getCaptureKeyword_3());
                       		
                     }
 
@@ -10120,7 +10120,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getCreateKeyword_4());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getCreateKeyword_4());
                       		
                     }
 
@@ -10133,7 +10133,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getWriteKeyword_5());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getWriteKeyword_5());
                       		
                     }
 
@@ -10146,7 +10146,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getErrorKeyword_6());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getErrorKeyword_6());
                       		
                     }
 
@@ -10159,7 +10159,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getWarnKeyword_7());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getWarnKeyword_7());
                       		
                     }
 
@@ -10172,7 +10172,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getExceptionKeyword_8());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getExceptionKeyword_8());
                       		
                     }
 
@@ -10185,7 +10185,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getSaveKeyword_9());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getSaveKeyword_9());
                       		
                     }
 
@@ -10198,7 +10198,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAssertKeyword_10());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getAssertKeyword_10());
                       		
                     }
 
@@ -10211,7 +10211,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getInspectKeyword_11());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getInspectKeyword_11());
                       		
                     }
 
@@ -10224,7 +10224,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getBrowseKeyword_12());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getBrowseKeyword_12());
                       		
                     }
 
@@ -10237,7 +10237,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getRestoreKeyword_13());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getRestoreKeyword_13());
                       		
                     }
 
@@ -10250,7 +10250,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getDrawKeyword_14());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getDrawKeyword_14());
                       		
                     }
 
@@ -10263,7 +10263,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getUsingKeyword_15());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getUsingKeyword_15());
                       		
                     }
 
@@ -10276,7 +10276,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getSwitchKeyword_16());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getSwitchKeyword_16());
                       		
                     }
 
@@ -10289,7 +10289,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getPutKeyword_17());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getPutKeyword_17());
                       		
                     }
 
@@ -10302,7 +10302,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAddKeyword_18());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getAddKeyword_18());
                       		
                     }
 
@@ -10315,7 +10315,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getRemoveKeyword_19());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getRemoveKeyword_19());
                       		
                     }
 
@@ -10328,7 +10328,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getMatchKeyword_20());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getMatchKeyword_20());
                       		
                     }
 
@@ -10341,7 +10341,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getMatch_betweenKeyword_21());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getMatch_betweenKeyword_21());
                       		
                     }
 
@@ -10354,7 +10354,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getMatch_oneKeyword_22());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getMatch_oneKeyword_22());
                       		
                     }
 
@@ -10367,7 +10367,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getParameterKeyword_23());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getParameterKeyword_23());
                       		
                     }
 
@@ -10380,7 +10380,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getStatusKeyword_24());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getStatusKeyword_24());
                       		
                     }
 
@@ -10393,7 +10393,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getHighlightKeyword_25());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getHighlightKeyword_25());
                       		
                     }
 
@@ -10406,7 +10406,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getFocus_onKeyword_26());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getFocus_onKeyword_26());
                       		
                     }
 
@@ -10419,7 +10419,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     if ( state.backtracking==0 ) {
 
                       			current.merge(kw);
-                      			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getLayoutKeyword_27());
+                      			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getLayoutKeyword_27());
                       		
                     }
 
@@ -10446,7 +10446,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
         }
         return current;
     }
-    // $ANTLR end "rule_1Expr_Facets_BlockOrEnd_Key"
+    // $ANTLR end "rule_GeneralKey"
 
 
     // $ANTLR start "entryRule_LayerKey"
@@ -23058,7 +23058,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleValid_ID"
-    // InternalGaml.g:7882:1: ruleValid_ID returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()] : (this__SpeciesKey_0= rule_SpeciesKey | this__ImageLayerKey_1= rule_ImageLayerKey | this__DoKey_2= rule_DoKey | this__ReflexKey_3= rule_ReflexKey | this__VarOrConstKey_4= rule_VarOrConstKey | this__1Expr_Facets_BlockOrEnd_Key_5= rule_1Expr_Facets_BlockOrEnd_Key | this__EquationsKey_6= rule_EquationsKey | this__ExperimentKey_7= rule_ExperimentKey | this_ID_8= RULE_ID ) ;
+    // InternalGaml.g:7882:1: ruleValid_ID returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()] : (this__SpeciesKey_0= rule_SpeciesKey | this__ImageLayerKey_1= rule_ImageLayerKey | this__DoKey_2= rule_DoKey | this__ReflexKey_3= rule_ReflexKey | this__VarOrConstKey_4= rule_VarOrConstKey | this__GeneralKey_5= rule_GeneralKey | this__EquationsKey_6= rule_EquationsKey | this__ExperimentKey_7= rule_ExperimentKey | this_ID_8= RULE_ID ) ;
     public final AntlrDatatypeRuleToken ruleValid_ID() throws RecognitionException {
         AntlrDatatypeRuleToken current = new AntlrDatatypeRuleToken();
 
@@ -23073,7 +23073,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
         AntlrDatatypeRuleToken this__VarOrConstKey_4 = null;
 
-        AntlrDatatypeRuleToken this__1Expr_Facets_BlockOrEnd_Key_5 = null;
+        AntlrDatatypeRuleToken this__GeneralKey_5 = null;
 
         AntlrDatatypeRuleToken this__EquationsKey_6 = null;
 
@@ -23084,10 +23084,10 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalGaml.g:7888:2: ( (this__SpeciesKey_0= rule_SpeciesKey | this__ImageLayerKey_1= rule_ImageLayerKey | this__DoKey_2= rule_DoKey | this__ReflexKey_3= rule_ReflexKey | this__VarOrConstKey_4= rule_VarOrConstKey | this__1Expr_Facets_BlockOrEnd_Key_5= rule_1Expr_Facets_BlockOrEnd_Key | this__EquationsKey_6= rule_EquationsKey | this__ExperimentKey_7= rule_ExperimentKey | this_ID_8= RULE_ID ) )
-            // InternalGaml.g:7889:2: (this__SpeciesKey_0= rule_SpeciesKey | this__ImageLayerKey_1= rule_ImageLayerKey | this__DoKey_2= rule_DoKey | this__ReflexKey_3= rule_ReflexKey | this__VarOrConstKey_4= rule_VarOrConstKey | this__1Expr_Facets_BlockOrEnd_Key_5= rule_1Expr_Facets_BlockOrEnd_Key | this__EquationsKey_6= rule_EquationsKey | this__ExperimentKey_7= rule_ExperimentKey | this_ID_8= RULE_ID )
+            // InternalGaml.g:7888:2: ( (this__SpeciesKey_0= rule_SpeciesKey | this__ImageLayerKey_1= rule_ImageLayerKey | this__DoKey_2= rule_DoKey | this__ReflexKey_3= rule_ReflexKey | this__VarOrConstKey_4= rule_VarOrConstKey | this__GeneralKey_5= rule_GeneralKey | this__EquationsKey_6= rule_EquationsKey | this__ExperimentKey_7= rule_ExperimentKey | this_ID_8= RULE_ID ) )
+            // InternalGaml.g:7889:2: (this__SpeciesKey_0= rule_SpeciesKey | this__ImageLayerKey_1= rule_ImageLayerKey | this__DoKey_2= rule_DoKey | this__ReflexKey_3= rule_ReflexKey | this__VarOrConstKey_4= rule_VarOrConstKey | this__GeneralKey_5= rule_GeneralKey | this__EquationsKey_6= rule_EquationsKey | this__ExperimentKey_7= rule_ExperimentKey | this_ID_8= RULE_ID )
             {
-            // InternalGaml.g:7889:2: (this__SpeciesKey_0= rule_SpeciesKey | this__ImageLayerKey_1= rule_ImageLayerKey | this__DoKey_2= rule_DoKey | this__ReflexKey_3= rule_ReflexKey | this__VarOrConstKey_4= rule_VarOrConstKey | this__1Expr_Facets_BlockOrEnd_Key_5= rule_1Expr_Facets_BlockOrEnd_Key | this__EquationsKey_6= rule_EquationsKey | this__ExperimentKey_7= rule_ExperimentKey | this_ID_8= RULE_ID )
+            // InternalGaml.g:7889:2: (this__SpeciesKey_0= rule_SpeciesKey | this__ImageLayerKey_1= rule_ImageLayerKey | this__DoKey_2= rule_DoKey | this__ReflexKey_3= rule_ReflexKey | this__VarOrConstKey_4= rule_VarOrConstKey | this__GeneralKey_5= rule_GeneralKey | this__EquationsKey_6= rule_EquationsKey | this__ExperimentKey_7= rule_ExperimentKey | this_ID_8= RULE_ID )
             int alt115=9;
             switch ( input.LA(1) ) {
             case 47:
@@ -23320,21 +23320,21 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 6 :
-                    // InternalGaml.g:7945:3: this__1Expr_Facets_BlockOrEnd_Key_5= rule_1Expr_Facets_BlockOrEnd_Key
+                    // InternalGaml.g:7945:3: this__GeneralKey_5= rule_GeneralKey
                     {
                     if ( state.backtracking==0 ) {
 
-                      			newCompositeNode(grammarAccess.getValid_IDAccess().get_1Expr_Facets_BlockOrEnd_KeyParserRuleCall_5());
+                      			newCompositeNode(grammarAccess.getValid_IDAccess().get_GeneralKeyParserRuleCall_5());
                       		
                     }
                     pushFollow(FOLLOW_2);
-                    this__1Expr_Facets_BlockOrEnd_Key_5=rule_1Expr_Facets_BlockOrEnd_Key();
+                    this__GeneralKey_5=rule_GeneralKey();
 
                     state._fsp--;
                     if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      			current.merge(this__1Expr_Facets_BlockOrEnd_Key_5);
+                      			current.merge(this__GeneralKey_5);
                       		
                     }
                     if ( state.backtracking==0 ) {
@@ -24635,7 +24635,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             this.transition = dfa_6;
         }
         public String getDescription() {
-            return "1005:2: (this_S_Display_0= ruleS_Display | this_S_Do_1= ruleS_Do | this_S_Return_2= ruleS_Return | this_S_Solve_3= ruleS_Solve | this_S_If_4= ruleS_If | this_S_Try_5= ruleS_Try | this_S_Equations_6= ruleS_Equations | ( ( ruleS_Assignment )=>this_S_Assignment_7= ruleS_Assignment ) | this_S_1Expr_Facets_BlockOrEnd_8= ruleS_1Expr_Facets_BlockOrEnd | ( ( ruleS_Declaration )=>this_S_Declaration_9= ruleS_Declaration ) | this_S_Other_10= ruleS_Other )";
+            return "1005:2: (this_S_Display_0= ruleS_Display | this_S_Do_1= ruleS_Do | this_S_Return_2= ruleS_Return | this_S_Solve_3= ruleS_Solve | this_S_If_4= ruleS_If | this_S_Try_5= ruleS_Try | this_S_Equations_6= ruleS_Equations | ( ( ruleS_Assignment )=>this_S_Assignment_7= ruleS_Assignment ) | this_S_General_8= ruleS_General | ( ( ruleS_Declaration )=>this_S_Declaration_9= ruleS_Declaration ) | this_S_Other_10= ruleS_Other )";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;

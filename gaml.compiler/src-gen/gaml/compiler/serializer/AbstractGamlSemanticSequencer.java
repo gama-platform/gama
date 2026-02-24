@@ -348,7 +348,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_StandaloneBlock(context, (StandaloneBlock) semanticObject); 
 				return; 
 			case GamlPackage.STATEMENT:
-				sequence_FacetsAndBlock_S_1Expr_Facets_BlockOrEnd(context, (Statement) semanticObject); 
+				sequence_FacetsAndBlock_S_General(context, (Statement) semanticObject); 
 				return; 
 			case GamlPackage.STRING_EVALUATOR:
 				sequence_StringEvaluator(context, (StringEvaluator) semanticObject); 
@@ -1005,21 +1005,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Statement returns Statement
-	 *     S_1Expr_Facets_BlockOrEnd returns Statement
-	 *
-	 * Constraint:
-	 *     (key=_1Expr_Facets_BlockOrEnd_Key firstFacet=FirstFacetKey? expr=Expression facets+=Facet* block=Block?)
-	 * </pre>
-	 */
-	protected void sequence_FacetsAndBlock_S_1Expr_Facets_BlockOrEnd(ISerializationContext context, Statement semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
 	 *     Statement returns S_Action
 	 *     S_Declaration returns S_Action
 	 *     S_Action returns S_Action
@@ -1112,6 +1097,21 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_Experiment(ISerializationContext context, S_Experiment semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     Statement returns Statement
+	 *     S_General returns Statement
+	 *
+	 * Constraint:
+	 *     (key=_GeneralKey firstFacet=FirstFacetKey? expr=Expression facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_General(ISerializationContext context, Statement semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	

@@ -1456,23 +1456,23 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
     // $ANTLR end "ruleStatement"
 
 
-    // $ANTLR start "entryRuleS_1Expr_Facets_BlockOrEnd"
-    // InternalGaml.g:421:1: entryRuleS_1Expr_Facets_BlockOrEnd : ruleS_1Expr_Facets_BlockOrEnd EOF ;
-    public final void entryRuleS_1Expr_Facets_BlockOrEnd() throws RecognitionException {
+    // $ANTLR start "entryRuleS_General"
+    // InternalGaml.g:421:1: entryRuleS_General : ruleS_General EOF ;
+    public final void entryRuleS_General() throws RecognitionException {
         try {
-            // InternalGaml.g:422:1: ( ruleS_1Expr_Facets_BlockOrEnd EOF )
-            // InternalGaml.g:423:1: ruleS_1Expr_Facets_BlockOrEnd EOF
+            // InternalGaml.g:422:1: ( ruleS_General EOF )
+            // InternalGaml.g:423:1: ruleS_General EOF
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getS_1Expr_Facets_BlockOrEndRule()); 
+               before(grammarAccess.getS_GeneralRule()); 
             }
             pushFollow(FOLLOW_1);
-            ruleS_1Expr_Facets_BlockOrEnd();
+            ruleS_General();
 
             state._fsp--;
             if (state.failed) return ;
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getS_1Expr_Facets_BlockOrEndRule()); 
+               after(grammarAccess.getS_GeneralRule()); 
             }
             match(input,EOF,FOLLOW_2); if (state.failed) return ;
 
@@ -1487,30 +1487,30 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "entryRuleS_1Expr_Facets_BlockOrEnd"
+    // $ANTLR end "entryRuleS_General"
 
 
-    // $ANTLR start "ruleS_1Expr_Facets_BlockOrEnd"
-    // InternalGaml.g:430:1: ruleS_1Expr_Facets_BlockOrEnd : ( ( rule__S_1Expr_Facets_BlockOrEnd__Group__0 ) ) ;
-    public final void ruleS_1Expr_Facets_BlockOrEnd() throws RecognitionException {
+    // $ANTLR start "ruleS_General"
+    // InternalGaml.g:430:1: ruleS_General : ( ( rule__S_General__Group__0 ) ) ;
+    public final void ruleS_General() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:434:2: ( ( ( rule__S_1Expr_Facets_BlockOrEnd__Group__0 ) ) )
-            // InternalGaml.g:435:2: ( ( rule__S_1Expr_Facets_BlockOrEnd__Group__0 ) )
+            // InternalGaml.g:434:2: ( ( ( rule__S_General__Group__0 ) ) )
+            // InternalGaml.g:435:2: ( ( rule__S_General__Group__0 ) )
             {
-            // InternalGaml.g:435:2: ( ( rule__S_1Expr_Facets_BlockOrEnd__Group__0 ) )
-            // InternalGaml.g:436:3: ( rule__S_1Expr_Facets_BlockOrEnd__Group__0 )
+            // InternalGaml.g:435:2: ( ( rule__S_General__Group__0 ) )
+            // InternalGaml.g:436:3: ( rule__S_General__Group__0 )
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getGroup()); 
+               before(grammarAccess.getS_GeneralAccess().getGroup()); 
             }
-            // InternalGaml.g:437:3: ( rule__S_1Expr_Facets_BlockOrEnd__Group__0 )
-            // InternalGaml.g:437:4: rule__S_1Expr_Facets_BlockOrEnd__Group__0
+            // InternalGaml.g:437:3: ( rule__S_General__Group__0 )
+            // InternalGaml.g:437:4: rule__S_General__Group__0
             {
             pushFollow(FOLLOW_2);
-            rule__S_1Expr_Facets_BlockOrEnd__Group__0();
+            rule__S_General__Group__0();
 
             state._fsp--;
             if (state.failed) return ;
@@ -1518,7 +1518,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             }
 
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getGroup()); 
+               after(grammarAccess.getS_GeneralAccess().getGroup()); 
             }
 
             }
@@ -1538,7 +1538,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "ruleS_1Expr_Facets_BlockOrEnd"
+    // $ANTLR end "ruleS_General"
 
 
     // $ANTLR start "entryRuleS_Do"
@@ -4191,23 +4191,23 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
     // $ANTLR end "rule_ExperimentKey"
 
 
-    // $ANTLR start "entryRule_1Expr_Facets_BlockOrEnd_Key"
-    // InternalGaml.g:1246:1: entryRule_1Expr_Facets_BlockOrEnd_Key : rule_1Expr_Facets_BlockOrEnd_Key EOF ;
-    public final void entryRule_1Expr_Facets_BlockOrEnd_Key() throws RecognitionException {
+    // $ANTLR start "entryRule_GeneralKey"
+    // InternalGaml.g:1246:1: entryRule_GeneralKey : rule_GeneralKey EOF ;
+    public final void entryRule_GeneralKey() throws RecognitionException {
         try {
-            // InternalGaml.g:1247:1: ( rule_1Expr_Facets_BlockOrEnd_Key EOF )
-            // InternalGaml.g:1248:1: rule_1Expr_Facets_BlockOrEnd_Key EOF
+            // InternalGaml.g:1247:1: ( rule_GeneralKey EOF )
+            // InternalGaml.g:1248:1: rule_GeneralKey EOF
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyRule()); 
+               before(grammarAccess.get_GeneralKeyRule()); 
             }
             pushFollow(FOLLOW_1);
-            rule_1Expr_Facets_BlockOrEnd_Key();
+            rule_GeneralKey();
 
             state._fsp--;
             if (state.failed) return ;
             if ( state.backtracking==0 ) {
-               after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyRule()); 
+               after(grammarAccess.get_GeneralKeyRule()); 
             }
             match(input,EOF,FOLLOW_2); if (state.failed) return ;
 
@@ -4222,30 +4222,30 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "entryRule_1Expr_Facets_BlockOrEnd_Key"
+    // $ANTLR end "entryRule_GeneralKey"
 
 
-    // $ANTLR start "rule_1Expr_Facets_BlockOrEnd_Key"
-    // InternalGaml.g:1255:1: rule_1Expr_Facets_BlockOrEnd_Key : ( ( rule___1Expr_Facets_BlockOrEnd_Key__Alternatives ) ) ;
-    public final void rule_1Expr_Facets_BlockOrEnd_Key() throws RecognitionException {
+    // $ANTLR start "rule_GeneralKey"
+    // InternalGaml.g:1255:1: rule_GeneralKey : ( ( rule___GeneralKey__Alternatives ) ) ;
+    public final void rule_GeneralKey() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:1259:2: ( ( ( rule___1Expr_Facets_BlockOrEnd_Key__Alternatives ) ) )
-            // InternalGaml.g:1260:2: ( ( rule___1Expr_Facets_BlockOrEnd_Key__Alternatives ) )
+            // InternalGaml.g:1259:2: ( ( ( rule___GeneralKey__Alternatives ) ) )
+            // InternalGaml.g:1260:2: ( ( rule___GeneralKey__Alternatives ) )
             {
-            // InternalGaml.g:1260:2: ( ( rule___1Expr_Facets_BlockOrEnd_Key__Alternatives ) )
-            // InternalGaml.g:1261:3: ( rule___1Expr_Facets_BlockOrEnd_Key__Alternatives )
+            // InternalGaml.g:1260:2: ( ( rule___GeneralKey__Alternatives ) )
+            // InternalGaml.g:1261:3: ( rule___GeneralKey__Alternatives )
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAlternatives()); 
+               before(grammarAccess.get_GeneralKeyAccess().getAlternatives()); 
             }
-            // InternalGaml.g:1262:3: ( rule___1Expr_Facets_BlockOrEnd_Key__Alternatives )
-            // InternalGaml.g:1262:4: rule___1Expr_Facets_BlockOrEnd_Key__Alternatives
+            // InternalGaml.g:1262:3: ( rule___GeneralKey__Alternatives )
+            // InternalGaml.g:1262:4: rule___GeneralKey__Alternatives
             {
             pushFollow(FOLLOW_2);
-            rule___1Expr_Facets_BlockOrEnd_Key__Alternatives();
+            rule___GeneralKey__Alternatives();
 
             state._fsp--;
             if (state.failed) return ;
@@ -4253,7 +4253,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             }
 
             if ( state.backtracking==0 ) {
-               after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAlternatives()); 
+               after(grammarAccess.get_GeneralKeyAccess().getAlternatives()); 
             }
 
             }
@@ -4273,7 +4273,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "rule_1Expr_Facets_BlockOrEnd_Key"
+    // $ANTLR end "rule_GeneralKey"
 
 
     // $ANTLR start "entryRule_LayerKey"
@@ -9980,13 +9980,13 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
 
 
     // $ANTLR start "rule__Statement__Alternatives"
-    // InternalGaml.g:2918:1: rule__Statement__Alternatives : ( ( ruleS_Display ) | ( ruleS_Do ) | ( ruleS_Return ) | ( ruleS_Solve ) | ( ruleS_If ) | ( ruleS_Try ) | ( ruleS_Equations ) | ( ( ruleS_Assignment ) ) | ( ruleS_1Expr_Facets_BlockOrEnd ) | ( ( ruleS_Declaration ) ) | ( ruleS_Other ) );
+    // InternalGaml.g:2918:1: rule__Statement__Alternatives : ( ( ruleS_Display ) | ( ruleS_Do ) | ( ruleS_Return ) | ( ruleS_Solve ) | ( ruleS_If ) | ( ruleS_Try ) | ( ruleS_Equations ) | ( ( ruleS_Assignment ) ) | ( ruleS_General ) | ( ( ruleS_Declaration ) ) | ( ruleS_Other ) );
     public final void rule__Statement__Alternatives() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:2922:1: ( ( ruleS_Display ) | ( ruleS_Do ) | ( ruleS_Return ) | ( ruleS_Solve ) | ( ruleS_If ) | ( ruleS_Try ) | ( ruleS_Equations ) | ( ( ruleS_Assignment ) ) | ( ruleS_1Expr_Facets_BlockOrEnd ) | ( ( ruleS_Declaration ) ) | ( ruleS_Other ) )
+            // InternalGaml.g:2922:1: ( ( ruleS_Display ) | ( ruleS_Do ) | ( ruleS_Return ) | ( ruleS_Solve ) | ( ruleS_If ) | ( ruleS_Try ) | ( ruleS_Equations ) | ( ( ruleS_Assignment ) ) | ( ruleS_General ) | ( ( ruleS_Declaration ) ) | ( ruleS_Other ) )
             int alt6=11;
             alt6 = dfa6.predict(input);
             switch (alt6) {
@@ -10181,21 +10181,21 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     }
                     break;
                 case 9 :
-                    // InternalGaml.g:2971:2: ( ruleS_1Expr_Facets_BlockOrEnd )
+                    // InternalGaml.g:2971:2: ( ruleS_General )
                     {
-                    // InternalGaml.g:2971:2: ( ruleS_1Expr_Facets_BlockOrEnd )
-                    // InternalGaml.g:2972:3: ruleS_1Expr_Facets_BlockOrEnd
+                    // InternalGaml.g:2971:2: ( ruleS_General )
+                    // InternalGaml.g:2972:3: ruleS_General
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.getStatementAccess().getS_1Expr_Facets_BlockOrEndParserRuleCall_8()); 
+                       before(grammarAccess.getStatementAccess().getS_GeneralParserRuleCall_8()); 
                     }
                     pushFollow(FOLLOW_2);
-                    ruleS_1Expr_Facets_BlockOrEnd();
+                    ruleS_General();
 
                     state._fsp--;
                     if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.getStatementAccess().getS_1Expr_Facets_BlockOrEndParserRuleCall_8()); 
+                       after(grammarAccess.getStatementAccess().getS_GeneralParserRuleCall_8()); 
                     }
 
                     }
@@ -11223,9 +11223,9 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
     // $ANTLR end "rule___SpeciesKey__Alternatives"
 
 
-    // $ANTLR start "rule___1Expr_Facets_BlockOrEnd_Key__Alternatives"
-    // InternalGaml.g:3209:1: rule___1Expr_Facets_BlockOrEnd_Key__Alternatives : ( ( rule_LayerKey ) | ( 'ask' ) | ( 'release' ) | ( 'capture' ) | ( 'create' ) | ( 'write' ) | ( 'error' ) | ( 'warn' ) | ( 'exception' ) | ( 'save' ) | ( 'assert' ) | ( 'inspect' ) | ( 'browse' ) | ( 'restore' ) | ( 'draw' ) | ( 'using' ) | ( 'switch' ) | ( 'put' ) | ( 'add' ) | ( 'remove' ) | ( 'match' ) | ( 'match_between' ) | ( 'match_one' ) | ( 'parameter' ) | ( 'status' ) | ( 'highlight' ) | ( 'focus_on' ) | ( 'layout' ) );
-    public final void rule___1Expr_Facets_BlockOrEnd_Key__Alternatives() throws RecognitionException {
+    // $ANTLR start "rule___GeneralKey__Alternatives"
+    // InternalGaml.g:3209:1: rule___GeneralKey__Alternatives : ( ( rule_LayerKey ) | ( 'ask' ) | ( 'release' ) | ( 'capture' ) | ( 'create' ) | ( 'write' ) | ( 'error' ) | ( 'warn' ) | ( 'exception' ) | ( 'save' ) | ( 'assert' ) | ( 'inspect' ) | ( 'browse' ) | ( 'restore' ) | ( 'draw' ) | ( 'using' ) | ( 'switch' ) | ( 'put' ) | ( 'add' ) | ( 'remove' ) | ( 'match' ) | ( 'match_between' ) | ( 'match_one' ) | ( 'parameter' ) | ( 'status' ) | ( 'highlight' ) | ( 'focus_on' ) | ( 'layout' ) );
+    public final void rule___GeneralKey__Alternatives() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
@@ -11400,7 +11400,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3215:3: rule_LayerKey
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().get_LayerKeyParserRuleCall_0()); 
+                       before(grammarAccess.get_GeneralKeyAccess().get_LayerKeyParserRuleCall_0()); 
                     }
                     pushFollow(FOLLOW_2);
                     rule_LayerKey();
@@ -11408,7 +11408,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     state._fsp--;
                     if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().get_LayerKeyParserRuleCall_0()); 
+                       after(grammarAccess.get_GeneralKeyAccess().get_LayerKeyParserRuleCall_0()); 
                     }
 
                     }
@@ -11423,11 +11423,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3221:3: 'ask'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAskKeyword_1()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getAskKeyword_1()); 
                     }
                     match(input,25,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAskKeyword_1()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getAskKeyword_1()); 
                     }
 
                     }
@@ -11442,11 +11442,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3227:3: 'release'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getReleaseKeyword_2()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getReleaseKeyword_2()); 
                     }
                     match(input,26,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getReleaseKeyword_2()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getReleaseKeyword_2()); 
                     }
 
                     }
@@ -11461,11 +11461,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3233:3: 'capture'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getCaptureKeyword_3()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getCaptureKeyword_3()); 
                     }
                     match(input,27,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getCaptureKeyword_3()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getCaptureKeyword_3()); 
                     }
 
                     }
@@ -11480,11 +11480,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3239:3: 'create'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getCreateKeyword_4()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getCreateKeyword_4()); 
                     }
                     match(input,28,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getCreateKeyword_4()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getCreateKeyword_4()); 
                     }
 
                     }
@@ -11499,11 +11499,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3245:3: 'write'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getWriteKeyword_5()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getWriteKeyword_5()); 
                     }
                     match(input,29,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getWriteKeyword_5()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getWriteKeyword_5()); 
                     }
 
                     }
@@ -11518,11 +11518,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3251:3: 'error'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getErrorKeyword_6()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getErrorKeyword_6()); 
                     }
                     match(input,30,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getErrorKeyword_6()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getErrorKeyword_6()); 
                     }
 
                     }
@@ -11537,11 +11537,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3257:3: 'warn'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getWarnKeyword_7()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getWarnKeyword_7()); 
                     }
                     match(input,31,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getWarnKeyword_7()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getWarnKeyword_7()); 
                     }
 
                     }
@@ -11556,11 +11556,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3263:3: 'exception'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getExceptionKeyword_8()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getExceptionKeyword_8()); 
                     }
                     match(input,32,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getExceptionKeyword_8()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getExceptionKeyword_8()); 
                     }
 
                     }
@@ -11575,11 +11575,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3269:3: 'save'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getSaveKeyword_9()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getSaveKeyword_9()); 
                     }
                     match(input,33,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getSaveKeyword_9()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getSaveKeyword_9()); 
                     }
 
                     }
@@ -11594,11 +11594,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3275:3: 'assert'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAssertKeyword_10()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getAssertKeyword_10()); 
                     }
                     match(input,34,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAssertKeyword_10()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getAssertKeyword_10()); 
                     }
 
                     }
@@ -11613,11 +11613,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3281:3: 'inspect'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getInspectKeyword_11()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getInspectKeyword_11()); 
                     }
                     match(input,35,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getInspectKeyword_11()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getInspectKeyword_11()); 
                     }
 
                     }
@@ -11632,11 +11632,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3287:3: 'browse'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getBrowseKeyword_12()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getBrowseKeyword_12()); 
                     }
                     match(input,36,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getBrowseKeyword_12()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getBrowseKeyword_12()); 
                     }
 
                     }
@@ -11651,11 +11651,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3293:3: 'restore'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getRestoreKeyword_13()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getRestoreKeyword_13()); 
                     }
                     match(input,37,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getRestoreKeyword_13()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getRestoreKeyword_13()); 
                     }
 
                     }
@@ -11670,11 +11670,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3299:3: 'draw'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getDrawKeyword_14()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getDrawKeyword_14()); 
                     }
                     match(input,38,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getDrawKeyword_14()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getDrawKeyword_14()); 
                     }
 
                     }
@@ -11689,11 +11689,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3305:3: 'using'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getUsingKeyword_15()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getUsingKeyword_15()); 
                     }
                     match(input,39,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getUsingKeyword_15()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getUsingKeyword_15()); 
                     }
 
                     }
@@ -11708,11 +11708,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3311:3: 'switch'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getSwitchKeyword_16()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getSwitchKeyword_16()); 
                     }
                     match(input,40,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getSwitchKeyword_16()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getSwitchKeyword_16()); 
                     }
 
                     }
@@ -11727,11 +11727,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3317:3: 'put'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getPutKeyword_17()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getPutKeyword_17()); 
                     }
                     match(input,41,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getPutKeyword_17()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getPutKeyword_17()); 
                     }
 
                     }
@@ -11746,11 +11746,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3323:3: 'add'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAddKeyword_18()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getAddKeyword_18()); 
                     }
                     match(input,42,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAddKeyword_18()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getAddKeyword_18()); 
                     }
 
                     }
@@ -11765,11 +11765,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3329:3: 'remove'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getRemoveKeyword_19()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getRemoveKeyword_19()); 
                     }
                     match(input,43,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getRemoveKeyword_19()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getRemoveKeyword_19()); 
                     }
 
                     }
@@ -11784,11 +11784,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3335:3: 'match'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getMatchKeyword_20()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getMatchKeyword_20()); 
                     }
                     match(input,44,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getMatchKeyword_20()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getMatchKeyword_20()); 
                     }
 
                     }
@@ -11803,11 +11803,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3341:3: 'match_between'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getMatch_betweenKeyword_21()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getMatch_betweenKeyword_21()); 
                     }
                     match(input,45,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getMatch_betweenKeyword_21()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getMatch_betweenKeyword_21()); 
                     }
 
                     }
@@ -11822,11 +11822,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3347:3: 'match_one'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getMatch_oneKeyword_22()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getMatch_oneKeyword_22()); 
                     }
                     match(input,46,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getMatch_oneKeyword_22()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getMatch_oneKeyword_22()); 
                     }
 
                     }
@@ -11841,11 +11841,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3353:3: 'parameter'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getParameterKeyword_23()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getParameterKeyword_23()); 
                     }
                     match(input,47,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getParameterKeyword_23()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getParameterKeyword_23()); 
                     }
 
                     }
@@ -11860,11 +11860,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3359:3: 'status'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getStatusKeyword_24()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getStatusKeyword_24()); 
                     }
                     match(input,48,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getStatusKeyword_24()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getStatusKeyword_24()); 
                     }
 
                     }
@@ -11879,11 +11879,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3365:3: 'highlight'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getHighlightKeyword_25()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getHighlightKeyword_25()); 
                     }
                     match(input,49,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getHighlightKeyword_25()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getHighlightKeyword_25()); 
                     }
 
                     }
@@ -11898,11 +11898,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3371:3: 'focus_on'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getFocus_onKeyword_26()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getFocus_onKeyword_26()); 
                     }
                     match(input,50,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getFocus_onKeyword_26()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getFocus_onKeyword_26()); 
                     }
 
                     }
@@ -11917,11 +11917,11 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     // InternalGaml.g:3377:3: 'layout'
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getLayoutKeyword_27()); 
+                       before(grammarAccess.get_GeneralKeyAccess().getLayoutKeyword_27()); 
                     }
                     match(input,51,FOLLOW_2); if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getLayoutKeyword_27()); 
+                       after(grammarAccess.get_GeneralKeyAccess().getLayoutKeyword_27()); 
                     }
 
                     }
@@ -11943,7 +11943,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "rule___1Expr_Facets_BlockOrEnd_Key__Alternatives"
+    // $ANTLR end "rule___GeneralKey__Alternatives"
 
 
     // $ANTLR start "rule___LayerKey__Alternatives"
@@ -17167,13 +17167,13 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
 
 
     // $ANTLR start "rule__Valid_ID__Alternatives"
-    // InternalGaml.g:4577:1: rule__Valid_ID__Alternatives : ( ( rule_SpeciesKey ) | ( rule_ImageLayerKey ) | ( rule_DoKey ) | ( rule_ReflexKey ) | ( rule_VarOrConstKey ) | ( rule_1Expr_Facets_BlockOrEnd_Key ) | ( rule_EquationsKey ) | ( rule_ExperimentKey ) | ( RULE_ID ) );
+    // InternalGaml.g:4577:1: rule__Valid_ID__Alternatives : ( ( rule_SpeciesKey ) | ( rule_ImageLayerKey ) | ( rule_DoKey ) | ( rule_ReflexKey ) | ( rule_VarOrConstKey ) | ( rule_GeneralKey ) | ( rule_EquationsKey ) | ( rule_ExperimentKey ) | ( RULE_ID ) );
     public final void rule__Valid_ID__Alternatives() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:4581:1: ( ( rule_SpeciesKey ) | ( rule_ImageLayerKey ) | ( rule_DoKey ) | ( rule_ReflexKey ) | ( rule_VarOrConstKey ) | ( rule_1Expr_Facets_BlockOrEnd_Key ) | ( rule_EquationsKey ) | ( rule_ExperimentKey ) | ( RULE_ID ) )
+            // InternalGaml.g:4581:1: ( ( rule_SpeciesKey ) | ( rule_ImageLayerKey ) | ( rule_DoKey ) | ( rule_ReflexKey ) | ( rule_VarOrConstKey ) | ( rule_GeneralKey ) | ( rule_EquationsKey ) | ( rule_ExperimentKey ) | ( RULE_ID ) )
             int alt53=9;
             switch ( input.LA(1) ) {
             case 23:
@@ -17391,21 +17391,21 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
                     }
                     break;
                 case 6 :
-                    // InternalGaml.g:4612:2: ( rule_1Expr_Facets_BlockOrEnd_Key )
+                    // InternalGaml.g:4612:2: ( rule_GeneralKey )
                     {
-                    // InternalGaml.g:4612:2: ( rule_1Expr_Facets_BlockOrEnd_Key )
-                    // InternalGaml.g:4613:3: rule_1Expr_Facets_BlockOrEnd_Key
+                    // InternalGaml.g:4612:2: ( rule_GeneralKey )
+                    // InternalGaml.g:4613:3: rule_GeneralKey
                     {
                     if ( state.backtracking==0 ) {
-                       before(grammarAccess.getValid_IDAccess().get_1Expr_Facets_BlockOrEnd_KeyParserRuleCall_5()); 
+                       before(grammarAccess.getValid_IDAccess().get_GeneralKeyParserRuleCall_5()); 
                     }
                     pushFollow(FOLLOW_2);
-                    rule_1Expr_Facets_BlockOrEnd_Key();
+                    rule_GeneralKey();
 
                     state._fsp--;
                     if (state.failed) return ;
                     if ( state.backtracking==0 ) {
-                       after(grammarAccess.getValid_IDAccess().get_1Expr_Facets_BlockOrEnd_KeyParserRuleCall_5()); 
+                       after(grammarAccess.getValid_IDAccess().get_GeneralKeyParserRuleCall_5()); 
                     }
 
                     }
@@ -21472,23 +21472,23 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
     // $ANTLR end "rule__S_Experiment__Group__3__Impl"
 
 
-    // $ANTLR start "rule__S_1Expr_Facets_BlockOrEnd__Group__0"
-    // InternalGaml.g:5840:1: rule__S_1Expr_Facets_BlockOrEnd__Group__0 : rule__S_1Expr_Facets_BlockOrEnd__Group__0__Impl rule__S_1Expr_Facets_BlockOrEnd__Group__1 ;
-    public final void rule__S_1Expr_Facets_BlockOrEnd__Group__0() throws RecognitionException {
+    // $ANTLR start "rule__S_General__Group__0"
+    // InternalGaml.g:5840:1: rule__S_General__Group__0 : rule__S_General__Group__0__Impl rule__S_General__Group__1 ;
+    public final void rule__S_General__Group__0() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:5844:1: ( rule__S_1Expr_Facets_BlockOrEnd__Group__0__Impl rule__S_1Expr_Facets_BlockOrEnd__Group__1 )
-            // InternalGaml.g:5845:2: rule__S_1Expr_Facets_BlockOrEnd__Group__0__Impl rule__S_1Expr_Facets_BlockOrEnd__Group__1
+            // InternalGaml.g:5844:1: ( rule__S_General__Group__0__Impl rule__S_General__Group__1 )
+            // InternalGaml.g:5845:2: rule__S_General__Group__0__Impl rule__S_General__Group__1
             {
             pushFollow(FOLLOW_5);
-            rule__S_1Expr_Facets_BlockOrEnd__Group__0__Impl();
+            rule__S_General__Group__0__Impl();
 
             state._fsp--;
             if (state.failed) return ;
             pushFollow(FOLLOW_2);
-            rule__S_1Expr_Facets_BlockOrEnd__Group__1();
+            rule__S_General__Group__1();
 
             state._fsp--;
             if (state.failed) return ;
@@ -21507,30 +21507,30 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "rule__S_1Expr_Facets_BlockOrEnd__Group__0"
+    // $ANTLR end "rule__S_General__Group__0"
 
 
-    // $ANTLR start "rule__S_1Expr_Facets_BlockOrEnd__Group__0__Impl"
-    // InternalGaml.g:5852:1: rule__S_1Expr_Facets_BlockOrEnd__Group__0__Impl : ( ( rule__S_1Expr_Facets_BlockOrEnd__KeyAssignment_0 ) ) ;
-    public final void rule__S_1Expr_Facets_BlockOrEnd__Group__0__Impl() throws RecognitionException {
+    // $ANTLR start "rule__S_General__Group__0__Impl"
+    // InternalGaml.g:5852:1: rule__S_General__Group__0__Impl : ( ( rule__S_General__KeyAssignment_0 ) ) ;
+    public final void rule__S_General__Group__0__Impl() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:5856:1: ( ( ( rule__S_1Expr_Facets_BlockOrEnd__KeyAssignment_0 ) ) )
-            // InternalGaml.g:5857:1: ( ( rule__S_1Expr_Facets_BlockOrEnd__KeyAssignment_0 ) )
+            // InternalGaml.g:5856:1: ( ( ( rule__S_General__KeyAssignment_0 ) ) )
+            // InternalGaml.g:5857:1: ( ( rule__S_General__KeyAssignment_0 ) )
             {
-            // InternalGaml.g:5857:1: ( ( rule__S_1Expr_Facets_BlockOrEnd__KeyAssignment_0 ) )
-            // InternalGaml.g:5858:2: ( rule__S_1Expr_Facets_BlockOrEnd__KeyAssignment_0 )
+            // InternalGaml.g:5857:1: ( ( rule__S_General__KeyAssignment_0 ) )
+            // InternalGaml.g:5858:2: ( rule__S_General__KeyAssignment_0 )
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getKeyAssignment_0()); 
+               before(grammarAccess.getS_GeneralAccess().getKeyAssignment_0()); 
             }
-            // InternalGaml.g:5859:2: ( rule__S_1Expr_Facets_BlockOrEnd__KeyAssignment_0 )
-            // InternalGaml.g:5859:3: rule__S_1Expr_Facets_BlockOrEnd__KeyAssignment_0
+            // InternalGaml.g:5859:2: ( rule__S_General__KeyAssignment_0 )
+            // InternalGaml.g:5859:3: rule__S_General__KeyAssignment_0
             {
             pushFollow(FOLLOW_2);
-            rule__S_1Expr_Facets_BlockOrEnd__KeyAssignment_0();
+            rule__S_General__KeyAssignment_0();
 
             state._fsp--;
             if (state.failed) return ;
@@ -21538,7 +21538,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             }
 
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getKeyAssignment_0()); 
+               after(grammarAccess.getS_GeneralAccess().getKeyAssignment_0()); 
             }
 
             }
@@ -21558,26 +21558,26 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "rule__S_1Expr_Facets_BlockOrEnd__Group__0__Impl"
+    // $ANTLR end "rule__S_General__Group__0__Impl"
 
 
-    // $ANTLR start "rule__S_1Expr_Facets_BlockOrEnd__Group__1"
-    // InternalGaml.g:5867:1: rule__S_1Expr_Facets_BlockOrEnd__Group__1 : rule__S_1Expr_Facets_BlockOrEnd__Group__1__Impl rule__S_1Expr_Facets_BlockOrEnd__Group__2 ;
-    public final void rule__S_1Expr_Facets_BlockOrEnd__Group__1() throws RecognitionException {
+    // $ANTLR start "rule__S_General__Group__1"
+    // InternalGaml.g:5867:1: rule__S_General__Group__1 : rule__S_General__Group__1__Impl rule__S_General__Group__2 ;
+    public final void rule__S_General__Group__1() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:5871:1: ( rule__S_1Expr_Facets_BlockOrEnd__Group__1__Impl rule__S_1Expr_Facets_BlockOrEnd__Group__2 )
-            // InternalGaml.g:5872:2: rule__S_1Expr_Facets_BlockOrEnd__Group__1__Impl rule__S_1Expr_Facets_BlockOrEnd__Group__2
+            // InternalGaml.g:5871:1: ( rule__S_General__Group__1__Impl rule__S_General__Group__2 )
+            // InternalGaml.g:5872:2: rule__S_General__Group__1__Impl rule__S_General__Group__2
             {
             pushFollow(FOLLOW_5);
-            rule__S_1Expr_Facets_BlockOrEnd__Group__1__Impl();
+            rule__S_General__Group__1__Impl();
 
             state._fsp--;
             if (state.failed) return ;
             pushFollow(FOLLOW_2);
-            rule__S_1Expr_Facets_BlockOrEnd__Group__2();
+            rule__S_General__Group__2();
 
             state._fsp--;
             if (state.failed) return ;
@@ -21596,34 +21596,34 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "rule__S_1Expr_Facets_BlockOrEnd__Group__1"
+    // $ANTLR end "rule__S_General__Group__1"
 
 
-    // $ANTLR start "rule__S_1Expr_Facets_BlockOrEnd__Group__1__Impl"
-    // InternalGaml.g:5879:1: rule__S_1Expr_Facets_BlockOrEnd__Group__1__Impl : ( ( rule__S_1Expr_Facets_BlockOrEnd__FirstFacetAssignment_1 )? ) ;
-    public final void rule__S_1Expr_Facets_BlockOrEnd__Group__1__Impl() throws RecognitionException {
+    // $ANTLR start "rule__S_General__Group__1__Impl"
+    // InternalGaml.g:5879:1: rule__S_General__Group__1__Impl : ( ( rule__S_General__FirstFacetAssignment_1 )? ) ;
+    public final void rule__S_General__Group__1__Impl() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:5883:1: ( ( ( rule__S_1Expr_Facets_BlockOrEnd__FirstFacetAssignment_1 )? ) )
-            // InternalGaml.g:5884:1: ( ( rule__S_1Expr_Facets_BlockOrEnd__FirstFacetAssignment_1 )? )
+            // InternalGaml.g:5883:1: ( ( ( rule__S_General__FirstFacetAssignment_1 )? ) )
+            // InternalGaml.g:5884:1: ( ( rule__S_General__FirstFacetAssignment_1 )? )
             {
-            // InternalGaml.g:5884:1: ( ( rule__S_1Expr_Facets_BlockOrEnd__FirstFacetAssignment_1 )? )
-            // InternalGaml.g:5885:2: ( rule__S_1Expr_Facets_BlockOrEnd__FirstFacetAssignment_1 )?
+            // InternalGaml.g:5884:1: ( ( rule__S_General__FirstFacetAssignment_1 )? )
+            // InternalGaml.g:5885:2: ( rule__S_General__FirstFacetAssignment_1 )?
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getFirstFacetAssignment_1()); 
+               before(grammarAccess.getS_GeneralAccess().getFirstFacetAssignment_1()); 
             }
-            // InternalGaml.g:5886:2: ( rule__S_1Expr_Facets_BlockOrEnd__FirstFacetAssignment_1 )?
+            // InternalGaml.g:5886:2: ( rule__S_General__FirstFacetAssignment_1 )?
             int alt66=2;
             alt66 = dfa66.predict(input);
             switch (alt66) {
                 case 1 :
-                    // InternalGaml.g:5886:3: rule__S_1Expr_Facets_BlockOrEnd__FirstFacetAssignment_1
+                    // InternalGaml.g:5886:3: rule__S_General__FirstFacetAssignment_1
                     {
                     pushFollow(FOLLOW_2);
-                    rule__S_1Expr_Facets_BlockOrEnd__FirstFacetAssignment_1();
+                    rule__S_General__FirstFacetAssignment_1();
 
                     state._fsp--;
                     if (state.failed) return ;
@@ -21634,7 +21634,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             }
 
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getFirstFacetAssignment_1()); 
+               after(grammarAccess.getS_GeneralAccess().getFirstFacetAssignment_1()); 
             }
 
             }
@@ -21654,26 +21654,26 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "rule__S_1Expr_Facets_BlockOrEnd__Group__1__Impl"
+    // $ANTLR end "rule__S_General__Group__1__Impl"
 
 
-    // $ANTLR start "rule__S_1Expr_Facets_BlockOrEnd__Group__2"
-    // InternalGaml.g:5894:1: rule__S_1Expr_Facets_BlockOrEnd__Group__2 : rule__S_1Expr_Facets_BlockOrEnd__Group__2__Impl rule__S_1Expr_Facets_BlockOrEnd__Group__3 ;
-    public final void rule__S_1Expr_Facets_BlockOrEnd__Group__2() throws RecognitionException {
+    // $ANTLR start "rule__S_General__Group__2"
+    // InternalGaml.g:5894:1: rule__S_General__Group__2 : rule__S_General__Group__2__Impl rule__S_General__Group__3 ;
+    public final void rule__S_General__Group__2() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:5898:1: ( rule__S_1Expr_Facets_BlockOrEnd__Group__2__Impl rule__S_1Expr_Facets_BlockOrEnd__Group__3 )
-            // InternalGaml.g:5899:2: rule__S_1Expr_Facets_BlockOrEnd__Group__2__Impl rule__S_1Expr_Facets_BlockOrEnd__Group__3
+            // InternalGaml.g:5898:1: ( rule__S_General__Group__2__Impl rule__S_General__Group__3 )
+            // InternalGaml.g:5899:2: rule__S_General__Group__2__Impl rule__S_General__Group__3
             {
             pushFollow(FOLLOW_18);
-            rule__S_1Expr_Facets_BlockOrEnd__Group__2__Impl();
+            rule__S_General__Group__2__Impl();
 
             state._fsp--;
             if (state.failed) return ;
             pushFollow(FOLLOW_2);
-            rule__S_1Expr_Facets_BlockOrEnd__Group__3();
+            rule__S_General__Group__3();
 
             state._fsp--;
             if (state.failed) return ;
@@ -21692,30 +21692,30 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "rule__S_1Expr_Facets_BlockOrEnd__Group__2"
+    // $ANTLR end "rule__S_General__Group__2"
 
 
-    // $ANTLR start "rule__S_1Expr_Facets_BlockOrEnd__Group__2__Impl"
-    // InternalGaml.g:5906:1: rule__S_1Expr_Facets_BlockOrEnd__Group__2__Impl : ( ( rule__S_1Expr_Facets_BlockOrEnd__ExprAssignment_2 ) ) ;
-    public final void rule__S_1Expr_Facets_BlockOrEnd__Group__2__Impl() throws RecognitionException {
+    // $ANTLR start "rule__S_General__Group__2__Impl"
+    // InternalGaml.g:5906:1: rule__S_General__Group__2__Impl : ( ( rule__S_General__ExprAssignment_2 ) ) ;
+    public final void rule__S_General__Group__2__Impl() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:5910:1: ( ( ( rule__S_1Expr_Facets_BlockOrEnd__ExprAssignment_2 ) ) )
-            // InternalGaml.g:5911:1: ( ( rule__S_1Expr_Facets_BlockOrEnd__ExprAssignment_2 ) )
+            // InternalGaml.g:5910:1: ( ( ( rule__S_General__ExprAssignment_2 ) ) )
+            // InternalGaml.g:5911:1: ( ( rule__S_General__ExprAssignment_2 ) )
             {
-            // InternalGaml.g:5911:1: ( ( rule__S_1Expr_Facets_BlockOrEnd__ExprAssignment_2 ) )
-            // InternalGaml.g:5912:2: ( rule__S_1Expr_Facets_BlockOrEnd__ExprAssignment_2 )
+            // InternalGaml.g:5911:1: ( ( rule__S_General__ExprAssignment_2 ) )
+            // InternalGaml.g:5912:2: ( rule__S_General__ExprAssignment_2 )
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getExprAssignment_2()); 
+               before(grammarAccess.getS_GeneralAccess().getExprAssignment_2()); 
             }
-            // InternalGaml.g:5913:2: ( rule__S_1Expr_Facets_BlockOrEnd__ExprAssignment_2 )
-            // InternalGaml.g:5913:3: rule__S_1Expr_Facets_BlockOrEnd__ExprAssignment_2
+            // InternalGaml.g:5913:2: ( rule__S_General__ExprAssignment_2 )
+            // InternalGaml.g:5913:3: rule__S_General__ExprAssignment_2
             {
             pushFollow(FOLLOW_2);
-            rule__S_1Expr_Facets_BlockOrEnd__ExprAssignment_2();
+            rule__S_General__ExprAssignment_2();
 
             state._fsp--;
             if (state.failed) return ;
@@ -21723,7 +21723,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             }
 
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getExprAssignment_2()); 
+               after(grammarAccess.getS_GeneralAccess().getExprAssignment_2()); 
             }
 
             }
@@ -21743,21 +21743,21 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "rule__S_1Expr_Facets_BlockOrEnd__Group__2__Impl"
+    // $ANTLR end "rule__S_General__Group__2__Impl"
 
 
-    // $ANTLR start "rule__S_1Expr_Facets_BlockOrEnd__Group__3"
-    // InternalGaml.g:5921:1: rule__S_1Expr_Facets_BlockOrEnd__Group__3 : rule__S_1Expr_Facets_BlockOrEnd__Group__3__Impl ;
-    public final void rule__S_1Expr_Facets_BlockOrEnd__Group__3() throws RecognitionException {
+    // $ANTLR start "rule__S_General__Group__3"
+    // InternalGaml.g:5921:1: rule__S_General__Group__3 : rule__S_General__Group__3__Impl ;
+    public final void rule__S_General__Group__3() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:5925:1: ( rule__S_1Expr_Facets_BlockOrEnd__Group__3__Impl )
-            // InternalGaml.g:5926:2: rule__S_1Expr_Facets_BlockOrEnd__Group__3__Impl
+            // InternalGaml.g:5925:1: ( rule__S_General__Group__3__Impl )
+            // InternalGaml.g:5926:2: rule__S_General__Group__3__Impl
             {
             pushFollow(FOLLOW_2);
-            rule__S_1Expr_Facets_BlockOrEnd__Group__3__Impl();
+            rule__S_General__Group__3__Impl();
 
             state._fsp--;
             if (state.failed) return ;
@@ -21776,12 +21776,12 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "rule__S_1Expr_Facets_BlockOrEnd__Group__3"
+    // $ANTLR end "rule__S_General__Group__3"
 
 
-    // $ANTLR start "rule__S_1Expr_Facets_BlockOrEnd__Group__3__Impl"
-    // InternalGaml.g:5932:1: rule__S_1Expr_Facets_BlockOrEnd__Group__3__Impl : ( ruleFacetsAndBlock ) ;
-    public final void rule__S_1Expr_Facets_BlockOrEnd__Group__3__Impl() throws RecognitionException {
+    // $ANTLR start "rule__S_General__Group__3__Impl"
+    // InternalGaml.g:5932:1: rule__S_General__Group__3__Impl : ( ruleFacetsAndBlock ) ;
+    public final void rule__S_General__Group__3__Impl() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
@@ -21793,7 +21793,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             // InternalGaml.g:5938:2: ruleFacetsAndBlock
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getFacetsAndBlockParserRuleCall_3()); 
+               before(grammarAccess.getS_GeneralAccess().getFacetsAndBlockParserRuleCall_3()); 
             }
             pushFollow(FOLLOW_2);
             ruleFacetsAndBlock();
@@ -21801,7 +21801,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             state._fsp--;
             if (state.failed) return ;
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getFacetsAndBlockParserRuleCall_3()); 
+               after(grammarAccess.getS_GeneralAccess().getFacetsAndBlockParserRuleCall_3()); 
             }
 
             }
@@ -21821,7 +21821,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "rule__S_1Expr_Facets_BlockOrEnd__Group__3__Impl"
+    // $ANTLR end "rule__S_General__Group__3__Impl"
 
 
     // $ANTLR start "rule__S_Do__Group__0"
@@ -50264,29 +50264,29 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
     // $ANTLR end "rule__S_Experiment__NameAssignment_2"
 
 
-    // $ANTLR start "rule__S_1Expr_Facets_BlockOrEnd__KeyAssignment_0"
-    // InternalGaml.g:14913:1: rule__S_1Expr_Facets_BlockOrEnd__KeyAssignment_0 : ( rule_1Expr_Facets_BlockOrEnd_Key ) ;
-    public final void rule__S_1Expr_Facets_BlockOrEnd__KeyAssignment_0() throws RecognitionException {
+    // $ANTLR start "rule__S_General__KeyAssignment_0"
+    // InternalGaml.g:14913:1: rule__S_General__KeyAssignment_0 : ( rule_GeneralKey ) ;
+    public final void rule__S_General__KeyAssignment_0() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
         try {
-            // InternalGaml.g:14917:1: ( ( rule_1Expr_Facets_BlockOrEnd_Key ) )
-            // InternalGaml.g:14918:2: ( rule_1Expr_Facets_BlockOrEnd_Key )
+            // InternalGaml.g:14917:1: ( ( rule_GeneralKey ) )
+            // InternalGaml.g:14918:2: ( rule_GeneralKey )
             {
-            // InternalGaml.g:14918:2: ( rule_1Expr_Facets_BlockOrEnd_Key )
-            // InternalGaml.g:14919:3: rule_1Expr_Facets_BlockOrEnd_Key
+            // InternalGaml.g:14918:2: ( rule_GeneralKey )
+            // InternalGaml.g:14919:3: rule_GeneralKey
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getKey_1Expr_Facets_BlockOrEnd_KeyParserRuleCall_0_0()); 
+               before(grammarAccess.getS_GeneralAccess().getKey_GeneralKeyParserRuleCall_0_0()); 
             }
             pushFollow(FOLLOW_2);
-            rule_1Expr_Facets_BlockOrEnd_Key();
+            rule_GeneralKey();
 
             state._fsp--;
             if (state.failed) return ;
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getKey_1Expr_Facets_BlockOrEnd_KeyParserRuleCall_0_0()); 
+               after(grammarAccess.getS_GeneralAccess().getKey_GeneralKeyParserRuleCall_0_0()); 
             }
 
             }
@@ -50306,12 +50306,12 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "rule__S_1Expr_Facets_BlockOrEnd__KeyAssignment_0"
+    // $ANTLR end "rule__S_General__KeyAssignment_0"
 
 
-    // $ANTLR start "rule__S_1Expr_Facets_BlockOrEnd__FirstFacetAssignment_1"
-    // InternalGaml.g:14928:1: rule__S_1Expr_Facets_BlockOrEnd__FirstFacetAssignment_1 : ( ruleFirstFacetKey ) ;
-    public final void rule__S_1Expr_Facets_BlockOrEnd__FirstFacetAssignment_1() throws RecognitionException {
+    // $ANTLR start "rule__S_General__FirstFacetAssignment_1"
+    // InternalGaml.g:14928:1: rule__S_General__FirstFacetAssignment_1 : ( ruleFirstFacetKey ) ;
+    public final void rule__S_General__FirstFacetAssignment_1() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
@@ -50323,7 +50323,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             // InternalGaml.g:14934:3: ruleFirstFacetKey
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getFirstFacetFirstFacetKeyParserRuleCall_1_0()); 
+               before(grammarAccess.getS_GeneralAccess().getFirstFacetFirstFacetKeyParserRuleCall_1_0()); 
             }
             pushFollow(FOLLOW_2);
             ruleFirstFacetKey();
@@ -50331,7 +50331,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             state._fsp--;
             if (state.failed) return ;
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getFirstFacetFirstFacetKeyParserRuleCall_1_0()); 
+               after(grammarAccess.getS_GeneralAccess().getFirstFacetFirstFacetKeyParserRuleCall_1_0()); 
             }
 
             }
@@ -50351,12 +50351,12 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "rule__S_1Expr_Facets_BlockOrEnd__FirstFacetAssignment_1"
+    // $ANTLR end "rule__S_General__FirstFacetAssignment_1"
 
 
-    // $ANTLR start "rule__S_1Expr_Facets_BlockOrEnd__ExprAssignment_2"
-    // InternalGaml.g:14943:1: rule__S_1Expr_Facets_BlockOrEnd__ExprAssignment_2 : ( ruleExpression ) ;
-    public final void rule__S_1Expr_Facets_BlockOrEnd__ExprAssignment_2() throws RecognitionException {
+    // $ANTLR start "rule__S_General__ExprAssignment_2"
+    // InternalGaml.g:14943:1: rule__S_General__ExprAssignment_2 : ( ruleExpression ) ;
+    public final void rule__S_General__ExprAssignment_2() throws RecognitionException {
 
         		int stackSize = keepStackSize();
         	
@@ -50368,7 +50368,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             // InternalGaml.g:14949:3: ruleExpression
             {
             if ( state.backtracking==0 ) {
-               before(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getExprExpressionParserRuleCall_2_0()); 
+               before(grammarAccess.getS_GeneralAccess().getExprExpressionParserRuleCall_2_0()); 
             }
             pushFollow(FOLLOW_2);
             ruleExpression();
@@ -50376,7 +50376,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             state._fsp--;
             if (state.failed) return ;
             if ( state.backtracking==0 ) {
-               after(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getExprExpressionParserRuleCall_2_0()); 
+               after(grammarAccess.getS_GeneralAccess().getExprExpressionParserRuleCall_2_0()); 
             }
 
             }
@@ -50396,7 +50396,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
         }
         return ;
     }
-    // $ANTLR end "rule__S_1Expr_Facets_BlockOrEnd__ExprAssignment_2"
+    // $ANTLR end "rule__S_General__ExprAssignment_2"
 
 
     // $ANTLR start "rule__S_Do__KeyAssignment_0"
@@ -58078,17 +58078,17 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
 
     // $ANTLR start synpred17_InternalGaml
     public final void synpred17_InternalGaml_fragment() throws RecognitionException {   
-        // InternalGaml.g:2971:2: ( ( ruleS_1Expr_Facets_BlockOrEnd ) )
-        // InternalGaml.g:2971:2: ( ruleS_1Expr_Facets_BlockOrEnd )
+        // InternalGaml.g:2971:2: ( ( ruleS_General ) )
+        // InternalGaml.g:2971:2: ( ruleS_General )
         {
-        // InternalGaml.g:2971:2: ( ruleS_1Expr_Facets_BlockOrEnd )
-        // InternalGaml.g:2972:3: ruleS_1Expr_Facets_BlockOrEnd
+        // InternalGaml.g:2971:2: ( ruleS_General )
+        // InternalGaml.g:2972:3: ruleS_General
         {
         if ( state.backtracking==0 ) {
-           before(grammarAccess.getStatementAccess().getS_1Expr_Facets_BlockOrEndParserRuleCall_8()); 
+           before(grammarAccess.getStatementAccess().getS_GeneralParserRuleCall_8()); 
         }
         pushFollow(FOLLOW_2);
-        ruleS_1Expr_Facets_BlockOrEnd();
+        ruleS_General();
 
         state._fsp--;
         if (state.failed) return ;
@@ -58608,7 +58608,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             this.transition = dfa_6;
         }
         public String getDescription() {
-            return "2918:1: rule__Statement__Alternatives : ( ( ruleS_Display ) | ( ruleS_Do ) | ( ruleS_Return ) | ( ruleS_Solve ) | ( ruleS_If ) | ( ruleS_Try ) | ( ruleS_Equations ) | ( ( ruleS_Assignment ) ) | ( ruleS_1Expr_Facets_BlockOrEnd ) | ( ( ruleS_Declaration ) ) | ( ruleS_Other ) );";
+            return "2918:1: rule__Statement__Alternatives : ( ( ruleS_Display ) | ( ruleS_Do ) | ( ruleS_Return ) | ( ruleS_Solve ) | ( ruleS_If ) | ( ruleS_Try ) | ( ruleS_Equations ) | ( ( ruleS_Assignment ) ) | ( ruleS_General ) | ( ( ruleS_Declaration ) ) | ( ruleS_Other ) );";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
@@ -62032,7 +62032,7 @@ public class InternalGamlParser extends AbstractInternalContentAssistParser {
             this.transition = dfa_59;
         }
         public String getDescription() {
-            return "5886:2: ( rule__S_1Expr_Facets_BlockOrEnd__FirstFacetAssignment_1 )?";
+            return "5886:2: ( rule__S_General__FirstFacetAssignment_1 )?";
         }
     }
 

@@ -71,7 +71,7 @@ Statement:
 	S_Try | 
 	S_Equations | 
 	=> S_Assignment | 
-	S_1Expr_Facets_BlockOrEnd |
+	S_General |
 	
 	// 2. Ambiguous rules: these might start with a simple identifier (ID).
 	// We use the syntactic predicate (=>) only here, as a last resort.
@@ -80,8 +80,8 @@ Statement:
 
 	S_Other;
 
-S_1Expr_Facets_BlockOrEnd returns Statement:
-	key=_1Expr_Facets_BlockOrEnd_Key (firstFacet=FirstFacetKey)? (expr=Expression) FacetsAndBlock;
+S_General returns Statement:
+	key=_GeneralKey (firstFacet=FirstFacetKey)? (expr=Expression) FacetsAndBlock;
 
 S_Do:
 	key=_DoKey (firstFacet="action:")? expr=AbstractRef FacetsAndBlock;
@@ -209,7 +209,7 @@ _OverlayLayerKey: "overlay";
 _ExperimentKey:
 	"experiment";
 
-_1Expr_Facets_BlockOrEnd_Key:
+_GeneralKey:
 	_LayerKey | "ask" | "release" | "capture" | "create" | "write" | "error" | "warn" | "exception" | "save" | "assert"
 	| "inspect" | "browse" | "restore" | "draw" | "using" | "switch" | "put" | "add" | "remove" | "match" | "match_between" | "match_one" | "parameter" |
 	"status" | "highlight" | "focus_on" | "layout";
@@ -463,7 +463,7 @@ EquationFakeDefinition:
 	'**equation*' name=Valid_ID;
 
 Valid_ID:
-	_SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _1Expr_Facets_BlockOrEnd_Key | _EquationsKey | 
+	_SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _GeneralKey | _EquationsKey | 
 	_ExperimentKey | ID ;
 
 /**

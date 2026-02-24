@@ -1079,11 +1079,11 @@ ruleStatement returns [EObject current=null]
 		)
 		    |
 		{
-			newCompositeNode(grammarAccess.getStatementAccess().getS_1Expr_Facets_BlockOrEndParserRuleCall_8());
+			newCompositeNode(grammarAccess.getStatementAccess().getS_GeneralParserRuleCall_8());
 		}
-		this_S_1Expr_Facets_BlockOrEnd_8=ruleS_1Expr_Facets_BlockOrEnd
+		this_S_General_8=ruleS_General
 		{
-			$current = $this_S_1Expr_Facets_BlockOrEnd_8.current;
+			$current = $this_S_General_8.current;
 			afterParserOrEnumRuleCall();
 		}
 		    |
@@ -1110,15 +1110,15 @@ ruleStatement returns [EObject current=null]
 	)
 ;
 
-// Entry rule entryRuleS_1Expr_Facets_BlockOrEnd
-entryRuleS_1Expr_Facets_BlockOrEnd returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getS_1Expr_Facets_BlockOrEndRule()); }
-	iv_ruleS_1Expr_Facets_BlockOrEnd=ruleS_1Expr_Facets_BlockOrEnd
-	{ $current=$iv_ruleS_1Expr_Facets_BlockOrEnd.current; }
+// Entry rule entryRuleS_General
+entryRuleS_General returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getS_GeneralRule()); }
+	iv_ruleS_General=ruleS_General
+	{ $current=$iv_ruleS_General.current; }
 	EOF;
 
-// Rule S_1Expr_Facets_BlockOrEnd
-ruleS_1Expr_Facets_BlockOrEnd returns [EObject current=null]
+// Rule S_General
+ruleS_General returns [EObject current=null]
 @init {
 	enterRule();
 }
@@ -1129,18 +1129,18 @@ ruleS_1Expr_Facets_BlockOrEnd returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getKey_1Expr_Facets_BlockOrEnd_KeyParserRuleCall_0_0());
+					newCompositeNode(grammarAccess.getS_GeneralAccess().getKey_GeneralKeyParserRuleCall_0_0());
 				}
-				lv_key_0_0=rule_1Expr_Facets_BlockOrEnd_Key
+				lv_key_0_0=rule_GeneralKey
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getS_1Expr_Facets_BlockOrEndRule());
+						$current = createModelElementForParent(grammarAccess.getS_GeneralRule());
 					}
 					set(
 						$current,
 						"key",
 						lv_key_0_0,
-						"gaml.compiler.Gaml._1Expr_Facets_BlockOrEnd_Key");
+						"gaml.compiler.Gaml._GeneralKey");
 					afterParserOrEnumRuleCall();
 				}
 			)
@@ -1148,12 +1148,12 @@ ruleS_1Expr_Facets_BlockOrEnd returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getFirstFacetFirstFacetKeyParserRuleCall_1_0());
+					newCompositeNode(grammarAccess.getS_GeneralAccess().getFirstFacetFirstFacetKeyParserRuleCall_1_0());
 				}
 				lv_firstFacet_1_0=ruleFirstFacetKey
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getS_1Expr_Facets_BlockOrEndRule());
+						$current = createModelElementForParent(grammarAccess.getS_GeneralRule());
 					}
 					set(
 						$current,
@@ -1167,12 +1167,12 @@ ruleS_1Expr_Facets_BlockOrEnd returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getExprExpressionParserRuleCall_2_0());
+					newCompositeNode(grammarAccess.getS_GeneralAccess().getExprExpressionParserRuleCall_2_0());
 				}
 				lv_expr_2_0=ruleExpression
 				{
 					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getS_1Expr_Facets_BlockOrEndRule());
+						$current = createModelElementForParent(grammarAccess.getS_GeneralRule());
 					}
 					set(
 						$current,
@@ -1185,9 +1185,9 @@ ruleS_1Expr_Facets_BlockOrEnd returns [EObject current=null]
 		)
 		{
 			if ($current==null) {
-				$current = createModelElement(grammarAccess.getS_1Expr_Facets_BlockOrEndRule());
+				$current = createModelElement(grammarAccess.getS_GeneralRule());
 			}
-			newCompositeNode(grammarAccess.getS_1Expr_Facets_BlockOrEndAccess().getFacetsAndBlockParserRuleCall_3());
+			newCompositeNode(grammarAccess.getS_GeneralAccess().getFacetsAndBlockParserRuleCall_3());
 		}
 		this_FacetsAndBlock_3=ruleFacetsAndBlock[$current]
 		{
@@ -3475,15 +3475,15 @@ rule_ExperimentKey returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRule
 	}
 ;
 
-// Entry rule entryRule_1Expr_Facets_BlockOrEnd_Key
-entryRule_1Expr_Facets_BlockOrEnd_Key returns [String current=null]:
-	{ newCompositeNode(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyRule()); }
-	iv_rule_1Expr_Facets_BlockOrEnd_Key=rule_1Expr_Facets_BlockOrEnd_Key
-	{ $current=$iv_rule_1Expr_Facets_BlockOrEnd_Key.current.getText(); }
+// Entry rule entryRule_GeneralKey
+entryRule_GeneralKey returns [String current=null]:
+	{ newCompositeNode(grammarAccess.get_GeneralKeyRule()); }
+	iv_rule_GeneralKey=rule_GeneralKey
+	{ $current=$iv_rule_GeneralKey.current.getText(); }
 	EOF;
 
-// Rule _1Expr_Facets_BlockOrEnd_Key
-rule_1Expr_Facets_BlockOrEnd_Key returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()]
+// Rule _GeneralKey
+rule_GeneralKey returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken()]
 @init {
 	enterRule();
 }
@@ -3492,7 +3492,7 @@ rule_1Expr_Facets_BlockOrEnd_Key returns [AntlrDatatypeRuleToken current=new Ant
 }:
 	(
 		{
-			newCompositeNode(grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().get_LayerKeyParserRuleCall_0());
+			newCompositeNode(grammarAccess.get_GeneralKeyAccess().get_LayerKeyParserRuleCall_0());
 		}
 		this__LayerKey_0=rule_LayerKey
 		{
@@ -3505,163 +3505,163 @@ rule_1Expr_Facets_BlockOrEnd_Key returns [AntlrDatatypeRuleToken current=new Ant
 		kw='ask'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAskKeyword_1());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getAskKeyword_1());
 		}
 		    |
 		kw='release'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getReleaseKeyword_2());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getReleaseKeyword_2());
 		}
 		    |
 		kw='capture'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getCaptureKeyword_3());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getCaptureKeyword_3());
 		}
 		    |
 		kw='create'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getCreateKeyword_4());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getCreateKeyword_4());
 		}
 		    |
 		kw='write'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getWriteKeyword_5());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getWriteKeyword_5());
 		}
 		    |
 		kw='error'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getErrorKeyword_6());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getErrorKeyword_6());
 		}
 		    |
 		kw='warn'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getWarnKeyword_7());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getWarnKeyword_7());
 		}
 		    |
 		kw='exception'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getExceptionKeyword_8());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getExceptionKeyword_8());
 		}
 		    |
 		kw='save'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getSaveKeyword_9());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getSaveKeyword_9());
 		}
 		    |
 		kw='assert'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAssertKeyword_10());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getAssertKeyword_10());
 		}
 		    |
 		kw='inspect'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getInspectKeyword_11());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getInspectKeyword_11());
 		}
 		    |
 		kw='browse'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getBrowseKeyword_12());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getBrowseKeyword_12());
 		}
 		    |
 		kw='restore'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getRestoreKeyword_13());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getRestoreKeyword_13());
 		}
 		    |
 		kw='draw'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getDrawKeyword_14());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getDrawKeyword_14());
 		}
 		    |
 		kw='using'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getUsingKeyword_15());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getUsingKeyword_15());
 		}
 		    |
 		kw='switch'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getSwitchKeyword_16());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getSwitchKeyword_16());
 		}
 		    |
 		kw='put'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getPutKeyword_17());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getPutKeyword_17());
 		}
 		    |
 		kw='add'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getAddKeyword_18());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getAddKeyword_18());
 		}
 		    |
 		kw='remove'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getRemoveKeyword_19());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getRemoveKeyword_19());
 		}
 		    |
 		kw='match'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getMatchKeyword_20());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getMatchKeyword_20());
 		}
 		    |
 		kw='match_between'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getMatch_betweenKeyword_21());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getMatch_betweenKeyword_21());
 		}
 		    |
 		kw='match_one'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getMatch_oneKeyword_22());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getMatch_oneKeyword_22());
 		}
 		    |
 		kw='parameter'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getParameterKeyword_23());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getParameterKeyword_23());
 		}
 		    |
 		kw='status'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getStatusKeyword_24());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getStatusKeyword_24());
 		}
 		    |
 		kw='highlight'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getHighlightKeyword_25());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getHighlightKeyword_25());
 		}
 		    |
 		kw='focus_on'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getFocus_onKeyword_26());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getFocus_onKeyword_26());
 		}
 		    |
 		kw='layout'
 		{
 			$current.merge(kw);
-			newLeafNode(kw, grammarAccess.get_1Expr_Facets_BlockOrEnd_KeyAccess().getLayoutKeyword_27());
+			newLeafNode(kw, grammarAccess.get_GeneralKeyAccess().getLayoutKeyword_27());
 		}
 	)
 ;
@@ -7943,11 +7943,11 @@ ruleValid_ID returns [AntlrDatatypeRuleToken current=new AntlrDatatypeRuleToken(
 		}
 		    |
 		{
-			newCompositeNode(grammarAccess.getValid_IDAccess().get_1Expr_Facets_BlockOrEnd_KeyParserRuleCall_5());
+			newCompositeNode(grammarAccess.getValid_IDAccess().get_GeneralKeyParserRuleCall_5());
 		}
-		this__1Expr_Facets_BlockOrEnd_Key_5=rule_1Expr_Facets_BlockOrEnd_Key
+		this__GeneralKey_5=rule_GeneralKey
 		{
-			$current.merge(this__1Expr_Facets_BlockOrEnd_Key_5);
+			$current.merge(this__GeneralKey_5);
 		}
 		{
 			afterParserOrEnumRuleCall();
