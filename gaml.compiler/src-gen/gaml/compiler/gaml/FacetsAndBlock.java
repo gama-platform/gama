@@ -19,7 +19,6 @@ import org.eclipse.emf.ecore.EObject;
  *   <li>{@link gaml.compiler.gaml.FacetsAndBlock#getFacets <em>Facets</em>}</li>
  *   <li>{@link gaml.compiler.gaml.FacetsAndBlock#getBlock <em>Block</em>}</li>
  *   <li>{@link gaml.compiler.gaml.FacetsAndBlock#getKey <em>Key</em>}</li>
- *   <li>{@link gaml.compiler.gaml.FacetsAndBlock#getFirstFacet <em>First Facet</em>}</li>
  * </ul>
  *
  * @see gaml.compiler.gaml.GamlPackage#getFacetsAndBlock()
@@ -83,27 +82,5 @@ public interface FacetsAndBlock extends EObject
    * @generated
    */
   void setKey(String value);
-
-  /**
-   * Returns the value of the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the value of the '<em>First Facet</em>' attribute.
-   * @see #setFirstFacet(String)
-   * @see gaml.compiler.gaml.GamlPackage#getFacetsAndBlock_FirstFacet()
-   * @model
-   * @generated
-   */
-  String getFirstFacet();
-
-  /**
-   * Sets the value of the '{@link gaml.compiler.gaml.FacetsAndBlock#getFirstFacet <em>First Facet</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @param value the new value of the '<em>First Facet</em>' attribute.
-   * @see #getFirstFacet()
-   * @generated
-   */
-  void setFirstFacet(String value);
 
 } // FacetsAndBlock

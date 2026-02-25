@@ -522,7 +522,7 @@ experiment match type:gui {
 	output {
 		display "soccer_field" type:2d{
 			// display the field.
-			image "../images/soccer_field.png";
+			picture "../images/soccer_field.png";
 			species player aspect:base;
 			species ball aspect:base;
 			species goal aspect:base;

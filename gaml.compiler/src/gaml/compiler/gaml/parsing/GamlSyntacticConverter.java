@@ -791,13 +791,7 @@ public class GamlSyntacticConverter {
 	 * @return the default facet
 	 */
 	private String getDefaultFacet(final Statement stm, final String keyword) {
-		String def = stm.getFirstFacet();
-		if (def != null) {
-			if (def.endsWith(":")) { def = def.substring(0, def.length() - 1); }
-		} else {
-			def = ArtefactProtoRegistry.getOmissibleFacetForSymbol(keyword);
-		}
-		return def;
+		return ArtefactProtoRegistry.getOmissibleFacetForSymbol(keyword);
 	}
 
 	/**

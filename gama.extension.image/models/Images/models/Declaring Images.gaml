@@ -53,7 +53,7 @@ experiment name type: gui {
 
 	output {
 		display Images type:2d{
-			image from_terrain;
+			picture from_terrain;
 		}
 	}
 }

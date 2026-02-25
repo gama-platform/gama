@@ -32,7 +32,7 @@ experiment GIS_visualization type: gui {
 		
 		//display of the building as an image
 		display gis_displays_image type: 3d {
-			image "Buildings as images" gis: shape_file_buildings.path color: rgb("gray") refresh: false;
+			picture "Buildings as images" gis: shape_file_buildings.path color: rgb("gray") refresh: false;
 		}
 	}
 }

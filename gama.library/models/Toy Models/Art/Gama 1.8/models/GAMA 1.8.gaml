@@ -22,14 +22,14 @@ global control: fsm {
 
 	rgb closest_color (rgb c1) {
 		int db <- distance_between(c1, blue);
-		int do <- distance_between(c1, orange);
+		int dor <- distance_between(c1, orange);
 		int dy <- distance_between(c1, yellow);
-		int m <- min(db, do, dy);
+		int m <- min(db, dor, dy);
 		if (m > 100) {
 			return #black;
 		} else if (m = db) {
 			return blue;
-		} else if (m = do) {
+		} else if (m = dor) {
 			return orange;
 		} else if (m = dy) {
 			return yellow;

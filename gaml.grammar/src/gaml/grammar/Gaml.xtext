@@ -31,11 +31,10 @@ ExperimentFileStructure:
 	exp=HeadlessExperiment;
 
 HeadlessExperiment:
-	key=_ExperimentKey (firstFacet="name:")? name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock;
+	key=_ExperimentKey name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock;
 
 /**
  * REUSABLE FRAGMENTS
- * Fragments act as macros to avoid code duplication without cluttering the AST.
  */
 fragment FacetsAndBlock:
 	// Captures zero or more facets, followed by either a code block or a semicolon.
@@ -51,58 +50,51 @@ S_Global:
 	key="global" FacetsAndBlock;
 
 S_Species:
-	key=_SpeciesKey (firstFacet='name:')? name=ID FacetsAndBlock;
+	key=_SpeciesKey name=ID FacetsAndBlock;
 
 S_Experiment:
-	key=_ExperimentKey (firstFacet="name:")? name=(Valid_ID | STRING) FacetsAndBlock;
+	key=_ExperimentKey name=(Valid_ID | STRING) FacetsAndBlock;
 
 /**
  * Statements
  */
 Statement:
 	// 1. STRICT FAST TRACK (No overlap with Valid_ID)
-	S_Display | S_Return | S_Solve | S_If | S_Try | 
-	
+	S_Display | S_Return | S_Solve | S_If | S_Try | S_Do | S_Loop |
 	// 2. KEYWORD FAST TRACK
 	// The => forces the parser to prioritize them and silences Valid_ID warnings.
-	=> S_Equations | => S_Do | => S_Loop | => S_Action | => S_Species | => S_Reflex |
-	
+	=> S_Equations | => S_Action | => S_Species | => S_Reflex |
 	// 3. AMBIGUITY RESOLUTION (Assignments)
-	=> S_Assignment | 
-	
+	=> S_Assignment |
 	// 4. THE GAML PILLARS
-	// ADDING '=>' HERE IS THE MAGIC FIX!
-	// It forces the parser to check for a mandatory expression first.
-	=> S_General |   // (Note: use S_General here if you renamed it!)
-	
+	=> S_General |
 	// Declarations come next
-	=> S_Declaration | 
-	=> S_Definition | 
-	
+	=> S_Declaration |
+	=> S_Definition |
 	// 5. THE UNIVERSAL FALLBACK
 	// If everything above fails, S_Other catches it perfectly.
 	S_Other;
 
 S_General returns Statement:
-	key=_GeneralKey (firstFacet=FirstFacetKey)? (expr=Expression) FacetsAndBlock;
+	key=_GeneralKey (expr=Expression) FacetsAndBlock;
 
 S_Do:
-	key=_DoKey (firstFacet="action:")? expr=AbstractRef FacetsAndBlock;
+	key=("do" | "invoke") expr=AbstractRef FacetsAndBlock;
 
 S_Loop:
 	key="loop" (name=ID)? (facets+=Facet)* block=Block;
 
 S_If:
-	key='if' (firstFacet="condition:")? expr=Expression block=Block (->'else' else=(S_If | Block))?;
+	key='if' expr=Expression block=Block (->'else' else=(S_If | Block))?;
 
 S_Try:
 	key='try' block=Block (->'catch' catch=Block)?;
 
+S_Return:
+	key='return' expr=Expression? ';';
+
 S_Other:
 	key=Valid_ID FacetsAndBlock;
-
-S_Return:
-	key='return' (firstFacet="value:")? expr=Expression? ';';
 
 /*
  * DECLARATIONS
@@ -111,35 +103,34 @@ S_Declaration:
 	->S_Definition | S_Species | S_Reflex | S_Action | S_Loop;
 
 S_Reflex:
-	key=_ReflexKey ((firstFacet="name:")? name=Valid_ID)? ("when" ":" expr=Expression)? block=Block;
+	key=K_Reflex (name=Valid_ID)? ("when" ":" expr=Expression)? block=Block;
 
 S_Definition:
-	tkey=(TypeRef) (firstFacet="name:")? name=(Valid_ID | STRING) ('(' (args=ActionArguments) ')')? FacetsAndBlock;
+	tkey=(TypeRef) name=(Valid_ID | STRING) ('(' (args=ActionArguments) ')')? FacetsAndBlock;
 
 S_Action returns S_Definition:
-	{S_Action} key="action" (firstFacet='name:')? name=Valid_ID ('(' (args=ActionArguments) ')')? FacetsAndBlock;
+	{S_Action} key="action" name=Valid_ID ('(' (args=ActionArguments) ')')? FacetsAndBlock;
 
 /*
  * ASSIGNMENTS
  */
-
 S_Assignment:
-	(expr=Expression key=(_AssignmentKey) value=Expression (facets+=Facet)*) ';';
+	(expr=Expression key=K_Assignment value=Expression (facets+=Facet)*) ';';
 
 S_Equations:
-	key=_EquationsKey name=Valid_ID (facets+=Facet)* ('{' (equations+=S_Equation ';')* '}' | ';');
+	key="equation" name=Valid_ID (facets+=Facet)* ('{' (equations+=S_Equation ';')* '}' | ';');
 
 S_Equation returns S_Assignment:
 	expr=(Function | VariableRef) key="=" value=Expression;
 
 S_Solve:
-	key=_SolveKey (firstFacet="equation:")? expr=EquationRef FacetsAndBlock;
+	key=K_Solve expr=EquationRef FacetsAndBlock;
 
 /**
  * DISPLAYS
  */
 S_Display:
-	key="display" (firstFacet="name:")? name=(Valid_ID | STRING) (facets+=Facet)* block=DisplayBlock;
+	key="display" name=(Valid_ID | STRING) (facets+=Facet)* block=DisplayBlock;
 
 DisplayBlock returns Block:
 	{Block} '{' (statements+=S_Layer)* '}';
@@ -147,94 +138,77 @@ DisplayBlock returns Block:
 /**
  * Display Statements
  */
-
 S_Layer returns Statement:
 	// Both "species" and "grid" can also be the start of a regular S_Species Statement.
-	S_SpeciesLayer | 
+	S_SpeciesLayer |
 	// 2. The keyword "image" can also be a Valid_ID in a regular S_Other Statement.
-	S_ImageLayer | 
+	S_ImageLayer |
 	// 3. "graphics" layers accept any statements in their blocks
-	S_GraphicsLayer | 
+	S_GraphicsLayer |
 	// 4. "event" layers accept any statements in their blocks
 	S_EventLayer |
 	// 5. "overlay" layers accept any statements in their blocks and do not take an expression
-	S_OverlayLayer | 
+	S_OverlayLayer |
 	// 6. Fallback to any generic layer statement.
 	S_OtherLayer;
 
 S_SpeciesLayer:
-	key=_SpeciesKey expr=Expression FacetsAndBlock
-;
-	
+	key=_SpeciesKey expr=Expression FacetsAndBlock;
+
 S_ImageLayer:
-	key =_ImageLayerKey  expr=Expression (facets+=Facet)* ";"
-;
-	
+	key="picture" expr=Expression (facets+=Facet)* ";";
+
 S_GraphicsLayer:
-	key=_GraphicsLayerKey expr=Expression FacetsAndBlock
-;
+	key="graphics" expr=Expression FacetsAndBlock;
 
 S_EventLayer:
-	key=_EventLayerKey expr=Expression FacetsAndBlock
-;
+	key="event" expr=Expression FacetsAndBlock;
 
 S_OverlayLayer:
-	key=_OverlayLayerKey FacetsAndBlock
-;
-	
+	key="overlay" FacetsAndBlock;
+
 S_OtherLayer:
-	key =_LayerKey (firstFacet=FirstFacetKey)? (expr=Expression) FacetsAndBlock
-;
+	key=_LayerKey ( 
+		// OPTION 1: The parser simulates reading an Expression AND the Facets. 
+		// If it hits a snag (like the orphaned ':'), it aborts this option.
+		=>(expr=Expression FacetsAndBlock) 
+		| 
+		// OPTION 2: No expression. It just reads the Facets cleanly.
+		FacetsAndBlock 
+	);
 
 /**
  * Statement keys
  */
-_EquationsKey:
-	"equation";
 
-_SolveKey:
+K_Solve:
 	"solve";
 
 _SpeciesKey:
 	"species" | "grid";
-	
-_ImageLayerKey: "image";
-
-_GraphicsLayerKey: "graphics";
-
-_EventLayerKey: "event";
-
-_OverlayLayerKey: "overlay";
 
 _ExperimentKey:
 	"experiment";
 
 _GeneralKey:
 	_LayerKey | "ask" | "release" | "capture" | "create" | "write" | "error" | "warn" | "exception" | "save" | "assert"
-	| "inspect" | "browse" | "restore" | "draw" | "using" | "switch" | "put" | "add" | "remove" | "match" | "match_between" | "match_one" | "parameter" |
-	"status" | "highlight" | "focus_on" | "layout";
+	| "inspect" | "browse" | "restore" | "draw" | "using" | "switch" | "put" | "add" | "remove" | "match" |
+	"match_between" | "match_one" | "parameter" | "status" | "highlight" | "focus_on" | "layout";
 
 _LayerKey:
-	"light" | "camera" | "text" | "image_layer" | "data" | "chart" | "agents" | "display_population" |
+	"light" | "camera" | "text" | "data" | "chart" | "agents" | "display_population" |
 	"display_grid" | "datalist" | "mesh" | "rotation";
 
-_DoKey:
-	"do" | "invoke";
-
-_VarOrConstKey:
-	"var" | "const" | "let" | "arg";
-
-_ReflexKey:
+K_Reflex:
 	"init" | "reflex" | "aspect";
 
-_AssignmentKey:
+K_Assignment:
 	"<-" | "<<" | '>' '>' | "<<+" | '>' '>-' | "+<-" | "<+" | ">-";
 
 /**
  * Parameters and arguments
  */
-//Parameters:
-//	{Parameters} (params=ParameterList)?;
+
 ActionArguments:
 	args+=ArgumentDefinition (',' args+=ArgumentDefinition)*;
 
@@ -247,14 +221,11 @@ ArgumentDefinition:
 Facet:
 	ActionFacet | DefinitionFacet | ClassicFacet | TypeFacet | VarFacet | FunctionFacet;
 
-FirstFacetKey:
-	DefinitionFacetKey | TypeFacetKey | SpecialFacetKey | VarFacetKey | ActionFacetKey | ClassicFacetKey;
-
 ClassicFacetKey:
 	(ID ':');
 
 DefinitionFacetKey:
-	"name:" | "returns:"; 
+	"name:" | "returns:";
 
 TypeFacetKey:
 	("as:" | "of:" | "parent:" | "species:" | "type:");
@@ -293,20 +264,19 @@ VarFacet returns Facet:
 Block:
 	{Block} '{' ((statements+=Statement)* '}');
 
-/**
- * Expressions
- */
-/**
- * Expressions
- */
+/******************************************************************************************
+ ******************************************************************************************
+ * 
+ * 			EXPRESSIONS
+ * 
+ ****************************************************************************************** 
+ ******************************************************************************************/
+ 
 Expression:
-	// The entry point simply points to Pair.
 	Pair;
-
 
 BinaryOperator returns Expression:
 	Or | And | Cast | Comparison | Addition | Multiplication | Binary | Pair | Unit;
-
 
 Pair returns Expression:
 	If
@@ -354,7 +324,6 @@ Multiplication returns Expression:
 	Binary
 	(({BinaryOperator.left=current} op=('*' | '/' | '^')) right=Binary)*;
 
-
 Binary returns Expression:
 	Unit
 	(({BinaryOperator.left=current} op=(Valid_ID)) right=Unit)*;
@@ -369,8 +338,7 @@ Unary returns Expression:
 	right=Unary));
 
 Access returns Expression:
-	Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary))))*
-;
+	Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op="." right=(Primary))))*;
 
 Primary returns Expression:
 	TerminalExpression |
@@ -401,7 +369,7 @@ VariableRef:
 
 // Necessary to add "image" hardcoded here, because of the existence of the "image" layer
 TypeRef returns Expression:
-	{TypeRef} (ref=[TypeDefinition|ID] parameter=TypeInfo?) | {TypeRef} ("species" parameter=TypeInfo) | {TypeRef} ("image");
+	{TypeRef} (ref=[TypeDefinition|ID] parameter=TypeInfo?) | {TypeRef} ("species" parameter=TypeInfo) ;
 
 TypeInfo:
 	('<' first=TypeRef ("," second=TypeRef)? ->'>');
@@ -429,8 +397,20 @@ VarDefinition:
 
 ActionDefinition:
 	S_Action | ActionFakeDefinition | S_Definition | TypeDefinition;
+	
 
-// Fake Definitions produced by the global scope provider
+// 'species' and 'experiment' can be used as types, vars or functions
+Valid_ID:
+	_SpeciesKey | K_Reflex | _GeneralKey | _ExperimentKey | ID;
+
+/******************************************************************************************
+ ******************************************************************************************
+ * 
+ * 			FAKE DEFINITIONS PRODUCED BY THE GlobalScopeProvider FOR LINKING
+ * 
+ ****************************************************************************************** 
+ ******************************************************************************************/
+ 
 UnitFakeDefinition:
 	'**unit*' name=ID;
 
@@ -449,13 +429,14 @@ VarFakeDefinition:
 EquationFakeDefinition:
 	'**equation*' name=Valid_ID;
 
-Valid_ID:
-	_SpeciesKey | _ImageLayerKey | _DoKey | _ReflexKey | _VarOrConstKey | _GeneralKey | _EquationsKey | 
-	_ExperimentKey | ID ;
-
-/**
- * Terminals
- */
+/******************************************************************************************
+ ******************************************************************************************
+ * 
+ * 			TERMINALS: STRING, INT, FLOAT, ...
+ * 
+ ****************************************************************************************** 
+ ******************************************************************************************/
+ 
 TerminalExpression:
 	StringLiteral |
 	{IntLiteral} op=INTEGER |
@@ -468,20 +449,18 @@ StringLiteral:
 
 terminal KEYWORD:
 	'each' | 'self' | 'myself' | 'nil' | 'super';
-	
+
 terminal INTEGER:
 	'0' | ('1'..'9' ('0'..'9')*);
 
 terminal DOUBLE:
 	// First part is a basic integer
-	('0' | ('1'..'9' ('0'..'9')*)) 
-	(
-		// OPTION 1 : there is a decimal point
-		('.' ('0'..'9')+) (('E' | 'e') ('+' | '-')? ('0'..'9')+)? 
-		|
-		// OPTION 2 : there is an exponent
-		(('E' | 'e') ('+' | '-')? ('0'..'9')+)
-	);
+	('0' | ('1'..'9' ('0'..'9')*))
+	(// OPTION 1 : there is a decimal point
+	('.' ('0'..'9')+) (('E' | 'e') ('+' | '-')? ('0'..'9')+)?
+	|
+	// OPTION 2 : there is an exponent
+	(('E' | 'e') ('+' | '-')? ('0'..'9')+));
 
 terminal BOOLEAN:
 	'true' | 'false';

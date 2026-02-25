@@ -40,7 +40,6 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//FacetsAndBlock/facets"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//FacetsAndBlock/block"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//FacetsAndBlock/key"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//FacetsAndBlock/firstFacet"/>
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//Statement">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//Statement/expr"/>
@@ -56,8 +55,8 @@
     <genClasses ecoreClass="Gaml.ecore#//S_Try">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//S_Try/catch"/>
     </genClasses>
-    <genClasses ecoreClass="Gaml.ecore#//S_Other"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Return"/>
+    <genClasses ecoreClass="Gaml.ecore#//S_Other"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Declaration"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Reflex"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Definition">

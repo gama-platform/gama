@@ -144,7 +144,7 @@ species people {
 	}
 
 	// When an agent is displayed drawing a picture, that picture can be resize (using the size: facet).
-	aspect image {
+	aspect icon {
 		draw wood0_image_file size: {50.0, 10.0, 0.0};
 	}
 
@@ -178,7 +178,7 @@ experiment Aspects type: gui {
 			agents "layer simple" value: [people(1)] aspect: simple;
 			agents "Text" value: [people(2)] aspect: simple_text;
 			agents "locate geom" value: [people(3)] aspect: locate_geometry;
-			agents "image" value: [people(4)] aspect: image;
+			agents "image" value: [people(4)] aspect: icon;
 			//
 			agents "3D" value: [people(5)] aspect: col3D;
 			agents "Textured" value: [people(6)] aspect: textured;

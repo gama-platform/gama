@@ -916,14 +916,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     HeadlessExperiment returns HeadlessExperiment
 	 *
 	 * Constraint:
-	 *     (
-	 *         key=_ExperimentKey 
-	 *         firstFacet='name:'? 
-	 *         (name=Valid_ID | name=STRING) 
-	 *         importURI=STRING? 
-	 *         facets+=Facet* 
-	 *         block=Block?
-	 *     )
+	 *     (key=_ExperimentKey (name=Valid_ID | name=STRING) importURI=STRING? facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_HeadlessExperiment(ISerializationContext context, HeadlessExperiment semanticObject) {
@@ -942,14 +935,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     ActionDefinition returns S_Action
 	 *
 	 * Constraint:
-	 *     (
-	 *         key='action' 
-	 *         firstFacet='name:'? 
-	 *         name=Valid_ID 
-	 *         args=ActionArguments? 
-	 *         facets+=Facet* 
-	 *         block=Block?
-	 *     )
+	 *     (key='action' name=Valid_ID args=ActionArguments? facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_Action(ISerializationContext context, S_Action semanticObject) {
@@ -968,14 +954,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     ActionDefinition returns S_Definition
 	 *
 	 * Constraint:
-	 *     (
-	 *         tkey=TypeRef 
-	 *         firstFacet='name:'? 
-	 *         (name=Valid_ID | name=STRING) 
-	 *         args=ActionArguments? 
-	 *         facets+=Facet* 
-	 *         block=Block?
-	 *     )
+	 *     (tkey=TypeRef (name=Valid_ID | name=STRING) args=ActionArguments? facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_Definition(ISerializationContext context, S_Definition semanticObject) {
@@ -990,7 +969,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_Do returns S_Do
 	 *
 	 * Constraint:
-	 *     (key=_DoKey firstFacet='action:'? expr=AbstractRef facets+=Facet* block=Block?)
+	 *     ((key='do' | key='invoke') expr=AbstractRef facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_Do(ISerializationContext context, S_Do semanticObject) {
@@ -1005,7 +984,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_EventLayer returns S_EventLayer
 	 *
 	 * Constraint:
-	 *     (key=_EventLayerKey expr=Expression facets+=Facet* block=Block?)
+	 *     (key='event' expr=Expression facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_EventLayer(ISerializationContext context, S_EventLayer semanticObject) {
@@ -1022,7 +1001,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     VarDefinition returns S_Experiment
 	 *
 	 * Constraint:
-	 *     (key=_ExperimentKey firstFacet='name:'? (name=Valid_ID | name=STRING) facets+=Facet* block=Block?)
+	 *     (key=_ExperimentKey (name=Valid_ID | name=STRING) facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_Experiment(ISerializationContext context, S_Experiment semanticObject) {
@@ -1037,7 +1016,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_General returns Statement
 	 *
 	 * Constraint:
-	 *     (key=_GeneralKey firstFacet=FirstFacetKey? expr=Expression facets+=Facet* block=Block?)
+	 *     (key=_GeneralKey expr=Expression facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_General(ISerializationContext context, Statement semanticObject) {
@@ -1067,7 +1046,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_GraphicsLayer returns S_GraphicsLayer
 	 *
 	 * Constraint:
-	 *     (key=_GraphicsLayerKey expr=Expression facets+=Facet* block=Block?)
+	 *     (key='graphics' expr=Expression facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_GraphicsLayer(ISerializationContext context, S_GraphicsLayer semanticObject) {
@@ -1082,7 +1061,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_OtherLayer returns S_OtherLayer
 	 *
 	 * Constraint:
-	 *     (key=_LayerKey firstFacet=FirstFacetKey? expr=Expression facets+=Facet* block=Block?)
+	 *     (key=_LayerKey expr=Expression? facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_OtherLayer(ISerializationContext context, S_OtherLayer semanticObject) {
@@ -1112,7 +1091,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_OverlayLayer returns S_OverlayLayer
 	 *
 	 * Constraint:
-	 *     (key=_OverlayLayerKey facets+=Facet* block=Block?)
+	 *     (key='overlay' facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_OverlayLayer(ISerializationContext context, S_OverlayLayer semanticObject) {
@@ -1127,7 +1106,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_Solve returns S_Solve
 	 *
 	 * Constraint:
-	 *     (key=_SolveKey firstFacet='equation:'? expr=EquationRef facets+=Facet* block=Block?)
+	 *     (key=K_Solve expr=EquationRef facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_Solve(ISerializationContext context, S_Solve semanticObject) {
@@ -1163,7 +1142,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     ActionDefinition returns S_Species
 	 *
 	 * Constraint:
-	 *     (key=_SpeciesKey firstFacet='name:'? name=ID facets+=Facet* block=Block?)
+	 *     (key=_SpeciesKey name=ID facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_Species(ISerializationContext context, S_Species semanticObject) {
@@ -1429,7 +1408,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_Assignment returns S_Assignment
 	 *
 	 * Constraint:
-	 *     (expr=Expression key=_AssignmentKey value=Expression facets+=Facet*)
+	 *     (expr=Expression key=K_Assignment value=Expression facets+=Facet*)
 	 * </pre>
 	 */
 	protected void sequence_S_Assignment(ISerializationContext context, S_Assignment semanticObject) {
@@ -1444,7 +1423,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_Display returns S_Display
 	 *
 	 * Constraint:
-	 *     (key='display' firstFacet='name:'? (name=Valid_ID | name=STRING) facets+=Facet* block=DisplayBlock)
+	 *     (key='display' (name=Valid_ID | name=STRING) facets+=Facet* block=DisplayBlock)
 	 * </pre>
 	 */
 	protected void sequence_S_Display(ISerializationContext context, S_Display semanticObject) {
@@ -1475,7 +1454,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     EquationDefinition returns S_Equations
 	 *
 	 * Constraint:
-	 *     (key=_EquationsKey name=Valid_ID facets+=Facet* equations+=S_Equation*)
+	 *     (key='equation' name=Valid_ID facets+=Facet* equations+=S_Equation*)
 	 * </pre>
 	 */
 	protected void sequence_S_Equations(ISerializationContext context, S_Equations semanticObject) {
@@ -1490,7 +1469,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_If returns S_If
 	 *
 	 * Constraint:
-	 *     (key='if' firstFacet='condition:'? expr=Expression block=Block (else=S_If | else=Block)?)
+	 *     (key='if' expr=Expression block=Block (else=S_If | else=Block)?)
 	 * </pre>
 	 */
 	protected void sequence_S_If(ISerializationContext context, S_If semanticObject) {
@@ -1505,7 +1484,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_ImageLayer returns S_ImageLayer
 	 *
 	 * Constraint:
-	 *     (key=_ImageLayerKey expr=Expression facets+=Facet*)
+	 *     (key='picture' expr=Expression facets+=Facet*)
 	 * </pre>
 	 */
 	protected void sequence_S_ImageLayer(ISerializationContext context, S_ImageLayer semanticObject) {
@@ -1541,7 +1520,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     VarDefinition returns S_Reflex
 	 *
 	 * Constraint:
-	 *     (key=_ReflexKey (firstFacet='name:'? name=Valid_ID)? expr=Expression? block=Block)
+	 *     (key=K_Reflex name=Valid_ID? expr=Expression? block=Block)
 	 * </pre>
 	 */
 	protected void sequence_S_Reflex(ISerializationContext context, S_Reflex semanticObject) {
@@ -1556,7 +1535,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_Return returns S_Return
 	 *
 	 * Constraint:
-	 *     (key='return' firstFacet='value:'? expr=Expression?)
+	 *     (key='return' expr=Expression?)
 	 * </pre>
 	 */
 	protected void sequence_S_Return(ISerializationContext context, S_Return semanticObject) {
@@ -1953,7 +1932,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     TypeRef returns TypeRef
 	 *
 	 * Constraint:
-	 *     ((ref=[TypeDefinition|ID] parameter=TypeInfo?) | parameter=TypeInfo)?
+	 *     ((ref=[TypeDefinition|ID] parameter=TypeInfo?) | parameter=TypeInfo)
 	 * </pre>
 	 */
 	protected void sequence_TypeRef(ISerializationContext context, TypeRef semanticObject) {

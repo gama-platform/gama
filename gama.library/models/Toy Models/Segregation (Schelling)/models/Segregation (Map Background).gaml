@@ -82,7 +82,7 @@ experiment schelling type: gui parent:base_exp{
 	
 	output {
 		display Segregation type:2d{
-			image bitmap_file_name.path ;
+			picture bitmap_file_name.path ;
 			species people transparency: 0.5 aspect: geom;
 		}	
 		display Charts  type: 2d {

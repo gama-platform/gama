@@ -24,8 +24,8 @@ package gama.api.constants;
  * <li>And many other language-level constants</li>
  * </ul>
  * <p>
- * These constants are used throughout the GAMA platform for parsing, compiling, and executing
- * GAML models, ensuring consistency in keyword recognition and usage.
+ * These constants are used throughout the GAMA platform for parsing, compiling, and executing GAML models, ensuring
+ * consistency in keyword recognition and usage.
  * </p>
  *
  * @author drogoul
@@ -517,7 +517,7 @@ public interface IKeyword {
 	String IMAGE = "image";
 
 	/** The display image. */
-	String IMAGE_LAYER = "image_layer";
+	String IMAGE_LAYER = "picture";
 
 	/** The in. */
 	String IN = "in";

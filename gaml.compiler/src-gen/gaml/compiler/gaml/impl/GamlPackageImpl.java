@@ -224,14 +224,14 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass s_OtherEClass = null;
+  private EClass s_ReturnEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass s_ReturnEClass = null;
+  private EClass s_OtherEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -951,17 +951,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EAttribute getFacetsAndBlock_FirstFacet()
-  {
-    return (EAttribute)facetsAndBlockEClass.getEStructuralFeatures().get(3);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EClass getStatement()
   {
     return statementEClass;
@@ -1083,9 +1072,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getS_Other()
+  public EClass getS_Return()
   {
-    return s_OtherEClass;
+    return s_ReturnEClass;
   }
 
   /**
@@ -1094,9 +1083,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getS_Return()
+  public EClass getS_Other()
   {
-    return s_ReturnEClass;
+    return s_OtherEClass;
   }
 
   /**
@@ -2276,7 +2265,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     createEReference(facetsAndBlockEClass, FACETS_AND_BLOCK__FACETS);
     createEReference(facetsAndBlockEClass, FACETS_AND_BLOCK__BLOCK);
     createEAttribute(facetsAndBlockEClass, FACETS_AND_BLOCK__KEY);
-    createEAttribute(facetsAndBlockEClass, FACETS_AND_BLOCK__FIRST_FACET);
 
     statementEClass = createEClass(STATEMENT);
     createEReference(statementEClass, STATEMENT__EXPR);
@@ -2297,9 +2285,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_TryEClass = createEClass(STRY);
     createEReference(s_TryEClass, STRY__CATCH);
 
-    s_OtherEClass = createEClass(SOTHER);
-
     s_ReturnEClass = createEClass(SRETURN);
+
+    s_OtherEClass = createEClass(SOTHER);
 
     s_DeclarationEClass = createEClass(SDECLARATION);
 
@@ -2506,8 +2494,8 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_LoopEClass.getESuperTypes().add(this.getS_Declaration());
     s_IfEClass.getESuperTypes().add(this.getStatement());
     s_TryEClass.getESuperTypes().add(this.getStatement());
-    s_OtherEClass.getESuperTypes().add(this.getStatement());
     s_ReturnEClass.getESuperTypes().add(this.getStatement());
+    s_OtherEClass.getESuperTypes().add(this.getStatement());
     s_DeclarationEClass.getESuperTypes().add(this.getStatement());
     s_DeclarationEClass.getESuperTypes().add(this.getVarDefinition());
     s_ReflexEClass.getESuperTypes().add(this.getStatement());
@@ -2599,7 +2587,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEReference(getFacetsAndBlock_Facets(), this.getFacet(), null, "facets", null, 0, -1, FacetsAndBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getFacetsAndBlock_Block(), this.getBlock(), null, "block", null, 0, 1, FacetsAndBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getFacetsAndBlock_Key(), ecorePackage.getEString(), "key", null, 0, 1, FacetsAndBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getFacetsAndBlock_FirstFacet(), ecorePackage.getEString(), "firstFacet", null, 0, 1, FacetsAndBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(statementEClass, Statement.class, "Statement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getStatement_Expr(), this.getExpression(), null, "expr", null, 0, 1, Statement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -2620,9 +2607,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(s_TryEClass, S_Try.class, "S_Try", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getS_Try_Catch(), this.getBlock(), null, "catch", null, 0, 1, S_Try.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(s_OtherEClass, S_Other.class, "S_Other", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
     initEClass(s_ReturnEClass, S_Return.class, "S_Return", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(s_OtherEClass, S_Other.class, "S_Other", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_DeclarationEClass, S_Declaration.class, "S_Declaration", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 

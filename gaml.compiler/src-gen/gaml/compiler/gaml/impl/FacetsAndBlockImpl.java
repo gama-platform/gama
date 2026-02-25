@@ -35,7 +35,6 @@ import org.eclipse.emf.ecore.util.InternalEList;
  *   <li>{@link gaml.compiler.gaml.impl.FacetsAndBlockImpl#getFacets <em>Facets</em>}</li>
  *   <li>{@link gaml.compiler.gaml.impl.FacetsAndBlockImpl#getBlock <em>Block</em>}</li>
  *   <li>{@link gaml.compiler.gaml.impl.FacetsAndBlockImpl#getKey <em>Key</em>}</li>
- *   <li>{@link gaml.compiler.gaml.impl.FacetsAndBlockImpl#getFirstFacet <em>First Facet</em>}</li>
  * </ul>
  *
  * @generated
@@ -81,26 +80,6 @@ public class FacetsAndBlockImpl extends MinimalEObjectImpl.Container implements 
    * @ordered
    */
   protected String key = KEY_EDEFAULT;
-
-  /**
-   * The default value of the '{@link #getFirstFacet() <em>First Facet</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #getFirstFacet()
-   * @generated
-   * @ordered
-   */
-  protected static final String FIRST_FACET_EDEFAULT = null;
-
-  /**
-   * The cached value of the '{@link #getFirstFacet() <em>First Facet</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #getFirstFacet()
-   * @generated
-   * @ordered
-   */
-  protected String firstFacet = FIRST_FACET_EDEFAULT;
 
   /**
    * <!-- begin-user-doc -->
@@ -219,31 +198,6 @@ public class FacetsAndBlockImpl extends MinimalEObjectImpl.Container implements 
    * @generated
    */
   @Override
-  public String getFirstFacet()
-  {
-    return firstFacet;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public void setFirstFacet(String newFirstFacet)
-  {
-    String oldFirstFacet = firstFacet;
-    firstFacet = newFirstFacet;
-    if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, GamlPackage.FACETS_AND_BLOCK__FIRST_FACET, oldFirstFacet, firstFacet));
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs)
   {
     switch (featureID)
@@ -272,8 +226,6 @@ public class FacetsAndBlockImpl extends MinimalEObjectImpl.Container implements 
         return getBlock();
       case GamlPackage.FACETS_AND_BLOCK__KEY:
         return getKey();
-      case GamlPackage.FACETS_AND_BLOCK__FIRST_FACET:
-        return getFirstFacet();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -299,9 +251,6 @@ public class FacetsAndBlockImpl extends MinimalEObjectImpl.Container implements 
       case GamlPackage.FACETS_AND_BLOCK__KEY:
         setKey((String)newValue);
         return;
-      case GamlPackage.FACETS_AND_BLOCK__FIRST_FACET:
-        setFirstFacet((String)newValue);
-        return;
     }
     super.eSet(featureID, newValue);
   }
@@ -325,9 +274,6 @@ public class FacetsAndBlockImpl extends MinimalEObjectImpl.Container implements 
       case GamlPackage.FACETS_AND_BLOCK__KEY:
         setKey(KEY_EDEFAULT);
         return;
-      case GamlPackage.FACETS_AND_BLOCK__FIRST_FACET:
-        setFirstFacet(FIRST_FACET_EDEFAULT);
-        return;
     }
     super.eUnset(featureID);
   }
@@ -348,8 +294,6 @@ public class FacetsAndBlockImpl extends MinimalEObjectImpl.Container implements 
         return block != null;
       case GamlPackage.FACETS_AND_BLOCK__KEY:
         return KEY_EDEFAULT == null ? key != null : !KEY_EDEFAULT.equals(key);
-      case GamlPackage.FACETS_AND_BLOCK__FIRST_FACET:
-        return FIRST_FACET_EDEFAULT == null ? firstFacet != null : !FIRST_FACET_EDEFAULT.equals(firstFacet);
     }
     return super.eIsSet(featureID);
   }
@@ -367,8 +311,6 @@ public class FacetsAndBlockImpl extends MinimalEObjectImpl.Container implements 
     StringBuilder result = new StringBuilder(super.toString());
     result.append(" (key: ");
     result.append(key);
-    result.append(", firstFacet: ");
-    result.append(firstFacet);
     result.append(')');
     return result.toString();
   }

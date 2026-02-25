@@ -121,7 +121,7 @@ public class GamlFormatter extends AbstractDeclarativeFormatter {
 				g.getS_EquationsAccess().getRightCurlyBracketKeyword_3_0_2(), 2);
 
 		// Else blocks should not be separated from their if
-		c.setNoLinewrap().before(g.getS_IfAccess().getElseKeyword_4_0());
+		c.setNoLinewrap().before(g.getS_IfAccess().getElseKeyword_3_0());
 		// Adding more space to init (supposing it is the first declared)
 		c.setLinewrap(2).before(g.getS_ReflexRule());
 		c.setLinewrap(2).before(g.getS_ActionRule());

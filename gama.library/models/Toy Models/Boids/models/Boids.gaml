@@ -214,7 +214,7 @@ experiment "Basic" type: gui {
 
 	output synchronized: true {
 		display Sky type: 3d axes:false{ 
-			image '../images/sky.jpg' refresh: false;
+			picture '../images/sky.jpg' refresh: false;
 			species boids aspect: image;
 			species boids_goal;
 			species obstacle;
@@ -255,7 +255,7 @@ experiment "Interactive" type: gui autorun: true{
 
 	output synchronized: true {
 		display Sky  background: #blue type: 3d fullscreen: 0 toolbar: false axes:false{ 
-			image '../images/sky.jpg' refresh: false;
+			picture '../images/sky.jpg' refresh: false;
 			species boids aspect: image trace: 10 fading: true ;
 			species boids_goal;
 			species obstacle;

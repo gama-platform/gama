@@ -51,7 +51,7 @@ experiment Display
 	{
 		display "Bing Map" type: 3d axes:false
 		{
-			image static_map_request refresh:true;
+			picture static_map_request refresh:true;
 		}
 
 	}

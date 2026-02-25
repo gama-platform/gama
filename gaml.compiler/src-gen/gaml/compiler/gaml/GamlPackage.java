@@ -420,22 +420,13 @@ public interface GamlPackage extends EPackage
   int FACETS_AND_BLOCK__KEY = 2;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int FACETS_AND_BLOCK__FIRST_FACET = 3;
-
-  /**
    * The number of structural features of the '<em>Facets And Block</em>' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int FACETS_AND_BLOCK_FEATURE_COUNT = 4;
+  int FACETS_AND_BLOCK_FEATURE_COUNT = 3;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.HeadlessExperimentImpl <em>Headless Experiment</em>}' class.
@@ -473,15 +464,6 @@ public interface GamlPackage extends EPackage
    * @ordered
    */
   int HEADLESS_EXPERIMENT__KEY = FACETS_AND_BLOCK__KEY;
-
-  /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int HEADLESS_EXPERIMENT__FIRST_FACET = FACETS_AND_BLOCK__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Name</b></em>' attribute.
@@ -548,15 +530,6 @@ public interface GamlPackage extends EPackage
   int STATEMENT__KEY = FACETS_AND_BLOCK__KEY;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int STATEMENT__FIRST_FACET = FACETS_AND_BLOCK__FIRST_FACET;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -612,15 +585,6 @@ public interface GamlPackage extends EPackage
   int SGLOBAL__KEY = STATEMENT__KEY;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SGLOBAL__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -674,15 +638,6 @@ public interface GamlPackage extends EPackage
    * @ordered
    */
   int SSPECIES__KEY = STATEMENT__KEY;
-
-  /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SSPECIES__FIRST_FACET = STATEMENT__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
@@ -749,15 +704,6 @@ public interface GamlPackage extends EPackage
   int SEXPERIMENT__KEY = STATEMENT__KEY;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SEXPERIMENT__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -822,15 +768,6 @@ public interface GamlPackage extends EPackage
   int SDO__KEY = STATEMENT__KEY;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SDO__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -884,15 +821,6 @@ public interface GamlPackage extends EPackage
    * @ordered
    */
   int SLOOP__KEY = STATEMENT__KEY;
-
-  /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SLOOP__FIRST_FACET = STATEMENT__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
@@ -959,15 +887,6 @@ public interface GamlPackage extends EPackage
   int SIF__KEY = STATEMENT__KEY;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SIF__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1032,15 +951,6 @@ public interface GamlPackage extends EPackage
   int STRY__KEY = STATEMENT__KEY;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int STRY__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1068,70 +978,6 @@ public interface GamlPackage extends EPackage
   int STRY_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 1;
 
   /**
-   * The meta object id for the '{@link gaml.compiler.gaml.impl.S_OtherImpl <em>SOther</em>}' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see gaml.compiler.gaml.impl.S_OtherImpl
-   * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_Other()
-   * @generated
-   */
-  int SOTHER = 18;
-
-  /**
-   * The feature id for the '<em><b>Facets</b></em>' containment reference list.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SOTHER__FACETS = STATEMENT__FACETS;
-
-  /**
-   * The feature id for the '<em><b>Block</b></em>' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SOTHER__BLOCK = STATEMENT__BLOCK;
-
-  /**
-   * The feature id for the '<em><b>Key</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SOTHER__KEY = STATEMENT__KEY;
-
-  /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SOTHER__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
-   * The feature id for the '<em><b>Expr</b></em>' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SOTHER__EXPR = STATEMENT__EXPR;
-
-  /**
-   * The number of structural features of the '<em>SOther</em>' class.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SOTHER_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 0;
-
-  /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.S_ReturnImpl <em>SReturn</em>}' class.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1139,7 +985,7 @@ public interface GamlPackage extends EPackage
    * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_Return()
    * @generated
    */
-  int SRETURN = 19;
+  int SRETURN = 18;
 
   /**
    * The feature id for the '<em><b>Facets</b></em>' containment reference list.
@@ -1169,15 +1015,6 @@ public interface GamlPackage extends EPackage
   int SRETURN__KEY = STATEMENT__KEY;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SRETURN__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1194,6 +1031,61 @@ public interface GamlPackage extends EPackage
    * @ordered
    */
   int SRETURN_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 0;
+
+  /**
+   * The meta object id for the '{@link gaml.compiler.gaml.impl.S_OtherImpl <em>SOther</em>}' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see gaml.compiler.gaml.impl.S_OtherImpl
+   * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_Other()
+   * @generated
+   */
+  int SOTHER = 19;
+
+  /**
+   * The feature id for the '<em><b>Facets</b></em>' containment reference list.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SOTHER__FACETS = STATEMENT__FACETS;
+
+  /**
+   * The feature id for the '<em><b>Block</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SOTHER__BLOCK = STATEMENT__BLOCK;
+
+  /**
+   * The feature id for the '<em><b>Key</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SOTHER__KEY = STATEMENT__KEY;
+
+  /**
+   * The feature id for the '<em><b>Expr</b></em>' containment reference.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SOTHER__EXPR = STATEMENT__EXPR;
+
+  /**
+   * The number of structural features of the '<em>SOther</em>' class.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   * @ordered
+   */
+  int SOTHER_FEATURE_COUNT = STATEMENT_FEATURE_COUNT + 0;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.S_DeclarationImpl <em>SDeclaration</em>}' class.
@@ -1231,15 +1123,6 @@ public interface GamlPackage extends EPackage
    * @ordered
    */
   int SDECLARATION__KEY = STATEMENT__KEY;
-
-  /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SDECLARATION__FIRST_FACET = STATEMENT__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
@@ -1306,15 +1189,6 @@ public interface GamlPackage extends EPackage
   int SREFLEX__KEY = STATEMENT__KEY;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SREFLEX__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1377,15 +1251,6 @@ public interface GamlPackage extends EPackage
    * @ordered
    */
   int SDEFINITION__KEY = STATEMENT__KEY;
-
-  /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SDEFINITION__FIRST_FACET = STATEMENT__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
@@ -1470,15 +1335,6 @@ public interface GamlPackage extends EPackage
   int SASSIGNMENT__KEY = STATEMENT__KEY;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SASSIGNMENT__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1541,15 +1397,6 @@ public interface GamlPackage extends EPackage
    * @ordered
    */
   int SEQUATIONS__KEY = STATEMENT__KEY;
-
-  /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SEQUATIONS__FIRST_FACET = STATEMENT__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
@@ -1625,15 +1472,6 @@ public interface GamlPackage extends EPackage
   int SSOLVE__KEY = STATEMENT__KEY;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SSOLVE__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1687,15 +1525,6 @@ public interface GamlPackage extends EPackage
    * @ordered
    */
   int SDISPLAY__KEY = STATEMENT__KEY;
-
-  /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SDISPLAY__FIRST_FACET = STATEMENT__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
@@ -1762,15 +1591,6 @@ public interface GamlPackage extends EPackage
   int SSPECIES_LAYER__KEY = STATEMENT__KEY;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SSPECIES_LAYER__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1824,15 +1644,6 @@ public interface GamlPackage extends EPackage
    * @ordered
    */
   int SIMAGE_LAYER__KEY = STATEMENT__KEY;
-
-  /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SIMAGE_LAYER__FIRST_FACET = STATEMENT__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
@@ -1890,15 +1701,6 @@ public interface GamlPackage extends EPackage
   int SGRAPHICS_LAYER__KEY = STATEMENT__KEY;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SGRAPHICS_LAYER__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -1952,15 +1754,6 @@ public interface GamlPackage extends EPackage
    * @ordered
    */
   int SEVENT_LAYER__KEY = STATEMENT__KEY;
-
-  /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SEVENT_LAYER__FIRST_FACET = STATEMENT__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
@@ -2018,15 +1811,6 @@ public interface GamlPackage extends EPackage
   int SOVERLAY_LAYER__KEY = STATEMENT__KEY;
 
   /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SOVERLAY_LAYER__FIRST_FACET = STATEMENT__FIRST_FACET;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -2080,15 +1864,6 @@ public interface GamlPackage extends EPackage
    * @ordered
    */
   int SOTHER_LAYER__KEY = STATEMENT__KEY;
-
-  /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SOTHER_LAYER__FIRST_FACET = STATEMENT__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
@@ -2693,15 +2468,6 @@ public interface GamlPackage extends EPackage
    * @ordered
    */
   int SACTION__KEY = SDEFINITION__KEY;
-
-  /**
-   * The feature id for the '<em><b>First Facet</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int SACTION__FIRST_FACET = SDEFINITION__FIRST_FACET;
 
   /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
@@ -3692,17 +3458,6 @@ public interface GamlPackage extends EPackage
   EAttribute getFacetsAndBlock_Key();
 
   /**
-   * Returns the meta object for the attribute '{@link gaml.compiler.gaml.FacetsAndBlock#getFirstFacet <em>First Facet</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>First Facet</em>'.
-   * @see gaml.compiler.gaml.FacetsAndBlock#getFirstFacet()
-   * @see #getFacetsAndBlock()
-   * @generated
-   */
-  EAttribute getFacetsAndBlock_FirstFacet();
-
-  /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.Statement <em>Statement</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -3816,16 +3571,6 @@ public interface GamlPackage extends EPackage
   EReference getS_Try_Catch();
 
   /**
-   * Returns the meta object for class '{@link gaml.compiler.gaml.S_Other <em>SOther</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for class '<em>SOther</em>'.
-   * @see gaml.compiler.gaml.S_Other
-   * @generated
-   */
-  EClass getS_Other();
-
-  /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.S_Return <em>SReturn</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -3834,6 +3579,16 @@ public interface GamlPackage extends EPackage
    * @generated
    */
   EClass getS_Return();
+
+  /**
+   * Returns the meta object for class '{@link gaml.compiler.gaml.S_Other <em>SOther</em>}'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the meta object for class '<em>SOther</em>'.
+   * @see gaml.compiler.gaml.S_Other
+   * @generated
+   */
+  EClass getS_Other();
 
   /**
    * Returns the meta object for class '{@link gaml.compiler.gaml.S_Declaration <em>SDeclaration</em>}'.
@@ -5146,14 +4901,6 @@ public interface GamlPackage extends EPackage
     EAttribute FACETS_AND_BLOCK__KEY = eINSTANCE.getFacetsAndBlock_Key();
 
     /**
-     * The meta object literal for the '<em><b>First Facet</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute FACETS_AND_BLOCK__FIRST_FACET = eINSTANCE.getFacetsAndBlock_FirstFacet();
-
-    /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.StatementImpl <em>Statement</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -5258,16 +5005,6 @@ public interface GamlPackage extends EPackage
     EReference STRY__CATCH = eINSTANCE.getS_Try_Catch();
 
     /**
-     * The meta object literal for the '{@link gaml.compiler.gaml.impl.S_OtherImpl <em>SOther</em>}' class.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @see gaml.compiler.gaml.impl.S_OtherImpl
-     * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_Other()
-     * @generated
-     */
-    EClass SOTHER = eINSTANCE.getS_Other();
-
-    /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.S_ReturnImpl <em>SReturn</em>}' class.
      * <!-- begin-user-doc -->
      * <!-- end-user-doc -->
@@ -5276,6 +5013,16 @@ public interface GamlPackage extends EPackage
      * @generated
      */
     EClass SRETURN = eINSTANCE.getS_Return();
+
+    /**
+     * The meta object literal for the '{@link gaml.compiler.gaml.impl.S_OtherImpl <em>SOther</em>}' class.
+     * <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * @see gaml.compiler.gaml.impl.S_OtherImpl
+     * @see gaml.compiler.gaml.impl.GamlPackageImpl#getS_Other()
+     * @generated
+     */
+    EClass SOTHER = eINSTANCE.getS_Other();
 
     /**
      * The meta object literal for the '{@link gaml.compiler.gaml.impl.S_DeclarationImpl <em>SDeclaration</em>}' class.

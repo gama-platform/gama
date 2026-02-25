@@ -166,14 +166,14 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createS_TryAdapter();
       }
       @Override
-      public Adapter caseS_Other(S_Other object)
-      {
-        return createS_OtherAdapter();
-      }
-      @Override
       public Adapter caseS_Return(S_Return object)
       {
         return createS_ReturnAdapter();
+      }
+      @Override
+      public Adapter caseS_Other(S_Other object)
+      {
+        return createS_OtherAdapter();
       }
       @Override
       public Adapter caseS_Declaration(S_Declaration object)
@@ -728,21 +728,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_Other <em>SOther</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see gaml.compiler.gaml.S_Other
-   * @generated
-   */
-  public Adapter createS_OtherAdapter()
-  {
-    return null;
-  }
-
-  /**
    * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_Return <em>SReturn</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -753,6 +738,21 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createS_ReturnAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_Other <em>SOther</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.S_Other
+   * @generated
+   */
+  public Adapter createS_OtherAdapter()
   {
     return null;
   }

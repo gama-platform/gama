@@ -73,7 +73,7 @@ experiment main type: gui
 			
 			agents "boids_goal" value: (Boids."Adapter of Boids" accumulate each.get_boids_goal()) ;
 			
-			agents "boids" value: (Boids."Adapter of Boids" accumulate each.get_boids())  aspect: image;
+			agents "boids" value: (Boids."Adapter of Boids" accumulate each.get_boids())  aspect: icon;
 			
 		}
 

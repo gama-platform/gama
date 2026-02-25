@@ -198,7 +198,7 @@ experiment "With Inspector" type: gui parent:base{
 	output {
 		layout #split editors: false;
 		display Ants type: 3d axes:false{
-			image terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
+			picture terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
 			agents "agents" transparency: 0.7 position: {0.05, 0.05} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant position: {0.05, 0.05, 0.05} size: {0.9, 0.9} aspect: icon_svg;
 			overlay transparency: 0.3 background: rgb(99, 85, 66, 255) position: {50 #px, 50 #px} size: {250 #px, 150 #px} border: rgb(99, 85, 66, 255) rounded: true {
@@ -230,7 +230,7 @@ experiment "Classic" type: gui record: every(10) parent:base{
 		display Ants antialias: false type: 3d {
 			light #ambient intensity: 127;
 			light #default intensity: 127;
-			image terrain refresh: false;
+			picture terrain refresh: false;
 			agents "Grid" transparency: 0.4 value: ant_grid where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant aspect: info;
 		}
@@ -290,7 +290,7 @@ experiment "3 Simulations" type: gui  parent:base{
 	output {
 		layout #split editors: false consoles: false toolbars: true tabs: true tray: false parameters: true background: #red;
 		display Ants background: color type: 3d toolbar: color axes: false {
-			image terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
+			picture terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
 			agents "agents" transparency: 0.5 position: {0.05, 0.05} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant position: {0.05, 0.05} size: {0.9, 0.9} aspect: icon;
 		}

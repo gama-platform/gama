@@ -141,7 +141,7 @@ species boids skills: [moving3D] {
 		draw sphere(10) color: #green;
 	}
 	
-	aspect image {
+	aspect icon {
 		draw bird0_gif_file size: boids_size rotate: heading::(location - boids_goal[0].location) color: #black ;      
 	}
 }
@@ -174,7 +174,7 @@ experiment "3D" type: gui {
 		
 		display Sky1 type:3d {
 			camera 'default' location: {555.5176,1479.257,750.4308} target: {442.2293,184.3665,0.0};
-			species boids aspect: image;
+			species boids aspect: icon;
 			species boids_goal;	
 		}
 		
