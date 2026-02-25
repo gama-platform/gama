@@ -22,8 +22,8 @@ global {
 	int predator_nb_max_offsprings <- 3;
 	float predator_energy_reproduce <- 0.5;
 	file map_init <- image_file("../includes/data/raster_map.png");
-	int nb_preys -> {length(prey)};
-	int nb_predators -> {length(predator)};
+	int nb_preys -> length(prey);
+	int nb_predators -> length(predator);
 	bool is_batch <- false;
 
 	init {

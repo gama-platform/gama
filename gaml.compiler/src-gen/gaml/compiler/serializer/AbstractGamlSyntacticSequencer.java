@@ -34,9 +34,20 @@ public abstract class AbstractGamlSyntacticSequencer extends AbstractSyntacticSe
 	
 	@Override
 	protected String getUnassignedRuleCallToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (ruleCall.getRule() == grammarAccess.getK_SpeciesRule())
+			return getK_SpeciesToken(semanticObject, ruleCall, node);
 		return "";
 	}
 	
+	/**
+	 * K_Species:
+	 * 	'species';
+	 */
+	protected String getK_SpeciesToken(EObject semanticObject, RuleCall ruleCall, INode node) {
+		if (node != null)
+			return getTokenText(node);
+		return "species";
+	}
 	
 	@Override
 	protected void emitUnassignedTokens(EObject semanticObject, ISynTransition transition, INode fromNode, INode toNode) {

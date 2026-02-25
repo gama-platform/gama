@@ -35,6 +35,9 @@
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//FacetsAndBlock/block"/>
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//FacetsAndBlock/key"/>
     </genClasses>
+    <genClasses ecoreClass="Gaml.ecore#//ActionArguments">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//ActionArguments/args"/>
+    </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//Statement">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//Statement/expr"/>
     </genClasses>
@@ -54,7 +57,6 @@
     <genClasses ecoreClass="Gaml.ecore#//S_Reflex"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Definition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//S_Definition/tkey"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//S_Definition/args"/>
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//S_Assignment">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//S_Assignment/value"/>
@@ -65,9 +67,6 @@
     <genClasses ecoreClass="Gaml.ecore#//S_Solve"/>
     <genClasses ecoreClass="Gaml.ecore#//S_Display">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//S_Display/name"/>
-    </genClasses>
-    <genClasses ecoreClass="Gaml.ecore#//ActionArguments">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//ActionArguments/args"/>
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//ArgumentDefinition">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//ArgumentDefinition/type"/>
@@ -97,8 +96,8 @@
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//EquationDefinition"/>
     <genClasses ecoreClass="Gaml.ecore#//TypeDefinition"/>
-    <genClasses ecoreClass="Gaml.ecore#//VarDefinition"/>
     <genClasses ecoreClass="Gaml.ecore#//ActionDefinition"/>
+    <genClasses ecoreClass="Gaml.ecore#//VarDefinition"/>
     <genClasses ecoreClass="Gaml.ecore#//UnitFakeDefinition"/>
     <genClasses ecoreClass="Gaml.ecore#//TypeFakeDefinition"/>
     <genClasses ecoreClass="Gaml.ecore#//ActionFakeDefinition"/>
@@ -157,10 +156,6 @@
     <genClasses ecoreClass="Gaml.ecore#//UnitName">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Gaml.ecore#//UnitName/ref"/>
     </genClasses>
-    <genClasses ecoreClass="Gaml.ecore#//TypeRef">
-      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Gaml.ecore#//TypeRef/ref"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//TypeRef/parameter"/>
-    </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//SkillRef">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Gaml.ecore#//SkillRef/ref"/>
     </genClasses>
@@ -169,6 +164,10 @@
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//EquationRef">
       <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Gaml.ecore#//EquationRef/ref"/>
+    </genClasses>
+    <genClasses ecoreClass="Gaml.ecore#//TypeRef">
+      <genFeatures notify="false" createChild="false" propertySortChoices="true" ecoreFeature="ecore:EReference Gaml.ecore#//TypeRef/ref"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//TypeRef/parameter"/>
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//IntLiteral"/>
     <genClasses ecoreClass="Gaml.ecore#//DoubleLiteral"/>

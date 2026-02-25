@@ -59,6 +59,7 @@ import java.util.Map;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
@@ -77,7 +78,6 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.map.GamaMapFactory;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.Access;
-import gaml.compiler.gaml.ActionArguments;
 import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.EGaml;
@@ -386,11 +386,11 @@ public class GamlSyntacticConverter {
 			// and put it as a child
 			// of the syntactic element (as GAML expects it)
 			convElse((S_If) stm, elt);
-		} else if (stm instanceof S_Action) {
+		} else if (stm instanceof S_Action sa) {
 			// Conversion of "action ID (type1 ID1 <- V1, type2 ID2)" to
 			// "action ID {arg ID1 type: type1 default: V1; arg ID2 type:
 			// type2}"
-			convertArgs(((S_Action) stm).getArgs(), elt);
+			convertArgs(sa.getArgs(), elt);
 		} else if (stm instanceof S_Reflex ref) {
 			if (ref.getExpr() != null) { addFacet(elt, WHEN, convExpr(ref.getExpr())); }
 		} else if (stm instanceof S_Solve) {
@@ -550,14 +550,14 @@ public class GamlSyntacticConverter {
 	/**
 	 * Convert args.
 	 *
-	 * @param args
+	 * @param eList
 	 *            the args
 	 * @param elt
 	 *            the elt
 	 */
-	private void convertArgs(final ActionArguments args, final ISyntacticElement elt) {
-		if (args != null) {
-			for (final ArgumentDefinition def : EGaml.getInstance().getArgsOf(args)) {
+	private void convertArgs(final EList<ArgumentDefinition> eList, final ISyntacticElement elt) {
+		if (eList != null) {
+			for (final ArgumentDefinition def : eList) {
 				final ISyntacticElement arg = SyntacticFactory.getInstance().create(ARG, def, false);
 				addFacet(arg, NAME, convertToLabel(null, def.getName()));
 				final EObject type = def.getType();

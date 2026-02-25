@@ -44,7 +44,7 @@ global skills: [moving] control: fsm {
 
 	// Functions can be declared using the regular facet "->" / "function:" 
 	int b1 ->  100 + length(a1) ;
-	int b2 -> { 100 + length(a1) };
+	int b2 ->  100 + length(a1) ;
 	// ... or using a block (like a statement -- note the absence of semi-column at the end)
 	int b3 {
 		return 100 + length(a1);

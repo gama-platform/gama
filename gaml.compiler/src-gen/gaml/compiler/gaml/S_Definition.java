@@ -14,14 +14,13 @@ package gaml.compiler.gaml;
  * </p>
  * <ul>
  *   <li>{@link gaml.compiler.gaml.S_Definition#getTkey <em>Tkey</em>}</li>
- *   <li>{@link gaml.compiler.gaml.S_Definition#getArgs <em>Args</em>}</li>
  * </ul>
  *
  * @see gaml.compiler.gaml.GamlPackage#getS_Definition()
  * @model
  * @generated
  */
-public interface S_Definition extends Statement, VarDefinition, ActionDefinition
+public interface S_Definition extends Statement, ActionArguments, ActionDefinition, VarDefinition
 {
   /**
    * Returns the value of the '<em><b>Tkey</b></em>' containment reference.
@@ -44,27 +43,5 @@ public interface S_Definition extends Statement, VarDefinition, ActionDefinition
    * @generated
    */
   void setTkey(Expression value);
-
-  /**
-   * Returns the value of the '<em><b>Args</b></em>' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the value of the '<em>Args</em>' containment reference.
-   * @see #setArgs(ActionArguments)
-   * @see gaml.compiler.gaml.GamlPackage#getS_Definition_Args()
-   * @model containment="true"
-   * @generated
-   */
-  ActionArguments getArgs();
-
-  /**
-   * Sets the value of the '{@link gaml.compiler.gaml.S_Definition#getArgs <em>Args</em>}' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Args</em>' containment reference.
-   * @see #getArgs()
-   * @generated
-   */
-  void setArgs(ActionArguments value);
 
 } // S_Definition

@@ -116,6 +116,11 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createFacetsAndBlockAdapter();
       }
       @Override
+      public Adapter caseActionArguments(ActionArguments object)
+      {
+        return createActionArgumentsAdapter();
+      }
+      @Override
       public Adapter caseStatement(Statement object)
       {
         return createStatementAdapter();
@@ -196,11 +201,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createS_DisplayAdapter();
       }
       @Override
-      public Adapter caseActionArguments(ActionArguments object)
-      {
-        return createActionArgumentsAdapter();
-      }
-      @Override
       public Adapter caseArgumentDefinition(ArgumentDefinition object)
       {
         return createArgumentDefinitionAdapter();
@@ -251,14 +251,14 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createTypeDefinitionAdapter();
       }
       @Override
-      public Adapter caseVarDefinition(VarDefinition object)
-      {
-        return createVarDefinitionAdapter();
-      }
-      @Override
       public Adapter caseActionDefinition(ActionDefinition object)
       {
         return createActionDefinitionAdapter();
+      }
+      @Override
+      public Adapter caseVarDefinition(VarDefinition object)
+      {
+        return createVarDefinitionAdapter();
       }
       @Override
       public Adapter caseUnitFakeDefinition(UnitFakeDefinition object)
@@ -356,11 +356,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createUnitNameAdapter();
       }
       @Override
-      public Adapter caseTypeRef(TypeRef object)
-      {
-        return createTypeRefAdapter();
-      }
-      @Override
       public Adapter caseSkillRef(SkillRef object)
       {
         return createSkillRefAdapter();
@@ -374,6 +369,11 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
       public Adapter caseEquationRef(EquationRef object)
       {
         return createEquationRefAdapter();
+      }
+      @Override
+      public Adapter caseTypeRef(TypeRef object)
+      {
+        return createTypeRefAdapter();
       }
       @Override
       public Adapter caseIntLiteral(IntLiteral object)
@@ -533,6 +533,21 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createFacetsAndBlockAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.ActionArguments <em>Action Arguments</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.ActionArguments
+   * @generated
+   */
+  public Adapter createActionArgumentsAdapter()
   {
     return null;
   }
@@ -778,21 +793,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.ActionArguments <em>Action Arguments</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see gaml.compiler.gaml.ActionArguments
-   * @generated
-   */
-  public Adapter createActionArgumentsAdapter()
-  {
-    return null;
-  }
-
-  /**
    * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.ArgumentDefinition <em>Argument Definition</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -943,21 +943,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.VarDefinition <em>Var Definition</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see gaml.compiler.gaml.VarDefinition
-   * @generated
-   */
-  public Adapter createVarDefinitionAdapter()
-  {
-    return null;
-  }
-
-  /**
    * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.ActionDefinition <em>Action Definition</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -968,6 +953,21 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createActionDefinitionAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.VarDefinition <em>Var Definition</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.VarDefinition
+   * @generated
+   */
+  public Adapter createVarDefinitionAdapter()
   {
     return null;
   }
@@ -1258,21 +1258,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.TypeRef <em>Type Ref</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see gaml.compiler.gaml.TypeRef
-   * @generated
-   */
-  public Adapter createTypeRefAdapter()
-  {
-    return null;
-  }
-
-  /**
    * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.SkillRef <em>Skill Ref</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -1313,6 +1298,21 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createEquationRefAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.TypeRef <em>Type Ref</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.TypeRef
+   * @generated
+   */
+  public Adapter createTypeRefAdapter()
   {
     return null;
   }

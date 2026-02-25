@@ -96,6 +96,15 @@ public interface GamlFactory extends EFactory
   FacetsAndBlock createFacetsAndBlock();
 
   /**
+   * Returns a new object of class '<em>Action Arguments</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Action Arguments</em>'.
+   * @generated
+   */
+  ActionArguments createActionArguments();
+
+  /**
    * Returns a new object of class '<em>Statement</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -240,15 +249,6 @@ public interface GamlFactory extends EFactory
   S_Display createS_Display();
 
   /**
-   * Returns a new object of class '<em>Action Arguments</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Action Arguments</em>'.
-   * @generated
-   */
-  ActionArguments createActionArguments();
-
-  /**
    * Returns a new object of class '<em>Argument Definition</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -339,15 +339,6 @@ public interface GamlFactory extends EFactory
   TypeDefinition createTypeDefinition();
 
   /**
-   * Returns a new object of class '<em>Var Definition</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Var Definition</em>'.
-   * @generated
-   */
-  VarDefinition createVarDefinition();
-
-  /**
    * Returns a new object of class '<em>Action Definition</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -355,6 +346,15 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   ActionDefinition createActionDefinition();
+
+  /**
+   * Returns a new object of class '<em>Var Definition</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Var Definition</em>'.
+   * @generated
+   */
+  VarDefinition createVarDefinition();
 
   /**
    * Returns a new object of class '<em>Unit Fake Definition</em>'.
@@ -528,15 +528,6 @@ public interface GamlFactory extends EFactory
   UnitName createUnitName();
 
   /**
-   * Returns a new object of class '<em>Type Ref</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Type Ref</em>'.
-   * @generated
-   */
-  TypeRef createTypeRef();
-
-  /**
    * Returns a new object of class '<em>Skill Ref</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -562,6 +553,15 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   EquationRef createEquationRef();
+
+  /**
+   * Returns a new object of class '<em>Type Ref</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Type Ref</em>'.
+   * @generated
+   */
+  TypeRef createTypeRef();
 
   /**
    * Returns a new object of class '<em>Int Literal</em>'.

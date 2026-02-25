@@ -73,6 +73,7 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.IMPORT: return createImport();
       case GamlPackage.PRAGMA: return createPragma();
       case GamlPackage.FACETS_AND_BLOCK: return createFacetsAndBlock();
+      case GamlPackage.ACTION_ARGUMENTS: return createActionArguments();
       case GamlPackage.STATEMENT: return createStatement();
       case GamlPackage.SGLOBAL: return createS_Global();
       case GamlPackage.SSPECIES: return createS_Species();
@@ -89,7 +90,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.SEQUATIONS: return createS_Equations();
       case GamlPackage.SSOLVE: return createS_Solve();
       case GamlPackage.SDISPLAY: return createS_Display();
-      case GamlPackage.ACTION_ARGUMENTS: return createActionArguments();
       case GamlPackage.ARGUMENT_DEFINITION: return createArgumentDefinition();
       case GamlPackage.FACET: return createFacet();
       case GamlPackage.BLOCK: return createBlock();
@@ -100,8 +100,8 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.GAML_DEFINITION: return createGamlDefinition();
       case GamlPackage.EQUATION_DEFINITION: return createEquationDefinition();
       case GamlPackage.TYPE_DEFINITION: return createTypeDefinition();
-      case GamlPackage.VAR_DEFINITION: return createVarDefinition();
       case GamlPackage.ACTION_DEFINITION: return createActionDefinition();
+      case GamlPackage.VAR_DEFINITION: return createVarDefinition();
       case GamlPackage.UNIT_FAKE_DEFINITION: return createUnitFakeDefinition();
       case GamlPackage.TYPE_FAKE_DEFINITION: return createTypeFakeDefinition();
       case GamlPackage.ACTION_FAKE_DEFINITION: return createActionFakeDefinition();
@@ -121,10 +121,10 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.FUNCTION: return createFunction();
       case GamlPackage.PARAMETER: return createParameter();
       case GamlPackage.UNIT_NAME: return createUnitName();
-      case GamlPackage.TYPE_REF: return createTypeRef();
       case GamlPackage.SKILL_REF: return createSkillRef();
       case GamlPackage.ACTION_REF: return createActionRef();
       case GamlPackage.EQUATION_REF: return createEquationRef();
+      case GamlPackage.TYPE_REF: return createTypeRef();
       case GamlPackage.INT_LITERAL: return createIntLiteral();
       case GamlPackage.DOUBLE_LITERAL: return createDoubleLiteral();
       case GamlPackage.BOOLEAN_LITERAL: return createBooleanLiteral();
@@ -228,6 +228,18 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     FacetsAndBlockImpl facetsAndBlock = new FacetsAndBlockImpl();
     return facetsAndBlock;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public ActionArguments createActionArguments()
+  {
+    ActionArgumentsImpl actionArguments = new ActionArgumentsImpl();
+    return actionArguments;
   }
 
   /**
@@ -428,18 +440,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
    * @generated
    */
   @Override
-  public ActionArguments createActionArguments()
-  {
-    ActionArgumentsImpl actionArguments = new ActionArgumentsImpl();
-    return actionArguments;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public ArgumentDefinition createArgumentDefinition()
   {
     ArgumentDefinitionImpl argumentDefinition = new ArgumentDefinitionImpl();
@@ -560,10 +560,10 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
    * @generated
    */
   @Override
-  public VarDefinition createVarDefinition()
+  public ActionDefinition createActionDefinition()
   {
-    VarDefinitionImpl varDefinition = new VarDefinitionImpl();
-    return varDefinition;
+    ActionDefinitionImpl actionDefinition = new ActionDefinitionImpl();
+    return actionDefinition;
   }
 
   /**
@@ -572,10 +572,10 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
    * @generated
    */
   @Override
-  public ActionDefinition createActionDefinition()
+  public VarDefinition createVarDefinition()
   {
-    ActionDefinitionImpl actionDefinition = new ActionDefinitionImpl();
-    return actionDefinition;
+    VarDefinitionImpl varDefinition = new VarDefinitionImpl();
+    return varDefinition;
   }
 
   /**
@@ -812,18 +812,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
    * @generated
    */
   @Override
-  public TypeRef createTypeRef()
-  {
-    TypeRefImpl typeRef = new TypeRefImpl();
-    return typeRef;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public SkillRef createSkillRef()
   {
     SkillRefImpl skillRef = new SkillRefImpl();
@@ -852,6 +840,18 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     EquationRefImpl equationRef = new EquationRefImpl();
     return equationRef;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public TypeRef createTypeRef()
+  {
+    TypeRefImpl typeRef = new TypeRefImpl();
+    return typeRef;
   }
 
   /**

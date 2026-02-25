@@ -146,6 +146,13 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
+  private EClass actionArgumentsEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
   private EClass statementEClass = null;
 
   /**
@@ -258,13 +265,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass actionArgumentsEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   private EClass argumentDefinitionEClass = null;
 
   /**
@@ -335,14 +335,14 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass varDefinitionEClass = null;
+  private EClass actionDefinitionEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass actionDefinitionEClass = null;
+  private EClass varDefinitionEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -482,13 +482,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass typeRefEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   private EClass skillRefEClass = null;
 
   /**
@@ -504,6 +497,13 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass equationRefEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass typeRefEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -843,6 +843,28 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
+  public EClass getActionArguments()
+  {
+    return actionArgumentsEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EReference getActionArguments_Args()
+  {
+    return (EReference)actionArgumentsEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
   public EClass getStatement()
   {
     return statementEClass;
@@ -1019,17 +1041,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EReference getS_Definition_Args()
-  {
-    return (EReference)s_DefinitionEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EClass getS_Assignment()
   {
     return s_AssignmentEClass;
@@ -1099,28 +1110,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EAttribute getS_Display_Name()
   {
     return (EAttribute)s_DisplayEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getActionArguments()
-  {
-    return actionArgumentsEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getActionArguments_Args()
-  {
-    return (EReference)actionArgumentsEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -1360,9 +1349,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getVarDefinition()
+  public EClass getActionDefinition()
   {
-    return varDefinitionEClass;
+    return actionDefinitionEClass;
   }
 
   /**
@@ -1371,9 +1360,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getActionDefinition()
+  public EClass getVarDefinition()
   {
-    return actionDefinitionEClass;
+    return varDefinitionEClass;
   }
 
   /**
@@ -1899,39 +1888,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getTypeRef()
-  {
-    return typeRefEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getTypeRef_Ref()
-  {
-    return (EReference)typeRefEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getTypeRef_Parameter()
-  {
-    return (EReference)typeRefEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EClass getSkillRef()
   {
     return skillRefEClass;
@@ -1990,6 +1946,39 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EReference getEquationRef_Ref()
   {
     return (EReference)equationRefEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getTypeRef()
+  {
+    return typeRefEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EReference getTypeRef_Ref()
+  {
+    return (EReference)typeRefEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EReference getTypeRef_Parameter()
+  {
+    return (EReference)typeRefEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -2097,6 +2086,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     createEReference(facetsAndBlockEClass, FACETS_AND_BLOCK__BLOCK);
     createEAttribute(facetsAndBlockEClass, FACETS_AND_BLOCK__KEY);
 
+    actionArgumentsEClass = createEClass(ACTION_ARGUMENTS);
+    createEReference(actionArgumentsEClass, ACTION_ARGUMENTS__ARGS);
+
     statementEClass = createEClass(STATEMENT);
     createEReference(statementEClass, STATEMENT__EXPR);
 
@@ -2124,7 +2116,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     s_DefinitionEClass = createEClass(SDEFINITION);
     createEReference(s_DefinitionEClass, SDEFINITION__TKEY);
-    createEReference(s_DefinitionEClass, SDEFINITION__ARGS);
 
     s_AssignmentEClass = createEClass(SASSIGNMENT);
     createEReference(s_AssignmentEClass, SASSIGNMENT__VALUE);
@@ -2136,9 +2127,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     s_DisplayEClass = createEClass(SDISPLAY);
     createEAttribute(s_DisplayEClass, SDISPLAY__NAME);
-
-    actionArgumentsEClass = createEClass(ACTION_ARGUMENTS);
-    createEReference(actionArgumentsEClass, ACTION_ARGUMENTS__ARGS);
 
     argumentDefinitionEClass = createEClass(ARGUMENT_DEFINITION);
     createEReference(argumentDefinitionEClass, ARGUMENT_DEFINITION__TYPE);
@@ -2171,9 +2159,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     typeDefinitionEClass = createEClass(TYPE_DEFINITION);
 
-    varDefinitionEClass = createEClass(VAR_DEFINITION);
-
     actionDefinitionEClass = createEClass(ACTION_DEFINITION);
+
+    varDefinitionEClass = createEClass(VAR_DEFINITION);
 
     unitFakeDefinitionEClass = createEClass(UNIT_FAKE_DEFINITION);
 
@@ -2241,10 +2229,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     unitNameEClass = createEClass(UNIT_NAME);
     createEReference(unitNameEClass, UNIT_NAME__REF);
 
-    typeRefEClass = createEClass(TYPE_REF);
-    createEReference(typeRefEClass, TYPE_REF__REF);
-    createEReference(typeRefEClass, TYPE_REF__PARAMETER);
-
     skillRefEClass = createEClass(SKILL_REF);
     createEReference(skillRefEClass, SKILL_REF__REF);
 
@@ -2253,6 +2237,10 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     equationRefEClass = createEClass(EQUATION_REF);
     createEReference(equationRefEClass, EQUATION_REF__REF);
+
+    typeRefEClass = createEClass(TYPE_REF);
+    createEReference(typeRefEClass, TYPE_REF__REF);
+    createEReference(typeRefEClass, TYPE_REF__PARAMETER);
 
     intLiteralEClass = createEClass(INT_LITERAL);
 
@@ -2320,8 +2308,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_ReflexEClass.getESuperTypes().add(this.getStatement());
     s_ReflexEClass.getESuperTypes().add(this.getVarDefinition());
     s_DefinitionEClass.getESuperTypes().add(this.getStatement());
-    s_DefinitionEClass.getESuperTypes().add(this.getVarDefinition());
+    s_DefinitionEClass.getESuperTypes().add(this.getActionArguments());
     s_DefinitionEClass.getESuperTypes().add(this.getActionDefinition());
+    s_DefinitionEClass.getESuperTypes().add(this.getVarDefinition());
     s_AssignmentEClass.getESuperTypes().add(this.getStatement());
     s_EquationsEClass.getESuperTypes().add(this.getStatement());
     s_EquationsEClass.getESuperTypes().add(this.getEquationDefinition());
@@ -2334,8 +2323,8 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     equationDefinitionEClass.getESuperTypes().add(this.getGamlDefinition());
     typeDefinitionEClass.getESuperTypes().add(this.getGamlDefinition());
     typeDefinitionEClass.getESuperTypes().add(this.getActionDefinition());
-    varDefinitionEClass.getESuperTypes().add(this.getGamlDefinition());
     actionDefinitionEClass.getESuperTypes().add(this.getGamlDefinition());
+    varDefinitionEClass.getESuperTypes().add(this.getGamlDefinition());
     unitFakeDefinitionEClass.getESuperTypes().add(this.getGamlDefinition());
     typeFakeDefinitionEClass.getESuperTypes().add(this.getTypeDefinition());
     actionFakeDefinitionEClass.getESuperTypes().add(this.getActionDefinition());
@@ -2355,10 +2344,10 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     functionEClass.getESuperTypes().add(this.getExpression());
     parameterEClass.getESuperTypes().add(this.getExpression());
     unitNameEClass.getESuperTypes().add(this.getExpression());
-    typeRefEClass.getESuperTypes().add(this.getExpression());
     skillRefEClass.getESuperTypes().add(this.getExpression());
     actionRefEClass.getESuperTypes().add(this.getExpression());
     equationRefEClass.getESuperTypes().add(this.getExpression());
+    typeRefEClass.getESuperTypes().add(this.getExpression());
     intLiteralEClass.getESuperTypes().add(this.getTerminalExpression());
     doubleLiteralEClass.getESuperTypes().add(this.getTerminalExpression());
     booleanLiteralEClass.getESuperTypes().add(this.getTerminalExpression());
@@ -2395,6 +2384,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEReference(getFacetsAndBlock_Block(), this.getBlock(), null, "block", null, 0, 1, FacetsAndBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEAttribute(getFacetsAndBlock_Key(), ecorePackage.getEString(), "key", null, 0, 1, FacetsAndBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
+    initEClass(actionArgumentsEClass, ActionArguments.class, "ActionArguments", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getActionArguments_Args(), this.getArgumentDefinition(), null, "args", null, 0, -1, ActionArguments.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
     initEClass(statementEClass, Statement.class, "Statement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getStatement_Expr(), this.getExpression(), null, "expr", null, 0, 1, Statement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
@@ -2422,7 +2414,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     initEClass(s_DefinitionEClass, S_Definition.class, "S_Definition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getS_Definition_Tkey(), this.getExpression(), null, "tkey", null, 0, 1, S_Definition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getS_Definition_Args(), this.getActionArguments(), null, "args", null, 0, 1, S_Definition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(s_AssignmentEClass, S_Assignment.class, "S_Assignment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getS_Assignment_Value(), this.getExpression(), null, "value", null, 0, 1, S_Assignment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -2434,9 +2425,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     initEClass(s_DisplayEClass, S_Display.class, "S_Display", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getS_Display_Name(), ecorePackage.getEString(), "name", null, 0, 1, S_Display.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-    initEClass(actionArgumentsEClass, ActionArguments.class, "ActionArguments", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getActionArguments_Args(), this.getArgumentDefinition(), null, "args", null, 0, -1, ActionArguments.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(argumentDefinitionEClass, ArgumentDefinition.class, "ArgumentDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getArgumentDefinition_Type(), this.getExpression(), null, "type", null, 0, 1, ArgumentDefinition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -2469,9 +2457,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     initEClass(typeDefinitionEClass, TypeDefinition.class, "TypeDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
-    initEClass(varDefinitionEClass, VarDefinition.class, "VarDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
     initEClass(actionDefinitionEClass, ActionDefinition.class, "ActionDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(varDefinitionEClass, VarDefinition.class, "VarDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(unitFakeDefinitionEClass, UnitFakeDefinition.class, "UnitFakeDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
@@ -2539,10 +2527,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(unitNameEClass, UnitName.class, "UnitName", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getUnitName_Ref(), this.getUnitFakeDefinition(), null, "ref", null, 0, 1, UnitName.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(typeRefEClass, TypeRef.class, "TypeRef", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getTypeRef_Ref(), this.getTypeDefinition(), null, "ref", null, 0, 1, TypeRef.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getTypeRef_Parameter(), this.getTypeInfo(), null, "parameter", null, 0, 1, TypeRef.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
     initEClass(skillRefEClass, SkillRef.class, "SkillRef", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getSkillRef_Ref(), this.getSkillFakeDefinition(), null, "ref", null, 0, 1, SkillRef.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
@@ -2551,6 +2535,10 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     initEClass(equationRefEClass, EquationRef.class, "EquationRef", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getEquationRef_Ref(), this.getEquationDefinition(), null, "ref", null, 0, 1, EquationRef.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(typeRefEClass, TypeRef.class, "TypeRef", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getTypeRef_Ref(), this.getTypeDefinition(), null, "ref", null, 0, 1, TypeRef.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getTypeRef_Parameter(), this.getTypeInfo(), null, "parameter", null, 0, 1, TypeRef.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(intLiteralEClass, IntLiteral.class, "IntLiteral", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
