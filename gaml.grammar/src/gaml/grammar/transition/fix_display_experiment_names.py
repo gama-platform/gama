@@ -9,6 +9,9 @@ Examples
 --------
     display "3 Simulations"
         → display _3_Simulations title: "3 Simulations"
+        
+    display "My Disp" title: "Custom Title"
+        → display My_Disp title: "Custom Title"
 
     experiment "Hello World!"
         → experiment Hello_World_ title: "Hello World!"
@@ -85,11 +88,18 @@ def _transform_line(line: str) -> str:
     str
         The transformed line (unchanged if no pattern matched).
     """
+    # Check if the line already contains a title facet
+    has_title = re.search(r'\btitle\s*:', line) is not None
+
     def _replace(match: re.Match) -> str:
         keyword = match.group(1)
         raw = match.group(2)
         ident = _make_identifier(raw)
-        return f'{keyword} {ident} title: "{raw}"'
+        
+        if has_title:
+            return f'{keyword} {ident}'
+        else:
+            return f'{keyword} {ident} title: "{raw}"'
 
     return _PATTERN.sub(_replace, line)
 
