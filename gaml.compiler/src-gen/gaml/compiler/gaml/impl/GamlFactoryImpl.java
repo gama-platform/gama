@@ -91,12 +91,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.SEQUATIONS: return createS_Equations();
       case GamlPackage.SSOLVE: return createS_Solve();
       case GamlPackage.SDISPLAY: return createS_Display();
-      case GamlPackage.SSPECIES_LAYER: return createS_SpeciesLayer();
-      case GamlPackage.SIMAGE_LAYER: return createS_ImageLayer();
-      case GamlPackage.SGRAPHICS_LAYER: return createS_GraphicsLayer();
-      case GamlPackage.SEVENT_LAYER: return createS_EventLayer();
-      case GamlPackage.SOVERLAY_LAYER: return createS_OverlayLayer();
-      case GamlPackage.SOTHER_LAYER: return createS_OtherLayer();
       case GamlPackage.ACTION_ARGUMENTS: return createActionArguments();
       case GamlPackage.ARGUMENT_DEFINITION: return createArgumentDefinition();
       case GamlPackage.FACET: return createFacet();
@@ -451,78 +445,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     S_DisplayImpl s_Display = new S_DisplayImpl();
     return s_Display;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public S_SpeciesLayer createS_SpeciesLayer()
-  {
-    S_SpeciesLayerImpl s_SpeciesLayer = new S_SpeciesLayerImpl();
-    return s_SpeciesLayer;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public S_ImageLayer createS_ImageLayer()
-  {
-    S_ImageLayerImpl s_ImageLayer = new S_ImageLayerImpl();
-    return s_ImageLayer;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public S_GraphicsLayer createS_GraphicsLayer()
-  {
-    S_GraphicsLayerImpl s_GraphicsLayer = new S_GraphicsLayerImpl();
-    return s_GraphicsLayer;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public S_EventLayer createS_EventLayer()
-  {
-    S_EventLayerImpl s_EventLayer = new S_EventLayerImpl();
-    return s_EventLayer;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public S_OverlayLayer createS_OverlayLayer()
-  {
-    S_OverlayLayerImpl s_OverlayLayer = new S_OverlayLayerImpl();
-    return s_OverlayLayer;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public S_OtherLayer createS_OtherLayer()
-  {
-    S_OtherLayerImpl s_OtherLayer = new S_OtherLayerImpl();
-    return s_OtherLayer;
   }
 
   /**

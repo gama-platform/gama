@@ -84,12 +84,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="S_Display" eSuperTypes="#//Statement">
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
-  <eClassifiers xsi:type="ecore:EClass" name="S_SpeciesLayer" eSuperTypes="#//Statement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="S_ImageLayer" eSuperTypes="#//Statement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="S_GraphicsLayer" eSuperTypes="#//Statement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="S_EventLayer" eSuperTypes="#//Statement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="S_OverlayLayer" eSuperTypes="#//Statement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="S_OtherLayer" eSuperTypes="#//Statement"/>
   <eClassifiers xsi:type="ecore:EClass" name="ActionArguments">
     <eStructuralFeatures xsi:type="ecore:EReference" name="args" upperBound="-1" eType="#//ArgumentDefinition"
         containment="true"/>

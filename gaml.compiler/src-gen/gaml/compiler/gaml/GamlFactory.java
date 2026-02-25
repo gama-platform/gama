@@ -258,60 +258,6 @@ public interface GamlFactory extends EFactory
   S_Display createS_Display();
 
   /**
-   * Returns a new object of class '<em>SSpecies Layer</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SSpecies Layer</em>'.
-   * @generated
-   */
-  S_SpeciesLayer createS_SpeciesLayer();
-
-  /**
-   * Returns a new object of class '<em>SImage Layer</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SImage Layer</em>'.
-   * @generated
-   */
-  S_ImageLayer createS_ImageLayer();
-
-  /**
-   * Returns a new object of class '<em>SGraphics Layer</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SGraphics Layer</em>'.
-   * @generated
-   */
-  S_GraphicsLayer createS_GraphicsLayer();
-
-  /**
-   * Returns a new object of class '<em>SEvent Layer</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SEvent Layer</em>'.
-   * @generated
-   */
-  S_EventLayer createS_EventLayer();
-
-  /**
-   * Returns a new object of class '<em>SOverlay Layer</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SOverlay Layer</em>'.
-   * @generated
-   */
-  S_OverlayLayer createS_OverlayLayer();
-
-  /**
-   * Returns a new object of class '<em>SOther Layer</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SOther Layer</em>'.
-   * @generated
-   */
-  S_OtherLayer createS_OtherLayer();
-
-  /**
    * Returns a new object of class '<em>Action Arguments</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

@@ -43,20 +43,14 @@ import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Equations;
-import gaml.compiler.gaml.S_EventLayer;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
-import gaml.compiler.gaml.S_GraphicsLayer;
 import gaml.compiler.gaml.S_If;
-import gaml.compiler.gaml.S_ImageLayer;
 import gaml.compiler.gaml.S_Loop;
-import gaml.compiler.gaml.S_OtherLayer;
-import gaml.compiler.gaml.S_OverlayLayer;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
 import gaml.compiler.gaml.S_Solve;
 import gaml.compiler.gaml.S_Species;
-import gaml.compiler.gaml.S_SpeciesLayer;
 import gaml.compiler.gaml.S_Try;
 import gaml.compiler.gaml.SkillFakeDefinition;
 import gaml.compiler.gaml.SkillRef;
@@ -273,48 +267,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass s_DisplayEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass s_SpeciesLayerEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass s_ImageLayerEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass s_GraphicsLayerEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass s_EventLayerEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass s_OverlayLayerEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass s_OtherLayerEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -1199,72 +1151,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EAttribute getS_Display_Name()
   {
     return (EAttribute)s_DisplayEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getS_SpeciesLayer()
-  {
-    return s_SpeciesLayerEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getS_ImageLayer()
-  {
-    return s_ImageLayerEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getS_GraphicsLayer()
-  {
-    return s_GraphicsLayerEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getS_EventLayer()
-  {
-    return s_EventLayerEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getS_OverlayLayer()
-  {
-    return s_OverlayLayerEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getS_OtherLayer()
-  {
-    return s_OtherLayerEClass;
   }
 
   /**
@@ -2287,18 +2173,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_DisplayEClass = createEClass(SDISPLAY);
     createEAttribute(s_DisplayEClass, SDISPLAY__NAME);
 
-    s_SpeciesLayerEClass = createEClass(SSPECIES_LAYER);
-
-    s_ImageLayerEClass = createEClass(SIMAGE_LAYER);
-
-    s_GraphicsLayerEClass = createEClass(SGRAPHICS_LAYER);
-
-    s_EventLayerEClass = createEClass(SEVENT_LAYER);
-
-    s_OverlayLayerEClass = createEClass(SOVERLAY_LAYER);
-
-    s_OtherLayerEClass = createEClass(SOTHER_LAYER);
-
     actionArgumentsEClass = createEClass(ACTION_ARGUMENTS);
     createEReference(actionArgumentsEClass, ACTION_ARGUMENTS__ARGS);
 
@@ -2487,12 +2361,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_EquationsEClass.getESuperTypes().add(this.getEquationDefinition());
     s_SolveEClass.getESuperTypes().add(this.getStatement());
     s_DisplayEClass.getESuperTypes().add(this.getStatement());
-    s_SpeciesLayerEClass.getESuperTypes().add(this.getStatement());
-    s_ImageLayerEClass.getESuperTypes().add(this.getStatement());
-    s_GraphicsLayerEClass.getESuperTypes().add(this.getStatement());
-    s_EventLayerEClass.getESuperTypes().add(this.getStatement());
-    s_OverlayLayerEClass.getESuperTypes().add(this.getStatement());
-    s_OtherLayerEClass.getESuperTypes().add(this.getStatement());
     argumentDefinitionEClass.getESuperTypes().add(this.getVarDefinition());
     facetEClass.getESuperTypes().add(this.getVarDefinition());
     expressionListEClass.getESuperTypes().add(this.getExpression());
@@ -2606,18 +2474,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     initEClass(s_DisplayEClass, S_Display.class, "S_Display", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getS_Display_Name(), ecorePackage.getEString(), "name", null, 0, 1, S_Display.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-    initEClass(s_SpeciesLayerEClass, S_SpeciesLayer.class, "S_SpeciesLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(s_ImageLayerEClass, S_ImageLayer.class, "S_ImageLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(s_GraphicsLayerEClass, S_GraphicsLayer.class, "S_GraphicsLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(s_EventLayerEClass, S_EventLayer.class, "S_EventLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(s_OverlayLayerEClass, S_OverlayLayer.class, "S_OverlayLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(s_OtherLayerEClass, S_OtherLayer.class, "S_OtherLayer", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(actionArgumentsEClass, ActionArguments.class, "ActionArguments", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getActionArguments_Args(), this.getArgumentDefinition(), null, "args", null, 0, -1, ActionArguments.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);

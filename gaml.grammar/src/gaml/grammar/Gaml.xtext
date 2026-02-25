@@ -109,7 +109,7 @@ S_Declaration:
 	->S_Definition | S_Species | S_Reflex | S_Action | S_Loop;
 
 S_Reflex:
-	key=K_Reflex (name=Valid_ID)? ("when" ":" expr=Expression)? block=Block;
+	key=(K_Reflex|K_Init) (name=Valid_ID)? ("when" ":" expr=Expression)? block=Block;
 
 S_Definition:
 	tkey=(TypeRef) name=(Valid_ID | STRING) ('(' (args=ActionArguments) ')')? FacetsAndBlock;
@@ -130,65 +130,19 @@ S_Equation returns S_Assignment:
 	expr=(Function | VariableRef) key="=" value=Expression;
 
 S_Solve:
-	key=K_Solve expr=EquationRef FacetsAndBlock;
+	key="solve" expr=EquationRef FacetsAndBlock;
 
-/**
- * DISPLAYS
- */
 S_Display:
 	key="display" name=(Valid_ID | STRING) (facets+=Facet)* block=DisplayBlock;
 
+// No species, no grid ambiguities
 DisplayBlock returns Block:
-	{Block} '{' (statements+=S_Layer)* '}';
-
-/**
- * Display Statements
- */
-S_Layer returns Statement:
-	// Both "species" and "grid" can also be the start of a regular S_Species Statement.
-	S_SpeciesLayer |
-	// 2. The keyword "image" can also be a Valid_ID in a regular S_Other Statement.
-	S_ImageLayer |
-	// 3. "graphics" layers accept any statements in their blocks
-	S_GraphicsLayer |
-	// 4. "event" layers accept any statements in their blocks
-	S_EventLayer |
-	// 5. "overlay" layers accept any statements in their blocks and do not take an expression
-	S_OverlayLayer |
-	// 6. Fallback to any generic layer statement.
-	S_OtherLayer;
-
-S_SpeciesLayer:
-	key=_SpeciesKey expr=Expression FacetsAndBlock;
-
-S_ImageLayer:
-	key="picture" expr=Expression (facets+=Facet)* ";";
-
-S_GraphicsLayer:
-	key="graphics" expr=Expression FacetsAndBlock;
-
-S_EventLayer:
-	key="event" expr=Expression FacetsAndBlock;
-
-S_OverlayLayer:
-	key="overlay" FacetsAndBlock;
-
-S_OtherLayer:
-	key=_LayerKey ( 
-		// OPTION 1: The parser simulates reading an Expression AND the Facets. 
-		// If it hits a snag (like the orphaned ':'), it aborts this option.
-		=>(expr=Expression FacetsAndBlock) 
-		| 
-		// OPTION 2: No expression. It just reads the Facets cleanly.
-		FacetsAndBlock 
-	);
+	{Block} '{' (statements+=S_Other)* '}';
 
 /**
  * Statement keys
  */
 
-K_Solve:
-	"solve";
 
 _SpeciesKey:
 	"species" | "grid";
@@ -197,16 +151,18 @@ _ExperimentKey:
 	"experiment";
 
 _GeneralKey:
-	_LayerKey | "ask" | "release" | "capture" | "create" | "write" | "error" | "warn" | "exception" | "save" | "assert"
+	 "ask" | "release" | "capture" | "create" | "write" | "error" | "warn" | "exception" | "save" | "assert"
 	| "inspect" | "browse" | "restore" | "draw" | "using" | "switch" | "put" | "add" | "remove" | "match" |
 	"match_between" | "match_one" | "parameter" | "status" | "highlight" | "focus_on" | "layout";
 
-_LayerKey:
-	"light" | "camera" | "text" | "data" | "chart" | "agents" | "display_population" |
-	"display_grid" | "datalist" | "mesh" | "rotation";
+	
+K_Init: 
+	"init"
+;
 
 K_Reflex:
-	"init" | "reflex" | "aspect";
+	"reflex";
+
 
 K_Assignment:
 	"<-" | "<<" | '>' '>' | "<<+" | '>' '>-' | "+<-" | "<+" | ">-";
@@ -407,7 +363,7 @@ ActionDefinition:
 
 // 'species' and 'experiment' can be used as types, vars or functions
 Valid_ID:
-	_SpeciesKey | K_Reflex | _GeneralKey | _ExperimentKey | ID;
+	_SpeciesKey | K_Init | _GeneralKey | _ExperimentKey | ID;
 
 /******************************************************************************************
  ******************************************************************************************
