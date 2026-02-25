@@ -81,13 +81,11 @@ import gaml.compiler.gaml.ActionArguments;
 import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.EGaml;
-import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.Function;
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.Pragma;
 import gaml.compiler.gaml.S_Action;
@@ -101,6 +99,7 @@ import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Solve;
 import gaml.compiler.gaml.S_Try;
 import gaml.compiler.gaml.StandaloneBlock;
+import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.TypeRef;
 import gaml.compiler.gaml.VariableRef;
@@ -235,8 +234,7 @@ public class GamlSyntacticConverter {
 			convertBlock(elt, ((StandaloneBlock) root).getBlock());
 			return elt;
 		}
-		if (root instanceof ExperimentFileStructure) {
-			final HeadlessExperiment he = ((ExperimentFileStructure) root).getExp();
+		if (root instanceof StandaloneExperiment he) {
 			final String path = getAbsoluteContainerFolderPathOf(root.eResource());
 			final SyntacticExperimentModelElement exp =
 					SyntacticFactory.getInstance().createExperimentModel(root, he, path);
@@ -819,7 +817,7 @@ public class GamlSyntacticConverter {
 	 * @param elt
 	 *            the elt
 	 */
-	private void convertFacets(final HeadlessExperiment stm, final ISyntacticElement elt) {
+	private void convertFacets(final StandaloneExperiment stm, final ISyntacticElement elt) {
 		final IArtefactProto.Symbol p = ArtefactProtoRegistry.getProto(EXPERIMENT, null);
 		for (final Facet f : EGaml.getInstance().getFacetsOf(stm)) {
 			final String fname = EGaml.getInstance().getKeyOf(f);
@@ -974,7 +972,7 @@ public class GamlSyntacticConverter {
 	 *            the stm
 	 * @return the i expression description
 	 */
-	private final IExpressionDescription findExpr(final HeadlessExperiment stm) {
+	private final IExpressionDescription findExpr(final StandaloneExperiment stm) {
 		if (stm == null) return null;
 		return convertToLabel(stm, EGaml.getInstance().getNameOf(stm));
 

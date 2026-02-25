@@ -16,7 +16,7 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.runtime.scope.IExecutionContext;
 import gama.api.utils.collections.Collector;
-import gaml.compiler.gaml.StringEvaluator;
+import gaml.compiler.gaml.StandaloneExpression;
 import gaml.compiler.gaml.ast.SyntacticModelElement;
 
 /**
@@ -45,7 +45,7 @@ public class GamlSyntheticResourcesServices {
 				throw GamaRuntimeException.error(d.getMessage(), tempContext.getScope());
 			}
 			final EObject e = resource.getContents().get(0);
-			if (e instanceof StringEvaluator) { result = ((StringEvaluator) e).getExpr(); }
+			if (e instanceof StandaloneExpression se) { result = se.getExpr(); }
 
 			return result;
 		} finally {

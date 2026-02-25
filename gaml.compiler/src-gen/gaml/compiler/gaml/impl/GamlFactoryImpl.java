@@ -67,13 +67,11 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
     {
       case GamlPackage.ENTRY: return createEntry();
       case GamlPackage.STANDALONE_BLOCK: return createStandaloneBlock();
-      case GamlPackage.STRING_EVALUATOR: return createStringEvaluator();
+      case GamlPackage.STANDALONE_EXPRESSION: return createStandaloneExpression();
+      case GamlPackage.STANDALONE_EXPERIMENT: return createStandaloneExperiment();
       case GamlPackage.MODEL: return createModel();
-      case GamlPackage.BLOCK: return createBlock();
       case GamlPackage.IMPORT: return createImport();
       case GamlPackage.PRAGMA: return createPragma();
-      case GamlPackage.EXPERIMENT_FILE_STRUCTURE: return createExperimentFileStructure();
-      case GamlPackage.HEADLESS_EXPERIMENT: return createHeadlessExperiment();
       case GamlPackage.FACETS_AND_BLOCK: return createFacetsAndBlock();
       case GamlPackage.STATEMENT: return createStatement();
       case GamlPackage.SGLOBAL: return createS_Global();
@@ -93,6 +91,7 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.ACTION_ARGUMENTS: return createActionArguments();
       case GamlPackage.ARGUMENT_DEFINITION: return createArgumentDefinition();
       case GamlPackage.FACET: return createFacet();
+      case GamlPackage.BLOCK: return createBlock();
       case GamlPackage.EXPRESSION: return createExpression();
       case GamlPackage.EXPRESSION_LIST: return createExpressionList();
       case GamlPackage.VARIABLE_REF: return createVariableRef();
@@ -164,10 +163,22 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
    * @generated
    */
   @Override
-  public StringEvaluator createStringEvaluator()
+  public StandaloneExpression createStandaloneExpression()
   {
-    StringEvaluatorImpl stringEvaluator = new StringEvaluatorImpl();
-    return stringEvaluator;
+    StandaloneExpressionImpl standaloneExpression = new StandaloneExpressionImpl();
+    return standaloneExpression;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public StandaloneExperiment createStandaloneExperiment()
+  {
+    StandaloneExperimentImpl standaloneExperiment = new StandaloneExperimentImpl();
+    return standaloneExperiment;
   }
 
   /**
@@ -180,18 +191,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     ModelImpl model = new ModelImpl();
     return model;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public Block createBlock()
-  {
-    BlockImpl block = new BlockImpl();
-    return block;
   }
 
   /**
@@ -216,30 +215,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     PragmaImpl pragma = new PragmaImpl();
     return pragma;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public ExperimentFileStructure createExperimentFileStructure()
-  {
-    ExperimentFileStructureImpl experimentFileStructure = new ExperimentFileStructureImpl();
-    return experimentFileStructure;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public HeadlessExperiment createHeadlessExperiment()
-  {
-    HeadlessExperimentImpl headlessExperiment = new HeadlessExperimentImpl();
-    return headlessExperiment;
   }
 
   /**
@@ -468,6 +443,18 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     FacetImpl facet = new FacetImpl();
     return facet;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public Block createBlock()
+  {
+    BlockImpl block = new BlockImpl();
+    return block;
   }
 
   /**

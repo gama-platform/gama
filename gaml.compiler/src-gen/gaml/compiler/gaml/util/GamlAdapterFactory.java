@@ -86,19 +86,19 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createStandaloneBlockAdapter();
       }
       @Override
-      public Adapter caseStringEvaluator(StringEvaluator object)
+      public Adapter caseStandaloneExpression(StandaloneExpression object)
       {
-        return createStringEvaluatorAdapter();
+        return createStandaloneExpressionAdapter();
+      }
+      @Override
+      public Adapter caseStandaloneExperiment(StandaloneExperiment object)
+      {
+        return createStandaloneExperimentAdapter();
       }
       @Override
       public Adapter caseModel(Model object)
       {
         return createModelAdapter();
-      }
-      @Override
-      public Adapter caseBlock(Block object)
-      {
-        return createBlockAdapter();
       }
       @Override
       public Adapter caseImport(Import object)
@@ -109,16 +109,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
       public Adapter casePragma(Pragma object)
       {
         return createPragmaAdapter();
-      }
-      @Override
-      public Adapter caseExperimentFileStructure(ExperimentFileStructure object)
-      {
-        return createExperimentFileStructureAdapter();
-      }
-      @Override
-      public Adapter caseHeadlessExperiment(HeadlessExperiment object)
-      {
-        return createHeadlessExperimentAdapter();
       }
       @Override
       public Adapter caseFacetsAndBlock(FacetsAndBlock object)
@@ -214,6 +204,11 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
       public Adapter caseFacet(Facet object)
       {
         return createFacetAdapter();
+      }
+      @Override
+      public Adapter caseBlock(Block object)
+      {
+        return createBlockAdapter();
       }
       @Override
       public Adapter caseExpression(Expression object)
@@ -448,16 +443,31 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.StringEvaluator <em>String Evaluator</em>}'.
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.StandaloneExpression <em>Standalone Expression</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
    * it's useful to ignore a case when inheritance will catch all the cases anyway.
    * <!-- end-user-doc -->
    * @return the new adapter.
-   * @see gaml.compiler.gaml.StringEvaluator
+   * @see gaml.compiler.gaml.StandaloneExpression
    * @generated
    */
-  public Adapter createStringEvaluatorAdapter()
+  public Adapter createStandaloneExpressionAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.StandaloneExperiment <em>Standalone Experiment</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.StandaloneExperiment
+   * @generated
+   */
+  public Adapter createStandaloneExperimentAdapter()
   {
     return null;
   }
@@ -473,21 +483,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createModelAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.Block <em>Block</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see gaml.compiler.gaml.Block
-   * @generated
-   */
-  public Adapter createBlockAdapter()
   {
     return null;
   }
@@ -518,36 +513,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createPragmaAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.ExperimentFileStructure <em>Experiment File Structure</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see gaml.compiler.gaml.ExperimentFileStructure
-   * @generated
-   */
-  public Adapter createExperimentFileStructureAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.HeadlessExperiment <em>Headless Experiment</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see gaml.compiler.gaml.HeadlessExperiment
-   * @generated
-   */
-  public Adapter createHeadlessExperimentAdapter()
   {
     return null;
   }
@@ -833,6 +798,21 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createFacetAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.Block <em>Block</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.Block
+   * @generated
+   */
+  public Adapter createBlockAdapter()
   {
     return null;
   }

@@ -6,22 +6,22 @@ package gaml.compiler.gaml;
 
 /**
  * <!-- begin-user-doc -->
- * A representation of the model object '<em><b>Headless Experiment</b></em>'.
+ * A representation of the model object '<em><b>Standalone Experiment</b></em>'.
  * <!-- end-user-doc -->
  *
  * <p>
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link gaml.compiler.gaml.HeadlessExperiment#getName <em>Name</em>}</li>
- *   <li>{@link gaml.compiler.gaml.HeadlessExperiment#getImportURI <em>Import URI</em>}</li>
+ *   <li>{@link gaml.compiler.gaml.StandaloneExperiment#getName <em>Name</em>}</li>
+ *   <li>{@link gaml.compiler.gaml.StandaloneExperiment#getImportURI <em>Import URI</em>}</li>
  * </ul>
  *
- * @see gaml.compiler.gaml.GamlPackage#getHeadlessExperiment()
+ * @see gaml.compiler.gaml.GamlPackage#getStandaloneExperiment()
  * @model
  * @generated
  */
-public interface HeadlessExperiment extends FacetsAndBlock
+public interface StandaloneExperiment extends Entry, FacetsAndBlock
 {
   /**
    * Returns the value of the '<em><b>Name</b></em>' attribute.
@@ -29,14 +29,14 @@ public interface HeadlessExperiment extends FacetsAndBlock
    * <!-- end-user-doc -->
    * @return the value of the '<em>Name</em>' attribute.
    * @see #setName(String)
-   * @see gaml.compiler.gaml.GamlPackage#getHeadlessExperiment_Name()
+   * @see gaml.compiler.gaml.GamlPackage#getStandaloneExperiment_Name()
    * @model
    * @generated
    */
   String getName();
 
   /**
-   * Sets the value of the '{@link gaml.compiler.gaml.HeadlessExperiment#getName <em>Name</em>}' attribute.
+   * Sets the value of the '{@link gaml.compiler.gaml.StandaloneExperiment#getName <em>Name</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Name</em>' attribute.
@@ -51,14 +51,14 @@ public interface HeadlessExperiment extends FacetsAndBlock
    * <!-- end-user-doc -->
    * @return the value of the '<em>Import URI</em>' attribute.
    * @see #setImportURI(String)
-   * @see gaml.compiler.gaml.GamlPackage#getHeadlessExperiment_ImportURI()
+   * @see gaml.compiler.gaml.GamlPackage#getStandaloneExperiment_ImportURI()
    * @model
    * @generated
    */
   String getImportURI();
 
   /**
-   * Sets the value of the '{@link gaml.compiler.gaml.HeadlessExperiment#getImportURI <em>Import URI</em>}' attribute.
+   * Sets the value of the '{@link gaml.compiler.gaml.StandaloneExperiment#getImportURI <em>Import URI</em>}' attribute.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @param value the new value of the '<em>Import URI</em>' attribute.
@@ -67,4 +67,4 @@ public interface HeadlessExperiment extends FacetsAndBlock
    */
   void setImportURI(String value);
 
-} // HeadlessExperiment
+} // StandaloneExperiment

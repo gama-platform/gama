@@ -27,10 +27,8 @@ import com.google.inject.Singleton;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IKeyword;
-import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.impl.StatementImpl;
@@ -174,22 +172,6 @@ public class ErrorToDiagnoticTranslator {
 		} else if (e.isInfo()) { diagnosticSeverity = Diagnostic.INFO; }
 
 		return diagnosticSeverity;
-	}
-
-	/**
-	 * Find import with.
-	 *
-	 * @param m
-	 *            the m
-	 * @param s
-	 *            the s
-	 * @return the e object
-	 */
-	private EObject findImportWith(final EObject m, final String s) {
-		if (m instanceof Model) {
-			for (final Import i : ((Model) m).getImports()) { if (i.getImportURI().endsWith(s)) return i; }
-		} else if (m instanceof ExperimentFileStructure) return ((ExperimentFileStructure) m).getExp();
-		return m;
 	}
 
 }

@@ -16,12 +16,10 @@ import gaml.compiler.gaml.BooleanLiteral;
 import gaml.compiler.gaml.DoubleLiteral;
 import gaml.compiler.gaml.EquationFakeDefinition;
 import gaml.compiler.gaml.EquationRef;
-import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.Function;
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.If;
 import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.IntLiteral;
@@ -47,8 +45,9 @@ import gaml.compiler.gaml.S_Try;
 import gaml.compiler.gaml.SkillFakeDefinition;
 import gaml.compiler.gaml.SkillRef;
 import gaml.compiler.gaml.StandaloneBlock;
+import gaml.compiler.gaml.StandaloneExperiment;
+import gaml.compiler.gaml.StandaloneExpression;
 import gaml.compiler.gaml.Statement;
-import gaml.compiler.gaml.StringEvaluator;
 import gaml.compiler.gaml.StringLiteral;
 import gaml.compiler.gaml.TypeFakeDefinition;
 import gaml.compiler.gaml.TypeInfo;
@@ -175,9 +174,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 			case GamlPackage.EQUATION_REF:
 				sequence_EquationRef(context, (EquationRef) semanticObject); 
 				return; 
-			case GamlPackage.EXPERIMENT_FILE_STRUCTURE:
-				sequence_ExperimentFileStructure(context, (ExperimentFileStructure) semanticObject); 
-				return; 
 			case GamlPackage.EXPRESSION_LIST:
 				sequence_ExpressionList(context, (ExpressionList) semanticObject); 
 				return; 
@@ -215,9 +211,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				else break;
 			case GamlPackage.FUNCTION:
 				sequence_Function(context, (Function) semanticObject); 
-				return; 
-			case GamlPackage.HEADLESS_EXPERIMENT:
-				sequence_FacetsAndBlock_HeadlessExperiment(context, (HeadlessExperiment) semanticObject); 
 				return; 
 			case GamlPackage.IF:
 				sequence_If(context, (If) semanticObject); 
@@ -305,11 +298,14 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 			case GamlPackage.STANDALONE_BLOCK:
 				sequence_StandaloneBlock(context, (StandaloneBlock) semanticObject); 
 				return; 
+			case GamlPackage.STANDALONE_EXPERIMENT:
+				sequence_FacetsAndBlock_StandaloneExperiment(context, (StandaloneExperiment) semanticObject); 
+				return; 
+			case GamlPackage.STANDALONE_EXPRESSION:
+				sequence_StandaloneExpression(context, (StandaloneExpression) semanticObject); 
+				return; 
 			case GamlPackage.STATEMENT:
 				sequence_FacetsAndBlock_S_Other(context, (Statement) semanticObject); 
-				return; 
-			case GamlPackage.STRING_EVALUATOR:
-				sequence_StringEvaluator(context, (StringEvaluator) semanticObject); 
 				return; 
 			case GamlPackage.STRING_LITERAL:
 				sequence_StringLiteral(context, (StringLiteral) semanticObject); 
@@ -824,27 +820,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Entry returns ExperimentFileStructure
-	 *     ExperimentFileStructure returns ExperimentFileStructure
-	 *
-	 * Constraint:
-	 *     exp=HeadlessExperiment
-	 * </pre>
-	 */
-	protected void sequence_ExperimentFileStructure(ISerializationContext context, ExperimentFileStructure semanticObject) {
-		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.EXPERIMENT_FILE_STRUCTURE__EXP) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.EXPERIMENT_FILE_STRUCTURE__EXP));
-		}
-		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getExperimentFileStructureAccess().getExpHeadlessExperimentParserRuleCall_0(), semanticObject.getExp());
-		feeder.finish();
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
 	 *     Expression returns ExpressionList
 	 *     BinaryOperator returns ExpressionList
 	 *     Pair returns ExpressionList
@@ -878,20 +853,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_ExpressionList(ISerializationContext context, ExpressionList semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     HeadlessExperiment returns HeadlessExperiment
-	 *
-	 * Constraint:
-	 *     (key=_ExperimentKey (name=Valid_ID | name=STRING) importURI=STRING? facets+=Facet* block=Block?)
-	 * </pre>
-	 */
-	protected void sequence_FacetsAndBlock_HeadlessExperiment(ISerializationContext context, HeadlessExperiment semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -1042,6 +1003,21 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_Species(ISerializationContext context, S_Species semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     Entry returns StandaloneExperiment
+	 *     StandaloneExperiment returns StandaloneExperiment
+	 *
+	 * Constraint:
+	 *     (key=_ExperimentKey (name=Valid_ID | name=STRING) importURI=STRING? facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_StandaloneExperiment(ISerializationContext context, StandaloneExperiment semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -1485,23 +1461,23 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Entry returns StringEvaluator
-	 *     StringEvaluator returns StringEvaluator
+	 *     Entry returns StandaloneExpression
+	 *     StandaloneExpression returns StandaloneExpression
 	 *
 	 * Constraint:
-	 *     (toto=ID expr=Expression)
+	 *     (identifier=ID expr=Expression)
 	 * </pre>
 	 */
-	protected void sequence_StringEvaluator(ISerializationContext context, StringEvaluator semanticObject) {
+	protected void sequence_StandaloneExpression(ISerializationContext context, StandaloneExpression semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.STRING_EVALUATOR__TOTO) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.STRING_EVALUATOR__TOTO));
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.STRING_EVALUATOR__EXPR) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.STRING_EVALUATOR__EXPR));
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.STANDALONE_EXPRESSION__IDENTIFIER) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.STANDALONE_EXPRESSION__IDENTIFIER));
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.STANDALONE_EXPRESSION__EXPR) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.STANDALONE_EXPRESSION__EXPR));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getStringEvaluatorAccess().getTotoIDTerminalRuleCall_0_0(), semanticObject.getToto());
-		feeder.accept(grammarAccess.getStringEvaluatorAccess().getExprExpressionParserRuleCall_2_0(), semanticObject.getExpr());
+		feeder.accept(grammarAccess.getStandaloneExpressionAccess().getIdentifierIDTerminalRuleCall_0_0(), semanticObject.getIdentifier());
+		feeder.accept(grammarAccess.getStandaloneExpressionAccess().getExprExpressionParserRuleCall_2_0(), semanticObject.getExpr());
 		feeder.finish();
 	}
 	

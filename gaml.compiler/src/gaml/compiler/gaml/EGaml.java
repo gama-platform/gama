@@ -26,11 +26,11 @@ import gama.dev.COUNTER;
 import gaml.compiler.gaml.impl.ActionArgumentsImpl;
 import gaml.compiler.gaml.impl.BlockImpl;
 import gaml.compiler.gaml.impl.ExpressionListImpl;
-import gaml.compiler.gaml.impl.HeadlessExperimentImpl;
 import gaml.compiler.gaml.impl.ModelImpl;
 import gaml.compiler.gaml.impl.S_ActionImpl;
 import gaml.compiler.gaml.impl.S_EquationsImpl;
 import gaml.compiler.gaml.impl.S_IfImpl;
+import gaml.compiler.gaml.impl.StandaloneExperimentImpl;
 import gaml.compiler.gaml.impl.StatementImpl;
 
 /**
@@ -139,7 +139,7 @@ public class EGaml {
 			}
 			case GamlDefinition g -> g.getName();
 			case S_Display d -> d.getName();
-			case HeadlessExperiment he -> he.getName();
+			case StandaloneExperiment se -> se.getName();
 			case null, default -> null;
 		};
 	}
@@ -183,9 +183,8 @@ public class EGaml {
 	public List<Facet> getFacetsOf(final EObject s) {
 		if (s instanceof StatementImpl) {
 			if (((StatementImpl) s).eIsSet(GamlPackage.STATEMENT__FACETS)) return ((StatementImpl) s).getFacets();
-		} else if (s instanceof HeadlessExperimentImpl
-				&& ((HeadlessExperimentImpl) s).eIsSet(GamlPackage.HEADLESS_EXPERIMENT__FACETS))
-			return ((HeadlessExperimentImpl) s).getFacets();
+		} else if (s instanceof StandaloneExperimentImpl sei && sei.eIsSet(GamlPackage.STANDALONE_EXPERIMENT__FACETS))
+			return sei.getFacets();
 		return EMPTY_FACET_LIST;
 	}
 
@@ -284,8 +283,7 @@ public class EGaml {
 			case S_ActionImpl si -> si.eIsSet(GamlPackage.SACTION__ARGS) || si.eIsSet(GamlPackage.STATEMENT__BLOCK)
 					|| hasFacet(si, IKeyword.VIRTUAL);
 			case BlockImpl bi -> bi.eIsSet(GamlPackage.BLOCK__STATEMENTS);
-			case HeadlessExperimentImpl hi -> hi.eIsSet(GamlPackage.HEADLESS_EXPERIMENT__BLOCK);
-			case ExperimentFileStructure efs -> true;
+			case StandaloneExperimentImpl se -> true;
 			case S_IfImpl si -> si.eIsSet(GamlPackage.STATEMENT__BLOCK) || hasFacet(si, IKeyword.VIRTUAL)
 					|| si.eIsSet(GamlPackage.SIF__ELSE);
 			case StatementImpl si -> si.eIsSet(GamlPackage.STATEMENT__BLOCK) || hasFacet(si, IKeyword.VIRTUAL);

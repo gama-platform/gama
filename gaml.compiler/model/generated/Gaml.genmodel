@@ -10,17 +10,18 @@
     <genClasses ecoreClass="Gaml.ecore#//StandaloneBlock">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//StandaloneBlock/block"/>
     </genClasses>
-    <genClasses ecoreClass="Gaml.ecore#//StringEvaluator">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//StringEvaluator/toto"/>
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//StringEvaluator/expr"/>
+    <genClasses ecoreClass="Gaml.ecore#//StandaloneExpression">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//StandaloneExpression/identifier"/>
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//StandaloneExpression/expr"/>
+    </genClasses>
+    <genClasses ecoreClass="Gaml.ecore#//StandaloneExperiment">
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//StandaloneExperiment/name"/>
+      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//StandaloneExperiment/importURI"/>
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//Model">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//Model/pragmas"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//Model/imports"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//Model/block"/>
-    </genClasses>
-    <genClasses ecoreClass="Gaml.ecore#//Block">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//Block/statements"/>
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//Import">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//Import/importURI"/>
@@ -28,13 +29,6 @@
     <genClasses ecoreClass="Gaml.ecore#//Pragma">
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//Pragma/name"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//Pragma/plugins"/>
-    </genClasses>
-    <genClasses ecoreClass="Gaml.ecore#//ExperimentFileStructure">
-      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//ExperimentFileStructure/exp"/>
-    </genClasses>
-    <genClasses ecoreClass="Gaml.ecore#//HeadlessExperiment">
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//HeadlessExperiment/name"/>
-      <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//HeadlessExperiment/importURI"/>
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//FacetsAndBlock">
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//FacetsAndBlock/facets"/>
@@ -82,6 +76,9 @@
       <genFeatures createChild="false" ecoreFeature="ecore:EAttribute Gaml.ecore#//Facet/key"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//Facet/expr"/>
       <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//Facet/block"/>
+    </genClasses>
+    <genClasses ecoreClass="Gaml.ecore#//Block">
+      <genFeatures property="None" children="true" createChild="true" ecoreFeature="ecore:EReference Gaml.ecore#//Block/statements"/>
     </genClasses>
     <genClasses ecoreClass="Gaml.ecore#//Expression"/>
     <genClasses ecoreClass="Gaml.ecore#//ExpressionList">

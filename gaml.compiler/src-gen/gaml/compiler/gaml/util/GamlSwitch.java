@@ -88,11 +88,20 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case GamlPackage.STRING_EVALUATOR:
+      case GamlPackage.STANDALONE_EXPRESSION:
       {
-        StringEvaluator stringEvaluator = (StringEvaluator)theEObject;
-        T result = caseStringEvaluator(stringEvaluator);
-        if (result == null) result = caseEntry(stringEvaluator);
+        StandaloneExpression standaloneExpression = (StandaloneExpression)theEObject;
+        T result = caseStandaloneExpression(standaloneExpression);
+        if (result == null) result = caseEntry(standaloneExpression);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case GamlPackage.STANDALONE_EXPERIMENT:
+      {
+        StandaloneExperiment standaloneExperiment = (StandaloneExperiment)theEObject;
+        T result = caseStandaloneExperiment(standaloneExperiment);
+        if (result == null) result = caseEntry(standaloneExperiment);
+        if (result == null) result = caseFacetsAndBlock(standaloneExperiment);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -103,13 +112,6 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = caseEntry(model);
         if (result == null) result = caseVarDefinition(model);
         if (result == null) result = caseGamlDefinition(model);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case GamlPackage.BLOCK:
-      {
-        Block block = (Block)theEObject;
-        T result = caseBlock(block);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -126,22 +128,6 @@ public class GamlSwitch<T> extends Switch<T>
       {
         Pragma pragma = (Pragma)theEObject;
         T result = casePragma(pragma);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case GamlPackage.EXPERIMENT_FILE_STRUCTURE:
-      {
-        ExperimentFileStructure experimentFileStructure = (ExperimentFileStructure)theEObject;
-        T result = caseExperimentFileStructure(experimentFileStructure);
-        if (result == null) result = caseEntry(experimentFileStructure);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
-      case GamlPackage.HEADLESS_EXPERIMENT:
-      {
-        HeadlessExperiment headlessExperiment = (HeadlessExperiment)theEObject;
-        T result = caseHeadlessExperiment(headlessExperiment);
-        if (result == null) result = caseFacetsAndBlock(headlessExperiment);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -323,6 +309,13 @@ public class GamlSwitch<T> extends Switch<T>
         T result = caseFacet(facet);
         if (result == null) result = caseVarDefinition(facet);
         if (result == null) result = caseGamlDefinition(facet);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case GamlPackage.BLOCK:
+      {
+        Block block = (Block)theEObject;
+        T result = caseBlock(block);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -664,17 +657,33 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
-   * Returns the result of interpreting the object as an instance of '<em>String Evaluator</em>'.
+   * Returns the result of interpreting the object as an instance of '<em>Standalone Expression</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
    * returning a non-null result will terminate the switch.
    * <!-- end-user-doc -->
    * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>String Evaluator</em>'.
+   * @return the result of interpreting the object as an instance of '<em>Standalone Expression</em>'.
    * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
    * @generated
    */
-  public T caseStringEvaluator(StringEvaluator object)
+  public T caseStandaloneExpression(StandaloneExpression object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Standalone Experiment</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Standalone Experiment</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseStandaloneExperiment(StandaloneExperiment object)
   {
     return null;
   }
@@ -691,22 +700,6 @@ public class GamlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseModel(Model object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>Block</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Block</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseBlock(Block object)
   {
     return null;
   }
@@ -739,38 +732,6 @@ public class GamlSwitch<T> extends Switch<T>
    * @generated
    */
   public T casePragma(Pragma object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>Experiment File Structure</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Experiment File Structure</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseExperimentFileStructure(ExperimentFileStructure object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>Headless Experiment</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>Headless Experiment</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseHeadlessExperiment(HeadlessExperiment object)
   {
     return null;
   }
@@ -1075,6 +1036,22 @@ public class GamlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseFacet(Facet object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>Block</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>Block</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseBlock(Block object)
   {
     return null;
   }

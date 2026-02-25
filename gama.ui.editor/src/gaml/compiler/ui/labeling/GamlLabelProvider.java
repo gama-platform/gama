@@ -32,11 +32,11 @@ import gama.gaml.operators.Strings;
 import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.Facet;
-import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Experiment;
+import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.StringLiteral;
 import gaml.compiler.gaml.VarDefinition;
@@ -99,7 +99,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	 *            the e
 	 * @return the string
 	 */
-	String text(final HeadlessExperiment e) {
+	String text(final StandaloneExperiment e) {
 		return "Experiment " + e.getName();
 	}
 
@@ -275,7 +275,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	 *            the ele
 	 * @return the string
 	 */
-	String image(final HeadlessExperiment ele) {
+	String image(final StandaloneExperiment ele) {
 		final List<Facet> facets = EGaml.getInstance().getFacetsOf(ele);
 		Facet type = null;
 		for (final Facet f : facets) {

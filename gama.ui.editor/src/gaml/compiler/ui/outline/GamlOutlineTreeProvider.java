@@ -23,14 +23,13 @@ import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IKeyword;
 import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.EGaml;
-import gaml.compiler.gaml.ExperimentFileStructure;
-import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.S_Action;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
 import gaml.compiler.gaml.S_Species;
+import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.util.GamlSwitch;
 import gaml.compiler.ui.labeling.GamlLabelProvider;
@@ -70,18 +69,13 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 				}
 
 				@Override
-				public Object caseExperimentFileStructure(final ExperimentFileStructure stm1) {
-					return caseHeadlessExperiment(stm1.getExp());
-				}
-
-				@Override
 				public Object caseS_Experiment(final S_Experiment stm1) {
 					ownCreateChildren(parentNode, stm1.getBlock(), true);
 					return FOUND;
 				}
 
 				@Override
-				public Object caseHeadlessExperiment(final HeadlessExperiment stm1) {
+				public Object caseStandaloneExperiment(final StandaloneExperiment stm1) {
 					ownCreateChildren(parentNode, stm1.getBlock(), true);
 					return FOUND;
 				}

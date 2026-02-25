@@ -30,10 +30,10 @@ import gama.api.GAMA;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.dev.DEBUG;
-import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.Model;
+import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.impl.ModelImpl;
 import gaml.compiler.gaml.resource.GamlResource;
 import gaml.compiler.gaml.resource.ImportedResources;
@@ -90,8 +90,8 @@ public class GamlResourceIndexer {
 					result.put(uri, e.getName());
 				}
 			}
-		} else if (m instanceof ExperimentFileStructure expe) {
-			final String u = expe.getExp().getImportURI();
+		} else if (m instanceof StandaloneExperiment expe) {
+			final String u = expe.getImportURI();
 			if (u != null) {
 				URI uri = URI.createURI(u, true);
 				uri = properlyEncodedURI(uri.resolve(baseURI));
@@ -111,8 +111,8 @@ public class GamlResourceIndexer {
 	 * @return the e object
 	 */
 	static private EObject findImport(final EObject contents, final URI baseURI, final URI uri) {
-		if (contents instanceof ExperimentFileStructure expe) {
-			String u = expe.getExp().getImportURI();
+		if (contents instanceof StandaloneExperiment expe) {
+			String u = expe.getImportURI();
 			String lastSegment = URI.decode(uri.lastSegment());
 			if (lastSegment != null && u.contains(lastSegment) || uri.equals(baseURI) && u.isEmpty()) return contents;
 		} else if (contents instanceof Model model) {
@@ -124,39 +124,39 @@ public class GamlResourceIndexer {
 	}
 
 	/**
-	 * Updates the import graph for a given resource with finer-grained synchronization.
-	 * Only graph modification operations are synchronized to reduce contention.
+	 * Updates the import graph for a given resource with finer-grained synchronization. Only graph modification
+	 * operations are synchronized to reduce contention.
 	 */
 	public static EObject updateImports(final GamlResource r) {
 		final URI baseURI = r.getURI();
-		
+
 		// Read current edges outside of sync block (graph reads are thread-safe)
 		final Map<URI, String> existingEdges = index.outgoingEdgesOf(baseURI);
-		
+
 		if (r.getContents().isEmpty()) return null;
 		final EObject contents = r.getContents().get(0);
 		if (contents == null) return null;
-		
+
 		// Parse new imports outside of sync block (no graph access)
 		final Map<URI, String> newEdges = getImportsAsAbsoluteURIS(baseURI, contents);
-		
+
 		// Prepare data for validation outside sync block
 		for (Map.Entry<URI, String> entry : newEdges.entrySet()) {
 			URI uri = entry.getKey();
 			if (baseURI.equals(uri)) { continue; }
 			String label = entry.getValue();
-			
+
 			if (!existingEdges.containsKey(uri)) {
 				// Validate URI before graph modification
 				if (!EcoreUtil2.isValidUri(r, uri)) return findImport(contents, baseURI, uri);
-				
+
 				// Only synchronize graph modifications
 				final boolean alreadyThere;
 				synchronized (index) {
 					alreadyThere = index.imports.containsVertex(uri);
 					index.addEdge(baseURI, uri, label);
 				}
-				
+
 				if (!alreadyThere) {
 					// This call should trigger the recursive call to updateImports()
 					// No need to synchronize - resource loading is handled separately
@@ -169,12 +169,12 @@ public class GamlResourceIndexer {
 				}
 			}
 		}
-		
+
 		// Remove obsolete edges in one synchronized block
 		synchronized (index) {
 			index.removeAllEdges(baseURI, existingEdges);
 		}
-		
+
 		return null;
 	}
 

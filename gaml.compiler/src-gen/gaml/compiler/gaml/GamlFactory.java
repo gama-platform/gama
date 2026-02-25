@@ -42,13 +42,22 @@ public interface GamlFactory extends EFactory
   StandaloneBlock createStandaloneBlock();
 
   /**
-   * Returns a new object of class '<em>String Evaluator</em>'.
+   * Returns a new object of class '<em>Standalone Expression</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
-   * @return a new object of class '<em>String Evaluator</em>'.
+   * @return a new object of class '<em>Standalone Expression</em>'.
    * @generated
    */
-  StringEvaluator createStringEvaluator();
+  StandaloneExpression createStandaloneExpression();
+
+  /**
+   * Returns a new object of class '<em>Standalone Experiment</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Standalone Experiment</em>'.
+   * @generated
+   */
+  StandaloneExperiment createStandaloneExperiment();
 
   /**
    * Returns a new object of class '<em>Model</em>'.
@@ -58,15 +67,6 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   Model createModel();
-
-  /**
-   * Returns a new object of class '<em>Block</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Block</em>'.
-   * @generated
-   */
-  Block createBlock();
 
   /**
    * Returns a new object of class '<em>Import</em>'.
@@ -85,24 +85,6 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   Pragma createPragma();
-
-  /**
-   * Returns a new object of class '<em>Experiment File Structure</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Experiment File Structure</em>'.
-   * @generated
-   */
-  ExperimentFileStructure createExperimentFileStructure();
-
-  /**
-   * Returns a new object of class '<em>Headless Experiment</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>Headless Experiment</em>'.
-   * @generated
-   */
-  HeadlessExperiment createHeadlessExperiment();
 
   /**
    * Returns a new object of class '<em>Facets And Block</em>'.
@@ -274,6 +256,15 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   Facet createFacet();
+
+  /**
+   * Returns a new object of class '<em>Block</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>Block</em>'.
+   * @generated
+   */
+  Block createBlock();
 
   /**
    * Returns a new object of class '<em>Expression</em>'.
