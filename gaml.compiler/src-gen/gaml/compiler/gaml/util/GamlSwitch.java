@@ -173,11 +173,10 @@ public class GamlSwitch<T> extends Switch<T>
       {
         S_Species s_Species = (S_Species)theEObject;
         T result = caseS_Species(s_Species);
-        if (result == null) result = caseS_Declaration(s_Species);
-        if (result == null) result = caseTypeDefinition(s_Species);
         if (result == null) result = caseStatement(s_Species);
-        if (result == null) result = caseFacetsAndBlock(s_Species);
+        if (result == null) result = caseTypeDefinition(s_Species);
         if (result == null) result = caseVarDefinition(s_Species);
+        if (result == null) result = caseFacetsAndBlock(s_Species);
         if (result == null) result = caseActionDefinition(s_Species);
         if (result == null) result = caseGamlDefinition(s_Species);
         if (result == null) result = defaultCase(theEObject);
@@ -207,10 +206,9 @@ public class GamlSwitch<T> extends Switch<T>
       {
         S_Loop s_Loop = (S_Loop)theEObject;
         T result = caseS_Loop(s_Loop);
-        if (result == null) result = caseS_Declaration(s_Loop);
         if (result == null) result = caseStatement(s_Loop);
-        if (result == null) result = caseFacetsAndBlock(s_Loop);
         if (result == null) result = caseVarDefinition(s_Loop);
+        if (result == null) result = caseFacetsAndBlock(s_Loop);
         if (result == null) result = caseGamlDefinition(s_Loop);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -242,25 +240,13 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
-      case GamlPackage.SDECLARATION:
-      {
-        S_Declaration s_Declaration = (S_Declaration)theEObject;
-        T result = caseS_Declaration(s_Declaration);
-        if (result == null) result = caseStatement(s_Declaration);
-        if (result == null) result = caseVarDefinition(s_Declaration);
-        if (result == null) result = caseFacetsAndBlock(s_Declaration);
-        if (result == null) result = caseGamlDefinition(s_Declaration);
-        if (result == null) result = defaultCase(theEObject);
-        return result;
-      }
       case GamlPackage.SREFLEX:
       {
         S_Reflex s_Reflex = (S_Reflex)theEObject;
         T result = caseS_Reflex(s_Reflex);
-        if (result == null) result = caseS_Declaration(s_Reflex);
         if (result == null) result = caseStatement(s_Reflex);
-        if (result == null) result = caseFacetsAndBlock(s_Reflex);
         if (result == null) result = caseVarDefinition(s_Reflex);
+        if (result == null) result = caseFacetsAndBlock(s_Reflex);
         if (result == null) result = caseGamlDefinition(s_Reflex);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -269,11 +255,10 @@ public class GamlSwitch<T> extends Switch<T>
       {
         S_Definition s_Definition = (S_Definition)theEObject;
         T result = caseS_Definition(s_Definition);
-        if (result == null) result = caseS_Declaration(s_Definition);
-        if (result == null) result = caseActionDefinition(s_Definition);
         if (result == null) result = caseStatement(s_Definition);
-        if (result == null) result = caseFacetsAndBlock(s_Definition);
         if (result == null) result = caseVarDefinition(s_Definition);
+        if (result == null) result = caseActionDefinition(s_Definition);
+        if (result == null) result = caseFacetsAndBlock(s_Definition);
         if (result == null) result = caseGamlDefinition(s_Definition);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -486,11 +471,10 @@ public class GamlSwitch<T> extends Switch<T>
         S_Action s_Action = (S_Action)theEObject;
         T result = caseS_Action(s_Action);
         if (result == null) result = caseS_Definition(s_Action);
-        if (result == null) result = caseS_Declaration(s_Action);
-        if (result == null) result = caseActionDefinition(s_Action);
         if (result == null) result = caseStatement(s_Action);
-        if (result == null) result = caseFacetsAndBlock(s_Action);
         if (result == null) result = caseVarDefinition(s_Action);
+        if (result == null) result = caseActionDefinition(s_Action);
+        if (result == null) result = caseFacetsAndBlock(s_Action);
         if (result == null) result = caseGamlDefinition(s_Action);
         if (result == null) result = defaultCase(theEObject);
         return result;
@@ -947,22 +931,6 @@ public class GamlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseS_Return(S_Return object)
-  {
-    return null;
-  }
-
-  /**
-   * Returns the result of interpreting the object as an instance of '<em>SDeclaration</em>'.
-   * <!-- begin-user-doc -->
-   * This implementation returns null;
-   * returning a non-null result will terminate the switch.
-   * <!-- end-user-doc -->
-   * @param object the target of the switch.
-   * @return the result of interpreting the object as an instance of '<em>SDeclaration</em>'.
-   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
-   * @generated
-   */
-  public T caseS_Declaration(S_Declaration object)
   {
     return null;
   }

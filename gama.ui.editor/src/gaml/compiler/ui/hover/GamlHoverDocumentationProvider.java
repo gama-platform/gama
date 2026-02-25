@@ -49,7 +49,6 @@ import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
-import gaml.compiler.gaml.S_SpeciesLayer;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.StringLiteral;
 import gaml.compiler.gaml.TypeRef;
@@ -266,13 +265,11 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		if (facetName.endsWith(":")) { facetName = facetName.substring(0, facetName.length() - 1); }
 		final EObject cont = facet.eContainer();
 		String key = EGaml.getInstance().getKeyOf(cont);
-		if (cont instanceof S_SpeciesLayer ds) {
+		if (cont instanceof Statement ds) {
 			String layerName = ds.getKey();
 			if (IKeyword.SPECIES.equals(layerName)) {
 				key = IKeyword.SPECIES_LAYER;
-			} else {
-				key = IKeyword.GRID_LAYER;
-			}
+			} else if (IKeyword.GRID.equals(layerName)) { key = IKeyword.GRID_LAYER; }
 		} else if (cont instanceof S_Definition sd && IKeyword.METHOD.equals(key)) { key = sd.getName(); }
 		final IArtefactProto.Symbol p = ArtefactProtoRegistry.getProto(key, null);
 		if (p != null) return p.getPossibleFacets().get(facetName);

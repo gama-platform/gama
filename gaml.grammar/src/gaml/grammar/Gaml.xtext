@@ -69,8 +69,7 @@ Statement:
 	// 3. AMBIGUITY RESOLUTION (Assignments)
 	=> S_Assignment |
 	
-	// 4. DECLARATIONS
-	=> S_Declaration |
+	// 4. DEFINITIONS
 	=> S_Definition |
 	
 	// 5. THE UNIVERSAL FALLBACK
@@ -101,12 +100,6 @@ S_Other returns Statement:
 		// OPTION 2: No expression, just facets and a block.
 		FacetsAndBlock
 	);
-
-/*
- * DECLARATIONS
- */
-S_Declaration:
-	->S_Definition | S_Species | S_Reflex | S_Action | S_Loop;
 
 S_Reflex:
 	key=(K_Reflex|K_Init) (name=Valid_ID)? ("when" ":" expr=Expression)? block=Block;
@@ -355,7 +348,7 @@ TypeDefinition:
 	S_Species | TypeFakeDefinition;
 
 VarDefinition:
-	=>S_Declaration | Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment;
+    => (->S_Definition | S_Species | S_Reflex | S_Action | S_Loop) | Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment;
 
 ActionDefinition:
 	S_Action | ActionFakeDefinition | S_Definition | TypeDefinition;

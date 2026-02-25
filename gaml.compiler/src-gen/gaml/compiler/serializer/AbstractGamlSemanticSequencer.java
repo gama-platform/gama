@@ -900,7 +900,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Statement returns S_Action
-	 *     S_Declaration returns S_Action
 	 *     S_Action returns S_Action
 	 *     GamlDefinition returns S_Action
 	 *     VarDefinition returns S_Action
@@ -919,7 +918,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Statement returns S_Definition
-	 *     S_Declaration returns S_Definition
 	 *     S_Definition returns S_Definition
 	 *     GamlDefinition returns S_Definition
 	 *     VarDefinition returns S_Definition
@@ -1017,7 +1015,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_Section returns S_Species
 	 *     S_Species returns S_Species
 	 *     Statement returns S_Species
-	 *     S_Declaration returns S_Species
 	 *     GamlDefinition returns S_Species
 	 *     TypeDefinition returns S_Species
 	 *     VarDefinition returns S_Species
@@ -1364,7 +1361,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * Contexts:
 	 *     Statement returns S_Loop
 	 *     S_Loop returns S_Loop
-	 *     S_Declaration returns S_Loop
 	 *     GamlDefinition returns S_Loop
 	 *     VarDefinition returns S_Loop
 	 *
@@ -1381,7 +1377,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Statement returns S_Reflex
-	 *     S_Declaration returns S_Reflex
 	 *     S_Reflex returns S_Reflex
 	 *     GamlDefinition returns S_Reflex
 	 *     VarDefinition returns S_Reflex

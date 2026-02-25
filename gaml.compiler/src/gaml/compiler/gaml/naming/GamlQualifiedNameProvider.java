@@ -19,7 +19,6 @@ import gama.api.constants.IKeyword;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.S_Reflex;
-import gaml.compiler.gaml.S_SpeciesLayer;
 import gaml.compiler.gaml.util.GamlSwitch;
 
 /**
@@ -37,11 +36,6 @@ public class GamlQualifiedNameProvider extends IQualifiedNameProvider.AbstractIm
 		@Override
 		public String caseS_Reflex(final S_Reflex s) {
 			if (IKeyword.ASPECT.equals(s.getKey())) return s.getName();
-			return NULL;
-		}
-
-		@Override
-		public String caseS_SpeciesLayer(final S_SpeciesLayer s) {
 			return NULL;
 		}
 

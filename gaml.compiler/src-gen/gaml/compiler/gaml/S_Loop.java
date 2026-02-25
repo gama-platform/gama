@@ -14,6 +14,6 @@ package gaml.compiler.gaml;
  * @model
  * @generated
  */
-public interface S_Loop extends Statement, S_Declaration
+public interface S_Loop extends Statement, VarDefinition
 {
 } // S_Loop

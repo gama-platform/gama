@@ -40,7 +40,6 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getS_DoAccess().getKeyAlternatives_0_0(), "rule__S_Do__KeyAlternatives_0_0");
 			builder.put(grammarAccess.getS_IfAccess().getElseAlternatives_3_1_0(), "rule__S_If__ElseAlternatives_3_1_0");
 			builder.put(grammarAccess.getS_OtherAccess().getAlternatives_1(), "rule__S_Other__Alternatives_1");
-			builder.put(grammarAccess.getS_DeclarationAccess().getAlternatives(), "rule__S_Declaration__Alternatives");
 			builder.put(grammarAccess.getS_ReflexAccess().getKeyAlternatives_0_0(), "rule__S_Reflex__KeyAlternatives_0_0");
 			builder.put(grammarAccess.getS_DefinitionAccess().getNameAlternatives_1_0(), "rule__S_Definition__NameAlternatives_1_0");
 			builder.put(grammarAccess.getS_EquationsAccess().getAlternatives_3(), "rule__S_Equations__Alternatives_3");
@@ -78,6 +77,7 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getEquationDefinitionAccess().getAlternatives(), "rule__EquationDefinition__Alternatives");
 			builder.put(grammarAccess.getTypeDefinitionAccess().getAlternatives(), "rule__TypeDefinition__Alternatives");
 			builder.put(grammarAccess.getVarDefinitionAccess().getAlternatives(), "rule__VarDefinition__Alternatives");
+			builder.put(grammarAccess.getVarDefinitionAccess().getAlternatives_0_0(), "rule__VarDefinition__Alternatives_0_0");
 			builder.put(grammarAccess.getActionDefinitionAccess().getAlternatives(), "rule__ActionDefinition__Alternatives");
 			builder.put(grammarAccess.getValid_IDAccess().getAlternatives(), "rule__Valid_ID__Alternatives");
 			builder.put(grammarAccess.getTerminalExpressionAccess().getAlternatives(), "rule__TerminalExpression__Alternatives");
@@ -197,6 +197,7 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getSkillRefAccess().getGroup(), "rule__SkillRef__Group__0");
 			builder.put(grammarAccess.getActionRefAccess().getGroup(), "rule__ActionRef__Group__0");
 			builder.put(grammarAccess.getEquationRefAccess().getGroup(), "rule__EquationRef__Group__0");
+			builder.put(grammarAccess.getVarDefinitionAccess().getGroup_0(), "rule__VarDefinition__Group_0__0");
 			builder.put(grammarAccess.getUnitFakeDefinitionAccess().getGroup(), "rule__UnitFakeDefinition__Group__0");
 			builder.put(grammarAccess.getTypeFakeDefinitionAccess().getGroup(), "rule__TypeFakeDefinition__Group__0");
 			builder.put(grammarAccess.getActionFakeDefinitionAccess().getGroup(), "rule__ActionFakeDefinition__Group__0");

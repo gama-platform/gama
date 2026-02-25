@@ -195,15 +195,6 @@ public interface GamlFactory extends EFactory
   S_Return createS_Return();
 
   /**
-   * Returns a new object of class '<em>SDeclaration</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SDeclaration</em>'.
-   * @generated
-   */
-  S_Declaration createS_Declaration();
-
-  /**
    * Returns a new object of class '<em>SReflex</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

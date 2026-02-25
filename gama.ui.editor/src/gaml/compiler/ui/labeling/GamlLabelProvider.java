@@ -35,7 +35,6 @@ import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.Model;
-import gaml.compiler.gaml.S_Declaration;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.Statement;
@@ -219,7 +218,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 			final Expression vr = f.getExpr();
 			if (vr instanceof VariableRef) {
 				final VarDefinition vd = ((VariableRef) vr).getRef();
-				if (vd instanceof S_Declaration) {
+				if (vd instanceof S_Definition) {
 					type = EGaml.getInstance().getKeyOf(vd);
 					var = EGaml.getInstance().getNameOf(vd);
 				}
@@ -325,7 +324,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 			final Expression vr = f.getExpr();
 			if (vr instanceof VariableRef) {
 				final VarDefinition vd = ((VariableRef) vr).getRef();
-				if (vd instanceof S_Declaration) { var = EGaml.getInstance().getKeyOf(vd); }
+				if (vd instanceof S_Definition) { var = EGaml.getInstance().getKeyOf(vd); }
 			}
 		}
 		if (var == null) return "_parameter.png";

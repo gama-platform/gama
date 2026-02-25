@@ -5,7 +5,6 @@ package gaml.compiler.gaml.impl;
 
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.S_Declaration;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.VarDefinition;
 
@@ -185,13 +184,6 @@ public class S_ReflexImpl extends StatementImpl implements S_Reflex
         default: return -1;
       }
     }
-    if (baseClass == S_Declaration.class)
-    {
-      switch (derivedFeatureID)
-      {
-        default: return -1;
-      }
-    }
     return super.eBaseStructuralFeatureID(derivedFeatureID, baseClass);
   }
 
@@ -212,13 +204,6 @@ public class S_ReflexImpl extends StatementImpl implements S_Reflex
       }
     }
     if (baseClass == VarDefinition.class)
-    {
-      switch (baseFeatureID)
-      {
-        default: return -1;
-      }
-    }
-    if (baseClass == S_Declaration.class)
     {
       switch (baseFeatureID)
       {

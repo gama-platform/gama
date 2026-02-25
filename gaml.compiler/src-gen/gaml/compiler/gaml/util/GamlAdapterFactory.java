@@ -171,11 +171,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createS_ReturnAdapter();
       }
       @Override
-      public Adapter caseS_Declaration(S_Declaration object)
-      {
-        return createS_DeclarationAdapter();
-      }
-      @Override
       public Adapter caseS_Reflex(S_Reflex object)
       {
         return createS_ReflexAdapter();
@@ -703,21 +698,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createS_ReturnAdapter()
-  {
-    return null;
-  }
-
-  /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_Declaration <em>SDeclaration</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see gaml.compiler.gaml.S_Declaration
-   * @generated
-   */
-  public Adapter createS_DeclarationAdapter()
   {
     return null;
   }

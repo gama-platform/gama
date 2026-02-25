@@ -8,7 +8,6 @@ import gaml.compiler.gaml.ActionDefinition;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.S_Declaration;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.VarDefinition;
 
@@ -350,13 +349,6 @@ public class S_DefinitionImpl extends StatementImpl implements S_Definition
         default: return -1;
       }
     }
-    if (baseClass == S_Declaration.class)
-    {
-      switch (derivedFeatureID)
-      {
-        default: return -1;
-      }
-    }
     if (baseClass == ActionDefinition.class)
     {
       switch (derivedFeatureID)
@@ -384,13 +376,6 @@ public class S_DefinitionImpl extends StatementImpl implements S_Definition
       }
     }
     if (baseClass == VarDefinition.class)
-    {
-      switch (baseFeatureID)
-      {
-        default: return -1;
-      }
-    }
-    if (baseClass == S_Declaration.class)
     {
       switch (baseFeatureID)
       {
