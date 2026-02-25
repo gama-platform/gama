@@ -282,7 +282,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_S_Loop(context, (S_Loop) semanticObject); 
 				return; 
 			case GamlPackage.SREFLEX:
-				sequence_S_Reflex(context, (S_Reflex) semanticObject); 
+				sequence_FacetsAndBlock_S_Reflex(context, (S_Reflex) semanticObject); 
 				return; 
 			case GamlPackage.SRETURN:
 				sequence_S_Return(context, (S_Return) semanticObject); 
@@ -924,7 +924,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     ActionDefinition returns S_Definition
 	 *
 	 * Constraint:
-	 *     (tkey=TypeRef (name=Valid_ID | name=STRING) args=ActionArguments? facets+=Facet* block=Block?)
+	 *     (tkey=TypeRef name=Valid_ID args=ActionArguments? facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_Definition(ISerializationContext context, S_Definition semanticObject) {
@@ -990,6 +990,23 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_Other(ISerializationContext context, Statement semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     Statement returns S_Reflex
+	 *     S_Reflex returns S_Reflex
+	 *     GamlDefinition returns S_Reflex
+	 *     VarDefinition returns S_Reflex
+	 *
+	 * Constraint:
+	 *     ((key=K_Reflex | key=K_Init) name=Valid_ID? facets+=Facet* block=Block?)
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_Reflex(ISerializationContext context, S_Reflex semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -1369,23 +1386,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_S_Loop(ISerializationContext context, S_Loop semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     Statement returns S_Reflex
-	 *     S_Reflex returns S_Reflex
-	 *     GamlDefinition returns S_Reflex
-	 *     VarDefinition returns S_Reflex
-	 *
-	 * Constraint:
-	 *     ((key=K_Reflex | key=K_Init) name=Valid_ID? expr=Expression? block=Block)
-	 * </pre>
-	 */
-	protected void sequence_S_Reflex(ISerializationContext context, S_Reflex semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	

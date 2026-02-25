@@ -1692,54 +1692,17 @@ ruleS_Reflex returns [EObject current=null]
 				}
 			)
 		)?
-		(
-			otherlv_2='when'
-			{
-				newLeafNode(otherlv_2, grammarAccess.getS_ReflexAccess().getWhenKeyword_2_0());
+		{
+			if ($current==null) {
+				$current = createModelElement(grammarAccess.getS_ReflexRule());
 			}
-			otherlv_3=':'
-			{
-				newLeafNode(otherlv_3, grammarAccess.getS_ReflexAccess().getColonKeyword_2_1());
-			}
-			(
-				(
-					{
-						newCompositeNode(grammarAccess.getS_ReflexAccess().getExprExpressionParserRuleCall_2_2_0());
-					}
-					lv_expr_4_0=ruleExpression
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getS_ReflexRule());
-						}
-						set(
-							$current,
-							"expr",
-							lv_expr_4_0,
-							"gaml.compiler.Gaml.Expression");
-						afterParserOrEnumRuleCall();
-					}
-				)
-			)
-		)?
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getS_ReflexAccess().getBlockBlockParserRuleCall_3_0());
-				}
-				lv_block_5_0=ruleBlock
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getS_ReflexRule());
-					}
-					set(
-						$current,
-						"block",
-						lv_block_5_0,
-						"gaml.compiler.Gaml.Block");
-					afterParserOrEnumRuleCall();
-				}
-			)
-		)
+			newCompositeNode(grammarAccess.getS_ReflexAccess().getFacetsAndBlockParserRuleCall_2());
+		}
+		this_FacetsAndBlock_2=ruleFacetsAndBlock[$current]
+		{
+			$current = $this_FacetsAndBlock_2.current;
+			afterParserOrEnumRuleCall();
+		}
 	)
 ;
 
@@ -1780,38 +1743,21 @@ ruleS_Definition returns [EObject current=null]
 		)
 		(
 			(
-				(
-					{
-						newCompositeNode(grammarAccess.getS_DefinitionAccess().getNameValid_IDParserRuleCall_1_0_0());
+				{
+					newCompositeNode(grammarAccess.getS_DefinitionAccess().getNameValid_IDParserRuleCall_1_0());
+				}
+				lv_name_1_0=ruleValid_ID
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getS_DefinitionRule());
 					}
-					lv_name_1_1=ruleValid_ID
-					{
-						if ($current==null) {
-							$current = createModelElementForParent(grammarAccess.getS_DefinitionRule());
-						}
-						set(
-							$current,
-							"name",
-							lv_name_1_1,
-							"gaml.compiler.Gaml.Valid_ID");
-						afterParserOrEnumRuleCall();
-					}
-					    |
-					lv_name_1_2=RULE_STRING
-					{
-						newLeafNode(lv_name_1_2, grammarAccess.getS_DefinitionAccess().getNameSTRINGTerminalRuleCall_1_0_1());
-					}
-					{
-						if ($current==null) {
-							$current = createModelElement(grammarAccess.getS_DefinitionRule());
-						}
-						setWithLastConsumed(
-							$current,
-							"name",
-							lv_name_1_2,
-							"gaml.compiler.Gaml.STRING");
-					}
-				)
+					set(
+						$current,
+						"name",
+						lv_name_1_0,
+						"gaml.compiler.Gaml.Valid_ID");
+					afterParserOrEnumRuleCall();
+				}
 			)
 		)
 		(

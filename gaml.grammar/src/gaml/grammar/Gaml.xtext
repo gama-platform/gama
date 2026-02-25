@@ -102,10 +102,10 @@ S_Other returns Statement:
 	);
 
 S_Reflex:
-	key=(K_Reflex|K_Init) (name=Valid_ID)? ("when" ":" expr=Expression)? block=Block;
+	key=(K_Reflex|K_Init) (name=Valid_ID)? FacetsAndBlock;
 
 S_Definition:
-	tkey=(TypeRef) name=(Valid_ID | STRING) ('(' (args=ActionArguments) ')')? FacetsAndBlock;
+	tkey=(TypeRef) name=Valid_ID ('(' (args=ActionArguments) ')')? FacetsAndBlock;
 
 S_Action returns S_Definition:
 	{S_Action} key="action" name=Valid_ID ('(' (args=ActionArguments) ')')? FacetsAndBlock;
