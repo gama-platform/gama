@@ -509,10 +509,9 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cS_SpeciesParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
 		private final RuleCall cS_ReflexParserRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
 		private final RuleCall cS_AssignmentParserRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
-		private final RuleCall cS_GeneralParserRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
-		private final RuleCall cS_DeclarationParserRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
-		private final RuleCall cS_DefinitionParserRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
-		private final RuleCall cS_OtherParserRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
+		private final RuleCall cS_DeclarationParserRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
+		private final RuleCall cS_DefinitionParserRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
+		private final RuleCall cS_OtherParserRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
 		
 		///**
 		// * Statements
@@ -521,34 +520,26 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//    // 1. STRICT FAST TRACK (No overlap with Valid_ID)
 		//    S_Display | S_Return | S_Solve | S_If | S_Try | S_Do | S_Loop |
 		//    // 2. KEYWORD FAST TRACK
-		//    // The => forces the parser to prioritize them and silences Valid_ID warnings.
 		//    => S_Equations | => S_Action | => S_Species | => S_Reflex |
 		//    // 3. AMBIGUITY RESOLUTION (Assignments)
 		//    => S_Assignment |
-		//    // 4. THE GAML PILLARS
-		//    => S_General |
-		//    // Declarations come next
+		//    // 4. DECLARATIONS
 		//    => S_Declaration |
 		//    => S_Definition |
 		//    // 5. THE UNIVERSAL FALLBACK
-		//    // If everything above fails, S_Other catches it perfectly.
 		//    S_Other;
 		@Override public ParserRule getRule() { return rule; }
 		
 		//// 1. STRICT FAST TRACK (No overlap with Valid_ID)
 		//S_Display | S_Return | S_Solve | S_If | S_Try | S_Do | S_Loop |
 		//// 2. KEYWORD FAST TRACK
-		//// The => forces the parser to prioritize them and silences Valid_ID warnings.
 		//=> S_Equations | => S_Action | => S_Species | => S_Reflex |
 		//// 3. AMBIGUITY RESOLUTION (Assignments)
 		//=> S_Assignment |
-		//// 4. THE GAML PILLARS
-		//=> S_General |
-		//// Declarations come next
+		//// 4. DECLARATIONS
 		//=> S_Declaration |
 		//=> S_Definition |
 		//// 5. THE UNIVERSAL FALLBACK
-		//// If everything above fails, S_Other catches it perfectly.
 		//S_Other
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
@@ -575,7 +566,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		public RuleCall getS_LoopParserRuleCall_6() { return cS_LoopParserRuleCall_6; }
 		
 		//// 2. KEYWORD FAST TRACK
-		//// The => forces the parser to prioritize them and silences Valid_ID warnings.
 		//=> S_Equations
 		public RuleCall getS_EquationsParserRuleCall_7() { return cS_EquationsParserRuleCall_7; }
 		
@@ -592,52 +582,16 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//=> S_Assignment
 		public RuleCall getS_AssignmentParserRuleCall_11() { return cS_AssignmentParserRuleCall_11; }
 		
-		//// 4. THE GAML PILLARS
-		//=> S_General
-		public RuleCall getS_GeneralParserRuleCall_12() { return cS_GeneralParserRuleCall_12; }
-		
-		//// Declarations come next
+		//// 4. DECLARATIONS
 		//=> S_Declaration
-		public RuleCall getS_DeclarationParserRuleCall_13() { return cS_DeclarationParserRuleCall_13; }
+		public RuleCall getS_DeclarationParserRuleCall_12() { return cS_DeclarationParserRuleCall_12; }
 		
 		//=> S_Definition
-		public RuleCall getS_DefinitionParserRuleCall_14() { return cS_DefinitionParserRuleCall_14; }
+		public RuleCall getS_DefinitionParserRuleCall_13() { return cS_DefinitionParserRuleCall_13; }
 		
 		//// 5. THE UNIVERSAL FALLBACK
-		//// If everything above fails, S_Other catches it perfectly.
 		//S_Other
-		public RuleCall getS_OtherParserRuleCall_15() { return cS_OtherParserRuleCall_15; }
-	}
-	public class S_GeneralElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_General");
-		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Assignment cKeyAssignment_0 = (Assignment)cGroup.eContents().get(0);
-		private final RuleCall cKey_GeneralKeyParserRuleCall_0_0 = (RuleCall)cKeyAssignment_0.eContents().get(0);
-		private final Assignment cExprAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final RuleCall cExprExpressionParserRuleCall_1_0 = (RuleCall)cExprAssignment_1.eContents().get(0);
-		private final RuleCall cFacetsAndBlockParserRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
-		
-		//S_General returns Statement:
-		//    key=_GeneralKey (expr=Expression) FacetsAndBlock;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//key=_GeneralKey (expr=Expression) FacetsAndBlock
-		public Group getGroup() { return cGroup; }
-		
-		//key=_GeneralKey
-		public Assignment getKeyAssignment_0() { return cKeyAssignment_0; }
-		
-		//_GeneralKey
-		public RuleCall getKey_GeneralKeyParserRuleCall_0_0() { return cKey_GeneralKeyParserRuleCall_0_0; }
-		
-		//(expr=Expression)
-		public Assignment getExprAssignment_1() { return cExprAssignment_1; }
-		
-		//Expression
-		public RuleCall getExprExpressionParserRuleCall_1_0() { return cExprExpressionParserRuleCall_1_0; }
-		
-		//FacetsAndBlock
-		public RuleCall getFacetsAndBlockParserRuleCall_2() { return cFacetsAndBlockParserRuleCall_2; }
+		public RuleCall getS_OtherParserRuleCall_14() { return cS_OtherParserRuleCall_14; }
 	}
 	public class S_DoElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_Do");
@@ -859,13 +813,35 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Group cGroup = (Group)rule.eContents().get(1);
 		private final Assignment cKeyAssignment_0 = (Assignment)cGroup.eContents().get(0);
 		private final RuleCall cKeyValid_IDParserRuleCall_0_0 = (RuleCall)cKeyAssignment_0.eContents().get(0);
-		private final RuleCall cFacetsAndBlockParserRuleCall_1 = (RuleCall)cGroup.eContents().get(1);
+		private final Alternatives cAlternatives_1 = (Alternatives)cGroup.eContents().get(1);
+		private final Group cGroup_1_0 = (Group)cAlternatives_1.eContents().get(0);
+		private final Group cGroup_1_0_0 = (Group)cGroup_1_0.eContents().get(0);
+		private final Assignment cExprAssignment_1_0_0_0 = (Assignment)cGroup_1_0_0.eContents().get(0);
+		private final RuleCall cExprExpressionParserRuleCall_1_0_0_0_0 = (RuleCall)cExprAssignment_1_0_0_0.eContents().get(0);
+		private final RuleCall cFacetsAndBlockParserRuleCall_1_0_0_1 = (RuleCall)cGroup_1_0_0.eContents().get(1);
+		private final RuleCall cFacetsAndBlockParserRuleCall_1_1 = (RuleCall)cAlternatives_1.eContents().get(1);
 		
-		//S_Other:
-		//    key=Valid_ID FacetsAndBlock;
+		//S_Other returns Statement:
+		//    key=Valid_ID (
+		//        // OPTION 1: Try to read an expression first.
+		//        // If it breaks the facets (like stealing the word 'name' from 'name:'),
+		//        // it will safely abort and go to Option 2.
+		//        =>(expr=Expression FacetsAndBlock)
+		//        |
+		//        // OPTION 2: No expression, just facets and a block.
+		//        FacetsAndBlock
+		//    );
 		@Override public ParserRule getRule() { return rule; }
 		
-		//key=Valid_ID FacetsAndBlock
+		//key=Valid_ID (
+		//    // OPTION 1: Try to read an expression first.
+		//    // If it breaks the facets (like stealing the word 'name' from 'name:'),
+		//    // it will safely abort and go to Option 2.
+		//    =>(expr=Expression FacetsAndBlock)
+		//    |
+		//    // OPTION 2: No expression, just facets and a block.
+		//    FacetsAndBlock
+		//)
 		public Group getGroup() { return cGroup; }
 		
 		//key=Valid_ID
@@ -874,8 +850,38 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//Valid_ID
 		public RuleCall getKeyValid_IDParserRuleCall_0_0() { return cKeyValid_IDParserRuleCall_0_0; }
 		
+		//(
+		//       // OPTION 1: Try to read an expression first.
+		//       // If it breaks the facets (like stealing the word 'name' from 'name:'),
+		//       // it will safely abort and go to Option 2.
+		//       =>(expr=Expression FacetsAndBlock)
+		//       |
+		//       // OPTION 2: No expression, just facets and a block.
+		//       FacetsAndBlock
+		//   )
+		public Alternatives getAlternatives_1() { return cAlternatives_1; }
+		
+		//// OPTION 1: Try to read an expression first.
+		//// If it breaks the facets (like stealing the word 'name' from 'name:'),
+		//// it will safely abort and go to Option 2.
+		//=>(expr=Expression FacetsAndBlock)
+		public Group getGroup_1_0() { return cGroup_1_0; }
+		
+		//expr=Expression FacetsAndBlock
+		public Group getGroup_1_0_0() { return cGroup_1_0_0; }
+		
+		//expr=Expression
+		public Assignment getExprAssignment_1_0_0_0() { return cExprAssignment_1_0_0_0; }
+		
+		//Expression
+		public RuleCall getExprExpressionParserRuleCall_1_0_0_0_0() { return cExprExpressionParserRuleCall_1_0_0_0_0; }
+		
 		//FacetsAndBlock
-		public RuleCall getFacetsAndBlockParserRuleCall_1() { return cFacetsAndBlockParserRuleCall_1; }
+		public RuleCall getFacetsAndBlockParserRuleCall_1_0_0_1() { return cFacetsAndBlockParserRuleCall_1_0_0_1; }
+		
+		//// OPTION 2: No expression, just facets and a block.
+		//FacetsAndBlock
+		public RuleCall getFacetsAndBlockParserRuleCall_1_1() { return cFacetsAndBlockParserRuleCall_1_1; }
 	}
 	public class S_DeclarationElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_Declaration");
@@ -4367,7 +4373,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	private final S_SpeciesElements pS_Species;
 	private final S_ExperimentElements pS_Experiment;
 	private final StatementElements pStatement;
-	private final S_GeneralElements pS_General;
 	private final S_DoElements pS_Do;
 	private final S_LoopElements pS_Loop;
 	private final S_IfElements pS_If;
@@ -4485,7 +4490,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		this.pS_Species = new S_SpeciesElements();
 		this.pS_Experiment = new S_ExperimentElements();
 		this.pStatement = new StatementElements();
-		this.pS_General = new S_GeneralElements();
 		this.pS_Do = new S_DoElements();
 		this.pS_Loop = new S_LoopElements();
 		this.pS_If = new S_IfElements();
@@ -4765,17 +4769,13 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	//    // 1. STRICT FAST TRACK (No overlap with Valid_ID)
 	//    S_Display | S_Return | S_Solve | S_If | S_Try | S_Do | S_Loop |
 	//    // 2. KEYWORD FAST TRACK
-	//    // The => forces the parser to prioritize them and silences Valid_ID warnings.
 	//    => S_Equations | => S_Action | => S_Species | => S_Reflex |
 	//    // 3. AMBIGUITY RESOLUTION (Assignments)
 	//    => S_Assignment |
-	//    // 4. THE GAML PILLARS
-	//    => S_General |
-	//    // Declarations come next
+	//    // 4. DECLARATIONS
 	//    => S_Declaration |
 	//    => S_Definition |
 	//    // 5. THE UNIVERSAL FALLBACK
-	//    // If everything above fails, S_Other catches it perfectly.
 	//    S_Other;
 	public StatementElements getStatementAccess() {
 		return pStatement;
@@ -4783,16 +4783,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	public ParserRule getStatementRule() {
 		return getStatementAccess().getRule();
-	}
-	
-	//S_General returns Statement:
-	//    key=_GeneralKey (expr=Expression) FacetsAndBlock;
-	public S_GeneralElements getS_GeneralAccess() {
-		return pS_General;
-	}
-	
-	public ParserRule getS_GeneralRule() {
-		return getS_GeneralAccess().getRule();
 	}
 	
 	//S_Do:
@@ -4845,8 +4835,16 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		return getS_ReturnAccess().getRule();
 	}
 	
-	//S_Other:
-	//    key=Valid_ID FacetsAndBlock;
+	//S_Other returns Statement:
+	//    key=Valid_ID (
+	//        // OPTION 1: Try to read an expression first.
+	//        // If it breaks the facets (like stealing the word 'name' from 'name:'),
+	//        // it will safely abort and go to Option 2.
+	//        =>(expr=Expression FacetsAndBlock)
+	//        |
+	//        // OPTION 2: No expression, just facets and a block.
+	//        FacetsAndBlock
+	//    );
 	public S_OtherElements getS_OtherAccess() {
 		return pS_Other;
 	}

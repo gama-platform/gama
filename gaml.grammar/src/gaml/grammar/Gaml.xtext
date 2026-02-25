@@ -58,25 +58,23 @@ S_Experiment:
 /**
  * Statements
  */
+	
 Statement:
 	// 1. STRICT FAST TRACK (No overlap with Valid_ID)
 	S_Display | S_Return | S_Solve | S_If | S_Try | S_Do | S_Loop |
+	
 	// 2. KEYWORD FAST TRACK
-	// The => forces the parser to prioritize them and silences Valid_ID warnings.
 	=> S_Equations | => S_Action | => S_Species | => S_Reflex |
+	
 	// 3. AMBIGUITY RESOLUTION (Assignments)
 	=> S_Assignment |
-	// 4. THE GAML PILLARS
-	=> S_General |
-	// Declarations come next
+	
+	// 4. DECLARATIONS
 	=> S_Declaration |
 	=> S_Definition |
+	
 	// 5. THE UNIVERSAL FALLBACK
-	// If everything above fails, S_Other catches it perfectly.
 	S_Other;
-
-S_General returns Statement:
-	key=_GeneralKey (expr=Expression) FacetsAndBlock;
 
 S_Do:
 	key=("do" | "invoke") expr=AbstractRef FacetsAndBlock;
@@ -93,8 +91,16 @@ S_Try:
 S_Return:
 	key='return' expr=Expression? ';';
 
-S_Other:
-	key=Valid_ID FacetsAndBlock;
+S_Other returns Statement:
+	key=Valid_ID (
+		// OPTION 1: Try to read an expression first. 
+		// If it breaks the facets (like stealing the word 'name' from 'name:'), 
+		// it will safely abort and go to Option 2.
+		=>(expr=Expression FacetsAndBlock)
+		|
+		// OPTION 2: No expression, just facets and a block.
+		FacetsAndBlock
+	);
 
 /*
  * DECLARATIONS

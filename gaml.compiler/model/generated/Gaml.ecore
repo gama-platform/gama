@@ -53,7 +53,7 @@
   <eClassifiers xsi:type="ecore:EClass" name="S_Global" eSuperTypes="#//Statement #//FacetsAndBlock"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Species" eSuperTypes="#//Statement #//FacetsAndBlock #//S_Declaration #//TypeDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Experiment" eSuperTypes="#//Statement #//FacetsAndBlock #//VarDefinition"/>
-  <eClassifiers xsi:type="ecore:EClass" name="S_Do" eSuperTypes="#//Statement"/>
+  <eClassifiers xsi:type="ecore:EClass" name="S_Do" eSuperTypes="#//Statement #//FacetsAndBlock"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Loop" eSuperTypes="#//Statement #//S_Declaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_If" eSuperTypes="#//Statement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="else" eType="ecore:EClass http://www.eclipse.org/emf/2002/Ecore#//EObject"
@@ -64,7 +64,6 @@
         containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="S_Return" eSuperTypes="#//Statement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="S_Other" eSuperTypes="#//Statement"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Declaration" eSuperTypes="#//Statement #//VarDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Reflex" eSuperTypes="#//Statement #//S_Declaration"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Definition" eSuperTypes="#//Statement #//S_Declaration #//ActionDefinition">

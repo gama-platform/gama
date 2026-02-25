@@ -50,7 +50,6 @@ import gaml.compiler.gaml.S_GraphicsLayer;
 import gaml.compiler.gaml.S_If;
 import gaml.compiler.gaml.S_ImageLayer;
 import gaml.compiler.gaml.S_Loop;
-import gaml.compiler.gaml.S_Other;
 import gaml.compiler.gaml.S_OtherLayer;
 import gaml.compiler.gaml.S_OverlayLayer;
 import gaml.compiler.gaml.S_Reflex;
@@ -225,13 +224,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass s_ReturnEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass s_OtherEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -1075,17 +1067,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EClass getS_Return()
   {
     return s_ReturnEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getS_Other()
-  {
-    return s_OtherEClass;
   }
 
   /**
@@ -2287,8 +2268,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     s_ReturnEClass = createEClass(SRETURN);
 
-    s_OtherEClass = createEClass(SOTHER);
-
     s_DeclarationEClass = createEClass(SDECLARATION);
 
     s_ReflexEClass = createEClass(SREFLEX);
@@ -2490,12 +2469,12 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_ExperimentEClass.getESuperTypes().add(this.getFacetsAndBlock());
     s_ExperimentEClass.getESuperTypes().add(this.getVarDefinition());
     s_DoEClass.getESuperTypes().add(this.getStatement());
+    s_DoEClass.getESuperTypes().add(this.getFacetsAndBlock());
     s_LoopEClass.getESuperTypes().add(this.getStatement());
     s_LoopEClass.getESuperTypes().add(this.getS_Declaration());
     s_IfEClass.getESuperTypes().add(this.getStatement());
     s_TryEClass.getESuperTypes().add(this.getStatement());
     s_ReturnEClass.getESuperTypes().add(this.getStatement());
-    s_OtherEClass.getESuperTypes().add(this.getStatement());
     s_DeclarationEClass.getESuperTypes().add(this.getStatement());
     s_DeclarationEClass.getESuperTypes().add(this.getVarDefinition());
     s_ReflexEClass.getESuperTypes().add(this.getStatement());
@@ -2608,8 +2587,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEReference(getS_Try_Catch(), this.getBlock(), null, "catch", null, 0, 1, S_Try.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(s_ReturnEClass, S_Return.class, "S_Return", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(s_OtherEClass, S_Other.class, "S_Other", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_DeclarationEClass, S_Declaration.class, "S_Declaration", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 

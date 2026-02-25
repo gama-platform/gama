@@ -39,6 +39,7 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getStatementAccess().getAlternatives(), "rule__Statement__Alternatives");
 			builder.put(grammarAccess.getS_DoAccess().getKeyAlternatives_0_0(), "rule__S_Do__KeyAlternatives_0_0");
 			builder.put(grammarAccess.getS_IfAccess().getElseAlternatives_3_1_0(), "rule__S_If__ElseAlternatives_3_1_0");
+			builder.put(grammarAccess.getS_OtherAccess().getAlternatives_1(), "rule__S_Other__Alternatives_1");
 			builder.put(grammarAccess.getS_DeclarationAccess().getAlternatives(), "rule__S_Declaration__Alternatives");
 			builder.put(grammarAccess.getS_DefinitionAccess().getNameAlternatives_1_0(), "rule__S_Definition__NameAlternatives_1_0");
 			builder.put(grammarAccess.getS_EquationsAccess().getAlternatives_3(), "rule__S_Equations__Alternatives_3");
@@ -98,7 +99,6 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getS_GlobalAccess().getGroup(), "rule__S_Global__Group__0");
 			builder.put(grammarAccess.getS_SpeciesAccess().getGroup(), "rule__S_Species__Group__0");
 			builder.put(grammarAccess.getS_ExperimentAccess().getGroup(), "rule__S_Experiment__Group__0");
-			builder.put(grammarAccess.getS_GeneralAccess().getGroup(), "rule__S_General__Group__0");
 			builder.put(grammarAccess.getS_DoAccess().getGroup(), "rule__S_Do__Group__0");
 			builder.put(grammarAccess.getS_LoopAccess().getGroup(), "rule__S_Loop__Group__0");
 			builder.put(grammarAccess.getS_IfAccess().getGroup(), "rule__S_If__Group__0");
@@ -107,6 +107,8 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getS_TryAccess().getGroup_2(), "rule__S_Try__Group_2__0");
 			builder.put(grammarAccess.getS_ReturnAccess().getGroup(), "rule__S_Return__Group__0");
 			builder.put(grammarAccess.getS_OtherAccess().getGroup(), "rule__S_Other__Group__0");
+			builder.put(grammarAccess.getS_OtherAccess().getGroup_1_0(), "rule__S_Other__Group_1_0__0");
+			builder.put(grammarAccess.getS_OtherAccess().getGroup_1_0_0(), "rule__S_Other__Group_1_0_0__0");
 			builder.put(grammarAccess.getS_ReflexAccess().getGroup(), "rule__S_Reflex__Group__0");
 			builder.put(grammarAccess.getS_ReflexAccess().getGroup_2(), "rule__S_Reflex__Group_2__0");
 			builder.put(grammarAccess.getS_DefinitionAccess().getGroup(), "rule__S_Definition__Group__0");
@@ -239,8 +241,6 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getS_SpeciesAccess().getNameAssignment_1(), "rule__S_Species__NameAssignment_1");
 			builder.put(grammarAccess.getS_ExperimentAccess().getKeyAssignment_0(), "rule__S_Experiment__KeyAssignment_0");
 			builder.put(grammarAccess.getS_ExperimentAccess().getNameAssignment_1(), "rule__S_Experiment__NameAssignment_1");
-			builder.put(grammarAccess.getS_GeneralAccess().getKeyAssignment_0(), "rule__S_General__KeyAssignment_0");
-			builder.put(grammarAccess.getS_GeneralAccess().getExprAssignment_1(), "rule__S_General__ExprAssignment_1");
 			builder.put(grammarAccess.getS_DoAccess().getKeyAssignment_0(), "rule__S_Do__KeyAssignment_0");
 			builder.put(grammarAccess.getS_DoAccess().getExprAssignment_1(), "rule__S_Do__ExprAssignment_1");
 			builder.put(grammarAccess.getS_LoopAccess().getKeyAssignment_0(), "rule__S_Loop__KeyAssignment_0");
@@ -257,6 +257,7 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getS_ReturnAccess().getKeyAssignment_0(), "rule__S_Return__KeyAssignment_0");
 			builder.put(grammarAccess.getS_ReturnAccess().getExprAssignment_1(), "rule__S_Return__ExprAssignment_1");
 			builder.put(grammarAccess.getS_OtherAccess().getKeyAssignment_0(), "rule__S_Other__KeyAssignment_0");
+			builder.put(grammarAccess.getS_OtherAccess().getExprAssignment_1_0_0_0(), "rule__S_Other__ExprAssignment_1_0_0_0");
 			builder.put(grammarAccess.getS_ReflexAccess().getKeyAssignment_0(), "rule__S_Reflex__KeyAssignment_0");
 			builder.put(grammarAccess.getS_ReflexAccess().getNameAssignment_1(), "rule__S_Reflex__NameAssignment_1");
 			builder.put(grammarAccess.getS_ReflexAccess().getExprAssignment_2_2(), "rule__S_Reflex__ExprAssignment_2_2");

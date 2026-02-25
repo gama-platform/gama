@@ -42,7 +42,6 @@ import gaml.compiler.gaml.S_GraphicsLayer;
 import gaml.compiler.gaml.S_If;
 import gaml.compiler.gaml.S_ImageLayer;
 import gaml.compiler.gaml.S_Loop;
-import gaml.compiler.gaml.S_Other;
 import gaml.compiler.gaml.S_OtherLayer;
 import gaml.compiler.gaml.S_OverlayLayer;
 import gaml.compiler.gaml.S_Reflex;
@@ -297,9 +296,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 			case GamlPackage.SLOOP:
 				sequence_S_Loop(context, (S_Loop) semanticObject); 
 				return; 
-			case GamlPackage.SOTHER:
-				sequence_FacetsAndBlock_S_Other(context, (S_Other) semanticObject); 
-				return; 
 			case GamlPackage.SOTHER_LAYER:
 				sequence_FacetsAndBlock_S_OtherLayer(context, (S_OtherLayer) semanticObject); 
 				return; 
@@ -334,7 +330,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_StandaloneBlock(context, (StandaloneBlock) semanticObject); 
 				return; 
 			case GamlPackage.STATEMENT:
-				sequence_FacetsAndBlock_S_General(context, (Statement) semanticObject); 
+				sequence_FacetsAndBlock_S_Other(context, (Statement) semanticObject); 
 				return; 
 			case GamlPackage.STRING_EVALUATOR:
 				sequence_StringEvaluator(context, (StringEvaluator) semanticObject); 
@@ -1012,21 +1008,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Statement returns Statement
-	 *     S_General returns Statement
-	 *
-	 * Constraint:
-	 *     (key=_GeneralKey expr=Expression facets+=Facet* block=Block?)
-	 * </pre>
-	 */
-	protected void sequence_FacetsAndBlock_S_General(ISerializationContext context, Statement semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
 	 *     S_Section returns S_Global
 	 *     S_Global returns S_Global
 	 *
@@ -1072,14 +1053,14 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Statement returns S_Other
-	 *     S_Other returns S_Other
+	 *     Statement returns Statement
+	 *     S_Other returns Statement
 	 *
 	 * Constraint:
-	 *     (key=Valid_ID facets+=Facet* block=Block?)
+	 *     (key=Valid_ID expr=Expression? facets+=Facet* block=Block?)
 	 * </pre>
 	 */
-	protected void sequence_FacetsAndBlock_S_Other(ISerializationContext context, S_Other semanticObject) {
+	protected void sequence_FacetsAndBlock_S_Other(ISerializationContext context, Statement semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	

@@ -84,7 +84,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.SIF: return createS_If();
       case GamlPackage.STRY: return createS_Try();
       case GamlPackage.SRETURN: return createS_Return();
-      case GamlPackage.SOTHER: return createS_Other();
       case GamlPackage.SDECLARATION: return createS_Declaration();
       case GamlPackage.SREFLEX: return createS_Reflex();
       case GamlPackage.SDEFINITION: return createS_Definition();
@@ -368,18 +367,6 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     S_ReturnImpl s_Return = new S_ReturnImpl();
     return s_Return;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public S_Other createS_Other()
-  {
-    S_OtherImpl s_Other = new S_OtherImpl();
-    return s_Other;
   }
 
   /**
