@@ -57,13 +57,13 @@ experiment Displays type: gui {
 				data "y" value: first(LV_model).y[] color: rgb(41,128,185) marker: false;
 			}
 		}
-		display D3 name: "Phase Portrait " toolbar: false  type: 2d {
+		display D3 title: "Phase Portrait " toolbar: false  type: 2d {
 			chart 'Phase Portrait' type: xy background:  rgb(47,47,47) color: #white x_label: "x" y_label:"y"{
 				// Continuous display requires to pass a list of two values x and y
 				data "y(x(t))" value: [first(LV_model).x,first(LV_model).y] color: rgb(243,156,18);
 			}
 		}
-		display D4 name: "Phase Portrait - continuous display" toolbar: false type: 2d {
+		display D4 title: "Phase Portrait - continuous display" toolbar: false type: 2d {
 			chart 'Phase Portrait - continuous display' type: xy background:  rgb(47,47,47) color: #white x_label: "x" y_label:"y"{
 				// Continuous display requires to pass a list of two values x and y
 				data "y(x(t))" value: rows_list(matrix(first(LV_model).x[],first(LV_model).y[])) color: rgb(243,156,18) marker: false;

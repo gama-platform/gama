@@ -38,7 +38,7 @@ species dummy skills:[moving] control:fsm {
 	int scope <- 1;
 	int score;
 	
-	dummy match;
+	dummy matcher;
 	
 	rgb color <- #orange;
 	
@@ -52,14 +52,14 @@ species dummy skills:[moving] control:fsm {
 		 * Code to be executed each step when the agent is in this state
 		 */
 		do wander; 
-		match <- (dummy-self) first_with (each distance_to self < scope);
+		matcher <- (dummy-self) first_with (each distance_to self < scope);
 		
 		scope <- scope + 1;
 		
 		/*
 		 * Transition to 'settle_down' when a match have been found
 		 */
-		transition to:settle_down when:not(match=nil) {
+		transition to:settle_down when:not(matcher=nil) {
 			color <- #blue;
 		}
 		
@@ -70,7 +70,7 @@ species dummy skills:[moving] control:fsm {
 	 */
 	state settle_down {
 		
-		do goto target: match;
+		do goto target: matcher;
 		score <- score - 1;
 		
 		/*
@@ -83,7 +83,7 @@ species dummy skills:[moving] control:fsm {
 		/**
 		 * Transition to 'break_up' state when the match agent respond positively to self agent call
 		 */
-		transition to:break_up when:match.hello(self){
+		transition to:break_up when:matcher.hello(self){
 			color <- #green;
 		}
 		
@@ -109,7 +109,7 @@ species dummy skills:[moving] control:fsm {
 		/**
 		 * Transition to the state 'in_search' when my score is higher the my match score
 		 */
-		transition to:in_search when:score > match.score;
+		transition to:in_search when:score > matcher.score;
 		
 		/**
 		 * Set of instructions to be executed ONCE when leaving the state 

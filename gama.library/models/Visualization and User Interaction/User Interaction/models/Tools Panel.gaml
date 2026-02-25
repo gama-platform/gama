@@ -89,7 +89,7 @@ experiment ToolsPanel type: gui {
 			
 		}
 		//display the action buttons
-		display action_button background:#black name:"Tools panel"  type:2d antialias:false{
+		display action_button background:#black title:"Tools panel"  type:2d antialias:false{
 			species button aspect:normal ;
 			event #mouse_down {ask simulation {do activate_act;}}  
 		}

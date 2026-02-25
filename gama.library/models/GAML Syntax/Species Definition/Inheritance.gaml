@@ -10,7 +10,7 @@ model Inheritance
 global {
 	init {
 		create child {
-			do init(10,10);
+			do initialize(10,10);
 		}
 		ask child {
 			do add;
@@ -22,7 +22,7 @@ species parent {
 	int a; 
 	int b;
 	
-	action init (int va, int vb) {
+	action initialize (int va, int vb) {
 		self.a <- va;
 		self.b <- vb;
 	}
@@ -38,8 +38,8 @@ species parent {
 }
 
 species child parent: parent {
-	action init(int va, int vb) {
-		invoke init(va + 20, vb+20); // we invoke the super implementation of init with the keyword invoke, if the action is not used as a function
+	action initialize(int va, int vb) {
+		invoke initialize(va + 20, vb+20); // we invoke the super implementation of init with the keyword invoke, if the action is not used as a function
 	}
 	
 	int add {

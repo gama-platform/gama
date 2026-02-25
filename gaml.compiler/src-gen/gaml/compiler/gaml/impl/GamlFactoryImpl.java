@@ -81,6 +81,7 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.SLOOP: return createS_Loop();
       case GamlPackage.SIF: return createS_If();
       case GamlPackage.STRY: return createS_Try();
+      case GamlPackage.SSWITCH: return createS_Switch();
       case GamlPackage.SRETURN: return createS_Return();
       case GamlPackage.SREFLEX: return createS_Reflex();
       case GamlPackage.SDEFINITION: return createS_Definition();
@@ -323,6 +324,18 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     S_TryImpl s_Try = new S_TryImpl();
     return s_Try;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public S_Switch createS_Switch()
+  {
+    S_SwitchImpl s_Switch = new S_SwitchImpl();
+    return s_Switch;
   }
 
   /**

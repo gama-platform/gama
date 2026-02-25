@@ -217,6 +217,15 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case GamlPackage.SSWITCH:
+      {
+        S_Switch s_Switch = (S_Switch)theEObject;
+        T result = caseS_Switch(s_Switch);
+        if (result == null) result = caseStatement(s_Switch);
+        if (result == null) result = caseFacetsAndBlock(s_Switch);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case GamlPackage.SRETURN:
       {
         S_Return s_Return = (S_Return)theEObject;
@@ -876,6 +885,22 @@ public class GamlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseS_Try(S_Try object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>SSwitch</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>SSwitch</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseS_Switch(S_Switch object)
   {
     return null;
   }

@@ -190,8 +190,8 @@ experiment base virtual:true {
 	//Complete experiment that will inspect all ants in a table
 experiment "With Inspector" type: gui parent:base{
 	
-	parameter 'Number:' var: ants_number init: 100 unit: 'ants' category: 'Environment and Population';
-	parameter 'Grid dimension:' var: gridsize init: 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number:' var: ants_number <- 100 unit: 'ants' category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
 
 	
 	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
@@ -241,9 +241,9 @@ experiment "Classic" type: gui record: every(10) parent:base{
 
 //Complete experiment that will inspect all ants in a table
 experiment "3D View" type: gui parent:base{
-	parameter 'Number:' var: ants_number init: 30 unit: 'ants' category: 'Environment and Population';
-	parameter 'Grid dimension:' var: gridsize init: 100 unit: '(number of rows and columns)' category: 'Environment and Population';
-	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
+	parameter 'Number:' var: ants_number <- 30 unit: 'ants' category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
 	output {
 		
 
@@ -260,9 +260,9 @@ experiment "3D View" type: gui parent:base{
 //Experiment to show how to make multi simulations
 experiment "3 Simulations" type: gui  parent:base{
 	
-	parameter 'Number:' var: ants_number init: 100 unit: 'ants' category: 'Environment and Population';
-	parameter 'Grid dimension:' var: gridsize init: 100 unit: '(number of rows and columns)' category: 'Environment and Population';
-	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
+	parameter 'Number:' var: ants_number <- 100 unit: 'ants' category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
 	
 
 	// We create 2 supplementary simulations using the species name 'ants_model' (automatically created from the name of the model + '_model')

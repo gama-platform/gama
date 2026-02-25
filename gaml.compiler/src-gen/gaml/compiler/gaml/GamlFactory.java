@@ -168,6 +168,15 @@ public interface GamlFactory extends EFactory
   S_Try createS_Try();
 
   /**
+   * Returns a new object of class '<em>SSwitch</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>SSwitch</em>'.
+   * @generated
+   */
+  S_Switch createS_Switch();
+
+  /**
    * Returns a new object of class '<em>SReturn</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->

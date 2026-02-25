@@ -48,6 +48,7 @@ import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
 import gaml.compiler.gaml.S_Solve;
 import gaml.compiler.gaml.S_Species;
+import gaml.compiler.gaml.S_Switch;
 import gaml.compiler.gaml.S_Try;
 import gaml.compiler.gaml.SkillFakeDefinition;
 import gaml.compiler.gaml.SkillRef;
@@ -195,6 +196,13 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass s_TryEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass s_SwitchEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -948,6 +956,17 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EReference getS_Try_Catch()
   {
     return (EReference)s_TryEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getS_Switch()
+  {
+    return s_SwitchEClass;
   }
 
   /**
@@ -2097,6 +2116,8 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_TryEClass = createEClass(STRY);
     createEReference(s_TryEClass, STRY__CATCH);
 
+    s_SwitchEClass = createEClass(SSWITCH);
+
     s_ReturnEClass = createEClass(SRETURN);
 
     s_ReflexEClass = createEClass(SREFLEX);
@@ -2294,6 +2315,7 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_LoopEClass.getESuperTypes().add(this.getVarDefinition());
     s_IfEClass.getESuperTypes().add(this.getStatement());
     s_TryEClass.getESuperTypes().add(this.getStatement());
+    s_SwitchEClass.getESuperTypes().add(this.getStatement());
     s_ReturnEClass.getESuperTypes().add(this.getStatement());
     s_ReflexEClass.getESuperTypes().add(this.getStatement());
     s_ReflexEClass.getESuperTypes().add(this.getVarDefinition());
@@ -2391,6 +2413,8 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     initEClass(s_TryEClass, S_Try.class, "S_Try", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getS_Try_Catch(), this.getBlock(), null, "catch", null, 0, 1, S_Try.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(s_SwitchEClass, S_Switch.class, "S_Switch", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_ReturnEClass, S_Return.class, "S_Return", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 

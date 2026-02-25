@@ -55,6 +55,7 @@
     <eStructuralFeatures xsi:type="ecore:EReference" name="catch" eType="#//Block"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="S_Switch" eSuperTypes="#//Statement"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Return" eSuperTypes="#//Statement"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Reflex" eSuperTypes="#//Statement #//VarDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Definition" eSuperTypes="#//Statement #//VarDefinition #//ActionDefinition">

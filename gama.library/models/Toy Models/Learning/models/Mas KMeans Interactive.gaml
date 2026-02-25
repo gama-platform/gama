@@ -137,7 +137,7 @@ experiment SelectPoints2Cluster2D type: gui autorun: true{
 			}
 		}
 		//display the action buttons
-		display action_buton background:#white name:"Tools panel" type:2d	{
+		display action_buton background:#white title:"Tools panel" type:2d	{
 			species button aspect:normal ;
 			event #mouse_down {ask simulation {do activate_act;}}   
 		}

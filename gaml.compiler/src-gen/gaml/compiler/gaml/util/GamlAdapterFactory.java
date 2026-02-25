@@ -156,6 +156,11 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createS_TryAdapter();
       }
       @Override
+      public Adapter caseS_Switch(S_Switch object)
+      {
+        return createS_SwitchAdapter();
+      }
+      @Override
       public Adapter caseS_Return(S_Return object)
       {
         return createS_ReturnAdapter();
@@ -648,6 +653,21 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createS_TryAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_Switch <em>SSwitch</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.S_Switch
+   * @generated
+   */
+  public Adapter createS_SwitchAdapter()
   {
     return null;
   }

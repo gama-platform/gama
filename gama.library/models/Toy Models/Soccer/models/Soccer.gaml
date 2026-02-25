@@ -487,7 +487,7 @@ species goal {
 }
 
 
-experiment match type:gui {
+experiment "Match" type:gui {
 	parameter "blue running speed" var:blue_players_speed category:"Blue Team";
 	parameter "red running speed" var:red_players_speed category:"Red Team";
 	// speed of players when they run. Note that a player which have the ball will run at 50% of his max capacity, and he will run at 80% of his max capacity if he does not have the ball.

@@ -85,7 +85,7 @@ species areaclc {
 	string sim_cover;
 	rgb color_fuzzy;
 	
-	aspect init {
+	aspect initial {
 		draw shape color: color_cat[init_cover];
 	}
 	aspect simulation {
@@ -110,7 +110,7 @@ experiment "Compare" type: gui {
 			species areaclc aspect: observed refresh: false;
 		}
 		display "Initial Map" type: 3d{
-			species areaclc aspect: init refresh: false;
+			species areaclc aspect: initial refresh: false;
 		}
 		display "Fuzzy Comparison Map" type: 3d background: #black{
 			species areaclc aspect: fuzzy_sim ;

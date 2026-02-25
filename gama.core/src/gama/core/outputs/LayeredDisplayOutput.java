@@ -89,13 +89,18 @@ import gama.dev.DEBUG;
 						doc = @doc ("Allows to fill the background of the display and its toolbar with a specific color. Beware that this color, used in the UI, will not be affected by the light used in the display.")),
 				@facet (
 						name = IKeyword.NAME,
-						type = IType.LABEL,
+						type = IType.ID,
 						optional = false,
-						doc = @doc ("the identifier of the display")),
+						doc = @doc ("the identifier of the display, so that it can be referenced by other elements")),
+				@facet (
+						name = IKeyword.TITLE,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("the title of the display, which will be shown in the UI. If not specified, the identifier of the display will be used")),
 				// WARNING VALIDER EN VERIFIANT LE TYPE DU DISPLAY
 				@facet (
 						name = IKeyword.TYPE,
-						type = IType.LABEL,
+						type = IType.ID,
 						optional = true,
 						doc = @doc ("Allows to use either Java2D (for planar models) or OpenGL (for 3D models) as the rendering subsystem")),
 				@facet (
@@ -518,6 +523,7 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	 * @param surface
 	 *            the new surface
 	 */
+	@Override
 	public void setSurface(final IDisplaySurface surface) {
 		this.surface = surface;
 		if (surface == null) { view = null; }
@@ -579,9 +585,7 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	 * @return the data
 	 */
 	@Override
-	public IDisplayData getData() {
-		return data; // .get();
-	}
+	public IDisplayData getData() { return data; }
 
 	/**
 	 * Gets the index.
@@ -654,14 +658,4 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		scope.setGraphics(surface.getIGraphics());
 	}
 
-	// @Override
-	// public void setRendered(final boolean b) { rendered = b; }
-	//
-	// @Override
-	// public boolean isRendered() {
-	// if (view != null && !view.isVisible()) return true;
-	// if (!this.isRefreshable() || !this.isOpen() || this.isPaused()) return
-	// true;
-	// return rendered;
-	// }
 }
