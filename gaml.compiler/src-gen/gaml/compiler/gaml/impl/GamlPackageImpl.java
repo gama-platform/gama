@@ -645,20 +645,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EAttribute getStandaloneExpression_Identifier()
-  {
-    return (EAttribute)standaloneExpressionEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EReference getStandaloneExpression_Expr()
   {
-    return (EReference)standaloneExpressionEClass.getEStructuralFeatures().get(1);
+    return (EReference)standaloneExpressionEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -2062,7 +2051,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     createEReference(standaloneBlockEClass, STANDALONE_BLOCK__BLOCK);
 
     standaloneExpressionEClass = createEClass(STANDALONE_EXPRESSION);
-    createEAttribute(standaloneExpressionEClass, STANDALONE_EXPRESSION__IDENTIFIER);
     createEReference(standaloneExpressionEClass, STANDALONE_EXPRESSION__EXPR);
 
     standaloneExperimentEClass = createEClass(STANDALONE_EXPERIMENT);
@@ -2360,7 +2348,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEReference(getStandaloneBlock_Block(), this.getBlock(), null, "block", null, 0, 1, StandaloneBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(standaloneExpressionEClass, StandaloneExpression.class, "StandaloneExpression", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getStandaloneExpression_Identifier(), ecorePackage.getEString(), "identifier", null, 0, 1, StandaloneExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getStandaloneExpression_Expr(), this.getExpression(), null, "expr", null, 0, 1, StandaloneExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(standaloneExperimentEClass, StandaloneExperiment.class, "StandaloneExperiment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);

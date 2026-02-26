@@ -199,8 +199,7 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getTerminalExpressionAccess().getGroup_3(), "rule__TerminalExpression__Group_3__0");
 			builder.put(grammarAccess.getTerminalExpressionAccess().getGroup_4(), "rule__TerminalExpression__Group_4__0");
 			builder.put(grammarAccess.getStandaloneBlockAccess().getBlockAssignment_1(), "rule__StandaloneBlock__BlockAssignment_1");
-			builder.put(grammarAccess.getStandaloneExpressionAccess().getIdentifierAssignment_0(), "rule__StandaloneExpression__IdentifierAssignment_0");
-			builder.put(grammarAccess.getStandaloneExpressionAccess().getExprAssignment_2(), "rule__StandaloneExpression__ExprAssignment_2");
+			builder.put(grammarAccess.getStandaloneExpressionAccess().getExprAssignment_1(), "rule__StandaloneExpression__ExprAssignment_1");
 			builder.put(grammarAccess.getStandaloneExperimentAccess().getKeyAssignment_0(), "rule__StandaloneExperiment__KeyAssignment_0");
 			builder.put(grammarAccess.getStandaloneExperimentAccess().getNameAssignment_1(), "rule__StandaloneExperiment__NameAssignment_1");
 			builder.put(grammarAccess.getStandaloneExperimentAccess().getImportURIAssignment_2_1(), "rule__StandaloneExperiment__ImportURIAssignment_2_1");

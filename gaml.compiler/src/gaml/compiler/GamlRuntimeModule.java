@@ -15,6 +15,7 @@ import org.eclipse.xtext.linking.ILinkingService;
 import org.eclipse.xtext.naming.IQualifiedNameConverter;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.parser.IEncodingProvider;
+import org.eclipse.xtext.parser.IParser;
 import org.eclipse.xtext.parser.antlr.ISyntaxErrorMessageProvider;
 import org.eclipse.xtext.resource.IDefaultResourceDescriptionStrategy;
 import org.eclipse.xtext.resource.IResourceDescription;
@@ -31,6 +32,7 @@ import gaml.compiler.gaml.linking.GamlLinkingService;
 import gaml.compiler.gaml.naming.GamlNameConverter;
 import gaml.compiler.gaml.naming.GamlQualifiedNameProvider;
 import gaml.compiler.gaml.parsing.GamlSyntaxErrorMessageProvider;
+import gaml.compiler.gaml.preprocessor.PreprocessingGamlParser;
 import gaml.compiler.gaml.resource.GamlEncodingProvider;
 import gaml.compiler.gaml.resource.GamlResource;
 import gaml.compiler.gaml.resource.GamlResourceDescriptionManager;
@@ -47,46 +49,13 @@ public class GamlRuntimeModule extends gaml.compiler.AbstractGamlRuntimeModule {
 		DEBUG.OFF();
 	}
 
-	/** The initialized. */
-	// private static boolean initialized;
-
-	// Disabled for the moment
-	// public static Pref<Boolean> ENABLE_FAST_COMPIL = GamaPreferences
-	//// .create("pref_optimize_fast_compilation", "Enable faster validation (but less accurate error reporting in
-	/// nagivator)", false, IType.BOOL) .in(GamaPreferences.Modeling.NAME, GamaPreferences.Modeling.OPTIONS).hidden();
-
-	/**
-	 * Static initialize.
-	 */
-	// public static void staticInitialize() {
-
-	// if (!initialized) {
-	// GamlExpressionFactory.registerParserProvider(GamlExpressionCompiler::new);
-	// GAML.registerInfoProvider(GamlResourceInfoProvider.INSTANCE);
-	// GAML.registerGamlEcoreUtils(EGaml.getInstance());
-	// initialized = true;
-	//
-	// }
-
-	// }
-
 	@Override
 	public void configure(final Binder binder) {
-		DEBUG.OUT("Initialization of GAML XText runtime module begins");
 		super.configure(binder);
-		// staticInitialize();
-		// binder.bind(ExpressionDescriptionBuilder.class);
-		// binder.bind(IDocManager.class).to(GamlResourceDocumenter.class);
-		// binder.bind(GamlSyntacticConverter.class);
 		binder.bind(IDefaultResourceDescriptionStrategy.class).to(GamlResourceDescriptionStrategy.class);
 		binder.bind(IQualifiedNameConverter.class).to(GamlNameConverter.class);
-		// binder.bind(IResourceDescription.Manager.class).to(GamlResourceDescriptionManager.class);
-		// binder.bind(IOutputConfigurationProvider.class).to(GamlOutputConfigurationProvider.class);
 		binder.bind(IResourceValidator.class).to(GamlResourceValidator.class);
 		binder.bind(ErrorToDiagnoticTranslator.class);
-		// binder.bind(org.eclipse.xtext.scoping.IGlobalScopeProvider.class)
-		// .toInstance(new gaml.compiler.gaml.scoping.BuiltinGlobalScopeProvider());
-		DEBUG.OUT("Initialization of GAML XText runtime module finished");
 	}
 
 	@Override
@@ -94,20 +63,9 @@ public class GamlRuntimeModule extends gaml.compiler.AbstractGamlRuntimeModule {
 		return GamlQualifiedNameProvider.class;
 	}
 
-	/**
-	 * Bind I gaml expression compiler.
-	 *
-	 * @return the class<? extends I expression compiler>
-	 */
-	// @SuppressWarnings ("rawtypes")
-	// public Class<? extends IExpressionCompiler> bindIGamlExpressionCompiler() {
-	// return GamlExpressionCompiler.class;
-	// }
-
 	@Override
 	@SingletonBinding ()
 	public Class<? extends org.eclipse.xtext.scoping.IGlobalScopeProvider> bindIGlobalScopeProvider() {
-		// return null;
 		return gaml.compiler.gaml.scoping.BuiltinGlobalScopeProvider.class;
 	}
 
@@ -139,10 +97,10 @@ public class GamlRuntimeModule extends gaml.compiler.AbstractGamlRuntimeModule {
 		return GamlResource.class;
 	}
 
-	// @Override
-	// public Class<? extends IParser> bindIParser() {
-	// return GamlSyntacticParser.class;
-	// }
+	@Override
+	public Class<? extends IParser> bindIParser() {
+		return PreprocessingGamlParser.class;
+	}
 
 	@Override
 	public void configureRuntimeEncodingProvider(final Binder binder) {

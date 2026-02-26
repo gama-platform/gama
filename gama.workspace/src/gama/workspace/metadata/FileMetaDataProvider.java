@@ -468,6 +468,10 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 				try {
 					file.setSessionProperty(CACHE_KEY, data == null ? null : data.toPropertyString());
 					file.setSessionProperty(CHANGE_KEY, true);
+					if (data == null) {
+						//remove persistent property
+						file.setPersistentProperty(CACHE_KEY, null);
+					}
 				} catch (final Exception e) {
 					DEBUG.ERR("Error setting session properties for " + file.getName() + ": " + e.getMessage());
 				}

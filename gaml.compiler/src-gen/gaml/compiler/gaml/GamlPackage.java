@@ -115,22 +115,13 @@ public interface GamlPackage extends EPackage
   int STANDALONE_EXPRESSION = 2;
 
   /**
-   * The feature id for the '<em><b>Identifier</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   * @ordered
-   */
-  int STANDALONE_EXPRESSION__IDENTIFIER = ENTRY_FEATURE_COUNT + 0;
-
-  /**
    * The feature id for the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    * @ordered
    */
-  int STANDALONE_EXPRESSION__EXPR = ENTRY_FEATURE_COUNT + 1;
+  int STANDALONE_EXPRESSION__EXPR = ENTRY_FEATURE_COUNT + 0;
 
   /**
    * The number of structural features of the '<em>Standalone Expression</em>' class.
@@ -139,7 +130,7 @@ public interface GamlPackage extends EPackage
    * @generated
    * @ordered
    */
-  int STANDALONE_EXPRESSION_FEATURE_COUNT = ENTRY_FEATURE_COUNT + 2;
+  int STANDALONE_EXPRESSION_FEATURE_COUNT = ENTRY_FEATURE_COUNT + 1;
 
   /**
    * The meta object id for the '{@link gaml.compiler.gaml.impl.StandaloneExperimentImpl <em>Standalone Experiment</em>}' class.
@@ -2801,17 +2792,6 @@ public interface GamlPackage extends EPackage
   EClass getStandaloneExpression();
 
   /**
-   * Returns the meta object for the attribute '{@link gaml.compiler.gaml.StandaloneExpression#getIdentifier <em>Identifier</em>}'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the meta object for the attribute '<em>Identifier</em>'.
-   * @see gaml.compiler.gaml.StandaloneExpression#getIdentifier()
-   * @see #getStandaloneExpression()
-   * @generated
-   */
-  EAttribute getStandaloneExpression_Identifier();
-
-  /**
    * Returns the meta object for the containment reference '{@link gaml.compiler.gaml.StandaloneExpression#getExpr <em>Expr</em>}'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -4185,14 +4165,6 @@ public interface GamlPackage extends EPackage
      * @generated
      */
     EClass STANDALONE_EXPRESSION = eINSTANCE.getStandaloneExpression();
-
-    /**
-     * The meta object literal for the '<em><b>Identifier</b></em>' attribute feature.
-     * <!-- begin-user-doc -->
-     * <!-- end-user-doc -->
-     * @generated
-     */
-    EAttribute STANDALONE_EXPRESSION__IDENTIFIER = eINSTANCE.getStandaloneExpression_Identifier();
 
     /**
      * The meta object literal for the '<em><b>Expr</b></em>' containment reference feature.

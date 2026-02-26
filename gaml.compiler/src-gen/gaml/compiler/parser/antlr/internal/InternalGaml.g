@@ -133,9 +133,9 @@ ruleStandaloneBlock returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		otherlv_0='__synthetic__'
+		otherlv_0='__standalone_block__'
 		{
-			newLeafNode(otherlv_0, grammarAccess.getStandaloneBlockAccess().get__synthetic__Keyword_0());
+			newLeafNode(otherlv_0, grammarAccess.getStandaloneBlockAccess().get__standalone_block__Keyword_0());
 		}
 		(
 			(
@@ -175,34 +175,16 @@ ruleStandaloneExpression returns [EObject current=null]
 	leaveRule();
 }:
 	(
-		(
-			(
-				lv_identifier_0_0=RULE_ID
-				{
-					newLeafNode(lv_identifier_0_0, grammarAccess.getStandaloneExpressionAccess().getIdentifierIDTerminalRuleCall_0_0());
-				}
-				{
-					if ($current==null) {
-						$current = createModelElement(grammarAccess.getStandaloneExpressionRule());
-					}
-					setWithLastConsumed(
-						$current,
-						"identifier",
-						lv_identifier_0_0,
-						"gaml.compiler.Gaml.ID");
-				}
-			)
-		)
-		otherlv_1='<-'
+		otherlv_0='__standalone_expression__'
 		{
-			newLeafNode(otherlv_1, grammarAccess.getStandaloneExpressionAccess().getLessThanSignHyphenMinusKeyword_1());
+			newLeafNode(otherlv_0, grammarAccess.getStandaloneExpressionAccess().get__standalone_expression__Keyword_0());
 		}
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getStandaloneExpressionAccess().getExprExpressionParserRuleCall_2_0());
+					newCompositeNode(grammarAccess.getStandaloneExpressionAccess().getExprExpressionParserRuleCall_1_0());
 				}
-				lv_expr_2_0=ruleExpression
+				lv_expr_1_0=ruleExpression
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getStandaloneExpressionRule());
@@ -210,7 +192,7 @@ ruleStandaloneExpression returns [EObject current=null]
 					set(
 						$current,
 						"expr",
-						lv_expr_2_0,
+						lv_expr_1_0,
 						"gaml.compiler.Gaml.Expression");
 					afterParserOrEnumRuleCall();
 				}

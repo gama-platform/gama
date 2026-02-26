@@ -13,7 +13,6 @@ package gaml.compiler.gaml;
  * The following features are supported:
  * </p>
  * <ul>
- *   <li>{@link gaml.compiler.gaml.StandaloneExpression#getIdentifier <em>Identifier</em>}</li>
  *   <li>{@link gaml.compiler.gaml.StandaloneExpression#getExpr <em>Expr</em>}</li>
  * </ul>
  *
@@ -23,28 +22,6 @@ package gaml.compiler.gaml;
  */
 public interface StandaloneExpression extends Entry
 {
-  /**
-   * Returns the value of the '<em><b>Identifier</b></em>' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the value of the '<em>Identifier</em>' attribute.
-   * @see #setIdentifier(String)
-   * @see gaml.compiler.gaml.GamlPackage#getStandaloneExpression_Identifier()
-   * @model
-   * @generated
-   */
-  String getIdentifier();
-
-  /**
-   * Sets the value of the '{@link gaml.compiler.gaml.StandaloneExpression#getIdentifier <em>Identifier</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Identifier</em>' attribute.
-   * @see #getIdentifier()
-   * @generated
-   */
-  void setIdentifier(String value);
-
   /**
    * Returns the value of the '<em><b>Expr</b></em>' containment reference.
    * <!-- begin-user-doc -->

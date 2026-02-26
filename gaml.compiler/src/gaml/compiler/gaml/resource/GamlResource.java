@@ -21,6 +21,7 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.getNode;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -43,29 +44,37 @@ import gama.api.runtime.scope.IExecutionContext;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.factories.ModelFactory;
 import gaml.compiler.gaml.indexer.GamlResourceIndexer;
+import gaml.compiler.gaml.preprocessor.GamlResourceOffsetMap;
 
 /**
  * The Class GamlResource - Represents a GAML source file resource with validation and compilation capabilities.
- * 
- * <p>This class extends Xtext's {@link LazyLinkingResource} to provide GAML-specific resource management,
- * including syntactic and semantic validation, model description building, and documentation generation.</p>
- * 
- * <p><b>Key Responsibilities:</b></p>
+ *
+ * <p>
+ * This class extends Xtext's {@link LazyLinkingResource} to provide GAML-specific resource management, including
+ * syntactic and semantic validation, model description building, and documentation generation.
+ * </p>
+ *
+ * <p>
+ * <b>Key Responsibilities:</b>
+ * </p>
  * <ul>
- *   <li>Parse GAML source files into syntactic elements</li>
- *   <li>Build model descriptions from syntactic elements and imports</li>
- *   <li>Validate models and collect syntactic and semantic errors</li>
- *   <li>Manage resource lifecycle (loading, linking, unloading)</li>
- *   <li>Coordinate with documentation and indexing services</li>
+ * <li>Parse GAML source files into syntactic elements</li>
+ * <li>Build model descriptions from syntactic elements and imports</li>
+ * <li>Validate models and collect syntactic and semantic errors</li>
+ * <li>Manage resource lifecycle (loading, linking, unloading)</li>
+ * <li>Coordinate with documentation and indexing services</li>
  * </ul>
- * 
- * <p><b>Thread Safety:</b> The {@code element} field is volatile and uses double-checked locking
- * in {@link #getSyntacticContents()} for safe lazy initialization in concurrent environments.
- * Other operations may not be thread-safe and should be externally synchronized if used concurrently.</p>
- * 
- * <p><b>Lifecycle:</b> Resources go through parsing → linking → validation → documentation phases.
- * Use {@link #validate()} to trigger full validation. The resource maintains caches that are
- * invalidated when the source changes.</p>
+ *
+ * <p>
+ * <b>Thread Safety:</b> The {@code element} field is volatile and uses double-checked locking in
+ * {@link #getSyntacticContents()} for safe lazy initialization in concurrent environments. Other operations may not be
+ * thread-safe and should be externally synchronized if used concurrently.
+ * </p>
+ *
+ * <p>
+ * <b>Lifecycle:</b> Resources go through parsing → linking → validation → documentation phases. Use {@link #validate()}
+ * to trigger full validation. The resource maintains caches that are invalidated when the source changes.
+ * </p>
  *
  * @author drogoul
  * @since 24 avr. 2012
@@ -79,15 +88,18 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 
 	/** Cache key for linking context. */
 	private static final String LINKING_CACHE_KEY = "linking";
-	
+
 	/** Error message for import location failure. */
 	private static final String ERROR_IMPORT_LOCATION = "Impossible to locate import";
-	
+
 	/** Error message template for validation failure. */
 	private static final String ERROR_VALIDATION_FAILED = "Impossible to validate %s (check the logs)";
 
 	/** The element. */
 	volatile ISyntacticElement element;
+
+	/** The offset map. */
+	final GamlResourceOffsetMap offsetMap = new GamlResourceOffsetMap();
 
 	/**
 	 * Gets the validation context.
@@ -280,6 +292,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	protected void clearInternalState() {
 		super.clearInternalState();
 		setElement(null);
+		offsetMap.clear();
 	}
 
 	/**
@@ -292,6 +305,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	protected void doUnload() {
 		super.doUnload();
 		setElement(null);
+		offsetMap.clear();
 	}
 
 	/**
@@ -347,12 +361,18 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 		// If the imports are not correctly updated, we cannot proceed
 		final EObject faulty = updateImports(this);
 		if (faulty != null) {
-			getErrors()
-					.add(new XtextLinkingDiagnostic(getNode(faulty), ERROR_IMPORT_LOCATION, IMPORT_ERROR, ""));
+			getErrors().add(new XtextLinkingDiagnostic(getNode(faulty), ERROR_IMPORT_LOCATION, IMPORT_ERROR, ""));
 			return;
 		}
 		EObject model = getParseResult().getRootASTElement();
 		if (model != null) { getLinker().linkModel(model, this); }
+	}
+
+	// Here we create a reader equipped with the offset map ?
+	@Override
+	protected Reader createReader(final InputStream inputStream) throws IOException {
+		Reader reader = super.createReader(inputStream);
+		return new GamlResourceReader(getURI(), reader, offsetMap);
 	}
 
 	/**

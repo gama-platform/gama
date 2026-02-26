@@ -17,14 +17,12 @@ import static org.apache.commons.lang3.StringUtils.join;
 import static org.apache.commons.lang3.StringUtils.splitByWholeSeparatorPreserveAllTokens;
 import static org.apache.commons.lang3.StringUtils.uncapitalize;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
@@ -49,18 +47,25 @@ import gaml.compiler.gaml.indexer.GamlResourceIndexer;
  */
 public class GamlFileInfo extends AbstractFileMetaData implements IGamlFileInfo {
 
+	static {
+		DEBUG.OFF();
+	}
+	/** The tokenizer for comments and strings. */
+	public static final Pattern findCommentsAndStrings =
+			Pattern.compile("//.*|(?s)/\\*.*?(?:\\*/|$)|'(?:\\\\.|[^'\\\\])*'|\"(?:\\\\.|[^\"\\\\])*\"");
+
 	/** The find tags. */
 	public static final Pattern findTags = Pattern.compile("Tags:\\s*(.*)");
 
 	/** The find pragmas. */
-	public static final Pattern findPragmas = Pattern.compile("^\\s*@([^\\s@]+)");
-
-	/** The find strings. */
-	public static final Pattern findStrings = Pattern.compile("('([^']*)')|(\"([^\"]*)\")");
+	public static final Pattern findPragmas = Pattern.compile("(?m)^\\s*@([^\\s@]+)");
 
 	/** The find experiments. */
 	public static final Pattern findExperiments = Pattern.compile(
-			"^\\s*experiment\\s+(?:'([^']*)'|\"([^\"]*)\"|(\\w+))(?:\\s+type:\\s*(\\w+))?(?:\\s+virtual:\\s*(\\w+))?");
+			"(?m)^\\s*experiment\\s+(?:'([^']*)'|\"([^\"]*)\"|(\\w+))(?:\\s+type:\\s*(\\w+))?(?:\\s+virtual:\\s*(\\w+))?");
+	/** The find species. */
+	public static final Pattern findSpecies = Pattern
+			.compile("\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'|\\b(?:species|grid)\\s+([a-zA-Z_][a-zA-Z0-9_]*)");
 
 	/** The batch prefix. */
 	public static final String BATCH_PREFIX = "***";
@@ -70,6 +75,9 @@ public class GamlFileInfo extends AbstractFileMetaData implements IGamlFileInfo 
 
 	/** The experiments. */
 	private Collection<String> experiments;
+
+	/** The species. */
+	private Collection<String> species;
 
 	/** The imports. */
 	private Collection<String> imports;
@@ -103,44 +111,42 @@ public class GamlFileInfo extends AbstractFileMetaData implements IGamlFileInfo 
 	 *
 	 * @param originalURI
 	 *            the original URI
-	 * @param stamp
-	 *            the stamp
 	 */
 	public void createFrom(final URI originalURI) {
 
 		Set<String> tags = null;
 		Set<String> exps = null;
+		Set<String> specs = null;
 
 		for (final URI u : GamlResourceIndexer.directImportsOf(originalURI)) {
 			if (imports == null) { imports = new LinkedHashSet<>(); }
 			imports.add(u.deresolve(originalURI).toString());
 		}
 
-		try (InputStreamReader isr =
-				new InputStreamReader(getResourceSet().getURIConverter().createInputStream(originalURI));
-				BufferedReader reader = new BufferedReader(isr)) {
+		try (InputStream is = getResourceSet().getURIConverter().createInputStream(originalURI)) {
+			// Read the entire file into a single string
+			String content = new String(is.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+			// 1. Sanitize the string by processing comments and strings first
+			Matcher tokenizer = findCommentsAndStrings.matcher(content);
+			StringBuilder sanitized = new StringBuilder();
 
-			String input;
-			boolean processExperiments = true;
-			while ((input = reader.readLine()) != null) {
-				Matcher tagsMatcher = findTags.matcher(input);
-				if (tagsMatcher.find()) {
-					String tagList = tagsMatcher.group(1);
-					tags = new HashSet<>(asList(
-							splitByWholeSeparatorPreserveAllTokens(uncapitalize(deleteWhitespace(tagList)), ",")));
-				}
-				Matcher pragmasMatcher = findPragmas.matcher(input);
-				if (pragmasMatcher.find()) {
-					String pragma = pragmasMatcher.group(1);
-					// DEBUG.OUT("Pragma found = " + pragma);
-					if (IKeyword.PRAGMA_NO_EXPERIMENT.equals(pragma)) { processExperiments = false; }
-				}
-				Matcher stringsMatcher = findStrings.matcher(input);
-				while (stringsMatcher.find()) {
-					String s = stringsMatcher.group();
-					// DEBUG.OUT("Strings found = " + s);
-					if (s.length() > 6) {
-						s = s.substring(1, s.length() - 1);
+			while (tokenizer.find()) {
+				String match = tokenizer.group();
+
+				if (match.startsWith("//") || match.startsWith("/*")) {
+					// It's a comment: search for tags inside it
+					Matcher tagsMatcher = findTags.matcher(match);
+					if (tagsMatcher.find()) {
+						String tagList = tagsMatcher.group(1);
+						tags = new HashSet<>(asList(
+								splitByWholeSeparatorPreserveAllTokens(uncapitalize(deleteWhitespace(tagList)), ",")));
+					}
+					// Blank out the comment to prevent false positives
+					tokenizer.appendReplacement(sanitized, " ");
+				} else {
+					// It's a string: check if it represents a valid use/import
+					if (match.length() > 6) {
+						String s = match.substring(1, match.length() - 1);
 						final URI u = URI.createFileURI(s);
 						final String ext = u.fileExtension();
 						if (ext != null && !ext.isBlank() && !"gaml".equals(ext)
@@ -150,26 +156,48 @@ public class GamlFileInfo extends AbstractFileMetaData implements IGamlFileInfo 
 							uses.add(s);
 						}
 					}
+					// KEEP the string intact so findExperiments can read its name
+					tokenizer.appendReplacement(sanitized, Matcher.quoteReplacement(match));
 				}
-				if (processExperiments) {
-					Matcher experimentsMatcher = findExperiments.matcher(input);
-					if (experimentsMatcher.find()) {
-						String name = experimentsMatcher.group(1); // single quotes
-						if (name == null) {
-							name = experimentsMatcher.group(2); // double quotes
-						}
-						if (name == null) {
-							name = experimentsMatcher.group(3); // no quotes
-						}
-						String type = experimentsMatcher.group(4);
-						String virtual = experimentsMatcher.group(5);
-						if (name != null && !IKeyword.TRUE.equals(virtual)) {
-							// DEBUG.OUT("Experiment " + name + " type " + type + " virtual " + virtual);
-							if (exps == null) { exps = new LinkedHashSet<>(); }
-							if (IKeyword.BATCH.equals(type)) { name = GamlFileInfo.BATCH_PREFIX + name; }
-							exps.add(name);
-						}
+			}
+			tokenizer.appendTail(sanitized);
+			String cleanText = sanitized.toString();
+
+			// 2. Process Pragmas on the clean text
+			boolean processExperiments = true;
+			Matcher pragmasMatcher = findPragmas.matcher(cleanText);
+			while (pragmasMatcher.find()) {
+				String pragma = pragmasMatcher.group(1);
+				if (IKeyword.PRAGMA_NO_EXPERIMENT.equals(pragma)) { processExperiments = false; }
+			}
+
+			// 3. Process Experiments on the clean text
+			if (processExperiments) {
+				Matcher experimentsMatcher = findExperiments.matcher(cleanText);
+				while (experimentsMatcher.find()) {
+					String name = experimentsMatcher.group(1); // single quotes
+					if (name == null) { name = experimentsMatcher.group(2); } // double quotes
+					if (name == null) { name = experimentsMatcher.group(3); } // no quotes
+
+					String type = experimentsMatcher.group(4);
+					String virtual = experimentsMatcher.group(5);
+
+					if (name != null && !IKeyword.TRUE.equals(virtual)) {
+						if (exps == null) { exps = new LinkedHashSet<>(); }
+						if (IKeyword.BATCH.equals(type)) { name = GamlFileInfo.BATCH_PREFIX + name; }
+						exps.add(name);
 					}
+				}
+			}
+
+			// 4. Process Species on the clean text
+			Matcher speciesMatcher = findSpecies.matcher(cleanText);
+			while (speciesMatcher.find()) {
+				String name = speciesMatcher.group(1);
+				// If name is null, the engine matched a string to discard it
+				if (name != null) {
+					if (specs == null) { specs = new LinkedHashSet<>(); }
+					specs.add(name);
 				}
 			}
 
@@ -178,10 +206,10 @@ public class GamlFileInfo extends AbstractFileMetaData implements IGamlFileInfo 
 		}
 
 		uri = originalURI;
-
+		this.species = specs;
+		DEBUG.OUT("Species built in " + originalURI + ": " + species);
 		this.experiments = exps;
 		this.tags = tags;
-
 	}
 
 	/**
@@ -225,6 +253,14 @@ public class GamlFileInfo extends AbstractFileMetaData implements IGamlFileInfo 
 	public Collection<String> getExperiments() { return experiments == null ? Collections.EMPTY_LIST : experiments; }
 
 	/**
+	 * Gets the species.
+	 *
+	 * @return the species
+	 */
+	@Override
+	public Collection<String> getSpecies() { return species == null ? Collections.EMPTY_LIST : species; }
+
+	/**
 	 * Instantiates a new gaml file info.
 	 *
 	 * @param propertyString
@@ -234,16 +270,39 @@ public class GamlFileInfo extends AbstractFileMetaData implements IGamlFileInfo 
 		super(propertyString);
 		final String[] values = split(propertyString);
 		this.uri = URI.createURI(values[1]);
-		final List<String> declaredImports = asList(splitByWholeSeparatorPreserveAllTokens(values[2], SUB_DELIMITER));
-		this.imports = declaredImports == null || declaredImports.isEmpty() || declaredImports.contains(null) ? null
-				: declaredImports;
-		final List<String> declaredUses = asList(splitByWholeSeparatorPreserveAllTokens(values[3], SUB_DELIMITER));
-		this.uses = declaredUses == null || declaredUses.isEmpty() || declaredUses.contains(null) ? null : declaredUses;
-		final List<String> exps = asList(splitByWholeSeparatorPreserveAllTokens(values[4], SUB_DELIMITER));
-		this.experiments = exps == null || exps.isEmpty() || exps.contains(null) ? null : exps;
-		final List<String> declaredTags = asList(splitByWholeSeparatorPreserveAllTokens(values[5], SUB_DELIMITER));
-		this.tags = declaredTags == null || declaredTags.isEmpty() || declaredTags.contains(null) ? null : declaredTags;
-		invalid = "TRUE".equals(values[6]);
+
+		this.imports = parseCollection(values[2]);
+		this.uses = parseCollection(values[3]);
+		this.experiments = parseCollection(values[4]);
+		this.species = parseCollection(values[5]);
+		this.tags = parseCollection(values[6]);
+
+		this.invalid = "TRUE".equals(values[7]);
+		DEBUG.OUT("Species read in " + uri + ": " + species);
+	}
+
+	/**
+	 * Helper method to safely parse delimited strings into collections.
+	 */
+	private Collection<String> parseCollection(final String value) {
+		if (value == null || value.isEmpty()) return null;
+		return asList(splitByWholeSeparatorPreserveAllTokens(value, SUB_DELIMITER));
+	}
+
+	@Override
+	public String toPropertyString() {
+		// Initialize with a capacity large enough to hold a typical serialized string
+		final StringBuilder sb = new StringBuilder(256);
+		sb.append(super.toPropertyString()).append(DELIMITER); // 0
+		sb.append(uri).append(DELIMITER); // 1
+		sb.append(imports == null || imports.isEmpty() ? "" : join(imports, SUB_DELIMITER)).append(DELIMITER); // 2
+		sb.append(uses == null || uses.isEmpty() ? "" : join(uses, SUB_DELIMITER)).append(DELIMITER); // 3
+		sb.append(experiments == null || experiments.isEmpty() ? "" : join(experiments, SUB_DELIMITER))
+				.append(DELIMITER); // 4
+		sb.append(species == null || species.isEmpty() ? "" : join(species, SUB_DELIMITER)).append(DELIMITER); // 5
+		sb.append(tags == null || tags.isEmpty() ? "" : join(tags, SUB_DELIMITER)).append(DELIMITER); // 6
+		sb.append(invalid ? "TRUE" : "FALSE").append(DELIMITER); // 7
+		return sb.toString();
 	}
 
 	/**
@@ -265,25 +324,6 @@ public class GamlFileInfo extends AbstractFileMetaData implements IGamlFileInfo 
 		} else {
 			sb.append("no experiment");
 		}
-	}
-
-	/**
-	 * To property string.
-	 *
-	 * @return the string
-	 */
-	@Override
-	public String toPropertyString() {
-		final StringBuilder sb = new StringBuilder();
-		sb.append(super.toPropertyString()).append(DELIMITER); // 0
-		sb.append(uri).append(DELIMITER); // 1
-		sb.append(imports == null ? "" : join(SUB_DELIMITER, imports)).append(DELIMITER); // 2
-		sb.append(uses == null ? "" : join(SUB_DELIMITER, uses)).append(DELIMITER); // 3
-		sb.append(experiments == null ? "" : join(SUB_DELIMITER, experiments)).append(DELIMITER); // 4
-		sb.append(tags == null ? "" : join(SUB_DELIMITER, tags)).append(DELIMITER); // 5
-		sb.append(invalid ? "TRUE" : "FALSE").append(DELIMITER); // 6
-		return sb.toString();
-
 	}
 
 	@Override

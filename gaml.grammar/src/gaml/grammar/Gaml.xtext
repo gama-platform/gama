@@ -18,11 +18,11 @@ Entry:
 
 // Parses a raw block without a model wrapper. Example: { do action; }
 StandaloneBlock:
-	'__synthetic__' block=Block;
+	'__standalone_block__' block=Block;
 
 // Parses a single assignment. Example: my_var <- 5 + 3;
 StandaloneExpression:
-	identifier=ID '<-' expr=Expression;
+	'__standalone_expression__' expr=Expression;
 
 // Parses an experiment independently. Example: experiment my_exp type: gui { }
 StandaloneExperiment:
@@ -169,7 +169,7 @@ S_Reflex:
 
 // Example: int my_var <- 5; or list<string> my_list;
 S_Definition:
-	tkey=(TypeRef) name=Valid_ID ('(' ActionArguments ')')? FacetsAndBlock;
+	tkey=TypeRef name=Valid_ID ('(' ActionArguments ')')? FacetsAndBlock;
 
 // Example: action do_something (int arg1) { ... }
 S_Action returns S_Definition:
@@ -198,9 +198,13 @@ S_Display:
 /******************************************************************************************
  * *****************************************************************************************
  * * STATEMENT KEYS
+ * * These keys represent two different cases: 
+ * * 1) Keywords that need to be included in Valid_ID, preventing the "lexer lock-in", so 
+ * * that they can be reused for facet names, variable names, etc. 
+ * * 2) Keywords that are not used for definition statements (e.g. 'create') but for which 
+ * * the parser cannot make the difference at its level, so that we 
  * ****************************************************************************************** 
  * ******************************************************************************************/
-// Extracted to be included in Valid_ID, preventing lexer lock-in.
 K_BuiltIn:
 	'ask' | 'text' | 'assert' | 'setup' | 'add' | 'remove' | 'put' |
 	'capture' | 'release' | 'migrate' | 'create' | 'error' | 'warn' | 'write' | 'status' |

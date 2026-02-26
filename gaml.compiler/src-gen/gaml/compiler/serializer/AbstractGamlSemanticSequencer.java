@@ -1543,19 +1543,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     StandaloneExpression returns StandaloneExpression
 	 *
 	 * Constraint:
-	 *     (identifier=ID expr=Expression)
+	 *     expr=Expression
 	 * </pre>
 	 */
 	protected void sequence_StandaloneExpression(ISerializationContext context, StandaloneExpression semanticObject) {
 		if (errorAcceptor != null) {
-			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.STANDALONE_EXPRESSION__IDENTIFIER) == ValueTransient.YES)
-				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.STANDALONE_EXPRESSION__IDENTIFIER));
 			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.STANDALONE_EXPRESSION__EXPR) == ValueTransient.YES)
 				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.STANDALONE_EXPRESSION__EXPR));
 		}
 		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
-		feeder.accept(grammarAccess.getStandaloneExpressionAccess().getIdentifierIDTerminalRuleCall_0_0(), semanticObject.getIdentifier());
-		feeder.accept(grammarAccess.getStandaloneExpressionAccess().getExprExpressionParserRuleCall_2_0(), semanticObject.getExpr());
+		feeder.accept(grammarAccess.getStandaloneExpressionAccess().getExprExpressionParserRuleCall_1_0(), semanticObject.getExpr());
 		feeder.finish();
 	}
 	

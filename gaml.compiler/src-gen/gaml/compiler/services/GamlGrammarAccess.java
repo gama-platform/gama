@@ -63,20 +63,20 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	public class StandaloneBlockElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.StandaloneBlock");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Keyword c__synthetic__Keyword_0 = (Keyword)cGroup.eContents().get(0);
+		private final Keyword c__standalone_block__Keyword_0 = (Keyword)cGroup.eContents().get(0);
 		private final Assignment cBlockAssignment_1 = (Assignment)cGroup.eContents().get(1);
 		private final RuleCall cBlockBlockParserRuleCall_1_0 = (RuleCall)cBlockAssignment_1.eContents().get(0);
 		
 		//// Parses a raw block without a model wrapper. Example: { do action; }
 		//StandaloneBlock:
-		//    '__synthetic__' block=Block;
+		//    '__standalone_block__' block=Block;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//'__synthetic__' block=Block
+		//'__standalone_block__' block=Block
 		public Group getGroup() { return cGroup; }
 		
-		//'__synthetic__'
-		public Keyword get__synthetic__Keyword_0() { return c__synthetic__Keyword_0; }
+		//'__standalone_block__'
+		public Keyword get__standalone_block__Keyword_0() { return c__standalone_block__Keyword_0; }
 		
 		//block=Block
 		public Assignment getBlockAssignment_1() { return cBlockAssignment_1; }
@@ -87,34 +87,26 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	public class StandaloneExpressionElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.StandaloneExpression");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Assignment cIdentifierAssignment_0 = (Assignment)cGroup.eContents().get(0);
-		private final RuleCall cIdentifierIDTerminalRuleCall_0_0 = (RuleCall)cIdentifierAssignment_0.eContents().get(0);
-		private final Keyword cLessThanSignHyphenMinusKeyword_1 = (Keyword)cGroup.eContents().get(1);
-		private final Assignment cExprAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cExprExpressionParserRuleCall_2_0 = (RuleCall)cExprAssignment_2.eContents().get(0);
+		private final Keyword c__standalone_expression__Keyword_0 = (Keyword)cGroup.eContents().get(0);
+		private final Assignment cExprAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cExprExpressionParserRuleCall_1_0 = (RuleCall)cExprAssignment_1.eContents().get(0);
 		
 		//// Parses a single assignment. Example: my_var <- 5 + 3;
 		//StandaloneExpression:
-		//    identifier=ID '<-' expr=Expression;
+		//    '__standalone_expression__' expr=Expression;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//identifier=ID '<-' expr=Expression
+		//'__standalone_expression__' expr=Expression
 		public Group getGroup() { return cGroup; }
 		
-		//identifier=ID
-		public Assignment getIdentifierAssignment_0() { return cIdentifierAssignment_0; }
-		
-		//ID
-		public RuleCall getIdentifierIDTerminalRuleCall_0_0() { return cIdentifierIDTerminalRuleCall_0_0; }
-		
-		//'<-'
-		public Keyword getLessThanSignHyphenMinusKeyword_1() { return cLessThanSignHyphenMinusKeyword_1; }
+		//'__standalone_expression__'
+		public Keyword get__standalone_expression__Keyword_0() { return c__standalone_expression__Keyword_0; }
 		
 		//expr=Expression
-		public Assignment getExprAssignment_2() { return cExprAssignment_2; }
+		public Assignment getExprAssignment_1() { return cExprAssignment_1; }
 		
 		//Expression
-		public RuleCall getExprExpressionParserRuleCall_2_0() { return cExprExpressionParserRuleCall_2_0; }
+		public RuleCall getExprExpressionParserRuleCall_1_0() { return cExprExpressionParserRuleCall_1_0; }
 	}
 	public class StandaloneExperimentElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.StandaloneExperiment");
@@ -1101,16 +1093,16 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		
 		//// Example: int my_var <- 5; or list<string> my_list;
 		//S_Definition:
-		//    tkey=(TypeRef) name=Valid_ID ('(' ActionArguments ')')? FacetsAndBlock;
+		//    tkey=TypeRef name=Valid_ID ('(' ActionArguments ')')? FacetsAndBlock;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//tkey=(TypeRef) name=Valid_ID ('(' ActionArguments ')')? FacetsAndBlock
+		//tkey=TypeRef name=Valid_ID ('(' ActionArguments ')')? FacetsAndBlock
 		public Group getGroup() { return cGroup; }
 		
-		//tkey=(TypeRef)
+		//tkey=TypeRef
 		public Assignment getTkeyAssignment_0() { return cTkeyAssignment_0; }
 		
-		//(TypeRef)
+		//TypeRef
 		public RuleCall getTkeyTypeRefParserRuleCall_0_0() { return cTkeyTypeRefParserRuleCall_0_0; }
 		
 		//name=Valid_ID
@@ -1463,9 +1455,13 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		///******************************************************************************************
 		// * *****************************************************************************************
 		// * * STATEMENT KEYS
+		// * * These keys represent two different cases:
+		// * * 1) Keywords that need to be included in Valid_ID, preventing the "lexer lock-in", so
+		// * * that they can be reused for facet names, variable names, etc.
+		// * * 2) Keywords that are not used for definition statements (e.g. 'create') but for which
+		// * * the parser cannot make the difference at its level, so that we
 		// * ******************************************************************************************
 		// * ******************************************************************************************/
-		//// Extracted to be included in Valid_ID, preventing lexer lock-in.
 		//K_BuiltIn:
 		//    'ask' | 'text' | 'assert' | 'setup' | 'add' | 'remove' | 'put' |
 		//    'capture' | 'release' | 'migrate' | 'create' | 'error' | 'warn' | 'write' | 'status' |
@@ -4062,7 +4058,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	//// Parses a raw block without a model wrapper. Example: { do action; }
 	//StandaloneBlock:
-	//    '__synthetic__' block=Block;
+	//    '__standalone_block__' block=Block;
 	public StandaloneBlockElements getStandaloneBlockAccess() {
 		return pStandaloneBlock;
 	}
@@ -4073,7 +4069,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	//// Parses a single assignment. Example: my_var <- 5 + 3;
 	//StandaloneExpression:
-	//    identifier=ID '<-' expr=Expression;
+	//    '__standalone_expression__' expr=Expression;
 	public StandaloneExpressionElements getStandaloneExpressionAccess() {
 		return pStandaloneExpression;
 	}
@@ -4375,7 +4371,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	//// Example: int my_var <- 5; or list<string> my_list;
 	//S_Definition:
-	//    tkey=(TypeRef) name=Valid_ID ('(' ActionArguments ')')? FacetsAndBlock;
+	//    tkey=TypeRef name=Valid_ID ('(' ActionArguments ')')? FacetsAndBlock;
 	public S_DefinitionElements getS_DefinitionAccess() {
 		return pS_Definition;
 	}
@@ -4453,9 +4449,13 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	///******************************************************************************************
 	// * *****************************************************************************************
 	// * * STATEMENT KEYS
+	// * * These keys represent two different cases:
+	// * * 1) Keywords that need to be included in Valid_ID, preventing the "lexer lock-in", so
+	// * * that they can be reused for facet names, variable names, etc.
+	// * * 2) Keywords that are not used for definition statements (e.g. 'create') but for which
+	// * * the parser cannot make the difference at its level, so that we
 	// * ******************************************************************************************
 	// * ******************************************************************************************/
-	//// Extracted to be included in Valid_ID, preventing lexer lock-in.
 	//K_BuiltIn:
 	//    'ask' | 'text' | 'assert' | 'setup' | 'add' | 'remove' | 'put' |
 	//    'capture' | 'release' | 'migrate' | 'create' | 'error' | 'warn' | 'write' | 'status' |

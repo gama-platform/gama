@@ -23,7 +23,6 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link gaml.compiler.gaml.impl.StandaloneExpressionImpl#getIdentifier <em>Identifier</em>}</li>
  *   <li>{@link gaml.compiler.gaml.impl.StandaloneExpressionImpl#getExpr <em>Expr</em>}</li>
  * </ul>
  *
@@ -31,26 +30,6 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  */
 public class StandaloneExpressionImpl extends EntryImpl implements StandaloneExpression
 {
-  /**
-   * The default value of the '{@link #getIdentifier() <em>Identifier</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #getIdentifier()
-   * @generated
-   * @ordered
-   */
-  protected static final String IDENTIFIER_EDEFAULT = null;
-
-  /**
-   * The cached value of the '{@link #getIdentifier() <em>Identifier</em>}' attribute.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #getIdentifier()
-   * @generated
-   * @ordered
-   */
-  protected String identifier = IDENTIFIER_EDEFAULT;
-
   /**
    * The cached value of the '{@link #getExpr() <em>Expr</em>}' containment reference.
    * <!-- begin-user-doc -->
@@ -80,31 +59,6 @@ public class StandaloneExpressionImpl extends EntryImpl implements StandaloneExp
   protected EClass eStaticClass()
   {
     return GamlPackage.Literals.STANDALONE_EXPRESSION;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public String getIdentifier()
-  {
-    return identifier;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public void setIdentifier(String newIdentifier)
-  {
-    String oldIdentifier = identifier;
-    identifier = newIdentifier;
-    if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, GamlPackage.STANDALONE_EXPRESSION__IDENTIFIER, oldIdentifier, identifier));
   }
 
   /**
@@ -183,8 +137,6 @@ public class StandaloneExpressionImpl extends EntryImpl implements StandaloneExp
   {
     switch (featureID)
     {
-      case GamlPackage.STANDALONE_EXPRESSION__IDENTIFIER:
-        return getIdentifier();
       case GamlPackage.STANDALONE_EXPRESSION__EXPR:
         return getExpr();
     }
@@ -201,9 +153,6 @@ public class StandaloneExpressionImpl extends EntryImpl implements StandaloneExp
   {
     switch (featureID)
     {
-      case GamlPackage.STANDALONE_EXPRESSION__IDENTIFIER:
-        setIdentifier((String)newValue);
-        return;
       case GamlPackage.STANDALONE_EXPRESSION__EXPR:
         setExpr((Expression)newValue);
         return;
@@ -221,9 +170,6 @@ public class StandaloneExpressionImpl extends EntryImpl implements StandaloneExp
   {
     switch (featureID)
     {
-      case GamlPackage.STANDALONE_EXPRESSION__IDENTIFIER:
-        setIdentifier(IDENTIFIER_EDEFAULT);
-        return;
       case GamlPackage.STANDALONE_EXPRESSION__EXPR:
         setExpr((Expression)null);
         return;
@@ -241,29 +187,10 @@ public class StandaloneExpressionImpl extends EntryImpl implements StandaloneExp
   {
     switch (featureID)
     {
-      case GamlPackage.STANDALONE_EXPRESSION__IDENTIFIER:
-        return IDENTIFIER_EDEFAULT == null ? identifier != null : !IDENTIFIER_EDEFAULT.equals(identifier);
       case GamlPackage.STANDALONE_EXPRESSION__EXPR:
         return expr != null;
     }
     return super.eIsSet(featureID);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public String toString()
-  {
-    if (eIsProxy()) return super.toString();
-
-    StringBuilder result = new StringBuilder(super.toString());
-    result.append(" (identifier: ");
-    result.append(identifier);
-    result.append(')');
-    return result.toString();
   }
 
 } //StandaloneExpressionImpl

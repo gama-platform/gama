@@ -62,4 +62,11 @@ public interface IGamlFileInfo extends IGamlDescription, IGamaFileMetaData {
 	 */
 	Collection<String> getExperiments();
 
+	/**
+	 * Gets the species.
+	 *
+	 * @return the species
+	 */
+	Collection<String> getSpecies();
+
 }

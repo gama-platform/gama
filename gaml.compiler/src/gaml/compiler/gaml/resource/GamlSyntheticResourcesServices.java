@@ -24,13 +24,19 @@ import gaml.compiler.gaml.ast.SyntacticModelElement;
  */
 public class GamlSyntheticResourcesServices {
 
+	/** The Constant STANDALONE_EXPRESSION_PREFIX. */
+	public static final String STANDALONE_EXPRESSION_PREFIX = "__standalone_expression__ ";
+
+	/** The Constant STANDALONE_BLOCK_PREFIX. */
+	public static final String STANDALONE_BLOCK_PREFIX = "__standalone_block__ ";
+
 	/**
 	 * Parses a string expression into an EObject by creating a temporary GAML resource.
 	 */
 	public static EObject getEObjectOf(final String string, final IExecutionContext tempContext, final IDescription ctx)
 			throws GamaRuntimeException {
 		EObject result = null;
-		final String s = "dummy <- " + string;
+		final String s = STANDALONE_EXPRESSION_PREFIX + string;
 		final GamlResource resource = GamlResourceServices.getTemporaryResource(ctx);
 		try {
 			final InputStream is = new ByteArrayInputStream(s.getBytes());
@@ -81,7 +87,7 @@ public class GamlSyntheticResourcesServices {
 	 */
 	public static List<IDescription> compileBlock(final String string, final IDescription actionContext,
 			final IExecutionContext tempContext) throws GamaRuntimeException {
-		final String s = "__synthetic__ {" + string + "}";
+		final String s = STANDALONE_BLOCK_PREFIX + " {" + string + "}";
 		final GamlResource resource = GamlResourceServices.getTemporaryResource(actionContext);
 		try (final Collector.AsList<IDescription> result = Collector.getList()) {
 			final InputStream is = new ByteArrayInputStream(s.getBytes());
