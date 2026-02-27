@@ -185,7 +185,7 @@ public class ParametricFileType extends ParametricType {
 	protected ParametricFileType(final String name, final Class<IGamaFile> class1,
 			final IGamaGetter<IGamaFile<?, ?>> helper, final IType<?> buffer, final IType<?> kt, final IType<?> ct,
 			final int id) {
-		super(Types.builtInTypes, Types.FILE, kt, ct);
+		super(Types.getBuiltInTypeManager(), Types.FILE, kt, ct);
 		support = class1;
 		bufferType = (IContainerType<?>) buffer;
 		builder = helper;

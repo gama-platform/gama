@@ -185,7 +185,7 @@ public abstract class UtilsForGamlAdditions {
 	protected Class<?> b = boolean.class;
 
 	/** Shortcut for the built-in types manager - provides access to GAMA's type system. */
-	protected ITypesManager TM = Types.builtInTypes;
+	protected ITypesManager TM = Types.getBuiltInTypeManager();
 
 	/**
 	 * A utility wrapper class for holding child descriptions. This class is used to group multiple

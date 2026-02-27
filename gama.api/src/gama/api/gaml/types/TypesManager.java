@@ -39,7 +39,7 @@ import gama.dev.DEBUG;
  * </p>
  * 
  * <pre>
- * Built-in TypesManager (Types.builtInTypes)
+ * Built-in TypesManager (Types.BUILT_IN_TYPES)
  *   ↑
  * Model TypesManager
  *   ↑
@@ -79,7 +79,7 @@ import gama.dev.DEBUG;
  * <pre>
  * {@code
  * // Create a types manager for a model
- * ITypesManager modelTypes = new TypesManager(Types.builtInTypes);
+ * ITypesManager modelTypes = new TypesManager(Types.BUILT_IN_TYPES);
  * 
  * // Initialize with model's species
  * modelTypes.init(modelDescription);
@@ -153,7 +153,7 @@ public class TypesManager implements ITypesManager {
 	 * The parent types manager to delegate to when a type is not found locally.
 	 * 
 	 * <p>
-	 * Typically points to {@link Types#builtInTypes} for model-level managers.
+	 * Typically points to {@link Types#BUILT_IN_TYPES} for model-level managers.
 	 * </p>
 	 */
 	private TypesManager parent;
@@ -442,7 +442,7 @@ public class TypesManager implements ITypesManager {
 	 * // species animal { ... }
 	 * // species dog parent: animal { ... }
 	 * 
-	 * TypesManager modelTypes = new TypesManager(Types.builtInTypes);
+	 * TypesManager modelTypes = new TypesManager(Types.BUILT_IN_TYPES);
 	 * modelTypes.init(modelDescription);
 	 * 
 	 * // After init:

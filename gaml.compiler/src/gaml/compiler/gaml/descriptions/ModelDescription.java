@@ -361,7 +361,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 			final Set<String> imports, final IAgentConstructor helper, final Set<String> skills) {
 		super(IKeyword.MODEL, clazz, macro, parent, children, source, facets, skills);
 		setName(name);
-		types = parent instanceof ModelDescription m ? new TypesManager(m.types) : Types.builtInTypes;
+		types = parent instanceof ModelDescription m ? new TypesManager(m.types) : Types.getBuiltInTypeManager();
 		modelFilePath = modelPath;
 		modelProjectPath = projectPath;
 		this.validationContext = validationContext;

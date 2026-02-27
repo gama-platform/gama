@@ -15,7 +15,6 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.types.ITypesManager;
@@ -83,23 +82,8 @@ public final class ExpressionCompilationContext implements Closeable {
 	 */
 	public ExpressionCompilationContext(final IDescription context) {
 		this.currentContext = context;
-		this.currentTypesManager = findTypesManager(context);
+		this.currentTypesManager = Types.findTypesManager(context);
 		this.documentationContext = findDocumentationContext(context);
-	}
-
-	/**
-	 * Find types manager.
-	 *
-	 * @param context
-	 *            the context
-	 * @return the i types manager
-	 */
-	public static ITypesManager findTypesManager(final IDescription context) {
-		if (context == null) return Types.builtInTypes;
-		final IModelDescription md = context.getModelDescription();
-		if (md == null) return Types.builtInTypes;
-		final ITypesManager tm = md.getTypesManager();
-		return tm != null ? tm : Types.builtInTypes;
 	}
 
 	/**

@@ -58,6 +58,7 @@ public class PreprocessingGamlParser extends GamlParser {
 
 			// 3. Parse the TAGGED text
 			Reader taggedReader = new StringReader(result);
+
 			IParseResult parseResult = super.doParse(taggedReader);
 
 			return parseResult;

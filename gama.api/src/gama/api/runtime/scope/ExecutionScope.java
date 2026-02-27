@@ -54,13 +54,13 @@ import gama.dev.DEBUG;
 
 /**
  * Standard implementation of {@link IScope} providing the complete execution context for GAML code.
- * 
+ *
  * <p>
  * ExecutionScope is the primary scope implementation in GAMA, managing the entire execution environment for statements,
  * expressions, and actions. It maintains multiple context stacks (agents, execution contexts, symbols) and provides
  * access to all runtime services needed during execution.
  * </p>
- * 
+ *
  * <h2>Core Responsibilities</h2>
  * <ul>
  * <li><b>Context Management:</b> Maintains agent stack, execution context stack, and symbol stack</li>
@@ -70,13 +70,13 @@ import gama.dev.DEBUG;
  * <li><b>Error Handling:</b> Manages exception reporting, try-mode, and error state</li>
  * <li><b>Lifecycle Management:</b> Handles agent initialization, stepping, and disposal</li>
  * </ul>
- * 
+ *
  * <h2>Internal Structure</h2>
- * 
+ *
  * <p>
  * ExecutionScope maintains three key context structures:
  * </p>
- * 
+ *
  * <pre>
  * ExecutionScope {
  *   - executionContext: IExecutionContext      // Variable scoping and local vars
@@ -86,215 +86,220 @@ import gama.dev.DEBUG;
  *   - scopeName: String                        // Scope identifier
  * }
  * </pre>
- * 
+ *
  * <h2>Usage Examples</h2>
- * 
+ *
  * <h3>Creating a Scope</h3>
+ *
  * <pre>{@code
  * // Create scope for an experiment agent
  * ITopLevelAgent experimentAgent = ...;
  * ExecutionScope scope = new ExecutionScope(experimentAgent);
- * 
+ *
  * // Create scope with a custom name
  * ExecutionScope namedScope = new ExecutionScope(experimentAgent, "MyScope");
- * 
+ *
  * // Scope is now ready for execution
  * IExecutionResult result = scope.execute(statement, agent, null);
  * }</pre>
- * 
+ *
  * <h3>Executing Statements</h3>
+ *
  * <pre>{@code
  * ExecutionScope scope = new ExecutionScope(root);
  * IAgent agent = scope.getSimulation().getAgent("agent_0");
  * IStatement statement = ...; // e.g., a reflex or action
- * 
+ *
  * // Execute in agent's context
  * IExecutionResult result = scope.execute(statement, agent, null);
- * 
+ *
  * if (result.passed()) {
  *     Object returnValue = result.getValue();
  *     // Process result...
  * }
  * }</pre>
- * 
+ *
  * <h3>Managing Agent Context</h3>
+ *
  * <pre>{@code
  * ExecutionScope scope = new ExecutionScope(root);
- * 
+ *
  * // Push an agent onto the stack
  * boolean pushed = scope.push(agent);
  * try {
- *     // Agent is now the current context
- *     assert scope.getAgent() == agent;
- *     
- *     // Access agent's variables
- *     Object value = scope.getVarValue("my_attribute");
- *     
- *     // Execute code in agent's context
- *     scope.execute(statement);
+ * 	// Agent is now the current context
+ * 	assert scope.getAgent() == agent;
+ * 
+ * 	// Access agent's variables
+ * 	Object value = scope.getVarValue("my_attribute");
+ * 
+ * 	// Execute code in agent's context
+ * 	scope.execute(statement);
  * } finally {
- *     // Always pop to restore previous context
- *     if (pushed) {
- *         scope.pop(agent);
- *     }
+ * 	// Always pop to restore previous context
+ * 	if (pushed) { scope.pop(agent); }
  * }
  * }</pre>
- * 
+ *
  * <h3>Variable Access</h3>
+ *
  * <pre>{@code
  * ExecutionScope scope = new ExecutionScope(root);
  * scope.push(agent);
- * 
+ *
  * // Access agent attributes
  * String name = (String) scope.getAgentVarValue(agent, "name");
- * 
+ *
  * // Access global variables
  * int worldSize = (Integer) scope.getGlobalVarValue("world_size");
- * 
+ *
  * // Access local/temporary variables
  * Object localValue = scope.getVarValue("temp_var");
- * 
+ *
  * // Set variables
  * scope.setVarValue("my_var", 42);
  * scope.setAgentVarValue(agent, "energy", 100.0);
  * scope.setGlobalVarValue("total_count", 1000);
  * }</pre>
- * 
+ *
  * <h3>Flow Control</h3>
+ *
  * <pre>{@code
  * ExecutionScope scope = new ExecutionScope(root);
- * 
+ *
  * // Execute loop body
  * for (int i = 0; i < 10; i++) {
- *     scope.execute(bodyStatement);
- *     
- *     // Check for break
- *     if (scope.getAndClearBreakStatus() != null) {
- *         break; // Exit loop
- *     }
- *     
- *     // Check for continue
- *     if (scope.getAndClearContinueStatus() != null) {
- *         continue; // Skip to next iteration
- *     }
- *     
- *     // Check for return
- *     if (scope.getAndClearReturnStatus() != null) {
- *         return scope.getVarValue("result");
- *     }
+ * 	scope.execute(bodyStatement);
+ * 
+ * 	// Check for break
+ * 	if (scope.getAndClearBreakStatus() != null) {
+ * 		break; // Exit loop
+ * 	}
+ * 
+ * 	// Check for continue
+ * 	if (scope.getAndClearContinueStatus() != null) {
+ * 		continue; // Skip to next iteration
+ * 	}
+ * 
+ * 	// Check for return
+ * 	if (scope.getAndClearReturnStatus() != null) { return scope.getVarValue("result"); }
  * }
  * }</pre>
- * 
+ *
  * <h3>Error Handling</h3>
+ *
  * <pre>{@code
  * ExecutionScope scope = new ExecutionScope(root);
- * 
+ *
  * // Disable error reporting for experimental code
  * scope.disableErrorReporting();
  * try {
- *     // Errors won't be reported to user
- *     riskyOperation(scope);
+ * 	// Errors won't be reported to user
+ * 	riskyOperation(scope);
  * } finally {
- *     scope.enableErrorReporting();
+ * 	scope.enableErrorReporting();
  * }
- * 
+ *
  * // Use try-mode for exception handling
  * scope.enableTryMode();
  * try {
- *     scope.execute(statement);
+ * 	scope.execute(statement);
  * } catch (GamaRuntimeException e) {
- *     // Handle error
- *     scope.setCurrentError(e);
+ * 	// Handle error
+ * 	scope.setCurrentError(e);
  * } finally {
- *     scope.disableTryMode();
+ * 	scope.disableTryMode();
  * }
  * }</pre>
- * 
+ *
  * <h3>Accessing Runtime Services</h3>
+ *
  * <pre>{@code
  * ExecutionScope scope = new ExecutionScope(root);
- * 
+ *
  * // Access random generator
  * IRandom random = scope.getRandom();
  * double randomValue = random.next();
- * 
+ *
  * // Access GUI
  * IGui gui = scope.getGui();
  * gui.inform("Simulation started");
- * 
+ *
  * // Access clock
  * IClock clock = scope.getClock();
  * double currentTime = clock.getTime();
- * 
+ *
  * // Access topology
  * ITopology topology = scope.getTopology();
  * List<IAgent> neighbors = topology.getNeighborsOf(agent, 10.0, scope);
- * 
+ *
  * // Access types
  * IType intType = scope.getType("int");
  * }</pre>
- * 
+ *
  * <h3>Copying Scopes</h3>
+ *
  * <pre>{@code
  * ExecutionScope originalScope = new ExecutionScope(root);
- * 
+ *
  * // Create a copy for nested execution
  * IScope copyScope = originalScope.copy("NestedExecution");
- * 
+ *
  * // Create a graphics scope for display operations
  * IGraphicsScope graphicsScope = originalScope.copyForGraphics("Display");
  * graphicsScope.setGraphics(graphics);
  * }</pre>
- * 
+ *
  * <h3>Agent Lifecycle</h3>
+ *
  * <pre>{@code
  * ExecutionScope scope = new ExecutionScope(root);
  * IAgent newAgent = ...; // Newly created agent
- * 
+ *
  * // Initialize the agent
  * IExecutionResult initResult = scope.init(newAgent);
- * 
+ *
  * if (initResult.passed()) {
  *     // Step the agent each cycle
  *     IExecutionResult stepResult = scope.step(newAgent);
- *     
+ *
  *     if (!stepResult.passed()) {
  *         // Handle step failure
  *     }
  * }
  * }</pre>
- * 
+ *
  * <h2>Scope Lifecycle</h2>
- * 
+ *
  * <p>
  * A typical scope lifecycle:
  * </p>
- * 
+ *
  * <pre>
  * 1. Creation:     new ExecutionScope(root)
  * 2. Usage:        scope.execute(), scope.push(), scope.getVarValue(), etc.
  * 3. Disposal:     scope.clear() or scope.close()
  * 4. After clear:  scope.isClosed() returns true, scope is unusable
  * </pre>
- * 
+ *
  * <h2>Thread Safety</h2>
- * 
+ *
  * <p>
  * ExecutionScope is NOT thread-safe. Each thread should have its own scope instance. The use of volatile fields for
  * flow control provides some thread visibility guarantees but does not make the class fully thread-safe.
  * </p>
- * 
+ *
  * <h2>Performance Considerations</h2>
- * 
+ *
  * <ul>
  * <li><b>Context Stacks:</b> Push/pop operations are optimized but should still be minimized in tight loops</li>
  * <li><b>Variable Access:</b> Local variables are faster to access than agent attributes or global variables</li>
  * <li><b>Benchmarking:</b> Scope implements IBenchmarkable and tracks execution time when benchmarking is enabled</li>
  * <li><b>Object Pooling:</b> AgentExecutionContext uses object pooling to reduce allocation overhead</li>
  * </ul>
- * 
+ *
  * <h2>Integration with GAMA Framework</h2>
- * 
+ *
  * <p>
  * ExecutionScope is used throughout GAMA:
  * </p>
@@ -305,13 +310,13 @@ import gama.dev.DEBUG;
  * <li>Actions execute within a caller's scope</li>
  * <li>Displays use GraphicsScope (subclass) for rendering</li>
  * </ul>
- * 
+ *
  * @see IScope
  * @see GraphicsScope
  * @see ExecutionContext
  * @see AgentExecutionContext
  * @see SpecialContext
- * 
+ *
  * @author drogoul
  * @since 23 mai 2013
  */
@@ -947,7 +952,8 @@ public class ExecutionScope implements IScope {
 	/**
 	 * Method setAgentVarValue()
 	 *
-	 * @see gama.api.runtime.scope.IScope#setAgentVarValue(gama.api.kernel.agent.IAgent, java.lang.String, java.lang.Object)
+	 * @see gama.api.runtime.scope.IScope#setAgentVarValue(gama.api.kernel.agent.IAgent, java.lang.String,
+	 *      java.lang.Object)
 	 */
 	@Override
 	public void setAgentVarValue(final IAgent agent, final String name, final Object v) {
@@ -1294,10 +1300,6 @@ public class ExecutionScope implements IScope {
 	}
 
 	@Override
-	public ITypesManager getTypes() {
-		IModelSpecies m = getModel();
-		if (m == null) return Types.builtInTypes;
-		return m.getDescription().getTypesManager();
-	}
+	public ITypesManager getTypes() { return Types.findTypesManager(this); }
 
 }

@@ -43,7 +43,7 @@ public class PlatformFactory extends SpeciesFactory {
 	public ISpeciesDescription createBuiltInSpeciesDescription(final String name, final Class clazz,
 			final ISpeciesDescription superDesc, final ISpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> skills, final Facets userSkills, final String plugin) {
-		ArtefactProtoRegistry.addSpeciesNameAsType(name);
+		ArtefactProtoRegistry.addBuiltInSpeciesNameAsType(name);
 		return new PlatformSpeciesDescription(name, clazz, superDesc, parent, helper, skills, userSkills, plugin);
 	}
 

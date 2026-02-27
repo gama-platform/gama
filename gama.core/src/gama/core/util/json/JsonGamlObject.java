@@ -13,7 +13,6 @@ package gama.core.util.json;
 import java.io.IOException;
 
 import gama.api.gaml.types.IType;
-import gama.api.gaml.types.ITypesManager;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.IMap;
@@ -59,8 +58,7 @@ public class JsonGamlObject extends JsonAbstractObject {
 
 	@Override
 	public Object toGamlValue(final IScope scope) {
-		ITypesManager types = scope == null ? Types.builtInTypes : scope.getTypes();
-		IType<?> gamlType = types.decodeType(type);
+		IType<?> gamlType = Types.findTypesManager(scope).decodeType(type);
 		return gamlType.deserializeFromJson(scope, (IMap<String, Object>) toMap(scope));
 
 	}

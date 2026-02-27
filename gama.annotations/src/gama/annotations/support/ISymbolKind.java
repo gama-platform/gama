@@ -105,7 +105,7 @@ public interface ISymbolKind {
 
 	/** The number. */
 	// Update this variable when adding a kind of symbol
-	int __NUMBER__ = 17;
+	int __NUMBER_OF_DECLARED_SYMBOL_KINDS__ = 17;
 
 	/** The template menu. */
 	String[] TEMPLATE_MENU = { "Species", "Model", "Statement", "Behavior", "Parameter", "Output", "Layer", "Skill",

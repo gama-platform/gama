@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -32,6 +33,9 @@ import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.dev.DEBUG;
+import one.util.streamex.StreamEx;
 
 /**
  * Central registry for GAML language artefact prototypes (statements, variables, and facets).
@@ -77,7 +81,7 @@ import gama.api.gaml.types.IType;
  * <h2>Dynamic Type Registration</h2>
  * <p>
  * As species are defined in GAML models, they are dynamically registered as valid type keywords using
- * {@link #addSpeciesNameAsType(String)}, allowing them to be used in variable declarations.
+ * {@link #addBuiltInSpeciesNameAsType(String)}, allowing them to be used in variable declarations.
  * </p>
  *
  * <h2>Usage Example</h2>
@@ -127,17 +131,17 @@ public class ArtefactProtoRegistry {
 	public static final String SPECIES_VAR = "species_var";
 
 	/** Map of statement keywords to their prototype definitions. */
-	public static final Map<String, IArtefactProto.Symbol> STATEMENT_KEYWORDS_PROTOS = new HashMap<>();
+	private static final Map<String, IArtefactProto.Symbol> STATEMENT_KEYWORDS_PROTOS = new HashMap<>();
 
 	/** Map of variable declaration keywords to their prototype definitions. */
-	public static final Map<String, IArtefactProto.Symbol> VAR_KEYWORDS_PROTOS = new HashMap<>();
+	private static final Map<String, IArtefactProto.Symbol> VAR_KEYWORDS_PROTOS = new HashMap<>();
 
 	/** Multimap from variable kind (type ID) to the keywords that declare that kind. */
 	public final static SetMultimap<Integer, String> VARKIND2KEYWORDS =
 			Multimaps.newSetMultimap(new ConcurrentHashMap<>(), ConcurrentHashMap::newKeySet);
 
 	/** Map of artefact kinds to their prototype definitions. */
-	public static final Map<Integer, IArtefactProto.Symbol> KINDS_PROTOS = new HashMap<>();
+	public static final Map<Integer, IArtefactProto.Symbol> VARIABLE_KINDS_TO_DECLARATION_PROTOTYPES = new HashMap<>();
 
 	/** Cache for statement protos. */
 	private static volatile Iterable<IArtefactProto.Symbol> cachedStatementProtos = null;
@@ -162,7 +166,7 @@ public class ArtefactProtoRegistry {
 	public static void addNewTypeName(final String s, final int kind) {
 		addNewVarKeyword(s, kind);
 		if (VAR_KEYWORDS_PROTOS.containsKey(s)) return;
-		final IArtefactProto.Symbol p = KINDS_PROTOS.get(kind);
+		final IArtefactProto.Symbol p = VARIABLE_KINDS_TO_DECLARATION_PROTOTYPES.get(kind);
 		if (p != null) {
 			if ("species".equals(s)) {
 				VAR_KEYWORDS_PROTOS.put(SPECIES_VAR, p);
@@ -354,7 +358,7 @@ public class ArtefactProtoRegistry {
 	 * @param name
 	 *            the name
 	 */
-	public static void addSpeciesNameAsType(final String name) {
+	public static void addBuiltInSpeciesNameAsType(final String name) {
 		if (!AGENT.equals(name) && !IKeyword.EXPERIMENT.equals(name)) {
 			VAR_KEYWORDS_PROTOS.putIfAbsent(name, VAR_KEYWORDS_PROTOS.get(AGENT));
 		}
@@ -375,7 +379,23 @@ public class ArtefactProtoRegistry {
 		} else {
 			for (final String s : names) { STATEMENT_KEYWORDS_PROTOS.put(s, md); }
 		}
-		KINDS_PROTOS.put(kind, md);
+		VARIABLE_KINDS_TO_DECLARATION_PROTOTYPES.put(kind, md);
+	}
+
+	/**
+	 *
+	 */
+	public static void writeStats() {
+		DEBUG.LINE();
+		DEBUG.TITLE("Artefact Proto Registry Stats");
+		DEBUG.LINE();
+		DEBUG.LOG("Statement protos registered: " + STATEMENT_KEYWORDS_PROTOS.keySet());
+		DEBUG.LOG("Variable protos registered: "
+				+ StreamEx.of(VAR_KEYWORDS_PROTOS.keySet()).sorted().collect(Collectors.toList()));
+		DEBUG.LOG("Compared to registered types: " + StreamEx.of(Iterables.toArray(Types.getTypeNames(), String.class))
+				.sorted().collect(Collectors.toList()));
+		DEBUG.LOG("Kinds protos registered: " + VARIABLE_KINDS_TO_DECLARATION_PROTOTYPES.keySet());
+		DEBUG.LINE();
 	}
 
 }

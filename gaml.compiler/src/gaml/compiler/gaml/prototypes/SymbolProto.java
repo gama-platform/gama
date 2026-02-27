@@ -72,7 +72,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 	private final ImmutableSet<String> contextKeywords;
 
 	/** The context kinds. */
-	private final boolean[] contextKinds = new boolean[ISymbolKind.__NUMBER__];
+	private final boolean[] contextKinds = new boolean[ISymbolKind.__NUMBER_OF_DECLARED_SYMBOL_KINDS__];
 
 	/** The possible facets. */
 	private final Map<String, IArtefactProto.Facet> possibleFacets;

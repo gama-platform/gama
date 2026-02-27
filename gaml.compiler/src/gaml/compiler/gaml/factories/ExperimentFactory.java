@@ -76,7 +76,7 @@ public class ExperimentFactory extends SpeciesFactory {
 	public IExperimentDescription createBuiltInSpeciesDescription(final String name, final Class clazz,
 			final ISpeciesDescription superDesc, final ISpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> skills, final Facets userSkills, final String plugin) {
-		ArtefactProtoRegistry.addSpeciesNameAsType(name);
+		ArtefactProtoRegistry.addBuiltInSpeciesNameAsType(name);
 		return new ExperimentDescription(name, clazz, superDesc, parent, helper, skills, userSkills, plugin);
 	}
 

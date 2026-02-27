@@ -96,8 +96,7 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 					new GamlIdiomsProvider<>("operators", "Operators", Iterables.concat(Iterables
 							.transform(GAML.getOperatorsNames(), name -> GAML.getOperatorsNamed(name).values())));
 
-			GamlIdiomsProvider<IType<?>> TYPES =
-					new GamlIdiomsProvider<>("types", "Types", Types.builtInTypes.getAllTypes());
+			GamlIdiomsProvider<IType<?>> TYPES = new GamlIdiomsProvider<>("types", "Types", Types.getAllTypes());
 
 			GamlIdiomsProvider<IArtefactProto.Facet> FACETS =
 					new GamlIdiomsProvider<>("facets", "Facets", ArtefactProtoRegistry.getFacetsProtos());
