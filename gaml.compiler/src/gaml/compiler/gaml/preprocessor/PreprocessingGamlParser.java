@@ -12,13 +12,17 @@ package gaml.compiler.gaml.preprocessor;
 
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Map;
 
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.parser.ParseException;
 
 import com.google.common.io.CharStreams;
 
 import gama.dev.DEBUG;
+import gama.dev.STRINGS;
+import gaml.compiler.gaml.indexer.GamlResourceIndexer;
 import gaml.compiler.gaml.resource.GamlResourceReader;
 import gaml.compiler.parser.antlr.GamlParser;
 
@@ -28,21 +32,28 @@ import gaml.compiler.parser.antlr.GamlParser;
 public class PreprocessingGamlParser extends GamlParser {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	@Override
 	public IParseResult doParse(final Reader reader) throws ParseException {
 		try {
 			GamlResourceOffsetMap offsetMap = null;
+			URI uri = null;
 			// 1. Read the original file
-			String result = CharStreams.toString(reader);
-			if (reader instanceof GamlResourceReader gamlReader) { offsetMap = gamlReader.getOffsetMap(); }
+			if (reader instanceof GamlResourceReader gamlReader) {
+				offsetMap = gamlReader.getOffsetMap();
+				uri = gamlReader.getURI();
+			}
 
 			DEBUG.OUT("Preprocessor called !");
+			String result = CharStreams.toString(reader);
 
 			// 2. Run the tagging preprocessor
 			GamlPreprocessor preprocessor = new GamlPreprocessor(offsetMap);
+			Map<URI, String> imports = GamlResourceIndexer.allImportsOf(uri);
+			DEBUG.OUT("Imports of " + uri + ": " + STRINGS.TO_STRING(imports.keySet()));
+
 			// String result = preprocessor.process(rawText);
 
 			// 3. Parse the TAGGED text

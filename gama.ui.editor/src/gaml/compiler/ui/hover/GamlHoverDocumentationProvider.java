@@ -35,7 +35,6 @@ import gama.api.ui.displays.IDisplayCreator;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.files.IGamaFileMetaData;
-import gama.gaml.statements.DoStatement;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.Array;
 import gaml.compiler.gaml.EGaml;
@@ -254,7 +253,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		// CASE do run_thread interval: 2#s;
 		if (facet.eContainer() instanceof S_Do sdo && sdo.getExpr() instanceof VariableRef vr) {
 			String key = EGaml.getInstance().getKeyOf(facet);
-			if (!DoStatement.DO_FACETS.contains(key)) {
+			if (!ArtefactProtoRegistry.getDoFacets().contains(key)) {
 				String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(sdo.getExpr());
 				IGamlDescription action = documenter.getGamlDocumentation(vr);
 				String doc = action == null ? "" : action.getDocumentation().get(key).toString();
@@ -312,7 +311,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				&& el.eContainer() instanceof Facet facet && facet.eContainer() instanceof S_Do sdo
 				&& sdo.getExpr() instanceof VariableRef v) {
 			String key = EGaml.getInstance().getKeyOf(pair);
-			if (!DoStatement.DO_FACETS.contains(key)) {
+			if (!ArtefactProtoRegistry.getDoFacets().contains(key)) {
 				String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(sdo.getExpr());
 				IGamlDescription action = documenter.getGamlDocumentation(v);
 				String doc = action == null ? "" : action.getDocumentation().get(key).toString();

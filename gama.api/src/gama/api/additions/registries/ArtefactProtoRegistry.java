@@ -35,65 +35,77 @@ import gama.api.gaml.types.IType;
 
 /**
  * Central registry for GAML language artefact prototypes (statements, variables, and facets).
- * 
- * <p>This registry maintains the metadata and prototypes for all GAML language constructs,
- * including statements (like 'create', 'ask', 'loop'), variable declarations (like 'int', 'float',
- * 'species'), and their facets (like 'name:', 'type:', 'from:'). It serves as the primary
- * reference for the GAML compiler and parser.</p>
- * 
+ *
+ * <p>
+ * This registry maintains the metadata and prototypes for all GAML language constructs, including statements (like
+ * 'create', 'ask', 'loop'), variable declarations (like 'int', 'float', 'species'), and their facets (like 'name:',
+ * 'type:', 'from:'). It serves as the primary reference for the GAML compiler and parser.
+ * </p>
+ *
  * <h2>Artefact Types</h2>
- * <p>The registry manages three main categories of artefacts:</p>
+ * <p>
+ * The registry manages three main categories of artefacts:
+ * </p>
  * <ul>
- *   <li><b>Statement Prototypes</b> - Definitions of GAML statements (commands, control structures)</li>
- *   <li><b>Variable Prototypes</b> - Definitions of variable declaration keywords and types</li>
- *   <li><b>Facet Prototypes</b> - Definitions of statement and variable facets (named parameters)</li>
+ * <li><b>Statement Prototypes</b> - Definitions of GAML statements (commands, control structures)</li>
+ * <li><b>Variable Prototypes</b> - Definitions of variable declaration keywords and types</li>
+ * <li><b>Facet Prototypes</b> - Definitions of statement and variable facets (named parameters)</li>
  * </ul>
- * 
+ *
  * <h2>Prototype Organization</h2>
- * <p>Prototypes are organized by:</p>
+ * <p>
+ * Prototypes are organized by:
+ * </p>
  * <ul>
- *   <li><b>Keyword</b> - The GAML keyword that triggers the artefact (stored in keyword maps)</li>
- *   <li><b>Kind</b> - The semantic category of the artefact (stored in kind map)</li>
- *   <li><b>Variable Type</b> - For variables, organized by type ID (stored in type-to-keyword multimap)</li>
+ * <li><b>Keyword</b> - The GAML keyword that triggers the artefact (stored in keyword maps)</li>
+ * <li><b>Kind</b> - The semantic category of the artefact (stored in kind map)</li>
+ * <li><b>Variable Type</b> - For variables, organized by type ID (stored in type-to-keyword multimap)</li>
  * </ul>
- * 
+ *
  * <h2>Special Keyword Sets</h2>
- * <p>The registry maintains several sets of keywords with special semantic meaning:</p>
+ * <p>
+ * The registry maintains several sets of keywords with special semantic meaning:
+ * </p>
  * <ul>
- *   <li>{@link #BREAKABLE_STATEMENTS} - Statements that can contain 'break'</li>
- *   <li>{@link #CONTINUABLE_STATEMENTS} - Statements that can contain 'continue'</li>
- *   <li>{@link #BINARY_PROTO_NAMES} - Binary operator keywords</li>
- *   <li>{@link #PROTOS_WITHOUT_PARENTHESES} - Operators that don't require parentheses</li>
- *   <li>{@link #NON_SERIALIZABLE_FACETS} - Facets excluded from serialization</li>
+ * <li>{@link #BREAKABLE_STATEMENTS} - Statements that can contain 'break'</li>
+ * <li>{@link #CONTINUABLE_STATEMENTS} - Statements that can contain 'continue'</li>
+ * <li>{@link #BINARY_PROTO_NAMES} - Binary operator keywords</li>
+ * <li>{@link #PROTOS_WITHOUT_PARENTHESES} - Operators that don't require parentheses</li>
+ * <li>{@link #NON_SERIALIZABLE_FACETS} - Facets excluded from serialization</li>
  * </ul>
- * 
+ *
  * <h2>Dynamic Type Registration</h2>
- * <p>As species are defined in GAML models, they are dynamically registered as valid type
- * keywords using {@link #addSpeciesNameAsType(String)}, allowing them to be used in
- * variable declarations.</p>
- * 
+ * <p>
+ * As species are defined in GAML models, they are dynamically registered as valid type keywords using
+ * {@link #addSpeciesNameAsType(String)}, allowing them to be used in variable declarations.
+ * </p>
+ *
  * <h2>Usage Example</h2>
+ *
  * <pre>{@code
  * // Retrieve a statement prototype
  * IArtefactProto.Symbol createProto = ArtefactProtoRegistry.getStatementProto("create");
- * 
+ *
  * // Check if a keyword is a statement
  * boolean isStatement = ArtefactProtoRegistry.isStatementProto("loop");
- * 
+ *
  * // Get the omissible facet for a statement
  * String omissible = ArtefactProtoRegistry.getOmissibleFacetForSymbol("create");
- * 
+ *
  * // Register a species as a type
  * ArtefactProtoRegistry.addSpeciesNameAsType("my_species");
  * }</pre>
- * 
+ *
  * @author drogoul
  * @since GAMA 1.0
- * 
+ *
  * @see IArtefactProto
  * @see gama.api.compilation.descriptions.IDescription
  */
 public class ArtefactProtoRegistry {
+
+	/** The Constant DO_FACETS. */
+	public static Set<String> DO_FACETS;
 
 	/** The Constant BREAKABLE_STATEMENTS. */
 	public static final Set<String> BREAKABLE_STATEMENTS = new HashSet<>();
@@ -135,13 +147,17 @@ public class ArtefactProtoRegistry {
 
 	/**
 	 * Registers a new type name as a valid variable declaration keyword.
-	 * 
-	 * <p>This method is called when new types are defined (e.g., through species declarations)
-	 * to make them available as variable declaration keywords in GAML. For example, after
-	 * declaring a species "my_agent", this allows writing "my_agent x;".</p>
 	 *
-	 * @param s the type name to register
-	 * @param kind the kind ID for this type (from {@link IType})
+	 * <p>
+	 * This method is called when new types are defined (e.g., through species declarations) to make them available as
+	 * variable declaration keywords in GAML. For example, after declaring a species "my_agent", this allows writing
+	 * "my_agent x;".
+	 * </p>
+	 *
+	 * @param s
+	 *            the type name to register
+	 * @param kind
+	 *            the kind ID for this type (from {@link IType})
 	 */
 	public static void addNewTypeName(final String s, final int kind) {
 		addNewVarKeyword(s, kind);
@@ -154,6 +170,16 @@ public class ArtefactProtoRegistry {
 				VAR_KEYWORDS_PROTOS.put(s, p);
 			}
 		}
+	}
+
+	/**
+	 * Gets the do facets.
+	 *
+	 * @return the do facets
+	 */
+	public static Set<String> getDoFacets() {
+		if (DO_FACETS == null) { DO_FACETS = getAllowedFacetsFor(IKeyword.DO); }
+		return DO_FACETS;
 	}
 
 	/** Operators that can be used without parentheses in GAML expressions. */
@@ -288,15 +314,11 @@ public class ArtefactProtoRegistry {
 	 *            the keys
 	 * @return the allowed facets for
 	 */
-	public static Set<String> getAllowedFacetsFor(final String... keys) {
-		if (keys == null || keys.length == 0) return Collections.emptySet();
-		final Set<String> result = new HashSet<>();
-		for (final String key : keys) {
-			final IArtefactProto.Symbol md = getProto(key, null);
-			if (md != null) { result.addAll(md.getPossibleFacets().keySet()); }
-		}
-
-		return result;
+	public static Set<String> getAllowedFacetsFor(final String key) {
+		if (key == null) return Collections.emptySet();
+		final IArtefactProto.Symbol md = getProto(key, null);
+		if (md == null) return Collections.emptySet();
+		return md.getPossibleFacets().keySet();
 	}
 
 	/**

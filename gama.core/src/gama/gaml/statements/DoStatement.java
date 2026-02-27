@@ -9,8 +9,6 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import java.util.Set;
-
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;
@@ -179,7 +177,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 
 		@Override
 		public String serializeFacetValue(final IDescription s, final String key, final boolean includingBuiltIn) {
-			if (!DO_FACETS.contains(key)) return null;
+			if (!ArtefactProtoRegistry.DO_FACETS.contains(key)) return null;
 			return super.serializeFacetValue(s, key, includingBuiltIn);
 		}
 
@@ -193,9 +191,6 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 
 	/** The function. */
 	final IExpression function, returns;
-
-	/** The Constant DO_FACETS. */
-	public static final Set<String> DO_FACETS = ArtefactProtoRegistry.getAllowedFacetsFor(IKeyword.DO, IKeyword.INVOKE);
 
 	/**
 	 * Instantiates a new do statement.

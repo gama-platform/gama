@@ -59,4 +59,11 @@ public class GamlResourceReader extends Reader {
 	 */
 	public GamlResourceOffsetMap getOffsetMap() { return offsetMap; }
 
+	/**
+	 * Gets the uri.
+	 *
+	 * @return the uri
+	 */
+	public URI getURI() { return uri; }
+
 }

@@ -15,7 +15,6 @@ import static gama.api.constants.IKeyword.WITH;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 
@@ -36,9 +35,6 @@ import gama.api.gaml.types.Types;
  * The Class StatementWithChildrenDescription.
  */
 public class DoDescription extends StatementWithChildrenDescription {
-
-	/** The Constant DO_FACETS. */
-	public static final Set<String> DO_FACETS = ArtefactProtoRegistry.getAllowedFacetsFor(IKeyword.DO, IKeyword.INVOKE);
 
 	/** The action. */
 	IActionDescription action;
@@ -120,7 +116,7 @@ public class DoDescription extends StatementWithChildrenDescription {
 
 	@Override
 	protected Arguments createArgs() {
-		if (!hasFacets() || !hasFacetsNotIn(DO_FACETS)) {
+		if (!hasFacets() || !hasFacetsNotIn(ArtefactProtoRegistry.getDoFacets())) {
 			if (hasFacet(WITH)) {
 				try {
 					return GAML.getExpressionFactory().createArgumentMap(getAction(), getFacet(WITH), this);
@@ -133,7 +129,7 @@ public class DoDescription extends StatementWithChildrenDescription {
 		}
 		final Arguments args = new Arguments();
 		visitFacets((facet, b) -> {
-			if (!DO_FACETS.contains(facet)) { args.put(facet, b); }
+			if (!ArtefactProtoRegistry.getDoFacets().contains(facet)) { args.put(facet, b); }
 			return true;
 		});
 		return args;
