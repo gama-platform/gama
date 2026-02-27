@@ -23,6 +23,7 @@ import java.util.stream.StreamSupport;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.ArtefactProtoRegistry;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.descriptions.IActionDescription;
@@ -693,7 +694,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return the symbol kind as defined in its prototype
 	 */
 	@Override
-	public int getKind() { return getMeta().getKind(); }
+	public ISymbolKind getKind() { return getMeta().getKind(); }
 
 	/**
 	 * Compiles all facets that can provide type information. This ensures type provider facets are compiled before they

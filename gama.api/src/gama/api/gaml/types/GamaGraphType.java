@@ -80,7 +80,7 @@ import gama.api.types.graph.IGraph;
 		name = IKeyword.GRAPH,
 		id = IType.GRAPH,
 		wraps = { IGraph.class },
-		kind = ISymbolKind.Variable.CONTAINER,
+		kind = ISymbolKind.CONTAINER,
 		concept = { IConcept.TYPE, IConcept.GRAPH },
 		doc = @doc ("Special type of container composed of edges and vertices"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })

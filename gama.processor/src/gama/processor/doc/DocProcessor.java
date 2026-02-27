@@ -60,6 +60,7 @@ import gama.annotations.constants.XMLElements;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IConstantCategory;
 import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ISymbolKind;
 import gama.processor.Constants;
 import gama.processor.ProcessorContext;
 import gama.processor.elements.ElementProcessor;
@@ -705,8 +706,8 @@ public class DocProcessor extends ElementProcessor<doc> {
 	 * @param args
 	 *            the args
 	 */
-	private void addCombinationOperandsResult(final org.w3c.dom.Element operator, final ExecutableElement e, final boolean isStatic,
-			final List<? extends VariableElement> args) {
+	private void addCombinationOperandsResult(final org.w3c.dom.Element operator, final ExecutableElement e,
+			final boolean isStatic, final List<? extends VariableElement> args) {
 		int arity = 0;
 		org.w3c.dom.Element combinaisonOpResElt;
 		if (operator.getElementsByTagName(XMLElements.COMBINAISON_IO).getLength() == 0) {
@@ -1168,7 +1169,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 				final inside insideAnnot = e.getAnnotation(inside.class);
 
 				if (insideAnnot != null) {
-					for (final int kind : insideAnnot.kinds()) {
+					for (final ISymbolKind kind : insideAnnot.kinds()) {
 						final String kindStr = tc.getSymbolKindStringFromISymbolKind(kind);
 						if (!insideStatementKind.contains(kindStr)) { insideStatementKind.add(kindStr); }
 					}
@@ -1201,7 +1202,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 					|| e.getAnnotation(doc.class) != null && !"".equals(e.getAnnotation(doc.class).deprecated())) {
 				// We just omit it
 			} else {
-				final int kindAnnot = e.getAnnotation(symbol.class).kind();
+				final ISymbolKind kindAnnot = e.getAnnotation(symbol.class).kind();
 				final String kindStr = tc.getSymbolKindStringFromISymbolKind(kindAnnot);
 				if (!statementKinds.contains(kindStr)) { statementKinds.add(kindStr); }
 			}
@@ -1834,7 +1835,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 
 		for (final facet f : facetsAnnot.value()) {
 			// if the facet is deprecated, it is not get in the docGAMA.mxl
-			if (((f.doc() == null) || (f.doc().length <= 0) || "".equals(f.doc()[0].deprecated()))) {
+			if (f.doc() == null || f.doc().length <= 0 || "".equals(f.doc()[0].deprecated())) {
 				final org.w3c.dom.Element facetElt = doc.createElement(XMLElements.FACET);
 				facetElt.setAttribute(XMLElements.ATT_FACET_NAME, f.name());
 				facetElt.setAttribute(XMLElements.ATT_FACET_TYPE, tc.getTypeString(f.type()));
@@ -1887,7 +1888,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 		insideElt.appendChild(symbolsElt);
 
 		final org.w3c.dom.Element kindsElt = doc.createElement(XMLElements.KINDS);
-		for (final int kind : insideAnnot.kinds()) {
+		for (final ISymbolKind kind : insideAnnot.kinds()) {
 			final org.w3c.dom.Element kindElt = doc.createElement(XMLElements.KIND);
 			kindElt.setTextContent(tc.getSymbolKindStringFromISymbolKind(kind));
 			kindsElt.appendChild(kindElt);

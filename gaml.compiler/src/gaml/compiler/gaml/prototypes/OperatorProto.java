@@ -302,7 +302,7 @@ public class OperatorProto extends AbstractProto implements IArtefactProto.Opera
 	 * @see gaml.compiler.gaml.prototypes.AbstractProto#getKind()
 	 */
 	@Override
-	public int getKind() { return ISymbolKind.OPERATOR; }
+	public ISymbolKind getKind() { return ISymbolKind.OPERATOR; }
 
 	/**
 	 * @return

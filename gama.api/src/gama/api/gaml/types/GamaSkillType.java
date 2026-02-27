@@ -97,7 +97,7 @@ import gama.api.types.map.IMap;
 		name = IKeyword.SKILL,
 		id = IType.SKILL,
 		wraps = { ISkill.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.SKILL },
 		doc = @doc ("Meta-type of the skills present in the GAML language"))
 public class GamaSkillType extends GamaType<ISkill> {

@@ -44,7 +44,7 @@ import gama.api.utils.interfaces.INamed;
 		name = IKeyword.STRING,
 		id = IType.STRING,
 		wraps = { String.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.STRING },
 		doc = @doc ("Strings are ordered list of characters"))
 public class GamaStringType extends GamaType<String> {

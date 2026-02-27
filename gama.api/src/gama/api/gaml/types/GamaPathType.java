@@ -99,7 +99,7 @@ import gama.api.types.graph.IPath;
 		name = IKeyword.PATH,
 		id = IType.PATH,
 		wraps = { IPath.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE },
 		doc = @doc ("Ordered lists of objects that represent a path in a graph"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })

@@ -212,7 +212,7 @@ import gama.dev.DEBUG;
 						doc = @doc ("A list of constant values among which the attribute can take its value")) },
 		omissible = IKeyword.NAME)
 @symbol (
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		with_sequence = false,
 		concept = { IConcept.ATTRIBUTE })
 @inside (

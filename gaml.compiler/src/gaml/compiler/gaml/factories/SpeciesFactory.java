@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.ArtefactProtoRegistry;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
@@ -112,6 +113,6 @@ public class SpeciesFactory implements ISymbolDescriptionFactory.Species {
 	}
 
 	@Override
-	public int[] getKinds() { return new int[] { SPECIES }; }
+	public ISymbolKind[] getKinds() { return new ISymbolKind[] { ISymbolKind.SPECIES }; }
 
 }

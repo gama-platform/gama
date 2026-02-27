@@ -88,7 +88,7 @@ import gama.api.types.map.IMap;
 		name = IKeyword.POINT,
 		id = IType.POINT,
 		wraps = { IPoint.class },
-		kind = ISymbolKind.Variable.NUMBER,
+		kind = ISymbolKind.NUMBER,
 		concept = { IConcept.TYPE, IConcept.POINT },
 		doc = @doc ("Represent locations in either 2 or 3 dimensions"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })

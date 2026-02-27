@@ -109,7 +109,7 @@ import gama.api.types.message.IMessage;
 		name = GamaMessageType.MESSAGE_STR,
 		id = IType.MESSAGE,
 		wraps = { IMessage.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		doc = @doc ("Represents the messages exchanged between agents"))
 public class GamaMessageType extends GamaType<IMessage> {
 

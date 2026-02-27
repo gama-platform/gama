@@ -29,10 +29,10 @@ import gama.api.types.matrix.IMatrix;
  * Type representing matrices in GAML - 2-dimensional containers that can hold any type of data.
  * <p>
  * Matrices are specialized containers organized in rows and columns, accessible either through point indices
- * (representing x,y coordinates) or through row/column access. Unlike simple 2D arrays, GAML matrices support
- * efficient spatial operations and can contain any data type.
+ * (representing x,y coordinates) or through row/column access. Unlike simple 2D arrays, GAML matrices support efficient
+ * spatial operations and can contain any data type.
  * </p>
- * 
+ *
  * <h2>Key Features:</h2>
  * <ul>
  * <li>2D structure with rows and columns</li>
@@ -41,28 +41,28 @@ import gama.api.types.matrix.IMatrix;
  * <li>Generic content type support</li>
  * <li>Efficient for grid-based and spatial data</li>
  * </ul>
- * 
+ *
  * <h2>Usage Examples:</h2>
- * 
+ *
  * <pre>
  * {@code
  * // Create a 3x4 integer matrix
  * matrix<int> m <- matrix([[1,2,3,4], [5,6,7,8], [9,10,11,12]]);
- * 
+ *
  * // Access by point
  * int val <- m[{1,2}];  // Gets element at column 1, row 2
- * 
+ *
  * // Access by row and column
  * int val2 <- m[1,2];
- * 
+ *
  * // Create from a list of lists
  * matrix<float> m2 <- matrix([[1.0, 2.0], [3.0, 4.0]]);
- * 
+ *
  * // Matrix of geometries
  * matrix<geometry> grid <- matrix(list_of_shapes);
  * }
  * </pre>
- * 
+ *
  * @author GAMA Development Team
  * @see GamaContainerType
  * @see IMatrix
@@ -73,7 +73,7 @@ import gama.api.types.matrix.IMatrix;
 		name = IKeyword.MATRIX,
 		id = IType.MATRIX,
 		wraps = { IMatrix.class },
-		kind = ISymbolKind.Variable.CONTAINER,
+		kind = ISymbolKind.CONTAINER,
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.MATRIX },
 		doc = @doc ("Matrices are 2-dimensional containers that can contain any type of date (not only floats or integers). They can be accessed with a point index or by rows / columns"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
@@ -81,7 +81,7 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 
 	/**
 	 * Constructs a new matrix type.
-	 * 
+	 *
 	 * @param typesManager
 	 *            the types manager responsible for type resolution and management
 	 */
@@ -100,7 +100,7 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	 * <li>Container types - attempts to build a matrix from contents</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param obj
@@ -128,7 +128,7 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	 * <p>
 	 * Matrix indices are represented as 2D points where x is the column and y is the row.
 	 * </p>
-	 * 
+	 *
 	 * @return the point type
 	 */
 	@Override
@@ -137,10 +137,10 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	/**
 	 * Indicates whether matrices have a fixed length.
 	 * <p>
-	 * Matrices are fixed-length containers - their dimensions are set at creation and cannot be changed.
-	 * Individual elements can be modified, but rows/columns cannot be added or removed.
+	 * Matrices are fixed-length containers - their dimensions are set at creation and cannot be changed. Individual
+	 * elements can be modified, but rows/columns cannot be added or removed.
 	 * </p>
-	 * 
+	 *
 	 * @return true, as matrices have fixed dimensions
 	 */
 	@Override
@@ -149,15 +149,15 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	/**
 	 * Determines the content type when casting an expression to a matrix.
 	 * <p>
-	 * This method analyzes the structure of the expression to determine what type of elements the resulting matrix
-	 * will contain:
+	 * This method analyzes the structure of the expression to determine what type of elements the resulting matrix will
+	 * contain:
 	 * <ul>
 	 * <li>For list of lists: returns the type of elements in the inner lists</li>
 	 * <li>For containers: returns the container's content type</li>
 	 * <li>Otherwise: returns the expression's type itself</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * @param exp
 	 *            the expression being cast to a matrix
 	 * @return the type that matrix elements will have
@@ -187,7 +187,7 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	 * <p>
 	 * Matrices can be constant if all their elements are constant.
 	 * </p>
-	 * 
+	 *
 	 * @return true, matrices can be constant
 	 */
 	@Override
@@ -206,7 +206,7 @@ public class GamaMatrixType extends GamaContainerType<IMatrix> {
 	 * <li>"rows" - number of rows</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param map2

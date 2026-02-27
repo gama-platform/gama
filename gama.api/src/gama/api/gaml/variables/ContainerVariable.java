@@ -142,7 +142,7 @@ import gama.annotations.support.ISymbolKind;
 		},
 		omissible = IKeyword.NAME)
 @symbol (
-		kind = ISymbolKind.Variable.CONTAINER,
+		kind = ISymbolKind.CONTAINER,
 		with_sequence = false,
 		concept = { IConcept.CONTAINER })
 @inside (

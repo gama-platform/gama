@@ -34,7 +34,7 @@ import gama.api.types.file.GamaFolderFile;
 		name = IKeyword.DIRECTORY,
 		id = IType.DIRECTORY,
 		wraps = { GamaFolderFile.class },
-		kind = ISymbolKind.Variable.CONTAINER,
+		kind = ISymbolKind.CONTAINER,
 		concept = { IConcept.TYPE, IConcept.FILE },
 		doc = @doc ("specific type for directories (folders). Contains the list of file names"))
 public class GamaDirectoryType extends GamaFileType {

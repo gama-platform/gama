@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
 import gama.api.additions.IConstantAcceptor;
 import gama.api.additions.registries.ArtefactProtoRegistry;
@@ -59,7 +60,7 @@ import gama.api.utils.files.IGamlFileInfo;
 
 /**
  * The GAML class provides the central registry and factory access point for the GAML language infrastructure.
- * 
+ *
  * <p>
  * This class serves as a thread-safe static registry for all GAML language elements including:
  * <ul>
@@ -71,13 +72,13 @@ import gama.api.utils.files.IGamlFileInfo;
  * <li>Expression and artefact factories</li>
  * </ul>
  * </p>
- * 
+ *
  * <p>
- * The class uses concurrent data structures (ConcurrentHashMap, ConcurrentHashSet) to ensure thread-safe
- * registration and access during GAMA platform initialization and runtime. This allows multiple threads
- * to register and access GAML elements without explicit synchronization.
+ * The class uses concurrent data structures (ConcurrentHashMap, ConcurrentHashSet) to ensure thread-safe registration
+ * and access during GAMA platform initialization and runtime. This allows multiple threads to register and access GAML
+ * elements without explicit synchronization.
  * </p>
- * 
+ *
  * <p>
  * Key responsibilities:
  * <ul>
@@ -97,13 +98,13 @@ public class GAML {
 
 	/**
 	 * Thread-safe registry of all GAML operators indexed by name and signature.
-	 * 
+	 *
 	 * <p>
 	 * Maps operator names to their signature-specific implementations. Each operator name can have multiple
-	 * implementations with different signatures (overloading). Uses ConcurrentHashMap for thread-safe access
-	 * without locking during platform initialization.
+	 * implementations with different signatures (overloading). Uses ConcurrentHashMap for thread-safe access without
+	 * locking during platform initialization.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Structure: {@code Map<OperatorName, Map<Signature, OperatorImplementation>>}
 	 * </p>
@@ -117,33 +118,33 @@ public class GAML {
 
 	/**
 	 * Thread-safe set of all registered iterator names in GAML.
-	 * 
+	 *
 	 * <p>
-	 * Iterators are special operators that loop over collections (e.g., "collect", "where", "count").
-	 * Uses ConcurrentHashMap.newKeySet() for efficient thread-safe access during registration.
+	 * Iterators are special operators that loop over collections (e.g., "collect", "where", "count"). Uses
+	 * ConcurrentHashMap.newKeySet() for efficient thread-safe access during registration.
 	 * </p>
 	 */
 	private static final Set<String> ITERATORS = ConcurrentHashMap.newKeySet();
 
 	/**
 	 * Thread-safe set of all registered constant names in GAML.
-	 * 
+	 *
 	 * <p>
-	 * Constants are predefined values available in GAML expressions (e.g., "pi", "e", "true", "false").
-	 * Uses ConcurrentHashMap.newKeySet() for efficient thread-safe access during registration.
+	 * Constants are predefined values available in GAML expressions (e.g., "pi", "e", "true", "false"). Uses
+	 * ConcurrentHashMap.newKeySet() for efficient thread-safe access during registration.
 	 * </p>
 	 */
 	private static final Set<String> CONSTANTS = ConcurrentHashMap.newKeySet();
 
 	/**
 	 * Thread-safe registry of additional descriptions (fields and actions) for agent classes.
-	 * 
+	 *
 	 * <p>
-	 * This multimap stores descriptions that extend agent classes at runtime. Uses ConcurrentHashMap with
-	 * concurrent sets as values to provide better concurrent performance than synchronized Guava multimaps
-	 * by using lock-free reads and fine-grained locking only on writes.
+	 * This multimap stores descriptions that extend agent classes at runtime. Uses ConcurrentHashMap with concurrent
+	 * sets as values to provide better concurrent performance than synchronized Guava multimaps by using lock-free
+	 * reads and fine-grained locking only on writes.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Structure: {@code Map<Class, Set<IDescription>>}
 	 * </p>
@@ -152,12 +153,12 @@ public class GAML {
 
 	/**
 	 * Thread-safe registry of field prototypes for agent classes.
-	 * 
+	 *
 	 * <p>
-	 * This multimap stores field prototypes that extend agent classes. Uses ConcurrentHashMap with
-	 * concurrent sets as values for efficient concurrent access during registration and retrieval.
+	 * This multimap stores field prototypes that extend agent classes. Uses ConcurrentHashMap with concurrent sets as
+	 * values for efficient concurrent access during registration and retrieval.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Structure: {@code Map<Class, Set<IArtefactProto>>}
 	 * </p>
@@ -166,69 +167,69 @@ public class GAML {
 
 	/**
 	 * Thread-safe registry of all unit expressions in GAML.
-	 * 
+	 *
 	 * <p>
-	 * Maps unit names to their expression representations. Units represent physical quantities
-	 * like distance, time, mass (e.g., "m", "km", "s", "ms"). Uses ConcurrentHashMap for
-	 * thread-safe access during initialization and runtime.
+	 * Maps unit names to their expression representations. Units represent physical quantities like distance, time,
+	 * mass (e.g., "m", "km", "s", "ms"). Uses ConcurrentHashMap for thread-safe access during initialization and
+	 * runtime.
 	 * </p>
 	 */
 	private static final Map<String, IExpression.Unit> UNITS = new ConcurrentHashMap<>();
 
 	/**
 	 * Thread-safe registry of symbol description factories indexed by their kind.
-	 * 
+	 *
 	 * <p>
-	 * Maps factory kinds (integer handles) to their corresponding factory implementations.
-	 * Uses ConcurrentHashMap for better performance under concurrent access compared to synchronized wrapper.
+	 * Maps factory kinds (integer handles) to their corresponding factory implementations. Uses ConcurrentHashMap for
+	 * better performance under concurrent access compared to synchronized wrapper.
 	 * </p>
 	 */
-	public final static Map<Integer, ISymbolDescriptionFactory> DESCRIPTION_FACTORIES = new ConcurrentHashMap<>();
+	public final static Map<ISymbolKind, ISymbolDescriptionFactory> DESCRIPTION_FACTORIES = new ConcurrentHashMap<>();
 
-	/** 
+	/**
 	 * The description factory used to create GAML descriptions.
-	 * 
+	 *
 	 * <p>
 	 * Volatile to ensure thread-safe visibility of the factory instance across threads.
 	 * </p>
 	 */
 	private static volatile IDescriptionFactory descriptionFactory = null;
 
-	/** 
+	/**
 	 * The artefact proto factory used to create artefact prototypes.
-	 * 
+	 *
 	 * <p>
 	 * Volatile to ensure thread-safe visibility of the factory instance across threads.
 	 * </p>
 	 */
 	private static volatile IArtefactProtoFactory artefactProtoFactory = null;
 
-	/** 
+	/**
 	 * The expression factory used to create GAML expressions.
-	 * 
+	 *
 	 * <p>
-	 * Volatile to ensure thread-safe visibility of the factory instance across threads.
-	 * Public to allow direct access from other GAML infrastructure components.
+	 * Volatile to ensure thread-safe visibility of the factory instance across threads. Public to allow direct access
+	 * from other GAML infrastructure components.
 	 * </p>
 	 */
 	public static volatile IExpressionFactory expressionFactory = null;
 
-	/** 
+	/**
 	 * The expression description factory used to create expression descriptions.
-	 * 
+	 *
 	 * <p>
-	 * Volatile to ensure thread-safe visibility of the factory instance across threads.
-	 * Public to allow direct access from other GAML infrastructure components.
+	 * Volatile to ensure thread-safe visibility of the factory instance across threads. Public to allow direct access
+	 * from other GAML infrastructure components.
 	 * </p>
 	 */
 	public static volatile IExpressionDescriptionFactory expressionDescriptionFactory = null;
 
-	/** 
+	/**
 	 * The GAML content provider that retrieves syntactic elements from file URIs.
-	 * 
+	 *
 	 * <p>
-	 * This function maps URIs to their corresponding syntactic element structures,
-	 * enabling access to the parsed representation of GAML files.
+	 * This function maps URIs to their corresponding syntactic element structures, enabling access to the parsed
+	 * representation of GAML files.
 	 * </p>
 	 */
 	private static Function<URI, ISyntacticElement> infoProvider = null;
@@ -241,10 +242,10 @@ public class GAML {
 
 	/**
 	 * Registers the expression factory used to create GAML expressions.
-	 * 
+	 *
 	 * <p>
-	 * The expression factory is responsible for parsing and creating expression instances
-	 * from GAML source code. This method should be called once during platform initialization.
+	 * The expression factory is responsible for parsing and creating expression instances from GAML source code. This
+	 * method should be called once during platform initialization.
 	 * </p>
 	 *
 	 * @param factory
@@ -256,10 +257,10 @@ public class GAML {
 
 	/**
 	 * Registers the artefact proto factory used to create artefact prototypes.
-	 * 
+	 *
 	 * <p>
-	 * The artefact proto factory creates prototypes for operators, actions, variables, and other
-	 * GAML language elements. This method should be called once during platform initialization.
+	 * The artefact proto factory creates prototypes for operators, actions, variables, and other GAML language
+	 * elements. This method should be called once during platform initialization.
 	 * </p>
 	 *
 	 * @param factory
@@ -271,27 +272,27 @@ public class GAML {
 
 	/**
 	 * Registers a symbol description factory for one or more symbol kinds.
-	 * 
+	 *
 	 * <p>
-	 * Symbol factories are responsible for creating descriptions of GAML symbols (statements, species, etc.).
-	 * Each factory can handle multiple kinds of symbols, specified by integer handles. This method registers
-	 * the factory for all its supported kinds.
+	 * Symbol factories are responsible for creating descriptions of GAML symbols (statements, species, etc.). Each
+	 * factory can handle multiple kinds of symbols, specified by integer handles. This method registers the factory for
+	 * all its supported kinds.
 	 * </p>
 	 *
 	 * @param factory
 	 *            the symbol description factory to register, must not be null
 	 */
 	public static void registerSymbolFactory(final ISymbolDescriptionFactory factory) {
-		int[] handles = factory.getKinds();
-		for (int i : handles) { DESCRIPTION_FACTORIES.put(i, factory); }
+		ISymbolKind[] handles = factory.getKinds();
+		for (ISymbolKind kind : handles) { DESCRIPTION_FACTORIES.put(kind, factory); }
 	}
 
 	/**
 	 * Registers the description factory used to create GAML descriptions.
-	 * 
+	 *
 	 * <p>
-	 * The description factory creates description instances for GAML language constructs.
-	 * This method should be called once during platform initialization.
+	 * The description factory creates description instances for GAML language constructs. This method should be called
+	 * once during platform initialization.
 	 * </p>
 	 *
 	 * @param factory
@@ -303,10 +304,10 @@ public class GAML {
 
 	/**
 	 * Registers the expression description factory used to create expression descriptions.
-	 * 
+	 *
 	 * <p>
-	 * The expression description factory creates descriptive metadata for GAML expressions.
-	 * This method should be called once during platform initialization.
+	 * The expression description factory creates descriptive metadata for GAML expressions. This method should be
+	 * called once during platform initialization.
 	 * </p>
 	 *
 	 * @param factory
@@ -318,10 +319,10 @@ public class GAML {
 
 	/**
 	 * Registers the GAML content provider function.
-	 * 
+	 *
 	 * <p>
-	 * The content provider function maps file URIs to their parsed syntactic element structures,
-	 * enabling access to the abstract syntax tree of GAML files.
+	 * The content provider function maps file URIs to their parsed syntactic element structures, enabling access to the
+	 * abstract syntax tree of GAML files.
 	 * </p>
 	 *
 	 * @param info
@@ -333,10 +334,10 @@ public class GAML {
 
 	/**
 	 * Registers the GAML model builder used to build model descriptions.
-	 * 
+	 *
 	 * <p>
-	 * The model builder is responsible for constructing complete model descriptions from
-	 * GAML source code, including validation and cross-referencing.
+	 * The model builder is responsible for constructing complete model descriptions from GAML source code, including
+	 * validation and cross-referencing.
 	 * </p>
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -369,11 +370,10 @@ public class GAML {
 
 	/**
 	 * Gets the constant acceptor for registering constants and units in GAML.
-	 * 
+	 *
 	 * <p>
-	 * Returns an implementation of IConstantAcceptor that registers constants and units
-	 * into the UNITS registry. The acceptor validates that names don't conflict with
-	 * existing units and creates appropriate unit expressions.
+	 * Returns an implementation of IConstantAcceptor that registers constants and units into the UNITS registry. The
+	 * acceptor validates that names don't conflict with existing units and creates appropriate unit expressions.
 	 * </p>
 	 *
 	 * @return the constant acceptor implementation
@@ -415,10 +415,10 @@ public class GAML {
 
 	/**
 	 * Evaluates a GAML expression in the context of the given agent.
-	 * 
+	 *
 	 * <p>
-	 * This method compiles and evaluates the provided expression string within the agent's
-	 * context. It creates a temporary scope for evaluation and releases it after completion.
+	 * This method compiles and evaluates the provided expression string within the agent's context. It creates a
+	 * temporary scope for evaluation and releases it after completion.
 	 * </p>
 	 *
 	 * @param expression
@@ -579,10 +579,10 @@ public class GAML {
 
 	/**
 	 * Gets the statement prototypes that should be defined in a given skill.
-	 * 
+	 *
 	 * <p>
-	 * This method collects all statement prototypes that are designated to be defined
-	 * within the specified skill context.
+	 * This method collects all statement prototypes that are designated to be defined within the specified skill
+	 * context.
 	 * </p>
 	 *
 	 * @param s
@@ -614,10 +614,10 @@ public class GAML {
 
 	/**
 	 * Validates GAML code based on a best guess regarding the contents provided.
-	 * 
+	 *
 	 * <p>
-	 * This method automatically determines the type of GAML code (model, species, statements, or expression)
-	 * and applies the appropriate validation strategy.
+	 * This method automatically determines the type of GAML code (model, species, statements, or expression) and
+	 * applies the appropriate validation strategy.
 	 * </p>
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -807,7 +807,7 @@ public class GAML {
 
 	/**
 	 * Registers an operator prototype in the OPERATORS registry.
-	 * 
+	 *
 	 * <p>
 	 * Associates the operator with its signature for later retrieval and compilation.
 	 * </p>

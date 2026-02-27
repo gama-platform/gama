@@ -39,7 +39,7 @@ import gama.api.utils.GamlProperties;
  * format-specific parsing and serialization logic. This class enables GAMA to support numerous file formats through a
  * plugin-based architecture.
  * </p>
- * 
+ *
  * <h2>Key Features:</h2>
  * <ul>
  * <li>Format-specific file handling</li>
@@ -50,7 +50,7 @@ import gama.api.utils.GamlProperties;
  * <li>Type-safe file operations</li>
  * <li>Automatic documentation generation</li>
  * </ul>
- * 
+ *
  * <h2>Type Parameters:</h2>
  * <p>
  * Parametric file types have three type parameters defining their structure:
@@ -60,61 +60,60 @@ import gama.api.utils.GamlProperties;
  * <li><b>Content Type</b> - type of individual elements in the file</li>
  * </ul>
  * </p>
- * 
+ *
  * <h2>Examples of Parametric File Types:</h2>
- * 
+ *
  * <pre>
  * CSV File:
  *   - Buffer: matrix
  *   - Key: point
  *   - Content: unknown (mixed types)
  *   - Extensions: .csv
- * 
+ *
  * Shapefile:
  *   - Buffer: list
  *   - Key: int
  *   - Content: geometry
  *   - Extensions: .shp
- * 
+ *
  * Image File:
  *   - Buffer: matrix
  *   - Key: point
  *   - Content: rgb color
  *   - Extensions: .jpg, .png, .gif, etc.
- * 
+ *
  * Text File:
  *   - Buffer: list
  *   - Key: int
  *   - Content: string
  *   - Extensions: .txt, .text
  * </pre>
- * 
+ *
  * <h2>Registration and Extension:</h2>
  * <p>
  * New file types are registered through {@link GamaFileType#addFileTypeDefinition}:
  * </p>
- * 
+ *
  * <pre>
  * {@code
- * GamaFileType.addFileTypeDefinition(
- *     "myformat",              // alias
- *     Types.LIST,              // buffer type
- *     Types.INT,               // key type
- *     Types.STRING,            // content type
- *     MyFileClass.class,       // implementation class
- *     builder,                 // file instance builder
- *     new String[]{"myext"},   // extensions
- *     "plugin.id"              // plugin ID
+ * GamaFileType.addFileTypeDefinition("myformat", // alias
+ * 		Types.LIST, // buffer type
+ * 		Types.INT, // key type
+ * 		Types.STRING, // content type
+ * 		MyFileClass.class, // implementation class
+ * 		builder, // file instance builder
+ * 		new String[] { "myext" }, // extensions
+ * 		"plugin.id" // plugin ID
  * );
  * }
  * </pre>
- * 
+ *
  * <h2>File Creation:</h2>
  * <p>
  * Parametric file types provide builders for creating file instances with proper type information and format-specific
  * initialization.
  * </p>
- * 
+ *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @see ParametricType
  * @see GamaFileType
@@ -128,7 +127,7 @@ public class ParametricFileType extends ParametricType {
 	 * <p>
 	 * Returns a singleton generic file type used as fallback when no specific file type matches an extension.
 	 * </p>
-	 * 
+	 *
 	 * @return the generic file type instance
 	 */
 	public static ParametricFileType getGenericFileType() {
@@ -166,7 +165,7 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Constructs a new parametric file type.
-	 * 
+	 *
 	 * @param name
 	 *            the type name (typically alias + "_file")
 	 * @param class1
@@ -198,7 +197,7 @@ public class ParametricFileType extends ParametricType {
 	 * <p>
 	 * Delegates to the buffer type's parameter count.
 	 * </p>
-	 * 
+	 *
 	 * @return the number of type parameters (typically 2: key and content)
 	 */
 	@Override
@@ -209,7 +208,7 @@ public class ParametricFileType extends ParametricType {
 	 * <p>
 	 * Files are drawable if they implement the IGamaFile.Drawable interface.
 	 * </p>
-	 * 
+	 *
 	 * @return true if the file type implements drawable interface
 	 */
 	@Override
@@ -217,14 +216,14 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Returns the builder/factory for creating file instances.
-	 * 
+	 *
 	 * @return the file instance builder
 	 */
 	public IGamaGetter<IGamaFile<?, ?>> getBuilder() { return builder; }
 
 	/**
 	 * Computes hash code based on the unique type ID.
-	 * 
+	 *
 	 * @return the type ID
 	 */
 	@Override
@@ -242,7 +241,7 @@ public class ParametricFileType extends ParametricType {
 	 * <li>Accessible fields and attributes</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * @return the documentation for this file type
 	 */
 	@Override
@@ -269,7 +268,7 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Documents the constructors available for this file type.
-	 * 
+	 *
 	 * @param result
 	 *            the documentation object to append to
 	 */
@@ -288,21 +287,21 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Returns a description of how this file type wraps its contents.
-	 * 
+	 *
 	 * @return description of the buffer type
 	 */
 	public String getWrappedName() { return "stores its contents as a  " + bufferType.getTitle(); }
 
 	/**
 	 * Returns the name of the Java class supporting this file type.
-	 * 
+	 *
 	 * @return description of the support class
 	 */
 	public String getSupportName() { return "wraps files of Java class " + support.getSimpleName(); }
 
 	/**
 	 * Checks equality with another object based on type ID.
-	 * 
+	 *
 	 * @param c
 	 *            the object to compare
 	 * @return true if c is a ParametricFileType with the same ID
@@ -324,7 +323,7 @@ public class ParametricFileType extends ParametricType {
 	 * <li>String with container parameter - creates and initializes the file</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param obj
@@ -358,7 +357,7 @@ public class ParametricFileType extends ParametricType {
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	/**
 	 * Returns the Java class implementing this file type.
-	 * 
+	 *
 	 * @return the support class
 	 */
 	@Override
@@ -368,15 +367,15 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Returns the variable kind for files.
-	 * 
+	 *
 	 * @return container variable kind
 	 */
 	@Override
-	public int getVarKind() { return ISymbolKind.Variable.CONTAINER; }
+	public ISymbolKind getVarKind() { return ISymbolKind.CONTAINER; }
 
 	/**
 	 * Returns the unique type identifier.
-	 * 
+	 *
 	 * @return the type ID
 	 */
 	@Override
@@ -386,7 +385,7 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Sets the plugin that defines this file type.
-	 * 
+	 *
 	 * @param plugin
 	 *            the plugin identifier
 	 */
@@ -395,7 +394,7 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Returns the plugin that defines this file type.
-	 * 
+	 *
 	 * @return the plugin identifier
 	 */
 	@Override
@@ -403,7 +402,7 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Returns the string representation of this file type (its alias).
-	 * 
+	 *
 	 * @return the type alias
 	 */
 	@Override
@@ -413,7 +412,7 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Collects meta-information about this file type for documentation.
-	 * 
+	 *
 	 * @param meta
 	 *            the properties object to populate
 	 */
@@ -430,7 +429,7 @@ public class ParametricFileType extends ParametricType {
 	 * <p>
 	 * Uses the builder to create the file and optionally initializes it with contents.
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param path
@@ -451,7 +450,7 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Returns the buffer/container type used to store file contents.
-	 * 
+	 *
 	 * @return the buffer type
 	 */
 	@Override
@@ -462,7 +461,7 @@ public class ParametricFileType extends ParametricType {
 	 * <p>
 	 * Only exact type matches are assignable for parametric file types.
 	 * </p>
-	 * 
+	 *
 	 * @param l
 	 *            the type to check
 	 * @return true if l is the same type
@@ -477,7 +476,7 @@ public class ParametricFileType extends ParametricType {
 	 * <p>
 	 * Always returns this specific parametric file type.
 	 * </p>
-	 * 
+	 *
 	 * @param exp
 	 *            the expression being cast
 	 * @return this parametric file type
@@ -492,7 +491,7 @@ public class ParametricFileType extends ParametricType {
 	 * <p>
 	 * Registers operators that can access file fields/attributes.
 	 * </p>
-	 * 
+	 *
 	 * @param map
 	 *            the map of field names to getter operators
 	 */
@@ -504,7 +503,7 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Returns the field getters for this file type.
-	 * 
+	 *
 	 * @return map of field names to getter operators
 	 */
 	@Override
@@ -514,7 +513,7 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Returns the getter operator for a specific field.
-	 * 
+	 *
 	 * @param field
 	 *            the field name
 	 * @return the getter operator, or null if not found
@@ -527,7 +526,7 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Documents all accessible fields for this file type.
-	 * 
+	 *
 	 * @param result
 	 *            the documentation object to append to
 	 */
@@ -543,7 +542,7 @@ public class ParametricFileType extends ParametricType {
 
 	/**
 	 * Generates documentation for a specific field.
-	 * 
+	 *
 	 * @param sb
 	 *            the documentation object to append to
 	 * @param prototype

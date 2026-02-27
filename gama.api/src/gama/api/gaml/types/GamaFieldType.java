@@ -44,7 +44,7 @@ import gama.api.types.matrix.IField;
 		name = IKeyword.FIELD,
 		id = IType.FIELD,
 		wraps = { IField.class },
-		kind = ISymbolKind.Variable.CONTAINER,
+		kind = ISymbolKind.CONTAINER,
 		concept = { IConcept.TYPE, IConcept.GRID, IConcept.MATRIX },
 		doc = @doc ("""
 				Fields are two-dimensional matrices holding float values. They can be easily created from arbitrary sources (grid, raster or DEM files, matrices, \

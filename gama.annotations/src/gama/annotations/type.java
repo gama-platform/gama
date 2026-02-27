@@ -54,11 +54,11 @@ public @interface type {
 	Class[] wraps();
 
 	/**
-	 * @return the kind of Variable used to store this type. see ISymbolKind.Variable.
+	 * @return the kind of Variable used to store this type. see ISymbolKind.
 	 */
-	int kind()
+	ISymbolKind kind()
 
-	default ISymbolKind.Variable.REGULAR;
+	default ISymbolKind.REGULAR;
 
 	/**
 	 * internal.

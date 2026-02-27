@@ -120,7 +120,7 @@ import gama.api.runtime.scope.IScope;
 		name = IKeyword.SPECIES,
 		id = IType.SPECIES,
 		wraps = { ISpecies.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.SPECIES },
 		doc = @doc ("Meta-type of the species present in the GAML language"))
 @SuppressWarnings ({ "rawtypes", "unchecked" })

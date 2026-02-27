@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.ArtefactProtoRegistry;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IExperimentDescription;
@@ -104,6 +105,6 @@ public class ExperimentFactory extends SpeciesFactory {
 	}
 
 	@Override
-	public int[] getKinds() { return new int[] { EXPERIMENT }; }
+	public ISymbolKind[] getKinds() { return new ISymbolKind[] { ISymbolKind.EXPERIMENT }; }
 
 }

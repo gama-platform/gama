@@ -87,9 +87,9 @@ public class StatementFactory implements ISymbolDescriptionFactory {
 	}
 
 	@Override
-	public int[] getKinds() {
-		return new int[] { SEQUENCE_STATEMENT, SINGLE_STATEMENT, BEHAVIOR, ISymbolKind.ACTION, LAYER, BATCH_METHOD,
-				ISymbolKind.OUTPUT };
+	public ISymbolKind[] getKinds() {
+		return new ISymbolKind[] { ISymbolKind.SEQUENCE_STATEMENT, ISymbolKind.SINGLE_STATEMENT, ISymbolKind.BEHAVIOR,
+				ISymbolKind.ACTION, ISymbolKind.LAYER, ISymbolKind.BATCH_METHOD, ISymbolKind.OUTPUT };
 	}
 
 }

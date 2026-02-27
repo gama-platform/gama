@@ -47,6 +47,7 @@ import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.usage;
 import gama.annotations.variable;
+import gama.annotations.support.ISymbolKind;
 import gama.processor.Constants;
 import gama.processor.IProcessor;
 import gama.processor.ProcessorContext;
@@ -610,6 +611,27 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 	 *            the sb
 	 * @return the string builder
 	 */
+	public static StringBuilder toArrayOfInts(final ISymbolKind[] array, final StringBuilder sb) {
+		if (array == null || array.length == 0) {
+			sb.append("AI");
+			return sb;
+		}
+		sb.append("I(");
+		for (final ISymbolKind i : array) { sb.append(i.code()).append(","); }
+		sb.setLength(sb.length() - 1);
+		sb.append(")");
+		return sb;
+	}
+
+	/**
+	 * To array of ints.
+	 *
+	 * @param array
+	 *            the array
+	 * @param sb
+	 *            the sb
+	 * @return the string builder
+	 */
 	public static StringBuilder toArrayOfInts(final int[] array, final StringBuilder sb) {
 		if (array == null || array.length == 0) {
 			sb.append("AI");
@@ -656,19 +678,19 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 		if (cachedName != null) return cachedName;
 		// As a workaround for ECJ/javac discrepancies regarding erasure
 		type = CLASS_PARAM.matcher(type).replaceAll("");
-		
+
 		// Check if this is a fully qualified class name (has a package)
 		int lastDot = type.lastIndexOf('.');
 		if (lastDot > 0) {
 			// Always record the full class name for import tracking
 			// This tracks ALL classes, not just those in COLLECTIVE_IMPORTS
 			context.recordImportUsage(type);
-			
+
 			// Now shorten ALL class names (not just COLLECTIVE_IMPORTS)
 			// Since we're importing exact classes, we can use the short name
 			type = type.substring(lastDot + 1);
 		}
-		
+
 		NAME_CACHE.put(key, type);
 		return type;
 	}

@@ -137,12 +137,12 @@ public class ArtefactProtoRegistry {
 	private static final Map<String, IArtefactProto.Symbol> VAR_KEYWORDS_PROTOS = new HashMap<>();
 
 	/** Multimap from variable kind (type ID) to the keywords that declare that kind. */
-	public final static SetMultimap<Integer, String> VARKIND2KEYWORDS =
+	public final static SetMultimap<ISymbolKind, String> VARKIND2KEYWORDS =
 			Multimaps.newSetMultimap(new ConcurrentHashMap<>(), ConcurrentHashMap::newKeySet);
 
 	/** Map of artefact kinds to their prototype definitions. */
-	public static final Map<Integer, IArtefactProto.Symbol> VARIABLE_KINDS_TO_DECLARATION_PROTOTYPES = new HashMap<>();
-
+	public static final Map<ISymbolKind, IArtefactProto.Symbol> VARIABLE_KINDS_TO_DECLARATION_PROTOTYPES =
+			new HashMap<>();
 	/** Cache for statement protos. */
 	private static volatile Iterable<IArtefactProto.Symbol> cachedStatementProtos = null;
 
@@ -163,7 +163,7 @@ public class ArtefactProtoRegistry {
 	 * @param kind
 	 *            the kind ID for this type (from {@link IType})
 	 */
-	public static void addNewTypeName(final String s, final int kind) {
+	public static void addNewTypeName(final String s, final ISymbolKind kind) {
 		addNewVarKeyword(s, kind);
 		if (VAR_KEYWORDS_PROTOS.containsKey(s)) return;
 		final IArtefactProto.Symbol p = VARIABLE_KINDS_TO_DECLARATION_PROTOTYPES.get(kind);
@@ -205,7 +205,7 @@ public class ArtefactProtoRegistry {
 	 * @param kind
 	 *            the kind
 	 */
-	public static void addNewVarKeyword(final String s, final int kind) {
+	public static void addNewVarKeyword(final String s, final ISymbolKind kind) {
 		VARKIND2KEYWORDS.put(kind, s);
 	}
 
@@ -373,8 +373,8 @@ public class ArtefactProtoRegistry {
 	 *            the names
 	 */
 	public static void addProto(final IArtefactProto.Symbol md, final Iterable<String> names) {
-		final int kind = md.getKind();
-		if (ISymbolKind.Variable.KINDS.contains(kind)) {
+		final ISymbolKind kind = md.getKind();
+		if (ISymbolKind.VARIABLES.contains(kind)) {
 			for (final String s : names) { VAR_KEYWORDS_PROTOS.putIfAbsent(s, md); }
 		} else {
 			for (final String s : names) { STATEMENT_KEYWORDS_PROTOS.put(s, md); }

@@ -27,7 +27,7 @@ import gama.api.runtime.scope.IScope;
 		name = "regression",
 		id = IType.REGRESSION,
 		wraps = { GamaRegression.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE },
 		doc = { @doc (
 				value = "Type of variables that enables to learn a regression function and to use it to predict new values") })

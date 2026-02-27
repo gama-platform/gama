@@ -89,7 +89,7 @@ import gama.api.types.topology.ITopology;
 		name = IKeyword.TOPOLOGY,
 		id = IType.TOPOLOGY,
 		wraps = { ITopology.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.TOPOLOGY },
 		doc = @doc ("Represents a topology, obtained from agents or geometries, that can be used to compute distances, neighbours, etc."))
 public class GamaTopologyType extends GamaType<ITopology> {

@@ -59,7 +59,7 @@ import gama.extension.image.svg.GamaSVGFile;
 		name = IKeyword.IMAGE,
 		id = GamaImageType.ID,
 		wraps = { GamaImage.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		doc = { @doc ("Represents ARGB image objects that can be passed directly as arguments to draw statements and other similar functions. "
 				+ "An image can be created from many different sources : a field, a grid, a file containing an image, and a number of operators allow to apply filters or to combine them. They can of course be saved on disk") },
 		concept = { IConcept.TYPE, IConcept.IMAGE, IConcept.DISPLAY })

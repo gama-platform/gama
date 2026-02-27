@@ -345,7 +345,7 @@ public class Graphs {
 	}
 
 	/*
-	 * TO DO : CHECK THE VALIDITY OF THESE OPERATORS FOR ALL KINDS OF PATH
+	 * TO DO : CHECK THE VALIDITY OF THESE OPERATORS FOR ALL VARIABLES OF PATH
 	 *
 	 * @operator(value = "vertices") public static IList nodesOfPath(final GamaPath path) { if ( path == null ) { return
 	 * new IList(); } return path.getVertexList(); }

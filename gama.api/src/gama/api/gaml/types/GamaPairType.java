@@ -99,7 +99,7 @@ import gama.api.types.pair.IPair;
 		name = IKeyword.PAIR,
 		id = IType.PAIR,
 		wraps = { IPair.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.CONTAINER },
 		doc = @doc ("Represents a pair of 2 arbitrary elements"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })

@@ -301,7 +301,7 @@ public class GamlSyntacticConverter {
 	private boolean doesNotDefineAttributes(final String keyword) {
 		final IArtefactProto.Symbol p = ArtefactProtoRegistry.getProto(keyword, null);
 		if (p == null) return true;
-		final int kind = p.getKind();
+		final ISymbolKind kind = p.getKind();
 		return !ISymbolKind.STATEMENTS_CONTAINING_ATTRIBUTES.contains(kind);
 	}
 

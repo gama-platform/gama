@@ -45,7 +45,7 @@ import gama.api.types.misc.IValue;
 		name = IKeyword.FLOAT,
 		id = IType.FLOAT,
 		wraps = { Double.class, double.class },
-		kind = ISymbolKind.Variable.NUMBER,
+		kind = ISymbolKind.NUMBER,
 		doc = { @doc ("Represents floating point numbers (equivalent to Double in Java)") },
 		concept = { IConcept.TYPE })
 public class GamaFloatType extends GamaType<Double> {

@@ -39,9 +39,9 @@ public @interface symbol {
 	 * Kind.
 	 *
 	 * @return the kind of the annotated symbol.
-	 * @see #ISymbolKind
+	 * @see ISymbolKind
 	 */
-	int kind();
+	ISymbolKind kind();
 
 	/**
 	 * WithScope.

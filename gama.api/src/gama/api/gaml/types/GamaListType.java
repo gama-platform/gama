@@ -82,7 +82,7 @@ import gama.api.types.list.IList;
 		name = IKeyword.LIST,
 		id = IType.LIST,
 		wraps = { IList.class },
-		kind = ISymbolKind.Variable.CONTAINER,
+		kind = ISymbolKind.CONTAINER,
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.LIST },
 		doc = @doc ("Ordered collection of values or agents"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })

@@ -18,6 +18,7 @@ import gama.annotations.doc;
 import gama.annotations.type;
 import gama.annotations.variable;
 import gama.annotations.vars;
+import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
@@ -37,7 +38,7 @@ import gama.dev.DEBUG;
 /**
  * Base class for all type descriptions in the GAMA modeling platform. This class provides the foundational
  * infrastructure for the type system, enabling type conversions, type checking, and type-specific operations.
- * 
+ *
  * <p>
  * <b>Key Responsibilities:</b>
  * <ul>
@@ -48,12 +49,12 @@ import gama.dev.DEBUG;
  * <li>Field accessor management for type-specific attributes</li>
  * </ul>
  * </p>
- * 
+ *
  * <p>
  * <b>Type Registration:</b> To be recognized by GAML, subclasses must be annotated with the {@code @type} annotation,
  * which specifies the type's ID, name, Java support class, and other metadata.
  * </p>
- * 
+ *
  * <p>
  * <b>Type System Features:</b>
  * <ul>
@@ -63,28 +64,31 @@ import gama.dev.DEBUG;
  * <li><b>Type Distance:</b> Computes type compatibility distance for method resolution</li>
  * </ul>
  * </p>
- * 
+ *
  * <p>
  * <b>Example Implementation:</b>
- * 
+ *
  * <pre>
  * {@code
- * @type(name = "int", id = IType.INT, wraps = {Integer.class})
+ * @type (
+ * 		name = "int",
+ * 		id = IType.INT,
+ * 		wraps = { Integer.class })
  * public class GamaIntegerType extends GamaType<Integer> {
- *     public Integer cast(IScope scope, Object obj, Object param, boolean copy) {
- *         // Conversion logic here
- *     }
+ * 	public Integer cast(IScope scope, Object obj, Object param, boolean copy) {
+ * 		// Conversion logic here
+ * 	}
  * }
  * }
  * </pre>
  * </p>
- * 
+ *
  * @param <Support>
  *            the Java class that this type wraps
- * 
+ *
  * @author drogoul
  * @since 2010
- * 
+ *
  * @see IType
  * @see ParametricType
  * @see TypesManager
@@ -104,9 +108,9 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/** The Java class that this type wraps (e.g., Integer.class for int type). */
 	protected Class<Support> support;
 
-	/** 
-	 * Map of field getter operators that provide access to type-specific attributes.
-	 * For example, a point type might have "x" and "y" getters.
+	/**
+	 * Map of field getter operators that provide access to type-specific attributes. For example, a point type might
+	 * have "x" and "y" getters.
 	 */
 	Map<String, IArtefactProto.Operator> getters;
 
@@ -114,7 +118,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	protected IType<? super Support> parent;
 
 	/** The variable kind identifier, used for categorizing variables of this type. */
-	protected int varKind;
+	protected ISymbolKind varKind;
 
 	/** The name of the plugin that defines this type. */
 	protected String plugin;
@@ -145,9 +149,9 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	/**
-	 * Initializes this type by extracting metadata from the {@code @type} annotation. This method must be called
-	 * during construction and will throw an IllegalStateException if the annotation is missing.
-	 * 
+	 * Initializes this type by extracting metadata from the {@code @type} annotation. This method must be called during
+	 * construction and will throw an IllegalStateException if the annotation is missing.
+	 *
 	 * <p>
 	 * The following metadata is extracted:
 	 * <ul>
@@ -173,16 +177,16 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns a human-readable title for this type, used in UI displays and documentation.
-	 * 
+	 *
 	 * @return a string in the format "Data type [name]"
 	 */
 	@Override
 	public String getTitle() { return "Data type " + getName(); }
 
 	/**
-	 * Returns the number of type parameters for this type. Base types have 0 parameters, while parametric types
-	 * (like list&lt;int&gt;) may have 1 or more.
-	 * 
+	 * Returns the number of type parameters for this type. Base types have 0 parameters, while parametric types (like
+	 * list&lt;int&gt;) may have 1 or more.
+	 *
 	 * @return 0 for non-parametric types
 	 */
 	@Override
@@ -190,7 +194,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the name of the plugin that defines this type.
-	 * 
+	 *
 	 * @return the plugin name, or null if not set
 	 */
 	@Override
@@ -199,7 +203,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Generates comprehensive documentation for this type, including its Java support class, description from
 	 * annotations, and accessible fields.
-	 * 
+	 *
 	 * <p>
 	 * The documentation is built from:
 	 * <ul>
@@ -208,7 +212,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 * <li>Documentation for all accessible fields/attributes</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * @return an IGamlDocumentation object containing the formatted documentation
 	 */
 	@Override
@@ -232,7 +236,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Appends documentation for all accessible fields of this type to the provided documentation object.
-	 * 
+	 *
 	 * @param result
 	 *            the documentation object to append field information to
 	 */
@@ -282,7 +286,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the GAML name of this type.
-	 * 
+	 *
 	 * @return the type name (e.g., "int", "float", "agent")
 	 */
 	@Override
@@ -290,7 +294,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Serializes this type to its GAML representation.
-	 * 
+	 *
 	 * @param includingBuiltIn
 	 *            whether to include built-in types in serialization
 	 * @return the GAML type name
@@ -302,15 +306,15 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the variable kind identifier for this type, used for categorizing variables.
-	 * 
+	 *
 	 * @return the variable kind constant
 	 */
 	@Override
-	public int getVarKind() { return varKind; }
+	public ISymbolKind getVarKind() { return varKind; }
 
 	/**
 	 * Sets the parent type in the type hierarchy.
-	 * 
+	 *
 	 * @param p
 	 *            the parent type, or null for root types
 	 */
@@ -319,7 +323,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the parent type in the type hierarchy.
-	 * 
+	 *
 	 * @return the parent type, or null if this is a root type
 	 */
 	@Override
@@ -328,7 +332,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Sets the map of field getter operators for this type. Each getter is copied with this type's signature to ensure
 	 * proper type binding.
-	 * 
+	 *
 	 * <p>
 	 * Field getters provide access to type-specific attributes. For example, a point type might have "x" and "y"
 	 * getters.
@@ -348,7 +352,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the getter operator for a specific field name.
-	 * 
+	 *
 	 * @param field
 	 *            the field name to look up
 	 * @return the getter operator, or null if the field doesn't exist
@@ -360,7 +364,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns all field getter operators for this type.
-	 * 
+	 *
 	 * @return an unmodifiable map of field names to getter operators, or an empty map if no getters are defined
 	 */
 	@Override
@@ -371,12 +375,12 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Converts an object to this type's support class. This is the primary type conversion method that must be
 	 * implemented by all type subclasses.
-	 * 
+	 *
 	 * <p>
 	 * This method handles the conversion logic from arbitrary Java objects to the specific type this class represents.
 	 * The conversion may or may not create a copy depending on the copy parameter.
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the execution scope for the conversion
 	 * @param obj
@@ -396,7 +400,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Converts an object to this type with additional type parameters for container types. For non-container types,
 	 * this delegates to the simpler cast method.
-	 * 
+	 *
 	 * @param scope
 	 *            the execution scope
 	 * @param obj
@@ -422,7 +426,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the unique identifier for this type.
-	 * 
+	 *
 	 * @return the type ID constant (e.g., IType.INT, IType.FLOAT)
 	 */
 	@Override
@@ -432,7 +436,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the hash code for this type, based on its unique ID.
-	 * 
+	 *
 	 * @return the type ID as hash code
 	 */
 	@Override
@@ -442,7 +446,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Checks equality based on type ID. Two types are equal if they have the same ID.
-	 * 
+	 *
 	 * @param c
 	 *            the object to compare with
 	 * @return true if c is an IType with the same ID
@@ -454,7 +458,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the string representation of this type, which is its GAML name.
-	 * 
+	 *
 	 * @return the type name
 	 */
 	@Override
@@ -465,7 +469,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Generates a pattern string for use in templates and code generation. The pattern includes proper article ("a" or
 	 * "an") based on whether the type name starts with a vowel.
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * <ul>
@@ -473,7 +477,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 * <li>"agent" → "${an_agent}"</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * @return the pattern string in the format "${a_name}" or "${an_name}"
 	 */
 	@Override
@@ -484,7 +488,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the Java class that this type wraps.
-	 * 
+	 *
 	 * @return the support class (e.g., Integer.class for int type)
 	 */
 	@Override
@@ -494,7 +498,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Checks whether this is an agent type.
-	 * 
+	 *
 	 * @return true for agent types, false otherwise
 	 */
 	@Override
@@ -502,7 +506,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Checks whether this is a skill type.
-	 * 
+	 *
 	 * @return true for skill types, false otherwise
 	 */
 	@Override
@@ -510,7 +514,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the content type for container types.
-	 * 
+	 *
 	 * @return the content type, or NO_TYPE for non-container types
 	 */
 	@Override
@@ -518,7 +522,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the key type for map-like container types.
-	 * 
+	 *
 	 * @return the key type, or NO_TYPE for non-map types
 	 */
 	@Override
@@ -526,7 +530,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the species name for agent types.
-	 * 
+	 *
 	 * @return the species name, or null for non-agent types
 	 */
 	@Override
@@ -534,7 +538,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the species description for agent types.
-	 * 
+	 *
 	 * @return the species description, or null for non-agent types
 	 */
 	@Override
@@ -542,7 +546,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the denoted species description for agent types.
-	 * 
+	 *
 	 * @return the denoted species description, delegates to getSpecies() by default
 	 */
 	@Override
@@ -550,7 +554,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Checks if this type is a supertype of another type by walking up the parent chain.
-	 * 
+	 *
 	 * <p>
 	 * This is a helper method used internally to determine type hierarchy relationships. It traverses the parent chain
 	 * of the given type to see if this type appears as an ancestor.
@@ -569,7 +573,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Internal computation of isAssignableFrom without cache lookup. This method should only be called by TypesManager
 	 * to avoid infinite recursion when building the type compatibility cache.
-	 * 
+	 *
 	 * <p>
 	 * A type A is assignable from type B if:
 	 * <ul>
@@ -590,7 +594,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Checks whether a value of the given type can be assigned to a variable of this type without explicit casting.
 	 * This method uses cached type relations from TypesManager for performance.
-	 * 
+	 *
 	 * <p>
 	 * This is the primary method for checking type compatibility in assignments and parameter passing.
 	 * </p>
@@ -608,9 +612,9 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	/**
-	 * Internal computation of isTranslatableInto without cache lookup. Used by TypesManager to avoid infinite
-	 * recursion when building the cache.
-	 * 
+	 * Internal computation of isTranslatableInto without cache lookup. Used by TypesManager to avoid infinite recursion
+	 * when building the cache.
+	 *
 	 * <p>
 	 * A type A is translatable into type B if B is assignable from A. This is the inverse relationship of
 	 * isAssignableFrom.
@@ -628,7 +632,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Checks whether a value of this type can be converted to the target type. This method uses cached type relations
 	 * for performance.
-	 * 
+	 *
 	 * <p>
 	 * This is equivalent to asking whether the target type is assignable from this type.
 	 * </p>
@@ -647,7 +651,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Checks whether an object can be an instance of this type by verifying Java class compatibility.
-	 * 
+	 *
 	 * @param scope
 	 *            the execution scope
 	 * @param c
@@ -663,7 +667,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Checks whether this is a parametric type (e.g., list&lt;int&gt;, map&lt;string,float&gt;).
-	 * 
+	 *
 	 * @return false for base types, true for parametric types
 	 */
 	@Override
@@ -671,11 +675,11 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Checks whether this type is a parametric form of another type.
-	 * 
+	 *
 	 * <p>
 	 * For example, list&lt;int&gt; is a parametric form of list.
 	 * </p>
-	 * 
+	 *
 	 * @param l
 	 *            the type to compare with
 	 * @return true if this is a parametric form of l
@@ -687,7 +691,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Determines whether this type accepts null/nil as a valid instance.
-	 * 
+	 *
 	 * @return true if the default value is null, false otherwise
 	 */
 	protected boolean acceptNullInstances() {
@@ -695,9 +699,9 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	/**
-	 * Attempts to coerce an expression type to be compatible with this type. Returns a coerced type if needed, or
-	 * null if no coercion is required.
-	 * 
+	 * Attempts to coerce an expression type to be compatible with this type. Returns a coerced type if needed, or null
+	 * if no coercion is required.
+	 *
 	 * @param expr
 	 *            the expression type to coerce
 	 * @param context
@@ -713,13 +717,13 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Internal computation of the "distance" between this type and another type without cache lookup. Used by
 	 * TypesManager to build the distance cache.
-	 * 
+	 *
 	 * <p>
 	 * Type distance is used for method overload resolution and type compatibility scoring. The distance is calculated
 	 * as the number of steps in the type hierarchy needed to reach a common ancestor. A distance of 0 means the types
 	 * are identical.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * <ul>
@@ -745,9 +749,8 @@ public abstract class GamaType<Support> implements IType<Support> {
 	}
 
 	/**
-	 * Computes the type compatibility distance to another type. Uses cached distances from TypesManager when
-	 * available.
-	 * 
+	 * Computes the type compatibility distance to another type. Uses cached distances from TypesManager when available.
+	 *
 	 * <p>
 	 * The distance metric is used to resolve method overloading and determine the "best" type conversion when multiple
 	 * options are available.
@@ -768,12 +771,12 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Internal computation of the common supertype without cache lookup. Used by TypesManager to build the common
 	 * supertype cache.
-	 * 
+	 *
 	 * <p>
 	 * The common supertype is the most specific type that both types can be assigned to. This is used for type
 	 * inference in expressions like [1, 2.5] which needs to infer list&lt;float&gt; as the common type.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Algorithm:
 	 * <ul>
@@ -802,12 +805,12 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Finds the most specific common supertype between this type and another type. Uses cached results from
 	 * TypesManager when available.
-	 * 
+	 *
 	 * <p>
 	 * This method is crucial for type inference in collections and expressions where multiple types need to be unified
 	 * under a single common type.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Example: findCommonSupertypeWith(int, float) returns float
 	 * </p>
@@ -827,7 +830,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Checks whether this type represents a container (list, map, matrix, etc.).
-	 * 
+	 *
 	 * @return true for container types, false otherwise
 	 */
 	@Override
@@ -835,7 +838,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Checks whether this type represents a numeric type (int, float).
-	 * 
+	 *
 	 * @return true for numeric types, false otherwise
 	 */
 	@Override
@@ -843,7 +846,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Checks whether this type has a fixed length/size.
-	 * 
+	 *
 	 * @return true for fixed-length types (default), false for variable-length containers
 	 */
 	@Override
@@ -852,7 +855,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Utility method to convert a value to a specific type. If the type is null or NONE, the value is returned
 	 * unchanged.
-	 * 
+	 *
 	 * @param scope
 	 *            the execution scope
 	 * @param value
@@ -871,7 +874,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Returns the key type that should be used when casting an expression to this type. Default implementation returns
 	 * this type's key type.
-	 * 
+	 *
 	 * <p>
 	 * Can be overridden by parametric types to provide dynamic key type inference.
 	 * </p>
@@ -887,7 +890,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Returns the content type that should be used when casting an expression to this type. Default implementation
 	 * returns this type's content type.
-	 * 
+	 *
 	 * <p>
 	 * Can be overridden by parametric types to provide dynamic content type inference.
 	 * </p>
@@ -902,7 +905,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the GAML type representation of this type (returns itself).
-	 * 
+	 *
 	 * @return this type
 	 */
 	@Override
@@ -911,7 +914,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Returns the type that would result from casting an expression to this type, potentially with specific key and
 	 * content types for containers.
-	 * 
+	 *
 	 * @param exp
 	 *            the expression being cast
 	 * @return the resulting type after casting
@@ -923,7 +926,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Creates a type from a species description.
-	 * 
+	 *
 	 * @param species
 	 *            the species description
 	 * @return a species type with the appropriate content type
@@ -935,7 +938,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Creates a parametric container type with specific key and content types. If both key and content types are
 	 * NO_TYPE, returns the original container type unchanged.
-	 * 
+	 *
 	 * <p>
 	 * This method is used to construct specialized container types like list&lt;int&gt; from the base list type.
 	 * </p>
@@ -960,7 +963,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Creates a type from a base type with specific key and content types. This is the general-purpose factory method
 	 * for creating parametric types.
-	 * 
+	 *
 	 * <p>
 	 * For container types, this creates a parametric type if the key or content types differ from the base type's
 	 * defaults. For non-container types, the base type is returned unchanged.
@@ -1002,14 +1005,13 @@ public abstract class GamaType<Support> implements IType<Support> {
 	public static final int PAIR_OF_TYPES = 4;
 
 	/**
-	 * Finds the common type among an array of expressions by extracting a specific type aspect (TYPE, CONTENT, or
-	 * KEY) from each expression.
-	 * 
+	 * Finds the common type among an array of expressions by extracting a specific type aspect (TYPE, CONTENT, or KEY)
+	 * from each expression.
+	 *
 	 * <p>
-	 * This method is useful for type inference in collections where you need to find a common content type or key
-	 * type.
+	 * This method is useful for type inference in collections where you need to find a common content type or key type.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * <ul>
@@ -1037,7 +1039,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Finds the common type among an array of expressions (convenience method that uses TYPE extraction).
-	 * 
+	 *
 	 * @param elements
 	 *            the expressions to analyze
 	 * @return the common type
@@ -1048,12 +1050,12 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Finds the most specific common supertype that all given types can be assigned to.
-	 * 
+	 *
 	 * <p>
 	 * This method iteratively combines types using findCommonSupertypeWith to determine the overall common type. The
 	 * result is the most specific type that can hold values of all input types.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Special handling for NO_TYPE:
 	 * <ul>
@@ -1085,7 +1087,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the GAML type of an object by examining its runtime characteristics.
-	 * 
+	 *
 	 * <p>
 	 * Priority order:
 	 * <ol>
@@ -1109,7 +1111,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Determines the actual runtime type of an object, which may be more specific than its compile-time type.
-	 * 
+	 *
 	 * <p>
 	 * For IValue objects, this calls computeRuntimeType() which may return a more specific type based on the object's
 	 * runtime state. For other objects, this delegates to of().
@@ -1129,7 +1131,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	/**
 	 * Determines the more specific type between a casting type and an original type, returning the casting type if it
 	 * requires explicit conversion.
-	 * 
+	 *
 	 * @param castingType
 	 *            the target type for conversion
 	 * @param originalType
@@ -1142,10 +1144,9 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Checks if explicit type casting is required to convert from the original type to the casting type.
-	 * 
+	 *
 	 * <p>
-	 * Casting is required if the casting type is specified, not NO_TYPE, and the original type is not assignable to
-	 * it.
+	 * Casting is required if the casting type is specified, not NO_TYPE, and the original type is not assignable to it.
 	 * </p>
 	 *
 	 * @param castingType
@@ -1160,7 +1161,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Sets the name of the plugin that defines this type.
-	 * 
+	 *
 	 * @param plugin
 	 *            the plugin name
 	 */
@@ -1169,11 +1170,11 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Collects metadata information about this type for documentation and analysis purposes.
-	 * 
+	 *
 	 * <p>
 	 * Adds the defining plugin name and type name to the metadata properties if a plugin is defined.
 	 * </p>
-	 * 
+	 *
 	 * @param meta
 	 *            the properties object to add metadata to
 	 */
@@ -1187,7 +1188,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Checks whether values of this type can be drawn/displayed graphically.
-	 * 
+	 *
 	 * @return true for drawable types (geometries, images, etc.), false otherwise
 	 */
 	@Override
@@ -1195,7 +1196,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the wrapped type for compound types, or NO_TYPE for simple types.
-	 * 
+	 *
 	 * @return the wrapped type, or NO_TYPE if not a compound type
 	 */
 	@Override
@@ -1203,7 +1204,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Checks whether this is a compound type (a type that wraps another type).
-	 * 
+	 *
 	 * @return true for compound types, false for simple types
 	 */
 	@Override
@@ -1211,12 +1212,12 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Deserializes an object of this type from a JSON map representation.
-	 * 
+	 *
 	 * <p>
 	 * This default implementation throws an exception. Types that support JSON deserialization should override this
 	 * method.
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the execution scope
 	 * @param map2
@@ -1233,7 +1234,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the optional expression associated with this type instance.
-	 * 
+	 *
 	 * @return the expression, or null if not set
 	 */
 	@Override
@@ -1241,7 +1242,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Sets an optional expression to be associated with this type instance.
-	 * 
+	 *
 	 * @param exp
 	 *            the expression to set
 	 */
@@ -1250,7 +1251,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 
 	/**
 	 * Returns the types manager that owns this type, used for cached type relation queries.
-	 * 
+	 *
 	 * @return the types manager
 	 */
 	@Override

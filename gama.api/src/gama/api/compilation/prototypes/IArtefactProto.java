@@ -395,7 +395,7 @@ public interface IArtefactProto extends IGamlDescription {
 		 * @return the kind
 		 */
 		@Override
-		default int getKind() { return ISymbolKind.FACET; }
+		default ISymbolKind getKind() { return ISymbolKind.FACET; }
 
 	}
 
@@ -555,6 +555,6 @@ public interface IArtefactProto extends IGamlDescription {
 	 *
 	 * @return the kind code from {@code ISymbolKind}
 	 */
-	int getKind();
+	ISymbolKind getKind();
 
 }

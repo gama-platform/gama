@@ -40,7 +40,7 @@ import gama.api.types.map.IMap;
 		name = IKeyword.RGB,
 		id = IType.COLOR,
 		wraps = { IColor.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.COLOR },
 		doc = @doc ("The type rgb represents colors in GAML, with their three red, green, blue components and, optionally, a fourth alpha component "))
 @SuppressWarnings ({ "unchecked", "rawtypes" })

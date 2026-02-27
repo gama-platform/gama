@@ -28,7 +28,7 @@ import gama.api.runtime.scope.IScope;
 		name = ConversationType.CONVERSATION_STR,
 		id = ConversationType.CONV_ID,
 		wraps = { Conversation.class },
-		kind = ISymbolKind.Variable.CONTAINER,
+		kind = ISymbolKind.CONTAINER,
 		concept = { IConcept.TYPE, IConcept.FIPA },
 		doc = @doc ("Represents a list of the messages exchanged by agents"))
 public class ConversationType extends GamaContainerType<Conversation> {

@@ -26,7 +26,7 @@ import gama.api.runtime.scope.IScope;
 		name = "kml",
 		id = IType.KML,
 		wraps = { GamaKmlExport.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE },
 		doc = { @doc (
 				value = "Type of variables that enables to store objects and to export them into a KML (Keyhole Markup Language) file") })

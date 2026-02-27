@@ -13,6 +13,7 @@ package gaml.compiler.gaml.prototypes;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Executable;
 
+import gama.annotations.support.ISymbolKind;
 import gama.api.additions.IGamaGetter;
 import gama.api.compilation.factories.ISymbolFactory;
 import gama.api.compilation.prototypes.IArtefactProto;
@@ -64,7 +65,7 @@ public class ArtefactProtoFactory implements IArtefactProtoFactory {
 	 */
 	@Override
 	public IArtefactProto.Symbol createSymbolProto(final Class c, final boolean isBreakable,
-			final boolean isContinuable, final boolean isSequence, final boolean hasArguments, final int sKind,
+			final boolean isContinuable, final boolean isSequence, final boolean hasArguments, final ISymbolKind sKind,
 			final boolean b, final IArtefactProto.Facet[] fmd, final String omissible, final String[] contextKeywords,
 			final int[] contextKinds, final boolean isRemoteContext, final boolean isUnique, final boolean name_unique,
 			final ISymbolFactory sc, final String name, final String plugin) {

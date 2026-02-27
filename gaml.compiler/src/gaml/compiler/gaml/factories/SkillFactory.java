@@ -12,6 +12,7 @@ package gaml.compiler.gaml.factories;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.factories.ISymbolDescriptionFactory;
@@ -60,6 +61,6 @@ public class SkillFactory implements ISymbolDescriptionFactory.Skill {
 	}
 
 	@Override
-	public int[] getKinds() { return new int[] { SKILL }; }
+	public ISymbolKind[] getKinds() { return new ISymbolKind[] { ISymbolKind.SKILL }; }
 
 }

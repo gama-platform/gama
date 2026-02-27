@@ -49,7 +49,7 @@ import gama.api.types.misc.IContainer;
 		name = IKeyword.BOOL,
 		id = IType.BOOL,
 		wraps = { Boolean.class, boolean.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		doc = { @doc ("Represents boolean values, either true or false") },
 		concept = { IConcept.TYPE, IConcept.LOGICAL, IConcept.CONDITION })
 public class GamaBoolType extends GamaType<Boolean> {

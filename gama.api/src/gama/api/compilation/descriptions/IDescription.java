@@ -18,6 +18,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.base.Function;
 
+import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.compilation.serialization.ModelSerializer;
@@ -460,7 +461,7 @@ public interface IDescription
 	 *
 	 * @return the kind
 	 */
-	int getKind();
+	ISymbolKind getKind();
 
 	/**
 	 * Checks if is built in.

@@ -13,6 +13,7 @@ package gama.processor.doc;
 import java.util.HashMap;
 
 import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ISymbolKind;
 
 /**
  * The Class TypeConverter.
@@ -433,8 +434,8 @@ public class TypeConverter {
 	 *            the i
 	 * @return the symbol kind string from I symbol kind
 	 */
-	public String getSymbolKindStringFromISymbolKind(final Integer i) {
+	public String getSymbolKindStringFromISymbolKind(final ISymbolKind i) {
 		if (symbolKindStringFromISymbolKind.containsKey(i)) return symbolKindStringFromISymbolKind.get(i);
-		return "" + i;
+		return "" + i.code();
 	}
 }

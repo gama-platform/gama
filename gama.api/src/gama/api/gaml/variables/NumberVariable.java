@@ -177,7 +177,7 @@ import gama.api.types.geometry.IPoint;
 						doc = @doc ("A list of constant values among which the attribute can take its value")) },
 		omissible = IKeyword.NAME)
 @symbol (
-		kind = ISymbolKind.Variable.NUMBER,
+		kind = ISymbolKind.NUMBER,
 		with_sequence = false,
 		concept = { IConcept.ATTRIBUTE, IConcept.ARITHMETIC })
 @inside (

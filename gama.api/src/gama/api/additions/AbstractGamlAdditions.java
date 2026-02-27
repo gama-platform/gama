@@ -247,7 +247,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 			final int innerType, final int keyType, final int contentType, final String[] s) {
 		GamaFileType.addFileTypeDefinition(string, Types.get(innerType), Types.get(keyType), Types.get(contentType),
 				clazz, helper, s, CURRENT_PLUGIN_NAME);
-		ArtefactProtoRegistry.addNewVarKeyword(string + "_file", ISymbolKind.Variable.CONTAINER);
+		ArtefactProtoRegistry.addNewVarKeyword(string + "_file", ISymbolKind.CONTAINER);
 	}
 
 	/**
@@ -313,14 +313,15 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 			final int[] contextKinds, final IArtefactProto.Facet[] fmd, final String omissible,
 			final ISymbolFactory sc) {
 		final Collection<String> keywords;
-		if (ISymbolKind.Variable.KINDS.contains(sKind)) {
-			keywords = ArtefactProtoRegistry.VARKIND2KEYWORDS.get(sKind);
+		ISymbolKind kind = ISymbolKind.get(sKind);
+		if (ISymbolKind.VARIABLES.contains(kind)) {
+			keywords = ArtefactProtoRegistry.VARKIND2KEYWORDS.get(kind);
 			keywords.remove(SPECIES);
 		} else {
 			keywords = Arrays.asList(names);
 		}
 		final IArtefactProto.Symbol md = GAML.getArtefactProtoFactory().createSymbolProto(c, isBreakable, isContinuable,
-				isSequence, hasArguments, sKind, !scope, fmd, omissible, contextKeywords, contextKinds, isRemoteContext,
+				isSequence, hasArguments, kind, !scope, fmd, omissible, contextKeywords, contextKinds, isRemoteContext,
 				isUnique, name_unique, sc, names == null || names.length == 0 ? "variable declaration" : names[0],
 				CURRENT_PLUGIN_NAME);
 		ArtefactProtoRegistry.addProto(md, keywords);

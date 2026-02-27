@@ -125,7 +125,7 @@ import gama.api.runtime.scope.IScope;
 		name = IKeyword.AGENT,
 		id = IType.AGENT,
 		wraps = { IAgent.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.SPECIES },
 		doc = @doc ("The basic and default type of agents in GAML"))
 public class GamaGenericAgentType extends GamaAgentType<IAgent> {

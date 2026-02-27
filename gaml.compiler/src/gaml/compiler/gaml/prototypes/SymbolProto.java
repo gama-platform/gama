@@ -11,8 +11,8 @@
 package gaml.compiler.gaml.prototypes;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +63,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 	// private final ISymbolDescriptionFactory factory;
 
 	/** The kind. */
-	private final int kind;
+	private final ISymbolKind kind;
 
 	/** The is unique in context. */
 	private final boolean hasSequence, hasArgs, hasScope, isRemoteContext, isUniqueInContext;
@@ -72,7 +72,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 	private final ImmutableSet<String> contextKeywords;
 
 	/** The context kinds. */
-	private final boolean[] contextKinds = new boolean[ISymbolKind.__NUMBER_OF_DECLARED_SYMBOL_KINDS__];
+	private final EnumSet<ISymbolKind> contextKinds = EnumSet.noneOf(ISymbolKind.class);
 
 	/** The possible facets. */
 	private final Map<String, IArtefactProto.Facet> possibleFacets;
@@ -130,7 +130,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 	 *            the plugin
 	 */
 	public SymbolProto(final Class clazz, final boolean isBreakable, final boolean isContinuable,
-			final boolean hasSequence, final boolean hasArgs, final int kind, final boolean doesNotHaveScope,
+			final boolean hasSequence, final boolean hasArgs, final ISymbolKind kind, final boolean doesNotHaveScope,
 			final IArtefactProto.Facet[] possibleFacets, final String omissible, final String[] contextKeywords,
 			final int[] parentKinds, final boolean isRemoteContext, final boolean isUniqueInContext,
 			final boolean nameUniqueInContext, final ISymbolFactory constr, final String name, final String plugin) {
@@ -148,7 +148,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 		this.omissibleFacet = omissible;
 		this.isUniqueInContext = isUniqueInContext;
 		this.kind = kind;
-		this.isVar = ISymbolKind.Variable.KINDS.contains(kind);
+		this.isVar = ISymbolKind.VARIABLES.contains(this.kind);
 		this.hasScope = !doesNotHaveScope;
 		if (possibleFacets != null) {
 			final ImmutableList.Builder<String> builder = ImmutableList.builder();
@@ -165,8 +165,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 			mandatoryFacets = null;
 		}
 		this.contextKeywords = ImmutableSet.copyOf(contextKeywords);
-		Arrays.fill(this.contextKinds, false);
-		for (final int i : parentKinds) { contextKinds[i] = true; }
+		for (final int i : parentKinds) { contextKinds.add(ISymbolKind.get(i)); }
 	}
 
 	/**
@@ -274,7 +273,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 	 * @return the factory
 	 */
 	@Override
-	public int getKind() { return kind; }
+	public ISymbolKind getKind() { return kind; }
 
 	/**
 	 * Gets the constructor.
@@ -291,7 +290,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 
 	@Override
 	public String getTitle() {
-		return isVar ? ISymbolKind.Variable.KINDS_AS_STRING.get(kind) + " declaration" : "Statement " + getName();
+		return isVar ? ISymbolKind.KINDS_AS_STRING.get(kind) + " declaration" : "Statement " + getName();
 	}
 
 	@Override
@@ -392,7 +391,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 	 * @return
 	 */
 	public boolean canBeDefinedIn(final IDescription sd) {
-		return contextKinds[sd.getKind()] || contextKeywords.contains(sd.getKeyword());
+		return contextKinds.contains(sd.getKind()) || contextKeywords.contains(sd.getKeyword());
 	}
 
 	/**

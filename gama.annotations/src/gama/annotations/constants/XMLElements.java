@@ -102,7 +102,7 @@ public interface XMLElements {
 	/** The Constant INSIDE_STAT_SYMBOL. */
 	public static final String INSIDE_STAT_SYMBOL = "insideStatementSymbol";
 	
-	/** The Constant KINDS. */
+	/** The Constant VARIABLES. */
 	public static final String KINDS = "kinds";
 	
 	/** The Constant KIND. */

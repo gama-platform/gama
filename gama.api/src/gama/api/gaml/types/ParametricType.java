@@ -31,8 +31,8 @@ import gama.dev.DEBUG;
 /**
  * Represents a parameterized container type in GAML.
  * <p>
- * Parametric types extend base container types (like list, map, matrix) with specific key and content
- * type parameters. For example:
+ * Parametric types extend base container types (like list, map, matrix) with specific key and content type parameters.
+ * For example:
  * <ul>
  * <li>{@code list<int>} - a list parameterized with integer content</li>
  * <li>{@code map<string, float>} - a map with string keys and float values</li>
@@ -49,9 +49,8 @@ import gama.dev.DEBUG;
  * </ul>
  * </p>
  * <p>
- * This class wraps a base container type with key and content type parameters,
- * delegating most operations to the base type while maintaining type parameter information.
- * Instances are immutable.
+ * This class wraps a base container type with key and content type parameters, delegating most operations to the base
+ * type while maintaining type parameter information. Instances are immutable.
  * </p>
  *
  * @author drogoul
@@ -87,14 +86,18 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	/**
 	 * Constructs a new parametric type.
 	 * <p>
-	 * The types manager is determined by finding the most specific manager among the base type
-	 * and the parameter types, ensuring proper type resolution in multi-model contexts.
+	 * The types manager is determined by finding the most specific manager among the base type and the parameter types,
+	 * ensuring proper type resolution in multi-model contexts.
 	 * </p>
 	 *
-	 * @param manager the types manager context
-	 * @param t the base container type
-	 * @param kt the key type parameter
-	 * @param ct the content type parameter
+	 * @param manager
+	 *            the types manager context
+	 * @param t
+	 *            the base container type
+	 * @param kt
+	 *            the key type parameter
+	 * @param ct
+	 *            the content type parameter
 	 */
 	protected ParametricType(final ITypesManager manager, final IContainerType<IContainer<?, ?>> t, final IType<?> kt,
 			final IType<?> ct) {
@@ -112,7 +115,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * <p>
 	 * Delegates to the base container type.
 	 * </p>
-	 * 
+	 *
 	 * @return the number of type parameters
 	 */
 	@Override
@@ -123,7 +126,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * <p>
 	 * Parametric types are always compound as they have accessible components.
 	 * </p>
-	 * 
+	 *
 	 * @return true
 	 */
 	@Override
@@ -134,8 +137,9 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * <p>
 	 * Two parametric types are equal if their base type, key type, and content type are all equal.
 	 * </p>
-	 * 
-	 * @param other the object to compare with
+	 *
+	 * @param other
+	 *            the object to compare with
 	 * @return true if equal, false otherwise
 	 */
 	@Override
@@ -151,7 +155,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * <p>
 	 * Based on the hash codes of the base type, key type, and content type.
 	 * </p>
-	 * 
+	 *
 	 * @return the hash code
 	 */
 	@Override
@@ -216,7 +220,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.api.gaml.types.IType#getVarKind()
 	 */
 	@Override
-	public int getVarKind() { return ISymbolKind.Variable.CONTAINER; }
+	public ISymbolKind getVarKind() { return ISymbolKind.CONTAINER; }
 
 	/**
 	 * Method getGetter()

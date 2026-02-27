@@ -11,6 +11,7 @@ package gama.api.gaml.types;
 
 import java.util.Map;
 
+import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IGamlDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
@@ -27,7 +28,7 @@ import gama.api.utils.json.IJsonable;
 /**
  * The central interface defining the type system in GAMA. All GAML types (built-in, species, parametric containers,
  * etc.) implement this interface.
- * 
+ *
  * <p>
  * IType provides a comprehensive API for:
  * </p>
@@ -39,40 +40,40 @@ import gama.api.utils.json.IJsonable;
  * <li>Serialization/deserialization to/from JSON</li>
  * <li>Documentation and metadata</li>
  * </ul>
- * 
+ *
  * <p>
  * Each type has a unique integer ID, a name (used in GAML code), and a Java support class that represents values of
  * this type at runtime.
  * </p>
- * 
+ *
  * <p>
  * Example usage:
  * </p>
- * 
+ *
  * <pre>
  * {@code
  * // Get a built-in type
  * IType<Integer> intType = Types.INT;
- * 
+ *
  * // Cast a value to this type
  * Integer value = intType.cast(scope, "42", null, false);
- * 
+ *
  * // Check type relationships
  * if (Types.FLOAT.isAssignableFrom(Types.INT)) {
- *     // INT values can be assigned to FLOAT variables
+ * 	// INT values can be assigned to FLOAT variables
  * }
- * 
+ *
  * // Create parametric types
  * IContainerType<IList<Integer>> listOfInt = Types.LIST.of(Types.INT);
  * }
  * </pre>
- * 
+ *
  * @param <Support>
  *            the Java class representing values of this type at runtime (e.g., Integer for int, GamaPoint for point)
- * 
+ *
  * @author drogoul
  * @since GAMA 1.0
- * 
+ *
  * @see GamaType
  * @see IContainerType
  * @see Types
@@ -209,18 +210,17 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	// ==================== Core Type Casting Methods ====================
 
 	/**
-	 * Casts an object to this type's support class. This is the fundamental conversion operation in GAMA's type
-	 * system.
-	 * 
+	 * Casts an object to this type's support class. This is the fundamental conversion operation in GAMA's type system.
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * // Cast string to int
 	 * Integer value = Types.INT.cast(scope, "42", null, false); // returns 42
-	 * 
+	 *
 	 * // Cast with copy flag
 	 * IList<Integer> copiedList = Types.LIST.cast(scope, originalList, null, true);
 	 * }
@@ -235,27 +235,27 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param copy
 	 *            if true, creates a copy of the object rather than reusing it
 	 * @return the object cast to this type's support class, or the default value if casting fails
-	 * 
+	 *
 	 * @see #getDefault()
 	 */
 	Support cast(IScope scope, Object obj, Object param, boolean copy);
 
 	/**
 	 * Casts an object to this type with explicit key and content types (for parametric container types).
-	 * 
+	 *
 	 * <p>
 	 * This method is primarily used for container types (list, map, matrix, etc.) that have parametric content.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * // Cast to list<int>
 	 * IList<Integer> intList = Types.LIST.cast(scope, rawList, null, Types.INT, Types.NO_TYPE, false);
-	 * 
+	 *
 	 * // Cast to map<string, float>
 	 * IMap<String, Double> stringFloatMap = Types.MAP.cast(scope, rawMap, null, Types.STRING, Types.FLOAT, false);
 	 * }
@@ -281,14 +281,14 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Returns the unique integer identifier of this type.
-	 * 
+	 *
 	 * <p>
 	 * Type IDs are used for efficient type comparison and switching. Built-in types have fixed IDs (see constants
 	 * above), while dynamic types (species, custom types) have IDs allocated at runtime.
 	 * </p>
 	 *
 	 * @return the type ID
-	 * 
+	 *
 	 * @see #NONE
 	 * @see #INT
 	 * @see #FLOAT
@@ -297,7 +297,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Returns the Java class that represents values of this type at runtime.
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
@@ -313,7 +313,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Returns the default value for this type. Used when initializing variables without explicit values.
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
@@ -330,7 +330,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Returns the variable kind constant for this type, used in GAML grammar and variable declarations.
-	 * 
+	 *
 	 * <p>
 	 * Variable kinds distinguish between different syntactic categories (regular variables, temporary variables,
 	 * parameters, etc.).
@@ -338,22 +338,22 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 *
 	 * @return the variable kind constant
 	 */
-	int getVarKind();
+	ISymbolKind getVarKind();
 
 	// ==================== Field and Attribute Access ====================
 
 	/**
 	 * Retrieves the getter operation for a named field/attribute of this type.
-	 * 
+	 *
 	 * <p>
 	 * Fields represent attributes and pseudo-attributes that can be accessed using the dot notation in GAML (e.g.,
 	 * {@code myPoint.x}, {@code myAgent.location}).
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Example:
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * // Get the "x" field getter for point type
@@ -364,20 +364,20 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param name
 	 *            the field name
 	 * @return the field getter operation, or null if no such field exists
-	 * 
+	 *
 	 * @see #getFieldGetters()
 	 */
 	IArtefactProto getGetter(String name);
 
 	/**
 	 * Returns a map of all field getters available for this type.
-	 * 
+	 *
 	 * <p>
 	 * The map keys are field names, and values are the corresponding operator prototypes.
 	 * </p>
 	 *
 	 * @return an immutable map of field name to operator
-	 * 
+	 *
 	 * @see #setFieldGetters(Map)
 	 */
 	Map<String, Operator> getFieldGetters();
@@ -394,13 +394,13 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Checks if this type represents an agent or agent species.
-	 * 
+	 *
 	 * <p>
 	 * Returns true for the agent type and all species types.
 	 * </p>
 	 *
 	 * @return true if this is an agent type
-	 * 
+	 *
 	 * @see #isSkillType()
 	 * @see #getSpecies()
 	 */
@@ -408,7 +408,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Checks if this type represents a skill.
-	 * 
+	 *
 	 * <p>
 	 * Skills are reusable behaviors that can be added to agent species.
 	 * </p>
@@ -419,11 +419,11 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Checks if this type is parametric (can accept type parameters).
-	 * 
+	 *
 	 * <p>
 	 * Container types (list, map, matrix, etc.) and file types are parametric.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
@@ -433,7 +433,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * </ul>
 	 *
 	 * @return true if this type can be parameterized
-	 * 
+	 *
 	 * @see #isParametricFormOf(IType)
 	 * @see #getNumberOfParameters()
 	 */
@@ -441,7 +441,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Checks if this type is a parameterized form of another type.
-	 * 
+	 *
 	 * <p>
 	 * For example, {@code list<int>} is a parametric form of {@code list}.
 	 * </p>
@@ -456,14 +456,14 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Returns the species name if this type represents an agent species.
-	 * 
+	 *
 	 * <p>
 	 * For example, if this type represents a species defined as {@code species mySpecies {...}}, this returns
 	 * "mySpecies".
 	 * </p>
 	 *
 	 * @return the species name, or null if this is not a species type
-	 * 
+	 *
 	 * @see #getSpecies()
 	 * @see #isAgentType()
 	 */
@@ -471,23 +471,23 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Returns the species description if this type represents an agent species.
-	 * 
+	 *
 	 * <p>
 	 * The species description contains all metadata about the species: its attributes, actions, parent species, etc.
 	 * </p>
 	 *
 	 * @return the species description, or null if this is not a species type
-	 * 
+	 *
 	 * @see #getDenotedSpecies()
 	 */
 	ISpeciesDescription getSpecies();
 
 	/**
 	 * Returns the species description denoted by this type (for species container types).
-	 * 
+	 *
 	 * <p>
-	 * This is used for types that represent containers of agents of a specific species, such as when using species as
-	 * a type (e.g., {@code mySpecies allAgents <- mySpecies;}).
+	 * This is used for types that represent containers of agents of a specific species, such as when using species as a
+	 * type (e.g., {@code mySpecies allAgents <- mySpecies;}).
 	 * </p>
 	 *
 	 * @return the denoted species, or null if not applicable
@@ -498,12 +498,12 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Checks if a value of type {@code l} can be assigned to a variable of this type without explicit casting.
-	 * 
+	 *
 	 * <p>
-	 * This is the fundamental assignability check in GAMA's type system. The relation is transitive: if A is
-	 * assignable from B and B is assignable from C, then A is assignable from C.
+	 * This is the fundamental assignability check in GAMA's type system. The relation is transitive: if A is assignable
+	 * from B and B is assignable from C, then A is assignable from C.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
@@ -517,7 +517,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param l
 	 *            the type to check
 	 * @return true if values of type l can be assigned to variables of this type
-	 * 
+	 *
 	 * @see #computeIsAssignableFrom(IType)
 	 * @see #isTranslatableInto(IType)
 	 */
@@ -525,7 +525,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Internal computation of isAssignableFrom without cache lookup. Used by TypesManager to avoid infinite recursion.
-	 * 
+	 *
 	 * <p>
 	 * Implementations should provide the actual assignability logic without delegating to the cache. This method is
 	 * called by {@link ITypesManager#checkAssignability(IType, IType)} which manages caching.
@@ -534,19 +534,19 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param l
 	 *            the type to check
 	 * @return true if is assignable from
-	 * 
+	 *
 	 * @see ITypesManager#checkAssignability(IType, IType)
 	 */
 	boolean computeIsAssignableFrom(IType<?> l);
 
 	/**
 	 * Checks if values of this type can be translated (converted with information loss) into the target type.
-	 * 
+	 *
 	 * <p>
 	 * Translation is more permissive than assignment. For example, float can be translated into int (with truncation),
 	 * even though float is not assignable to int.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
@@ -559,7 +559,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param t
 	 *            the target type
 	 * @return true if this type can be translated into the target type
-	 * 
+	 *
 	 * @see #computeIsTranslatableInto(IType)
 	 * @see #isAssignableFrom(IType)
 	 */
@@ -568,7 +568,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	/**
 	 * Internal computation of isTranslatableInto without cache lookup. Used by TypesManager to avoid infinite
 	 * recursion.
-	 * 
+	 *
 	 * <p>
 	 * Implementations should provide the actual translatability logic without delegating to the cache. This method is
 	 * called by {@link ITypesManager#checkTranslatability(IType, IType)} which manages caching.
@@ -577,23 +577,23 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param t
 	 *            the target type
 	 * @return true if translatable
-	 * 
+	 *
 	 * @see ITypesManager#checkTranslatability(IType, IType)
 	 */
 	boolean computeIsTranslatableInto(IType<?> t);
 
 	/**
 	 * Sets the parent type in the type hierarchy.
-	 * 
+	 *
 	 * <p>
 	 * The type hierarchy forms a tree rooted at Types.NO_TYPE. Parent-child relationships are based on Java class
 	 * inheritance and semantic relationships.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Example hierarchy:
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * NO_TYPE
 	 *   ├─ int
@@ -608,27 +608,27 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 *
 	 * @param p
 	 *            the parent type
-	 * 
+	 *
 	 * @see #getParent()
 	 */
 	void setParent(IType<? super Support> p);
 
 	/**
 	 * Returns the parent type in the type hierarchy.
-	 * 
+	 *
 	 * <p>
 	 * All types except NO_TYPE have a parent. This is used for inheritance of fields and type compatibility checks.
 	 * </p>
 	 *
 	 * @return the parent type, or null for NO_TYPE
-	 * 
+	 *
 	 * @see #setParent(IType)
 	 */
 	IType<?> getParent();
 
 	/**
 	 * Coerces an expression's type to make it compatible with this type in a given context.
-	 * 
+	 *
 	 * <p>
 	 * This method is used during compilation to determine if an expression needs type conversion. It may return a
 	 * different type than this or the expression type, representing the most specific common type.
@@ -644,7 +644,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Computes the distance between this type and another type in the type hierarchy.
-	 * 
+	 *
 	 * <p>
 	 * The distance represents the number of steps in the type hierarchy between two types. This is used for:
 	 * </p>
@@ -653,7 +653,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * <li>Type inference (choose most specific type)</li>
 	 * <li>Compatibility checking</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
@@ -666,36 +666,35 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param originalChildType
 	 *            the target type to compute distance to
 	 * @return the distance (0 = same type, positive = steps in hierarchy, MAX_VALUE = unreachable)
-	 * 
+	 *
 	 * @see #computeDistanceTo(IType)
 	 */
 	int distanceTo(IType<?> originalChildType);
 
 	/**
 	 * Internal computation of distanceTo without cache lookup. Used by TypesManager to avoid infinite recursion.
-	 * 
+	 *
 	 * <p>
-	 * Implementations should provide the actual distance computation logic without delegating to the cache. This
-	 * method is called by {@link ITypesManager#computeDistance(IType, IType)} which manages caching.
+	 * Implementations should provide the actual distance computation logic without delegating to the cache. This method
+	 * is called by {@link ITypesManager#computeDistance(IType, IType)} which manages caching.
 	 * </p>
 	 *
 	 * @param originalChildType
 	 *            the target type
 	 * @return the distance
-	 * 
+	 *
 	 * @see ITypesManager#computeDistance(IType, IType)
 	 */
 	int computeDistanceTo(IType<?> originalChildType);
 
-
 	/**
 	 * Tries to find a common supertype shared between this type and the argument.
-	 * 
+	 *
 	 * <p>
 	 * The common supertype is the most specific type that both types can be assigned to. This is used for type
 	 * inference in expressions with mixed types.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
@@ -708,7 +707,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param iType
 	 *            the other type
 	 * @return the common supertype, or Types.NO_TYPE if no common supertype exists
-	 * 
+	 *
 	 * @see #computeFindCommonSupertypeWith(IType)
 	 */
 	IType<? super Support> findCommonSupertypeWith(IType<?> iType);
@@ -716,7 +715,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	/**
 	 * Internal computation of findCommonSupertypeWith without cache lookup. Used by TypesManager to avoid infinite
 	 * recursion.
-	 * 
+	 *
 	 * <p>
 	 * Implementations should provide the actual common supertype logic without delegating to the cache. This method is
 	 * called by {@link ITypesManager#computeCommonSupertype(IType, IType)} which manages caching.
@@ -725,19 +724,19 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param iType
 	 *            the other type
 	 * @return the common supertype
-	 * 
+	 *
 	 * @see ITypesManager#computeCommonSupertype(IType, IType)
 	 */
 	IType<? super Support> computeFindCommonSupertypeWith(IType<?> iType);
 
 	/**
 	 * Determines the actual type that results from casting an expression to this type.
-	 * 
+	 *
 	 * <p>
 	 * Usually returns this type, but some types (like species types or agent types) compute a more specific type based
 	 * on the expression being cast.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * For example, casting an agent to a species type might return the specific species type of that agent.
 	 * </p>
@@ -752,13 +751,13 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Checks if this type represents a container (list, map, matrix, etc.).
-	 * 
+	 *
 	 * <p>
 	 * Container types hold collections of values and support iteration, indexing, and other container operations.
 	 * </p>
 	 *
 	 * @return true if this is a container type
-	 * 
+	 *
 	 * @see IContainerType
 	 * @see #isCompoundType()
 	 */
@@ -766,11 +765,11 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Checks if this type has a fixed length (cannot use add/remove operations).
-	 * 
+	 *
 	 * <p>
 	 * Types like matrices, strings, and points have fixed length. Lists and maps do not.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
@@ -786,11 +785,11 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Returns the type of elements contained in this container type.
-	 * 
+	 *
 	 * <p>
 	 * For non-container types, this may return the type of components (e.g., float for point).
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
@@ -801,18 +800,18 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * </ul>
 	 *
 	 * @return the content type, or Types.NO_TYPE if not applicable
-	 * 
+	 *
 	 * @see #getKeyType()
 	 */
 	IType<?> getContentType();
 
 	/**
 	 * Returns the type of keys/indices for this container type.
-	 * 
+	 *
 	 * <p>
 	 * For maps, this is the actual key type. For lists and matrices, this is the index type (int).
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
@@ -822,19 +821,19 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * </ul>
 	 *
 	 * @return the key type, or Types.NO_TYPE if not applicable
-	 * 
+	 *
 	 * @see #getContentType()
 	 */
 	IType<?> getKeyType();
 
 	/**
 	 * Checks if this type represents a compound value which components can be extracted when casting to a container.
-	 * 
+	 *
 	 * <p>
 	 * For instance, points have float components that can be extracted as a list. Containers are compound types by
 	 * default.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
@@ -845,14 +844,14 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * </ul>
 	 *
 	 * @return true if the type represents a compound value
-	 * 
+	 *
 	 * @see #getContentType()
 	 */
 	boolean isCompoundType();
 
 	/**
 	 * Returns the number of type parameters this type can accept.
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
@@ -864,14 +863,14 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * </ul>
 	 *
 	 * @return the number of type parameters (0 for non-parametric types)
-	 * 
+	 *
 	 * @see #isParametricType()
 	 */
 	int getNumberOfParameters();
 
 	/**
 	 * Returns the wrapped type for wrapper types (like file types wrapping specific formats).
-	 * 
+	 *
 	 * <p>
 	 * For most types, returns Types.NO_TYPE. File types return their buffer type (csv, shapefile, etc.).
 	 * </p>
@@ -884,7 +883,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Checks if an object can be considered an instance of this type in the given scope.
-	 * 
+	 *
 	 * <p>
 	 * This is a runtime check that may involve scope-dependent logic (e.g., checking if an agent belongs to a specific
 	 * species).
@@ -900,7 +899,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Checks if values of this type can be cast to constant expressions.
-	 * 
+	 *
 	 * <p>
 	 * Most primitive types (int, float, bool, string) can be cast to const. Complex types (agents, files) typically
 	 * cannot.
@@ -919,7 +918,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Checks if values of this type can be drawn/rendered in displays.
-	 * 
+	 *
 	 * <p>
 	 * Drawable types include geometries, agents, images, etc.
 	 * </p>
@@ -930,7 +929,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Checks if values of this type are comparable (implement Comparable interface).
-	 * 
+	 *
 	 * <p>
 	 * Comparable types can be used in comparisons (<, >, <=, >=) and sorting operations.
 	 * </p>
@@ -943,7 +942,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Returns a string pattern representation of this type for use in regular expressions or pattern matching.
-	 * 
+	 *
 	 * <p>
 	 * Used internally for type name parsing and validation.
 	 * </p>
@@ -956,7 +955,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Sets the name of the plugin that defines this type.
-	 * 
+	 *
 	 * <p>
 	 * Used for documentation and error messages to indicate which GAMA extension provides this type.
 	 * </p>
@@ -968,7 +967,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Documents the fields of this type for use in the GAMA documentation.
-	 * 
+	 *
 	 * <p>
 	 * This method is called during documentation generation to include type-specific field information.
 	 * </p>
@@ -982,7 +981,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Creates an instance of this type from clipboard text content.
-	 * 
+	 *
 	 * <p>
 	 * The default implementation retrieves text from the clipboard and casts it to this type.
 	 * </p>
@@ -990,7 +989,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param scope
 	 *            the current execution scope
 	 * @return a value of this type parsed from the clipboard, or the default value if parsing fails
-	 * 
+	 *
 	 * @see #cast(IScope, Object, Object, boolean)
 	 */
 	default Support copyFromClipboard(final IScope scope) {
@@ -999,7 +998,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Deserializes a value of this type from a JSON map representation.
-	 * 
+	 *
 	 * <p>
 	 * Used when loading GAMA state from JSON files or network messages.
 	 * </p>
@@ -1009,14 +1008,14 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param map2
 	 *            the JSON map containing serialized data
 	 * @return the deserialized value
-	 * 
+	 *
 	 * @see #serializeToJson(IJson)
 	 */
 	Support deserializeFromJson(IScope scope, IMap<String, Object> map2);
 
 	/**
 	 * Serializes this type metadata to JSON.
-	 * 
+	 *
 	 * <p>
 	 * The default implementation creates a JSON object with the type name.
 	 * </p>
@@ -1024,7 +1023,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param json
 	 *            the JSON builder
 	 * @return the JSON representation of this type
-	 * 
+	 *
 	 * @see #deserializeFromJson(IScope, IMap)
 	 */
 	@Override
@@ -1036,13 +1035,13 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/**
 	 * Returns the expression associated with this type (for types defined by expressions).
-	 * 
+	 *
 	 * <p>
 	 * Some types are defined dynamically based on expressions (e.g., species types from species expressions).
 	 * </p>
 	 *
 	 * @return the associated expression, or null if not applicable
-	 * 
+	 *
 	 * @see #setExpression(IExpression)
 	 */
 	IExpression getExpression();
@@ -1052,20 +1051,20 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 *
 	 * @param exp
 	 *            the expression to associate
-	 * 
+	 *
 	 * @see #getExpression()
 	 */
 	void setExpression(IExpression exp);
 
 	/**
 	 * Returns the types manager that owns this type and provides cached type relation operations.
-	 * 
+	 *
 	 * <p>
 	 * The types manager handles caching of expensive type relationship computations (assignability, distance, etc.).
 	 * </p>
 	 *
 	 * @return the types manager, or null if not set
-	 * 
+	 *
 	 * @see ITypesManager
 	 */
 	ITypesManager getTypesManager();

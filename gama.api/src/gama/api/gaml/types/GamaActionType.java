@@ -38,7 +38,7 @@ import gama.api.types.map.IMap;
 		name = IKeyword.ACTION,
 		id = IType.ACTION,
 		wraps = { IStatementDescription.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		doc = { @doc ("The type of the variables that denote an action or an aspect of a species") },
 		concept = { IConcept.TYPE, IConcept.ACTION, IConcept.SPECIES })
 public class GamaActionType extends GamaType<IDescription> {

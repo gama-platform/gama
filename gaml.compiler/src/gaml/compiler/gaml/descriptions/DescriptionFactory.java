@@ -206,7 +206,7 @@ public class DescriptionFactory implements IDescriptionFactory {
 	 *            the kind
 	 * @return the factory
 	 */
-	private ISymbolDescriptionFactory getFactory(final int kind) {
+	private ISymbolDescriptionFactory getFactory(final ISymbolKind kind) {
 		return GAML.DESCRIPTION_FACTORIES.get(kind);
 	}
 

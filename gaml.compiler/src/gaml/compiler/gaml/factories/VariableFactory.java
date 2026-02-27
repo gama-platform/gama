@@ -10,9 +10,6 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.factories;
 
-import static gama.annotations.support.ISymbolKind.Variable.CONTAINER;
-import static gama.annotations.support.ISymbolKind.Variable.NUMBER;
-import static gama.annotations.support.ISymbolKind.Variable.REGULAR;
 import static gama.api.constants.IKeyword.ON_CHANGE;
 import static gama.api.constants.IKeyword.VAR;
 
@@ -20,6 +17,7 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
@@ -80,6 +78,9 @@ public class VariableFactory implements ISymbolDescriptionFactory {
 	}
 
 	@Override
-	public int[] getKinds() { return new int[] { CONTAINER, NUMBER, REGULAR, PARAMETER }; }
+	public ISymbolKind[] getKinds() {
+		return new ISymbolKind[] { ISymbolKind.CONTAINER, ISymbolKind.NUMBER, ISymbolKind.REGULAR,
+				ISymbolKind.PARAMETER };
+	}
 
 }

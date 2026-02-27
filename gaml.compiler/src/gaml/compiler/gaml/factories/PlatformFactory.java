@@ -12,6 +12,7 @@ package gaml.compiler.gaml.factories;
 
 import java.util.Set;
 
+import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.ArtefactProtoRegistry;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.gaml.symbols.Facets;
@@ -48,6 +49,6 @@ public class PlatformFactory extends SpeciesFactory {
 	}
 
 	@Override
-	public int[] getKinds() { return new int[] { PLATFORM }; }
+	public ISymbolKind[] getKinds() { return new ISymbolKind[] { ISymbolKind.PLATFORM }; }
 
 }

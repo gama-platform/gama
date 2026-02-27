@@ -78,7 +78,7 @@ public class GamaAgentType<T extends IAgent> extends GamaType<T> {
 		this.species = species;
 		this.id = id;
 		this.name = name;
-		this.varKind = ISymbolKind.Variable.REGULAR;
+		this.varKind = ISymbolKind.REGULAR;
 		this.support = support;
 	}
 

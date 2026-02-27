@@ -44,7 +44,7 @@ import gama.api.types.misc.IValue;
 		name = IKeyword.INT,
 		id = IType.INT,
 		wraps = { Integer.class, int.class, Long.class },
-		kind = ISymbolKind.Variable.NUMBER,
+		kind = ISymbolKind.NUMBER,
 		concept = { IConcept.TYPE },
 		doc = @doc ("Type of integer numbers"))
 public class GamaIntegerType extends GamaType<Integer> {

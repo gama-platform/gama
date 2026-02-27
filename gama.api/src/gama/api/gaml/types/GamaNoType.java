@@ -23,7 +23,7 @@ import gama.api.runtime.scope.IScope;
  * information. It acts as the universal supertype in GAMA's type hierarchy - all other types are subtypes of NoType.
  * This type is used during compilation when type information cannot be determined, and at runtime for untyped values.
  * </p>
- * 
+ *
  * <h2>Key Characteristics:</h2>
  * <ul>
  * <li>Universal supertype - all types are subtypes of NoType</li>
@@ -33,7 +33,7 @@ import gama.api.runtime.scope.IScope;
  * <li>Default null value</li>
  * <li>Can be cast to constant</li>
  * </ul>
- * 
+ *
  * <h2>Type Hierarchy Role:</h2>
  * <p>
  * In GAMA's type system:
@@ -44,7 +44,7 @@ import gama.api.runtime.scope.IScope;
  * <li>Common supertype resolution falls back to NoType when no specific common type exists</li>
  * </ul>
  * </p>
- * 
+ *
  * <h2>Usage Scenarios:</h2>
  * <ul>
  * <li>Variables declared without explicit type</li>
@@ -53,24 +53,24 @@ import gama.api.runtime.scope.IScope;
  * <li>Fallback type when type inference fails</li>
  * <li>Placeholder during compilation</li>
  * </ul>
- * 
+ *
  * <h2>Examples:</h2>
- * 
+ *
  * <pre>
  * {@code
  * // Implicitly uses NoType (though GAMA usually infers specific types)
  * unknown my_value <- "hello";
  * my_value <- 42;  // Can change to different type
  * my_value <- {10, 20};  // And again to another type
- * 
+ *
  * // Generic/heterogeneous collections
  * list mixed_list <- ["text", 42, {10, 20}, self];
- * 
+ *
  * // Dynamic operations where type is unknown at compile time
  * unknown result <- some_plugin_operation();
  * }
  * </pre>
- * 
+ *
  * <h2>Type Translation Limitations:</h2>
  * <p>
  * While NoType is compatible with most types, it cannot be directly translated to certain primitive types at compile
@@ -82,7 +82,7 @@ import gama.api.runtime.scope.IScope;
  * </ul>
  * This prevents incorrect compile-time assumptions about unknown values.
  * </p>
- * 
+ *
  * @author GAMA Development Team
  * @see GamaType
  * @since GAMA 1.0
@@ -92,14 +92,14 @@ import gama.api.runtime.scope.IScope;
 		name = IKeyword.UNKNOWN,
 		id = IType.NONE,
 		wraps = { Object.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE },
 		doc = @doc ("A type, root of all other types, that represents values without a precise type"))
 public class GamaNoType extends GamaType<Object> {
 
 	/**
 	 * Constructs a new NoType.
-	 * 
+	 *
 	 * @param typesManager
 	 *            the types manager responsible for type resolution and management
 	 */
@@ -113,7 +113,7 @@ public class GamaNoType extends GamaType<Object> {
 	 * Since NoType accepts any value, this simply returns the object itself without transformation. The copy parameter
 	 * is ignored as there's no type-specific copying needed.
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param obj
@@ -136,7 +136,7 @@ public class GamaNoType extends GamaType<Object> {
 	 * <p>
 	 * The default value is null, representing absence of value.
 	 * </p>
-	 * 
+	 *
 	 * @return null
 	 */
 	@Override
@@ -147,7 +147,7 @@ public class GamaNoType extends GamaType<Object> {
 	 * <p>
 	 * As the universal supertype, NoType is always a supertype of any other type.
 	 * </p>
-	 * 
+	 *
 	 * @param type
 	 *            the type to check
 	 * @return true always, as NoType is the supertype of all types
@@ -162,7 +162,7 @@ public class GamaNoType extends GamaType<Object> {
 	 * <p>
 	 * As the universal supertype, NoType is the common supertype for any type combination.
 	 * </p>
-	 * 
+	 *
 	 * @param iType
 	 *            the other type
 	 * @return this (NoType), as it's the common supertype of all types
@@ -178,7 +178,7 @@ public class GamaNoType extends GamaType<Object> {
 	 * <p>
 	 * NoType can be constant since it places no restrictions on values.
 	 * </p>
-	 * 
+	 *
 	 * @return true, NoType values can be constant
 	 */
 	@Override
@@ -189,10 +189,10 @@ public class GamaNoType extends GamaType<Object> {
 	/**
 	 * Determines if NoType values can be translated into another type at compile time.
 	 * <p>
-	 * An unknown value (at compilation time) cannot be reliably translated into primitive numeric or boolean types,
-	 * as this would require knowing the actual value. However, it can be translated to other types.
+	 * An unknown value (at compilation time) cannot be reliably translated into primitive numeric or boolean types, as
+	 * this would require knowing the actual value. However, it can be translated to other types.
 	 * </p>
-	 * 
+	 *
 	 * @param t
 	 *            the target type
 	 * @return false for bool, int, and float types; true for all other types

@@ -39,5 +39,5 @@ public @interface inside {
 	 *
 	 * @return the int[]
 	 */
-	int[] kinds() default {};
+	ISymbolKind[] kinds() default {};
 }

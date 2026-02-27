@@ -91,7 +91,7 @@ public class GamlTemplateFactory {
 		String menuPath = "";
 		for (final String p : path) { menuPath += p + "."; }
 		String menu = u.menu();
-		if (usage.NULL.equals(menu)) { menu = ISymbolKind.TEMPLATE_MENU[sp.getKind()]; }
+		if (usage.NULL.equals(menu)) { menu = ISymbolKind.TEMPLATE_MENU[sp.getKind().code()]; }
 		String desc = u.value();
 		if (usage.NULL.equals(desc)) {
 			// Trying to build something that makes sense..

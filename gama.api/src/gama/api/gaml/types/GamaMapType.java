@@ -82,7 +82,7 @@ import gama.api.types.map.IMap;
 		name = IKeyword.MAP,
 		id = IType.MAP,
 		wraps = { IMap.class },
-		kind = ISymbolKind.Variable.CONTAINER,
+		kind = ISymbolKind.CONTAINER,
 		concept = { IConcept.TYPE, IConcept.CONTAINER, IConcept.MAP },
 		doc = @doc ("Represents lists of pairs key::value, where each key is unique in the map. Maps are ordered by the insertion order of elements"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })

@@ -128,7 +128,7 @@ import gama.dev.DEBUG;
 		name = "date",
 		id = IType.DATE,
 		wraps = { IDate.class },
-		kind = ISymbolKind.Variable.NUMBER,
+		kind = ISymbolKind.NUMBER,
 		concept = { IConcept.TYPE, IConcept.DATE, IConcept.TIME },
 		doc = { @doc ("GAML objects that represent a date") })
 public class GamaDateType extends GamaType<IDate> {

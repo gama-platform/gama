@@ -89,7 +89,7 @@ import gama.api.types.geometry.IShape;
 		name = IKeyword.GEOMETRY,
 		id = IType.GEOMETRY,
 		wraps = { IShape.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		concept = { IConcept.TYPE, IConcept.GEOMETRY },
 		doc = @doc ("Represents geometries, i.e. the support for the shapes of agents and all the spatial operations in GAMA."))
 @SuppressWarnings ({ "unchecked", "rawtypes" })

@@ -32,15 +32,16 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
+import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.ast.ISyntacticElement.SyntacticVisitor;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescription.DescriptionVisitor;
-import gama.api.compilation.factories.IModelFactory;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.factories.IModelFactory;
 import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
@@ -931,6 +932,6 @@ public class ModelFactory implements IModelFactory {
 	 * @return an array containing the MODEL kind constant
 	 */
 	@Override
-	public int[] getKinds() { return new int[] { MODEL }; }
+	public ISymbolKind[] getKinds() { return new ISymbolKind[] { ISymbolKind.MODEL }; }
 
 }

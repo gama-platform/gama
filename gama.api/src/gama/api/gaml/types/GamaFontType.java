@@ -44,7 +44,7 @@ import gama.api.types.map.IMap;
 		name = IKeyword.FONT,
 		id = IType.FONT,
 		wraps = { IFont.class },
-		kind = ISymbolKind.Variable.REGULAR,
+		kind = ISymbolKind.REGULAR,
 		doc = { @doc ("Represents font objects that can be passed directly as arguments to draw statements and text layers. A font is identified by its face name (e.g. 'Helvetica'), its size in points (e.g. 12) and its style (i.e., #bold, #italic, or an addition of the 2") },
 		concept = { IConcept.TYPE, IConcept.TEXT, IConcept.DISPLAY })
 public class GamaFontType extends GamaType<IFont> {
