@@ -131,7 +131,7 @@ public class ShaderProgram {
 		gl.glUniform1i(location, value);
 	}
 
-	public void setUniform(GL3 gl, int location, float x, float y, float z, float w) {
-		gl.glUniform4f(location, x, y, z, w);
+	public void setUniform(GL3 gl, int location, org.joml.Vector4f vector) {
+		gl.glUniform4f(location, vector.x, vector.y, vector.z, vector.w);
 	}
 }

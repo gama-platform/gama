@@ -1026,33 +1026,36 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param y
 	 * @param z
 	 */
+
+	private void resizeBuffersIfNeeded() {
+		if (vertexBuffer.remaining() >= 3) return;
+		int newCap = vertexBuffer.capacity() * 2;
+
+		java.nio.FloatBuffer newVB = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(newCap);
+		vertexBuffer.flip();
+		newVB.put(vertexBuffer);
+		vertexBuffer = newVB;
+
+		java.nio.FloatBuffer newCB = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(newCap / 3 * 4);
+		colorBuffer.flip();
+		newCB.put(colorBuffer);
+		colorBuffer = newCB;
+
+		java.nio.FloatBuffer newTB = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(newCap / 3 * 2);
+		texCoordBuffer.flip();
+		newTB.put(texCoordBuffer);
+		texCoordBuffer = newTB;
+	}
+
 	public void outputVertex(final double x, final double y, final double z) {
 		gl.glVertex3d(x, y, z + currentZTranslation);
-		if (isBatching) {
-			if (vertexBuffer.remaining() < 3) {
-				// Reallocate buffers instead of flushing mid-primitive to prevent tearing
-				int newCap = vertexBuffer.capacity() * 2;
+		if (!isBatching) return;
 
-				java.nio.FloatBuffer newVB = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(newCap);
-				vertexBuffer.flip();
-				newVB.put(vertexBuffer);
-				vertexBuffer = newVB;
-
-				java.nio.FloatBuffer newCB = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(newCap / 3 * 4);
-				colorBuffer.flip();
-				newCB.put(colorBuffer);
-				colorBuffer = newCB;
-
-				java.nio.FloatBuffer newTB = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(newCap / 3 * 2);
-				texCoordBuffer.flip();
-				newTB.put(texCoordBuffer);
-				texCoordBuffer = newTB;
-			}
-			vertexBuffer.put((float)x).put((float)y).put((float)(z + currentZTranslation));
-			colorBuffer.put((float)currentRed).put((float)currentGreen).put((float)currentBlue).put((float)currentAlpha);
-			texCoordBuffer.put(currentU).put(currentV);
-			vertexCount++;
-		}
+		resizeBuffersIfNeeded();
+		vertexBuffer.put((float)x).put((float)y).put((float)(z + currentZTranslation));
+		colorBuffer.put((float)currentRed).put((float)currentGreen).put((float)currentBlue).put((float)currentAlpha);
+		texCoordBuffer.put(currentU).put(currentV);
+		vertexCount++;
 	}
 
 	/**
