@@ -28,8 +28,8 @@ import com.google.inject.Provider;
 import com.google.inject.name.Named;
 
 import gama.annotations.usage;
-import gama.api.additions.registries.ArtefactProtoRegistry;
-import gama.api.compilation.prototypes.IArtefactProto;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Signature;
 import gama.gaml.operators.Strings;
@@ -194,9 +194,9 @@ public class GamlTemplateStore extends XtextTemplateStore {
 	@Override
 	protected void loadContributedTemplates() throws IOException {
 		super.loadContributedTemplates();
-		Iterable<String> protos = ArtefactProtoRegistry.getProtoNames();
+		Iterable<String> protos = ArtefactRegistry.getProtoNames();
 		for (final String keyword : protos) {
-			final IArtefactProto.Symbol sp = ArtefactProtoRegistry.getProto(keyword, null);
+			final IArtefact.Symbol sp = ArtefactRegistry.getProto(keyword, null);
 			// List<template> templates = sp.getTemplates();
 			for (final usage u : sp.getUsages()) {
 				final TemplatePersistenceData data = GamlTemplateFactory.from(u, sp);
@@ -205,8 +205,8 @@ public class GamlTemplateStore extends XtextTemplateStore {
 		}
 		protos = GAML.getOperatorsNames();
 		for (final String keyword : protos) {
-			final Map<Signature, IArtefactProto.Operator> map = GAML.getOperatorsNamed(keyword);
-			for (final IArtefactProto.Operator p : map.values()) {
+			final Map<Signature, IArtefact.Operator> map = GAML.getOperatorsNamed(keyword);
+			for (final IArtefact.Operator p : map.values()) {
 				for (final usage u : p.getUsages()) {
 					final TemplatePersistenceData data = GamlTemplateFactory.from(u, p);
 					if (data != null) { internalAdd(data); }

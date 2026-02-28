@@ -24,8 +24,9 @@ import java.util.stream.StreamSupport;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.support.ISymbolKind;
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.GamlCompilationError;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
@@ -33,7 +34,6 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
@@ -53,7 +53,7 @@ import gama.api.utils.GamlProperties;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.EGaml;
-import gaml.compiler.gaml.prototypes.SymbolProto;
+import gaml.compiler.gaml.prototypes.SymbolArtefact;
 
 /**
  * Abstract base class for all GAML symbol descriptions in the compilation pipeline.
@@ -184,7 +184,7 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
  * <li><strong>Factory Method:</strong> {@link #compile()} creates runtime symbols</li>
  * <li><strong>Template Method:</strong> {@link #validate()} defines validation algorithm</li>
  * <li><strong>Visitor:</strong> {@link #visitFacets} and {@link #visitChildren} support traversal</li>
- * <li><strong>Prototype:</strong> {@link SymbolProto} stores shared metadata</li>
+ * <li><strong>Prototype:</strong> {@link SymbolArtefact} stores shared metadata</li>
  * </ul>
  *
  * @author Alexis Drogoul
@@ -192,7 +192,7 @@ import gaml.compiler.gaml.prototypes.SymbolProto;
  * @see IDescription
  * @see ISymbol
  * @see DescriptionFactory
- * @see SymbolProto
+ * @see SymbolArtefact
  */
 public abstract class SymbolDescription implements IDescription {
 
@@ -356,10 +356,10 @@ public abstract class SymbolDescription implements IDescription {
 	 * </p>
 	 *
 	 * <p>
-	 * <strong>Lookup:</strong> Retrieved from {@link ArtefactProtoRegistry} based on keyword and species context.
+	 * <strong>Lookup:</strong> Retrieved from {@link ArtefactRegistry} based on keyword and species context.
 	 * </p>
 	 */
-	final SymbolProto proto;
+	final SymbolArtefact proto;
 
 	/**
 	 * Creates a new symbol description.
@@ -391,7 +391,7 @@ public abstract class SymbolDescription implements IDescription {
 			facets.remove(ORIGIN);
 		} else if (superDesc != null) { originName = superDesc.getName(); }
 		setEnclosingDescription(superDesc);
-		proto = (SymbolProto) ArtefactProtoRegistry.getProto(getKeyword(), getSpeciesContext());
+		proto = (SymbolArtefact) ArtefactRegistry.getProto(getKeyword(), getSpeciesContext());
 
 	}
 
@@ -472,7 +472,7 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public final ISymbolSerializer getSerializer() {
-		final SymbolProto p = getMeta();
+		final SymbolArtefact p = getMeta();
 		ISymbolSerializer d = p.getSerializer();
 		if (d == null) {
 			d = createSerializer();
@@ -726,7 +726,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return the symbol prototype
 	 */
 	@Override
-	public final SymbolProto getMeta() { return proto; }
+	public final SymbolArtefact getMeta() { return proto; }
 
 	/**
 	 * Internal method to handle error, warning, and info flags during validation. Determines the proper reporting
@@ -1563,7 +1563,7 @@ public abstract class SymbolDescription implements IDescription {
 		}
 
 		return visitFacets((facet, expr) -> {
-			final IArtefactProto.Facet fp = proto.getFacet(facet);
+			final IArtefact.Facet fp = proto.getFacet(facet);
 			if (fp == null) return processUnknowFacet(isDo, facet);
 			if (fp.getDeprecated() != null) {
 				warning("Facet '" + facet + "' is deprecated: " + fp.getDeprecated(), IGamlIssue.DEPRECATED, facet);
@@ -1609,7 +1609,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return the compiled expression
 	 */
 	private IExpression compileExpression(final String facet, final IExpressionDescription expr,
-			final IArtefactProto.Facet fp) {
+			final IArtefact.Facet fp) {
 		IExpression exp;
 		if (fp.isNewTemp()) {
 			exp = createVarWithTypes(facet);
@@ -1643,7 +1643,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * @param keyType
 	 *            the expected key type
 	 */
-	private void emitFacetTypesIncompatibilityWarning(final String facet, final IArtefactProto.Facet fp,
+	private void emitFacetTypesIncompatibilityWarning(final String facet, final IArtefact.Facet fp,
 			final IType<?> actualType, final IType<?> contentType, final IType<?> keyType) {
 		final String[] strings = new String[fp.getTypes().length];
 		for (int i = 0; i < fp.getTypes().length; i++) {
@@ -1671,7 +1671,7 @@ public abstract class SymbolDescription implements IDescription {
 	 *            the expected key type
 	 * @return true if the types are compatible, false otherwise
 	 */
-	private boolean verifyFacetTypesCompatibility(final IArtefactProto.Facet fp, final IExpression exp,
+	private boolean verifyFacetTypesCompatibility(final IArtefact.Facet fp, final IExpression exp,
 			final IType<?> actualType, final IType<?> contentType, final IType<?> keyType) {
 		boolean compatible = false;
 		for (final IType<?> definedType : fp.getTypes()) {
@@ -1706,7 +1706,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return true if the value is valid, false otherwise
 	 */
 	private boolean processMultiValuedFacet(final String facet, final IExpressionDescription expr,
-			final IArtefactProto.Facet fp) {
+			final IArtefact.Facet fp) {
 		final String val = expr.getExpression().literalValue();
 		// We have a multi-valued facet
 		if (!fp.getValues().contains(val)) {

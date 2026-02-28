@@ -20,7 +20,8 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.support.ISymbolKind;
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.ast.ISyntacticElement.SyntacticVisitor;
 import gama.api.compilation.descriptions.IDescription;
@@ -32,7 +33,6 @@ import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription.Platform;
 import gama.api.compilation.factories.ISymbolDescriptionFactory;
 import gama.api.compilation.factories.ISymbolDescriptionFactory.Species;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IGamlIssue;
 import gama.api.gaml.GAML;
 import gama.api.gaml.symbols.Facets;
@@ -114,7 +114,7 @@ import gaml.compiler.gaml.factories.PlatformFactory;
  * <strong>Performance Considerations:</strong>
  * </p>
  * <ul>
- * <li><strong>Factory Lookup:</strong> O(1) lookup from ArtefactProtoRegistry</li>
+ * <li><strong>Factory Lookup:</strong> O(1) lookup from ArtefactRegistry</li>
  * <li><strong>Creation Time:</strong> O(n) where n is the number of symbols in the AST</li>
  * <li><strong>Memory:</strong> Transient - factory itself is lightweight singleton</li>
  * <li><strong>Bottleneck:</strong> Recursive child processing can be expensive for deep hierarchies</li>
@@ -173,7 +173,7 @@ import gaml.compiler.gaml.factories.PlatformFactory;
  * @see IDescriptionFactory
  * @see SymbolDescription
  * @see ISymbolDescriptionFactory
- * @see ArtefactProtoRegistry
+ * @see ArtefactRegistry
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class DescriptionFactory implements IDescriptionFactory {
@@ -218,7 +218,7 @@ public class DescriptionFactory implements IDescriptionFactory {
 	 * @return the factory
 	 */
 	private ISymbolDescriptionFactory getFactory(final String keyword) {
-		final IArtefactProto.Symbol p = ArtefactProtoRegistry.getProto(keyword, null);
+		final IArtefact.Symbol p = ArtefactRegistry.getProto(keyword, null);
 		if (p != null) return getFactory(p.getKind());
 		return null;
 	}
@@ -485,10 +485,10 @@ public class DescriptionFactory implements IDescriptionFactory {
 			final Iterable<IDescription> cp) {
 		if (source == null) return null;
 		final String keyword = source.getKeyword();
-		IArtefactProto.Symbol md = ArtefactProtoRegistry.getProto(keyword, superDesc);
+		IArtefact.Symbol md = ArtefactRegistry.getProto(keyword, superDesc);
 		if (md == null) {
 			if (superDesc == null) throw new RuntimeException("Description of " + keyword + " cannot be built");
-			md = ArtefactProtoRegistry.getProto(keyword, superDesc);
+			md = ArtefactRegistry.getProto(keyword, superDesc);
 			superDesc.error("Unknown statement " + keyword, IGamlIssue.UNKNOWN_KEYWORD, source.getElement(), keyword);
 			return null;
 		}

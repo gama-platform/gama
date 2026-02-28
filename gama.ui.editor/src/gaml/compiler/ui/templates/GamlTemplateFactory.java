@@ -24,9 +24,9 @@ import gama.annotations.example;
 import gama.annotations.usage;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.GamaSkillRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
 import gama.api.utils.StringUtils;
@@ -67,7 +67,7 @@ public class GamlTemplateFactory {
 	 *            the sp
 	 * @return the template persistence data
 	 */
-	public static TemplatePersistenceData from(final usage u, final IArtefactProto sp) {
+	public static TemplatePersistenceData from(final usage u, final IArtefact sp) {
 		boolean isExample = false;
 		String name = u.name();
 		boolean emptyName = name.isEmpty();
@@ -201,7 +201,7 @@ public class GamlTemplateFactory {
 	 * @return the template
 	 */
 	public static Template speciesWithControl(final String skill) {
-		// Collection<SymbolProto> controls =
+		// Collection<SymbolArtefact> controls =
 		// AbstractGamlAdditions.getStatementsForSkill(skill);
 		final StringBuilder comment = new StringBuilder(200);
 		comment.append(beginComment);
@@ -259,7 +259,7 @@ public class GamlTemplateFactory {
 	 * @param proto
 	 * @return
 	 */
-	public static Template from(final IArtefactProto.Operator proto) {
+	public static Template from(final IArtefact.Operator proto) {
 		String description = proto.getMainDoc();
 		if (description == null) { description = "Template for using operator " + proto.getName(); }
 		return new Template("Operator " + proto.getName(), description, getContextId(), proto.getPattern(true), true);

@@ -15,10 +15,10 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.gaml.symbols.Facets;
 import gama.api.kernel.agent.IAgentConstructor;
 
@@ -77,7 +77,7 @@ import gama.api.kernel.agent.IAgentConstructor;
  *
  * 		&#64;Override
  * 		public IDescription buildDescription(String keyword, Facets facets, EObject element,
- * 				Iterable<IDescription> children, IDescription enclosing, IArtefactProto.Symbol proto) {
+ * 				Iterable<IDescription> children, IDescription enclosing, IArtefact.Symbol proto) {
  * 			// Create species description from facets and children
  * 			String name = facets.getLabel(IKeyword.NAME);
  * 			ISpeciesDescription parent = resolveParent(facets);
@@ -248,7 +248,7 @@ public interface ISymbolDescriptionFactory {
 	 * @return a new description instance appropriate for this symbol type
 	 */
 	IDescription buildDescription(String keyword, Facets facets, EObject element, Iterable<IDescription> children,
-			IDescription enclosing, IArtefactProto.Symbol proto);
+			IDescription enclosing, IArtefact.Symbol proto);
 
 	/**
 	 * Returns the symbol kinds that this factory can create.

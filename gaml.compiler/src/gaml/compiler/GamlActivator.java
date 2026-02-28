@@ -28,7 +28,7 @@ import gaml.compiler.gaml.factories.SkillFactory;
 import gaml.compiler.gaml.factories.SpeciesFactory;
 import gaml.compiler.gaml.factories.StatementFactory;
 import gaml.compiler.gaml.factories.VariableFactory;
-import gaml.compiler.gaml.prototypes.ArtefactProtoFactory;
+import gaml.compiler.gaml.prototypes.ArtefactFactory;
 import gaml.compiler.gaml.resource.GamlResourceServices;
 import gaml.compiler.gaml.validation.GamlModelBuilder;
 import gaml.compiler.gaml.validation.GamlTextValidator;
@@ -96,7 +96,7 @@ public class GamlActivator implements BundleActivator {
 					// GamlExpressionFactory.registerParser(GamlExpressionCompiler.getInstance());
 
 					// Register factory for creating GAML artefact prototypes
-					GAML.registerArtefactProtoFactory(ArtefactProtoFactory.getInstance());
+					GAML.registerArtefactProtoFactory(ArtefactFactory.getInstance());
 
 					// Register factory for creating model element descriptions
 					GAML.registerDescriptionFactory(DescriptionFactory.getInstance());

@@ -26,11 +26,11 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
 
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.factories.IExpressionFactory;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
@@ -49,7 +49,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.InScope;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.descriptions.ConstantExpressionDescription;
-import gaml.compiler.gaml.prototypes.OperatorProto;
+import gaml.compiler.gaml.prototypes.OperatorArtefact;
 import gaml.compiler.gaml.resource.GamlSyntheticResourcesServices;
 
 /**
@@ -178,7 +178,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 * Cache for operator signature matching to improve performance. Stores nested cache: operator name -> (signature ->
 	 * operator proto). Config: max 1000 entries, expires after 30 minutes of no access, tracks statistics.
 	 */
-	private static final Cache<String, Cache<Signature, IArtefactProto.Operator>> operatorCache =
+	private static final Cache<String, Cache<Signature, IArtefact.Operator>> operatorCache =
 			CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).recordStats().build();
 
 	/**
@@ -613,7 +613,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		if (cachedResult != null) return cachedResult;
 
 		// If the operator is not known, we have no match
-		final Map<Signature, IArtefactProto.Operator> variants = GAML.getOperatorsNamed(op);
+		final Map<Signature, IArtefact.Operator> variants = GAML.getOperatorsNamed(op);
 		if (variants == null) {
 			exactOperatorCache.put(cacheKey, Boolean.FALSE);
 			return false;
@@ -659,7 +659,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		if (cachedResult != null) return cachedResult; // Cache hit - return cached result
 
 		// Cache miss - need to compute the result
-		final Map<Signature, IArtefactProto.Operator> ops = GAML.getOperatorsNamed(op);
+		final Map<Signature, IArtefact.Operator> ops = GAML.getOperatorsNamed(op);
 		final Signature sig = s.simplified();
 
 		// Does any known operator signature match with the signature of the expressions?
@@ -706,7 +706,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		for (final IExpression exp : args) { if (exp == null) return emitError(op, context, eObject, args); }
 
 		// Get the possible sets of types registered in OPERATORS
-		final Map<Signature, IArtefactProto.Operator> ops = GAML.getOperatorsNamed(op);
+		final Map<Signature, IArtefact.Operator> ops = GAML.getOperatorsNamed(op);
 
 		// Create the signature corresponding to the arguments (only simplified signature is used)
 		Signature userSignature = Signature.createSimplified(args);
@@ -718,7 +718,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 
 			// Browse all the entries of the operators with this name to find best match
 			// The algorithm finds the signature requiring minimal type conversions
-			for (final Map.Entry<Signature, IArtefactProto.Operator> entry : ops.entrySet()) {
+			for (final Map.Entry<Signature, IArtefact.Operator> entry : ops.entrySet()) {
 				final Signature formalParametersSignature = entry.getKey();
 
 				// Check if this operator signature can accept the provided arguments
@@ -743,7 +743,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				// No matching signature found - try varArg as last resort
 				// VarArg allows operators to accept variable number of arguments as a single list
 				final Signature varArg = Signature.varArgFrom(originalUserSignature);
-				for (final Map.Entry<Signature, IArtefactProto.Operator> entry : ops.entrySet()) {
+				for (final Map.Entry<Signature, IArtefact.Operator> entry : ops.entrySet()) {
 					final Signature s = entry.getKey();
 					// If varArg signature matches, wrap all args in a list and retry
 					if (varArg.matchesDesiredSignature(s))
@@ -764,7 +764,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			}
 		}
 
-		final IArtefactProto proto = ops.get(userSignature);
+		final IArtefact proto = ops.get(userSignature);
 		// Finally make an instance of the operator and init it with the arguments
 		final IExpression operator = createOperator(proto, context, eObject, args);
 		if (operator != null) {
@@ -833,7 +833,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 */
 	private IExpression emitError(final String op, final IDescription context, final EObject eObject,
 			final IExpression... args) {
-		final Map<Signature, IArtefactProto.Operator> ops = GAML.getOperatorsNamed(op);
+		final Map<Signature, IArtefact.Operator> ops = GAML.getOperatorsNamed(op);
 		final Signature userSignature = new Signature(args).simplified();
 		final StringBuilder msg = new StringBuilder(128).append("No operator found for applying '").append(op)
 				.append("' to ").append(userSignature);
@@ -858,7 +858,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 */
 	@Override
 	public IExpression createAs(final IDescription context, final IExpression toCast, final IExpression type) {
-		return createOperator(OperatorProto.AS, context, null, toCast, type);
+		return createOperator(OperatorArtefact.AS, context, null, toCast, type);
 	}
 
 	/**
@@ -879,10 +879,10 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 * @return a new operator expression of the appropriate type, or null if validation fails
 	 */
 	@Override
-	public IExpression createOperator(final IArtefactProto artefact, final IDescription context,
+	public IExpression createOperator(final IArtefact artefact, final IDescription context,
 			final EObject currentEObject, final IExpression... exprs) {
 		// Validate that artefact is an operator and passes validation rules
-		if (artefact instanceof OperatorProto proto && proto.getValidator().validate(context, currentEObject, exprs)) {
+		if (artefact instanceof OperatorArtefact proto && proto.getValidator().validate(context, currentEObject, exprs)) {
 			// Choose operator implementation based on number of arguments
 			switch (proto.getSignature().size()) {
 				case 1:
@@ -898,7 +898,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 							// Handle type casting on variable access: (expr.var) as Type
 							TypeExpression typeExpr = (TypeExpression) bo.arg(1);
 							IVarExpression var = (IVarExpression) bo.arg(0);
-							return BinaryOperator.create(OperatorProto.AS, context,
+							return BinaryOperator.create(OperatorArtefact.AS, context,
 									new BinaryOperator.BinaryVarOperator(proto, context, exprs[0], var), typeExpr);
 
 						}

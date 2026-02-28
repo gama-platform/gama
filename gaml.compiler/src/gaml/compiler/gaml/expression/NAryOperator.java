@@ -11,8 +11,8 @@ package gaml.compiler.gaml.expression;
 
 import java.util.Arrays;
 
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.gaml.expressions.IExpression;
 
 /**
@@ -29,7 +29,7 @@ public class NAryOperator extends AbstractNAryOperator {
 	 *            the child
 	 * @return the i expression
 	 */
-	public static IExpression create(final IArtefactProto.Operator proto, final IDescription context,
+	public static IExpression create(final IArtefact.Operator proto, final IDescription context,
 			final IExpression... child) {
 		return new NAryOperator(proto, context, child).optimized();
 	}
@@ -42,7 +42,7 @@ public class NAryOperator extends AbstractNAryOperator {
 	 * @param exprs
 	 *            the exprs
 	 */
-	public NAryOperator(final IArtefactProto.Operator proto, final IDescription context, final IExpression... exprs) {
+	public NAryOperator(final IArtefact.Operator proto, final IDescription context, final IExpression... exprs) {
 		super(proto, exprs);
 		if (context != null && proto.isIterator()) {
 

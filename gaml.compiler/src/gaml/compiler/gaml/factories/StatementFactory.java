@@ -13,10 +13,10 @@ package gaml.compiler.gaml.factories;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.factories.ISymbolDescriptionFactory;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.symbols.Facets;
 import gaml.compiler.gaml.descriptions.ActionDescription;
@@ -71,7 +71,7 @@ public class StatementFactory implements ISymbolDescriptionFactory {
 	 */
 	@Override
 	public IStatementDescription buildDescription(final String keyword, final Facets facets, final EObject element,
-			final Iterable<IDescription> children, final IDescription enclosing, final IArtefactProto.Symbol proto) {
+			final Iterable<IDescription> children, final IDescription enclosing, final IArtefact.Symbol proto) {
 		if (proto.isPrimitive()) return new PrimitiveDescription(enclosing, element, children, facets, null);
 		if (IKeyword.ACTION.equals(keyword))
 			return new ActionDescription(keyword, enclosing, children, element, facets);

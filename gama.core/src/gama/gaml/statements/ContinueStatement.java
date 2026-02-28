@@ -15,7 +15,7 @@ import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.annotations.serializer;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
@@ -80,7 +80,7 @@ public class ContinueStatement extends AbstractStatement {
 				superDesc = superDesc.getEnclosingDescription();
 			}
 			description.error(
-					"'continue' must be used in the context of " + ArtefactProtoRegistry.CONTINUABLE_STATEMENTS,
+					"'continue' must be used in the context of " + ArtefactRegistry.CONTINUABLE_STATEMENTS,
 					IGamlIssue.WRONG_CONTEXT);
 		}
 	}

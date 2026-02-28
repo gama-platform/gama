@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * FacetProto.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * FacetArtefact.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -17,17 +17,17 @@ import com.google.common.collect.ImmutableSet;
 import gama.annotations.doc;
 import gama.annotations.facet;
 import gama.annotations.facets;
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 
 /**
- * The Class FacetProto.
+ * The Class FacetArtefact.
  */
-public class FacetProto implements IArtefactProto.Facet, Comparable<FacetProto> {
+public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact> {
 
 	/** The Constant NO_DOC. */
 	private static final String NO_DOC = "No documentation yet";
@@ -85,7 +85,7 @@ public class FacetProto implements IArtefactProto.Facet, Comparable<FacetProto> 
 	 * @param isRemote
 	 *            the is remote
 	 */
-	public FacetProto(final String name, final int[] types, final int ct, final int kt, final String[] values,
+	public FacetArtefact(final String name, final int[] types, final int ct, final int kt, final String[] values,
 			final boolean optional, final boolean internal, final boolean isRemote) {
 		this.name = name;
 		this.typesDescribers = types;
@@ -97,7 +97,7 @@ public class FacetProto implements IArtefactProto.Facet, Comparable<FacetProto> 
 		this.optional = optional;
 		this.internal = internal;
 		this.isRemote = isRemote;
-		isLabel = ArtefactProtoRegistry.ID_FACETS.contains(types[0]);
+		isLabel = ArtefactRegistry.ID_FACETS.contains(types[0]);
 		isId = isLabel && types[0] != IType.LABEL;
 		this.values = values.length == 0 ? null : ImmutableSet.copyOf(values);
 	}
@@ -223,7 +223,7 @@ public class FacetProto implements IArtefactProto.Facet, Comparable<FacetProto> 
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	@Override
-	public int compareTo(final FacetProto o) {
+	public int compareTo(final FacetArtefact o) {
 		return getName().compareTo(o.getName());
 	}
 
@@ -234,7 +234,7 @@ public class FacetProto implements IArtefactProto.Facet, Comparable<FacetProto> 
 	 */
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
-		if (getDeprecated() != null || ArtefactProtoRegistry.NON_SERIALIZABLE_FACETS.contains(name)) return "";
+		if (getDeprecated() != null || ArtefactRegistry.NON_SERIALIZABLE_FACETS.contains(name)) return "";
 		return name + (optional ? ": optional" : ": required") + " ("
 				+ (types.length < 2 ? typesToString().substring(1) : typesToString()) + ")";
 	}

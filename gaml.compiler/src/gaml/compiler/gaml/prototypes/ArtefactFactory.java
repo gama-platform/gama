@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * ArtefactProtoFactory.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * ArtefactFactory.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -15,31 +15,31 @@ import java.lang.reflect.Executable;
 
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.IGamaGetter;
+import gama.api.compilation.artefacts.IArtefact;
+import gama.api.compilation.artefacts.IArtefactFactory;
 import gama.api.compilation.factories.ISymbolFactory;
-import gama.api.compilation.prototypes.IArtefactProto;
-import gama.api.compilation.prototypes.IArtefactProtoFactory;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Signature;
 
 /**
  *
  */
-public class ArtefactProtoFactory implements IArtefactProtoFactory {
+public class ArtefactFactory implements IArtefactFactory {
 
 	/** The Constant INSTANCE. */
-	static final ArtefactProtoFactory INSTANCE = new ArtefactProtoFactory();
+	static final ArtefactFactory INSTANCE = new ArtefactFactory();
 
 	/**
-	 * Gets the single instance of ArtefactProtoFactory.
+	 * Gets the single instance of ArtefactFactory.
 	 *
-	 * @return single instance of ArtefactProtoFactory
+	 * @return single instance of ArtefactFactory
 	 */
-	public static ArtefactProtoFactory getInstance() { return INSTANCE; }
+	public static ArtefactFactory getInstance() { return INSTANCE; }
 
 	/**
 	 * Instantiates a new artefact proto factory.
 	 */
-	protected ArtefactProtoFactory() {
+	protected ArtefactFactory() {
 		// Prevent instantiation
 	}
 
@@ -64,12 +64,12 @@ public class ArtefactProtoFactory implements IArtefactProtoFactory {
 	 * @return
 	 */
 	@Override
-	public IArtefactProto.Symbol createSymbolProto(final Class c, final boolean isBreakable,
+	public IArtefact.Symbol createSymbolProto(final Class c, final boolean isBreakable,
 			final boolean isContinuable, final boolean isSequence, final boolean hasArguments, final ISymbolKind sKind,
-			final boolean b, final IArtefactProto.Facet[] fmd, final String omissible, final String[] contextKeywords,
+			final boolean b, final IArtefact.Facet[] fmd, final String omissible, final String[] contextKeywords,
 			final int[] contextKinds, final boolean isRemoteContext, final boolean isUnique, final boolean name_unique,
 			final ISymbolFactory sc, final String name, final String plugin) {
-		return new SymbolProto(c, isBreakable, isContinuable, isSequence, hasArguments, sKind, b, fmd, omissible,
+		return new SymbolArtefact(c, isBreakable, isContinuable, isSequence, hasArguments, sKind, b, fmd, omissible,
 				contextKeywords, contextKinds, isRemoteContext, isUnique, name_unique, sc, name, plugin);
 	}
 
@@ -88,11 +88,11 @@ public class ArtefactProtoFactory implements IArtefactProtoFactory {
 	 * @return
 	 */
 	@Override
-	public IArtefactProto.Operator createOperatorProto(final String name, final AnnotatedElement object,
+	public IArtefact.Operator createOperatorProto(final String name, final AnnotatedElement object,
 			final IGamaGetter helper, final boolean b, final boolean c, final int returnType, final Class signature,
 			final int typeProvider, final int contentTypeProvider, final int keyTypeProvider,
 			final int[] expectedContentType) {
-		return new OperatorProto(name, object, helper, b, c, returnType, signature, typeProvider, contentTypeProvider,
+		return new OperatorArtefact(name, object, helper, b, c, returnType, signature, typeProvider, contentTypeProvider,
 				keyTypeProvider, expectedContentType);
 	}
 
@@ -114,18 +114,18 @@ public class ArtefactProtoFactory implements IArtefactProtoFactory {
 	 * @return
 	 */
 	@Override
-	public IArtefactProto.Operator createOperatorProto(final String name, final Executable method,
+	public IArtefact.Operator createOperatorProto(final String name, final Executable method,
 			final String constantDoc, final IGamaGetter helper, final boolean c, final boolean b, final IType rt,
 			final Signature signature, final int t, final int content, final int index, final int contentContentType,
 			final int[] expectedContentTypes, final String plugin) {
-		return new OperatorProto(name, method, constantDoc, helper, c, b, rt, signature, t, content, index,
+		return new OperatorArtefact(name, method, constantDoc, helper, c, b, rt, signature, t, content, index,
 				contentContentType, expectedContentTypes, plugin);
 	}
 
 	@Override
-	public IArtefactProto.Facet createFacetProto(final String name, final int[] types, final int ct, final int kt,
+	public IArtefact.Facet createFacetProto(final String name, final int[] types, final int ct, final int kt,
 			final String[] values, final boolean optional, final boolean internal, final boolean isRemote) {
-		return new FacetProto(name, types, ct, kt, values, optional, internal, isRemote);
+		return new FacetArtefact(name, types, ct, kt, values, optional, internal, isRemote);
 	}
 
 }

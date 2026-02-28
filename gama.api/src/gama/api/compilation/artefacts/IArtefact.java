@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * IArtefactProto.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
+ * IArtefact.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.compilation.prototypes;
+package gama.api.compilation.artefacts;
 
 import java.lang.reflect.AnnotatedElement;
 import java.util.Collections;
@@ -84,10 +84,10 @@ import gama.api.gaml.types.Signature;
  *
  * <pre>{@code
  * // Prototype for "species" statement
- * IArtefactProto.Symbol speciesProto = registry.getStatementProto("species");
+ * IArtefact.Symbol speciesProto = registry.getStatementProto("species");
  *
  * // Check allowed facets
- * Map<String, IArtefactProto.Facet> facets = speciesProto.getPossibleFacets();
+ * Map<String, IArtefact.Facet> facets = speciesProto.getPossibleFacets();
  * if (facets.containsKey("name")) {
  * 	// "name" facet is valid for species
  * }
@@ -102,7 +102,7 @@ import gama.api.gaml.types.Signature;
  *
  * <pre>{@code
  * // Prototype for "+" operator
- * IArtefactProto.Operator plusProto = registry.getOperator("+", signature);
+ * IArtefact.Operator plusProto = registry.getOperator("+", signature);
  *
  * // Get return type
  * IType<?> returnType = plusProto.getReturnType();
@@ -137,11 +137,11 @@ import gama.api.gaml.types.Signature;
  * @since GAMA 1.0
  * @version 2025-03
  *
- * @see IArtefactProtoFactory
- * @see gama.api.additions.registries.ArtefactProtoRegistry
+ * @see IArtefactFactory
+ * @see gama.api.additions.registries.ArtefactRegistry
  * @see gama.api.compilation.descriptions.IDescription
  */
-public interface IArtefactProto extends IGamlDescription {
+public interface IArtefact extends IGamlDescription {
 
 	/**
 	 * Prototype interface for GAML symbols (statements, species, actions, etc.).
@@ -161,11 +161,11 @@ public interface IArtefactProto extends IGamlDescription {
 	 * <h3>Usage:</h3>
 	 *
 	 * <pre>{@code
-	 * IArtefactProto.Symbol proto = registry.getStatementProto("if");
+	 * IArtefact.Symbol proto = registry.getStatementProto("if");
 	 *
 	 * // Check facets
-	 * Map<String, IArtefactProto.Facet> facets = proto.getPossibleFacets();
-	 * IArtefactProto.Facet conditionFacet = facets.get("condition");
+	 * Map<String, IArtefact.Facet> facets = proto.getPossibleFacets();
+	 * IArtefact.Facet conditionFacet = facets.get("condition");
 	 *
 	 * // Check context
 	 * if (proto.shouldBeDefinedIn("action")) {
@@ -173,7 +173,7 @@ public interface IArtefactProto extends IGamlDescription {
 	 * }
 	 * }</pre>
 	 */
-	interface Symbol extends IArtefactProto {
+	interface Symbol extends IArtefact {
 
 		/**
 		 * @return
@@ -197,7 +197,7 @@ public interface IArtefactProto extends IGamlDescription {
 		 *
 		 * @return the possible facets
 		 */
-		Map<String, IArtefactProto.Facet> getPossibleFacets();
+		Map<String, IArtefact.Facet> getPossibleFacets();
 
 		/**
 		 * Checks for args.
@@ -269,7 +269,7 @@ public interface IArtefactProto extends IGamlDescription {
 	 * <h3>Usage:</h3>
 	 *
 	 * <pre>{@code
-	 * IArtefactProto.Facet facet = symbolProto.getPossibleFacets().get("condition");
+	 * IArtefact.Facet facet = symbolProto.getPossibleFacets().get("condition");
 	 *
 	 * // Check type
 	 * IType<?>[] types = facet.getTypes();
@@ -280,7 +280,7 @@ public interface IArtefactProto extends IGamlDescription {
 	 * }
 	 * }</pre>
 	 */
-	interface Facet extends IArtefactProto {
+	interface Facet extends IArtefact {
 
 		/**
 		 * Gets the support class for this facet.
@@ -428,7 +428,7 @@ public interface IArtefactProto extends IGamlDescription {
 	 * <h3>Usage:</h3>
 	 *
 	 * <pre>{@code
-	 * IArtefactProto.Operator plusOp = registry.getOperator("+", signature);
+	 * IArtefact.Operator plusOp = registry.getOperator("+", signature);
 	 *
 	 * // Get return type
 	 * IType<?> returnType = plusOp.getReturnType();
@@ -442,7 +442,7 @@ public interface IArtefactProto extends IGamlDescription {
 	 * Signature sig = plusOp.getSignature();
 	 * }</pre>
 	 */
-	interface Operator extends IArtefactProto, IVarDescriptionUser {
+	interface Operator extends IArtefact, IVarDescriptionUser {
 
 		/**
 		 * @return

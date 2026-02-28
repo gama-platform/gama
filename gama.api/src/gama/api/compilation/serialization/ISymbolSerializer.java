@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.api.compilation.serialization;
 
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
@@ -233,7 +233,7 @@ public interface ISymbolSerializer extends IKeyword {
 	default void serializeFacets(final IDescription symbolDescription, final StringBuilder sb,
 			final boolean includingBuiltIn) {
 
-		final String omit = ArtefactProtoRegistry.getOmissibleFacetForSymbol(symbolDescription.getKeyword());
+		final String omit = ArtefactRegistry.getOmissibleFacetForSymbol(symbolDescription.getKeyword());
 		final String expr = serializeFacetValue(symbolDescription, omit, includingBuiltIn);
 		if (expr != null) { sb.append(expr).append(" "); }
 		symbolDescription.visitFacets((key, b) -> {
@@ -278,7 +278,7 @@ public interface ISymbolSerializer extends IKeyword {
 	 */
 	default String serializeFacetValue(final IDescription symbolDescription, final String key,
 			final boolean includingBuiltIn) {
-		if (ArtefactProtoRegistry.NON_SERIALIZABLE_FACETS.contains(key)) return null;
+		if (ArtefactRegistry.NON_SERIALIZABLE_FACETS.contains(key)) return null;
 		final IExpressionDescription ed = symbolDescription.getFacet(key);
 		if (ed == null) return null;
 		String exprString = ed.serializeToGaml(includingBuiltIn);

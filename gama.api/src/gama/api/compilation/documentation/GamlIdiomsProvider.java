@@ -27,14 +27,14 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
 import gama.api.GAMA;
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.additions.registries.GamaSkillRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IGamlDescription;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
@@ -86,22 +86,22 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 			GamlIdiomsProvider<IActionDescription> SKILLS_ACTIONS = new GamlIdiomsProvider<>("actions", "Skill Action",
 					GamaSkillRegistry.INSTANCE.getRegisteredSkillsActions());
 
-			GamlIdiomsProvider<IArtefactProto> STATEMENTS =
-					new GamlIdiomsProvider<>("statements", "Statements", ArtefactProtoRegistry.getStatementProtos());
+			GamlIdiomsProvider<IArtefact> STATEMENTS =
+					new GamlIdiomsProvider<>("statements", "Statements", ArtefactRegistry.getStatementProtos());
 
 			GamlIdiomsProvider<IExpression> CONSTANTS =
 					new GamlIdiomsProvider<>("constant", "Constant & Units", GAML.getUnits().values());
 
-			GamlIdiomsProvider<IArtefactProto> OPERATORS =
+			GamlIdiomsProvider<IArtefact> OPERATORS =
 					new GamlIdiomsProvider<>("operators", "Operators", Iterables.concat(Iterables
 							.transform(GAML.getOperatorsNames(), name -> GAML.getOperatorsNamed(name).values())));
 
 			GamlIdiomsProvider<IType<?>> TYPES = new GamlIdiomsProvider<>("types", "Types", Types.getAllTypes());
 
-			GamlIdiomsProvider<IArtefactProto.Facet> FACETS =
-					new GamlIdiomsProvider<>("facets", "Facets", ArtefactProtoRegistry.getFacetsProtos());
+			GamlIdiomsProvider<IArtefact.Facet> FACETS =
+					new GamlIdiomsProvider<>("facets", "Facets", ArtefactRegistry.getFacetsProtos());
 
-			GamlIdiomsProvider<IArtefactProto> FIELDS =
+			GamlIdiomsProvider<IArtefact> FIELDS =
 					new GamlIdiomsProvider<>("attributes", "Fields", Types.getAllFields());
 
 			/** The Constant PROVIDERS. */

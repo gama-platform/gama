@@ -18,11 +18,11 @@ import java.util.Map;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.factories.ISymbolDescriptionFactory;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Facets;
@@ -52,10 +52,10 @@ public class VariableFactory implements ISymbolDescriptionFactory {
 
 	@Override
 	public IDescription buildDescription(final String keyword, final Facets facets, final EObject element,
-			final Iterable<IDescription> children, final IDescription enclosing, final IArtefactProto.Symbol proto) {
+			final Iterable<IDescription> children, final IDescription enclosing, final IArtefact.Symbol proto) {
 		if (IKeyword.PARAMETER.equals(keyword)) {
 
-			final Map<String, IArtefactProto.Facet> possibleFacets = proto.getPossibleFacets();
+			final Map<String, IArtefact.Facet> possibleFacets = proto.getPossibleFacets();
 			// We copy the relevant facets from the targeted var of the
 			// parameter
 			IVariableDescription targetedVar = enclosing.getModelDescription().getAttribute(facets.getLabel(VAR));

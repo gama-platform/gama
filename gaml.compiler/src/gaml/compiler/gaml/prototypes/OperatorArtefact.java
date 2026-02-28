@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * OperatorProto.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * OperatorArtefact.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -22,16 +22,16 @@ import gama.annotations.support.ISymbolKind;
 import gama.annotations.support.ITypeProvider;
 import gama.api.additions.GamaBundleLoader;
 import gama.api.additions.IGamaGetter;
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.annotations.depends_on;
 import gama.api.annotations.validator;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.compilation.validation.IValidator;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
@@ -47,7 +47,7 @@ import gama.api.utils.collections.ICollector;
 import gama.dev.DEBUG;
 
 /**
- * Class OperatorProto.
+ * Class OperatorArtefact.
  *
  *
  *
@@ -55,13 +55,13 @@ import gama.dev.DEBUG;
  * @date 9 déc. 2023
  */
 @SuppressWarnings ({ "rawtypes" })
-public class OperatorProto extends AbstractProto implements IArtefactProto.Operator {
+public class OperatorArtefact extends AbstractArtefact implements IArtefact.Operator {
 
 	/** The Constant EMPTY_DEPS. */
 	public static final String[] EMPTY_DEPS = {};
 
 	/** The as. */
-	public static OperatorProto AS;
+	public static OperatorArtefact AS;
 
 	/** The iterator. */
 	public final boolean isVarOrField, canBeConst, iterator;
@@ -120,7 +120,7 @@ public class OperatorProto extends AbstractProto implements IArtefactProto.Opera
 	 * @param plugin
 	 *            the plugin
 	 */
-	public OperatorProto(final String name, final AnnotatedElement method, final String constantDoc,
+	public OperatorArtefact(final String name, final AnnotatedElement method, final String constantDoc,
 			final IGamaGetter helper, final boolean canBeConst, final boolean isVarOrField, final IType returnType,
 			final Signature signature, final int typeProvider, final int contentTypeProvider, final int keyTypeProvider,
 			final int contentTypeContentTypeProvider, final int[] expectedContentType, final String plugin) {
@@ -166,7 +166,7 @@ public class OperatorProto extends AbstractProto implements IArtefactProto.Opera
 	 * @param expectedContentType
 	 *            the expected content type
 	 */
-	public OperatorProto(final String name, final AnnotatedElement method, final IGamaGetter helper,
+	public OperatorArtefact(final String name, final AnnotatedElement method, final IGamaGetter helper,
 			final boolean canBeConst, final boolean isVarOrField, final int returnType, final Class signature,
 			final int typeProvider, final int contentTypeProvider, final int keyTypeProvider,
 			final int[] expectedContentType) {
@@ -209,7 +209,7 @@ public class OperatorProto extends AbstractProto implements IArtefactProto.Opera
 	 * @param gamaType
 	 *            the gama type
 	 */
-	private OperatorProto(final OperatorProto op, final IType gamaType) {
+	private OperatorArtefact(final OperatorArtefact op, final IType gamaType) {
 		this(op.name, op.support, null, op.getHelper(), op.canBeConst, op.isVarOrField, op.returnType,
 				new Signature(gamaType), op.typeProvider, op.contentTypeProvider, op.keyTypeProvider,
 				op.contentTypeContentTypeProvider, op.expectedContentType, op.plugin);
@@ -299,7 +299,7 @@ public class OperatorProto extends AbstractProto implements IArtefactProto.Opera
 	/**
 	 * Method getKind()
 	 *
-	 * @see gaml.compiler.gaml.prototypes.AbstractProto#getKind()
+	 * @see gaml.compiler.gaml.prototypes.AbstractArtefact#getKind()
 	 */
 	@Override
 	public ISymbolKind getKind() { return ISymbolKind.OPERATOR; }
@@ -312,11 +312,11 @@ public class OperatorProto extends AbstractProto implements IArtefactProto.Opera
 		final int size = signature.size();
 		final String aName = getName();
 		if (size == 1 || size > 2) {
-			if (ArtefactProtoRegistry.PROTOS_WITHOUT_PARENTHESES.contains(aName))
+			if (ArtefactRegistry.PROTOS_WITHOUT_PARENTHESES.contains(aName))
 				return aName + signature.asPattern(withVariables);
 			return aName + "(" + signature.asPattern(withVariables) + ")";
 		}
-		if (ArtefactProtoRegistry.BINARY_PROTO_NAMES.contains(aName))
+		if (ArtefactRegistry.BINARY_PROTO_NAMES.contains(aName))
 			return signature.get(0).asPattern() + " " + aName + " " + signature.get(1).asPattern();
 		return aName + "(" + signature.asPattern(withVariables) + ")";
 	}
@@ -335,8 +335,8 @@ public class OperatorProto extends AbstractProto implements IArtefactProto.Opera
 	 * @return the operator proto
 	 */
 	@Override
-	public OperatorProto copyWithSignature(final IType gamaType) {
-		return new OperatorProto(this, gamaType);
+	public OperatorArtefact copyWithSignature(final IType gamaType) {
+		return new OperatorArtefact(this, gamaType);
 	}
 
 	@Override

@@ -16,8 +16,8 @@ import java.util.function.Predicate;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription.IFacetVisitor;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Facets;
@@ -338,7 +338,7 @@ public interface ISyntacticElement extends INamed, IDisposable {
 	 * @param sp the symbol prototype, may be null
 	 * @return a new Facets instance containing a copy of this element's facets (never null)
 	 */
-	Facets copyFacets(IArtefactProto.Symbol sp);
+	Facets copyFacets(IArtefact.Symbol sp);
 
 	/**
 	 * Sets or replaces a facet with the given name and expression.

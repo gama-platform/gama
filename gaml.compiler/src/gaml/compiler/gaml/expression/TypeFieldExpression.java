@@ -12,10 +12,10 @@ package gaml.compiler.gaml.expression;
 
 import gama.annotations.variable;
 import gama.annotations.vars;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.GamlProperties;
@@ -35,7 +35,7 @@ public class TypeFieldExpression extends UnaryOperator {
 	 * @param expr
 	 *            the expr
 	 */
-	public TypeFieldExpression(final IArtefactProto.Operator proto, final IDescription context,
+	public TypeFieldExpression(final IArtefact.Operator proto, final IDescription context,
 			final IExpression expr) {
 		super(proto, context, expr);
 	}

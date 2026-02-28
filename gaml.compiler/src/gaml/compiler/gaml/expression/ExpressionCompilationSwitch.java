@@ -41,6 +41,7 @@ import com.google.common.collect.Iterables;
 import gama.api.GAMA;
 import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.additions.registries.GamaSkillRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.ast.ISyntacticFactory;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
@@ -51,7 +52,6 @@ import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.factories.IExpressionDescriptionFactory;
 import gama.api.compilation.factories.IExpressionFactory;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
@@ -198,7 +198,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			return FACTORY.createAs(context.getContext(), expr, getSpeciesContext(op).getSpeciesExpr());
 
 		// Check for field getter
-		final IArtefactProto proto = expr.getGamlType().getGetter(op);
+		final IArtefact proto = expr.getGamlType().getGetter(op);
 		if (proto != null) {
 			// It can only be a field as 'actions' are not defined on simple objects
 			final IExpression fieldExpr = FACTORY.createOperator(proto, context.getContext(), e, expr);
@@ -578,7 +578,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 */
 	private IExpression compileSimpleTypeField(final Expression ownerExpr, final Expression fieldExpr,
 			final String fieldName, final IType ownerType, final IExpression compiledOwner) {
-		final IArtefactProto proto = ownerType.getGetter(fieldName);
+		final IArtefact proto = ownerType.getGetter(fieldName);
 		if (proto == null) {
 			if (ownerType.id() == IType.MATRIX && fieldExpr != null) return binary(".", compiledOwner, fieldExpr);
 			context.getContext().error("Unknown field '" + fieldName + "' for type " + ownerType,

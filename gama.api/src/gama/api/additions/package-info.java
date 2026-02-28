@@ -57,7 +57,7 @@
  * <ul>
  *   <li>{@link gama.api.additions.registries.GamaAdditionRegistry} - Main registry for all additions</li>
  *   <li>{@link gama.api.additions.registries.GamaSkillRegistry} - Registry for agent skills</li>
- *   <li>{@link gama.api.additions.registries.ArtefactProtoRegistry} - Registry for action/operator prototypes</li>
+ *   <li>{@link gama.api.additions.registries.ArtefactRegistry} - Registry for action/operator prototypes</li>
  * </ul>
  * 
  * <h2>Usage Example</h2>

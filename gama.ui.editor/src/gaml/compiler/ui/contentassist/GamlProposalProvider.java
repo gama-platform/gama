@@ -32,8 +32,9 @@ import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor;
 import com.google.common.base.Function;
 import com.google.inject.Inject;
 
-import gama.api.additions.registries.ArtefactProtoRegistry;
-import gama.api.compilation.prototypes.IArtefactProto;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.compilation.artefacts.IArtefact;
+import gama.api.gaml.types.Types;
 import gaml.compiler.services.GamlGrammarAccess;
 import gaml.compiler.ui.labeling.GamlLabelProvider;
 
@@ -296,8 +297,8 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 			// " (Built-in unit)"), null);
 			// proposals.add(cp);
 			// }
-			for (final String t : ArtefactProtoRegistry.getStatementProtoNames()) {
-				final IArtefactProto s = ArtefactProtoRegistry.getProto(t, null);
+			for (final String t : ArtefactRegistry.getStatementProtoNames()) {
+				final IArtefact s = ArtefactRegistry.getProto(t, null);
 				statements.add(t);
 				final String title = " (Statement)";
 				final BuiltInProposal cp = new BuiltInProposal(t, new StyledString(t + title), null);
@@ -305,8 +306,8 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 				cp.setDoc(s.getDocumentation().toString());
 			}
 
-			for (final String t : ArtefactProtoRegistry.getVarProtoNames()) {
-				final IArtefactProto s = ArtefactProtoRegistry.getVarProto(t, null);
+			for (final String t : Types.getTypeNames()) {
+				final IArtefact s = ArtefactRegistry.getVarProto(t, null);
 				statements.add(t);
 				final String title = " (Declaration)";
 				final BuiltInProposal cp = new BuiltInProposal(t, new StyledString(t + title), null);

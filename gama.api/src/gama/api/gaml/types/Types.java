@@ -22,10 +22,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Iterables;
 
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
-import gama.api.compilation.prototypes.IArtefactProto;
+import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.species.IModelSpecies;
@@ -48,11 +49,16 @@ public class Types {
 		DEBUG.OFF();
 	}
 
+	/**
+	 * Special keyword for species variable declarations (from SyntacticFactory).
+	 */
+	public static final String SPECIES_VAR = "species_var";
+
 	/** The manager responsible for storing and retrieving built-in types. */
 	private final static ITypesManager BUILT_IN_TYPES = new TypesManager(null);
 
 	/** The constant representing the absence of a type (GamaNoType). */
-	public final static IType NO_TYPE = new GamaNoType(getBuiltInTypeManager());
+	public final static IType NO_TYPE = new GamaNoType(BUILT_IN_TYPES);
 
 	/** Static references to common built-in types for fast access. */
 	public static IType AGENT, PATH, FONT, SKILL, DATE, ACTION, TYPE;
@@ -380,7 +386,7 @@ public class Types {
 	public static void init() {
 		// We build a graph-type multimap structure
 		Map<IType<?>, Set<IType<?>>> outgoing = new HashMap(), incoming = new HashMap();
-		Set<IType<?>> types = getBuiltInTypeManager().getAllTypes();
+		Set<IType<?>> types = BUILT_IN_TYPES.getAllTypes();
 		for (IType t : types) {
 			outgoing.put(t, new HashSet<>());
 			incoming.put(t, new HashSet<>());
@@ -407,7 +413,7 @@ public class Types {
 					toProcess.push(t);
 					// DEBUG.OUT("Parenting " + t.getName() + " with " + parent.getName());
 					t.setParent(parent);
-					ArtefactProtoRegistry.addNewTypeName(t.toString(), t.getVarKind());
+					ArtefactRegistry.addNewTypeName(t.toString(), t.getVarKind());
 					t.setFieldGetters(GAML.getAllFields(t.toClass()));
 				}
 			}
@@ -535,7 +541,7 @@ public class Types {
 	 * <pre>
 	 * {@code
 	 * // Get all fields for documentation
-	 * for (IArtefactProto field : Types.getAllFields()) {
+	 * for (IArtefact field : Types.getAllFields()) {
 	 * 	System.out.println(field.getName() + " on " + field.getDefiningType());
 	 * }
 	 * }
@@ -545,7 +551,7 @@ public class Types {
 	 *
 	 * @see IType#getFieldGetters()
 	 */
-	public static Iterable<IArtefactProto> getAllFields() {
+	public static Iterable<IArtefact> getAllFields() {
 		return concat(transform(BUILT_IN_TYPES.getAllTypes(), each -> each.getFieldGetters().values()));
 	}
 
@@ -633,6 +639,21 @@ public class Types {
 	}
 
 	/**
+	 * Creates the types manager parented by.
+	 *
+	 * @param context
+	 *            the context
+	 * @return the i types manager
+	 */
+	public static ITypesManager createTypesManagerParentedBy(final IDescription context) {
+		if (context == null) return BUILT_IN_TYPES;
+		final IModelDescription md = context.getModelDescription();
+		if (md == null) return BUILT_IN_TYPES;
+		final ITypesManager tm = md.getTypesManager();
+		return tm != null ? new TypesManager(tm) : BUILT_IN_TYPES;
+	}
+
+	/**
 	 * @param executionScope
 	 * @return
 	 */
@@ -654,5 +675,26 @@ public class Types {
 	 * @return the built in type manager
 	 */
 	public static ITypesManager getBuiltInTypeManager() { return BUILT_IN_TYPES; }
+
+	/**
+	 * @param name
+	 * @param t
+	 * @param plugin
+	 */
+	public static IType<?> addRegularType(final String name, final IType<?> t, final String plugin) {
+		if (IKeyword.SPECIES.equals(name)) { BUILT_IN_TYPES.addRegularType(SPECIES_VAR, t, plugin); }
+		return BUILT_IN_TYPES.addRegularType(name, t, plugin);
+	}
+
+	/**
+	 * Contains type.
+	 *
+	 * @param name
+	 *            the name
+	 * @return true, if successful
+	 */
+	public static boolean containsType(final String name) {
+		return BUILT_IN_TYPES.containsType(name);
+	}
 
 }

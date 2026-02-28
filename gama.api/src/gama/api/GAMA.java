@@ -17,7 +17,7 @@ import java.util.prefs.Preferences;
 
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.exceptions.GamaRuntimeFileException;
 import gama.api.gaml.GAML;
@@ -476,7 +476,7 @@ public class GAMA {
 		getGui().closeSimulationViews(null, andOpenModelingPerspective, immediately);
 		PoolUtils.writeStats();
 		GAML.getExpressionFactory().writeStats();
-		ArtefactProtoRegistry.writeStats();
+		ArtefactRegistry.writeStats();
 		changeCurrentTopLevelAgent(getPlatformAgent(), false);
 	}
 

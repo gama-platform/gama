@@ -14,9 +14,9 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.descriptions.IDescription.IFacetVisitor;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Facets;
@@ -219,7 +219,7 @@ public abstract class AbstractSyntacticElement implements ISyntacticElement {
 	 * @return a new Facets object with clean copies of all facets, or null if no facets exist
 	 */
 	@Override
-	public final Facets copyFacets(final IArtefactProto.Symbol sp) {
+	public final Facets copyFacets(final IArtefact.Symbol sp) {
 		if (facets != null) {
 			final Facets ff = new Facets();
 			visitFacets((a, b) -> {

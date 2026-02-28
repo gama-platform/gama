@@ -12,12 +12,12 @@ package gama.api.gaml.types;
 import java.util.Map;
 
 import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.artefacts.IArtefact;
+import gama.api.compilation.artefacts.IArtefact.Operator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IGamlDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
-import gama.api.compilation.prototypes.IArtefactProto.Operator;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.IMap;
@@ -357,7 +357,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * <pre>
 	 * {@code
 	 * // Get the "x" field getter for point type
-	 * IArtefactProto xGetter = Types.POINT.getGetter("x");
+	 * IArtefact xGetter = Types.POINT.getGetter("x");
 	 * }
 	 * </pre>
 	 *
@@ -367,7 +367,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 *
 	 * @see #getFieldGetters()
 	 */
-	IArtefactProto getGetter(String name);
+	IArtefact getGetter(String name);
 
 	/**
 	 * Returns a map of all field getters available for this type.
@@ -388,7 +388,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @param map
 	 *            a map from field names to operator prototypes
 	 */
-	void setFieldGetters(Map<String, IArtefactProto.Operator> map);
+	void setFieldGetters(Map<String, IArtefact.Operator> map);
 
 	// ==================== Type Classification ====================
 

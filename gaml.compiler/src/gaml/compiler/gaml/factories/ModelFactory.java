@@ -34,6 +34,7 @@ import com.google.common.collect.Iterables;
 
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.GamlCompilationError;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.ast.ISyntacticElement.SyntacticVisitor;
 import gama.api.compilation.descriptions.IDescription;
@@ -42,7 +43,6 @@ import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.factories.IModelFactory;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
@@ -190,7 +190,7 @@ public class ModelFactory implements IModelFactory {
 	 */
 	@Override
 	public IDescription buildDescription(final String keyword, final Facets facets, final EObject element,
-			final Iterable<IDescription> children, final IDescription enclosing, final IArtefactProto.Symbol proto) {
+			final Iterable<IDescription> children, final IDescription enclosing, final IArtefact.Symbol proto) {
 		// This method is actually never called.
 		return null;
 	}

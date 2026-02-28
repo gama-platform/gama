@@ -23,11 +23,11 @@ import org.eclipse.swt.widgets.Menu;
 import com.google.common.collect.Lists;
 
 import gama.api.additions.registries.GamaSkillRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
@@ -37,7 +37,7 @@ import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gaml.compiler.gaml.descriptions.StatementDescription;
 import gaml.compiler.gaml.descriptions.VariableDescription;
-import gaml.compiler.gaml.prototypes.OperatorProto;
+import gaml.compiler.gaml.prototypes.OperatorArtefact;
 import gaml.compiler.ui.templates.GamlTemplateFactory;
 
 /**
@@ -94,7 +94,7 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 			}
 
 		});
-		final Map<String, OperatorProto> getters = Types.get(type).getFieldGetters();
+		final Map<String, OperatorArtefact> getters = Types.get(type).getFieldGetters();
 		final List<String> names = new ArrayList<>(getters.keySet());
 		if (!names.isEmpty()) {
 			Collections.sort(names);
@@ -152,11 +152,11 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 			}
 		}
 		if (isControl) {
-			final List<IArtefactProto> controls = new ArrayList<>(GAML.getStatementsForSkill(skill));
+			final List<IArtefact> controls = new ArrayList<>(GAML.getStatementsForSkill(skill));
 			Collections.sort(controls, INamed.COMPARATOR);
 			if (!controls.isEmpty()) {
 				title(submenu, "Control statements");
-				for (final IArtefactProto control : controls) {
+				for (final IArtefact control : controls) {
 					fillProtoSubMenu(sub(submenu, control.getName()), control);
 				}
 			}
@@ -171,7 +171,7 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 	 * @param statement
 	 *            the statement
 	 */
-	private void fillProtoSubMenu(final Menu menu, final IArtefactProto statement) {
+	private void fillProtoSubMenu(final Menu menu, final IArtefact statement) {
 		action(menu, "Insert statement name", new SelectionAdapter() {
 
 			@Override
@@ -191,7 +191,7 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 	 * @param attribute
 	 *            the attribute
 	 */
-	private void fillProtoSubMenu(final Menu menu, final OperatorProto attribute) {
+	private void fillProtoSubMenu(final Menu menu, final OperatorArtefact attribute) {
 		action(menu, "Insert attribute name", new SelectionAdapter() {
 
 			@Override

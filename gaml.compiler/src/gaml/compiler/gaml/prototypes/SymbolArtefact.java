@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * SymbolProto.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * SymbolArtefact.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -24,14 +24,14 @@ import gama.annotations.action;
 import gama.annotations.doc;
 import gama.annotations.symbol;
 import gama.annotations.support.ISymbolKind;
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.annotations.serializer;
 import gama.api.annotations.validator;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.factories.ISymbolFactory;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.compilation.validation.IValidator;
 import gama.api.constants.IKeyword;
@@ -45,7 +45,7 @@ import gama.api.utils.GamlProperties;
  *
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol {
+public class SymbolArtefact extends AbstractArtefact implements IArtefact.Symbol {
 
 	/** The null validator. */
 	static IValidator NULL_VALIDATOR = (d, e, i) -> true;
@@ -75,7 +75,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 	private final EnumSet<ISymbolKind> contextKinds = EnumSet.noneOf(ISymbolKind.class);
 
 	/** The possible facets. */
-	private final Map<String, IArtefactProto.Facet> possibleFacets;
+	private final Map<String, IArtefact.Facet> possibleFacets;
 
 	/** The mandatory facets. */
 	private final ImmutableList<String> mandatoryFacets;
@@ -129,9 +129,9 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 	 * @param plugin
 	 *            the plugin
 	 */
-	public SymbolProto(final Class clazz, final boolean isBreakable, final boolean isContinuable,
+	public SymbolArtefact(final Class clazz, final boolean isBreakable, final boolean isContinuable,
 			final boolean hasSequence, final boolean hasArgs, final ISymbolKind kind, final boolean doesNotHaveScope,
-			final IArtefactProto.Facet[] possibleFacets, final String omissible, final String[] contextKeywords,
+			final IArtefact.Facet[] possibleFacets, final String omissible, final String[] contextKeywords,
 			final int[] parentKinds, final boolean isRemoteContext, final boolean isUniqueInContext,
 			final boolean nameUniqueInContext, final ISymbolFactory constr, final String name, final String plugin) {
 		super(name, clazz, plugin);
@@ -139,8 +139,8 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 		constructor = constr;
 		this.isBreakable = isBreakable;
 		this.isContinuable = isContinuable;
-		if (isContinuable) { ArtefactProtoRegistry.CONTINUABLE_STATEMENTS.add(name); }
-		if (isBreakable) { ArtefactProtoRegistry.BREAKABLE_STATEMENTS.add(name); }
+		if (isContinuable) { ArtefactRegistry.CONTINUABLE_STATEMENTS.add(name); }
+		if (isBreakable) { ArtefactRegistry.BREAKABLE_STATEMENTS.add(name); }
 		this.isRemoteContext = isRemoteContext;
 		this.hasSequence = hasSequence;
 		this.isPrimitive = IKeyword.PRIMITIVE.equals(name);
@@ -153,7 +153,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 		if (possibleFacets != null) {
 			final ImmutableList.Builder<String> builder = ImmutableList.builder();
 			this.possibleFacets = new HashMap<>();
-			for (final IArtefactProto.Facet f : possibleFacets) {
+			for (final IArtefact.Facet f : possibleFacets) {
 				this.possibleFacets.put(f.getName(), f);
 				f.setOwner(getTitle());
 				f.setClass(clazz);
@@ -255,7 +255,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 	 * @return the possible facets
 	 */
 	@Override
-	public Map<String, IArtefactProto.Facet> getPossibleFacets() {
+	public Map<String, IArtefact.Facet> getPossibleFacets() {
 		return possibleFacets == null ? Collections.emptyMap() : possibleFacets;
 	}
 
@@ -317,9 +317,9 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 	public IGamlDocumentation getDocumentation() {
 		if (documentation == null) {
 			documentation = new GamlRegularDocumentation(super.getDocumentation().toString());
-			final List<FacetProto> protos = new ArrayList(getPossibleFacets().values());
+			final List<FacetArtefact> protos = new ArrayList(getPossibleFacets().values());
 			Collections.sort(protos);
-			for (final FacetProto f : protos) {
+			for (final FacetArtefact f : protos) {
 				if (!f.isInternal()) { documentation.set("Possible facets: ", f.getName(), f.getDocumentation()); }
 			}
 		}
@@ -417,7 +417,7 @@ public class SymbolProto extends AbstractProto implements IArtefactProto.Symbol 
 	 * @param facet
 	 * @return
 	 */
-	public IArtefactProto.Facet getFacet(final String facet) {
+	public IArtefact.Facet getFacet(final String facet) {
 		return possibleFacets == null ? null : possibleFacets.get(facet);
 	}
 

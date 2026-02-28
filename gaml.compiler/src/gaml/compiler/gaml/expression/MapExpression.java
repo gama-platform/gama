@@ -14,12 +14,12 @@ import java.util.function.Predicate;
 
 import com.google.common.collect.Iterables;
 
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -266,7 +266,7 @@ public class MapExpression extends AbstractExpression implements IOperator, IExp
 	}
 
 	@Override
-	public IArtefactProto getPrototype() { return null; }
+	public IArtefact getPrototype() { return null; }
 
 	/**
 	 * Checks if is empty.

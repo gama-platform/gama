@@ -40,7 +40,6 @@ import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.gaml.types.Types;
-import gama.api.gaml.types.TypesManager;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.kernel.simulation.ISimulationAgent;
@@ -361,7 +360,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 			final Set<String> imports, final IAgentConstructor helper, final Set<String> skills) {
 		super(IKeyword.MODEL, clazz, macro, parent, children, source, facets, skills);
 		setName(name);
-		types = parent instanceof ModelDescription m ? new TypesManager(m.types) : Types.getBuiltInTypeManager();
+		types = Types.createTypesManagerParentedBy(parent);
 		modelFilePath = modelPath;
 		modelProjectPath = projectPath;
 		this.validationContext = validationContext;

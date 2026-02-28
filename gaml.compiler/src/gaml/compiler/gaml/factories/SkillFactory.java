@@ -13,10 +13,10 @@ package gaml.compiler.gaml.factories;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.factories.ISymbolDescriptionFactory;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.gaml.symbols.Facets;
 import gaml.compiler.gaml.descriptions.SkillDescription;
 
@@ -41,7 +41,7 @@ public class SkillFactory implements ISymbolDescriptionFactory.Skill {
 
 	@Override
 	public IDescription buildDescription(final String keyword, final Facets facets, final EObject element,
-			final Iterable<IDescription> children, final IDescription enclosing, final IArtefactProto.Symbol proto) {
+			final Iterable<IDescription> children, final IDescription enclosing, final IArtefact.Symbol proto) {
 		// Should not be invoked for the moment. Later probably when skills can be built in GAML
 		return null;
 	}

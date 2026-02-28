@@ -27,11 +27,11 @@ import java.util.Arrays;
 import java.util.function.Predicate;
 
 import gama.annotations.support.ITypeProvider;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -56,7 +56,7 @@ public abstract class AbstractNAryOperator extends AbstractExpression implements
 	public final IExpression[] exprs;
 
 	/** The prototype. */
-	protected IArtefactProto.Operator prototype;
+	protected IArtefact.Operator prototype;
 
 	/**
 	 * Instantiates a new abstract N ary operator.
@@ -67,7 +67,7 @@ public abstract class AbstractNAryOperator extends AbstractExpression implements
 	 *            the expressions
 	 * @see #copy()
 	 */
-	public AbstractNAryOperator(final IArtefactProto.Operator proto, final IExpression... expressions) {
+	public AbstractNAryOperator(final IArtefact.Operator proto, final IExpression... expressions) {
 		if (expressions.length == 0 || expressions[0] == null) {
 			exprs = null;
 		} else {
@@ -89,7 +89,7 @@ public abstract class AbstractNAryOperator extends AbstractExpression implements
 	}
 
 	@Override
-	public IArtefactProto getPrototype() { return prototype; }
+	public IArtefact getPrototype() { return prototype; }
 
 	/**
 	 * Compute type.

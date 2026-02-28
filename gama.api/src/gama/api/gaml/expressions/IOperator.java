@@ -9,7 +9,7 @@
  ********************************************************************************************************/
 package gama.api.gaml.expressions;
 
-import gama.api.compilation.prototypes.IArtefactProto;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.utils.benchmark.IBenchmarkable;
 
 /**
@@ -42,7 +42,7 @@ import gama.api.utils.benchmark.IBenchmarkable;
  * <ul>
  * <li>A name (the operator symbol or keyword)</li>
  * <li>Zero or more argument expressions accessible via {@link #arg(int)}</li>
- * <li>A prototype ({@link IArtefactProto}) defining signature, return type, and implementation</li>
+ * <li>A prototype ({@link IArtefact}) defining signature, return type, and implementation</li>
  * <li>Evaluation logic that processes argument values</li>
  * </ul>
  * 
@@ -96,7 +96,7 @@ import gama.api.utils.benchmark.IBenchmarkable;
 	 * });
 	 * 
 	 * // Getting operator metadata
-	 * IArtefactProto proto = operator.getPrototype();
+	 * IArtefact proto = operator.getPrototype();
 	 * String opName = proto.getName();
 	 * IType&lt;?&gt; returnType = proto.getReturnType();
 	 * &lt;/pre&gt;
@@ -115,7 +115,7 @@ import gama.api.utils.benchmark.IBenchmarkable;
  * 
  * @author drogoul
  * @see IExpression
- * @see IArtefactProto
+ * @see IArtefact
  * @see IBenchmarkable
  * @see IOperatorVisitor
  */
@@ -231,7 +231,7 @@ public interface IOperator extends IExpression, IBenchmarkable {
 	 * 
 	 * @return the operator's prototype, never null
 	 */
-	IArtefactProto getPrototype();
+	IArtefact getPrototype();
 
 	/**
 	 * Returns the name to use when benchmarking this operator. By default, this is the operator's GAML serialization,

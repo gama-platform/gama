@@ -21,7 +21,7 @@ import java.util.concurrent.ExecutionException;
 
 import com.google.common.cache.Cache;
 
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
@@ -335,7 +335,7 @@ public class TypesManager implements ITypesManager {
 		IType<Support> type = originalType;
 		if (IKeyword.UNKNOWN.equals(name)) { type = Types.NO_TYPE; }
 		type.setDefiningPlugin(plugin);
-		ArtefactProtoRegistry.addNewTypeName(name, type.getVarKind());
+		ArtefactRegistry.addNewTypeName(name, type.getVarKind());
 		addType(type);
 		return type;
 	}

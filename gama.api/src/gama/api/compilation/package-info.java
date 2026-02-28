@@ -35,7 +35,7 @@
  *   <li>{@link gama.api.compilation.descriptions} - Model descriptions (species, actions, variables, etc.)</li>
  *   <li>{@link gama.api.compilation.validation} - Validation contexts, error handling, and model builders</li>
  *   <li>{@link gama.api.compilation.factories} - Factories for creating language constructs and descriptions</li>
- *   <li>{@link gama.api.compilation.prototypes} - Prototypes and signatures for operators and actions</li>
+ *   <li>{@link gama.api.compilation.artefacts} - Prototypes and signatures for operators and actions</li>
  *   <li>{@link gama.api.compilation.documentation} - Documentation extraction and management</li>
  *   <li>{@link gama.api.compilation.serialization} - Model serialization and deserialization</li>
  * </ul>

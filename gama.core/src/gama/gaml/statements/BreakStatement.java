@@ -15,7 +15,7 @@ import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.annotations.serializer;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
@@ -78,7 +78,7 @@ public class BreakStatement extends AbstractStatement {
 				if (isd.isBreakable()) return;
 				superDesc = superDesc.getEnclosingDescription();
 			}
-			description.error("'break' must be used in the context of " + ArtefactProtoRegistry.BREAKABLE_STATEMENTS,
+			description.error("'break' must be used in the context of " + ArtefactRegistry.BREAKABLE_STATEMENTS,
 					IGamlIssue.WRONG_CONTEXT);
 		}
 	}

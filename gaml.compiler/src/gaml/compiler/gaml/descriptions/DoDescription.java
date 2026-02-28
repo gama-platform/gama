@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
@@ -116,7 +116,7 @@ public class DoDescription extends StatementWithChildrenDescription {
 
 	@Override
 	protected Arguments createArgs() {
-		if (!hasFacets() || !hasFacetsNotIn(ArtefactProtoRegistry.getDoFacets())) {
+		if (!hasFacets() || !hasFacetsNotIn(ArtefactRegistry.getDoFacets())) {
 			if (hasFacet(WITH)) {
 				try {
 					return GAML.getExpressionFactory().createArgumentMap(getAction(), getFacet(WITH), this);
@@ -129,7 +129,7 @@ public class DoDescription extends StatementWithChildrenDescription {
 		}
 		final Arguments args = new Arguments();
 		visitFacets((facet, b) -> {
-			if (!ArtefactProtoRegistry.getDoFacets().contains(facet)) { args.put(facet, b); }
+			if (!ArtefactRegistry.getDoFacets().contains(facet)) { args.put(facet, b); }
 			return true;
 		});
 		return args;

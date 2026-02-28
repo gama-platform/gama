@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * IArtefactProtoFactory.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
+ * IArtefactFactory.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -8,7 +8,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.compilation.prototypes;
+package gama.api.compilation.artefacts;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Executable;
@@ -23,7 +23,7 @@ import gama.api.gaml.types.Signature;
  * Factory interface for creating artefact prototypes from annotations and metadata.
  *
  * <p>
- * This interface defines the contract for factories that create {@link IArtefactProto} instances during platform
+ * This interface defines the contract for factories that create {@link IArtefact} instances during platform
  * initialization. Prototypes are constructed from Java annotations on classes and methods that define GAML symbols and
  * operators.
  * </p>
@@ -47,7 +47,7 @@ import gama.api.gaml.types.Signature;
  * <li><strong>Annotation Scanning:</strong> Platform scans for {@code @symbol} and {@code @operator} annotations</li>
  * <li><strong>Metadata Extraction:</strong> Annotation processor extracts metadata (facets, signatures, etc.)</li>
  * <li><strong>Prototype Creation:</strong> Factory creates appropriate prototype type</li>
- * <li><strong>Registration:</strong> Prototype is registered in {@code ArtefactProtoRegistry}</li>
+ * <li><strong>Registration:</strong> Prototype is registered in {@code ArtefactRegistry}</li>
  * </ol>
  *
  * <h2>Usage Example</h2>
@@ -60,7 +60,7 @@ import gama.api.gaml.types.Signature;
  * public class MyStatement extends AbstractStatement { }
  *
  * // Factory creates prototype
- * IArtefactProto.Symbol proto = factory.createSymbolProto(
+ * IArtefact.Symbol proto = factory.createSymbolProto(
  *     MyStatement.class,
  *     false,  // not breakable
  *     false,  // not continuable
@@ -89,7 +89,7 @@ import gama.api.gaml.types.Signature;
  * public static Object myOperation(IScope scope, Object arg1, Object arg2) { }
  *
  * // Factory creates prototype
- * IArtefactProto.Operator proto = factory.createOperatorProto(
+ * IArtefact.Operator proto = factory.createOperatorProto(
  *     "my_op",
  *     method,
  *     "Performs my operation",
@@ -111,12 +111,12 @@ import gama.api.gaml.types.Signature;
  * @since GAMA 1.0
  * @version 2025-03
  *
- * @see IArtefactProto
- * @see gama.api.additions.registries.ArtefactProtoRegistry
+ * @see IArtefact
+ * @see gama.api.additions.registries.ArtefactRegistry
  * @see gama.annotations.symbol
  * @see gama.annotations.operator
  */
-public interface IArtefactProtoFactory {
+public interface IArtefactFactory {
 
 	/**
 	 * Creates a symbol prototype from metadata extracted from annotations.
@@ -162,8 +162,8 @@ public interface IArtefactProtoFactory {
 	 *            the plugin defining this symbol
 	 * @return a new symbol prototype
 	 */
-	IArtefactProto.Symbol createSymbolProto(Class c, boolean isBreakable, boolean isContinuable, boolean isSequence,
-			boolean hasArguments, ISymbolKind sKind, boolean isPrimitive, IArtefactProto.Facet[] fmd, String omissible,
+	IArtefact.Symbol createSymbolProto(Class c, boolean isBreakable, boolean isContinuable, boolean isSequence,
+			boolean hasArguments, ISymbolKind sKind, boolean isPrimitive, IArtefact.Facet[] fmd, String omissible,
 			String[] contextKeywords, int[] contextKinds, boolean isRemoteContext, boolean isUnique,
 			boolean name_unique, ISymbolFactory sc, String name, String plugin);
 
@@ -199,7 +199,7 @@ public interface IArtefactProtoFactory {
 	 *            expected content types array
 	 * @return a new operator prototype
 	 */
-	IArtefactProto.Operator createOperatorProto(String name, AnnotatedElement object, IGamaGetter helper,
+	IArtefact.Operator createOperatorProto(String name, AnnotatedElement object, IGamaGetter helper,
 			boolean canBeConst, boolean isIterator, int returnType, Class signature, int typeProvider,
 			int contentTypeProvider, int keyTypeProvider, int[] expectedContentType);
 
@@ -241,7 +241,7 @@ public interface IArtefactProtoFactory {
 	 *            the plugin defining this operator
 	 * @return a new operator prototype
 	 */
-	IArtefactProto.Operator createOperatorProto(String name, Executable method, String constantDoc, IGamaGetter helper,
+	IArtefact.Operator createOperatorProto(String name, Executable method, String constantDoc, IGamaGetter helper,
 			boolean canBeConst, boolean isIterator, IType rt, Signature signature, int typeProvider,
 			int contentTypeProvider, int keyTypeProvider, int contentContentTypeProvider, int[] expectedContentTypes,
 			String plugin);
@@ -272,7 +272,7 @@ public interface IArtefactProtoFactory {
 	 *            whether expressions are evaluated in remote context
 	 * @return a new facet prototype
 	 */
-	IArtefactProto.Facet createFacetProto(String name, int[] types, int contentType, int keyType, String[] values,
+	IArtefact.Facet createFacetProto(String name, int[] types, int contentType, int keyType, String[] values,
 			boolean optional, boolean internal, boolean isRemote);
 
 }

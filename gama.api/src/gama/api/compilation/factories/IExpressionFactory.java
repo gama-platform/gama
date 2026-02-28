@@ -12,9 +12,9 @@ package gama.api.compilation.factories;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
@@ -259,7 +259,7 @@ public interface IExpressionFactory {
 	 *            the argument expressions for the operator
 	 * @return a new operator expression of the appropriate type, or null if validation fails
 	 */
-	IExpression createOperator(final IArtefactProto proto, final IDescription context, final EObject currentEObject,
+	IExpression createOperator(final IArtefact proto, final IDescription context, final EObject currentEObject,
 			final IExpression... exprs);
 
 	/**

@@ -134,4 +134,16 @@ public enum ISymbolKind {
 	/** The kinds as string. */
 	public static Map<ISymbolKind, String> KINDS_AS_STRING =
 			Map.of(NUMBER, "Number variable", CONTAINER, "Container variable", REGULAR, "Variable");
+
+	/**
+	 * Defines attributes.
+	 *
+	 * @param kind
+	 *            the kind
+	 * @return true, if successful
+	 */
+	public static boolean definesAttributes(final ISymbolKind kind) {
+		return STATEMENTS_CONTAINING_ATTRIBUTES.contains(kind);
+	}
+
 }

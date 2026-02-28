@@ -15,11 +15,10 @@ import java.util.Set;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.support.ISymbolKind;
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.gaml.symbols.Facets;
 import gama.api.kernel.agent.IAgentConstructor;
 import gaml.compiler.gaml.descriptions.ExperimentDescription;
@@ -77,7 +76,7 @@ public class ExperimentFactory extends SpeciesFactory {
 	public IExperimentDescription createBuiltInSpeciesDescription(final String name, final Class clazz,
 			final ISpeciesDescription superDesc, final ISpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> skills, final Facets userSkills, final String plugin) {
-		ArtefactProtoRegistry.addBuiltInSpeciesNameAsType(name);
+		// ArtefactRegistry.addBuiltInSpeciesNameAsType(name);
 		return new ExperimentDescription(name, clazz, superDesc, parent, helper, skills, userSkills, plugin);
 	}
 
@@ -100,7 +99,7 @@ public class ExperimentFactory extends SpeciesFactory {
 	 */
 	@Override
 	public IExperimentDescription buildDescription(final String keyword, final Facets facets, final EObject element,
-			final Iterable<IDescription> children, final IDescription sd, final IArtefactProto.Symbol proto) {
+			final Iterable<IDescription> children, final IDescription sd, final IArtefact.Symbol proto) {
 		return new ExperimentDescription(keyword, (ISpeciesDescription) sd, children, element, facets);
 	}
 

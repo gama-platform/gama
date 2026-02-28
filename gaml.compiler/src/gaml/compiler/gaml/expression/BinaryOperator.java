@@ -14,11 +14,11 @@ import java.util.Arrays;
 
 import gama.annotations.doc;
 import gama.annotations.usage;
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -46,7 +46,7 @@ public class BinaryOperator extends AbstractNAryOperator {
 	 *            the child
 	 * @return the i expression
 	 */
-	public static IExpression create(final IArtefactProto.Operator proto, final IDescription context,
+	public static IExpression create(final IArtefact.Operator proto, final IDescription context,
 			final IExpression... child) {
 		return new BinaryOperator(proto, context, child).optimized();
 	}
@@ -109,7 +109,7 @@ public class BinaryOperator extends AbstractNAryOperator {
 	 * @param args
 	 *            the args
 	 */
-	public BinaryOperator(final IArtefactProto.Operator proto, final IDescription context, final IExpression... args) {
+	public BinaryOperator(final IArtefact.Operator proto, final IDescription context, final IExpression... args) {
 		super(proto, args);
 		if (context != null) { prototype.verifyExpectedTypes(context, exprs[1].getGamlType()); }
 	}
@@ -121,7 +121,7 @@ public class BinaryOperator extends AbstractNAryOperator {
 		if ("internal_at".equals(name)) {
 			// '[' and ']' included
 			sb.append(exprs[0].serializeToGaml(includingBuiltIn)).append(exprs[1].serializeToGaml(includingBuiltIn));
-		} else if (ArtefactProtoRegistry.BINARY_PROTO_NAMES.contains(name)) {
+		} else if (ArtefactRegistry.BINARY_PROTO_NAMES.contains(name)) {
 			parenthesize(sb, exprs[0]);
 			sb.append(' ').append(name).append(' ');
 			parenthesize(sb, exprs[1]);
@@ -140,7 +140,7 @@ public class BinaryOperator extends AbstractNAryOperator {
 	public boolean shouldBeParenthesized() {
 		final String s = getName();
 		if (".".equals(s) || ":".equals(s)) return false;
-		return ArtefactProtoRegistry.BINARY_PROTO_NAMES.contains(getName());
+		return ArtefactRegistry.BINARY_PROTO_NAMES.contains(getName());
 	}
 
 	@Override
@@ -186,7 +186,7 @@ public class BinaryOperator extends AbstractNAryOperator {
 		 * @param var
 		 *            the var
 		 */
-		public BinaryVarOperator(final IArtefactProto.Operator proto, final IDescription context,
+		public BinaryVarOperator(final IArtefact.Operator proto, final IDescription context,
 				final IExpression target, final IVarExpression var) {
 			super(proto, context, target, var);
 			definitionDescription = context;

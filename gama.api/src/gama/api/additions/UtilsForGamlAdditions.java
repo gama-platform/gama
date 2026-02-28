@@ -13,8 +13,8 @@ package gama.api.additions;
 import java.util.Arrays;
 import java.util.Collections;
 
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -298,7 +298,7 @@ public abstract class UtilsForGamlAdditions {
 	 *            the facet prototypes to include in the array
 	 * @return a FacetProto array containing the provided prototypes
 	 */
-	protected IArtefactProto.Facet[] P(final IArtefactProto.Facet... protos) {
+	protected IArtefact.Facet[] P(final IArtefact.Facet... protos) {
 		return protos;
 	}
 

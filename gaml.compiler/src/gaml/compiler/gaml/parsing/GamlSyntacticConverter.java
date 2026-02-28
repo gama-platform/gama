@@ -66,9 +66,9 @@ import org.eclipse.emf.ecore.resource.Resource;
 
 import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.ast.ISyntacticElement;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IGamlIssue;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
@@ -292,20 +292,6 @@ public class GamlSyntacticConverter {
 	}
 
 	/**
-	 * Does not define attributes.
-	 *
-	 * @param keyword
-	 *            the keyword
-	 * @return true, if successful
-	 */
-	private boolean doesNotDefineAttributes(final String keyword) {
-		final IArtefactProto.Symbol p = ArtefactProtoRegistry.getProto(keyword, null);
-		if (p == null) return true;
-		final ISymbolKind kind = p.getKind();
-		return !ISymbolKind.STATEMENTS_CONTAINING_ATTRIBUTES.contains(kind);
-	}
-
-	/**
 	 * Converts a single statement from the parsed EMF representation to a syntactic element.
 	 *
 	 * <p>
@@ -342,9 +328,10 @@ public class GamlSyntacticConverter {
 		if (keyword == null) throw new NullPointerException(
 				"Trying to convert a statement with a null keyword. Please debug to understand the cause.");
 		keyword = convertKeyword(keyword, upper.getKeyword());
-
-		final boolean upperContainsAttributes = !doesNotDefineAttributes(upper.getKeyword());
-		final boolean isVar = stm instanceof S_Definition && !ArtefactProtoRegistry.isStatementProto(keyword)
+		IArtefact.Symbol upperArtefact = ArtefactRegistry.getStatementProto(upper.getKeyword());
+		final boolean upperContainsAttributes =
+				upperArtefact != null && ISymbolKind.definesAttributes(upperArtefact.getKind());
+		final boolean isVar = stm instanceof S_Definition && !ArtefactRegistry.isStatementProto(keyword)
 				&& upperContainsAttributes && !EGaml.getInstance().hasChildren(stm);
 
 		final ISyntacticElement elt =
@@ -353,7 +340,7 @@ public class GamlSyntacticConverter {
 
 		if (stm instanceof S_Assignment sa) {
 			keyword = convertAssignment(sa, keyword, elt, stm.getExpr());
-		} else if (stm instanceof S_Definition def && !ArtefactProtoRegistry.isStatementProto(keyword)) {
+		} else if (stm instanceof S_Definition def && !ArtefactRegistry.isStatementProto(keyword)) {
 			// If we define a variable with this statement
 			final TypeRef t = (TypeRef) def.getTkey();
 			if (t != null) {
@@ -759,7 +746,7 @@ public class GamlSyntacticConverter {
 	 *            the elt
 	 */
 	private void convertFacets(final Statement stm, final String keyword, final ISyntacticElement elt) {
-		final IArtefactProto.Symbol p = ArtefactProtoRegistry.getProto(keyword, null);
+		final IArtefact.Symbol p = ArtefactRegistry.getProto(keyword, null);
 		for (final Facet f : EGaml.getInstance().getFacetsOf(stm)) {
 			String fname = replaceAssignments(keyword, EGaml.getInstance().getKeyOf(f));
 			// We compute (and convert) the expression attached to the facet
@@ -789,7 +776,7 @@ public class GamlSyntacticConverter {
 	 * @return the default facet
 	 */
 	private String getDefaultFacet(final Statement stm, final String keyword) {
-		return ArtefactProtoRegistry.getOmissibleFacetForSymbol(keyword);
+		return ArtefactRegistry.getOmissibleFacetForSymbol(keyword);
 	}
 
 	/**
@@ -818,7 +805,7 @@ public class GamlSyntacticConverter {
 	 *            the elt
 	 */
 	private void convertFacets(final StandaloneExperiment stm, final ISyntacticElement elt) {
-		final IArtefactProto.Symbol p = ArtefactProtoRegistry.getProto(EXPERIMENT, null);
+		final IArtefact.Symbol p = ArtefactRegistry.getProto(EXPERIMENT, null);
 		for (final Facet f : EGaml.getInstance().getFacetsOf(stm)) {
 			final String fname = EGaml.getInstance().getKeyOf(f);
 

@@ -18,8 +18,8 @@ import org.eclipse.xtext.ui.editor.outline.impl.BackgroundOutlineTreeProvider;
 import com.google.inject.Inject;
 
 import gama.annotations.support.ISymbolKind;
-import gama.api.additions.registries.ArtefactProtoRegistry;
-import gama.api.compilation.prototypes.IArtefactProto;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.constants.IKeyword;
 import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.EGaml;
@@ -168,7 +168,7 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 		final String key = EGaml.getInstance().getKeyOf(s);
 		if (IKeyword.ACTION.equals(key)) return false;
 		// if (s.getBlock() != null && s.getBlock().getFunction() == null) { return false; }
-		final IArtefactProto.Symbol p = ArtefactProtoRegistry.getStatementProto(key);
+		final IArtefact.Symbol p = ArtefactRegistry.getStatementProto(key);
 		if (p != null && p.getKind() == ISymbolKind.BATCH_METHOD) return false;
 		return true;
 	}
@@ -184,7 +184,7 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 		if (!(s instanceof S_Definition)) return false;
 		if (s instanceof S_Action) return true;
 		final String key = EGaml.getInstance().getKeyOf(s);
-		final IArtefactProto.Symbol p = ArtefactProtoRegistry.getStatementProto(key);
+		final IArtefact.Symbol p = ArtefactRegistry.getStatementProto(key);
 		if (p != null && p.isTopLevel()) return false;
 		if (s.getKey() == null) return true;
 		return false;

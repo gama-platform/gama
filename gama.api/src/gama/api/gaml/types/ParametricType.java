@@ -15,10 +15,10 @@ import java.util.Map;
 import org.apache.commons.lang3.Strings;
 
 import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -228,7 +228,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.api.gaml.types.IType#getGetter(java.lang.String)
 	 */
 	@Override
-	public IArtefactProto getGetter(final String name) {
+	public IArtefact getGetter(final String name) {
 		return type.getGetter(name);
 	}
 
@@ -396,7 +396,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.api.gaml.types.IType#setFieldGetters(java.util.Map)
 	 */
 	@Override
-	public void setFieldGetters(final Map<String, IArtefactProto.Operator> map) {}
+	public void setFieldGetters(final Map<String, IArtefact.Operator> map) {}
 
 	/**
 	 * Method canBeTypeOf()
@@ -594,7 +594,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	public IType<?> getWrappedType() { return Types.NO_TYPE; }
 
 	@Override
-	public Map<String, IArtefactProto.Operator> getFieldGetters() { return type.getFieldGetters(); }
+	public Map<String, IArtefact.Operator> getFieldGetters() { return type.getFieldGetters(); }
 
 	@Override
 	public IContainer<?, ?> deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {

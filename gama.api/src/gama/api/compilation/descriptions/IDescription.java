@@ -19,7 +19,7 @@ import org.eclipse.emf.ecore.EObject;
 import com.google.common.base.Function;
 
 import gama.annotations.support.ISymbolKind;
-import gama.api.compilation.prototypes.IArtefactProto;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.compilation.serialization.ModelSerializer;
 import gama.api.compilation.serialization.SpeciesSerializer;
@@ -338,7 +338,7 @@ public interface IDescription
 	 *
 	 * @return the meta
 	 */
-	IArtefactProto.Symbol getMeta();
+	IArtefact.Symbol getMeta();
 
 	/**
 	 * Gets the enclosing description.

@@ -17,16 +17,16 @@ import org.eclipse.emf.ecore.EObject;
 import com.google.inject.Inject;
 
 import gama.api.GAMA;
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.additions.registries.GamaSkillRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IGamlDescription;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IDocManager;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
@@ -253,7 +253,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		// CASE do run_thread interval: 2#s;
 		if (facet.eContainer() instanceof S_Do sdo && sdo.getExpr() instanceof VariableRef vr) {
 			String key = EGaml.getInstance().getKeyOf(facet);
-			if (!ArtefactProtoRegistry.getDoFacets().contains(key)) {
+			if (!ArtefactRegistry.getDoFacets().contains(key)) {
 				String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(sdo.getExpr());
 				IGamlDescription action = documenter.getGamlDocumentation(vr);
 				String doc = action == null ? "" : action.getDocumentation().get(key).toString();
@@ -270,7 +270,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				key = IKeyword.SPECIES_LAYER;
 			} else if (IKeyword.GRID.equals(layerName)) { key = IKeyword.GRID_LAYER; }
 		} else if (cont instanceof S_Definition sd && IKeyword.METHOD.equals(key)) { key = sd.getName(); }
-		final IArtefactProto.Symbol p = ArtefactProtoRegistry.getProto(key, null);
+		final IArtefact.Symbol p = ArtefactRegistry.getProto(key, null);
 		if (p != null) return p.getPossibleFacets().get(facetName);
 		return null;
 	}
@@ -311,7 +311,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				&& el.eContainer() instanceof Facet facet && facet.eContainer() instanceof S_Do sdo
 				&& sdo.getExpr() instanceof VariableRef v) {
 			String key = EGaml.getInstance().getKeyOf(pair);
-			if (!ArtefactProtoRegistry.getDoFacets().contains(key)) {
+			if (!ArtefactRegistry.getDoFacets().contains(key)) {
 				String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(sdo.getExpr());
 				IGamlDescription action = documenter.getGamlDocumentation(v);
 				String doc = action == null ? "" : action.getDocumentation().get(key).toString();
@@ -393,7 +393,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		String name = EGaml.getInstance().getKeyOf(type);
 		// Can happen with statements that "look like" var declarations and which are not treated specially in the
 		// grammar
-		if (ArtefactProtoRegistry.isStatementProto(name)) return ArtefactProtoRegistry.getStatementProto(name);
+		if (ArtefactRegistry.isStatementProto(name)) return ArtefactRegistry.getStatementProto(name);
 		if (Types.hasType(name)) return Types.get(name);
 		return null;
 	}

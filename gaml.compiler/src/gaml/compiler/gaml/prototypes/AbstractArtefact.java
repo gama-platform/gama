@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * AbstractProto.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * AbstractArtefact.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -17,16 +17,16 @@ import java.util.Collections;
 import gama.annotations.doc;
 import gama.annotations.usage;
 import gama.api.additions.GamlAddition;
-import gama.api.compilation.prototypes.IArtefactProto;
+import gama.api.compilation.artefacts.IArtefact;
 
 /**
- * Class AbstractProto.
+ * Class AbstractArtefact.
  *
  * @author drogoul
  * @since 17 déc. 2014
  *
  */
-public abstract class AbstractProto extends GamlAddition implements IArtefactProto {
+public abstract class AbstractArtefact extends GamlAddition implements IArtefact {
 
 	/** The deprecated. */
 	protected String deprecated;
@@ -41,7 +41,7 @@ public abstract class AbstractProto extends GamlAddition implements IArtefactPro
 	 * @param plugin
 	 *            the plugin
 	 */
-	protected AbstractProto(final String name, final AnnotatedElement support, final String plugin) {
+	protected AbstractArtefact(final String name, final AnnotatedElement support, final String plugin) {
 		super(name, support, plugin);
 	}
 

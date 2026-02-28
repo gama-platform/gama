@@ -22,13 +22,13 @@ import static gama.annotations.support.ITypeProvider.WRAPPED;
 
 import java.util.function.Predicate;
 
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IOperator;
@@ -50,7 +50,7 @@ public class UnaryOperator extends AbstractExpression implements IOperator {
 	final protected IExpression child;
 
 	/** The prototype. */
-	protected final IArtefactProto.Operator prototype;
+	protected final IArtefact.Operator prototype;
 
 	/**
 	 * Creates the.
@@ -63,7 +63,7 @@ public class UnaryOperator extends AbstractExpression implements IOperator {
 	 *            the child
 	 * @return the i expression
 	 */
-	public static IExpression create(final IArtefactProto.Operator proto, final IDescription context,
+	public static IExpression create(final IArtefact.Operator proto, final IDescription context,
 			final IExpression child) {
 		return new UnaryOperator(proto, context, child).optimized();
 	}
@@ -84,7 +84,7 @@ public class UnaryOperator extends AbstractExpression implements IOperator {
 	 * @param child
 	 *            the child
 	 */
-	public UnaryOperator(final IArtefactProto.Operator proto, final IDescription context, final IExpression... child) {
+	public UnaryOperator(final IArtefact.Operator proto, final IDescription context, final IExpression... child) {
 		this.child = child[0];
 		this.prototype = proto;
 		if (proto != null) {
@@ -113,7 +113,7 @@ public class UnaryOperator extends AbstractExpression implements IOperator {
 	public String serializeToGaml(final boolean includingBuiltIn) {
 		final String s = literalValue();
 		final StringBuilder sb = new StringBuilder(s);
-		if (ArtefactProtoRegistry.PROTOS_WITHOUT_PARENTHESES.contains(s)) {
+		if (ArtefactRegistry.PROTOS_WITHOUT_PARENTHESES.contains(s)) {
 			parenthesize(sb, child);
 		} else {
 			sb.append("(").append(child.serializeToGaml(includingBuiltIn)).append(")");
@@ -267,7 +267,7 @@ public class UnaryOperator extends AbstractExpression implements IOperator {
 	public boolean isAllowedInParameters() { return child.isAllowedInParameters(); }
 
 	@Override
-	public IArtefactProto getPrototype() { return prototype; }
+	public IArtefact getPrototype() { return prototype; }
 
 	@Override
 	public void visitSuboperators(final IOperatorVisitor visitor) {

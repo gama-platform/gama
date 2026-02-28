@@ -20,10 +20,10 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.IGamaGetter;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.file.GenericFile;
@@ -158,7 +158,7 @@ public class ParametricFileType extends ParametricType {
 	String plugin;
 
 	/** Field getters for accessing file attributes. */
-	private Map<String, IArtefactProto.Operator> getters;
+	private Map<String, IArtefact.Operator> getters;
 
 	/** Singleton instance of the generic file type. */
 	static volatile ParametricFileType genericInstance;
@@ -184,7 +184,7 @@ public class ParametricFileType extends ParametricType {
 	protected ParametricFileType(final String name, final Class<IGamaFile> class1,
 			final IGamaGetter<IGamaFile<?, ?>> helper, final IType<?> buffer, final IType<?> kt, final IType<?> ct,
 			final int id) {
-		super(Types.getBuiltInTypeManager(), Types.FILE, kt, ct);
+		super(null, Types.FILE, kt, ct);
 		support = class1;
 		bufferType = (IContainerType<?>) buffer;
 		builder = helper;
@@ -496,8 +496,8 @@ public class ParametricFileType extends ParametricType {
 	 *            the map of field names to getter operators
 	 */
 	@Override
-	public void setFieldGetters(final Map<String, IArtefactProto.Operator> map) {
-		map.replaceAll((final String key, final IArtefactProto.Operator each) -> each.copyWithSignature(this));
+	public void setFieldGetters(final Map<String, IArtefact.Operator> map) {
+		map.replaceAll((final String key, final IArtefact.Operator each) -> each.copyWithSignature(this));
 		getters = map;
 	}
 
@@ -507,7 +507,7 @@ public class ParametricFileType extends ParametricType {
 	 * @return map of field names to getter operators
 	 */
 	@Override
-	public Map<String, IArtefactProto.Operator> getFieldGetters() {
+	public Map<String, IArtefact.Operator> getFieldGetters() {
 		return getters == null ? Collections.EMPTY_MAP : getters;
 	}
 
@@ -519,7 +519,7 @@ public class ParametricFileType extends ParametricType {
 	 * @return the getter operator, or null if not found
 	 */
 	@Override
-	public IArtefactProto getGetter(final String field) {
+	public IArtefact getGetter(final String field) {
 		if (getters == null) return null;
 		return getters.get(field);
 	}
@@ -534,7 +534,7 @@ public class ParametricFileType extends ParametricType {
 	public void documentFields(final IGamlDocumentation result) {
 		if (getters != null) {
 			// sb.append("<b><br/>Fields :</b><ul>");
-			for (final IArtefactProto.Operator f : getters.values()) { getFieldDocumentation(result, f); }
+			for (final IArtefact.Operator f : getters.values()) { getFieldDocumentation(result, f); }
 
 			result.append("</ul>");
 		}
@@ -548,7 +548,7 @@ public class ParametricFileType extends ParametricType {
 	 * @param prototype
 	 *            the field's getter operator
 	 */
-	void getFieldDocumentation(final IGamlDocumentation sb, final IArtefactProto.Operator prototype) {
+	void getFieldDocumentation(final IGamlDocumentation sb, final IArtefact.Operator prototype) {
 
 		final vars annot = prototype.getJavaBase().getAnnotation(vars.class);
 		if (annot != null) {

@@ -19,13 +19,13 @@ import gama.annotations.type;
 import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
@@ -112,7 +112,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 * Map of field getter operators that provide access to type-specific attributes. For example, a point type might
 	 * have "x" and "y" getters.
 	 */
-	Map<String, IArtefactProto.Operator> getters;
+	Map<String, IArtefact.Operator> getters;
 
 	/** The parent type in the type hierarchy, or null if this is a root type. */
 	protected IType<? super Support> parent;
@@ -244,7 +244,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	public void documentFields(final IGamlDocumentation result) {
 		if (getters != null) {
 			if (getters.isEmpty()) { result.append("<p>").append("No fields accessible").append("</p>"); }
-			for (final IArtefactProto.Operator f : getters.values()) { getFieldDocumentation(result, f); }
+			for (final IArtefact.Operator f : getters.values()) { getFieldDocumentation(result, f); }
 		}
 	}
 
@@ -268,7 +268,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 * @param prototype
 	 *            the field getter operator prototype
 	 */
-	void getFieldDocumentation(final IGamlDocumentation sb, final IArtefactProto.Operator prototype) {
+	void getFieldDocumentation(final IGamlDocumentation sb, final IArtefact.Operator prototype) {
 
 		final vars annot = prototype.getJavaBase().getAnnotation(vars.class);
 		if (annot != null) {
@@ -342,8 +342,8 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 *            the map of field names to getter operators
 	 */
 	@Override
-	public void setFieldGetters(final Map<String, IArtefactProto.Operator> map) {
-		map.replaceAll((final String key, final IArtefactProto.Operator each) -> each.copyWithSignature(this));
+	public void setFieldGetters(final Map<String, IArtefact.Operator> map) {
+		map.replaceAll((final String key, final IArtefact.Operator each) -> each.copyWithSignature(this));
 
 		getters = map;
 		// AD 20/09/13 Added the initialization of the type containing the fields
@@ -358,7 +358,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 * @return the getter operator, or null if the field doesn't exist
 	 */
 	@Override
-	public IArtefactProto getGetter(final String field) {
+	public IArtefact getGetter(final String field) {
 		return getters == null ? null : getters.get(field);
 	}
 
@@ -368,7 +368,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 * @return an unmodifiable map of field names to getter operators, or an empty map if no getters are defined
 	 */
 	@Override
-	public Map<String, IArtefactProto.Operator> getFieldGetters() {
+	public Map<String, IArtefact.Operator> getFieldGetters() {
 		return getters == null ? Collections.emptyMap() : getters;
 	}
 

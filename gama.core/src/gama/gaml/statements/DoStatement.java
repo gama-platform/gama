@@ -18,7 +18,7 @@ import gama.annotations.symbol;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
-import gama.api.additions.registries.ArtefactProtoRegistry;
+import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.annotations.serializer;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
@@ -177,7 +177,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 
 		@Override
 		public String serializeFacetValue(final IDescription s, final String key, final boolean includingBuiltIn) {
-			if (!ArtefactProtoRegistry.DO_FACETS.contains(key)) return null;
+			if (!ArtefactRegistry.DO_FACETS.contains(key)) return null;
 			return super.serializeFacetValue(s, key, includingBuiltIn);
 		}
 

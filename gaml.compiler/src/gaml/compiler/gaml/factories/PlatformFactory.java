@@ -13,7 +13,6 @@ package gaml.compiler.gaml.factories;
 import java.util.Set;
 
 import gama.annotations.support.ISymbolKind;
-import gama.api.additions.registries.ArtefactProtoRegistry;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.gaml.symbols.Facets;
 import gama.api.kernel.agent.IAgentConstructor;
@@ -44,7 +43,7 @@ public class PlatformFactory extends SpeciesFactory {
 	public ISpeciesDescription createBuiltInSpeciesDescription(final String name, final Class clazz,
 			final ISpeciesDescription superDesc, final ISpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> skills, final Facets userSkills, final String plugin) {
-		ArtefactProtoRegistry.addBuiltInSpeciesNameAsType(name);
+		// ArtefactRegistry.addBuiltInSpeciesNameAsType(name);
 		return new PlatformSpeciesDescription(name, clazz, superDesc, parent, helper, skills, userSkills, plugin);
 	}
 

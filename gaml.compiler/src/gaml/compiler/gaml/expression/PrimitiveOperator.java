@@ -11,13 +11,13 @@
 package gaml.compiler.gaml.expression;
 
 import gama.api.GAMA;
+import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.compilation.prototypes.IArtefactProto;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IOperator;
@@ -285,6 +285,6 @@ public class PrimitiveOperator implements IOperator {
 	}
 
 	@Override
-	public IArtefactProto getPrototype() { return null; }
+	public IArtefact getPrototype() { return null; }
 
 }
