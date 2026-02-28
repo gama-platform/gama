@@ -192,7 +192,7 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 			if (nm == null) { nm = "statement"; }
 		}
 		String in = "";
-		if (getMeta().isTopLevel()) {
+		if (getArtefact().isTopLevel()) {
 			final IDescription d = getEnclosingDescription();
 			if (d == null) {
 				in = " defined in " + getOriginName();

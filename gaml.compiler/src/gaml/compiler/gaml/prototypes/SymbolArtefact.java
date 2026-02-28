@@ -59,9 +59,6 @@ public class SymbolArtefact extends AbstractArtefact implements IArtefact.Symbol
 	/** The serializer. */
 	private ISymbolSerializer serializer;
 
-	/** The factory. */
-	// private final ISymbolDescriptionFactory factory;
-
 	/** The kind. */
 	private final ISymbolKind kind;
 
@@ -96,7 +93,7 @@ public class SymbolArtefact extends AbstractArtefact implements IArtefact.Symbol
 	private final boolean isVar;
 
 	/**
-	 * Instantiates a new symbol proto.
+	 * Instantiates a new symbol artefact.
 	 *
 	 * @param clazz
 	 *            the clazz

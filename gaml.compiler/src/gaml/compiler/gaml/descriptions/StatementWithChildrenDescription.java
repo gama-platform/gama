@@ -66,8 +66,8 @@ public class StatementWithChildrenDescription extends StatementDescription {
 			final Iterable<IDescription> cp, final boolean hasArgs, final EObject source, final Facets facets,
 			final Arguments alreadyComputedArgs) {
 		super(keyword, superDesc, hasArgs, source, facets, alreadyComputedArgs);
-		setIf(Flag.Breakable, getMeta().isBreakable());
-		setIf(Flag.Continuable, getMeta().isContinuable());
+		setIf(Flag.Breakable, getArtefact().isBreakable());
+		setIf(Flag.Continuable, getArtefact().isContinuable());
 		addChildren(cp);
 	}
 
@@ -134,7 +134,7 @@ public class StatementWithChildrenDescription extends StatementDescription {
 	 * @return true, if successful
 	 */
 	public boolean hasTemps() {
-		return getMeta().hasScope() /* canHaveTemps */ && temps != null;
+		return getArtefact().hasScope() /* canHaveTemps */ && temps != null;
 	}
 
 	/**
@@ -151,7 +151,7 @@ public class StatementWithChildrenDescription extends StatementDescription {
 	public IExpression addTemp(final IDescription declaration, final String facet, final String name,
 			final IType<?> type) {
 		IDescription enclosing = getEnclosingDescription();
-		if (!getMeta().hasScope()) return enclosing instanceof StatementWithChildrenDescription sc
+		if (!getArtefact().hasScope()) return enclosing instanceof StatementWithChildrenDescription sc
 				? sc.addTemp(declaration, null, name, type) : null;
 		// final String kw = getKeyword();
 		if (temps == null) { temps = new LinkedHashMap<>(); }

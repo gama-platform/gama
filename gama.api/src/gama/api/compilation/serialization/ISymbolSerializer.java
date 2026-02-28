@@ -284,7 +284,7 @@ public interface ISymbolSerializer extends IKeyword {
 		String exprString = ed.serializeToGaml(includingBuiltIn);
 		if (exprString.startsWith(INTERNAL)) return null;
 		if (ed.isLabel()) {
-			final boolean isId = symbolDescription.getMeta().isId(key);
+			final boolean isId = symbolDescription.getArtefact().isId(key);
 			if (!isId) { exprString = StringUtils.toGamlString(exprString); }
 		}
 		return exprString;

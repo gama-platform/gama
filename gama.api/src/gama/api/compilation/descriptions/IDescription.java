@@ -338,7 +338,7 @@ public interface IDescription
 	 *
 	 * @return the meta
 	 */
-	IArtefact.Symbol getMeta();
+	IArtefact.Symbol getArtefact();
 
 	/**
 	 * Gets the enclosing description.

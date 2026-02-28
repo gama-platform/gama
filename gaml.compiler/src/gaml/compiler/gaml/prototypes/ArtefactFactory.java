@@ -37,7 +37,7 @@ public class ArtefactFactory implements IArtefactFactory {
 	public static ArtefactFactory getInstance() { return INSTANCE; }
 
 	/**
-	 * Instantiates a new artefact proto factory.
+	 * Instantiates a new artefact artefact factory.
 	 */
 	protected ArtefactFactory() {
 		// Prevent instantiation
@@ -64,9 +64,9 @@ public class ArtefactFactory implements IArtefactFactory {
 	 * @return
 	 */
 	@Override
-	public IArtefact.Symbol createSymbolProto(final Class c, final boolean isBreakable,
-			final boolean isContinuable, final boolean isSequence, final boolean hasArguments, final ISymbolKind sKind,
-			final boolean b, final IArtefact.Facet[] fmd, final String omissible, final String[] contextKeywords,
+	public IArtefact.Symbol createSymbolArtefact(final Class c, final boolean isBreakable, final boolean isContinuable,
+			final boolean isSequence, final boolean hasArguments, final ISymbolKind sKind, final boolean b,
+			final IArtefact.Facet[] fmd, final String omissible, final String[] contextKeywords,
 			final int[] contextKinds, final boolean isRemoteContext, final boolean isUnique, final boolean name_unique,
 			final ISymbolFactory sc, final String name, final String plugin) {
 		return new SymbolArtefact(c, isBreakable, isContinuable, isSequence, hasArguments, sKind, b, fmd, omissible,
@@ -88,12 +88,12 @@ public class ArtefactFactory implements IArtefactFactory {
 	 * @return
 	 */
 	@Override
-	public IArtefact.Operator createOperatorProto(final String name, final AnnotatedElement object,
+	public IArtefact.Operator createOperatorArtefact(final String name, final AnnotatedElement object,
 			final IGamaGetter helper, final boolean b, final boolean c, final int returnType, final Class signature,
 			final int typeProvider, final int contentTypeProvider, final int keyTypeProvider,
 			final int[] expectedContentType) {
-		return new OperatorArtefact(name, object, helper, b, c, returnType, signature, typeProvider, contentTypeProvider,
-				keyTypeProvider, expectedContentType);
+		return new OperatorArtefact(name, object, helper, b, c, returnType, signature, typeProvider,
+				contentTypeProvider, keyTypeProvider, expectedContentType);
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class ArtefactFactory implements IArtefactFactory {
 	 * @return
 	 */
 	@Override
-	public IArtefact.Operator createOperatorProto(final String name, final Executable method,
+	public IArtefact.Operator createOperatorArtefact(final String name, final Executable method,
 			final String constantDoc, final IGamaGetter helper, final boolean c, final boolean b, final IType rt,
 			final Signature signature, final int t, final int content, final int index, final int contentContentType,
 			final int[] expectedContentTypes, final String plugin) {
@@ -123,7 +123,7 @@ public class ArtefactFactory implements IArtefactFactory {
 	}
 
 	@Override
-	public IArtefact.Facet createFacetProto(final String name, final int[] types, final int ct, final int kt,
+	public IArtefact.Facet createFacetArtefact(final String name, final int[] types, final int ct, final int kt,
 			final String[] values, final boolean optional, final boolean internal, final boolean isRemote) {
 		return new FacetArtefact(name, types, ct, kt, values, optional, internal, isRemote);
 	}

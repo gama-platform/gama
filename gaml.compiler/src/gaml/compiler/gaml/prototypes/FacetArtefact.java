@@ -66,7 +66,7 @@ public class FacetArtefact implements IArtefact.Facet, Comparable<FacetArtefact>
 	private String mainDoc = null;
 
 	/**
-	 * Instantiates a new facet proto.
+	 * Instantiates a new facet artefact.
 	 *
 	 * @param name
 	 *            the name

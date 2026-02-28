@@ -733,7 +733,7 @@ public class GAML {
 	 * @return true, if is a statement
 	 */
 	public static boolean isAStatement(final String name) {
-		return ArtefactRegistry.isStatementProto(name);
+		return ArtefactRegistry.isStatementArtefact(name);
 	}
 
 	// ==================================================================================
@@ -904,8 +904,8 @@ public class GAML {
 	 */
 	public static Collection<IArtefact.Symbol> getStatementsForSkill(final String skill) {
 		final Set<IArtefact.Symbol> result = new LinkedHashSet<>();
-		for (final String p : ArtefactRegistry.getStatementProtoNames()) {
-			final IArtefact.Symbol proto = ArtefactRegistry.getStatementProto(p);
+		for (final String p : ArtefactRegistry.getStatementArtefactNames()) {
+			final IArtefact.Symbol proto = ArtefactRegistry.getStatementArtefact(p);
 			if (proto != null && proto.shouldBeDefinedIn(skill)) { result.add(proto); }
 		}
 		return result;

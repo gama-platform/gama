@@ -194,9 +194,9 @@ public class GamlTemplateStore extends XtextTemplateStore {
 	@Override
 	protected void loadContributedTemplates() throws IOException {
 		super.loadContributedTemplates();
-		Iterable<String> protos = ArtefactRegistry.getProtoNames();
+		Iterable<String> protos = ArtefactRegistry.getArtefactNames();
 		for (final String keyword : protos) {
-			final IArtefact.Symbol sp = ArtefactRegistry.getProto(keyword, null);
+			final IArtefact.Symbol sp = ArtefactRegistry.getArtefact(keyword, null);
 			// List<template> templates = sp.getTemplates();
 			for (final usage u : sp.getUsages()) {
 				final TemplatePersistenceData data = GamlTemplateFactory.from(u, sp);

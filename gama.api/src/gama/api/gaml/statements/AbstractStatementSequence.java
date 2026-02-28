@@ -81,7 +81,7 @@ public class AbstractStatementSequence extends AbstractStatement {
 	 */
 	public AbstractStatementSequence(final IDescription desc) {
 		super(desc);
-		isTopLevel = desc != null && desc.getMeta().isTopLevel();
+		isTopLevel = desc != null && desc.getArtefact().isTopLevel();
 	}
 
 	/**

@@ -145,7 +145,7 @@ import gaml.compiler.gaml.prototypes.SymbolArtefact;
  * <li>Facets are lazily initialized and nullified when empty</li>
  * <li>EnumSet provides compact flag storage (single long for ≤64 flags)</li>
  * <li>Weak references used for model description to prevent circular retention</li>
- * <li>Prototype (meta) information shared across instances of same symbol type</li>
+ * <li>Artefact information shared across instances of same symbol type</li>
  * </ul>
  *
  * <p>
@@ -184,7 +184,7 @@ import gaml.compiler.gaml.prototypes.SymbolArtefact;
  * <li><strong>Factory Method:</strong> {@link #compile()} creates runtime symbols</li>
  * <li><strong>Template Method:</strong> {@link #validate()} defines validation algorithm</li>
  * <li><strong>Visitor:</strong> {@link #visitFacets} and {@link #visitChildren} support traversal</li>
- * <li><strong>Prototype:</strong> {@link SymbolArtefact} stores shared metadata</li>
+ * <li><strong>Artefact:</strong> {@link SymbolArtefact} stores shared metadata</li>
  * </ul>
  *
  * @author Alexis Drogoul
@@ -359,7 +359,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * <strong>Lookup:</strong> Retrieved from {@link ArtefactRegistry} based on keyword and species context.
 	 * </p>
 	 */
-	final SymbolArtefact proto;
+	final SymbolArtefact artefact;
 
 	/**
 	 * Creates a new symbol description.
@@ -391,7 +391,7 @@ public abstract class SymbolDescription implements IDescription {
 			facets.remove(ORIGIN);
 		} else if (superDesc != null) { originName = superDesc.getName(); }
 		setEnclosingDescription(superDesc);
-		proto = (SymbolArtefact) ArtefactRegistry.getProto(getKeyword(), getSpeciesContext());
+		artefact = (SymbolArtefact) ArtefactRegistry.getArtefact(getKeyword(), getSpeciesContext());
 
 	}
 
@@ -472,7 +472,7 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public final ISymbolSerializer getSerializer() {
-		final SymbolArtefact p = getMeta();
+		final SymbolArtefact p = getArtefact();
 		ISymbolSerializer d = p.getSerializer();
 		if (d == null) {
 			d = createSerializer();
@@ -694,7 +694,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return the symbol kind as defined in its prototype
 	 */
 	@Override
-	public ISymbolKind getKind() { return getMeta().getKind(); }
+	public ISymbolKind getKind() { return getArtefact().getKind(); }
 
 	/**
 	 * Compiles all facets that can provide type information. This ensures type provider facets are compiled before they
@@ -726,7 +726,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return the symbol prototype
 	 */
 	@Override
-	public final SymbolArtefact getMeta() { return proto; }
+	public final SymbolArtefact getArtefact() { return artefact; }
 
 	/**
 	 * Internal method to handle error, warning, and info flags during validation. Determines the proper reporting
@@ -979,7 +979,7 @@ public abstract class SymbolDescription implements IDescription {
 	@Override
 	public void setName(final String name) {
 		this.name = name;
-		if (getMeta().getPossibleFacets().containsKey(IKeyword.NAME)) {
+		if (getArtefact().getPossibleFacets().containsKey(IKeyword.NAME)) {
 			setFacetExprDescription(IKeyword.NAME, GAML.getExpressionDescriptionFactory().createLabel(name));
 		}
 	}
@@ -1085,7 +1085,7 @@ public abstract class SymbolDescription implements IDescription {
 			}
 		}
 		if (facet instanceof String) {
-			if (getMeta() != null && !returnFacet && facet.equals(getMeta().getOmissible())) {
+			if (getArtefact() != null && !returnFacet && facet.equals(getArtefact().getOmissible())) {
 				final EObject o = EGaml.getInstance().getExprOf(element);
 				if (o != null) return o;
 			}
@@ -1403,7 +1403,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return the documentation object
 	 */
 	@Override
-	public IGamlDocumentation getDocumentation() { return getMeta().getDocumentation(); }
+	public IGamlDocumentation getDocumentation() { return getArtefact().getDocumentation(); }
 
 	/**
 	 * Gets the plugin that defined this symbol.
@@ -1411,7 +1411,7 @@ public abstract class SymbolDescription implements IDescription {
 	 * @return the plugin ID
 	 */
 	@Override
-	public String getDefiningPlugin() { return getMeta().getDefiningPlugin(); }
+	public String getDefiningPlugin() { return getArtefact().getDefiningPlugin(); }
 
 	/**
 	 * Sets the defining plugin for this symbol. Default implementation does nothing; subclasses may override.
@@ -1511,12 +1511,12 @@ public abstract class SymbolDescription implements IDescription {
 			final String kw = getKeyword();
 			final String ekw = enclosing.getKeyword();
 			// We first verify that the description is at the right place
-			if (!proto.canBeDefinedIn(enclosing)) {
+			if (!artefact.canBeDefinedIn(enclosing)) {
 				error(kw + " cannot be defined in " + ekw, IGamlIssue.WRONG_CONTEXT);
 				return null;
 			}
 			// If it is supposed to be unique, we verify this
-			if (proto.isUniqueInContext()) {
+			if (artefact.isUniqueInContext()) {
 				final boolean hasError = !enclosing.visitOwnChildren(child -> {
 					if (child != SymbolDescription.this && child.getKeyword().equals(kw)) {
 						final String error = kw + " is defined twice. Only one definition is allowed in " + ekw;
@@ -1533,12 +1533,12 @@ public abstract class SymbolDescription implements IDescription {
 
 		// We then validate its facets and children
 		if (!validateFacets() || !validateChildren()) return null;
-		if (proto.getDeprecated() != null) {
-			warning("'" + getKeyword() + "' is deprecated. " + proto.getDeprecated(), IGamlIssue.DEPRECATED);
+		if (artefact.getDeprecated() != null) {
+			warning("'" + getKeyword() + "' is deprecated. " + artefact.getDeprecated(), IGamlIssue.DEPRECATED);
 		}
 
 		// If a custom validator has been defined, run it
-		if (!proto.getValidator().validate(this, element)) return null;
+		if (!artefact.getValidator().validate(this, element)) return null;
 		return this;
 	}
 
@@ -1552,7 +1552,7 @@ public abstract class SymbolDescription implements IDescription {
 		// Special case for "do", which can accept (at parsing time) any facet
 		final boolean isDo = isInvocation();
 		final boolean isBuiltIn = isBuiltIn();
-		final List<String> mandatory = proto.getMandatoryFacets();
+		final List<String> mandatory = artefact.getMandatoryFacets();
 		if (mandatory != null) {
 			for (final String facet : mandatory) {
 				if (!hasFacets() || !facets.containsKey(facet)) {
@@ -1563,7 +1563,7 @@ public abstract class SymbolDescription implements IDescription {
 		}
 
 		return visitFacets((facet, expr) -> {
-			final IArtefact.Facet fp = proto.getFacet(facet);
+			final IArtefact.Facet fp = artefact.getFacet(facet);
 			if (fp == null) return processUnknowFacet(isDo, facet);
 			if (fp.getDeprecated() != null) {
 				warning("Facet '" + facet + "' is deprecated: " + fp.getDeprecated(), IGamlIssue.DEPRECATED, facet);
@@ -1770,12 +1770,12 @@ public abstract class SymbolDescription implements IDescription {
 	@Override
 	public ISymbol compile() {
 		validate();
-		final ISymbol cs = proto.create(this);
+		final ISymbol cs = artefact.create(this);
 		if (cs == null) return null;
-		if (proto.hasArgs()) {
+		if (artefact.hasArgs()) {
 			((IStatement.WithArgs) cs).setFormalArgs(((StatementDescription) this).createCompiledArgs());
 		}
-		if (proto.hasSequence() && !proto.isPrimitive()) { cs.setChildren(compileChildren()); }
+		if (artefact.hasSequence() && !artefact.isPrimitive()) { cs.setChildren(compileChildren()); }
 		return cs;
 	}
 

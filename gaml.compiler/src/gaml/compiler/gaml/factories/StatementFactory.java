@@ -65,8 +65,8 @@ public class StatementFactory implements ISymbolDescriptionFactory {
 	 *            the children
 	 * @param enclosing
 	 *            the enclosing
-	 * @param proto
-	 *            the proto
+	 * @param artefact
+	 *            the artefact
 	 * @return the statement description
 	 */
 	@Override

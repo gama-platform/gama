@@ -256,7 +256,7 @@ public class GamlTemplateFactory {
 	}
 
 	/**
-	 * @param proto
+	 * @param artefact
 	 * @return
 	 */
 	public static Template from(final IArtefact.Operator proto) {

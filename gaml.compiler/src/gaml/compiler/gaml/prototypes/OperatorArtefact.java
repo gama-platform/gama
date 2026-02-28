@@ -91,7 +91,7 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	private String[] depends_on;
 
 	/**
-	 * Instantiates a new operator proto.
+	 * Instantiates a new operator artefact.
 	 *
 	 * @param name
 	 *            the name
@@ -141,7 +141,7 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	}
 
 	/**
-	 * Instantiates a new operator proto.
+	 * Instantiates a new operator artefact.
 	 *
 	 * @param name
 	 *            the name
@@ -202,7 +202,7 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	}
 
 	/**
-	 * Instantiates a new operator proto.
+	 * Instantiates a new operator artefact.
 	 *
 	 * @param op
 	 *            the op
@@ -316,7 +316,7 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 				return aName + signature.asPattern(withVariables);
 			return aName + "(" + signature.asPattern(withVariables) + ")";
 		}
-		if (ArtefactRegistry.BINARY_PROTO_NAMES.contains(aName))
+		if (ArtefactRegistry.BINARY_ARTEFACTS_NAMES.contains(aName))
 			return signature.get(0).asPattern() + " " + aName + " " + signature.get(1).asPattern();
 		return aName + "(" + signature.asPattern(withVariables) + ")";
 	}
@@ -332,7 +332,7 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 	 *
 	 * @param gamaType
 	 *            the gama type
-	 * @return the operator proto
+	 * @return the operator artefact
 	 */
 	@Override
 	public OperatorArtefact copyWithSignature(final IType gamaType) {

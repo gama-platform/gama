@@ -297,8 +297,8 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 			// " (Built-in unit)"), null);
 			// proposals.add(cp);
 			// }
-			for (final String t : ArtefactRegistry.getStatementProtoNames()) {
-				final IArtefact s = ArtefactRegistry.getProto(t, null);
+			for (final String t : ArtefactRegistry.getStatementArtefactNames()) {
+				final IArtefact s = ArtefactRegistry.getArtefact(t, null);
 				statements.add(t);
 				final String title = " (Statement)";
 				final BuiltInProposal cp = new BuiltInProposal(t, new StyledString(t + title), null);
@@ -307,7 +307,7 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 			}
 
 			for (final String t : Types.getTypeNames()) {
-				final IArtefact s = ArtefactRegistry.getVarProto(t, null);
+				final IArtefact s = ArtefactRegistry.getVarArtefact(t, null);
 				statements.add(t);
 				final String title = " (Declaration)";
 				final BuiltInProposal cp = new BuiltInProposal(t, new StyledString(t + title), null);

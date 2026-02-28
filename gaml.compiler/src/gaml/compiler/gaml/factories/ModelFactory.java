@@ -184,7 +184,7 @@ public class ModelFactory implements IModelFactory {
 	 *            the child descriptions
 	 * @param enclosing
 	 *            the enclosing description context
-	 * @param proto
+	 * @param artefact
 	 *            the symbol prototype
 	 * @return always returns null as this method is not used in model assembly
 	 */

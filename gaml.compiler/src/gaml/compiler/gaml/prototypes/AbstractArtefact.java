@@ -32,7 +32,7 @@ public abstract class AbstractArtefact extends GamlAddition implements IArtefact
 	protected String deprecated;
 
 	/**
-	 * Instantiates a new abstract proto.
+	 * Instantiates a new abstract artefact.
 	 *
 	 * @param name
 	 *            the name

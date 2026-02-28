@@ -61,8 +61,8 @@ public abstract class AbstractNAryOperator extends AbstractExpression implements
 	/**
 	 * Instantiates a new abstract N ary operator.
 	 *
-	 * @param proto
-	 *            the proto
+	 * @param artefact
+	 *            the artefact
 	 * @param expressions
 	 *            the expressions
 	 * @see #copy()

@@ -23,8 +23,8 @@ public class NAryOperator extends AbstractNAryOperator {
 	/**
 	 * Creates the.
 	 *
-	 * @param proto
-	 *            the proto
+	 * @param artefact
+	 *            the artefact
 	 * @param child
 	 *            the child
 	 * @return the i expression
@@ -37,8 +37,8 @@ public class NAryOperator extends AbstractNAryOperator {
 	/**
 	 * Instantiates a new n ary operator.
 	 *
-	 * @param proto
-	 *            the proto
+	 * @param artefact
+	 *            the artefact
 	 * @param exprs
 	 *            the exprs
 	 */

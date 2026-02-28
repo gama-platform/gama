@@ -50,14 +50,14 @@ import one.util.streamex.StreamEx;
  * The registry manages three main categories of artefacts:
  * </p>
  * <ul>
- * <li><b>Statement Prototypes</b> - Definitions of GAML statements (commands, control structures)</li>
- * <li><b>Variable Prototypes</b> - Definitions of variable declaration keywords and types</li>
- * <li><b>Facet Prototypes</b> - Definitions of statement and variable facets (named parameters)</li>
+ * <li><b>Statement Artefacts</b> - Definitions of GAML statements (commands, control structures)</li>
+ * <li><b>Variable Artefacts</b> - Definitions of variable declaration keywords and types</li>
+ * <li><b>Facet Artefacts</b> - Definitions of statement and variable facets (named parameters)</li>
  * </ul>
  *
- * <h2>Prototype Organization</h2>
+ * <h2>Artefact Organization</h2>
  * <p>
- * Prototypes are organized by:
+ * Artefacts are organized by:
  * </p>
  * <ul>
  * <li><b>Keyword</b> - The GAML keyword that triggers the artefact (stored in keyword maps)</li>
@@ -72,7 +72,7 @@ import one.util.streamex.StreamEx;
  * <ul>
  * <li>{@link #BREAKABLE_STATEMENTS} - Statements that can contain 'break'</li>
  * <li>{@link #CONTINUABLE_STATEMENTS} - Statements that can contain 'continue'</li>
- * <li>{@link #BINARY_PROTO_NAMES} - Binary operator keywords</li>
+ * <li>{@link #BINARY_ARTEFACTS_NAMES} - Binary operator keywords</li>
  * <li>{@link #PROTOS_WITHOUT_PARENTHESES} - Operators that don't require parentheses</li>
  * <li>{@link #NON_SERIALIZABLE_FACETS} - Facets excluded from serialization</li>
  * </ul>
@@ -86,11 +86,11 @@ import one.util.streamex.StreamEx;
  * <h2>Usage Example</h2>
  *
  * <pre>{@code
- * // Retrieve a statement prototype
- * IArtefact.Symbol createProto = ArtefactRegistry.getStatementProto("create");
+ * // Retrieve a statement artefact
+ * IArtefact.Symbol createArtefact = ArtefactRegistry.getStatementArtefact("create");
  *
  * // Check if a keyword is a statement
- * boolean isStatement = ArtefactRegistry.isStatementProto("loop");
+ * boolean isStatement = ArtefactRegistry.isStatementArtefact("loop");
  *
  * // Get the omissible facet for a statement
  * String omissible = ArtefactRegistry.getOmissibleFacetForSymbol("create");
@@ -125,7 +125,7 @@ public class ArtefactRegistry {
 			new HashSet<>(Arrays.asList(IKeyword.INTERNAL_FUNCTION, IKeyword.WITH));
 
 	/** Map of statement keywords to their prototype definitions. */
-	private static final Map<String, IArtefact.Symbol> STATEMENT_KEYWORDS_PROTOS = new HashMap<>();
+	private static final Map<String, IArtefact.Symbol> STATEMENT_KEYWORDS_ARTEFACTS = new HashMap<>();
 
 	/** Map of variable declaration keywords to their prototype definitions. */
 	// private static final Map<String, IArtefact.Symbol> VAR_KEYWORDS_PROTOS = new HashMap<>();
@@ -135,13 +135,12 @@ public class ArtefactRegistry {
 			Multimaps.newSetMultimap(new ConcurrentHashMap<>(), ConcurrentHashMap::newKeySet);
 
 	/** Map of artefact kinds to their prototype definitions. */
-	public static final Map<ISymbolKind, IArtefact.Symbol> VARIABLE_KINDS_TO_DECLARATION_PROTOTYPES =
-			new HashMap<>();
+	public static final Map<ISymbolKind, IArtefact.Symbol> VARIABLE_KINDS_TO_DECLARATION_ARTEFACTS = new HashMap<>();
 	/** Cache for statement protos. */
-	private static volatile Iterable<IArtefact.Symbol> cachedStatementProtos = null;
+	private static volatile Iterable<IArtefact.Symbol> cachedStatementArtefacts = null;
 
 	/** Cache for facets protos. */
-	private static volatile Iterable<? extends IArtefact.Facet> cachedFacetsProtos = null;
+	private static volatile Iterable<? extends IArtefact.Facet> cachedFacetsArtefacts = null;
 
 	/**
 	 * Registers a new type name as a valid variable declaration keyword.
@@ -160,7 +159,7 @@ public class ArtefactRegistry {
 	public static void addNewTypeName(final String s, final ISymbolKind kind) {
 		addNewVarKeyword(s, kind);
 		// if (VAR_KEYWORDS_PROTOS.containsKey(s)) return;
-		// final IArtefact.Symbol p = VARIABLE_KINDS_TO_DECLARATION_PROTOTYPES.get(kind);
+		// final IArtefact.Symbol p = VARIABLE_KINDS_TO_DECLARATION_ARTEFACTS.get(kind);
 		// if (p != null) {
 		// if ("species".equals(s)) {
 		// VAR_KEYWORDS_PROTOS.put(SPECIES_VAR, p);
@@ -184,10 +183,10 @@ public class ArtefactRegistry {
 	public static final Set<String> PROTOS_WITHOUT_PARENTHESES = ImmutableSet.of("-", "!");
 
 	/** Binary operator keywords in GAML. */
-	public static final Set<String> BINARY_PROTO_NAMES = ImmutableSet.of(IKeyword.EQUALS, IKeyword.PLUS, IKeyword.MINUS,
-			IKeyword.DIVIDE, IKeyword.TIMES, "^", "<", ">", "<=", ">=", "?", "!=", ":", ".", "where", "select",
-			"collect", "first_with", "last_with", "overlapping", "at_distance", "in", "inside", "among", "contains",
-			"contains_any", "contains_all", "min_of", "max_of", "with_max_of", "with_min_of", "of_species",
+	public static final Set<String> BINARY_ARTEFACTS_NAMES = ImmutableSet.of(IKeyword.EQUALS, IKeyword.PLUS,
+			IKeyword.MINUS, IKeyword.DIVIDE, IKeyword.TIMES, "^", "<", ">", "<=", ">=", "?", "!=", ":", ".", "where",
+			"select", "collect", "first_with", "last_with", "overlapping", "at_distance", "in", "inside", "among",
+			"contains", "contains_any", "contains_all", "min_of", "max_of", "with_max_of", "with_min_of", "of_species",
 			"of_generic_species", "sort_by", "accumulate", "or", "and", "at", "is", "group_by", "index_of",
 			"last_index_of", "index_by", "count", "sort", "::", "as_map");
 
@@ -210,10 +209,10 @@ public class ArtefactRegistry {
 	 *            the keyword
 	 * @param control
 	 *            the control
-	 * @return the statement proto
+	 * @return the statement artefact
 	 */
-	public final static IArtefact.Symbol getStatementProto(final String keyword) {
-		return STATEMENT_KEYWORDS_PROTOS.get(keyword);
+	public final static IArtefact.Symbol getStatementArtefact(final String keyword) {
+		return STATEMENT_KEYWORDS_ARTEFACTS.get(keyword);
 	}
 
 	/**
@@ -221,8 +220,8 @@ public class ArtefactRegistry {
 	 *
 	 * @return the proto names
 	 */
-	public final static Iterable<String> getProtoNames() {
-		return Iterables.concat(getStatementProtoNames()/* , getVarProtoNames() */);
+	public final static Iterable<String> getArtefactNames() {
+		return Iterables.concat(getStatementArtefactNames()/* , getVarProtoNames() */);
 	}
 
 	/**
@@ -230,7 +229,9 @@ public class ArtefactRegistry {
 	 *
 	 * @return the statement proto names
 	 */
-	public final static Iterable<String> getStatementProtoNames() { return STATEMENT_KEYWORDS_PROTOS.keySet(); }
+	public final static Iterable<String> getStatementArtefactNames() {
+		return STATEMENT_KEYWORDS_ARTEFACTS.keySet();
+	}
 
 	/**
 	 * Gets the var proto names.
@@ -248,11 +249,11 @@ public class ArtefactRegistry {
 	 *            the super desc
 	 * @return the proto
 	 */
-	public final static IArtefact.Symbol getProto(final String keyword, final IDescription superDesc) {
+	public final static IArtefact.Symbol getArtefact(final String keyword, final IDescription superDesc) {
 		// Check statement proto first
-		IArtefact.Symbol p = STATEMENT_KEYWORDS_PROTOS.get(keyword);
+		IArtefact.Symbol p = STATEMENT_KEYWORDS_ARTEFACTS.get(keyword);
 		// If not a statement, try var declaration prototype
-		return p != null ? p : getVarProto(keyword, superDesc);
+		return p != null ? p : getVarArtefact(keyword, superDesc);
 	}
 
 	/**
@@ -264,13 +265,13 @@ public class ArtefactRegistry {
 	 *            the super desc
 	 * @return the var proto
 	 */
-	public final static IArtefact.Symbol getVarProto(final String keyword, final IDescription superDesc) {
+	public final static IArtefact.Symbol getVarArtefact(final String keyword, final IDescription superDesc) {
 		// final IArtefact.Symbol p = VAR_KEYWORDS_PROTOS.get(keyword);
 		// Not a type and not a statement. So probably a species
-		if (!Types.containsType(keyword) && !STATEMENT_KEYWORDS_PROTOS.containsKey(keyword))
-			return getVarProto(AGENT, null);
+		if (!Types.containsType(keyword) && !STATEMENT_KEYWORDS_ARTEFACTS.containsKey(keyword))
+			return getVarArtefact(AGENT, null);
 		// TODO Add the future case of objects / skills
-		return VARIABLE_KINDS_TO_DECLARATION_PROTOTYPES.get(Types.get(keyword).getVarKind());
+		return VARIABLE_KINDS_TO_DECLARATION_ARTEFACTS.get(Types.get(keyword).getVarKind());
 	}
 
 	/**
@@ -280,8 +281,8 @@ public class ArtefactRegistry {
 	 *            the s
 	 * @return true, if is statement proto
 	 */
-	public final static boolean isStatementProto(final String s) {
-		return STATEMENT_KEYWORDS_PROTOS.containsKey(s) || IKeyword.METHOD.equals(s);
+	public final static boolean isStatementArtefact(final String s) {
+		return STATEMENT_KEYWORDS_ARTEFACTS.containsKey(s) || IKeyword.METHOD.equals(s);
 	}
 
 	/**
@@ -291,8 +292,8 @@ public class ArtefactRegistry {
 	 *            the s
 	 * @return true, if is var proto
 	 */
-	public final static boolean isVarProto(final String s) {
-		return VARIABLE_KINDS_TO_DECLARATION_PROTOTYPES.containsKey(s);
+	public final static boolean isVarArtefact(final String s) {
+		return VARIABLE_KINDS_TO_DECLARATION_ARTEFACTS.containsKey(s);
 	}
 
 	/**
@@ -303,7 +304,7 @@ public class ArtefactRegistry {
 	 * @return the omissible facet for symbol
 	 */
 	public static String getOmissibleFacetForSymbol(final String keyword) {
-		final IArtefact.Symbol md = getProto(keyword, null);
+		final IArtefact.Symbol md = getArtefact(keyword, null);
 		if (md == null) return IKeyword.NAME;
 		return md.getOmissible();
 	}
@@ -317,7 +318,7 @@ public class ArtefactRegistry {
 	 */
 	public static Set<String> getAllowedFacetsFor(final String key) {
 		if (key == null) return Collections.emptySet();
-		final IArtefact.Symbol md = getProto(key, null);
+		final IArtefact.Symbol md = getArtefact(key, null);
 		if (md == null) return Collections.emptySet();
 		return md.getPossibleFacets().keySet();
 	}
@@ -327,13 +328,13 @@ public class ArtefactRegistry {
 	 *
 	 * @return the statement protos
 	 */
-	public static Iterable<IArtefact.Symbol> getStatementProtos() {
-		if (cachedStatementProtos == null) {
-			cachedStatementProtos = Iterables.filter(
-					Iterables.concat(STATEMENT_KEYWORDS_PROTOS.values()/* , VAR_KEYWORDS_PROTOS.values() */),
+	public static Iterable<IArtefact.Symbol> getStatementArtefacts() {
+		if (cachedStatementArtefacts == null) {
+			cachedStatementArtefacts = Iterables.filter(
+					Iterables.concat(STATEMENT_KEYWORDS_ARTEFACTS.values()/* , VAR_KEYWORDS_PROTOS.values() */),
 					IArtefact.Symbol.class);
 		}
-		return cachedStatementProtos;
+		return cachedStatementArtefacts;
 	}
 
 	/**
@@ -341,12 +342,12 @@ public class ArtefactRegistry {
 	 *
 	 * @return the facets protos
 	 */
-	public static Iterable<? extends IArtefact.Facet> getFacetsProtos() {
-		if (cachedFacetsProtos == null) {
-			cachedFacetsProtos = Iterables
-					.concat(Iterables.transform(getStatementProtos(), each -> each.getPossibleFacets().values()));
+	public static Iterable<? extends IArtefact.Facet> getFacetsArtefacts() {
+		if (cachedFacetsArtefacts == null) {
+			cachedFacetsArtefacts = Iterables
+					.concat(Iterables.transform(getStatementArtefacts(), each -> each.getPossibleFacets().values()));
 		}
-		return cachedFacetsProtos;
+		return cachedFacetsArtefacts;
 	}
 
 	/**
@@ -369,14 +370,14 @@ public class ArtefactRegistry {
 	 * @param names
 	 *            the names
 	 */
-	public static void addProto(final IArtefact.Symbol md, final Iterable<String> names) {
+	public static void addArtefact(final IArtefact.Symbol md, final Iterable<String> names) {
 		final ISymbolKind kind = md.getKind();
 		// if (ISymbolKind.VARIABLES.contains(kind)) {
 		// for (final String s : names) { VAR_KEYWORDS_PROTOS.putIfAbsent(s, md); }
 		// } else {
-		for (final String s : names) { STATEMENT_KEYWORDS_PROTOS.put(s, md); }
+		for (final String s : names) { STATEMENT_KEYWORDS_ARTEFACTS.put(s, md); }
 		// }
-		VARIABLE_KINDS_TO_DECLARATION_PROTOTYPES.put(kind, md); // .. ???? ... FIX TODO
+		VARIABLE_KINDS_TO_DECLARATION_ARTEFACTS.put(kind, md); // .. ???? ... FIX TODO
 	}
 
 	/**
@@ -384,14 +385,14 @@ public class ArtefactRegistry {
 	 */
 	public static void writeStats() {
 		DEBUG.LINE();
-		DEBUG.TITLE("Artefact Proto Registry Stats");
+		DEBUG.TITLE("Artefact Registry Stats");
 		DEBUG.LINE();
-		DEBUG.LOG("Statement protos registered: " + STATEMENT_KEYWORDS_PROTOS.keySet());
-		// DEBUG.LOG("Variable protos registered: "
+		DEBUG.LOG("Statement artefacts registered: " + STATEMENT_KEYWORDS_ARTEFACTS.keySet());
+		// DEBUG.LOG("Variable artefacts registered: "
 		// + StreamEx.of(VAR_KEYWORDS_PROTOS.keySet()).sorted().collect(Collectors.toList()));
 		DEBUG.LOG("Compared to registered types: " + StreamEx.of(Iterables.toArray(Types.getTypeNames(), String.class))
 				.sorted().collect(Collectors.toList()));
-		DEBUG.LOG("Kinds protos registered: " + VARIABLE_KINDS_TO_DECLARATION_PROTOTYPES.keySet());
+		DEBUG.LOG("Kinds artefacts registered: " + VARIABLE_KINDS_TO_DECLARATION_ARTEFACTS.keySet());
 		DEBUG.LINE();
 	}
 

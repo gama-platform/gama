@@ -168,7 +168,7 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 		final String key = EGaml.getInstance().getKeyOf(s);
 		if (IKeyword.ACTION.equals(key)) return false;
 		// if (s.getBlock() != null && s.getBlock().getFunction() == null) { return false; }
-		final IArtefact.Symbol p = ArtefactRegistry.getStatementProto(key);
+		final IArtefact.Symbol p = ArtefactRegistry.getStatementArtefact(key);
 		if (p != null && p.getKind() == ISymbolKind.BATCH_METHOD) return false;
 		return true;
 	}
@@ -184,7 +184,7 @@ public class GamlOutlineTreeProvider extends BackgroundOutlineTreeProvider {
 		if (!(s instanceof S_Definition)) return false;
 		if (s instanceof S_Action) return true;
 		final String key = EGaml.getInstance().getKeyOf(s);
-		final IArtefact.Symbol p = ArtefactRegistry.getStatementProto(key);
+		final IArtefact.Symbol p = ArtefactRegistry.getStatementArtefact(key);
 		if (p != null && p.isTopLevel()) return false;
 		if (s.getKey() == null) return true;
 		return false;

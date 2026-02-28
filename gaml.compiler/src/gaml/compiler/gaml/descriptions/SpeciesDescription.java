@@ -916,7 +916,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	public IGamlDocumentation getDocumentation() {
 		final IGamlDocumentation result = new GamlRegularDocumentation();
 		documentThis(result);
-		result.append("<hr/>").append(getMeta().getDocumentation().toString());
+		result.append("<hr/>").append(getArtefact().getDocumentation().toString());
 		return result;
 	}
 

@@ -28,8 +28,8 @@ public class TypeFieldExpression extends UnaryOperator {
 	/**
 	 * Instantiates a new type field expression.
 	 *
-	 * @param proto
-	 *            the proto
+	 * @param artefact
+	 *            the artefact
 	 * @param context
 	 *            the context
 	 * @param expr

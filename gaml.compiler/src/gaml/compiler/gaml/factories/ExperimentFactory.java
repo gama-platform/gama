@@ -93,8 +93,8 @@ public class ExperimentFactory extends SpeciesFactory {
 	 *            the children
 	 * @param sd
 	 *            the sd
-	 * @param proto
-	 *            the proto
+	 * @param artefact
+	 *            the artefact
 	 * @return the experiment description
 	 */
 	@Override

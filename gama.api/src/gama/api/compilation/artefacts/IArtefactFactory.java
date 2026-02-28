@@ -160,9 +160,9 @@ public interface IArtefactFactory {
 	 *            the symbol name/keyword
 	 * @param plugin
 	 *            the plugin defining this symbol
-	 * @return a new symbol prototype
+	 * @return a new symbol artefact
 	 */
-	IArtefact.Symbol createSymbolProto(Class c, boolean isBreakable, boolean isContinuable, boolean isSequence,
+	IArtefact.Symbol createSymbolArtefact(Class c, boolean isBreakable, boolean isContinuable, boolean isSequence,
 			boolean hasArguments, ISymbolKind sKind, boolean isPrimitive, IArtefact.Facet[] fmd, String omissible,
 			String[] contextKeywords, int[] contextKinds, boolean isRemoteContext, boolean isUnique,
 			boolean name_unique, ISymbolFactory sc, String name, String plugin);
@@ -199,7 +199,7 @@ public interface IArtefactFactory {
 	 *            expected content types array
 	 * @return a new operator prototype
 	 */
-	IArtefact.Operator createOperatorProto(String name, AnnotatedElement object, IGamaGetter helper,
+	IArtefact.Operator createOperatorArtefact(String name, AnnotatedElement object, IGamaGetter helper,
 			boolean canBeConst, boolean isIterator, int returnType, Class signature, int typeProvider,
 			int contentTypeProvider, int keyTypeProvider, int[] expectedContentType);
 
@@ -241,7 +241,7 @@ public interface IArtefactFactory {
 	 *            the plugin defining this operator
 	 * @return a new operator prototype
 	 */
-	IArtefact.Operator createOperatorProto(String name, Executable method, String constantDoc, IGamaGetter helper,
+	IArtefact.Operator createOperatorArtefact(String name, Executable method, String constantDoc, IGamaGetter helper,
 			boolean canBeConst, boolean isIterator, IType rt, Signature signature, int typeProvider,
 			int contentTypeProvider, int keyTypeProvider, int contentContentTypeProvider, int[] expectedContentTypes,
 			String plugin);
@@ -272,7 +272,7 @@ public interface IArtefactFactory {
 	 *            whether expressions are evaluated in remote context
 	 * @return a new facet prototype
 	 */
-	IArtefact.Facet createFacetProto(String name, int[] types, int contentType, int keyType, String[] values,
+	IArtefact.Facet createFacetArtefact(String name, int[] types, int contentType, int keyType, String[] values,
 			boolean optional, boolean internal, boolean isRemote);
 
 }

@@ -328,10 +328,10 @@ public class GamlSyntacticConverter {
 		if (keyword == null) throw new NullPointerException(
 				"Trying to convert a statement with a null keyword. Please debug to understand the cause.");
 		keyword = convertKeyword(keyword, upper.getKeyword());
-		IArtefact.Symbol upperArtefact = ArtefactRegistry.getStatementProto(upper.getKeyword());
+		IArtefact.Symbol upperArtefact = ArtefactRegistry.getStatementArtefact(upper.getKeyword());
 		final boolean upperContainsAttributes =
 				upperArtefact != null && ISymbolKind.definesAttributes(upperArtefact.getKind());
-		final boolean isVar = stm instanceof S_Definition && !ArtefactRegistry.isStatementProto(keyword)
+		final boolean isVar = stm instanceof S_Definition && !ArtefactRegistry.isStatementArtefact(keyword)
 				&& upperContainsAttributes && !EGaml.getInstance().hasChildren(stm);
 
 		final ISyntacticElement elt =
@@ -340,7 +340,7 @@ public class GamlSyntacticConverter {
 
 		if (stm instanceof S_Assignment sa) {
 			keyword = convertAssignment(sa, keyword, elt, stm.getExpr());
-		} else if (stm instanceof S_Definition def && !ArtefactRegistry.isStatementProto(keyword)) {
+		} else if (stm instanceof S_Definition def && !ArtefactRegistry.isStatementArtefact(keyword)) {
 			// If we define a variable with this statement
 			final TypeRef t = (TypeRef) def.getTkey();
 			if (t != null) {
@@ -746,7 +746,7 @@ public class GamlSyntacticConverter {
 	 *            the elt
 	 */
 	private void convertFacets(final Statement stm, final String keyword, final ISyntacticElement elt) {
-		final IArtefact.Symbol p = ArtefactRegistry.getProto(keyword, null);
+		final IArtefact.Symbol p = ArtefactRegistry.getArtefact(keyword, null);
 		for (final Facet f : EGaml.getInstance().getFacetsOf(stm)) {
 			String fname = replaceAssignments(keyword, EGaml.getInstance().getKeyOf(f));
 			// We compute (and convert) the expression attached to the facet
@@ -805,7 +805,7 @@ public class GamlSyntacticConverter {
 	 *            the elt
 	 */
 	private void convertFacets(final StandaloneExperiment stm, final ISyntacticElement elt) {
-		final IArtefact.Symbol p = ArtefactRegistry.getProto(EXPERIMENT, null);
+		final IArtefact.Symbol p = ArtefactRegistry.getArtefact(EXPERIMENT, null);
 		for (final Facet f : EGaml.getInstance().getFacetsOf(stm)) {
 			final String fname = EGaml.getInstance().getKeyOf(f);
 

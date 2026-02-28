@@ -87,7 +87,7 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 					GamaSkillRegistry.INSTANCE.getRegisteredSkillsActions());
 
 			GamlIdiomsProvider<IArtefact> STATEMENTS =
-					new GamlIdiomsProvider<>("statements", "Statements", ArtefactRegistry.getStatementProtos());
+					new GamlIdiomsProvider<>("statements", "Statements", ArtefactRegistry.getStatementArtefacts());
 
 			GamlIdiomsProvider<IExpression> CONSTANTS =
 					new GamlIdiomsProvider<>("constant", "Constant & Units", GAML.getUnits().values());
@@ -99,7 +99,7 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 			GamlIdiomsProvider<IType<?>> TYPES = new GamlIdiomsProvider<>("types", "Types", Types.getAllTypes());
 
 			GamlIdiomsProvider<IArtefact.Facet> FACETS =
-					new GamlIdiomsProvider<>("facets", "Facets", ArtefactRegistry.getFacetsProtos());
+					new GamlIdiomsProvider<>("facets", "Facets", ArtefactRegistry.getFacetsArtefacts());
 
 			GamlIdiomsProvider<IArtefact> FIELDS =
 					new GamlIdiomsProvider<>("attributes", "Fields", Types.getAllFields());

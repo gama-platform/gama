@@ -270,7 +270,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				key = IKeyword.SPECIES_LAYER;
 			} else if (IKeyword.GRID.equals(layerName)) { key = IKeyword.GRID_LAYER; }
 		} else if (cont instanceof S_Definition sd && IKeyword.METHOD.equals(key)) { key = sd.getName(); }
-		final IArtefact.Symbol p = ArtefactRegistry.getProto(key, null);
+		final IArtefact.Symbol p = ArtefactRegistry.getArtefact(key, null);
 		if (p != null) return p.getPossibleFacets().get(facetName);
 		return null;
 	}
@@ -393,7 +393,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		String name = EGaml.getInstance().getKeyOf(type);
 		// Can happen with statements that "look like" var declarations and which are not treated specially in the
 		// grammar
-		if (ArtefactRegistry.isStatementProto(name)) return ArtefactRegistry.getStatementProto(name);
+		if (ArtefactRegistry.isStatementArtefact(name)) return ArtefactRegistry.getStatementArtefact(name);
 		if (Types.hasType(name)) return Types.get(name);
 		return null;
 	}

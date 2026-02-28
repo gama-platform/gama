@@ -176,7 +176,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 
 	/**
 	 * Cache for operator signature matching to improve performance. Stores nested cache: operator name -> (signature ->
-	 * operator proto). Config: max 1000 entries, expires after 30 minutes of no access, tracks statistics.
+	 * operator artefact). Config: max 1000 entries, expires after 30 minutes of no access, tracks statistics.
 	 */
 	private static final Cache<String, Cache<Signature, IArtefact.Operator>> operatorCache =
 			CacheBuilder.newBuilder().maximumSize(1000).expireAfterAccess(30, TimeUnit.MINUTES).recordStats().build();

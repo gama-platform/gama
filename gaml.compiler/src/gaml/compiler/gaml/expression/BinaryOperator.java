@@ -38,8 +38,8 @@ public class BinaryOperator extends AbstractNAryOperator {
 	/**
 	 * Creates the.
 	 *
-	 * @param proto
-	 *            the proto
+	 * @param artefact
+	 *            the artefact
 	 * @param context
 	 *            the context
 	 * @param child
@@ -102,8 +102,8 @@ public class BinaryOperator extends AbstractNAryOperator {
 	/**
 	 * Instantiates a new binary operator.
 	 *
-	 * @param proto
-	 *            the proto
+	 * @param artefact
+	 *            the artefact
 	 * @param context
 	 *            the context
 	 * @param args
@@ -121,7 +121,7 @@ public class BinaryOperator extends AbstractNAryOperator {
 		if ("internal_at".equals(name)) {
 			// '[' and ']' included
 			sb.append(exprs[0].serializeToGaml(includingBuiltIn)).append(exprs[1].serializeToGaml(includingBuiltIn));
-		} else if (ArtefactRegistry.BINARY_PROTO_NAMES.contains(name)) {
+		} else if (ArtefactRegistry.BINARY_ARTEFACTS_NAMES.contains(name)) {
 			parenthesize(sb, exprs[0]);
 			sb.append(' ').append(name).append(' ');
 			parenthesize(sb, exprs[1]);
@@ -140,7 +140,7 @@ public class BinaryOperator extends AbstractNAryOperator {
 	public boolean shouldBeParenthesized() {
 		final String s = getName();
 		if (".".equals(s) || ":".equals(s)) return false;
-		return ArtefactRegistry.BINARY_PROTO_NAMES.contains(getName());
+		return ArtefactRegistry.BINARY_ARTEFACTS_NAMES.contains(getName());
 	}
 
 	@Override
@@ -177,8 +177,8 @@ public class BinaryOperator extends AbstractNAryOperator {
 		/**
 		 * Instantiates a new binary var operator.
 		 *
-		 * @param proto
-		 *            the proto
+		 * @param artefact
+		 *            the artefact
 		 * @param context
 		 *            the context
 		 * @param target

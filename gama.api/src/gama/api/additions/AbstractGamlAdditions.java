@@ -310,8 +310,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	protected void _symbol(final String[] names, final Class c, final int sKind, final boolean isBreakable,
 			final boolean isContinuable, final boolean isRemoteContext, final boolean hasArguments, final boolean scope,
 			final boolean isSequence, final boolean isUnique, final boolean name_unique, final String[] contextKeywords,
-			final int[] contextKinds, final IArtefact.Facet[] fmd, final String omissible,
-			final ISymbolFactory sc) {
+			final int[] contextKinds, final IArtefact.Facet[] fmd, final String omissible, final ISymbolFactory sc) {
 		final Collection<String> keywords;
 		ISymbolKind kind = ISymbolKind.get(sKind);
 		if (ISymbolKind.VARIABLES.contains(kind)) {
@@ -320,11 +319,11 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 		} else {
 			keywords = Arrays.asList(names);
 		}
-		final IArtefact.Symbol md = GAML.getArtefactProtoFactory().createSymbolProto(c, isBreakable, isContinuable,
+		final IArtefact.Symbol md = GAML.getArtefactProtoFactory().createSymbolArtefact(c, isBreakable, isContinuable,
 				isSequence, hasArguments, kind, !scope, fmd, omissible, contextKeywords, contextKinds, isRemoteContext,
 				isUnique, name_unique, sc, names == null || names.length == 0 ? "variable declaration" : names[0],
 				CURRENT_PLUGIN_NAME);
-		ArtefactRegistry.addProto(md, keywords);
+		ArtefactRegistry.addArtefact(md, keywords);
 	}
 
 	/**
@@ -364,7 +363,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 		for (final String kw : keywords) {
 			if (GAML.canRegisterOperator(kw, signature)) {
 				boolean isField = nbParam == 2 && (OF.equals(kw) || _DOT.equals(kw)) && signature.get(0).isAgentType();
-				GAML.registerOperator(GAML.getArtefactProtoFactory().createOperatorProto(kw, method,
+				GAML.registerOperator(GAML.getArtefactProtoFactory().createOperatorArtefact(kw, method,
 						isField ? null : doc, helper, c, isField, rt, signature, t, content, index, contentContentType,
 						expectedContentTypes, plugin));
 			}
@@ -462,7 +461,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 */
 	protected IArtefact.Facet _facet(final String name, final int[] types, final int ct, final int kt,
 			final String[] values, final boolean optional, final boolean internal, final boolean isRemote) {
-		return GAML.getArtefactProtoFactory().createFacetProto(name, types, ct, kt, values, optional, internal,
+		return GAML.getArtefactProtoFactory().createFacetArtefact(name, types, ct, kt, values, optional, internal,
 				isRemote);
 	}
 
@@ -476,7 +475,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 */
 	protected void _field(final Class clazz, final String name, final IGamaGetter helper, final int returnType,
 			final Class signature, final int typeProvider, final int contentTypeProvider, final int keyTypeProvider) {
-		IArtefact proto = GAML.getArtefactProtoFactory().createOperatorProto(name, null, helper, false, true,
+		IArtefact proto = GAML.getArtefactProtoFactory().createOperatorArtefact(name, null, helper, false, true,
 				returnType, signature, typeProvider, contentTypeProvider, keyTypeProvider, AI);
 		GAML.addField(clazz, proto);
 	}

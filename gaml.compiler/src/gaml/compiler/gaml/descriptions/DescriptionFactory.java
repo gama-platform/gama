@@ -218,7 +218,7 @@ public class DescriptionFactory implements IDescriptionFactory {
 	 * @return the factory
 	 */
 	private ISymbolDescriptionFactory getFactory(final String keyword) {
-		final IArtefact.Symbol p = ArtefactRegistry.getProto(keyword, null);
+		final IArtefact.Symbol p = ArtefactRegistry.getArtefact(keyword, null);
 		if (p != null) return getFactory(p.getKind());
 		return null;
 	}
@@ -485,10 +485,10 @@ public class DescriptionFactory implements IDescriptionFactory {
 			final Iterable<IDescription> cp) {
 		if (source == null) return null;
 		final String keyword = source.getKeyword();
-		IArtefact.Symbol md = ArtefactRegistry.getProto(keyword, superDesc);
+		IArtefact.Symbol md = ArtefactRegistry.getArtefact(keyword, superDesc);
 		if (md == null) {
 			if (superDesc == null) throw new RuntimeException("Description of " + keyword + " cannot be built");
-			md = ArtefactRegistry.getProto(keyword, superDesc);
+			md = ArtefactRegistry.getArtefact(keyword, superDesc);
 			superDesc.error("Unknown statement " + keyword, IGamlIssue.UNKNOWN_KEYWORD, source.getElement(), keyword);
 			return null;
 		}

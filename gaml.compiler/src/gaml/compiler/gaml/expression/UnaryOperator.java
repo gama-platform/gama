@@ -55,8 +55,8 @@ public class UnaryOperator extends AbstractExpression implements IOperator {
 	/**
 	 * Creates the.
 	 *
-	 * @param proto
-	 *            the proto
+	 * @param artefact
+	 *            the artefact
 	 * @param context
 	 *            the context
 	 * @param child
@@ -77,8 +77,8 @@ public class UnaryOperator extends AbstractExpression implements IOperator {
 	/**
 	 * Instantiates a new unary operator.
 	 *
-	 * @param proto
-	 *            the proto
+	 * @param artefact
+	 *            the artefact
 	 * @param context
 	 *            the context
 	 * @param child

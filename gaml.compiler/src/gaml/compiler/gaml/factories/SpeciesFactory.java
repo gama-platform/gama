@@ -66,8 +66,8 @@ public class SpeciesFactory implements ISymbolDescriptionFactory.Species {
 	 *            the children
 	 * @param sd
 	 *            the sd
-	 * @param proto
-	 *            the proto
+	 * @param artefact
+	 *            the artefact
 	 * @return the type description
 	 */
 	@Override

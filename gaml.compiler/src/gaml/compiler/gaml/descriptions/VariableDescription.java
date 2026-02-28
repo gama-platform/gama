@@ -378,7 +378,7 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 		if (isBuiltIn()) return new GamlConstantDocumentation(doc == null ? "Not yet documented" : doc);
 		StringBuilder s = new StringBuilder();
 		if (doc != null) { s.append(doc).append("<br/>"); }
-		IGamlDocumentation result = new GamlRegularDocumentation(s).append(getMeta().getDocumentation().toString());
+		IGamlDocumentation result = new GamlRegularDocumentation(s).append(getArtefact().getDocumentation().toString());
 		result.append("<hr/>").append("<b><p>").append(getGamlType().getTitle()).append("</p></b>").append("<br/>")
 				.append(getGamlType().getDocumentation().toString());
 		return result;

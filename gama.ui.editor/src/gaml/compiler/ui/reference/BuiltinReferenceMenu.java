@@ -164,7 +164,7 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 	}
 
 	/**
-	 * Fill proto sub menu.
+	 * Fill artefact sub menu.
 	 *
 	 * @param menu
 	 *            the menu
@@ -184,7 +184,7 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 	}
 
 	/**
-	 * Fill proto sub menu.
+	 * Fill artefact sub menu.
 	 *
 	 * @param menu
 	 *            the menu
