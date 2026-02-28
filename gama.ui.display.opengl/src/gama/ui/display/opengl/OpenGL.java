@@ -118,6 +118,10 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	private int batchStyle = -1;
 	private int vertexCount = 0;
 
+		private int[] batchVbos = new int[3];
+	private int[] batchVao = new int[1];
+	private boolean vbosInitialized = false;
+
 	public void initializeShaders() {
 		try {
 			if (currentShader == null && gl.isGL3()) {
@@ -125,6 +129,12 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 				currentShader.createVertexShader(gl.getGL3(), gama.ui.display.opengl.renderer.shaders.BasicShaders.VERTEX_SHADER);
 				currentShader.createFragmentShader(gl.getGL3(), gama.ui.display.opengl.renderer.shaders.BasicShaders.FRAGMENT_SHADER);
 				currentShader.link(gl.getGL3());
+
+				gl.getGL3().glGenVertexArrays(1, batchVao, 0);
+				gl.getGL3().glBindVertexArray(batchVao[0]);
+				gl.getGL3().glGenBuffers(3, batchVbos, 0);
+				gl.getGL3().glBindVertexArray(0);
+				vbosInitialized = true;
 			}
 		} catch(Exception e) { e.printStackTrace(); }
 	}
@@ -141,20 +151,19 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		colorBuffer.flip();
 		texCoordBuffer.flip();
 
-		int[] vbos = new int[3];
-		gl.getGL3().glGenBuffers(3, vbos, 0);
-
-		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[0]);
+		if (!vbosInitialized) return;
+		gl.getGL3().glBindVertexArray(batchVao[0]);
+		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[0]);
 		gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vertexBuffer.limit() * 4, vertexBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
 		gl.getGL3().glEnableVertexAttribArray(0);
 		gl.getGL3().glVertexAttribPointer(0, 3, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
 
-		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[1]);
+		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[1]);
 		gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, colorBuffer.limit() * 4, colorBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
 		gl.getGL3().glEnableVertexAttribArray(1);
 		gl.getGL3().glVertexAttribPointer(1, 4, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
 
-		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[2]);
+		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[2]);
 		gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, texCoordBuffer.limit() * 4, texCoordBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
 		gl.getGL3().glEnableVertexAttribArray(2);
 		gl.getGL3().glVertexAttribPointer(2, 2, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
@@ -182,7 +191,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		gl.getGL3().glDisableVertexAttribArray(2);
 
 		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, 0);
-		gl.getGL3().glDeleteBuffers(3, vbos, 0);
+
+		gl.getGL3().glBindVertexArray(0);
 
 		vertexBuffer.clear();
 		colorBuffer.clear();
@@ -420,7 +430,10 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param gl2
 	 *            the new gl2
 	 */
-	public void setGL2(final GL2 gl2) { this.gl = gl2; }
+		public void setGL2(final GL2 gl2) {
+		this.gl = gl2;
+		initializeShaders();
+	}
 
 	/**
 	 * Gets the glut.
@@ -787,14 +800,19 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	public void beginDrawing(final int style) {
 		gl.glBegin(style);
 		this.isBatching = true;
+		// If style changes mid-batch, we must flush the previous style first
+		if (this.batchStyle != -1 && this.batchStyle != style) {
+			flushBatcherIfActive();
+		}
 		this.batchStyle = style;
-		this.vertexCount = 0;
-		this.vertexBuffer.clear();
-		this.colorBuffer.clear();
-		this.texCoordBuffer.clear();
 	}
 
 	@Override
+
+	public void flushBatcherIfActive() {
+		if (vertexCount > 0) flushBatcher();
+	}
+
 	public void endDrawing() {
 		gl.glEnd();
 		if (isBatching) {
