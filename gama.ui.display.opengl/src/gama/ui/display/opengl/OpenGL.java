@@ -84,6 +84,23 @@ import jogamp.opengl.glu.tessellator.GLUtessellatorImpl;
  */
 public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
+	private java.util.Stack<org.joml.Matrix4d> getActiveStack() {
+		return currentMatrixMode == com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION ? projectionStack : modelViewStack;
+	}
+
+	private org.joml.Matrix4d getActiveMatrix() {
+		return currentMatrixMode == com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION ? currentProjection : currentModelView;
+	}
+
+	private void setActiveMatrix(org.joml.Matrix4d matrix) {
+		if (currentMatrixMode == com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION) {
+			currentProjection = matrix;
+		} else {
+			currentModelView = matrix;
+		}
+	}
+
+
 	// JOML Matrices
 	private java.util.Stack<org.joml.Matrix4d> modelViewStack = new java.util.Stack<>();
 	private java.util.Stack<org.joml.Matrix4d> projectionStack = new java.util.Stack<>();
@@ -686,11 +703,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void pushMatrix() {
 		gl.glPushMatrix();
-		if (currentMatrixMode == GLMatrixFunc.GL_PROJECTION) {
-			projectionStack.push(new Matrix4d(currentProjection));
-		} else {
-			modelViewStack.push(new Matrix4d(currentModelView));
-		}
+		getActiveStack().push(new org.joml.Matrix4d(getActiveMatrix()));
 	}
 
 	/**
@@ -698,10 +711,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void popMatrix() {
 		gl.glPopMatrix();
-		if (currentMatrixMode == GLMatrixFunc.GL_PROJECTION) {
-			if (!projectionStack.isEmpty()) currentProjection = projectionStack.pop();
-		} else {
-			if (!modelViewStack.isEmpty()) currentModelView = modelViewStack.pop();
+		java.util.Stack<org.joml.Matrix4d> stack = getActiveStack();
+		if (!stack.isEmpty()) {
+			setActiveMatrix(stack.pop());
 		}
 	}
 
@@ -714,11 +726,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	private void resetMatrix(final int mode) {
 		matrixMode(mode);
 		gl.glLoadIdentity();
-		if (mode == GLMatrixFunc.GL_PROJECTION) {
-			currentProjection.identity();
-		} else {
-			currentModelView.identity();
-		}
+		getActiveMatrix().identity();
 	}
 
 	/**
@@ -819,11 +827,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void translateBy(final double x, final double y, final double z) {
 		gl.glTranslated(x, y, z);
-		if (currentMatrixMode == GLMatrixFunc.GL_PROJECTION) {
-			currentProjection.translate(x, y, z);
-		} else {
-			currentModelView.translate(x, y, z);
-		}
+		getActiveMatrix().translate(x, y, z);
 	}
 
 	/**
@@ -870,15 +874,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the z
 	 */
 	public void rotateBy(final double angle, double x, double y, double z) {
-		if (x == 0 && y == 0 && z == 0) {
-			z = 1;
-		}
+		if (x == 0 && y == 0 && z == 0) { z = 1; }
 		gl.glRotated(angle, x, y, z);
-		if (currentMatrixMode == GLMatrixFunc.GL_PROJECTION) {
-			currentProjection.rotate(Math.toRadians(angle), x, y, z);
-		} else {
-			currentModelView.rotate(Math.toRadians(angle), x, y, z);
-		}
+		getActiveMatrix().rotate(Math.toRadians(angle), x, y, z);
 	}
 
 	/**
@@ -905,11 +903,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void scaleBy(final double x, final double y, final double z) {
 		gl.glScaled(x, y, z);
-		if (currentMatrixMode == GLMatrixFunc.GL_PROJECTION) {
-			currentProjection.scale(x, y, z);
-		} else {
-			currentModelView.scale(x, y, z);
-		}
+		getActiveMatrix().scale(x, y, z);
 	}
 
 	/**
