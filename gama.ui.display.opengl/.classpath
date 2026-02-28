@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry exported="true" kind="lib" path="libs/jogl 2.6.0/gluegen-rt.jar"/>
@@ -21,4 +20,5 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
+	<classpathentry exported="true" kind="lib" path="libs/joml/joml-1.10.5.jar"/>
 </classpath>

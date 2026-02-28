@@ -20,6 +20,11 @@ import org.locationtech.jts.geom.Polygon;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
+import java.util.Stack;
+import java.nio.FloatBuffer;
+import org.joml.Matrix4d;
+import gama.ui.display.opengl.renderer.shaders.ShaderProgram;
+
 import com.jogamp.opengl.GL2ES1;
 import com.jogamp.opengl.GL2ES3;
 import com.jogamp.opengl.GL2GL3;
@@ -78,6 +83,96 @@ import jogamp.opengl.glu.tessellator.GLUtessellatorImpl;
  *
  */
 public class OpenGL extends AbstractRendererHelper implements ITesselator {
+
+	// JOML Matrices
+	private java.util.Stack<org.joml.Matrix4d> modelViewStack = new java.util.Stack<>();
+	private java.util.Stack<org.joml.Matrix4d> projectionStack = new java.util.Stack<>();
+	private org.joml.Matrix4d currentModelView = new org.joml.Matrix4d();
+	private org.joml.Matrix4d currentProjection = new org.joml.Matrix4d();
+	private int currentMatrixMode = com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
+	private gama.ui.display.opengl.renderer.shaders.ShaderProgram currentShader;
+
+	// VBO Batcher Fields for Immediate Mode Emulation
+	private java.nio.FloatBuffer vertexBuffer = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(30000);
+	private java.nio.FloatBuffer colorBuffer = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(40000);
+	private java.nio.FloatBuffer texCoordBuffer = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(20000);
+
+	private boolean isBatching = false;
+	private int batchStyle = -1;
+	private int vertexCount = 0;
+
+	public void initializeShaders() {
+		try {
+			if (currentShader == null && gl.isGL3()) {
+				currentShader = new gama.ui.display.opengl.renderer.shaders.ShaderProgram(gl.getGL3());
+				currentShader.createVertexShader(gl.getGL3(), gama.ui.display.opengl.renderer.shaders.BasicShaders.VERTEX_SHADER);
+				currentShader.createFragmentShader(gl.getGL3(), gama.ui.display.opengl.renderer.shaders.BasicShaders.FRAGMENT_SHADER);
+				currentShader.link(gl.getGL3());
+			}
+		} catch(Exception e) { e.printStackTrace(); }
+	}
+	private float currentU = 0.0f;
+	private float currentV = 0.0f;
+	private float currentRed = 1.0f;
+	private float currentGreen = 1.0f;
+	private float currentBlue = 1.0f;
+	private float currentAlpha = 1.0f;
+
+	private void flushBatcher() {
+		if (vertexCount == 0 || currentShader == null) return;
+		vertexBuffer.flip();
+		colorBuffer.flip();
+		texCoordBuffer.flip();
+
+		int[] vbos = new int[3];
+		gl.getGL3().glGenBuffers(3, vbos, 0);
+
+		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[0]);
+		gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vertexBuffer.limit() * 4, vertexBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
+		gl.getGL3().glEnableVertexAttribArray(0);
+		gl.getGL3().glVertexAttribPointer(0, 3, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+
+		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[1]);
+		gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, colorBuffer.limit() * 4, colorBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
+		gl.getGL3().glEnableVertexAttribArray(1);
+		gl.getGL3().glVertexAttribPointer(1, 4, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+
+		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[2]);
+		gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, texCoordBuffer.limit() * 4, texCoordBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
+		gl.getGL3().glEnableVertexAttribArray(2);
+		gl.getGL3().glVertexAttribPointer(2, 2, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+
+		try {
+			currentShader.bind((com.jogamp.opengl.GL3)gl);
+			int projLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL3)gl, "projection");
+			int mvLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL3)gl, "modelView");
+
+			org.joml.Matrix4f projF = new org.joml.Matrix4f(currentProjection);
+			org.joml.Matrix4f mvF = new org.joml.Matrix4f(currentModelView);
+
+			currentShader.setUniform((com.jogamp.opengl.GL3)gl, projLoc, projF);
+			currentShader.setUniform((com.jogamp.opengl.GL3)gl, mvLoc, mvF);
+
+			gl.getGL3().glDrawArrays(batchStyle, 0, vertexCount);
+
+			currentShader.unbind((com.jogamp.opengl.GL3)gl);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+		gl.getGL3().glDisableVertexAttribArray(0);
+		gl.getGL3().glDisableVertexAttribArray(1);
+		gl.getGL3().glDisableVertexAttribArray(2);
+
+		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, 0);
+		gl.getGL3().glDeleteBuffers(3, vbos, 0);
+
+		vertexBuffer.clear();
+		colorBuffer.clear();
+		texCoordBuffer.clear();
+		vertexCount = 0;
+	}
+
 
 	static {
 		DEBUG.OFF();
@@ -583,6 +678,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void matrixMode(final int mode) {
 		gl.glMatrixMode(mode);
+		this.currentMatrixMode = mode;
 	}
 
 	/**
@@ -590,6 +686,11 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void pushMatrix() {
 		gl.glPushMatrix();
+		if (currentMatrixMode == GLMatrixFunc.GL_PROJECTION) {
+			projectionStack.push(new Matrix4d(currentProjection));
+		} else {
+			modelViewStack.push(new Matrix4d(currentModelView));
+		}
 	}
 
 	/**
@@ -597,6 +698,11 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void popMatrix() {
 		gl.glPopMatrix();
+		if (currentMatrixMode == GLMatrixFunc.GL_PROJECTION) {
+			if (!projectionStack.isEmpty()) currentProjection = projectionStack.pop();
+		} else {
+			if (!modelViewStack.isEmpty()) currentModelView = modelViewStack.pop();
+		}
 	}
 
 	/**
@@ -608,6 +714,11 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	private void resetMatrix(final int mode) {
 		matrixMode(mode);
 		gl.glLoadIdentity();
+		if (mode == GLMatrixFunc.GL_PROJECTION) {
+			currentProjection.identity();
+		} else {
+			currentModelView.identity();
+		}
 	}
 
 	/**
@@ -667,11 +778,23 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	@Override
 	public void beginDrawing(final int style) {
 		gl.glBegin(style);
+		this.isBatching = true;
+		this.batchStyle = style;
+		this.vertexCount = 0;
+		this.vertexBuffer.clear();
+		this.colorBuffer.clear();
+		this.texCoordBuffer.clear();
 	}
 
 	@Override
 	public void endDrawing() {
 		gl.glEnd();
+		if (isBatching) {
+			// Actually do NOT flush batcher here unless we specifically skip the fixed function code.
+			// Currently this is acting as a dual-dispatch for migration purposes.
+			// flushBatcher();
+			isBatching = false;
+		}
 	}
 
 	/**
@@ -696,6 +819,11 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void translateBy(final double x, final double y, final double z) {
 		gl.glTranslated(x, y, z);
+		if (currentMatrixMode == GLMatrixFunc.GL_PROJECTION) {
+			currentProjection.translate(x, y, z);
+		} else {
+			currentModelView.translate(x, y, z);
+		}
 	}
 
 	/**
@@ -741,11 +869,15 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param z
 	 *            the z
 	 */
-	public void rotateBy(final double angle, final double x, final double y, final double z) {
-		if (x == 0d && y == 0d && z == 0d) {
-			gl.glRotated(angle, 0, 0, 1);
+	public void rotateBy(final double angle, double x, double y, double z) {
+		if (x == 0 && y == 0 && z == 0) {
+			z = 1;
+		}
+		gl.glRotated(angle, x, y, z);
+		if (currentMatrixMode == GLMatrixFunc.GL_PROJECTION) {
+			currentProjection.rotate(Math.toRadians(angle), x, y, z);
 		} else {
-			gl.glRotated(angle, x, y, z);
+			currentModelView.rotate(Math.toRadians(angle), x, y, z);
 		}
 	}
 
@@ -772,8 +904,12 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the z
 	 */
 	public void scaleBy(final double x, final double y, final double z) {
-		// currentScale.setLocation(x, y, z);
 		gl.glScaled(x, y, z);
+		if (currentMatrixMode == GLMatrixFunc.GL_PROJECTION) {
+			currentProjection.scale(x, y, z);
+		} else {
+			currentModelView.scale(x, y, z);
+		}
 	}
 
 	/**
@@ -892,18 +1028,31 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void outputVertex(final double x, final double y, final double z) {
 		gl.glVertex3d(x, y, z + currentZTranslation);
-	}
+		if (isBatching) {
+			if (vertexBuffer.remaining() < 3) {
+				// Reallocate buffers instead of flushing mid-primitive to prevent tearing
+				int newCap = vertexBuffer.capacity() * 2;
 
-	/**
-	 * Output tex coord.
-	 *
-	 * @param u
-	 *            the u
-	 * @param v
-	 *            the v
-	 */
-	public void outputTexCoord(final double u, final double v) {
-		gl.glTexCoord2d(u, v);
+				java.nio.FloatBuffer newVB = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(newCap);
+				vertexBuffer.flip();
+				newVB.put(vertexBuffer);
+				vertexBuffer = newVB;
+
+				java.nio.FloatBuffer newCB = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(newCap / 3 * 4);
+				colorBuffer.flip();
+				newCB.put(colorBuffer);
+				colorBuffer = newCB;
+
+				java.nio.FloatBuffer newTB = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(newCap / 3 * 2);
+				texCoordBuffer.flip();
+				newTB.put(texCoordBuffer);
+				texCoordBuffer = newTB;
+			}
+			vertexBuffer.put((float)x).put((float)y).put((float)(z + currentZTranslation));
+			colorBuffer.put((float)currentRed).put((float)currentGreen).put((float)currentBlue).put((float)currentAlpha);
+			texCoordBuffer.put(currentU).put(currentV);
+			vertexCount++;
+		}
 	}
 
 	/**
@@ -916,6 +1065,22 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param z
 	 *            the z
 	 */
+
+	/**
+	 * Output tex coord.
+	 *
+	 * @param u
+	 *            the u
+	 * @param v
+	 *            the v
+	 */
+	public void outputTexCoord(final double u, final double v) {
+		gl.glTexCoord2d(u, v);
+		this.currentU = (float)u;
+		this.currentV = (float)v;
+	}
+
+
 	public void outputNormal(final double x, final double y, final double z) {
 		currentNormal.setLocation(x, y, z);
 		gl.glNormal3d(x, y, z);
