@@ -112,13 +112,14 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	// VBO Batcher Fields for Immediate Mode Emulation
 	private java.nio.FloatBuffer vertexBuffer = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(30000);
 	private java.nio.FloatBuffer colorBuffer = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(40000);
+	private java.nio.FloatBuffer normalBuffer = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(30000);
 	private java.nio.FloatBuffer texCoordBuffer = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(20000);
 
 	private boolean isBatching = false;
 	private int batchStyle = -1;
 	private int vertexCount = 0;
 
-		private int[] batchVbos = new int[3];
+		private int[] batchVbos = new int[4];
 	private int[] batchVao = new int[1];
 	private boolean vbosInitialized = false;
 
@@ -132,7 +133,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 				gl.getGL3().glGenVertexArrays(1, batchVao, 0);
 				gl.getGL3().glBindVertexArray(batchVao[0]);
-				gl.getGL3().glGenBuffers(3, batchVbos, 0);
+				gl.getGL3().glGenBuffers(4, batchVbos, 0);
 				gl.getGL3().glBindVertexArray(0);
 				vbosInitialized = true;
 			}
@@ -140,6 +141,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	}
 	private float currentU = 0.0f;
 	private float currentV = 0.0f;
+	private float currentNx = 0.0f;
+	private float currentNy = 0.0f;
+	private float currentNz = 1.0f;
 	private float currentRed = 1.0f;
 	private float currentGreen = 1.0f;
 	private float currentBlue = 1.0f;
@@ -163,10 +167,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		gl.getGL3().glEnableVertexAttribArray(1);
 		gl.getGL3().glVertexAttribPointer(1, 4, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
 
-		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[2]);
+				gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[2]);
 		gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, texCoordBuffer.limit() * 4, texCoordBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
 		gl.getGL3().glEnableVertexAttribArray(2);
 		gl.getGL3().glVertexAttribPointer(2, 2, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+
+		normalBuffer.flip();
+		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[3]);
+		gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, normalBuffer.limit() * 4, normalBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
+		gl.getGL3().glEnableVertexAttribArray(3);
+		gl.getGL3().glVertexAttribPointer(3, 3, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
 
 		try {
 			currentShader.bind((com.jogamp.opengl.GL3)gl);
@@ -189,6 +199,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		gl.getGL3().glDisableVertexAttribArray(0);
 		gl.getGL3().glDisableVertexAttribArray(1);
 		gl.getGL3().glDisableVertexAttribArray(2);
+		gl.getGL3().glDisableVertexAttribArray(3);
 
 		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, 0);
 
@@ -197,6 +208,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		vertexBuffer.clear();
 		colorBuffer.clear();
 		texCoordBuffer.clear();
+		normalBuffer.clear();
 		vertexCount = 0;
 	}
 
@@ -798,12 +810,18 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	@Override
 	public void beginDrawing(final int style) {
-		gl.glBegin(style);
-		this.isBatching = true;
-		// If style changes mid-batch, we must flush the previous style first
-		if (this.batchStyle != -1 && this.batchStyle != style) {
-			flushBatcherIfActive();
+		if (!isCompilingStaticList) {
+			gl.glBegin(style);
+			if (this.batchStyle != -1 && this.batchStyle != style) {
+				flushBatcherIfActive();
+			}
+		} else {
+			if (currentListCommands != null && vertexCount > currentListOffset) {
+				currentListCommands.add(new DrawCommand(this.batchStyle, currentListOffset, vertexCount - currentListOffset));
+				currentListOffset = vertexCount;
+			}
 		}
+		this.isBatching = true;
 		this.batchStyle = style;
 	}
 
@@ -814,12 +832,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	}
 
 	public void endDrawing() {
-		gl.glEnd();
-		if (isBatching) {
-			// Actually do NOT flush batcher here unless we specifically skip the fixed function code.
-			// Currently this is acting as a dual-dispatch for migration purposes.
-			// flushBatcher();
-			isBatching = false;
+		if (!isCompilingStaticList) {
+			gl.glEnd();
+			if (isBatching) {
+				isBatching = false;
+			}
+		} else {
+			if (currentListCommands != null && vertexCount > currentListOffset) {
+				currentListCommands.add(new DrawCommand(this.batchStyle, currentListOffset, vertexCount - currentListOffset));
+				currentListOffset = vertexCount;
+			}
 		}
 	}
 
@@ -1057,6 +1079,11 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		texCoordBuffer.flip();
 		newTB.put(texCoordBuffer);
 		texCoordBuffer = newTB;
+
+		java.nio.FloatBuffer newNB = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(newCap);
+		normalBuffer.flip();
+		newNB.put(normalBuffer);
+		normalBuffer = newNB;
 	}
 
 	public void outputVertex(final double x, final double y, final double z) {
@@ -1067,6 +1094,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		vertexBuffer.put((float)x).put((float)y).put((float)(z + currentZTranslation));
 		colorBuffer.put((float)currentRed).put((float)currentGreen).put((float)currentBlue).put((float)currentAlpha);
 		texCoordBuffer.put(currentU).put(currentV);
+		normalBuffer.put(currentNx).put(currentNy).put(currentNz);
 		vertexCount++;
 	}
 
@@ -1568,13 +1596,111 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the r
 	 * @return the int
 	 */
-	public int compileAsList(final Runnable r) {
-		final int index = gl.glGenLists(1);
-		gl.glNewList(index, GL2.GL_COMPILE);
-		r.run();
-		gl.glEndList();
-		return index;
+
+
+	private static class DrawCommand {
+		int style;
+		int offset;
+		int count;
+		public DrawCommand(int style, int offset, int count) {
+			this.style = style; this.offset = offset; this.count = count;
+		}
 	}
+
+	private static class StaticVAO {
+		int vaoId;
+		java.util.List<DrawCommand> commands;
+		public StaticVAO(int vaoId, java.util.List<DrawCommand> commands) {
+			this.vaoId = vaoId; this.commands = commands;
+		}
+	}
+
+	private java.util.Map<Integer, StaticVAO> staticVAOs = new java.util.HashMap<>();
+	private java.util.List<DrawCommand> currentListCommands = null;
+	private int currentListOffset = 0;
+
+	private int staticListCounter = 10000; // Start high to avoid collision with real lists if they happen
+	private boolean isCompilingStaticList = false;
+
+		public int compileAsList(final Runnable r) {
+		if (gl.isGL3()) {
+			isCompilingStaticList = true;
+			isBatching = true;
+			vertexCount = 0;
+			currentListOffset = 0;
+			currentListCommands = new java.util.ArrayList<>();
+			vertexBuffer.clear();
+			colorBuffer.clear();
+			texCoordBuffer.clear();
+			normalBuffer.clear();
+
+			r.run();
+
+			if (currentListCommands != null && vertexCount > currentListOffset) {
+				currentListCommands.add(new DrawCommand(this.batchStyle, currentListOffset, vertexCount - currentListOffset));
+				currentListOffset = vertexCount;
+			}
+
+			int id = staticListCounter++;
+			if (vertexCount > 0) {
+				int[] vao = new int[1];
+				gl.getGL3().glGenVertexArrays(1, vao, 0);
+				gl.getGL3().glBindVertexArray(vao[0]);
+
+				int[] vbos = new int[4];
+				gl.getGL3().glGenBuffers(4, vbos, 0);
+
+				vertexBuffer.flip();
+				gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[0]);
+				gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vertexBuffer.limit() * 4, vertexBuffer, com.jogamp.opengl.GL.GL_STATIC_DRAW);
+				gl.getGL3().glEnableVertexAttribArray(0);
+				gl.getGL3().glVertexAttribPointer(0, 3, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+
+				colorBuffer.flip();
+				gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[1]);
+				gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, colorBuffer.limit() * 4, colorBuffer, com.jogamp.opengl.GL.GL_STATIC_DRAW);
+				gl.getGL3().glEnableVertexAttribArray(1);
+				gl.getGL3().glVertexAttribPointer(1, 4, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+
+				texCoordBuffer.flip();
+				gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[2]);
+				gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, texCoordBuffer.limit() * 4, texCoordBuffer, com.jogamp.opengl.GL.GL_STATIC_DRAW);
+				gl.getGL3().glEnableVertexAttribArray(2);
+				gl.getGL3().glVertexAttribPointer(2, 2, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+
+				normalBuffer.flip();
+				gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[3]);
+				gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, normalBuffer.limit() * 4, normalBuffer, com.jogamp.opengl.GL.GL_STATIC_DRAW);
+				gl.getGL3().glEnableVertexAttribArray(3);
+				gl.getGL3().glVertexAttribPointer(3, 3, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+
+				gl.getGL3().glBindVertexArray(0);
+				gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, 0);
+
+				staticVAOs.put(id, new StaticVAO(vao[0], currentListCommands));
+			} else {
+				staticVAOs.put(id, null);
+			}
+
+			isCompilingStaticList = false;
+			isBatching = false;
+			currentListCommands = null;
+			currentListOffset = 0;
+			vertexCount = 0;
+			vertexBuffer.clear();
+			colorBuffer.clear();
+			texCoordBuffer.clear();
+			normalBuffer.clear();
+			return id;
+		} else {
+			final int index = gl.glGenLists(1);
+			gl.glNewList(index, GL2.GL_COMPILE);
+			r.run();
+			gl.glEndList();
+			return index;
+		}
+	}
+
 
 	/**
 	 * Draw list.
@@ -1582,8 +1708,33 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param i
 	 *            the i
 	 */
-	public void drawList(final int i) {
-		gl.glCallList(i);
+		public void drawList(final int i) {
+		if (gl.isGL3()) {
+			StaticVAO data = staticVAOs.get(i);
+			if (data != null && currentShader != null) {
+				currentShader.bind((com.jogamp.opengl.GL3)gl);
+				gl.getGL3().glBindVertexArray(data.vaoId);
+
+				int projLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL3)gl, "projection");
+				int mvLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL3)gl, "modelView");
+				int colorLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL3)gl, "globalColor");
+				int texLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL3)gl, "useTexture");
+
+				currentShader.setUniform((com.jogamp.opengl.GL3)gl, projLoc, new org.joml.Matrix4f(currentProjection));
+				currentShader.setUniform((com.jogamp.opengl.GL3)gl, mvLoc, new org.joml.Matrix4f(currentModelView));
+				if (colorLoc >= 0) currentShader.setUniform((com.jogamp.opengl.GL3)gl, colorLoc, new org.joml.Vector4f(1.0f, 1.0f, 1.0f, (float)getCurrentObjectAlpha()));
+				if (texLoc >= 0) currentShader.setUniform((com.jogamp.opengl.GL3)gl, texLoc, isTextured() ? 1 : 0);
+
+				for (DrawCommand cmd : data.commands) {
+					gl.getGL3().glDrawArrays(cmd.style, cmd.offset, cmd.count);
+				}
+
+				gl.getGL3().glBindVertexArray(0);
+				currentShader.unbind((com.jogamp.opengl.GL3)gl);
+			}
+		} else {
+			gl.glCallList(i);
+		}
 	}
 
 	/**

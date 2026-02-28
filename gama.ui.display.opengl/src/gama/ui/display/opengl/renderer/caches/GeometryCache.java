@@ -383,7 +383,7 @@ public class GeometryCache {
 		put(IShape.Type.ROUNDED, BuiltInGeometry.assemble().bottom(gl.compileAsList(() -> {
 			// Align with SQUARE; see issue #3542
 			gl.translateBy(-.5d, -.5d);
-			drawRoundedRectangle(gl.getGL());
+			drawRoundedRectangle(gl.getGL(), gl);
 			gl.translateBy(.5d, .5d);
 		})));
 		put(SQUARE, BuiltInGeometry.assemble().bottom(gl.compileAsList(() -> {
@@ -413,11 +413,14 @@ public class GeometryCache {
 	 * @param gl
 	 *            the gl
 	 */
-	public void drawRoundedRectangle(final GL2 gl) {
-		gl.glEnableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
-		gl.glVertexPointer(2, GL2GL3.GL_DOUBLE, 0, db);
-		gl.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 40);
-		gl.glDisableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
+	public void drawRoundedRectangle(final GL2 gl, final OpenGL glWrapper) {
+		glWrapper.beginDrawing(GL.GL_TRIANGLES);
+		for (int i = 0; i < 38; i++) {
+			glWrapper.outputVertex(roundRect[0], roundRect[1], 0);
+			glWrapper.outputVertex(roundRect[(i + 1) * 2], roundRect[(i + 1) * 2 + 1], 0);
+			glWrapper.outputVertex(roundRect[(i + 2) * 2], roundRect[(i + 2) * 2 + 1], 0);
+		}
+		glWrapper.endDrawing();
 	}
 
 	/**
@@ -449,20 +452,24 @@ public class GeometryCache {
 		for (l = 0; l < loops; l++) {
 			final double r2 = r1 + dr;
 			int s;
-			gl.beginDrawing(GL2.GL_QUAD_STRIP);
-			for (s = 0; s <= slices; s++) {
-				double a;
-				if (s == slices) {
-					a = 0.0f;
-				} else {
-					a = s * da;
-				}
-				sa = Math.sin(a);
-				ca = Math.cos(a);
-				gl.outputTexCoord(0.5f + sa * r2 / dtc, 0.5f + ca * r2 / dtc);
-				gl.outputVertex(r2 * sa, r2 * ca, 0);
-				gl.outputTexCoord(0.5f + sa * r1 / dtc, 0.5f + ca * r1 / dtc);
-				gl.outputVertex(r1 * sa, r1 * ca, 0);
+			gl.beginDrawing(com.jogamp.opengl.GL.GL_TRIANGLES);
+			for (s = 0; s < slices; s++) {
+				double a1 = s * da;
+				double a2 = (s + 1 == slices) ? 0.0 : (s + 1) * da;
+
+				double sa1 = Math.sin(a1), ca1 = Math.cos(a1);
+				double sa2 = Math.sin(a2), ca2 = Math.cos(a2);
+
+				// Quad: (r1, a1), (r2, a1), (r2, a2), (r1, a2)
+				// Triangle 1: (r1, a1), (r2, a1), (r2, a2)
+				gl.outputTexCoord(0.5f + sa1 * r1 / dtc, 0.5f + ca1 * r1 / dtc); gl.outputVertex(r1 * sa1, r1 * ca1, 0);
+				gl.outputTexCoord(0.5f + sa1 * r2 / dtc, 0.5f + ca1 * r2 / dtc); gl.outputVertex(r2 * sa1, r2 * ca1, 0);
+				gl.outputTexCoord(0.5f + sa2 * r2 / dtc, 0.5f + ca2 * r2 / dtc); gl.outputVertex(r2 * sa2, r2 * ca2, 0);
+
+				// Triangle 2: (r1, a1), (r2, a2), (r1, a2)
+				gl.outputTexCoord(0.5f + sa1 * r1 / dtc, 0.5f + ca1 * r1 / dtc); gl.outputVertex(r1 * sa1, r1 * ca1, 0);
+				gl.outputTexCoord(0.5f + sa2 * r2 / dtc, 0.5f + ca2 * r2 / dtc); gl.outputVertex(r2 * sa2, r2 * ca2, 0);
+				gl.outputTexCoord(0.5f + sa2 * r1 / dtc, 0.5f + ca2 * r1 / dtc); gl.outputVertex(r1 * sa2, r1 * ca2, 0);
 			}
 			gl.endDrawing();
 			r1 = r2;
@@ -498,23 +505,42 @@ public class GeometryCache {
 		// draw intermediate stacks as quad strips
 		for (i = imin; i < imax; i++) {
 			rho = i * drho;
-			gl.beginDrawing(GL2.GL_QUAD_STRIP);
+			gl.beginDrawing(com.jogamp.opengl.GL.GL_TRIANGLES);
 			s = 0.0f;
-			for (j = 0; j <= slices; j++) {
-				theta = j == slices ? 0.0f : j * dtheta;
-				x = -Math.sin(theta) * Math.sin(rho);
-				y = Math.cos(theta) * Math.sin(rho);
-				z = Math.cos(rho);
-				gl.outputNormal(x, y, z);
-				gl.outputTexCoord(s, t);
-				gl.outputVertex(x * radius, y * radius, z * radius);
-				x = -Math.sin(theta) * Math.sin(rho + drho);
-				y = Math.cos(theta) * Math.sin(rho + drho);
-				z = Math.cos(rho + drho);
-				gl.outputNormal(x, y, z);
-				gl.outputTexCoord(s, t - dt);
+			for (j = 0; j < slices; j++) {
+				double theta1 = j * dtheta;
+				double theta2 = (j + 1 == slices) ? 0.0f : (j + 1) * dtheta;
+
+				double x11 = -Math.sin(theta1) * Math.sin(rho);
+				double y11 = Math.cos(theta1) * Math.sin(rho);
+				double z11 = Math.cos(rho);
+
+				double x12 = -Math.sin(theta1) * Math.sin(rho + drho);
+				double y12 = Math.cos(theta1) * Math.sin(rho + drho);
+				double z12 = Math.cos(rho + drho);
+
+				double x21 = -Math.sin(theta2) * Math.sin(rho);
+				double y21 = Math.cos(theta2) * Math.sin(rho);
+				double z21 = Math.cos(rho);
+
+				double x22 = -Math.sin(theta2) * Math.sin(rho + drho);
+				double y22 = Math.cos(theta2) * Math.sin(rho + drho);
+				double z22 = Math.cos(rho + drho);
+
+				double s1 = s;
+				double s2 = s + ds;
+
+				// Triangle 1
+				gl.outputNormal(x11, y11, z11); gl.outputTexCoord(s1, t); gl.outputVertex(x11 * radius, y11 * radius, z11 * radius);
+				gl.outputNormal(x12, y12, z12); gl.outputTexCoord(s1, t - dt); gl.outputVertex(x12 * radius, y12 * radius, z12 * radius);
+				gl.outputNormal(x22, y22, z22); gl.outputTexCoord(s2, t - dt); gl.outputVertex(x22 * radius, y22 * radius, z22 * radius);
+
+				// Triangle 2
+				gl.outputNormal(x11, y11, z11); gl.outputTexCoord(s1, t); gl.outputVertex(x11 * radius, y11 * radius, z11 * radius);
+				gl.outputNormal(x22, y22, z22); gl.outputTexCoord(s2, t - dt); gl.outputVertex(x22 * radius, y22 * radius, z22 * radius);
+				gl.outputNormal(x21, y21, z21); gl.outputTexCoord(s2, t); gl.outputVertex(x21 * radius, y21 * radius, z21 * radius);
+
 				s += ds;
-				gl.outputVertex(x * radius, y * radius, z * radius);
 			}
 			gl.endDrawing();
 			t -= dt;
@@ -557,24 +583,28 @@ public class GeometryCache {
 		gl.getGL().glFrontFace(GL.GL_CCW);
 		for (j = 0; j < stacks; j++) {
 			float s = 0.0f;
-			gl.beginDrawing(GL2.GL_QUAD_STRIP);
-			for (i = 0; i <= slices; i++) {
-				if (i == slices) {
-					x = 0; // Math.sin(0.0f);
-					y = 1; // Math.cos(0.0f);
-				} else {
-					x = Math.sin(i * da);
-					y = Math.cos(i * da);
-				}
-				gl.outputNormal(x, y, nz);
-				gl.outputTexCoord(s, t);
-				gl.outputVertex(x * r, y * r, z);
-				gl.outputNormal(x, y, nz);
-				gl.outputTexCoord(s, t + dt);
-				gl.outputVertex(x * (r + dr), y * (r + dr), z + dz);
+			gl.beginDrawing(com.jogamp.opengl.GL.GL_TRIANGLES);
+			for (i = 0; i < slices; i++) {
+				double x1 = Math.sin(i * da);
+				double y1 = Math.cos(i * da);
+				double x2 = (i + 1 == slices) ? 0 : Math.sin((i + 1) * da);
+				double y2 = (i + 1 == slices) ? 1 : Math.cos((i + 1) * da);
+
+				double s1 = s;
+				double s2 = s + ds;
+
+				// Triangle 1
+				gl.outputNormal(x1, y1, nz); gl.outputTexCoord(s1, t); gl.outputVertex(x1 * r, y1 * r, z);
+				gl.outputNormal(x1, y1, nz); gl.outputTexCoord(s1, t + dt); gl.outputVertex(x1 * (r + dr), y1 * (r + dr), z + dz);
+				gl.outputNormal(x2, y2, nz); gl.outputTexCoord(s2, t + dt); gl.outputVertex(x2 * (r + dr), y2 * (r + dr), z + dz);
+
+				// Triangle 2
+				gl.outputNormal(x1, y1, nz); gl.outputTexCoord(s1, t); gl.outputVertex(x1 * r, y1 * r, z);
+				gl.outputNormal(x2, y2, nz); gl.outputTexCoord(s2, t + dt); gl.outputVertex(x2 * (r + dr), y2 * (r + dr), z + dz);
+				gl.outputNormal(x2, y2, nz); gl.outputTexCoord(s2, t); gl.outputVertex(x2 * r, y2 * r, z);
 
 				s += ds;
-			} // for slices
+			}
 			gl.endDrawing();
 			r += dr;
 			t += dt;

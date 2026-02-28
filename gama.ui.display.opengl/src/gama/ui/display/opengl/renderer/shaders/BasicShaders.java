@@ -17,9 +17,11 @@ public class BasicShaders {
 		layout (location = 0) in vec3 aPos;
 		layout (location = 1) in vec4 aColor;
 		layout (location = 2) in vec2 aTexCoord;
+		layout (location = 3) in vec3 aNormal;
 
 		out vec4 fragColor;
 		out vec2 texCoord;
+		out vec3 fragNormal;
 
 		uniform mat4 projection;
 		uniform mat4 modelView;
@@ -29,6 +31,7 @@ public class BasicShaders {
 		    gl_Position = projection * modelView * vec4(aPos, 1.0);
 		    fragColor = aColor;
 		    texCoord = aTexCoord;
+		    fragNormal = mat3(modelView) * aNormal;
 		}
 		""";
 
@@ -36,6 +39,7 @@ public class BasicShaders {
 		#version 330 core
 		in vec4 fragColor;
 		in vec2 texCoord;
+		in vec3 fragNormal;
 
 		out vec4 FragColor;
 
