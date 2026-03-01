@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.dependencies;
 
+import java.util.concurrent.CompletableFuture;
+
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -24,7 +26,7 @@ public abstract class GamaBundleActivator implements BundleActivator {
 	@Override
 	public final void start(final BundleContext context) throws Exception {
 		DEBUG.TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAMA, "Activation of " + context.getBundle().getSymbolicName(),
-				"done in", () -> {
+				"completed in", () -> {
 					initialize(context);
 				});
 
@@ -37,5 +39,17 @@ public abstract class GamaBundleActivator implements BundleActivator {
 
 	@Override
 	public final void stop(final BundleContext context) throws Exception {}
+
+	/**
+	 * Run async.
+	 *
+	 * @param task
+	 *            the task
+	 */
+	protected final void runAsync(final Runnable task) {
+
+		CompletableFuture.runAsync(task, r -> Thread.ofVirtual().start(r));
+
+	}
 
 }

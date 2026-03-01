@@ -145,7 +145,7 @@ public class SymbolArtefact extends AbstractArtefact implements IArtefact.Symbol
 		this.omissibleFacet = omissible;
 		this.isUniqueInContext = isUniqueInContext;
 		this.kind = kind;
-		this.isVar = ISymbolKind.VARIABLES.contains(this.kind);
+		this.isVar = ISymbolKind.isVariable(this.kind);
 		this.hasScope = !doesNotHaveScope;
 		if (possibleFacets != null) {
 			final ImmutableList.Builder<String> builder = ImmutableList.builder();

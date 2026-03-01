@@ -10,8 +10,6 @@
  ********************************************************************************************************/
 package gama.api.additions.registries;
 
-import static gama.api.constants.IKeyword.AGENT;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,13 +17,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.SetMultimap;
 
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.artefacts.IArtefact;
@@ -40,139 +35,125 @@ import one.util.streamex.StreamEx;
  * Central registry for GAML language artefact prototypes (statements, variables, and facets).
  *
  * <p>
- * This registry maintains the metadata and prototypes for all GAML language constructs, including statements (like
- * 'create', 'ask', 'loop'), variable declarations (like 'int', 'float', 'species'), and their facets (like 'name:',
- * 'type:', 'from:'). It serves as the primary reference for the GAML compiler and parser.
+ * This registry maintains the metadata and prototypes for all GAML language constructs, including statements (e.g.
+ * {@code create}, {@code ask}, {@code loop}), variable declarations (e.g. {@code int}, {@code float}, {@code species}),
+ * and their facets (e.g. {@code name:}, {@code type:}, {@code from:}). It serves as the primary reference for the GAML
+ * compiler and parser when resolving keywords and their legal facets.
  * </p>
  *
- * <h2>Artefact Types</h2>
+ * <h2>Artefact Categories</h2>
  * <p>
  * The registry manages three main categories of artefacts:
  * </p>
  * <ul>
- * <li><b>Statement Artefacts</b> - Definitions of GAML statements (commands, control structures)</li>
- * <li><b>Variable Artefacts</b> - Definitions of variable declaration keywords and types</li>
- * <li><b>Facet Artefacts</b> - Definitions of statement and variable facets (named parameters)</li>
- * </ul>
- *
- * <h2>Artefact Organization</h2>
- * <p>
- * Artefacts are organized by:
- * </p>
- * <ul>
- * <li><b>Keyword</b> - The GAML keyword that triggers the artefact (stored in keyword maps)</li>
- * <li><b>Kind</b> - The semantic category of the artefact (stored in kind map)</li>
- * <li><b>Variable Type</b> - For variables, organized by type ID (stored in type-to-keyword multimap)</li>
+ * <li><b>Statement Artefacts</b> – Prototypes for GAML statements (commands, control structures). Keyed by keyword in
+ * {@link #STATEMENT_ARTEFACTS}.</li>
+ * <li><b>Variable Artefacts</b> – Prototypes for variable declaration keywords, keyed by {@link ISymbolKind} in
+ * {@link #VAR_DECLARATION_ARTEFACTS}.</li>
+ * <li><b>Facet Artefacts</b> – Prototypes for facets (named parameters) associated with statements or variables,
+ * derived lazily from the statement artefacts.</li>
  * </ul>
  *
  * <h2>Special Keyword Sets</h2>
  * <p>
- * The registry maintains several sets of keywords with special semantic meaning:
+ * Several constant sets expose keywords with particular semantic roles:
  * </p>
  * <ul>
- * <li>{@link #BREAKABLE_STATEMENTS} - Statements that can contain 'break'</li>
- * <li>{@link #CONTINUABLE_STATEMENTS} - Statements that can contain 'continue'</li>
- * <li>{@link #BINARY_ARTEFACTS_NAMES} - Binary operator keywords</li>
- * <li>{@link #PROTOS_WITHOUT_PARENTHESES} - Operators that don't require parentheses</li>
- * <li>{@link #NON_SERIALIZABLE_FACETS} - Facets excluded from serialization</li>
+ * <li>{@link #BREAKABLE_STATEMENTS} – Statements that may legally contain a {@code break} instruction.</li>
+ * <li>{@link #CONTINUABLE_STATEMENTS} – Statements that may legally contain a {@code continue} instruction.</li>
+ * <li>{@link #BINARY_ARTEFACTS_NAMES} – All binary operator keywords.</li>
+ * <li>{@link #ARTEFACTS_WITHOUT_PARENTHESES} – Unary operators that do not require surrounding parentheses.</li>
+ * <li>{@link #NON_SERIALIZABLE_FACETS} – Facets that must be excluded from serialization.</li>
+ * <li>{@link #ID_FACETS} – Facet type IDs that represent identifiers or labels.</li>
  * </ul>
  *
- * <h2>Dynamic Type Registration</h2>
+ * <h2>Registration</h2>
  * <p>
- * As species are defined in GAML models, they are dynamically registered as valid type keywords using
- * {@link #addBuiltInSpeciesNameAsType(String)}, allowing them to be used in variable declarations.
+ * Artefacts are registered at startup via {@link #addArtefact(IArtefact.Symbol, Iterable)}, which records the prototype
+ * both under each of its keyword names and under its {@link ISymbolKind}. The lazy caches
+ * ({@link #cachedStatementArtefacts} and {@link #cachedFacetsArtefacts}) are populated on first access and must be
+ * invalidated whenever new artefacts are added.
  * </p>
  *
  * <h2>Usage Example</h2>
  *
  * <pre>{@code
- * // Retrieve a statement artefact
+ * // Retrieve a statement artefact by keyword
  * IArtefact.Symbol createArtefact = ArtefactRegistry.getStatementArtefact("create");
  *
- * // Check if a keyword is a statement
+ * // Check whether a keyword corresponds to a statement
  * boolean isStatement = ArtefactRegistry.isStatementArtefact("loop");
  *
- * // Get the omissible facet for a statement
+ * // Retrieve the omissible facet name for a given keyword
  * String omissible = ArtefactRegistry.getOmissibleFacetForSymbol("create");
  *
- * // Register a species as a type
- * ArtefactRegistry.addSpeciesNameAsType("my_species");
+ * // Retrieve the set of allowed facets for a keyword
+ * Set<String> facets = ArtefactRegistry.getAllowedFacetsFor("create");
  * }</pre>
  *
  * @author drogoul
  * @since GAMA 1.0
- *
  * @see IArtefact
+ * @see IArtefact.Symbol
+ * @see IArtefact.Facet
  * @see gama.api.compilation.descriptions.IDescription
  */
 public class ArtefactRegistry {
 
-	/** The Constant DO_FACETS. */
+	/**
+	 * Lazily initialised set of facet names allowed on the {@code do} statement. Populated on first call to
+	 * {@link #getDoFacets()}.
+	 */
 	public static Set<String> DO_FACETS;
 
-	/** The Constant BREAKABLE_STATEMENTS. */
+	/**
+	 * Set of statement keywords that may legally contain a {@code break} instruction (e.g. {@code loop}, {@code ask}).
+	 */
 	public static final Set<String> BREAKABLE_STATEMENTS = new HashSet<>();
 
-	/** The Constant CONTINUABLE_STATEMENTS. */
+	/**
+	 * Set of statement keywords that may legally contain a {@code continue} instruction (e.g. {@code loop}).
+	 */
 	public static final Set<String> CONTINUABLE_STATEMENTS = new HashSet<>();
 
-	/** Facet types that represent identifiers or labels. */
+	/**
+	 * List of {@link IType} kind constants whose facets represent identifiers or labels rather than arbitrary
+	 * expressions. Includes {@link IType#LABEL}, {@link IType#ID}, {@link IType#NEW_TEMP_ID}, and
+	 * {@link IType#NEW_VAR_ID}.
+	 */
 	public static final List<Integer> ID_FACETS =
 			Arrays.asList(IType.LABEL, IType.ID, IType.NEW_TEMP_ID, IType.NEW_VAR_ID);
 
-	/** Facets that should not be included in serialization. */
+	/**
+	 * Set of facet names that must be excluded from GAML model serialization (e.g. {@code internal_function},
+	 * {@code with}).
+	 */
 	public static final Set<String> NON_SERIALIZABLE_FACETS =
 			new HashSet<>(Arrays.asList(IKeyword.INTERNAL_FUNCTION, IKeyword.WITH));
 
-	/** Map of statement keywords to their prototype definitions. */
-	private static final Map<String, IArtefact.Symbol> STATEMENT_KEYWORDS_ARTEFACTS = new HashMap<>();
+	/**
+	 * Primary map from GAML statement keyword strings to their corresponding {@link IArtefact.Symbol} prototype
+	 * definitions.
+	 */
+	private static final Map<String, IArtefact.Symbol> STATEMENT_ARTEFACTS = new HashMap<>();
 
-	/** Map of variable declaration keywords to their prototype definitions. */
-	// private static final Map<String, IArtefact.Symbol> VAR_KEYWORDS_PROTOS = new HashMap<>();
+	/**
+	 * Map from {@link ISymbolKind} constants to the {@link IArtefact.Symbol} prototype that represents variable
+	 * declarations of that kind.
+	 */
+	private static final Map<ISymbolKind, IArtefact.Symbol> VAR_DECLARATION_ARTEFACTS = new HashMap<>();
 
-	/** Multimap from variable kind (type ID) to the keywords that declare that kind. */
-	public final static SetMultimap<ISymbolKind, String> VARKIND2KEYWORDS =
-			Multimaps.newSetMultimap(new ConcurrentHashMap<>(), ConcurrentHashMap::newKeySet);
-
-	/** Map of artefact kinds to their prototype definitions. */
-	public static final Map<ISymbolKind, IArtefact.Symbol> VARIABLE_KINDS_TO_DECLARATION_ARTEFACTS = new HashMap<>();
-	/** Cache for statement protos. */
-	private static volatile Iterable<IArtefact.Symbol> cachedStatementArtefacts = null;
-
-	/** Cache for facets protos. */
+	/**
+	 * Lazy cache of all facet artefact prototypes, computed on first call to {@link #getFacetsArtefacts()} and
+	 * invalidated when new artefacts are registered.
+	 */
 	private static volatile Iterable<? extends IArtefact.Facet> cachedFacetsArtefacts = null;
 
 	/**
-	 * Registers a new type name as a valid variable declaration keyword.
+	 * Returns the set of facet names that are allowed on the {@code do} statement. The set is computed lazily on first
+	 * access and cached in {@link #DO_FACETS}.
 	 *
-	 * <p>
-	 * This method is called when new types are defined (e.g., through species declarations) to make them available as
-	 * variable declaration keywords in GAML. For example, after declaring a species "my_agent", this allows writing
-	 * "my_agent x;".
-	 * </p>
-	 *
-	 * @param s
-	 *            the type name to register
-	 * @param kind
-	 *            the kind ID for this type (from {@link IType})
-	 */
-	public static void addNewTypeName(final String s, final ISymbolKind kind) {
-		addNewVarKeyword(s, kind);
-		// if (VAR_KEYWORDS_PROTOS.containsKey(s)) return;
-		// final IArtefact.Symbol p = VARIABLE_KINDS_TO_DECLARATION_ARTEFACTS.get(kind);
-		// if (p != null) {
-		// if ("species".equals(s)) {
-		// VAR_KEYWORDS_PROTOS.put(SPECIES_VAR, p);
-		// } else {
-		// VAR_KEYWORDS_PROTOS.put(s, p);
-		// }
-		// }
-	}
-
-	/**
-	 * Gets the do facets.
-	 *
-	 * @return the do facets
+	 * @return the (possibly cached) set of facet names for the {@code do} statement; never {@code null}
 	 */
 	public static Set<String> getDoFacets() {
 		if (DO_FACETS == null) { DO_FACETS = getAllowedFacetsFor(IKeyword.DO); }
@@ -180,7 +161,7 @@ public class ArtefactRegistry {
 	}
 
 	/** Operators that can be used without parentheses in GAML expressions. */
-	public static final Set<String> PROTOS_WITHOUT_PARENTHESES = ImmutableSet.of("-", "!");
+	public static final Set<String> ARTEFACTS_WITHOUT_PARENTHESES = ImmutableSet.of("-", "!");
 
 	/** Binary operator keywords in GAML. */
 	public static final Set<String> BINARY_ARTEFACTS_NAMES = ImmutableSet.of(IKeyword.EQUALS, IKeyword.PLUS,
@@ -191,69 +172,40 @@ public class ArtefactRegistry {
 			"last_index_of", "index_by", "count", "sort", "::", "as_map");
 
 	/**
-	 * Adds the new var keyword.
-	 *
-	 * @param s
-	 *            the s
-	 * @param kind
-	 *            the kind
-	 */
-	public static void addNewVarKeyword(final String s, final ISymbolKind kind) {
-		VARKIND2KEYWORDS.put(kind, s);
-	}
-
-	/**
-	 * Gets the statement proto.
+	 * Returns the {@link IArtefact.Symbol} prototype registered for the given GAML statement keyword, or {@code null}
+	 * if no statement artefact is registered under that keyword.
 	 *
 	 * @param keyword
-	 *            the keyword
-	 * @param control
-	 *            the control
-	 * @return the statement artefact
+	 *            the GAML keyword to look up (e.g. {@code "create"}, {@code "loop"})
+	 * @return the corresponding statement artefact, or {@code null} if not found
 	 */
 	public final static IArtefact.Symbol getStatementArtefact(final String keyword) {
-		return STATEMENT_KEYWORDS_ARTEFACTS.get(keyword);
+		return STATEMENT_ARTEFACTS.get(keyword);
 	}
 
 	/**
-	 * Gets the proto names.
+	 * Returns all GAML statement keyword strings that have a registered artefact prototype.
 	 *
-	 * @return the proto names
+	 * @return an iterable over the registered statement keyword names; never {@code null}
 	 */
-	public final static Iterable<String> getArtefactNames() {
-		return Iterables.concat(getStatementArtefactNames()/* , getVarProtoNames() */);
-	}
+	public final static Iterable<String> getStatementArtefactNames() { return STATEMENT_ARTEFACTS.keySet(); }
 
 	/**
-	 * Gets the statement proto names.
-	 *
-	 * @return the statement proto names
-	 */
-	public final static Iterable<String> getStatementArtefactNames() {
-		return STATEMENT_KEYWORDS_ARTEFACTS.keySet();
-	}
-
-	/**
-	 * Gets the var proto names.
-	 *
-	 * @return the var proto names
-	 */
-	// public final static Iterable<String> getVarProtoNames() { return VAR_KEYWORDS_PROTOS.keySet(); }
-
-	/**
-	 * Gets the proto.
+	 * Returns the best-matching {@link IArtefact.Symbol} prototype for the given keyword, consulting statement
+	 * artefacts first and falling back to variable declaration artefacts.
 	 *
 	 * @param keyword
-	 *            the keyword
+	 *            the GAML keyword to look up
 	 * @param superDesc
-	 *            the super desc
-	 * @return the proto
+	 *            the enclosing {@link IDescription} context, used when resolving variable artefacts; may be
+	 *            {@code null}
+	 * @return the matching artefact prototype, or {@code null} if none is found
 	 */
 	public final static IArtefact.Symbol getArtefact(final String keyword, final IDescription superDesc) {
-		// Check statement proto first
-		IArtefact.Symbol p = STATEMENT_KEYWORDS_ARTEFACTS.get(keyword);
-		// If not a statement, try var declaration prototype
-		return p != null ? p : getVarArtefact(keyword, superDesc);
+		// Check statement artefacts first
+		IArtefact.Symbol artefact = STATEMENT_ARTEFACTS.get(keyword);
+		// If not a statement, try var declaration artefact
+		return artefact != null ? artefact : getVarArtefact(keyword, superDesc);
 	}
 
 	/**
@@ -266,42 +218,32 @@ public class ArtefactRegistry {
 	 * @return the var proto
 	 */
 	public final static IArtefact.Symbol getVarArtefact(final String keyword, final IDescription superDesc) {
-		// final IArtefact.Symbol p = VAR_KEYWORDS_PROTOS.get(keyword);
 		// Not a type and not a statement. So probably a species
-		if (!Types.containsType(keyword) && !STATEMENT_KEYWORDS_ARTEFACTS.containsKey(keyword))
-			return getVarArtefact(AGENT, null);
-		// TODO Add the future case of objects / skills
-		return VARIABLE_KINDS_TO_DECLARATION_ARTEFACTS.get(Types.get(keyword).getVarKind());
+		if (!Types.containsType(keyword) && !STATEMENT_ARTEFACTS.containsKey(keyword))
+			return VAR_DECLARATION_ARTEFACTS.get(Types.AGENT.getVarKind());
+		return VAR_DECLARATION_ARTEFACTS.get(Types.get(keyword).getVarKind());
+		// superDesc will be useful later when objets / skills will be defined in GAML
 	}
 
 	/**
-	 * Checks if is statement proto.
+	 * Returns {@code true} if the given keyword is registered as a statement artefact, or is the special
+	 * {@link IKeyword#METHOD} keyword.
 	 *
 	 * @param s
-	 *            the s
-	 * @return true, if is statement proto
+	 *            the GAML keyword to test
+	 * @return {@code true} if {@code s} maps to a statement artefact or equals {@code "method"}
 	 */
 	public final static boolean isStatementArtefact(final String s) {
-		return STATEMENT_KEYWORDS_ARTEFACTS.containsKey(s) || IKeyword.METHOD.equals(s);
+		return STATEMENT_ARTEFACTS.containsKey(s) || IKeyword.METHOD.equals(s);
 	}
 
 	/**
-	 * Checks if is var proto.
-	 *
-	 * @param s
-	 *            the s
-	 * @return true, if is var proto
-	 */
-	public final static boolean isVarArtefact(final String s) {
-		return VARIABLE_KINDS_TO_DECLARATION_ARTEFACTS.containsKey(s);
-	}
-
-	/**
-	 * Gets the omissible facet for symbol.
+	 * Returns the name of the omissible facet for the given GAML keyword. The omissible facet is the one that may be
+	 * written without its name in a GAML statement. Falls back to {@link IKeyword#NAME} when no artefact is found.
 	 *
 	 * @param keyword
-	 *            the keyword
-	 * @return the omissible facet for symbol
+	 *            the GAML keyword to query (e.g. {@code "create"}, {@code "loop"})
+	 * @return the omissible facet name, or {@link IKeyword#NAME} if the artefact is unknown
 	 */
 	public static String getOmissibleFacetForSymbol(final String keyword) {
 		final IArtefact.Symbol md = getArtefact(keyword, null);
@@ -310,11 +252,12 @@ public class ArtefactRegistry {
 	}
 
 	/**
-	 * Gets the allowed facets for.
+	 * Returns the set of facet names that are allowed for the given GAML keyword. Returns an empty set when the keyword
+	 * is {@code null} or has no registered artefact.
 	 *
-	 * @param keys
-	 *            the keys
-	 * @return the allowed facets for
+	 * @param key
+	 *            the GAML keyword to query; may be {@code null}
+	 * @return the set of allowed facet names, or an empty set if the keyword is unknown
 	 */
 	public static Set<String> getAllowedFacetsFor(final String key) {
 		if (key == null) return Collections.emptySet();
@@ -324,23 +267,18 @@ public class ArtefactRegistry {
 	}
 
 	/**
-	 * Gets the statement protos.
+	 * Returns all registered {@link IArtefact.Symbol} prototypes for GAML statements. The result is computed lazily on
+	 * first access and cached in {@link #cachedStatementArtefacts}.
 	 *
-	 * @return the statement protos
+	 * @return an iterable over all registered statement artefact prototypes; never {@code null}
 	 */
-	public static Iterable<IArtefact.Symbol> getStatementArtefacts() {
-		if (cachedStatementArtefacts == null) {
-			cachedStatementArtefacts = Iterables.filter(
-					Iterables.concat(STATEMENT_KEYWORDS_ARTEFACTS.values()/* , VAR_KEYWORDS_PROTOS.values() */),
-					IArtefact.Symbol.class);
-		}
-		return cachedStatementArtefacts;
-	}
+	public static Iterable<IArtefact.Symbol> getStatementArtefacts() { return STATEMENT_ARTEFACTS.values(); }
 
 	/**
-	 * Gets the facets protos.
+	 * Returns all registered {@link IArtefact.Facet} prototypes, derived lazily from the facets declared on each
+	 * statement artefact. The result is cached in {@link #cachedFacetsArtefacts} on first access.
 	 *
-	 * @return the facets protos
+	 * @return an iterable over all registered facet artefact prototypes; never {@code null}
 	 */
 	public static Iterable<? extends IArtefact.Facet> getFacetsArtefacts() {
 		if (cachedFacetsArtefacts == null) {
@@ -351,48 +289,38 @@ public class ArtefactRegistry {
 	}
 
 	/**
-	 * Adds the species name as type.
-	 *
-	 * @param name
-	 *            the name
-	 */
-	// public static void addBuiltInSpeciesNameAsType(final String name) {
-	// if (!AGENT.equals(name) && !IKeyword.EXPERIMENT.equals(name)) {
-	// VAR_KEYWORDS_PROTOS.putIfAbsent(name, VAR_KEYWORDS_PROTOS.get(AGENT));
-	// }
-	// }
-
-	/**
-	 * Adds the proto.
+	 * Registers a new {@link IArtefact.Symbol} prototype under each of the given keyword names and under its
+	 * {@link ISymbolKind}. Both the {@link #STATEMENT_ARTEFACTS} map and the {@link #VAR_DECLARATION_ARTEFACTS} map are
+	 * updated. Any previously cached iterables derived from these maps (see {@link #cachedStatementArtefacts} and
+	 * {@link #cachedFacetsArtefacts}) should be considered stale after this call.
 	 *
 	 * @param md
-	 *            the md
+	 *            the artefact prototype to register; must not be {@code null}
 	 * @param names
-	 *            the names
+	 *            the GAML keyword strings under which the prototype should be reachable; must not be {@code null}
 	 */
 	public static void addArtefact(final IArtefact.Symbol md, final Iterable<String> names) {
 		final ISymbolKind kind = md.getKind();
-		// if (ISymbolKind.VARIABLES.contains(kind)) {
-		// for (final String s : names) { VAR_KEYWORDS_PROTOS.putIfAbsent(s, md); }
-		// } else {
-		for (final String s : names) { STATEMENT_KEYWORDS_ARTEFACTS.put(s, md); }
-		// }
-		VARIABLE_KINDS_TO_DECLARATION_ARTEFACTS.put(kind, md); // .. ???? ... FIX TODO
+		if (ISymbolKind.isVariable(kind)) {
+			VAR_DECLARATION_ARTEFACTS.put(kind, md);
+		} else {
+			for (final String s : names) { STATEMENT_ARTEFACTS.put(s, md); }
+		}
+
 	}
 
 	/**
-	 *
+	 * Prints a summary of the current registry state to the debug output, listing the registered statement artefact
+	 * keywords, the registered type names, and the registered {@link ISymbolKind} keys for variable artefacts.
 	 */
 	public static void writeStats() {
 		DEBUG.LINE();
 		DEBUG.TITLE("Artefact Registry Stats");
 		DEBUG.LINE();
-		DEBUG.LOG("Statement artefacts registered: " + STATEMENT_KEYWORDS_ARTEFACTS.keySet());
-		// DEBUG.LOG("Variable artefacts registered: "
-		// + StreamEx.of(VAR_KEYWORDS_PROTOS.keySet()).sorted().collect(Collectors.toList()));
+		DEBUG.LOG("Statement artefacts registered: " + STATEMENT_ARTEFACTS.keySet());
 		DEBUG.LOG("Compared to registered types: " + StreamEx.of(Iterables.toArray(Types.getTypeNames(), String.class))
 				.sorted().collect(Collectors.toList()));
-		DEBUG.LOG("Kinds artefacts registered: " + VARIABLE_KINDS_TO_DECLARATION_ARTEFACTS.keySet());
+		DEBUG.LOG("Kinds artefacts registered: " + VAR_DECLARATION_ARTEFACTS);
 		DEBUG.LINE();
 	}
 

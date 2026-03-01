@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 
 import gama.annotations.inside;
 import gama.api.compilation.descriptions.IDescription;
@@ -98,6 +98,7 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 	 *
 	 * @return true, if is to create
 	 */
+	@Override
 	public boolean isToCreate() { return true; }
 
 	/**
@@ -118,7 +119,7 @@ public abstract class AbstractLayerStatement extends Symbol implements ILayerSta
 
 	@Override
 	public int compareTo(final ILayerStatement o) {
-		return Ints.compare(getOrder(), o.getOrder());
+		return Longs.compare(getOrder(), o.getOrder());
 	}
 
 	@Override

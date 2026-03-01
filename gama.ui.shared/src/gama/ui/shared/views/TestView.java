@@ -33,7 +33,7 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 
-import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 
 import gama.api.GAMA;
 import gama.api.types.color.IColor;
@@ -67,7 +67,7 @@ import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 public class TestView extends ExpandableItemsView<AbstractSummary<?>> implements IGamaView.Test {
 
 	/** The Constant BY_ORDER. */
-	static final Comparator<AbstractSummary<?>> BY_ORDER = (o1, o2) -> Ints.compare(o1.getIndex(), o2.getIndex());
+	static final Comparator<AbstractSummary<?>> BY_ORDER = (o1, o2) -> Longs.compare(o1.getIndex(), o2.getIndex());
 
 	/** The Constant BY_SEVERITY. */
 	static final Comparator<AbstractSummary<?>> BY_SEVERITY = (o1, o2) -> {

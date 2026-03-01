@@ -39,7 +39,7 @@ import one.util.streamex.StreamEx;
 public class Pref<T> implements IParameter {
 
 	/** The order. */
-	private final int order = COUNTER.COUNT();
+	private final long order = COUNTER.COUNT();
 
 	/** The in gaml. */
 	private final boolean inGaml;
@@ -148,7 +148,7 @@ public class Pref<T> implements IParameter {
 	}
 
 	@Override
-	public int getOrder() { return order; }
+	public long getOrder() { return order; }
 
 	/**
 	 * Among.

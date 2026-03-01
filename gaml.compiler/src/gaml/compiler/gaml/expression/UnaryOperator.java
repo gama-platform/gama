@@ -113,7 +113,7 @@ public class UnaryOperator extends AbstractExpression implements IOperator {
 	public String serializeToGaml(final boolean includingBuiltIn) {
 		final String s = literalValue();
 		final StringBuilder sb = new StringBuilder(s);
-		if (ArtefactRegistry.PROTOS_WITHOUT_PARENTHESES.contains(s)) {
+		if (ArtefactRegistry.ARTEFACTS_WITHOUT_PARENTHESES.contains(s)) {
 			parenthesize(sb, child);
 		} else {
 			sb.append("(").append(child.serializeToGaml(includingBuiltIn)).append(")");

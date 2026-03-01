@@ -72,7 +72,7 @@ public class SpeciesFactory implements ISymbolDescriptionFactory.Species {
 	 */
 	@Override
 	public ITypeDescription buildDescription(final String keyword, final Facets facets, final EObject element,
-			final Iterable<IDescription> children, final IDescription sd, final IArtefact.Symbol proto) {
+			final Iterable<IDescription> children, final IDescription sd, final IArtefact.Symbol artefact) {
 		return new SpeciesDescription(keyword, null, (ISpeciesDescription) sd, null, children, element, facets);
 	}
 

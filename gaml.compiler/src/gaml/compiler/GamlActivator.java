@@ -91,7 +91,7 @@ public class GamlActivator implements BundleActivator {
 		DEBUG.OUT("Starting GAML Compiler bundle");
 
 		TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAMA, "Initialization of " + context.getBundle().getSymbolicName(),
-				"done in", () -> {
+				"completed in", () -> {
 					// Register the stateless singleton expression compiler
 					// GamlExpressionFactory.registerParser(GamlExpressionCompiler.getInstance());
 

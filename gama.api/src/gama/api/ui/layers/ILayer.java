@@ -14,7 +14,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.Collections;
 import java.util.Set;
 
-import com.google.common.primitives.Ints;
+import com.google.common.primitives.Longs;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
@@ -90,6 +90,7 @@ public interface ILayer extends INamed, Comparable<ILayer>, IDisposable {
 	 * Asks this layer to dispose of the resources it may use (in addition to the ILayerData instance, which is
 	 * automatically disposed of)
 	 */
+	@Override
 	default void dispose() {}
 
 	/**
@@ -311,7 +312,7 @@ public interface ILayer extends INamed, Comparable<ILayer>, IDisposable {
 	 */
 	@Override
 	default int compareTo(final ILayer o) {
-		return Ints.compare(getDefinition().getOrder(), o.getDefinition().getOrder());
+		return Longs.compare(getDefinition().getOrder(), o.getDefinition().getOrder());
 	}
 
 	/**

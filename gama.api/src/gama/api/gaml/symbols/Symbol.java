@@ -24,13 +24,13 @@ import gama.dev.COUNTER;
 
 /**
  * Base abstract implementation of {@link ISymbol} providing common functionality for GAML symbols.
- * 
+ *
  * <p>
  * This class serves as the foundation for all concrete symbol implementations in GAMA. It provides default
  * implementations for core symbol operations including facet access, description management, serialization, and
  * lifecycle management.
  * </p>
- * 
+ *
  * <h2>Key Responsibilities</h2>
  * <ul>
  * <li><strong>Description Management</strong> - Maintains reference to the compile-time description</li>
@@ -39,7 +39,7 @@ import gama.dev.COUNTER;
  * <li><strong>Serialization</strong> - Supports conversion back to GAML source code</li>
  * <li><strong>Tracing</strong> - Enables runtime debugging and error reporting</li>
  * </ul>
- * 
+ *
  * <h2>Subclassing</h2>
  * <p>
  * Concrete symbol implementations should extend this class and override methods as needed:
@@ -49,13 +49,13 @@ import gama.dev.COUNTER;
  * <li>{@link #setEnclosing(ISymbol)} - To track the containing symbol</li>
  * <li>{@link #dispose()} - To perform cleanup when the symbol is no longer needed</li>
  * </ul>
- * 
+ *
  * <h2>Thread Safety</h2>
  * <p>
  * This class is not thread-safe. Symbols are typically created during compilation (single-threaded) and then shared
  * read-only during execution. Modifications during runtime should be avoided.
  * </p>
- * 
+ *
  * @author drogoul
  * @since GAMA 1.0
  * @see ISymbol
@@ -70,7 +70,7 @@ public abstract class Symbol implements ISymbol {
 	protected final IDescription description;
 
 	/** The declaration order of this symbol relative to siblings. */
-	protected int order;
+	protected long order;
 
 	/**
 	 * Gets the compile-time description associated with this symbol.
@@ -82,7 +82,7 @@ public abstract class Symbol implements ISymbol {
 
 	/**
 	 * Gets the URI identifying the source location of this symbol.
-	 * 
+	 *
 	 * <p>
 	 * Extracts the URI from the underlying EMF element in the description, if available.
 	 * </p>
@@ -97,14 +97,14 @@ public abstract class Symbol implements ISymbol {
 	}
 
 	@Override
-	public int getOrder() { return order; }
+	public long getOrder() { return order; }
 
 	@Override
 	public void setOrder(final int i) { order = i; }
 
 	/**
 	 * Constructs a new symbol with the given description.
-	 * 
+	 *
 	 * <p>
 	 * The constructor assigns a unique order number to this symbol for sequencing purposes. The order is obtained from
 	 * a global counter to ensure uniqueness across the model.
@@ -125,7 +125,7 @@ public abstract class Symbol implements ISymbol {
 
 	/**
 	 * Serializes this symbol back to GAML source code.
-	 * 
+	 *
 	 * <p>
 	 * Delegates to the description's serialization if available. This allows symbols to be written back to files or
 	 * displayed in debugging interfaces.
@@ -154,7 +154,7 @@ public abstract class Symbol implements ISymbol {
 
 	/**
 	 * Gets the expression for the first matching facet among the provided keys.
-	 * 
+	 *
 	 * <p>
 	 * This is a convenience method that searches for the first facet that exists and returns its compiled expression.
 	 * Useful for facets that may have multiple valid names (aliases).
@@ -172,7 +172,7 @@ public abstract class Symbol implements ISymbol {
 
 	/**
 	 * Gets the value of a facet, evaluated in the provided scope.
-	 * 
+	 *
 	 * <p>
 	 * Convenience method equivalent to calling {@link #getFacetValue(IScope, String, Object)} with a null default.
 	 * </p>
@@ -191,7 +191,7 @@ public abstract class Symbol implements ISymbol {
 
 	/**
 	 * Gets the value of a facet, evaluated in the provided scope, with a default fallback.
-	 * 
+	 *
 	 * <p>
 	 * This method retrieves the facet expression, evaluates it in the given scope, and returns the result. If the facet
 	 * doesn't exist, the default value is returned instead.
@@ -219,7 +219,7 @@ public abstract class Symbol implements ISymbol {
 
 	/**
 	 * Gets the literal (uncompiled) string value of a facet.
-	 * 
+	 *
 	 * <p>
 	 * Returns the facet's literal representation without evaluation. Useful for getting constant string values or
 	 * displaying the source text.
@@ -249,7 +249,7 @@ public abstract class Symbol implements ISymbol {
 
 	/**
 	 * Sets or updates a facet's expression description.
-	 * 
+	 *
 	 * <p>
 	 * This method modifies the compile-time description of the symbol. Should be used with caution, typically only
 	 * during compilation or special symbol transformations.
@@ -296,7 +296,7 @@ public abstract class Symbol implements ISymbol {
 
 	/**
 	 * Disposes of this symbol and releases any resources.
-	 * 
+	 *
 	 * <p>
 	 * Default implementation does nothing. Subclasses should override to perform cleanup such as removing listeners,
 	 * disposing child symbols, or releasing external resources.
@@ -307,7 +307,7 @@ public abstract class Symbol implements ISymbol {
 
 	/**
 	 * Gets a detailed trace of this symbol's current state for debugging.
-	 * 
+	 *
 	 * <p>
 	 * The trace includes the symbol's keyword, facet names, their source expressions, and their evaluated values in the
 	 * provided scope. Internal symbols (names starting with INTERNAL) are excluded from the trace.

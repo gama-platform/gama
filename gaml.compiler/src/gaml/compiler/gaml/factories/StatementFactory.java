@@ -71,19 +71,19 @@ public class StatementFactory implements ISymbolDescriptionFactory {
 	 */
 	@Override
 	public IStatementDescription buildDescription(final String keyword, final Facets facets, final EObject element,
-			final Iterable<IDescription> children, final IDescription enclosing, final IArtefact.Symbol proto) {
-		if (proto.isPrimitive()) return new PrimitiveDescription(enclosing, element, children, facets, null);
+			final Iterable<IDescription> children, final IDescription enclosing, final IArtefact.Symbol artefact) {
+		if (artefact.isPrimitive()) return new PrimitiveDescription(enclosing, element, children, facets, null);
 		if (IKeyword.ACTION.equals(keyword))
 			return new ActionDescription(keyword, enclosing, children, element, facets);
 		if (IKeyword.DO.equals(keyword) || IKeyword.INVOKE.equals(keyword))
-			return new DoDescription(keyword, enclosing, children, proto.hasArgs(), element, facets, null);
-		if (proto.hasSequence() && children != null) {
-			if (proto.isRemoteContext()) return new StatementRemoteWithChildrenDescription(keyword, enclosing, children,
-					proto.hasArgs(), element, facets, null);
-			return new StatementWithChildrenDescription(keyword, enclosing, children, proto.hasArgs(), element, facets,
-					null);
+			return new DoDescription(keyword, enclosing, children, artefact.hasArgs(), element, facets, null);
+		if (artefact.hasSequence() && children != null) {
+			if (artefact.isRemoteContext()) return new StatementRemoteWithChildrenDescription(keyword, enclosing,
+					children, artefact.hasArgs(), element, facets, null);
+			return new StatementWithChildrenDescription(keyword, enclosing, children, artefact.hasArgs(), element,
+					facets, null);
 		}
-		return new StatementDescription(keyword, enclosing, proto.hasArgs(), element, facets, null);
+		return new StatementDescription(keyword, enclosing, artefact.hasArgs(), element, facets, null);
 	}
 
 	@Override

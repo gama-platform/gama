@@ -22,7 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Iterables;
 
-import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
@@ -413,7 +412,6 @@ public class Types {
 					toProcess.push(t);
 					// DEBUG.OUT("Parenting " + t.getName() + " with " + parent.getName());
 					t.setParent(parent);
-					ArtefactRegistry.addNewTypeName(t.toString(), t.getVarKind());
 					t.setFieldGetters(GAML.getAllFields(t.toClass()));
 				}
 			}

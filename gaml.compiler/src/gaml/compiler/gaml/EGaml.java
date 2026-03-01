@@ -312,7 +312,7 @@ public class EGaml {
 	 *            the statement containing equations
 	 * @return the list of equation assignments, or an empty list if not available
 	 */
-	public List<S_Assignment> getEquationsOf(final EObject stm) {
+	public List<S_Assignment> getEquationsOf(final S_Equations stm) {
 		if (stm instanceof S_EquationsImpl e && e.eIsSet(GamlPackage.SEQUATIONS__EQUATIONS)) return e.getEquations();
 		return EMPTY_ASSIGNMENT_LIST;
 	}

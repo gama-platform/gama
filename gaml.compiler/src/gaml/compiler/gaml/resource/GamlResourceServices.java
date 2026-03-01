@@ -363,6 +363,34 @@ public class GamlResourceServices {
 	}
 
 	/**
+	 * Extracts the absolute folder path of the container directory for the given resource. This is used to determine
+	 * the path to model files for proper resource resolution. Handles both file-based URIs (headless mode) and
+	 * platform-based URIs (Eclipse workspace mode).
+	 *
+	 * @param resource
+	 *            the EMF resource whose container path should be extracted; must not be null and must have a valid URI
+	 * @return the absolute path to the folder containing the resource as a string
+	 * @throws IllegalArgumentException
+	 *             if the resource is null or has no valid URI
+	 */
+	public static String getAbsoluteContainerFolderPathOf(final Resource resource) {
+		if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+		URI uri = resource.getURI();
+		if (uri == null) throw new IllegalArgumentException("Resource must have a valid URI");
+		if (uri.isFile()) {
+			uri = uri.trimSegments(1);
+			return uri.toFileString();
+		}
+		if (uri.isPlatform()) {
+			final IPath path = getPathOf(resource);
+			final IFile file = GAMA.getWorkspaceManager().getRoot().getFile(path);
+			final org.eclipse.core.resources.IContainer folder = file.getParent();
+			return folder.getLocation().toString();
+		}
+		return URI.decode(uri.toString());
+	}
+
+	/**
 	 * Creates a temporary synthetic GAML resource with proper import setup. The resource is assigned a unique synthetic
 	 * URI and inherits imports from the provided description. This method is unsynchronized to avoid thread contention
 	 * at startup (thread-safe via volatile counter).

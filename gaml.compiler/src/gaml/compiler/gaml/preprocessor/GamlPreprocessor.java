@@ -15,4 +15,12 @@ public class GamlPreprocessor {
 		// TODO Auto-generated constructor stub
 	}
 
+	/**
+	 * @param result
+	 * @return
+	 */
+	public String process(final String result) {
+
+	}
+
 }

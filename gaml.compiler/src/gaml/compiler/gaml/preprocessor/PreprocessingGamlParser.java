@@ -12,7 +12,6 @@ package gaml.compiler.gaml.preprocessor;
 
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.Map;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.parser.IParseResult;
@@ -21,8 +20,6 @@ import org.eclipse.xtext.parser.ParseException;
 import com.google.common.io.CharStreams;
 
 import gama.dev.DEBUG;
-import gama.dev.STRINGS;
-import gaml.compiler.gaml.indexer.GamlResourceIndexer;
 import gaml.compiler.gaml.resource.GamlResourceReader;
 import gaml.compiler.parser.antlr.GamlParser;
 
@@ -51,10 +48,8 @@ public class PreprocessingGamlParser extends GamlParser {
 
 			// 2. Run the tagging preprocessor
 			GamlPreprocessor preprocessor = new GamlPreprocessor(offsetMap);
-			Map<URI, String> imports = GamlResourceIndexer.allImportsOf(uri);
-			DEBUG.OUT("Imports of " + uri + ": " + STRINGS.TO_STRING(imports.keySet()));
 
-			// String result = preprocessor.process(rawText);
+			result = preprocessor.process(result);
 
 			// 3. Parse the TAGGED text
 			Reader taggedReader = new StringReader(result);

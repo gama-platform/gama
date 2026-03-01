@@ -148,9 +148,6 @@ public class ReflexArchitecture extends AbstractArchitecture {
 	public void preStep(final IScope scope, final IPopulation<? extends IAgent> gamaPopulation) {}
 
 	@Override
-	public int getOrder() { return 0; }
-
-	@Override
 	public void setOrder(final int o) {}
 
 	@Override

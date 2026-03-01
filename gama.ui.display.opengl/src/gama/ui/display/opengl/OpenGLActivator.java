@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.osgi.framework.BundleContext;
@@ -54,7 +53,7 @@ public class OpenGLActivator extends GamaBundleActivator {
 		// // Necessary to load the native libraries correctly (see
 		// //
 		// http://forum.jogamp.org/Return-of-the-quot-java-lang-UnsatisfiedLinkError-Can-t-load-library-System-Library-Frameworks-glueg-td4034549.html)
-		CompletableFuture.runAsync(() -> {
+		runAsync(() -> {
 			DEBUG.TIMER(BANNER_CATEGORY.OpenGL, "Subsystem preloaded", "in", () -> {
 
 				JarUtil.setResolver(url -> {
@@ -76,9 +75,7 @@ public class OpenGLActivator extends GamaBundleActivator {
 				}
 				while (!GLProfile.isInitialized()) { THREADS.WAIT(100, null, "Impossible to initialize OpenGL"); }
 				gatherOpenGLProperties();
-				// }).start();
 			});
-
 		});
 	}
 

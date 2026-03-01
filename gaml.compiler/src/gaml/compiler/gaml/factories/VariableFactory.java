@@ -52,10 +52,10 @@ public class VariableFactory implements ISymbolDescriptionFactory {
 
 	@Override
 	public IDescription buildDescription(final String keyword, final Facets facets, final EObject element,
-			final Iterable<IDescription> children, final IDescription enclosing, final IArtefact.Symbol proto) {
+			final Iterable<IDescription> children, final IDescription enclosing, final IArtefact.Symbol artefact) {
 		if (IKeyword.PARAMETER.equals(keyword)) {
 
-			final Map<String, IArtefact.Facet> possibleFacets = proto.getPossibleFacets();
+			final Map<String, IArtefact.Facet> possibleFacets = artefact.getPossibleFacets();
 			// We copy the relevant facets from the targeted var of the
 			// parameter
 			IVariableDescription targetedVar = enclosing.getModelDescription().getAttribute(facets.getLabel(VAR));

@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.annotations.support;
 
+import java.util.EnumSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Written by drogoul Modified on 1 ao�t 2010
@@ -125,14 +125,17 @@ public enum ISymbolKind {
 	public static String[] TEMPLATE_MENU = { "Species", "Model", "Statement", "Behavior", "Parameter", "Output",
 			"Layer", "Skill", "Batch", "Batch", "", "Statement", "Statement", "Experiment", "", "Operator", "" };
 
-	/** The Constant STATEMENTS_WITH_ATTRIBUTES. */
-	public static final Set<ISymbolKind> STATEMENTS_CONTAINING_ATTRIBUTES = Set.of(SPECIES, EXPERIMENT, OUTPUT, MODEL);
+	/**
+	 * STATEMENTS_DEFINING_ATTRIBUTES. A list of statements that consider the definitions as attributes instead of temp
+	 * variables. TODO needs to be adjusted soon for objects and skills
+	 */
+	private static final EnumSet<ISymbolKind> STATEMENTS_DEFINING_ATTRIBUTES = EnumSet.of(SPECIES, EXPERIMENT, MODEL);
 
-	/** The kinds. */
-	public static Set<ISymbolKind> VARIABLES = Set.of(NUMBER, CONTAINER, REGULAR);
+	/** VARIABLES. Which statements are considered variable declarations. */
+	private static final EnumSet<ISymbolKind> VARIABLES = EnumSet.of(NUMBER, CONTAINER, REGULAR);
 
 	/** The kinds as string. */
-	public static Map<ISymbolKind, String> KINDS_AS_STRING =
+	public static final Map<ISymbolKind, String> KINDS_AS_STRING =
 			Map.of(NUMBER, "Number variable", CONTAINER, "Container variable", REGULAR, "Variable");
 
 	/**
@@ -142,8 +145,16 @@ public enum ISymbolKind {
 	 *            the kind
 	 * @return true, if successful
 	 */
-	public static boolean definesAttributes(final ISymbolKind kind) {
-		return STATEMENTS_CONTAINING_ATTRIBUTES.contains(kind);
+	public static boolean isDefiningAttributes(final ISymbolKind kind) {
+		return STATEMENTS_DEFINING_ATTRIBUTES.contains(kind);
+	}
+
+	/**
+	 * @param kind
+	 * @return
+	 */
+	public static boolean isVariable(final ISymbolKind kind) {
+		return VARIABLES.contains(kind);
 	}
 
 }

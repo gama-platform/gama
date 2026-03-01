@@ -29,7 +29,7 @@ import gama.dev.COUNTER;
 public abstract class ParameterAdapter implements IParameter.Batch {
 
 	/** The order. */
-	private final int order = COUNTER.COUNT();
+	private final long order = COUNTER.COUNT();
 
 	/** The title. */
 	protected String title;
@@ -89,7 +89,7 @@ public abstract class ParameterAdapter implements IParameter.Batch {
 	}
 
 	@Override
-	public int getOrder() { return order; }
+	public long getOrder() { return order; }
 
 	@Override
 	public String getTitle() { return title; }

@@ -296,7 +296,7 @@ public class ExpressionDescriptionFactory extends GamlSwitch<IExpressionDescript
 	 *
 	 * @return the singleton ConstantExpressionDescription representing null values
 	 */
-	private ConstantExpressionDescription getNull() {
+	public ConstantExpressionDescription getNull() {
 		if (NULL_EXPR_DESCRIPTION == null) { NULL_EXPR_DESCRIPTION = new ConstantExpressionDescription(null); }
 		return NULL_EXPR_DESCRIPTION;
 	}
@@ -306,7 +306,8 @@ public class ExpressionDescriptionFactory extends GamlSwitch<IExpressionDescript
 	 *
 	 * @return the singleton ConstantExpressionDescription representing boolean true value
 	 */
-	private ConstantExpressionDescription getTrue() {
+	@Override
+	public ConstantExpressionDescription getTrue() {
 		if (TRUE_EXPR_DESCRIPTION == null) { TRUE_EXPR_DESCRIPTION = new ConstantExpressionDescription(true); }
 		return TRUE_EXPR_DESCRIPTION;
 	}
@@ -316,7 +317,7 @@ public class ExpressionDescriptionFactory extends GamlSwitch<IExpressionDescript
 	 *
 	 * @return the singleton ConstantExpressionDescription representing boolean false value
 	 */
-	private ConstantExpressionDescription getFalse() {
+	public ConstantExpressionDescription getFalse() {
 		if (FALSE_EXPR_DESCRIPTION == null) { FALSE_EXPR_DESCRIPTION = new ConstantExpressionDescription(false); }
 		return FALSE_EXPR_DESCRIPTION;
 	}

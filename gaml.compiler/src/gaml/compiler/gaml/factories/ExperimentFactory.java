@@ -99,7 +99,7 @@ public class ExperimentFactory extends SpeciesFactory {
 	 */
 	@Override
 	public IExperimentDescription buildDescription(final String keyword, final Facets facets, final EObject element,
-			final Iterable<IDescription> children, final IDescription sd, final IArtefact.Symbol proto) {
+			final Iterable<IDescription> children, final IDescription sd, final IArtefact.Symbol artefact) {
 		return new ExperimentDescription(keyword, (ISpeciesDescription) sd, children, element, facets);
 	}
 

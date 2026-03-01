@@ -12,9 +12,9 @@ package gama.extension.maths.ode.statements;
 
 import static gama.api.constants.IKeyword.DIF2;
 import static gama.api.constants.IKeyword.DIFF;
+import static gama.api.constants.IKeyword.EQUALS;
 import static gama.api.constants.IKeyword.EQUATION;
 import static gama.api.constants.IKeyword.EQUATION_LEFT;
-import static gama.api.constants.IKeyword.EQUALS;
 import static gama.api.constants.IKeyword.EQUATION_RIGHT;
 import static gama.api.constants.IKeyword.SOLVE;
 import static gama.api.constants.IKeyword.ZERO;
@@ -294,7 +294,7 @@ public class SingleEquationStatement extends AbstractStatement {
 	}
 
 	@Override
-	public int getOrder() { return orderNames.get(function.getName()); }
+	public long getOrder() { return orderNames.get(function.getName()); }
 
 	// Placeholders operators that are (normally) never called.
 	// FIXME Can probably be replaced by actions, so that they do not pollute

@@ -600,7 +600,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 			workspace.getSynchronizer().add(CACHE_KEY);
 			started = true;
 			
-			DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Retrieving workspace metadata", "done in", () -> {
+			DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Retrieving workspace metadata", "completed in", () -> {
 				try {
 					workspace.getRoot().accept(resource -> {
 						if (resource.isAccessible()) {

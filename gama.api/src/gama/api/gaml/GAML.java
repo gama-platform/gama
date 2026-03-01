@@ -33,8 +33,8 @@ import gama.api.additions.IConstantAcceptor;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.artefacts.IArtefact;
-import gama.api.compilation.artefacts.IArtefactFactory;
 import gama.api.compilation.artefacts.IArtefact.Operator;
+import gama.api.compilation.artefacts.IArtefactFactory;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionFactory;
@@ -202,7 +202,7 @@ public class GAML {
 	 * Volatile to ensure thread-safe visibility of the factory instance across threads.
 	 * </p>
 	 */
-	private static volatile IArtefactFactory artefactProtoFactory = null;
+	private static volatile IArtefactFactory artefactFactory = null;
 
 	/**
 	 * The expression factory used to create GAML expressions.
@@ -299,7 +299,7 @@ public class GAML {
 	 *            the artefact proto factory to register, must not be null
 	 */
 	public static void registerArtefactProtoFactory(final IArtefactFactory factory) {
-		artefactProtoFactory = factory;
+		artefactFactory = factory;
 	}
 
 	/**
@@ -407,11 +407,11 @@ public class GAML {
 	}
 
 	/**
-	 * Returns the artefact proto factory used to create artefact prototypes.
+	 * Returns the artefact factory used to create artefacts.
 	 *
-	 * @return the registered artefact proto factory, or null if not yet registered
+	 * @return the registered artefact factory, or null if not yet registered
 	 */
-	public static IArtefactFactory getArtefactProtoFactory() { return artefactProtoFactory; }
+	public static IArtefactFactory getArtefactFactory() { return artefactFactory; }
 
 	/**
 	 * Returns the GAML model builder used to build model descriptions.
@@ -882,9 +882,7 @@ public class GAML {
 		final Map<String, IArtefact> fieldsMap = new HashMap<>(classes.size() * 4);
 		for (final Class c : classes) {
 			final Set<IArtefact> fields = FIELDS.get(c);
-			if (fields != null) {
-				for (final IArtefact desc : fields) { fieldsMap.putIfAbsent(desc.getName(), desc); }
-			}
+			if (fields != null) { for (final IArtefact desc : fields) { fieldsMap.putIfAbsent(desc.getName(), desc); } }
 		}
 		return fieldsMap;
 	}
@@ -893,9 +891,9 @@ public class GAML {
 	 * Returns all statement prototypes that are designated to be defined within the given skill.
 	 *
 	 * <p>
-	 * Iterates over all registered statement prototype names in the {@link ArtefactRegistry} and retains those
-	 * whose {@code shouldBeDefinedIn} predicate returns {@code true} for the given skill name. Insertion order is
-	 * preserved via a {@link LinkedHashSet}.
+	 * Iterates over all registered statement prototype names in the {@link ArtefactRegistry} and retains those whose
+	 * {@code shouldBeDefinedIn} predicate returns {@code true} for the given skill name. Insertion order is preserved
+	 * via a {@link LinkedHashSet}.
 	 * </p>
 	 *
 	 * @param skill

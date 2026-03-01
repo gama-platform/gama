@@ -41,7 +41,7 @@ public class SkillFactory implements ISymbolDescriptionFactory.Skill {
 
 	@Override
 	public IDescription buildDescription(final String keyword, final Facets facets, final EObject element,
-			final Iterable<IDescription> children, final IDescription enclosing, final IArtefact.Symbol proto) {
+			final Iterable<IDescription> children, final IDescription enclosing, final IArtefact.Symbol artefact) {
 		// Should not be invoked for the moment. Later probably when skills can be built in GAML
 		return null;
 	}

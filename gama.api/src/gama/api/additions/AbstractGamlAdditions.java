@@ -12,7 +12,6 @@ package gama.api.additions;
 
 import static gama.api.additions.GamaBundleLoader.CURRENT_PLUGIN_NAME;
 import static gama.api.constants.IKeyword.OF;
-import static gama.api.constants.IKeyword.SPECIES;
 import static gama.api.constants.IKeyword._DOT;
 
 import java.lang.reflect.Executable;
@@ -247,7 +246,6 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 			final int innerType, final int keyType, final int contentType, final String[] s) {
 		GamaFileType.addFileTypeDefinition(string, Types.get(innerType), Types.get(keyType), Types.get(contentType),
 				clazz, helper, s, CURRENT_PLUGIN_NAME);
-		ArtefactRegistry.addNewVarKeyword(string + "_file", ISymbolKind.CONTAINER);
 	}
 
 	/**
@@ -313,13 +311,8 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 			final int[] contextKinds, final IArtefact.Facet[] fmd, final String omissible, final ISymbolFactory sc) {
 		final Collection<String> keywords;
 		ISymbolKind kind = ISymbolKind.get(sKind);
-		if (ISymbolKind.VARIABLES.contains(kind)) {
-			keywords = ArtefactRegistry.VARKIND2KEYWORDS.get(kind);
-			keywords.remove(SPECIES);
-		} else {
-			keywords = Arrays.asList(names);
-		}
-		final IArtefact.Symbol md = GAML.getArtefactProtoFactory().createSymbolArtefact(c, isBreakable, isContinuable,
+		keywords = Arrays.asList(names);
+		final IArtefact.Symbol md = GAML.getArtefactFactory().createSymbolArtefact(c, isBreakable, isContinuable,
 				isSequence, hasArguments, kind, !scope, fmd, omissible, contextKeywords, contextKinds, isRemoteContext,
 				isUnique, name_unique, sc, names == null || names.length == 0 ? "variable declaration" : names[0],
 				CURRENT_PLUGIN_NAME);
@@ -363,9 +356,9 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 		for (final String kw : keywords) {
 			if (GAML.canRegisterOperator(kw, signature)) {
 				boolean isField = nbParam == 2 && (OF.equals(kw) || _DOT.equals(kw)) && signature.get(0).isAgentType();
-				GAML.registerOperator(GAML.getArtefactProtoFactory().createOperatorArtefact(kw, method,
-						isField ? null : doc, helper, c, isField, rt, signature, t, content, index, contentContentType,
-						expectedContentTypes, plugin));
+				GAML.registerOperator(GAML.getArtefactFactory().createOperatorArtefact(kw, method, isField ? null : doc,
+						helper, c, isField, rt, signature, t, content, index, contentContentType, expectedContentTypes,
+						plugin));
 			}
 		}
 	}
@@ -461,8 +454,7 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 */
 	protected IArtefact.Facet _facet(final String name, final int[] types, final int ct, final int kt,
 			final String[] values, final boolean optional, final boolean internal, final boolean isRemote) {
-		return GAML.getArtefactProtoFactory().createFacetArtefact(name, types, ct, kt, values, optional, internal,
-				isRemote);
+		return GAML.getArtefactFactory().createFacetArtefact(name, types, ct, kt, values, optional, internal, isRemote);
 	}
 
 	/**
@@ -475,8 +467,8 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 	 */
 	protected void _field(final Class clazz, final String name, final IGamaGetter helper, final int returnType,
 			final Class signature, final int typeProvider, final int contentTypeProvider, final int keyTypeProvider) {
-		IArtefact proto = GAML.getArtefactProtoFactory().createOperatorArtefact(name, null, helper, false, true,
-				returnType, signature, typeProvider, contentTypeProvider, keyTypeProvider, AI);
+		IArtefact proto = GAML.getArtefactFactory().createOperatorArtefact(name, null, helper, false, true, returnType,
+				signature, typeProvider, contentTypeProvider, keyTypeProvider, AI);
 		GAML.addField(clazz, proto);
 	}
 

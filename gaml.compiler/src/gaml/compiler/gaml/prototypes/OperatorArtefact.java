@@ -312,7 +312,7 @@ public class OperatorArtefact extends AbstractArtefact implements IArtefact.Oper
 		final int size = signature.size();
 		final String aName = getName();
 		if (size == 1 || size > 2) {
-			if (ArtefactRegistry.PROTOS_WITHOUT_PARENTHESES.contains(aName))
+			if (ArtefactRegistry.ARTEFACTS_WITHOUT_PARENTHESES.contains(aName))
 				return aName + signature.asPattern(withVariables);
 			return aName + "(" + signature.asPattern(withVariables) + ")";
 		}

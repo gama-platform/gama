@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
@@ -290,48 +291,53 @@ public class GamaBundleLoader {
 				return;
 			}
 			// We then build the other extensions to the language
-			for (final Bundle addition : GAMA_PLUGINS) {
-				CURRENT_PLUGIN_NAME = addition.getSymbolicName();
-				try {
-					preBuild(addition);
-				} catch (final Exception e1) {
-					ERROR("Error in loading plugin " + CURRENT_PLUGIN_NAME + ". ", e1);
-					// We do not systematically exit in case of additional plugins failing to load, so as to
-					// give the platform a chance to execute even in case of errors (to save files, to
-					// remove offending plugins, etc.)
-					continue;
+			CompletableFuture.runAsync(() -> {
+				for (final Bundle addition : GAMA_PLUGINS) {
+					CURRENT_PLUGIN_NAME = addition.getSymbolicName();
+					try {
+						preBuild(addition);
+					} catch (final Exception e1) {
+						ERROR("Error in loading plugin " + CURRENT_PLUGIN_NAME + ". ", e1);
+						// We do not systematically exit in case of additional plugins failing to load, so as to
+						// give the platform a chance to execute even in case of errors (to save files, to
+						// remove offending plugins, etc.)
+						continue;
+					}
 				}
-			}
-			CURRENT_PLUGIN_NAME = null;
-			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'create'", "done in", () -> {
-				loadCreateExt(registry);
-			});
-			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'save'", "done in",
-					() -> { loadSaveExt(registry); });
-			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'draw'", "done in",
-					() -> { loadDrawExt(registry); });
-			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'event'", "done in", () -> {
-				loadEventExt(registry);
-			});
-			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'metadata'", "done in", () -> {
-				loadMetadataExt(registry);
-			});
-			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Gathering built-in models", "done in",
-					() -> { loadModels(registry); });
-			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAMA, "Loading content extensions", "done in", () -> {
-				loadContentExtensions(registry);
-			});
+				CURRENT_PLUGIN_NAME = null;
+				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'create'", "completed in", () -> {
+					loadCreateExt(registry);
+				});
+				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'save'", "completed in", () -> {
+					loadSaveExt(registry);
+				});
+				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'draw'", "completed in", () -> {
+					loadDrawExt(registry);
+				});
+				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'event'", "completed in", () -> {
+					loadEventExt(registry);
+				});
+				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading extensions to 'metadata'", "completed in", () -> {
+					loadMetadataExt(registry);
+				});
+				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Gathering built-in models", "completed in",
+						() -> { loadModels(registry); });
+				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAMA, "Loading content extensions", "completed in", () -> {
+					loadContentExtensions(registry);
+				});
 
-			// CRUCIAL INITIALIZATIONS
-			// We init the meta-model of GAMA (i.e. abstract agent, model, experiment species)
-			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Building metamodel", "done in",
-					() -> { GamaMetaModel.build(); });
+				// CRUCIAL INITIALIZATIONS
+				// We init the meta-model of GAMA (i.e. abstract agent, model, experiment species)
+				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Building metamodel", "completed in",
+						() -> { GamaMetaModel.build(); });
 
-			// We init the type hierarchy, the units and the agent representing the GAMA platform
-			Types.init();
-			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading constants", "done in",
-					() -> { loadConstants(registry); });
-			GamaMetaModel.getSpeciesDescription(IKeyword.PLATFORM).validate();
+				// We init the type hierarchy, the units and the agent representing the GAMA platform
+				Types.init();
+				TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GAML, "Loading constants", "completed in",
+						() -> { loadConstants(registry); });
+				GamaMetaModel.getSpeciesDescription(IKeyword.PLATFORM).validate();
+			}, r -> Thread.ofVirtual().start(r));
+
 		});
 
 	}

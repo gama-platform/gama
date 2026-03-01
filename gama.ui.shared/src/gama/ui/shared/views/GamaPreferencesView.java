@@ -111,7 +111,7 @@ public class GamaPreferencesView {
 	 * Preload.
 	 */
 	public static void preload() {
-		DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Preloading preferences view", "done in", () -> {
+		DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Preloading preferences view", "completed in", () -> {
 			WorkbenchHelper.run(() -> {
 				if (instance == null || instance.shell == null || instance.shell.isDisposed()) {
 					instance = new GamaPreferencesView(WorkbenchHelper.getShell());

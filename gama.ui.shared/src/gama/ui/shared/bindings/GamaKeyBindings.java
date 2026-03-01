@@ -176,7 +176,7 @@ public class GamaKeyBindings implements Listener {
 	 * Install.
 	 */
 	public static void install() {
-		DEBUG.TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Installing key bindings", "done in", () -> {
+		DEBUG.TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Installing key bindings", "completed in", () -> {
 			WorkbenchHelper.getDisplay().addFilter(SWT.KeyDown, BINDINGS);
 		});
 

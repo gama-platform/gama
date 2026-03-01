@@ -27,8 +27,8 @@ import gama.api.utils.interfaces.INamed;
  * </p>
  * 
  * <p>
- * Symbols form a hierarchical structure where symbols can contain child symbols (e.g., a species contains variables
- * and actions). They are ordered to maintain declaration order and support proper initialization sequences.
+ * Symbols form a hierarchical structure where symbols can contain child symbols (e.g., a species contains variables and
+ * actions). They are ordered to maintain declaration order and support proper initialization sequences.
  * </p>
  * 
  * <h2>Key Responsibilities</h2>
@@ -57,7 +57,7 @@ public interface ISymbol extends INamed, IDisposable {
 	 *
 	 * @return the declaration order (lower values indicate earlier declaration)
 	 */
-	int getOrder();
+	long getOrder();
 
 	/**
 	 * Sets the declaration order of this symbol.

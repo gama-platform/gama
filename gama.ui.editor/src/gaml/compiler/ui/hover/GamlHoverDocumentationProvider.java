@@ -393,7 +393,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		String name = EGaml.getInstance().getKeyOf(type);
 		// Can happen with statements that "look like" var declarations and which are not treated specially in the
 		// grammar
-		if (ArtefactRegistry.isStatementArtefact(name)) return ArtefactRegistry.getStatementArtefact(name);
+		if (GAML.isAStatement(name)) return ArtefactRegistry.getStatementArtefact(name);
 		if (Types.hasType(name)) return Types.get(name);
 		return null;
 	}

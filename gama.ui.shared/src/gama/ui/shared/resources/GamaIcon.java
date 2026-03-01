@@ -79,7 +79,7 @@ public class GamaIcon implements IGamaIcons {
 	 */
 	public static void preloadAllIcons() {
 		try {
-			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Preloading icons", "done in", () -> {
+			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Preloading icons", "completed in", () -> {
 				if (PATH_TO_ICONS == null) return;
 				Files.walkFileTree(PATH_TO_ICONS, new SimpleFileVisitor<Path>() {
 

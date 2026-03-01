@@ -45,6 +45,27 @@ import gama.api.gaml.expressions.IExpressionDescription;
 public interface IExpressionDescriptionFactory {
 
 	/**
+	 * Gets the true.
+	 *
+	 * @return the true
+	 */
+	IExpressionDescription getTrue();
+
+	/**
+	 * Gets the false.
+	 *
+	 * @return the false
+	 */
+	IExpressionDescription getFalse();
+
+	/**
+	 * Gets the null.
+	 *
+	 * @return the null
+	 */
+	IExpressionDescription getNull();
+
+	/**
 	 * Creates an expression description for a constant value of any type.
 	 * <p>
 	 * This method is cached for performance optimization, meaning that subsequent calls with the same value may return

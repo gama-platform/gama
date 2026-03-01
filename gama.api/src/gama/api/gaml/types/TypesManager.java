@@ -21,7 +21,6 @@ import java.util.concurrent.ExecutionException;
 
 import com.google.common.cache.Cache;
 
-import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
@@ -33,11 +32,11 @@ import gama.dev.DEBUG;
 /**
  * Implementation of {@link ITypesManager} that provides model-scoped type registry with hierarchical delegation and
  * performance-optimized caching of type relationships.
- * 
+ *
  * <p>
  * TypesManager maintains a local registry of types and can delegate lookups to a parent manager, creating a hierarchy:
  * </p>
- * 
+ *
  * <pre>
  * Built-in TypesManager (Types.BUILT_IN_TYPES)
  *   ↑
@@ -45,7 +44,7 @@ import gama.dev.DEBUG;
  *   ↑
  * Experiment TypesManager (if needed)
  * </pre>
- * 
+ *
  * <p>
  * This implementation includes sophisticated caching mechanisms for expensive type relationship operations:
  * </p>
@@ -55,11 +54,11 @@ import gama.dev.DEBUG;
  * <li><b>Distance cache:</b> Stores hierarchy distance computations</li>
  * <li><b>Translatability cache:</b> Stores type translation compatibility checks</li>
  * </ul>
- * 
+ *
  * <p>
  * All caches use a 5-minute expiration policy (expire after access) to balance memory usage with performance.
  * </p>
- * 
+ *
  * <p>
  * Key features:
  * </p>
@@ -71,37 +70,37 @@ import gama.dev.DEBUG;
  * <li>Hierarchical delegation to parent managers</li>
  * <li>Guava cache-based memoization of type relationships</li>
  * </ul>
- * 
+ *
  * <p>
  * Example usage:
  * </p>
- * 
+ *
  * <pre>
  * {@code
  * // Create a types manager for a model
  * ITypesManager modelTypes = new TypesManager(Types.BUILT_IN_TYPES);
- * 
+ *
  * // Initialize with model's species
  * modelTypes.init(modelDescription);
- * 
+ *
  * // Look up types (searches local, then parent)
  * IType mySpecies = modelTypes.get("mySpecies"); // local
  * IType intType = modelTypes.get("int"); // from parent
- * 
+ *
  * // Use cached type relationships
  * boolean assignable = modelTypes.checkAssignability(Types.FLOAT, Types.INT);
- * 
+ *
  * // Decode parametric types
  * IType listOfInt = modelTypes.decodeType("list<int>");
- * 
+ *
  * // Clean up when done
  * modelTypes.dispose();
  * }
  * </pre>
- * 
+ *
  * @author drogoul
  * @since GAMA 1.0
- * 
+ *
  * @see ITypesManager
  * @see Types
  * @see IType
@@ -115,12 +114,12 @@ public class TypesManager implements ITypesManager {
 
 	/**
 	 * Creates a unique cache key from two types by combining their hash codes into a single long value.
-	 * 
+	 *
 	 * <p>
-	 * The key is constructed by placing the first type's hash code in the upper 32 bits and the second type's hash
-	 * code in the lower 32 bits. This creates a unique, order-sensitive key for caching binary type relationships.
+	 * The key is constructed by placing the first type's hash code in the upper 32 bits and the second type's hash code
+	 * in the lower 32 bits. This creates a unique, order-sensitive key for caching binary type relationships.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Implementation note: The bitwise operations ensure that different type pairs always produce different keys,
 	 * avoiding cache collisions.
@@ -141,7 +140,7 @@ public class TypesManager implements ITypesManager {
 
 	/**
 	 * Global counter for assigning unique IDs to dynamically created species types.
-	 * 
+	 *
 	 * <p>
 	 * Species type IDs start at {@link IType#BEGINNING_OF_SPECIES_TYPES} (10000) and increment for each new species
 	 * registered across all TypesManager instances.
@@ -151,7 +150,7 @@ public class TypesManager implements ITypesManager {
 
 	/**
 	 * The parent types manager to delegate to when a type is not found locally.
-	 * 
+	 *
 	 * <p>
 	 * Typically points to {@link Types#BUILT_IN_TYPES} for model-level managers.
 	 * </p>
@@ -160,7 +159,7 @@ public class TypesManager implements ITypesManager {
 
 	/**
 	 * Local registry mapping type names to type instances.
-	 * 
+	 *
 	 * <p>
 	 * Thread-safe storage using ConcurrentHashMap. Contains both the canonical type names and their string ID
 	 * representations.
@@ -170,7 +169,7 @@ public class TypesManager implements ITypesManager {
 
 	/**
 	 * Set of unique type instances registered in this manager (prevents duplicates).
-	 * 
+	 *
 	 * <p>
 	 * Uses a thread-safe Set to ensure the same type object is not registered multiple times under different names.
 	 * </p>
@@ -179,45 +178,45 @@ public class TypesManager implements ITypesManager {
 
 	/**
 	 * Cache for isAssignableFrom operations.
-	 * 
+	 *
 	 * <p>
 	 * Maps type pair keys to Boolean results. Expires entries 5 minutes after last access to balance memory and
 	 * performance.
 	 * </p>
-	 * 
+	 *
 	 * @see #checkAssignability(IType, IType)
 	 */
 	private final Cache<Long, Boolean> assignabilityCache = newBuilder().expireAfterAccess(5, MINUTES).build();
 
 	/**
 	 * Cache for findCommonSupertypeWith operations.
-	 * 
+	 *
 	 * <p>
 	 * Maps type pair keys to the computed common supertype. Expires entries 5 minutes after last access.
 	 * </p>
-	 * 
+	 *
 	 * @see #computeCommonSupertype(IType, IType)
 	 */
 	private final Cache<Long, IType<?>> commonSupertypeCache = newBuilder().expireAfterAccess(5, MINUTES).build();
 
 	/**
 	 * Cache for distanceTo operations.
-	 * 
+	 *
 	 * <p>
 	 * Maps type pair keys to Integer distance values. Expires entries 5 minutes after last access.
 	 * </p>
-	 * 
+	 *
 	 * @see #computeDistance(IType, IType)
 	 */
 	private final Cache<Long, Integer> distanceCache = newBuilder().expireAfterAccess(5, MINUTES).build();
 
 	/**
 	 * Cache for isTranslatableInto operations.
-	 * 
+	 *
 	 * <p>
 	 * Maps type pair keys to Boolean translatability results. Expires entries 5 minutes after last access.
 	 * </p>
-	 * 
+	 *
 	 * @see #checkTranslatability(IType, IType)
 	 */
 	private final Cache<Long, Boolean> translatabilityCache = newBuilder().expireAfterAccess(5, MINUTES).build();
@@ -234,7 +233,7 @@ public class TypesManager implements ITypesManager {
 
 	/**
 	 * Returns a copy of all types registered locally in this manager.
-	 * 
+	 *
 	 * <p>
 	 * This method returns only the types directly registered in this manager, not those from the parent. The returned
 	 * set is a defensive copy to prevent external modification.
@@ -247,7 +246,7 @@ public class TypesManager implements ITypesManager {
 
 	/**
 	 * Sets the parent types manager for hierarchical type resolution.
-	 * 
+	 *
 	 * <p>
 	 * When a type lookup fails in this manager, it is delegated to the parent. This creates the type hierarchy where
 	 * model-specific types can access built-in types.
@@ -259,24 +258,23 @@ public class TypesManager implements ITypesManager {
 	@Override
 	public void setParent(final ITypesManager parent) { this.parent = (TypesManager) parent; }
 
-
 	/**
 	 * Registers an alias for an existing type name, allowing the type to be referenced by multiple names.
-	 * 
+	 *
 	 * <p>
 	 * If the existing type is found in this manager's local registry, the alias is added locally. If the type doesn't
 	 * exist locally, the alias is not created (it does not search the parent).
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Example:
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * // Create an alias "integer" for "int"
 	 * typesManager.alias("int", "integer");
-	 * 
+	 *
 	 * // Both names now resolve to the same type object
 	 * assert typesManager.get("int") == typesManager.get("integer");
 	 * }
@@ -293,10 +291,9 @@ public class TypesManager implements ITypesManager {
 		if (t != null) { types.put(otherTypeName, t); }
 	}
 
-
 	/**
 	 * Registers a regular (non-species) type with metadata, making it available for GAML code.
-	 * 
+	 *
 	 * <p>
 	 * This method performs the following operations:
 	 * </p>
@@ -306,11 +303,11 @@ public class TypesManager implements ITypesManager {
 	 * <li>Adds the type to the local registry</li>
 	 * <li>Handles the special case of "unknown" types by returning NO_TYPE</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * Example from plugin initialization:
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * // Register a custom type from a plugin
@@ -335,14 +332,13 @@ public class TypesManager implements ITypesManager {
 		IType<Support> type = originalType;
 		if (IKeyword.UNKNOWN.equals(name)) { type = Types.NO_TYPE; }
 		type.setDefiningPlugin(plugin);
-		ArtefactRegistry.addNewTypeName(name, type.getVarKind());
 		addType(type);
 		return type;
 	}
 
 	/**
 	 * Registers a species description as a type, allowing agents of that species to be referenced by type in GAML.
-	 * 
+	 *
 	 * <p>
 	 * This method:
 	 * </p>
@@ -354,16 +350,16 @@ public class TypesManager implements ITypesManager {
 	 * <li>Registers the Java class to type name mapping</li>
 	 * <li>Adds the type to the local registry</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * Example usage during model compilation:
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * // Model defines: species mySpecies { ... }
 	 * IType<IAgent> speciesType = modelTypes.addSpeciesType(speciesDescription);
-	 * 
+	 *
 	 * // Now can use in GAML:
 	 * // mySpecies agent1 <- create mySpecies;
 	 * }
@@ -390,7 +386,7 @@ public class TypesManager implements ITypesManager {
 
 	/**
 	 * Internal method to add a type to the local registry.
-	 * 
+	 *
 	 * <p>
 	 * This method registers the type under two keys:
 	 * </p>
@@ -398,7 +394,7 @@ public class TypesManager implements ITypesManager {
 	 * <li>Its string name (e.g., "int", "mySpecies")</li>
 	 * <li>Its numeric ID as a string (e.g., "1" for int) - this is a legacy feature for backward compatibility</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * The type is also added to the uniqueTypes set to prevent duplicate instances.
 	 * </p>
@@ -417,7 +413,7 @@ public class TypesManager implements ITypesManager {
 	/**
 	 * Initializes this types manager from a model description by registering all species types and setting up the type
 	 * hierarchy.
-	 * 
+	 *
 	 * <p>
 	 * This two-phase initialization process:
 	 * </p>
@@ -426,25 +422,25 @@ public class TypesManager implements ITypesManager {
 	 * <li><b>Phase 2:</b> Visits all species again to set up parent-child relationships in the type hierarchy based on
 	 * species inheritance</li>
 	 * </ol>
-	 * 
+	 *
 	 * <p>
 	 * The two-phase approach ensures all species types exist before establishing relationships, avoiding null parent
 	 * references.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * Example:
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * // Model defines:
 	 * // species animal { ... }
 	 * // species dog parent: animal { ... }
-	 * 
+	 *
 	 * TypesManager modelTypes = new TypesManager(Types.BUILT_IN_TYPES);
 	 * modelTypes.init(modelDescription);
-	 * 
+	 *
 	 * // After init:
 	 * // - "animal" type exists with parent "agent"
 	 * // - "dog" type exists with parent "animal"
@@ -475,7 +471,7 @@ public class TypesManager implements ITypesManager {
 
 	/**
 	 * Checks if a type with the given name exists in this manager or the parent hierarchy.
-	 * 
+	 *
 	 * <p>
 	 * This method searches locally first, then delegates to the parent if not found.
 	 * </p>
@@ -494,7 +490,7 @@ public class TypesManager implements ITypesManager {
 
 	/**
 	 * Retrieves a type by name, returning NO_TYPE if not found.
-	 * 
+	 *
 	 * <p>
 	 * Convenience method that delegates to {@link #get(String, IType)} with Types.NO_TYPE as the default.
 	 * </p>
@@ -510,7 +506,7 @@ public class TypesManager implements ITypesManager {
 
 	/**
 	 * Retrieves a type by name with a custom default value.
-	 * 
+	 *
 	 * <p>
 	 * Search order:
 	 * </p>
@@ -536,10 +532,9 @@ public class TypesManager implements ITypesManager {
 		return parent.get(type, defaultValue);
 	}
 
-
 	/**
 	 * Clears all locally registered types and invalidates all caches.
-	 * 
+	 *
 	 * <p>
 	 * This method performs a complete cleanup:
 	 * </p>
@@ -548,10 +543,10 @@ public class TypesManager implements ITypesManager {
 	 * <li>Clears the uniqueTypes set</li>
 	 * <li>Invalidates all 4 relationship caches (assignability, common supertype, distance, translatability)</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
-	 * After disposal, this manager is empty but can still delegate to its parent. Call this when a model is unloaded
-	 * to free memory.
+	 * After disposal, this manager is empty but can still delegate to its parent. Call this when a model is unloaded to
+	 * free memory.
 	 * </p>
 	 */
 	@Override
@@ -566,7 +561,7 @@ public class TypesManager implements ITypesManager {
 
 	/**
 	 * Parses and decodes a type expression that may contain parametric type parameters.
-	 * 
+	 *
 	 * <p>
 	 * This powerful method handles complex nested type expressions with angle bracket notation:
 	 * </p>
@@ -576,7 +571,7 @@ public class TypesManager implements ITypesManager {
 	 * <li>Two parameter containers: "map<string,float>", "pair<int,bool>"</li>
 	 * <li>Deeply nested types: "list<map<string,list<int>>>"</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * The parser correctly handles:
 	 * </p>
@@ -585,28 +580,28 @@ public class TypesManager implements ITypesManager {
 	 * <li>Multiple parameters separated by commas</li>
 	 * <li>Whitespace around type names and parameters</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * Examples:
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * // Simple type
 	 * IType t1 = manager.decodeType("int");
-	 * 
+	 *
 	 * // List with parameter
 	 * IType t2 = manager.decodeType("list<int>");
 	 * // Equivalent to: Types.LIST.of(Types.INT)
-	 * 
+	 *
 	 * // Map with two parameters
 	 * IType t3 = manager.decodeType("map<string,float>");
 	 * // Equivalent to: Types.MAP.of(Types.STRING, Types.FLOAT)
-	 * 
+	 *
 	 * // Nested types
 	 * IType t4 = manager.decodeType("list<map<string,int>>");
 	 * // List of maps from string to int
-	 * 
+	 *
 	 * // Complex nesting
 	 * IType t5 = manager.decodeType("map<string,list<pair<int,float>>>");
 	 * }
