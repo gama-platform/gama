@@ -420,7 +420,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		// Forcing alpha
 		ogl.glBlendColor(0.0f, 0.0f, 0.0f, (float) gl.getCurrentObjectAlpha());
 		ogl.glBlendFunc(GL2ES2.GL_CONSTANT_ALPHA, GL2ES2.GL_ONE_MINUS_CONSTANT_ALPHA);
-		gl.beginDrawing(GL.GL_TRIANGLES);
+		gl.beginDrawing(com.jogamp.opengl.GL.GL_TRIANGLES);
 		for (var index = 0; index < indexBuffer.limit(); index++) {
 			var i = indexBuffer.get(index);
 			int one = i * 3, two = one + 1, three = one + 2;
@@ -468,33 +468,110 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		ogl.glBlendColor(0.0f, 0.0f, 0.0f, (float) gl.getCurrentObjectAlpha());
 		ogl.glBlendFunc(GL2ES2.GL_CONSTANT_ALPHA, GL2ES2.GL_ONE_MINUS_CONSTANT_ALPHA);
 
-		// VBO Management
-		if (useVBO) {
+		// VAO/VBO Management for Core Profile GL3
+		if (gl.getGL().isGL3()) {
+			com.jogamp.opengl.GL3 gl3 = gl.getGL().getGL3();
 			if (vboIds == null) {
-				vboIds = new int[5]; // Vertex, Normal, Tex, Color, LineColor
-				ogl.glGenBuffers(5, vboIds, 0);
+				vboIds = new int[7]; // [0]=VAO, [1]=Vertex, [2]=Normal, [3]=Tex, [4]=Color, [5]=LineColor, [6]=Index
+				gl3.glGenVertexArrays(1, vboIds, 0);
+				gl3.glGenBuffers(6, vboIds, 1);
 			}
+
+			gl3.glBindVertexArray(vboIds[0]);
+
 			// Bind and upload Data
-			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
-			ogl.glBufferData(GL.GL_ARRAY_BUFFER, vertexBuffer.capacity() * Double.BYTES, vertexBuffer,
-					GL.GL_DYNAMIC_DRAW);
-			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[1]);
-			ogl.glBufferData(GL.GL_ARRAY_BUFFER, normalBuffer.capacity() * Double.BYTES, normalBuffer,
-					GL.GL_DYNAMIC_DRAW);
+			gl3.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[1]);
+			gl3.glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vertexBuffer.capacity() * Double.BYTES, vertexBuffer, com.jogamp.opengl.GL.GL_DYNAMIC_DRAW);
+			gl3.glEnableVertexAttribArray(0);
+			gl3.glVertexAttribPointer(0, 3, com.jogamp.opengl.GL2GL3.GL_DOUBLE, false, 0, 0);
+
+			gl3.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[2]);
+			gl3.glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, normalBuffer.capacity() * Double.BYTES, normalBuffer, com.jogamp.opengl.GL.GL_DYNAMIC_DRAW);
+			gl3.glEnableVertexAttribArray(3);
+			gl3.glVertexAttribPointer(3, 3, com.jogamp.opengl.GL2GL3.GL_DOUBLE, false, 0, 0);
+
 			if (outputsTextures) {
-				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[2]);
-				ogl.glBufferData(GL.GL_ARRAY_BUFFER, texBuffer.capacity() * Double.BYTES, texBuffer,
-						GL.GL_DYNAMIC_DRAW);
+				gl3.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[3]);
+				gl3.glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, texBuffer.capacity() * Double.BYTES, texBuffer, com.jogamp.opengl.GL.GL_DYNAMIC_DRAW);
+				gl3.glEnableVertexAttribArray(2);
+				gl3.glVertexAttribPointer(2, 2, com.jogamp.opengl.GL2GL3.GL_DOUBLE, false, 0, 0);
+			} else {
+				gl3.glDisableVertexAttribArray(2);
+			}
+
+			if (outputsColors) {
+				gl3.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[4]);
+				gl3.glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, colorBuffer.capacity() * Double.BYTES, colorBuffer, com.jogamp.opengl.GL.GL_DYNAMIC_DRAW);
+				gl3.glEnableVertexAttribArray(1);
+				gl3.glVertexAttribPointer(1, 4, com.jogamp.opengl.GL2GL3.GL_DOUBLE, false, 0, 0);
+			} else {
+				gl3.glDisableVertexAttribArray(1);
+			}
+
+			// Element Buffer (EBO) - since glDrawElements uses indexBuffer
+			// Actually indexBuffer is passed directly to glDrawElements, but in Core Profile it MUST be bound to GL_ELEMENT_ARRAY_BUFFER!
+			// Wait, let's just use it dynamically in glDrawElements or bind an EBO. I will bind an EBO for correctness.
+			// Let's add EBO to vboIds.
+					gl3.glBindBuffer(com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER, vboIds[6]);
+			gl3.glBufferData(com.jogamp.opengl.GL.GL_ELEMENT_ARRAY_BUFFER, indexBuffer.capacity() * Integer.BYTES, indexBuffer, com.jogamp.opengl.GL.GL_DYNAMIC_DRAW);
+
+			// Setup Shader
+			gama.ui.display.opengl.renderer.shaders.ShaderProgram shader = gl.getCurrentShader();
+			if (shader != null) {
+				shader.bind(gl3);
+				int projLoc = shader.getUniformLocation(gl3, "projection");
+				int mvLoc = shader.getUniformLocation(gl3, "modelView");
+				int colorLoc = shader.getUniformLocation(gl3, "globalColor");
+				int texLoc = shader.getUniformLocation(gl3, "useTexture");
+
+				shader.setUniform(gl3, projLoc, new org.joml.Matrix4f(gl.getCurrentProjectionMatrix()));
+				shader.setUniform(gl3, mvLoc, new org.joml.Matrix4f(gl.getCurrentModelViewMatrix()));
+				if (colorLoc >= 0) shader.setUniform(gl3, colorLoc, new org.joml.Vector4f(1.0f, 1.0f, 1.0f, (float)gl.getCurrentObjectAlpha()));
+				if (texLoc >= 0) shader.setUniform(gl3, texLoc, outputsTextures ? 1 : 0);
+
+				if (!gl.isWireframe()) {
+					gl3.glDrawElements(com.jogamp.opengl.GL.GL_TRIANGLES, indexBuffer.limit(), com.jogamp.opengl.GL.GL_UNSIGNED_INT, 0); // offset 0 since EBO is bound
+				}
+
+				if (outputsLines) {
+					// Update color buffer to use line colors instead of face colors
+					gl3.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[5]);
+					gl3.glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, lineColorBuffer.capacity() * Double.BYTES, lineColorBuffer, com.jogamp.opengl.GL.GL_DYNAMIC_DRAW);
+					gl3.glEnableVertexAttribArray(1);
+					gl3.glVertexAttribPointer(1, 4, com.jogamp.opengl.GL2GL3.GL_DOUBLE, false, 0, 0);
+
+					// Draw lines
+					gl3.glPolygonMode(com.jogamp.opengl.GL.GL_FRONT_AND_BACK, com.jogamp.opengl.GL2GL3.GL_LINE);
+					gl3.glDrawElements(com.jogamp.opengl.GL.GL_TRIANGLES, indexBuffer.limit(), com.jogamp.opengl.GL.GL_UNSIGNED_INT, 0);
+					gl3.glPolygonMode(com.jogamp.opengl.GL.GL_FRONT_AND_BACK, com.jogamp.opengl.GL2GL3.GL_FILL);
+				}
+				shader.unbind(gl3);
+			}
+			gl3.glBindVertexArray(0);
+
+			// Return immediately since GL3 handled the entire draw
+			return;
+		} else if (useVBO) {
+			ogl.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[0]);
+			ogl.glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vertexBuffer.capacity() * Double.BYTES, vertexBuffer,
+					com.jogamp.opengl.GL.GL_DYNAMIC_DRAW);
+			ogl.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[1]);
+			ogl.glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, normalBuffer.capacity() * Double.BYTES, normalBuffer,
+					com.jogamp.opengl.GL.GL_DYNAMIC_DRAW);
+			if (outputsTextures) {
+				ogl.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[2]);
+				ogl.glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, texBuffer.capacity() * Double.BYTES, texBuffer,
+						com.jogamp.opengl.GL.GL_DYNAMIC_DRAW);
 			}
 			if (outputsColors) {
-				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
-				ogl.glBufferData(GL.GL_ARRAY_BUFFER, colorBuffer.capacity() * Double.BYTES, colorBuffer,
-						GL.GL_DYNAMIC_DRAW);
+				ogl.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[3]);
+				ogl.glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, colorBuffer.capacity() * Double.BYTES, colorBuffer,
+						com.jogamp.opengl.GL.GL_DYNAMIC_DRAW);
 			}
 			if (outputsLines) {
-				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[4]);
-				ogl.glBufferData(GL.GL_ARRAY_BUFFER, lineColorBuffer.capacity() * Double.BYTES, lineColorBuffer,
-						GL.GL_DYNAMIC_DRAW);
+				ogl.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[4]);
+				ogl.glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, lineColorBuffer.capacity() * Double.BYTES, lineColorBuffer,
+						com.jogamp.opengl.GL.GL_DYNAMIC_DRAW);
 			}
 		}
 
@@ -508,16 +585,16 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		if (outputsColors) { gl.enable(GLPointerFunc.GL_COLOR_ARRAY); }
 		try {
 			if (useVBO) {
-				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
+				ogl.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[0]);
 				ogl.glVertexPointer(3, GL2GL3.GL_DOUBLE, 0, 0);
-				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[1]);
+				ogl.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[1]);
 				ogl.glNormalPointer(GL2GL3.GL_DOUBLE, 0, 0);
 				if (outputsTextures) {
-					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[2]);
+					ogl.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[2]);
 					ogl.glTexCoordPointer(2, GL2GL3.GL_DOUBLE, 0, 0);
 				}
 				if (outputsColors) {
-					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
+					ogl.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[3]);
 					ogl.glColorPointer(4, GL2GL3.GL_DOUBLE, 0, 0);
 				}
 			} else {
@@ -529,23 +606,23 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 			}
 
 			if (!gl.isWireframe()) {
-				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, indexBuffer);
+				ogl.glDrawElements(com.jogamp.opengl.GL.GL_TRIANGLES, indexBuffer.limit(), com.jogamp.opengl.GL.GL_UNSIGNED_INT, indexBuffer);
 			}
 			if (outputsLines) {
 				if (!outputsColors) { gl.enable(GLPointerFunc.GL_COLOR_ARRAY); }
 				if (useVBO) {
-					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[4]);
+					ogl.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vboIds[4]);
 					ogl.glColorPointer(4, GL2GL3.GL_DOUBLE, 0, 0);
 				} else {
 					ogl.glColorPointer(4, GL2GL3.GL_DOUBLE, 0, lineColorBuffer);
 				}
 				boolean previous = gl.setObjectWireframe(true);
-				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, indexBuffer);
+				ogl.glDrawElements(com.jogamp.opengl.GL.GL_TRIANGLES, indexBuffer.limit(), com.jogamp.opengl.GL.GL_UNSIGNED_INT, indexBuffer);
 				gl.setObjectWireframe(previous);
 			}
 
 		} finally {
-			if (useVBO) { ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0); }
+			if (useVBO) { ogl.glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, 0); }
 			gl.disable(GLPointerFunc.GL_NORMAL_ARRAY);
 			if (outputsTextures) { gl.disable(GLPointerFunc.GL_TEXTURE_COORD_ARRAY); }
 			if (outputsColors || outputsLines) { gl.disable(GLPointerFunc.GL_COLOR_ARRAY); }
