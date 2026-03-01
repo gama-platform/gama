@@ -36,39 +36,72 @@ import gama.api.utils.StringUtils;
 import one.util.streamex.StreamEx;
 
 /**
- * A store that acts as a gateway with either the JREPreferenceStore preference store (global) or configuration-specific
- * preference stores (Eclipse). In addition, allows preferences to be overriden if they are passed as VM arguments to
- * GAMA (e.g. "-Dpref_use_pooling=true"), enabling different instances to set different values even if the store used is
- * global
+ * Abstract base implementation of {@link IGamaPreferenceStore} that bridges the GAMA in-memory preference model
+ * ({@link Pref}) with an arbitrary persistent backend store of type {@code T}. Concrete subclasses supply the
+ * backend-specific I/O operations ({@link #flush()}, {@link #putInStore}, {@link #getInStore}, etc.) while this class
+ * handles the common concerns of:
+ * <ul>
+ * <li>Maintaining an ordered registry of all registered preferences (keyed by name).</li>
+ * <li>Resolving preference override precedence: JVM system properties beat persisted store values beat the compiled-in
+ * defaults.</li>
+ * <li>Serializing typed {@link Pref} values to the backend-neutral string representation required by the store.</li>
+ * <li>Exporting the preference set to a GAML model file or a Java {@link java.util.Properties} file.</li>
+ * <li>Applying preference overrides loaded from an external properties file.</li>
+ * </ul>
  *
- * @author drogoul
+ * <p>
+ * Override resolution is handled by {@link #isOverriden(String)} which checks two sources in order:
+ * <ol>
+ * <li>JVM system properties (set via {@code -Dkey=value} on the command line).</li>
+ * <li>Values already persisted in the backing store at the time this store was instantiated (captured in
+ * {@link #overriddenKeys}).</li>
+ * </ol>
+ * </p>
  *
  * @param <T>
+ *            the type of the backend persistence object (e.g. {@link java.util.prefs.Preferences} or
+ *            {@code IEclipsePreferences})
  */
-
 @SuppressWarnings ({ "restriction", "unchecked", "rawtypes" })
 public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 
-	/** The Constant NODE_NAME. */
+	/**
+	 * The name of the root node used when creating the JRE {@link java.util.prefs.Preferences} node for GAMA. All
+	 * global preferences are stored under this node name.
+	 */
 	public static final String NODE_NAME = "gama";
 
-	/** The Constant DEFAULT_FONT. */
+	/**
+	 * The sentinel string written to the backend store when a font preference has no explicit value (i.e., the system
+	 * default font should be used).
+	 */
 	private static final String DEFAULT_FONT = "Default";
 
-	/** The store. */
+	/**
+	 * The backend persistence object supplied by the concrete subclass (e.g. a {@link java.util.prefs.Preferences}
+	 * node or an {@code IEclipsePreferences} node).
+	 */
 	T store;
 
-	/** The cache. */
+	/**
+	 * An ordered registry mapping preference keys to their corresponding {@link Pref} instances. The insertion order
+	 * is preserved so that iteration produces preferences in registration order.
+	 */
 	Map<String, Pref> map = new LinkedHashMap<>();
 
-	/** The overridden keys. */
+	/**
+	 * The set of keys that were already present in the backing store at construction time, indicating that those
+	 * preferences have previously been persisted and should override the compiled-in default values.
+	 */
 	Set<String> overriddenKeys = Set.of();
 
 	/**
-	 * Instantiates a new gama preference store.
+	 * Constructs a new store wrapping the given backend persistence object. After setting the {@link #store} field the
+	 * constructor immediately calls {@link #flush()} to synchronize any in-flight state between the in-memory registry
+	 * and the backend.
 	 *
 	 * @param store
-	 *            the store
+	 *            the backend persistence object; must not be {@code null}
 	 */
 	GamaPreferenceStore(final T store) {
 		this.store = store;
@@ -76,33 +109,51 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 	}
 
 	/**
-	 * Makes sure preferences are kept in sync between GAMA runtime and the backend file
+	 * Flushes all pending writes to the backend persistence store, ensuring that the in-memory state and the on-disk
+	 * (or registry) state remain synchronized. Concrete subclasses must implement this method using the appropriate
+	 * flush mechanism of their backend (e.g. {@link java.util.prefs.Preferences#flush()} or
+	 * {@code IEclipsePreferences#flush()}).
 	 */
-
 	protected abstract void flush();
 
 	/**
-	 * Exports the contents of the preferences as a properties (key = value) file, which can then be reloaded in another
-	 * instance of GAMA
+	 * Exports all registered preference key/value pairs into a Java {@link java.util.Properties} file at the given
+	 * path. The resulting file is a human-readable {@code key=value} text file that can be shared across GAMA
+	 * instances and later restored via {@link #loadFromProperties(String)}. Concrete subclasses must implement this
+	 * method to iterate over the keys available in their backend store.
 	 *
 	 * @param path
+	 *            the absolute file-system path at which to write the properties file
 	 */
 	@Override
 	public abstract void saveToProperties(final String path);
 
 	/**
-	 * Reads a properties file and sets the contents of the preferences to the values registered in the file
+	 * Reads a Java {@link java.util.Properties} file previously created by {@link #saveToProperties(String)} and
+	 * restores the preference values it contains into the backing store. After loading, the registered {@link Pref}
+	 * instances whose keys appear in the file will reflect the imported values on the next call to
+	 * {@link #register(Pref)}. Concrete subclasses must implement this using their backend-specific import mechanism.
 	 *
 	 * @param path
+	 *            the absolute file-system path of the properties file to load
 	 */
 	@Override
 	public abstract void loadFromProperties(final String path);
 
 	/**
-	 * Save preferences to GAML.
+	 * Exports all visible GAML-accessible preferences as a GAML model file at the given path. The generated file
+	 * contains:
+	 * <ul>
+	 * <li>A {@code Display __PREFS__} GUI experiment that prints the current value of each preference to the console
+	 * using {@code write sample(gama.&lt;key&gt;)}.</li>
+	 * <li>A {@code Set __PREFS__} GUI experiment that reassigns each preference to its current value via
+	 * {@code gama.&lt;key&gt; &lt;- &lt;value&gt;}.</li>
+	 * </ul>
+	 * Hidden preferences and preferences not accessible from GAML are excluded. The file is prefixed with a comment
+	 * recording the GAMA version and the current date/time.
 	 *
 	 * @param path
-	 *            the path
+	 *            the absolute file-system path at which to write the GAML file
 	 */
 	@Override
 	public void saveToGAML(final String path) {
@@ -141,10 +192,14 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 	}
 
 	/**
-	 * Write.
+	 * Serializes the current value of the given {@link Pref} into the backing store. The method dispatches on the
+	 * GAML type identifier of the preference ({@link gama.api.gaml.types.IType#INT}, {@code FLOAT}, {@code BOOL},
+	 * {@code STRING}, {@code FILE}, {@code COLOR}, {@code POINT}, {@code FONT}, {@code DATE}) and converts the typed
+	 * Java value to the appropriate representation before delegating to {@link #putInStore(String, Object)}, after
+	 * which {@link #flush()} is called to guarantee durability.
 	 *
 	 * @param gp
-	 *            the gp
+	 *            the preference whose value should be persisted; must not be {@code null}
 	 */
 	@Override
 	public void write(final Pref gp) {
@@ -169,10 +224,19 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 	}
 
 	/**
-	 * Register.
+	 * Registers a {@link Pref} with this store. During registration the store resolves the override precedence for the
+	 * preference key:
+	 * <ol>
+	 * <li>If the key is overridden (via a JVM system property or a previously persisted value), the preference's
+	 * initial value supplier is replaced by one that returns the overriding value, correctly typed according to the
+	 * preference's GAML type id.</li>
+	 * <li>The preference is added to the internal registry ({@link #map}) under its key.</li>
+	 * <li>{@link #flush()} is called to synchronize the backend.</li>
+	 * </ol>
+	 * If the preference's key is {@code null}, this method returns silently.
 	 *
 	 * @param gp
-	 *            the gp
+	 *            the preference to register; must not be {@code null}
 	 */
 	@Override
 	public void register(final Pref<?> gp) {
@@ -216,9 +280,18 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 	}
 
 	/**
+	 * Returns the overriding string value for the given preference key, following override precedence:
+	 * <ol>
+	 * <li>JVM system properties ({@code System.getProperty(key)}) take highest priority.</li>
+	 * <li>A value previously persisted in the backing store (indicated by {@link #overriddenKeys}) is used as a
+	 * fallback.</li>
+	 * </ol>
+	 * Returns {@code null} if neither source provides a value (which should not happen when called only after
+	 * {@link #isOverriden(String)} returns {@code true}).
+	 *
 	 * @param key
-	 * @param object
-	 * @return
+	 *            the preference key to look up; must not be {@code null}
+	 * @return the overriding string value, or {@code null} if not overridden
 	 */
 	protected String getOverridenValue(final String key) {
 		if (isOverridenInSystemProperties(key)) return System.getProperty(key);
@@ -227,8 +300,12 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 	}
 
 	/**
+	 * Determines whether the preference with the given key has been overridden — either by a JVM system property or by
+	 * a value persisted in the backing store prior to this store being instantiated.
+	 *
 	 * @param key
-	 * @return
+	 *            the preference key to test; must not be {@code null}
+	 * @return {@code true} if the key has been overridden in any source, {@code false} otherwise
 	 */
 	protected boolean isOverriden(final String key) {
 		return isOverridenInSystemProperties(key) || isOverridenInStore(key);
@@ -257,33 +334,46 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 	}
 
 	/**
-	 * Gets the keys.
+	 * Returns the live key set of the internal preference registry. The returned collection reflects the current state
+	 * of the registry and iterates in insertion (registration) order.
 	 *
-	 * @return the keys
+	 * @return a {@link Collection} of all registered preference keys; never {@code null}
 	 */
 	@Override
 	public Collection<String> getKeys() { return map.keySet(); }
 
 	/**
-	 * Gets the preferences.
+	 * Returns the live values collection of the internal preference registry. The returned collection reflects the
+	 * current state of the registry and iterates in insertion (registration) order.
 	 *
-	 * @return the preferences
+	 * @return a {@link Collection} of all registered {@link Pref} instances; never {@code null}
 	 */
 	@Override
 	public Collection<Pref> getPreferences() { return map.values(); }
 
+	/**
+	 * Looks up a registered preference by its key.
+	 *
+	 * @param key
+	 *            the preference key to look up
+	 * @return the {@link Pref} registered under {@code key}, or {@code null} if no such preference exists
+	 */
 	@Override
 	public Pref get(final String key) {
 		return map.get(key);
 	}
 
 	/**
-	 * Apply preferences from.
+	 * Applies preference overrides from the properties file at {@code path} and then re-registers all currently
+	 * registered preferences, populating {@code modelValues} with their (potentially overridden) values. This method
+	 * is called at model load time to allow a GAML model to carry its own preference snapshot.
 	 *
 	 * @param path
-	 *            the path
+	 *            the absolute file-system path of the properties file to load; the file is imported via
+	 *            {@link #loadFromProperties(String)} before preferences are re-registered
 	 * @param modelValues
-	 *            the model values
+	 *            a mutable map that will be populated with {@code key -> value} entries for every registered preference
+	 *            after the overrides have been applied
 	 */
 	@Override
 	public void applyPreferencesFrom(final String path, final Map<String, Object> modelValues) {
