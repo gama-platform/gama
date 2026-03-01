@@ -83,6 +83,18 @@ import jogamp.opengl.glu.tessellator.GLUtessellatorImpl;
  *
  */
 public class OpenGL extends AbstractRendererHelper implements ITesselator {
+	public org.joml.Matrix4d getCurrentProjectionMatrix() {
+		return currentProjection;
+	}
+
+	public org.joml.Matrix4d getCurrentModelViewMatrix() {
+		return currentModelView;
+	}
+
+	public gama.ui.display.opengl.renderer.shaders.ShaderProgram getCurrentShader() {
+		return currentShader;
+	}
+
 
 	private java.util.Stack<org.joml.Matrix4d> getActiveStack() {
 		return currentMatrixMode == com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION ? projectionStack : modelViewStack;
@@ -809,6 +821,21 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	}
 
 	@Override
+
+	private void handleDynamicBatchStart(final int style) {
+		gl.glBegin(style);
+		if (this.batchStyle != -1 && this.batchStyle != style) {
+			flushBatcherIfActive();
+		}
+	}
+
+	private void recordStaticListCommand() {
+		if (currentListCommands != null && vertexCount > currentListOffset) {
+			currentListCommands.add(new DrawCommand(this.batchStyle, currentListOffset, vertexCount - currentListOffset));
+			currentListOffset = vertexCount;
+		}
+	}
+
 	public void beginDrawing(final int style) {
 		if (!isCompilingStaticList) {
 			gl.glBegin(style);
