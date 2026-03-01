@@ -403,8 +403,9 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	public void drawSide() {
 		if (sideQuadsBuffer.limit() == 0) return;
 		// AD - See issue #3125
-		if (gl.isRenderingKeystone()) {
+		if (gl.isRenderingKeystone() || gl.getGL().isGL3()) {
 			drawSideFallback(gl);
+			if (gl.getGL().isGL3()) gl.flushBatcherIfActive();
 			return;
 		}
 		var ogl = gl.getGL();
@@ -423,8 +424,9 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 * Draw border.
 	 */
 	public void drawBorder() {
-		if (gl.isRenderingKeystone()) {
+		if (gl.isRenderingKeystone() || gl.getGL().isGL3()) {
 			drawBorderFallback();
+			if (gl.getGL().isGL3()) gl.flushBatcherIfActive();
 			return;
 		}
 		gl.enable(GL_VERTEX_ARRAY);
@@ -450,8 +452,9 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 */
 	void drawFace(final boolean up) {
 		if (faceVertexBuffer.limit() == 0) return;
-		if (gl.isRenderingKeystone()) {
+		if (gl.isRenderingKeystone() || gl.getGL().isGL3()) {
 			drawFaceFallback(up);
+			if (gl.getGL().isGL3()) gl.flushBatcherIfActive();
 			return;
 		}
 		gl.enable(GL_VERTEX_ARRAY);
@@ -504,16 +507,42 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 		while (i < currentIndex) {
 			var begin = indices[++i];
 			var end = indices[++i];
-			openGL.beginDrawing(GL_QUAD_STRIP);
-			for (var index = begin; index < end; index += 3) {
-				openGL.outputNormal(sideNormalBuffer.get(index), sideNormalBuffer.get(index + 1),
-						sideNormalBuffer.get(index + 2));
-				openGL.outputVertex(sideQuadsBuffer.get(index), sideQuadsBuffer.get(index + 1),
-						sideQuadsBuffer.get(index + 2));
-			}
-			openGL.endDrawing();
-		}
 
+			if (openGL.getGL().isGL3()) {
+				openGL.beginDrawing(GL_TRIANGLES);
+				for (var index = begin; index <= end - 12; index += 6) {
+					// v0
+					openGL.outputNormal(sideNormalBuffer.get(index), sideNormalBuffer.get(index + 1), sideNormalBuffer.get(index + 2));
+					openGL.outputVertex(sideQuadsBuffer.get(index), sideQuadsBuffer.get(index + 1), sideQuadsBuffer.get(index + 2));
+					// v1
+					openGL.outputNormal(sideNormalBuffer.get(index+3), sideNormalBuffer.get(index+4), sideNormalBuffer.get(index+5));
+					openGL.outputVertex(sideQuadsBuffer.get(index+3), sideQuadsBuffer.get(index+4), sideQuadsBuffer.get(index+5));
+					// v2
+					openGL.outputNormal(sideNormalBuffer.get(index+6), sideNormalBuffer.get(index+7), sideNormalBuffer.get(index+8));
+					openGL.outputVertex(sideQuadsBuffer.get(index+6), sideQuadsBuffer.get(index+7), sideQuadsBuffer.get(index+8));
+
+					// v2
+					openGL.outputNormal(sideNormalBuffer.get(index+6), sideNormalBuffer.get(index+7), sideNormalBuffer.get(index+8));
+					openGL.outputVertex(sideQuadsBuffer.get(index+6), sideQuadsBuffer.get(index+7), sideQuadsBuffer.get(index+8));
+					// v1
+					openGL.outputNormal(sideNormalBuffer.get(index+3), sideNormalBuffer.get(index+4), sideNormalBuffer.get(index+5));
+					openGL.outputVertex(sideQuadsBuffer.get(index+3), sideQuadsBuffer.get(index+4), sideQuadsBuffer.get(index+5));
+					// v3
+					openGL.outputNormal(sideNormalBuffer.get(index+9), sideNormalBuffer.get(index+10), sideNormalBuffer.get(index+11));
+					openGL.outputVertex(sideQuadsBuffer.get(index+9), sideQuadsBuffer.get(index+10), sideQuadsBuffer.get(index+11));
+				}
+				openGL.endDrawing();
+			} else {
+				openGL.beginDrawing(GL_QUAD_STRIP);
+				for (var index = begin; index < end; index += 3) {
+					openGL.outputNormal(sideNormalBuffer.get(index), sideNormalBuffer.get(index + 1),
+							sideNormalBuffer.get(index + 2));
+					openGL.outputVertex(sideQuadsBuffer.get(index), sideQuadsBuffer.get(index + 1),
+							sideQuadsBuffer.get(index + 2));
+				}
+				openGL.endDrawing();
+			}
+		}
 	}
 
 	/**
