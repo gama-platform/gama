@@ -457,7 +457,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	 * Draw field.
 	 */
 		private void drawFieldGL3() {
-		com.jogamp.opengl.GL3 gl3 = gl.getGL().getGL3();
+		com.jogamp.opengl.GL4 gl3 = gl.getGL().getGL3();
 		if (vboIds == null) {
 			vboIds = new int[7]; // [0]=VAO, [1]=Vertex, [2]=Normal, [3]=Tex, [4]=Color, [5]=LineColor, [6]=Index
 			gl3.glGenVertexArrays(1, vboIds, 0);

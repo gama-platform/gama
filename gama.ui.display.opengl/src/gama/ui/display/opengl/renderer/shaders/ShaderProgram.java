@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.renderer.shaders;
 
-import com.jogamp.opengl.GL3;
+import com.jogamp.opengl.GL4;
 import gama.dev.DEBUG;
 
 import java.nio.FloatBuffer;
@@ -22,7 +22,7 @@ public class ShaderProgram {
 
 	private final FloatBuffer matrixBuffer = com.jogamp.common.nio.Buffers.newDirectFloatBuffer(16);
 
-	public ShaderProgram(GL3 gl) throws Exception {
+	public ShaderProgram(GL4 gl) throws Exception {
 
 	programId = gl.glCreateProgram();
 
@@ -31,15 +31,15 @@ public class ShaderProgram {
 		}
 	}
 
-	public void createVertexShader(GL3 gl, String shaderCode) throws Exception {
-		vertexShaderId = createShader(gl, shaderCode, GL3.GL_VERTEX_SHADER);
+	public void createVertexShader(GL4 gl, String shaderCode) throws Exception {
+		vertexShaderId = createShader(gl, shaderCode, GL4.GL_VERTEX_SHADER);
 	}
 
-	public void createFragmentShader(GL3 gl, String shaderCode) throws Exception {
-		fragmentShaderId = createShader(gl, shaderCode, GL3.GL_FRAGMENT_SHADER);
+	public void createFragmentShader(GL4 gl, String shaderCode) throws Exception {
+		fragmentShaderId = createShader(gl, shaderCode, GL4.GL_FRAGMENT_SHADER);
 	}
 
-	protected int createShader(GL3 gl, String shaderCode, int shaderType) throws Exception {
+	protected int createShader(GL4 gl, String shaderCode, int shaderType) throws Exception {
 
 	int shaderId = gl.glCreateShader(shaderType);
 
@@ -51,10 +51,10 @@ public class ShaderProgram {
 		gl.glCompileShader(shaderId);
 
 		int[] compiled = new int[1];
-		gl.glGetShaderiv(shaderId, GL3.GL_COMPILE_STATUS, compiled, 0);
+		gl.glGetShaderiv(shaderId, GL4.GL_COMPILE_STATUS, compiled, 0);
 		if (compiled[0] == 0) {
 			int[] logLength = new int[1];
-			gl.glGetShaderiv(shaderId, GL3.GL_INFO_LOG_LENGTH, logLength, 0);
+			gl.glGetShaderiv(shaderId, GL4.GL_INFO_LOG_LENGTH, logLength, 0);
 
 			byte[] log = new byte[logLength[0]];
 			gl.glGetShaderInfoLog(shaderId, logLength[0], (int[]) null, 0, log, 0);
@@ -66,13 +66,13 @@ public class ShaderProgram {
 		return shaderId;
 	}
 
-	public void link(GL3 gl) throws Exception {
+	public void link(GL4 gl) throws Exception {
 		gl.glLinkProgram(programId);
 		int[] linked = new int[1];
-		gl.glGetProgramiv(programId, GL3.GL_LINK_STATUS, linked, 0);
+		gl.glGetProgramiv(programId, GL4.GL_LINK_STATUS, linked, 0);
 		if (linked[0] == 0) {
 			int[] logLength = new int[1];
-			gl.glGetProgramiv(programId, GL3.GL_INFO_LOG_LENGTH, logLength, 0);
+			gl.glGetProgramiv(programId, GL4.GL_INFO_LOG_LENGTH, logLength, 0);
 
 			byte[] log = new byte[logLength[0]];
 			gl.glGetProgramInfoLog(programId, logLength[0], (int[]) null, 0, log, 0);
@@ -90,28 +90,28 @@ public class ShaderProgram {
 
 		gl.glValidateProgram(programId);
 		int[] validated = new int[1];
-		gl.glGetProgramiv(programId, GL3.GL_VALIDATE_STATUS, validated, 0);
+		gl.glGetProgramiv(programId, GL4.GL_VALIDATE_STATUS, validated, 0);
 		if (validated[0] == 0) {
 			System.err.println("Warning validating Shader code");
 		}
 	}
 
-	public void bind(GL3 gl) {
+	public void bind(GL4 gl) {
 		gl.glUseProgram(programId);
 	}
 
-	public void unbind(GL3 gl) {
+	public void unbind(GL4 gl) {
 		gl.glUseProgram(0);
 	}
 
-	public void cleanup(GL3 gl) {
+	public void cleanup(GL4 gl) {
 		unbind(gl);
 		if (programId != 0) {
 			gl.glDeleteProgram(programId);
 		}
 	}
 
-	public int getUniformLocation(GL3 gl, String uniformName) throws Exception {
+	public int getUniformLocation(GL4 gl, String uniformName) throws Exception {
 		int loc = gl.glGetUniformLocation(programId, uniformName);
 		if (loc < 0) {
 			// Do not throw Exception, just log warning
@@ -121,17 +121,17 @@ public class ShaderProgram {
 		return loc;
 	}
 
-	public void setUniform(GL3 gl, int location, org.joml.Matrix4f value) {
+	public void setUniform(GL4 gl, int location, org.joml.Matrix4f value) {
 		matrixBuffer.clear();
 		value.get(matrixBuffer);
 		gl.glUniformMatrix4fv(location, 1, false, matrixBuffer);
 	}
 
-	public void setUniform(GL3 gl, int location, int value) {
+	public void setUniform(GL4 gl, int location, int value) {
 		gl.glUniform1i(location, value);
 	}
 
-	public void setUniform(GL3 gl, int location, org.joml.Vector4f vector) {
+	public void setUniform(GL4 gl, int location, org.joml.Vector4f vector) {
 		gl.glUniform4f(location, vector.x, vector.y, vector.z, vector.w);
 	}
 }

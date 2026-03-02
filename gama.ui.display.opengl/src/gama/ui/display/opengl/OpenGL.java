@@ -137,16 +137,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	public void initializeShaders() {
 		try {
-			if (currentShader == null && gl.isGL3()) {
-				currentShader = new gama.ui.display.opengl.renderer.shaders.ShaderProgram(gl.getGL3());
-				currentShader.createVertexShader(gl.getGL3(), gama.ui.display.opengl.renderer.shaders.BasicShaders.VERTEX_SHADER);
-				currentShader.createFragmentShader(gl.getGL3(), gama.ui.display.opengl.renderer.shaders.BasicShaders.FRAGMENT_SHADER);
-				currentShader.link(gl.getGL3());
+			if (currentShader == null && gl.isGL4()) {
+				currentShader = new gama.ui.display.opengl.renderer.shaders.ShaderProgram(gl.getGL4());
+				currentShader.createVertexShader(gl.getGL4(), gama.ui.display.opengl.renderer.shaders.BasicShaders.VERTEX_SHADER);
+				currentShader.createFragmentShader(gl.getGL4(), gama.ui.display.opengl.renderer.shaders.BasicShaders.FRAGMENT_SHADER);
+				currentShader.link(gl.getGL4());
 
-				gl.getGL3().glGenVertexArrays(1, batchVao, 0);
-				gl.getGL3().glBindVertexArray(batchVao[0]);
-				gl.getGL3().glGenBuffers(4, batchVbos, 0);
-				gl.getGL3().glBindVertexArray(0);
+				gl.getGL4().glGenVertexArrays(1, batchVao, 0);
+				gl.getGL4().glBindVertexArray(batchVao[0]);
+				gl.getGL4().glGenBuffers(4, batchVbos, 0);
+				gl.getGL4().glBindVertexArray(0);
 				vbosInitialized = true;
 			}
 		} catch(Exception e) { e.printStackTrace(); }
@@ -168,54 +168,54 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		texCoordBuffer.flip();
 
 		if (!vbosInitialized) return;
-		gl.getGL3().glBindVertexArray(batchVao[0]);
-		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[0]);
-		gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vertexBuffer.limit() * 4, vertexBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
-		gl.getGL3().glEnableVertexAttribArray(0);
-		gl.getGL3().glVertexAttribPointer(0, 3, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+		gl.getGL4().glBindVertexArray(batchVao[0]);
+		gl.getGL4().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[0]);
+		gl.getGL4().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vertexBuffer.limit() * 4, vertexBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
+		gl.getGL4().glEnableVertexAttribArray(0);
+		gl.getGL4().glVertexAttribPointer(0, 3, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
 
-		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[1]);
-		gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, colorBuffer.limit() * 4, colorBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
-		gl.getGL3().glEnableVertexAttribArray(1);
-		gl.getGL3().glVertexAttribPointer(1, 4, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+		gl.getGL4().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[1]);
+		gl.getGL4().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, colorBuffer.limit() * 4, colorBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
+		gl.getGL4().glEnableVertexAttribArray(1);
+		gl.getGL4().glVertexAttribPointer(1, 4, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
 
-				gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[2]);
-		gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, texCoordBuffer.limit() * 4, texCoordBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
-		gl.getGL3().glEnableVertexAttribArray(2);
-		gl.getGL3().glVertexAttribPointer(2, 2, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+				gl.getGL4().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[2]);
+		gl.getGL4().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, texCoordBuffer.limit() * 4, texCoordBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
+		gl.getGL4().glEnableVertexAttribArray(2);
+		gl.getGL4().glVertexAttribPointer(2, 2, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
 
 		normalBuffer.flip();
-		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[3]);
-		gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, normalBuffer.limit() * 4, normalBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
-		gl.getGL3().glEnableVertexAttribArray(3);
-		gl.getGL3().glVertexAttribPointer(3, 3, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+		gl.getGL4().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, batchVbos[3]);
+		gl.getGL4().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, normalBuffer.limit() * 4, normalBuffer, com.jogamp.opengl.GL.GL_STREAM_DRAW);
+		gl.getGL4().glEnableVertexAttribArray(3);
+		gl.getGL4().glVertexAttribPointer(3, 3, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
 
 		try {
-			currentShader.bind((com.jogamp.opengl.GL3)gl);
-			int projLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL3)gl, "projection");
-			int mvLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL3)gl, "modelView");
+			currentShader.bind((com.jogamp.opengl.GL4)gl);
+			int projLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL4)gl, "projection");
+			int mvLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL4)gl, "modelView");
 
 			org.joml.Matrix4f projF = new org.joml.Matrix4f(currentProjection);
 			org.joml.Matrix4f mvF = new org.joml.Matrix4f(currentModelView);
 
-			currentShader.setUniform((com.jogamp.opengl.GL3)gl, projLoc, projF);
-			currentShader.setUniform((com.jogamp.opengl.GL3)gl, mvLoc, mvF);
+			currentShader.setUniform((com.jogamp.opengl.GL4)gl, projLoc, projF);
+			currentShader.setUniform((com.jogamp.opengl.GL4)gl, mvLoc, mvF);
 
-			gl.getGL3().glDrawArrays(batchStyle, 0, vertexCount);
+			gl.getGL4().glDrawArrays(batchStyle, 0, vertexCount);
 
-			currentShader.unbind((com.jogamp.opengl.GL3)gl);
+			currentShader.unbind((com.jogamp.opengl.GL4)gl);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		gl.getGL3().glDisableVertexAttribArray(0);
-		gl.getGL3().glDisableVertexAttribArray(1);
-		gl.getGL3().glDisableVertexAttribArray(2);
-		gl.getGL3().glDisableVertexAttribArray(3);
+		gl.getGL4().glDisableVertexAttribArray(0);
+		gl.getGL4().glDisableVertexAttribArray(1);
+		gl.getGL4().glDisableVertexAttribArray(2);
+		gl.getGL4().glDisableVertexAttribArray(3);
 
-		gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, 0);
+		gl.getGL4().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, 0);
 
-		gl.getGL3().glBindVertexArray(0);
+		gl.getGL4().glBindVertexArray(0);
 
 		vertexBuffer.clear();
 		colorBuffer.clear();
@@ -1650,7 +1650,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	private boolean isCompilingStaticList = false;
 
 		public int compileAsList(final Runnable r) {
-		if (gl.isGL3()) {
+		if (gl.isGL4()) {
 			isCompilingStaticList = true;
 			isBatching = true;
 			vertexCount = 0;
@@ -1671,38 +1671,38 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 			int id = staticListCounter++;
 			if (vertexCount > 0) {
 				int[] vao = new int[1];
-				gl.getGL3().glGenVertexArrays(1, vao, 0);
-				gl.getGL3().glBindVertexArray(vao[0]);
+				gl.getGL4().glGenVertexArrays(1, vao, 0);
+				gl.getGL4().glBindVertexArray(vao[0]);
 
 				int[] vbos = new int[4];
-				gl.getGL3().glGenBuffers(4, vbos, 0);
+				gl.getGL4().glGenBuffers(4, vbos, 0);
 
 				vertexBuffer.flip();
-				gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[0]);
-				gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vertexBuffer.limit() * 4, vertexBuffer, com.jogamp.opengl.GL.GL_STATIC_DRAW);
-				gl.getGL3().glEnableVertexAttribArray(0);
-				gl.getGL3().glVertexAttribPointer(0, 3, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+				gl.getGL4().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[0]);
+				gl.getGL4().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vertexBuffer.limit() * 4, vertexBuffer, com.jogamp.opengl.GL.GL_STATIC_DRAW);
+				gl.getGL4().glEnableVertexAttribArray(0);
+				gl.getGL4().glVertexAttribPointer(0, 3, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
 
 				colorBuffer.flip();
-				gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[1]);
-				gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, colorBuffer.limit() * 4, colorBuffer, com.jogamp.opengl.GL.GL_STATIC_DRAW);
-				gl.getGL3().glEnableVertexAttribArray(1);
-				gl.getGL3().glVertexAttribPointer(1, 4, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+				gl.getGL4().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[1]);
+				gl.getGL4().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, colorBuffer.limit() * 4, colorBuffer, com.jogamp.opengl.GL.GL_STATIC_DRAW);
+				gl.getGL4().glEnableVertexAttribArray(1);
+				gl.getGL4().glVertexAttribPointer(1, 4, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
 
 				texCoordBuffer.flip();
-				gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[2]);
-				gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, texCoordBuffer.limit() * 4, texCoordBuffer, com.jogamp.opengl.GL.GL_STATIC_DRAW);
-				gl.getGL3().glEnableVertexAttribArray(2);
-				gl.getGL3().glVertexAttribPointer(2, 2, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+				gl.getGL4().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[2]);
+				gl.getGL4().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, texCoordBuffer.limit() * 4, texCoordBuffer, com.jogamp.opengl.GL.GL_STATIC_DRAW);
+				gl.getGL4().glEnableVertexAttribArray(2);
+				gl.getGL4().glVertexAttribPointer(2, 2, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
 
 				normalBuffer.flip();
-				gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[3]);
-				gl.getGL3().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, normalBuffer.limit() * 4, normalBuffer, com.jogamp.opengl.GL.GL_STATIC_DRAW);
-				gl.getGL3().glEnableVertexAttribArray(3);
-				gl.getGL3().glVertexAttribPointer(3, 3, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
+				gl.getGL4().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, vbos[3]);
+				gl.getGL4().glBufferData(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, normalBuffer.limit() * 4, normalBuffer, com.jogamp.opengl.GL.GL_STATIC_DRAW);
+				gl.getGL4().glEnableVertexAttribArray(3);
+				gl.getGL4().glVertexAttribPointer(3, 3, com.jogamp.opengl.GL.GL_FLOAT, false, 0, 0);
 
-				gl.getGL3().glBindVertexArray(0);
-				gl.getGL3().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, 0);
+				gl.getGL4().glBindVertexArray(0);
+				gl.getGL4().glBindBuffer(com.jogamp.opengl.GL.GL_ARRAY_BUFFER, 0);
 
 				staticVAOs.put(id, new StaticVAO(vao[0], currentListCommands));
 			} else {
@@ -1736,28 +1736,28 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the i
 	 */
 		public void drawList(final int i) {
-		if (gl.isGL3()) {
+		if (gl.isGL4()) {
 			StaticVAO data = staticVAOs.get(i);
 			if (data != null && currentShader != null) {
-				currentShader.bind((com.jogamp.opengl.GL3)gl);
-				gl.getGL3().glBindVertexArray(data.vaoId);
+				currentShader.bind((com.jogamp.opengl.GL4)gl);
+				gl.getGL4().glBindVertexArray(data.vaoId);
 
-				int projLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL3)gl, "projection");
-				int mvLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL3)gl, "modelView");
-				int colorLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL3)gl, "globalColor");
-				int texLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL3)gl, "useTexture");
+				int projLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL4)gl, "projection");
+				int mvLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL4)gl, "modelView");
+				int colorLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL4)gl, "globalColor");
+				int texLoc = currentShader.getUniformLocation((com.jogamp.opengl.GL4)gl, "useTexture");
 
-				currentShader.setUniform((com.jogamp.opengl.GL3)gl, projLoc, new org.joml.Matrix4f(currentProjection));
-				currentShader.setUniform((com.jogamp.opengl.GL3)gl, mvLoc, new org.joml.Matrix4f(currentModelView));
-				if (colorLoc >= 0) currentShader.setUniform((com.jogamp.opengl.GL3)gl, colorLoc, new org.joml.Vector4f(1.0f, 1.0f, 1.0f, (float)getCurrentObjectAlpha()));
-				if (texLoc >= 0) currentShader.setUniform((com.jogamp.opengl.GL3)gl, texLoc, isTextured() ? 1 : 0);
+				currentShader.setUniform((com.jogamp.opengl.GL4)gl, projLoc, new org.joml.Matrix4f(currentProjection));
+				currentShader.setUniform((com.jogamp.opengl.GL4)gl, mvLoc, new org.joml.Matrix4f(currentModelView));
+				if (colorLoc >= 0) currentShader.setUniform((com.jogamp.opengl.GL4)gl, colorLoc, new org.joml.Vector4f(1.0f, 1.0f, 1.0f, (float)getCurrentObjectAlpha()));
+				if (texLoc >= 0) currentShader.setUniform((com.jogamp.opengl.GL4)gl, texLoc, isTextured() ? 1 : 0);
 
 				for (DrawCommand cmd : data.commands) {
-					gl.getGL3().glDrawArrays(cmd.style, cmd.offset, cmd.count);
+					gl.getGL4().glDrawArrays(cmd.style, cmd.offset, cmd.count);
 				}
 
-				gl.getGL3().glBindVertexArray(0);
-				currentShader.unbind((com.jogamp.opengl.GL3)gl);
+				gl.getGL4().glBindVertexArray(0);
+				currentShader.unbind((com.jogamp.opengl.GL4)gl);
 			}
 		} else {
 			gl.glCallList(i);
