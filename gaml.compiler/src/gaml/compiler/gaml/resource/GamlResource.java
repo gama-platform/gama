@@ -22,6 +22,7 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.getNode;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.Map;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -366,6 +367,14 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 		}
 		EObject model = getParseResult().getRootASTElement();
 		if (model != null) { getLinker().linkModel(model, this); }
+
+	}
+
+	@Override
+	protected void doLoad(final InputStream inputStream, final Map<?, ?> options) throws IOException {
+		super.doLoad(inputStream, options);
+		EObject model = getParseResult().getRootASTElement();
+		if (model != null) { DEBUG.LOG("Serialization : \n" + model.toString()); }
 	}
 
 	// Here we create a reader equipped with the offset map ?

@@ -679,7 +679,7 @@ public abstract class AbstractTopology implements ITopology {
 
 	@Override
 	public String stringValue(final IScope scope) throws GamaRuntimeException {
-		// TODO Auto-generated method stub
+
 		return null;
 	}
 

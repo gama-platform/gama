@@ -138,8 +138,15 @@ public class EGaml {
 				yield s == null ? IKeyword.INTERNAL + getKeyOf(r) + COUNTER.COUNT() : s;
 			}
 			case GamlDefinition g -> g.getName();
+			case Function f -> getNameOf(f.getLeft());
 			case S_Display d -> d.getName();
 			case StandaloneExperiment se -> se.getName();
+			case ActionRef ar -> getNameOf(ar.getRef());
+			case VariableRef vr -> getNameOf(vr.getRef());
+			case UnitName un -> getNameOf(un.getRef());
+			case TypeRef tr -> getNameOf(tr.getRef());
+			case SkillRef sr -> getNameOf(sr.getRef());
+			case EquationRef er -> getNameOf(er.getRef());
 			case null, default -> null;
 		};
 	}

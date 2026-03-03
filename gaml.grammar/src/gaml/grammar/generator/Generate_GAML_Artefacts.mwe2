@@ -45,8 +45,11 @@ Workflow {
 	}
 
 	component = XtextGenerator {
+		
 		configuration = {
+			
 			project = model.project.StandardProjectConfig {
+				
 				baseName = "gaml.compiler.gaml"
 				rootPath = rootPath
 				web = {
@@ -83,6 +86,7 @@ Workflow {
 			
 		}
 		language = StandardLanguage {
+		
 			grammarUri = "platform:/resource/gaml.grammar/src/gaml/grammar/Gaml.xtext"
 			name = "gaml.grammar.Gaml"
 			fileExtensions = "gaml,experiment"
@@ -110,6 +114,9 @@ Workflow {
 			}
 			serializer = {
 				generateXtendStub = false
+			}
+			emfGenerator = {
+				rootExtendsClass = "gaml.compiler.gaml.serializer.GamlEObjectImpl"
 			}
 			
 		}

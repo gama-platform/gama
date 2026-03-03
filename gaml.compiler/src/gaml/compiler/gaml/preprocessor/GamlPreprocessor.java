@@ -20,7 +20,7 @@ public class GamlPreprocessor {
 	 * @return
 	 */
 	public String process(final String result) {
-
+		return result;
 	}
 
 }

@@ -858,7 +858,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
 	@Override
 	public void save(final IScope scope, final Facets parameters) {
-		// TODO Auto-generated method stub
+
 
 	}
 

@@ -46,7 +46,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 
 	@Override
 	public IStatus restoreState(final IMemento memento) {
-		// TODO Auto-generated method stub
+
 		return super.restoreState(memento);
 	}
 
