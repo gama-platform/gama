@@ -1,0 +1,14 @@
+--- OpenGL.java
++++ OpenGL.java
+@@ -341,7 +341,10 @@
+	 */
+	public void reshape(final GL4 newGL, final int width, final int height) {
+		setGL4(newGL);
+-
++		if (basicShader == null) {
++			basicShader = new BasicShader(newGL);
++			basicShader.start();
++		}
+		final double envWidth = renderer.getCanvas().getSurfaceWidth();
+		final double envHeight = renderer.getCanvas().getSurfaceHeight();
+		if (envWidth == 0 || envHeight == 0) return;

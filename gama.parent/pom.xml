@@ -154,6 +154,7 @@
 		<module>../gama.ui.experiment</module>
 		<module>../gama.ui.application</module>
 		<module>../gama.ui.display.opengl</module>
+		<module>../gama.ui.display.opengl4</module>
 		<module>../gama.ui.display.java2d</module>
 
 		<!--
