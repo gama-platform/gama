@@ -140,7 +140,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 		gl.translateByYNegated(loc);
 		final IPoint axis = rotation.getAxis();
 		// AD Change to a negative rotation to fix Issue #1514
-		gl.rotateBy(rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
+		gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
 		gl.translateBy(-loc.getX(), loc.getY(), -loc.getZ());
 		return true;
 	}
