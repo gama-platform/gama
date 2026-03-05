@@ -262,7 +262,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	/**
 	 *
-	 * IGraphics DRAWING METHODS
+	 * IGraphics DRAWING SAMPLING
 	 *
 	 */
 
@@ -426,7 +426,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	/**
 	 *
-	 * DIMENSIONS, RATIOS AND LOCATIONS METHODS
+	 * DIMENSIONS, RATIOS AND LOCATIONS SAMPLING
 	 *
 	 */
 

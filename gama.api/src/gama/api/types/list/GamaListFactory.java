@@ -573,7 +573,7 @@ public class GamaListFactory {
 	}
 
 	// ================================================================================================
-	// CORE CREATION METHODS
+	// CORE CREATION SAMPLING
 	// Methods for creating empty or sized lists
 	// ================================================================================================
 
@@ -630,7 +630,7 @@ public class GamaListFactory {
 	}
 
 	// ================================================================================================
-	// WRAPPING METHODS
+	// WRAPPING SAMPLING
 	// Zero-copy wrappers that expose existing data as IList (changes are bidirectional)
 	// ================================================================================================
 
@@ -699,7 +699,7 @@ public class GamaListFactory {
 	}
 
 	// ================================================================================================
-	// UTILITY AND CONVERSION METHODS
+	// UTILITY AND CONVERSION SAMPLING
 	// Helper methods for list comparison, conversion, and GAML operators
 	// ================================================================================================
 

@@ -236,7 +236,7 @@ public final class Morris {
 		this.outputs = outputs;
 	}
 
-	/** ########################## ANALYSIS METHODS ############################# */
+	/** ########################## ANALYSIS SAMPLING ############################# */
 
 	/**
 	 * Main method for Morris Analysis
@@ -310,7 +310,7 @@ public final class Morris {
 		return List.of(mu, mu_star, sigma);
 	}
 
-	/** ########################## SAVING/LOADING METHODS ############################# */
+	/** ########################## SAVING/LOADING SAMPLING ############################# */
 
 	public String buildReportString(final String extension) {
 

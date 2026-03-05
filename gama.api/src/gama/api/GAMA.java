@@ -139,7 +139,7 @@ public class GAMA {
 	private volatile static IGamaServer __SERVER__;
 
 	// ==================================================================================
-	// PLATFORM SERVICES - INITIALIZATION METHODS
+	// PLATFORM SERVICES - INITIALIZATION SAMPLING
 	// Methods for initializing platform-wide services during startup
 	// ==================================================================================
 
@@ -214,7 +214,7 @@ public class GAMA {
 	}
 
 	// ==================================================================================
-	// PLATFORM SERVICES - ACCESS METHODS
+	// PLATFORM SERVICES - ACCESS SAMPLING
 	// Methods for accessing platform-wide services
 	// ==================================================================================
 

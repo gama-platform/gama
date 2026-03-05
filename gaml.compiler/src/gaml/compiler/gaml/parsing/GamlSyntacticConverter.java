@@ -162,7 +162,7 @@ public class GamlSyntacticConverter {
 	private static EGaml EGAML = EGaml.getInstance();
 
 	// =========================================================================
-	// MAIN CONVERSION METHODS
+	// MAIN CONVERSION SAMPLING
 	// =========================================================================
 
 	/**
@@ -535,7 +535,7 @@ public class GamlSyntacticConverter {
 	}
 
 	// =========================================================================
-	// ASSIGNMENT CONVERSION METHODS
+	// ASSIGNMENT CONVERSION SAMPLING
 	// =========================================================================
 
 	/**

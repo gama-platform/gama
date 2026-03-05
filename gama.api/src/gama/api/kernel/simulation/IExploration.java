@@ -217,7 +217,7 @@ import gama.api.runtime.scope.IScope;
  * 
  * <h3>Constants</h3>
  * <ul>
- * <li><b>{@link #METHODS}:</b> Property name for sampling method ("sampling")</li>
+ * <li><b>{@link #SAMPLING}:</b> Property name for sampling method ("sampling")</li>
  * <li><b>{@link #SAMPLE_SIZE}:</b> Property name for sample size ("sample")</li>
  * <li><b>{@link #SAMPLE_FACTORIAL}:</b> Identifier for factorial sampling</li>
  * <li><b>{@link #DEFAULT_FACTORIAL}:</b> Default factorial levels (9)</li>
@@ -310,7 +310,7 @@ import gama.api.runtime.scope.IScope;
  */
 public interface IExploration extends ISymbol {// , Runnable {
 	/** The Constant Method */
-	String METHODS = "sampling";
+	String SAMPLING = "sampling";
 
 	/** The Constant SAMPLE_SIZE */
 	String SAMPLE_SIZE = "sample";

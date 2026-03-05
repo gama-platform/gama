@@ -138,13 +138,13 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 				if (hasFacet(IKeyword.FROM)) return IExploration.FROM_FILE;
 				if (hasFacet(IKeyword.WITH)) return IExploration.FROM_LIST;
 				final String methodName = IKeyword.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
-				if (!hasFacet(IExploration.METHODS)) {
+				if (!hasFacet(IExploration.SAMPLING)) {
 					if (methodName == IKeyword.MORRIS) return IKeyword.MORRIS;
 					if (methodName == IKeyword.SOBOL) return IKeyword.SALTELLI;
 					return IExploration.DEFAULT_SAMPLING;
 				}
-				return hasFacet(IExploration.METHODS)
-						? Cast.asString(agent.getScope(), getFacet(IExploration.METHODS).value(agent.getScope()))
+				return hasFacet(IExploration.SAMPLING)
+						? Cast.asString(agent.getScope(), getFacet(IExploration.SAMPLING).value(agent.getScope()))
 						: IExploration.DEFAULT_SAMPLING;
 			}
 		});
@@ -233,7 +233,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 */
 	public List<ParametersSet> getExperimentPlan(final List<Batch> parameters, final IScope scope) {
 		String method =
-				hasFacet(IExploration.METHODS) ? Cast.asString(scope, getFacet(IExploration.METHODS).value(scope))
+				hasFacet(IExploration.SAMPLING) ? Cast.asString(scope, getFacet(IExploration.SAMPLING).value(scope))
 						: hasFacet(IKeyword.FROM) ? IExploration.FROM_FILE
 						: hasFacet(IKeyword.WITH) ? IExploration.FROM_LIST : "";
 
@@ -493,8 +493,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 */
 	private int estimateSamples(final IExperimentAgent.Batch agent) {
 		String method = IExploration.DEFAULT_SAMPLING;
-		if (hasFacet(IExploration.METHODS)) {
-			method = Cast.asString(agent.getScope(), getFacet(IExploration.METHODS).value(agent.getScope()));
+		if (hasFacet(IExploration.SAMPLING)) {
+			method = Cast.asString(agent.getScope(), getFacet(IExploration.SAMPLING).value(agent.getScope()));
 		} else {
 			String xpm = IKeyword.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
 			if (hasFacet(IKeyword.FROM)) {

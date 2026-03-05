@@ -61,7 +61,7 @@ import gama.core.experiment.parameters.ParametersSet;
 				internal = true,
 				doc = @doc ("The name of the method. For internal use only")),
 				@facet (
-						name = Exploration.METHODS,
+						name = Exploration.SAMPLING,
 						type = IType.ID,
 						optional = true,
 						doc = @doc ("The sampling method to build parameters sets. Available methods are: "

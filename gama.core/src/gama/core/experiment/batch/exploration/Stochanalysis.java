@@ -433,7 +433,7 @@ public class Stochanalysis {
 	}
 
 	// -------------------------------------------------- //
-	// ################# ACTUAL METHODS ################# //
+	// ################# ACTUAL SAMPLING ################# //
 
 	/**
 	 * Main method for the Stochastic Analysis
