@@ -8,6 +8,8 @@ import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.FacetsAndBlock;
 import gaml.compiler.gaml.GamlPackage;
 
+import gaml.compiler.gaml.serializer.GamlEObjectImpl;
+
 import java.util.Collection;
 
 import org.eclipse.emf.common.notify.Notification;
@@ -19,7 +21,6 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 import org.eclipse.emf.ecore.util.EObjectContainmentEList;
 import org.eclipse.emf.ecore.util.InternalEList;
@@ -39,7 +40,7 @@ import org.eclipse.emf.ecore.util.InternalEList;
  *
  * @generated
  */
-public class FacetsAndBlockImpl extends MinimalEObjectImpl.Container implements FacetsAndBlock
+public class FacetsAndBlockImpl extends GamlEObjectImpl implements FacetsAndBlock
 {
   /**
    * The cached value of the '{@link #getFacets() <em>Facets</em>}' containment reference list.

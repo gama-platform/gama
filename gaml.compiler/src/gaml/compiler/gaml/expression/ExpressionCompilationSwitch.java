@@ -705,7 +705,11 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			if (argInfo.incrementIndex) { positionalIndex++; }
 
 			IExpressionDescription ed = builder.createFromEObject(argInfo.valueExpr);
-			if (ed != null && compileArgValues) { ed.compile(command); }
+			if (ed != null && compileArgValues) {
+				// We keep the same compilation context
+				ed.setExpression(compile(argInfo.valueExpr));
+				// ed.compile(command); would switch the compilation context
+			}
 			argMap.put(argInfo.name, ed);
 		}
 

@@ -21,7 +21,6 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.getNode;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.util.Map;
 
 import org.eclipse.emf.common.util.URI;
@@ -373,16 +372,22 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	@Override
 	protected void doLoad(final InputStream inputStream, final Map<?, ?> options) throws IOException {
 		super.doLoad(inputStream, options);
-		EObject model = getParseResult().getRootASTElement();
-		if (model != null) { DEBUG.LOG("Serialization : \n" + model.toString()); }
+		// GamlEObjectImpl model = (GamlEObjectImpl) getParseResult().getRootASTElement();
+		// // if (model != null) {
+		// // try {
+		// // DEBUG.LOG("Serialization : \n" + model.asString());
+		// // } catch (Exception e) {
+		// // DEBUG.ERR("Error in serialization", e);
+		// // }
+		// // }
 	}
 
 	// Here we create a reader equipped with the offset map ?
-	@Override
-	protected Reader createReader(final InputStream inputStream) throws IOException {
-		Reader reader = super.createReader(inputStream);
-		return new GamlResourceReader(getURI(), reader, offsetMap);
-	}
+	// @Override
+	// protected Reader createReader(final InputStream inputStream) throws IOException {
+	// Reader reader = super.createReader(inputStream);
+	// return new GamlResourceReader(getURI(), reader, offsetMap);
+	// }
 
 	/**
 	 * Checks for errors.

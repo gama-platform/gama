@@ -20,6 +20,7 @@ import gaml.compiler.gaml.BinaryOperator;
 import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.BooleanLiteral;
 import gaml.compiler.gaml.DoubleLiteral;
+import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.EquationDefinition;
 import gaml.compiler.gaml.EquationFakeDefinition;
 import gaml.compiler.gaml.EquationRef;
@@ -579,28 +580,28 @@ public class GamlSerializerToString extends GamlSwitch<String> {
 
 	@Override
 	public String caseUnitName(final UnitName object) {
-		return object.getRef().getName();
+		return EGaml.getInstance().getNameOfRef(object);
 	}
 
 	@Override
 	public String caseSkillRef(final SkillRef object) {
-		return object.getRef().getName();
+		return EGaml.getInstance().getNameOfRef(object);
 	}
 
 	@Override
 	public String caseActionRef(final ActionRef object) {
-		return object.getRef().getName();
+		return EGaml.getInstance().getNameOfRef(object);
 	}
 
 	@Override
 	public String caseEquationRef(final EquationRef object) {
-		return object.getRef().getName();
+		return EGaml.getInstance().getNameOfRef(object);
 	}
 
 	@Override
 	public String caseTypeRef(final TypeRef object) {
 		int m = mark();
-		sb().append(object.getRef().getName());
+		sb().append(EGaml.getInstance().getNameOfRef(object));
 		if (object.getParameter() != null) {
 			sb().append(LESS_THAN).append(serialize(object.getParameter())).append(GREATER_THAN);
 		}
