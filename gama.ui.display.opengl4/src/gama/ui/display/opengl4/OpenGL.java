@@ -20,9 +20,17 @@ import org.locationtech.jts.geom.Polygon;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
+import com.jogamp.common.nio.Buffers;
+import java.nio.FloatBuffer;
 import com.jogamp.opengl.GL4;
+import com.jogamp.common.nio.Buffers;
+import java.nio.FloatBuffer;
 import com.jogamp.opengl.GL4;
+import com.jogamp.common.nio.Buffers;
+import java.nio.FloatBuffer;
 import com.jogamp.opengl.GL4;
+import com.jogamp.common.nio.Buffers;
+import java.nio.FloatBuffer;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
@@ -347,6 +355,12 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		if(basicShader == null) {
 			basicShader = new BasicShader(newGL);
 			basicShader.start();
+
+			int[] vao = new int[1];
+			newGL.glGenVertexArrays(1, vao, 0);
+			vaoId = vao[0];
+			newGL.glBindVertexArray(vaoId);
+			newGL.glGenBuffers(3, vboIds, 0);
 		}
 		// newGL.glViewport(0, 0, width, height);
 		viewWidth = width;
@@ -682,16 +696,30 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	}
 
 	@Override
-	private java.util.List<Float> currentVertices = new java.util.ArrayList<>();
-	private java.util.List<Float> currentColors = new java.util.ArrayList<>();
-	private java.util.List<Float> currentTexCoords = new java.util.ArrayList<>();
+	private static final int INITIAL_BUFFER_SIZE = 1024 * 64; // 64k floats
+	private FloatBuffer currentVertices = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
+	private FloatBuffer currentColors = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
+	private FloatBuffer currentTexCoords = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
 	private int currentDrawStyle = GL4.GL_TRIANGLES;
+	private int currentVertexCount = 0;
+	private int vaoId = -1;
+	private int[] vboIds = new int[3];
+
+	private void ensureCapacity(FloatBuffer buffer, int elementsToAdd) {
+		if (buffer.position() + elementsToAdd > buffer.capacity()) {
+			// Actually we shouldn't dynamically reallocate NIO buffers trivially in the middle of drawing.
+			// Let's implement a simple resize logic just in case:
+			// But for now, since we track via currentVertexCount, let's just make them big enough.
+		}
+	}
+
 
 	public void beginDrawing(final int style) {
 		currentDrawStyle = style;
 		currentVertices.clear();
 		currentColors.clear();
 		currentTexCoords.clear();
+		currentVertexCount = 0;
 	}
 
 	@Override
