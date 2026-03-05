@@ -111,9 +111,6 @@ public interface IKeyword {
 	/** The autosave. */
 	String AUTOSAVE = "autosave";
 
-	/** The avoid mask. */
-	String AVOID_MASK = "avoid_mask";
-
 	/** The axes. */
 	String AXES = "axes";
 
@@ -222,9 +219,6 @@ public interface IKeyword {
 	/** The control. */
 	String CONTROL = "control";
 
-	/** The convolution. */
-	String CONVOLUTION = "convolution";
-
 	/** The create. */
 	String CREATE = "create";
 
@@ -236,9 +230,6 @@ public interface IKeyword {
 
 	/** The Constant CYCLE. */
 	String CYCLE = "cycle";
-
-	/** The cycle length. */
-	String CYCLE_LENGTH = "cycle_length";
 
 	/** The darker. */
 	String DARKER = "darker";
@@ -266,9 +257,6 @@ public interface IKeyword {
 
 	/** The diffuse. */
 	String DIFFUSE = "diffuse";
-
-	/** The diffusion. */
-	String DIFFUSION = "diffusion";
 
 	/** The direction. */
 	String DIRECTION = "direction";
@@ -434,9 +422,6 @@ public interface IKeyword {
 
 	/** The global. */
 	String GLOBAL = "global";
-
-	/** The gradient. */
-	String GRADIENT = "gradient";
 
 	/** The graph. */
 	String GRAPH = "graph";
@@ -607,9 +592,6 @@ public interface IKeyword {
 
 	/** The map. */
 	String MAP = "map";
-
-	/** The mask. */
-	String MASK = "mask";
 
 	/** The match. */
 	String MATCH = "match";
@@ -839,12 +821,6 @@ public interface IKeyword {
 	/** The primitive. */
 	String PRIMITIVE = "primitive";
 
-	/** The propagation. */
-	String PROPAGATION = "propagation";
-
-	/** The proportion. */
-	String PROPORTION = "proportion";
-
 	/** The put. */
 	String PUT = "put";
 
@@ -856,9 +832,6 @@ public interface IKeyword {
 
 	/** The radar. */
 	String RADAR = "radar";
-
-	/** The radius. */
-	String RADIUS = "radius";
 
 	/** The range. */
 	String RANGE = "range";
@@ -1168,9 +1141,6 @@ public interface IKeyword {
 
 	/** The var. */
 	String VAR = "var";
-
-	/** The variation. */
-	String VARIATION = "variation";
 
 	/** The vars. */
 	String VARS = "vars";

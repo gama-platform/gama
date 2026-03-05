@@ -69,7 +69,7 @@ import gama.extension.maths.pde.diffusion.statements.DiffusionStatement.Diffusio
 						name = IKeyword.METHOD,
 						type = IType.ID,
 						optional = true,
-						values = { IKeyword.CONVOLUTION, "dot_product" },
+						values = { DiffusionStatement.CONVOLUTION, "dot_product" },
 						doc = @doc ("the diffusion method. One of 'convolution' or 'dot_product'")),
 				@facet (
 						name = IKeyword.MIN,
@@ -77,39 +77,39 @@ import gama.extension.maths.pde.diffusion.statements.DiffusionStatement.Diffusio
 						optional = true,
 						doc = @doc ("if a value is smaller than this value, it will not be diffused. By default, this value is equal to 0.0. This value cannot be smaller than 0.")),
 				@facet (
-						name = IKeyword.MASK,
+						name = DiffusionStatement.MASK,
 						type = IType.MATRIX,
 						of = IType.FLOAT,
 						optional = true,
 						doc = @doc ("a matrix that masks the diffusion ( created from an image for instance). The cells corresponding to the values smaller than \"-1\" in the mask matrix will not diffuse, and the other will diffuse.")),
 				@facet (
-						name = IKeyword.PROPORTION,
+						name = DiffusionStatement.PROPORTION,
 						type = IType.FLOAT,
 						optional = true,
 						doc = @doc ("a diffusion rate")),
 				@facet (
-						name = IKeyword.PROPAGATION,
+						name = DiffusionStatement.PROPAGATION,
 						type = IType.LABEL,
-						values = { IKeyword.DIFFUSION, IKeyword.GRADIENT },
+						values = { DiffusionStatement.DIFFUSION, DiffusionStatement.GRADIENT },
 						optional = true,
 						doc = @doc ("represents both the way the signal is propagated and the way to treat multiple propagation of the same signal occurring at once from different places. If propagation equals 'diffusion', the intensity of a signal is shared between its neighbors with respect to 'proportion', 'variation' and the number of neighbors of the environment places (4, 6 or 8). I.e., for a given signal S propagated from place P, the value transmitted to its N neighbors is : S' = (S / N / proportion) - variation. The intensity of S is then diminished by S `*` proportion on P. In a diffusion, the different signals of the same name see their intensities added to each other on each place. If propagation equals 'gradient', the original intensity is not modified, and each neighbors receives the intensity : S / proportion - variation. If multiple propagation occur at once, only the maximum intensity is kept on each place. If 'propagation' is not defined, it is assumed that it is equal to 'diffusion'.")),
 				@facet (
-						name = IKeyword.RADIUS,
+						name = DiffusionStatement.RADIUS,
 						type = IType.INT,
 						optional = true,
 						doc = @doc ("a diffusion radius (in number of cells from the center)")),
 				@facet (
-						name = IKeyword.VARIATION,
+						name = DiffusionStatement.VARIATION,
 						type = IType.FLOAT,
 						optional = true,
 						doc = @doc ("an absolute value to decrease at each neighbors")),
 				@facet (
-						name = IKeyword.CYCLE_LENGTH,
+						name = DiffusionStatement.CYCLE_LENGTH,
 						type = IType.INT,
 						optional = true,
 						doc = @doc ("the number of diffusion operation applied in one simulation step")),
 				@facet (
-						name = IKeyword.AVOID_MASK,
+						name = DiffusionStatement.AVOID_MASK,
 						type = IType.BOOL,
 						optional = true,
 						doc = @doc ("""
@@ -148,6 +148,36 @@ import gama.extension.maths.pde.diffusion.statements.DiffusionStatement.Diffusio
 								isExecutable = false) }) })
 public class DiffusionStatement extends AbstractStatement {
 
+	/** The variation. */
+	private static final String VARIATION = "variation";
+
+	/** The avoid mask. */
+	private static final String AVOID_MASK = "avoid_mask";
+
+	/** The cycle length. */
+	private static final String CYCLE_LENGTH = "cycle_length";
+
+	/** The propagation. */
+	private static final String PROPAGATION = "propagation";
+
+	/** The gradient. */
+	private static final String GRADIENT = "gradient";
+
+	/** The diffusion. */
+	private static final String DIFFUSION = "diffusion";
+
+	/** The mask. */
+	private static final String MASK = "mask";
+
+	/** The radius. */
+	private final static String RADIUS = "radius";
+
+	/** The proportion. */
+	private final static String PROPORTION = "proportion";
+
+	/** The convolution. */
+	private final static String CONVOLUTION = "convolution";
+
 	/**
 	 * The Class DiffusionValidator.
 	 */
@@ -175,10 +205,10 @@ public class DiffusionStatement extends AbstractStatement {
 			}
 
 			final IExpressionDescription mat_diffu = desc.getFacet(MATRIX);
-			final IExpressionDescription propor = desc.getFacet(IKeyword.PROPORTION);
-			final IExpressionDescription propagation = desc.getFacet(IKeyword.PROPAGATION);
-			final IExpressionDescription radius = desc.getFacet(IKeyword.RADIUS);
-			final IExpressionDescription variation = desc.getFacet(IKeyword.VARIATION);
+			final IExpressionDescription propor = desc.getFacet(PROPORTION);
+			final IExpressionDescription propagation = desc.getFacet(PROPAGATION);
+			final IExpressionDescription radius = desc.getFacet(RADIUS);
+			final IExpressionDescription variation = desc.getFacet(VARIATION);
 
 			// conflict diffusion matrix /vs/ parameters
 			if (propor != null && mat_diffu != null) {
@@ -226,8 +256,8 @@ public class DiffusionStatement extends AbstractStatement {
 			variableName = Cast.asString(scope, getFacetValue(scope, IKeyword.VAR));
 			minValue = Cast.asFloat(scope, getFacetValue(scope, IKeyword.MIN, 0.0));
 			if (minValue < 0) throw GamaRuntimeException.error("Facet \"min_value\" cannot be smaller than 0 !", scope);
-			useConvolution = IKeyword.CONVOLUTION.equals(getLiteral(IKeyword.METHOD, IKeyword.CONVOLUTION));
-			isGradient = IKeyword.GRADIENT.equals(getLiteral(IKeyword.PROPAGATION, IKeyword.DIFFUSION));
+			useConvolution = CONVOLUTION.equals(getLiteral(IKeyword.METHOD, CONVOLUTION));
+			isGradient = GRADIENT.equals(getLiteral(PROPAGATION, DIFFUSION));
 			Object on = getFacetValue(scope, IKeyword.ON);
 			if (on instanceof ISpecies) {
 				on = ((ISpecies) on).getPopulation(scope).getTopology().getPlaces();
@@ -236,12 +266,10 @@ public class DiffusionStatement extends AbstractStatement {
 				if (first instanceof IAgent) { on = ((IAgent) first).getPopulation().getTopology().getPlaces(); }
 			}
 			this.terrain = (IDiffusionTarget) on;
-			cycleLength = Cast.asInt(scope, getFacetValue(scope, IKeyword.CYCLE_LENGTH, 1));
+			cycleLength = Cast.asInt(scope, getFacetValue(scope, CYCLE_LENGTH, 1));
 			nbNeighbors = terrain.getNbNeighbours();
 			avoidMask = false;
-			if (getFacet(IKeyword.AVOID_MASK) != null) {
-				avoidMask = Cast.asBool(scope, getFacet(IKeyword.AVOID_MASK).value(scope));
-			}
+			if (getFacet(AVOID_MASK) != null) { avoidMask = Cast.asBool(scope, getFacet(AVOID_MASK).value(scope)); }
 		}
 	}
 
@@ -262,7 +290,7 @@ public class DiffusionStatement extends AbstractStatement {
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
 		DiffusionData data = dataSupplier.get(scope);
 
-		final IMatrix<?> rawMask = GamaMatrixFactory.castToMatrix(scope, getFacetValue(scope, IKeyword.MASK));
+		final IMatrix<?> rawMask = GamaMatrixFactory.castToMatrix(scope, getFacetValue(scope, MASK));
 
 		double[][] diffusionMatrix =
 				translateMatrix(scope, GamaMatrixFactory.castToMatrix(scope, getFacetValue(scope, IKeyword.MATRIX)));
@@ -403,9 +431,9 @@ public class DiffusionStatement extends AbstractStatement {
 	 */
 	public double[][] computeDiffusionMatrix(final IScope scope) {
 		double[][] mat_diffu;
-		double proportion = Cast.asFloat(scope, getFacetValue(scope, IKeyword.PROPORTION));
-		final double variation = Cast.asFloat(scope, getFacetValue(scope, IKeyword.VARIATION));
-		int range = Cast.asInt(scope, getFacetValue(scope, IKeyword.RADIUS));
+		double proportion = Cast.asFloat(scope, getFacetValue(scope, PROPORTION));
+		final double variation = Cast.asFloat(scope, getFacetValue(scope, VARIATION));
+		int range = Cast.asInt(scope, getFacetValue(scope, RADIUS));
 		DiffusionData data = dataSupplier.get(scope);
 		if (range == 0) { range = 1; }
 		if (proportion == 0) { proportion = 1; }
