@@ -817,13 +817,8 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	public IOpenGLRenderer getRenderer() { return renderer; }
 
 	@Override
-	public final void keyPressed(final com.jogamp.newt.event.KeyEvent e) {
-
+	private void handleGlobalKeystrokes(final com.jogamp.newt.event.KeyEvent e) {
 		switch (e.getKeySymbol()) {
-			// We need to register here all the keystrokes used in the Workbench and on the view, as they might
-			// be caught by the NEWT key listener. Those dedicated to modelling are left over for the moment
-			// (like CTRL+SHIFT+H)
-			// First the global keystrokes
 			case com.jogamp.newt.event.KeyEvent.VK_ESCAPE: {
 				if (!getRenderer().getSurface().isEscRedefined()) { ViewsHelper.toggleFullScreenMode(); }
 				return;
@@ -858,6 +853,49 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 				}
 			}
 		}
+	}
+	private void handleGlobalKeystrokes(final com.jogamp.newt.event.KeyEvent e) {
+		switch (e.getKeySymbol()) {
+			case com.jogamp.newt.event.KeyEvent.VK_ESCAPE: {
+				if (!getRenderer().getSurface().isEscRedefined()) { ViewsHelper.toggleFullScreenMode(); }
+				return;
+			}
+			case 'p':
+			case 'P':
+				if (isControlDown(e)) {
+					if (e.isShiftDown()) {
+						GAMA.stepFrontmostExperiment(false);
+					} else {
+						GAMA.startPauseFrontmostExperiment(false);
+					}
+					return;
+				}
+				break;
+			case 'R':
+			case 'r':
+				if (isControlDown(e)) {
+					if (e.isShiftDown()) {
+						GAMA.relaunchFrontmostExperiment();
+					} else {
+						GAMA.reloadFrontmostExperiment(false);
+					}
+					return;
+				}
+				break;
+			case 'X':
+			case 'x': {
+				if (isControlDown(e) && e.isShiftDown()) {
+					GAMA.closeAllExperiments(true, false);
+					return;
+				}
+			}
+		}
+	}
+
+
+	public final void keyPressed(final com.jogamp.newt.event.KeyEvent e) {
+
+		handleGlobalKeystrokes(e);
 
 		invokeOnGLThread(drawable -> {
 			if (!keystoneMode) {

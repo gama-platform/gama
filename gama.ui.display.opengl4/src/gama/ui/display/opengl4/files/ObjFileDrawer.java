@@ -38,7 +38,34 @@ public class ObjFileDrawer {
 	 * @param gl
 	 *            the gl
 	 */
-	public static void drawToOpenGL(final GamaObjFile file, final OpenGL gl) {
+	private static Texture handleMaterial(GamaObjFile file, OpenGL gl, String nextmatname) {
+		gl.setCurrentColor(file.materials.getKd(nextmatname)[0], file.materials.getKd(nextmatname)[1],
+				file.materials.getKd(nextmatname)[2], file.materials.getd(nextmatname));
+
+		final String mapKa = file.materials.getMapKa(nextmatname);
+		final String mapKd = file.materials.getMapKd(nextmatname);
+		final String mapd = file.materials.getMapd(nextmatname);
+		if (mapKa != null || mapKd != null || mapd != null) {
+			File f = new File(file.mtlPath);
+			StringBuilder path = new StringBuilder().append(f.getAbsolutePath().replace(f.getName(), ""));
+			if (mapd != null) {
+				path.append(mapd);
+			} else if (mapKa != null) {
+				path.append(mapKa);
+			} else if (mapKd != null) { path.append(mapKd); }
+			GamaImageFile asset = new GamaImageFile(null, path.toString());
+			if (asset.exists(null)) {
+				Texture texture = gl.getTexture(asset, false, true);
+				gl.setCurrentTextures(texture.getTextureObject(), texture.getTextureObject());
+				texture.setTexParameteri(gl.getGL(), GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
+				texture.setTexParameteri(gl.getGL(), GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
+				return texture;
+			}
+		}
+		return null;
+	}
+
+		public static void drawToOpenGL(final GamaObjFile file, final OpenGL gl) {
 
 		int nextmat = -1;
 		int matcount = 0;
@@ -61,6 +88,16 @@ public class ObjFileDrawer {
 					texture.destroy(gl.getGL());
 					texture = null;
 				}
+
+				texture = handleMaterial(file, gl, nextmatname);
+
+				matcount++;
+				if (matcount < totalmats) {
+					nextmatnamearray = file.matTimings.get(matcount);
+					nextmatname = nextmatnamearray[0];
+					nextmat = Integer.parseInt(nextmatnamearray[1]);
+				}
+			}
 				// gl.getGL().glEnable(GL4.GL_COLOR_MATERIAL);
 				gl.setCurrentColor(file.materials.getKd(nextmatname)[0], file.materials.getKd(nextmatname)[1],
 						file.materials.getKd(nextmatname)[2], file.materials.getd(nextmatname));
