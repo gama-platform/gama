@@ -210,8 +210,8 @@ public abstract class AOptimizationAlgorithm extends Symbol implements IExplorat
 
 			@Override
 			public Object value() {
-				@SuppressWarnings ("rawtypes") final List<Class> classes = AExplorationAlgorithm.CLASSES;
-				final String methodName = IKeyword.METHODS[classes.indexOf(AOptimizationAlgorithm.this.getClass())];
+				@SuppressWarnings ("rawtypes") final List<Class<?>> classes = AExplorationAlgorithm.CLASSES;
+				final String methodName = IExploration.METHODS[classes.indexOf(AOptimizationAlgorithm.this.getClass())];
 				final String fit = fitnessExpression == null ? "" : "fitness = "
 						+ (isMaximize ? " maximize " : " minimize ") + fitnessExpression.serializeToGaml(false);
 				final String sim = fitnessExpression == null ? ""

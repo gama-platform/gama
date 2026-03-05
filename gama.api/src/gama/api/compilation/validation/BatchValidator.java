@@ -23,7 +23,7 @@ import gama.api.kernel.simulation.IExploration;
  *
  * <p>
  * This validator ensures that batch experiments are properly configured with valid exploration methods and appropriate
- * parameters. It validates experiment types, exploration methods, sampling configurations, and parameter requirements
+ * parameters. It validates experiment types, exploration methods, SAMPLING configurations, and parameter requirements
  * for different exploration strategies.
  * </p>
  *
@@ -71,7 +71,7 @@ import gama.api.kernel.simulation.IExploration;
  * <h3>Uniform Sampling:</h3>
  * <ul>
  * <li><strong>Required:</strong> Sample size (default: 132)</li>
- * <li><strong>Use Case:</strong> Uniform random sampling</li>
+ * <li><strong>Use Case:</strong> Uniform random SAMPLING</li>
  * </ul>
  *
  * <h3>Factorial Design:</h3>
@@ -173,9 +173,9 @@ public class BatchValidator implements IDescriptionValidator {
 			desc.removeFacets(RECORD);
 		}
 
-		if (desc.getChildWithKeyword(EXPLORATION) != null) {
+		if (desc.getChildWithKeyword(IExploration.EXPLORATION) != null) {
 
-			IDescription tmpDesc = desc.getChildWithKeyword(EXPLORATION);
+			IDescription tmpDesc = desc.getChildWithKeyword(IExploration.EXPLORATION);
 			if (tmpDesc.hasFacet(IKeyword.BATCH_VAR_OUTPUTS)) {
 				IExpression xp = tmpDesc.getFacet(IKeyword.BATCH_VAR_OUTPUTS).getExpression();
 				if (!(xp instanceof IExpression.List list)) {
@@ -198,9 +198,9 @@ public class BatchValidator implements IDescriptionValidator {
 
 				switch (tmpDesc.getLitteral(IExploration.SAMPLING)) {
 
-					case IKeyword.MORRIS:
+					case IExploration.MORRIS:
 						if (!tmpDesc.hasFacet(IExploration.NB_LEVELS)) {
-							tmpDesc.warning("Levels are not defined for Morris sampling, will be 4 by default",
+							tmpDesc.warning("Levels are not defined for Morris SAMPLING, will be 4 by default",
 									IGamlIssue.MISSING_FACET);
 						} else {
 							int levels = Integer.parseInt(tmpDesc.getLitteral(IExploration.NB_LEVELS));
@@ -229,7 +229,7 @@ public class BatchValidator implements IDescriptionValidator {
 
 						}
 						if (tmpDesc.hasFacet(IExploration.NB_LEVELS)) {
-							tmpDesc.warning("Saltelli sampling doesn't need the levels facet",
+							tmpDesc.warning("Saltelli SAMPLING doesn't need the levels facet",
 									IGamlIssue.MISSING_FACET);
 						}
 						break;
@@ -252,9 +252,9 @@ public class BatchValidator implements IDescriptionValidator {
 						}
 						break;
 
-					case IKeyword.SOBOL:
+					case IExploration.SOBOL:
 						tmpDesc.warning(
-								"The sampling " + tmpDesc.getLitteral(IExploration.SAMPLING)
+								"The SAMPLING " + tmpDesc.getLitteral(IExploration.SAMPLING)
 										+ " doesn't exist yet, do you perhaps mean 'saltelli' ?",
 								IGamlIssue.MISSING_FACET);
 						break;
@@ -276,7 +276,7 @@ public class BatchValidator implements IDescriptionValidator {
 						}
 						break;
 					default:
-						tmpDesc.error("The sampling " + tmpDesc.getLitteral(IExploration.SAMPLING) + " doesn't exist",
+						tmpDesc.error("The SAMPLING " + tmpDesc.getLitteral(IExploration.SAMPLING) + " doesn't exist",
 								IGamlIssue.MISSING_FACET);
 				}
 			}

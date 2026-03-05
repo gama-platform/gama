@@ -13,7 +13,7 @@ import gama.api.runtime.scope.IScope;
 import gama.core.experiment.parameters.ParametersSet;
 
 /**
- * A sampling method from a given parameter space with uniformally chosen points
+ * A SAMPLING method from a given parameter space with uniformally chosen points
  * 
  * @author kevinchapuis
  *

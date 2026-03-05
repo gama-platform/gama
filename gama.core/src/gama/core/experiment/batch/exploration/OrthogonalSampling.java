@@ -16,7 +16,7 @@ import gama.core.experiment.parameters.ParametersSet;
 /**
  * 
  * 
- * Orthogonal sampling for exhaustive exploration
+ * Orthogonal SAMPLING for exhaustive exploration
  *
  */
 public class OrthogonalSampling extends SamplingUtils {
@@ -184,7 +184,7 @@ public class OrthogonalSampling extends SamplingUtils {
     }
 
     /**
-     * Generate the sampling
+     * Generate the SAMPLING
      * @param n
      * @param sample
      * @param iteration
@@ -213,7 +213,7 @@ public class OrthogonalSampling extends SamplingUtils {
     }
     
     /**
-     * Generate List of ParametersSet according with the orthogonal sampling
+     * Generate List of ParametersSet according with the orthogonal SAMPLING
      * @param N : sample size
      * @param iteration : number of iterations
      * @param parameters

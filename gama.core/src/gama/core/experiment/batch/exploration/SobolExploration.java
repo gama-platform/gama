@@ -34,6 +34,7 @@ import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.IExploration;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.date.GamaDateFactory;
 import gama.api.types.geometry.GamaPointFactory;
@@ -49,7 +50,7 @@ import gama.core.experiment.parameters.ParametersSet;
  *
  */
 @symbol (
-		name = IKeyword.SOBOL,
+		name = IExploration.SOBOL,
 		kind = ISymbolKind.BATCH_METHOD,
 		with_sequence = false,
 		concept = { IConcept.BATCH, IConcept.ALGORITHM })
@@ -86,7 +87,7 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = IKeyword.PATH,
 						type = IType.STRING,
 						optional = true,
-						doc = @doc ("The path to the saltelli sample csv file. If the file doesn't exist automatic Saltelli sampling will be performed and saved in the corresponding location")) },
+						doc = @doc ("The path to the saltelli sample csv file. If the file doesn't exist automatic Saltelli SAMPLING will be performed and saved in the corresponding location")) },
 		omissible = IKeyword.NAME)
 @doc (
 		value = "This algorithm runs a Sobol exploration - it has been built upon the moea framework at https://github.com/MOEAFramework/MOEAFramework - disabled the repeat facet of the experiment",
@@ -110,7 +111,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 	private IList<String> outputs;
 
 	/** The current parameters space. */
-	/* The parameter space defined by the Sobol sequence (Satteli sampling method) */
+	/* The parameter space defined by the Sobol sequence (Satteli SAMPLING method) */
 	private List<ParametersSet> solutions;
 
 	/** The res outputs. */
@@ -167,7 +168,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 	public List<ParametersSet> buildParameterSets(final IScope scope, final List<ParametersSet> sets, final int index) {
 		int sample = Cast.asInt(scope, getFacet(SAMPLE_SIZE).value(scope));
 		// Do not trust getExplorableParameter of the BatchAgent
-		// Needs a step to explore a parameter, also for any sampling methods only min/max is required
+		// Needs a step to explore a parameter, also for any SAMPLING methods only min/max is required
 		List<Batch> params = new ArrayList<>(currentExperiment.getParametersToExplore());
 		parameters = parameters == null ? params : parameters;
 		/* times 2 the number of parameters for the bootstraping (Saltelli 2002) and +2 because of sample A & B */
@@ -197,7 +198,7 @@ public class SobolExploration extends AExplorationAlgorithm {
 					break;
 				case IType.STRING:
 					if (parameters.get(j).getAmongValue(scope).isEmpty()) throw GamaRuntimeException
-							.error("Trying to force a string variable in sampling without among facets", scope);
+							.error("Trying to force a string variable in SAMPLING without among facets", scope);
 					var_info.addAll(parameters.get(j).getAmongValue(scope));
 					break;
 				default:
@@ -226,12 +227,12 @@ public class SobolExploration extends AExplorationAlgorithm {
 			}
 			// ... or build the saltelli sequence automatically and save it into a file
 			else {
-				// DEBUG.OUT("Automatic sampling used");
+				// DEBUG.OUT("Automatic SAMPLING used");
 				sobol_analysis.setRandomSaltelliSampling();
 				sobol_analysis.saveSaltelliSample(f);
 			}
 		} else {
-			// No path provided use random saltelli sampling and nothing is saved
+			// No path provided use random saltelli SAMPLING and nothing is saved
 			sobol_analysis.setRandomSaltelliSampling();
 		}
 

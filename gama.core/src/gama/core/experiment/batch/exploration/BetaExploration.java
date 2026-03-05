@@ -58,7 +58,7 @@ import gama.core.experiment.parameters.ParametersSet;
  *
  */
 @symbol (
-		name = IKeyword.BETAD,
+		name = IExploration.BETAD,
 		kind = ISymbolKind.BATCH_METHOD,
 		with_sequence = false,
 		concept = { IConcept.BATCH, IConcept.ALGORITHM })
@@ -75,9 +75,9 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = Exploration.SAMPLING,
 						type = IType.ID,
 						optional = false,
-						doc = @doc ("The sampling method to build parameters sets that must be factorial based to some extends - available are: "
+						doc = @doc ("The SAMPLING method to build parameters sets that must be factorial based to some extends - available are: "
 								+ IKeyword.LHS + ", " + IKeyword.ORTHOGONAL + ", " + IKeyword.FACTORIAL + ", "
-								+ IKeyword.UNIFORM + ", " + IKeyword.SALTELLI + ", " + IKeyword.MORRIS)),
+								+ IKeyword.UNIFORM + ", " + IKeyword.SALTELLI + ", " + IExploration.MORRIS)),
 				@facet (
 						name = IKeyword.BATCH_VAR_OUTPUTS,
 						type = IType.LIST,
@@ -105,7 +105,7 @@ import gama.core.experiment.parameters.ParametersSet;
 						doc = @doc ("The path to the file where the Betad report will be written")) },
 		omissible = IKeyword.NAME)
 @doc (
-		value = "This algorithm runs an exploration with a given sampling to compute BetadKu - see doi: 10.1007/s10588-021-09358-5",
+		value = "This algorithm runs an exploration with a given SAMPLING to compute BetadKu - see doi: 10.1007/s10588-021-09358-5",
 		usages = { @usage (
 				value = "For example: ",
 				examples = { @example (

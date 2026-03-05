@@ -44,7 +44,7 @@ public class MorrisSampling extends SamplingUtils {
 		}
 	}
 	
-	/* Retro-engine SAlib Morris sampling */
+	/* Retro-engine SAlib Morris SAMPLING */
 	
 
 	/**
@@ -86,7 +86,7 @@ public class MorrisSampling extends SamplingUtils {
 	}
 	
 	/**
-	 * Same as above but only give the sampling with a list of parameter set
+	 * Same as above but only give the SAMPLING with a list of parameter set
 	 * @param nb_levels
 	 * 				the number of levels (Should be even, frequently 4)
 	 * @param nb_sample

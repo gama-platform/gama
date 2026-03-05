@@ -17,15 +17,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
-import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
-import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.expressions.IExpression;
-import gama.api.gaml.types.Cast;
-import gama.api.gaml.types.IType;
-import gama.api.runtime.GamaExecutorService;
-import gama.api.runtime.scope.IScope;
-import gama.api.types.map.GamaMapFactory;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;
@@ -35,6 +26,16 @@ import gama.annotations.symbol;
 import gama.annotations.usage;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.simulation.IExploration;
+import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.map.GamaMapFactory;
 import gama.core.experiment.batch.BatchAgent;
 import gama.core.experiment.batch.StoppingCriterion;
 import gama.core.experiment.batch.StoppingCriterionMaxIt;
@@ -44,7 +45,7 @@ import gama.core.experiment.parameters.ParametersSet;
  * The Class Swarm.
  */
 @symbol (
-		name = IKeyword.PSO,
+		name = IExploration.PSO,
 		kind = ISymbolKind.BATCH_METHOD,
 		with_sequence = false,
 		concept = { IConcept.BATCH, IConcept.ALGORITHM })

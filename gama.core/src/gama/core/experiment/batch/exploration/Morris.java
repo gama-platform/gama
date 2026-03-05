@@ -73,7 +73,7 @@ public final class Morris {
 	 * Example: MySample=[{Var1=1,Var2=1},{Var1=4,Var2=5}] ParametersName=[Var1,Var2]
 	 *
 	 */
-	protected List<Map<String, Object>> simulationSamples; // Experiment plan defined using Morris sampling
+	protected List<Map<String, Object>> simulationSamples; // Experiment plan defined using Morris SAMPLING
 
 	/** The parameters names. */
 	protected List<String> parametersNames;
@@ -222,7 +222,7 @@ public final class Morris {
 	}
 
 	/**
-	 * When using Morris within an experiment, the class is created, sampling is made and then Gama runs simulations
+	 * When using Morris within an experiment, the class is created, SAMPLING is made and then Gama runs simulations
 	 * then results is given back to Morris class for analysis. This setter is meant to do that !
 	 * 
 	 * @param outputs
@@ -242,7 +242,7 @@ public final class Morris {
 	 * Main method for Morris Analysis
 	 *
 	 * @param num_levels:
-	 *            Number of levels used for the sampling (Usually 4)
+	 *            Number of levels used for the SAMPLING (Usually 4)
 	 * @param Outputs:
 	 *            List of the Output to analyze
 	 *

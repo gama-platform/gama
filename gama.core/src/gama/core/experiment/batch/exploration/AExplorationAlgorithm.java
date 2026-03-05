@@ -75,7 +75,7 @@ import one.util.streamex.StreamEx;
 public abstract class AExplorationAlgorithm extends Symbol implements IExploration {
 
 	/** The Constant CLASSES. */
-	@SuppressWarnings ("rawtypes") public static final List<Class> CLASSES =
+	@SuppressWarnings ("rawtypes") public static final List<Class<?>> CLASSES =
 			Arrays.asList(GeneticAlgorithm.class, SimulatedAnnealing.class, HillClimbing.class, TabuSearch.class,
 					TabuSearchReactive.class, Exploration.class, Swarm.class, SobolExploration.class,
 					MorrisExploration.class, StochanalysisExploration.class, BetaExploration.class);
@@ -126,7 +126,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			@Override
 			public Object value() {
 				@SuppressWarnings ("rawtypes") final String methodName =
-						IKeyword.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
+						IExploration.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
 				return methodName;
 			}
 
@@ -137,10 +137,10 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			public Object value() {
 				if (hasFacet(IKeyword.FROM)) return IExploration.FROM_FILE;
 				if (hasFacet(IKeyword.WITH)) return IExploration.FROM_LIST;
-				final String methodName = IKeyword.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
+				final String methodName = IExploration.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
 				if (!hasFacet(IExploration.SAMPLING)) {
-					if (methodName == IKeyword.MORRIS) return IKeyword.MORRIS;
-					if (methodName == IKeyword.SOBOL) return IKeyword.SALTELLI;
+					if (methodName == IExploration.MORRIS) return IExploration.MORRIS;
+					if (methodName == SOBOL) return IKeyword.SALTELLI;
 					return IExploration.DEFAULT_SAMPLING;
 				}
 				return hasFacet(IExploration.SAMPLING)
@@ -160,8 +160,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			@Override
 			public Object value() {
 				int res = estimateSamples(agent);
-				final String methodName = IKeyword.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
-				if (Arrays.asList(IKeyword.SOBOL, IKeyword.MORRIS, IKeyword.BETAD).contains(methodName)) return res;
+				final String methodName = IExploration.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
+				if (Arrays.asList(SOBOL, MORRIS, IExploration.BETAD).contains(methodName)) return res;
 				return res * (agent.getSpecies().hasFacet(IKeyword.REPEAT) ? Cast.asInt(agent.getScope(),
 						agent.getSpecies().getFacet(IKeyword.REPEAT).value(agent.getScope())) : 1);
 			}
@@ -224,7 +224,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	}
 
 	/**
-	 * Construct the experimental plan based on the given the proper modeler input: from sampling methods, from a file
+	 * Construct the experimental plan based on the given the proper modeler input: from SAMPLING methods, from a file
 	 * or explicit list of points
 	 *
 	 * @param parameters
@@ -238,7 +238,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 						: hasFacet(IKeyword.WITH) ? IExploration.FROM_LIST : "";
 
 		return switch (method) {
-			case IKeyword.MORRIS:
+			case MORRIS:
 				yield MorrisSampling.makeMorrisSamplingOnly(hasFacet(MorrisExploration.NB_LEVELS)
 						? Cast.asInt(scope, getFacet(MorrisExploration.NB_LEVELS)) : Morris.DEFAULT_LEVELS, sample_size,
 						parameters, scope);
@@ -496,21 +496,21 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		if (hasFacet(IExploration.SAMPLING)) {
 			method = Cast.asString(agent.getScope(), getFacet(IExploration.SAMPLING).value(agent.getScope()));
 		} else {
-			String xpm = IKeyword.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
+			String xpm = IExploration.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
 			if (hasFacet(IKeyword.FROM)) {
 				method = IExploration.FROM_FILE;
 			} else if (hasFacet(IKeyword.WITH)) {
 				method = IExploration.FROM_LIST;
-			} else if (xpm == IKeyword.MORRIS) {
-				method = IKeyword.MORRIS;
-			} else if (xpm == IKeyword.SOBOL) { method = IKeyword.SALTELLI; }
+			} else if (xpm == MORRIS) {
+				method = MORRIS;
+			} else if (xpm == SOBOL) { method = IKeyword.SALTELLI; }
 		}
 		int K = agent.getParametersToExplore().size();
 		int N = hasFacet(IExploration.SAMPLE_SIZE)
 				? Cast.asInt(agent.getScope(), getFacet(IExploration.SAMPLE_SIZE).value(agent.getScope()))
 				: sample_size;
 		int res = switch (method) {
-			case IKeyword.MORRIS:
+			case MORRIS:
 				yield N * (K + 1);
 			case IKeyword.SALTELLI:
 				yield N * (2 * K + 2);
@@ -531,7 +531,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 								.reduce(1, (a, b) -> a * b);
 
 		};
-		if (IKeyword.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())] == IKeyword.BETAD
+		if (METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())] == BETAD
 				&& hasFacet(BetaExploration.BOOTSTRAP)) {
 			res = N + N * Cast.asInt(agent.getScope(), getFacet(BetaExploration.BOOTSTRAP).value(agent.getScope())) * K;
 		}

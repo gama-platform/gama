@@ -56,7 +56,7 @@ import gama.core.experiment.parameters.ParametersSet;
  *
  */
 @symbol (
-		name = IKeyword.MORRIS,
+		name = IExploration.MORRIS,
 		kind = ISymbolKind.BATCH_METHOD,
 		with_sequence = false,
 		concept = { IConcept.BATCH, IConcept.ALGORITHM })
@@ -93,7 +93,7 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = MorrisExploration.PARAMETER_CSV_PATH,
 						type = IType.STRING,
 						optional = true,
-						doc = @doc ("The path of morris sample .csv file. If don't use, automatic morris sampling will be perform and saved in the corresponding file")),
+						doc = @doc ("The path of morris sample .csv file. If don't use, automatic morris SAMPLING will be perform and saved in the corresponding file")),
 				@facet (
 						name = IKeyword.BATCH_OUTPUT,
 						type = IType.STRING,
@@ -123,7 +123,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	protected IList<String> outputs;
 
 	/** The current parameters space. */
-	/* The parameter space defined by the Morris sampling method */
+	/* The parameter space defined by the Morris SAMPLING method */
 	protected List<ParametersSet> solutions;
 
 	/** The res outputs. */
@@ -186,7 +186,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 		Map<String, List<Double>> rebuilt_output = rebuildOutput(scope, res_outputs);
 		momo.setOutputs(rebuilt_output, scope);
 
-		// TODO : verify if Morris sampling can lead to several identical points in the parameter space
+		// TODO : verify if Morris SAMPLING can lead to several identical points in the parameter space
 		int outsize = 0;
 		for (Map<String, List<Object>> m : res_outputs.values()) {
 			outsize += m.values().stream().findFirst().get().size();
@@ -240,7 +240,7 @@ public class MorrisExploration extends AExplorationAlgorithm {
 	public void addParametersTo(final List<Batch> exp, final IExperimentAgent.Batch agent) {
 		super.addParametersTo(exp, agent);
 
-		exp.add(new ParameterAdapter("Morris level", IKeyword.MORRIS, IType.STRING) {
+		exp.add(new ParameterAdapter("Morris level", IExploration.MORRIS, IType.STRING) {
 			@Override
 			public Object value() {
 				return Cast.asInt(agent.getScope(), getFacet(NB_LEVELS).value(agent.getScope()));

@@ -36,6 +36,7 @@ import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.IExploration;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.GamaMapFactory;
@@ -49,7 +50,7 @@ import gama.core.experiment.parameters.ParametersSet;
  * The Class GeneticAlgorithm.
  */
 @symbol (
-		name = IKeyword.GENETIC,
+		name = IExploration.GENETIC,
 		kind = ISymbolKind.BATCH_METHOD,
 		with_sequence = false,
 		concept = { IConcept.BATCH, IConcept.ALGORITHM })

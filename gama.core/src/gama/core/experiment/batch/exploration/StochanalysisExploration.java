@@ -31,11 +31,12 @@ import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.symbols.IParameter.Batch;
+import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.IExploration;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
@@ -47,7 +48,7 @@ import gama.core.experiment.parameters.ParametersSet;
  * The Class StochanalysisExploration.
  */
 @symbol (
-		name = { IKeyword.STO },
+		name = { IExploration.STO },
 		kind = ISymbolKind.BATCH_METHOD,
 		with_sequence = false,
 		concept = { IConcept.BATCH, IConcept.ALGORITHM })
@@ -64,9 +65,9 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = Exploration.SAMPLING,
 						type = IType.ID,
 						optional = true,
-						doc = @doc ("The sampling method to build parameters sets. Available methods are: "
+						doc = @doc ("The SAMPLING method to build parameters sets. Available methods are: "
 								+ IKeyword.LHS + ", " + IKeyword.ORTHOGONAL + ", " + IKeyword.FACTORIAL + ", "
-								+ IKeyword.UNIFORM + ", " + IKeyword.SALTELLI + ", " + IKeyword.MORRIS)),
+								+ IKeyword.UNIFORM + ", " + IKeyword.SALTELLI + ", " + IExploration.MORRIS)),
 				@facet (
 						name = IKeyword.BATCH_VAR_OUTPUTS,
 						type = IType.LIST,
@@ -91,16 +92,16 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = Exploration.ITERATIONS,
 						type = IType.INT,
 						optional = true,
-						doc = @doc ("The number of iteration for orthogonal sampling, 5 by default"))
+						doc = @doc ("The number of iteration for orthogonal SAMPLING, 5 by default"))
 
 		},
 		omissible = IKeyword.NAME)
 @doc (
-		value = "This algorithm runs an exploration with a given sampling to compute a Stochasticity Analysis",
+		value = "This algorithm runs an exploration with a given SAMPLING to compute a Stochasticity Analysis",
 		usages = { @usage (
 				value = "For example: ",
 				examples = { @example (
-						value = "method stochanalyse sampling:'latinhypercube' outputs:['my_var'] replicat:10 report:'../path/to/report/file.txt'; ",
+						value = "method stochanalyse SAMPLING:'latinhypercube' outputs:['my_var'] replicat:10 report:'../path/to/report/file.txt'; ",
 						isExecutable = false) }) })
 public class StochanalysisExploration extends AExplorationAlgorithm {
 
@@ -130,8 +131,8 @@ public class StochanalysisExploration extends AExplorationAlgorithm {
 
 		parameters = parameters == null ? new ArrayList<>(currentExperiment.getParametersToExplore()) : parameters;
 
-		if (hasFacet(Exploration.SAMPLE_SIZE)) {
-			this.sample_size = Cast.asInt(scope, getFacet(Exploration.SAMPLE_SIZE).value(scope));
+		if (hasFacet(IExploration.SAMPLE_SIZE)) {
+			this.sample_size = Cast.asInt(scope, getFacet(IExploration.SAMPLE_SIZE).value(scope));
 		}
 
 		List<ParametersSet> sets = getExperimentPlan(parameters, scope);

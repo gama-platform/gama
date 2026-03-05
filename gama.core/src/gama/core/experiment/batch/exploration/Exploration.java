@@ -38,7 +38,7 @@ import gama.core.experiment.parameters.ParametersSet;
  * The Class ExhaustiveSearch.
  */
 @symbol (
-		name = { IKeyword.EXPLORATION },
+		name = { IExploration.EXPLORATION },
 		kind = ISymbolKind.BATCH_METHOD,
 		with_sequence = false,
 		concept = { IConcept.BATCH, IConcept.ALGORITHM })
@@ -55,9 +55,9 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = Exploration.SAMPLING,
 						type = IType.STRING,
 						optional = true,
-						doc = @doc ("The name of the sampling method among: " + IKeyword.LHS + ", "
+						doc = @doc ("The name of the SAMPLING method among: " + IKeyword.LHS + ", "
 								+ IKeyword.ORTHOGONAL + ", " + IKeyword.FACTORIAL + ", " + IKeyword.UNIFORM + ", "
-								+ IKeyword.SALTELLI + ", " + IKeyword.MORRIS)),
+								+ IKeyword.SALTELLI + ", " + IExploration.MORRIS)),
 				@facet (
 						name = IKeyword.FROM,
 						type = IType.STRING,
@@ -93,17 +93,17 @@ import gama.core.experiment.parameters.ParametersSet;
 						name = Exploration.NB_LEVELS,
 						type = IType.INT,
 						optional = true,
-						doc = @doc ("The number of levels for morris sampling, 4 by default")),
+						doc = @doc ("The number of levels for morris SAMPLING, 4 by default")),
 				@facet (
 						name = Exploration.ITERATIONS,
 						type = IType.INT,
 						optional = true,
-						doc = @doc ("The number of iteration for orthogonal sampling, 5 by default"))
+						doc = @doc ("The number of iteration for orthogonal SAMPLING, 5 by default"))
 
 		},
 		omissible = IKeyword.NAME)
 @doc (
-		value = "This is the standard batch method. The exploration mode is defined by default when there is no method element present in the batch section. It explores all the combination of parameter values in a sequential way. You can also choose a sampling method for the exploration. See [batch161 the batch dedicated page].",
+		value = "This is the standard batch method. The exploration mode is defined by default when there is no method element present in the batch section. It explores all the combination of parameter values in a sequential way. You can also choose a SAMPLING method for the exploration. See [batch161 the batch dedicated page].",
 		usages = { @usage (
 				value = "As other batch methods, the basic syntax of the exploration statement uses `method exploration` instead of the expected `exploration name: id` : ",
 				examples = { @example (
@@ -115,9 +115,9 @@ import gama.core.experiment.parameters.ParametersSet;
 								value = "method exploration;",
 								isExecutable = false) }),
 				@usage (
-						value = "Using sampling facet: ",
+						value = "Using SAMPLING facet: ",
 						examples = { @example (
-								value = "method exploration sampling:latinhypercube sample:100; ",
+								value = "method exploration SAMPLING:latinhypercube sample:100; ",
 								isExecutable = false) }),
 				@usage (
 						value = "Using from facet: ",

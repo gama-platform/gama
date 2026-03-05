@@ -31,6 +31,7 @@ import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.IExploration;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.scope.IScope;
 import gama.core.experiment.batch.BatchAgent;
@@ -43,7 +44,7 @@ import gama.core.experiment.parameters.ParametersSet;
  * The Class HillClimbing.
  */
 @symbol (
-		name = IKeyword.HILL_CLIMBING,
+		name = IExploration.HILL_CLIMBING,
 		kind = ISymbolKind.BATCH_METHOD,
 		with_sequence = false,
 		concept = { IConcept.BATCH, IConcept.ALGORITHM })

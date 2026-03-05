@@ -75,9 +75,6 @@ public interface IKeyword {
 	/** The angle. */
 	String ANGLE = "angle";
 
-	/** The annealing. */
-	String ANNEALING = "annealing";
-
 	/** The append horizontally. */
 	String APPEND_HORIZONTALLY = "append_horizontally";
 
@@ -143,9 +140,6 @@ public interface IKeyword {
 
 	/** The benchmark. */
 	String BENCHMARK = "benchmark";
-
-	/** The beta^d coefficient */
-	String BETAD = "betad";
 
 	/** The bool. */
 	String BOOL = "bool";
@@ -363,16 +357,13 @@ public interface IKeyword {
 	/** The exploded. */
 	String EXPLODED = "exploded";
 
-	/** The exploration. */
-	String EXPLORATION = "exploration";
-
 	/** The extension. */
 	String EXTENSION = "extension";
 
 	/** The extensions. */
 	String EXTENSIONS = "extensions";
 
-	/** Factorial sampling */
+	/** Factorial SAMPLING */
 	String FACTORIAL = "factorial";
 
 	/** The fading. */
@@ -435,9 +426,6 @@ public interface IKeyword {
 	/** The gap. */
 	String GAP = "gap";
 
-	/** The genetic. */
-	String GENETIC = "genetic";
-
 	/** The geometry. */
 	String GEOMETRY = "geometry";
 
@@ -494,9 +482,6 @@ public interface IKeyword {
 
 	/** The highlight. */
 	String HIGHLIGHT = "highlight";
-
-	/** The hill climbing. */
-	String HILL_CLIMBING = "hill_climbing";
 
 	/** The histogram. */
 	String HISTOGRAM = "histogram";
@@ -686,9 +671,6 @@ public interface IKeyword {
 	/** The monitor. */
 	String MONITOR = "monitor";
 
-	/** The Morris method */
-	String MORRIS = "morris";
-
 	/** The mouse clicked. */
 	String MOUSE_CLICK = "mouse_click";
 
@@ -767,7 +749,7 @@ public interface IKeyword {
 	/** The no type inference keyword. Used to flag declarations that have a type explicitly set */
 	String NO_TYPE_INFERENCE = "**no_type_inference**";
 
-	/** The orthogonal sampling */
+	/** The orthogonal SAMPLING */
 	String ORTHOGONAL = "orthogonal";
 
 	/** The orthographic projection. */
@@ -863,9 +845,6 @@ public interface IKeyword {
 	/** The proportion. */
 	String PROPORTION = "proportion";
 
-	/** The pso. */
-	String PSO = "pso";
-
 	/** The put. */
 	String PUT = "put";
 
@@ -883,9 +862,6 @@ public interface IKeyword {
 
 	/** The range. */
 	String RANGE = "range";
-
-	/** The reactive tabu. */
-	String REACTIVE_TABU = "reactive_tabu";
 
 	/** The readable. */
 	String READABLE = "readable";
@@ -1013,9 +989,6 @@ public interface IKeyword {
 	/** The smooth. */
 	String SMOOTH = "smooth";
 
-	/** The sobol exploration method */
-	String SOBOL = "sobol";
-
 	/** The solve. */
 	String SOLVE = "solve";
 
@@ -1052,9 +1025,6 @@ public interface IKeyword {
 	/** The step. */
 	String STEP = "step";
 
-	/** The Stochasticity Analysis */
-	String STO = "stochanalyse";
-
 	/** The stop sound. */
 	String STOP_SOUND = "stop_sound";
 
@@ -1078,9 +1048,6 @@ public interface IKeyword {
 
 	/** The table. */
 	String TABLE = "table";
-
-	/** The tabu. */
-	String TABU = "tabu";
 
 	/** The target. */
 	String TARGET = "target";
@@ -1142,7 +1109,7 @@ public interface IKeyword {
 	/** The type. */
 	String TYPE = "type";
 
-	/** Uniform sampling */
+	/** Uniform SAMPLING */
 	String UNIFORM = "uniform";
 
 	/** The unit. */
@@ -1288,10 +1255,6 @@ public interface IKeyword {
 
 	/** The zero. */
 	String ZERO = "internal_zero_order_equation";
-
-	/** The methods. */
-	String[] METHODS =
-			{ GENETIC, ANNEALING, HILL_CLIMBING, TABU, REACTIVE_TABU, EXPLORATION, PSO, SOBOL, MORRIS, STO, BETAD };
 
 	/** The bottom. */
 	String BOTTOM = "bottom";

@@ -19,13 +19,13 @@ import gama.api.runtime.scope.IScope;
 
 /**
  * Interface for parameter exploration and optimization strategies in GAMA batch experiments.
- * 
+ *
  * <p>
- * This interface defines the contract for exploration methods that systematically vary experiment parameters to
- * explore the parameter space, optimize outcomes, or conduct systematic sensitivity analysis. It is central to GAMA's
- * batch experimentation capabilities.
+ * This interface defines the contract for exploration methods that systematically vary experiment parameters to explore
+ * the parameter space, optimize outcomes, or conduct systematic sensitivity analysis. It is central to GAMA's batch
+ * experimentation capabilities.
  * </p>
- * 
+ *
  * <h3>Purpose</h3>
  * <p>
  * Explorations enable automated execution of multiple simulation runs with different parameter combinations to:
@@ -36,12 +36,12 @@ import gama.api.runtime.scope.IScope;
  * <li><b>Analyze:</b> Understand parameter sensitivity and interactions</li>
  * <li><b>Validate:</b> Test model behavior across parameter ranges</li>
  * </ul>
- * 
+ *
  * <h3>Exploration Types</h3>
  * <p>
  * GAMA provides several built-in exploration methods:
  * </p>
- * 
+ *
  * <table border="1">
  * <tr>
  * <th>Method</th>
@@ -63,7 +63,7 @@ import gama.api.runtime.scope.IScope;
  * </tr>
  * <tr>
  * <td>Latin Hypercube</td>
- * <td>Space-filling sampling</td>
+ * <td>Space-filling SAMPLING</td>
  * <td>No</td>
  * <td>Large spaces, uniform coverage</td>
  * </tr>
@@ -98,37 +98,37 @@ import gama.api.runtime.scope.IScope;
  * <td>Continuous optimization, fast convergence</td>
  * </tr>
  * </table>
- * 
+ *
  * <h3>GAML Usage</h3>
- * 
+ *
  * <h4>1. Exhaustive Exploration</h4>
- * 
+ *
  * <pre>
  * <code>
  * experiment batch_exploration type: batch {
  *     parameter "Population" var: nb_people among: [100, 500, 1000];
  *     parameter "Threshold" var: threshold min: 0.1 max: 0.9 step: 0.2;
- *     
+ *
  *     method exhaustive;  // Test all combinations
- *     
+ *
  *     reflex save_results {
- *         save [nb_people, threshold, mean(person.age)] 
+ *         save [nb_people, threshold, mean(person.age)]
  *              to: "results.csv" type: csv;
  *     }
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>2. Genetic Algorithm Optimization</h4>
- * 
+ *
  * <pre>
  * <code>
  * experiment optimize type: batch {
  *     parameter "Resource allocation" var: resources min: 0.0 max: 1.0;
  *     parameter "Growth rate" var: growth min: 0.01 max: 0.1;
- *     
- *     method genetic 
- *         minimize: total_cost 
+ *
+ *     method genetic
+ *         minimize: total_cost
  *         maximize: total_benefit
  *         population: 50
  *         crossover: 0.7
@@ -137,37 +137,37 @@ import gama.api.runtime.scope.IScope;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>3. Factorial Design</h4>
- * 
+ *
  * <pre>
  * <code>
  * experiment factorial_design type: batch {
  *     parameter "Factor A" var: factorA among: [low, medium, high];
  *     parameter "Factor B" var: factorB among: [0, 1];
- *     
- *     method factorial 
+ *
+ *     method factorial
  *         levels: 3  // Number of levels per parameter
  *         sample: 27;  // 3^3 combinations
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>4. From File or List</h4>
- * 
+ *
  * <pre>
  * <code>
  * experiment custom_scenarios type: batch {
  *     parameter "Config" var: config_name among: ["scenario1", "scenario2", "scenario3"];
- *     
- *     method explicit 
+ *
+ *     method explicit
  *         from: "parameter_sets.csv";  // Load combinations from file
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h3>Interface Methods</h3>
- * 
+ *
  * <h4>{@link #initializeFor(IScope, IExperimentAgent.Batch)}</h4>
  * <p>
  * Called once before exploration begins. Should:
@@ -175,10 +175,10 @@ import gama.api.runtime.scope.IScope;
  * <ul>
  * <li>Validate exploration parameters</li>
  * <li>Initialize data structures</li>
- * <li>Generate parameter combinations (for sampling methods)</li>
+ * <li>Generate parameter combinations (for SAMPLING methods)</li>
  * <li>Setup optimization algorithms (for fitness-based methods)</li>
  * </ul>
- * 
+ *
  * <h4>{@link #addParametersTo(List, IExperimentAgent.Batch)}</h4>
  * <p>
  * Populates the list of parameters to explore. Should:
@@ -188,7 +188,7 @@ import gama.api.runtime.scope.IScope;
  * <li>Add them to the provided list</li>
  * <li>Configure parameter ranges and values</li>
  * </ul>
- * 
+ *
  * <h4>{@link #run(IScope)}</h4>
  * <p>
  * Executes the exploration strategy. Should:
@@ -200,7 +200,7 @@ import gama.api.runtime.scope.IScope;
  * <li>Update optimization state (for fitness-based methods)</li>
  * <li>Report progress</li>
  * </ul>
- * 
+ *
  * <h4>{@link #isFitnessBased()}</h4>
  * <p>
  * Indicates whether the exploration uses fitness functions for optimization.
@@ -209,17 +209,17 @@ import gama.api.runtime.scope.IScope;
  * <li><b>true:</b> GA, PSO, Simulated Annealing, Tabu Search</li>
  * <li><b>false:</b> Exhaustive, Factorial, Latin Hypercube, Sobol</li>
  * </ul>
- * 
+ *
  * <h4>{@link #getOutputs()}</h4>
  * <p>
  * Returns the expression defining requested outputs/fitness values.
  * </p>
- * 
+ *
  * <h3>Constants</h3>
  * <ul>
- * <li><b>{@link #SAMPLING}:</b> Property name for sampling method ("sampling")</li>
+ * <li><b>{@link #SAMPLING}:</b> Property name for SAMPLING method ("SAMPLING")</li>
  * <li><b>{@link #SAMPLE_SIZE}:</b> Property name for sample size ("sample")</li>
- * <li><b>{@link #SAMPLE_FACTORIAL}:</b> Identifier for factorial sampling</li>
+ * <li><b>{@link #SAMPLE_FACTORIAL}:</b> Identifier for factorial SAMPLING</li>
  * <li><b>{@link #DEFAULT_FACTORIAL}:</b> Default factorial levels (9)</li>
  * <li><b>{@link #NB_LEVELS}:</b> Property name for number of levels</li>
  * <li><b>{@link #ITERATIONS}:</b> Property name for iteration count</li>
@@ -227,25 +227,25 @@ import gama.api.runtime.scope.IScope;
  * <li><b>{@link #FROM_LIST}:</b> Identifier for list-based parameter sets</li>
  * <li><b>{@link #DEFAULT_SAMPLING}:</b> Default method name ("Exhaustive")</li>
  * </ul>
- * 
+ *
  * <h3>Implementation Example</h3>
- * 
+ *
  * <pre>
  * <code>
  * public class RandomExploration implements IExploration {
  *     private int sampleSize = 100;
  *     private List&lt;IParameter.Batch&gt; parameters;
- *     
+ *
  *     public void initializeFor(IScope scope, IExperimentAgent.Batch agent) {
  *         // Get sample size from experiment facets
  *         sampleSize = getFacetValue(SAMPLE_SIZE, 100);
  *         parameters = new ArrayList&lt;&gt;();
  *     }
- *     
+ *
  *     public void addParametersTo(List&lt;IParameter.Batch&gt; exp, IExperimentAgent.Batch agent) {
  *         parameters = exp;
  *     }
- *     
+ *
  *     public void run(IScope scope) {
  *         for (int i = 0; i &lt; sampleSize; i++) {
  *             // Generate random parameter values
@@ -253,27 +253,27 @@ import gama.api.runtime.scope.IScope;
  *             for (IParameter.Batch param : parameters) {
  *                 values.put(param.getName(), param.getRandomValue(scope));
  *             }
- *             
+ *
  *             // Create and run simulation
  *             ISimulationAgent sim = agent.createSimulation(values, true);
  *             sim.step(scope);
- *             
+ *
  *             // Collect results
  *             collectResults(sim);
  *         }
  *     }
- *     
+ *
  *     public boolean isFitnessBased() {
- *         return false;  // Pure sampling, no optimization
+ *         return false;  // Pure SAMPLING, no optimization
  *     }
- *     
+ *
  *     public IExpression getOutputs() {
  *         return null;  // No specific outputs needed
  *     }
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h3>Parameter Space</h3>
  * <p>
  * Parameters define the exploration space:
@@ -283,7 +283,7 @@ import gama.api.runtime.scope.IScope;
  * <li><b>Continuous:</b> {@code min: x max: y step: z}</li>
  * <li><b>Mixed:</b> Some discrete, some continuous</li>
  * </ul>
- * 
+ *
  * <h3>Best Practices</h3>
  * <ul>
  * <li>Report progress for long-running explorations</li>
@@ -293,15 +293,15 @@ import gama.api.runtime.scope.IScope;
  * <li>Handle simulation failures gracefully</li>
  * <li>Provide meaningful stopping criteria for optimization</li>
  * </ul>
- * 
+ *
  * <h3>Performance Considerations</h3>
  * <ul>
  * <li>Exhaustive exploration grows exponentially with parameters</li>
- * <li>Use sampling methods for large parameter spaces</li>
+ * <li>Use SAMPLING methods for large parameter spaces</li>
  * <li>Consider parallel execution for independent simulations</li>
  * <li>Balance exploration depth vs. computational cost</li>
  * </ul>
- * 
+ *
  * @see IExperimentAgent.Batch
  * @see IParameter.Batch
  * @see ISymbol
@@ -309,13 +309,51 @@ import gama.api.runtime.scope.IScope;
  * @since 26 déc. 2011
  */
 public interface IExploration extends ISymbol {// , Runnable {
+
+	/** The annealing. */
+	String ANNEALING = "annealing";
+
+	/** The beta^d coefficient */
+	String BETAD = "betad";
+
+	/** The exploration. */
+	String EXPLORATION = "exploration";
+
+	/** The genetic. */
+	String GENETIC = "genetic";
+
+	/** The hill climbing. */
+	String HILL_CLIMBING = "hill_climbing";
+
+	/** The Morris method */
+	String MORRIS = "morris";
+
+	/** The pso. */
+	String PSO = "pso";
+
+	/** The reactive tabu. */
+	String REACTIVE_TABU = "reactive_tabu";
+
+	/** The sobol exploration method */
+	String SOBOL = "sobol";
+
+	/** The Stochasticity Analysis */
+	String STO = "stochanalyse";
+
+	/** The tabu. */
+	String TABU = "tabu";
+
+	/** The methods. */
+	String[] METHODS =
+			{ GENETIC, ANNEALING, HILL_CLIMBING, TABU, REACTIVE_TABU, EXPLORATION, PSO, SOBOL, MORRIS, STO, BETAD };
+
 	/** The Constant Method */
-	String SAMPLING = "sampling";
+	String SAMPLING = "SAMPLING";
 
 	/** The Constant SAMPLE_SIZE */
 	String SAMPLE_SIZE = "sample";
 
-	/** The factorial sampling */
+	/** The factorial SAMPLING */
 	String SAMPLE_FACTORIAL = "factorial";
 
 	/** The Constant DEFAULT_FACTORIAL. */

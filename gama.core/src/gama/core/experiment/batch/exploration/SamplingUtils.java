@@ -34,18 +34,18 @@ import gama.core.experiment.parameters.ParametersSet;
  */
 /**
  *
- * This abstract class gives methods for all sampling methods.
+ * This abstract class gives methods for all SAMPLING methods.
  *
  */
 public abstract class SamplingUtils {
 
 	/**
-	 * Instantiates a new sampling utils.
+	 * Instantiates a new SAMPLING utils.
 	 */
 	public SamplingUtils() {}
 
 	/**
-	 * This scale the sampling value for discrete values
+	 * This scale the SAMPLING value for discrete values
 	 *
 	 * @param scope
 	 * @param set
@@ -62,7 +62,7 @@ public abstract class SamplingUtils {
 	}
 
 	/**
-	 * This function scale the sampling value
+	 * This function scale the SAMPLING value
 	 *
 	 * @param scope
 	 * @param set
@@ -106,7 +106,7 @@ public abstract class SamplingUtils {
 				return set;
 			case IType.STRING:
 				if (var.getAmongValue(scope).isEmpty()) throw GamaRuntimeException
-						.error("Trying to force a string variable in sampling without among facets", scope);
+						.error("Trying to force a string variable in SAMPLING without among facets", scope);
 				int ms = var.getAmongValue(scope).size();
 				int sv = (int) Math.round(ValFromSampling * ms);
 				set.put(var.getName(), var.getAmongValue(scope).get(sv));

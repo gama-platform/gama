@@ -158,7 +158,7 @@ public class Sobol {
 	}
 
 	/**
-	 * Generate a sample using a random Saltelli sampling
+	 * Generate a sample using a random Saltelli SAMPLING
 	 */
 	public void setRandomSaltelliSampling() {
 		saltelli = new Saltelli().generate(_sample, parameters.size());

@@ -1643,7 +1643,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		// gl.glEnable(GL2GL3.GL_POLYGON_SMOOTH);
 		// Enabling forced normalization of normal vectors (important)
 		gl.glEnable(GLLightingFunc.GL_NORMALIZE);
-		// Enabling multi-sampling (necessary ?)
+		// Enabling multi-SAMPLING (necessary ?)
 		// if (USE_MULTI_SAMPLE) {
 		gl.glEnable(GL.GL_MULTISAMPLE);
 		// Setting the default polygon mode
