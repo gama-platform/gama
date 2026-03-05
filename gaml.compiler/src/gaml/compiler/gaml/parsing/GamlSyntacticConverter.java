@@ -91,10 +91,12 @@ import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Equations;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_If;
+import gaml.compiler.gaml.S_Species;
 import gaml.compiler.gaml.S_Try;
 import gaml.compiler.gaml.StandaloneBlock;
 import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.Statement;
+import gaml.compiler.gaml.VarDefinition;
 import gaml.compiler.gaml.VariableRef;
 import gaml.compiler.gaml.ast.SyntacticExperimentModelElement;
 import gaml.compiler.gaml.ast.SyntacticFactory;
@@ -146,7 +148,7 @@ import gaml.compiler.gaml.resource.GamlResourceServices;
 public class GamlSyntacticConverter {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/**
@@ -299,6 +301,7 @@ public class GamlSyntacticConverter {
 		// We catch its keyword
 		String keyword = computeKeyword(upper, stm);
 		final IArtefact.Symbol upperArtefact = getStatementArtefact(upper.getKeyword());
+
 		final boolean isDefinition = stm instanceof S_Definition;
 		final boolean upperContainsAttributes = upperArtefact != null && isDefiningAttributes(upperArtefact.getKind());
 		final boolean isVarOrAction = isDefinition && !GAML.isAStatement(keyword) || ACTION.equals(keyword);
@@ -306,8 +309,22 @@ public class GamlSyntacticConverter {
 
 		final ISyntacticElement elt = isVar ? FACTORY.createVar(keyword, ((S_Definition) stm).getName(), stm)
 				: FACTORY.create(keyword, stm, true);
-
+		final String kkk = keyword;
 		switch (stm) {
+			case S_Species ss when "species_layer".equals(kkk) -> {
+				// Create a VarDefinition with the species name, wrap it in a VariableRef,
+				// and assign it as the expression of the statement so that the species_layer
+				// facet resolution can find the referenced species by name. It is a very bad fix...
+				final String speciesName = ss.getName();
+				if (speciesName != null) {
+					final VarDefinition varDef = EGAML.getFactory().createVarDefinition();
+					varDef.setName(speciesName);
+					final VariableRef varRef = EGAML.getFactory().createVariableRef();
+					varRef.setRef(varDef);
+					ss.setExpr(varRef);
+					ss.setName(null);
+				}
+			}
 			case S_Definition def when isVarOrAction -> {
 				// If we define a variable with this statement
 				final Expression t = def.getTkey();
@@ -334,8 +351,11 @@ public class GamlSyntacticConverter {
 				switch (keyword) {
 					case IKeyword.PARAMETER -> processParameter(stm, elt);
 					case IKeyword.METHOD -> {// We apply conversion to get the name instead of the "method" keyword
-						final String type = elt.getName();
-						if (type != null) { elt.setKeyword(type); }
+						final String type = EGAML.getNameOf(stm);
+						if (type != null) {
+							elt.setKeyword(type);
+							keyword = type;
+						}
 					}
 				}
 			}

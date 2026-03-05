@@ -95,7 +95,7 @@ experiment explicit_exploration parent: batch_abstract type: batch repeat: 3 kee
 
 // Conducted the same experiment plan but explicitly defined using a csv file
 experiment explicit_from_file parent: batch_abstract type: batch repeat: 3 keep_seed: true until: world.stop_sim() or ( time > end_cycle ) {
-	method exploration from:"includes/ParameterSets.csv" outputs:[nb_preys,nb_predators,time];
+	method exploration from:"includes/ParameterSets.csv" outputs:[nb_preys,nb_predators,time] results:"Results/exploration.csv";
 }
 
 // This experiment iterate over point of the parameter space choosen following

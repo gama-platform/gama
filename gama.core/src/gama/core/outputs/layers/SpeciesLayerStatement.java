@@ -119,7 +119,7 @@ import gama.gaml.statements.AspectStatement;
 		omissible = IKeyword.SPECIES)
 @doc (
 		value = "The `" + IKeyword.SPECIES_LAYER
-				+ "` statement is used using the `species keyword`. It allows modeler to display all the agent of a given species in the current display. In particular, modeler can choose the aspect used to display them.",
+				+ "` statement is using the `species` keyword. It allows modeler to display all the agent of a given species in the current display. In particular, modeler can choose the aspect used to display them.",
 		usages = { @usage (
 				value = "The general syntax is:",
 				examples = { @example (

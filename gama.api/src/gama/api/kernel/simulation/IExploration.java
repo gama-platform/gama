@@ -348,7 +348,7 @@ public interface IExploration extends ISymbol {// , Runnable {
 			{ GENETIC, ANNEALING, HILL_CLIMBING, TABU, REACTIVE_TABU, EXPLORATION, PSO, SOBOL, MORRIS, STO, BETAD };
 
 	/** The Constant Method */
-	String SAMPLING = "SAMPLING";
+	String SAMPLING = "sampling";
 
 	/** The Constant SAMPLE_SIZE */
 	String SAMPLE_SIZE = "sample";
