@@ -10,6 +10,15 @@
  ********************************************************************************************************/
 package gama.api.utils.prefs;
 
+import static gama.api.gaml.types.Cast.asBool;
+import static gama.api.gaml.types.Cast.asFloat;
+import static gama.api.gaml.types.Cast.asInt;
+import static gama.api.gaml.types.Cast.asString;
+import static gama.api.types.date.GamaDateFactory.createFromISOString;
+import static gama.api.types.font.GamaFontFactory.castToFont;
+import static gama.api.types.geometry.GamaPointFactory.castToPoint;
+import static gama.api.utils.StringUtils.toJavaString;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -19,18 +28,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.SystemInfo;
-import gama.api.runtime.scope.IScope;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.date.GamaDateFactory;
 import gama.api.types.date.IDate;
 import gama.api.types.file.GenericFile;
 import gama.api.types.file.IGamaFile;
-import gama.api.types.font.GamaFontFactory;
-import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.utils.StringUtils;
 import one.util.streamex.StreamEx;
@@ -78,14 +83,14 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 	private static final String DEFAULT_FONT = "Default";
 
 	/**
-	 * The backend persistence object supplied by the concrete subclass (e.g. a {@link java.util.prefs.Preferences}
-	 * node or an {@code IEclipsePreferences} node).
+	 * The backend persistence object supplied by the concrete subclass (e.g. a {@link java.util.prefs.Preferences} node
+	 * or an {@code IEclipsePreferences} node).
 	 */
 	T store;
 
 	/**
-	 * An ordered registry mapping preference keys to their corresponding {@link Pref} instances. The insertion order
-	 * is preserved so that iteration produces preferences in registration order.
+	 * An ordered registry mapping preference keys to their corresponding {@link Pref} instances. The insertion order is
+	 * preserved so that iteration produces preferences in registration order.
 	 */
 	Map<String, Pref> map = new LinkedHashMap<>();
 
@@ -118,9 +123,9 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 
 	/**
 	 * Exports all registered preference key/value pairs into a Java {@link java.util.Properties} file at the given
-	 * path. The resulting file is a human-readable {@code key=value} text file that can be shared across GAMA
-	 * instances and later restored via {@link #loadFromProperties(String)}. Concrete subclasses must implement this
-	 * method to iterate over the keys available in their backend store.
+	 * path. The resulting file is a human-readable {@code key=value} text file that can be shared across GAMA instances
+	 * and later restored via {@link #loadFromProperties(String)}. Concrete subclasses must implement this method to
+	 * iterate over the keys available in their backend store.
 	 *
 	 * @param path
 	 *            the absolute file-system path at which to write the properties file
@@ -192,8 +197,8 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 	}
 
 	/**
-	 * Serializes the current value of the given {@link Pref} into the backing store. The method dispatches on the
-	 * GAML type identifier of the preference ({@link gama.api.gaml.types.IType#INT}, {@code FLOAT}, {@code BOOL},
+	 * Serializes the current value of the given {@link Pref} into the backing store. The method dispatches on the GAML
+	 * type identifier of the preference ({@link gama.api.gaml.types.IType#INT}, {@code FLOAT}, {@code BOOL},
 	 * {@code STRING}, {@code FILE}, {@code COLOR}, {@code POINT}, {@code FONT}, {@code DATE}) and converts the typed
 	 * Java value to the appropriate representation before delegating to {@link #putInStore(String, Object)}, after
 	 * which {@link #flush()} is called to guarantee durability.
@@ -240,43 +245,41 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 	 */
 	@Override
 	public void register(final Pref<?> gp) {
-		final IScope scope = null;
 		final String key = gp.getKey();
 		if (key == null) return;
-		if (isOverriden(key)) {
-			String val = getOverridenValue(key);
-			switch (gp.getTypeId()) {
-				case IType.POINT -> {
-					gp.init(val == null ? (Supplier) gp.getValueProvider()
-							: (Supplier) () -> GamaPointFactory.castToPoint(scope, Cast.asString(scope, val), false));
-				}
-				case IType.INT -> gp
-						.init(val == null ? (Supplier) gp.getValueProvider() : (Supplier) () -> Cast.asInt(scope, val));
-				case IType.FLOAT -> gp.init(
-						val == null ? (Supplier) gp.getValueProvider() : (Supplier) () -> Cast.asFloat(scope, val));
-				case IType.BOOL -> gp.init(
-						val == null ? (Supplier) gp.getValueProvider() : (Supplier) () -> Cast.asBool(scope, val));
-				case IType.STRING -> gp.init(val == null ? (Supplier) gp.getValueProvider()
-						: (Supplier) () -> StringUtils.toJavaString(Cast.asString(scope, val)));
-				case IType.FILE -> gp.init(
-						val == null ? (Supplier) gp.getValueProvider() : (Supplier) () -> new GenericFile(val, false));
-				case IType.COLOR -> gp.init(val == null ? (Supplier) gp.getValueProvider()
-						: (Supplier) () -> GamaColorFactory.get(Cast.asInt(scope, val)));
-				case IType.FONT -> gp.init((Supplier) () -> {
-					if (DEFAULT_FONT.equals(val)) return null;
-					return val == null ? (Supplier) gp.getValueProvider()
-							: (Supplier) () -> GamaFontFactory.castToFont(scope, Cast.asString(scope, val), false);
-				});
-				case IType.DATE -> gp
-						.init(val == null ? (Supplier) gp.getValueProvider() : (Supplier) () -> GamaDateFactory
-								.createFromISOString(StringUtils.toJavaString(Cast.asString(scope, val))));
-				default -> gp.init(
-						val == null ? (Supplier) gp.getValueProvider() : (Supplier) () -> Cast.asString(scope, val));
-			}
-
-		}
+		if (isOverriden(key)) { gp.init(getValueSupplierFor(gp, getOverridenValue(key))); }
 		map.put(key, gp);
 		flush();
+	}
+
+	/**
+	 * Gets the value supplier for.
+	 *
+	 * @param gp
+	 *            the gp
+	 * @param val
+	 *            the val
+	 * @param scope
+	 *            the scope
+	 * @return the value supplier for
+	 */
+	private Supplier getValueSupplierFor(final Pref<?> gp, final String val) {
+		if (val == null) return gp.getValueProvider();
+		return switch (gp.getTypeId()) {
+			case IType.POINT -> (Supplier) () -> castToPoint(null, asString(null, val), false);
+			case IType.INT -> (Supplier) () -> asInt(null, val);
+			case IType.FLOAT -> (Supplier) () -> asFloat(null, val);
+			case IType.BOOL -> (Supplier) () -> asBool(null, val);
+			case IType.STRING -> (Supplier) () -> toJavaString(asString(null, val));
+			case IType.FILE -> (Supplier) () -> new GenericFile(val, false);
+			case IType.COLOR -> (Supplier) () -> GamaColorFactory.get(asInt(null, val));
+			case IType.FONT -> (Supplier) () -> {
+				if (DEFAULT_FONT.equals(val)) return null;
+				return castToFont(null, asString(null, val), false);
+			};
+			case IType.DATE -> (Supplier) () -> createFromISOString(toJavaString(asString(null, val)));
+			default -> (Supplier) () -> asString(null, val);
+		};
 	}
 
 	/**
@@ -365,8 +368,8 @@ public abstract class GamaPreferenceStore<T> implements IGamaPreferenceStore {
 
 	/**
 	 * Applies preference overrides from the properties file at {@code path} and then re-registers all currently
-	 * registered preferences, populating {@code modelValues} with their (potentially overridden) values. This method
-	 * is called at model load time to allow a GAML model to carry its own preference snapshot.
+	 * registered preferences, populating {@code modelValues} with their (potentially overridden) values. This method is
+	 * called at model load time to allow a GAML model to carry its own preference snapshot.
 	 *
 	 * @param path
 	 *            the absolute file-system path of the properties file to load; the file is imported via

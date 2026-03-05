@@ -56,9 +56,9 @@ public class ResourceDrawer extends ObjectDrawer<ResourceObject> {
 				gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
 			}
 			if (initRotation != null) {
-				final IPoint initAxis = initRotation.axis;
+				final IPoint initAxis = initRotation.getAxis();
 				// AD Change to a negative rotation to fix Issue #1514
-				gl.rotateBy(-initRotation.angle, initAxis.getX(), initAxis.getY(), initAxis.getZ());
+				gl.rotateBy(-initRotation.getAngle(), initAxis.getX(), initAxis.getY(), initAxis.getZ());
 			}
 		} finally {
 			gl.translateBy(-lx, ly, -lz);

@@ -1436,21 +1436,22 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Keyword cAddKeyword_4 = (Keyword)cAlternatives.eContents().get(4);
 		private final Keyword cRemoveKeyword_5 = (Keyword)cAlternatives.eContents().get(5);
 		private final Keyword cPutKeyword_6 = (Keyword)cAlternatives.eContents().get(6);
-		private final Keyword cCaptureKeyword_7 = (Keyword)cAlternatives.eContents().get(7);
-		private final Keyword cReleaseKeyword_8 = (Keyword)cAlternatives.eContents().get(8);
-		private final Keyword cMigrateKeyword_9 = (Keyword)cAlternatives.eContents().get(9);
-		private final Keyword cCreateKeyword_10 = (Keyword)cAlternatives.eContents().get(10);
-		private final Keyword cErrorKeyword_11 = (Keyword)cAlternatives.eContents().get(11);
-		private final Keyword cWarnKeyword_12 = (Keyword)cAlternatives.eContents().get(12);
-		private final Keyword cWriteKeyword_13 = (Keyword)cAlternatives.eContents().get(13);
-		private final Keyword cStatusKeyword_14 = (Keyword)cAlternatives.eContents().get(14);
-		private final Keyword cFocus_onKeyword_15 = (Keyword)cAlternatives.eContents().get(15);
-		private final Keyword cHighlightKeyword_16 = (Keyword)cAlternatives.eContents().get(16);
-		private final Keyword cLayoutKeyword_17 = (Keyword)cAlternatives.eContents().get(17);
-		private final Keyword cSaveKeyword_18 = (Keyword)cAlternatives.eContents().get(18);
-		private final Keyword cRestoreKeyword_19 = (Keyword)cAlternatives.eContents().get(19);
-		private final Keyword cDiffuseKeyword_20 = (Keyword)cAlternatives.eContents().get(20);
-		private final Keyword cDefaultKeyword_21 = (Keyword)cAlternatives.eContents().get(21);
+		private final Keyword cDrawKeyword_7 = (Keyword)cAlternatives.eContents().get(7);
+		private final Keyword cCaptureKeyword_8 = (Keyword)cAlternatives.eContents().get(8);
+		private final Keyword cReleaseKeyword_9 = (Keyword)cAlternatives.eContents().get(9);
+		private final Keyword cMigrateKeyword_10 = (Keyword)cAlternatives.eContents().get(10);
+		private final Keyword cCreateKeyword_11 = (Keyword)cAlternatives.eContents().get(11);
+		private final Keyword cErrorKeyword_12 = (Keyword)cAlternatives.eContents().get(12);
+		private final Keyword cWarnKeyword_13 = (Keyword)cAlternatives.eContents().get(13);
+		private final Keyword cWriteKeyword_14 = (Keyword)cAlternatives.eContents().get(14);
+		private final Keyword cStatusKeyword_15 = (Keyword)cAlternatives.eContents().get(15);
+		private final Keyword cFocus_onKeyword_16 = (Keyword)cAlternatives.eContents().get(16);
+		private final Keyword cHighlightKeyword_17 = (Keyword)cAlternatives.eContents().get(17);
+		private final Keyword cLayoutKeyword_18 = (Keyword)cAlternatives.eContents().get(18);
+		private final Keyword cSaveKeyword_19 = (Keyword)cAlternatives.eContents().get(19);
+		private final Keyword cRestoreKeyword_20 = (Keyword)cAlternatives.eContents().get(20);
+		private final Keyword cDiffuseKeyword_21 = (Keyword)cAlternatives.eContents().get(21);
+		private final Keyword cDefaultKeyword_22 = (Keyword)cAlternatives.eContents().get(22);
 		
 		///******************************************************************************************
 		// * *****************************************************************************************
@@ -1463,12 +1464,12 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		// * ******************************************************************************************
 		// * ******************************************************************************************/
 		//K_BuiltIn:
-		//    'ask' | 'text' | 'assert' | 'setup' | 'add' | 'remove' | 'put' |
+		//    'ask' | 'text' | 'assert' | 'setup' | 'add' | 'remove' | 'put' | 'draw' |
 		//    'capture' | 'release' | 'migrate' | 'create' | 'error' | 'warn' | 'write' | 'status' |
 		//    'focus_on' | 'highlight' | 'layout' | 'save' | 'restore' | 'diffuse' | 'default';
 		@Override public ParserRule getRule() { return rule; }
 		
-		//'ask' | 'text' | 'assert' | 'setup' | 'add' | 'remove' | 'put' |
+		//'ask' | 'text' | 'assert' | 'setup' | 'add' | 'remove' | 'put' | 'draw' |
 		//'capture' | 'release' | 'migrate' | 'create' | 'error' | 'warn' | 'write' | 'status' |
 		//'focus_on' | 'highlight' | 'layout' | 'save' | 'restore' | 'diffuse' | 'default'
 		public Alternatives getAlternatives() { return cAlternatives; }
@@ -1494,50 +1495,53 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//'put'
 		public Keyword getPutKeyword_6() { return cPutKeyword_6; }
 		
+		//'draw'
+		public Keyword getDrawKeyword_7() { return cDrawKeyword_7; }
+		
 		//'capture'
-		public Keyword getCaptureKeyword_7() { return cCaptureKeyword_7; }
+		public Keyword getCaptureKeyword_8() { return cCaptureKeyword_8; }
 		
 		//'release'
-		public Keyword getReleaseKeyword_8() { return cReleaseKeyword_8; }
+		public Keyword getReleaseKeyword_9() { return cReleaseKeyword_9; }
 		
 		//'migrate'
-		public Keyword getMigrateKeyword_9() { return cMigrateKeyword_9; }
+		public Keyword getMigrateKeyword_10() { return cMigrateKeyword_10; }
 		
 		//'create'
-		public Keyword getCreateKeyword_10() { return cCreateKeyword_10; }
+		public Keyword getCreateKeyword_11() { return cCreateKeyword_11; }
 		
 		//'error'
-		public Keyword getErrorKeyword_11() { return cErrorKeyword_11; }
+		public Keyword getErrorKeyword_12() { return cErrorKeyword_12; }
 		
 		//'warn'
-		public Keyword getWarnKeyword_12() { return cWarnKeyword_12; }
+		public Keyword getWarnKeyword_13() { return cWarnKeyword_13; }
 		
 		//'write'
-		public Keyword getWriteKeyword_13() { return cWriteKeyword_13; }
+		public Keyword getWriteKeyword_14() { return cWriteKeyword_14; }
 		
 		//'status'
-		public Keyword getStatusKeyword_14() { return cStatusKeyword_14; }
+		public Keyword getStatusKeyword_15() { return cStatusKeyword_15; }
 		
 		//'focus_on'
-		public Keyword getFocus_onKeyword_15() { return cFocus_onKeyword_15; }
+		public Keyword getFocus_onKeyword_16() { return cFocus_onKeyword_16; }
 		
 		//'highlight'
-		public Keyword getHighlightKeyword_16() { return cHighlightKeyword_16; }
+		public Keyword getHighlightKeyword_17() { return cHighlightKeyword_17; }
 		
 		//'layout'
-		public Keyword getLayoutKeyword_17() { return cLayoutKeyword_17; }
+		public Keyword getLayoutKeyword_18() { return cLayoutKeyword_18; }
 		
 		//'save'
-		public Keyword getSaveKeyword_18() { return cSaveKeyword_18; }
+		public Keyword getSaveKeyword_19() { return cSaveKeyword_19; }
 		
 		//'restore'
-		public Keyword getRestoreKeyword_19() { return cRestoreKeyword_19; }
+		public Keyword getRestoreKeyword_20() { return cRestoreKeyword_20; }
 		
 		//'diffuse'
-		public Keyword getDiffuseKeyword_20() { return cDiffuseKeyword_20; }
+		public Keyword getDiffuseKeyword_21() { return cDiffuseKeyword_21; }
 		
 		//'default'
-		public Keyword getDefaultKeyword_21() { return cDefaultKeyword_21; }
+		public Keyword getDefaultKeyword_22() { return cDefaultKeyword_22; }
 	}
 	public class K_SpeciesElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.K_Species");
@@ -4457,7 +4461,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	// * ******************************************************************************************
 	// * ******************************************************************************************/
 	//K_BuiltIn:
-	//    'ask' | 'text' | 'assert' | 'setup' | 'add' | 'remove' | 'put' |
+	//    'ask' | 'text' | 'assert' | 'setup' | 'add' | 'remove' | 'put' | 'draw' |
 	//    'capture' | 'release' | 'migrate' | 'create' | 'error' | 'warn' | 'write' | 'status' |
 	//    'focus_on' | 'highlight' | 'layout' | 'save' | 'restore' | 'diffuse' | 'default';
 	public K_BuiltInElements getK_BuiltInAccess() {

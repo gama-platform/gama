@@ -182,7 +182,7 @@ public class Rotation3D implements Serializable, ITransformation3D {
 	 * @param description
 	 */
 	public Rotation3D(final AxisAngle description) {
-		this(description.axis, Math.toRadians(description.angle));
+		this(description.getAxis(), Math.toRadians(description.getAngle()));
 	}
 
 	/**

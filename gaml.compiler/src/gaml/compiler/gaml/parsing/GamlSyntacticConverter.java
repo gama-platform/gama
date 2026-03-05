@@ -300,6 +300,12 @@ public class GamlSyntacticConverter {
 	private final ISyntacticElement convStatement(final ISyntacticElement upper, final Statement stm) {
 		// We catch its keyword
 		String keyword = computeKeyword(upper, stm);
+		if ("draw".equals(keyword)) {
+
+			DEBUG.OUT("");
+
+		}
+
 		final IArtefact.Symbol upperArtefact = getStatementArtefact(upper.getKeyword());
 
 		final boolean isDefinition = stm instanceof S_Definition;

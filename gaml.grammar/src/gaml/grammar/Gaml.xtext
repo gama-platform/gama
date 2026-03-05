@@ -206,7 +206,7 @@ S_Display:
  * ****************************************************************************************** 
  * ******************************************************************************************/
 K_BuiltIn:
-	'ask' | 'text' | 'assert' | 'setup' | 'add' | 'remove' | 'put' |
+	'ask' | 'text' | 'assert' | 'setup' | 'add' | 'remove' | 'put' | 'draw' | 
 	'capture' | 'release' | 'migrate' | 'create' | 'error' | 'warn' | 'write' | 'status' |
 	'focus_on' | 'highlight' | 'layout' | 'save' | 'restore' | 'diffuse' | 'default';
 

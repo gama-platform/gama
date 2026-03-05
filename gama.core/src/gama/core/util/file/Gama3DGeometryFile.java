@@ -97,7 +97,7 @@ public abstract class Gama3DGeometryFile extends GamaGeometryFile {
 	public IEnvelope computeEnvelope(final IScope scope) {
 		if (envelope == null) {
 			fillBuffer(scope);
-			if (initRotation != null && initRotation.angle != 0.0) { envelope = envelope.rotate(initRotation); }
+			if (initRotation != null && initRotation.getAngle() != 0.0) { envelope = envelope.rotate(initRotation); }
 		}
 		return envelope;
 	}

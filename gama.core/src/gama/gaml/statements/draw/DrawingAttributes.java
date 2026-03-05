@@ -22,7 +22,6 @@ import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.ui.layers.IDrawingAttributes;
-import gama.api.ui.layers.IDrawingAttributes.Flag;
 import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.Scaling3D;
 import gama.api.utils.interfaces.IImageProvider;
@@ -189,7 +188,7 @@ public class DrawingAttributes implements IDrawingAttributes {
 	@Override
 	public Double getAngle() {
 		if (getRotation() == null) return null;
-		return getRotation().angle;
+		return getRotation().getAngle();
 	}
 
 	/**

@@ -15,22 +15,18 @@ import gama.api.types.geometry.IPoint;
 
 /**
  * A four-element axis angle represented by double-precision floating point x,y,z,angle components. An axis angle is a
- * rotation of angle (radians) about the vector (x,y,z).
+ * rotation of angle (degrees) about the vector (x,y,z).
  *
  * @adapted from Vecmath by A. Drogoul (2017)
  *
  */
-public class AxisAngle implements java.io.Serializable, Cloneable {
+public record AxisAngle(IPoint axis, double angle) implements java.io.Serializable {
 
-	/**
-	 * The Axis around which the rotation is done
-	 */
-	public final IPoint axis = GamaPointFactory.create(Rotation3D.PLUS_K);
+	/** The Constant DEFAULT_AXIS. */
+	private static final IPoint DEFAULT_AXIS = GamaPointFactory.createImmutable(Rotation3D.PLUS_K);
 
-	/**
-	 * The angle of rotation in degrees.
-	 */
-	public double angle;
+	/** The Constant DEFAULT_ANGLE. */
+	private static final double DEFAULT_ANGLE = 0.0;
 
 	/**
 	 * Constructs and initializes an AxisAngle4 from the specified axis and angle. If the axis is null, the default
@@ -45,9 +41,9 @@ public class AxisAngle implements java.io.Serializable, Cloneable {
 	 */
 	public AxisAngle(final IPoint axis, final double angle) {
 		if (axis != null) {
-			this.axis.setLocation(axis);
+			this.axis = axis.clone();
 		} else {
-			this.axis.setLocation(Rotation3D.PLUS_K);
+			this.axis = DEFAULT_AXIS;
 		}
 		this.angle = angle;
 	}
@@ -59,89 +55,14 @@ public class AxisAngle implements java.io.Serializable, Cloneable {
 	 *            the angle
 	 */
 	public AxisAngle(final Double angle) {
-		this.angle = angle == null ? 0 : angle.doubleValue();
+		this(DEFAULT_AXIS, angle == null ? DEFAULT_ANGLE : angle.doubleValue());
 	}
 
 	/**
 	 * Instantiates a new axis angle.
 	 */
 	public AxisAngle() {
-		axis.setLocation(0, 0, 0);
-		this.angle = 0.0;
-	}
-
-	/**
-	 * Returns a string that contains the values of this AxisAngle4d. The form is (x,y,z,angle).
-	 *
-	 * @return the String representation
-	 */
-	@Override
-	public String toString() {
-		return "(" + axis.getX() + ", " + axis.getY() + ", " + axis.getZ() + ", " + this.angle + ")";
-	}
-
-	/**
-	 * Returns true if all of the data members of AxisAngle4d a1 are equal to the corresponding data members in this
-	 * AxisAngle4d.
-	 *
-	 * @param a1
-	 *            the axis-angle with which the comparison is made
-	 * @return true or false
-	 */
-	public boolean equals(final AxisAngle a1) {
-		if (a1 == null) return false;
-		return axis.equals(a1.axis) && this.angle == a1.angle;
-
-	}
-
-	/**
-	 * Returns true if the Object o1 is of type AxisAngle4 and all of the data members of o1 are equal to the
-	 * corresponding data members in this AxisAngle4.
-	 *
-	 * @param o1
-	 *            the object with which the comparison is made
-	 * @return true or false
-	 */
-	@Override
-	public boolean equals(final Object o1) {
-		if (o1 instanceof AxisAngle) return equals((AxisAngle) o1);
-		return false;
-	}
-
-	/**
-	 * Returns a hash code value based on the data values in this object. Two different AxisAngle4 objects with
-	 * identical data values (i.e., AxisAngle4.equals returns true) will return the same hash code value. Two objects
-	 * with different data members may return the same hash value, although this is not likely.
-	 *
-	 * @return the integer hash code value
-	 */
-	@Override
-	public int hashCode() {
-		long bits = 1L;
-		bits = 31L * bits + Double.doubleToLongBits(axis.getX());
-		bits = 31L * bits + Double.doubleToLongBits(axis.getY());
-		bits = 31L * bits + Double.doubleToLongBits(axis.getZ());
-		bits = 31L * bits + Double.doubleToLongBits(angle);
-		return (int) (bits ^ bits >> 32);
-	}
-
-	/**
-	 * Creates a new object of the same class as this object.
-	 *
-	 * @return a clone of this instance.
-	 * @exception OutOfMemoryError
-	 *                if there is not enough memory.
-	 * @see java.lang.Cloneable
-	 * @since vecmath 1.3
-	 */
-	@Override
-	public Object clone() {
-		// Since there are no arrays we can just use Object.clone()
-		try {
-			return super.clone();
-		} catch (final CloneNotSupportedException e) {
-			return null;
-		}
+		this(GamaPointFactory.create(), DEFAULT_ANGLE);
 	}
 
 	/**
@@ -151,16 +72,6 @@ public class AxisAngle implements java.io.Serializable, Cloneable {
 	 * @return the angle, in degrees.
 	 */
 	public final double getAngle() { return angle; }
-
-	/**
-	 * Set the axis angle, in degrees.<br>
-	 * An axis angle is a rotation angle about the vector (x,y,z).
-	 *
-	 * @param angle
-	 *            The angle to set, in degrees.
-	 *
-	 */
-	public final void setAngle(final double angle) { this.angle = angle; }
 
 	/**
 	 * Get value of <i>x</i> coordinate.
