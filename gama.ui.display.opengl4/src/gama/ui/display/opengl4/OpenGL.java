@@ -804,7 +804,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void rotateBy(final double angle, final double x, final double y, final double z) {
 		if (x == 0d && y == 0d && z == 0d) {
-			gl.glRotated(angle, 0, 0, 1);
+			gl.rotateBy(angle, 0, 0, 1);
 		} else {
 			getCurrentMatrixStack().rotate(angle, x, y, z);
 		}
@@ -994,7 +994,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void drawVertex(final IPoint coords, final IPoint normal, final IPoint tex) {
 		if (normal != null) { outputNormal(normal.getX(), normal.getY(), normal.getZ()); }
-		if (tex != null) { gl.glTexCoord3d(tex.getX(), tex.getY(), tex.getZ()); }
+		if (tex != null) { gl.outputTexCoord(tex.getX(), tex.getY()); }
 		outputVertex(coords.getX(), coords.getY(), coords.getZ());
 	}
 
@@ -1121,7 +1121,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void setCurrentColor(final double red, final double green, final double blue, final double alpha) {
 		currentColor = GamaColorFactory.getWithDoubles(Math.max(red, 0), Math.max(green, 0), Math.max(blue, 0), alpha);
-		gl.glColor4d(red, green, blue, alpha);
+		gl.setCurrentColor(red, green, blue, alpha);
 	}
 
 	/**

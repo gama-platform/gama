@@ -558,14 +558,14 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 				}
 				if (outputsColors) {
 					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
-					ogl.glColorPointer(4, GL4.GL_DOUBLE, 0, 0);
+					// removed glColorPointer
 				}
 			} else {
 				// removed glVertexPointer
 				// removed glNormalPointer
 
 				// removed glTexCoordPointer
-				if (outputsColors) { ogl.glColorPointer(4, GL4.GL_DOUBLE, 0, colorBuffer); }
+				// removed glColorPointer
 			}
 
 			if (!gl.isWireframe()) {
@@ -575,9 +575,9 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 				if (!outputsColors) { gl.enable(GLPointerFunc.GL_COLOR_ARRAY); }
 				if (useVBO) {
 					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[4]);
-					ogl.glColorPointer(4, GL4.GL_DOUBLE, 0, 0);
+					// removed glColorPointer
 				} else {
-					ogl.glColorPointer(4, GL4.GL_DOUBLE, 0, lineColorBuffer);
+					// removed glColorPointer
 				}
 				boolean previous = gl.setObjectWireframe(true);
 				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, indexBuffer);

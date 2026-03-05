@@ -488,7 +488,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 			if (gl.isTextured()) {
 				gl.outputTexCoord(faceTextureBuffer.get(2 * i / 3), faceTextureBuffer.get(2 * i / 3 + 1));
 			}
-			gl.getGL().glVertex3d(faceVertexBuffer.get(i), faceVertexBuffer.get(i + 1), faceVertexBuffer.get(i + 2));
+			gl.outputVertex(faceVertexBuffer.get(i), faceVertexBuffer.get(i + 1), faceVertexBuffer.get(i + 2));
 		}
 		gl.endDrawing();
 	}

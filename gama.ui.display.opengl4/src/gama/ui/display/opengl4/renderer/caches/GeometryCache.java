@@ -417,7 +417,7 @@ public class GeometryCache {
 		// removed glEnableClientState
 		// removed glVertexPointer
 		gl.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 40);
-		gl.glDisableClientState(GLPointerFunc.GL_VERTEX_ARRAY);
+		// removed glDisableClientState
 	}
 
 	/**

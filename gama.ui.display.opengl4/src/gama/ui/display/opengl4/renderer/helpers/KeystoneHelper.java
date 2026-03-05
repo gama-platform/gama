@@ -248,7 +248,7 @@ public class KeystoneHelper extends AbstractRendererHelper {
 			drawRectangle(openGL, xLabelIn01, yLabelIn01, z, labelWidthIn01, labelHeightIn01, FILL_COLORS[fill]);
 
 			// Setting back the color to white
-			gl.glColor3d(1, 1, 1);
+			gl.setCurrentColor(java.awt.Color.WHITE);
 			// Drawing the text itself
 			final double xPosIn01 = id == 0 || id == 1 ? 10 * pixelWidthIn01 + (worldCorners ? xOffsetIn01 : 0)
 					: 1 - labelWidthIn01 + 10 * pixelWidthIn01 - (worldCorners ? xOffsetIn01 : 0);
