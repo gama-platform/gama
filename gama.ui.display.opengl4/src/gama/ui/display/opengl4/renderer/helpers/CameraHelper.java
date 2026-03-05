@@ -466,6 +466,47 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @param isShift
 	 *            the is shift
 	 */
+	private void updateAnglesFromMouseMovement(final IPoint newPoint) {
+		final int horizMovement = (int) (newPoint.getX() - lastMousePressedPosition.getX());
+		final int vertMovement = (int) (newPoint.getY() - lastMousePressedPosition.getY());
+		final double horizMovement_real = horizMovement;
+		final double vertMovement_real = vertMovement;
+		lastMousePressedPosition.setLocation(newPoint);
+		theta = theta - horizMovement_real * getSensivity();
+		if (flipped) {
+			if (vertMovement_real > 0) {
+				if (phi + vertMovement_real * getSensivity() < 180) {
+					phi += vertMovement_real * getSensivity();
+				} else {
+					phi = +360 + phi - vertMovement_real * getSensivity();
+					flipped = !flipped;
+					theta += 180;
+				}
+			} else if (phi - -vertMovement_real * getSensivity() > 0) {
+				phi -= -vertMovement_real * getSensivity();
+			} else {
+				phi = -phi + -vertMovement_real * getSensivity();
+				flipped = !flipped;
+				theta += 180;
+			}
+		} else if (vertMovement_real > 0) {
+			if (phi - vertMovement_real * getSensivity() > 0) {
+				phi -= vertMovement_real * getSensivity();
+			} else {
+				phi = -phi + vertMovement_real * getSensivity();
+				flipped = !flipped;
+				theta += 180;
+			}
+		} else if (phi + -vertMovement_real * getSensivity() < 180) {
+			phi += -vertMovement_real * getSensivity();
+		} else {
+			phi = +360 + phi - vertMovement_real * getSensivity();
+			flipped = !flipped;
+			theta += 180;
+		}
+		updateCartesianCoordinatesFromAngles();
+	}
+
 	protected void internalMouseMove(final int x, final int y, final int button, final boolean buttonPressed,
 			final boolean isCtrl, final boolean isShift) {
 
@@ -497,49 +538,8 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		if (!buttonPressed || button != 1) return;
 		final IPoint newPoint = GamaPointFactory.create(x, y);
 
-		if (!data.isCameraLocked() && isCtrl) {
-			final int horizMovement = (int) (newPoint.getX() - lastMousePressedPosition.getX());
-			final int vertMovement = (int) (newPoint.getY() - lastMousePressedPosition.getY());
-			final double horizMovement_real = horizMovement;
-			final double vertMovement_real = vertMovement;
-			lastMousePressedPosition.setLocation(newPoint);
-			theta = theta - horizMovement_real * getSensivity();
-			if (flipped) {
-				if (vertMovement_real > 0) {
-					// down drag : phi increase
-					if (phi + vertMovement_real * getSensivity() < 180) {
-						phi += vertMovement_real * getSensivity();
-					} else {
-						phi = +360 + phi - vertMovement_real * getSensivity();
-						flipped = !flipped;
-						theta += 180;
-					}
-				} else // up drag : phi decrease
-				if (phi - -vertMovement_real * getSensivity() > 0) {
-					phi -= -vertMovement_real * getSensivity();
-				} else {
-					phi = -phi + -vertMovement_real * getSensivity();
-					flipped = !flipped;
-					theta += 180;
-				}
-			} else if (vertMovement_real > 0) {
-				// down drag : phi decrease
-				if (phi - vertMovement_real * getSensivity() > 0) {
-					phi -= vertMovement_real * getSensivity();
-				} else {
-					phi = -phi + vertMovement_real * getSensivity();
-					flipped = !flipped;
-					theta += 180;
-				}
-			} else // up drag : phi increase
-			if (phi + -vertMovement_real * getSensivity() < 180) {
-				phi += -vertMovement_real * getSensivity();
-			} else {
-				phi = +360 + phi - vertMovement_real * getSensivity();
-				flipped = !flipped;
-				theta += 180;
-			}
-			updateCartesianCoordinatesFromAngles();
+				if (!data.isCameraLocked() && isCtrl) {
+			updateAnglesFromMouseMovement(newPoint);
 		} else if (shiftPressed && isViewInXYPlan()) {
 			mousePosition.setX(x);
 			mousePosition.setY(y);

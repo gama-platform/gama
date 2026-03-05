@@ -456,6 +456,46 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	/**
 	 * Draw field.
 	 */
+	private void drawFieldLoop(final double width, final double height, final boolean isTexture,
+			final boolean isZ_is_color, final int x_size, final int y_size, final double x_step,
+			final double y_step, final double cellWidth, final double cellHeight,
+			final double[] z_values) {
+		for (int i = 0; i < x_size - 1; i++) {
+			for (int j = 0; j < y_size - 1; j++) {
+				final double z1 = z_values[i + j * x_size];
+				final double z2 = z_values[i + 1 + j * x_size];
+				final double z3 = z_values[i + 1 + (j + 1) * x_size];
+				final double z4 = z_values[i + (j + 1) * x_size];
+				final double z_mean = (z1 + z2 + z3 + z4) / 4;
+				final double z_shift = isTexture ? z_mean : 0.0;
+				if (isTexture) {
+					gl.outputTexCoord(0, 0);
+				} else if (isZ_is_color) {
+					setColor(z1);
+				}
+				gl.outputVertex(i * x_step, j * y_step, z1 - z_shift);
+				if (isTexture) {
+					gl.outputTexCoord(1, 0);
+				} else if (isZ_is_color) {
+					setColor(z2);
+				}
+				gl.outputVertex((i + 1) * x_step, j * y_step, z2 - z_shift);
+				if (isTexture) {
+					gl.outputTexCoord(1, 1);
+				} else if (isZ_is_color) {
+					setColor(z3);
+				}
+				gl.outputVertex((i + 1) * x_step, (j + 1) * y_step, z3 - z_shift);
+				if (isTexture) {
+					gl.outputTexCoord(0, 1);
+				} else if (isZ_is_color) {
+					setColor(z4);
+				}
+				gl.outputVertex(i * x_step, (j + 1) * y_step, z4 - z_shift);
+			}
+		}
+	}
+
 	public void drawField() {
 		// AD - See issue #3125
 		if (gl.isRenderingKeystone()) {
