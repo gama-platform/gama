@@ -1,0 +1,1281 @@
+/*******************************************************************************************************
+ *
+ * CameraHelper.java, in gama.ui.display.opengl4, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.ui.display.opengl4.renderer.helpers;
+
+import java.nio.FloatBuffer;
+import java.util.Collection;
+
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL4ES2;
+import com.jogamp.opengl.GLRunnable;
+import com.jogamp.opengl.glu.GLU;
+
+import gama.api.GAMA;
+import gama.api.constants.IKeyword;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.SystemInfo;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.dev.DEBUG;
+import gama.gaml.operators.Maths;
+import gama.ui.display.opengl4.OpenGL;
+import gama.ui.display.opengl4.camera.IMultiListener;
+import gama.ui.display.opengl4.renderer.IOpenGLRenderer;
+import gama.ui.shared.utils.ViewsHelper;
+import gama.ui.shared.utils.WorkbenchHelper;
+import gama.ui.shared.views.toolbar.IToolbarDecoratedView.ICameraHelper;
+
+/**
+ * The Class CameraHelper.
+ */
+public class CameraHelper extends AbstractRendererHelper implements IMultiListener, ICameraHelper {
+
+	static {
+		DEBUG.OFF();
+	}
+
+	/** The glu. */
+	private final GLU glu;
+
+	/** The initialized. */
+	protected boolean initialized;
+
+	/** The mouse position. */
+	// Mouse
+	private final IPoint mousePosition = GamaPointFactory.create(0, 0);
+
+	/**
+	 * Internal world position.
+	 *
+	 * See SWTOpenGLDisplaySUrface::getModelCoordinates() to access the world position is an OpenGL display.
+	 */
+	private final IPoint positionInTheWorld = GamaPointFactory.create();
+
+	/** The last mouse pressed position. */
+	protected final IPoint lastMousePressedPosition = GamaPointFactory.create(0, 0);
+
+	/** The first mouse pressed position. */
+	protected final IPoint firstMousePressedPosition = GamaPointFactory.create(0, 0);
+
+	/** The firsttime mouse down. */
+	protected boolean firsttimeMouseDown = true;
+
+	/** The theta. */
+	protected double theta;
+
+	/** The phi. */
+	protected double phi;
+
+	/** The flipped. */
+	protected boolean flipped = false;
+
+	/** The up. */
+	protected final IPoint up = GamaPointFactory.create();
+
+	/** The goes forward. */
+	// Mouse and keyboard state
+	private boolean goesForward;
+
+	/** The goes backward. */
+	private boolean goesBackward;
+
+	/** The strafe left. */
+	private boolean strafeLeft;
+
+	/** The strafe right. */
+	private boolean strafeRight;
+
+	/** The ROI currently drawn. */
+	private volatile boolean ROICurrentlyDrawn = false;
+
+	/** The ctrl pressed. */
+	protected boolean ctrlPressed = false;
+
+	/** The shift pressed. */
+	protected boolean shiftPressed = false;
+
+	/** The keystone mode. */
+	protected boolean keystoneMode = false;
+
+	/** The use num keys. */
+	private final boolean useNumKeys = GamaPreferences.Displays.OPENGL_NUM_KEYS_CAM.getValue();
+
+	/** The roi envelope. */
+	IEnvelope roiEnvelope;
+
+	/** The is ROI sticky. */
+	private boolean isROISticky;
+
+	/** The are arrow keys redefined. */
+	final boolean areArrowKeysRedefined;
+
+	/**
+	 * Instantiates a new abstract camera.
+	 *
+	 * @param renderer2
+	 *            the renderer 2
+	 */
+	public CameraHelper(final IOpenGLRenderer renderer2) {
+		super(renderer2);
+		areArrowKeysRedefined = renderer2.getSurface().isArrowRedefined();
+		glu = new GLU();
+		applyPreset(data.getCameraName());
+		initialize();
+		update();
+	}
+
+	@Override
+	public void initialize() {
+		flipped = false;
+		initialized = false;
+		data.resetCamera();
+		updateSphericalCoordinatesFromLocations();
+	}
+
+	/**
+	 * Update Cartesian coordinates from angles.
+	 */
+	public void updateCartesianCoordinatesFromAngles() {
+		theta = theta % 360;
+		phi = phi % 360;
+		if (phi <= 0) {
+			phi = 0.001;
+		} else if (phi >= 180) { phi = 179.999; }
+		final double factorT = theta * Maths.toRad;
+		final double factorP = phi * Maths.toRad;
+		final double cosT = Math.cos(factorT);
+		final double sinT = Math.sin(factorT);
+		final double cosP = Math.cos(factorP);
+		final double sinP = Math.sin(factorP);
+		final double radius = data.getCameraDistance();
+		IPoint target = getTarget();
+		data.setCameraPos(GamaPointFactory.create(radius * cosT * sinP + target.getX(),
+				radius * sinT * sinP + target.getY(), radius * cosP + target.getZ()));
+	}
+
+	/**
+	 * Update spherical coordinates from locations.
+	 */
+	public void updateSphericalCoordinatesFromLocations() {
+		final IPoint p = getPosition();
+		final IPoint t = getTarget();
+
+		theta = Maths.toDeg * Math.atan2(p.getY() - t.getY(), p.getX() - t.getX());
+		// See issue on camera_pos
+		if (theta == 0) { theta = -90; }
+		phi = Maths.toDeg * Math.acos((p.getZ() - t.getZ()) / data.getCameraDistance());
+	}
+
+	/**
+	 * Translate camera from screen plan.
+	 *
+	 * @param xTranslationOnScreen
+	 *            the x translation in screen
+	 * @param yTranslationOnScreen
+	 *            the y translation in screen
+	 */
+	private void translateCameraFromScreenPlan(final double xTranslationOnScreen, final double yTranslationOnScreen) {
+
+		final double theta_vect_x = -Math.sin(theta * Maths.toRad);
+		final double theta_vect_y = Math.cos(theta * Maths.toRad);
+		final double theta_vect_ratio =
+				xTranslationOnScreen / (theta_vect_x * theta_vect_x + theta_vect_y * theta_vect_y);
+		final double theta_vect_x_norm = theta_vect_x * theta_vect_ratio;
+		final double theta_vect_y_norm = theta_vect_y * theta_vect_ratio;
+
+		final double phi_vect_x = Math.cos(theta * Maths.toRad) * Math.cos(phi * Maths.toRad);
+		final double phi_vect_y = Math.sin(theta * Maths.toRad) * Math.cos(phi * Maths.toRad);
+		final double phi_vect_z = -Math.sin(phi * Maths.toRad);
+		final double phi_vect_ratio =
+				yTranslationOnScreen / (phi_vect_x * phi_vect_x + phi_vect_y * phi_vect_y + phi_vect_z * phi_vect_z);
+		final double phi_vect_x_norm = phi_vect_x * phi_vect_ratio;
+		final double phi_vect_y_norm = phi_vect_y * phi_vect_ratio;
+
+		final double x_translation_in_world = theta_vect_x_norm + phi_vect_x_norm;
+		final double y_translation_in_world = theta_vect_y_norm + phi_vect_y_norm;
+		IPoint position = getPosition();
+		IPoint target = getTarget();
+		Double distance = data.getCameraDistance();
+		data.setCameraPos(GamaPointFactory.create(position.getX() - x_translation_in_world * distance / 1000,
+				position.getY() - y_translation_in_world * distance / 1000, position.getZ()));
+		data.setCameraTarget(GamaPointFactory.create(target.getX() - x_translation_in_world * distance / 1000,
+				target.getY() - y_translation_in_world * distance / 1000, target.getZ()));
+
+		updateSphericalCoordinatesFromLocations();
+	}
+
+	/**
+	 * Apply preset.
+	 *
+	 * @param name
+	 *            the name
+	 */
+	public void applyPreset(final String name) {
+		// data.setCameraNameFromUser(name);
+		flipped = false;
+		initialized = false;
+		update();
+		data.setZoomLevel(zoomLevel(), true);
+	}
+
+	/**
+	 * Update.
+	 */
+	public void update() {
+		// data.transferToData();
+		updateSphericalCoordinatesFromLocations();
+		if (initialized) { drawRotationHelper(); }
+		initialized = true;
+	}
+
+	/* -------Get commands--------- */
+
+	/**
+	 * Gets the position.
+	 *
+	 * @return the position
+	 */
+	public IPoint getPosition() { return data.getCameraPos(); }
+
+	/**
+	 * Gets the target.
+	 *
+	 * @return the target
+	 */
+	public IPoint getTarget() { return data.getCameraTarget(); }
+
+	/**
+	 * Gets the orientation.
+	 *
+	 * @return the orientation
+	 */
+	public IPoint getOrientation() { return up; }
+
+	/**
+	 * Animate.
+	 */
+	public void animate() {
+
+		if (!data.isCameraLocked()) {
+			// And we animate it if the keyboard is invoked
+			if (goesForward) {
+				if (ctrlPressed) {
+					if (flipped) {
+						if (phi - getKeyboardSensivity() > 0) {
+							phi -= getKeyboardSensivity();
+						} else {
+							phi = -phi + getKeyboardSensivity();
+							flipped = false;
+							theta += 180;
+						}
+					} else if (phi + getKeyboardSensivity() < 180) {
+						phi += getKeyboardSensivity();
+					} else {
+						phi = 360 - phi - getKeyboardSensivity();
+						flipped = true;
+						theta += 180;
+					}
+					updateCartesianCoordinatesFromAngles();
+				} else if (flipped) {
+					translateCameraFromScreenPlan(0.0, getKeyboardSensivity());
+				} else {
+					translateCameraFromScreenPlan(0.0, -getKeyboardSensivity());
+				}
+			}
+			if (goesBackward) {
+				if (ctrlPressed) {
+					if (flipped) {
+						if (phi + getKeyboardSensivity() < 180) {
+							phi += getKeyboardSensivity();
+						} else {
+							phi = 360 - phi - getKeyboardSensivity();
+							flipped = false;
+							theta += 180;
+						}
+					} else if (phi - getKeyboardSensivity() > 0) {
+						phi -= getKeyboardSensivity();
+					} else {
+						phi = -phi + getKeyboardSensivity();
+						flipped = true;
+						theta += 180;
+					}
+					updateCartesianCoordinatesFromAngles();
+				} else if (flipped) {
+					translateCameraFromScreenPlan(0.0, -getKeyboardSensivity());
+				} else {
+					translateCameraFromScreenPlan(0.0, getKeyboardSensivity());
+				}
+			}
+			if (strafeLeft) {
+				if (ctrlPressed) {
+					if (flipped) {
+						theta = theta + -getKeyboardSensivity();
+					} else {
+						theta = theta - -getKeyboardSensivity();
+					}
+					updateCartesianCoordinatesFromAngles();
+				} else if (flipped) {
+					translateCameraFromScreenPlan(getKeyboardSensivity(), 0.0);
+				} else {
+					translateCameraFromScreenPlan(-getKeyboardSensivity(), 0.0);
+				}
+			}
+			if (strafeRight) {
+				if (ctrlPressed) {
+					if (flipped) {
+						theta = theta + getKeyboardSensivity();
+					} else {
+						theta = theta - getKeyboardSensivity();
+					}
+					updateCartesianCoordinatesFromAngles();
+				} else if (flipped) {
+					translateCameraFromScreenPlan(-getKeyboardSensivity(), 0.0);
+				} else {
+					translateCameraFromScreenPlan(getKeyboardSensivity(), 0.0);
+				}
+			}
+		}
+
+		// Completely recomputes the up-vector
+		double tr = theta * Maths.toRad;
+		double pr = phi * Maths.toRad;
+		IPoint position = data.getCameraPos();
+		IPoint target = data.getCameraTarget();
+		double cp = Math.cos(pr);
+		up.setLocation(-Math.cos(tr) * cp, -Math.sin(tr) * cp, Math.sin(pr));
+		if (flipped) { up.negate(); }
+		openGL.getCurrentMatrixStack().getCurrentMatrix().lookAt((float)position.getX(), (float)position.getY(), (float)position.getZ(), (float)target.getX(), (float)target.getY(), (float)target.getZ(),
+				up.getX(), up.getY(), up.getZ());
+	}
+
+	/*------------------ Events controls ---------------------*/
+
+	/**
+	 * Sets the shift pressed.
+	 *
+	 * @param value
+	 *            the new shift pressed
+	 */
+	final void setShiftPressed(final boolean value) { shiftPressed = value; }
+
+	/**
+	 * Sets the ctrl pressed.
+	 *
+	 * @param value
+	 *            the new ctrl pressed
+	 */
+	final void setCtrlPressed(final boolean value) { ctrlPressed = value; }
+
+	/**
+	 * Sets the mouse left pressed.
+	 *
+	 * @param b
+	 *            the new mouse left pressed
+	 */
+	protected void setMouseLeftPressed(final boolean b) {}
+
+	/**
+	 * Invoke on GL thread.
+	 *
+	 * @param runnable
+	 *            the runnable
+	 */
+	protected void invokeOnGLThread(final GLRunnable runnable) {
+		// Fixing issue #2224
+		// runnable.run(renderer.getCanvas());
+		renderer.getCanvas().invoke(false, runnable);
+	}
+
+	@Override
+	public final void mouseWheelMoved(final com.jogamp.newt.event.MouseEvent e) {
+		invokeOnGLThread(drawable -> {
+			if (!data.isCameraLocked()) { internalMouseScrolled((int) e.getRotation()[1]); }
+			return false;
+		});
+	}
+
+	/**
+	 * Internal mouse scrolled.
+	 *
+	 * @param e
+	 *            the e
+	 */
+	protected final void internalMouseScrolled(final int count) {
+		zoom(count > 0);
+	}
+
+	@Override
+	public final void mouseMoved(final com.jogamp.newt.event.MouseEvent e) {
+		invokeOnGLThread(drawable -> {
+			internalMouseMove(e.getX(), e.getY(), e.getButton(), e.getButton() > 0, isControlDown(e), e.isShiftDown());
+			return false;
+		});
+	}
+
+	/**
+	 * Checks if is control down.
+	 *
+	 * @param e
+	 *            the e
+	 * @return true, if is control down
+	 */
+	private boolean isControlDown(final com.jogamp.newt.event.MouseEvent e) {
+		return e.isControlDown() || SystemInfo.isMac() && e.isMetaDown();
+	}
+
+	/**
+	 * Checks if is control down.
+	 *
+	 * @param e
+	 *            the e
+	 * @return true, if is control down
+	 */
+	private boolean isControlDown(final com.jogamp.newt.event.KeyEvent e) {
+		return e.isControlDown() || SystemInfo.isMac() && e.isMetaDown();
+	}
+
+	@Override
+	public final void mouseDragged(final com.jogamp.newt.event.MouseEvent e) {
+		mouseMoved(e);
+	}
+
+	/**
+	 * Internal mouse move.
+	 *
+	 * @param x
+	 *            the x already scaled
+	 * @param y
+	 *            the y already scaled
+	 * @param button
+	 *            the button 0 for no activity
+	 * @param isCtrl
+	 *            the is ctrl
+	 * @param isShift
+	 *            the is shift
+	 */
+	private void updateAnglesFromMouseMovement(final IPoint newPoint) {
+		final int horizMovement = (int) (newPoint.getX() - lastMousePressedPosition.getX());
+		final int vertMovement = (int) (newPoint.getY() - lastMousePressedPosition.getY());
+		final double horizMovement_real = horizMovement;
+		final double vertMovement_real = vertMovement;
+		lastMousePressedPosition.setLocation(newPoint);
+		theta = theta - horizMovement_real * getSensivity();
+		if (flipped) {
+			if (vertMovement_real > 0) {
+				if (phi + vertMovement_real * getSensivity() < 180) {
+					phi += vertMovement_real * getSensivity();
+				} else {
+					phi = +360 + phi - vertMovement_real * getSensivity();
+					flipped = !flipped;
+					theta += 180;
+				}
+			} else if (phi - -vertMovement_real * getSensivity() > 0) {
+				phi -= -vertMovement_real * getSensivity();
+			} else {
+				phi = -phi + -vertMovement_real * getSensivity();
+				flipped = !flipped;
+				theta += 180;
+			}
+		} else if (vertMovement_real > 0) {
+			if (phi - vertMovement_real * getSensivity() > 0) {
+				phi -= vertMovement_real * getSensivity();
+			} else {
+				phi = -phi + vertMovement_real * getSensivity();
+				flipped = !flipped;
+				theta += 180;
+			}
+		} else if (phi + -vertMovement_real * getSensivity() < 180) {
+			phi += -vertMovement_real * getSensivity();
+		} else {
+			phi = +360 + phi - vertMovement_real * getSensivity();
+			flipped = !flipped;
+			theta += 180;
+		}
+		updateCartesianCoordinatesFromAngles();
+	}
+
+	protected void internalMouseMove(final int x, final int y, final int button, final boolean buttonPressed,
+			final boolean isCtrl, final boolean isShift) {
+
+		// Do it before the mouse position is newly set
+		if (keystoneMode) {
+			final int selectedCorner = getRenderer().getKeystoneHelper().getCornerSelected();
+			if (selectedCorner != -1) {
+				final IPoint origin = getNormalizedCoordinates(mousePosition.getX(), mousePosition.getY());
+				IPoint p = getNormalizedCoordinates(x, y);
+				final IPoint translation = origin.minus(p).yNegated();
+				p = getRenderer().getKeystoneHelper().getKeystoneCoordinates(selectedCorner).plus(-translation.getX(),
+						translation.getY(), 0);
+				getRenderer().getKeystoneHelper().setKeystoneCoordinates(selectedCorner, p);
+			} else {
+				final int cornerSelected = hoverOnKeystone(x, y);
+				getRenderer().getKeystoneHelper().setCornerHovered(cornerSelected);
+			}
+			mousePosition.setLocation(x, y, 0);
+			computeMouseLocationInTheWorld(x, y);
+			setCtrlPressed(isCtrl);
+			setShiftPressed(isShift);
+			return;
+		}
+		mousePosition.setLocation(x, y, 0);
+		computeMouseLocationInTheWorld(x, y);
+		setCtrlPressed(isCtrl);
+		setShiftPressed(isShift);
+
+		if (!buttonPressed || button != 1) return;
+		final IPoint newPoint = GamaPointFactory.create(x, y);
+
+				if (!data.isCameraLocked() && isCtrl) {
+			updateAnglesFromMouseMovement(newPoint);
+		} else if (shiftPressed && isViewInXYPlan()) {
+			mousePosition.setX(x);
+			mousePosition.setY(y);
+			defineROI(GamaPointFactory.create(firstMousePressedPosition.getX(), firstMousePressedPosition.getY()));
+		} else if (mouseInROI(GamaPointFactory.create(mousePosition.getX(), mousePosition.getY()))) {
+			IPoint p = positionInTheWorld;
+			p = p.minus(roiEnvelope.center());
+			roiEnvelope.translate(p.getX(), p.getY(), 0);
+		} else if (!data.isCameraLocked()) {
+			int horizMovement = (int) (x - lastMousePressedPosition.getX());
+			int vertMovement = (int) (y - lastMousePressedPosition.getY());
+			if (flipped) {
+				horizMovement = -horizMovement;
+				vertMovement = -vertMovement;
+			}
+
+			final double horizMovement_real = horizMovement;
+			final double vertMovement_real = vertMovement;
+
+			translateCameraFromScreenPlan(horizMovement_real, vertMovement_real);
+
+			lastMousePressedPosition.setLocation(newPoint);
+		}
+
+	}
+
+	@Override
+	public final void mouseClicked(final com.jogamp.newt.event.MouseEvent e) {
+		if (e.getClickCount() == 2) {
+			if (keystoneMode) {
+				final int x = e.getX();
+				final int y = e.getY();
+				final int corner = clickOnKeystone(x, y);
+				if (corner != -1) { getRenderer().getKeystoneHelper().resetCorner(corner); }
+			} else {
+				invokeOnGLThread(drawable -> {
+					getRenderer().getSurface().zoomFit();
+					return false;
+				});
+			}
+		}
+	}
+
+	@Override
+	public final void mousePressed(final com.jogamp.newt.event.MouseEvent e) {
+		// DEBUG.OUT("Mouse pressed from NEWT");
+		invokeOnGLThread(drawable -> {
+			final int x = e.getX();
+			final int y = e.getY();
+			internalMouseDown(x, y, e.getButton(), isControlDown(e), e.isShiftDown());
+			return false;
+		});
+	}
+
+	/**
+	 * Gets the normalized coordinates.
+	 *
+	 * @param x
+	 *            the x
+	 * @param y
+	 *            the y
+	 * @return the normalized coordinates
+	 */
+	protected IPoint getNormalizedCoordinates(final double x, final double y) {
+		final double xCoordNormalized = x / getRenderer().getWidth();
+		double yCoordNormalized = y / getRenderer().getHeight();
+		if (!renderer.useShader()) { yCoordNormalized = 1 - yCoordNormalized; }
+		return GamaPointFactory.create(xCoordNormalized, yCoordNormalized);
+	}
+
+	/**
+	 * Click on keystone.
+	 *
+	 * @param e
+	 *            the e
+	 * @return the int
+	 */
+	private int clickOnKeystone(final int x, final int y) {
+		return renderer.getKeystoneHelper().cornerSelected(GamaPointFactory.create(x, y));
+	}
+
+	/**
+	 * Hover on keystone.
+	 *
+	 * @param e
+	 *            the e
+	 * @return the int
+	 */
+	protected int hoverOnKeystone(final int x, final int y) {
+		return renderer.getKeystoneHelper().cornerHovered(GamaPointFactory.create(x, y));
+	}
+
+	/**
+	 * Internal mouse down.
+	 *
+	 * @param x
+	 *            the x
+	 * @param y
+	 *            the y
+	 */
+	final void internalMouseDown(final int x, final int y, final int button, final boolean isCtrl,
+			final boolean isShift) {
+		if (firsttimeMouseDown) {
+			firstMousePressedPosition.setLocation(x, y, 0);
+			firsttimeMouseDown = false;
+		}
+		if (keystoneMode) {
+			if (getRenderer().getKeystoneHelper().getCornerSelected() != -1) {
+				getRenderer().getKeystoneHelper().setCornerSelected(-1);
+				return;
+			}
+			final int cornerSelected = clickOnKeystone(x, y);
+			if (cornerSelected != -1) { getRenderer().getKeystoneHelper().setCornerSelected(cornerSelected); }
+		}
+
+		lastMousePressedPosition.setLocation(x, y, 0);
+		// Activate Picking when press and right click
+		if (button == 3 && !keystoneMode) {
+			if (mouseInROI(lastMousePressedPosition)) {
+				renderer.getSurface().selectionIn(getROIEnvelope());
+			} else if (renderer.getSurface().canTriggerContextualMenu()) {
+				// DEBUG.OUT("Triggering the opening of the menu from the Camera");
+				renderer.getPickingHelper().setPicking(true);
+			}
+		} else if (button == 2 && !data.isCameraLocked()) { // mouse wheel
+			resetPivot();
+		} else if (isShift && isViewInXYPlan()) { startROI(); }
+		mousePosition.setLocation(x, y, 0);
+		computeMouseLocationInTheWorld(x, y);
+
+		setMouseLeftPressed(button == 1);
+		setCtrlPressed(isCtrl);
+		setShiftPressed(isShift);
+	}
+
+	@Override
+	public final void mouseReleased(final com.jogamp.newt.event.MouseEvent e) {
+		invokeOnGLThread(drawable -> {
+			internalMouseUp(e.getButton(), e.isShiftDown());
+			return false;
+		});
+	}
+
+	/**
+	 * Internal mouse up.
+	 *
+	 * @param e
+	 *            the e
+	 */
+	protected void internalMouseUp(final int button, final boolean isShift) {
+		firsttimeMouseDown = true;
+		if (isViewInXYPlan() && isShift) { finishROISelection(); }
+		if (button == 1) { setMouseLeftPressed(false); }
+
+	}
+
+	/**
+	 * Start ROI.
+	 *
+	 * @param e
+	 *            the e
+	 */
+	private void startROI() {
+		defineROI(GamaPointFactory.create(firstMousePressedPosition));
+		ROICurrentlyDrawn = true;
+	}
+
+	/**
+	 * Finish ROI selection.
+	 */
+	void finishROISelection() {
+		if (ROICurrentlyDrawn) {
+			final IEnvelope env = getROIEnvelope();
+			if (env != null) { renderer.getSurface().selectionIn(env); }
+		}
+	}
+
+	/** The pixel depth. */
+	FloatBuffer pixelDepth = Buffers.newDirectFloatBuffer(1);
+
+	/**
+	 * Gets the world position from the mouse position. Less computationally intensive and more accurate for planar
+	 * surfaces. Requires however to be done in the GL context
+	 *
+	 * @param mouse
+	 *            the mouse
+	 * @return the world position from
+	 */
+	public void computeMouseLocationInTheWorld(final int mouse_x, final int mouse_y) {
+
+		OpenGL gl = renderer.getOpenGLHelper();
+		final double[] wcoord = new double[4];
+		final int[] viewport = gl.viewport;
+		final double mvmatrix[] = gl.mvmatrix;
+		final double projmatrix[] = gl.projmatrix;
+		final int x = mouse_x;
+		final int y = viewport[3] - mouse_y;
+		pixelDepth.rewind();
+		gl.getGL().glReadPixels(x, y, 1, 1, GL4ES2.GL_DEPTH_COMPONENT, GL.GL_FLOAT, pixelDepth);
+		double z = pixelDepth.get(0);
+
+		if (z == 1d || z == 0d) {
+			getWorldPositionFrom(GamaPointFactory.create(mouse_x, mouse_y), positionInTheWorld);
+		} else {
+			glu.gluUnProject(x, y, z, mvmatrix, 0, projmatrix, 0, viewport, 0, wcoord, 0);
+			positionInTheWorld.setLocation(wcoord[0], wcoord[1], 0);
+		}
+	}
+
+	/**
+	 * Different method from above, as it might be used in non openGL contexts
+	 *
+	 * @param mouse
+	 * @return
+	 */
+	public IPoint getWorldPositionFrom(final IPoint mouse, final IPoint result) {
+		final IPoint camLoc = getPosition();
+		OpenGL gl = renderer.getOpenGLHelper();
+		if (gl == null) return GamaPointFactory.create();
+		final double[] wcoord = new double[4];
+		final double x = (int) mouse.getX(), y = gl.viewport[3] - (int) mouse.getY();
+		glu.gluUnProject(x, y, 0.1, gl.mvmatrix, 0, gl.projmatrix, 0, gl.viewport, 0, wcoord, 0);
+		result.setLocation(wcoord[0], wcoord[1], wcoord[2]);
+		glu.gluUnProject(x, y, 0.9, gl.mvmatrix, 0, gl.projmatrix, 0, gl.viewport, 0, wcoord, 0);
+		result.setLocation(wcoord[0] - result.getX(), wcoord[1] - result.getY(), wcoord[2] - result.getZ()).normalize();
+		final double distance = camLoc.getZ() / -result.getZ();
+		return result.setLocation(result.getX() * distance + camLoc.getX(), result.getY() * distance + camLoc.getY(),
+				0);
+	}
+
+	/**
+	 * Gets the mouse position.
+	 *
+	 * @return the mouse position
+	 */
+	public IPoint getMousePosition() { return mousePosition; }
+
+	/**
+	 * Checks if is view in XY plan.
+	 *
+	 * @return true, if is view in XY plan
+	 */
+	private boolean isViewInXYPlan() {
+		return true;
+		// return phi > 170 || phi < 10;// && theta > -5 && theta < 5;
+	}
+
+	/**
+	 * Gets the last mouse pressed position.
+	 *
+	 * @return the last mouse pressed position
+	 */
+	public IPoint getLastMousePressedPosition() { return lastMousePressedPosition; }
+
+	/**
+	 * Gets the keyboard sensivity.
+	 *
+	 * @return the keyboard sensivity
+	 */
+	protected double getKeyboardSensivity() { return GamaPreferences.Displays.OPENGL_KEYBOARD.getValue(); }
+
+	/**
+	 * Gets the sensivity.
+	 *
+	 * @return the sensivity
+	 */
+	protected double getSensivity() { return GamaPreferences.Displays.OPENGL_MOUSE.getValue(); }
+
+	/**
+	 * Gets the renderer.
+	 *
+	 * @return the renderer
+	 */
+	@Override
+	public IOpenGLRenderer getRenderer() { return renderer; }
+
+	@Override
+	private void handleGlobalKeystrokes(final com.jogamp.newt.event.KeyEvent e) {
+		switch (e.getKeySymbol()) {
+			case com.jogamp.newt.event.KeyEvent.VK_ESCAPE: {
+				if (!getRenderer().getSurface().isEscRedefined()) { ViewsHelper.toggleFullScreenMode(); }
+				return;
+			}
+			case 'p':
+			case 'P':
+				if (isControlDown(e)) {
+					if (e.isShiftDown()) {
+						GAMA.stepFrontmostExperiment(false);
+					} else {
+						GAMA.startPauseFrontmostExperiment(false);
+					}
+					return;
+				}
+				break;
+			case 'R':
+			case 'r':
+				if (isControlDown(e)) {
+					if (e.isShiftDown()) {
+						GAMA.relaunchFrontmostExperiment();
+					} else {
+						GAMA.reloadFrontmostExperiment(false);
+					}
+					return;
+				}
+				break;
+			case 'X':
+			case 'x': {
+				if (isControlDown(e) && e.isShiftDown()) {
+					GAMA.closeAllExperiments(true, false);
+					return;
+				}
+			}
+		}
+	}
+	private void handleGlobalKeystrokes(final com.jogamp.newt.event.KeyEvent e) {
+		switch (e.getKeySymbol()) {
+			case com.jogamp.newt.event.KeyEvent.VK_ESCAPE: {
+				if (!getRenderer().getSurface().isEscRedefined()) { ViewsHelper.toggleFullScreenMode(); }
+				return;
+			}
+			case 'p':
+			case 'P':
+				if (isControlDown(e)) {
+					if (e.isShiftDown()) {
+						GAMA.stepFrontmostExperiment(false);
+					} else {
+						GAMA.startPauseFrontmostExperiment(false);
+					}
+					return;
+				}
+				break;
+			case 'R':
+			case 'r':
+				if (isControlDown(e)) {
+					if (e.isShiftDown()) {
+						GAMA.relaunchFrontmostExperiment();
+					} else {
+						GAMA.reloadFrontmostExperiment(false);
+					}
+					return;
+				}
+				break;
+			case 'X':
+			case 'x': {
+				if (isControlDown(e) && e.isShiftDown()) {
+					GAMA.closeAllExperiments(true, false);
+					return;
+				}
+			}
+		}
+	}
+
+
+	public final void keyPressed(final com.jogamp.newt.event.KeyEvent e) {
+
+		handleGlobalKeystrokes(e);
+
+		invokeOnGLThread(drawable -> {
+			if (!keystoneMode) {
+				boolean cameraInteraction = !data.isCameraLocked();
+				switch (e.getKeySymbol()) {
+					case com.jogamp.newt.event.KeyEvent.VK_SPACE:
+						if (cameraInteraction) { resetPivot(); }
+						break;
+					case com.jogamp.newt.event.KeyEvent.VK_CONTROL, com.jogamp.newt.event.KeyEvent.VK_META:
+						// The press and release of these keys does not seem to work. Caught after
+						setCtrlPressed(!firsttimeMouseDown);
+						break;
+				}
+				// setShiftPressed(e.isShiftDown());
+				switch (e.getKeyCode()) {
+					// Finally the keystrokes for the display itself
+					case com.jogamp.newt.event.KeyEvent.VK_LEFT:
+						setCtrlPressed(isControlDown(e));
+						if (cameraInteraction && (!areArrowKeysRedefined || isControlDown(e) || e.isShiftDown())) {
+							CameraHelper.this.strafeLeft = true;
+						}
+						break;
+					case com.jogamp.newt.event.KeyEvent.VK_RIGHT:
+						setCtrlPressed(isControlDown(e));
+						if (cameraInteraction && (!areArrowKeysRedefined || isControlDown(e) || e.isShiftDown())) {
+							CameraHelper.this.strafeRight = true;
+						}
+						break;
+					case com.jogamp.newt.event.KeyEvent.VK_UP:
+						setCtrlPressed(isControlDown(e));
+						if (cameraInteraction && (!areArrowKeysRedefined || isControlDown(e) || e.isShiftDown())) {
+							CameraHelper.this.goesForward = true;
+						}
+						break;
+					case com.jogamp.newt.event.KeyEvent.VK_DOWN:
+						setCtrlPressed(isControlDown(e));
+						if (cameraInteraction && (!areArrowKeysRedefined || isControlDown(e) || e.isShiftDown())) {
+							CameraHelper.this.goesBackward = true;
+						}
+						break;
+				}
+
+				switch (e.getKeyChar()) {
+					case 0:
+						setCtrlPressed(e.isControlDown() || SystemInfo.isMac() && e.isMetaDown());
+						setShiftPressed(e.isShiftDown());
+						break;
+					case '+':
+						if (cameraInteraction) { zoom(true); }
+						break;
+					case '-':
+						if (cameraInteraction) { zoom(false); }
+						break;
+					case '4':
+						if (cameraInteraction && useNumKeys) { quickLeftTurn(); }
+						break;
+					case '6':
+						if (cameraInteraction && useNumKeys) { quickRightTurn(); }
+						break;
+					case '8':
+						if (cameraInteraction && useNumKeys) { quickUpTurn(); }
+						break;
+					case '2':
+						if (cameraInteraction && useNumKeys) { quickDownTurn(); }
+						break;
+					case 'k':
+						if (!isControlDown(e)) { activateKeystoneMode(); }
+						break;
+					default:
+						return true;
+				}
+			} else if (e.getKeyChar() == 'k' && !isControlDown(e)) { activateKeystoneMode(); }
+			return true;
+		});
+	}
+
+	/**
+	 * Reset pivot.
+	 */
+	protected void resetPivot() {
+		data.resetCamera();
+		updateSphericalCoordinatesFromLocations();
+	}
+
+	/**
+	 * Quick left turn.
+	 */
+	protected void quickLeftTurn() {
+		theta -= 30;
+		updateCartesianCoordinatesFromAngles();
+	}
+
+	/**
+	 * Quick right turn.
+	 */
+	protected void quickRightTurn() {
+		theta += 30;
+		updateCartesianCoordinatesFromAngles();
+	}
+
+	/**
+	 * Quick up turn.
+	 */
+	protected void quickUpTurn() {
+		if (flipped) {
+			if (phi + 30 < 180) {
+				phi += 30;
+			} else {
+				phi = 360 - phi - 30;
+				flipped = false;
+				theta += 180;
+			}
+		} else if (phi - 30 > 0) {
+			phi -= 30;
+		} else {
+			phi = -phi + 30;
+			flipped = true;
+			theta += 180;
+		}
+		updateCartesianCoordinatesFromAngles();
+	}
+
+	/**
+	 * Quick down turn.
+	 */
+	protected void quickDownTurn() {
+		if (flipped) {
+			if (phi - 30 > 0) {
+				phi -= 30;
+			} else {
+				phi = -phi + 30;
+				flipped = false;
+				theta += 180;
+			}
+		} else if (phi + 30 < 180) {
+			phi += 30;
+		} else {
+			phi = 360 - phi - 30;
+			flipped = true;
+			theta += 180;
+		}
+		updateCartesianCoordinatesFromAngles();
+	}
+
+	/**
+	 * Activate keystone mode.
+	 */
+	protected final void activateKeystoneMode() {
+		if (!keystoneMode) {
+			getRenderer().getSurface().zoomFit();
+			getRenderer().getKeystoneHelper().startDrawHelper();
+		} else {
+			String def = IKeyword.KEYSTONE + ": " + GamaListFactory
+					.createWithoutCasting(Types.POINT, data.getKeystone().toCoordinateArray()).serializeToGaml(false);
+			getRenderer().getKeystoneHelper().stopDrawHelper();
+			WorkbenchHelper.copy(def);
+		}
+		keystoneMode = !keystoneMode;
+	}
+
+	@Override
+	public final void keyReleased(final com.jogamp.newt.event.KeyEvent e) {
+
+		invokeOnGLThread(drawable -> {
+			if (!keystoneMode) {
+				if (e.getKeyChar() == 0) {
+					if (ctrlPressed) { setCtrlPressed(!isControlDown(e)); }
+					if (shiftPressed) { setShiftPressed(!e.isShiftDown()); }
+					return true;
+				}
+				boolean cameraInteraction = !data.isCameraLocked();
+				switch (e.getKeyCode()) {
+
+					case com.jogamp.newt.event.KeyEvent.VK_LEFT: // turns left (scene rotates right)
+						if (cameraInteraction) { strafeLeft = false; }
+						break;
+					case com.jogamp.newt.event.KeyEvent.VK_RIGHT: // turns right (scene rotates left)
+						if (cameraInteraction) { strafeRight = false; }
+						break;
+					case com.jogamp.newt.event.KeyEvent.VK_UP:
+						if (cameraInteraction) { goesForward = false; }
+						break;
+					case com.jogamp.newt.event.KeyEvent.VK_DOWN:
+						if (cameraInteraction) { goesBackward = false; }
+						break;
+					case com.jogamp.newt.event.KeyEvent.VK_CONTROL, com.jogamp.newt.event.KeyEvent.VK_META:
+						setCtrlPressed(false);
+						break;
+					case com.jogamp.newt.event.KeyEvent.VK_SHIFT:
+						setShiftPressed(false);
+						finishROISelection();
+						break;
+					default:
+						return true;
+				}
+			}
+			return false;
+		});
+	}
+
+	/**
+	 * Zoom level.
+	 *
+	 * @return the double
+	 */
+	public Double zoomLevel() {
+		return getMaxEnvDim() * data.getCameraDistanceCoefficient() / data.getCameraDistance();
+	}
+
+	/**
+	 * Zoom.
+	 *
+	 * @param level
+	 *            the level
+	 */
+	public void zoom(final double level) {
+		data.setCameraDistance(getMaxEnvDim() * data.getCameraDistanceCoefficient() / level);
+		updateCartesianCoordinatesFromAngles();
+		/**
+		 * Zoom.
+		 *
+		 * @param in
+		 *            the in
+		 */
+	}
+
+	/**
+	 * Zoom.
+	 *
+	 * @param in
+	 *            the in
+	 */
+	public void zoom(final boolean in) {
+		if (keystoneMode) return;
+		Double distance = data.getCameraDistance();
+		final double step = distance != 0d ? distance / 10d * GamaPreferences.Displays.OPENGL_ZOOM.getValue() : 0.1d;
+		data.setCameraDistance(distance + (in ? -step : step));
+		data.setZoomLevel(zoomLevel(), true);
+	}
+
+	/**
+	 * Zoom focus.
+	 *
+	 * @param env
+	 *            the env
+	 */
+	public void zoomFocus(final IEnvelope env) {
+		// REDO it entirely
+		final double extent = env.maxExtent();
+		if (extent == 0) {
+			data.setCameraDistance(env.getMaxZ() + getMaxEnvDim() / 10);
+		} else {
+			data.setCameraDistance(extent * 1.5);
+		}
+		final IPoint centre = env.center();
+		// we suppose y is already negated
+		data.setCameraTarget(GamaPointFactory.create(centre.getX(), centre.getY(), centre.getZ()));
+		data.setZoomLevel(zoomLevel(), true);
+		/**
+		 * Draw rotation helper.
+		 */
+	}
+
+	/**
+	 * Draw rotation helper.
+	 */
+	protected void drawRotationHelper() {
+		renderer.getOpenGLHelper().setRotationMode(ctrlPressed && !data.isCameraLocked());
+		/**
+		 * Sets the distance.
+		 *
+		 * @param distance
+		 *            the new distance
+		 */
+	}
+
+	/**
+	 * Hook.
+	 */
+	public void hook() {
+		getCanvas().addCameraListeners(this);
+	}
+
+	/**
+	 * Dispose.
+	 */
+	public void dispose() {
+		getCanvas().removeCameraListeners(this);
+	}
+
+	@Override
+	public Collection<String> getCameraNames() { return data.getCameraNames(); }
+
+	@Override
+	public void setCameraName(final String p) {
+		data.setCameraNameFromUser(p);
+		applyPreset(p);
+	}
+
+	@Override
+	public String getCameraName() { return data.getCameraName(); }
+
+	@Override
+	public boolean isCameraLocked() { return data.isCameraLocked(); }
+
+	@Override
+	public boolean isCameraDynamic() { return data.isCameraDynamic(); }
+
+	@Override
+	public void toggleCameraLock() {
+		data.setCameraLocked(!data.isCameraLocked());
+	}
+
+	@Override
+	public String getCameraDefinition() {
+		StringBuilder text = new StringBuilder(IKeyword.CAMERA).append(" 'default' ").append(IKeyword.LOCATION)
+				.append(": ").append(GamaPointFactory.create(data.getCameraPos()).yNegated().withPrecision(4)
+						.serializeToGaml(false));
+		text.append(" ").append(IKeyword.TARGET).append(": ").append(
+				GamaPointFactory.create(data.getCameraTarget()).yNegated().withPrecision(4).serializeToGaml(false))
+				.append(";");
+		return text.toString();
+	}
+
+	/**
+	 * Toogle ROI.
+	 */
+	public void toogleROI() {
+		isROISticky = !isROISticky;
+	}
+
+	/**
+	 * Checks if is sticky ROI.
+	 *
+	 * @return true, if is sticky ROI
+	 */
+	public boolean isStickyROI() { return isROISticky; }
+
+	/**
+	 * Gets the ROI envelope.
+	 *
+	 * @return the ROI envelope
+	 */
+	public IEnvelope getROIEnvelope() { return roiEnvelope; }
+
+	/**
+	 * Cancel ROI.
+	 */
+	public void cancelROI() {
+		if (isROISticky) return;
+		roiEnvelope = null;
+	}
+
+	/**
+	 * Define ROI.
+	 *
+	 * @param mouseStart
+	 *            the mouse start
+	 * @param mouseEnd
+	 *            the mouse end
+	 */
+	public void defineROI(final IPoint mouseStart) {
+		final IPoint start = getWorldPositionFrom(mouseStart, GamaPointFactory.create());
+
+		roiEnvelope = GamaEnvelopeFactory.of(start.getX(), positionInTheWorld.getX(), start.getY(),
+				positionInTheWorld.getY(), 0, getMaxEnvDim() / 20d);
+	}
+
+	/**
+	 * Mouse in ROI.
+	 *
+	 * @param mousePosition
+	 *            the mouse position
+	 * @return true, if successful
+	 */
+	public boolean mouseInROI(final IPoint mousePosition) {
+		final IEnvelope env = getROIEnvelope();
+		if (env == null) return false;
+		final IPoint p = getWorldPositionFrom(mousePosition, GamaPointFactory.create());
+		return env.intersects(p);
+	}
+
+}
