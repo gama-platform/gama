@@ -198,6 +198,7 @@ public class ShapeDrawer implements IDrawDelegate {
 	private Geometry addArrows(final IScope scope, final Geometry g1, final IExpression beginArrow,
 			final IExpression endArrow, final Boolean fill) {
 		if (g1 == null) return g1;
+		// if (!(g1 instanceof org.locationtech.jts.geom.Lineal)) return g1;
 		final IPoint[] points = GeometryUtils.getPointsOf(g1);
 		final int size = points.length;
 		if (size < 2) return g1;
@@ -221,7 +222,7 @@ public class ShapeDrawer implements IDrawDelegate {
 			return GeometryUtils.getGeometryFactory().createCollection(g1, begin);
 		}
 		if (begin == null) return GeometryUtils.getGeometryFactory().createCollection(g1, end);
-		return g1;
+		return GeometryUtils.getGeometryFactory().createCollection(g1, end, begin);
 	}
 
 	/**
