@@ -84,7 +84,7 @@ public class GamaMatrixFactory {
 	@test ("as_matrix('a', {2,3}) = matrix(['a','a','a'],['a','a','a'])")
 	@test ("as_matrix(1.0, {2,2}) = matrix([1.0,1.0],[1.0,1.0])")
 	public static IMatrix createWithValue(final IScope scope, final Object obj, final IPoint point) {
-		return createWithValue(scope, obj, point, Types.NO_TYPE);
+		return castToMatrix(scope, obj, point, Types.NO_TYPE, false);
 	}
 
 	/**

@@ -33,7 +33,9 @@ import gama.api.kernel.topology.IGrid;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.font.GamaFontFactory;
 import gama.api.types.font.IFont;
+import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.types.geometry.IShape.Type;
 import gama.api.types.list.GamaListFactory;
@@ -148,6 +150,35 @@ public class BinarySerialiser implements ISerialisationConstants {
 	 */
 	@SuppressWarnings ("rawtypes")
 	protected void registerSerialisers(final FSTConfiguration conf) {
+
+		register(conf, IPoint.class, new FSTIndividualSerialiser<IPoint>() {
+
+			@Override
+			protected boolean shouldRegister() {
+				return false;
+			}
+
+			// TODO The inner attributes of the shape should be saved (ie the ones that do not belong to the var names
+			// of the species
+			@Override
+			public void serialise(final FSTObjectOutput out, final IPoint toWrite) throws Exception {
+				out.writeDouble(toWrite.getX());
+				out.writeDouble(toWrite.getY());
+				double z = toWrite.getZ();
+				out.writeBoolean(Double.isNaN(z));
+				out.writeDouble(Double.isNaN(z) ? 0d : z);
+			}
+
+			@Override
+			public IPoint deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+				double x = in.readDouble();
+				double y = in.readDouble();
+				boolean isNaN = in.readBoolean();
+				double z = in.readDouble();
+				IPoint result = GamaPointFactory.create(x, y, isNaN ? Double.NaN : z);
+				return result;
+			}
+		});
 
 		register(conf, IShape.class, new FSTIndividualSerialiser<IShape>() {
 

@@ -27,6 +27,7 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.types.geometry.IShape;
 import gama.api.types.list.IList;
 import gama.api.utils.geometry.GamaGeometryFactory;
+import gama.api.utils.geometry.UniqueCoordinateSequence;
 import gama.dev.DEBUG;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
 import gama.extension.serialize.fst.util.FSTUtil;
@@ -826,7 +827,14 @@ public class FSTObjectOutput implements ObjectOutput {
 					if (subObject == null) {
 						getCodec().writeTag(NULL, null, 0, toWrite, this);
 					} else {
+						DEBUG.LOG("Writing object field: " + subInfo.getName() + " for object: " + toWrite);
+						if ("point".equals(subInfo.getName()) && toWrite instanceof UniqueCoordinateSequence) {
+
+							DEBUG.OUT("");
+
+						}
 						writeObjectWithContext(subInfo, subObject);
+
 					}
 				}
 			}
@@ -1065,8 +1073,8 @@ public class FSTObjectOutput implements ObjectOutput {
 	 */
 	public FSTClazzInfoRegistry getClassInfoRegistry() { return conf.getCLInfoRegistry(); }
 
-	/////////////////////////////////////////////////////////////////////////////////////////////////////
-	/////////////////////// java serialization compatibility ////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////////////////// java
+	/// serialization compatibility ////////////////////////////////////////////
 
 	/**
 	 *
