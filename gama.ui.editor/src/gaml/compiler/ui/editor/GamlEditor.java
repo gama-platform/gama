@@ -621,15 +621,10 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				} else if (newState.showExperiments) {
 					if (EDITOR_EXPERIMENT_MENU.getValue()) {
 						displayExperimentMenu(newState, listener);
-					} else if (newState.abbreviations.size() <= 1 || !EDITOR_COLLAPSE_BUTTONS.getValue()) {
-						displayExperimentButtons(newState, listener);
+					} else if (EDITOR_COLLAPSE_BUTTONS.getValue() && buttonsOverflow(newState)) {
+						displayExperimentMenu(newState, listener);
 					} else {
-						int width = computeWidth(newState);
-						if (width > toolbar.getSize().x - toolbar.getToolbar(SWT.RIGHT).getSize().x) {
-							displayExperimentMenu(newState, listener);
-						} else {
-							displayExperimentButtons(newState, listener);
-						}
+						displayExperimentButtons(newState, listener);
 					}
 				}
 				toolbar.requestLayout();
@@ -675,6 +670,21 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			width += fakeButton.computeSize(SWT.DEFAULT, 12).x + 2;
 		}
 		return width;
+	}
+
+	/**
+	 * Returns true when the total pixel width of all experiment buttons exceeds the space currently available in the
+	 * left toolbar. If the toolbar has not been sized yet (available width unknown), returns false so that buttons are
+	 * shown optimistically and the next resize event will re-evaluate.
+	 *
+	 * @param newState
+	 *            the new state
+	 * @return true if the buttons would overflow the left toolbar
+	 */
+	private boolean buttonsOverflow(final GamlEditorState newState) {
+		final int available = toolbar.getAvailableLeftWidth();
+		if (available < 0) return false; // toolbar not yet laid out — show buttons
+		return computeWidth(newState) > available;
 	}
 
 	/**
