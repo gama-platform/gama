@@ -199,7 +199,7 @@ public class GeometryCache {
 		builtInCache = newBuilder().concurrencyLevel(2).initialCapacity(10).build();
 		fileCache = newBuilder().expireAfterAccess(2, MINUTES).initialCapacity(10).removalListener(notif -> {
 			if (renderer.isDisposed()) return;
-			renderer.getOpenGLHelper().getGL().glDeleteLists((Integer) notif.getValue(), 1);
+			// renderer.getOpenGLHelper().getGL().glDeleteLists((Integer) notif.getValue(), 1);
 
 		}).build(new CacheLoader<String, Integer>() {
 

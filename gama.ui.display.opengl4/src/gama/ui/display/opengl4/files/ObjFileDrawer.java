@@ -13,8 +13,6 @@ package gama.ui.display.opengl4.files;
 import java.io.File;
 
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL4;
-import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.util.texture.Texture;
 
 import gama.api.types.geometry.GamaPointFactory;
@@ -98,7 +96,7 @@ public class ObjFileDrawer {
 					nextmat = Integer.parseInt(nextmatnamearray[1]);
 				}
 			}
-				// gl.getGL().glEnable(GL4.GL_COLOR_MATERIAL);
+				// gl.getGL().glEnable(GL.GL_COLOR_MATERIAL);
 				gl.setCurrentColor(file.materials.getKd(nextmatname)[0], file.materials.getKd(nextmatname)[1],
 						file.materials.getKd(nextmatname)[2], file.materials.getd(nextmatname));
 
@@ -138,7 +136,7 @@ public class ObjFileDrawer {
 
 			//// Quad Begin Header ////
 			final int polytype =
-					tempfaces.length == 3 ? GL.GL_TRIANGLES : tempfaces.length == 4 ? GL4.GL_TRIANGLE_FAN : GL4.GL_TRIANGLE_FAN;
+					tempfaces.length == 3 ? GL.GL_TRIANGLES : tempfaces.length == 4 ? GL.GL_TRIANGLES : GL.GL_TRIANGLES;
 			gl.beginDrawing(polytype);
 			////////////////////////////
 
@@ -185,4 +183,3 @@ public class ObjFileDrawer {
 		}
 	}
 
-}
