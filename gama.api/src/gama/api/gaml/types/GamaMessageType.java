@@ -176,7 +176,7 @@ public class GamaMessageType extends GamaType<IMessage> {
 	@doc ("Returns a message built from the argument. If the argument is already a message returns it, otherwise returns a message with the current agent as the sender and the argument as the contents ")
 	public IMessage cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
-		if (obj instanceof IMessage m) return (IMessage) (copy ? m.copy(scope) : m);
+		if (obj instanceof IMessage m) return copy ? m.copy(scope) : m;
 		return GamaMessageFactory.castToMessage(scope, scope.getAgent(), obj);
 	}
 
