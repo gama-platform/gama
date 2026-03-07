@@ -203,12 +203,36 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	}
 
 	/**
+	 * Font used for the keystone corner labels — Helvetica 18pt, matching the original GLUT bitmap font size.
+	 * Stored as a constant to avoid recreating it on every frame.
+	 */
+	private static final java.awt.Font KEYSTONE_FONT = new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 18);
+
+	/**
+	 * Estimates the pixel width of a label string rendered in {@link #KEYSTONE_FONT}.
+	 * Uses the AWT {@link java.awt.FontMetrics} via a headless {@link java.awt.image.BufferedImage} so no
+	 * GL context is needed. The result is cached by the first call.
+	 *
+	 * @param text the label text
+	 * @return estimated pixel width
+	 */
+	private int estimateLabelWidth(final String text) {
+		// Use a 1×1 BufferedImage to get FontMetrics without a display device
+		final java.awt.image.BufferedImage img =
+				new java.awt.image.BufferedImage(1, 1, java.awt.image.BufferedImage.TYPE_INT_ARGB);
+		final java.awt.Graphics2D g2 = img.createGraphics();
+		try {
+			return g2.getFontMetrics(KEYSTONE_FONT).stringWidth(text);
+		} finally {
+			g2.dispose();
+		}
+	}
+
+	/**
 	 * Draw keystone marks.
 	 */
 	private void drawKeystoneMarks() {
 		final OpenGL openGL = getOpenGL();
-		final GL4 gl = getGL();
-		//
 		final int displayWidthInPixels = getViewWidth();
 		final int displayHeightInPixels = getViewHeight();
 		final double pixelWidthIn01 = 1d / displayWidthInPixels;
@@ -237,30 +261,31 @@ public class KeystoneHelper extends AbstractRendererHelper {
 		boolean previous = openGL.setObjectLighting(false);
 		openGL.push(GLMatrixFunc.GL_MODELVIEW);
 		vertices.visit((id, x, y, z) -> {
-			// Basic computations on text and color
+			// Build label text and measure its pixel width via AWT FontMetrics
 			final String text = floor4Digit(getCoords()[id].getX()) + "," + floor4Digit(getCoords()[id].getY());
-			final int lengthOfTextInPixels = openGL.getGlut().glutBitmapLength(GLUT.BITMAP_HELVETICA_18, text);
+			final int lengthOfTextInPixels = estimateLabelWidth(text);
 			final double labelWidthIn01 = pixelWidthIn01 * (lengthOfTextInPixels + 20);
 			final int fill = id == cornerSelected ? 0 : id == cornerHovered ? 1 : 2;
-			// Drawing the background of labels
+			// Draw the background rectangle
 			final double xLabelIn01 = x + (id == 0 || id == 1 ? labelWidthIn01 / 2 : -labelWidthIn01 / 2);
 			final double yLabelIn01 = y + (id == 0 || id == 3 ? labelHeightIn01 / 2 : -labelHeightIn01 / 2);
 			drawRectangle(openGL, xLabelIn01, yLabelIn01, z, labelWidthIn01, labelHeightIn01, FILL_COLORS[fill]);
 
-			// Setting back the color to white
-			openGL.setCurrentColor(gama.api.types.color.GamaColorFactory.WHITE);
-			// Drawing the text itself
+			// Compute the pixel-space position of the label text
 			final double xPosIn01 = id == 0 || id == 1 ? 10 * pixelWidthIn01 + (worldCorners ? xOffsetIn01 : 0)
 					: 1 - labelWidthIn01 + 10 * pixelWidthIn01 - (worldCorners ? xOffsetIn01 : 0);
 			final double yPosIn01 = id == 0 || id == 3 ? 12 * pixelHeightIn01 + (worldCorners ? yOffsetIn01 : 0)
 					: 1 - labelHeightIn01 + 12 * pixelHeightIn01 - (worldCorners ? yOffsetIn01 : 0);
-			// openGL.getGL().glRasterPos2d(xPosIn01, yPosIn01);
-			openGL.getGlut().glutBitmapString(GLUT.BITMAP_HELVETICA_18, text);
+
+			// Draw the label text using the graph/curve screen-space renderer
+			openGL.setCurrentColor(gama.api.types.color.GamaColorFactory.WHITE);
+			openGL.drawScreenText(text, KEYSTONE_FONT,
+					xPosIn01 * displayWidthInPixels,
+					yPosIn01 * displayHeightInPixels);
 		}, 4, true);
 		openGL.pop(GLMatrixFunc.GL_MODELVIEW);
 		openGL.setObjectLighting(previous);
 		openGL.pop(GLMatrixFunc.GL_PROJECTION);
-
 	}
 
 	/**

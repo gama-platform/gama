@@ -153,81 +153,63 @@ public class PickingHelper extends AbstractRendererHelper {
 	 */
 	public boolean isPicking() { return isPicking; }
 
-	// Picking method
-	// //////////////////////////////////////////////////////////////////////////////////////
+	// Picking (GL4 replacement for the removed GL_SELECT path)
+	// =========================================================
+	// We use colour-buffer picking: during the picking pass each object is
+	// rendered with a unique flat colour encoding its index via
+	// OpenGL#registerForSelection(int). After the scene is drawn we read back
+	// the pixel under the mouse and decode the index.
+
+	/** GL-coordinate (y-flipped) of the pixel to read back during endPicking(). */
+	private int pickX, pickY;
+
 	/**
-	 * First pass prepare select buffer for select mode by clearing it, prepare openGL to select mode and tell it where
-	 * should draw object by using gluPickMatrix() method
-	 *
-	 * @return if returned value is true that mean the picking is enabled
+	 * Begin picking. Records the cursor position and restricts the projection to a 4×4-pixel window around
+	 * the click (replicates the old {@code gluPickMatrix} behaviour without requiring {@code GL_SELECT} mode).
 	 */
 	public void beginPicking() {
-		// DEBUG.OUT("Entering beginPicking");
-		final GL4 gl = getGL();
 		final OpenGL openGL = getOpenGL();
 		try {
 			final CameraHelper camera = getRenderer().getCameraHelper();
-			final GLU glu = GLU.createGLU();
-			// 1. Selecting buffer
-			selectBuffer.clear(); // prepare buffer for new objects
-			// gl.glSelectBuffer(selectBuffer.capacity(), selectBuffer);
-			// 2. Take the viewport attributes,
-			final int viewport[] = new int[4];
-			gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
-			// 3. Prepare openGL for rendering in select mode
-			// gl.glRenderMode(GLMatrixFunc.GL_SELECT);
-			/*
-			 * The application must redefine the viewing volume so that it renders only a small area around the place
-			 * where the mouse was clicked. In order to do that it is necessary to set the matrix mode to GL_PROJECTION.
-			 * Afterwards, the application should push the current matrix to save the normal rendering mode settings.
-			 */
+			final int[] viewport = new int[4];
+			getGL().glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
+			pickX = (int) camera.getMousePosition().getX();
+			pickY = viewport[3] - (int) camera.getMousePosition().getY(); // GL y is bottom-up
 			openGL.pushIdentity(GLMatrixFunc.GL_PROJECTION);
-			/*
-			 * Define the viewing volume so that rendering is done only in a small area around the cursor. gluPickMatrix
-			 * method restrict the area where openGL will drawing objects
-			 *
-			 */
-			glu.gluPickMatrix(camera.getMousePosition().getX(), viewport[3] - camera.getMousePosition().getY(), 4, 4,
-					viewport, 0);
+			final GLU glu = GLU.createGLU();
+			glu.gluPickMatrix(pickX, pickY, 4, 4, viewport, 0);
 		} catch (Throwable e) {
 			DEBUG.ERR("in beginPicking", e);
 		} finally {
-			// Calling updatePerspective() appears necessary to pick an object
 			openGL.updatePerspective();
 			openGL.matrixMode(GLMatrixFunc.GL_MODELVIEW);
 		}
 	}
 
 	/**
-	 * End picking.
+	 * End picking. Reads the single pixel at the click position from the colour buffer. The object index is
+	 * encoded in the red (low byte) and green (high byte) channels by
+	 * {@link OpenGL#registerForSelection(int)}. A blue value of 0xFF signals the background (no object hit).
 	 */
 	public void endPicking() {
-		// DEBUG.OUT("Entering endPicking");
 		final GL4 gl = getGL();
 		final OpenGL openGL = getOpenGL();
 		int selectedIndex = PickingHelper.NONE;
 		try {
-			// 5. // gl.glRenderMode() methods return number of hits
-			final int howManyObjects = 0; // gl.glRenderMode(GLMatrixFunc.GL_RENDER);
-			// 6. Search the select buffer to find the nearest object
-			if (howManyObjects > 0) {
-				// simple searching algorithm
-				selectedIndex = selectBuffer.get(3);
-				int mindistance = Math.abs(selectBuffer.get(1));
-				for (int i = 0; i < howManyObjects; i++) {
-					int d = Math.abs(selectBuffer.get(1 + i * 4));
-					if (mindistance < d) {
-						mindistance = d;
-						selectedIndex = selectBuffer.get(3 + i * 4);
-					}
-				}
+			final java.nio.ByteBuffer pixel = com.jogamp.common.nio.Buffers.newDirectByteBuffer(4);
+			gl.glReadPixels(pickX, pickY, 1, 1, GL4.GL_RGBA, GL.GL_UNSIGNED_BYTE, pixel);
+			final int r = pixel.get(0) & 0xFF;
+			final int g = pixel.get(1) & 0xFF;
+			final int b = pixel.get(2) & 0xFF;
+			// Background: blue channel == 0xFF (objects encode b=0 for index < 65536)
+			if (b == 0xFF) {
+				selectedIndex = PickingHelper.WORLD;
 			} else {
-				selectedIndex = PickingHelper.WORLD;// return -1 as there was no hits
+				selectedIndex = r + (g << 8);
 			}
 		} catch (Throwable e) {
 			DEBUG.ERR("in endPicking", e);
 		} finally {
-			// 7. Restore to normal settings and pick the selected object
 			openGL.pop(GLMatrixFunc.GL_PROJECTION);
 			openGL.matrixMode(GLMatrixFunc.GL_MODELVIEW);
 			setPickedIndex(selectedIndex);

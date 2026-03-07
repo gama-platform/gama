@@ -12,7 +12,6 @@ package gama.ui.display.opengl4.scene.layers;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
-import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
 import gama.annotations.constants.IKeyword;

@@ -135,6 +135,26 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		return currentMatrixMode == GLMatrixFunc.GL_PROJECTION ? projectionMatrix : modelViewMatrix;
 	}
 
+	/**
+	 * Returns the current model-view {@link org.joml.Matrix4f}. Used by {@link gama.ui.display.opengl4.scene.text.TextDrawer}
+	 * to feed the scene matrices to the JOGL graph/curve {@code RegionRenderer}.
+	 *
+	 * @return the model-view matrix (live reference — do not mutate)
+	 */
+	public org.joml.Matrix4f getModelViewMatrix() {
+		return modelViewMatrix.getCurrentMatrix();
+	}
+
+	/**
+	 * Returns the current projection {@link org.joml.Matrix4f}. Used by {@link gama.ui.display.opengl4.scene.text.TextDrawer}
+	 * to feed the scene matrices to the JOGL graph/curve {@code RegionRenderer}.
+	 *
+	 * @return the projection matrix (live reference — do not mutate)
+	 */
+	public org.joml.Matrix4f getProjectionMatrix() {
+		return projectionMatrix.getCurrentMatrix();
+	}
+
 	/** The glut. */
 	private final GLUT glut;
 
@@ -199,11 +219,6 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	/** The display is lighted. */
 	private boolean displayIsLighted;
-
-	/** The in raster text mode. */
-	// Text
-	private boolean inRasterTextMode;
-	// protected final FontCache fontCache = new FontCache();
 
 	/** The geometry cache. */
 	// Geometries
@@ -1393,42 +1408,23 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	// TEXT
 
 	/**
-	 * Draws one string in raster at the given coords and with the given font. Enters and exits raster mode before and
-	 * after drawing the string
+	 * Draws one string in raster at the given coords and with the given font.
 	 *
-	 * @param seq
-	 *            the string to draw
-	 * @param font
-	 *            the font to draw with
-	 * @param x,y,z
-	 *            the {x, y, z} coordinates
+	 * <p>
+	 * <b>GL4 core profile limitation:</b> GLUT bitmap strings rely on {@code glBitmap()} and
+	 * {@code glRasterPos3d()}, both removed from the OpenGL 4 core profile. This method is a no-op
+	 * in the current implementation. Text that must be visible should be drawn via
+	 * {@link gama.ui.display.opengl4.scene.text.TextDrawer} with {@code isPerspective = true}.
+	 * </p>
+	 *
+	 * @param s    the string
+	 * @param font the GLUT font constant
+	 * @param x    x coordinate
+	 * @param y    y coordinate
+	 * @param z    z coordinate
 	 */
 	public void rasterText(final String s, final int font, final double x, final double y, final double z) {
-		beginRasterTextMode();
-		final boolean previous = setObjectLighting(false);
-		// gl.glRasterPos3d(x, y, z);
-		glut.glutBitmapString(font, s);
-		setObjectLighting(previous);
-		exitRasterTextMode();
-	}
-
-	/**
-	 * Exit raster text mode.
-	 */
-	public void exitRasterTextMode() {
-		gl.glEnable(GL.GL_BLEND);
-		popMatrix();
-		inRasterTextMode = false;
-	}
-
-	/**
-	 * Begin raster text mode.
-	 */
-	public void beginRasterTextMode() {
-		if (inRasterTextMode) return;
-		pushMatrix();
-		gl.glDisable(GL.GL_BLEND);
-		inRasterTextMode = true;
+		// No-op in GL4 core: glBitmap / glRasterPos3d have been removed.
 	}
 
 	/**
@@ -1485,7 +1481,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		int newPolygonMode = isWireframe() ? GL2GL3.GL_LINE : GL2GL3.GL_FILL;
 		if (newPolygonMode != currentPolygonMode) {
 			currentPolygonMode = newPolygonMode;
-			// gl.glPolygonMode(GL.GL_FRONT_AND_BACK, currentPolygonMode);
+			gl.glPolygonMode(GL.GL_FRONT_AND_BACK, currentPolygonMode);
 		}
 	}
 
@@ -1512,13 +1508,14 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	}
 
 	/**
-	 * Register for selection.
+	 * Register for selection. Encodes the object index into the current colour using the colour-buffer picking
+	 * convention: red = low byte, green = high byte, blue = 0 (background uses blue = 0xFF).
+	 * This colour will be emitted by subsequent {@link #outputVertex} calls during the picking pass.
 	 *
-	 * @param index
-	 *            the index
+	 * @param index the object index (0…65535)
 	 */
 	public void registerForSelection(final int index) {
-		// gl.glLoadName(index);
+		setCurrentColor((index & 0xFF) / 255.0, ((index >> 8) & 0xFF) / 255.0, 0.0, 1.0);
 	}
 
 	// LISTS
@@ -1815,17 +1812,39 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	public boolean isInRotationMode() { return rotationMode; }
 
 	/**
-	 * Draw FPS.
+	 * Draws a string in fixed screen-space (overlay) coordinates using the JOGL graph/curve renderer.
+	 * The position {@code (x, y)} is in pixels measured from the bottom-left corner of the viewport.
+	 * This replaces every former call to {@link #rasterText} which is a no-op in GL4 core.
 	 *
-	 * @param doIt
-	 *            the do it
+	 * @param s    the string to draw
+	 * @param font the AWT font to use
+	 * @param x    x position in pixels from the left edge of the viewport
+	 * @param y    y position in pixels from the bottom edge of the viewport
+	 */
+	public void drawScreenText(final String s, final java.awt.Font font, final double x, final double y) {
+		final TextDrawer td = (TextDrawer) drawers.get(DrawerType.STRING);
+		if (td == null) return;
+		// Build minimal IDrawingAttributes in overlay (screen-space) mode
+		final gama.gaml.statements.draw.TextDrawingAttributes attr = new gama.gaml.statements.draw.TextDrawingAttributes(
+				gama.api.utils.geometry.Scaling3D.of(1, 1, 1), null,
+				gama.api.types.geometry.GamaPointFactory.create(x, y, 0), getCurrentColor());
+		attr.setFont(gama.api.types.font.GamaFontFactory.createFontFrom(font));
+		attr.setPerspective(false);
+		td.drawWithGraphLibraryPublic(s, attr, true);
+	}
+
+	/**
+	 * Draw FPS. Renders the current frames-per-second count in the top-left corner of the display
+	 * using the JOGL graph/curve screen-space renderer.
+	 *
+	 * @param doIt whether the FPS counter should be drawn
 	 */
 	public void drawFPS(final boolean doIt) {
 		if (doIt) {
 			setCurrentColor(GamaColorFactory.BLACK);
 			final int nb = (int) getCanvas().getAnimator().getLastFPS();
 			final String s = nb == 0 ? "(computing FPS...)" : nb + " FPS";
-			rasterText(s, GLUT.BITMAP_HELVETICA_12, -5, 5, 0);
+			drawScreenText(s, new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 12), -5, 5);
 		}
 	}
 

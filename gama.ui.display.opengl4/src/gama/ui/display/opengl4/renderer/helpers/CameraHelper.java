@@ -357,8 +357,15 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		double cp = Math.cos(pr);
 		up.setLocation(-Math.cos(tr) * cp, -Math.sin(tr) * cp, Math.sin(pr));
 		if (flipped) { up.negate(); }
-		renderer.getOpenGLHelper().getCurrentMatrixStack().getCurrentMatrix().lookAt((float)position.getX(), (float)position.getY(), (float)position.getZ(), (float)target.getX(), (float)target.getY(), (float)target.getZ(),
-				(float)up.getX(), (float)up.getY(), (float)up.getZ());
+		// JOML Matrix4f.lookAt(Vector3f eye, Vector3f center, Vector3f up) sets the matrix.
+		// Use the float-argument overload that is actually present in JOML:
+		//   lookAt(float eyeX, float eyeY, float eyeZ, float centerX, float centerY, float centerZ, float upX, float upY, float upZ, Matrix4f dest)
+		// Simpler: use new Matrix4f().lookAt(...) and post-multiply onto the current stack via multMatrix.
+		org.joml.Matrix4f lookAt = new org.joml.Matrix4f().lookAt(
+				(float) position.getX(), (float) position.getY(), (float) position.getZ(),
+				(float) target.getX(), (float) target.getY(), (float) target.getZ(),
+				(float) up.getX(), (float) up.getY(), (float) up.getZ());
+		renderer.getOpenGLHelper().getCurrentMatrixStack().multMatrix(lookAt);
 	}
 
 	/*------------------ Events controls ---------------------*/

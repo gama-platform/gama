@@ -607,15 +607,9 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 				coords[c + 2] = gridValue;
 			}
 		}
-		gl.beginRasterTextMode();
-		final var previous = gl.setObjectLighting(false);
-		for (var i = 0; i < strings.length; i++) {
-			// gl.getGL().glRasterPos3d(coords[i * 3], coords[i * 3 + 1], coords[i * 3 + 2] + gl.getCurrentZTranslation());
-			gl.getGlut().glutBitmapString(GLUT.BITMAP_TIMES_ROMAN_10, strings[i]);
-		}
-		gl.setObjectLighting(previous);
-		gl.exitRasterTextMode();
-
+		// GLUT bitmap strings (glBitmap / glRasterPos3d) are not available in GL4 core profile.
+		// Mesh value labels are therefore not rendered in this implementation.
+		// To display labels, use a TextDrawer-based approach with isPerspective=true.
 	}
 
 	/**

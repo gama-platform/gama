@@ -480,22 +480,38 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param border
 	 *            the border
 	 */
-	private void drawTeapot(final Geometry p, /* final boolean solid, */final double height, final IColor border) {
+	/**
+	 * Draw teapot. Renders the GAML {@code teapot} primitive at the centroid of the given geometry.
+	 *
+	 * <p><b>GL4 note:</b> {@code glutSolidTeapot} / {@code glutWireTeapot} rely on GLUT's internal
+	 * vertex-array path, which is not available in the GL4 core profile. They are replaced here by the
+	 * cached {@link gama.api.types.geometry.IShape.Type#SPHERE} VBO geometry scaled to the requested
+	 * height, giving a similar bounding volume.
+	 * TODO: replace with a proper Bézier-patch tessellation of the Utah teapot stored in
+	 * {@link gama.ui.display.opengl4.renderer.caches.GeometryCache}.</p>
+	 *
+	 * @param p      the geometry whose centroid is used as the teapot position
+	 * @param height the desired height of the teapot (used as the radius of the sphere approximation)
+	 * @param border optional border colour; if non-{@code null} a wireframe version is drawn on top
+	 */
+	private void drawTeapot(final Geometry p, final double height, final IColor border) {
 		_vertices.setToYNegated(GamaCoordinateSequenceFactory.pointsOf(p));
 		try {
 			gl.pushMatrix();
 			_vertices.getCenter(_center);
 			gl.translateBy(_center);
-			gl.rotateBy(90, 1.0, 0.0, 0.0);
-			final GLUT glut = gl.getGlut();
+			gl.scaleBy(height, height, height);
+			// Solid pass
 			if (!gl.isWireframe()) {
-				glut.glutSolidTeapot(height);
+				gl.drawCachedGeometry(gama.api.types.geometry.IShape.Type.SPHERE, null);
 				if (border != null) {
+					final boolean prevWf = gl.setObjectWireframe(true);
 					gl.setCurrentColor(border);
-					glut.glutWireTeapot(height);
+					gl.drawCachedGeometry(gama.api.types.geometry.IShape.Type.SPHERE, null);
+					gl.setObjectWireframe(prevWf);
 				}
 			} else {
-				glut.glutWireTeapot(height);
+				gl.drawCachedGeometry(gama.api.types.geometry.IShape.Type.SPHERE, null);
 			}
 		} finally {
 			gl.popMatrix();

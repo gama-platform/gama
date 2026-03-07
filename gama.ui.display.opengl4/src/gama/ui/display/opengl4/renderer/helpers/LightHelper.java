@@ -132,23 +132,19 @@ public class LightHelper extends AbstractRendererHelper {
 	private void drawLight(final OpenGL openGL, final double size, final double worldWidth, final double worldHeight,
 			final ILightDefinition light, final float[] pos) {
 
-		// save the current color to re-set it at the end of this
-		// part
 		final IColor currentColor = openGL.swapCurrentColor(light.getIntensity());
-		// change the current color to the light color (the
-		// representation of the color will have the same color as
-		// the light in itself)
-		final GLUT glut = new GLUT();
 		IPoint dir = light.getDirection().normalized();
 		final String type = light.getType();
 		if (ILightDefinition.point.equals(type)) {
+			// Draw a sphere at the light position using the cached VBO geometry
 			openGL.pushMatrix();
 			openGL.translateBy(pos[0], pos[1], pos[2]);
-			glut.glutSolidSphere(size, 16, 16);
+			openGL.scaleBy(size, size, size);
+			openGL.drawCachedGeometry(gama.api.types.geometry.IShape.Type.SPHERE, null);
 			openGL.popMatrix();
 		} else if (ILightDefinition.spot.equals(type)) {
+			// Draw a cone oriented along the spot direction using the cached VBO geometry
 			openGL.pushMatrix();
-			// Desired direction. It seems that y and z need to be negated, but not x. Not completely sure why.
 			dir = GamaPointFactory.create(dir.getX(), -dir.getY(), -dir.getZ());
 			double coneRadius = Math.sin(Math.toRadians(light.getAngle())) * size;
 			openGL.translateBy(pos[0], pos[1], pos[2]);
@@ -160,10 +156,11 @@ public class LightHelper extends AbstractRendererHelper {
 							rotationAxis.getZ());
 				}
 			}
-			glut.glutSolidCone(coneRadius, size, 16, 16);
+			openGL.scaleBy(coneRadius, coneRadius, size);
+			openGL.drawCachedGeometry(gama.api.types.geometry.IShape.Type.CONE, null);
 			openGL.popMatrix();
 		} else {
-			// draw direction light : a line and an sphere at the end of the line.
+			// Directional light: draw a grid of lines with a small sphere at each line end
 			final int maxI = 3;
 			final int maxJ = 3;
 			for (int i = 0; i < maxI; i++) {
@@ -171,21 +168,20 @@ public class LightHelper extends AbstractRendererHelper {
 					final double[] beginPoint = { i * worldWidth / maxI, -j * worldHeight / maxJ, size * 10 };
 					final double[] endPoint = { i * worldWidth / maxI + dir.getX() * size * 3,
 							-(j * worldHeight / maxJ) - dir.getY() * size * 3, size * 10 + dir.getZ() * size * 3 };
-					// draw the lines
 					openGL.beginDrawing(GL.GL_LINES);
 					openGL.drawVertex(0, beginPoint[0], beginPoint[1], beginPoint[2]);
 					openGL.drawVertex(0, endPoint[0], endPoint[1], endPoint[2]);
 					openGL.endDrawing();
-					// draw the small sphere
+					// Small sphere at the end of each line
 					openGL.pushMatrix();
 					openGL.translateBy(endPoint[0], endPoint[1], endPoint[2]);
-					glut.glutSolidSphere(size / 5, 16, 16);
+					openGL.scaleBy(size / 5, size / 5, size / 5);
+					openGL.drawCachedGeometry(gama.api.types.geometry.IShape.Type.SPHERE, null);
 					openGL.popMatrix();
 				}
 			}
 		}
 		openGL.setCurrentColor(currentColor);
-
 	}
 
 	/**
