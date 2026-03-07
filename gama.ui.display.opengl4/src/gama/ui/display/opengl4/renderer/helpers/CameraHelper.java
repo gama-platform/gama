@@ -15,7 +15,7 @@ import java.util.Collection;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL4ES2;
+import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLRunnable;
 import com.jogamp.opengl.glu.GLU;
 
@@ -357,7 +357,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		double cp = Math.cos(pr);
 		up.setLocation(-Math.cos(tr) * cp, -Math.sin(tr) * cp, Math.sin(pr));
 		if (flipped) { up.negate(); }
-		openGL.getCurrentMatrixStack().getCurrentMatrix().lookAt((float)position.getX(), (float)position.getY(), (float)position.getZ(), (float)target.getX(), (float)target.getY(), (float)target.getZ(),
+		renderer.getOpenGLHelper().getCurrentMatrixStack().getCurrentMatrix().lookAt((float)position.getX(), (float)position.getY(), (float)position.getZ(), (float)target.getX(), (float)target.getY(), (float)target.getZ(),
 				up.getX(), up.getY(), up.getZ());
 	}
 
@@ -738,7 +738,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		final int x = mouse_x;
 		final int y = viewport[3] - mouse_y;
 		pixelDepth.rewind();
-		gl.getGL().glReadPixels(x, y, 1, 1, GL4ES2.GL_DEPTH_COMPONENT, GL.GL_FLOAT, pixelDepth);
+		gl.getGL().glReadPixels(x, y, 1, 1, GL4.GL_DEPTH_COMPONENT, GL.GL_FLOAT, pixelDepth);
 		double z = pixelDepth.get(0);
 
 		if (z == 1d || z == 0d) {
@@ -817,7 +817,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	public IOpenGLRenderer getRenderer() { return renderer; }
 
 	@Override
-	private void handleGlobalKeystrokes(final com.jogamp.newt.event.KeyEvent e) {
+	public void handleGlobalKeystrokes(final com.jogamp.newt.event.KeyEvent e) {
 		switch (e.getKeySymbol()) {
 			case com.jogamp.newt.event.KeyEvent.VK_ESCAPE: {
 				if (!getRenderer().getSurface().isEscRedefined()) { ViewsHelper.toggleFullScreenMode(); }
@@ -853,123 +853,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 				}
 			}
 		}
-	}
-	private void handleGlobalKeystrokes(final com.jogamp.newt.event.KeyEvent e) {
-		switch (e.getKeySymbol()) {
-			case com.jogamp.newt.event.KeyEvent.VK_ESCAPE: {
-				if (!getRenderer().getSurface().isEscRedefined()) { ViewsHelper.toggleFullScreenMode(); }
-				return;
-			}
-			case 'p':
-			case 'P':
-				if (isControlDown(e)) {
-					if (e.isShiftDown()) {
-						GAMA.stepFrontmostExperiment(false);
-					} else {
-						GAMA.startPauseFrontmostExperiment(false);
-					}
-					return;
-				}
-				break;
-			case 'R':
-			case 'r':
-				if (isControlDown(e)) {
-					if (e.isShiftDown()) {
-						GAMA.relaunchFrontmostExperiment();
-					} else {
-						GAMA.reloadFrontmostExperiment(false);
-					}
-					return;
-				}
-				break;
-			case 'X':
-			case 'x': {
-				if (isControlDown(e) && e.isShiftDown()) {
-					GAMA.closeAllExperiments(true, false);
-					return;
-				}
-			}
-		}
-	}
-
-
-	public final void keyPressed(final com.jogamp.newt.event.KeyEvent e) {
-
-		handleGlobalKeystrokes(e);
-
-		invokeOnGLThread(drawable -> {
-			if (!keystoneMode) {
-				boolean cameraInteraction = !data.isCameraLocked();
-				switch (e.getKeySymbol()) {
-					case com.jogamp.newt.event.KeyEvent.VK_SPACE:
-						if (cameraInteraction) { resetPivot(); }
-						break;
-					case com.jogamp.newt.event.KeyEvent.VK_CONTROL, com.jogamp.newt.event.KeyEvent.VK_META:
-						// The press and release of these keys does not seem to work. Caught after
-						setCtrlPressed(!firsttimeMouseDown);
-						break;
-				}
-				// setShiftPressed(e.isShiftDown());
-				switch (e.getKeyCode()) {
-					// Finally the keystrokes for the display itself
-					case com.jogamp.newt.event.KeyEvent.VK_LEFT:
-						setCtrlPressed(isControlDown(e));
-						if (cameraInteraction && (!areArrowKeysRedefined || isControlDown(e) || e.isShiftDown())) {
-							CameraHelper.this.strafeLeft = true;
-						}
-						break;
-					case com.jogamp.newt.event.KeyEvent.VK_RIGHT:
-						setCtrlPressed(isControlDown(e));
-						if (cameraInteraction && (!areArrowKeysRedefined || isControlDown(e) || e.isShiftDown())) {
-							CameraHelper.this.strafeRight = true;
-						}
-						break;
-					case com.jogamp.newt.event.KeyEvent.VK_UP:
-						setCtrlPressed(isControlDown(e));
-						if (cameraInteraction && (!areArrowKeysRedefined || isControlDown(e) || e.isShiftDown())) {
-							CameraHelper.this.goesForward = true;
-						}
-						break;
-					case com.jogamp.newt.event.KeyEvent.VK_DOWN:
-						setCtrlPressed(isControlDown(e));
-						if (cameraInteraction && (!areArrowKeysRedefined || isControlDown(e) || e.isShiftDown())) {
-							CameraHelper.this.goesBackward = true;
-						}
-						break;
-				}
-
-				switch (e.getKeyChar()) {
-					case 0:
-						setCtrlPressed(e.isControlDown() || SystemInfo.isMac() && e.isMetaDown());
-						setShiftPressed(e.isShiftDown());
-						break;
-					case '+':
-						if (cameraInteraction) { zoom(true); }
-						break;
-					case '-':
-						if (cameraInteraction) { zoom(false); }
-						break;
-					case '4':
-						if (cameraInteraction && useNumKeys) { quickLeftTurn(); }
-						break;
-					case '6':
-						if (cameraInteraction && useNumKeys) { quickRightTurn(); }
-						break;
-					case '8':
-						if (cameraInteraction && useNumKeys) { quickUpTurn(); }
-						break;
-					case '2':
-						if (cameraInteraction && useNumKeys) { quickDownTurn(); }
-						break;
-					case 'k':
-						if (!isControlDown(e)) { activateKeystoneMode(); }
-						break;
-					default:
-						return true;
-				}
-			} else if (e.getKeyChar() == 'k' && !isControlDown(e)) { activateKeystoneMode(); }
-			return true;
-		});
 	}
 
 	/**

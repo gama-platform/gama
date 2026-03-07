@@ -133,10 +133,10 @@ public class OverlayLayerObject extends LayerObject {
 
 		if (cornerRadius == 0) {
 			gl.beginDrawing(GL4.GL_TRIANGLE_FAN);
-			gl.outputVertex(d, e);
-			gl.outputVertex(d + x, e);
-			gl.outputVertex(d + x, e + y);
-			gl.outputVertex(d, e + y);
+			gl.outputVertex(d, e, 0.0);
+			gl.outputVertex(d + x, e, 0.0);
+			gl.outputVertex(d + x, e + y, 0.0);
+			gl.outputVertex(d, e + y, 0.0);
 			gl.endDrawing();
 			return;
 		}
@@ -160,34 +160,34 @@ public class OverlayLayerObject extends LayerObject {
 		gl.beginDrawing(GL4.GL_TRIANGLE_FAN);
 
 		// 1. Rectangle Central
-		gl.outputVertex(cx_bl, cy_bl); // Coin inférieur gauche du rectangle central
-		gl.outputVertex(cx_br, cy_br); // Coin inférieur droit du rectangle central
-		gl.outputVertex(cx_tr, cy_tr); // Coin supérieur droit du rectangle central
-		gl.outputVertex(cx_tl, cy_tl); // Coin supérieur gauche du rectangle central
+		gl.outputVertex(cx_bl, cy_bl, 0.0); // Coin inférieur gauche du rectangle central
+		gl.outputVertex(cx_br, cy_br, 0.0); // Coin inférieur droit du rectangle central
+		gl.outputVertex(cx_tr, cy_tr, 0.0); // Coin supérieur droit du rectangle central
+		gl.outputVertex(cx_tl, cy_tl, 0.0); // Coin supérieur gauche du rectangle central
 
 		// 2. Rectangle du Bas (sous le rectangle central)
-		gl.outputVertex(cx_bl, e); // Coin inférieur gauche (bord du rectangle englobant)
-		gl.outputVertex(cx_br, e); // Coin inférieur droit (bord du rectangle englobant)
-		gl.outputVertex(cx_br, cy_br); // Coin supérieur droit (jonction avec central)
-		gl.outputVertex(cx_bl, cy_bl); // Coin supérieur gauche (jonction avec central)
+		gl.outputVertex(cx_bl, e, 0.0); // Coin inférieur gauche (bord du rectangle englobant)
+		gl.outputVertex(cx_br, e, 0.0); // Coin inférieur droit (bord du rectangle englobant)
+		gl.outputVertex(cx_br, cy_br, 0.0); // Coin supérieur droit (jonction avec central)
+		gl.outputVertex(cx_bl, cy_bl, 0.0); // Coin supérieur gauche (jonction avec central)
 
 		// 3. Rectangle du Haut (au-dessus du rectangle central)
-		gl.outputVertex(cx_tl, cy_tl); // Coin inférieur gauche (jonction avec central)
-		gl.outputVertex(cx_tr, cy_tr); // Coin inférieur droit (jonction avec central)
-		gl.outputVertex(cx_tr, e + y); // Coin supérieur droit (bord du rectangle englobant)
-		gl.outputVertex(cx_tl, e + y); // Coin supérieur gauche (bord du rectangle englobant)
+		gl.outputVertex(cx_tl, cy_tl, 0.0); // Coin inférieur gauche (jonction avec central)
+		gl.outputVertex(cx_tr, cy_tr, 0.0); // Coin inférieur droit (jonction avec central)
+		gl.outputVertex(cx_tr, e + y, 0.0); // Coin supérieur droit (bord du rectangle englobant)
+		gl.outputVertex(cx_tl, e + y, 0.0); // Coin supérieur gauche (bord du rectangle englobant)
 
 		// 4. Rectangle de Gauche (à gauche du rectangle central)
-		gl.outputVertex(d, cy_bl); // Coin inférieur gauche (bord du rectangle englobant)
-		gl.outputVertex(cx_bl, cy_bl); // Coin inférieur droit (jonction avec central)
-		gl.outputVertex(cx_tl, cy_tl); // Coin supérieur droit (jonction avec central)
-		gl.outputVertex(d, cy_tl); // Coin supérieur gauche (bord du rectangle englobant)
+		gl.outputVertex(d, cy_bl, 0.0); // Coin inférieur gauche (bord du rectangle englobant)
+		gl.outputVertex(cx_bl, cy_bl, 0.0); // Coin inférieur droit (jonction avec central)
+		gl.outputVertex(cx_tl, cy_tl, 0.0); // Coin supérieur droit (jonction avec central)
+		gl.outputVertex(d, cy_tl, 0.0); // Coin supérieur gauche (bord du rectangle englobant)
 
 		// 5. Rectangle de Droite (à droite du rectangle central)
-		gl.outputVertex(cx_br, cy_br); // Coin inférieur gauche (jonction avec central)
-		gl.outputVertex(d + x, cy_br); // Coin inférieur droit (bord du rectangle englobant)
-		gl.outputVertex(d + x, cy_tr); // Coin supérieur droit (bord du rectangle englobant)
-		gl.outputVertex(cx_tr, cy_tr); // Coin supérieur gauche (jonction avec central)
+		gl.outputVertex(cx_br, cy_br, 0.0); // Coin inférieur gauche (jonction avec central)
+		gl.outputVertex(d + x, cy_br, 0.0); // Coin inférieur droit (bord du rectangle englobant)
+		gl.outputVertex(d + x, cy_tr, 0.0); // Coin supérieur droit (bord du rectangle englobant)
+		gl.outputVertex(cx_tr, cy_tr, 0.0); // Coin supérieur gauche (jonction avec central)
 
 		gl.endDrawing(); // Fin du dessin des parties rectangulaires
 
@@ -199,48 +199,48 @@ public class OverlayLayerObject extends LayerObject {
 		// Coin Inférieur Gauche
 		// Angles de PI (180°) à 3*PI/2 (270°)
 		gl.beginDrawing(GL4.GL_TRIANGLE_FAN);
-		gl.outputVertex(cx_bl, cy_bl); // Centre de l'éventail
+		gl.outputVertex(cx_bl, cy_bl, 0.0); // Centre de l'éventail
 		for (int i = 0; i <= numSegments; i++) {
 			double angle = (float) Math.PI + i * angleIncrement;
 			double vx = cx_bl + cornerRadius * Math.cos(angle);
 			double vy = cy_bl + cornerRadius * Math.sin(angle);
-			gl.outputVertex(vx, vy);
+			gl.outputVertex(vx, vy, 0.0);
 		}
 		gl.endDrawing();
 
 		// Coin Inférieur Droit
 		// Angles de 3*PI/2 (270°) à 2*PI (360°)
 		gl.beginDrawing(GL4.GL_TRIANGLE_FAN);
-		gl.outputVertex(cx_br, cy_br); // Centre de l'éventail
+		gl.outputVertex(cx_br, cy_br, 0.0); // Centre de l'éventail
 		for (int i = 0; i <= numSegments; i++) {
 			double angle = (float) (3 * Math.PI / 2.0) + i * angleIncrement;
 			double vx = cx_br + cornerRadius * Math.cos(angle);
 			double vy = cy_br + cornerRadius * Math.sin(angle);
-			gl.outputVertex(vx, vy);
+			gl.outputVertex(vx, vy, 0.0);
 		}
 		gl.endDrawing();
 
 		// Coin Supérieur Droit
 		// Angles de 0° à PI/2 (90°)
 		gl.beginDrawing(GL4.GL_TRIANGLE_FAN);
-		gl.outputVertex(cx_tr, cy_tr); // Centre de l'éventail
+		gl.outputVertex(cx_tr, cy_tr, 0.0); // Centre de l'éventail
 		for (int i = 0; i <= numSegments; i++) {
 			double angle = i * angleIncrement; // angle = 0 pour le premier point, puis augmente
 			double vx = cx_tr + cornerRadius * Math.cos(angle);
 			double vy = cy_tr + cornerRadius * Math.sin(angle);
-			gl.outputVertex(vx, vy);
+			gl.outputVertex(vx, vy, 0.0);
 		}
 		gl.endDrawing();
 
 		// Coin Supérieur Gauche
 		// Angles de PI/2 (90°) à PI (180°)
 		gl.beginDrawing(GL4.GL_TRIANGLE_FAN);
-		gl.outputVertex(cx_tl, cy_tl); // Centre de l'éventail
+		gl.outputVertex(cx_tl, cy_tl, 0.0); // Centre de l'éventail
 		for (int i = 0; i <= numSegments; i++) {
 			double angle = (float) (Math.PI / 2.0) + i * angleIncrement;
 			double vx = cx_tl + cornerRadius * Math.cos(angle);
 			double vy = cy_tl + cornerRadius * Math.sin(angle);
-			gl.outputVertex(vx, vy);
+			gl.outputVertex(vx, vy, 0.0);
 		}
 		gl.endDrawing();
 	}

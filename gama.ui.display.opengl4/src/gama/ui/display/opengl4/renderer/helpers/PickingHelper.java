@@ -170,12 +170,12 @@ public class PickingHelper extends AbstractRendererHelper {
 			final GLU glu = GLU.createGLU();
 			// 1. Selecting buffer
 			selectBuffer.clear(); // prepare buffer for new objects
-			gl.glSelectBuffer(selectBuffer.capacity(), selectBuffer);
+			// gl.glSelectBuffer(selectBuffer.capacity(), selectBuffer);
 			// 2. Take the viewport attributes,
 			final int viewport[] = new int[4];
 			gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
 			// 3. Prepare openGL for rendering in select mode
-			gl.glRenderMode(GL4.GL_SELECT);
+			// gl.glRenderMode(GLMatrixFunc.GL_SELECT);
 			/*
 			 * The application must redefine the viewing volume so that it renders only a small area around the place
 			 * where the mouse was clicked. In order to do that it is necessary to set the matrix mode to GL_PROJECTION.
@@ -207,8 +207,8 @@ public class PickingHelper extends AbstractRendererHelper {
 		final OpenGL openGL = getOpenGL();
 		int selectedIndex = PickingHelper.NONE;
 		try {
-			// 5. gl.glRenderMode() methods return number of hits
-			final int howManyObjects = gl.glRenderMode(GL4.GL_RENDER);
+			// 5. // gl.glRenderMode() methods return number of hits
+			final int howManyObjects = 0; // gl.glRenderMode(GLMatrixFunc.GL_RENDER);
 			// 6. Search the select buffer to find the nearest object
 			if (howManyObjects > 0) {
 				// simple searching algorithm
