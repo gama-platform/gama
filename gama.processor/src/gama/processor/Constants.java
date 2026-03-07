@@ -132,7 +132,7 @@ public interface Constants {
 	 *
 	 * @return the string
 	 */
-	default TypeMirror getString() { return getType("java.lang.String"); }
+	default TypeMirror getString() { return getType(String.class.getName()); }
 
 	/**
 	 * Gets the i expression.
@@ -281,10 +281,10 @@ public interface Constants {
 			.map(s -> s + ".").collect(Collectors.toSet());
 
 	/** The ss 1. */
-	List<String> ss1 = Arrays.asList("const", "true", "false", "name", "type");
+	List<String> ss1 = Arrays.asList(IKeyword.CONST, IKeyword.TRUE, IKeyword.FALSE, IKeyword.NAME, IKeyword.TYPE);
 
 	/** The ss 2. */
-	List<String> ss2 = Arrays.asList("CONST", "TRUE", "FALSE", "NAME", "TYPE");
+	List<String> ss2 = ss1.stream().map(String::toUpperCase).collect(Collectors.toList());
 
 	/** The class names. */
 	Map<String, String> CLASS_NAMES = new HashMap<>() {

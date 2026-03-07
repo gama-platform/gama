@@ -501,11 +501,11 @@ public class GamlAccessContents2 extends PopupDialog {
 			// build regex like "^(:?Views|Perspective):\\s?(.*)"
 			StringBuilder sb = new StringBuilder();
 			sb.append("^(:?"); //$NON-NLS-1$
-			for (int i = 0; i < GamlIdiomsProvider.getProviders().size(); i++) {
+			for (int i = 0; i < GamlIdiomsProvider.getProviders().length; i++) {
 				if (i != 0) {
 					sb.append("|"); //$NON-NLS-1$
 				}
-				sb.append(GamlIdiomsProvider.getProviders().get(i).getSearchCategory());
+				sb.append(GamlIdiomsProvider.getProviders()[i].getSearchCategory());
 			}
 			sb.append("):\\s?(.*)"); //$NON-NLS-1$
 			String regex = sb.toString();

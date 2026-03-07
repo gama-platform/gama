@@ -18,6 +18,7 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Signature;
@@ -199,7 +200,8 @@ public interface IExpressionFactory {
 	 *            the description context where the variable is defined
 	 * @return a new variable expression appropriate for the specified scope, or null for unknown scope
 	 */
-	IExpression createVar(String name, IType type, boolean isConst, int scope, IDescription definitionDescription);
+	IExpression createVar(String name, IType type, boolean isConst, IVarExpression.Category scope,
+			IDescription definitionDescription);
 
 	/**
 	 * Creates a list expression from an iterable collection of expressions. The resulting expression will evaluate to a

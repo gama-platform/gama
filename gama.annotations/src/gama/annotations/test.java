@@ -91,9 +91,7 @@ public @interface test {
 	 *
 	 * @return the name of the test (see the general comment for the effect of naming tests). It is empty by default.
 	 */
-	String name()
-
-	default "";
+	String name() default "";
 
 	/**
 	 *

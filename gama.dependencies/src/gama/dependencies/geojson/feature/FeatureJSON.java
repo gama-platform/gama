@@ -45,6 +45,7 @@ import org.json.simple.parser.JSONParser;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
+import gama.annotations.constants.IKeyword;
 import gama.dependencies.geojson.GeoJSONUtil;
 import gama.dependencies.geojson.geom.GeometryJSON;
 
@@ -455,15 +456,15 @@ public class FeatureJSON {
 	 */
 	Map<String, Object> createCRS(final CoordinateReferenceSystem crs) throws IOException {
 		Map<String, Object> obj = new LinkedHashMap<>();
-		obj.put("type", "name");
+		obj.put(IKeyword.TYPE, IKeyword.NAME);
 
 		Map<String, Object> props = new LinkedHashMap<>();
 		if (crs == null) {
-			props.put("name", "EPSG:4326");
+			props.put(IKeyword.NAME, "EPSG:4326");
 		} else {
 			try {
 				String identifier = CRS.lookupIdentifier(crs, true);
-				props.put("name", identifier);
+				props.put(IKeyword.NAME, identifier);
 			} catch (FactoryException e) {
 				throw (IOException) new IOException("Error looking up crs identifier").initCause(e);
 			}
@@ -600,7 +601,7 @@ public class FeatureJSON {
 			sb.append("{");
 
 			// type
-			entry("type", "Feature", sb);
+			entry(IKeyword.TYPE, "Feature", sb);
 			sb.append(",");
 
 			// crs

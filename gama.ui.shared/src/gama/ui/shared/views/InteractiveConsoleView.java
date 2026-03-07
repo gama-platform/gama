@@ -52,7 +52,6 @@ import gama.api.ui.IGamaView;
 import gama.api.utils.StringUtils;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
-import gama.gaml.operators.Strings;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaIcon;
@@ -306,7 +305,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 
 	@Override
 	public Control getSizableFontControl() {
-		if (viewer == null) { return null; }
+		if (viewer == null) return null;
 		return viewer.getTextWidget();
 	}
 
@@ -515,7 +514,7 @@ public class InteractiveConsoleView extends GamaViewPart implements IToolbarDeco
 		final var value = temps.get(name);
 		if (value != null) {
 			final IType<?> t = GamaType.of(value);
-			return GAML.getExpressionFactory().createVar(name, t, false, IVarExpression.TEMP, null);
+			return GAML.getExpressionFactory().createVar(name, t, false, IVarExpression.Category.TEMP, null);
 		}
 		return null;
 	}

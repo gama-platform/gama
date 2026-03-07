@@ -1,84 +1,82 @@
 /*******************************************************************************************************
  *
- * XmlTAG.java, in gama.headless, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * XmlTAG.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.headless.xml;
+
+import gama.annotations.constants.IKeyword;
 
 /**
  * The Interface XmlTAG.
  */
 public interface XmlTAG {
-	
+
 	/** The Constant SIMULATION_TAG. */
-	public final static String SIMULATION_TAG = "Simulation";
-	
+	String SIMULATION_TAG = "Simulation";
+
 	/** The Constant PARAMETERS_TAG. */
-	public final static String PARAMETERS_TAG = "Parameters";
-	
+	String PARAMETERS_TAG = "Parameters";
+
 	/** The Constant OUTPUTS_TAG. */
-	public final static String OUTPUTS_TAG = "Outputs";
-	
+	String OUTPUTS_TAG = "Outputs";
+
 	/** The Constant EXPERIMENT_ID_TAG. */
-	public final static String EXPERIMENT_ID_TAG = "id";
-	
+	String EXPERIMENT_ID_TAG = IKeyword.ID;
+
 	/** The Constant SOURCE_PATH_TAG. */
-	public final static String SOURCE_PATH_TAG = "sourcePath";
-	
+	String SOURCE_PATH_TAG = "sourcePath";
+
 	/** The Constant FINAL_STEP_TAG. */
-	public final static String FINAL_STEP_TAG = "finalStep";
-	
+	String FINAL_STEP_TAG = "finalStep";
+
 	/** The Constant EXPERIMENT_NAME_TAG. */
-	public final static String EXPERIMENT_NAME_TAG = "experiment";
-	
+	String EXPERIMENT_NAME_TAG = "experiment";
+
 	/** The Constant SEED_TAG. */
-	public final static String SEED_TAG = "seed";
-	
+	String SEED_TAG = IKeyword.SEED;
+
 	/** The Constant OUTPUT_TAG. */
-	public final static String OUTPUT_TAG = "Output";
-	
+	String OUTPUT_TAG = "Output";
+
 	/** The Constant PARAMETER_TAG. */
-	public final static String PARAMETER_TAG = "Parameter";
-	
+	String PARAMETER_TAG = "Parameter";
+
 	/** The Constant ID_TAG. */
-	public final static String ID_TAG = "id";
-	
+	String ID_TAG = IKeyword.ID;
+
 	/** The Constant NAME_TAG. */
-	public final static String NAME_TAG = "name";
-	
+	String NAME_TAG = IKeyword.NAME;
+
 	/** The Constant VAR_TAG. */
-	public final static String VAR_TAG = "var";	
-	
+	String VAR_TAG = IKeyword.VAR;
+
 	/** The Constant VALUE_TAG. */
-	public final static String VALUE_TAG = "value";
-	
+	String VALUE_TAG = IKeyword.VALUE;
+
 	/** The Constant TYPE_TAG. */
-	public final static String TYPE_TAG = "type";
-	
+	String TYPE_TAG = IKeyword.TYPE;
+
 	/** The Constant WIDTH_TAG. */
-	public final static String WIDTH_TAG = "width";
-	
+	String WIDTH_TAG = IKeyword.WIDTH;
+
 	/** The Constant HEIGHT_TAG. */
-	public final static String HEIGHT_TAG = "height";
-	
+	String HEIGHT_TAG = IKeyword.HEIGHT;
+
 	/** The Constant FRAMERATE_TAG. */
-	public final static String FRAMERATE_TAG = "framerate";
-	
+	String FRAMERATE_TAG = "framerate";
+
 	/** The Constant EXPERIMENT_PLAN_TAG. */
-	public final static String EXPERIMENT_PLAN_TAG = "Experiment_plan";
-	
+	String EXPERIMENT_PLAN_TAG = "Experiment_plan";
+
 	/** The Constant OUTPUT_PATH. */
-	public final static String OUTPUT_PATH = "output_path";
-	
+	String OUTPUT_PATH = "output_path";
+
 	/** The Constant UNTIL_TAG. */
-	public final static String UNTIL_TAG = "until";
-	
-	
-	
-	
+	String UNTIL_TAG = IKeyword.UNTIL;
+
 }

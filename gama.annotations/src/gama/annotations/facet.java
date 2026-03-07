@@ -31,7 +31,6 @@ public @interface facet {
 	 * @return The int values of the different types that can be taken by this facet.
 	 * @see gama.gaml.types.IType
 	 */
-
 	int[] type();
 
 	/**
@@ -40,14 +39,7 @@ public @interface facet {
 	 * @return The int representation of the content type of the facet (see IType#defaultContentType()). Only applies to
 	 *         the types considered as containers
 	 */
-	int of()
-
-	/**
-	 * Index.
-	 *
-	 * @return the int
-	 */
-	default 0;
+	int of() default 0;
 
 	/**
 	 * Index.
@@ -55,14 +47,7 @@ public @interface facet {
 	 * @return The int representation of the index type of the facet (see IType#defaultKeyType()). Only applies to the
 	 *         types considered as containers
 	 */
-	int index()
-
-	/**
-	 * Values.
-	 *
-	 * @return the string[]
-	 */
-	default 0;
+	int index() default 0;
 
 	/**
 	 * Values.
@@ -77,29 +62,14 @@ public @interface facet {
 	 *
 	 * @return whether or not this facet is optional or mandatory.
 	 */
-
-	boolean optional()
-
-	/**
-	 * Internal.
-	 *
-	 * @return true, if successful
-	 */
-	default false;
+	boolean optional() default false;
 
 	/**
 	 * internal.
 	 *
 	 * @return whether this facet is for internal use only.
 	 */
-	boolean internal()
-
-	/**
-	 * Doc.
-	 *
-	 * @return the doc[]
-	 */
-	default false;
+	boolean internal() default false;
 
 	/**
 	 * Doc.
@@ -116,6 +86,5 @@ public @interface facet {
 	 *         i.e. `self` will represent an agent of the species denoted by the statement, while `myself` will
 	 *         represent the agent calling the statement
 	 */
-
 	boolean remote_context() default false;
 }

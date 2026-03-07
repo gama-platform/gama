@@ -36,7 +36,6 @@ public @interface type {
 	 * @return an array of strings, each representing this GAML word we can use to find the type in the website search
 	 *         feature.
 	 */
-
 	String[] concept() default {};
 
 	/**
@@ -56,24 +55,19 @@ public @interface type {
 	/**
 	 * @return the kind of Variable used to store this type. see ISymbolKind.
 	 */
-	ISymbolKind kind()
-
-	default ISymbolKind.REGULAR;
+	ISymbolKind kind() default ISymbolKind.REGULAR;
 
 	/**
 	 * internal.
 	 *
 	 * @return whether this type is for internal use only.
 	 */
-	boolean internal()
-
-	default false;
+	boolean internal() default false;
 
 	/**
 	 * @return an array of strings, each representing a category in which this constant can be classified (for
 	 *         documentation indexes)
 	 */
-
 	String[] category() default {};
 
 	/**

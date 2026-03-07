@@ -407,6 +407,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 *            the name
 	 * @return the i expression
 	 */
+	@Override
 	public IExpression createSkillConstant(final String name) {
 		return new SkillConstantExpression(name, Types.SKILL);
 	}
@@ -527,25 +528,25 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 * @return a new variable expression appropriate for the specified scope, or null for unknown scope
 	 */
 	@Override
-	public IExpression createVar(final String name, final IType type, final boolean isConst, final int scope,
-			final IDescription definitionDescription) {
+	public IExpression createVar(final String name, final IType type, final boolean isConst,
+			final IVarExpression.Category scope, final IDescription definitionDescription) {
 		// Create appropriate variable expression type based on scope level
 		return switch (scope) {
 			// Global variables are model-wide and shared across all agents
-			case IVarExpression.GLOBAL -> GlobalVariableExpression.create(name, type, isConst,
+			case GLOBAL -> GlobalVariableExpression.create(name, type, isConst,
 					definitionDescription.getModelDescription());
 			// Agent variables are instance variables specific to each agent
-			case IVarExpression.AGENT -> new AgentVariableExpression(name, type, isConst, definitionDescription);
+			case AGENT -> new AgentVariableExpression(name, type, isConst, definitionDescription);
 			// Temporary variables exist only during the current execution block
-			case IVarExpression.TEMP -> new TempVariableExpression(name, type, definitionDescription);
+			case TEMP -> new TempVariableExpression(name, type, definitionDescription);
 			// 'each' is the iteration variable in loops
-			case IVarExpression.EACH -> new EachExpression(name, type);
+			case EACH -> new EachExpression(name, type);
 			// 'self' refers to the current agent executing the code
-			case IVarExpression.SELF -> new SelfExpression(type);
+			case SELF -> new SelfExpression(type);
 			// 'super' refers to the parent species of the current agent
-			case IVarExpression.SUPER -> new SuperExpression(type);
+			case SUPER -> new SuperExpression(type);
 			// 'myself' refers to the agent that called this action
-			case IVarExpression.MYSELF -> new MyselfExpression(type, definitionDescription);
+			case MYSELF -> new MyselfExpression(type, definitionDescription);
 			// Unknown scope - should not happen in well-formed code
 			default -> null;
 		};
@@ -882,7 +883,8 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	public IExpression createOperator(final IArtefact artefact, final IDescription context,
 			final EObject currentEObject, final IExpression... exprs) {
 		// Validate that artefact is an operator and passes validation rules
-		if (artefact instanceof OperatorArtefact proto && proto.getValidator().validate(context, currentEObject, exprs)) {
+		if (artefact instanceof OperatorArtefact proto
+				&& proto.getValidator().validate(context, currentEObject, exprs)) {
 			// Choose operator implementation based on number of arguments
 			switch (proto.getSignature().size()) {
 				case 1:

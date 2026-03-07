@@ -14,6 +14,7 @@ import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.type;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
@@ -26,7 +27,7 @@ import gama.api.types.map.IMap;
  * powerful meta-programming capabilities including runtime type inspection, dynamic type manipulation, and generic
  * algorithms that operate on types. It's the foundation of GAMA's reflective type system.
  * </p>
- * 
+ *
  * <h2>Key Features:</h2>
  * <ul>
  * <li>Types as first-class values</li>
@@ -36,7 +37,7 @@ import gama.api.types.map.IMap;
  * <li>Dynamic type resolution</li>
  * <li>Meta-programming capabilities</li>
  * </ul>
- * 
+ *
  * <h2>Type Inspection:</h2>
  * <p>
  * The meta-type provides operators for inspecting and working with types:
@@ -46,26 +47,26 @@ import gama.api.types.map.IMap;
  * <li>Type comparison and compatibility checking</li>
  * </ul>
  * </p>
- * 
+ *
  * <h2>Usage Examples:</h2>
- * 
+ *
  * <pre>
  * {@code
  * // Get type of variables/expressions
  * gaml_type str_type <- type_of("hello");  // Returns string type
  * gaml_type list_type <- type_of([1,2,3]); // Returns list<int>
  * gaml_type agent_type <- type_of(self);   // Returns agent type
- * 
+ *
  * // Actual runtime type (computed from value)
  * list my_list <- [1,2,3];
  * gaml_type actual <- actual_type_of(my_list);  // list<int>
- * 
+ *
  * // Declared type (from variable declaration)
  * gaml_type declared <- type_of(my_list);  // just 'list'
- * 
+ *
  * // Type as string
  * string type_name <- string(type_of([1,2,3]));  // "list<int>"
- * 
+ *
  * // Store types in collections
  * list<gaml_type> numeric_types <- [int, float];
  * map<string, gaml_type> type_registry <- [
@@ -73,7 +74,7 @@ import gama.api.types.map.IMap;
  *     "decimal" :: float,
  *     "text" :: string
  * ];
- * 
+ *
  * // Use in generic algorithms
  * action create_from_type(gaml_type t, int count) {
  *     // Create entities based on type parameter
@@ -81,17 +82,17 @@ import gama.api.types.map.IMap;
  *         create t number: count;
  *     }
  * }
- * 
+ *
  * // Type checking
  * bool is_list <- type_of(my_var) = list;
  * bool is_container <- container in ancestors_of(type_of(my_var));
- * 
+ *
  * // Parametric types
  * gaml_type list_of_agents <- list<agent>;
  * gaml_type map_str_int <- map<string, int>;
  * }
  * </pre>
- * 
+ *
  * <h2>Type Hierarchy:</h2>
  * <p>
  * The meta-type allows inspection of GAMA's type hierarchy:
@@ -101,7 +102,7 @@ import gama.api.types.map.IMap;
  * <li>Determine common supertypes</li>
  * </ul>
  * </p>
- * 
+ *
  * @author GAMA Development Team
  * @see GamaType
  * @see IType
@@ -116,7 +117,7 @@ public class GamaMetaType extends GamaType<IType<?>> {
 
 	/**
 	 * Constructs a new meta-type.
-	 * 
+	 *
 	 * @param typesManager
 	 *            the types manager responsible for type resolution and management
 	 */
@@ -129,7 +130,7 @@ public class GamaMetaType extends GamaType<IType<?>> {
 	 * <p>
 	 * Types can be constant as they are immutable descriptors.
 	 * </p>
-	 * 
+	 *
 	 * @return true, types can be constant
 	 */
 	@Override
@@ -147,7 +148,7 @@ public class GamaMetaType extends GamaType<IType<?>> {
 	 * <li>Other objects - determines the type from the object's class</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param obj
@@ -175,7 +176,7 @@ public class GamaMetaType extends GamaType<IType<?>> {
 	 * <p>
 	 * This is a static version of type resolution that doesn't require a scope.
 	 * </p>
-	 * 
+	 *
 	 * @param obj
 	 *            the object to get the type of
 	 * @return the type of the object
@@ -189,7 +190,7 @@ public class GamaMetaType extends GamaType<IType<?>> {
 	 * <p>
 	 * The default type is NO_TYPE, representing absence of type information.
 	 * </p>
-	 * 
+	 *
 	 * @return the NO_TYPE constant
 	 */
 	@Override
@@ -198,20 +199,20 @@ public class GamaMetaType extends GamaType<IType<?>> {
 	/**
 	 * Returns the declared GAML type of an expression.
 	 * <p>
-	 * This operator returns the type as declared in the model, based on compile-time type inference. For variables,
-	 * it returns the declared type, not the actual runtime type of the contents. Use actual_type_of for runtime type
+	 * This operator returns the type as declared in the model, based on compile-time type inference. For variables, it
+	 * returns the declared type, not the actual runtime type of the contents. Use actual_type_of for runtime type
 	 * inspection.
 	 * </p>
-	 * 
+	 *
 	 * <h3>Example:</h3>
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * list my_list <- [1,2,3];
 	 * string declared <- string(type_of(my_list));  // Returns "list" (declared type)
 	 * }
 	 * </pre>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param obj
@@ -248,20 +249,20 @@ public class GamaMetaType extends GamaType<IType<?>> {
 	/**
 	 * Returns the actual runtime GAML type of an expression's value.
 	 * <p>
-	 * This operator evaluates the expression and determines the type of its actual value at runtime, including
-	 * complete parametric type information for containers. Unlike type_of, this recomputes the type based on the
-	 * actual contents.
+	 * This operator evaluates the expression and determines the type of its actual value at runtime, including complete
+	 * parametric type information for containers. Unlike type_of, this recomputes the type based on the actual
+	 * contents.
 	 * </p>
-	 * 
+	 *
 	 * <h3>Example:</h3>
-	 * 
+	 *
 	 * <pre>
 	 * {@code
 	 * list my_list <- [1,2,3];
 	 * string actual <- string(actual_type_of(my_list));  // Returns "list<int>" (computed from contents)
 	 * }
 	 * </pre>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param exp
@@ -306,7 +307,7 @@ public class GamaMetaType extends GamaType<IType<?>> {
 	 * <li>"content" - (optional) the content type for parametric types</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param map2
@@ -315,10 +316,10 @@ public class GamaMetaType extends GamaType<IType<?>> {
 	 */
 	@Override
 	public IType<?> deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
-		if (!map2.containsKey("name")) return getDefault();
-		IType base = scope.getType(Cast.asString(scope, map2.get("name")));
+		if (!map2.containsKey(IKeyword.NAME)) return getDefault();
+		IType base = scope.getType(Cast.asString(scope, map2.get(IKeyword.NAME)));
 		if (base instanceof IContainerType<?> ic && map2.size() > 1)
-			return ic.of(scope.getType(Cast.asString(scope, map2.get("key"))),
+			return ic.of(scope.getType(Cast.asString(scope, map2.get(IKeyword.KEY))),
 					scope.getType(Cast.asString(scope, map2.get("content"))));
 		return base;
 	}

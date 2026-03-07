@@ -174,7 +174,7 @@ public class StatementWithChildrenDescription extends StatementDescription {
 		}
 
 		final IExpression result = getExpressionFactory().createVar(name, type, false,
-				isMyself ? IVarExpression.MYSELF : IVarExpression.TEMP, this);
+				isMyself ? IVarExpression.Category.MYSELF : IVarExpression.Category.TEMP, this);
 		temps.put(name, (IVarExpression) result);
 		return result;
 	}

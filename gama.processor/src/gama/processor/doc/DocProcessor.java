@@ -56,6 +56,7 @@ import gama.annotations.type;
 import gama.annotations.usage;
 import gama.annotations.variable;
 import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.constants.XMLElements;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IConstantCategory;
@@ -683,12 +684,12 @@ public class DocProcessor extends ElementProcessor<doc> {
 	private void addDocumentation(final org.w3c.dom.Element operator, final ExecutableElement e) {
 		org.w3c.dom.Element docElt;
 		if (operator.getElementsByTagName(XMLElements.DOCUMENTATION).getLength() == 0) {
-			docElt = getDocElt(e.getAnnotation(doc.class), document, mes, "Operator " + operator.getAttribute("name"),
-					tc, e, operator);
+			docElt = getDocElt(e.getAnnotation(doc.class), document, mes,
+					"Operator " + operator.getAttribute(IKeyword.NAME), tc, e, operator);
 		} else {
 			docElt = getDocElt(e.getAnnotation(doc.class), document,
 					(org.w3c.dom.Element) operator.getElementsByTagName(XMLElements.DOCUMENTATION).item(0), mes,
-					"Operator " + operator.getAttribute("name"), tc, e, operator);
+					"Operator " + operator.getAttribute(IKeyword.NAME), tc, e, operator);
 		}
 
 		if (docElt != null) { operator.appendChild(docElt); }
@@ -870,7 +871,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 		if (nNode != null && nNode.getNodeType() == Node.ELEMENT_NODE) {
 			org.w3c.dom.Element eElement = (org.w3c.dom.Element) nNode;
 
-			if (n.equals(eElement.getAttribute("name"))) { bFound = true; }
+			if (n.equals(eElement.getAttribute(IKeyword.NAME))) { bFound = true; }
 		}
 		return bFound;
 	}
@@ -903,8 +904,8 @@ public class DocProcessor extends ElementProcessor<doc> {
 				if (docEltArchi != null) { archiElt.appendChild(docEltArchi); }
 
 				// Parsing of vars
-				final org.w3c.dom.Element varsElt =
-						getVarsElt(e.getAnnotation(vars.class), document, mes, archiElt.getAttribute("name"), tc);
+				final org.w3c.dom.Element varsElt = getVarsElt(e.getAnnotation(vars.class), document, mes,
+						archiElt.getAttribute(IKeyword.NAME), tc);
 
 				if (varsElt != null) { archiElt.appendChild(varsElt); }
 
@@ -977,8 +978,8 @@ public class DocProcessor extends ElementProcessor<doc> {
 				}
 
 				// Parsing of vars
-				final org.w3c.dom.Element varsElt =
-						getVarsElt(e.getAnnotation(vars.class), document, mes, skillElt.getAttribute("name"), tc);
+				final org.w3c.dom.Element varsElt = getVarsElt(e.getAnnotation(vars.class), document, mes,
+						skillElt.getAttribute(IKeyword.NAME), tc);
 
 				if (varsElt != null) {
 					skillElt.appendChild(varsElt);
@@ -1081,7 +1082,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 
 				// Parsing of vars
 				org.w3c.dom.Element varsElt =
-						getVarsElt(e.getAnnotation(vars.class), document, mes, spec.getAttribute("name"), tc);
+						getVarsElt(e.getAnnotation(vars.class), document, mes, spec.getAttribute(IKeyword.NAME), tc);
 				if (varsElt != null) {
 					spec.appendChild(varsElt);
 				} else {
@@ -1090,7 +1091,7 @@ public class DocProcessor extends ElementProcessor<doc> {
 					// This is particularly useful for the agent species.
 					varsElt = getVarsElt(
 							ElementTypeUtils.getFirstImplementingInterfacesWithVars(e, mes).getAnnotation(vars.class),
-							document, mes, spec.getAttribute("name"), tc);
+							document, mes, spec.getAttribute(IKeyword.NAME), tc);
 					if (varsElt != null) {
 						spec.appendChild(varsElt);
 					} else {

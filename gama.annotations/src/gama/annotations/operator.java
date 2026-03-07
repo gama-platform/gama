@@ -24,14 +24,12 @@ public @interface operator {
 	 * @return an array of strings, each representing this GAML word we can use to find the operator in the website
 	 *         search feature.
 	 */
-
 	String[] concept() default {};
 
 	/**
 	 * @return an array of strings, each representing a category in which this operator can be classified (for
 	 *         documentation indexes)
 	 */
-
 	String[] category() default {};
 
 	/**
@@ -45,7 +43,6 @@ public @interface operator {
 	 * @return true if this operator should be treated as an iterator (i.e. allows the special variable "each" to be
 	 *         used inside)
 	 */
-
 	boolean iterator() default false;
 
 	/**

@@ -9,6 +9,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import gama.annotations.constants.IKeyword;
+
 /**
  *
  * The class facets. Describes a list of facet used by a symbol (a statement, a declaration) in GAML. Can only be
@@ -36,6 +38,6 @@ public @interface facets {
 	 * @return the facet that can be safely omitted by the modeler (provided its value is the first following the
 	 *         keyword of the statement).
 	 */
-	String omissible() default "name";
+	String omissible() default IKeyword.NAME;
 
 }

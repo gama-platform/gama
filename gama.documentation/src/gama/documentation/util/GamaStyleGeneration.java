@@ -29,6 +29,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import gama.annotations.constants.IKeyword;
+
 /**
  * The Class GamaStyleGeneration.
  */
@@ -81,7 +83,7 @@ public class GamaStyleGeneration {
 		final NodeList nl = doc.getElementsByTagName("keyword");
 		for (int i = 0; i < nl.getLength(); i++) {
 			final String category = ((Element) nl.item(i)).getElementsByTagName("category").item(0).getTextContent();
-			final String name = ((Element) nl.item(i)).getElementsByTagName("name").item(0).getTextContent();
+			final String name = ((Element) nl.item(i)).getElementsByTagName(IKeyword.NAME).item(0).getTextContent();
 			if (!keywordMap.containsKey(category)) {
 				final ArrayList<String> elemToAdd = new ArrayList<>();
 				elemToAdd.add(name);
@@ -194,7 +196,7 @@ public class GamaStyleGeneration {
 		final NodeList nl = doc.getElementsByTagName("subpart");
 
 		for (int i = 0; i < nl.getLength(); i++) {
-			final String subpartName = ((Element) nl.item(i)).getAttribute("name");
+			final String subpartName = ((Element) nl.item(i)).getAttribute(IKeyword.NAME);
 			final File subpartFile =
 					new File(Constants.TOC_GEN_FOLDER + File.separator + subpartName.replace(' ', '_') + ".md");
 

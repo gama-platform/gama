@@ -38,36 +38,28 @@ public @interface variable {
 	 *
 	 * @return The int representation of the content type of the variable (see IType#defaultContentType())
 	 */
-	int of()
-
-	default 0;
+	int of() default 0;
 
 	/**
 	 * Index.
 	 *
 	 * @return The int representation of the index type of the variable (see IType#defaultKeyType())
 	 */
-	int index()
-
-	default 0;
+	int index() default 0;
 
 	/**
 	 * Constant
 	 *
 	 * @return whether or not this variable should be considered as non modifiable
 	 */
-	boolean constant()
-
-	default false;
+	boolean constant() default false;
 
 	/**
 	 * Init
 	 *
 	 * @return the initial value of this variable as a String that will be interpreted by GAML
 	 */
-	String init()
-
-	default "";
+	String init() default "";
 
 	/**
 	 * Depends_on.
@@ -78,24 +70,11 @@ public @interface variable {
 	String[] depends_on() default {};
 
 	/**
-	 * Species.
-	 *
-	 * @return the species of the variable value in case its type is IType.AGENT.
-	 * @deprecated use type instead with the name of the species
-	 */
-	@Deprecated
-	String species()
-
-	default "";
-
-	/**
 	 * internal.
 	 *
 	 * @return whether this var is for internal use only.
 	 */
-	boolean internal()
-
-	default false;
+	boolean internal() default false;
 
 	/**
 	 * Doc.

@@ -32,7 +32,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import gama.annotations.doc;
-import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ITypeProvider;
@@ -344,7 +343,8 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 		final boolean asGlobal = isGlobal() && !asField;
 
 		return GAML.getExpressionFactory().createVar(getName(), getGamlType(), isNotModifiable(),
-				asGlobal ? IVarExpression.GLOBAL : IVarExpression.AGENT, this.getEnclosingDescription());
+				asGlobal ? IVarExpression.Category.GLOBAL : IVarExpression.Category.AGENT,
+				this.getEnclosingDescription());
 	}
 
 	@Override

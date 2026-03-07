@@ -90,9 +90,7 @@ public @interface usage {
 	 * constants if necessary (i.e. "My templates"). When no menu is defined, GAMA tries to guess it from the context
 	 * where the template is defined
 	 */
-	String menu()
-
-	default NULL;
+	String menu() default NULL;
 
 	/**
 	 * The path indicates where to put this template in the menu. For instance, the following annotation:
@@ -110,9 +108,7 @@ public @interface usage {
 	 * The name of the template should be both concise (as it will appear in a menu) and precise (to remove ambiguities
 	 * between templates).
 	 */
-	String name()
-
-	default NULL;
+	String name() default NULL;
 
 	/**
 	 * Examples

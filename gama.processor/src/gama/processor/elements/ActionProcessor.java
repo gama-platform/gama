@@ -20,9 +20,9 @@ import javax.lang.model.type.TypeMirror;
 
 import gama.annotations.action;
 import gama.annotations.arg;
+import gama.annotations.constants.IKeyword;
 
 /**
- * The ActionProcessor is responsible for processing {@code @action} annotations during the annotation processing phase.
  *
  * <p>
  * This processor generates runtime helper code that enables GAMA to register and invoke actions defined in Java
@@ -78,7 +78,7 @@ public class ActionProcessor extends ElementProcessor<action> {
 	 * <li>{@code returns} - used to specify return value handling</li>
 	 * </ul>
 	 */
-	private static final Set<String> RESERVED_FACETS = Set.of("name", "keyword", "returns");
+	private static final Set<String> RESERVED_FACETS = Set.of(IKeyword.NAME, "keyword", IKeyword.RETURNS);
 
 	/**
 	 * Creates the element code for an action annotation.

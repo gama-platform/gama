@@ -11,11 +11,9 @@
 
 package gama.api.compilation.documentation;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -26,6 +24,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.additions.registries.GamaSkillRegistry;
@@ -57,56 +56,48 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 	public static final int NOT_FOUND = -1;
 
 	/** The providers. */
-	static List<GamlIdiomsProvider<?>> PROVIDERS;
+	static GamlIdiomsProvider<?>[] PROVIDERS;
 
 	/**
 	 * Gets the providers.
 	 *
 	 * @return the providers
 	 */
-	public static List<GamlIdiomsProvider<?>> getProviders() {
+	public static GamlIdiomsProvider<?>[] getProviders() {
 		if (PROVIDERS == null) {
 
 			GamlIdiomsProvider<IGamlFileInfo> FILES = new GamlIdiomsProvider<>("models", "Models (title & tags)",
 					GAMA.getGui().getModelsManager().getAllModels());
-			GamlIdiomsProvider<ISpeciesDescription> SPECIES =
-					new GamlIdiomsProvider<>("species", "Built-in species", GamaMetaModel.getAllSpeciesDescriptions());
-			GamlIdiomsProvider<IVariableDescription> SPECIES_ATTRIBUTES =
-					new GamlIdiomsProvider<>("variables", "Built-in species attribute", Iterables.concat(Iterables
-							.transform(GamaMetaModel.getAllSpeciesDescriptions(), s -> s.getOwnAttributes().values())));
-			GamlIdiomsProvider<IActionDescription> SPECIES_ACTIONS =
-					new GamlIdiomsProvider<>("actions", "Built-in species action", Iterables.concat(Iterables
-							.transform(GamaMetaModel.getAllSpeciesDescriptions(), s -> s.getOwnActions().values())));
-			GamlIdiomsProvider<ISkillDescription> SKILLS =
-					new GamlIdiomsProvider<>("skills", "Skill", GamaSkillRegistry.INSTANCE.getRegisteredSkills());
-
+			GamlIdiomsProvider<ISpeciesDescription> SPECIES = new GamlIdiomsProvider<>(IKeyword.SPECIES,
+					"Built-in species", GamaMetaModel.getAllSpeciesDescriptions());
+			GamlIdiomsProvider<IVariableDescription> SPECIES_ATTRIBUTES = new GamlIdiomsProvider<>("variables",
+					"Built-in species attribute", GamaMetaModel.getAllSpeciesDescriptions().stream()
+							.flatMap(s -> s.getOwnAttributes().values().stream()).toList());
+			GamlIdiomsProvider<IActionDescription> SPECIES_ACTIONS = new GamlIdiomsProvider<>("actions",
+					"Built-in species action", GamaMetaModel.getAllSpeciesDescriptions().stream()
+							.flatMap(s -> s.getOwnActions().values().stream()).toList());
+			GamlIdiomsProvider<ISkillDescription> SKILLS = new GamlIdiomsProvider<>(IKeyword.SKILLS, "Skill",
+					GamaSkillRegistry.INSTANCE.getRegisteredSkills());
 			GamlIdiomsProvider<IVariableDescription> SKILLS_ATTRIBUTES = new GamlIdiomsProvider<>("variables",
 					"Skill Attribute", GamaSkillRegistry.INSTANCE.getRegisteredSkillsAttributes());
-
 			GamlIdiomsProvider<IActionDescription> SKILLS_ACTIONS = new GamlIdiomsProvider<>("actions", "Skill Action",
 					GamaSkillRegistry.INSTANCE.getRegisteredSkillsActions());
-
 			GamlIdiomsProvider<IArtefact> STATEMENTS =
 					new GamlIdiomsProvider<>("statements", "Statements", ArtefactRegistry.getStatementArtefacts());
-
 			GamlIdiomsProvider<IExpression> CONSTANTS =
 					new GamlIdiomsProvider<>("constant", "Constant & Units", GAML.getUnits().values());
-
 			GamlIdiomsProvider<IArtefact> OPERATORS =
-					new GamlIdiomsProvider<>("operators", "Operators", Iterables.concat(Iterables
-							.transform(GAML.getOperatorsNames(), name -> GAML.getOperatorsNamed(name).values())));
-
+					new GamlIdiomsProvider<>("operators", "Operators", GAML.getOperatorsNames().stream()
+							.flatMap(name -> GAML.getOperatorsNamed(name).values().stream()).toList());
 			GamlIdiomsProvider<IType<?>> TYPES = new GamlIdiomsProvider<>("types", "Types", Types.getAllTypes());
-
 			GamlIdiomsProvider<IArtefact.Facet> FACETS =
 					new GamlIdiomsProvider<>("facets", "Facets", ArtefactRegistry.getFacetsArtefacts());
-
 			GamlIdiomsProvider<IArtefact> FIELDS =
 					new GamlIdiomsProvider<>("attributes", "Fields", Types.getAllFields());
 
 			/** The Constant PROVIDERS. */
-			PROVIDERS = new ArrayList<>(Arrays.asList(FILES, SPECIES, SPECIES_ATTRIBUTES, SPECIES_ACTIONS, SKILLS,
-					SKILLS_ATTRIBUTES, SKILLS_ACTIONS, STATEMENTS, CONSTANTS, OPERATORS, TYPES, FACETS, FIELDS));
+			PROVIDERS = new GamlIdiomsProvider[] { FILES, SPECIES, SPECIES_ATTRIBUTES, SPECIES_ACTIONS, SKILLS,
+					SKILLS_ATTRIBUTES, SKILLS_ACTIONS, STATEMENTS, CONSTANTS, OPERATORS, TYPES, FACETS, FIELDS };
 		}
 
 		return PROVIDERS;
@@ -214,7 +205,6 @@ public class GamlIdiomsProvider<T extends IGamlDescription> {
 	 * Inits the.
 	 */
 	private void init() {
-
 		sortedElements = Iterables.toArray(elements, IGamlDescription.class);
 		if (titles == null) {
 			Arrays.sort(sortedElements, Comparator.comparing(IGamlDescription::getTitle));

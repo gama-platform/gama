@@ -34,7 +34,6 @@ public @interface file {
 	 * @return an array of strings, each representing this GAML word we can use to find the operators related to this
 	 *         file in the website search feature.
 	 */
-
 	String[] concept() default {};
 
 	/**
@@ -53,9 +52,7 @@ public @interface file {
 	 * @see IType
 	 * @see ITypeProvider
 	 */
-	int buffer_content()
-
-	default ITypeProvider.NONE;
+	int buffer_content() default ITypeProvider.NONE;
 
 	/**
 	 * @return the type of the index of the buffer. Can be directly a type in IType or one of the constants declared in
@@ -63,9 +60,7 @@ public @interface file {
 	 * @see IType
 	 * @see ITypeProvider
 	 */
-	int buffer_index()
-
-	default ITypeProvider.NONE;
+	int buffer_index() default ITypeProvider.NONE;
 
 	/**
 	 *
@@ -74,15 +69,12 @@ public @interface file {
 	 * @see IType
 	 * @see ITypeProvider
 	 */
-	int buffer_type()
-
-	default ITypeProvider.NONE;
+	int buffer_type() default ITypeProvider.NONE;
 
 	/**
 	 * @return an array of strings, each representing a category in which this constant can be classified (for
 	 *         documentation indexes)
 	 */
-
 	String[] category() default {};
 
 	/**

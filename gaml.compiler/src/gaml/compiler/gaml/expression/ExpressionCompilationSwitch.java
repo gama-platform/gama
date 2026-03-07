@@ -1338,7 +1338,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			return null;
 		}
 		IType type = isSuper ? sd.getParent().getGamlType() : sd.getGamlType();
-		return FACTORY.createVar(name, type, true, isSuper ? IVarExpression.SUPER : IVarExpression.SELF, null);
+		return FACTORY.createVar(name, type, true,
+				isSuper ? IVarExpression.Category.SUPER : IVarExpression.Category.SELF, null);
 	}
 
 	/**

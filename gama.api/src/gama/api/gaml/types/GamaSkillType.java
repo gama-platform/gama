@@ -23,12 +23,12 @@ import gama.api.types.map.IMap;
 /**
  * Meta-type representing skills in GAML - reusable behavioral components for agents.
  * <p>
- * Skills are modular collections of attributes and actions that can be attached to agents to extend their
- * capabilities. They provide a composition-based approach to agent design, allowing agents to acquire behaviors
- * without inheritance. Skills can be dynamically assigned to species and provide specialized functionality like
- * movement, communication, or spatial awareness.
+ * Skills are modular collections of attributes and actions that can be attached to agents to extend their capabilities.
+ * They provide a composition-based approach to agent design, allowing agents to acquire behaviors without inheritance.
+ * Skills can be dynamically assigned to species and provide specialized functionality like movement, communication, or
+ * spatial awareness.
  * </p>
- * 
+ *
  * <h2>Key Features:</h2>
  * <ul>
  * <li>Modular behavioral components</li>
@@ -38,7 +38,7 @@ import gama.api.types.map.IMap;
  * <li>Can be built-in or defined by plugins</li>
  * <li>Runtime access to skill instances</li>
  * </ul>
- * 
+ *
  * <h2>Built-in Skills:</h2>
  * <ul>
  * <li><b>moving</b> - basic movement capabilities (move, goto, wander)</li>
@@ -50,9 +50,9 @@ import gama.api.types.map.IMap;
  * <li><b>physics</b> - physical simulation integration</li>
  * <li>And many more from plugins...</li>
  * </ul>
- * 
+ *
  * <h2>Usage Examples:</h2>
- * 
+ *
  * <pre>
  * {@code
  * // Assign skills to a species
@@ -61,31 +61,31 @@ import gama.api.types.map.IMap;
  *         do wander;  // Action from moving skill
  *     }
  * }
- * 
+ *
  * // Multiple skills
  * species communicating_agent skills: [moving, messaging] {
  *     reflex send_message {
  *         do start_conversation to: [other_agent] protocol: 'fipa-request';
  *     }
  * }
- * 
+ *
  * // Access skill programmatically
  * skill moving_skill <- skill("moving");
- * 
+ *
  * // Check if agent has skill
  * bool has_moving <- agent1 has_skill moving;
- * 
+ *
  * // Add skill dynamically (advanced usage)
  * do add_skill(moving_skill);
  * }
  * </pre>
- * 
+ *
  * <h2>Skill Registration:</h2>
  * <p>
  * Skills are registered through the {@link gama.api.additions.registries.GamaSkillRegistry} by plugins during
  * initialization. Each skill defines its attributes (variables) and actions that become available to agents.
  * </p>
- * 
+ *
  * @author GAMA Development Team
  * @see GamaType
  * @see gama.api.kernel.skill.ISkill
@@ -104,7 +104,7 @@ public class GamaSkillType extends GamaType<ISkill> {
 
 	/**
 	 * Constructs a new skill type.
-	 * 
+	 *
 	 * @param typesManager
 	 *            the types manager responsible for type resolution and management
 	 */
@@ -122,7 +122,7 @@ public class GamaSkillType extends GamaType<ISkill> {
 	 * <li>Other types - returns null</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param obj
@@ -149,7 +149,7 @@ public class GamaSkillType extends GamaType<ISkill> {
 	 * <p>
 	 * The default skill is null, as there is no meaningful default skill.
 	 * </p>
-	 * 
+	 *
 	 * @return null
 	 */
 	@Override
@@ -160,7 +160,7 @@ public class GamaSkillType extends GamaType<ISkill> {
 	 * <p>
 	 * Skills can be constant as they are stateless singletons.
 	 * </p>
-	 * 
+	 *
 	 * @return true, skills can be constant
 	 */
 	@Override
@@ -173,7 +173,7 @@ public class GamaSkillType extends GamaType<ISkill> {
 	 * <p>
 	 * The JSON map should contain a "name" field with the skill name.
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param map2
@@ -182,7 +182,7 @@ public class GamaSkillType extends GamaType<ISkill> {
 	 */
 	@Override
 	public ISkill deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
-		return cast(scope, map2.get("name"), null, false);
+		return cast(scope, map2.get(IKeyword.NAME), null, false);
 	}
 
 }
