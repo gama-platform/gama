@@ -14,6 +14,7 @@ import java.awt.Color;
 import gama.annotations.getter;
 import gama.api.constants.IKeyword;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory.NamedGamaColor;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
 
@@ -37,8 +38,8 @@ import gama.api.utils.json.IJsonValue;
  * 
  * <h2>GAML Serialization</h2>
  * <p>
- * Colors serialize to GAML syntax as: {@code rgb(r, g, b, a)}. Named colors (created through
- * {@link NamedGamaColor}) use their name instead.
+ * Colors serialize to GAML syntax as: {@code rgb(r, g, b, a)}. Named colors (created through {@link NamedGamaColor})
+ * use their name instead.
  * </p>
  * 
  * <h2>JSON Serialization</h2>
@@ -167,8 +168,8 @@ class GamaColor implements IColor {
 	 * <li><strong>Alpha preservation:</strong> The alpha channel remains unchanged</li>
 	 * </ol>
 	 * <p>
-	 * The algorithm divides each non-zero RGB component by {@link #BRIGHTNESS_FACTOR} (0.7), effectively multiplying
-	 * by ~1.43, with a ceiling of 255.
+	 * The algorithm divides each non-zero RGB component by {@link #BRIGHTNESS_FACTOR} (0.7), effectively multiplying by
+	 * ~1.43, with a ceiling of 255.
 	 * </p>
 	 *
 	 * @return a new IColor instance that is brighter than this color
@@ -198,8 +199,8 @@ class GamaColor implements IColor {
 	/**
 	 * Creates a darker version of this color.
 	 * <p>
-	 * Multiplies each RGB component by {@link #BRIGHTNESS_FACTOR} (0.7), reducing brightness while maintaining hue.
-	 * The alpha channel is preserved. Components are floored at 0.
+	 * Multiplies each RGB component by {@link #BRIGHTNESS_FACTOR} (0.7), reducing brightness while maintaining hue. The
+	 * alpha channel is preserved. Components are floored at 0.
 	 * </p>
 	 *
 	 * @return a new IColor instance that is darker than this color
