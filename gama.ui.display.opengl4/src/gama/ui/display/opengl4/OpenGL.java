@@ -127,10 +127,10 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	private BasicShader basicShader;
 	private MatrixStack modelViewMatrix = new MatrixStack();
 	private MatrixStack projectionMatrix = new MatrixStack();
-	private int currentMatrixMode = GL4.GL_MODELVIEW;
+	private int currentMatrixMode = GLMatrixFunc.GL_MODELVIEW;
 
 	public MatrixStack getCurrentMatrixStack() {
-		return currentMatrixMode == GL4.GL_PROJECTION ? projectionMatrix : modelViewMatrix;
+		return currentMatrixMode == GLMatrixFunc.GL_PROJECTION ? projectionMatrix : modelViewMatrix;
 	}
 
 	/** The glut. */
@@ -144,7 +144,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	/** The current polygon mode. */
 	private int currentPolygonMode = GL4.GL_FILL;
-	private java.awt.Color currentColor = java.awt.Color.WHITE;
+	private IColor currentColor = GamaColorFactory.getWithDoubles(1, 1, 1, 1);
 
 	/** The picking state. */
 	// private final PickingHelper pickingState;
@@ -176,7 +176,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	/** The current color. */
 	// Colors
-	private IColor currentColor;
+
 
 	/** The current object alpha. */
 	private double currentObjectAlpha = 1d;
@@ -461,14 +461,14 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 					fH = fW / aspect;
 				}
 
-				gl.glFrustum(-fW, fW, -fH, fH, zNear, zFar);
+				getCurrentMatrixStack().frustum(-fW, fW, -fH, fH, zNear, zFar);
 			} catch (final BufferOverflowException e) {
 				DEBUG.ERR("Buffer overflow exception");
 			}
 		} else if (aspect >= 1.0) {
-			gl.glOrtho(-maxDim * aspect, maxDim * aspect, -maxDim, maxDim, maxDim * 10, -maxDim * 10);
+			getCurrentMatrixStack().ortho(-maxDim * aspect, maxDim * aspect, -maxDim, maxDim, maxDim * 10, -maxDim * 10);
 		} else {
-			gl.glOrtho(-maxDim, maxDim, -maxDim / aspect, maxDim / aspect, maxDim * 10, -maxDim * 10);
+			getCurrentMatrixStack().ortho(-maxDim, maxDim, -maxDim / aspect, maxDim / aspect, maxDim * 10, -maxDim * 10);
 		}
 
 		// else {
@@ -695,7 +695,6 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		// removed glDisableClientState
 	}
 
-	@Override
 	private static final int INITIAL_BUFFER_SIZE = 1024 * 64; // 64k floats
 	private FloatBuffer currentVertices = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
 	private FloatBuffer currentColors = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
@@ -724,7 +723,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	@Override
 	public void endDrawing() {
-		if (currentVertices.isEmpty()) return;
+		if (currentVertices.position() == 0) return;
 		if(basicShader == null) return;
 		basicShader.start();
 		int[] vao = new int[1];
@@ -734,33 +733,43 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		int[] vboVertices = new int[1];
 		gl.glGenBuffers(1, vboVertices, 0);
 		gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, vboVertices[0]);
-		float[] verticesArray = new float[currentVertices.size()];
-		for (int i = 0; i < currentVertices.size(); i++) verticesArray[i] = currentVertices.get(i);
-		gl.glBufferData(GL4.GL_ARRAY_BUFFER, verticesArray.length * 4, java.nio.FloatBuffer.wrap(verticesArray), GL4.GL_STATIC_DRAW);
+		currentVertices.flip();
+		gl.glBufferData(GL4.GL_ARRAY_BUFFER, currentVertices.limit() * 4, currentVertices, GL4.GL_STATIC_DRAW);
 		gl.glVertexAttribPointer(0, 3, GL4.GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(0);
 
 		int[] vboColors = new int[1];
 		gl.glGenBuffers(1, vboColors, 0);
 		gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, vboColors[0]);
-		float[] colorsArray = new float[currentColors.size()];
-		for (int i = 0; i < currentColors.size(); i++) colorsArray[i] = currentColors.get(i);
-		gl.glBufferData(GL4.GL_ARRAY_BUFFER, colorsArray.length * 4, java.nio.FloatBuffer.wrap(colorsArray), GL4.GL_STATIC_DRAW);
+		currentColors.flip();
+		gl.glBufferData(GL4.GL_ARRAY_BUFFER, currentColors.limit() * 4, currentColors, GL4.GL_STATIC_DRAW);
 		gl.glVertexAttribPointer(1, 4, GL4.GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(1);
+
+		int[] vboTex = new int[1];
+		boolean hasTex = false;
+		if (currentTexCoords.position() > 0) {
+			hasTex = true;
+			gl.glGenBuffers(1, vboTex, 0);
+			gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, vboTex[0]);
+			currentTexCoords.flip();
+			gl.glBufferData(GL4.GL_ARRAY_BUFFER, currentTexCoords.limit() * 4, currentTexCoords, GL4.GL_STATIC_DRAW);
+			gl.glVertexAttribPointer(2, 2, GL4.GL_FLOAT, false, 0, 0);
+			gl.glEnableVertexAttribArray(2);
+		}
 
 		basicShader.loadModelMatrix(modelViewMatrix.getCurrentMatrix());
 		basicShader.loadViewMatrix(new org.joml.Matrix4f().identity());
 		basicShader.loadProjectionMatrix(projectionMatrix.getCurrentMatrix());
-		basicShader.loadUseTexture(false);
+		basicShader.loadUseTexture(hasTex);
 
-		gl.glDrawArrays(currentDrawStyle, 0, verticesArray.length / 3);
+		gl.glDrawArrays(currentDrawStyle, 0, currentVertices.limit() / 3);
 
 		gl.glDeleteBuffers(1, vboVertices, 0);
 		gl.glDeleteBuffers(1, vboColors, 0);
+		if (hasTex) gl.glDeleteBuffers(1, vboTex, 0);
 		gl.glDeleteVertexArrays(1, vao, 0);
 		basicShader.stop();
-
 	}
 
 	/**
@@ -832,7 +841,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void rotateBy(final double angle, final double x, final double y, final double z) {
 		if (x == 0d && y == 0d && z == 0d) {
-			gl.rotateBy(angle, 0, 0, 1);
+			getCurrentMatrixStack().rotate(angle, 0, 0, 1);
 		} else {
 			getCurrentMatrixStack().rotate(angle, x, y, z);
 		}
@@ -980,7 +989,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param z
 	 */
 	public void outputVertex(final double x, final double y, final double z) {
-		gl.outputVertex(x, y, z + currentZTranslation);
+		ensureCapacity(currentVertices, 3);
+		currentVertices.put((float)x);
+		currentVertices.put((float)y);
+		currentVertices.put((float)(z + currentZTranslation));
+		ensureCapacity(currentColors, 4);
+		currentColors.put((float)(currentColor.getRed() / 255.0));
+		currentColors.put((float)(currentColor.getGreen() / 255.0));
+		currentColors.put((float)(currentColor.getBlue() / 255.0));
+		currentColors.put((float)(currentColor.getAlpha() / 255.0));
+		currentVertexCount++;
 	}
 
 	/**
@@ -992,7 +1010,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the v
 	 */
 	public void outputTexCoord(final double u, final double v) {
-		gl.outputTexCoord(u, v);
+		ensureCapacity(currentTexCoords, 2);
+		currentTexCoords.put((float)u);
+		currentTexCoords.put((float)v);
 	}
 
 	/**
@@ -1007,7 +1027,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void outputNormal(final double x, final double y, final double z) {
 		currentNormal.setLocation(x, y, z);
-		gl.outputNormal(x, y, z);
+		// gl.outputNormal(x, y, z);
 	}
 
 	/**
@@ -1022,7 +1042,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void drawVertex(final IPoint coords, final IPoint normal, final IPoint tex) {
 		if (normal != null) { outputNormal(normal.getX(), normal.getY(), normal.getZ()); }
-		if (tex != null) { gl.outputTexCoord(tex.getX(), tex.getY()); }
+		if (tex != null) { outputTexCoord(tex.getX(), tex.getY()); }
 		outputVertex(coords.getX(), coords.getY(), coords.getZ());
 	}
 
@@ -1149,7 +1169,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void setCurrentColor(final double red, final double green, final double blue, final double alpha) {
 		currentColor = GamaColorFactory.getWithDoubles(Math.max(red, 0), Math.max(green, 0), Math.max(blue, 0), alpha);
-		gl.setCurrentColor(red, green, blue, alpha);
+		// gl.setCurrentColor(red, green, blue, alpha);
 	}
 
 	/**
@@ -1353,7 +1373,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	public void rasterText(final String s, final int font, final double x, final double y, final double z) {
 		beginRasterTextMode();
 		final boolean previous = setObjectLighting(false);
-		gl.glRasterPos3d(x, y, z);
+		// gl.glRasterPos3d(x, y, z);
 		glut.glutBitmapString(font, s);
 		setObjectLighting(previous);
 		exitRasterTextMode();
@@ -1452,10 +1472,10 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the r
 	 */
 	public void runWithNames(final Runnable r) {
-		gl.glInitNames();
-		gl.glPushName(0);
+		// gl.glInitNames();
+		// gl.glPushName(0);
 		r.run();
-		gl.glPopName();
+		// gl.glPopName();
 	}
 
 	/**
@@ -1465,7 +1485,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the index
 	 */
 	public void registerForSelection(final int index) {
-		gl.glLoadName(index);
+		// gl.glLoadName(index);
 	}
 
 	// LISTS
@@ -1502,7 +1522,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the index
 	 */
 	public void deleteList(final Integer index) {
-		gl.getGL().glDeleteLists(index, 1);
+		// gl.getGL().glDeleteLists(index, 1);
 	}
 
 	/**
@@ -1698,7 +1718,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 		// Enable smooth shading, which blends colors nicely, and smoothes out
 		// lighting.
-		gl.glShadeModel(GLLightingFunc.GL_SMOOTH);
+		// gl.glShadeModel(GLLightingFunc.GL_SMOOTH);
 		// Enabling the depth buffer & the depth testing
 		gl.glClearDepth(1.0f);
 		gl.glEnable(GL.GL_DEPTH_TEST); // enables depth testing
@@ -1724,11 +1744,11 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		gl.glEnable(GL.GL_BLEND);
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 		// removed glTexEnvi
-		gl.glEnable(GL4.GL_ALPHA_TEST);
+		gl.glEnable(GL4.GL_DEPTH_TEST);
 		// removed glAlphaFunc(GL.GL_GREATER, 0.01f);
 		// Disabling line smoothing to only rely on FSAA
 		gl.glEnable(GL.GL_LINE_SMOOTH);
-		gl.glEnable(GL4.GL_POINT_SMOOTH);
+		gl.glEnable(GL4.GL_LINE_SMOOTH);
 		// gl.glEnable(GL4.GL_TRIANGLE_FAN_SMOOTH);
 		// Enabling forced normalization of normal vectors (important)
 		gl.glEnable(GLLightingFunc.GL_NORMALIZE);

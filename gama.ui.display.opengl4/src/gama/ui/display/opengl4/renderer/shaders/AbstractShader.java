@@ -15,7 +15,7 @@ import java.util.Scanner;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
-import com.jogamp.opengl.GL4ES2;
+import com.jogamp.opengl.GL4;
 
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
@@ -81,8 +81,8 @@ public abstract class AbstractShader {
 			return;
 		}
 
-		vertexShaderID = loadShader(vertexInputStream, GL4ES2.GL_VERTEX_SHADER);
-		fragmentShaderID = loadShader(fragmentInputStream, GL4ES2.GL_FRAGMENT_SHADER);
+		vertexShaderID = loadShader(vertexInputStream, GL4.GL_VERTEX_SHADER);
+		fragmentShaderID = loadShader(fragmentInputStream, GL4.GL_FRAGMENT_SHADER);
 
 		// Each shaderProgram must have
 		// one vertex shader and one fragment shader.
@@ -128,10 +128,10 @@ public abstract class AbstractShader {
 
 			// Check compile status.
 			final int[] compiled = new int[1];
-			gl.glGetShaderiv(shaderID, GL4ES2.GL_COMPILE_STATUS, compiled, 0);
+			gl.glGetShaderiv(shaderID, GL4.GL_COMPILE_STATUS, compiled, 0);
 			if (compiled[0] == 0) {
 				final int[] logLength = new int[1];
-				gl.glGetShaderiv(shaderID, GL4ES2.GL_INFO_LOG_LENGTH, logLength, 0);
+				gl.glGetShaderiv(shaderID, GL4.GL_INFO_LOG_LENGTH, logLength, 0);
 
 				final byte[] log = new byte[logLength[0]];
 				gl.glGetShaderInfoLog(shaderID, logLength[0], (int[]) null, 0, log, 0);

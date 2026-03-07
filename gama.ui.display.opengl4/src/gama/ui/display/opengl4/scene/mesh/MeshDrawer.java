@@ -16,7 +16,7 @@ import java.util.Locale;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL4ES2;
+import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.fixedfunc.GLPointerFunc;
 import com.jogamp.opengl.util.gl2.GLUT;
@@ -419,7 +419,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		final var ogl = gl.getGL();
 		// Forcing alpha
 		ogl.glBlendColor(0.0f, 0.0f, 0.0f, (float) gl.getCurrentObjectAlpha());
-		ogl.glBlendFunc(GL4ES2.GL_CONSTANT_ALPHA, GL4ES2.GL_ONE_MINUS_CONSTANT_ALPHA);
+		ogl.glBlendFunc(GL4.GL_CONSTANT_ALPHA, GL4.GL_ONE_MINUS_CONSTANT_ALPHA);
 		gl.beginDrawing(GL.GL_TRIANGLES);
 		for (var index = 0; index < indexBuffer.limit(); index++) {
 			var i = indexBuffer.get(index);
@@ -436,7 +436,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 			}
 			if (outputsTextures) { gl.outputTexCoord(texBuffer.get(i * 2), texBuffer.get(i * 2 + 1)); }
 			gl.outputNormal(normalBuffer.get(one), normalBuffer.get(two), normalBuffer.get(three));
-			ogl.outputVertex(vertexBuffer.get(one), vertexBuffer.get(two), vertexBuffer.get(three));
+			gl.outputVertex(vertexBuffer.get(one), vertexBuffer.get(two), vertexBuffer.get(three));
 		}
 		if (outputsLines) {
 			boolean previous = gl.setObjectWireframe(true);
@@ -471,25 +471,25 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 				if (isTexture) {
 					gl.outputTexCoord(0, 0);
 				} else if (isZ_is_color) {
-					setColor(z1);
+					setColor(z1, i, j);
 				}
 				gl.outputVertex(i * x_step, j * y_step, z1 - z_shift);
 				if (isTexture) {
 					gl.outputTexCoord(1, 0);
 				} else if (isZ_is_color) {
-					setColor(z2);
+					setColor(z2, i + 1, j);
 				}
 				gl.outputVertex((i + 1) * x_step, j * y_step, z2 - z_shift);
 				if (isTexture) {
 					gl.outputTexCoord(1, 1);
 				} else if (isZ_is_color) {
-					setColor(z3);
+					setColor(z3, i + 1, j + 1);
 				}
 				gl.outputVertex((i + 1) * x_step, (j + 1) * y_step, z3 - z_shift);
 				if (isTexture) {
 					gl.outputTexCoord(0, 1);
 				} else if (isZ_is_color) {
-					setColor(z4);
+					setColor(z4, i, j + 1);
 				}
 				gl.outputVertex(i * x_step, (j + 1) * y_step, z4 - z_shift);
 			}
@@ -506,7 +506,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		final var ogl = gl.getGL();
 		// Forcing alpha
 		ogl.glBlendColor(0.0f, 0.0f, 0.0f, (float) gl.getCurrentObjectAlpha());
-		ogl.glBlendFunc(GL4ES2.GL_CONSTANT_ALPHA, GL4ES2.GL_ONE_MINUS_CONSTANT_ALPHA);
+		ogl.glBlendFunc(GL4.GL_CONSTANT_ALPHA, GL4.GL_ONE_MINUS_CONSTANT_ALPHA);
 
 		// VBO Management
 		if (useVBO) {
@@ -569,7 +569,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 			}
 
 			if (!gl.isWireframe()) {
-				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, indexBuffer);
+				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, 0);
 			}
 			if (outputsLines) {
 				if (!outputsColors) { gl.enable(GLPointerFunc.GL_COLOR_ARRAY); }
@@ -580,7 +580,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 					// removed glColorPointer
 				}
 				boolean previous = gl.setObjectWireframe(true);
-				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, indexBuffer);
+				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, 0);
 				gl.setObjectWireframe(previous);
 			}
 
@@ -623,7 +623,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		gl.beginRasterTextMode();
 		final var previous = gl.setObjectLighting(false);
 		for (var i = 0; i < strings.length; i++) {
-			gl.getGL().glRasterPos3d(coords[i * 3], coords[i * 3 + 1], coords[i * 3 + 2] + gl.getCurrentZTranslation());
+			// gl.getGL().glRasterPos3d(coords[i * 3], coords[i * 3 + 1], coords[i * 3 + 2] + gl.getCurrentZTranslation());
 			gl.getGlut().glutBitmapString(GLUT.BITMAP_TIMES_ROMAN_10, strings[i]);
 		}
 		gl.setObjectLighting(previous);

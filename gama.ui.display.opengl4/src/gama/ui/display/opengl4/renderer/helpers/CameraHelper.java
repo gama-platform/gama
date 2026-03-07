@@ -15,7 +15,7 @@ import java.util.Collection;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL4ES2;
+import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLRunnable;
 import com.jogamp.opengl.glu.GLU;
 
@@ -357,8 +357,8 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		double cp = Math.cos(pr);
 		up.setLocation(-Math.cos(tr) * cp, -Math.sin(tr) * cp, Math.sin(pr));
 		if (flipped) { up.negate(); }
-		openGL.getCurrentMatrixStack().getCurrentMatrix().lookAt((float)position.getX(), (float)position.getY(), (float)position.getZ(), (float)target.getX(), (float)target.getY(), (float)target.getZ(),
-				up.getX(), up.getY(), up.getZ());
+		renderer.getOpenGLHelper().getCurrentMatrixStack().getCurrentMatrix().lookAt((float)position.getX(), (float)position.getY(), (float)position.getZ(), (float)target.getX(), (float)target.getY(), (float)target.getZ(),
+				(float)up.getX(), (float)up.getY(), (float)up.getZ());
 	}
 
 	/*------------------ Events controls ---------------------*/
@@ -738,7 +738,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		final int x = mouse_x;
 		final int y = viewport[3] - mouse_y;
 		pixelDepth.rewind();
-		gl.getGL().glReadPixels(x, y, 1, 1, GL4ES2.GL_DEPTH_COMPONENT, GL.GL_FLOAT, pixelDepth);
+		gl.getGL().glReadPixels(x, y, 1, 1, GL4.GL_DEPTH_COMPONENT, GL.GL_FLOAT, pixelDepth);
 		double z = pixelDepth.get(0);
 
 		if (z == 1d || z == 0d) {
@@ -816,84 +816,45 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	@Override
 	public IOpenGLRenderer getRenderer() { return renderer; }
 
+	public void handleGlobalKeystrokes(final com.jogamp.newt.event.KeyEvent e) {
+		switch (e.getKeySymbol()) {
+			case com.jogamp.newt.event.KeyEvent.VK_ESCAPE: {
+				if (!getRenderer().getSurface().isEscRedefined()) { ViewsHelper.toggleFullScreenMode(); }
+				return;
+			}
+			case 'p':
+			case 'P':
+				if (isControlDown(e)) {
+					if (e.isShiftDown()) {
+						GAMA.stepFrontmostExperiment(false);
+					} else {
+						GAMA.startPauseFrontmostExperiment(false);
+					}
+					return;
+				}
+				break;
+			case 'R':
+			case 'r':
+				if (isControlDown(e)) {
+					if (e.isShiftDown()) {
+						GAMA.relaunchFrontmostExperiment();
+					} else {
+						GAMA.reloadFrontmostExperiment(false);
+					}
+					return;
+				}
+				break;
+			case 'X':
+			case 'x': {
+				if (isControlDown(e) && e.isShiftDown()) {
+					GAMA.closeAllExperiments(true, false);
+					return;
+				}
+			}
+		}
+	}
 	@Override
-	private void handleGlobalKeystrokes(final com.jogamp.newt.event.KeyEvent e) {
-		switch (e.getKeySymbol()) {
-			case com.jogamp.newt.event.KeyEvent.VK_ESCAPE: {
-				if (!getRenderer().getSurface().isEscRedefined()) { ViewsHelper.toggleFullScreenMode(); }
-				return;
-			}
-			case 'p':
-			case 'P':
-				if (isControlDown(e)) {
-					if (e.isShiftDown()) {
-						GAMA.stepFrontmostExperiment(false);
-					} else {
-						GAMA.startPauseFrontmostExperiment(false);
-					}
-					return;
-				}
-				break;
-			case 'R':
-			case 'r':
-				if (isControlDown(e)) {
-					if (e.isShiftDown()) {
-						GAMA.relaunchFrontmostExperiment();
-					} else {
-						GAMA.reloadFrontmostExperiment(false);
-					}
-					return;
-				}
-				break;
-			case 'X':
-			case 'x': {
-				if (isControlDown(e) && e.isShiftDown()) {
-					GAMA.closeAllExperiments(true, false);
-					return;
-				}
-			}
-		}
-	}
-	private void handleGlobalKeystrokes(final com.jogamp.newt.event.KeyEvent e) {
-		switch (e.getKeySymbol()) {
-			case com.jogamp.newt.event.KeyEvent.VK_ESCAPE: {
-				if (!getRenderer().getSurface().isEscRedefined()) { ViewsHelper.toggleFullScreenMode(); }
-				return;
-			}
-			case 'p':
-			case 'P':
-				if (isControlDown(e)) {
-					if (e.isShiftDown()) {
-						GAMA.stepFrontmostExperiment(false);
-					} else {
-						GAMA.startPauseFrontmostExperiment(false);
-					}
-					return;
-				}
-				break;
-			case 'R':
-			case 'r':
-				if (isControlDown(e)) {
-					if (e.isShiftDown()) {
-						GAMA.relaunchFrontmostExperiment();
-					} else {
-						GAMA.reloadFrontmostExperiment(false);
-					}
-					return;
-				}
-				break;
-			case 'X':
-			case 'x': {
-				if (isControlDown(e) && e.isShiftDown()) {
-					GAMA.closeAllExperiments(true, false);
-					return;
-				}
-			}
-		}
-	}
-
-
-	public final void keyPressed(final com.jogamp.newt.event.KeyEvent e) {
+	public void keyPressed(final com.jogamp.newt.event.KeyEvent e) {
 
 		handleGlobalKeystrokes(e);
 
@@ -1057,7 +1018,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	}
 
 	@Override
-	public final void keyReleased(final com.jogamp.newt.event.KeyEvent e) {
+	public void keyReleased(final com.jogamp.newt.event.KeyEvent e) {
 
 		invokeOnGLThread(drawable -> {
 			if (!keystoneMode) {

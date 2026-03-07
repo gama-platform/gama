@@ -248,13 +248,13 @@ public class KeystoneHelper extends AbstractRendererHelper {
 			drawRectangle(openGL, xLabelIn01, yLabelIn01, z, labelWidthIn01, labelHeightIn01, FILL_COLORS[fill]);
 
 			// Setting back the color to white
-			gl.setCurrentColor(java.awt.Color.WHITE);
+			openGL.setCurrentColor(gama.api.types.color.GamaColorFactory.WHITE);
 			// Drawing the text itself
 			final double xPosIn01 = id == 0 || id == 1 ? 10 * pixelWidthIn01 + (worldCorners ? xOffsetIn01 : 0)
 					: 1 - labelWidthIn01 + 10 * pixelWidthIn01 - (worldCorners ? xOffsetIn01 : 0);
 			final double yPosIn01 = id == 0 || id == 3 ? 12 * pixelHeightIn01 + (worldCorners ? yOffsetIn01 : 0)
 					: 1 - labelHeightIn01 + 12 * pixelHeightIn01 - (worldCorners ? yOffsetIn01 : 0);
-			openGL.getGL().glRasterPos2d(xPosIn01, yPosIn01);
+			// openGL.getGL().glRasterPos2d(xPosIn01, yPosIn01);
 			openGL.getGlut().glutBitmapString(GLUT.BITMAP_HELVETICA_18, text);
 		}, 4, true);
 		openGL.pop(GLMatrixFunc.GL_MODELVIEW);
