@@ -43,6 +43,7 @@ import org.eclipse.xtext.util.CancelIndicator;
 
 import com.google.inject.Inject;
 
+import gama.api.constants.IKeyword;
 import gama.api.utils.StringUtils;
 import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.EGaml;
@@ -142,7 +143,7 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 					setStyle(object, ASSIGN_ID, 0);
 				} else {
 					setStyle(object, FACET_ID, 0);
-					if (key.startsWith("type")) {
+					if (key.startsWith(IKeyword.TYPE)) {
 						setStyle(TYPE_ID, NodeModelUtils.getNode(f.getExpr()));
 					} else if (f.getName() != null) { setStyle(object, VARDEF_ID, 1); }
 				}

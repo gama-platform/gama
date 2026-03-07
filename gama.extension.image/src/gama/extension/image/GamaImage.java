@@ -374,7 +374,7 @@ public class GamaImage extends BufferedImage implements IImageProvider, IFieldMa
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType(), "width", getWidth(), "height", getHeight(), "type", getType(), "pixels",
+		return json.typedObject(getGamlType(), "width", getWidth(), "height", getHeight(), IKeyword.TYPE, getType(), "pixels",
 				ImageOperators.matrix(null, this));
 	}
 

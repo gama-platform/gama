@@ -47,6 +47,7 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;
 import gama.annotations.support.IConcept;
+import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -471,7 +472,7 @@ public class GamaOsmFile extends GamaGisFile {
 				if (RESERVED_KEYS.contains(key)) { continue; }
 				values.put(key, tg.getValue());
 			}
-			String type = (String) values.get("type");
+			String type = (String) values.get(IKeyword.TYPE);
 			if ("polygon".equals(type) || "multipolygon".equals(type)) {
 
 				managePolygonRelation(scope, relation, geometries, geomMap, values, nodesPt, intersectionNodes, atts);

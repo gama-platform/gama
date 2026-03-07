@@ -24,6 +24,7 @@ import javax.imageio.ImageIO;
 import org.java_websocket.WebSocket;
 
 import gama.api.compilation.GamlCompilationError;
+import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaCompilationFailedException;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Types;
@@ -144,7 +145,7 @@ public class GamaServerExperimentJob extends ExperimentJob {
 			final ExperimentSpecies curExperiment = (ExperimentSpecies) simulator.getExperimentPlan();
 			for (var param : params.listValue(null, Types.MAP, false)) {
 				IMap<String, Object> m = (IMap<String, Object>) param;
-				String type = m.get("type").toString();
+				String type = m.get(IKeyword.TYPE).toString();
 				Object v = m.get("value");
 				if ("int".equals(type)) { v = Integer.valueOf("" + m.get("value")); }
 				if ("float".equals(type)) { v = Double.valueOf("" + m.get("value")); }

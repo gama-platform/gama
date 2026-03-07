@@ -438,7 +438,7 @@ public class Assert implements gama.api.constants.IKeyword {
 		if (!manager.containsType(name)) return true;
 		final String type = "It cannot be used as a "
 				+ (cd instanceof IVariableDescription ? "variable" : cd.getKeyword()) + " name.";
-		final String species = manager.get(name).isAgentType() ? "species" : "type";
+		final String species = manager.get(name).isAgentType() ? "species" : IKeyword.TYPE;
 		cd.error(name + " is a " + species + " name. " + type, IGamlIssue.IS_A_TYPE, NAME, name);
 		return false;
 	}

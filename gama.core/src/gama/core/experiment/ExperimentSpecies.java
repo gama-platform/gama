@@ -1054,7 +1054,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 			var scope = getExperimentScope();
 			for (var param : p.listValue(null, Types.MAP, false)) {
 				@SuppressWarnings ("unchecked") IMap<String, Object> m = (IMap<String, Object>) param;
-				String type = m.get("type") != null ? m.get("type").toString() : "";
+				String type = m.get(IKeyword.TYPE) != null ? m.get(IKeyword.TYPE).toString() : "";
 				Object v = m.get("value");
 				if ("int".equals(type)) { v = Integer.valueOf("" + m.get("value")); }
 				if ("float".equals(type)) { v = Double.valueOf("" + m.get("value")); }

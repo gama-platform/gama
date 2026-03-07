@@ -543,7 +543,7 @@ public class DefaultServerCommands {
 		for (IVariable variable : species.getVars()) {
 			Map<String, String> resVariable = new HashMap<>();
 			resVariable.put("name", variable.getName());
-			resVariable.put("type", variable.getType().getName());
+			resVariable.put(IKeyword.TYPE, variable.getType().getName());
 			allVariables.add(resVariable);
 		}
 		return allVariables;
@@ -566,12 +566,12 @@ public class DefaultServerCommands {
 			for (var arg : actionDescription.getFormalArgs()) {
 				Map<String, String> command = new HashMap<>();
 				command.put("name", arg.getName());
-				command.put("type", arg.getGamlType().getName());
+				command.put(IKeyword.TYPE, arg.getGamlType().getName());
 				resAllCommands.add(command);
 			}
 
 			resAction.put("parameters", resAllCommands);
-			resAction.put("type", actionDescription.getGamlType().getName());
+			resAction.put(IKeyword.TYPE, actionDescription.getGamlType().getName());
 			allActions.add(resAction);
 		}
 		return allActions;
@@ -627,7 +627,7 @@ public class DefaultServerCommands {
 				IParameter param = paramEntry.getValue();
 				resParam.put("name", param.getName());
 				resParam.put("description", param.getTitle());
-				resParam.put("type", param.getType().toString());
+				resParam.put(IKeyword.TYPE, param.getType().toString());
 				resAllParams.add(resParam);
 			}
 			resExp.put("parameters", resAllParams);
