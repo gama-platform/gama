@@ -195,7 +195,7 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	private void drawRectangle(final OpenGL openGL, final double centerX, final double centerY, final double centerZ,
 			final double width, final double height, final IColor fill) {
 		openGL.pushMatrix();
-		openGL.translateBy(centerX, centerY, centerY);
+		openGL.translateBy(centerX, centerY, centerZ);
 		openGL.setCurrentColor(fill);
 		openGL.scaleBy(Scaling3D.of(width, height, 1));
 		openGL.drawCachedGeometry(IShape.Type.SQUARE, null);

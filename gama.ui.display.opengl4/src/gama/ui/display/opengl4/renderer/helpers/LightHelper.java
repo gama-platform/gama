@@ -10,12 +10,8 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl4.renderer.helpers;
 
-import static com.jogamp.opengl.fixedfunc.GLLightingFunc.GL_LIGHT0;
-
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
-import com.jogamp.opengl.GL4;
-import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.util.gl2.GLUT;
 
 import gama.api.types.color.GamaColorFactory;
@@ -79,13 +75,12 @@ public class LightHelper extends AbstractRendererHelper {
 		final double worldHeight = getRenderer().getEnvHeight();
 		getData().getLights().forEach((name, light) -> {
 			if (ILightDefinition.ambient.equals(name)) return;
-			int id = GL_LIGHT0 + light.getId();
+			// GL_LIGHT0..GL_LIGHT7 and glEnable/glDisable for individual lights are removed in GL4 core profile.
+			// Light properties must be passed to shaders via uniforms instead.
 			if (light.isActive()) {
 				String type = light.getType();
 				IColor c = light.getIntensity();
-				gl.glEnable(id);
-				final float[] color = { c.red() / 255.0f, c.green() / 255.0f, c.blue() / 255.0f, c.alpha() / 255.0f };
-				// removed glLightfv
+				// Note: glLightfv/glLightf calls removed (fixed-function lighting not available in GL4 core).
 				float[] lightPosition;
 				if (ILightDefinition.direction.equals(type)) {
 					IPoint p = light.getDirection();
@@ -94,32 +89,12 @@ public class LightHelper extends AbstractRendererHelper {
 					IPoint p = light.getLocation();
 					lightPosition = new float[] { (float) p.getX(), -(float) p.getY(), (float) p.getZ(), 1 };
 				}
-				// removed glLightfv
-				// Get and set the attenuation (if it is not a direction light)
-				if (!ILightDefinition.direction.equals(type)) {
-					final double ca = light.getConstantAttenuation();
-					final double l = light.getLinearAttenuation();
-					final double q = light.getQuadraticAttenuation();
-					// removed glLightf
-					// removed glLightf
-					// removed glLightf
-				}
-				// Get and set spot properties (if the light is a spot light)
-				if (ILightDefinition.spot.equals(type)) {
-					IPoint p = light.getDirection();
-					float[] spotLight = { (float) p.getX(), -(float) p.getY(), (float) p.getZ(), 0 };
-					// removed glLightfv
-					final double spotAngle = light.getAngle();
-					// removed glLightf
-				}
 				if (light.isDrawing()) {
 					// disable the lighting during the time the light is drawn
 					final boolean previous = openGL.setObjectLighting(false);
 					drawLight(openGL, size, worldWidth, worldHeight, light, lightPosition);
 					openGL.setObjectLighting(previous);
 				}
-			} else {
-				gl.glDisable(id);
 			}
 		});
 

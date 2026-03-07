@@ -16,9 +16,8 @@ import java.util.Locale;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.GL4;
-import com.jogamp.opengl.GL4;
-import com.jogamp.opengl.fixedfunc.GLPointerFunc;
 import com.jogamp.opengl.util.gl2.GLUT;
 
 import gama.api.types.color.GamaColorFactory;
@@ -109,9 +108,6 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 
 	/** A temporary transfer value for the normal */
 	final IPoint normal = GamaPointFactory.create();
-
-	/** Does this drawer use VBOs or Vertex Arrays ?. */
-	private final boolean useVBO = true;
 
 	/** The vbo ids. */
 	private int[] vboIds;
@@ -442,8 +438,9 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 			boolean previous = gl.setObjectWireframe(true);
 			for (var index = 0; index < indexBuffer.limit(); index++) {
 				var i = indexBuffer.get(index);
-				gl.setCurrentColor(lineColorBuffer.get(i * 3), lineColorBuffer.get(i * 3 + 1),
-						lineColorBuffer.get(i * 3 + 2), lineColorBuffer.get(i * 3 + 4));
+				// lineColorBuffer has 4 components per vertex (RGBA)
+				gl.setCurrentColor(lineColorBuffer.get(i * 4), lineColorBuffer.get(i * 4 + 1),
+						lineColorBuffer.get(i * 4 + 2), lineColorBuffer.get(i * 4 + 3));
 				gl.outputVertex(vertexBuffer.get(i * 3), vertexBuffer.get(i * 3 + 1), vertexBuffer.get(i * 3 + 2));
 			}
 			gl.setObjectWireframe(previous);
@@ -508,94 +505,84 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 		ogl.glBlendColor(0.0f, 0.0f, 0.0f, (float) gl.getCurrentObjectAlpha());
 		ogl.glBlendFunc(GL4.GL_CONSTANT_ALPHA, GL4.GL_ONE_MINUS_CONSTANT_ALPHA);
 
-		// VBO Management
-		if (useVBO) {
-			if (vboIds == null) {
-				vboIds = new int[5]; // Vertex, Normal, Tex, Color, LineColor
-				ogl.glGenBuffers(5, vboIds, 0);
-			}
-			// Bind and upload Data
-			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
-			ogl.glBufferData(GL.GL_ARRAY_BUFFER, vertexBuffer.capacity() * Double.BYTES, vertexBuffer,
-					GL.GL_DYNAMIC_DRAW);
-			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[1]);
-			ogl.glBufferData(GL.GL_ARRAY_BUFFER, normalBuffer.capacity() * Double.BYTES, normalBuffer,
-					GL.GL_DYNAMIC_DRAW);
-			if (outputsTextures) {
-				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[2]);
-				ogl.glBufferData(GL.GL_ARRAY_BUFFER, texBuffer.capacity() * Double.BYTES, texBuffer,
-						GL.GL_DYNAMIC_DRAW);
-			}
-			if (outputsColors) {
-				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
-				ogl.glBufferData(GL.GL_ARRAY_BUFFER, colorBuffer.capacity() * Double.BYTES, colorBuffer,
-						GL.GL_DYNAMIC_DRAW);
-			}
-			if (outputsLines) {
-				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[4]);
-				ogl.glBufferData(GL.GL_ARRAY_BUFFER, lineColorBuffer.capacity() * Double.BYTES, lineColorBuffer,
-						GL.GL_DYNAMIC_DRAW);
-			}
+		// VBO + IBO + VAO management (GL4 core: no legacy client-state arrays)
+		// vboIds: 0=Vertex, 1=Normal, 2=Tex, 3=Color, 4=LineColor, 5=IndexBuffer(IBO)
+		if (vboIds == null) {
+			vboIds = new int[6];
+			ogl.glGenBuffers(6, vboIds, 0);
 		}
 
-		gl.enable(GLPointerFunc.GL_VERTEX_ARRAY);
-		gl.enable(GLPointerFunc.GL_NORMAL_ARRAY);
+		// Upload vertex data
+		ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
+		ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) vertexBuffer.capacity() * Double.BYTES, vertexBuffer,
+				GL.GL_DYNAMIC_DRAW);
+		ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[1]);
+		ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) normalBuffer.capacity() * Double.BYTES, normalBuffer,
+				GL.GL_DYNAMIC_DRAW);
 		if (outputsTextures) {
-			gl.enable(GLPointerFunc.GL_TEXTURE_COORD_ARRAY);
-		} else {
-			ogl.glDisable(GL.GL_TEXTURE_2D);
+			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[2]);
+			ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) texBuffer.capacity() * Double.BYTES, texBuffer,
+					GL.GL_DYNAMIC_DRAW);
 		}
-		if (outputsColors) { gl.enable(GLPointerFunc.GL_COLOR_ARRAY); }
+		if (outputsColors) {
+			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
+			ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) colorBuffer.capacity() * Double.BYTES, colorBuffer,
+					GL.GL_DYNAMIC_DRAW);
+		}
+		if (outputsLines) {
+			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[4]);
+			ogl.glBufferData(GL.GL_ARRAY_BUFFER, (long) lineColorBuffer.capacity() * Double.BYTES, lineColorBuffer,
+					GL.GL_DYNAMIC_DRAW);
+		}
+
+		// Upload index data to the element-array VBO
+		indexBuffer.rewind();
+		ogl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vboIds[5]);
+		ogl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, (long) indexBuffer.limit() * Integer.BYTES, indexBuffer,
+				GL.GL_DYNAMIC_DRAW);
+
+		// Wire attribute 0 = position (3 × double)
+		ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
+		ogl.glVertexAttribPointer(0, 3, GL2GL3.GL_DOUBLE, false, 0, 0);
+		ogl.glEnableVertexAttribArray(0);
+
+		// Wire attribute 1 = color (4 × double) when drawing filled
+		if (outputsColors) {
+			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
+			ogl.glVertexAttribPointer(1, 4, GL2GL3.GL_DOUBLE, false, 0, 0);
+			ogl.glEnableVertexAttribArray(1);
+		}
+
+		// Wire attribute 2 = tex coords (2 × double)
+		if (outputsTextures) {
+			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[2]);
+			ogl.glVertexAttribPointer(2, 2, GL2GL3.GL_DOUBLE, false, 0, 0);
+			ogl.glEnableVertexAttribArray(2);
+		}
+
 		try {
-			if (useVBO) {
-				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
-				// removed glVertexPointer
-				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[1]);
-				// removed glNormalPointer
-				if (outputsTextures) {
-					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[2]);
-					// removed glTexCoordPointer
-				}
-				if (outputsColors) {
-					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
-					// removed glColorPointer
-				}
-			} else {
-				// removed glVertexPointer
-				// removed glNormalPointer
-
-				// removed glTexCoordPointer
-				// removed glColorPointer
-			}
-
 			if (!gl.isWireframe()) {
-				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, 0);
+				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, 0L);
 			}
 			if (outputsLines) {
-				if (!outputsColors) { gl.enable(GLPointerFunc.GL_COLOR_ARRAY); }
-				if (useVBO) {
-					ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[4]);
-					// removed glColorPointer
-				} else {
-					// removed glColorPointer
-				}
+				// Switch attribute 1 to the line-color buffer
+				ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[4]);
+				ogl.glVertexAttribPointer(1, 4, GL2GL3.GL_DOUBLE, false, 0, 0);
+				ogl.glEnableVertexAttribArray(1);
 				boolean previous = gl.setObjectWireframe(true);
-				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, 0);
+				ogl.glDrawElements(GL.GL_TRIANGLES, indexBuffer.limit(), GL.GL_UNSIGNED_INT, 0L);
 				gl.setObjectWireframe(previous);
 			}
-
 		} finally {
-			if (useVBO) { ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0); }
-			gl.disable(GLPointerFunc.GL_NORMAL_ARRAY);
-			if (outputsTextures) { gl.disable(GLPointerFunc.GL_TEXTURE_COORD_ARRAY); }
-			if (outputsColors || outputsLines) { gl.disable(GLPointerFunc.GL_COLOR_ARRAY); }
-			gl.disable(GLPointerFunc.GL_VERTEX_ARRAY);
+			ogl.glDisableVertexAttribArray(0);
+			ogl.glDisableVertexAttribArray(1);
+			if (outputsTextures) { ogl.glDisableVertexAttribArray(2); }
+			ogl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+			ogl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, 0);
 			// Putting back alpha to normal
 			ogl.glBlendColor(0.0f, 0.0f, 0.0f, 0.0f);
 			ogl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-
 		}
-
 	}
 
 	/**

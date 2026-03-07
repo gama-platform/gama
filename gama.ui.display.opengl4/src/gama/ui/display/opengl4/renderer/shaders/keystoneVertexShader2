@@ -1,21 +1,12 @@
-#if __VERSION__ >= 130
-	#define attribute in
-	#define varying out
-#endif
+#version 410 core
 
-#ifdef GL_ES
-	precision mediump float;
-	precision mediump int;
-#endif
+layout (location = 0) in vec3  attribute_Position;
+layout (location = 3) in vec4  attribute_TextureCoords3D;
 
-attribute vec3  attribute_Position;
-attribute vec4  attribute_TextureCoords3D;
-
-varying vec4    pass_textureCoords;
-
+out vec4 pass_textureCoords;
 
 void main(void)
 {
 	pass_textureCoords = attribute_TextureCoords3D;
-	gl_Position = vec4(attribute_Position.xy,0.0,1.0);
+	gl_Position = vec4(attribute_Position.xy, 0.0, 1.0);
 }

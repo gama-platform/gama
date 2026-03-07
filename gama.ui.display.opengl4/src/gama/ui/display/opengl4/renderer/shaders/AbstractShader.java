@@ -15,7 +15,6 @@ import java.util.Scanner;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
-import com.jogamp.opengl.GL4;
 
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
@@ -123,8 +122,6 @@ public abstract class AbstractShader {
 			final int[] vlengths = { vlines[0].length() };
 			gl.glShaderSource(shaderID, vlines.length, vlines, vlengths, 0);
 			gl.glCompileShader(shaderID);
-			gl.glEnable(GL.GL_BLEND);
-			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 
 			// Check compile status.
 			final int[] compiled = new int[1];

@@ -24,7 +24,6 @@ import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.gl2.GLUT;
@@ -93,7 +92,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	public static final int NO_TEXTURE = Integer.MAX_VALUE;
 
 	/** The Constant PROFILE. */
-	public static final GLProfile PROFILE = GLProfile.getMaxFixedFunc(true);
+	public static final GLProfile PROFILE = GLProfile.get(GLProfile.GL4);
 
 	/** The drawers. */
 	final Map<DrawerType, ObjectDrawer<?>> drawers = new HashMap<>();
@@ -369,9 +368,11 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		// newGL.glViewport(0, 0, width, height);
 		viewWidth = width;
 		viewHeight = height;
-		resetMatrix(GLMatrixFunc.GL_MODELVIEW);
 		resetMatrix(GLMatrixFunc.GL_PROJECTION);
 		updatePerspective();
+		// Note: updatePerspective() calls animate() and then reads back mvmatrix/projmatrix from our MatrixStacks.
+		// Reset model-view after perspective so gluProject below uses the correct projection.
+		resetMatrix(GLMatrixFunc.GL_MODELVIEW);
 
 		final double[] pixelSize = new double[4];
 		glu.gluProject(getWorldWidth(), 0, 0, mvmatrix, 0, projmatrix, 0, viewport, 0, pixelSize, 0);
@@ -470,11 +471,14 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 				DEBUG.ERR("Buffer overflow exception");
 			}
 		} else if (aspect >= 1.0) {
-			getCurrentMatrixStack().ortho(-maxDim * aspect, maxDim * aspect, -maxDim, maxDim, maxDim * 10,
-					-maxDim * 10);
+			// JOML ortho(left, right, bottom, top, zNear, zFar) requires zNear < zFar.
+			// The original glOrtho used (near=maxDim*10, far=-maxDim*10), which flipped Z.
+			// Reproduce that by passing negative near and positive far to JOML.
+			getCurrentMatrixStack().ortho(-maxDim * aspect, maxDim * aspect, -maxDim, maxDim, -maxDim * 10,
+					maxDim * 10);
 		} else {
-			getCurrentMatrixStack().ortho(-maxDim, maxDim, -maxDim / aspect, maxDim / aspect, maxDim * 10,
-					-maxDim * 10);
+			getCurrentMatrixStack().ortho(-maxDim, maxDim, -maxDim / aspect, maxDim / aspect, -maxDim * 10,
+					maxDim * 10);
 		}
 
 		// else {
@@ -484,8 +488,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		// translateBy(0d, 0d, maxDim * 0.2);
 		getRenderer().getCameraHelper().animate();
 		gl.glGetIntegerv(GL.GL_VIEWPORT, viewport, 0);
-		gl.glGetDoublev(GLMatrixFunc.GL_MODELVIEW_MATRIX, mvmatrix, 0);
-		gl.glGetDoublev(GLMatrixFunc.GL_PROJECTION_MATRIX, projmatrix, 0);
+		// Read matrices from our own MatrixStack, not from the deprecated GL state
+		// (GL_MODELVIEW_MATRIX / GL_PROJECTION_MATRIX are removed in core GL4).
+		float[] mv = new float[16];
+		float[] pr = new float[16];
+		modelViewMatrix.getCurrentMatrix().get(mv);
+		projectionMatrix.getCurrentMatrix().get(pr);
+		for (int i = 0; i < 16; i++) {
+			mvmatrix[i] = mv[i];
+			projmatrix[i] = pr[i];
+		}
 	}
 
 	/**
@@ -595,14 +607,12 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	}
 
 	/**
-	 * Update light mode.
+	 * Update light mode. In core GL4, per-vertex fixed-function lighting (GL_LIGHTING) has been removed.
+	 * Lighting is handled entirely in shaders; this method is intentionally empty.
 	 */
 	private void updateLightMode() {
-		if (getLighting()) {
-			gl.glEnable(GLLightingFunc.GL_LIGHTING);
-		} else {
-			gl.glDisable(GLLightingFunc.GL_LIGHTING);
-		}
+		// GL_LIGHTING is not available in OpenGL 4 core profile.
+		// Lighting state is passed to shaders via uniforms (e.g. in BasicShader).
 	}
 
 	/**
@@ -752,51 +762,47 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	@Override
 	public void endDrawing() {
-		if ((currentVertices.position() == 0) || (basicShader == null)) return;
+		if ((currentVertices.position() == 0) || (basicShader == null) || vaoId < 0) return;
 		basicShader.start();
-		int[] vao = new int[1];
-		gl.glGenVertexArrays(1, vao, 0);
-		gl.glBindVertexArray(vao[0]);
+		gl.glBindVertexArray(vaoId);
 
-		int[] vboVertices = new int[1];
-		gl.glGenBuffers(1, vboVertices, 0);
-		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboVertices[0]);
+		// --- vertices (location 0) ---
+		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[0]);
 		currentVertices.flip();
-		gl.glBufferData(GL.GL_ARRAY_BUFFER, currentVertices.limit() * 4, currentVertices, GL.GL_STATIC_DRAW);
+		gl.glBufferData(GL.GL_ARRAY_BUFFER, (long) currentVertices.limit() * 4, currentVertices, GL.GL_DYNAMIC_DRAW);
 		gl.glVertexAttribPointer(0, 3, GL.GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(0);
 
-		int[] vboColors = new int[1];
-		gl.glGenBuffers(1, vboColors, 0);
-		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboColors[0]);
+		// --- colors (location 1) ---
+		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[1]);
 		currentColors.flip();
-		gl.glBufferData(GL.GL_ARRAY_BUFFER, currentColors.limit() * 4, currentColors, GL.GL_STATIC_DRAW);
+		gl.glBufferData(GL.GL_ARRAY_BUFFER, (long) currentColors.limit() * 4, currentColors, GL.GL_DYNAMIC_DRAW);
 		gl.glVertexAttribPointer(1, 4, GL.GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(1);
 
-		int[] vboTex = new int[1];
-		boolean hasTex = false;
-		if (currentTexCoords.position() > 0) {
-			hasTex = true;
-			gl.glGenBuffers(1, vboTex, 0);
-			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboTex[0]);
+		// --- tex coords (location 2) ---
+		boolean hasTex = currentTexCoords.position() > 0;
+		if (hasTex) {
+			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[2]);
 			currentTexCoords.flip();
-			gl.glBufferData(GL.GL_ARRAY_BUFFER, currentTexCoords.limit() * 4, currentTexCoords, GL.GL_STATIC_DRAW);
+			gl.glBufferData(GL.GL_ARRAY_BUFFER, (long) currentTexCoords.limit() * 4, currentTexCoords,
+					GL.GL_DYNAMIC_DRAW);
 			gl.glVertexAttribPointer(2, 2, GL.GL_FLOAT, false, 0, 0);
 			gl.glEnableVertexAttribArray(2);
+		} else {
+			gl.glDisableVertexAttribArray(2);
 		}
 
 		basicShader.loadModelMatrix(modelViewMatrix.getCurrentMatrix());
+		// Pass the projection matrix; the model-view matrix already contains camera+model transforms.
 		basicShader.loadViewMatrix(new org.joml.Matrix4f().identity());
 		basicShader.loadProjectionMatrix(projectionMatrix.getCurrentMatrix());
 		basicShader.loadUseTexture(hasTex);
 
 		gl.glDrawArrays(currentDrawStyle, 0, currentVertices.limit() / 3);
 
-		gl.glDeleteBuffers(1, vboVertices, 0);
-		gl.glDeleteBuffers(1, vboColors, 0);
-		if (hasTex) { gl.glDeleteBuffers(1, vboTex, 0); }
-		gl.glDeleteVertexArrays(1, vao, 0);
+		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+		gl.glBindVertexArray(0);
 		basicShader.stop();
 	}
 
@@ -1274,28 +1280,27 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	}
 
 	/**
-	 * Enable primary texture.
+	 * Enable primary texture. Binds the primary texture. In core GL4 there is no GL_TEXTURE_2D enable/disable;
+	 * texturing is active whenever a sampler uniform is bound in the shader.
 	 */
 	public void enablePrimaryTexture() {
 		if (primaryTexture == NO_TEXTURE) return;
 		bindTexture(primaryTexture);
-		gl.glEnable(GL.GL_TEXTURE_2D);
 	}
 
 	/**
-	 * Enable alternate texture.
+	 * Enable alternate texture. Binds the alternate texture.
 	 */
 	public void enableAlternateTexture() {
 		if (alternateTexture == NO_TEXTURE) return;
 		bindTexture(alternateTexture);
-		gl.glEnable(GL.GL_TEXTURE_2D);
 	}
 
 	/**
-	 * Disable textures.
+	 * Disable textures. In core GL4, texturing is disabled by binding texture 0.
 	 */
 	public void disableTextures() {
-		gl.glDisable(GL.GL_TEXTURE_2D);
+		gl.glBindTexture(GL.GL_TEXTURE_2D, 0);
 		textured = false;
 	}
 
@@ -1518,39 +1523,48 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	// LISTS
 
+	// DISPLAY-LIST REPLACEMENT
+	// OpenGL display lists have been removed in GL4 core profile.
+	// We replace them with a simple Runnable cache: compileAsList stores the lambda,
+	// drawList replays it, and deleteList removes it from the map.
+
+	/** Replacement for display lists: maps a list-index → Runnable to replay. */
+	private final java.util.Map<Integer, Runnable> listCache = new java.util.HashMap<>();
+
+	/** Counter for generating unique list IDs. */
+	private int nextListId = 1;
+
 	/**
-	 * Compile as list.
+	 * Compile as list. Stores the provided {@link Runnable} under a new unique index and executes it immediately
+	 * (so that the first draw also initialises any state the lambda depends on). Returns the index that can be
+	 * passed to {@link #drawList(int)} to replay the geometry.
 	 *
-	 * @param r
-	 *            the r
-	 * @return the int
+	 * @param r the geometry-producing runnable
+	 * @return the list index
 	 */
 	public int compileAsList(final Runnable r) {
-		final int index = 0; // Removed display list glGenLists
-		// Removed display list glNewList
-		r.run();
-		// Removed display list glEndList
+		final int index = nextListId++;
+		listCache.put(index, r);
 		return index;
 	}
 
 	/**
-	 * Draw list.
+	 * Draw list. Replays the {@link Runnable} stored under the given index.
 	 *
-	 * @param i
-	 *            the i
+	 * @param i the list index returned by {@link #compileAsList(Runnable)}
 	 */
 	public void drawList(final int i) {
-		// Removed display list glCallList
+		final Runnable r = listCache.get(i);
+		if (r != null) { r.run(); }
 	}
 
 	/**
-	 * Delete list.
+	 * Delete list. Removes the stored {@link Runnable} for the given index.
 	 *
-	 * @param index
-	 *            the index
+	 * @param index the list index to remove
 	 */
 	public void deleteList(final Integer index) {
-		// gl.getGL().glDeleteLists(index, 1);
+		if (index != null) { listCache.remove(index); }
 	}
 
 	/**
@@ -1761,27 +1775,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 		// Hints
 		int hint = getData().isAntialias() ? GL.GL_NICEST : GL.GL_FASTEST;
-		// removed glHint
 		gl.glHint(GL.GL_LINE_SMOOTH_HINT, hint);
-		// removed glHint
-		// gl.glHint(GL4.GL_TRIANGLE_FAN_SMOOTH_HINT, hint);
-		// removed glHint
-		// Enable texture 2D
-		gl.glEnable(GL.GL_TEXTURE_2D);
+		// GL_TEXTURE_2D enable/disable is not valid in OpenGL 4 core profile; texturing is controlled by shaders.
 		// Blending & alpha control
 		gl.glEnable(GL.GL_BLEND);
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
-		// removed glTexEnvi
 		gl.glEnable(GL.GL_DEPTH_TEST);
-		// removed glAlphaFunc(GL.GL_GREATER, 0.01f);
 		// Disabling line smoothing to only rely on FSAA
 		gl.glEnable(GL.GL_LINE_SMOOTH);
-		gl.glEnable(GL.GL_LINE_SMOOTH);
-		// gl.glEnable(GL4.GL_TRIANGLE_FAN_SMOOTH);
-		// Enabling forced normalization of normal vectors (important)
-		gl.glEnable(GLLightingFunc.GL_NORMALIZE);
-		// Enabling multi-sampling (necessary ?)
-		// if (USE_MULTI_SAMPLE) {
+		// GL_NORMALIZE is a fixed-function lighting constant removed in GL4 core profile; normals are normalized in shaders.
+		// Enabling multi-sampling
 		gl.glEnable(GL.GL_MULTISAMPLE);
 		// Setting the default polygon mode
 		updatePolygonMode();

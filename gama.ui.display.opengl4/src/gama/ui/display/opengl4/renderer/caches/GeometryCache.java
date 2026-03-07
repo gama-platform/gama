@@ -36,9 +36,8 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.GL4;
-import com.jogamp.opengl.GL4;
-import com.jogamp.opengl.fixedfunc.GLPointerFunc;
 
 import gama.api.GAMA;
 import gama.api.runtime.scope.IScope;
@@ -408,16 +407,24 @@ public class GeometryCache {
 	}
 
 	/**
-	 * Draw rounded rectangle.
+	 * Draw rounded rectangle. Uploads the pre-computed 2-D vertices into a temporary VBO and draws them
+	 * as a GL_TRIANGLE_FAN. The old glEnableClientState/glVertexPointer path was removed in GL4 core.
 	 *
-	 * @param gl
-	 *            the gl
+	 * @param gl the GL4 context
 	 */
 	public void drawRoundedRectangle(final GL4 gl) {
-		// removed glEnableClientState
-		// removed glVertexPointer
+		// Upload the 2-D rounded-rect vertices (40 vertices × 2 components) to a temporary VBO.
+		final int[] tmpVbo = new int[1];
+		gl.glGenBuffers(1, tmpVbo, 0);
+		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tmpVbo[0]);
+		db.rewind();
+		gl.glBufferData(GL.GL_ARRAY_BUFFER, (long) roundRect.length * Double.BYTES, db, GL.GL_STATIC_DRAW);
+		gl.glVertexAttribPointer(0, 2, GL2GL3.GL_DOUBLE, false, 0, 0);
+		gl.glEnableVertexAttribArray(0);
 		gl.glDrawArrays(GL.GL_TRIANGLE_FAN, 0, 40);
-		// removed glDisableClientState
+		gl.glDisableVertexAttribArray(0);
+		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
+		gl.glDeleteBuffers(1, tmpVbo, 0);
 	}
 
 	/**

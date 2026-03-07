@@ -146,7 +146,8 @@ public class FrameBufferObject {
 	 * @return the int
 	 */
 	private int createFrameBuffer() {
-		cleanUp();
+		// Only clean up a previously valid FBO; frameBufferArray[0] == -1 means not yet allocated.
+		if (frameBufferArray[0] != -1) { cleanUp(); }
 		gl.glGenFramebuffers(1, frameBufferArray, 0);
 		// generate name for frame buffer
 		gl.glBindFramebuffer(GL4.GL_FRAMEBUFFER, frameBufferArray[0]);
@@ -167,10 +168,12 @@ public class FrameBufferObject {
 		gl.glGenTextures(1, textureArray, 0);
 		gl.glBindTexture(GL4.GL_TEXTURE_2D, textureArray[0]);
 		gl.glTexParameteri(GL4.GL_TEXTURE_2D, GL4.GL_TEXTURE_MAG_FILTER, GL4.GL_LINEAR);
-		gl.glTexParameteri(GL4.GL_TEXTURE_2D, GL4.GL_TEXTURE_MIN_FILTER, GL4.GL_LINEAR_MIPMAP_LINEAR);
+		// Use GL_LINEAR (not a mipmap filter) for a render-target texture.
+		// GL_LINEAR_MIPMAP_LINEAR would require glGenerateMipmap and makes the FBO incomplete without it.
+		gl.glTexParameteri(GL4.GL_TEXTURE_2D, GL4.GL_TEXTURE_MIN_FILTER, GL4.GL_LINEAR);
 		gl.glTexImage2D(GL4.GL_TEXTURE_2D, 0, GL4.GL_RGB, width, height, 0, GL4.GL_RGB, GL4.GL_UNSIGNED_BYTE,
 				(ByteBuffer) null);
-		gl.glFramebufferTextureEXT(GL4.GL_FRAMEBUFFER, GL4.GL_COLOR_ATTACHMENT0, textureArray[0], 0);
+		gl.glFramebufferTexture2D(GL4.GL_FRAMEBUFFER, GL4.GL_COLOR_ATTACHMENT0, GL4.GL_TEXTURE_2D, textureArray[0], 0);
 		return textureArray[0];
 	}
 
