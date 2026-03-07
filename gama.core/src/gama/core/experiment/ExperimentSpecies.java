@@ -275,6 +275,17 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		}
 
 		/**
+		 * To array.
+		 *
+		 * @return the i experiment agent[]
+		 */
+		@SuppressWarnings ("unchecked")
+		@Override
+		public IExperimentAgent[] toArray() {
+			return super.toArray(new IExperimentAgent[0]);
+		}
+
+		/**
 		 * Creates the agents.
 		 *
 		 * @param scope
