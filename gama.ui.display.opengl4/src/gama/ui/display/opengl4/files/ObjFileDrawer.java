@@ -13,6 +13,7 @@ package gama.ui.display.opengl4.files;
 import java.io.File;
 
 import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.util.texture.Texture;
 
 import gama.api.types.geometry.GamaPointFactory;
@@ -29,12 +30,7 @@ import gama.ui.display.opengl4.OpenGL;
 public class ObjFileDrawer {
 
 	/**
-	 * Draw to open GL.
-	 *
-	 * @param file
-	 *            the file
-	 * @param gl
-	 *            the gl
+	 * Handle material loading and texturing
 	 */
 	private static Texture handleMaterial(GamaObjFile file, OpenGL gl, String nextmatname) {
 		gl.setCurrentColor(file.materials.getKd(nextmatname)[0], file.materials.getKd(nextmatname)[1],
@@ -63,7 +59,15 @@ public class ObjFileDrawer {
 		return null;
 	}
 
-		public static void drawToOpenGL(final GamaObjFile file, final OpenGL gl) {
+	/**
+	 * Draw to open GL.
+	 *
+	 * @param file
+	 *            the file
+	 * @param gl
+	 *            the gl
+	 */
+	public static void drawToOpenGL(final GamaObjFile file, final OpenGL gl) {
 
 		int nextmat = -1;
 		int matcount = 0;
@@ -96,39 +100,6 @@ public class ObjFileDrawer {
 					nextmat = Integer.parseInt(nextmatnamearray[1]);
 				}
 			}
-				// gl.getGL().glEnable(GL.GL_COLOR_MATERIAL);
-				gl.setCurrentColor(file.materials.getKd(nextmatname)[0], file.materials.getKd(nextmatname)[1],
-						file.materials.getKd(nextmatname)[2], file.materials.getd(nextmatname));
-
-				final String mapKa = file.materials.getMapKa(nextmatname);
-				final String mapKd = file.materials.getMapKd(nextmatname);
-				final String mapd = file.materials.getMapd(nextmatname);
-				if (mapKa != null || mapKd != null || mapd != null) {
-					File f = new File(file.mtlPath);
-					StringBuilder path = new StringBuilder().append(f.getAbsolutePath().replace(f.getName(), ""));
-					if (mapd != null) {
-						path.append(mapd);
-					} else if (mapKa != null) {
-						path.append(mapKa);
-					} else if (mapKd != null) { path.append(mapKd); }
-					GamaImageFile asset = new GamaImageFile(null, path.toString());
-					if (asset.exists(null)) {
-						// Solves Issue #1951. Asynchronous loading of textures
-						// was not possible when displaying the file
-						texture = gl.getTexture(asset, false, true);
-						gl.setCurrentTextures(texture.getTextureObject(), texture.getTextureObject());
-						texture.setTexParameteri(gl.getGL(), GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
-						texture.setTexParameteri(gl.getGL(), GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
-					}
-
-				}
-				matcount++;
-				if (matcount < totalmats) {
-					nextmatnamearray = file.matTimings.get(matcount);
-					nextmatname = nextmatnamearray[0];
-					nextmat = Integer.parseInt(nextmatnamearray[1]);
-				}
-			}
 
 			final int[] tempfaces = file.faces.get(i);
 			final int[] norms = file.facesNorms.get(i);
@@ -136,7 +107,7 @@ public class ObjFileDrawer {
 
 			//// Quad Begin Header ////
 			final int polytype =
-					tempfaces.length == 3 ? GL.GL_TRIANGLES : tempfaces.length == 4 ? GL.GL_TRIANGLES : GL.GL_TRIANGLES;
+					tempfaces.length == 3 ? GL.GL_TRIANGLES : tempfaces.length == 4 ? GL4.GL_TRIANGLE_FAN : GL4.GL_TRIANGLE_FAN;
 			gl.beginDrawing(polytype);
 			////////////////////////////
 
@@ -183,3 +154,4 @@ public class ObjFileDrawer {
 		}
 	}
 
+}
