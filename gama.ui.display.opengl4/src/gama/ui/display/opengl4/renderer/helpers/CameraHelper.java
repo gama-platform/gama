@@ -358,7 +358,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		up.setLocation(-Math.cos(tr) * cp, -Math.sin(tr) * cp, Math.sin(pr));
 		if (flipped) { up.negate(); }
 		renderer.getOpenGLHelper().getCurrentMatrixStack().getCurrentMatrix().lookAt((float)position.getX(), (float)position.getY(), (float)position.getZ(), (float)target.getX(), (float)target.getY(), (float)target.getZ(),
-				up.getX(), up.getY(), up.getZ());
+				(float)up.getX(), (float)up.getY(), (float)up.getZ());
 	}
 
 	/*------------------ Events controls ---------------------*/
@@ -816,7 +816,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	@Override
 	public IOpenGLRenderer getRenderer() { return renderer; }
 
-	@Override
 	public void handleGlobalKeystrokes(final com.jogamp.newt.event.KeyEvent e) {
 		switch (e.getKeySymbol()) {
 			case com.jogamp.newt.event.KeyEvent.VK_ESCAPE: {
@@ -853,6 +852,85 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 				}
 			}
 		}
+	}
+	@Override
+	public void keyPressed(final com.jogamp.newt.event.KeyEvent e) {
+
+		handleGlobalKeystrokes(e);
+
+		invokeOnGLThread(drawable -> {
+			if (!keystoneMode) {
+				boolean cameraInteraction = !data.isCameraLocked();
+				switch (e.getKeySymbol()) {
+					case com.jogamp.newt.event.KeyEvent.VK_SPACE:
+						if (cameraInteraction) { resetPivot(); }
+						break;
+					case com.jogamp.newt.event.KeyEvent.VK_CONTROL, com.jogamp.newt.event.KeyEvent.VK_META:
+						// The press and release of these keys does not seem to work. Caught after
+						setCtrlPressed(!firsttimeMouseDown);
+						break;
+				}
+				// setShiftPressed(e.isShiftDown());
+				switch (e.getKeyCode()) {
+					// Finally the keystrokes for the display itself
+					case com.jogamp.newt.event.KeyEvent.VK_LEFT:
+						setCtrlPressed(isControlDown(e));
+						if (cameraInteraction && (!areArrowKeysRedefined || isControlDown(e) || e.isShiftDown())) {
+							CameraHelper.this.strafeLeft = true;
+						}
+						break;
+					case com.jogamp.newt.event.KeyEvent.VK_RIGHT:
+						setCtrlPressed(isControlDown(e));
+						if (cameraInteraction && (!areArrowKeysRedefined || isControlDown(e) || e.isShiftDown())) {
+							CameraHelper.this.strafeRight = true;
+						}
+						break;
+					case com.jogamp.newt.event.KeyEvent.VK_UP:
+						setCtrlPressed(isControlDown(e));
+						if (cameraInteraction && (!areArrowKeysRedefined || isControlDown(e) || e.isShiftDown())) {
+							CameraHelper.this.goesForward = true;
+						}
+						break;
+					case com.jogamp.newt.event.KeyEvent.VK_DOWN:
+						setCtrlPressed(isControlDown(e));
+						if (cameraInteraction && (!areArrowKeysRedefined || isControlDown(e) || e.isShiftDown())) {
+							CameraHelper.this.goesBackward = true;
+						}
+						break;
+				}
+
+				switch (e.getKeyChar()) {
+					case 0:
+						setCtrlPressed(e.isControlDown() || SystemInfo.isMac() && e.isMetaDown());
+						setShiftPressed(e.isShiftDown());
+						break;
+					case '+':
+						if (cameraInteraction) { zoom(true); }
+						break;
+					case '-':
+						if (cameraInteraction) { zoom(false); }
+						break;
+					case '4':
+						if (cameraInteraction && useNumKeys) { quickLeftTurn(); }
+						break;
+					case '6':
+						if (cameraInteraction && useNumKeys) { quickRightTurn(); }
+						break;
+					case '8':
+						if (cameraInteraction && useNumKeys) { quickUpTurn(); }
+						break;
+					case '2':
+						if (cameraInteraction && useNumKeys) { quickDownTurn(); }
+						break;
+					case 'k':
+						if (!isControlDown(e)) { activateKeystoneMode(); }
+						break;
+					default:
+						return true;
+				}
+			} else if (e.getKeyChar() == 'k' && !isControlDown(e)) { activateKeystoneMode(); }
+			return true;
+		});
 	}
 
 	/**
@@ -940,7 +1018,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	}
 
 	@Override
-	public final void keyReleased(final com.jogamp.newt.event.KeyEvent e) {
+	public void keyReleased(final com.jogamp.newt.event.KeyEvent e) {
 
 		invokeOnGLThread(drawable -> {
 			if (!keystoneMode) {

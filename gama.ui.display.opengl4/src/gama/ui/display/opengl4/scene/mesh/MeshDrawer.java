@@ -436,7 +436,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 			}
 			if (outputsTextures) { gl.outputTexCoord(texBuffer.get(i * 2), texBuffer.get(i * 2 + 1)); }
 			gl.outputNormal(normalBuffer.get(one), normalBuffer.get(two), normalBuffer.get(three));
-			ogl.outputVertex(vertexBuffer.get(one), vertexBuffer.get(two), vertexBuffer.get(three));
+			gl.outputVertex(vertexBuffer.get(one), vertexBuffer.get(two), vertexBuffer.get(three));
 		}
 		if (outputsLines) {
 			boolean previous = gl.setObjectWireframe(true);

@@ -60,9 +60,9 @@ public class LightHelper extends AbstractRendererHelper {
 		// ambient
 		setAmbientLight(data.getLights().get(ILightDefinition.ambient));
 		// set material properties which will be assigned by glColor
-		getGL().glColorMaterial(GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_AMBIENT_AND_DIFFUSE);
+		// getGL().glColorMaterial(GL.GL_FRONT_AND_BACK, GLLightingFunc.GL_AMBIENT_AND_DIFFUSE);
 		// removed glLightModelf
-		getGL().glEnable(GLLightingFunc.GL_COLOR_MATERIAL);
+		// getGL().glEnable(GLLightingFunc.GL_COLOR_MATERIAL);
 	}
 
 	/**

@@ -461,14 +461,14 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 					fH = fW / aspect;
 				}
 
-				gl.glFrustum(-fW, fW, -fH, fH, zNear, zFar);
+				getCurrentMatrixStack().frustum(-fW, fW, -fH, fH, zNear, zFar);
 			} catch (final BufferOverflowException e) {
 				DEBUG.ERR("Buffer overflow exception");
 			}
 		} else if (aspect >= 1.0) {
-			gl.glOrtho(-maxDim * aspect, maxDim * aspect, -maxDim, maxDim, maxDim * 10, -maxDim * 10);
+			getCurrentMatrixStack().ortho(-maxDim * aspect, maxDim * aspect, -maxDim, maxDim, maxDim * 10, -maxDim * 10);
 		} else {
-			gl.glOrtho(-maxDim, maxDim, -maxDim / aspect, maxDim / aspect, maxDim * 10, -maxDim * 10);
+			getCurrentMatrixStack().ortho(-maxDim, maxDim, -maxDim / aspect, maxDim / aspect, maxDim * 10, -maxDim * 10);
 		}
 
 		// else {
@@ -723,7 +723,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	@Override
 	public void endDrawing() {
-		if (currentVertices.isEmpty()) return;
+		if (currentVertices.position() == 0) return;
 		if(basicShader == null) return;
 		basicShader.start();
 		int[] vao = new int[1];
@@ -733,33 +733,43 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		int[] vboVertices = new int[1];
 		gl.glGenBuffers(1, vboVertices, 0);
 		gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, vboVertices[0]);
-		float[] verticesArray = new float[currentVertices.position()];
-		for (int i = 0; i < currentVertices.position(); i++) verticesArray[i] = currentVertices.get(i);
-		gl.glBufferData(GL4.GL_ARRAY_BUFFER, verticesArray.length * 4, java.nio.FloatBuffer.wrap(verticesArray), GL4.GL_STATIC_DRAW);
+		currentVertices.flip();
+		gl.glBufferData(GL4.GL_ARRAY_BUFFER, currentVertices.limit() * 4, currentVertices, GL4.GL_STATIC_DRAW);
 		gl.glVertexAttribPointer(0, 3, GL4.GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(0);
 
 		int[] vboColors = new int[1];
 		gl.glGenBuffers(1, vboColors, 0);
 		gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, vboColors[0]);
-		float[] colorsArray = new float[currentColors.position()];
-		for (int i = 0; i < currentColors.position(); i++) colorsArray[i] = currentColors.get(i);
-		gl.glBufferData(GL4.GL_ARRAY_BUFFER, colorsArray.length * 4, java.nio.FloatBuffer.wrap(colorsArray), GL4.GL_STATIC_DRAW);
+		currentColors.flip();
+		gl.glBufferData(GL4.GL_ARRAY_BUFFER, currentColors.limit() * 4, currentColors, GL4.GL_STATIC_DRAW);
 		gl.glVertexAttribPointer(1, 4, GL4.GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(1);
+
+		int[] vboTex = new int[1];
+		boolean hasTex = false;
+		if (currentTexCoords.position() > 0) {
+			hasTex = true;
+			gl.glGenBuffers(1, vboTex, 0);
+			gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, vboTex[0]);
+			currentTexCoords.flip();
+			gl.glBufferData(GL4.GL_ARRAY_BUFFER, currentTexCoords.limit() * 4, currentTexCoords, GL4.GL_STATIC_DRAW);
+			gl.glVertexAttribPointer(2, 2, GL4.GL_FLOAT, false, 0, 0);
+			gl.glEnableVertexAttribArray(2);
+		}
 
 		basicShader.loadModelMatrix(modelViewMatrix.getCurrentMatrix());
 		basicShader.loadViewMatrix(new org.joml.Matrix4f().identity());
 		basicShader.loadProjectionMatrix(projectionMatrix.getCurrentMatrix());
-		basicShader.loadUseTexture(false);
+		basicShader.loadUseTexture(hasTex);
 
-		gl.glDrawArrays(currentDrawStyle, 0, verticesArray.length / 3);
+		gl.glDrawArrays(currentDrawStyle, 0, currentVertices.limit() / 3);
 
 		gl.glDeleteBuffers(1, vboVertices, 0);
 		gl.glDeleteBuffers(1, vboColors, 0);
+		if (hasTex) gl.glDeleteBuffers(1, vboTex, 0);
 		gl.glDeleteVertexArrays(1, vao, 0);
 		basicShader.stop();
-
 	}
 
 	/**
@@ -979,7 +989,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param z
 	 */
 	public void outputVertex(final double x, final double y, final double z) {
-		gl.outputVertex(x, y, z + currentZTranslation);
+		ensureCapacity(currentVertices, 3);
+		currentVertices.put((float)x);
+		currentVertices.put((float)y);
+		currentVertices.put((float)(z + currentZTranslation));
+		ensureCapacity(currentColors, 4);
+		currentColors.put((float)(currentColor.getRed() / 255.0));
+		currentColors.put((float)(currentColor.getGreen() / 255.0));
+		currentColors.put((float)(currentColor.getBlue() / 255.0));
+		currentColors.put((float)(currentColor.getAlpha() / 255.0));
+		currentVertexCount++;
 	}
 
 	/**
@@ -991,7 +1010,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the v
 	 */
 	public void outputTexCoord(final double u, final double v) {
-		gl.outputTexCoord(u, v);
+		ensureCapacity(currentTexCoords, 2);
+		currentTexCoords.put((float)u);
+		currentTexCoords.put((float)v);
 	}
 
 	/**
@@ -1006,7 +1027,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void outputNormal(final double x, final double y, final double z) {
 		currentNormal.setLocation(x, y, z);
-		gl.outputNormal(x, y, z);
+		// gl.outputNormal(x, y, z);
 	}
 
 	/**
@@ -1021,7 +1042,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void drawVertex(final IPoint coords, final IPoint normal, final IPoint tex) {
 		if (normal != null) { outputNormal(normal.getX(), normal.getY(), normal.getZ()); }
-		if (tex != null) { gl.outputTexCoord(tex.getX(), tex.getY()); }
+		if (tex != null) { outputTexCoord(tex.getX(), tex.getY()); }
 		outputVertex(coords.getX(), coords.getY(), coords.getZ());
 	}
 
@@ -1452,7 +1473,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void runWithNames(final Runnable r) {
 		// gl.glInitNames();
-		gl.glPushName(0);
+		// gl.glPushName(0);
 		r.run();
 		// gl.glPopName();
 	}
