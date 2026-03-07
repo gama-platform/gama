@@ -782,16 +782,16 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		outputs.forEach((oName, output) -> {
 			String keyName, newOutputName;
 			if (!scheduled) {
-				keyName = output.getName() + "#" + this.getSpecies().getDescription().getModelDescription().getAlias()
+				keyName = output.getTitle() + "#" + this.getSpecies().getDescription().getModelDescription().getAlias()
 						+ "#" + this.getExperiment().getSpecies().getName() + "#" + this.getExperiment().getIndex();
 				newOutputName = keyName;
 			} else {
 				final String postfix = buildPostfix();
 				keyName = oName + postfix;
-				newOutputName = output.getName() + postfix;
+				newOutputName = output.getTitle() + postfix;
 			}
 			mm.put(keyName, output);
-			output.setName(newOutputName);
+			output.setTitle(newOutputName);
 		});
 		outputs.clear();
 		outputs.putAll(mm);

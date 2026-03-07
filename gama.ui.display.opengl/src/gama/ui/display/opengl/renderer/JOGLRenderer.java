@@ -219,7 +219,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		if (first) {
 			first = false;
 			if (getData().fullScreen() > -1) {
-				WorkbenchHelper.runInUI("Expand " + surface.getOutput().getName(), 100,
+				WorkbenchHelper.runInUI("Expand " + surface.getOutput().getTitle(), 100,
 						m -> this.getSurface().getOutput().getView().toggleFullScreen());
 			}
 		}

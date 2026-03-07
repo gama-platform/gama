@@ -124,7 +124,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		decorator = new LayeredDisplayDecorator(this);
 		if (getOutput() != null) {
 			getOutput().getData().addListener(decorator);
-			setPartName(getOutput().getName());
+			setPartName(getOutput().getTitle());
 		}
 		shellListener = new ControlListener() {
 

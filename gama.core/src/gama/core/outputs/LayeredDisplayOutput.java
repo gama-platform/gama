@@ -292,6 +292,10 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 
 			handleInheritance(d);
 
+			IExpressionDescription name = d.getFacet(NAME);
+			IExpressionDescription title = d.getFacet(TITLE);
+			if (name != null && title == null) { d.setFacetExprDescription(TITLE, name.compileAsLabel()); }
+
 			final IExpressionDescription auto = d.getFacet(AUTOSAVE);
 			if (auto != null && auto.getExpression().isConst() && TRUE.equals(auto.getExpression().literalValue())) {
 				d.info("With autosave enabled, GAMA must remain the frontmost window and the display must not be covered or obscured by other windows",
@@ -658,4 +662,11 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		scope.setGraphics(surface.getIGraphics());
 	}
 
+	// @Override
+	// public String getTitle() { return getLiteral(IKeyword.TITLE); }
+
+	// @Override
+	// public void setTitle(final String newTitle) {
+	// this.setFacet(IKeyword.TITLE, GAML.getExpressionDescriptionFactory().createConstant(newTitle));
+	// }
 }

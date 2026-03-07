@@ -11,7 +11,6 @@
 package gama.ui.display.java2d;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Font;
@@ -41,6 +40,7 @@ import gama.api.constants.IKeyword;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.GeneralSynchronizer;
 import gama.api.runtime.SystemInfo;
+import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
@@ -843,7 +843,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	public void changed(final Changes property, final Object value) {
 
 		switch (property) {
-			case BACKGROUND -> setBackground((Color) value);
+			case BACKGROUND -> setBackground(GamaColorFactory.castToColor(getScope(), value).getAWTColor());
 			default -> {
 			}
 		}

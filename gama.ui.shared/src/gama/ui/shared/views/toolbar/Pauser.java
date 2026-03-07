@@ -55,7 +55,7 @@ public class Pauser implements StateListener {
 	 *            the out
 	 */
 	void togglePause(final ToolItem item, final IOutput out) {
-		if (out != null) { item.setToolTipText((out.isPaused() ? "Resume " : "Pause ") + out.getName()); }
+		if (out != null) { item.setToolTipText((out.isPaused() ? "Resume " : "Pause ") + out.getTitle()); }
 		view.pauseChanged();
 	}
 

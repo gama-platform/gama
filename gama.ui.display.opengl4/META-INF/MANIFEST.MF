@@ -22,8 +22,7 @@ Bundle-ClassPath: .,
  libs/jogl 2.6.0/jogl-all-natives-windows-amd64.jar
 Import-Package: gama.extension.image,
  org.locationtech.jts.geom
-Export-Package:
- org.joml,
+Export-Package: org.joml,
  org.joml.sampling,
  com.jogamp.common,
  com.jogamp.common.jvm,
