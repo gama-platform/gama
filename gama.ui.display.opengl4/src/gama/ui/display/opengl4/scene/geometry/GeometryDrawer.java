@@ -18,8 +18,6 @@ import static gama.api.utils.geometry.GeometryUtils.getYNegatedCoordinates;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
-import com.jogamp.opengl.util.gl2.GLUT;
-
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;

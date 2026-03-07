@@ -14,27 +14,9 @@ import static com.jogamp.common.nio.Buffers.newDirectDoubleBuffer;
 import static com.jogamp.opengl.GL.GL_LINE_LOOP;
 import static com.jogamp.opengl.GL.GL_TRIANGLES;
 import static com.jogamp.opengl.GL4.GL_TRIANGLE_STRIP;
-import static com.jogamp.opengl.glu.GLU.GLU_TESS_BEGIN;
-import static com.jogamp.opengl.glu.GLU.GLU_TESS_COMBINE;
-import static com.jogamp.opengl.glu.GLU.GLU_TESS_EDGE_FLAG;
-import static com.jogamp.opengl.glu.GLU.GLU_TESS_END;
-import static com.jogamp.opengl.glu.GLU.GLU_TESS_ERROR;
-import static com.jogamp.opengl.glu.GLU.GLU_TESS_VERTEX;
-import static com.jogamp.opengl.glu.GLU.GLU_TESS_WINDING_NONZERO;
-import static com.jogamp.opengl.glu.GLU.GLU_TESS_WINDING_ODD;
-import static com.jogamp.opengl.glu.GLU.GLU_TESS_WINDING_RULE;
-import static com.jogamp.opengl.glu.GLU.gluTessBeginContour;
-import static com.jogamp.opengl.glu.GLU.gluTessBeginPolygon;
-import static com.jogamp.opengl.glu.GLU.gluTessCallback;
-import static com.jogamp.opengl.glu.GLU.gluTessEndContour;
-import static com.jogamp.opengl.glu.GLU.gluTessEndPolygon;
-import static com.jogamp.opengl.glu.GLU.gluTessNormal;
-import static com.jogamp.opengl.glu.GLU.gluTessProperty;
-import static com.jogamp.opengl.glu.GLU.gluTessVertex;
 import static java.awt.geom.PathIterator.SEG_CLOSE;
 import static java.awt.geom.PathIterator.SEG_LINETO;
 import static java.awt.geom.PathIterator.SEG_MOVETO;
-import static java.awt.geom.PathIterator.WIND_EVEN_ODD;
 
 import java.awt.Font;
 import java.awt.Shape;
@@ -43,7 +25,9 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.PathIterator;
 import java.awt.geom.Rectangle2D;
 import java.nio.DoubleBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.jogamp.graph.curve.Region;
@@ -55,8 +39,6 @@ import com.jogamp.math.util.PMVMatrix4f;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2ES2;
 import com.jogamp.opengl.GL2GL3;
-import com.jogamp.opengl.glu.GLU;
-import com.jogamp.opengl.glu.GLUtessellator;
 
 import gama.api.types.color.IColor;
 import gama.api.types.font.IFont;
@@ -67,8 +49,8 @@ import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.dev.DEBUG;
-import gama.ui.display.opengl4.ITesselator;
 import gama.ui.display.opengl4.OpenGL;
+import gama.ui.display.opengl4.OpenGL.EarCut2D;
 import gama.ui.display.opengl4.scene.ObjectDrawer;
 import gama.ui.shared.utils.DPIHelper;
 
@@ -98,7 +80,7 @@ import gama.ui.shared.utils.DPIHelper;
  * <h3>Thread safety</h3>
  * All methods must be called from the GL thread.
  */
-public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselator {
+public class TextDrawer extends ObjectDrawer<StringObject> {
 
 	// -------------------------------------------------------------------------
 	// JOGL graph / curve API state
@@ -129,7 +111,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	private final Map<Font, com.jogamp.graph.font.Font> fontCache = new HashMap<>();
 
 	// -------------------------------------------------------------------------
-	// Legacy GLU tessellator state (kept for 3-D extrusion side geometry)
+	// Contour geometry state (used for 3-D extrusion side geometry and EarCut2D face tessellation)
 	// -------------------------------------------------------------------------
 
 	/** Temporary coordinate sequence used to compute side-face normals. */
@@ -137,9 +119,6 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 
 	/** Current face normal, reused across vertex additions. */
 	IPoint normal = GamaPointFactory.create();
-
-	/** GLU tessellator — used only for the face geometry of extruded (depth > 0) text. */
-	final GLUtessellator tobj = GLU.gluNewTess();
 
 	/** X coordinate of the previous contour vertex, used to compute extrusion normals. */
 	double previousX = Double.MIN_VALUE;
@@ -221,18 +200,12 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Instantiates a new text drawer and registers GLU tessellator callbacks for the extrusion path.
+	 * Instantiates a new text drawer.
 	 *
 	 * @param gl the {@link OpenGL} helper that owns this drawer
 	 */
 	public TextDrawer(final OpenGL gl) {
 		super(gl);
-		gluTessCallback(tobj, GLU_TESS_BEGIN, this);
-		gluTessCallback(tobj, GLU_TESS_END, this);
-		gluTessCallback(tobj, GLU_TESS_ERROR, this);
-		gluTessCallback(tobj, GLU_TESS_VERTEX, this);
-		gluTessCallback(tobj, GLU_TESS_COMBINE, this);
-		gluTessCallback(tobj, GLU_TESS_EDGE_FLAG, this);
 	}
 
 	// -------------------------------------------------------------------------
@@ -763,37 +736,55 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Processes a {@link PathIterator} of an AWT glyph outline. In solid mode the contours are fed to the
-	 * GLU tessellator to produce triangle data in {@link #faceVertexBuffer}. In wireframe mode only the
-	 * contour vertices are collected. Side geometry (for depth > 0) is always collected into
-	 * {@link #sideQuadsBuffer}.
+	 * Processes a {@link PathIterator} of an AWT glyph outline.
 	 *
-	 * @param pi the glyph outline path iterator
+	 * <p>Contour vertices are collected into per-contour rings. In solid mode the rings are passed to
+	 * {@link EarCut2D#triangulate} to fill {@link #faceVertexBuffer} with triangle data (replaces
+	 * the former GLU tessellator path). In wireframe mode only the side contour vertices are collected.
+	 * Side geometry (for depth > 0) is always collected into {@link #sideQuadsBuffer}.</p>
+	 *
+	 * @param pi the glyph outline path iterator (pre-flattened: only SEG_MOVETO/SEG_LINETO/SEG_CLOSE)
 	 */
 	void process(final PathIterator pi) {
 		final boolean wireframe = gl.isWireframe();
-		if (!wireframe) {
-			gluTessProperty(tobj, GLU_TESS_WINDING_RULE,
-					pi.getWindingRule() == WIND_EVEN_ODD ? GLU_TESS_WINDING_ODD : GLU_TESS_WINDING_NONZERO);
-			gluTessNormal(tobj, 0, 0, -1);
-			gluTessBeginPolygon(tobj, (double[]) null);
-		}
+
+		// Collect all contours: each is a flat double[x0,y0,x1,y1,...] open ring.
+		final List<double[]> contours = new ArrayList<>();
+		final List<double[]> contourZ = new ArrayList<>();  // parallel z values (always 0 for text faces)
+		double[] curX = null, curY = null;
+		int curLen = 0;
 		double x0 = 0, y0 = 0;
+
 		while (!pi.isDone()) {
 			final double[] coords = new double[6];
 			switch (pi.currentSegment(coords)) {
 				case SEG_MOVETO:
-					if (!wireframe) { gluTessBeginContour(tobj); gluTessVertex(tobj, coords, 0, coords); }
+					// Start a new contour ring
+					curX = new double[256]; curY = new double[256]; curLen = 0;
 					x0 = coords[0]; y0 = coords[1];
+					curX[curLen] = x0; curY[curLen] = y0; curLen++;
 					beginNewContour();
 					addContourVertex0(x0, y0);
 					break;
 				case SEG_LINETO:
-					if (!wireframe) { gluTessVertex(tobj, coords, 0, coords); }
+					if (curX != null) {
+						if (curLen >= curX.length) {
+							curX = java.util.Arrays.copyOf(curX, curLen * 2);
+							curY = java.util.Arrays.copyOf(curY, curLen * 2);
+						}
+						curX[curLen] = coords[0]; curY[curLen] = coords[1]; curLen++;
+					}
 					addContourVertex0(coords[0], coords[1]);
 					break;
 				case SEG_CLOSE:
-					if (!wireframe) { gluTessEndContour(tobj); }
+					if (curX != null && curLen >= 3) {
+						final double[] flatXY = new double[curLen * 2];
+						for (int i = 0; i < curLen; i++) {
+							flatXY[i * 2] = curX[i]; flatXY[i * 2 + 1] = curY[i];
+						}
+						contours.add(flatXY);
+						curX = null;
+					}
 					addContourVertex0(x0, y0);
 					endContour();
 					break;
@@ -802,11 +793,70 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 			}
 			pi.next();
 		}
-		if (!wireframe) { gluTessEndPolygon(tobj); }
+
+		// ---- face tessellation via EarCut2D (solid mode only) ----
+		if (!wireframe && !contours.isEmpty()) {
+			// Determine outer ring: the one with the largest absolute signed area (CW in screen space)
+			// AWT uses a Y-down coordinate system after the AT (y-flip), so the outer ring has the largest area.
+			int outerIdx = 0;
+			double maxArea = 0;
+			for (int i = 0; i < contours.size(); i++) {
+				final double area = Math.abs(signedArea(contours.get(i)));
+				if (area > maxArea) { maxArea = area; outerIdx = i; }
+			}
+			final double[] outerRing = contours.get(outerIdx);
+			final int outerN = outerRing.length / 2;
+
+			// Holes: all other contours
+			final List<double[]> holes = new ArrayList<>(contours.size() - 1);
+			for (int i = 0; i < contours.size(); i++) {
+				if (i != outerIdx) holes.add(contours.get(i));
+			}
+			final double[][] holesArr = holes.isEmpty() ? null : holes.toArray(new double[0][]);
+
+			final int[] triIndices = EarCut2D.triangulate(outerRing, holesArr, outerN);
+
+			// Build combined flat vertex arrays (outer first, then holes)
+			int totalV = outerN;
+			if (holesArr != null) { for (final double[] h : holesArr) totalV += h.length / 2; }
+			final double[] allX = new double[totalV], allY = new double[totalV];
+			for (int i = 0; i < outerN; i++) {
+				allX[i] = outerRing[i * 2]; allY[i] = outerRing[i * 2 + 1];
+			}
+			int off = outerN;
+			if (holesArr != null) {
+				for (final double[] h : holesArr) {
+					for (int i = 0; i < h.length / 2; i++) {
+						allX[off + i] = h[i * 2]; allY[off + i] = h[i * 2 + 1];
+					}
+					off += h.length / 2;
+				}
+			}
+
+			// Fill faceVertexBuffer
+			for (final int idx : triIndices) {
+				if (gl.isTextured()) { faceTextureBuffer.put(allX[idx] / width).put(allY[idx] / height); }
+				faceVertexBuffer.put(allX[idx]).put(allY[idx]).put(0);
+			}
+		}
+
 		sideQuadsBuffer.flip();
 		sideNormalBuffer.flip();
 		faceVertexBuffer.flip();
 		if (faceTextureBuffer != null) { faceTextureBuffer.flip(); }
+	}
+
+	/**
+	 * Computes the signed area of a flat {@code double[x0,y0,x1,y1,…]} open ring using the shoelace formula.
+	 * Positive = CCW, negative = CW (in Y-up space).
+	 */
+	private static double signedArea(final double[] ring) {
+		final int n = ring.length / 2;
+		double area = 0;
+		for (int i = 0, j = n - 1; i < n; j = i++) {
+			area += (ring[j * 2] + ring[i * 2]) * (ring[j * 2 + 1] - ring[i * 2 + 1]);
+		}
+		return area / 2.0;
 	}
 
 	/**
@@ -866,40 +916,13 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	}
 
 	/**
-	 * Draws the front or back face of extruded text using the triangle data produced by the GLU tessellator.
+	 * Draws the front or back face of extruded text using the triangle data produced by {@link EarCut2D}.
 	 *
 	 * @param up {@code true} to use the upward-facing normal (front face); {@code false} for back face
 	 */
 	void drawFace(final boolean up) {
 		if (faceVertexBuffer == null || faceVertexBuffer.limit() == 0) return;
 		drawFaceFallback(up);
-	}
-
-	/**
-	 * {@link ITesselator} callback: stores tessellated face triangle vertices in {@link #faceVertexBuffer}.
-	 *
-	 * @param i ignored
-	 * @param x x coordinate
-	 * @param y y coordinate
-	 * @param z z coordinate
-	 */
-	@Override
-	public void drawVertex(final int i, final double x, final double y, final double z) {
-		if (gl.isTextured()) { faceTextureBuffer.put(x / width).put(y / height); }
-		faceVertexBuffer.put(x).put(y).put(z);
-	}
-
-	/**
-	 * {@link ITesselator} callback: resolves edge intersections during GLU tessellation.
-	 *
-	 * @param coords  intersection point coordinates
-	 * @param data    input vertex data array
-	 * @param weight  barycentric weights (unused)
-	 * @param outData output: first input vertex is returned unchanged
-	 */
-	@Override
-	public void combine(final double[] coords, final Object[] data, final float[] weight, final Object[] outData) {
-		outData[0] = data[0];
 	}
 
 	/**

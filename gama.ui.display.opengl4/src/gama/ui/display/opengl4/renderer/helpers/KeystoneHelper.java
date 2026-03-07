@@ -17,7 +17,6 @@ import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
-import com.jogamp.opengl.util.gl2.GLUT;
 
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
@@ -203,86 +202,116 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	}
 
 	/**
-	 * Font used for the keystone corner labels — Helvetica 18pt, matching the original GLUT bitmap font size.
+	 * Font used for the keystone corner labels — SansSerif 18pt.
 	 * Stored as a constant to avoid recreating it on every frame.
 	 */
 	private static final java.awt.Font KEYSTONE_FONT = new java.awt.Font("SansSerif", java.awt.Font.PLAIN, 18);
 
 	/**
-	 * Estimates the pixel width of a label string rendered in {@link #KEYSTONE_FONT}.
-	 * Uses the AWT {@link java.awt.FontMetrics} via a headless {@link java.awt.image.BufferedImage} so no
-	 * GL context is needed. The result is cached by the first call.
-	 *
-	 * @param text the label text
-	 * @return estimated pixel width
+	 * Cached {@link java.awt.FontMetrics} for {@link #KEYSTONE_FONT}, obtained once from a scratch
+	 * {@link java.awt.image.BufferedImage}. Avoids allocating a new image on every frame.
 	 */
-	private int estimateLabelWidth(final String text) {
-		// Use a 1×1 BufferedImage to get FontMetrics without a display device
+	private static final java.awt.FontMetrics KEYSTONE_METRICS = initMetrics();
+
+	/** Label height in pixels: font size (18) + padding (20). */
+	private static final int LABEL_HEIGHT_PX = 18 + 20;
+
+	/**
+	 * Creates the cached {@link java.awt.FontMetrics} for {@link #KEYSTONE_FONT}.
+	 *
+	 * @return the metrics, or a fallback that estimates 10 px per character if initialisation fails
+	 */
+	private static java.awt.FontMetrics initMetrics() {
 		final java.awt.image.BufferedImage img =
 				new java.awt.image.BufferedImage(1, 1, java.awt.image.BufferedImage.TYPE_INT_ARGB);
 		final java.awt.Graphics2D g2 = img.createGraphics();
 		try {
-			return g2.getFontMetrics(KEYSTONE_FONT).stringWidth(text);
+			return g2.getFontMetrics(KEYSTONE_FONT);
 		} finally {
 			g2.dispose();
 		}
 	}
 
 	/**
-	 * Draw keystone marks.
+	 * Estimates the pixel width of a label string rendered in {@link #KEYSTONE_FONT}.
+	 * Uses the statically cached {@link #KEYSTONE_METRICS}; no allocation occurs per call.
+	 *
+	 * @param text the label text
+	 * @return estimated pixel width
+	 */
+	private static int estimateLabelWidth(final String text) {
+		return KEYSTONE_METRICS.stringWidth(text);
+	}
+
+	/**
+	 * Draws the four corner labels for the keystone helper overlay.
+	 *
+	 * <p>All geometry (background rectangles and text) is expressed in <em>pixel</em> coordinates.
+	 * The background rectangles are drawn via {@link OpenGL#drawCachedGeometry} under a pixel-space
+	 * ortho projection ({@code [0, W] × [0, H]}), and the text is drawn via
+	 * {@link OpenGL#drawScreenText} which uses the same coordinate space internally. This avoids
+	 * the previous mismatch where the outer {@code [0,1]} normalised ortho was silently overwritten
+	 * by {@code TextDrawer}'s own pixel-space overlay projection.</p>
 	 */
 	private void drawKeystoneMarks() {
 		final OpenGL openGL = getOpenGL();
-		final int displayWidthInPixels = getViewWidth();
-		final int displayHeightInPixels = getViewHeight();
-		final double pixelWidthIn01 = 1d / displayWidthInPixels;
-		final double pixelHeightIn01 = 1d / displayHeightInPixels;
-		final double[] worldCoords = getOpenGL().getPixelWidthAndHeightOfWorld();
-		final double worldWidthInPixels = worldCoords[0];
-		final double worldHeightInPixels = worldCoords[1];
-		final double widthRatio = worldWidthInPixels / displayWidthInPixels;
-		final double heightRatio = worldHeightInPixels / displayHeightInPixels;
-		final double xOffsetIn01 = 1 - widthRatio;
-		final double yOffsetIn01 = 1 - heightRatio;
-		final double labelHeightIn01 = pixelHeightIn01 * (18 + 20);
+		final int W = getViewWidth();
+		final int H = getViewHeight();
+
+		// Compute keystone vertex positions in [0,W]×[0,H] pixel space
+		final double[] worldCoords = openGL.getPixelWidthAndHeightOfWorld();
+		final double widthRatio  = worldCoords[0] / W;
+		final double heightRatio = worldCoords[1] / H;
+		final double xOffsetPx   = (1 - widthRatio)  * W;
+		final double yOffsetPx   = (1 - heightRatio) * H;
+
 		ICoordinates vertices;
 		if (!worldCorners) {
-			vertices = GamaCoordinateSequenceFactory.getKeystoneIdentity();
+			// identity corners in pixel space: (0,0),(0,H),(W,H),(W,0)
+			vertices = GamaCoordinateSequenceFactory.create(4, 3);
+			vertices.at(0).setLocation(0,  0,  0);
+			vertices.at(1).setLocation(0,  H,  0);
+			vertices.at(2).setLocation(W,  H,  0);
+			vertices.at(3).setLocation(W,  0,  0);
 		} else {
 			vertices = GamaCoordinateSequenceFactory.create(4, 3);
-			vertices.at(0).setLocation(xOffsetIn01, yOffsetIn01, 0);
-			vertices.at(1).setLocation(xOffsetIn01, 1 - yOffsetIn01, 0);
-			vertices.at(2).setLocation(1 - xOffsetIn01, 1 - yOffsetIn01, 0);
-			vertices.at(3).setLocation(1 - xOffsetIn01, yOffsetIn01, 0);
+			vertices.at(0).setLocation(xOffsetPx,       yOffsetPx,       0);
+			vertices.at(1).setLocation(xOffsetPx,       H - yOffsetPx,   0);
+			vertices.at(2).setLocation(W - xOffsetPx,   H - yOffsetPx,   0);
+			vertices.at(3).setLocation(W - xOffsetPx,   yOffsetPx,       0);
 		}
 
+		// Use pixel-space ortho so rectangles and text share the same coordinate system.
+		// TextDrawer's overlay projection is also [0,W]×[0,H], so no conflict.
 		openGL.pushIdentity(GLMatrixFunc.GL_PROJECTION);
-		openGL.getCurrentMatrixStack().ortho(0, 1, 0, 1, 1, -1);
-		boolean previous = openGL.setObjectLighting(false);
+		openGL.getCurrentMatrixStack().ortho(0, W, 0, H, 1, -1);
+		final boolean previous = openGL.setObjectLighting(false);
 		openGL.push(GLMatrixFunc.GL_MODELVIEW);
+
 		vertices.visit((id, x, y, z) -> {
-			// Build label text and measure its pixel width via AWT FontMetrics
 			final String text = floor4Digit(getCoords()[id].getX()) + "," + floor4Digit(getCoords()[id].getY());
-			final int lengthOfTextInPixels = estimateLabelWidth(text);
-			final double labelWidthIn01 = pixelWidthIn01 * (lengthOfTextInPixels + 20);
+			final int textWidthPx  = estimateLabelWidth(text);
+			final int labelWidthPx = textWidthPx + 20;
+
 			final int fill = id == cornerSelected ? 0 : id == cornerHovered ? 1 : 2;
-			// Draw the background rectangle
-			final double xLabelIn01 = x + (id == 0 || id == 1 ? labelWidthIn01 / 2 : -labelWidthIn01 / 2);
-			final double yLabelIn01 = y + (id == 0 || id == 3 ? labelHeightIn01 / 2 : -labelHeightIn01 / 2);
-			drawRectangle(openGL, xLabelIn01, yLabelIn01, z, labelWidthIn01, labelHeightIn01, FILL_COLORS[fill]);
 
-			// Compute the pixel-space position of the label text
-			final double xPosIn01 = id == 0 || id == 1 ? 10 * pixelWidthIn01 + (worldCorners ? xOffsetIn01 : 0)
-					: 1 - labelWidthIn01 + 10 * pixelWidthIn01 - (worldCorners ? xOffsetIn01 : 0);
-			final double yPosIn01 = id == 0 || id == 3 ? 12 * pixelHeightIn01 + (worldCorners ? yOffsetIn01 : 0)
-					: 1 - labelHeightIn01 + 12 * pixelHeightIn01 - (worldCorners ? yOffsetIn01 : 0);
+			// Background rectangle — centred on the label position, in pixel space
+			final double xLabelPx = x + (id == 0 || id == 1 ?  labelWidthPx / 2.0 : -labelWidthPx / 2.0);
+			final double yLabelPx = y + (id == 0 || id == 3 ?  LABEL_HEIGHT_PX / 2.0 : -LABEL_HEIGHT_PX / 2.0);
+			drawRectangle(openGL, xLabelPx, yLabelPx, z, labelWidthPx, LABEL_HEIGHT_PX, FILL_COLORS[fill]);
 
-			// Draw the label text using the graph/curve screen-space renderer
-			openGL.setCurrentColor(gama.api.types.color.GamaColorFactory.WHITE);
-			openGL.drawScreenText(text, KEYSTONE_FONT,
-					xPosIn01 * displayWidthInPixels,
-					yPosIn01 * displayHeightInPixels);
+			// Text position — lower-left of the text, in pixel space
+			final double xTextPx = id == 0 || id == 1
+					? 10 + (worldCorners ? xOffsetPx : 0)
+					: W - labelWidthPx + 10 - (worldCorners ? xOffsetPx : 0);
+			final double yTextPx = id == 0 || id == 3
+					? 12 + (worldCorners ? yOffsetPx : 0)
+					: H - LABEL_HEIGHT_PX + 12 - (worldCorners ? yOffsetPx : 0);
+
+			openGL.setCurrentColor(GamaColorFactory.WHITE);
+			openGL.drawScreenText(text, KEYSTONE_FONT, xTextPx, yTextPx);
 		}, 4, true);
+
 		openGL.pop(GLMatrixFunc.GL_MODELVIEW);
 		openGL.setObjectLighting(previous);
 		openGL.pop(GLMatrixFunc.GL_PROJECTION);

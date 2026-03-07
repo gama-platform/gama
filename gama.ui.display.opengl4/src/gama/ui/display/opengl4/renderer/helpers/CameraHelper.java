@@ -17,7 +17,6 @@ import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLRunnable;
-import com.jogamp.opengl.glu.GLU;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
@@ -46,9 +45,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	static {
 		DEBUG.OFF();
 	}
-
-	/** The glu. */
-	private final GLU glu;
 
 	/** The initialized. */
 	protected boolean initialized;
@@ -131,7 +127,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	public CameraHelper(final IOpenGLRenderer renderer2) {
 		super(renderer2);
 		areArrowKeysRedefined = renderer2.getSurface().isArrowRedefined();
-		glu = new GLU();
 		applyPreset(data.getCameraName());
 		initialize();
 		update();
@@ -340,7 +335,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 					} else {
 						theta = theta - getKeyboardSensivity();
 					}
-					updateCartesianCoordinatesFromAngles();
+				 updateCartesianCoordinatesFromAngles();
 				} else if (flipped) {
 					translateCameraFromScreenPlan(-getKeyboardSensivity(), 0.0);
 				} else {
@@ -724,19 +719,51 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		}
 	}
 
+	/** Scratch JOML vector reused by {@link #jomlUnProject} to avoid per-call allocation. */
+	private final org.joml.Vector3f _unprojectResult = new org.joml.Vector3f();
+
+	/**
+	 * JOML replacement for {@code glu.gluUnProject}.
+	 *
+	 * <p>Builds the combined projection × model-view matrix from the {@code double[16]} column-major
+	 * arrays maintained by {@link OpenGL}, then calls
+	 * {@link org.joml.Matrix4f#unproject(float, float, float, int[], org.joml.Vector3f)}.
+	 * The result is written into {@code out[0..2]}.</p>
+	 *
+	 * @param winX       window x coordinate
+	 * @param winY       window y coordinate (GL convention: 0 = bottom)
+	 * @param winZ       window depth (0 = near plane, 1 = far plane)
+	 * @param mvmatrix   model-view matrix as column-major {@code double[16]}
+	 * @param projmatrix projection matrix as column-major {@code double[16]}
+	 * @param viewport   viewport as {@code int[4]}: {x, y, width, height}
+	 * @param out        output array; world coordinates written to {@code out[0..2]}
+	 */
+	private void jomlUnProject(final double winX, final double winY, final double winZ,
+			final double[] mvmatrix, final double[] projmatrix, final int[] viewport, final double[] out) {
+		final org.joml.Matrix4f mv = new org.joml.Matrix4f(
+				(float) mvmatrix[0],  (float) mvmatrix[1],  (float) mvmatrix[2],  (float) mvmatrix[3],
+				(float) mvmatrix[4],  (float) mvmatrix[5],  (float) mvmatrix[6],  (float) mvmatrix[7],
+				(float) mvmatrix[8],  (float) mvmatrix[9],  (float) mvmatrix[10], (float) mvmatrix[11],
+				(float) mvmatrix[12], (float) mvmatrix[13], (float) mvmatrix[14], (float) mvmatrix[15]);
+		final org.joml.Matrix4f proj = new org.joml.Matrix4f(
+				(float) projmatrix[0],  (float) projmatrix[1],  (float) projmatrix[2],  (float) projmatrix[3],
+				(float) projmatrix[4],  (float) projmatrix[5],  (float) projmatrix[6],  (float) projmatrix[7],
+				(float) projmatrix[8],  (float) projmatrix[9],  (float) projmatrix[10], (float) projmatrix[11],
+				(float) projmatrix[12], (float) projmatrix[13], (float) projmatrix[14], (float) projmatrix[15]);
+		proj.mul(mv).unproject((float) winX, (float) winY, (float) winZ, viewport, _unprojectResult);
+		out[0] = _unprojectResult.x;
+		out[1] = _unprojectResult.y;
+		out[2] = _unprojectResult.z;
+	}
+
 	/** The pixel depth. */
 	FloatBuffer pixelDepth = Buffers.newDirectFloatBuffer(1);
 
 	/**
 	 * Gets the world position from the mouse position. Less computationally intensive and more accurate for planar
-	 * surfaces. Requires however to be done in the GL context
-	 *
-	 * @param mouse
-	 *            the mouse
-	 * @return the world position from
+	 * surfaces. Requires however to be done in the GL context.
 	 */
 	public void computeMouseLocationInTheWorld(final int mouse_x, final int mouse_y) {
-
 		OpenGL gl = renderer.getOpenGLHelper();
 		final double[] wcoord = new double[4];
 		final int[] viewport = gl.viewport;
@@ -747,20 +774,16 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		pixelDepth.rewind();
 		gl.getGL().glReadPixels(x, y, 1, 1, GL4.GL_DEPTH_COMPONENT, GL.GL_FLOAT, pixelDepth);
 		double z = pixelDepth.get(0);
-
 		if (z == 1d || z == 0d) {
 			getWorldPositionFrom(GamaPointFactory.create(mouse_x, mouse_y), positionInTheWorld);
 		} else {
-			glu.gluUnProject(x, y, z, mvmatrix, 0, projmatrix, 0, viewport, 0, wcoord, 0);
+			jomlUnProject(x, y, z, mvmatrix, projmatrix, viewport, wcoord);
 			positionInTheWorld.setLocation(wcoord[0], wcoord[1], 0);
 		}
 	}
 
 	/**
-	 * Different method from above, as it might be used in non openGL contexts
-	 *
-	 * @param mouse
-	 * @return
+	 * Different method from above, as it might be used in non openGL contexts.
 	 */
 	public IPoint getWorldPositionFrom(final IPoint mouse, final IPoint result) {
 		final IPoint camLoc = getPosition();
@@ -768,13 +791,12 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		if (gl == null) return GamaPointFactory.create();
 		final double[] wcoord = new double[4];
 		final double x = (int) mouse.getX(), y = gl.viewport[3] - (int) mouse.getY();
-		glu.gluUnProject(x, y, 0.1, gl.mvmatrix, 0, gl.projmatrix, 0, gl.viewport, 0, wcoord, 0);
+		jomlUnProject(x, y, 0.1, gl.mvmatrix, gl.projmatrix, gl.viewport, wcoord);
 		result.setLocation(wcoord[0], wcoord[1], wcoord[2]);
-		glu.gluUnProject(x, y, 0.9, gl.mvmatrix, 0, gl.projmatrix, 0, gl.viewport, 0, wcoord, 0);
+		jomlUnProject(x, y, 0.9, gl.mvmatrix, gl.projmatrix, gl.viewport, wcoord);
 		result.setLocation(wcoord[0] - result.getX(), wcoord[1] - result.getY(), wcoord[2] - result.getZ()).normalize();
 		final double distance = camLoc.getZ() / -result.getZ();
-		return result.setLocation(result.getX() * distance + camLoc.getX(), result.getY() * distance + camLoc.getY(),
-				0);
+		return result.setLocation(result.getX() * distance + camLoc.getX(), result.getY() * distance + camLoc.getY(), 0);
 	}
 
 	/**

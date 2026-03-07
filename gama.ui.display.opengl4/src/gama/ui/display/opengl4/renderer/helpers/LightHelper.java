@@ -12,7 +12,6 @@ package gama.ui.display.opengl4.renderer.helpers;
 
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL4;
-import com.jogamp.opengl.util.gl2.GLUT;
 
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;

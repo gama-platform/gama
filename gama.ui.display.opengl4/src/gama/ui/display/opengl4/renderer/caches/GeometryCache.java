@@ -451,10 +451,21 @@ public class GeometryCache {
 
 		put(POINT, BuiltInGeometry.assemble().faces(gl.compileAsList(() -> drawSphere(gl, 1.0, 5, 5))));
 
+		// ROUNDED: a unit square [0,1]×[0,1] with corner radius 0.1, built from an OutlineShape
+		// with 4 cubic-Bézier corner arcs. Replaces the 40-vertex hard-coded array with a
+		// resolution-independent outline. The translation to [-0.5,0.5] is applied by the caller
+		// (see LayerObject / OverlayLayerObject). The Runnable is kept identical in structure to
+		// all other built-in shapes — it replays immutable float[] triangles via beginDrawing/outputVertex.
+		final float[] roundedTriangles = fanToTriangles(buildRoundedRectOutline(1.0f, 1.0f, 0.1f));
 		put(IShape.Type.ROUNDED, BuiltInGeometry.assemble().bottom(gl.compileAsList(() -> {
 			// Align with SQUARE; see issue #3542
 			gl.translateBy(-.5d, -.5d);
-			drawRoundedRectangle(gl.getGL());
+			gl.beginDrawing(GL4.GL_TRIANGLES);
+			gl.outputNormal(0.0, 0.0, 1.0);
+			for (int i = 0; i < roundedTriangles.length; i += 2) {
+				gl.outputVertex(roundedTriangles[i], roundedTriangles[i + 1], 0.0);
+			}
+			gl.endDrawing();
 			gl.translateBy(.5d, .5d);
 		})));
 
@@ -466,7 +477,18 @@ public class GeometryCache {
 			gl.drawSimpleShape(v, 4, true, true, null);
 		})));
 
-		put(CIRCLE, BuiltInGeometry.assemble().bottom(gl.compileAsList(() -> drawDisk(gl, 0.0, 1.0, slices, 1))));
+		// CIRCLE: built from a Path2D cubic Bézier full-circle arc, flattened and tessellated at init time.
+		// The result is analytically smooth regardless of DISPLAY_SLICE_NUMBER preference.
+		final float[] circleTriangles = fanToTriangles(buildCircleOutline(1.0f));
+		put(CIRCLE, BuiltInGeometry.assemble().bottom(gl.compileAsList(() -> {
+			gl.beginDrawing(GL4.GL_TRIANGLES);
+			gl.outputNormal(0.0, 0.0, 1.0);
+			for (int i = 0; i < circleTriangles.length; i += 2) {
+				gl.outputVertex(circleTriangles[i], circleTriangles[i + 1], 0.0);
+			}
+			gl.endDrawing();
+		})));
+
 
 		// --- PYRAMID ---
 		final double[] pyrBase = { -0.5, -0.5, 0, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0, -0.5, -0.5, 0 };
@@ -492,13 +514,150 @@ public class GeometryCache {
 	}
 
 	/**
-	 * Draw rounded rectangle. Uploads the pre-computed 2-D vertices into a temporary VBO and draws them as a
-	 * {@code GL_TRIANGLE_FAN}. The buffer ({@link #db}) is instance-local so that concurrent calls from different
-	 * GL contexts do not race on its position. The old {@code glEnableClientState}/{@code glVertexPointer} path has
-	 * been removed in the GL4 core profile.
+	 * Builds a tessellated unit circle as a flat {@code float[]} of {@code GL_TRIANGLE_FAN} vertices
+	 * with layout {@code [cx,cy, x0,y0, x1,y1, …, x0,y0]} (centroid first, then perimeter, closing
+	 * by repeating the first perimeter point).
 	 *
+	 * <p>A full circle is described by 4 cubic Bézier quarter-arcs (the classic {@code k ≈ 0.5523}
+	 * approximation) encoded in a {@link java.awt.geom.Path2D.Float}. The path is then flattened by
+	 * {@link java.awt.geom.PathIterator} at a very small tolerance ({@code 0.001}), which converts
+	 * the Bézier curves to dense polyline segments. The result is analytically smooth — the number of
+	 * segments is chosen adaptively by AWT, not by a fixed {@code slices} preference.</p>
+	 *
+	 * @param radius the circle radius (use {@code 1.0f} for the unit circle)
+	 * @return float array suitable for {@code GL_TRIANGLE_FAN}: {@code [cx,cy, x0,y0, x1,y1, …, x0,y0]}
+	 */
+	private static float[] buildCircleOutline(final float radius) {
+		final float k = 0.5522847498f * radius;
+		final float r = radius;
+		final java.awt.geom.Path2D.Float p = new java.awt.geom.Path2D.Float();
+		p.moveTo( r,  0);
+		p.curveTo( r,  k,  k,  r,  0,  r);
+		p.curveTo(-k,  r, -r,  k, -r,  0);
+		p.curveTo(-r, -k, -k, -r,  0, -r);
+		p.curveTo( k, -r,  r, -k,  r,  0);
+		p.closePath();
+		return flatPathToTriangleFan(p, 0f, 0f);
+	}
+
+	/**
+	 * Builds a tessellated rounded rectangle as a flat {@code float[]} of {@code GL_TRIANGLE_FAN}
+	 * vertices with layout {@code [cx,cy, x0,y0, x1,y1, …, x0,y0]}.
+	 *
+	 * <p>The rectangle occupies {@code [0,width] × [0,height]} with corner arcs of radius
+	 * {@code cornerRadius}. Each corner is a single cubic Bézier arc (same {@code k ≈ 0.5523}
+	 * constant as {@link #buildCircleOutline}). The path is flattened at flatness {@code 0.001}
+	 * via {@link java.awt.geom.PathIterator}.</p>
+	 *
+	 * @param width        width of the bounding rectangle
+	 * @param height       height of the bounding rectangle
+	 * @param cornerRadius radius of the rounded corners; clamped to {@code min(width,height)/2}
+	 * @return float array suitable for {@code GL_TRIANGLE_FAN}
+	 */
+	private static float[] buildRoundedRectOutline(final float width, final float height, float cornerRadius) {
+		cornerRadius = Math.min(cornerRadius, Math.min(width, height) / 2f);
+		final float k = 0.5522847498f * cornerRadius;
+		final float cr = cornerRadius;
+		final float x0 = 0, y0 = 0, x1 = width, y1 = height;
+
+		final java.awt.geom.Path2D.Float p = new java.awt.geom.Path2D.Float();
+		// Start at bottom-left arc start, go clockwise
+		p.moveTo(x0 + cr, y0);
+		// Bottom edge → bottom-right arc
+		p.lineTo(x1 - cr, y0);
+		p.curveTo(x1 - cr + k, y0,       x1, y0 + cr - k,      x1, y0 + cr);
+		// Right edge → top-right arc
+		p.lineTo(x1, y1 - cr);
+		p.curveTo(x1, y1 - cr + k,       x1 - cr + k, y1,      x1 - cr, y1);
+		// Top edge → top-left arc
+		p.lineTo(x0 + cr, y1);
+		p.curveTo(x0 + cr - k, y1,       x0, y1 - cr + k,      x0, y1 - cr);
+		// Left edge → bottom-left arc
+		p.lineTo(x0, y0 + cr);
+		p.curveTo(x0, y0 + cr - k,       x0 + cr - k, y0,      x0 + cr, y0);
+		p.closePath();
+		return flatPathToTriangleFan(p, width / 2f, height / 2f);
+	}
+
+	/**
+	 * Flattens an AWT {@link java.awt.geom.Path2D} to a {@code GL_TRIANGLE_FAN} float array.
+	 *
+	 * <p>The path is iterated at flatness {@code 0.001} (very high quality). A
+	 * {@code GL_TRIANGLE_FAN} is formed as {@code [cx, cy, p0x, p0y, p1x, p1y, …, p0x, p0y]}:
+	 * the centroid {@code (cx, cy)} is the fan origin and the last point repeats the first
+	 * to close the fan.</p>
+	 *
+	 * @param path the 2-D path to flatten (must be a closed outline)
+	 * @param cx   x coordinate of the fan centre (centroid)
+	 * @param cy   y coordinate of the fan centre
+	 * @return float array for {@code GL_TRIANGLE_FAN}, layout: {@code [cx,cy, x0,y0, x1,y1, …, x0,y0]}
+	 */
+	private static float[] flatPathToTriangleFan(final java.awt.geom.Path2D path,
+			final float cx, final float cy) {
+		// Collect perimeter points
+		final java.util.ArrayList<Float> pts = new java.util.ArrayList<>(256);
+		final java.awt.geom.PathIterator it = path.getPathIterator(null, 0.001);
+		final float[] seg = new float[6];
+		while (!it.isDone()) {
+			final int type = it.currentSegment(seg);
+			if (type == java.awt.geom.PathIterator.SEG_MOVETO
+					|| type == java.awt.geom.PathIterator.SEG_LINETO) {
+				pts.add(seg[0]);
+				pts.add(seg[1]);
+			}
+			it.next();
+		}
+		// Build GL_TRIANGLE_FAN: [cx, cy, p0, p1, ..., pN, p0]
+		final int n = pts.size() / 2;
+		final float[] result = new float[2 + pts.size() + 2]; // centroid + perimeter + closing vertex
+		result[0] = cx;
+		result[1] = cy;
+		for (int i = 0; i < pts.size(); i++) { result[2 + i] = pts.get(i); }
+		// Close the fan by repeating the first perimeter vertex
+		result[2 + pts.size()]     = pts.get(0);
+		result[2 + pts.size() + 1] = pts.get(1);
+		return result;
+	}
+
+	/**
+	 * Converts a {@code GL_TRIANGLE_FAN} vertex array (as produced by {@link #flatPathToTriangleFan})
+	 * into a flat {@code float[]} of explicit {@code GL_TRIANGLES} vertex pairs
+	 * {@code [x0,y0, x1,y1, x2,y2, …]}, expanding the fan into individual triangles.
+	 *
+	 * <p>This conversion is needed because the built-in geometry Runnables emit vertices one-at-a-time
+	 * via {@link OpenGL#outputVertex}, so they cannot change the primitive mode mid-draw.
+	 * The expansion is done once at init time and stored in an immutable array.</p>
+	 *
+	 * @param fan float array in {@code GL_TRIANGLE_FAN} layout:
+	 *            {@code [cx,cy, x0,y0, x1,y1, …, xN,yN]}
+	 * @return float array in {@code GL_TRIANGLES} layout:
+	 *         {@code [cx,cy, x0,y0, x1,y1,  cx,cy, x1,y1, x2,y2, …]}
+	 */
+	private static float[] fanToTriangles(final float[] fan) {
+		// fan[0,1] = centroid; fan[2..end] = perimeter pairs; last pair repeats first to close
+		final int perimeterPairs = (fan.length - 2) / 2; // includes closing repeat
+		final int triCount = perimeterPairs - 1;
+		final float[] tris = new float[triCount * 6];
+		final float cx = fan[0], cy = fan[1];
+		int out = 0;
+		for (int i = 0; i < triCount; i++) {
+			tris[out++] = cx;              tris[out++] = cy;
+			tris[out++] = fan[2 + i * 2]; tris[out++] = fan[3 + i * 2];
+			tris[out++] = fan[4 + i * 2]; tris[out++] = fan[5 + i * 2];
+		}
+		return tris;
+	}
+
+	/**
+	 * Draw rounded rectangle. Uploads the pre-computed 2-D vertices into a temporary VBO and draws them as a
+	 * {@code GL_TRIANGLE_FAN}.
+	 *
+	 * @deprecated Superseded by {@link #buildRoundedRectOutline(float, float, float)} which uses an
+	 *             {@link OutlineShape} Bézier-arc tessellation and is resolution-independent. This method is
+	 *             retained as a low-level fallback in case the graph library is unavailable.
 	 * @param gl the {@link GL4} context
 	 */
+	@Deprecated
 	public void drawRoundedRectangle(final GL4 gl) {
 		final int[] tmpVbo = new int[1];
 		gl.glGenBuffers(1, tmpVbo, 0);
