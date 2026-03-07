@@ -10,8 +10,6 @@
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
-import java.awt.Color;
-
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.list.IList;
@@ -128,7 +126,7 @@ public class MeshDrawingAttributes extends AssetDrawingAttributes {
 			case GamaScale gs -> new ScaleBasedMeshColorProvider(gs);
 			case GamaGradient gg -> new GradientBasedMeshColorProvider(gg);
 			case IList list -> list.get(0) instanceof IField ? new BandsBasedMeshColorProvider(list)
-					: new ListBasedMeshColorProvider((IList<Color>) colors);
+					: new ListBasedMeshColorProvider((IList<IColor>) colors);
 			case null, default -> isGrayscale ? GRAYSCALE : DEFAULT;
 		};
 	}

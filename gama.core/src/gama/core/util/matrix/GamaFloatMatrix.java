@@ -545,8 +545,15 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 		getMatrix()[index] = Cast.asFloat(scope, value);
 	}
 
+	/**
+	 * Compute type.
+	 *
+	 * @return the i container type
+	 */
 	@Override
-	public IContainerType getGamlType() { return Types.MATRIX.of(Types.FLOAT); }
+	public IContainerType computeTypeWith(final IType contentsType) {
+		return Types.MATRIX.of(Types.FLOAT);
+	}
 
 	@Override
 	public IType<?> computeRuntimeType(final IScope scope) {

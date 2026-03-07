@@ -577,7 +577,9 @@ public class GamaField extends GamaFloatMatrix implements IField {
 	 * @return the gaml type
 	 */
 	@Override
-	public GamaFieldType getGamlType() { return Types.FIELD; }
+	public GamaFieldType computeTypeWith(final IType contentsType) {
+		return Types.FIELD;
+	}
 
 	@Override
 	public IField plus(final IScope scope, final IField other) throws GamaRuntimeException {

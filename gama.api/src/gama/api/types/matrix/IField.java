@@ -21,26 +21,25 @@ import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
 import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.types.GamaFieldType;
 import gama.api.gaml.types.IType;
-import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.types.list.IList;
 import gama.api.utils.interfaces.IDiffusionTarget;
+import gama.api.utils.interfaces.IFieldMatrixProvider;
 import gama.api.utils.interfaces.IImageProvider;
 
 /**
  * A specialized matrix of doubles designed as a lightweight replacement for grids in GAMA.
- * 
+ *
  * <p>
  * Fields are two-dimensional continuous data structures that hold a single double value per cell, covering the entire
  * environment. They provide spatial awareness, allowing agents to query field values using their world location. Fields
  * are particularly useful for representing environmental variables (elevation, temperature, pollution, etc.) and
  * support diffusion operations.
  * </p>
- * 
+ *
  * <h2>Key Features</h2>
  * <ul>
  * <li><strong>Double precision storage:</strong> Each cell stores a double value</li>
@@ -51,11 +50,10 @@ import gama.api.utils.interfaces.IImageProvider;
  * images</li>
  * <li><strong>Spatial queries:</strong> Agents can query values based on their location, get neighboring cells, find
  * intersecting cells</li>
- * <li><strong>Diffusion support:</strong> Implements {@link IDiffusionTarget} for simulating diffusion
- * processes</li>
+ * <li><strong>Diffusion support:</strong> Implements {@link IDiffusionTarget} for simulating diffusion processes</li>
  * <li><strong>Image provider:</strong> Can be visualized as images through {@link IImageProvider}</li>
  * </ul>
- * 
+ *
  * <h2>Available Variables</h2>
  * <ul>
  * <li><strong>no_data</strong> (float) - The value indicating absence of data (default: {@link #NO_NO_DATA}). Setting
@@ -65,7 +63,7 @@ import gama.api.utils.interfaces.IImageProvider;
  * <li><strong>bands</strong> (list&lt;field&gt;) - Optional list of bands present in the field. The first band is the
  * field itself</li>
  * </ul>
- * 
+ *
  * <h2>Spatial Operations</h2>
  * <ul>
  * <li>{@link #getCellShapeAt(IScope, IPoint)} - Get the rectangle shape representing a cell at a location</li>
@@ -74,7 +72,7 @@ import gama.api.utils.interfaces.IImageProvider;
  * <li>{@link #getCellsOverlapping(IScope, IShape)} - Get all cell shapes overlapping a geometry</li>
  * <li>{@link #getNeighborsOf(IScope, IPoint)} - Get neighboring cell locations</li>
  * </ul>
- * 
+ *
  * <h2>Mathematical Operations</h2>
  * <p>
  * Fields support element-wise arithmetic operations with other fields or scalar values:
@@ -85,25 +83,25 @@ import gama.api.utils.interfaces.IImageProvider;
  * <li>Multiplication: field * field, field * double, field * int</li>
  * <li>Division: field / field, field / double, field / int</li>
  * </ul>
- * 
+ *
  * <h2>Usage Examples</h2>
- * 
+ *
  * <pre>
  * // Create a field
  * IField elevation = GamaMatrixFactory.createField(scope, 100, 100);
  * elevation.setNoData(scope, -9999.0);
- * 
+ *
  * // Query field at agent location
  * IPoint agentLocation = agent.getLocation();
  * double value = elevation.get(scope, agentLocation);
- * 
+ *
  * // Get cells intersecting a geometry
  * IList&lt;IShape&gt; cells = elevation.getCellsIntersecting(scope, someShape);
- * 
+ *
  * // Perform arithmetic
  * IField combined = elevation.plus(scope, temperature.times(0.5));
  * </pre>
- * 
+ *
  * @author drogoul
  * @since GAMA 1.0
  */
@@ -136,7 +134,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Returns the field itself (identity operation).
-	 * 
+	 *
 	 * <p>
 	 * This method is part of the {@link IFieldMatrixProvider} interface and simply returns this field instance.
 	 * </p>
@@ -152,7 +150,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Returns the direct internal double array containing all field values.
-	 * 
+	 *
 	 * <p>
 	 * <strong>Warning:</strong> This array should preferably not be modified directly as it may bypass internal
 	 * consistency checks. The array is stored in row-major order.
@@ -164,7 +162,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Gets the no-data value for this field.
-	 * 
+	 *
 	 * <p>
 	 * The no-data value is a special double value that represents the absence or invalidity of data. It is commonly
 	 * used in raster datasets to indicate cells where no measurement was taken or data is not applicable.
@@ -180,7 +178,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Sets the no-data value for this field.
-	 * 
+	 *
 	 * <p>
 	 * Setting the no-data value only changes how the field interprets its values; it does not modify the actual cell
 	 * values. Cells containing this value will be treated as having no valid data.
@@ -196,7 +194,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Gets the minimum and maximum values present in this field.
-	 * 
+	 *
 	 * <p>
 	 * This method computes or retrieves the range of values in the field, excluding the no-data value if one is set.
 	 * </p>
@@ -207,7 +205,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Gets the list of bands associated with this field.
-	 * 
+	 *
 	 * <p>
 	 * Multi-band fields are similar to multi-band raster images (like RGB images or multi-spectral satellite imagery).
 	 * The first band in the list is always this field itself, and subsequent bands are independent fields without their
@@ -223,7 +221,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Sets the bands for this field.
-	 * 
+	 *
 	 * <p>
 	 * By default, this method does nothing as bands are typically read-only. Implementations may override this to
 	 * support mutable band collections.
@@ -241,7 +239,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Gets the spatial size of individual cells in world coordinates.
-	 * 
+	 *
 	 * <p>
 	 * The cell size determines how field indices map to world coordinates and affects spatial queries.
 	 * </p>
@@ -255,7 +253,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Sets the spatial size of individual cells.
-	 * 
+	 *
 	 * <p>
 	 * Setting the cell size only changes the interpretation of field coordinates; it does not modify cell values. By
 	 * default, this method does nothing as cell size is typically read-only.
@@ -273,7 +271,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Gets the shape (rectangle) representing the cell at a given world location.
-	 * 
+	 *
 	 * <p>
 	 * This method converts a world coordinate to the corresponding cell and returns a rectangular geometry representing
 	 * that cell's spatial extent.
@@ -302,7 +300,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Gets all field values (from all bands) that intersect with a given geometry.
-	 * 
+	 *
 	 * <p>
 	 * This method finds all cells whose spatial extent intersects the provided shape and returns their values from all
 	 * bands.
@@ -319,7 +317,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Gets all cell shapes (rectangles) that intersect with a given geometry.
-	 * 
+	 *
 	 * <p>
 	 * Returns the spatial rectangles of all cells whose extent intersects the provided shape.
 	 * </p>
@@ -334,7 +332,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Gets all cell shapes (rectangles) that overlap with a given geometry.
-	 * 
+	 *
 	 * <p>
 	 * Similar to {@link #getCellsIntersecting(IScope, IShape)} but may use different overlap semantics depending on
 	 * implementation.
@@ -361,7 +359,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Gets the neighboring cell locations of a given point.
-	 * 
+	 *
 	 * <p>
 	 * Returns the grid locations of cells adjacent to the specified point, typically using 4-connectivity or
 	 * 8-connectivity depending on implementation.
@@ -374,14 +372,6 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 	 * @return a list of neighboring cell locations
 	 */
 	IList<IPoint> getNeighborsOf(IScope scope, IPoint point);
-
-	/**
-	 * Gets the gaml type.
-	 *
-	 * @return the gaml type
-	 */
-	@Override
-	default GamaFieldType getGamlType() { return Types.FIELD; }
 
 	/**
 	 * Plus.
@@ -629,7 +619,7 @@ public interface IField extends IMatrix<Double>, IDiffusionTarget, IImageProvide
 
 	/**
 	 * Flattens or processes the field using a custom computer/provider.
-	 * 
+	 *
 	 * <p>
 	 * This method applies a computation or transformation to the field, potentially reducing multi-band data or
 	 * applying a custom color mapping. The exact behavior depends on the computer implementation provided.

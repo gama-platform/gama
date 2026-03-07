@@ -496,9 +496,9 @@ public class GamaMatrixFactory {
 	public static IField createFieldWithObjectSizeAndType(final IScope scope, final Object val, final int cols,
 			final int rows, final IType contentsType) throws GamaRuntimeException {
 		Double toStore = Cast.asFloat(scope, val);
-		final IMatrix<Double> matrix = GamaMatrixFactory.createFloatMatrix(cols, rows);
-		matrix.setAllValues(scope, toStore);
-		return castToField(scope, matrix);
+		IField field = createField(scope, cols, rows);
+		field.setAllValues(scope, toStore);
+		return field;
 	}
 
 	/**
@@ -552,7 +552,7 @@ public class GamaMatrixFactory {
 			final double init, final double no) {
 		double[] data = new double[cols * rows];
 		Arrays.fill(data, init);
-		return GamaMatrixFactory.createField(scope, cols, rows, data, no);
+		return createField(scope, cols, rows, data, no);
 	}
 
 	/**

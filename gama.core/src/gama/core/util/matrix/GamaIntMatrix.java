@@ -114,7 +114,9 @@ public class GamaIntMatrix extends GamaMatrix<Integer> implements IImageProvider
 	}
 
 	@Override
-	public IContainerType getGamlType() { return Types.MATRIX.of(Types.INT); }
+	public IContainerType computeTypeWith(final IType contentsType) {
+		return Types.MATRIX.of(Types.INT);
+	}
 
 	@Override
 	public IType<?> computeRuntimeType(final IScope scope) {

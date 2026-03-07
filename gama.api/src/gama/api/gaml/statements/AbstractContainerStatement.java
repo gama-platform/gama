@@ -33,19 +33,19 @@ import gama.api.types.misc.IContainer;
 
 /**
  * Abstract base class for statements that manipulate containers (add, remove, put).
- * 
+ *
  * <p>
- * This class provides the foundation for container manipulation statements in GAML, handling the complex validation
- * and execution logic for adding, removing, or updating elements in lists, maps, matrices, and graphs.
+ * This class provides the foundation for container manipulation statements in GAML, handling the complex validation and
+ * execution logic for adding, removing, or updating elements in lists, maps, matrices, and graphs.
  * </p>
- * 
+ *
  * <h2>Supported Operations</h2>
  * <ul>
  * <li><b>add:</b> Adds elements to a container</li>
  * <li><b>remove:</b> Removes elements from a container</li>
  * <li><b>put:</b> Sets elements at specific positions/keys</li>
  * </ul>
- * 
+ *
  * <h2>Container Types</h2>
  * <p>
  * Works with all GAML container types:
@@ -57,7 +57,7 @@ import gama.api.types.misc.IContainer;
  * <li>Graphs: nodes and edges</li>
  * <li>Agent attributes: dynamic property maps</li>
  * </ul>
- * 
+ *
  * <h2>Validation</h2>
  * <p>
  * The {@link ContainerValidator} performs extensive compile-time validation:
@@ -69,27 +69,28 @@ import gama.api.types.misc.IContainer;
  * <li>Detection of attempts to modify fixed-length containers</li>
  * <li>Special handling for graph operations (edges, nodes)</li>
  * </ul>
- * 
+ *
  * <h2>Example GAML Usage</h2>
+ *
  * <pre>
  * {@code
  * // Add to list
  * add new_agent to: agent_list;
- * 
+ *
  * // Remove from list
  * remove first(agent_list) from: agent_list;
- * 
+ *
  * // Put in map
  * put "value" at: "key" in: my_map;
- * 
+ *
  * // Add all from another container
  * add all: other_list to: my_list;
- * 
+ *
  * // Add edge to graph
  * add edge: (node1, node2) to: my_graph weight: 5.0;
  * }
  * </pre>
- * 
+ *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @since GAMA 1.0
  * @see AbstractStatement
@@ -101,17 +102,17 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 
 	/**
 	 * Validator for container manipulation statements.
-	 * 
+	 *
 	 * <p>
-	 * Performs complex validation including type checking, facet compatibility verification, and special case
-	 * handling for graphs and agent variables.
+	 * Performs complex validation including type checking, facet compatibility verification, and special case handling
+	 * for graphs and agent variables.
 	 * </p>
 	 */
 	public static class ContainerValidator implements IDescriptionValidator {
 
 		/**
 		 * Validates a container manipulation statement description.
-		 * 
+		 *
 		 * <p>
 		 * This method normalizes facets, checks type compatibility, and emits warnings for potentially problematic
 		 * usages.
@@ -183,7 +184,7 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 
 		/**
 		 * Normalizes the 'all:' facet.
-		 * 
+		 *
 		 * <p>
 		 * If 'all:' receives a container value instead of a boolean, that value is moved to 'item:' and 'all:' is set
 		 * to true.
@@ -208,7 +209,7 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 
 		/**
 		 * Normalizes index/key facets.
-		 * 
+		 *
 		 * <p>
 		 * Merges 'at:', 'key:', and 'index:' facets into a single 'at:' facet for uniform handling.
 		 * </p>
@@ -229,7 +230,7 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 
 		/**
 		 * Normalizes container target facets.
-		 * 
+		 *
 		 * <p>
 		 * Merges 'to:', 'from:', and 'in:' facets into a single 'to:' facet for uniform handling.
 		 * </p>
@@ -250,7 +251,7 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 
 		/**
 		 * Normalizes item facets and handles special graph operations.
-		 * 
+		 *
 		 * <p>
 		 * This method:
 		 * </p>
@@ -370,13 +371,13 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 
 	/** Expression for the item(s) to add/remove/put. */
 	protected IExpression item;
-	
+
 	/** Expression for the index/key where to perform the operation. */
 	protected IExpression index;
-	
+
 	/** Expression for the container to modify. */
 	protected IExpression list;
-	
+
 	/** Expression indicating batch operation mode. */
 	protected IExpression all;
 
@@ -391,13 +392,13 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 
 	/** Indicates if the container expression directly yields a modifiable container (vs. an agent/shape). */
 	final boolean isDirect;
-	
+
 	/** Indicates if the container is a graph (requires special handling for edges/nodes). */
 	final boolean isGraph;
 
 	/**
 	 * Constructs a new container manipulation statement.
-	 * 
+	 *
 	 * <p>
 	 * This constructor extracts and normalizes all facets, determines operation mode flags, and identifies the
 	 * container type for specialized handling.
@@ -454,8 +455,10 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 		if (item == null) return null;
 		// For the moment, only graphs need to recompute their objects
 		// GamaFloatMatrix and GamaField need too, as GAML happily accepts int ...
-
-		if (container.getGamlType().id() == IType.MATRIX) return Cast.asFloat(scope, item.value(scope));
+		int id = container.getGamlType().id();
+		int cid = container.getGamlType().getContentType().id();
+		if (id == IType.MATRIX && cid == IType.FLOAT || id == IType.FIELD)
+			return Cast.asFloat(scope, item.value(scope));
 		if (isGraph) return buildValue(scope, (IGraph) container);
 		return item.value(scope);
 	}
