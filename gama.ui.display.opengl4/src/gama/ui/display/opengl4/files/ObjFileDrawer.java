@@ -29,6 +29,22 @@ import gama.ui.display.opengl4.OpenGL;
 public class ObjFileDrawer {
 
 	/**
+	 * Helper class to encapsulate reusable drawing objects
+	 */
+	private static class DrawContext {
+		final OpenGL gl;
+		final GamaObjFile file;
+		final IPoint tex = GamaPointFactory.create();
+		final IPoint normal = GamaPointFactory.create();
+		final IPoint vertex = GamaPointFactory.create();
+
+		DrawContext(GamaObjFile file, OpenGL gl) {
+			this.file = file;
+			this.gl = gl;
+		}
+	}
+
+	/**
 	 * Handle material loading and texturing
 	 */
 	private static Texture handleMaterial(GamaObjFile file, OpenGL gl, String nextmatname) {
@@ -61,9 +77,13 @@ public class ObjFileDrawer {
 	/**
 	 * Helper method to draw a single face of the object
 	 */
-	private static void drawFace(final GamaObjFile file, final OpenGL gl, final int[] tempfaces, final int[] norms, final int[] texs, final IPoint tex, final IPoint normal, final IPoint vertex) {
+	private static void drawFace(final DrawContext ctx, final int faceIndex) {
+		final int[] tempfaces = ctx.file.faces.get(faceIndex);
+		final int[] norms = ctx.file.facesNorms.get(faceIndex);
+		final int[] texs = ctx.file.facesTexs.get(faceIndex);
+
 		final int polytype = tempfaces.length == 3 ? GL.GL_TRIANGLES : GL.GL_TRIANGLE_FAN;
-		gl.beginDrawing(polytype);
+		ctx.gl.beginDrawing(polytype);
 
 		boolean hasNormals = true;
 		for (int w = 0; w < tempfaces.length; w++) {
@@ -75,36 +95,36 @@ public class ObjFileDrawer {
 
 		final double[] arrayOfVertices = new double[tempfaces.length * 3];
 		for (int w = 0; w < tempfaces.length; w++) {
-			final double[] ordinates = file.setOfVertex.get(tempfaces[w] - 1);
+			final double[] ordinates = ctx.file.setOfVertex.get(tempfaces[w] - 1);
 			for (int k = 0; k < 3; k++) { arrayOfVertices[w * 3 + k] = ordinates[k]; }
 		}
 		final ICoordinates coords = GamaCoordinateSequenceFactory.ofLength(tempfaces.length + 1);
 		coords.setTo(arrayOfVertices);
 		coords.completeRing();
 
-		if (!hasNormals) { gl.setNormal(coords, !coords.isClockwise()); }
+		if (!hasNormals) { ctx.gl.setNormal(coords, !coords.isClockwise()); }
 		for (int w = 0; w < tempfaces.length; w++) {
 			if (tempfaces[w] == 0) { continue; }
 			final boolean hasNormal = norms[w] != 0;
 			final boolean hasTex = texs[w] != 0;
 			if (hasNormal) {
-				final double[] temp_coords = file.setOfVertexNormals.get(norms[w] - 1);
-				normal.setLocation(temp_coords[0], temp_coords[1], temp_coords[2]);
+				final double[] temp_coords = ctx.file.setOfVertexNormals.get(norms[w] - 1);
+				ctx.normal.setLocation(temp_coords[0], temp_coords[1], temp_coords[2]);
 			}
 			if (hasTex) {
-				final double[] ordinates = file.setOfVertexTextures.get(texs[w] - 1);
-				tex.setLocation(ordinates[0], ordinates[1], ordinates[2]);
-				if (1d >= tex.getY() && -tex.getY() <= 0) {
-					tex.setY(1d - tex.getY());
+				final double[] ordinates = ctx.file.setOfVertexTextures.get(texs[w] - 1);
+				ctx.tex.setLocation(ordinates[0], ordinates[1], ordinates[2]);
+				if (1d >= ctx.tex.getY() && -ctx.tex.getY() <= 0) {
+					ctx.tex.setY(1d - ctx.tex.getY());
 				} else {
-					tex.setY(Math.abs(tex.getY()));
+					ctx.tex.setY(Math.abs(ctx.tex.getY()));
 				}
 			}
-			final double[] temp_coords = file.setOfVertex.get(tempfaces[w] - 1);
-			vertex.setLocation(temp_coords[0], temp_coords[1], temp_coords[2]);
-			gl.drawVertex(vertex, hasNormal ? normal : null, hasTex ? tex : null);
+			final double[] temp_coords = ctx.file.setOfVertex.get(tempfaces[w] - 1);
+			ctx.vertex.setLocation(temp_coords[0], temp_coords[1], temp_coords[2]);
+			ctx.gl.drawVertex(ctx.vertex, hasNormal ? ctx.normal : null, hasTex ? ctx.tex : null);
 		}
-		gl.endDrawing();
+		ctx.gl.endDrawing();
 	}
 
 	/**
@@ -129,9 +149,8 @@ public class ObjFileDrawer {
 			nextmat = Integer.parseInt(nextmatnamearray[1]);
 		}
 		Texture texture = null;
-		final IPoint tex = GamaPointFactory.create();
-		final IPoint normal = GamaPointFactory.create();
-		final IPoint vertex = GamaPointFactory.create();
+		DrawContext ctx = new DrawContext(file, gl);
+
 		for (int i = 0; i < file.faces.size(); i++) {
 			if (i == nextmat) {
 				if (texture != null) {
@@ -149,11 +168,7 @@ public class ObjFileDrawer {
 				}
 			}
 
-			final int[] tempfaces = file.faces.get(i);
-			final int[] norms = file.facesNorms.get(i);
-			final int[] texs = file.facesTexs.get(i);
-
-			drawFace(file, gl, tempfaces, norms, texs, tex, normal, vertex);
+			drawFace(ctx, i);
 		}
 	}
 
