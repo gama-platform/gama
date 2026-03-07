@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamaStyleGeneration.java, in gama.documentation, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * GamaStyleGeneration.java, in gama.documentation, is part of the source code of the GAMA modeling and simulation
+ * platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.documentation.util;
 
@@ -36,20 +36,22 @@ public class GamaStyleGeneration {
 
 	/** The keyword file. */
 	public static final String KEYWORD_FILE = Constants.WIKI_FOLDER + "/keywords.xml";
-	
+
 	/** The gama style file. */
 	public static final String GAMA_STYLE_FILE = "files/input/pandocPDF/gama_style.sty";
-	
+
 	/** The list category. */
 	// BEWARE !! The order of the list_category is important !! The first one will be prioritary
 	public static final String[] LIST_CATEGORY = { "statement", "type", "operator", "facet", "literal" };
-	
+
 	/** The list forbidden char. */
-	public static final String[] LIST_FORBIDDEN_CHAR = { "-", ":", "!", "?", "/", ".", "^", "@", "*", "+", "<", ">", "=" };
-	
+	public static final String[] LIST_FORBIDDEN_CHAR =
+			{ "-", ":", "!", "?", "/", ".", "^", "@", "*", "+", "<", ">", "=" };
+
 	/** The list undetected statement. */
-	public static final String[] LIST_UNDETECTED_STATEMENT = { "species", "global", "grid", "model", "import", "output" };
-	
+	public static final String[] LIST_UNDETECTED_STATEMENT =
+			{ "species", "global", "grid", "model", "import", "output" };
+
 	/** The list literal. */
 	public static final String[] LIST_LITERAL = { "true", "false", "unknown", "nil" };
 
@@ -59,9 +61,12 @@ public class GamaStyleGeneration {
 	/**
 	 * Generate gama style.
 	 *
-	 * @throws ParserConfigurationException the parser configuration exception
-	 * @throws SAXException the SAX exception
-	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ParserConfigurationException
+	 *             the parser configuration exception
+	 * @throws SAXException
+	 *             the SAX exception
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
 	 */
 	public static void generateGamaStyle() throws ParserConfigurationException, SAXException, IOException {
 		final File keywordFile = new File(KEYWORD_FILE);
@@ -106,9 +111,7 @@ public class GamaStyleGeneration {
 			boolean automaticGeneratedPart = false;
 			while ((line = in.readLine()) != null) {
 				// change the title of the page (# Title) to the correct latex title
-				if (line.contains("% end of the automatically generated part")) {
-					automaticGeneratedPart = false;
-				}
+				if (line.contains("% end of the automatically generated part")) { automaticGeneratedPart = false; }
 				if (line.contains("% this part is automatically generated")) {
 					automaticGeneratedPart = true;
 					// generate automatically the text from the map
@@ -118,9 +121,7 @@ public class GamaStyleGeneration {
 					// write all the categories
 					for (int i = 0; i < LIST_CATEGORY.length; i++) {
 						ArrayList<String> listKeywords = keywordMap.get(LIST_CATEGORY[i]);
-						if (listKeywords == null) {
-							listKeywords = new ArrayList<>();
-						}
+						if (listKeywords == null) { listKeywords = new ArrayList<>(); }
 						out.write("% list of " + LIST_CATEGORY[i] + "\n");
 						if (i == 0) {
 							out.write("morekeywords={\n");
@@ -130,27 +131,21 @@ public class GamaStyleGeneration {
 						boolean firstWordWritten = false;
 						if ("statement".equals(LIST_CATEGORY[i])) {
 							for (final String undetectStatement : LIST_UNDETECTED_STATEMENT) {
-								if (firstWordWritten) {
-									out.write(", ");
-								}
+								if (firstWordWritten) { out.write(", "); }
 								firstWordWritten = true;
 								out.write(undetectStatement);
 							}
 						}
 						if ("literal".equals(LIST_CATEGORY[i])) {
 							for (final String literal : LIST_LITERAL) {
-								if (firstWordWritten) {
-									out.write(", ");
-								}
+								if (firstWordWritten) { out.write(", "); }
 								firstWordWritten = true;
 								out.write(literal);
 							}
 						}
 						for (final String keyword : listKeywords) {
 							if (!containsForbiddenChar(keyword)) {
-								if (firstWordWritten) {
-									out.write(", ");
-								}
+								if (firstWordWritten) { out.write(", "); }
 								firstWordWritten = true;
 								out.write(keyword);
 							}
@@ -174,25 +169,25 @@ public class GamaStyleGeneration {
 	/**
 	 * Contains forbidden char.
 	 *
-	 * @param keyword the keyword
+	 * @param keyword
+	 *            the keyword
 	 * @return true, if successful
 	 */
 	public static boolean containsForbiddenChar(final String keyword) {
 		boolean result = false;
-		for (final String str : LIST_FORBIDDEN_CHAR) {
-			if (keyword.contains(str)) {
-				result = true;
-			}
-		}
+		for (final String str : LIST_FORBIDDEN_CHAR) { if (keyword.contains(str)) { result = true; } }
 		return result;
 	}
 
 	/**
 	 * Creates the subpart files.
 	 *
-	 * @throws ParserConfigurationException the parser configuration exception
-	 * @throws SAXException the SAX exception
-	 * @throws IOException Signals that an I/O exception has occurred.
+	 * @throws ParserConfigurationException
+	 *             the parser configuration exception
+	 * @throws SAXException
+	 *             the SAX exception
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
 	 */
 	public void createSubpartFiles() throws ParserConfigurationException, SAXException, IOException {
 		final Document doc = XMLUtils.createDoc("oj");
@@ -201,7 +196,7 @@ public class GamaStyleGeneration {
 		for (int i = 0; i < nl.getLength(); i++) {
 			final String subpartName = ((Element) nl.item(i)).getAttribute("name");
 			final File subpartFile =
-					new File(Constants.TOC_GEN_FOLDER + File.separator + subpartName.replaceAll(" ", "_") + ".md");
+					new File(Constants.TOC_GEN_FOLDER + File.separator + subpartName.replace(' ', '_') + ".md");
 
 			// copy the content of the wiki file in the new file.
 			final String wikiPagePath =

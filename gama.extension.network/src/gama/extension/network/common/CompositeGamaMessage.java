@@ -11,6 +11,7 @@
 package gama.extension.network.common;
 
 import gama.api.runtime.scope.IScope;
+import gama.api.types.message.IMessage;
 import gama.core.util.messaging.GamaMessage;
 import gama.extension.serialize.binary.BinarySerialisation;
 
@@ -30,7 +31,7 @@ public class CompositeGamaMessage extends GamaMessage {
 	 * @param message
 	 *            the message
 	 */
-	public CompositeGamaMessage(final IScope scope, final GamaMessage message) {
+	public CompositeGamaMessage(final IScope scope, final IMessage message) {
 		super(scope, message.getSender(), message.getReceivers(), message.getContents(scope));
 		this.contents = BinarySerialisation.saveToString(scope, message.getContents(scope));
 		// this.contents = StreamConverter.convertNetworkObjectToStream(scope, message.getContents(scope));

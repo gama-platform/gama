@@ -25,7 +25,6 @@ import gama.api.types.map.IMap;
 import gama.api.types.message.GamaMessageFactory;
 import gama.api.types.message.IMessage;
 import gama.core.util.messaging.GamaMailbox;
-import gama.core.util.messaging.GamaMessage;
 import gama.core.util.messaging.MessagingSkill;
 import gama.extension.network.common.Connector;
 import gama.extension.network.common.GamaNetworkException;
@@ -95,7 +94,7 @@ public class HTTPRequestConnector extends Connector {
 
 	@SuppressWarnings ({ "unchecked" })
 	@Override
-	public void send(final IAgent sender, final String receiver, final GamaMessage content) {
+	public void send(final IAgent sender, final String receiver, final IMessage content) {
 		Object cont = content.getContents(sender.getScope());
 		try {
 			if (!(cont instanceof IList listContent)) throw GamaNetworkException.cannotSendMessage(null,

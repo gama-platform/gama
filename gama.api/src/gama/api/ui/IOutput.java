@@ -20,56 +20,66 @@ import gama.api.ui.layers.ILayerStatement;
 
 /**
  * Interface for simulation outputs in GAMA.
- * 
- * <p>This interface represents objects declared in GAML models that perform computations
- * and generate information to be displayed during simulations. Outputs are not directly
- * responsible for displaying information on screen - they only compute data and control
- * the lifecycle of their associated display surfaces or views.</p>
- * 
+ *
+ * <p>
+ * This interface represents objects declared in GAML models that perform computations and generate information to be
+ * displayed during simulations. Outputs are not directly responsible for displaying information on screen - they only
+ * compute data and control the lifecycle of their associated display surfaces or views.
+ * </p>
+ *
  * <h2>Output Types:</h2>
- * <p>GAMA supports various output types:</p>
+ * <p>
+ * GAMA supports various output types:
+ * </p>
  * <ul>
- *   <li><strong>Display:</strong> Graphical displays (2D/3D visualizations)</li>
- *   <li><strong>Monitor:</strong> Variable value displays</li>
- *   <li><strong>Inspect:</strong> Agent inspection views</li>
- *   <li><strong>File:</strong> File export outputs</li>
- *   <li><strong>Layout:</strong> UI layout configurations</li>
+ * <li><strong>Display:</strong> Graphical displays (2D/3D visualizations)</li>
+ * <li><strong>Monitor:</strong> Variable value displays</li>
+ * <li><strong>Inspect:</strong> Agent inspection views</li>
+ * <li><strong>File:</strong> File export outputs</li>
+ * <li><strong>Layout:</strong> UI layout configurations</li>
  * </ul>
- * 
+ *
  * <h2>Output Lifecycle:</h2>
- * <p>Outputs follow a specific lifecycle:</p>
+ * <p>
+ * Outputs follow a specific lifecycle:
+ * </p>
  * <ol>
- *   <li><strong>Created:</strong> Output is instantiated from GAML</li>
- *   <li><strong>Opened:</strong> {@link #open()} creates the concrete display surface</li>
- *   <li><strong>Running:</strong> {@link #step(IScope)} computes data each cycle</li>
- *   <li><strong>Paused:</strong> {@link #setPaused(boolean)} temporarily halts updates</li>
- *   <li><strong>Closed:</strong> {@link #close()} releases resources</li>
+ * <li><strong>Created:</strong> Output is instantiated from GAML</li>
+ * <li><strong>Opened:</strong> {@link #open()} creates the concrete display surface</li>
+ * <li><strong>Running:</strong> {@link #step(IScope)} computes data each cycle</li>
+ * <li><strong>Paused:</strong> {@link #setPaused(boolean)} temporarily halts updates</li>
+ * <li><strong>Closed:</strong> {@link #close()} releases resources</li>
  * </ol>
- * 
+ *
  * <h2>Computation vs Display:</h2>
- * <p>Since 2018, outputs have had reduced computational responsibilities:</p>
+ * <p>
+ * Since 2018, outputs have had reduced computational responsibilities:
+ * </p>
  * <ul>
- *   <li>{@link #step(IScope)} - Performs GAML-defined computations</li>
- *   <li>{@link #update()} - Refreshes the concrete display (delegated to surface)</li>
+ * <li>{@link #step(IScope)} - Performs GAML-defined computations</li>
+ * <li>{@link #update()} - Refreshes the concrete display (delegated to surface)</li>
  * </ul>
- * 
+ *
  * <h2>Refresh Control:</h2>
- * <p>Outputs can control when they refresh using:</p>
+ * <p>
+ * Outputs can control when they refresh using:
+ * </p>
  * <ul>
- *   <li>Refresh rate (every N cycles)</li>
- *   <li>Pause state</li>
- *   <li>Scope interruption state</li>
- *   <li>{@link #isRefreshable()} combines these factors</li>
+ * <li>Refresh rate (every N cycles)</li>
+ * <li>Pause state</li>
+ * <li>Scope interruption state</li>
+ * <li>{@link #isRefreshable()} combines these factors</li>
  * </ul>
- * 
+ *
  * <h2>Usage Example:</h2>
+ *
  * <pre>{@code
  * IOutput output = experiment.getOutputManager().getOutputWithId("my_display");
  * output.open();
- * output.step(scope);      // Compute data
- * output.update();         // Refresh display
- * output.setPaused(true);  // Pause updates
- * output.close();          // Release resources
+ * output.step(scope); // Compute data
+ * output.update(); // Refresh display
+ * output.setPaused(true); // Pause updates
+ * output.close(); // Release resources
  * }</pre>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -104,6 +114,7 @@ public interface IOutput extends ISymbol, IStepable, IScoped {
 		/**
 		 */
 		void setSurface(IDisplaySurface swtOpenGLDisplaySurface);
+
 	}
 
 	/**
@@ -220,5 +231,17 @@ public interface IOutput extends ISymbol, IStepable, IScoped {
 	 * @return true, if is auto save
 	 */
 	default boolean isAutoSave() { return false; }
+
+	/**
+	 * @return the title (name by default)
+	 */
+	default String getTitle() { return getName(); }
+
+	/**
+	 * @param newOutputName
+	 */
+	default void setTitle(final String newOutputName) {
+		setName(newOutputName);
+	}
 
 }

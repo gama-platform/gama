@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.core.topology.continuous;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaShapeFactory;

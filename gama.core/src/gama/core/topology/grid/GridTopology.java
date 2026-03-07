@@ -13,7 +13,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;

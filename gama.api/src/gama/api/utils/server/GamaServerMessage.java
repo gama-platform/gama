@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.api.utils.server;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonObject;
 import gama.api.utils.json.IJsonValue;
@@ -75,7 +76,7 @@ public class GamaServerMessage implements IJsonable {
 	 */
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		IJsonObject o = json.object().add("type", type).add("content", content);
+		IJsonObject o = json.object().add(IKeyword.TYPE, type).add("content", content);
 		if (exp_id != null) { o.add(ISocketCommand.EXP_ID, exp_id); }
 		return o;
 	}

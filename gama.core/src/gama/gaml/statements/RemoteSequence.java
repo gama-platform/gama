@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.AbstractStatementSequence;
 import gama.api.gaml.statements.IStatement;

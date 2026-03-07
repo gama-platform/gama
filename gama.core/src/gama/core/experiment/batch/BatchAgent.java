@@ -22,8 +22,8 @@ import org.jfree.data.statistics.Statistics;
 
 import gama.annotations.doc;
 import gama.annotations.experiment;
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.IParameter;

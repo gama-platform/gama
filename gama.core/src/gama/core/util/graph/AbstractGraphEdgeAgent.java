@@ -14,7 +14,7 @@ import gama.annotations.doc;
 import gama.annotations.species;
 import gama.annotations.variable;
 import gama.annotations.vars;
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;

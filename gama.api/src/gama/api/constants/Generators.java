@@ -6,6 +6,8 @@ package gama.api.constants;
 import java.util.Arrays;
 import java.util.List;
 
+import gama.annotations.constants.IKeyword;
+
 /**
  * Enumeration of random number generators available in GAMA.
  * <p>

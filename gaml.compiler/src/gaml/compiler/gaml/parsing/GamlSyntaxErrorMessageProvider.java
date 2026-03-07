@@ -19,7 +19,7 @@ import org.eclipse.xtext.nodemodel.SyntaxErrorMessage;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.parser.antlr.SyntaxErrorMessageProvider;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gaml.compiler.gaml.EGaml;
 
 /**

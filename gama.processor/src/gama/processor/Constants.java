@@ -37,6 +37,7 @@ import gama.annotations.symbol;
 import gama.annotations.tests;
 import gama.annotations.type;
 import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
 import gama.processor.doc.DocProcessor;
 import gama.processor.elements.ActionProcessor;
 import gama.processor.elements.ConstantProcessor;
@@ -268,16 +269,15 @@ public interface Constants {
 	/** The explicit imports. */
 	String[] INDIVIDUAL_IMPORTS = {};
 
-	/** 
-	 * Fallback package imports - only used if import tracking completely fails (should never happen).
-	 * Since we now track ALL class imports automatically, this is just a safety net.
-	 * No longer reads from gama-api-packages.txt file.
+	/**
+	 * Fallback package imports - only used if import tracking completely fails (should never happen). Since we now
+	 * track ALL class imports automatically, this is just a safety net. No longer reads from gama-api-packages.txt
+	 * file.
 	 */
-	Set<String> COLLECTIVE_IMPORTS = Stream.of("java.util.", "java.lang.")
-			.collect(Collectors.toSet());
+	Set<String> COLLECTIVE_IMPORTS = Stream.of("java.util.", "java.lang.").collect(Collectors.toSet());
 
 	/** The static star imports. */
-	Set<String> STATIC_COLLECTIVE_IMPORTS = Stream.of("gama.api.gaml.types.Cast", "gama.api.constants.IKeyword")
+	Set<String> STATIC_COLLECTIVE_IMPORTS = Stream.of("gama.api.gaml.types.Cast", IKeyword.class.getName())
 			.map(s -> s + ".").collect(Collectors.toSet());
 
 	/** The ss 1. */

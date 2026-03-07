@@ -108,9 +108,6 @@ public class ViewsHelper {
 		if (page == null) return false;
 		final IViewReference ref = page.findViewReference(id);
 		return ref != null;
-		// final IViewPart view = ref.getView(false);
-		// if (view instanceof IGamaView.Display) { return (IGamaView.Display) view; }
-		// return <
 	}
 
 	/**

@@ -13,6 +13,7 @@ import java.util.Map;
 
 import gama.annotations.doc;
 import gama.annotations.type;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.GamaType;
@@ -61,7 +62,7 @@ public class PredicateType extends GamaType<Predicate> {
 		if (obj instanceof String s) return new Predicate(s);
 		if (obj instanceof Map) {
 			final Map<String, Object> map = (Map<String, Object>) obj;
-			String nm = (String) map.get("name");
+			String nm = (String) map.get(IKeyword.NAME);
 			if (nm == null) { nm = SimpleBdiArchitecture.PREDICATE; }
 			final IMap values = (IMap) map.get("values");
 			return new Predicate(nm, values);

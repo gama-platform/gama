@@ -15,35 +15,29 @@ import gama.api.runtime.scope.IScope;
 
 /**
  * A static factory for creating and converting {@link IMessage} instances.
- * 
+ *
  * <p>
  * This class provides the main entry point for creating messages in GAMA. It delegates to an internal
  * {@link IMessageFactory} implementation that can be configured at runtime, allowing for pluggable message
  * implementations while maintaining a consistent public API.
  * </p>
- * 
- * <h2>Factory Methods</h2>
- * <ul>
- * <li>{@link #create(IScope, Object, Object, Object)} - Creates a message with sender, receivers, and contents</li>
- * <li>{@link #castToMessage(IScope, IAgent, Object)} - Converts an object to a message</li>
- * </ul>
- * 
+ *
  * <h2>Configuration</h2>
  * <p>
  * The factory must be configured with an internal implementation using {@link #setBuilder(IMessageFactory)} before any
  * messages can be created. This is typically done during GAMA platform initialization.
  * </p>
- * 
+ *
  * <h2>Usage Examples</h2>
- * 
+ *
  * <pre>
  * // Create a message with specific sender and receivers
  * IMessage msg = GamaMessageFactory.create(scope, senderAgent, receiverAgent, "Hello!");
- * 
+ *
  * // Create a message from an agent with arbitrary content
  * IMessage msg2 = GamaMessageFactory.castToMessage(scope, agent, contentObject);
  * </pre>
- * 
+ *
  * @author drogoul
  * @since GAMA 1.0
  */
@@ -57,7 +51,7 @@ public class GamaMessageFactory {
 
 	/**
 	 * Configures the internal factory implementation.
-	 * 
+	 *
 	 * <p>
 	 * This method should be called once during GAMA platform initialization to register the concrete message factory
 	 * implementation.
@@ -70,7 +64,7 @@ public class GamaMessageFactory {
 
 	/**
 	 * Converts an arbitrary object to a message.
-	 * 
+	 *
 	 * <p>
 	 * This method creates a message with the specified agent as sender and the provided object as contents. The
 	 * receivers are not explicitly set and may default to a value depending on the implementation.
@@ -90,7 +84,7 @@ public class GamaMessageFactory {
 
 	/**
 	 * Creates a message with full control over sender, receivers, and contents.
-	 * 
+	 *
 	 * <p>
 	 * This is the primary method for creating messages with complete information. All parameters are stored as provided
 	 * without validation, allowing for flexible message creation patterns.

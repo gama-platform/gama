@@ -11,6 +11,7 @@ package gama.core.util.json;
 
 import org.eclipse.core.resources.IFile;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
@@ -67,8 +68,8 @@ public class JSONInfo extends AbstractFileMetaData {
 			} else if (value.isObject()) {
 				type = "Object";
 				itemCount = value.asObject().size();
-				if (value.asObject().get("type") != null) {
-					String t = value.asObject().get("type").asString();
+				if (value.asObject().get(IKeyword.TYPE) != null) {
+					String t = value.asObject().get(IKeyword.TYPE).asString();
 					if ("FeatureCollection".equals(t) || "Feature".equals(t) || "GeometryCollection".equals(t)) {
 						isGeoJson = true;
 						IEnvelope env = GamaEnvelopeFactory.of(0, 0, 0, 0, 0, 0);
@@ -110,7 +111,7 @@ public class JSONInfo extends AbstractFileMetaData {
 						if (crsVal != null && crsVal.isObject()) {
 							IJsonValue props = crsVal.asObject().get("properties");
 							if (props != null && props.isObject()) {
-								IJsonValue name = props.asObject().get("name");
+								IJsonValue name = props.asObject().get(IKeyword.NAME);
 								if (name != null && name.isString()) { crs = name.asString(); }
 							}
 						}
@@ -135,7 +136,7 @@ public class JSONInfo extends AbstractFileMetaData {
 	private void computeEnvelope(final IJsonValue geom, final IEnvelope env) {
 		IJsonValue coords = geom.asObject().get("coordinates");
 		if (coords == null) return;
-		String type = geom.asObject().get("type").asString();
+		String type = geom.asObject().get(IKeyword.TYPE).asString();
 		switch (type) {
 			case "Point":
 				expandEnvelope(coords, env);

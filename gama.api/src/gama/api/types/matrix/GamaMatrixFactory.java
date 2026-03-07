@@ -17,10 +17,10 @@ import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
@@ -496,9 +496,9 @@ public class GamaMatrixFactory {
 	public static IField createFieldWithObjectSizeAndType(final IScope scope, final Object val, final int cols,
 			final int rows, final IType contentsType) throws GamaRuntimeException {
 		Double toStore = Cast.asFloat(scope, val);
-		final IMatrix<Double> matrix = GamaMatrixFactory.createFloatMatrix(cols, rows);
-		matrix.setAllValues(scope, toStore);
-		return castToField(scope, matrix);
+		IField field = createField(scope, cols, rows);
+		field.setAllValues(scope, toStore);
+		return field;
 	}
 
 	/**
@@ -552,7 +552,7 @@ public class GamaMatrixFactory {
 			final double init, final double no) {
 		double[] data = new double[cols * rows];
 		Arrays.fill(data, init);
-		return GamaMatrixFactory.createField(scope, cols, rows, data, no);
+		return createField(scope, cols, rows, data, no);
 	}
 
 	/**

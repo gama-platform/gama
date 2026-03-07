@@ -756,11 +756,13 @@ public class InternalGamaShapeFactory implements IShapeFactory {
 		final IList<IPoint> points = GamaListFactory.createWithoutCasting(Types.POINT, head);
 		// build the line vector
 		final IPoint vecLine = head.minus(tail);
+		// setup length parameters
+		final double fLength = vecLine.norm();
+		// Guard against degenerate segments (tail == head) which would produce NaN coordinates
+		if (fLength == 0) return closed ? buildPolygon(points) : buildPolyline(points);
 		// build the arrow base vector - normal to the line
 		IPoint vecLeft = GamaPointFactory.create(-vecLine.getY(), vecLine.getX());
 		if (vecLine.getY() == 0 && vecLine.getX() == 0) { vecLeft = GamaPointFactory.create(-vecLine.getZ(), 0, 0); }
-		// setup length parameters
-		final double fLength = vecLine.norm();
 		final double th = arrowWidth / (2.0d * fLength);
 		final double ta = arrowLength / (2.0d * theta * fLength);
 		// find the base of the arrow

@@ -321,10 +321,6 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
 		super.createToolItems(tb);
-		GridData data = (GridData) tb.getToolbar(SWT.LEFT).getLayoutData();
-		data.grabExcessHorizontalSpace = true;
-		data.horizontalAlignment = SWT.FILL;
-
 		if (GAMA.getExperiment() == null || GAMA.getExperiment().isBatch()) return;
 		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
 		tbs.button("editor/local.menu", "More...", "More options", e -> {

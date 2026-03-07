@@ -14,14 +14,13 @@ import java.io.Reader;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.serialization.ISerialisedAgent;
 
 /**
  *
  */
-
 
 public interface IJson {
 
@@ -46,10 +45,10 @@ public interface IJson {
 		String NAME_PROPERTIES = "properties";
 
 		/** The Constant NAME_NAME. */
-		String NAME_NAME = "name";
+		String NAME_NAME = IKeyword.NAME;
 
 		/** The Constant NAME_TYPE. */
-		String NAME_TYPE = "type";
+		String NAME_TYPE = IKeyword.TYPE;
 
 		/** The Constant NAME_POINT. */
 		String NAME_POINT = "Point";

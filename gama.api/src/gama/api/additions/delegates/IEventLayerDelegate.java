@@ -16,8 +16,8 @@ import java.util.Set;
 
 import gama.annotations.constant;
 import gama.annotations.doc;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IOperatorCategory;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.statements.IStatement;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.layers.ILayerStatement;

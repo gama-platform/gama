@@ -25,7 +25,7 @@ import gama.api.types.message.IMessage;
  * being transmitted between agents, including sender, receivers, content, and communication protocol metadata. Messages
  * support various communication paradigms including FIPA-ACL (agent communication language) protocols.
  * </p>
- * 
+ *
  * <h2>Key Features:</h2>
  * <ul>
  * <li>Structured agent-to-agent communication</li>
@@ -36,7 +36,7 @@ import gama.api.types.message.IMessage;
  * <li>Message queuing and retrieval</li>
  * <li>Network communication support</li>
  * </ul>
- * 
+ *
  * <h2>Message Attributes:</h2>
  * <ul>
  * <li><b>sender</b> - the agent that sent the message</li>
@@ -46,47 +46,47 @@ import gama.api.types.message.IMessage;
  * <li><b>protocol</b> - communication protocol identifier</li>
  * <li><b>conversation_id</b> - identifier for conversation tracking</li>
  * </ul>
- * 
+ *
  * <h2>Usage Examples:</h2>
- * 
+ *
  * <pre>
  * {@code
  * // Create and send a message (messaging skill required)
  * species communicating_agent skills: [messaging] {
- *     
+ *
  *     reflex send_info {
- *         do start_conversation to: [agent1, agent2] 
- *            protocol: 'fipa-request' 
+ *         do start_conversation to: [agent1, agent2]
+ *            protocol: 'fipa-request'
  *            performative: 'inform'
  *            contents: ['Hello', 42];
  *     }
- *     
+ *
  *     reflex receive_messages {
  *         // Check mailbox
  *         if (length(mailbox) > 0) {
  *             message msg <- mailbox[0];
  *             write "Received from " + msg.sender + ": " + msg.contents;
- *             
+ *
  *             // Reply
  *             do reply message: msg contents: "Acknowledged";
  *         }
  *     }
  * }
- * 
+ *
  * // Create message directly
  * message msg <- message("Simple text content");
- * 
+ *
  * // Access message properties
  * agent sender <- my_message.sender;
  * list receivers <- my_message.receivers;
  * unknown content <- my_message.contents;
  * string perf <- my_message.performative;
- * 
+ *
  * // Filter messages by sender
  * list<message> msgs_from_agent1 <- mailbox where (each.sender = agent1);
  * }
  * </pre>
- * 
+ *
  * <h2>Communication Protocols:</h2>
  * <p>
  * GAMA supports FIPA-ACL protocols for structured agent communication:
@@ -98,7 +98,7 @@ import gama.api.types.message.IMessage;
  * <li>And more custom protocols...</li>
  * </ul>
  * </p>
- * 
+ *
  * @author GAMA Development Team
  * @see GamaType
  * @see IMessage
@@ -118,7 +118,7 @@ public class GamaMessageType extends GamaType<IMessage> {
 
 	/**
 	 * Constructs a new message type.
-	 * 
+	 *
 	 * @param typesManager
 	 *            the types manager responsible for type resolution and management
 	 */
@@ -131,7 +131,7 @@ public class GamaMessageType extends GamaType<IMessage> {
 	 * <p>
 	 * The default message is null, as there is no meaningful default message.
 	 * </p>
-	 * 
+	 *
 	 * @return null
 	 */
 	@Override
@@ -142,7 +142,7 @@ public class GamaMessageType extends GamaType<IMessage> {
 	 * <p>
 	 * Message type accepts null values.
 	 * </p>
-	 * 
+	 *
 	 * @return true, null messages are accepted
 	 */
 	@Override
@@ -159,7 +159,7 @@ public class GamaMessageType extends GamaType<IMessage> {
 	 * <li>Other types - creates a new message with the current agent as sender and the object as contents</li>
 	 * </ul>
 	 * </p>
-	 * 
+	 *
 	 * @param scope
 	 *            the current execution scope
 	 * @param obj
@@ -176,6 +176,7 @@ public class GamaMessageType extends GamaType<IMessage> {
 	@doc ("Returns a message built from the argument. If the argument is already a message returns it, otherwise returns a message with the current agent as the sender and the argument as the contents ")
 	public IMessage cast(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {
+		if (obj instanceof IMessage m) return copy ? m.copy(scope) : m;
 		return GamaMessageFactory.castToMessage(scope, scope.getAgent(), obj);
 	}
 
@@ -184,7 +185,7 @@ public class GamaMessageType extends GamaType<IMessage> {
 	 * <p>
 	 * Messages cannot be constant as they represent dynamic communication events.
 	 * </p>
-	 * 
+	 *
 	 * @return false, messages are not constant
 	 */
 	@Override

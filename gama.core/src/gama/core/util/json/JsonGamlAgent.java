@@ -13,7 +13,7 @@ package gama.core.util.json;
 import java.io.IOException;
 import java.util.Map;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.runtime.scope.IScope;

@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.constants;
+package gama.annotations.constants;
 
 /**
  * Interface defining all keywords and constants used in the GAML language.

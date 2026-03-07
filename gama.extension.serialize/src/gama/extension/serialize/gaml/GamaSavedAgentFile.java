@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import gama.api.constants.IKeyword;
 import gama.api.constants.ISerialisationConstants;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
@@ -26,6 +25,7 @@ import gama.api.types.list.IList;
 import gama.api.utils.geometry.IEnvelope;
 import gama.annotations.doc;
 import gama.annotations.file;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 
 /**

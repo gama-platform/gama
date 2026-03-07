@@ -10,15 +10,16 @@
  ********************************************************************************************************/
 package gama.api.additions;
 
+import static gama.annotations.constants.IKeyword.OF;
+import static gama.annotations.constants.IKeyword._DOT;
 import static gama.api.additions.GamaBundleLoader.CURRENT_PLUGIN_NAME;
-import static gama.api.constants.IKeyword.OF;
-import static gama.api.constants.IKeyword._DOT;
 
 import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.annotations.support.ITypeProvider;
 import gama.api.additions.registries.ArtefactRegistry;
@@ -31,7 +32,6 @@ import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.factories.ISymbolFactory;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.GamaFileType;

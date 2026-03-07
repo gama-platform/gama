@@ -53,10 +53,10 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;

@@ -24,9 +24,9 @@ import org.eclipse.xtext.ui.label.DefaultEObjectLabelProvider;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.ast.IGamlLabelProvider;
 import gama.api.compilation.ast.ISyntacticElement;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.types.Types;
 import gama.gaml.operators.Strings;
 import gaml.compiler.gaml.EGaml;

@@ -18,6 +18,7 @@ import gama.annotations.facets;
 import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.annotations.validator;
@@ -26,7 +27,6 @@ import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IContainerType;
@@ -619,7 +619,7 @@ public class GamlSpecies extends AbstractSpecies {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType(), "name", getName());
+		return json.typedObject(getGamlType(), IKeyword.NAME, getName());
 	}
 
 }

@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
+import static gama.annotations.constants.IKeyword.NAME;
+import static gama.annotations.constants.IKeyword.PARAMETER;
 import static gama.api.constants.IGamlIssue.DUPLICATE_DEFINITION;
 import static gama.api.constants.IGamlIssue.REDEFINES;
-import static gama.api.constants.IKeyword.NAME;
-import static gama.api.constants.IKeyword.PARAMETER;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -24,13 +24,13 @@ import org.eclipse.emf.ecore.resource.Resource;
 
 import com.google.common.collect.Iterables;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.symbols.Facets;
 import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.kernel.simulation.IExperimentAgent;

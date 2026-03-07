@@ -26,10 +26,10 @@ import gama.annotations.setter;
 import gama.annotations.species;
 import gama.annotations.variable;
 import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ITypeProvider;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.ISymbol;
@@ -782,16 +782,16 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		outputs.forEach((oName, output) -> {
 			String keyName, newOutputName;
 			if (!scheduled) {
-				keyName = output.getName() + "#" + this.getSpecies().getDescription().getModelDescription().getAlias()
+				keyName = output.getTitle() + "#" + this.getSpecies().getDescription().getModelDescription().getAlias()
 						+ "#" + this.getExperiment().getSpecies().getName() + "#" + this.getExperiment().getIndex();
 				newOutputName = keyName;
 			} else {
 				final String postfix = buildPostfix();
 				keyName = oName + postfix;
-				newOutputName = output.getName() + postfix;
+				newOutputName = output.getTitle() + postfix;
 			}
 			mm.put(keyName, output);
-			output.setName(newOutputName);
+			output.setTitle(newOutputName);
 		});
 		outputs.clear();
 		outputs.putAll(mm);
@@ -1028,7 +1028,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 					// updated from the corresponding agent
 					final Map<String, ISerialisedAgent> mapSavedAgtName = GamaMapFactory.createUnordered();
 					for (final ISerialisedAgent localSA : savedAgentInnerPop.get(savedAgentMicroPopName).agents()) {
-						mapSavedAgtName.put((String) localSA.getAttributeValue("name"), localSA);
+						mapSavedAgtName.put((String) localSA.getAttributeValue(IKeyword.NAME), localSA);
 					}
 
 					final Map<String, IAgent> mapSimuAgtName = GamaMapFactory.createUnordered();

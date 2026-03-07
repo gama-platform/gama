@@ -16,8 +16,8 @@ import java.util.Map;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.ast.ISyntacticElement;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.symbols.Facets;
 
 /**

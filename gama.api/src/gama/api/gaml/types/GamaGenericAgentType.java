@@ -12,12 +12,12 @@ package gama.api.gaml.types;
 
 import gama.annotations.doc;
 import gama.annotations.type;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.agent.IAgent;

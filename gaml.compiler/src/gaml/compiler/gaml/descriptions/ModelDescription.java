@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
-import static gama.api.constants.IKeyword.NAME;
+import static gama.annotations.constants.IKeyword.NAME;
 
 import java.io.File;
 import java.util.Collection;
@@ -25,6 +25,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.collect.Iterables;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
@@ -35,7 +36,6 @@ import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;

@@ -147,7 +147,7 @@ public class GamaColorFactory {
 	 * @param rgb
 	 *            the integer representation of the color (ignoring its alpha).
 	 * @param alpha
-	 *            the alpha component (0-255).
+	 *            the alpha component (0-255). 0 transparent, 255 opaque.
 	 * @return the new {@link IColor} instance.
 	 */
 	public static IColor createWithAlpha(final int rgb, final int alpha) {
@@ -182,7 +182,7 @@ public class GamaColorFactory {
 	 * @return the corresponding {@link IColor} instance.
 	 */
 	public static IColor get(final int r, final int g, final int b) {
-		return createWithRGBA(r, g, b, 0);
+		return createWithRGBA(r, g, b, 255);
 	}
 
 	/**
@@ -381,8 +381,7 @@ public class GamaColorFactory {
 	 *            whether to create a copy if the object is already a color (currently unused)
 	 * @return the resulting {@link IColor} instance, or null if input is null
 	 * @throws GamaRuntimeException
-	 *             if the object cannot be converted to a valid color (e.g., invalid color name or malformed RGB
-	 *             string)
+	 *             if the object cannot be converted to a valid color (e.g., invalid color name or malformed RGB string)
 	 */
 	public static IColor castToColor(final IScope scope, final Object obj, final Object param, final boolean copy)
 			throws GamaRuntimeException {

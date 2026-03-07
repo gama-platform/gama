@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.simulation.IClock;

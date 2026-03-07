@@ -23,13 +23,13 @@ import gama.dev.DEBUG;
 
 /**
  * Default controller for GUI-based experiment execution in GAMA.
- * 
+ *
  * <p>
- * This controller manages interactive experiments where users can control execution through the GAMA user interface.
- * It implements a dual-thread architecture with one thread processing user commands and another executing simulation
+ * This controller manages interactive experiments where users can control execution through the GAMA user interface. It
+ * implements a dual-thread architecture with one thread processing user commands and another executing simulation
  * steps.
  * </p>
- * 
+ *
  * <h3>Architecture</h3>
  * <p>
  * The controller uses two concurrent threads:
@@ -38,12 +38,12 @@ import gama.dev.DEBUG;
  * <li><b>Command Thread:</b> Processes user commands (_OPEN, _START, _PAUSE, _STEP, _BACK, _RELOAD, _CLOSE)</li>
  * <li><b>Execution Thread:</b> Continuously executes simulation steps when not paused</li>
  * </ul>
- * 
+ *
  * <h3>Execution Model</h3>
  * <p>
  * The execution thread runs in a loop controlled by the {@code experimentAlive} flag:
  * </p>
- * 
+ *
  * <pre>
  * <code>
  * while (experimentAlive) {
@@ -54,7 +54,7 @@ import gama.dev.DEBUG;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h3>Command Processing</h3>
  * <table border="1">
  * <tr>
@@ -98,7 +98,7 @@ import gama.dev.DEBUG;
  * <td>Any → NONE</td>
  * </tr>
  * </table>
- * 
+ *
  * <h3>State Synchronization</h3>
  * <p>
  * Two synchronizers coordinate execution:
@@ -107,35 +107,35 @@ import gama.dev.DEBUG;
  * <li><b>lock:</b> Acquired when paused, released to start/step. Controls execution thread blocking.</li>
  * <li><b>previouslock:</b> Ensures step completion. Acquired during STEP, released after step completes.</li>
  * </ul>
- * 
+ *
  * <h3>Usage Example</h3>
- * 
+ *
  * <pre>
  * <code>
  * // Create and start controller
  * IExperimentSpecies experiment = ...;
  * DefaultExperimentController controller = new DefaultExperimentController(experiment);
- * 
+ *
  * // Open the experiment
  * controller.processOpen(true);  // Synchronous
- * 
+ *
  * // Start execution
  * controller.processStart(false);  // Asynchronous - returns immediately
- * 
+ *
  * // Pause after some time
  * controller.processPause(true);
- * 
+ *
  * // Execute single step
  * controller.processStep(true);
- * 
+ *
  * // Reload experiment
  * controller.processReload(true);
- * 
+ *
  * // Close when done
  * controller.close();
  * </code>
  * </pre>
- * 
+ *
  * <h3>Error Handling</h3>
  * <p>
  * When exceptions occur during command processing:
@@ -146,7 +146,7 @@ import gama.dev.DEBUG;
  * <li>Experiment is closed via {@link #notifyExceptionAndCloseExperiment(Throwable)}</li>
  * <li>State updated to NONE</li>
  * </ol>
- * 
+ *
  * <h3>Lifecycle</h3>
  * <ol>
  * <li><b>Construction:</b> Both threads start, execution thread blocks on lock</li>
@@ -154,7 +154,7 @@ import gama.dev.DEBUG;
  * <li><b>Execution:</b> Steps execute based on commands and pause state</li>
  * <li><b>Disposal:</b> Threads signaled to stop, resources cleaned up</li>
  * </ol>
- * 
+ *
  * <h3>Thread Safety</h3>
  * <ul>
  * <li>Command queue limited to 10 items to prevent memory issues</li>
@@ -162,17 +162,17 @@ import gama.dev.DEBUG;
  * <li>Lock acquired in constructor to ensure controlled start</li>
  * <li>Volatile flags for state coordination</li>
  * </ul>
- * 
+ *
  * <h3>Test Integration</h3>
  * <p>
  * Automatically starts execution for {@link ITestAgent} instances, enabling automated test runs.
  * </p>
- * 
+ *
  * <h3>Server Mode</h3>
  * <p>
  * Supports server configuration for remote/headless operation while maintaining GUI controller semantics.
  * </p>
- * 
+ *
  * @see AbstractExperimentController
  * @see IExperimentController
  * @see IExperimentAgent
@@ -202,21 +202,18 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		// under high command throughput scenarios (e.g., automated testing, batch operations)
 		commands = new ArrayBlockingQueue<>(50);
 		this.experiment = experiment;
-		
+
 		// Execution thread runs simulation steps when not paused
-		executionThread = new Thread(() -> { 
-			while (experimentAlive) { 
-				step(); 
-			} 
-		}, "Experiment Execution Thread [" + experiment.getName() + "]");
-		
+		executionThread = new Thread(() -> { while (experimentAlive) { step(); } },
+				"Experiment Execution Thread [" + experiment.getName() + "]");
+
 		executionThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
 		commandThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
-		
+
 		// Acquire lock initially to ensure execution thread blocks until explicitly started
 		// This prevents premature execution before experiment is properly scheduled
 		lock.acquire();
-		
+
 		commandThread.start();
 		executionThread.start();
 	}
@@ -229,11 +226,11 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 */
 	/**
 	 * Process user command.
-	 * 
+	 *
 	 * <p>
 	 * Handles experiment control commands. Commands modify execution state and trigger state change notifications.
 	 * </p>
-	 * 
+	 *
 	 * <h3>Optimizations Applied:</h3>
 	 * <ul>
 	 * <li>Caches scope reference to avoid repeated getScope() calls</li>
@@ -241,19 +238,20 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 * <li>Adds null checks before scope operations</li>
 	 * </ul>
 	 *
-	 * @param command the command to execute
+	 * @param command
+	 *            the command to execute
 	 * @return true if successful, false otherwise
 	 */
 	@Override
 	protected boolean processUserCommand(final ExperimentCommand command) {
 		// Optimization: Cache scope to reduce volatile reads
 		final IScope currentScope = getScope();
-		
+
 		switch (command) {
 			case _CLOSE:
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
 				return true;
-				
+
 			case _OPEN:
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NOTREADY);
 				try {
@@ -267,7 +265,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					notifyExceptionAndCloseExperiment(e);
 					return false;
 				}
-				
+
 			case _START:
 				try {
 					// Optimization: Only change state if actually paused
@@ -283,21 +281,19 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				} finally {
 					GAMA.updateExperimentState(experiment, IExperimentStateListener.State.RUNNING);
 				}
-				
+
 			case _PAUSE:
 				paused = true;
-				if (!disposing) { 
-					GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED); 
-				}
+				if (!disposing) { GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED); }
 				return true;
-				
+
 			case _STEP:
 				previouslock.acquire();
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
 				lock.release();
 				return true;
-				
+
 			case _BACK:
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
@@ -306,14 +302,14 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					experiment.getAgent().backward(currentScope);
 				}
 				return true;
-				
+
 			case _RELOAD:
 				// Optimization: Early exit if scope not available
 				if (currentScope == null) {
 					DEBUG.ERR("Cannot reload experiment: scope not initialized");
 					return false;
 				}
-				
+
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NOTREADY);
 				try {
 					final boolean wasRunning = !isPaused() && !experiment.isAutorun();
@@ -321,7 +317,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 					currentScope.getGui().getStatus().waitStatus("Reloading...", IStatusMessage.SIMULATION_ICON,
 							() -> experiment.reload());
 					if (wasRunning) return processUserCommand(ExperimentCommand._START);
-					currentScope.getGui().getStatus().informStatus("Experiment reloaded", IStatusMessage.SIMULATION_ICON);
+					currentScope.getGui().getStatus().informStatus("Experiment reloaded",
+							IStatusMessage.SIMULATION_ICON);
 					return true;
 				} catch (final Throwable e) {
 					// Improved error handling with proper logging
@@ -337,12 +334,12 @@ public class DefaultExperimentController extends AbstractExperimentController {
 
 	/**
 	 * Disposes the controller and releases all resources.
-	 * 
+	 *
 	 * <p>
 	 * This method ensures clean shutdown of both execution and command threads, releases locks, and cleans up
 	 * resources. It's safe to call multiple times.
 	 * </p>
-	 * 
+	 *
 	 * <h3>Optimizations Applied:</h3>
 	 * <ul>
 	 * <li>Sets disposing flag early to prevent new operations</li>
@@ -355,17 +352,17 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	public void dispose() {
 		// Set disposing flag early to prevent new operations
 		disposing = true;
-		
+
 		// Clear references first to fail-fast any pending operations
 		final IScope localScope = scope;
 		scope = null;
 		agent = null;
-		
+
 		if (experiment != null) {
 			try {
 				paused = true;
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NOTREADY);
-				
+
 				// Close dialogs if scope is available
 				if (localScope != null) {
 					try {
@@ -375,27 +372,27 @@ public class DefaultExperimentController extends AbstractExperimentController {
 						DEBUG.ERR("Error closing dialogs during disposal", e);
 					}
 				}
-				
+
 				// Dec 2015 This method is normally now called from ExperimentPlan.dispose()
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
 			} finally {
 				// Stop accepting new commands
 				acceptingCommands = false;
-				
+
 				// Signal execution thread to stop
 				experimentAlive = false;
-				
+
 				// Release lock to unblock execution thread if it's waiting
 				try {
 					lock.release();
 				} catch (final Exception e) {
 					// Lock might already be released - that's fine
 				}
-				
+
 				// Send close command to command thread
 				if (commandThread != null && commandThread.isAlive()) {
 					commands.offer(ExperimentCommand._CLOSE);
-					
+
 					// Optimization: Wait for command thread to finish with timeout
 					try {
 						commandThread.join(1000); // Wait up to 1 second
@@ -408,7 +405,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 						Thread.currentThread().interrupt(); // Restore interrupt status
 					}
 				}
-				
+
 				// Optimization: Wait for execution thread to finish with timeout
 				if (executionThread != null && executionThread.isAlive()) {
 					try {
@@ -479,12 +476,12 @@ public class DefaultExperimentController extends AbstractExperimentController {
 
 	/**
 	 * Executes one simulation step.
-	 * 
+	 *
 	 * <p>
-	 * This method is called repeatedly by the execution thread. It blocks when paused and executes a single step
-	 * when running.
+	 * This method is called repeatedly by the execution thread. It blocks when paused and executes a single step when
+	 * running.
 	 * </p>
-	 * 
+	 *
 	 * <h3>Optimizations:</h3>
 	 * <ul>
 	 * <li>Caches scope reference to reduce volatile field reads in hot path</li>
@@ -494,13 +491,11 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 */
 	protected void step() {
 		// Block if paused - wait for START or STEP command to release lock
-		if (paused) {
-			lock.acquire();
-		}
-		
+		if (paused) { lock.acquire(); }
+
 		// Cache scope reference to avoid repeated volatile reads
 		final IScope currentScope = scope;
-		
+
 		// Early exit if scope is not initialized yet
 		if (currentScope == null) {
 			// Scope not yet initialized - this can happen during startup
@@ -508,7 +503,7 @@ public class DefaultExperimentController extends AbstractExperimentController {
 			previouslock.release();
 			return;
 		}
-		
+
 		try {
 			// Execute one simulation step
 			if (!currentScope.step(agent).passed()) {
@@ -518,20 +513,20 @@ public class DefaultExperimentController extends AbstractExperimentController {
 			}
 		} catch (final RuntimeException e) {
 			// Log exception with proper context instead of printStackTrace
-			DEBUG.ERR("Error during experiment step execution for " + 
-					(agent != null ? agent.getName() : "unknown agent"), e);
-			
+			DEBUG.ERR(
+					"Error during experiment step execution for " + (agent != null ? agent.getName() : "unknown agent"),
+					e);
+
 			// Optionally notify GUI of the error
-			if (currentScope != null && !disposing) {
+			if (!disposing) {
 				try {
-					currentScope.getGui().getStatus().errorStatus(
-						GamaRuntimeException.create(e, currentScope));
+					currentScope.getGui().getStatus().errorStatus(GamaRuntimeException.create(e, currentScope));
 				} catch (final Exception guiError) {
 					// GUI notification failed - just log it
 					DEBUG.ERR("Failed to notify GUI of step error", guiError);
 				}
 			}
-			
+
 			// Pause execution on error to prevent error spam
 			paused = true;
 		} finally {

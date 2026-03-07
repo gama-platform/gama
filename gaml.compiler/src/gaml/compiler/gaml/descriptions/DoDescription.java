@@ -10,20 +10,20 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
-import static gama.api.constants.IKeyword.ACTION;
-import static gama.api.constants.IKeyword.WITH;
+import static gama.annotations.constants.IKeyword.ACTION;
+import static gama.annotations.constants.IKeyword.WITH;
 
 import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.Arguments;

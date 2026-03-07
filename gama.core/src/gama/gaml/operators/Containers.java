@@ -37,6 +37,7 @@ import gama.annotations.no_test;
 import gama.annotations.operator;
 import gama.annotations.test;
 import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
 import gama.annotations.support.ITypeProvider;
@@ -45,7 +46,6 @@ import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.validation.IOperatorValidator;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IOperator;
@@ -2855,10 +2855,10 @@ public class Containers {
 			category = IOperatorCategory.CONTAINER,
 			concept = { IConcept.MATRIX })
 	@doc (
-			value = "When applied to a field, collect returns a field of the same size, in which each element is the evaluation of the right-hand operand on the corresponding element in the left-hand operand")
+			value = "When applied to a field, collect returns a field of the same size if the right expression returns float values, in which each element is the evaluation of the right-hand operand on the corresponding element in the left-hand operand")
 	@test ("field([1,2,4],[1,3,4]) collect (x: x *2) = field([2,4,8],[2,6,8])")
-	public static IField collect(final IScope scope, final String eachName, final IField f, final IExpression filter) {
-		return (IField) collect(scope, eachName, (IMatrix) f, filter);
+	public static IMatrix collect(final IScope scope, final String eachName, final IField f, final IExpression filter) {
+		return collect(scope, eachName, (IMatrix) f, filter);
 	}
 
 	/**

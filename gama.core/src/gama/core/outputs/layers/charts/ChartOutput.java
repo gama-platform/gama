@@ -16,7 +16,7 @@ import java.util.LinkedHashMap;
 
 import org.jfree.chart.JFreeChart;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.kernel.simulation.IClock;

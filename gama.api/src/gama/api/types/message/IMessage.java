@@ -10,22 +10,24 @@
 package gama.api.types.message;
 
 import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.setter;
 import gama.annotations.variable;
 import gama.annotations.vars;
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.misc.IValue;
 
 /**
  * Represents a message that can be exchanged between agents in a GAMA simulation.
- * 
+ *
  * <p>
  * Messages are the primary mechanism for agent communication in multi-agent systems. Each message encapsulates
  * information about who sent it, who should receive it, what content it carries, and when it was sent and received.
  * Messages also track their read/unread status to support message processing workflows.
  * </p>
- * 
+ *
  * <h2>Message Structure</h2>
  * <p>
  * A message consists of the following components:
@@ -38,7 +40,7 @@ import gama.api.types.misc.IValue;
  * <li><strong>Reception timestamp:</strong> The simulation cycle when the message was received</li>
  * <li><strong>Unread flag:</strong> Whether the message has been read by the receiver</li>
  * </ul>
- * 
+ *
  * <h2>Available Variables</h2>
  * <ul>
  * <li><strong>sender</strong> (any type) - The agent or entity that sent this message</li>
@@ -47,38 +49,37 @@ import gama.api.types.misc.IValue;
  * <li><strong>emission_timestamp</strong> (int) - The cycle at which this message was emitted</li>
  * <li><strong>reception_timestamp</strong> (int) - The cycle at which this message was received</li>
  * </ul>
- * 
+ *
  * <h2>Message Lifecycle</h2>
  * <ol>
- * <li>A message is created with {@link GamaMessageFactory#create(IScope, Object, Object, Object)}</li>
  * <li>The emission timestamp is set to the current simulation cycle</li>
  * <li>The message is sent to receiver(s) and delivered (implementation-specific)</li>
  * <li>Upon delivery, {@link #hasBeenReceived(IScope)} is called to set the reception timestamp</li>
  * <li>The receiver can check {@link #isUnread()} and process the message</li>
  * <li>The receiver marks the message as read using {@link #setUnread(boolean)}</li>
  * </ol>
- * 
+ *
  * <h2>Usage Examples</h2>
- * 
+ *
  * <pre>
  * // Sending a message
  * IMessage msg = GamaMessageFactory.create(scope, this, otherAgent, "Hello!");
  * // ... send via communication protocol ...
- * 
+ *
  * // Receiving and processing messages
  * for (IMessage msg : mailbox) {
- *     if (msg.isUnread()) {
- *         Object sender = msg.getSender();
- *         Object content = msg.getContents();
- *         // ... process message ...
- *         msg.setUnread(false);
- *     }
+ * 	if (msg.isUnread()) {
+ * 		Object sender = msg.getSender();
+ * 		Object content = msg.getContents();
+ * 		// ... process message ...
+ * 		msg.setUnread(false);
+ * 	}
  * }
- * 
+ *
  * // Checking timestamps
  * int delay = msg.getReceptionTimestamp() - msg.getEmissionTimestamp();
  * </pre>
- * 
+ *
  * @author drogoul
  * @since GAMA 1.0
  */
@@ -138,18 +139,19 @@ public interface IMessage extends IValue {
 
 	/**
 	 * Gets the sender of this message.
-	 * 
+	 *
 	 * <p>
 	 * The sender is typically an agent, but can be any object depending on the communication protocol.
 	 * </p>
 	 *
 	 * @return the sender object (usually an {@link gama.api.kernel.agent.IAgent})
 	 */
+	@getter (IMessage.SENDER)
 	Object getSender();
 
 	/**
 	 * Sets the sender of this message.
-	 * 
+	 *
 	 * <p>
 	 * This method allows changing the sender after message creation, which may be useful in some communication
 	 * protocols or message forwarding scenarios.
@@ -158,11 +160,12 @@ public interface IMessage extends IValue {
 	 * @param sender
 	 *            the new sender object
 	 */
+	@setter (IMessage.SENDER)
 	void setSender(Object sender);
 
 	/**
 	 * Gets the receiver(s) of this message.
-	 * 
+	 *
 	 * <p>
 	 * The receivers can be a single agent, a list of agents, or any other representation depending on the
 	 * implementation and communication protocol.
@@ -170,11 +173,12 @@ public interface IMessage extends IValue {
 	 *
 	 * @return the receiver(s) object
 	 */
+	@getter (IMessage.RECEIVERS)
 	Object getReceivers();
 
 	/**
 	 * Sets the receiver(s) of this message.
-	 * 
+	 *
 	 * <p>
 	 * This method allows changing the receivers after message creation.
 	 * </p>
@@ -182,25 +186,22 @@ public interface IMessage extends IValue {
 	 * @param receivers
 	 *            the new receiver(s) object
 	 */
+	@setter (IMessage.RECEIVERS)
 	void setReceivers(Object receivers);
 
 	/**
-	 * Gets the contents/payload of this message.
-	 * 
-	 * <p>
-	 * The contents can be any GAMA value or object - primitives, lists, maps, agents, geometries, etc. It is up to the
-	 * receiver to interpret the contents appropriately.
-	 * </p>
+	 * Gets the contents.
 	 *
-	 * @return the message contents
+	 * @param scope
+	 *            the scope
+	 * @return the contents
 	 */
-	default Object getContents() {
-		return null;
-	}
+	@getter (IMessage.CONTENTS)
+	Object getContents(IScope scope);
 
 	/**
 	 * Sets the contents/payload of this message.
-	 * 
+	 *
 	 * <p>
 	 * This method allows changing the message contents after creation.
 	 * </p>
@@ -208,11 +209,12 @@ public interface IMessage extends IValue {
 	 * @param content
 	 *            the new message contents
 	 */
+	@setter (IMessage.CONTENTS)
 	void setContents(Object content);
 
 	/**
 	 * Checks if this message is unread.
-	 * 
+	 *
 	 * <p>
 	 * Messages are typically created with unread status set to true. Receivers should set this to false after
 	 * processing the message.
@@ -220,11 +222,12 @@ public interface IMessage extends IValue {
 	 *
 	 * @return true if the message has not been read, false otherwise
 	 */
+	@getter (IMessage.UNREAD)
 	boolean isUnread();
 
 	/**
 	 * Sets the unread status of this message.
-	 * 
+	 *
 	 * <p>
 	 * Receivers typically call this method with false after processing a message to mark it as read.
 	 * </p>
@@ -232,22 +235,24 @@ public interface IMessage extends IValue {
 	 * @param unread
 	 *            true to mark as unread, false to mark as read
 	 */
+	@setter (IMessage.UNREAD)
 	void setUnread(boolean unread);
 
 	/**
 	 * Gets the emission timestamp of this message.
-	 * 
+	 *
 	 * <p>
 	 * The emission timestamp is the simulation cycle number when the message was created and sent.
 	 * </p>
 	 *
 	 * @return the cycle number when this message was emitted
 	 */
+	@getter (IMessage.EMISSION_TIMESTAMP)
 	int getEmissionTimestamp();
 
 	/**
 	 * Gets the reception timestamp of this message.
-	 * 
+	 *
 	 * <p>
 	 * The reception timestamp is the simulation cycle number when the message was received/delivered. It is set by
 	 * calling {@link #hasBeenReceived(IScope)}.
@@ -255,11 +260,12 @@ public interface IMessage extends IValue {
 	 *
 	 * @return the cycle number when this message was received
 	 */
+	@getter (IMessage.RECEPTION_TIMESTAMP)
 	int getReceptionTimestamp();
 
 	/**
 	 * Marks this message as having been received.
-	 * 
+	 *
 	 * <p>
 	 * This method should be called by the message delivery system when the message is delivered to the receiver. It
 	 * sets the reception timestamp to the current simulation cycle.
@@ -269,5 +275,15 @@ public interface IMessage extends IValue {
 	 *            the current GAMA execution scope (provides access to simulation time)
 	 */
 	void hasBeenReceived(IScope scope);
+
+	/**
+	 * Copy.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i message
+	 */
+	@Override
+	IMessage copy(IScope scope);
 
 }

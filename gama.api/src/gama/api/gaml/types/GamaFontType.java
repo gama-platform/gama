@@ -13,9 +13,9 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.type;
 import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.font.GamaFontFactory;
@@ -102,7 +102,7 @@ public class GamaFontType extends GamaType<IFont> {
 	 */
 	@Override
 	public IFont deserializeFromJson(final IScope scope, final IMap<String, Object> map2) {
-		return GamaFontFactory.createFont(Cast.asString(scope, map2.get("name")), Cast.asInt(scope, map2.get("style")),
+		return GamaFontFactory.createFont(Cast.asString(scope, map2.get(IKeyword.NAME)), Cast.asInt(scope, map2.get("style")),
 				Cast.asInt(scope, map2.get("size")));
 	}
 

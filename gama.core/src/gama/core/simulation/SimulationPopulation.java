@@ -15,8 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.IVariable;
@@ -28,13 +28,13 @@ import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.GamaExecutorService;
 import gama.api.runtime.GamaExecutorService.Caller;
+import gama.api.runtime.ISimulationRunner;
+import gama.api.runtime.SimulationRunner;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.topology.AmorphousTopology;
-import gama.api.runtime.ISimulationRunner;
-import gama.api.runtime.SimulationRunner;
 import gama.api.ui.IStatusMessage;
 import gama.core.experiment.ExperimentAgent;
 import gama.core.experiment.ExperimentSpecies;
@@ -98,6 +98,12 @@ public class SimulationPopulation extends GamaPopulation<ISimulationAgent> imple
 	private ISimulationAgent nextSimulationAfter(final int index) {
 		if (size() <= 1 || index == -1) return null;
 		return get((index + 1) % size());
+	}
+
+	@SuppressWarnings ("unchecked")
+	@Override
+	public ISimulationAgent[] toArray() {
+		return super.toArray(new ISimulationAgent[0]);
 	}
 
 	/**
@@ -165,7 +171,9 @@ public class SimulationPopulation extends GamaPopulation<ISimulationAgent> imple
 				boolean isBatch = getHost().getSpecies().isBatch();
 				// Batch experiments now dont allow their simulations to have outputs
 
-				if (!isBatch) { sim.setOutputs(((ExperimentSpecies) host.getSpecies()).getOriginalSimulationOutputs()); }
+				if (!isBatch) {
+					sim.setOutputs(((ExperimentSpecies) host.getSpecies()).getOriginalSimulationOutputs());
+				}
 				if (!scope.interrupted()) {
 					// Necessary to set it early -- see Issue #3872
 					setCurrentSimulation(sim);

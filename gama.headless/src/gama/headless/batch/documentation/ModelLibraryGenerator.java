@@ -35,6 +35,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import gama.annotations.constants.IKeyword;
 import gama.headless.common.Globals;
 import gama.headless.runtime.HeadlessApplication;
 
@@ -371,7 +372,8 @@ public class ModelLibraryGenerator {
 
 			String line = null;
 
-			final String[] categoryKeywords = { "operator", "type", "statement", "skill", "architecture", "constant" };
+			final String[] categoryKeywords =
+					{ "operator", IKeyword.TYPE, "statement", "skill", "architecture", "constant" };
 
 			while ((line = br.readLine()) != null) {
 				for (final String catKeywords : categoryKeywords) {
@@ -418,7 +420,7 @@ public class ModelLibraryGenerator {
 					final ScreenshotStructure screenshot = new ScreenshotStructure(id);
 					for (int i = 0; i < eElement.getElementsByTagName("display").getLength(); i++) {
 						final String displayName =
-								((Element) eElement.getElementsByTagName("display").item(i)).getAttribute("name");
+								((Element) eElement.getElementsByTagName("display").item(i)).getAttribute(IKeyword.NAME);
 						int cycleNumber = Integer.parseInt(((Element) eElement.getElementsByTagName("display").item(i))
 								.getAttribute("cycle_number"));
 						if (cycleNumber == 0) { cycleNumber = 10; }

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.utils.json.IJson;
 import gama.api.utils.prefs.GamaPreferences;
 
@@ -275,7 +276,7 @@ public class JsonParser {
 	 * @date 29 oct. 2023
 	 */
 	private String readName() throws IOException {
-		if (current != '"') throw expected("name");
+		if (current != '"') throw expected(IKeyword.NAME);
 		return readStringInternal();
 	}
 

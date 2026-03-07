@@ -8,7 +8,7 @@ import static gama.api.utils.StringUtils.LN;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.utils.StringUtils;
 import gaml.compiler.gaml.Access;
 import gaml.compiler.gaml.ActionDefinition;

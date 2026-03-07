@@ -24,6 +24,7 @@ import gama.annotations.facet;
 import gama.annotations.facets;
 import gama.annotations.inside;
 import gama.annotations.symbol;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
@@ -31,7 +32,6 @@ import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.validation.BatchValidator;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -272,6 +272,17 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		 */
 		public ExperimentPopulation(final ISpecies expr) {
 			super(null, expr);
+		}
+
+		/**
+		 * To array.
+		 *
+		 * @return the population as a new array
+		 */
+		@SuppressWarnings ("unchecked")
+		@Override
+		public IExperimentAgent[] toArray() {
+			return super.toArray(new IExperimentAgent[0]);
 		}
 
 		/**
@@ -1043,16 +1054,16 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 			var scope = getExperimentScope();
 			for (var param : p.listValue(null, Types.MAP, false)) {
 				@SuppressWarnings ("unchecked") IMap<String, Object> m = (IMap<String, Object>) param;
-				String type = m.get("type") != null ? m.get("type").toString() : "";
+				String type = m.get(IKeyword.TYPE) != null ? m.get(IKeyword.TYPE).toString() : "";
 				Object v = m.get("value");
 				if ("int".equals(type)) { v = Integer.valueOf("" + m.get("value")); }
 				if ("float".equals(type)) { v = Double.valueOf("" + m.get("value")); }
 
-				final IParameter.Batch b = getParameterByTitle(m.get("name").toString());
+				final IParameter.Batch b = getParameterByTitle(m.get(IKeyword.NAME).toString());
 				if (b != null) {
-					setParameterValueByTitle(scope, m.get("name").toString(), v);
-				} else if (getParameter(m.get("name").toString()) != null) {
-					setParameterValue(scope, m.get("name").toString(), v);
+					setParameterValueByTitle(scope, m.get(IKeyword.NAME).toString(), v);
+				} else if (getParameter(m.get(IKeyword.NAME).toString()) != null) {
+					setParameterValue(scope, m.get(IKeyword.NAME).toString(), v);
 				}
 			}
 		}

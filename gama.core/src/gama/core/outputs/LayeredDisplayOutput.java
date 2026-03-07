@@ -24,6 +24,7 @@ import gama.annotations.facets;
 import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.GamaAdditionRegistry;
@@ -33,7 +34,6 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -291,6 +291,10 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		public void validate(final IDescription d) {
 
 			handleInheritance(d);
+
+			IExpressionDescription name = d.getFacet(NAME);
+			IExpressionDescription title = d.getFacet(TITLE);
+			if (name != null && title == null) { d.setFacetExprDescription(TITLE, name.compileAsLabel()); }
 
 			final IExpressionDescription auto = d.getFacet(AUTOSAVE);
 			if (auto != null && auto.getExpression().isConst() && TRUE.equals(auto.getExpression().literalValue())) {
@@ -658,4 +662,11 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 		scope.setGraphics(surface.getIGraphics());
 	}
 
+	// @Override
+	// public String getTitle() { return getLiteral(IKeyword.TITLE); }
+
+	// @Override
+	// public void setTitle(final String newTitle) {
+	// this.setFacet(IKeyword.TITLE, GAML.getExpressionDescriptionFactory().createConstant(newTitle));
+	// }
 }

@@ -36,11 +36,12 @@ import org.eclipse.swt.widgets.Monitor;
 
 import gama.annotations.display;
 import gama.annotations.doc;
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
-import gama.api.constants.IKeyword;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.GeneralSynchronizer;
 import gama.api.runtime.SystemInfo;
+import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
@@ -843,7 +844,10 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	public void changed(final Changes property, final Object value) {
 
 		switch (property) {
-			case BACKGROUND -> setBackground((Color) value);
+			case BACKGROUND -> {
+				Color cc = IColor.toAWTColor(GamaColorFactory.castToColor(getScope(), value));
+				setBackground(cc);
+			}
 			default -> {
 			}
 		}

@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.api.ui.layers;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.kernel.agent.IAgent;

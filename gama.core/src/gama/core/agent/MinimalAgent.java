@@ -15,7 +15,7 @@ import java.util.Set;
 import gama.annotations.action;
 import gama.annotations.doc;
 import gama.annotations.species;
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.GamlSpecies;

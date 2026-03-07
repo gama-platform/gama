@@ -149,7 +149,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		layerManager = new LayerManager(this, output);
 		if (!layerManager.stayProportional()) { output.getData().setDrawEnv(false); }
 		renderer = createRenderer();
-		animator = new GamaGLCanvas(this.parent, renderer, getOutput().getName()).getAnimator();
+		animator = new GamaGLCanvas(this.parent, renderer, getOutput().getTitle()).getAnimator();
 		animator.start();
 	}
 

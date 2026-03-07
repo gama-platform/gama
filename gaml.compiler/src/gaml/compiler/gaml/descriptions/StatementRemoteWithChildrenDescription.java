@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
-import static gama.api.constants.IKeyword.MYSELF;
+import static gama.annotations.constants.IKeyword.MYSELF;
 
 import org.eclipse.emf.ecore.EObject;
 

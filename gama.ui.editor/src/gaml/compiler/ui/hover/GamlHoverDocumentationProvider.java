@@ -16,6 +16,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.inject.Inject;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.additions.registries.GamaAdditionRegistry;
@@ -27,7 +28,6 @@ import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IDocManager;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.simulation.IExperimentAgentCreator.ExperimentAgentDescription;

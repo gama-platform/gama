@@ -14,12 +14,12 @@ import java.util.Arrays;
 
 import gama.annotations.doc;
 import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IVarExpression;

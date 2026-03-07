@@ -9,8 +9,6 @@
  ********************************************************************************************************/
 package gama.core.util.messaging;
 
-import gama.annotations.getter;
-import gama.annotations.setter;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -104,7 +102,7 @@ public class GamaMessage implements IMessage {
 	 * @return the sender
 	 */
 	@Override
-	@getter (IMessage.SENDER)
+
 	public Object getSender() { return sender; }
 
 	/**
@@ -114,7 +112,7 @@ public class GamaMessage implements IMessage {
 	 *            the sender
 	 */
 	@Override
-	@setter (IMessage.SENDER)
+
 	public void setSender(final Object sender) { this.sender = sender; }
 
 	/**
@@ -123,7 +121,7 @@ public class GamaMessage implements IMessage {
 	 * @return the receivers
 	 */
 	@Override
-	@getter (IMessage.RECEIVERS)
+
 	public Object getReceivers() { return receivers; }
 
 	/**
@@ -133,7 +131,7 @@ public class GamaMessage implements IMessage {
 	 *            the receivers
 	 */
 	@Override
-	@setter (IMessage.RECEIVERS)
+
 	public void setReceivers(final Object receivers) { this.receivers = receivers; }
 
 	/**
@@ -141,7 +139,8 @@ public class GamaMessage implements IMessage {
 	 *
 	 * @return the contents
 	 */
-	@getter (IMessage.CONTENTS)
+
+	@Override
 	public Object getContents(final IScope scope) {
 		setUnread(false);
 		return contents;
@@ -154,7 +153,7 @@ public class GamaMessage implements IMessage {
 	 *            the content
 	 */
 	@Override
-	@setter (IMessage.CONTENTS)
+
 	public void setContents(final Object content) { contents = content; }
 
 	/**
@@ -163,7 +162,7 @@ public class GamaMessage implements IMessage {
 	 * @return true, if is unread
 	 */
 	@Override
-	@getter (IMessage.UNREAD)
+
 	public boolean isUnread() { return unread; }
 
 	/**
@@ -173,7 +172,7 @@ public class GamaMessage implements IMessage {
 	 *            the new unread
 	 */
 	@Override
-	@setter (IMessage.UNREAD)
+
 	public void setUnread(final boolean unread) { this.unread = unread; }
 
 	/**
@@ -182,7 +181,7 @@ public class GamaMessage implements IMessage {
 	 * @return the emission timestamp
 	 */
 	@Override
-	@getter (IMessage.EMISSION_TIMESTAMP)
+
 	public int getEmissionTimestamp() { return emissionTimeStamp; }
 
 	/**
@@ -191,7 +190,7 @@ public class GamaMessage implements IMessage {
 	 * @return the reception timestamp
 	 */
 	@Override
-	@getter (IMessage.RECEPTION_TIMESTAMP)
+
 	public int getReceptionTimestamp() { return emissionTimeStamp; }
 
 	/**

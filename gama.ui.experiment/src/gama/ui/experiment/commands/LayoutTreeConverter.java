@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.experiment.commands;
 
-import static gama.api.constants.IKeyword.LAYOUT;
+import static gama.annotations.constants.IKeyword.LAYOUT;
 import static gama.api.gaml.constants.GamlCoreConstants.horizontal;
 import static gama.api.gaml.constants.GamlCoreConstants.none;
 import static gama.api.gaml.constants.GamlCoreConstants.split;

@@ -14,8 +14,8 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.naming.IQualifiedNameProvider;
 import org.eclipse.xtext.naming.QualifiedName;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IModelDescription;
-import gama.api.constants.IKeyword;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.S_Reflex;

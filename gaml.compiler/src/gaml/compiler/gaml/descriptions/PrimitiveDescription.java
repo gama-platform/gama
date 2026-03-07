@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
-import static gama.api.constants.IKeyword.DEFAULT;
+import static gama.annotations.constants.IKeyword.DEFAULT;
 
 import java.lang.reflect.AccessibleObject;
 import java.util.Collections;
@@ -22,12 +22,12 @@ import org.eclipse.emf.ecore.EObject;
 import gama.annotations.action;
 import gama.annotations.arg;
 import gama.annotations.doc;
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.IGamaHelper;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;

@@ -184,6 +184,7 @@ public class SerialisationOperators {
 					json string returned will be an object with two attributes: "gama_object", the object containing the references, and "reference_table" a dictionary mapping the references to the json description of the agents (their species, name, index, and list of attributes). \
 					This choice allows to manage cross references between agents""",
 			see = { "serialize", "to_gaml" })
+	@no_test
 	public static String toJson(final IScope scope, final Object obj) {
 		return toJson(scope, obj, false);
 	}

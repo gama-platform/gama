@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
-import static gama.api.constants.IKeyword.NO_TYPE_INFERENCE;
-import static gama.api.constants.IKeyword.ORIGIN;
+import static gama.annotations.constants.IKeyword.NO_TYPE_INFERENCE;
+import static gama.annotations.constants.IKeyword.ORIGIN;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -23,6 +23,7 @@ import java.util.stream.StreamSupport;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.GamlCompilationError;
@@ -38,7 +39,6 @@ import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;

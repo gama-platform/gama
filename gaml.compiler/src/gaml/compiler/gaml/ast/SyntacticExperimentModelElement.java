@@ -12,8 +12,8 @@ package gaml.compiler.gaml.ast;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.ast.ISyntacticElement;
-import gama.api.constants.IKeyword;
 
 /**
  * Represents a synthetic model element that wraps a standalone experiment.

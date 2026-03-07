@@ -12,7 +12,7 @@ package gama.core.outputs.layers.charts;
 
 import java.util.HashMap;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;

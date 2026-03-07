@@ -9,9 +9,10 @@
  ********************************************************************************************************/
 package gama.api.gaml;
 
-import static gama.api.constants.IKeyword.MY;
+import static gama.annotations.constants.IKeyword.MY;
 import static gama.api.utils.JavaUtils.collectImplementationClasses;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,6 +28,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
 import gama.api.additions.IConstantAcceptor;
@@ -45,7 +47,6 @@ import gama.api.compilation.factories.IExpressionFactory;
 import gama.api.compilation.factories.ISymbolDescriptionFactory;
 import gama.api.compilation.validation.IGamlModelBuilder;
 import gama.api.compilation.validation.IGamlTextValidator;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.GamaType;
@@ -927,6 +928,17 @@ public class GAML {
 	 */
 	public static IGamlFileInfo getInfo(final URI uri) {
 		return (IGamlFileInfo) GAMA.getMetadataProvider().getMetaData(uri, true, true);
+	}
+
+	/**
+	 * Gets the info.
+	 *
+	 * @param uri
+	 *            the uri
+	 * @return the info
+	 */
+	public static IGamlFileInfo getInfo(final File file) {
+		return (IGamlFileInfo) GAMA.getMetadataProvider().getMetaData(file, true, true);
 	}
 
 	/**

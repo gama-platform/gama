@@ -13,9 +13,9 @@ package gama.api.additions;
 import java.util.Arrays;
 import java.util.Collections;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;

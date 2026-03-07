@@ -13,6 +13,7 @@ package gama.api.utils.server;
 import java.util.HashMap;
 import java.util.Map;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
 
@@ -55,7 +56,8 @@ public class CommandResponse extends GamaServerMessage {
 	public IJsonValue serializeToJson(final IJson json) {
 		var params = new HashMap<>(commandParameters);
 		params.remove("server");
-		return json.object("type", type, "content", isJson ? json.parse((String) content) : content, "command", params);
+		return json.object(IKeyword.TYPE, type, "content", isJson ? json.parse((String) content) : content, "command",
+				params);
 	}
 
 }

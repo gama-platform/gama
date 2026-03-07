@@ -13,7 +13,7 @@ package gama.core.outputs.layers.charts;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;

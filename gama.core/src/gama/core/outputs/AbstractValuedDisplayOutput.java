@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.core.outputs;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;

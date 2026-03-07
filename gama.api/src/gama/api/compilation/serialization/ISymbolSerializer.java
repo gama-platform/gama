@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gama.api.compilation.serialization;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.utils.GamlProperties;

@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.ast;
 
-import static gama.api.constants.IKeyword.EXPERIMENT;
-import static gama.api.constants.IKeyword.GRID;
-import static gama.api.constants.IKeyword.MODEL;
-import static gama.api.constants.IKeyword.SPECIES;
+import static gama.annotations.constants.IKeyword.EXPERIMENT;
+import static gama.annotations.constants.IKeyword.GRID;
+import static gama.annotations.constants.IKeyword.MODEL;
+import static gama.annotations.constants.IKeyword.SPECIES;
 
 import org.eclipse.emf.ecore.EObject;
 

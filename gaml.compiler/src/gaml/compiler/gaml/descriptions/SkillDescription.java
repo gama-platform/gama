@@ -15,11 +15,11 @@ import java.util.Collection;
 
 import gama.annotations.doc;
 import gama.annotations.skill;
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.constants.IKeyword;
 import gama.api.kernel.skill.IArchitecture;
 import gama.api.kernel.skill.ISkill;
 

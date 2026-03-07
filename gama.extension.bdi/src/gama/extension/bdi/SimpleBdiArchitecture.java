@@ -33,6 +33,7 @@ import gama.annotations.example;
 import gama.annotations.skill;
 import gama.annotations.variable;
 import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.gaml.architecture.reflex.ReflexArchitecture;
 import gama.gaml.operators.Maths;
@@ -285,7 +286,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public static final String PREDICATE = "predicate";
 
 	/** The Constant PREDICATE_NAME. */
-	public static final String PREDICATE_NAME = "name";
+	public static final String PREDICATE_NAME = IKeyword.NAME;
 
 	/** The Constant PREDICATE_VALUE. */
 	public static final String PREDICATE_VALUE = "value";
@@ -294,7 +295,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public static final String PREDICATE_PRIORITY = "priority";
 
 	/** The Constant PREDICATE_PARAMETERS. */
-	public static final String PREDICATE_PARAMETERS = "parameters";
+	public static final String PREDICATE_PARAMETERS = "parameters"; 
 
 	/** The Constant PREDICATE_ONHOLD. */
 	public static final String ON_HOLD_UNTIL = "on_hold_until";
@@ -303,7 +304,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 	public static final String AGENT_CAUSE = "cause";
 
 	/** The Constant AGREEABLENESS. */
-	public static final String MENTAL_STATE = "mental_state";
+	public static final String MENTAL_STATE = "mental_state"; 
 
 	/** The Constant PREDICATE_TODO. */
 	public static final String PREDICATE_TODO = "todo";
@@ -1627,7 +1628,7 @@ public class SimpleBdiArchitecture extends ReflexArchitecture {
 					returns = "true if it is in the base.",
 					examples = { @example ("has_belief_with_name(\"has_water\")") }))
 	public Boolean hasBeliefName(final IScope scope) throws GamaRuntimeException {
-		final String predicateName = scope.getTypedArgIfExists("name", IType.STRING);
+		final String predicateName = scope.getTypedArgIfExists(IKeyword.NAME, IType.STRING);
 		if (predicateName != null) {
 			final MentalState tempState = new MentalState("Belief", new Predicate(predicateName));
 			return BdiUtils.hasBelief(scope, tempState);

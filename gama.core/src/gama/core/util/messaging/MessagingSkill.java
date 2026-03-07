@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * MessagingSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * MessagingSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -19,14 +18,15 @@ import gama.annotations.setter;
 import gama.annotations.skill;
 import gama.annotations.variable;
 import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.skill.Skill;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
+import gama.api.types.message.GamaMessageFactory;
 import gama.api.types.message.IMessage;
 
 /**
@@ -35,7 +35,7 @@ import gama.api.types.message.IMessage;
 @skill (
 		name = MessagingSkill.SKILL_NAME,
 
-		concept = {IConcept.COMMUNICATION, IConcept.SKILL })
+		concept = { IConcept.COMMUNICATION, IConcept.SKILL })
 @doc ("A simple skill that provides agents with a mailbox than can be filled with messages")
 @vars ({ @variable (
 		name = "mailbox",
@@ -99,26 +99,26 @@ public class MessagingSkill extends Skill {
 	@action (
 			name = "send",
 			args = { @arg (
-						name = IKeyword.TO,
-						type = IType.NONE,
-						optional = true,
-						doc = @doc ("The agent, or server, to which this message will be sent to")),
+					name = IKeyword.TO,
+					type = IType.NONE,
+					optional = true,
+					doc = @doc ("The agent, or server, to which this message will be sent to")),
 					@arg (
-						name = GamaMessage.CONTENTS,
-						type = IType.NONE,
-						optional = false,
-						doc = @doc ("The contents of the message, an arbitrary object")
-					) },
-			doc = @doc(
-				value = "Action used to send a message (that can be of any kind of object) to an agent or a server.",
-				examples = {@example("do send to:dest contents:\"This message is sent by \" + name + \" to \" + dest;")}))
+							name = GamaMessage.CONTENTS,
+							type = IType.NONE,
+							optional = false,
+							doc = @doc ("The contents of the message, an arbitrary object")) },
+			doc = @doc (
+					value = "Action used to send a message (that can be of any kind of object) to an agent or a server.",
+					examples = {
+							@example ("do send to:dest contents:\"This message is sent by \" + name + \" to \" + dest;") }))
 	public IMessage primSendMessage(final IScope scope) throws GamaRuntimeException {
 		final IAgent sender = scope.getAgent();
 		Object receiver = scope.getArg("to", IType.NONE);
 		if (receiver == null) { receiver = sender; }
-		final Object contents = effectiveContents(scope, scope.getArg(GamaMessage.CONTENTS, IType.NONE));
+		final Object contents = effectiveContents(scope, scope.getArg(IMessage.CONTENTS, IType.NONE));
 		if (contents == null) return null;
-		final GamaMessage message = createNewMessage(scope, sender, receiver, contents);
+		final IMessage message = GamaMessageFactory.create(scope, sender, receiver, contents);
 		effectiveSend(scope, message, receiver);
 		return message;
 	}
@@ -146,24 +146,6 @@ public class MessagingSkill extends Skill {
 	}
 
 	/**
-	 * Creates the new message.
-	 *
-	 * @param scope
-	 *            the scope
-	 * @param sender
-	 *            the sender
-	 * @param receivers
-	 *            the receivers
-	 * @param contents
-	 *            the contents
-	 * @return the gama message
-	 */
-	protected GamaMessage createNewMessage(final IScope scope, final Object sender, final Object receivers,
-			final Object contents) {
-		return new GamaMessage(scope, sender, receivers, contents);
-	}
-
-	/**
 	 * Effective send.
 	 *
 	 * @param scope
@@ -174,11 +156,10 @@ public class MessagingSkill extends Skill {
 	 *            the receiver
 	 */
 	@SuppressWarnings ({ "rawtypes", "unchecked" })
-	protected void effectiveSend(final IScope scope, final GamaMessage message, final Object receiver) {
+	protected void effectiveSend(final IScope scope, final IMessage message, final Object receiver) {
 		if (receiver instanceof IAgent agent) {
 			if (agent.isInstanceOf(SKILL_NAME, false)) {
-				final GamaMailbox<GamaMessage> mailbox =
-						(GamaMailbox<GamaMessage>) agent.getAttribute(MAILBOX_ATTRIBUTE);
+				final GamaMailbox<IMessage> mailbox = (GamaMailbox<IMessage>) agent.getAttribute(MAILBOX_ATTRIBUTE);
 				mailbox.addMessage(scope, message);
 			}
 		} else if (receiver instanceof IList) {

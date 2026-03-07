@@ -16,13 +16,13 @@ import java.util.Set;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.additions.IGamaHelper;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.validation.IValidationContext;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.Facets;

@@ -11,11 +11,11 @@
 package gaml.compiler.gaml.factories;
 
 import static com.google.common.collect.Iterables.get;
-import static gama.api.constants.IKeyword.FREQUENCY;
-import static gama.api.constants.IKeyword.GLOBAL;
-import static gama.api.constants.IKeyword.NAME;
-import static gama.api.constants.IKeyword.PARENT;
-import static gama.api.constants.IKeyword.SCHEDULES;
+import static gama.annotations.constants.IKeyword.FREQUENCY;
+import static gama.annotations.constants.IKeyword.GLOBAL;
+import static gama.annotations.constants.IKeyword.NAME;
+import static gama.annotations.constants.IKeyword.PARENT;
+import static gama.annotations.constants.IKeyword.SCHEDULES;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +32,7 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.artefacts.IArtefact.Symbol;
@@ -46,7 +47,6 @@ import gama.api.compilation.factories.IModelFactory;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.symbols.Facets;
 import gama.api.kernel.GamaMetaModel;

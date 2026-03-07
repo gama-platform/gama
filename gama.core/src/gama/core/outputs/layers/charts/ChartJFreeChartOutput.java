@@ -37,7 +37,7 @@ import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.VerticalAlignment;
 import org.jfree.data.general.Dataset;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;

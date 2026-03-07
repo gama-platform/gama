@@ -83,12 +83,12 @@ import gama.processor.ProcessorContext;
  * 					type = IType.POINT,
  * 					depends_on = { "x", "y" }) })
  * 	public class MovingAgent extends AbstractAgent {
- * 
+ *
  * 		&#64;getter ("speed")
  * 		public double getSpeed(IAgent agent) {
  * 			return (Double) agent.getAttribute("speed");
  * 		}
- * 
+ *
  * 		&#64;setter ("speed")
  * 		public void setSpeed(IAgent agent, Object value) {
  * 			agent.setAttribute("speed", value);
@@ -164,7 +164,7 @@ public class VarsProcessor extends ElementProcessor<vars> {
 		for (final variable node : vars.value()) {
 			final String vName = node.name();
 			if (!temp.add(vName)) {
-				context.emitError("Attribute '" + vName + "' is declared twice", e);
+				context.emitError("Attribute '" + vName + "' is declared twice in " + typeClass, e);
 				continue;
 			}
 			verifyDoc(e, "attribute " + node.name(), node);

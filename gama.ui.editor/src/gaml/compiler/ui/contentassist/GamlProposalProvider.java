@@ -32,6 +32,7 @@ import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor;
 import com.google.common.base.Function;
 import com.google.inject.Inject;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.gaml.types.Types;
@@ -100,7 +101,7 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 			if (cp != null) {
 				cp.setAdditionalProposalInfo("<b>" + title + "</b><p/><p>" + doc + "</p>");
 
-				final String type = candidate.getUserData("type");
+				final String type = candidate.getUserData(IKeyword.TYPE);
 				if (type != null) {
 					cp.setDisplayString(cp.getDisplayString().concat(" (Built-in " + type + ") "));
 					switch (type) {
@@ -119,7 +120,7 @@ public class GamlProposalProvider extends AbstractGamlProposalProvider {
 							isOperator = true;
 							cp.setImage(null);
 							break;
-						case "type":
+						case IKeyword.TYPE:
 							isOperator = true;
 							cp.setImage(typeImage);
 							break;

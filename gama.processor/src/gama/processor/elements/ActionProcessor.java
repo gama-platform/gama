@@ -44,12 +44,17 @@ import gama.annotations.arg;
  *
  * <pre>
  * {@code
- * &#64;action(name = "move", args = {
- *     &#64;arg(name = "speed", type = IType.FLOAT),
- *     @arg(name = "heading", type = IType.INT, optional = true)
- * })
+ * &#64;action (
+ * 		name = "move",
+ * 		args = { &#64;arg (
+ * 				name = "speed",
+ * 				type = IType.FLOAT),
+ * 				@arg (
+ * 						name = "heading",
+ * 						type = IType.INT,
+ * 						optional = true) })
  * public void moveAction(IScope scope) {
- *     // Action implementation
+ * 	// Action implementation
  * }
  * }
  * </pre>

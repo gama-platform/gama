@@ -16,7 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;

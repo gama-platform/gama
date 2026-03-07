@@ -34,7 +34,7 @@ import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.DefaultGraphType;
 import org.jgrapht.graph.SimpleWeightedGraph;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IContainerType;

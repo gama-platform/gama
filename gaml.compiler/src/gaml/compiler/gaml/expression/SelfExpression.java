@@ -10,12 +10,12 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.expression;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;

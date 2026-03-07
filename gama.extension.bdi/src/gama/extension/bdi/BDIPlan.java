@@ -16,7 +16,7 @@ import gama.annotations.doc;
 import gama.annotations.getter;
 import gama.annotations.variable;
 import gama.annotations.vars;
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -29,7 +29,7 @@ import gama.api.utils.json.IJsonValue;
  * The Class BDIPlan.
  */
 @vars ({ @variable (
-		name = "name",
+		name = IKeyword.NAME,
 		type = IType.STRING,
 		doc = @doc ("The name of this BDI plan")),
 		@variable (
@@ -52,7 +52,7 @@ public class BDIPlan implements IValue {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType(), "name", getName());
+		return json.typedObject(getGamlType(), IKeyword.NAME, getName());
 	}
 
 	/** The planstatement. */
@@ -63,7 +63,7 @@ public class BDIPlan implements IValue {
 	 *
 	 * @return the name
 	 */
-	@getter ("name")
+	@getter (IKeyword.NAME)
 	public String getName() { return this.planstatement.getName(); }
 
 	/**

@@ -11,6 +11,7 @@ package gama.api.gaml.types;
 
 import java.util.Map;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.artefacts.IArtefact.Operator;
@@ -1028,7 +1029,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 */
 	@Override
 	default IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(Types.TYPE, "name", getName());
+		return json.typedObject(Types.TYPE, IKeyword.NAME, getName());
 	}
 
 	// ==================== Expression Methods ====================

@@ -9,8 +9,6 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.resource;
 
-import org.eclipse.emf.common.util.URI;
-
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;
@@ -71,12 +69,6 @@ import gama.api.utils.geometry.IEnvelope;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamlFile extends GamaFile<IList<IModelSpecies>, IModelSpecies> {
 
-	/** The mymodel. */
-	private IModelSpecies model;
-
-	/** The alias name. */
-	private final String aliasName;
-
 	/**
 	 * Instantiates a new gaml file.
 	 *
@@ -94,8 +86,6 @@ public class GamlFile extends GamaFile<IList<IModelSpecies>, IModelSpecies> {
 					isExecutable = false) })
 	public GamlFile(final IScope scope, final String pathName) throws GamaRuntimeException {
 		super(scope, pathName);
-		aliasName = "";
-
 	}
 
 	@Override
@@ -110,8 +100,7 @@ public class GamlFile extends GamaFile<IList<IModelSpecies>, IModelSpecies> {
 	 */
 	@getter ("experiments")
 	public IList<String> getExperiments(final IScope scope) {
-		// TODO AD Verify the use of a 'file' URI.
-		IGamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()));
+		IGamlFileInfo info = GAML.getInfo(getFile(scope));
 		if (info != null) return GamaListFactory.wrap(Types.STRING, info.getExperiments());
 		return GamaListFactory.getEmptyList();
 	}
@@ -125,7 +114,7 @@ public class GamlFile extends GamaFile<IList<IModelSpecies>, IModelSpecies> {
 	 */
 	@getter ("tags")
 	public IList<String> getTags(final IScope scope) {
-		IGamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()));
+		IGamlFileInfo info = GAML.getInfo(getFile(scope));
 		if (info != null) return GamaListFactory.wrap(Types.STRING, info.getTags());
 		return GamaListFactory.getEmptyList();
 	}
@@ -139,7 +128,7 @@ public class GamlFile extends GamaFile<IList<IModelSpecies>, IModelSpecies> {
 	 */
 	@getter ("uses")
 	public IList<String> getUses(final IScope scope) {
-		IGamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()));
+		IGamlFileInfo info = GAML.getInfo(getFile(scope));
 		if (info != null) return GamaListFactory.wrap(Types.STRING, info.getUses());
 		return GamaListFactory.getEmptyList();
 	}
@@ -153,7 +142,7 @@ public class GamlFile extends GamaFile<IList<IModelSpecies>, IModelSpecies> {
 	 */
 	@getter ("imports")
 	public IList<String> getImports(final IScope scope) {
-		IGamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()));
+		IGamlFileInfo info = GAML.getInfo(getFile(scope));
 		if (info != null) return GamaListFactory.wrap(Types.STRING, info.getImports());
 		return GamaListFactory.getEmptyList();
 	}
@@ -167,7 +156,7 @@ public class GamlFile extends GamaFile<IList<IModelSpecies>, IModelSpecies> {
 	 */
 	@getter ("valid")
 	public Boolean isValid(final IScope scope) {
-		IGamlFileInfo info = GAML.getInfo(URI.createFileURI(getFile(scope).getAbsolutePath()));
+		IGamlFileInfo info = GAML.getInfo(getFile(scope));
 		if (info != null) return info.isValid();
 		return false; // If the file is not available, return false by default
 	}

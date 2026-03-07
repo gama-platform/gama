@@ -36,6 +36,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.java_websocket.WebSocket;
 import org.java_websocket.enums.ReadyState;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.gaml.types.Types;
 import gama.api.types.list.IList;
@@ -98,7 +99,7 @@ public class CommandExecutor implements ICommandExecuter {
 	 * @date 15 oct. 2023
 	 */
 	protected void process(final IGamaServer server, final WebSocket socket, final ReceivedMessage map) {
-		final String cmd_type = map.get("type").toString();
+		final String cmd_type = map.get(IKeyword.TYPE).toString();
 		ISocketCommand command = commands.get(cmd_type);
 		if (command == null) throw new IllegalArgumentException("Invalid command type: " + cmd_type);
 
@@ -125,8 +126,8 @@ public class CommandExecutor implements ICommandExecuter {
 			int i = 1;
 			for (var param : parameters.listValue(null, Types.MAP, false)) {
 				@SuppressWarnings ("unchecked") Map<String, Object> m = (Map<String, Object>) param;
-				// field "type" is optional, "name" and "value" are mandatory
-				var name = m.get("name");
+				// field IKeyword.TYPE is optional, IKeyword.NAME and "value" are mandatory
+				var name = m.get(IKeyword.NAME);
 				var value = m.get("value");
 				if (name == null) return new CommandResponse(MessageType.MalformedRequest, "Parameter number " + i
 						+ " is missing its `name` field. Parameter received: " + GAMA.getJsonEncoder().valueOf(m),

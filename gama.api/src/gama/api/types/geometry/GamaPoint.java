@@ -33,62 +33,80 @@ import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * A mutable 3D point implementation extending JTS Coordinate.
- * 
- * <p>GamaPoint is the primary implementation of {@link IPoint}, serving multiple purposes in GAMA:</p>
+ *
+ * <p>
+ * GamaPoint is the primary implementation of {@link IPoint}, serving multiple purposes in GAMA:
+ * </p>
  * <ul>
- *   <li>Location of agents in the simulation space</li>
- *   <li>Vertices of geometric shapes (via GamaCoordinateSequence)</li>
- *   <li>Vectors for transformations (rotations, translations)</li>
- *   <li>Direction vectors (see Rotation3D and AxisAngle)</li>
+ * <li>Location of agents in the simulation space</li>
+ * <li>Vertices of geometric shapes (via GamaCoordinateSequence)</li>
+ * <li>Vectors for transformations (rotations, translations)</li>
+ * <li>Direction vectors (see Rotation3D and AxisAngle)</li>
  * </ul>
- * 
- * <p>This class extends JTS {@link Coordinate}, enabling seamless integration with the Java Topology Suite
- * while adding GAMA-specific functionality including 3D support, type system integration, and rich operators.</p>
- * 
+ *
+ * <p>
+ * This class extends JTS {@link Coordinate}, enabling seamless integration with the Java Topology Suite while adding
+ * GAMA-specific functionality including 3D support, type system integration, and rich operators.
+ * </p>
+ *
  * <h2>Mutability</h2>
- * <p><b>Important:</b> GamaPoint instances are MUTABLE. Operations like {@link #add(IPoint)}, {@link #subtract(IPoint)},
- * {@link #multiplyBy(double)}, and {@link #divideBy(double)} modify the point in place and return {@code this}
- * for method chaining.</p>
- * 
- * <p>If you need to preserve the original point, create a copy first:</p>
+ * <p>
+ * <b>Important:</b> GamaPoint instances are MUTABLE. Operations like {@link #add(IPoint)}, {@link #subtract(IPoint)},
+ * {@link #multiplyBy(double)}, and {@link #divideBy(double)} modify the point in place and return {@code this} for
+ * method chaining.
+ * </p>
+ *
+ * <p>
+ * If you need to preserve the original point, create a copy first:
+ * </p>
+ *
  * <pre>
  * IPoint original = GamaPointFactory.create(10, 20, 5);
- * IPoint modified = original.copy(scope).add(offset);  // original unchanged
+ * IPoint modified = original.copy(scope).add(offset); // original unchanged
  * </pre>
- * 
- * <p>For immutable points, use {@link GamaPointFactory.Immutable} instead.</p>
- * 
+ *
+ * <p>
+ * For immutable points, use {@link GamaPointFactory.Immutable} instead.
+ * </p>
+ *
  * <h2>Tolerance</h2>
- * <p>Equality comparisons and geometric predicates use a configurable tolerance value defined in
- * {@link #TOLERANCE}. This handles floating-point precision issues common in geometric calculations.
- * The tolerance is controlled via preferences and can be updated at runtime.</p>
- * 
+ * <p>
+ * Equality comparisons and geometric predicates use a configurable tolerance value defined in {@link #TOLERANCE}. This
+ * handles floating-point precision issues common in geometric calculations. The tolerance is controlled via preferences
+ * and can be updated at runtime.
+ * </p>
+ *
  * <h2>Coordinate Handling</h2>
  * <ul>
- *   <li><b>X, Y coordinates:</b> Standard double precision floating-point values</li>
- *   <li><b>Z coordinate:</b> Automatically converts {@link Double#NaN} to 0.0 for robustness</li>
- *   <li><b>2D operations:</b> Most 2D comparisons ignore the z-coordinate</li>
+ * <li><b>X, Y coordinates:</b> Standard double precision floating-point values</li>
+ * <li><b>Z coordinate:</b> Automatically converts {@link Double#NaN} to 0.0 for robustness</li>
+ * <li><b>2D operations:</b> Most 2D comparisons ignore the z-coordinate</li>
  * </ul>
- * 
+ *
  * <h2>Thread Safety</h2>
- * <p>GamaPoint is NOT thread-safe. Concurrent modifications from multiple threads will lead to race conditions.
- * If a point must be shared across threads, either:</p>
+ * <p>
+ * GamaPoint is NOT thread-safe. Concurrent modifications from multiple threads will lead to race conditions. If a point
+ * must be shared across threads, either:
+ * </p>
  * <ul>
- *   <li>Use {@link GamaPointFactory.Immutable} for read-only sharing</li>
- *   <li>Create separate copies for each thread</li>
- *   <li>Provide external synchronization</li>
+ * <li>Use {@link GamaPointFactory.Immutable} for read-only sharing</li>
+ * <li>Create separate copies for each thread</li>
+ * <li>Provide external synchronization</li>
  * </ul>
- * 
+ *
  * <h2>Performance Considerations</h2>
- * <p>GamaPoint instances are lightweight objects suitable for frequent creation and manipulation. The mutable
- * design allows efficient in-place updates without allocation overhead. However, be mindful of the mutability
- * when storing points in collections or passing them to methods.</p>
- * 
+ * <p>
+ * GamaPoint instances are lightweight objects suitable for frequent creation and manipulation. The mutable design
+ * allows efficient in-place updates without allocation overhead. However, be mindful of the mutability when storing
+ * points in collections or passing them to methods.
+ * </p>
+ *
  * <h2>Integration with JTS</h2>
- * <p>Since GamaPoint extends {@link Coordinate}, it can be used directly in JTS geometry operations.
- * This enables GAMA to leverage JTS's robust geometric algorithms while maintaining type safety and
- * additional functionality.</p>
- * 
+ * <p>
+ * Since GamaPoint extends {@link Coordinate}, it can be used directly in JTS geometry operations. This enables GAMA to
+ * leverage JTS's robust geometric algorithms while maintaining type safety and additional functionality.
+ * </p>
+ *
  * @author drogoul
  * @see IPoint
  * @see GamaPointFactory
@@ -107,21 +125,27 @@ public class GamaPoint extends Coordinate implements IPoint {
 
 	/**
 	 * Constructs a new GamaPoint with the specified coordinates.
-	 * 
-	 * <p>This constructor is package-private. Use {@link GamaPointFactory} to create points:</p>
+	 *
+	 * <p>
+	 * This constructor is package-private. Use {@link GamaPointFactory} to create points:
+	 * </p>
+	 *
 	 * <pre>
 	 * IPoint point = GamaPointFactory.create(x, y, z);
 	 * </pre>
 	 *
-	 * @param x the x-coordinate
-	 * @param y the y-coordinate
-	 * @param z the z-coordinate
+	 * @param x
+	 *            the x-coordinate
+	 * @param y
+	 *            the y-coordinate
+	 * @param z
+	 *            the z-coordinate
 	 * @see GamaPointFactory#create(double, double, double)
 	 */
 	GamaPoint(final double x, final double y, final double z) {
 		this.x = x;
 		this.y = y;
-		this.z = z;
+		this.z = Double.isNaN(z) ? 0.0d : z;
 	}
 
 	/**
@@ -384,7 +408,8 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 */
 	@Override
 	public IEnvelope computeEnvelope(final IScope scope) {
-		return GamaEnvelopeFactory.of(0, x, 0, y, 0, z);
+		final double sz = Double.isNaN(z) ? 0.0d : z;
+		return GamaEnvelopeFactory.of(0, x, 0, y, 0, sz);
 	}
 
 	@Override
@@ -597,6 +622,7 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 */
 	@Override
 	public double norm() {
+		if (Double.isNaN(z)) return Math.sqrt(x * x + y * y);
 		return Math.sqrt(x * x + y * y + z * z);
 	}
 
@@ -678,7 +704,10 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 */
 	@Override
 	public final double dotProductWith(final IPoint v2) {
-		return x * v2.getX() + y * v2.getY() + z * v2.getZ();
+		final double sz = Double.isNaN(z) ? 0.0d : z;
+		final double oz = v2.getZ();
+		final double oz2 = Double.isNaN(oz) ? 0.0d : oz;
+		return x * v2.getX() + y * v2.getY() + sz * oz2;
 	}
 
 	/**
@@ -703,9 +732,11 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 */
 	@Override
 	public final IPoint crossProductWith(final IPoint v2) {
-		return GamaPointFactory.create(y * v2.getZ() - z * v2.getY(), v2.getX() * z - v2.getZ() * x,
+		final double sz = Double.isNaN(z) ? 0.0d : z;
+		final double oz = v2.getZ();
+		final double oz2 = Double.isNaN(oz) ? 0.0d : oz;
+		return GamaPointFactory.create(y * oz2 - sz * v2.getY(), v2.getX() * sz - oz2 * x,
 				x * v2.getY() - y * v2.getX());
-
 	}
 
 	/**
@@ -862,15 +893,16 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 */
 	@Override
 	public IPoint orthogonal() {
+		final double sz = Double.isNaN(z) ? 0.0d : z;
 		final double threshold = 0.6 * norm();
 		if (threshold == 0) return this;
 		if (Math.abs(x) <= threshold) {
-			final double inverse = 1 / sqrt(y * y + z * z);
-			return GamaPointFactory.create(0, inverse * z, -inverse * y);
+			final double inverse = 1 / sqrt(y * y + sz * sz);
+			return GamaPointFactory.create(0, inverse * sz, -inverse * y);
 		}
 		if (Math.abs(y) <= threshold) {
-			final double inverse = 1 / sqrt(x * x + z * z);
-			return GamaPointFactory.create(-inverse * z, 0, inverse * x);
+			final double inverse = 1 / sqrt(x * x + sz * sz);
+			return GamaPointFactory.create(-inverse * sz, 0, inverse * x);
 		}
 		final double inverse = 1 / sqrt(x * x + y * y);
 		return GamaPointFactory.create(inverse * y, -inverse * x, 0);
@@ -928,7 +960,7 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 * @return true, if is null
 	 */
 	@Override
-	public boolean isNull() { return x == 0d && y == 0d && z == 0d; }
+	public boolean isNull() { return x == 0d && y == 0d && (Double.isNaN(z) || z == 0d); }
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
@@ -964,11 +996,17 @@ public class GamaPoint extends Coordinate implements IPoint {
 	 *
 	 * @param p
 	 *            the p
-	 * @return true, if successful
+	 * @return the distance between this point and {@code p} in 3D, treating NaN z as 0
 	 */
 	@Override
 	public double distance3D(final IPoint p) {
-		return distance3D(p.toCoordinate());
+		final double sz = Double.isNaN(z) ? 0.0d : z;
+		final double oz = p.getZ();
+		final double oz2 = Double.isNaN(oz) ? 0.0d : oz;
+		final double dx = x - p.getX();
+		final double dy = y - p.getY();
+		final double dz = sz - oz2;
+		return Math.sqrt(dx * dx + dy * dy + dz * dz);
 	}
 
 	@Override
@@ -984,9 +1022,11 @@ public class GamaPoint extends Coordinate implements IPoint {
 		double py = p.getY();
 		if (y < py) return -1;
 		if (y > py) return 1;
+		final double sz = Double.isNaN(z) ? 0.0d : z;
 		double pz = p.getZ();
-		if (z < pz) return -1;
-		if (z > pz) return 1;
+		final double oz = Double.isNaN(pz) ? 0.0d : pz;
+		if (sz < oz) return -1;
+		if (sz > oz) return 1;
 		return 0;
 	}
 
@@ -998,9 +1038,11 @@ public class GamaPoint extends Coordinate implements IPoint {
 		double py = p.getY();
 		if (y < py) return -1;
 		if (y > py) return 1;
+		final double sz = Double.isNaN(z) ? 0.0d : z;
 		double pz = p.getZ();
-		if (z < pz) return -1;
-		if (z > pz) return 1;
+		final double oz = Double.isNaN(pz) ? 0.0d : pz;
+		if (sz < oz) return -1;
+		if (sz > oz) return 1;
 		return 0;
 	}
 

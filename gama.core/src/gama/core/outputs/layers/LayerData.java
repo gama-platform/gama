@@ -9,15 +9,15 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import static gama.api.constants.IKeyword.FADING;
-import static gama.api.constants.IKeyword.POSITION;
-import static gama.api.constants.IKeyword.REFRESH;
-import static gama.api.constants.IKeyword.ROTATE;
-import static gama.api.constants.IKeyword.SELECTABLE;
-import static gama.api.constants.IKeyword.SIZE;
-import static gama.api.constants.IKeyword.TRACE;
-import static gama.api.constants.IKeyword.TRANSPARENCY;
-import static gama.api.constants.IKeyword.VISIBLE;
+import static gama.annotations.constants.IKeyword.FADING;
+import static gama.annotations.constants.IKeyword.POSITION;
+import static gama.annotations.constants.IKeyword.REFRESH;
+import static gama.annotations.constants.IKeyword.ROTATE;
+import static gama.annotations.constants.IKeyword.SELECTABLE;
+import static gama.annotations.constants.IKeyword.SIZE;
+import static gama.annotations.constants.IKeyword.TRACE;
+import static gama.annotations.constants.IKeyword.TRANSPARENCY;
+import static gama.annotations.constants.IKeyword.VISIBLE;
 import static gama.api.gaml.types.Types.BOOL;
 import static gama.api.gaml.types.Types.FLOAT;
 import static gama.api.gaml.types.Types.INT;

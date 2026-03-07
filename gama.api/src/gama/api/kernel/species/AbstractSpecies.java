@@ -18,13 +18,13 @@ import java.util.Map;
 
 import com.google.common.base.Objects;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.factories.IExpressionFactory;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.statements.IStatement.WithArgs;

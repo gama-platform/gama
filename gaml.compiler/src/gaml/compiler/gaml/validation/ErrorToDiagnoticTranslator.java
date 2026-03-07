@@ -24,9 +24,9 @@ import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.validation.IValidationContext;
-import gama.api.constants.IKeyword;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.Model;

@@ -22,7 +22,7 @@ import gama.annotations.doc;
 import gama.annotations.getter;
 import gama.annotations.variable;
 import gama.annotations.vars;
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -374,7 +374,7 @@ public class GamaImage extends BufferedImage implements IImageProvider, IFieldMa
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType(), "width", getWidth(), "height", getHeight(), "type", getType(), "pixels",
+		return json.typedObject(getGamlType(), "width", getWidth(), "height", getHeight(), IKeyword.TYPE, getType(), "pixels",
 				ImageOperators.matrix(null, this));
 	}
 

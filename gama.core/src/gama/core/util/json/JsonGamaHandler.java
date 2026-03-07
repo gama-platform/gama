@@ -13,7 +13,7 @@ package gama.core.util.json;
 import static gama.api.utils.prefs.GamaPreferences.External.JSON_INFINITY;
 import static gama.api.utils.prefs.GamaPreferences.External.JSON_NAN;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.types.Types;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonArray;

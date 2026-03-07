@@ -11,11 +11,11 @@
 package gama.api.gaml.constants;
 
 import gama.annotations.constants.ColorCSS;
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.IConstantAcceptor;
 import gama.api.additions.delegates.IConstantsSupplier;
 import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
-import gama.api.constants.IKeyword;
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.ui.layers.ICameraDefinition;

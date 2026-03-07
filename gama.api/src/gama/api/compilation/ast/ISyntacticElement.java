@@ -16,9 +16,9 @@ import java.util.function.Predicate;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription.IFacetVisitor;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Facets;
 import gama.api.utils.interfaces.IDisposable;

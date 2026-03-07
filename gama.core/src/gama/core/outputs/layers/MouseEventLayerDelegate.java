@@ -13,8 +13,8 @@ package gama.core.outputs.layers;
 import java.util.Objects;
 import java.util.Set;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.delegates.IEventLayerDelegate;
-import gama.api.constants.IKeyword;
 import gama.api.runtime.scope.IScope;
 import gama.api.ui.layers.ILayerStatement;
 

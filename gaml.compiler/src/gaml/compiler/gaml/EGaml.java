@@ -19,9 +19,9 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.ast.ISyntacticFactory;
 import gama.api.compilation.descriptions.IModelDescription;
-import gama.api.constants.IKeyword;
 import gama.dev.COUNTER;
 import gaml.compiler.gaml.impl.ActionArgumentsImpl;
 import gaml.compiler.gaml.impl.BlockImpl;

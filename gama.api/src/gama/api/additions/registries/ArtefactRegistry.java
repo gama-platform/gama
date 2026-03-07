@@ -22,10 +22,10 @@ import java.util.stream.Collectors;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.dev.DEBUG;

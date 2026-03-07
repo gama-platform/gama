@@ -28,10 +28,10 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import gama.annotations.inside;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.IParameter;
@@ -318,8 +318,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	/**
 	 *
 	 * Save the raw results of simulations with targeted outputs specified in the facet
-	 * {@value gama.api.constants.IKeyword#BATCH_VAR_OUTPUTS} and file destination in the facet
-	 * {@value gama.api.constants.IKeyword#BATCH_OUTPUT}
+	 * {@value gama.annotations.constants.IKeyword#BATCH_VAR_OUTPUTS} and file destination in the facet
+	 * {@value gama.annotations.constants.IKeyword#BATCH_OUTPUT}
 	 *
 	 * WARNING : file are erased if same path is passed
 	 *

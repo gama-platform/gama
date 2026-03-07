@@ -16,8 +16,8 @@ import java.util.Map;
 
 import org.java_websocket.WebSocket;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.constants.GamlFileExtension;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaCompilationFailedException;
 import gama.api.types.list.IList;
 import gama.api.utils.server.CommandExecutor;

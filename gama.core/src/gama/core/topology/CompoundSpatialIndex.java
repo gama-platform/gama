@@ -20,7 +20,7 @@ import java.util.WeakHashMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.agent.IPopulationSet;

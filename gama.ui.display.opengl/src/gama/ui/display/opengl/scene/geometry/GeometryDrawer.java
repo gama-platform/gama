@@ -16,6 +16,7 @@ import static gama.api.utils.geometry.GeometryUtils.getTypeOf;
 import static gama.api.utils.geometry.GeometryUtils.getYNegatedCoordinates;
 
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.Polygon;
 
 import com.jogamp.opengl.util.gl2.GLUT;
@@ -31,8 +32,8 @@ import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.Rotation3D;
-import gama.api.utils.geometry.UnboundedCoordinateSequence;
 import gama.api.utils.geometry.Scaling3D.Heterogeneous;
+import gama.api.utils.geometry.UnboundedCoordinateSequence;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 
@@ -183,7 +184,15 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 				drawPoint(geom, gl.getMaxEnvDim() / 800d, border);
 				break;
 			default:
-				applyToInnerGeometries(geom, g -> { drawGeometry(g, border, height, getTypeOf(g)); });
+				if (geom instanceof GeometryCollection gc) {
+					final int n = gc.getNumGeometries();
+					for (int i = 0; i < n; i++) {
+						final Geometry sub = gc.getGeometryN(i);
+						drawGeometry(sub, border, height, getTypeOf(sub));
+					}
+				} else {
+					applyToInnerGeometries(geom, g -> { drawGeometry(g, border, height, getTypeOf(g)); });
+				}
 		}
 	}
 
@@ -374,26 +383,6 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 		drawCachedGeometry(Type.SPHERE, border);
 	}
 
-	// see Issue #3908
-	//
-	// private void drawCircle(final Geometry p, /* final boolean solid, */final double height, final Color border) {
-	// _vertices.setToYNegated(getContourCoordinates(p));
-	// _vertices.getNormal(true, 1, _normal);
-	// _vertices.getCenter(_center);
-	// _tangent.setLocation(_center).subtract(_vertices.at(0));
-	// _scale.setTo(p.getEnvelopeInternal().getWidth() / 2);
-	// drawCachedGeometry(Type.CIRCLE, /* solid, */border);
-	// }
-
-	// public void drawRoundedRectangle(final IPoint pos, /*final boolean solid,*/final double width, final double
-	// height,
-	// final Color fill, final Color border) {
-	// _center.setCoordinate(pos);
-	// _scale.setTo(width, height, 1);
-	// gl.setCurrentColor(fill);
-	// drawCachedGeometry(Type.ROUNDED, solid, border);
-	// }
-
 	/**
 	 * Draw cylinder.
 	 *
@@ -424,8 +413,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param border
 	 *            the border
 	 */
-	private void drawLineCylinder(final Geometry g, /* final boolean solid, */ final double radius,
-			final IColor border) {
+	private void drawLineCylinder(final Geometry g, final double radius, final IColor border) {
 		_vertices.setToYNegated(GamaCoordinateSequenceFactory.pointsOf(g));
 		for (int i = 0, n = _vertices.size(); i < n - 1; i++) {
 			final IPoint v1 = _vertices.at(i);
@@ -436,12 +424,6 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 			final double height = _normal.norm();
 			_tangent.setLocation(_normal.orthogonal());
 			_normal.normalize();
-			// if (i > 0) {
-			// _scale.setTo(radius);
-			// drawCachedGeometry(Type.SPHERE, border);
-			// }
-			// _center.setLocation(v1);
-			// draw tube
 			_scale.setTo(radius, radius, height);
 			drawCachedGeometry(Type.CYLINDER, /* solid, */border);
 
@@ -480,7 +462,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 	 * @param border
 	 *            the border
 	 */
-	private void drawTeapot(final Geometry p, /* final boolean solid, */final double height, final IColor border) {
+	private void drawTeapot(final Geometry p, final double height, final IColor border) {
 		_vertices.setToYNegated(GamaCoordinateSequenceFactory.pointsOf(p));
 		try {
 			gl.pushMatrix();
@@ -516,7 +498,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 		boolean old = gl.setObjectWireframe(false);
 		boolean previous = gl.setObjectLighting(false);
 		try {
-			drawPolyhedron(polygon, /* true, */ envelope.getMaxZ(), DEFAULT_BORDER);
+			drawPolyhedron(polygon, envelope.getMaxZ(), DEFAULT_BORDER);
 		} finally {
 			gl.setObjectWireframe(old);
 			gl.setObjectLighting(previous);
@@ -539,7 +521,7 @@ public class GeometryDrawer extends ObjectDrawer<GeometryObject> {
 		boolean old = gl.setObjectWireframe(false);
 		boolean previous = gl.setObjectLighting(false);
 		try {
-			drawSphere(point, /* true, */ height, DEFAULT_BORDER);
+			drawSphere(point, height, DEFAULT_BORDER);
 		} finally {
 			gl.setObjectWireframe(old);
 			gl.setObjectLighting(previous);

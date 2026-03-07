@@ -24,11 +24,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
 import org.geotools.referencing.CRS;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription.Platform;
 import gama.api.constants.Generators;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.GamaMetaModel;

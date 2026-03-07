@@ -15,7 +15,7 @@ import static com.google.common.collect.Iterables.transform;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.eclipse.core.runtime.QualifiedName;
+
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
@@ -407,7 +407,6 @@ public abstract class GamaViewPart extends ViewPart
 		if (first == -1) {
 			if (agent.getPopulation().size() > 1) { setPartName(old + " (" + agent.getName() + ")"); }
 		} else {
-
 			setPartName(overlay(old, agent.getName(), first + 1, second));
 		}
 	}

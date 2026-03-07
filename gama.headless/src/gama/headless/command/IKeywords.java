@@ -1,56 +1,57 @@
 /*******************************************************************************************************
  *
- * IKeywords.java, in gama.headless, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * IKeywords.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.headless.command;
+
+import gama.annotations.constants.IKeyword;
 
 /**
  * The Interface IKeywords.
  */
 public interface IKeywords {
-	
+
 	/** The Constant RUNSIMULARTION. */
-	public final static String RUNSIMULARTION = "run";
-	
+	String RUNSIMULARTION = "run";
+
 	/** The Constant STARTSIMULATION. */
-	public final static String STARTSIMULATION = "start_simulation";
-	
+	String STARTSIMULATION = "start_simulation";
+
 	/** The Constant LOADSUBMODEL. */
-	public final static String LOADSUBMODEL = "load_sub_model";
-	
+	String LOADSUBMODEL = "load_sub_model";
+
 	/** The Constant STEPSUBMODEL. */
-	public final static String STEPSUBMODEL = "step_sub_model";
-	
+	String STEPSUBMODEL = "step_sub_model";
+
 	/** The Constant EVALUATESUBMODEL. */
-	public final static String EVALUATESUBMODEL = "evaluate_sub_model";
-	
+	String EVALUATESUBMODEL = "evaluate_sub_model";
+
 	/** The Constant WITHPARAMS. */
-	public final static String WITHPARAMS = "with_param";
-	
+	String WITHPARAMS = "with_param";
+
 	/** The Constant WITHOUTPUTS. */
-	public final static String WITHOUTPUTS = "with_output";
-	
+	String WITHOUTPUTS = "with_output";
+
 	/** The Constant WITHSEED. */
-	public final static String WITHSEED = "seed";
-	
+	String WITHSEED = "seed";
+
 	/** The Constant OUT. */
-	public final static String OUT = "out";
-	
+	String OUT = "out";
+
 	/** The Constant CORE. */
-	public final static String CORE = "core";
-	
+	String CORE = "core";
+
 	/** The Constant END. */
-	public final static String END = "end_cycle";
-	
+	String END = "end_cycle";
+
 	/** The Constant EXPERIMENT. */
-	public final static String EXPERIMENT = "name";
-	
+	String EXPERIMENT = IKeyword.NAME;
+
 	/** The Constant MODEL. */
-	public final static String MODEL= "of";
+	String MODEL = "of";
 }

@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.core.topology.grid;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IGridAgent;

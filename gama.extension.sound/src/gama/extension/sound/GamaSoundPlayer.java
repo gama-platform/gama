@@ -13,8 +13,8 @@ package gama.extension.sound;
 import java.io.File;
 import java.util.Map;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.runtime.scope.IScope;
 import javazoom.jlgui.basicplayer.BasicController;

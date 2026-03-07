@@ -26,13 +26,13 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.factories.IExpressionFactory;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;

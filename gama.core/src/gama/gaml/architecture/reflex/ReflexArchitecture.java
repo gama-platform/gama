@@ -17,8 +17,8 @@ import org.eclipse.emf.common.util.URI;
 
 import gama.annotations.doc;
 import gama.annotations.skill;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.ISymbol;

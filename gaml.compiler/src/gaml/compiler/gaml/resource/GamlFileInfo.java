@@ -31,11 +31,11 @@ import java.util.regex.Pattern;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.emf.common.util.URI;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IGamlDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.types.GamaFileType;
 import gama.api.utils.files.AbstractFileMetaData;
 import gama.api.utils.files.IGamlFileInfo;

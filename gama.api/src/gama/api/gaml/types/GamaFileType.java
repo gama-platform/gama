@@ -21,10 +21,10 @@ import com.google.common.collect.Multimap;
 
 import gama.annotations.doc;
 import gama.annotations.type;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.IGamaGetter;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.file.GamaFolderFile;

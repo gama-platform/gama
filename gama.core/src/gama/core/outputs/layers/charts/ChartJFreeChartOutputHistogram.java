@@ -52,7 +52,7 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.PieDataset;
 import org.jfree.data.xy.XYDataset;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;

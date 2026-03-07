@@ -18,9 +18,9 @@ import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
 import gama.annotations.operator;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.IOperatorCategory;
-import gama.api.constants.IKeyword;
 import gama.api.runtime.scope.IScope;
 
 /**
