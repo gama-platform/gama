@@ -13,7 +13,6 @@ package gama.ui.display.opengl4.files;
 import java.io.File;
 
 import com.jogamp.opengl.GL;
-import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.util.texture.Texture;
 
 import gama.api.types.geometry.GamaPointFactory;
@@ -57,6 +56,55 @@ public class ObjFileDrawer {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Helper method to draw a single face of the object
+	 */
+	private static void drawFace(final GamaObjFile file, final OpenGL gl, final int[] tempfaces, final int[] norms, final int[] texs, final IPoint tex, final IPoint normal, final IPoint vertex) {
+		final int polytype = tempfaces.length == 3 ? GL.GL_TRIANGLES : GL.GL_TRIANGLE_FAN;
+		gl.beginDrawing(polytype);
+
+		boolean hasNormals = true;
+		for (int w = 0; w < tempfaces.length; w++) {
+			if (norms[w] == 0) {
+				hasNormals = false;
+				break;
+			}
+		}
+
+		final double[] arrayOfVertices = new double[tempfaces.length * 3];
+		for (int w = 0; w < tempfaces.length; w++) {
+			final double[] ordinates = file.setOfVertex.get(tempfaces[w] - 1);
+			for (int k = 0; k < 3; k++) { arrayOfVertices[w * 3 + k] = ordinates[k]; }
+		}
+		final ICoordinates coords = GamaCoordinateSequenceFactory.ofLength(tempfaces.length + 1);
+		coords.setTo(arrayOfVertices);
+		coords.completeRing();
+
+		if (!hasNormals) { gl.setNormal(coords, !coords.isClockwise()); }
+		for (int w = 0; w < tempfaces.length; w++) {
+			if (tempfaces[w] == 0) { continue; }
+			final boolean hasNormal = norms[w] != 0;
+			final boolean hasTex = texs[w] != 0;
+			if (hasNormal) {
+				final double[] temp_coords = file.setOfVertexNormals.get(norms[w] - 1);
+				normal.setLocation(temp_coords[0], temp_coords[1], temp_coords[2]);
+			}
+			if (hasTex) {
+				final double[] ordinates = file.setOfVertexTextures.get(texs[w] - 1);
+				tex.setLocation(ordinates[0], ordinates[1], ordinates[2]);
+				if (1d >= tex.getY() && -tex.getY() <= 0) {
+					tex.setY(1d - tex.getY());
+				} else {
+					tex.setY(Math.abs(tex.getY()));
+				}
+			}
+			final double[] temp_coords = file.setOfVertex.get(tempfaces[w] - 1);
+			vertex.setLocation(temp_coords[0], temp_coords[1], temp_coords[2]);
+			gl.drawVertex(vertex, hasNormal ? normal : null, hasTex ? tex : null);
+		}
+		gl.endDrawing();
 	}
 
 	/**
@@ -105,52 +153,7 @@ public class ObjFileDrawer {
 			final int[] norms = file.facesNorms.get(i);
 			final int[] texs = file.facesTexs.get(i);
 
-			//// Quad Begin Header ////
-			final int polytype =
-					tempfaces.length == 3 ? GL.GL_TRIANGLES : tempfaces.length == 4 ? GL4.GL_TRIANGLE_FAN : GL4.GL_TRIANGLE_FAN;
-			gl.beginDrawing(polytype);
-			////////////////////////////
-
-			boolean hasNormals = true;
-			for (int w = 0; w < tempfaces.length; w++) {
-				if (norms[w] == 0) {
-					hasNormals = false;
-					break;
-				}
-			}
-
-			final double[] arrayOfVertices = new double[tempfaces.length * 3];
-			for (int w = 0; w < tempfaces.length; w++) {
-				final double[] ordinates = file.setOfVertex.get(tempfaces[w] - 1);
-				for (int k = 0; k < 3; k++) { arrayOfVertices[w * 3 + k] = ordinates[k]; }
-			}
-			final ICoordinates coords = GamaCoordinateSequenceFactory.ofLength(tempfaces.length + 1);
-			coords.setTo(arrayOfVertices);
-			coords.completeRing();
-
-			if (!hasNormals) { gl.setNormal(coords, !coords.isClockwise()); }
-			for (int w = 0; w < tempfaces.length; w++) {
-				if (tempfaces[w] == 0) { continue; }
-				final boolean hasNormal = norms[w] != 0;
-				final boolean hasTex = texs[w] != 0;
-				if (hasNormal) {
-					final double[] temp_coords = file.setOfVertexNormals.get(norms[w] - 1);
-					normal.setLocation(temp_coords[0], temp_coords[1], temp_coords[2]);
-				}
-				if (hasTex) {
-					final double[] ordinates = file.setOfVertexTextures.get(texs[w] - 1);
-					tex.setLocation(ordinates[0], ordinates[1], ordinates[2]);
-					if (1d >= tex.getY() && -tex.getY() <= 0) {
-						tex.setY(1d - tex.getY());
-					} else {
-						tex.setY(Math.abs(tex.getY()));
-					}
-				}
-				final double[] temp_coords = file.setOfVertex.get(tempfaces[w] - 1);
-				vertex.setLocation(temp_coords[0], temp_coords[1], temp_coords[2]);
-				gl.drawVertex(vertex, hasNormal ? normal : null, hasTex ? tex : null);
-			}
-			gl.endDrawing();
+			drawFace(file, gl, tempfaces, norms, texs, tex, normal, vertex);
 		}
 	}
 
