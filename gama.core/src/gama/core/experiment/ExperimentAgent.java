@@ -22,9 +22,6 @@ import gama.annotations.arg;
 import gama.annotations.doc;
 import gama.annotations.experiment;
 import gama.annotations.species;
-import gama.annotations.variable;
-import gama.annotations.vars;
-import gama.annotations.support.ITypeProvider;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.constants.Generators;
@@ -90,65 +87,6 @@ import gama.dev.DEBUG;
 @species (
 		name = IKeyword.EXPERIMENT,
 		doc = @doc ("The species of agents that represent experiments"))
-@vars ({ @variable (
-		name = IKeyword.SIMULATIONS,
-		type = IType.LIST,
-		of = ITypeProvider.MODEL_TYPE,
-		doc = @doc (
-				value = "Contains the list of currently running simulations")),
-		@variable (
-				name = IKeyword.SIMULATION,
-				type = ITypeProvider.MODEL_TYPE,
-				doc = @doc (
-						value = "Contains a reference to the current simulation being run by this experiment",
-						comment = "will be nil if no simulation have been created. In case several simulations are launched, contains a reference to the latest one")),
-		@variable (
-				name = IExperimentAgent.MODEL_PATH,
-				type = IType.STRING,
-				constant = true,
-				doc = @doc (
-						value = "Contains the absolute path to the folder in which the current model is located",
-						comment = "Always terminated with a trailing separator")),
-		@variable (
-				name = IKeyword.SEED,
-				type = IType.FLOAT,
-				doc = @doc (
-						value = "The seed of the random number generator. Each time it is set, the random number generator is reinitialized. WARNING: Setting it to zero actually means that you let GAMA choose a random seed")),
-		@variable (
-				name = IKeyword.RNG,
-				type = IType.STRING,
-				doc = @doc (IRandom.DOC)),
-		@variable (
-				name = IKeyword.CYCLE,
-				type = IType.INT,
-				doc = @doc ("Returns the current cycle of the simulation")),
-		@variable (
-				name = ISimulationAgent.USAGE,
-				type = IType.INT,
-				doc = @doc ("Returns the number of times the random number generator of the experiment has been drawn")),
-		@variable (
-				name = IExperimentAgent.MAXIMUM_CYCLE_DURATION,
-				type = IType.FLOAT,
-				doc = @doc (
-						value = "The maximum duration (in seconds) a simulation cycle should last. Default is 1. Units can be used to pass values greater than a second (for instance '10 #sec')",
-						comment = "Useful to set the range, from 0 to this value, in which the user can choose a value for the delay")),
-		@variable (
-				name = IExperimentAgent.MINIMUM_CYCLE_DURATION,
-				type = IType.FLOAT,
-				doc = @doc (
-						value = "The minimum duration (in seconds) a simulation cycle should last. Default is 0. Units can be used to pass values smaller than a second (for instance '10 #msec')",
-						comment = "Useful to introduce slow_downs to fast simulations or to synchronize the simulation on some other process")),
-		@variable (
-				name = IKeyword.PARAMETERS,
-				type = IType.MAP,
-				doc = @doc ("A parameters set of this experiment agent")),
-		@variable (
-				name = IExperimentAgent.PROJECT_PATH,
-				type = IType.STRING,
-				constant = true,
-				doc = @doc (
-						value = "Contains the absolute path to the project in which the current model is located",
-						comment = "Always terminated with a trailing separator")) })
 @experiment (
 		value = IKeyword.GUI_)
 @doc ("GUI experiments are experiments used to visualise and interact with simulations through the regular user interface of GAMA. They can declare, parameters, used to populate the Parameters view, outputs like displays or monitors")

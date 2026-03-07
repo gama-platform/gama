@@ -277,7 +277,7 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		/**
 		 * To array.
 		 *
-		 * @return the i experiment agent[]
+		 * @return the population as a new array
 		 */
 		@SuppressWarnings ("unchecked")
 		@Override

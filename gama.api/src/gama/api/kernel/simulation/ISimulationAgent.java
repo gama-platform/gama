@@ -22,13 +22,13 @@ import gama.api.utils.random.IRandom;
 
 /**
  * The Interface ISimulationAgent.
- * 
+ *
  * <p>
  * Represents a running simulation instance in GAMA. A simulation agent is the top-level agent that contains all other
  * agents and manages the simulation lifecycle, time, randomness, and outputs. In GAMA, an experiment can run multiple
  * simulations concurrently (for batch experiments or replication).
  * </p>
- * 
+ *
  * <h3>Core Responsibilities</h3>
  * <ul>
  * <li><b>Agent Container:</b> Hosts all species populations and their agents</li>
@@ -38,7 +38,7 @@ import gama.api.utils.random.IRandom;
  * <li><b>Scheduling:</b> Controls agent execution order and timing</li>
  * <li><b>Spatial Context:</b> Defines world geometry and projections</li>
  * </ul>
- * 
+ *
  * <h3>Simulation vs Experiment</h3>
  * <table border="1">
  * <tr>
@@ -67,11 +67,11 @@ import gama.api.utils.random.IRandom;
  * <td>Actual agents and their state</td>
  * </tr>
  * </table>
- * 
+ *
  * <h3>Usage in GAML</h3>
- * 
+ *
  * <h4>1. Accessing Simulation Attributes</h4>
- * 
+ *
  * <pre>
  * <code>
  * global {
@@ -85,16 +85,16 @@ import gama.api.utils.random.IRandom;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>2. Controlling Random Number Generation</h4>
- * 
+ *
  * <pre>
  * <code>
  * experiment myExp {
  *     float seed <- 42.0;  // Fixed seed for reproducibility
  *     string rng <- "mersenne";  // RNG algorithm
  * }
- * 
+ *
  * global {
  *     init {
  *         // All random operations use this seed
@@ -105,15 +105,15 @@ import gama.api.utils.random.IRandom;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>3. Working with Dates</h4>
- * 
+ *
  * <pre>
  * <code>
  * global {
  *     date starting_date <- date("2020-01-01");
  *     float step <- 1 #hour;
- *     
+ *
  *     reflex monitor_date {
  *         write "Current simulation date: " + current_date;
  *         // Advances by 1 hour each cycle
@@ -121,9 +121,9 @@ import gama.api.utils.random.IRandom;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>4. Managing Outputs</h4>
- * 
+ *
  * <pre>
  * <code>
  * experiment myExp {
@@ -131,17 +131,17 @@ import gama.api.utils.random.IRandom;
  *         display map {
  *             species person;
  *         }
- *         
+ *
  *         monitor "Population" value: length(person);
  *     }
  * }
- * 
+ *
  * // Outputs are managed by the simulation agent
  * </code>
  * </pre>
- * 
+ *
  * <h4>5. Micro-Simulations</h4>
- * 
+ *
  * <pre>
  * <code>
  * // Simulations can contain other simulations
@@ -152,43 +152,43 @@ import gama.api.utils.random.IRandom;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h3>Java Usage</h3>
- * 
+ *
  * <pre>
  * <code>
  * ISimulationAgent simulation = ...;
- * 
+ *
  * // Time and dates
  * IDate currentDate = simulation.getCurrentDate();
  * IDate startDate = simulation.getStartingDate();
  * double timeStep = simulation.getTimeStep(scope);
  * Integer cycle = simulation.getCycle(scope);
- * 
+ *
  * // Random number generation
  * Double seed = simulation.getSeed();
  * IRandom rng = simulation.getRandomGenerator();
  * simulation.generateRandomGenerator(42.0, "mersenne");
- * 
+ *
  * // Outputs
  * simulation.addOutput(monitorOutput);
  * simulation.initOutputs();
  * IOutputManager outputs = simulation.getOutputManager();
- * 
+ *
  * // Spatial
  * IProjectionFactory projFactory = simulation.getProjectionFactory();
  * simulation.adoptTopologyOf(otherSimulation);
- * 
+ *
  * // Initialization
  * Map&lt;String, Object&gt; externalInits = simulation.getExternalInits();
  * simulation.setExternalInits(initValues);
- * 
+ *
  * // State
  * boolean isMicro = simulation.isMicroSimulation();
  * simulation.setScheduled(true);
  * </code>
  * </pre>
- * 
+ *
  * <h3>Lifecycle</h3>
  * <ol>
  * <li><b>Creation:</b> Simulation created from experiment specification</li>
@@ -198,7 +198,7 @@ import gama.api.utils.random.IRandom;
  * <li><b>Execution:</b> Cycles execute until stop condition or user intervention</li>
  * <li><b>Disposal:</b> Agents cleaned up, outputs closed, resources released</li>
  * </ol>
- * 
+ *
  * <h3>Special Attributes</h3>
  * <ul>
  * <li><b>DURATION:</b> Last cycle execution time (milliseconds)</li>
@@ -210,7 +210,7 @@ import gama.api.utils.random.IRandom;
  * <li><b>PAUSED:</b> Whether simulation is paused</li>
  * <li><b>USAGE:</b> RNG usage count</li>
  * </ul>
- * 
+ *
  * <h3>Implementation Notes</h3>
  * <ul>
  * <li>Each simulation has its own independent RNG for reproducibility</li>
@@ -219,7 +219,7 @@ import gama.api.utils.random.IRandom;
  * <li>External inits allow parameter passing from experiment to simulation</li>
  * <li>Topology can be adopted from another simulation for consistency</li>
  * </ul>
- * 
+ *
  * @see ITopLevelAgent
  * @see IExperimentAgent
  * @see IClock
