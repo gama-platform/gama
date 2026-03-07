@@ -45,7 +45,7 @@ public interface IJson {
 		String NAME_PROPERTIES = "properties";
 
 		/** The Constant NAME_NAME. */
-		String NAME_NAME = "name";
+		String NAME_NAME = IKeyword.NAME;
 
 		/** The Constant NAME_TYPE. */
 		String NAME_TYPE = IKeyword.TYPE;

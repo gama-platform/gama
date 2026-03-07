@@ -150,12 +150,12 @@ public class GamaServerExperimentJob extends ExperimentJob {
 				if ("int".equals(type)) { v = Integer.valueOf("" + m.get("value")); }
 				if ("float".equals(type)) { v = Double.valueOf("" + m.get("value")); }
 
-				final IParameter.Batch b = curExperiment.getParameterByTitle(m.get("name").toString());
+				final IParameter.Batch b = curExperiment.getParameterByTitle(m.get(IKeyword.NAME).toString());
 				if (b != null) {
-					curExperiment.setParameterValueByTitle(curExperiment.getExperimentScope(), m.get("name").toString(),
+					curExperiment.setParameterValueByTitle(curExperiment.getExperimentScope(), m.get(IKeyword.NAME).toString(),
 							v);
 				} else {
-					curExperiment.setParameterValue(curExperiment.getExperimentScope(), m.get("name").toString(), v);
+					curExperiment.setParameterValue(curExperiment.getExperimentScope(), m.get(IKeyword.NAME).toString(), v);
 				}
 
 			}

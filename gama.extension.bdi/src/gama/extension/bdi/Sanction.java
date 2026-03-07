@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * Sanction.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * Sanction.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -16,6 +15,7 @@ import gama.annotations.doc;
 import gama.annotations.getter;
 import gama.annotations.variable;
 import gama.annotations.vars;
+import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -28,7 +28,7 @@ import gama.api.utils.json.IJsonValue;
  * The Class Sanction.
  */
 @vars ({ @variable (
-		name = "name",
+		name = IKeyword.NAME,
 		type = IType.STRING,
 		doc = @doc ("The name of this sanction")),
 
@@ -37,7 +37,7 @@ public class Sanction implements IValue {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType(), "name", getName());
+		return json.typedObject(getGamlType(), IKeyword.NAME, getName());
 	}
 
 	/** The sanction statement. */
@@ -48,7 +48,7 @@ public class Sanction implements IValue {
 	 *
 	 * @return the name
 	 */
-	@getter ("name")
+	@getter (IKeyword.NAME)
 	public String getName() { return this.sanctionStatement.getName(); }
 
 	/**

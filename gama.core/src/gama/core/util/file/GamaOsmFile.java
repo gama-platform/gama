@@ -614,7 +614,7 @@ public class GamaOsmFile extends GamaGisFile {
 				final Map<String, Object> wayValues = GamaMapFactory.create();
 				wayValues.put("entity_order", order++);
 				// TODO FIXME AD: What's that ??
-				wayValues.put("gama_bus_line", values.get("name"));
+				wayValues.put("gama_bus_line", values.get(IKeyword.NAME));
 				wayValues.put("osm_way_id", entity.getId());
 				if (relationWays.size() > 0) {
 					final List<IShape> geoms = createSplitRoad(relationWays, wayValues, intersectionNodes, nodesPt);
@@ -627,7 +627,7 @@ public class GamaOsmFile extends GamaGisFile {
 				final List<IShape> objs = GamaListFactory.create(Types.GEOMETRY);
 				objs.add(pt2);
 
-				pt2.setAttribute("gama_bus_line", values.get("name"));
+				pt2.setAttribute("gama_bus_line", values.get(IKeyword.NAME));
 
 				geometries.add(pt2);
 

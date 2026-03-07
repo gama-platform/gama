@@ -111,7 +111,7 @@ public class JSONInfo extends AbstractFileMetaData {
 						if (crsVal != null && crsVal.isObject()) {
 							IJsonValue props = crsVal.asObject().get("properties");
 							if (props != null && props.isObject()) {
-								IJsonValue name = props.asObject().get("name");
+								IJsonValue name = props.asObject().get(IKeyword.NAME);
 								if (name != null && name.isString()) { crs = name.asString(); }
 							}
 						}

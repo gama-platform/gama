@@ -35,7 +35,7 @@ import gama.api.utils.json.IJsonValue;
  * The Class Predicate.
  */
 @vars ({ @variable (
-		name = "name",
+		name = IKeyword.NAME,
 		type = IType.STRING,
 		doc = @doc ("the name of the predicate")),
 		@variable (
@@ -70,7 +70,7 @@ public class Predicate implements IValue {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType(), "name", name, "is_true", is_true, "values", values, "date", date)
+		return json.typedObject(getGamlType(), IKeyword.NAME, name, "is_true", is_true, "values", values, "date", date)
 				.add(SimpleBdiArchitecture.SUBINTENTIONS, subintentions)
 				.add(SimpleBdiArchitecture.ON_HOLD_UNTIL, onHoldUntil)
 				.add(SimpleBdiArchitecture.SUPERINTENTION, superIntention)
@@ -106,7 +106,7 @@ public class Predicate implements IValue {
 	 *
 	 * @return the name
 	 */
-	@getter ("name")
+	@getter (IKeyword.NAME)
 	public String getName() { return name; }
 
 	/**

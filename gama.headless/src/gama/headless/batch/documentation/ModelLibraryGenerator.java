@@ -420,7 +420,7 @@ public class ModelLibraryGenerator {
 					final ScreenshotStructure screenshot = new ScreenshotStructure(id);
 					for (int i = 0; i < eElement.getElementsByTagName("display").getLength(); i++) {
 						final String displayName =
-								((Element) eElement.getElementsByTagName("display").item(i)).getAttribute("name");
+								((Element) eElement.getElementsByTagName("display").item(i)).getAttribute(IKeyword.NAME);
 						int cycleNumber = Integer.parseInt(((Element) eElement.getElementsByTagName("display").item(i))
 								.getAttribute("cycle_number"));
 						if (cycleNumber == 0) { cycleNumber = 10; }

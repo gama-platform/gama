@@ -29,7 +29,7 @@ import gama.api.utils.json.IJsonValue;
  * The Class Norm.
  */
 @vars ({ @variable (
-		name = "name",
+		name = IKeyword.NAME,
 		type = IType.STRING,
 		doc = @doc ("The name of this norm")),
 		@variable (
@@ -58,7 +58,7 @@ public class Norm implements IValue {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType(), "name", getName());
+		return json.typedObject(getGamlType(), IKeyword.NAME, getName());
 	}
 
 	/** The norm statement. */
@@ -84,7 +84,7 @@ public class Norm implements IValue {
 	 *
 	 * @return the name
 	 */
-	@getter ("name")
+	@getter (IKeyword.NAME)
 	public String getName() { return this.normStatement.getName(); }
 
 	/**

@@ -522,7 +522,7 @@ public class GamaBundleLoader {
 		// We gather all the GAMA_PLUGINS that explicitly declare models using
 		// the non-default scheme (plugin > models ...).
 		for (final IConfigurationElement e : registry.getConfigurationElementsFor(MODELS_EXTENSION)) {
-			MODEL_PLUGINS.put(Platform.getBundle(e.getContributor().getName()), e.getAttribute("name"));
+			MODEL_PLUGINS.put(Platform.getBundle(e.getContributor().getName()), e.getAttribute(IKeyword.NAME));
 		}
 	}
 

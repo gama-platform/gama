@@ -30,7 +30,7 @@ import gama.api.utils.json.IJsonValue;
  * The Class Emotion.
  */
 @vars ({ @variable (
-		name = "name",
+		name = IKeyword.NAME,
 		type = IType.STRING,
 		doc = @doc ("the name of the emotion")),
 		@variable (
@@ -65,7 +65,7 @@ public class Emotion implements IValue {
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
 		return json
-				.typedObject(getGamlType(), "name", name, IKeyword.INTENSITY, intensity, ABOUT,
+				.typedObject(getGamlType(), IKeyword.NAME, name, IKeyword.INTENSITY, intensity, ABOUT,
 						about == null ? null : about.getName(), "decay", decay)
 				.add(SimpleBdiArchitecture.AGENT_CAUSE, agentCause)
 				.add(SimpleBdiArchitecture.OWNER, owner);
@@ -97,7 +97,7 @@ public class Emotion implements IValue {
 	 *
 	 * @return the name
 	 */
-	@getter ("name")
+	@getter (IKeyword.NAME)
 	public String getName() { return name; }
 
 	/**

@@ -74,7 +74,7 @@ public class MulticriteriaAnalyzeOperator {
 		final List<String> criteriaStr = new LinkedList<>();
 		final Map<String, Double> weight = new HashMap<>();
 		for (final Map<String, Object> critMap : criteriaMap) {
-			final String name = (String) critMap.get("name");
+			final String name = (String) critMap.get(IKeyword.NAME);
 			criteriaStr.add(name);
 			final Double w = Cast.asFloat(scope, critMap.get("weight"));
 			if (w != null) {
@@ -252,7 +252,7 @@ public class MulticriteriaAnalyzeOperator {
 		final Map<String, FonctionPreference> fctPrefCrit = new HashMap<>();
 		final Map<String, Double> weight = new Hashtable<>();
 		for (final Map<String, Object> critMap : criteriaMap) {
-			final String name = (String) critMap.get("name");
+			final String name = (String) critMap.get(IKeyword.NAME);
 			criteriaStr.add(name);
 			final Double w = Cast.asFloat(scope, critMap.get("weight"));
 			if (w != null) {
@@ -354,7 +354,7 @@ public class MulticriteriaAnalyzeOperator {
 		final Map<String, Double> indifference = new HashMap<>();
 		final Map<String, Double> veto = new HashMap<>();
 		for (final Map<String, Object> critMap : criteriaMap) {
-			final String name = (String) critMap.get("name");
+			final String name = (String) critMap.get(IKeyword.NAME);
 			criteriaStr.add(name);
 			final Double w = Cast.asFloat(scope, critMap.get("weight"));
 			if (w != null) {
@@ -482,7 +482,7 @@ public class MulticriteriaAnalyzeOperator {
 		final List<String> criteriaStr = new LinkedList<>();
 		final LinkedList<CritereFonctionsCroyances> criteresFC = new LinkedList<>();
 		for (final Map<String, Object> critMap : criteriaMap) {
-			final String name = (String) critMap.get("name");
+			final String name = (String) critMap.get(IKeyword.NAME);
 			criteriaStr.add(name);
 			final Object s1r = critMap.get("s1");
 			Double s1 = 0.0, s2 = 1.0, v1Pour = 0.0, v2Pour = 1.0, v1Contre = 0.0, v2Contre = 0.0;

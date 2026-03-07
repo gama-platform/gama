@@ -526,7 +526,7 @@ public class DefaultServerCommands {
 
 		if (readSpeciesNames) { res.put("species", readSpecies(model, readSpeciesActions, readspeciesVariables)); }
 
-		res.put("name", model.getName());
+		res.put(IKeyword.NAME, model.getName());
 		res.put("path", pathToModel);
 		return new CommandResponse(CommandExecutedSuccessfully, res, map, false);
 	}
@@ -542,7 +542,7 @@ public class DefaultServerCommands {
 		List<Map<String, String>> allVariables = new ArrayList<>();
 		for (IVariable variable : species.getVars()) {
 			Map<String, String> resVariable = new HashMap<>();
-			resVariable.put("name", variable.getName());
+			resVariable.put(IKeyword.NAME, variable.getName());
 			resVariable.put(IKeyword.TYPE, variable.getType().getName());
 			allVariables.add(resVariable);
 		}
@@ -560,12 +560,12 @@ public class DefaultServerCommands {
 		List<Map<String, Object>> allActions = new ArrayList<>();
 		for (IStatement action : species.getActions()) {
 			Map<String, Object> resAction = new HashMap<>();
-			resAction.put("name", action.getName());
+			resAction.put(IKeyword.NAME, action.getName());
 			List<Map<String, String>> resAllCommands = new ArrayList<>();
 			IActionDescription actionDescription = (IActionDescription) action.getDescription();
 			for (var arg : actionDescription.getFormalArgs()) {
 				Map<String, String> command = new HashMap<>();
-				command.put("name", arg.getName());
+				command.put(IKeyword.NAME, arg.getName());
 				command.put(IKeyword.TYPE, arg.getGamlType().getName());
 				resAllCommands.add(command);
 			}
@@ -594,7 +594,7 @@ public class DefaultServerCommands {
 		for (ISpecies species : model.getAllSpecies().values()) {
 			// Name
 			Map<String, Object> resSpecie = new HashMap<>();
-			resSpecie.put("name", species.getName());
+			resSpecie.put(IKeyword.NAME, species.getName());
 
 			// Variables
 			if (readspeciesVariables) { resSpecie.put("variables", getSpeciesVariables(species)); }
@@ -620,12 +620,12 @@ public class DefaultServerCommands {
 		for (IExperimentSpecies ittExp : model.getExperiments()) {
 			// Get the parameters
 			Map<String, Object> resExp = new HashMap<>();
-			resExp.put("name", ittExp.getName());
+			resExp.put(IKeyword.NAME, ittExp.getName());
 			List<Map<String, String>> resAllParams = new ArrayList<>();
 			for (Map.Entry<String, IParameter> paramEntry : ittExp.getParameters().entrySet()) {
 				Map<String, String> resParam = new HashMap<>();
 				IParameter param = paramEntry.getValue();
-				resParam.put("name", param.getName());
+				resParam.put(IKeyword.NAME, param.getName());
 				resParam.put("description", param.getTitle());
 				resParam.put(IKeyword.TYPE, param.getType().toString());
 				resAllParams.add(resParam);

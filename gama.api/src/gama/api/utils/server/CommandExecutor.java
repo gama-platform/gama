@@ -126,8 +126,8 @@ public class CommandExecutor implements ICommandExecuter {
 			int i = 1;
 			for (var param : parameters.listValue(null, Types.MAP, false)) {
 				@SuppressWarnings ("unchecked") Map<String, Object> m = (Map<String, Object>) param;
-				// field IKeyword.TYPE is optional, "name" and "value" are mandatory
-				var name = m.get("name");
+				// field IKeyword.TYPE is optional, IKeyword.NAME and "value" are mandatory
+				var name = m.get(IKeyword.NAME);
 				var value = m.get("value");
 				if (name == null) return new CommandResponse(MessageType.MalformedRequest, "Parameter number " + i
 						+ " is missing its `name` field. Parameter received: " + GAMA.getJsonEncoder().valueOf(m),

@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.api.gaml.types;
 
-
+import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.misc.IContainer;
@@ -20,10 +20,9 @@ import gama.api.utils.json.IJsonValue;
 /**
  * Interface for GAML container types.
  * <p>
- * Container types represent collections of values with keys/indices. This interface extends
- * {@link IType} with additional methods specific to containers, including parameterization
- * by key and content types. Container types are used for lists, maps, matrices, graphs, and
- * other collection-based data structures.
+ * Container types represent collections of values with keys/indices. This interface extends {@link IType} with
+ * additional methods specific to containers, including parameterization by key and content types. Container types are
+ * used for lists, maps, matrices, graphs, and other collection-based data structures.
  * </p>
  * <p>
  * Container types support:
@@ -34,8 +33,9 @@ import gama.api.utils.json.IJsonValue;
  * </ul>
  * </p>
  *
- * @param <T> the specific container class this type represents
- * 
+ * @param <T>
+ *            the specific container class this type represents
+ *
  * @author drogoul
  * @since GAMA 1.0
  * @see IType
@@ -55,11 +55,12 @@ public interface IContainerType<T extends IContainer<?, ?>> extends IType<T> {
 	/**
 	 * Determines the container type resulting from casting an expression to this type.
 	 * <p>
-	 * This method analyzes the expression's type to determine the appropriate parameterized
-	 * container type after casting.
+	 * This method analyzes the expression's type to determine the appropriate parameterized container type after
+	 * casting.
 	 * </p>
 	 *
-	 * @param exp the expression to analyze
+	 * @param exp
+	 *            the expression to analyze
 	 * @return the resulting container type after casting
 	 */
 	@Override
@@ -68,10 +69,14 @@ public interface IContainerType<T extends IContainer<?, ?>> extends IType<T> {
 	/**
 	 * Casts an object to this container type.
 	 *
-	 * @param scope the execution scope
-	 * @param obj the object to cast
-	 * @param param optional casting parameter
-	 * @param copy whether to copy the result
+	 * @param scope
+	 *            the execution scope
+	 * @param obj
+	 *            the object to cast
+	 * @param param
+	 *            optional casting parameter
+	 * @param copy
+	 *            whether to copy the result
 	 * @return the casted container
 	 */
 	@Override
@@ -80,16 +85,22 @@ public interface IContainerType<T extends IContainer<?, ?>> extends IType<T> {
 	/**
 	 * Casts an object to this container type with specified key and content types.
 	 * <p>
-	 * This method allows for type-safe casting where the key and content types of the
-	 * resulting container can be specified explicitly.
+	 * This method allows for type-safe casting where the key and content types of the resulting container can be
+	 * specified explicitly.
 	 * </p>
 	 *
-	 * @param scope the execution scope
-	 * @param obj the object to cast
-	 * @param param optional casting parameter
-	 * @param keyType the desired key type for the container
-	 * @param contentType the desired content type for the container
-	 * @param copy whether to copy the result
+	 * @param scope
+	 *            the execution scope
+	 * @param obj
+	 *            the object to cast
+	 * @param param
+	 *            optional casting parameter
+	 * @param keyType
+	 *            the desired key type for the container
+	 * @param contentType
+	 *            the desired content type for the container
+	 * @param copy
+	 *            whether to copy the result
 	 * @return the casted container with the specified types
 	 */
 	@Override
@@ -98,11 +109,12 @@ public interface IContainerType<T extends IContainer<?, ?>> extends IType<T> {
 	/**
 	 * Creates a parameterized version of this container type with a specified content type.
 	 * <p>
-	 * This method is used to build type expressions like {@code list<int>} from a base
-	 * {@code list} type. The key type is inherited from this type.
+	 * This method is used to build type expressions like {@code list<int>} from a base {@code list} type. The key type
+	 * is inherited from this type.
 	 * </p>
 	 *
-	 * @param sub1 the content type parameter
+	 * @param sub1
+	 *            the content type parameter
 	 * @return a new parameterized container type
 	 */
 	IContainerType<?> of(IType<?> sub1);
@@ -110,12 +122,14 @@ public interface IContainerType<T extends IContainer<?, ?>> extends IType<T> {
 	/**
 	 * Creates a parameterized version of this container type with specified key and content types.
 	 * <p>
-	 * This method is used to build type expressions like {@code map<string,float>} from a base
-	 * {@code map} type, specifying both key and content types.
+	 * This method is used to build type expressions like {@code map<string,float>} from a base {@code map} type,
+	 * specifying both key and content types.
 	 * </p>
 	 *
-	 * @param sub1 the key type parameter
-	 * @param sub2 the content type parameter
+	 * @param sub1
+	 *            the key type parameter
+	 * @param sub2
+	 *            the content type parameter
 	 * @return a new parameterized container type
 	 */
 	IContainerType<?> of(IType<?> sub1, IType<?> sub2);
@@ -126,13 +140,14 @@ public interface IContainerType<T extends IContainer<?, ?>> extends IType<T> {
 	 * The JSON representation includes the type name and its key and content type parameters.
 	 * </p>
 	 *
-	 * @param json the JSON context
+	 * @param json
+	 *            the JSON context
 	 * @return a JSON representation of this container type
 	 */
 	@Override
 	default IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(Types.TYPE, "name", json.valueOf(getGamlType()), "key", json.valueOf(getKeyType()),
-				"content", json.valueOf(getContentType()));
+		return json.typedObject(Types.TYPE, IKeyword.NAME, json.valueOf(getGamlType()), "key",
+				json.valueOf(getKeyType()), "content", json.valueOf(getContentType()));
 	}
 
 }

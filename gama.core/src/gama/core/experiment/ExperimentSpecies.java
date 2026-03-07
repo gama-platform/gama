@@ -1059,11 +1059,11 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 				if ("int".equals(type)) { v = Integer.valueOf("" + m.get("value")); }
 				if ("float".equals(type)) { v = Double.valueOf("" + m.get("value")); }
 
-				final IParameter.Batch b = getParameterByTitle(m.get("name").toString());
+				final IParameter.Batch b = getParameterByTitle(m.get(IKeyword.NAME).toString());
 				if (b != null) {
-					setParameterValueByTitle(scope, m.get("name").toString(), v);
-				} else if (getParameter(m.get("name").toString()) != null) {
-					setParameterValue(scope, m.get("name").toString(), v);
+					setParameterValueByTitle(scope, m.get(IKeyword.NAME).toString(), v);
+				} else if (getParameter(m.get(IKeyword.NAME).toString()) != null) {
+					setParameterValue(scope, m.get(IKeyword.NAME).toString(), v);
 				}
 			}
 		}

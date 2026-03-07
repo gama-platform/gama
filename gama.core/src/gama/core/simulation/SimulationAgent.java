@@ -1028,7 +1028,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 					// updated from the corresponding agent
 					final Map<String, ISerialisedAgent> mapSavedAgtName = GamaMapFactory.createUnordered();
 					for (final ISerialisedAgent localSA : savedAgentInnerPop.get(savedAgentMicroPopName).agents()) {
-						mapSavedAgtName.put((String) localSA.getAttributeValue("name"), localSA);
+						mapSavedAgtName.put((String) localSA.getAttributeValue(IKeyword.NAME), localSA);
 					}
 
 					final Map<String, IAgent> mapSimuAgtName = GamaMapFactory.createUnordered();

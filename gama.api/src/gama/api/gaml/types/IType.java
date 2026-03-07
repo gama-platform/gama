@@ -18,6 +18,7 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IGamlDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
+import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.IMap;
@@ -1028,7 +1029,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 */
 	@Override
 	default IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(Types.TYPE, "name", getName());
+		return json.typedObject(Types.TYPE, IKeyword.NAME, getName());
 	}
 
 	// ==================== Expression Methods ====================

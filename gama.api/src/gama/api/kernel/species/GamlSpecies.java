@@ -619,7 +619,7 @@ public class GamlSpecies extends AbstractSpecies {
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType(), "name", getName());
+		return json.typedObject(getGamlType(), IKeyword.NAME, getName());
 	}
 
 }
