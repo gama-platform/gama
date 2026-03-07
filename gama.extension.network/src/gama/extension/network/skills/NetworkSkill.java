@@ -562,7 +562,7 @@ public class NetworkSkill extends MessagingSkill {
 
 	@SuppressWarnings ({ "unchecked", "rawtypes" })
 	@Override
-	protected void effectiveSend(final IScope scope, final GamaMessage message, final Object receiver) {
+	protected void effectiveSend(final IScope scope, final IMessage message, final Object receiver) {
 		if (receiver instanceof IList) {
 			for (final Object o : ((IList) receiver).iterable(scope)) { effectiveSend(scope, message.copy(scope), o); }
 		}

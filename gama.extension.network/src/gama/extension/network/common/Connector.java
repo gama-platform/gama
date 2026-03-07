@@ -19,7 +19,7 @@ import java.util.Map;
 
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;
-import gama.core.util.messaging.GamaMessage;
+import gama.api.types.message.IMessage;
 import gama.extension.network.skills.INetworkSkill;
 import gama.extension.serialize.binary.BinarySerialisation;
 
@@ -173,7 +173,7 @@ public abstract class Connector implements IConnector {
 	}
 
 	@Override
-	public void send(final IAgent sender, final String receiver, final GamaMessage content) {
+	public void send(final IAgent sender, final String receiver, final IMessage content) {
 		if (!this.forceNetworkUse && this.boxFollower.containsKey(receiver)) {
 			final ConnectorMessage msg =
 					new LocalMessage((String) sender.getAttribute(INetworkSkill.NET_AGENT_NAME), receiver, content);
