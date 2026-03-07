@@ -12,25 +12,17 @@ package gama.ui.display.opengl4;
 
 import java.awt.image.BufferedImage;
 import java.nio.BufferOverflowException;
+import java.nio.FloatBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
+import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
+import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.GL4;
-import com.jogamp.common.nio.Buffers;
-import java.nio.FloatBuffer;
-import com.jogamp.opengl.GL4;
-import com.jogamp.common.nio.Buffers;
-import java.nio.FloatBuffer;
-import com.jogamp.opengl.GL4;
-import com.jogamp.common.nio.Buffers;
-import java.nio.FloatBuffer;
-import com.jogamp.opengl.GL4;
-import com.jogamp.common.nio.Buffers;
-import java.nio.FloatBuffer;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
@@ -49,11 +41,11 @@ import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.ICoordinates;
+import gama.api.utils.geometry.ICoordinates.VertexVisitor;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.Scaling3D;
 import gama.api.utils.geometry.UnboundedCoordinateSequence;
-import gama.api.utils.geometry.ICoordinates.VertexVisitor;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGeometryFile;
@@ -66,6 +58,8 @@ import gama.ui.display.opengl4.renderer.caches.ITextureCache;
 import gama.ui.display.opengl4.renderer.caches.TextureCache2;
 import gama.ui.display.opengl4.renderer.helpers.AbstractRendererHelper;
 import gama.ui.display.opengl4.renderer.helpers.KeystoneHelper;
+import gama.ui.display.opengl4.renderer.shaders.BasicShader;
+import gama.ui.display.opengl4.renderer.shaders.MatrixStack;
 import gama.ui.display.opengl4.scene.AbstractObject;
 import gama.ui.display.opengl4.scene.ObjectDrawer;
 import gama.ui.display.opengl4.scene.geometry.GeometryDrawer;
@@ -73,9 +67,6 @@ import gama.ui.display.opengl4.scene.mesh.MeshDrawer;
 import gama.ui.display.opengl4.scene.mesh.MeshObject;
 import gama.ui.display.opengl4.scene.resources.ResourceDrawer;
 import gama.ui.display.opengl4.scene.text.TextDrawer;
-import gama.ui.display.opengl4.renderer.shaders.BasicShader;
-import gama.ui.display.opengl4.renderer.shaders.MatrixStack;
-import org.joml.Matrix4f;
 import gama.ui.shared.utils.DPIHelper;
 import jogamp.opengl.glu.tessellator.GLUtessellatorImpl;
 
@@ -124,11 +115,23 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	// The real openGL context
 	private GL4 gl;
 
+	/** The basic shader. */
 	private BasicShader basicShader;
-	private MatrixStack modelViewMatrix = new MatrixStack();
-	private MatrixStack projectionMatrix = new MatrixStack();
+
+	/** The model view matrix. */
+	private final MatrixStack modelViewMatrix = new MatrixStack();
+
+	/** The projection matrix. */
+	private final MatrixStack projectionMatrix = new MatrixStack();
+
+	/** The current matrix mode. */
 	private int currentMatrixMode = GLMatrixFunc.GL_MODELVIEW;
 
+	/**
+	 * Gets the current matrix stack.
+	 *
+	 * @return the current matrix stack
+	 */
 	public MatrixStack getCurrentMatrixStack() {
 		return currentMatrixMode == GLMatrixFunc.GL_PROJECTION ? projectionMatrix : modelViewMatrix;
 	}
@@ -144,6 +147,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	/** The current polygon mode. */
 	private int currentPolygonMode = GL4.GL_FILL;
+
+	/** The current color. */
 	private IColor currentColor = GamaColorFactory.getWithDoubles(1, 1, 1, 1);
 
 	/** The picking state. */
@@ -176,7 +181,6 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	/** The current color. */
 	// Colors
-
 
 	/** The current object alpha. */
 	private double currentObjectAlpha = 1d;
@@ -352,7 +356,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void reshape(final GL4 newGL, final int width, final int height) {
 		setGL4(newGL);
-		if(basicShader == null) {
+		if (basicShader == null) {
 			basicShader = new BasicShader(newGL);
 			basicShader.start();
 
@@ -466,9 +470,11 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 				DEBUG.ERR("Buffer overflow exception");
 			}
 		} else if (aspect >= 1.0) {
-			getCurrentMatrixStack().ortho(-maxDim * aspect, maxDim * aspect, -maxDim, maxDim, maxDim * 10, -maxDim * 10);
+			getCurrentMatrixStack().ortho(-maxDim * aspect, maxDim * aspect, -maxDim, maxDim, maxDim * 10,
+					-maxDim * 10);
 		} else {
-			getCurrentMatrixStack().ortho(-maxDim, maxDim, -maxDim / aspect, maxDim / aspect, maxDim * 10, -maxDim * 10);
+			getCurrentMatrixStack().ortho(-maxDim, maxDim, -maxDim / aspect, maxDim / aspect, maxDim * 10,
+					-maxDim * 10);
 		}
 
 		// else {
@@ -695,16 +701,39 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		// removed glDisableClientState
 	}
 
+	/** The Constant INITIAL_BUFFER_SIZE. */
 	private static final int INITIAL_BUFFER_SIZE = 1024 * 64; // 64k floats
-	private FloatBuffer currentVertices = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
-	private FloatBuffer currentColors = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
-	private FloatBuffer currentTexCoords = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
-	private int currentDrawStyle = GL4.GL_TRIANGLES;
-	private int currentVertexCount = 0;
-	private int vaoId = -1;
-	private int[] vboIds = new int[3];
 
-	private void ensureCapacity(FloatBuffer buffer, int elementsToAdd) {
+	/** The current vertices. */
+	private final FloatBuffer currentVertices = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
+
+	/** The current colors. */
+	private final FloatBuffer currentColors = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
+
+	/** The current tex coords. */
+	private final FloatBuffer currentTexCoords = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
+
+	/** The current draw style. */
+	private int currentDrawStyle = GL4.GL_TRIANGLES;
+
+	/** The current vertex count. */
+	private int currentVertexCount = 0;
+
+	/** The vao id. */
+	private int vaoId = -1;
+
+	/** The vbo ids. */
+	private final int[] vboIds = new int[3];
+
+	/**
+	 * Ensure capacity.
+	 *
+	 * @param buffer
+	 *            the buffer
+	 * @param elementsToAdd
+	 *            the elements to add
+	 */
+	private void ensureCapacity(final FloatBuffer buffer, final int elementsToAdd) {
 		if (buffer.position() + elementsToAdd > buffer.capacity()) {
 			// Actually we shouldn't dynamically reallocate NIO buffers trivially in the middle of drawing.
 			// Let's implement a simple resize logic just in case:
@@ -712,7 +741,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		}
 	}
 
-
+	@Override
 	public void beginDrawing(final int style) {
 		currentDrawStyle = style;
 		currentVertices.clear();
@@ -723,8 +752,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	@Override
 	public void endDrawing() {
-		if (currentVertices.position() == 0) return;
-		if(basicShader == null) return;
+		if ((currentVertices.position() == 0) || (basicShader == null)) return;
 		basicShader.start();
 		int[] vao = new int[1];
 		gl.glGenVertexArrays(1, vao, 0);
@@ -732,18 +760,18 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 		int[] vboVertices = new int[1];
 		gl.glGenBuffers(1, vboVertices, 0);
-		gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, vboVertices[0]);
+		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboVertices[0]);
 		currentVertices.flip();
-		gl.glBufferData(GL4.GL_ARRAY_BUFFER, currentVertices.limit() * 4, currentVertices, GL4.GL_STATIC_DRAW);
-		gl.glVertexAttribPointer(0, 3, GL4.GL_FLOAT, false, 0, 0);
+		gl.glBufferData(GL.GL_ARRAY_BUFFER, currentVertices.limit() * 4, currentVertices, GL.GL_STATIC_DRAW);
+		gl.glVertexAttribPointer(0, 3, GL.GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(0);
 
 		int[] vboColors = new int[1];
 		gl.glGenBuffers(1, vboColors, 0);
-		gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, vboColors[0]);
+		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboColors[0]);
 		currentColors.flip();
-		gl.glBufferData(GL4.GL_ARRAY_BUFFER, currentColors.limit() * 4, currentColors, GL4.GL_STATIC_DRAW);
-		gl.glVertexAttribPointer(1, 4, GL4.GL_FLOAT, false, 0, 0);
+		gl.glBufferData(GL.GL_ARRAY_BUFFER, currentColors.limit() * 4, currentColors, GL.GL_STATIC_DRAW);
+		gl.glVertexAttribPointer(1, 4, GL.GL_FLOAT, false, 0, 0);
 		gl.glEnableVertexAttribArray(1);
 
 		int[] vboTex = new int[1];
@@ -751,10 +779,10 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		if (currentTexCoords.position() > 0) {
 			hasTex = true;
 			gl.glGenBuffers(1, vboTex, 0);
-			gl.glBindBuffer(GL4.GL_ARRAY_BUFFER, vboTex[0]);
+			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboTex[0]);
 			currentTexCoords.flip();
-			gl.glBufferData(GL4.GL_ARRAY_BUFFER, currentTexCoords.limit() * 4, currentTexCoords, GL4.GL_STATIC_DRAW);
-			gl.glVertexAttribPointer(2, 2, GL4.GL_FLOAT, false, 0, 0);
+			gl.glBufferData(GL.GL_ARRAY_BUFFER, currentTexCoords.limit() * 4, currentTexCoords, GL.GL_STATIC_DRAW);
+			gl.glVertexAttribPointer(2, 2, GL.GL_FLOAT, false, 0, 0);
 			gl.glEnableVertexAttribArray(2);
 		}
 
@@ -767,7 +795,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 		gl.glDeleteBuffers(1, vboVertices, 0);
 		gl.glDeleteBuffers(1, vboColors, 0);
-		if (hasTex) gl.glDeleteBuffers(1, vboTex, 0);
+		if (hasTex) { gl.glDeleteBuffers(1, vboTex, 0); }
 		gl.glDeleteVertexArrays(1, vao, 0);
 		basicShader.stop();
 	}
@@ -907,7 +935,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 			final boolean computeNormal, final IColor border) {
 		if (!isWireframe()) {
 			if (computeNormal) { setNormal(yNegatedVertices, clockwise); }
-			final int style = number == 4 ? GL4.GL_TRIANGLE_FAN : number == -1 ? GL4.GL_TRIANGLE_FAN : GL.GL_TRIANGLES;
+			final int style = number == 4 ? GL.GL_TRIANGLE_FAN : number == -1 ? GL.GL_TRIANGLE_FAN : GL.GL_TRIANGLES;
 			drawVertices(style, yNegatedVertices, number, clockwise);
 		}
 		if (border != null || isWireframe()) {
@@ -990,14 +1018,14 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void outputVertex(final double x, final double y, final double z) {
 		ensureCapacity(currentVertices, 3);
-		currentVertices.put((float)x);
-		currentVertices.put((float)y);
-		currentVertices.put((float)(z + currentZTranslation));
+		currentVertices.put((float) x);
+		currentVertices.put((float) y);
+		currentVertices.put((float) (z + currentZTranslation));
 		ensureCapacity(currentColors, 4);
-		currentColors.put((float)(currentColor.getRed() / 255.0));
-		currentColors.put((float)(currentColor.getGreen() / 255.0));
-		currentColors.put((float)(currentColor.getBlue() / 255.0));
-		currentColors.put((float)(currentColor.getAlpha() / 255.0));
+		currentColors.put((float) (currentColor.red() / 255.0));
+		currentColors.put((float) (currentColor.green() / 255.0));
+		currentColors.put((float) (currentColor.blue() / 255.0));
+		currentColors.put((float) (currentColor.alpha() / 255.0));
 		currentVertexCount++;
 	}
 
@@ -1011,8 +1039,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void outputTexCoord(final double u, final double v) {
 		ensureCapacity(currentTexCoords, 2);
-		currentTexCoords.put((float)u);
-		currentTexCoords.put((float)v);
+		currentTexCoords.put((float) u);
+		currentTexCoords.put((float) v);
 	}
 
 	/**
@@ -1449,7 +1477,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the new polygon mode
 	 */
 	public void updatePolygonMode() {
-		int newPolygonMode = isWireframe() ? GL4.GL_LINE : GL4.GL_FILL;
+		int newPolygonMode = isWireframe() ? GL2GL3.GL_LINE : GL2GL3.GL_FILL;
 		if (newPolygonMode != currentPolygonMode) {
 			currentPolygonMode = newPolygonMode;
 			// gl.glPolygonMode(GL.GL_FRONT_AND_BACK, currentPolygonMode);
@@ -1744,11 +1772,11 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		gl.glEnable(GL.GL_BLEND);
 		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
 		// removed glTexEnvi
-		gl.glEnable(GL4.GL_DEPTH_TEST);
+		gl.glEnable(GL.GL_DEPTH_TEST);
 		// removed glAlphaFunc(GL.GL_GREATER, 0.01f);
 		// Disabling line smoothing to only rely on FSAA
 		gl.glEnable(GL.GL_LINE_SMOOTH);
-		gl.glEnable(GL4.GL_LINE_SMOOTH);
+		gl.glEnable(GL.GL_LINE_SMOOTH);
 		// gl.glEnable(GL4.GL_TRIANGLE_FAN_SMOOTH);
 		// Enabling forced normalization of normal vectors (important)
 		gl.glEnable(GLLightingFunc.GL_NORMALIZE);
