@@ -10,6 +10,8 @@
 package gama.api.types.message;
 
 import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.setter;
 import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.api.constants.IKeyword;
@@ -144,6 +146,7 @@ public interface IMessage extends IValue {
 	 *
 	 * @return the sender object (usually an {@link gama.api.kernel.agent.IAgent})
 	 */
+	@getter (IMessage.SENDER)
 	Object getSender();
 
 	/**
@@ -157,6 +160,7 @@ public interface IMessage extends IValue {
 	 * @param sender
 	 *            the new sender object
 	 */
+	@setter (IMessage.SENDER)
 	void setSender(Object sender);
 
 	/**
@@ -169,6 +173,7 @@ public interface IMessage extends IValue {
 	 *
 	 * @return the receiver(s) object
 	 */
+	@getter (IMessage.RECEIVERS)
 	Object getReceivers();
 
 	/**
@@ -181,7 +186,18 @@ public interface IMessage extends IValue {
 	 * @param receivers
 	 *            the new receiver(s) object
 	 */
+	@setter (IMessage.RECEIVERS)
 	void setReceivers(Object receivers);
+
+	/**
+	 * Gets the contents.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the contents
+	 */
+	@getter (IMessage.CONTENTS)
+	Object getContents(IScope scope);
 
 	/**
 	 * Sets the contents/payload of this message.
@@ -193,6 +209,7 @@ public interface IMessage extends IValue {
 	 * @param content
 	 *            the new message contents
 	 */
+	@setter (IMessage.CONTENTS)
 	void setContents(Object content);
 
 	/**
@@ -205,6 +222,7 @@ public interface IMessage extends IValue {
 	 *
 	 * @return true if the message has not been read, false otherwise
 	 */
+	@getter (IMessage.UNREAD)
 	boolean isUnread();
 
 	/**
@@ -217,6 +235,7 @@ public interface IMessage extends IValue {
 	 * @param unread
 	 *            true to mark as unread, false to mark as read
 	 */
+	@setter (IMessage.UNREAD)
 	void setUnread(boolean unread);
 
 	/**
@@ -228,6 +247,7 @@ public interface IMessage extends IValue {
 	 *
 	 * @return the cycle number when this message was emitted
 	 */
+	@getter (IMessage.EMISSION_TIMESTAMP)
 	int getEmissionTimestamp();
 
 	/**
@@ -240,6 +260,7 @@ public interface IMessage extends IValue {
 	 *
 	 * @return the cycle number when this message was received
 	 */
+	@getter (IMessage.RECEPTION_TIMESTAMP)
 	int getReceptionTimestamp();
 
 	/**
@@ -264,19 +285,5 @@ public interface IMessage extends IValue {
 	 */
 	@Override
 	IMessage copy(IScope scope);
-
-	/**
-	 * Gets the contents/payload of this message.
-	 *
-	 * <p>
-	 * The contents can be any GAMA value or object - primitives, lists, maps, agents, geometries, etc. It is up to the
-	 * receiver to interpret the contents appropriately.
-	 * </p>
-	 *
-	 * @return the message contents
-	 */
-	default Object getContents(final IScope scope) {
-		return null;
-	}
 
 }
