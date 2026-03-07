@@ -95,7 +95,7 @@ public class OverlayLayerObject extends LayerObject {
 			if (d.isRounded()) {
 				gl.translateBy(-sx / 2, -sy / 2, 0);
 				gl.scaleBy(1, 1, 1);
-				drawRoundedRectangle(gl.getGL(), sx / 2, -sy / 2, sx, sy, sx / 20, 40);
+				drawRoundedRectangle(gl, sx / 2, -sy / 2, sx, sy, sx / 20, 40);
 			} else {
 				gl.translateBy(sx / 2, -sy / 2, 0);
 				gl.scaleBy(sx, sy, 1);
@@ -125,7 +125,7 @@ public class OverlayLayerObject extends LayerObject {
 	 * @param numSegments
 	 *            The number of line segments to draw each corner arc (more => smoother).
 	 */
-	public void drawRoundedRectangle(final GL4 gl, final double d, final double e, final double x, final double y,
+	public void drawRoundedRectangle(final OpenGL gl, final double d, final double e, final double x, final double y,
 			double cornerRadius, final int numSegments) {
 		double maxRadius = Math.min(x / 2.0f, y / 2.0f);
 		if (cornerRadius < 0) { cornerRadius = 0; }
@@ -264,9 +264,9 @@ public class OverlayLayerObject extends LayerObject {
 		final double maxDim = worldHeight > worldWidth ? worldHeight : worldWidth;
 		gl.pushIdentity(GLMatrixFunc.GL_PROJECTION);
 		if (viewRatio >= 1.0) {
-			gl.getGL().glOrtho(0, maxDim * viewRatio, -maxDim, 0, -1, 1);
+			gl.getCurrentMatrixStack().ortho(0, maxDim * viewRatio, -maxDim, 0, -1, 1);
 		} else {
-			gl.getGL().glOrtho(0, maxDim, -maxDim / viewRatio, 0, -1, 1);
+			gl.getCurrentMatrixStack().ortho(0, maxDim, -maxDim / viewRatio, 0, -1, 1);
 		}
 		super.prepareDrawing(gl, list);
 

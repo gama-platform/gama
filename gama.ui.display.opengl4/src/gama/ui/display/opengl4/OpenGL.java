@@ -1502,7 +1502,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the index
 	 */
 	public void deleteList(final Integer index) {
-		gl.getGL().glDeleteLists(index, 1);
+		// gl.getGL().glDeleteLists(index, 1);
 	}
 
 	/**
