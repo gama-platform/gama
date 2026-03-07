@@ -24,7 +24,7 @@
  * <h2>Key Classes</h2>
  * 
  * <ul>
- *   <li>{@link gama.api.constants.IKeyword} - GAML language keywords and operators</li>
+ *   <li>{@link gama.annotations.constants.IKeyword} - GAML language keywords and operators</li>
  *   <li>{@link gama.api.constants.GamlFileExtension} - File extension constants</li>
  *   <li>{@link gama.api.constants.IGamlIssue} - Validation issue codes</li>
  *   <li>{@link gama.api.constants.Generators} - Code generation constants</li>

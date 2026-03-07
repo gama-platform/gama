@@ -9,7 +9,7 @@
  ********************************************************************************************************/
 package gama.headless.command;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 
 /**
  * The Interface IKeywords.

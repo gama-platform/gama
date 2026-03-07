@@ -11,12 +11,12 @@
 package gama.core.population;
 
 import static com.google.common.collect.Iterators.transform;
-import static gama.api.constants.IKeyword.EDGE_SPECIES;
-import static gama.api.constants.IKeyword.EXPERIMENT;
-import static gama.api.constants.IKeyword.LOCATION;
-import static gama.api.constants.IKeyword.MIRRORS;
-import static gama.api.constants.IKeyword.SHAPE;
-import static gama.api.constants.IKeyword.TARGET;
+import static gama.annotations.constants.IKeyword.EDGE_SPECIES;
+import static gama.annotations.constants.IKeyword.EXPERIMENT;
+import static gama.annotations.constants.IKeyword.LOCATION;
+import static gama.annotations.constants.IKeyword.MIRRORS;
+import static gama.annotations.constants.IKeyword.SHAPE;
+import static gama.annotations.constants.IKeyword.TARGET;
 import static java.util.Collections.EMPTY_LIST;
 import static java.util.Collections.EMPTY_MAP;
 
@@ -37,11 +37,11 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.IStatement;

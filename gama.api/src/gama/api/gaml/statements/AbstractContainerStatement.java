@@ -10,12 +10,12 @@
  ********************************************************************************************************/
 package gama.api.gaml.statements;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;

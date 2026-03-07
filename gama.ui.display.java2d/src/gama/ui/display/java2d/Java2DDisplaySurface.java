@@ -36,8 +36,8 @@ import org.eclipse.swt.widgets.Monitor;
 
 import gama.annotations.display;
 import gama.annotations.doc;
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
-import gama.api.constants.IKeyword;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.GeneralSynchronizer;
 import gama.api.runtime.SystemInfo;

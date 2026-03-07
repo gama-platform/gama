@@ -10,14 +10,14 @@
  ********************************************************************************************************/
 package gama.extension.maths.ode.statements;
 
-import static gama.api.constants.IKeyword.DIF2;
-import static gama.api.constants.IKeyword.DIFF;
-import static gama.api.constants.IKeyword.EQUALS;
-import static gama.api.constants.IKeyword.EQUATION;
-import static gama.api.constants.IKeyword.EQUATION_LEFT;
-import static gama.api.constants.IKeyword.EQUATION_RIGHT;
-import static gama.api.constants.IKeyword.SOLVE;
-import static gama.api.constants.IKeyword.ZERO;
+import static gama.annotations.constants.IKeyword.DIF2;
+import static gama.annotations.constants.IKeyword.DIFF;
+import static gama.annotations.constants.IKeyword.EQUALS;
+import static gama.annotations.constants.IKeyword.EQUATION;
+import static gama.annotations.constants.IKeyword.EQUATION_LEFT;
+import static gama.annotations.constants.IKeyword.EQUATION_RIGHT;
+import static gama.annotations.constants.IKeyword.SOLVE;
+import static gama.annotations.constants.IKeyword.ZERO;
 
 import java.util.ArrayList;
 import java.util.List;

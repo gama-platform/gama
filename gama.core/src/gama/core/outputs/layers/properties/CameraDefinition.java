@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.GraphicsScope;
 import gama.api.runtime.scope.IScope;

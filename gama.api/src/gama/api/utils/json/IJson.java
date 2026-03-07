@@ -14,7 +14,7 @@ import java.io.Reader;
 import java.util.Collection;
 import java.util.function.Supplier;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.serialization.ISerialisedAgent;
 

@@ -29,11 +29,11 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.commands.ICommandService;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.compilation.IModelsManager;
 import gama.api.compilation.descriptions.IActionDescription;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.IParameter;

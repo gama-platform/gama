@@ -26,13 +26,13 @@ import static gama.annotations.support.ITypeProvider.WRAPPED;
 import java.util.Arrays;
 import java.util.function.Predicate;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ITypeProvider;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IOperator;

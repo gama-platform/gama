@@ -12,7 +12,7 @@ package gama.api.utils.server;
 
 import org.java_websocket.WebSocket;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 
 /**
  * The Interface ISocketCommand.

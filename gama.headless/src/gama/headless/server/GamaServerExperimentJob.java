@@ -23,8 +23,8 @@ import javax.imageio.ImageIO;
 
 import org.java_websocket.WebSocket;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.GamlCompilationError;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaCompilationFailedException;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.Types;

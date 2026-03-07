@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import static gama.api.constants.IKeyword.LOCATION;
+import static gama.annotations.constants.IKeyword.LOCATION;
 
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;

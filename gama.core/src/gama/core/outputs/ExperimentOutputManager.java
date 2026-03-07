@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.core.outputs;
 
-import static gama.api.constants.IKeyword.LAYOUT;
+import static gama.annotations.constants.IKeyword.LAYOUT;
 import static gama.api.utils.prefs.GamaPreferences.Displays.CORE_DISPLAY_LAYOUT;
 import static gama.api.utils.prefs.GamaPreferences.Displays.LAYOUTS;
 
@@ -19,11 +19,11 @@ import gama.annotations.example;
 import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.symbols.Symbol;
 import gama.api.runtime.scope.IScope;

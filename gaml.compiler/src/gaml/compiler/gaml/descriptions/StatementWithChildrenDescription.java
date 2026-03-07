@@ -23,10 +23,10 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.collect.Iterables;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IVarExpression;
 import gama.api.gaml.symbols.Arguments;

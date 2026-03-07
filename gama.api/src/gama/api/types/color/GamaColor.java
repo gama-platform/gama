@@ -12,7 +12,7 @@ package gama.api.types.color;
 import java.awt.Color;
 
 import gama.annotations.getter;
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.GamaColorFactory.NamedGamaColor;
 import gama.api.utils.json.IJson;

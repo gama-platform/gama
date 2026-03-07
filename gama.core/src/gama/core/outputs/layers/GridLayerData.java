@@ -13,7 +13,7 @@ package gama.core.outputs.layers;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;

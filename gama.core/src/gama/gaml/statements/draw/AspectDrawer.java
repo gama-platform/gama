@@ -12,9 +12,9 @@ package gama.gaml.statements.draw;
 
 import java.awt.geom.Rectangle2D;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.delegates.IDrawDelegate;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.IType;

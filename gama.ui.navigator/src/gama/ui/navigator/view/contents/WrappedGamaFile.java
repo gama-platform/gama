@@ -19,9 +19,9 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.constants.GamlFileExtension;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.types.map.GamaMapFactory;

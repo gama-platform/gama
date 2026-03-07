@@ -22,10 +22,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.Iterables;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.species.IModelSpecies;

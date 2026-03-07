@@ -13,8 +13,8 @@ package gama.gaml.statements.create;
 import java.util.List;
 import java.util.Map;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.delegates.ICreateDelegate;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;

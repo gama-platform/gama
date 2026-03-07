@@ -11,6 +11,7 @@ package gama.api.gaml.types;
 
 import java.util.Map;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.artefacts.IArtefact.Operator;
@@ -18,7 +19,6 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IGamlDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.map.IMap;

@@ -26,7 +26,7 @@ import javax.net.ssl.TrustManagerFactory;
 import org.java_websocket.WebSocket;
 import org.java_websocket.server.SSLParametersWebSocketServerFactory;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.CommandException;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.utils.server.CommandResponse;

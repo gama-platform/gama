@@ -14,7 +14,7 @@ import static gama.api.types.list.GamaListFactory.createWithoutCasting;
 
 import java.io.File;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.GamaFileType;

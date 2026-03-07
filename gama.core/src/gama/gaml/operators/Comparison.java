@@ -9,7 +9,7 @@
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import static gama.api.constants.IKeyword.EQUALS;
+import static gama.annotations.constants.IKeyword.EQUALS;
 import static org.locationtech.jts.index.quadtree.IntervalSize.isZeroWidth;
 
 import org.eclipse.emf.ecore.EObject;

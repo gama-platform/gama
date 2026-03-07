@@ -10,14 +10,14 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
+import static gama.annotations.constants.IKeyword.FUNCTION;
+import static gama.annotations.constants.IKeyword.INIT;
+import static gama.annotations.constants.IKeyword.NAME;
+import static gama.annotations.constants.IKeyword.SHAPE;
+import static gama.annotations.constants.IKeyword.TRUE;
+import static gama.annotations.constants.IKeyword.VIRTUAL;
 import static gama.api.compilation.descriptions.IVariableDescription.FUNCTION_DEPENDENCIES_FACETS;
 import static gama.api.compilation.descriptions.IVariableDescription.INIT_DEPENDENCIES_FACETS;
-import static gama.api.constants.IKeyword.FUNCTION;
-import static gama.api.constants.IKeyword.INIT;
-import static gama.api.constants.IKeyword.NAME;
-import static gama.api.constants.IKeyword.SHAPE;
-import static gama.api.constants.IKeyword.TRUE;
-import static gama.api.constants.IKeyword.VIRTUAL;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -31,6 +31,7 @@ import org.jgrapht.graph.DirectedAcyclicGraph;
 
 import com.google.common.collect.Iterables;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
@@ -38,7 +39,6 @@ import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.Facets;

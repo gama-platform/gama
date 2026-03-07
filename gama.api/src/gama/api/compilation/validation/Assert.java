@@ -13,10 +13,10 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.collect.ImmutableSet;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
@@ -106,7 +106,7 @@ import gama.api.gaml.types.Types;
  * @see Types
  * @see IGamlIssue
  */
-public class Assert implements gama.api.constants.IKeyword {
+public class Assert implements gama.annotations.constants.IKeyword {
 
 	/**
 	 * Validates that an assigned value is type-compatible with the receiver variable.

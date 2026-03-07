@@ -16,8 +16,8 @@ import java.net.URL;
 import org.eclipse.emf.common.util.URI;
 
 import gama.annotations.file;
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.FlushBufferException;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;

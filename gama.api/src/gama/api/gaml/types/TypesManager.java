@@ -21,11 +21,11 @@ import java.util.concurrent.ExecutionException;
 
 import com.google.common.cache.Cache;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.kernel.agent.IAgent;
 import gama.dev.DEBUG;
 

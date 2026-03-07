@@ -17,10 +17,10 @@ import org.eclipse.xtext.ui.editor.outline.impl.BackgroundOutlineTreeProvider;
 
 import com.google.inject.Inject;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.artefacts.IArtefact;
-import gama.api.constants.IKeyword;
 import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.Model;

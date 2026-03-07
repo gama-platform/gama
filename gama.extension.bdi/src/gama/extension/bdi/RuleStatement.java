@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatement;
@@ -30,6 +29,7 @@ import gama.annotations.facet;
 import gama.annotations.facets;
 import gama.annotations.inside;
 import gama.annotations.symbol;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.gaml.operators.System;

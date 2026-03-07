@@ -20,9 +20,9 @@ import org.eclipse.emf.ecore.resource.Resource;
 
 import com.google.common.cache.Cache;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.factories.IExpressionDescriptionFactory;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;

@@ -32,13 +32,13 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 
 import com.google.common.collect.Iterables;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
-import gama.api.constants.IKeyword;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.dev.DEBUG;

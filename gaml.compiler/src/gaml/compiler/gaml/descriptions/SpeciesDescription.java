@@ -26,6 +26,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.collect.Iterables;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ITypeProvider;
 import gama.api.additions.IGamaHelper;
 import gama.api.additions.registries.AgentConstructorsRegistry;
@@ -41,7 +42,6 @@ import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;

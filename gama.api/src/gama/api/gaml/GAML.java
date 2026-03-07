@@ -9,7 +9,7 @@
  ********************************************************************************************************/
 package gama.api.gaml;
 
-import static gama.api.constants.IKeyword.MY;
+import static gama.annotations.constants.IKeyword.MY;
 import static gama.api.utils.JavaUtils.collectImplementationClasses;
 
 import java.io.File;
@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
 import gama.api.additions.IConstantAcceptor;
@@ -46,7 +47,6 @@ import gama.api.compilation.factories.IExpressionFactory;
 import gama.api.compilation.factories.ISymbolDescriptionFactory;
 import gama.api.compilation.validation.IGamlModelBuilder;
 import gama.api.compilation.validation.IGamlTextValidator;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.GamaType;

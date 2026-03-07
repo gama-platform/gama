@@ -13,7 +13,7 @@ package gama.api.kernel.agent;
 import java.util.LinkedList;
 import java.util.List;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.runtime.scope.IScope;

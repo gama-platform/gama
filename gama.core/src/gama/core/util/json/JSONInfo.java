@@ -11,10 +11,10 @@ package gama.core.util.json;
 
 import org.eclipse.core.resources.IFile;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.constants.IKeyword;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.AbstractFileMetaData;
 import gama.api.utils.geometry.GamaEnvelopeFactory;

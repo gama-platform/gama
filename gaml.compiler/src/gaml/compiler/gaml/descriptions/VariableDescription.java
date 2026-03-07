@@ -10,19 +10,19 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
+import static gama.annotations.constants.IKeyword.CONST;
+import static gama.annotations.constants.IKeyword.FALSE;
+import static gama.annotations.constants.IKeyword.FUNCTION;
+import static gama.annotations.constants.IKeyword.INIT;
+import static gama.annotations.constants.IKeyword.MIRRORS;
+import static gama.annotations.constants.IKeyword.OF;
+import static gama.annotations.constants.IKeyword.PARAMETER;
+import static gama.annotations.constants.IKeyword.TRUE;
+import static gama.annotations.constants.IKeyword.TYPE;
+import static gama.annotations.constants.IKeyword.UPDATE;
+import static gama.annotations.constants.IKeyword.VALUE;
 import static gama.api.compilation.descriptions.IDescription.Flag.Unmodifiable;
 import static gama.api.compilation.descriptions.IDescription.Flag.Updatable;
-import static gama.api.constants.IKeyword.CONST;
-import static gama.api.constants.IKeyword.FALSE;
-import static gama.api.constants.IKeyword.FUNCTION;
-import static gama.api.constants.IKeyword.INIT;
-import static gama.api.constants.IKeyword.MIRRORS;
-import static gama.api.constants.IKeyword.OF;
-import static gama.api.constants.IKeyword.PARAMETER;
-import static gama.api.constants.IKeyword.TRUE;
-import static gama.api.constants.IKeyword.TYPE;
-import static gama.api.constants.IKeyword.UPDATE;
-import static gama.api.constants.IKeyword.VALUE;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -34,6 +34,7 @@ import org.eclipse.emf.ecore.util.EcoreUtil;
 import gama.annotations.doc;
 import gama.annotations.variable;
 import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ITypeProvider;
 import gama.api.additions.GamaHelper;
 import gama.api.additions.IGamaHelper;
@@ -48,7 +49,6 @@ import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;

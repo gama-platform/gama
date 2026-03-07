@@ -37,12 +37,12 @@ import java.util.Map;
 
 import org.java_websocket.WebSocket;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.documentation.GamlIdiomsProvider;
 import gama.api.constants.GamlFileExtension;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.CommandException;
 import gama.api.exceptions.GamaCompilationFailedException;
 import gama.api.exceptions.GamaRuntimeException;

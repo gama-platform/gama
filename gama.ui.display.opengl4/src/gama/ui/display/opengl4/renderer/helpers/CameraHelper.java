@@ -19,8 +19,8 @@ import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLRunnable;
 import com.jogamp.opengl.glu.GLU;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.SystemInfo;
 import gama.api.types.geometry.GamaPointFactory;

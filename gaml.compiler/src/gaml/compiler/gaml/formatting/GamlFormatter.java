@@ -18,7 +18,7 @@ import org.eclipse.xtext.formatting.impl.AbstractDeclarativeFormatter;
 import org.eclipse.xtext.formatting.impl.FormattingConfig;
 import org.eclipse.xtext.parsetree.reconstr.ITokenStream;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gaml.compiler.services.GamlGrammarAccess;
 import gaml.compiler.services.GamlGrammarAccess.BlockElements;
 

@@ -13,7 +13,7 @@ package gama.api.utils.server;
 import java.util.HashMap;
 import java.util.Map;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
 

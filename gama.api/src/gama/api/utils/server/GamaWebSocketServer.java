@@ -24,8 +24,8 @@ import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.CommandException;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.species.IExperimentSpecies;

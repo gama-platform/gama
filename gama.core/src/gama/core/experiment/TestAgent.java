@@ -20,7 +20,7 @@ import org.eclipse.emf.common.util.URI;
 
 import gama.annotations.doc;
 import gama.annotations.experiment;
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.IStatement;

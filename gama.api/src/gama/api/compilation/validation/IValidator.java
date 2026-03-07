@@ -11,10 +11,9 @@ package gama.api.compilation.validation;
 
 import org.eclipse.emf.ecore.EObject;
 
-
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 
 /**

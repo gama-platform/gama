@@ -126,12 +126,12 @@ import org.eclipse.xtext.validation.Issue;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.IModelsManager;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.GamlFileExtension;
-import gama.api.constants.IKeyword;
 import gama.api.utils.GamlProperties;
 import gama.api.utils.StringUtils;
 import gama.api.utils.prefs.GamaPreferences;

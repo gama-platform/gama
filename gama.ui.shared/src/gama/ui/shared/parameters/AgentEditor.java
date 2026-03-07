@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.symbols.IParameter;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;

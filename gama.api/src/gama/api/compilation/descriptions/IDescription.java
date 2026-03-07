@@ -18,6 +18,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.base.Function;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.serialization.ISymbolSerializer;
@@ -27,7 +28,6 @@ import gama.api.compilation.serialization.StatementSerializer;
 import gama.api.compilation.serialization.VarSerializer;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Facets;

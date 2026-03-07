@@ -10,14 +10,14 @@
  ********************************************************************************************************/
 package gama.core.topology;
 
-import static gama.api.constants.IKeyword.CELL_HEIGHT;
-import static gama.api.constants.IKeyword.CELL_WIDTH;
-import static gama.api.constants.IKeyword.FILE;
-import static gama.api.constants.IKeyword.FILES;
-import static gama.api.constants.IKeyword.NEIGHBORS;
-import static gama.api.constants.IKeyword.WIDTH;
+import static gama.annotations.constants.IKeyword.CELL_HEIGHT;
+import static gama.annotations.constants.IKeyword.CELL_WIDTH;
+import static gama.annotations.constants.IKeyword.FILE;
+import static gama.annotations.constants.IKeyword.FILES;
+import static gama.annotations.constants.IKeyword.NEIGHBORS;
+import static gama.annotations.constants.IKeyword.WIDTH;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;

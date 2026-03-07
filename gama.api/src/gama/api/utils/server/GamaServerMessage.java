@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.api.utils.server;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonObject;
 import gama.api.utils.json.IJsonValue;

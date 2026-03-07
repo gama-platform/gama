@@ -10,12 +10,12 @@
  ********************************************************************************************************/
 package gama.extension.serialize.gaml;
 
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.annotations.doc;
 import gama.annotations.file;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 
 /**

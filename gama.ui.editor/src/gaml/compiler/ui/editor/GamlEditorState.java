@@ -20,10 +20,10 @@ import org.eclipse.emf.common.util.URI;
 
 import com.google.common.collect.Iterables;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.validation.IValidationContext;
-import gama.api.constants.IKeyword;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.IGamaColors;
 

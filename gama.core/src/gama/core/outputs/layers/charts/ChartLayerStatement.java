@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.charts;
 
-import static gama.api.constants.IKeyword.ANCHOR;
+import static gama.annotations.constants.IKeyword.ANCHOR;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,11 +24,11 @@ import gama.annotations.facets;
 import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;

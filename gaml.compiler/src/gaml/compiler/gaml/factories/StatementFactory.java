@@ -12,12 +12,12 @@ package gaml.compiler.gaml.factories;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.factories.ISymbolDescriptionFactory;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.symbols.Facets;
 import gaml.compiler.gaml.descriptions.ActionDescription;
 import gaml.compiler.gaml.descriptions.DoDescription;

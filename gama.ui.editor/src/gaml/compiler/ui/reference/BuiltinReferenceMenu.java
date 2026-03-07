@@ -22,13 +22,13 @@ import org.eclipse.swt.widgets.Menu;
 
 import com.google.common.collect.Lists;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.registries.GamaSkillRegistry;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.GamaMetaModel;

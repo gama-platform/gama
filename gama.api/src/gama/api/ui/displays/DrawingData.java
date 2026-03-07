@@ -9,7 +9,7 @@
  ********************************************************************************************************/
 package gama.api.ui.displays;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.constants.GamlCoreConstants;
 import gama.api.gaml.expressions.IExpression;

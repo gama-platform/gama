@@ -12,7 +12,7 @@ package gama.core.outputs.layers;
 
 import java.awt.geom.Rectangle2D;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.IExecutable;

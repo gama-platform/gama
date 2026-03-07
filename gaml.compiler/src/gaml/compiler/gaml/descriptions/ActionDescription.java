@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
-import static gama.api.constants.IKeyword.DEFAULT;
-import static gama.api.constants.IKeyword.FALSE;
-import static gama.api.constants.IKeyword.OPTIONAL;
+import static gama.annotations.constants.IKeyword.DEFAULT;
+import static gama.annotations.constants.IKeyword.FALSE;
+import static gama.annotations.constants.IKeyword.OPTIONAL;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,13 +24,13 @@ import org.eclipse.emf.ecore.EObject;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Arguments;

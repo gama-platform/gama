@@ -14,7 +14,7 @@ import java.text.Collator;
 
 import org.eclipse.jface.viewers.ViewerComparator;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.ui.navigator.view.contents.Category;
 import gama.ui.navigator.view.contents.WrappedExperimentContent;
 import gama.ui.navigator.view.contents.WrappedSyntacticContent;

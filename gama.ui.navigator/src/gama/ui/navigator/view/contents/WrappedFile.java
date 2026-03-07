@@ -23,8 +23,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.GamaBundleLoader;
-import gama.api.constants.IKeyword;
 import gama.api.kernel.GamaMetaModel;
 import gama.api.utils.files.IFileMetadataProvider;
 import gama.api.utils.files.IGamaFileMetaData;

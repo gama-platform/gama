@@ -36,8 +36,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.java_websocket.WebSocket;
 import org.java_websocket.enums.ReadyState;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.types.Types;
 import gama.api.types.list.IList;
 

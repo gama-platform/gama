@@ -17,8 +17,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IExperimentDescription;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaCompilationFailedException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;

@@ -34,6 +34,7 @@ import org.osgi.framework.Bundle;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.additions.delegates.IConstantsSupplier;
 import gama.api.additions.delegates.ICreateDelegate;
@@ -41,7 +42,6 @@ import gama.api.additions.delegates.IDrawDelegate;
 import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.additions.delegates.ISaveDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.GamaMetaModel;

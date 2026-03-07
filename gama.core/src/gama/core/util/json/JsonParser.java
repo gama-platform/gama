@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.utils.json.IJson;
 import gama.api.utils.prefs.GamaPreferences;
 

@@ -15,7 +15,7 @@ import gama.annotations.doc;
 import gama.annotations.getter;
 import gama.annotations.variable;
 import gama.annotations.vars;
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.types.misc.IValue;

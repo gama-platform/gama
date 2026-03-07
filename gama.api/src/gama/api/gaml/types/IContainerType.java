@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.api.gaml.types;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.misc.IContainer;

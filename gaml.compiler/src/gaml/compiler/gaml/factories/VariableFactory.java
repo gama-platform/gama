@@ -10,20 +10,20 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.factories;
 
-import static gama.api.constants.IKeyword.ON_CHANGE;
-import static gama.api.constants.IKeyword.VAR;
+import static gama.annotations.constants.IKeyword.ON_CHANGE;
+import static gama.annotations.constants.IKeyword.VAR;
 
 import java.util.Map;
 
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.factories.ISymbolDescriptionFactory;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Facets;
 import gaml.compiler.gaml.descriptions.VariableDescription;

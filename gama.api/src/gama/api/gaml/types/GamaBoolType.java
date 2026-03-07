@@ -13,9 +13,9 @@ import java.io.File;
 
 import gama.annotations.doc;
 import gama.annotations.type;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IScope;

@@ -22,10 +22,10 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IExperimentDescription;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaCompilationFailedException;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;

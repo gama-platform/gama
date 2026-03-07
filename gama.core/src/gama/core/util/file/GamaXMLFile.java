@@ -21,7 +21,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
@@ -35,6 +34,7 @@ import gama.api.utils.geometry.IEnvelope;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.file;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 
 /**

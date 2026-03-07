@@ -10,18 +10,18 @@
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
-import static gama.api.constants.IKeyword.ANCHOR;
-import static gama.api.constants.IKeyword.ASPECT;
-import static gama.api.constants.IKeyword.AT;
-import static gama.api.constants.IKeyword.BORDER;
-import static gama.api.constants.IKeyword.COLOR;
-import static gama.api.constants.IKeyword.DEPTH;
-import static gama.api.constants.IKeyword.DRAW;
-import static gama.api.constants.IKeyword.FONT;
-import static gama.api.constants.IKeyword.PERSPECTIVE;
-import static gama.api.constants.IKeyword.ROTATE;
-import static gama.api.constants.IKeyword.SIZE;
-import static gama.api.constants.IKeyword.TEXTURE;
+import static gama.annotations.constants.IKeyword.ANCHOR;
+import static gama.annotations.constants.IKeyword.ASPECT;
+import static gama.annotations.constants.IKeyword.AT;
+import static gama.annotations.constants.IKeyword.BORDER;
+import static gama.annotations.constants.IKeyword.COLOR;
+import static gama.annotations.constants.IKeyword.DEPTH;
+import static gama.annotations.constants.IKeyword.DRAW;
+import static gama.annotations.constants.IKeyword.FONT;
+import static gama.annotations.constants.IKeyword.PERSPECTIVE;
+import static gama.annotations.constants.IKeyword.ROTATE;
+import static gama.annotations.constants.IKeyword.SIZE;
+import static gama.annotations.constants.IKeyword.TEXTURE;
 
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
@@ -35,6 +35,7 @@ import gama.annotations.facets;
 import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.delegates.IDrawDelegate;
@@ -44,7 +45,6 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;

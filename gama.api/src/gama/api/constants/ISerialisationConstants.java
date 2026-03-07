@@ -14,6 +14,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
+import gama.annotations.constants.IKeyword;
+
 /**
  * Interface defining constants used for serialization and deserialization of GAMA agents and simulations.
  * <p>

@@ -43,7 +43,7 @@ import org.eclipse.xtext.util.CancelIndicator;
 
 import com.google.inject.Inject;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.utils.StringUtils;
 import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.EGaml;

@@ -10,17 +10,17 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
+import static gama.annotations.constants.IKeyword.ARG;
+import static gama.annotations.constants.IKeyword.AS;
+import static gama.annotations.constants.IKeyword.FROM;
+import static gama.annotations.constants.IKeyword.OVER;
+import static gama.annotations.constants.IKeyword.SPECIES;
+import static gama.annotations.constants.IKeyword.VALUE;
+import static gama.annotations.constants.IKeyword.WITH;
 import static gama.api.constants.IGamlIssue.GENERAL;
 import static gama.api.constants.IGamlIssue.MISSING_NAME;
 import static gama.api.constants.IGamlIssue.SHOULD_CAST;
 import static gama.api.constants.IGamlIssue.UNKNOWN_ARGUMENT;
-import static gama.api.constants.IKeyword.ARG;
-import static gama.api.constants.IKeyword.AS;
-import static gama.api.constants.IKeyword.FROM;
-import static gama.api.constants.IKeyword.OVER;
-import static gama.api.constants.IKeyword.SPECIES;
-import static gama.api.constants.IKeyword.VALUE;
-import static gama.api.constants.IKeyword.WITH;
 import static gama.api.gaml.types.Types.NO_TYPE;
 
 import java.util.Collections;
@@ -28,12 +28,12 @@ import java.util.Collections;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.ecore.EObject;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.serialization.ISymbolSerializer;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;

@@ -19,9 +19,9 @@ import org.locationtech.jts.geom.Geometry;
 
 import gama.annotations.no_test;
 import gama.annotations.operator;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IOperatorCategory;
 import gama.api.annotations.validator;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;

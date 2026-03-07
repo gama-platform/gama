@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.headless.job;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.GamaFileType;
 import gama.api.gaml.types.IType;

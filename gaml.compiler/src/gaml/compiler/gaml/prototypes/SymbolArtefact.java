@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableSet;
 import gama.annotations.action;
 import gama.annotations.doc;
 import gama.annotations.symbol;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.annotations.serializer;
@@ -34,7 +35,6 @@ import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.factories.ISymbolFactory;
 import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.compilation.validation.IValidator;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.utils.GamlProperties;
 

@@ -11,9 +11,9 @@ package gama.api.kernel;
 
 import static com.google.common.collect.Iterables.concat;
 import static com.google.common.collect.Sets.newHashSet;
-import static gama.api.constants.IKeyword.AGENT;
-import static gama.api.constants.IKeyword.EXPERIMENT;
-import static gama.api.constants.IKeyword.MODEL;
+import static gama.annotations.constants.IKeyword.AGENT;
+import static gama.annotations.constants.IKeyword.EXPERIMENT;
+import static gama.annotations.constants.IKeyword.MODEL;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,12 +24,12 @@ import java.util.Set;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.GamaBundleLoader;
 import gama.api.compilation.descriptions.IDescriptionFactory;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.GAML;
 import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.kernel.simulation.IExperimentAgent;

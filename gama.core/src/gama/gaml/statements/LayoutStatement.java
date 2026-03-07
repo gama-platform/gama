@@ -11,12 +11,11 @@
 package gama.gaml.statements;
 
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.symbols.Symbol;
 import gama.api.gaml.types.IType;
 
-import static gama.api.constants.IKeyword.LAYOUT;
+import static gama.annotations.constants.IKeyword.LAYOUT;
 
 import gama.annotations.doc;
 import gama.annotations.example;
@@ -25,6 +24,7 @@ import gama.annotations.facets;
 import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 

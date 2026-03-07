@@ -32,9 +32,9 @@ import org.eclipse.xtext.ui.editor.contentassist.ICompletionProposalAcceptor;
 import com.google.common.base.Function;
 import com.google.inject.Inject;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.artefacts.IArtefact;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.types.Types;
 import gaml.compiler.services.GamlGrammarAccess;
 import gaml.compiler.ui.labeling.GamlLabelProvider;

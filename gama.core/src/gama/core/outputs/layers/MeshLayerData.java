@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.api.constants.IKeyword;
+import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;

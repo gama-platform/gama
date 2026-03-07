@@ -17,9 +17,9 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+import gama.annotations.constants.IKeyword;
 import gama.api.additions.IGamaHelper;
 import gama.api.compilation.documentation.IGamlDocumentation;
-import gama.api.constants.IKeyword;
 import gama.api.gaml.expressions.IExpression;
 
 /**

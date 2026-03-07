@@ -10,15 +10,15 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
+import static gama.annotations.constants.IKeyword.AS;
+import static gama.annotations.constants.IKeyword.CREATE;
+import static gama.annotations.constants.IKeyword.FROM;
+import static gama.annotations.constants.IKeyword.HEADER;
+import static gama.annotations.constants.IKeyword.NUMBER;
+import static gama.annotations.constants.IKeyword.RETURNS;
+import static gama.annotations.constants.IKeyword.SPECIES;
+import static gama.annotations.constants.IKeyword.WITH;
 import static gama.annotations.support.ISymbolKind.SEQUENCE_STATEMENT;
-import static gama.api.constants.IKeyword.AS;
-import static gama.api.constants.IKeyword.CREATE;
-import static gama.api.constants.IKeyword.FROM;
-import static gama.api.constants.IKeyword.HEADER;
-import static gama.api.constants.IKeyword.NUMBER;
-import static gama.api.constants.IKeyword.RETURNS;
-import static gama.api.constants.IKeyword.SPECIES;
-import static gama.api.constants.IKeyword.WITH;
 
 import java.util.List;
 import java.util.Map;
@@ -30,6 +30,7 @@ import gama.annotations.facets;
 import gama.annotations.inside;
 import gama.annotations.symbol;
 import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.delegates.ICreateDelegate;
@@ -43,7 +44,6 @@ import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.serialization.StatementSerializer;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.AbstractStatementSequence;

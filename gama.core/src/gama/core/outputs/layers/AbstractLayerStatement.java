@@ -13,11 +13,11 @@ package gama.core.outputs.layers;
 import com.google.common.primitives.Longs;
 
 import gama.annotations.inside;
+import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.constants.IGamlIssue;
-import gama.api.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.symbols.ISymbol;
