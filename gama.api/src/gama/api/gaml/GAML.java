@@ -12,6 +12,7 @@ package gama.api.gaml;
 import static gama.api.constants.IKeyword.MY;
 import static gama.api.utils.JavaUtils.collectImplementationClasses;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -927,6 +928,17 @@ public class GAML {
 	 */
 	public static IGamlFileInfo getInfo(final URI uri) {
 		return (IGamlFileInfo) GAMA.getMetadataProvider().getMetaData(uri, true, true);
+	}
+
+	/**
+	 * Gets the info.
+	 *
+	 * @param uri
+	 *            the uri
+	 * @return the info
+	 */
+	public static IGamlFileInfo getInfo(final File file) {
+		return (IGamlFileInfo) GAMA.getMetadataProvider().getMetaData(file, true, true);
 	}
 
 	/**

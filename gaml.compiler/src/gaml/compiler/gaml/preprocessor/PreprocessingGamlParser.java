@@ -11,16 +11,11 @@
 package gaml.compiler.gaml.preprocessor;
 
 import java.io.Reader;
-import java.io.StringReader;
 
-import org.eclipse.emf.common.util.URI;
 import org.eclipse.xtext.parser.IParseResult;
 import org.eclipse.xtext.parser.ParseException;
 
-import com.google.common.io.CharStreams;
-
 import gama.dev.DEBUG;
-import gaml.compiler.gaml.resource.GamlResourceReader;
 import gaml.compiler.parser.antlr.GamlParser;
 
 /**
@@ -34,32 +29,33 @@ public class PreprocessingGamlParser extends GamlParser {
 
 	@Override
 	public IParseResult doParse(final Reader reader) throws ParseException {
-		try {
-			GamlResourceOffsetMap offsetMap = null;
-			URI uri = null;
-			// 1. Read the original file
-			if (reader instanceof GamlResourceReader gamlReader) {
-				offsetMap = gamlReader.getOffsetMap();
-				uri = gamlReader.getURI();
-			}
-
-			DEBUG.OUT("Preprocessor called !");
-			String result = CharStreams.toString(reader);
-
-			// 2. Run the tagging preprocessor
-			GamlPreprocessor preprocessor = new GamlPreprocessor(offsetMap);
-
-			result = preprocessor.process(result);
-
-			// 3. Parse the TAGGED text
-			Reader taggedReader = new StringReader(result);
-
-			IParseResult parseResult = super.doParse(taggedReader);
-
-			return parseResult;
-
-		} catch (Exception e) {
-			throw new ParseException(e.getMessage(), e);
-		}
+		return super.doParse(reader);
+		// try {
+		// GamlResourceOffsetMap offsetMap = null;
+		// URI uri = null;
+		// // 1. Read the original file
+		// if (reader instanceof GamlResourceReader gamlReader) {
+		// offsetMap = gamlReader.getOffsetMap();
+		// uri = gamlReader.getURI();
+		// }
+		//
+		// DEBUG.OUT("Preprocessor called !");
+		// String result = CharStreams.toString(reader);
+		//
+		// // 2. Run the tagging preprocessor
+		// GamlPreprocessor preprocessor = new GamlPreprocessor(offsetMap);
+		//
+		// result = preprocessor.process(result);
+		//
+		// // 3. Parse the TAGGED text
+		// Reader taggedReader = new StringReader(result);
+		//
+		// IParseResult parseResult = super.doParse(taggedReader);
+		//
+		// return parseResult;
+		//
+		// } catch (Exception e) {
+		// throw new ParseException(e.getMessage(), e);
+		// }
 	}
 }
