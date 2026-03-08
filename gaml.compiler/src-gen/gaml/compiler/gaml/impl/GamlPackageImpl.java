@@ -931,17 +931,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EReference getS_Do_Args()
-  {
-    return (EReference)s_DoEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EClass getS_Loop()
   {
     return s_LoopEClass;
@@ -2110,7 +2099,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     s_DoEClass = createEClass(SDO);
     createEReference(s_DoEClass, SDO__TARGET);
-    createEReference(s_DoEClass, SDO__ARGS);
 
     s_LoopEClass = createEClass(SLOOP);
 
@@ -2409,7 +2397,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     initEClass(s_DoEClass, S_Do.class, "S_Do", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getS_Do_Target(), this.getExpression(), null, "target", null, 0, 1, S_Do.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getS_Do_Args(), this.getExpressionList(), null, "args", null, 0, 1, S_Do.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(s_LoopEClass, S_Loop.class, "S_Loop", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 

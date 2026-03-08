@@ -75,7 +75,7 @@ public class StatementFactory implements ISymbolDescriptionFactory {
 		if (artefact.isPrimitive()) return new PrimitiveDescription(enclosing, element, children, facets, null);
 		if (IKeyword.ACTION.equals(keyword))
 			return new ActionDescription(keyword, enclosing, children, element, facets);
-		if (IKeyword.DO.equals(keyword) || IKeyword.INVOKE.equals(keyword))
+		if (IKeyword.DO.equals(keyword) || IKeyword.INVOKE.equals(keyword) || IKeyword._DOT.equals(keyword))
 			return new DoDescription(keyword, enclosing, children, artefact.hasArgs(), element, facets, null);
 		if (artefact.hasSequence() && children != null) {
 			if (artefact.isRemoteContext()) return new StatementRemoteWithChildrenDescription(keyword, enclosing,

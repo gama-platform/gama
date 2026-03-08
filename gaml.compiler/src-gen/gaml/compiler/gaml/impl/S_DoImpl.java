@@ -4,7 +4,6 @@
 package gaml.compiler.gaml.impl;
 
 import gaml.compiler.gaml.Expression;
-import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.S_Do;
 
@@ -25,7 +24,6 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  * </p>
  * <ul>
  *   <li>{@link gaml.compiler.gaml.impl.S_DoImpl#getTarget <em>Target</em>}</li>
- *   <li>{@link gaml.compiler.gaml.impl.S_DoImpl#getArgs <em>Args</em>}</li>
  * </ul>
  *
  * @generated
@@ -41,16 +39,6 @@ public class S_DoImpl extends StatementImpl implements S_Do
    * @ordered
    */
   protected Expression target;
-
-  /**
-   * The cached value of the '{@link #getArgs() <em>Args</em>}' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #getArgs()
-   * @generated
-   * @ordered
-   */
-  protected ExpressionList args;
 
   /**
    * <!-- begin-user-doc -->
@@ -129,64 +117,12 @@ public class S_DoImpl extends StatementImpl implements S_Do
    * @generated
    */
   @Override
-  public ExpressionList getArgs()
-  {
-    return args;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public NotificationChain basicSetArgs(ExpressionList newArgs, NotificationChain msgs)
-  {
-    ExpressionList oldArgs = args;
-    args = newArgs;
-    if (eNotificationRequired())
-    {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, GamlPackage.SDO__ARGS, oldArgs, newArgs);
-      if (msgs == null) msgs = notification; else msgs.add(notification);
-    }
-    return msgs;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public void setArgs(ExpressionList newArgs)
-  {
-    if (newArgs != args)
-    {
-      NotificationChain msgs = null;
-      if (args != null)
-        msgs = ((InternalEObject)args).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - GamlPackage.SDO__ARGS, null, msgs);
-      if (newArgs != null)
-        msgs = ((InternalEObject)newArgs).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - GamlPackage.SDO__ARGS, null, msgs);
-      msgs = basicSetArgs(newArgs, msgs);
-      if (msgs != null) msgs.dispatch();
-    }
-    else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, GamlPackage.SDO__ARGS, newArgs, newArgs));
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs)
   {
     switch (featureID)
     {
       case GamlPackage.SDO__TARGET:
         return basicSetTarget(null, msgs);
-      case GamlPackage.SDO__ARGS:
-        return basicSetArgs(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -203,8 +139,6 @@ public class S_DoImpl extends StatementImpl implements S_Do
     {
       case GamlPackage.SDO__TARGET:
         return getTarget();
-      case GamlPackage.SDO__ARGS:
-        return getArgs();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -221,9 +155,6 @@ public class S_DoImpl extends StatementImpl implements S_Do
     {
       case GamlPackage.SDO__TARGET:
         setTarget((Expression)newValue);
-        return;
-      case GamlPackage.SDO__ARGS:
-        setArgs((ExpressionList)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -242,9 +173,6 @@ public class S_DoImpl extends StatementImpl implements S_Do
       case GamlPackage.SDO__TARGET:
         setTarget((Expression)null);
         return;
-      case GamlPackage.SDO__ARGS:
-        setArgs((ExpressionList)null);
-        return;
     }
     super.eUnset(featureID);
   }
@@ -261,8 +189,6 @@ public class S_DoImpl extends StatementImpl implements S_Do
     {
       case GamlPackage.SDO__TARGET:
         return target != null;
-      case GamlPackage.SDO__ARGS:
-        return args != null;
     }
     return super.eIsSet(featureID);
   }

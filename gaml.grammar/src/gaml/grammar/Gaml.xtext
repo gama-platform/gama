@@ -114,7 +114,7 @@ Statement:
 	S_Other;
 	
 S_ActionCall returns S_Do: 
-	target=Primary key='.' expr=ActionRef '(' args=ExpressionList? ')'';'
+	target=Primary key='.' expr=Function ';'
 ;
 
 // Example: do my_action; or invoke my_action(5);

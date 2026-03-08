@@ -911,7 +911,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Statement returns S_Do
 	 *
 	 * Constraint:
-	 *     ((target=Primary key='.' expr=ActionRef args=ExpressionList?) | ((key='do' | key='invoke') expr=AbstractRef facets+=Facet* block=Block?))
+	 *     ((target=Primary key='.' expr=Function) | ((key='do' | key='invoke') expr=AbstractRef facets+=Facet* block=Block?))
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_ActionCall_S_Do(ISerializationContext context, S_Do semanticObject) {
@@ -1317,11 +1317,23 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     S_ActionCall returns S_Do
 	 *
 	 * Constraint:
-	 *     (target=Primary key='.' expr=ActionRef args=ExpressionList?)
+	 *     (target=Primary key='.' expr=Function)
 	 * </pre>
 	 */
 	protected void sequence_S_ActionCall(ISerializationContext context, S_Do semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
+		if (errorAcceptor != null) {
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.SDO__TARGET) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.SDO__TARGET));
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.FACETS_AND_BLOCK__KEY) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.FACETS_AND_BLOCK__KEY));
+			if (transientValues.isValueTransient(semanticObject, GamlPackage.Literals.STATEMENT__EXPR) == ValueTransient.YES)
+				errorAcceptor.accept(diagnosticProvider.createFeatureValueMissing(semanticObject, GamlPackage.Literals.STATEMENT__EXPR));
+		}
+		SequenceFeeder feeder = createSequencerFeeder(context, semanticObject);
+		feeder.accept(grammarAccess.getS_ActionCallAccess().getTargetPrimaryParserRuleCall_0_0(), semanticObject.getTarget());
+		feeder.accept(grammarAccess.getS_ActionCallAccess().getKeyFullStopKeyword_1_0(), semanticObject.getKey());
+		feeder.accept(grammarAccess.getS_ActionCallAccess().getExprFunctionParserRuleCall_2_0(), semanticObject.getExpr());
+		feeder.finish();
 	}
 	
 	

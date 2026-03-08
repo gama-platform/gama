@@ -51,8 +51,6 @@
   <eClassifiers xsi:type="ecore:EClass" name="S_Do" eSuperTypes="#//Statement #//FacetsAndBlock">
     <eStructuralFeatures xsi:type="ecore:EReference" name="target" eType="#//Expression"
         containment="true"/>
-    <eStructuralFeatures xsi:type="ecore:EReference" name="args" eType="#//ExpressionList"
-        containment="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="S_Loop" eSuperTypes="#//Statement #//VarDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_If" eSuperTypes="#//Statement">

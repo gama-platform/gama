@@ -14,7 +14,6 @@ package gaml.compiler.gaml;
  * </p>
  * <ul>
  *   <li>{@link gaml.compiler.gaml.S_Do#getTarget <em>Target</em>}</li>
- *   <li>{@link gaml.compiler.gaml.S_Do#getArgs <em>Args</em>}</li>
  * </ul>
  *
  * @see gaml.compiler.gaml.GamlPackage#getS_Do()
@@ -44,27 +43,5 @@ public interface S_Do extends Statement, FacetsAndBlock
    * @generated
    */
   void setTarget(Expression value);
-
-  /**
-   * Returns the value of the '<em><b>Args</b></em>' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return the value of the '<em>Args</em>' containment reference.
-   * @see #setArgs(ExpressionList)
-   * @see gaml.compiler.gaml.GamlPackage#getS_Do_Args()
-   * @model containment="true"
-   * @generated
-   */
-  ExpressionList getArgs();
-
-  /**
-   * Sets the value of the '{@link gaml.compiler.gaml.S_Do#getArgs <em>Args</em>}' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @param value the new value of the '<em>Args</em>' containment reference.
-   * @see #getArgs()
-   * @generated
-   */
-  void setArgs(ExpressionList value);
 
 } // S_Do

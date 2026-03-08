@@ -45,7 +45,7 @@ import gama.gaml.statements.DoStatement.DoSerializer;
  *
  */
 @symbol (
-		name = { IKeyword.DO, IKeyword.INVOKE },
+		name = { IKeyword.DO, IKeyword.INVOKE, IKeyword._DOT },
 		kind = ISymbolKind.SINGLE_STATEMENT,
 		with_sequence = true,
 		with_scope = false,

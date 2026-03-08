@@ -1182,9 +1182,9 @@ ruleS_ActionCall returns [EObject current=null]
 		(
 			(
 				{
-					newCompositeNode(grammarAccess.getS_ActionCallAccess().getExprActionRefParserRuleCall_2_0());
+					newCompositeNode(grammarAccess.getS_ActionCallAccess().getExprFunctionParserRuleCall_2_0());
 				}
-				lv_expr_2_0=ruleActionRef
+				lv_expr_2_0=ruleFunction
 				{
 					if ($current==null) {
 						$current = createModelElementForParent(grammarAccess.getS_ActionCallRule());
@@ -1193,41 +1193,14 @@ ruleS_ActionCall returns [EObject current=null]
 						$current,
 						"expr",
 						lv_expr_2_0,
-						"gaml.compiler.Gaml.ActionRef");
+						"gaml.compiler.Gaml.Function");
 					afterParserOrEnumRuleCall();
 				}
 			)
 		)
-		otherlv_3='('
+		otherlv_3=';'
 		{
-			newLeafNode(otherlv_3, grammarAccess.getS_ActionCallAccess().getLeftParenthesisKeyword_3());
-		}
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getS_ActionCallAccess().getArgsExpressionListParserRuleCall_4_0());
-				}
-				lv_args_4_0=ruleExpressionList
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getS_ActionCallRule());
-					}
-					set(
-						$current,
-						"args",
-						lv_args_4_0,
-						"gaml.compiler.Gaml.ExpressionList");
-					afterParserOrEnumRuleCall();
-				}
-			)
-		)?
-		otherlv_5=')'
-		{
-			newLeafNode(otherlv_5, grammarAccess.getS_ActionCallAccess().getRightParenthesisKeyword_5());
-		}
-		otherlv_6=';'
-		{
-			newLeafNode(otherlv_6, grammarAccess.getS_ActionCallAccess().getSemicolonKeyword_6());
+			newLeafNode(otherlv_3, grammarAccess.getS_ActionCallAccess().getSemicolonKeyword_3());
 		}
 	)
 ;

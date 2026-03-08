@@ -1,8 +1,8 @@
 '!'=73
 '!='=62
 '#'=114
-'('=85
-')'=86
+'('=87
+')'=88
 '*'=70
 '**action*'=94
 '**equation*'=97
@@ -47,7 +47,7 @@
 'ask'=30
 'assert'=32
 'capture'=38
-'catch'=88
+'catch'=86
 'class'=16
 'create'=41
 'default'=52
@@ -55,7 +55,7 @@
 'display'=108
 'do'=22
 'draw'=37
-'else'=87
+'else'=85
 'equation'=106
 'error'=42
 'experiment'=19

@@ -652,19 +652,15 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Assignment cKeyAssignment_1 = (Assignment)cGroup.eContents().get(1);
 		private final Keyword cKeyFullStopKeyword_1_0 = (Keyword)cKeyAssignment_1.eContents().get(0);
 		private final Assignment cExprAssignment_2 = (Assignment)cGroup.eContents().get(2);
-		private final RuleCall cExprActionRefParserRuleCall_2_0 = (RuleCall)cExprAssignment_2.eContents().get(0);
-		private final Keyword cLeftParenthesisKeyword_3 = (Keyword)cGroup.eContents().get(3);
-		private final Assignment cArgsAssignment_4 = (Assignment)cGroup.eContents().get(4);
-		private final RuleCall cArgsExpressionListParserRuleCall_4_0 = (RuleCall)cArgsAssignment_4.eContents().get(0);
-		private final Keyword cRightParenthesisKeyword_5 = (Keyword)cGroup.eContents().get(5);
-		private final Keyword cSemicolonKeyword_6 = (Keyword)cGroup.eContents().get(6);
+		private final RuleCall cExprFunctionParserRuleCall_2_0 = (RuleCall)cExprAssignment_2.eContents().get(0);
+		private final Keyword cSemicolonKeyword_3 = (Keyword)cGroup.eContents().get(3);
 		
 		//S_ActionCall returns S_Do:
-		//    target=Primary key='.' expr=ActionRef '(' args=ExpressionList? ')'';'
+		//    target=Primary key='.' expr=Function ';'
 		//;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//target=Primary key='.' expr=ActionRef '(' args=ExpressionList? ')'';'
+		//target=Primary key='.' expr=Function ';'
 		public Group getGroup() { return cGroup; }
 		
 		//target=Primary
@@ -679,26 +675,14 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//'.'
 		public Keyword getKeyFullStopKeyword_1_0() { return cKeyFullStopKeyword_1_0; }
 		
-		//expr=ActionRef
+		//expr=Function
 		public Assignment getExprAssignment_2() { return cExprAssignment_2; }
 		
-		//ActionRef
-		public RuleCall getExprActionRefParserRuleCall_2_0() { return cExprActionRefParserRuleCall_2_0; }
-		
-		//'('
-		public Keyword getLeftParenthesisKeyword_3() { return cLeftParenthesisKeyword_3; }
-		
-		//args=ExpressionList?
-		public Assignment getArgsAssignment_4() { return cArgsAssignment_4; }
-		
-		//ExpressionList
-		public RuleCall getArgsExpressionListParserRuleCall_4_0() { return cArgsExpressionListParserRuleCall_4_0; }
-		
-		//')'
-		public Keyword getRightParenthesisKeyword_5() { return cRightParenthesisKeyword_5; }
+		//Function
+		public RuleCall getExprFunctionParserRuleCall_2_0() { return cExprFunctionParserRuleCall_2_0; }
 		
 		//';'
-		public Keyword getSemicolonKeyword_6() { return cSemicolonKeyword_6; }
+		public Keyword getSemicolonKeyword_3() { return cSemicolonKeyword_3; }
 	}
 	public class S_DoElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_Do");
@@ -4347,7 +4331,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//S_ActionCall returns S_Do:
-	//    target=Primary key='.' expr=ActionRef '(' args=ExpressionList? ')'';'
+	//    target=Primary key='.' expr=Function ';'
 	//;
 	public S_ActionCallElements getS_ActionCallAccess() {
 		return pS_ActionCall;

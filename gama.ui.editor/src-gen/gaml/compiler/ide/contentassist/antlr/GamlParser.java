@@ -224,7 +224,6 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getS_ActionCallAccess().getTargetAssignment_0(), "rule__S_ActionCall__TargetAssignment_0");
 			builder.put(grammarAccess.getS_ActionCallAccess().getKeyAssignment_1(), "rule__S_ActionCall__KeyAssignment_1");
 			builder.put(grammarAccess.getS_ActionCallAccess().getExprAssignment_2(), "rule__S_ActionCall__ExprAssignment_2");
-			builder.put(grammarAccess.getS_ActionCallAccess().getArgsAssignment_4(), "rule__S_ActionCall__ArgsAssignment_4");
 			builder.put(grammarAccess.getS_DoAccess().getKeyAssignment_0(), "rule__S_Do__KeyAssignment_0");
 			builder.put(grammarAccess.getS_DoAccess().getExprAssignment_1(), "rule__S_Do__ExprAssignment_1");
 			builder.put(grammarAccess.getS_LoopAccess().getKeyAssignment_0(), "rule__S_Loop__KeyAssignment_0");

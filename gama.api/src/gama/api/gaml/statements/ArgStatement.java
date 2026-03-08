@@ -9,10 +9,6 @@
  ********************************************************************************************************/
 package gama.api.gaml.statements;
 
-import gama.api.annotations.validator;
-import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.validation.ValidNameValidator;
-import gama.api.gaml.types.IType;
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;
@@ -23,21 +19,26 @@ import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.validation.ValidNameValidator;
+import gama.api.gaml.types.IType;
 
 /**
  * Placeholder statement for argument declarations in actions.
- * 
+ *
  * <p>
  * ArgStatement represents a parameter declaration in an action definition. It doesn't execute any runtime code but
  * provides metadata about arguments including their name, type, default value, and whether they're optional.
  * </p>
- * 
+ *
  * <h2>Usage Contexts</h2>
- * 
+ *
  * <h3>In Action Declarations</h3>
  * <p>
  * Defines formal parameters for actions:
  * </p>
+ *
  * <pre>
  * {@code
  * action move_to {
@@ -48,11 +49,12 @@ import gama.annotations.support.ISymbolKind;
  * }
  * }
  * </pre>
- * 
+ *
  * <h3>In Action Invocations (do statements)</h3>
  * <p>
  * Provides actual values for parameters:
  * </p>
+ *
  * <pre>
  * {@code
  * do move_to {
@@ -61,7 +63,7 @@ import gama.annotations.support.ISymbolKind;
  * }
  * }
  * </pre>
- * 
+ *
  * <h2>Facets</h2>
  * <ul>
  * <li><b>name:</b> The parameter name</li>
@@ -72,21 +74,22 @@ import gama.annotations.support.ISymbolKind;
  * <li><b>default:</b> Default value if not provided</li>
  * <li><b>value:</b> Actual value (in invocations)</li>
  * </ul>
- * 
+ *
  * <h2>Modern Syntax</h2>
  * <p>
  * Note that modern GAML syntax uses the shorter form without explicit 'arg' keywords:
  * </p>
+ *
  * <pre>
  * {@code
  * // Declaration
  * action move_to(point target, float speed <- 1.0) { ... }
- * 
+ *
  * // Invocation
  * do move_to(target: {100, 100}, speed: 2.0);
  * }
  * </pre>
- * 
+ *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @since GAMA 1.0
  * @see ActionStatement
@@ -144,7 +147,7 @@ import gama.annotations.support.ISymbolKind;
 		internal = true,
 		concept = { IConcept.ACTION })
 @inside (
-		symbols = { IKeyword.ACTION, IKeyword.DO, IKeyword.INVOKE })
+		symbols = { IKeyword.ACTION, IKeyword.DO, IKeyword.INVOKE, IKeyword._DOT })
 @validator (ValidNameValidator.class)
 @doc (
 		value = "Argument ",
@@ -187,7 +190,7 @@ public class ArgStatement extends AbstractPlaceHolderStatement {
 
 	/**
 	 * Constructs a new argument declaration statement.
-	 * 
+	 *
 	 * <p>
 	 * This is a placeholder statement that provides metadata but executes no runtime code.
 	 * </p>
