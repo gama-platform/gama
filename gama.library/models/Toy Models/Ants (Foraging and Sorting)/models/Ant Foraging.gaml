@@ -120,11 +120,11 @@ species ant skills: [moving] control: fsm {
 	}
 	//Reflex to drop food once the ant is in the nest
 	reflex drop when: has_food and (ant_grid(location)).is_nest {
-		do drop();
+		self.drop();
 	}
 	//Reflex to pick food when there is one at the same location
 	reflex pick when: !has_food and (ant_grid(location)).food > 0 {
-		do pick(1);
+		self.pick(1);
 	}
 	//Initial state to make the ant wander 
 	state wandering initial: true {
@@ -216,7 +216,7 @@ experiment "With Inspector" type: gui parent:base{
 
 }
 
-experiment "Classic" type: gui record: every(10) parent:base{
+experiment "Classic" type: gui parent:base{
 	
 	parameter 'Number of ants:' var: ants_number category: 'Model';
 	parameter 'Evaporation of the signal (unit/cycle):' var: evaporation_per_cycle category: 'Model';
