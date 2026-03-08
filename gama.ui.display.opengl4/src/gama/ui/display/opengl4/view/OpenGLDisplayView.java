@@ -36,12 +36,12 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	public static String ID = "gama.ui.application.view.OpenGLDisplayView";
 
 	@Override
-	public OpenGL4DisplaySurface getDisplaySurface() { return (OpenGL4DisplaySurface) super.getDisplaySurface(); }
+	public SWTOpenGLDisplaySurface getDisplaySurface() { return (SWTOpenGLDisplaySurface) super.getDisplaySurface(); }
 
 	@Override
 	protected Composite createSurfaceComposite(final Composite parent) {
-		final OpenGL4DisplaySurface surface =
-				(OpenGL4DisplaySurface) GAMA.getGui().createDisplaySurfaceFor(getOutput(), parent);
+		final SWTOpenGLDisplaySurface surface =
+				(SWTOpenGLDisplaySurface) GAMA.getGui().createDisplaySurfaceFor(getOutput(), parent);
 		surfaceComposite = surface.renderer.getCanvas();
 		// synchronizer.setSurface(getDisplaySurface());
 		surface.outputReloaded();
@@ -72,7 +72,7 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 
 	@Override
 	public boolean forceOverlayVisibility() {
-		final OpenGL4DisplaySurface surface = getDisplaySurface();
+		final SWTOpenGLDisplaySurface surface = getDisplaySurface();
 		return surface != null && surface.getROIDimensions() != null;
 	}
 

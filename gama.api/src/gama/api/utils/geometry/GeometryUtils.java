@@ -61,7 +61,6 @@ import gama.api.types.geometry.IShape;
 import gama.api.types.geometry.IShape.Type;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
-import gama.api.utils.prefs.GamaPreferences;
 import gama.api.utils.random.IRandom;
 import gama.dev.DEBUG;
 
@@ -216,7 +215,6 @@ public class GeometryUtils {
 		if (polygon.getArea() > 0) {
 			final double y = rand.between(yMin, yMax);
 			if (polygon.getNumInteriorRing() == 0) {
-				// Simple polygon (no holes): fast ring test, no JTS overhead
 				IPoint p = GamaPointFactory.create(x, y, 0);
 				Coordinate[] coordinates = polygon.getCoordinates();
 				while (!PointLocation.isInRing(p.toCoordinate(), coordinates)) {
@@ -224,11 +222,14 @@ public class GeometryUtils {
 				}
 				return p;
 			}
-			// Polygon with holes: use EarCut2D triangle-weighted sampling.
-			// O(n) setup, always succeeds in one shot — replaces the unbounded
-			// rejection-sampling loop which could iterate many times for thin or
-			// complex holed polygons.
-			return EarCut2D.randomPointIn(polygon, rand.between(0.0, 1.0), rand.between(0.0, 1.0));
+			final ICoordinates ucs = GamaCoordinateSequenceFactory.ofLength(1);
+			ucs.setTo(x, y, 0);
+			final Point pt = getGeometryFactory().createPoint(ucs);
+			while (!polygon.intersects(pt)) {
+				ucs.setTo(rand.between(xMin, xMax), rand.between(yMin, yMax), 0);
+				pt.geometryChanged();
+			}
+			return ucs.at(0);
 		}
 		// DEBUG.OUT("Point in Polygon with Area = 0");
 		final Coordinate coord1 = new Coordinate(x, yMin);
@@ -573,8 +574,6 @@ public class GeometryUtils {
 	 *            the scope
 	 * @param lines
 	 *            the lines
-	 * @param tol
-	 *            the tolerance
 	 * @return the i list
 	 */
 	public static IList<IShape> triangulation(final IScope scope, final IList<IShape> lines, final double tol) {
@@ -594,37 +593,26 @@ public class GeometryUtils {
 	}
 
 	/**
-	 * Triangulates a geometry using the <b>Conforming Delaunay</b> algorithm (JTS).
-	 *
-	 * <p>
-	 * This is the high-quality path: the resulting triangles satisfy the Delaunay criterion and respect the constraint
-	 * edges of the input polygon. It is the right choice for skeletonisation, medial-axis extraction, FEM meshing, and
-	 * any algorithm that depends on triangle adjacency or quality.
-	 * </p>
-	 *
-	 * <p>
-	 * This method is called by the unified dispatcher
-	 * {@link #triangulation(IScope, Geometry, double, double, boolean, boolean)} when {@code useEarCut = false}.
-	 * </p>
+	 * Triangulation.
 	 *
 	 * @param scope
-	 *            the simulation scope
+	 *            the scope
 	 * @param geom
-	 *            the geometry to triangulate
+	 *            the geom
 	 * @param toleranceTriangulation
-	 *            snapping tolerance passed to the Delaunay builder
+	 *            the tolerance triangulation
 	 * @param toleranceClip
-	 *            buffer tolerance used to clip the output triangles to the input polygon
+	 *            the tolerance clip
 	 * @param approxClipping
-	 *            if {@code true}, use a faster but approximate clip (centroid + vertex test)
-	 * @return a list of triangle {@link IShape}s
+	 *            the approx clipping
+	 * @return the i list
 	 */
-	public static IList<IShape> triangulationDelaunay(final IScope scope, final Geometry geom,
+	public static IList<IShape> triangulation(final IScope scope, final Geometry geom,
 			final double toleranceTriangulation, final double toleranceClip, final boolean approxClipping) {
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
 		if (geom instanceof GeometryCollection gc && !(geom instanceof MultiLineString)) {
 			for (int i = 0; i < gc.getNumGeometries(); i++) {
-				geoms.addAll(triangulationDelaunay(scope, gc.getGeometryN(i), toleranceTriangulation, toleranceClip,
+				geoms.addAll(triangulation(scope, gc.getGeometryN(i), toleranceTriangulation, toleranceClip,
 						approxClipping));
 			}
 		} else {
@@ -636,6 +624,7 @@ public class GeometryUtils {
 			try {
 				dtb.setSites(geom);
 				dtb.setConstraints(geom);
+
 				tri = (GeometryCollection) dtb.getTriangles(getGeometryFactory());
 			} catch (final LocateFailureException | ConstraintEnforcementException e) {
 				dtb.setTolerance(toleranceTriangulation + 0.1);
@@ -644,254 +633,9 @@ public class GeometryUtils {
 				tri = (GeometryCollection) dtb.getTriangles(getGeometryFactory());
 			}
 			if (tri != null) { geoms.addAll(filterGeoms(tri, geom, toClip, toleranceClip, approxClipping)); }
+
 		}
 		return geoms;
-	}
-
-	/**
-	 * Triangulates a geometry using the <b>ear-clipping</b> algorithm ({@link EarCut2D}).
-	 *
-	 * <p>
-	 * This is the fast path: O(n²) in vertex count, always terminates, never throws a {@link LocateFailureException} or
-	 * {@link ConstraintEnforcementException}. The resulting triangles are not Delaunay-optimal but are correct for
-	 * rendering, physics, and any use case that only needs a valid decomposition rather than quality triangles.
-	 * </p>
-	 *
-	 * <p>
-	 * Non-polygon geometries ({@link LineString}, {@link MultiLineString}, {@link Point}, {@link MultiPoint}) cannot be
-	 * ear-clipped meaningfully; they are silently delegated to {@link #triangulationDelaunay} with
-	 * {@code toleranceTriangulation = 0}.
-	 * </p>
-	 *
-	 * <p>
-	 * This method is called by the unified dispatcher
-	 * {@link #triangulation(IScope, Geometry, double, double, boolean, boolean)} when {@code useEarCut = true}.
-	 * </p>
-	 *
-	 * @param scope
-	 *            the simulation scope
-	 * @param geom
-	 *            the geometry to triangulate
-	 * @param toleranceClip
-	 *            buffer tolerance used to clip the output triangles to the input polygon (≤ 0 = no clip)
-	 * @param approxClipping
-	 *            if {@code true}, use a faster but approximate clip (centroid + vertex test)
-	 * @return a list of triangle {@link IShape}s
-	 */
-	public static IList<IShape> triangulationEarCut(final IScope scope, final Geometry geom, final double toleranceClip,
-			final boolean approxClipping) {
-		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
-		if (geom instanceof GeometryCollection gc && !(geom instanceof MultiLineString)) {
-			for (int i = 0; i < gc.getNumGeometries(); i++) {
-				geoms.addAll(triangulationEarCut(scope, gc.getGeometryN(i), toleranceClip, approxClipping));
-			}
-		} else if (geom instanceof Polygon polygon) {
-			final Geometry bufferClip = toleranceClip > 0 ? polygon.buffer(toleranceClip, 5, 0) : null;
-			final PreparedGeometry buffered = bufferClip != null ? PREPARED_GEOMETRY_FACTORY.create(bufferClip) : null;
-			final IEnvelope env = bufferClip != null ? GamaEnvelopeFactory.of(bufferClip) : null;
-			try {
-				EarCut2D.iterateOverTriangles(polygon, getGeometryFactory(), tri -> {
-					if (buffered == null) {
-						geoms.add(GamaShapeFactory.createFrom(tri));
-					} else {
-						final Coordinate[] coord = tri.getCoordinates();
-						boolean cond = env.covers(tri.getCentroid().getCoordinate());
-						cond = cond && (approxClipping
-								? buffered.covers(tri.getCentroid())
-										&& buffered.covers(getGeometryFactory().createPoint(coord[0]))
-										&& buffered.covers(getGeometryFactory().createPoint(coord[1]))
-										&& buffered.covers(getGeometryFactory().createPoint(coord[2]))
-								: bufferClip.covers(tri));
-						if (cond) { geoms.add(GamaShapeFactory.createFrom(tri)); }
-					}
-				});
-			} finally {
-				if (env != null) { env.dispose(); }
-			}
-		} else {
-			// Non-polygon types (LineString, Point, …) are not ear-clippable; fall back to Delaunay
-			geoms.addAll(triangulationDelaunay(scope, geom, 0, toleranceClip, approxClipping));
-		}
-		return geoms;
-	}
-
-	/**
-	 * Triangulates a geometry using either the Conforming Delaunay algorithm or the ear-clipping algorithm, depending
-	 * on the {@code useEarCut} flag.
-	 *
-	 * <p>
-	 * This is the <b>unified entry point</b> that supersedes the original
-	 * {@code triangulation(IScope, Geometry, double, double, boolean)} method. Existing call sites that do not need to
-	 * choose the algorithm explicitly should use the
-	 * {@linkplain #triangulation(IScope, Geometry, double, double, boolean) 5-argument overload} which defaults to
-	 * Delaunay for backward compatibility.
-	 * </p>
-	 *
-	 * <h3>Choosing the algorithm</h3>
-	 * <table>
-	 * <tr>
-	 * <th>Criterion</th>
-	 * <th>Delaunay ({@code useEarCut=false})</th>
-	 * <th>Ear-cut ({@code useEarCut=true})</th>
-	 * </tr>
-	 * <tr>
-	 * <td>Triangle quality</td>
-	 * <td>Maximises minimum angle</td>
-	 * <td>No guarantee</td>
-	 * </tr>
-	 * <tr>
-	 * <td>Speed</td>
-	 * <td>Slower (JTS infrastructure)</td>
-	 * <td>Fast, O(n²)</td>
-	 * </tr>
-	 * <tr>
-	 * <td>Failure modes</td>
-	 * <td>May throw on pathological input</td>
-	 * <td>Always terminates</td>
-	 * </tr>
-	 * <tr>
-	 * <td>Holes</td>
-	 * <td>Full support</td>
-	 * <td>Full support (bridge edge)</td>
-	 * </tr>
-	 * <tr>
-	 * <td>Non-polygon input</td>
-	 * <td>Full support</td>
-	 * <td>Falls back to Delaunay</td>
-	 * </tr>
-	 * <tr>
-	 * <td>Use when</td>
-	 * <td>Skeletonisation, medial axis, FEM</td>
-	 * <td>Rendering, physics, GPU upload</td>
-	 * </tr>
-	 * </table>
-	 *
-	 * @param scope
-	 *            the simulation scope
-	 * @param geom
-	 *            the geometry to triangulate
-	 * @param toleranceTriangulation
-	 *            snapping tolerance for the Delaunay builder (ignored when {@code useEarCut=true})
-	 * @param toleranceClip
-	 *            buffer tolerance used to clip output triangles to the input polygon
-	 * @param approxClipping
-	 *            if {@code true}, use a faster approximate clip (centroid + vertex test)
-	 * @param useEarCut
-	 *            if {@code true}, use ear-clipping; if {@code false}, use Conforming Delaunay
-	 * @return a list of triangle {@link IShape}s
-	 */
-	public static IList<IShape> triangulation(final IScope scope, final Geometry geom,
-			final double toleranceTriangulation, final double toleranceClip, final boolean approxClipping,
-			final boolean useEarCut) {
-		return useEarCut ? triangulationEarCut(scope, geom, toleranceClip, approxClipping)
-				: triangulationDelaunay(scope, geom, toleranceTriangulation, toleranceClip, approxClipping);
-	}
-
-	/**
-	 * Triangulates a geometry using the <b>Conforming Delaunay</b> algorithm.
-	 *
-	 * <p>
-	 * Backward-compatibility overload equivalent to
-	 * {@link #triangulation(IScope, Geometry, double, double, boolean, boolean) triangulation(scope, geom,
-	 * toleranceTriangulation, toleranceClip, approxClipping, false)}.
-	 * </p>
-	 *
-	 * @param scope
-	 *            the simulation scope
-	 * @param geom
-	 *            the geometry to triangulate
-	 * @param toleranceTriangulation
-	 *            snapping tolerance passed to the Delaunay builder
-	 * @param toleranceClip
-	 *            buffer tolerance used to clip the output triangles to the input polygon
-	 * @param approxClipping
-	 *            if {@code true}, use a faster but approximate clip
-	 * @return a list of triangle {@link IShape}s
-	 */
-	public static IList<IShape> triangulation(final IScope scope, final Geometry geom,
-			final double toleranceTriangulation, final double toleranceClip, final boolean approxClipping) {
-		return triangulation(scope, geom, toleranceTriangulation, toleranceClip, approxClipping,
-				GamaPreferences.Experimental.TRIANGULATION_OPTIMIZATION.getValue());
-	}
-
-	/**
-	 * Checks if an array of coordinates forms a valid ring (closed loop). A valid ring must have at least 4 points and
-	 * the first point must equal the last.
-	 *
-	 * @param pts
-	 *            the array of coordinates.
-	 * @return true if the coordinates form a valid ring, false otherwise.
-	 */
-	public static boolean isRing(final Coordinate[] pts) {
-		if (pts.length < 4 || !pts[0].equals(pts[pts.length - 1])) return false;
-		return true;
-	}
-
-	/**
-	 * Checks if an array of {@link IPoint} forms a valid ring.
-	 *
-	 * @param pts
-	 *            the array of points.
-	 * @return true if the points form a valid ring, false otherwise.
-	 */
-	public static boolean isRing(final IPoint[] pts) {
-		if (pts.length < 4 || !pts[0].equals(pts[pts.length - 1])) return false;
-		return true;
-	}
-
-	/**
-	 * Checks if a list of {@link IPoint} forms a valid ring.
-	 *
-	 * @param pts
-	 *            the list of points.
-	 * @return true if the points form a valid ring, false otherwise.
-	 */
-	public static boolean isRing(final List<IPoint> pts) {
-		final int size = pts.size();
-		if (size < 4 || !pts.get(0).equals(pts.get(size - 1))) return false;
-		return true;
-	}
-
-	/**
-	 * Calculates the signed area of a ring defined by points using the Shoelace formula. The sign indicates the
-	 * orientation (positive for counter-clockwise, usually).
-	 *
-	 * @param ring
-	 *            the array of points forming the ring.
-	 * @return the signed area.
-	 */
-	public static double signedArea(final IPoint[] ring) {
-		if (ring.length < 3) return 0.0;
-		double sum = 0.0;
-		/*
-		 * Based on the Shoelace formula. http://en.wikipedia.org/wiki/Shoelace_formula
-		 */
-		double x0 = ring[0].getX();
-		for (int i = 1; i < ring.length - 1; i++) {
-			double x = ring[i].getX() - x0;
-			double y1 = ring[i + 1].getY();
-			double y2 = ring[i - 1].getY();
-			sum += x * (y2 - y1);
-		}
-		return sum / 2.0;
-	}
-
-	/**
-	 * Calculates the signed area of a ring defined by JTS {@link Coordinate} objects using the Shoelace formula.
-	 * Delegates to {@link #signedArea(IPoint[])} after converting via {@link GamaPointFactory}.
-	 *
-	 * <p>
-	 * The sign indicates orientation: positive for counter-clockwise, negative for clockwise.
-	 * </p>
-	 *
-	 * @param ring
-	 *            the array of {@link Coordinate} objects forming the ring (open or closed).
-	 * @return the signed area.
-	 */
-	public static double signedArea(final Coordinate[] ring) {
-		final IPoint[] pts = new IPoint[ring.length];
-		for (int i = 0; i < ring.length; i++) { pts[i] = GamaPointFactory.create(ring[i]); }
-		return signedArea(pts);
 	}
 
 	/**
@@ -950,26 +694,14 @@ public class GeometryUtils {
 	}
 
 	/**
-	 * Iterates over the triangles produced by the <b>Delaunay</b> algorithm for the given polygon, delivering each
-	 * triangle to {@code action} as a JTS {@link Geometry}.
-	 *
-	 * <p>
-	 * The output satisfies the Delaunay criterion — minimum angles are maximised — making it suitable for
-	 * skeletonisation, medial-axis extraction, and FEM meshing. It may throw on pathological input (very thin
-	 * polygons); in that case the polygon is simplified and retried.
-	 * </p>
-	 *
-	 * <p>
-	 * For rendering or other non-quality-sensitive use cases prefer {@link #iterateOverTrianglesEarCut} or the unified
-	 * {@link #iterateOverTriangles(Polygon, Consumer, boolean)} dispatcher.
-	 * </p>
+	 * Iterate over triangles.
 	 *
 	 * @param polygon
-	 *            the polygon to triangulate (must not be {@code null})
+	 *            the polygon
 	 * @param action
-	 *            called once per output triangle
+	 *            the action
 	 */
-	public static void iterateOverTrianglesDelaunay(final Polygon polygon, final Consumer<Geometry> action) {
+	public static void iterateOverTriangles(final Polygon polygon, final Consumer<Geometry> action) {
 		final double elevation = GamaCoordinateSequenceFactory.pointsOf(polygon).averageZ();
 		final double sizeTol = Math.sqrt(polygon.getArea()) / 100.0;
 		final DelaunayTriangulationBuilder dtb = new DelaunayTriangulationBuilder();
@@ -991,75 +723,11 @@ public class GeometryUtils {
 			GAMA.reportAndThrowIfNeeded(scope,
 					GamaRuntimeException.warning("Impossible to triangulate: " + new WKTWriter().write(polygon), scope),
 					false);
-			iterateOverTrianglesDelaunay((Polygon) DouglasPeuckerSimplifier.simplify(polygon, 0.1), action);
+			iterateOverTriangles((Polygon) DouglasPeuckerSimplifier.simplify(polygon, 0.1), action);
+			return;
 		} finally {
 			env.dispose();
 		}
-	}
-
-	/**
-	 * Iterates over the triangles of the given polygon using either the Delaunay or the ear-clipping algorithm,
-	 * depending on the {@code useDelaunay} flag.
-	 *
-	 * <p>
-	 * This is the <b>unified dispatcher</b>. Call sites that do not need to choose the algorithm explicitly should use
-	 * {@link #iterateOverTriangles(Polygon, Consumer)}, which defaults to Delaunay for backward compatibility.
-	 * </p>
-	 *
-	 * @param polygon
-	 *            the polygon to triangulate (must not be {@code null})
-	 * @param action
-	 *            called once per output triangle
-	 * @param useDelaunay
-	 *            {@code true} to use the Delaunay algorithm, {@code false} to use ear-clipping
-	 */
-	public static void iterateOverTriangles(final Polygon polygon, final Consumer<Geometry> action,
-			final boolean useDelaunay) {
-		if (useDelaunay) {
-			iterateOverTrianglesDelaunay(polygon, action);
-		} else {
-			iterateOverTrianglesEarCut(polygon, action);
-		}
-	}
-
-	/**
-	 * Iterates over the triangles of the given polygon using the <b>Delaunay</b> algorithm.
-	 *
-	 * <p>
-	 * Backward-compatibility overload equivalent to {@link #iterateOverTriangles(Polygon, Consumer, boolean)
-	 * iterateOverTriangles(polygon, action, true)}.
-	 * </p>
-	 *
-	 * @param polygon
-	 *            the polygon to triangulate (must not be {@code null})
-	 * @param action
-	 *            called once per output triangle
-	 */
-	public static void iterateOverTriangles(final Polygon polygon, final Consumer<Geometry> action) {
-		iterateOverTrianglesDelaunay(polygon, action);
-	}
-
-	/**
-	 * Iterates over the triangles produced by <b>ear-clipping</b> the given polygon, delivering each triangle to
-	 * {@code action} as a JTS {@link Geometry}.
-	 *
-	 * <p>
-	 * This is the fast O(n²) alternative to {@link #iterateOverTrianglesDelaunay}. It never throws and always
-	 * terminates. The output triangles are correct but not Delaunay-optimal; they are suitable for rendering, GPU
-	 * upload, and physics decomposition.
-	 * </p>
-	 *
-	 * <p>
-	 * To let the caller choose at runtime, use {@link #iterateOverTriangles(Polygon, Consumer, boolean)}.
-	 * </p>
-	 *
-	 * @param polygon
-	 *            the polygon to triangulate (must not be {@code null})
-	 * @param action
-	 *            called once per output triangle
-	 */
-	public static void iterateOverTrianglesEarCut(final Polygon polygon, final Consumer<Geometry> action) {
-		EarCut2D.iterateOverTriangles(polygon, getGeometryFactory(), action);
 	}
 
 	/**

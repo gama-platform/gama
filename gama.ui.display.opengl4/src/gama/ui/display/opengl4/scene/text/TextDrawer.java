@@ -49,8 +49,8 @@ import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.dev.DEBUG;
-import gama.api.utils.geometry.EarCut2D;
 import gama.ui.display.opengl4.OpenGL;
+import gama.ui.display.opengl4.OpenGL.EarCut2D;
 import gama.ui.display.opengl4.scene.ObjectDrawer;
 import gama.ui.shared.utils.DPIHelper;
 

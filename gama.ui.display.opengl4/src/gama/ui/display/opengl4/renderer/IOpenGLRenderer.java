@@ -22,7 +22,7 @@ import gama.ui.display.opengl4.renderer.helpers.LightHelper;
 import gama.ui.display.opengl4.renderer.helpers.PickingHelper;
 import gama.ui.display.opengl4.renderer.helpers.SceneHelper;
 import gama.ui.display.opengl4.view.GamaGLCanvas;
-import gama.ui.display.opengl4.view.OpenGL4DisplaySurface;
+import gama.ui.display.opengl4.view.SWTOpenGLDisplaySurface;
 
 /**
  * The Interface IOpenGLRenderer.
@@ -78,7 +78,7 @@ public interface IOpenGLRenderer extends GLEventListener, IGraphics.ThreeD {
 	 * @return the surface
 	 */
 	@Override
-	OpenGL4DisplaySurface getSurface();
+	SWTOpenGLDisplaySurface getSurface();
 
 	/**
 	 * Gets the camera helper.

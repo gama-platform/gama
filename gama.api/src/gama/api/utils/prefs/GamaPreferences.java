@@ -47,8 +47,8 @@ import gama.api.utils.files.FileUtils;
 import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceBeforeChangeListener;
 
 /**
- * {@code GamaPreferences} is the central registry of all GAMA user-configurable preferences. It owns the static factory
- * methods ({@link #create}) used to declare new preferences and the utility methods ({@link #setNewPreferences},
+ * {@code GamaPreferences} is the central registry of all GAMA user-configurable preferences. It owns the static
+ * factory methods ({@link #create}) used to declare new preferences and the utility methods ({@link #setNewPreferences},
  * {@link #revertToDefaultValues}, {@link #organizePrefs}) used by the UI to display and manipulate them.
  *
  * <p>
@@ -66,8 +66,8 @@ import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceBeforeChangeLis
  *
  * <p>
  * The inner static classes ({@link Interface}, {@link Theme}, {@link Modeling}, {@link Runtime}, {@link Displays},
- * {@link Network}, {@link External}, {@link Experimental}) act as namespaces grouping logically related preferences and
- * their associated tab/group name constants.
+ * {@link Network}, {@link External}, {@link Experimental}) act as namespaces grouping logically related preferences
+ * and their associated tab/group name constants.
  * </p>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -165,8 +165,8 @@ public class GamaPreferences {
 
 	/**
 	 * The {@code Theme} class acts as a namespace for preference tab and group name constants related to the visual
-	 * theme of the GAMA UI. It does not declare any {@link Pref} constants itself; the actual theme-related preferences
-	 * are contributed by other components.
+	 * theme of the GAMA UI. It does not declare any {@link Pref} constants itself; the actual theme-related
+	 * preferences are contributed by other components.
 	 */
 	public static class Theme {
 
@@ -183,8 +183,8 @@ public class GamaPreferences {
 
 	/**
 	 * The {@code Network} class groups all GAMA preferences related to networking: HTTP connections, web browser
-	 * selection, and GAMA Server mode. It also defines the tab and group name constants used to place these preferences
-	 * in the GAMA preferences dialog.
+	 * selection, and GAMA Server mode. It also defines the tab and group name constants used to place these
+	 * preferences in the GAMA preferences dialog.
 	 */
 	public static class Network {
 
@@ -253,24 +253,20 @@ public class GamaPreferences {
 				create("pref_ask_outdated", "Ask before using a workspace created by another version", true, IType.BOOL,
 						false).in(NAME, STARTUP).withLabels("Yes", "No");
 
-		/**
-		 * Whether GAMA should automatically open a predefined model at startup. Activates the model/experiment pickers.
-		 */
+		/** Whether GAMA should automatically open a predefined model at startup. Activates the model/experiment pickers. */
 		public static final Pref<Boolean> CORE_STARTUP_MODEL =
 				create("pref_startup_model", "Open a model", false, IType.BOOL, false).in(NAME, STARTUP)
 						.activates("pref_default_model", "pref_default_experiment").withLabels("Yes", "No");
 
-		/**
-		 * The file-system path of the model to open automatically at startup (requires {@link #CORE_STARTUP_MODEL}).
-		 */
+		/** The file-system path of the model to open automatically at startup (requires {@link #CORE_STARTUP_MODEL}). */
 		public static final Pref<? extends IGamaFile> CORE_DEFAULT_MODEL =
 				create("pref_default_model", "Model to open", () -> new GenericFile("Enter path", false), IType.FILE,
 						false).in(NAME, STARTUP).restrictToWorkspace().withExtensions("gaml", "experiment")
 								.refreshes("pref_default_experiment").activates("pref_default_experiment");
 
 		/**
-		 * The name of the experiment to launch automatically after opening {@link #CORE_DEFAULT_MODEL} at startup. The
-		 * list of available experiments is populated dynamically from the selected model file.
+		 * The name of the experiment to launch automatically after opening {@link #CORE_DEFAULT_MODEL} at startup.
+		 * The list of available experiments is populated dynamically from the selected model file.
 		 */
 		public static final Pref<String> CORE_DEFAULT_EXPERIMENT =
 				create("pref_default_experiment", "Experiment to run", "", IType.STRING, false).in(NAME, STARTUP)
@@ -299,8 +295,8 @@ public class GamaPreferences {
 		public static final String CONSOLE = "Console";
 
 		/**
-		 * The maximum number of characters that can be displayed in the GAMA console at any time. A value of {@code -1}
-		 * means unlimited.
+		 * The maximum number of characters that can be displayed in the GAMA console at any time. A value of
+		 * {@code -1} means unlimited.
 		 */
 		public static final Pref<Integer> CORE_CONSOLE_SIZE = create("pref_console_size",
 				"Max. number of characters to display (-1 = unlimited)", 20000, IType.INT, true).in(NAME, CONSOLE);
@@ -342,9 +338,9 @@ public class GamaPreferences {
 
 		/**
 		 * Recomputes the {@link #SIMULATION_COLORS} array using the given pivot color. Nine colors are derived by
-		 * applying successive {@link IColor#darker()} and {@link IColor#brighter()} transformations, producing a ramp
-		 * centered on the pivot. This method is only effective when the current color scheme is {@link #PIVOT}; if the
-		 * scheme is something else this method returns immediately.
+		 * applying successive {@link IColor#darker()} and {@link IColor#brighter()} transformations, producing a
+		 * ramp centered on the pivot. This method is only effective when the current color scheme is
+		 * {@link #PIVOT}; if the scheme is something else this method returns immediately.
 		 *
 		 * @param c
 		 *            the pivot (central) color of the generated ramp; must not be {@code null}
@@ -364,9 +360,9 @@ public class GamaPreferences {
 		}
 
 		/**
-		 * Returns the UI color associated with the simulation at the given zero-based {@code index}. Colors are cycled
-		 * modulo the length of the current palette, so this method never returns {@code null} regardless of the index
-		 * value. The color palette is initialized lazily on the first call.
+		 * Returns the UI color associated with the simulation at the given zero-based {@code index}. Colors are
+		 * cycled modulo the length of the current palette, so this method never returns {@code null} regardless of
+		 * the index value. The color palette is initialized lazily on the first call.
 		 *
 		 * @param index
 		 *            the zero-based index of the simulation whose color is requested
@@ -442,8 +438,8 @@ public class GamaPreferences {
 						IType.COLOR, true).in(NAME, SIMULATIONS).onChange(Interface::setPivot);
 
 		/**
-		 * Whether the console contents should be kept (not cleared) between successive experiments. When {@code false},
-		 * the console is wiped each time a new experiment starts.
+		 * Whether the console contents should be kept (not cleared) between successive experiments. When
+		 * {@code false}, the console is wiped each time a new experiment starts.
 		 */
 		public static final Pref<Boolean> CORE_CONSOLE_KEEP =
 				create("pref_console_keep", "Keep the console contents between experiments", false, IType.BOOL, true)
@@ -452,9 +448,9 @@ public class GamaPreferences {
 	}
 
 	/**
-	 * The {@code Modeling} class groups all preferences that control the behavior and appearance of GAML editors in the
-	 * GAMA IDE, including auto-closing of brackets and quotes, formatting, font, background color, and the display of
-	 * experiment buttons.
+	 * The {@code Modeling} class groups all preferences that control the behavior and appearance of GAML editors in
+	 * the GAMA IDE, including auto-closing of brackets and quotes, formatting, font, background color, and the
+	 * display of experiment buttons.
 	 */
 	public static class Modeling {
 
@@ -471,9 +467,7 @@ public class GamaPreferences {
 				create("pref_editor_enable_warnings", "Show warning markers in the editor", true, IType.BOOL, false)
 						.in(NAME, OPTIONS).hidden();
 
-		/**
-		 * Whether informational markers should be displayed in the GAML editor gutter. Hidden from the preferences UI.
-		 */
+		/** Whether informational markers should be displayed in the GAML editor gutter. Hidden from the preferences UI. */
 		public static final Pref<Boolean> INFO_ENABLED =
 				create("pref_editor_enable_infos", "Show information markers in the editor", true, IType.BOOL, false)
 						.in(NAME, OPTIONS).hidden();
@@ -498,9 +492,7 @@ public class GamaPreferences {
 				create("pref_editor_perspective_hide", "Hide editors when switching to simulation perspective", true,
 						IType.BOOL, false).in(Modeling.NAME, Modeling.OPTIONS).withLabels("Yes", "No");
 
-		/**
-		 * Whether the operators context menu should be sorted by category or by name. Hidden from the preferences UI.
-		 */
+		/** Whether the operators context menu should be sorted by category or by name. Hidden from the preferences UI. */
 		public static final Pref<Boolean> OPERATORS_MENU_SORT =
 				create("pref_menu_operators_sort2", "Sort operators menu by", true, IType.STRING, false)
 						.withLabels("Category", "Name").in(Interface.NAME, Interface.MENUS).hidden();
@@ -560,8 +552,8 @@ public class GamaPreferences {
 
 		/**
 		 * Whether experiments defined in a GAML model should appear as a drop-down menu or as individual toolbar
-		 * buttons at the top of the editor. When {@code false} (labelled "Buttons"), individual buttons are shown; when
-		 * {@code true} (labelled "Menu"), a single menu is used instead.
+		 * buttons at the top of the editor. When {@code false} (labelled "Buttons"), individual buttons are shown;
+		 * when {@code true} (labelled "Menu"), a single menu is used instead.
 		 */
 		public static final Pref<Boolean> EDITOR_EXPERIMENT_MENU = GamaPreferences
 				.create("pref_editor_experiment_menu", "Display experiments as", false, IType.BOOL, false)
@@ -569,16 +561,16 @@ public class GamaPreferences {
 				.withColors(() -> GamaColorFactory.get("white"), () -> GamaColorFactory.get("darkgray"));
 
 		/**
-		 * Whether experiment buttons that exceed the editor width should collapse into a menu. Defaults to {@code true}
-		 * on Linux where button overflow is more common.
+		 * Whether experiment buttons that exceed the editor width should collapse into a menu. Defaults to
+		 * {@code true} on Linux where button overflow is more common.
 		 */
 		public static final Pref<Boolean> EDITOR_COLLAPSE_BUTTONS =
 				create("pref_editor_collapse_buttons", "Use a menu when the buttons exceed the width of the editor",
 						SystemInfo.isLinux(), IType.BOOL, false).in(NAME, TEXT);
 
 		/**
-		 * Whether errors, warnings, and informational messages should be displayed inline in the editor body (as inline
-		 * annotations) rather than only in the editor gutter.
+		 * Whether errors, warnings, and informational messages should be displayed inline in the editor body
+		 * (as inline annotations) rather than only in the editor gutter.
 		 */
 		public static final Pref<Boolean> EDITOR_MINING = create("pref_editor_mining",
 				"Inline errors, warnings and information messages", true, IType.BOOL, false).in(NAME, TEXT);
@@ -598,9 +590,7 @@ public class GamaPreferences {
 		/** The name of the "Experiments" group within the Execution tab. */
 		public static final String EXECUTION = "Experiments";
 
-		/**
-		 * Whether experiments should start running immediately after being launched, without waiting for user input.
-		 */
+		/** Whether experiments should start running immediately after being launched, without waiting for user input. */
 		public static final Pref<Boolean> CORE_AUTO_RUN = create("pref_experiment_auto_run",
 				"Auto-run experiments when they are launched", false, IType.BOOL, true).in(NAME, EXECUTION);
 
@@ -627,9 +617,7 @@ public class GamaPreferences {
 		public static final Pref<Boolean> CORE_EXPAND_PARAMS = create("pref_experiment_expand_params",
 				"Automatically expand the parameters categories", false, IType.BOOL, true).in(NAME, PARAMETERS);
 
-		/**
-		 * Whether monitor outputs should be displayed in the parameters view rather than in a dedicated monitor view.
-		 */
+		/** Whether monitor outputs should be displayed in the parameters view rather than in a dedicated monitor view. */
 		public static final Pref<Boolean> CORE_MONITOR_PARAMETERS =
 				create("pref_monitors_in_parameters", "Display monitors in the parameters view", true, IType.BOOL, true)
 						.in(NAME, PARAMETERS);
@@ -671,8 +659,8 @@ public class GamaPreferences {
 		public static final String MEMORY = "Memory";
 
 		/**
-		 * Whether GAMA should monitor available memory and emit a warning when it becomes low. Activates the memory
-		 * threshold and polling frequency preferences. Hidden from the preferences UI.
+		 * Whether GAMA should monitor available memory and emit a warning when it becomes low. Activates the
+		 * memory threshold and polling frequency preferences. Hidden from the preferences UI.
 		 */
 		public static final Pref<Boolean> CORE_MEMORY_POLLING =
 				create("pref_check_memory", "Emit a warning when memory is low", true, IType.BOOL, true)
@@ -699,8 +687,8 @@ public class GamaPreferences {
 		public static final String ERRORS = "Runtime errors";
 
 		/**
-		 * Whether runtime execution errors should be displayed to the user. When active, also enables the error count
-		 * and ordering preferences.
+		 * Whether runtime execution errors should be displayed to the user. When active, also enables the error
+		 * count and ordering preferences.
 		 */
 		public static final Pref<Boolean> CORE_SHOW_ERRORS =
 				create("pref_errors_display", "Show execution errors", true, IType.BOOL, true).in(NAME, ERRORS)
@@ -715,10 +703,7 @@ public class GamaPreferences {
 				create("pref_errors_number", "Number of errors to display", 10, IType.INT, true).in(NAME, ERRORS)
 						.between(1, null);
 
-		/**
-		 * Whether the most recently thrown errors should appear first in the error view. Hidden from the preferences
-		 * UI.
-		 */
+		/** Whether the most recently thrown errors should appear first in the error view. Hidden from the preferences UI. */
 		public static final Pref<Boolean> CORE_RECENT =
 				create("pref_errors_recent_first", "Display most recent first", true, IType.BOOL, true).in(NAME, ERRORS)
 						.hidden();
@@ -750,17 +735,12 @@ public class GamaPreferences {
 				create("pref_server_port", "Port to which GAMA Server is listening", 1000, IType.INT, true)
 						.in(Network.NAME, Network.SERVER);
 
-		/**
-		 * The interval in milliseconds between two keep-alive pings from the server to connected clients. Use
-		 * {@code -1} to disable pinging.
-		 */
+		/** The interval in milliseconds between two keep-alive pings from the server to connected clients. Use {@code -1} to disable pinging. */
 		public static final Pref<Integer> CORE_SERVER_PING =
 				create("pref_server_ping", "Interval between two pings (-1 to disable)", 10000, IType.INT, true)
 						.in(Network.NAME, Network.SERVER);
 
-		/**
-		 * Whether the {@code TCP_NODELAY} socket option should be set, disabling Nagle's algorithm for lower latency.
-		 */
+		/** Whether the {@code TCP_NODELAY} socket option should be set, disabling Nagle's algorithm for lower latency. */
 		public static final Pref<Boolean> CORE_SERVER_NO_DELAY =
 				create("pref_server_no_delay", "Sets the TCP_NODELAY option to true for gama server", false, IType.BOOL,
 						true).in(Network.NAME, Network.SERVER);
@@ -773,8 +753,8 @@ public class GamaPreferences {
 
 	/**
 	 * The {@code Displays} class groups all GAMA preferences that control how graphical displays are rendered and
-	 * presented, covering layout, background color, agent shapes, OpenGL rendering options, camera settings, and chart
-	 * rendering.
+	 * presented, covering layout, background color, agent shapes, OpenGL rendering options, camera settings, and
+	 * chart rendering.
 	 */
 	public static class Displays {
 
@@ -798,16 +778,16 @@ public class GamaPreferences {
 						.in(NAME, PRESENTATION).hidden();
 
 		/**
-		 * Whether displays should continue to refresh and repaint even while the Modeling perspective is active (i.e.,
-		 * not the simulation perspective).
+		 * Whether displays should continue to refresh and repaint even while the Modeling perspective is active
+		 * (i.e., not the simulation perspective).
 		 */
 		public static final Pref<Boolean> CORE_DISPLAY_PERSPECTIVE =
 				create("pref_display_continue_drawing", "Continue to draw displays when in Modeling perspective", false,
 						IType.BOOL, true).in(NAME, PRESENTATION);
 
 		/**
-		 * Whether to use a faster but potentially incomplete snapshot mechanism. Fast snapshots may be incorrect if the
-		 * display is obscured by other windows.
+		 * Whether to use a faster but potentially incomplete snapshot mechanism. Fast snapshots may be incorrect if
+		 * the display is obscured by other windows.
 		 */
 		public static final Pref<Boolean> DISPLAY_FAST_SNAPSHOT = create("pref_display_fast_snapshot",
 				"Enable fast snapshots (uncomplete when the display is obscured by others but much faster)", false,
@@ -818,9 +798,7 @@ public class GamaPreferences {
 				create("pref_display_show_toolbar", "Show the display top toolbar", true, IType.BOOL, true)
 						.in(NAME, PRESENTATION).hidden();
 
-		/**
-		 * Whether the overlay bar at the bottom of each display view should be shown. Hidden from the preferences UI.
-		 */
+		/** Whether the overlay bar at the bottom of each display view should be shown. Hidden from the preferences UI. */
 		public static final Pref<Boolean> CORE_OVERLAY =
 				create("pref_display_show_overlay", "Show the display bottom overlay", false, IType.BOOL, true)
 						.in(NAME, PRESENTATION).hidden();
@@ -892,8 +870,8 @@ public class GamaPreferences {
 		public static final String RENDERING = "OpenGL Rendering Properties";
 
 		/**
-		 * Whether only agents whose {@code visible} attribute is {@code true} should be sent to the OpenGL rendering
-		 * pipeline. Enabling this can improve performance but may create visual oddities.
+		 * Whether only agents whose {@code visible} attribute is {@code true} should be sent to the OpenGL
+		 * rendering pipeline. Enabling this can improve performance but may create visual oddities.
 		 */
 		public static final Pref<Boolean> DISPLAY_ONLY_VISIBLE = create("pref_display_visible_agents",
 				"Only display visible agents in OpenGL (faster, may create visual oddities)", false, IType.BOOL, true)
@@ -910,16 +888,16 @@ public class GamaPreferences {
 						.hidden();
 
 		/**
-		 * The default line width (in pixels) used by the {@code width} facet of GAML {@code draw} statements. Note: not
-		 * all OpenGL implementations support widths other than 1.
+		 * The default line width (in pixels) used by the {@code width} facet of GAML {@code draw} statements.
+		 * Note: not all OpenGL implementations support widths other than 1.
 		 */
 		public static final Pref<Double> CORE_LINE_WIDTH = create("pref_display_line_width",
 				"Default line width (facet 'width' of 'draw'). Note that this attribute is not supported by all OpenGL implementations",
 				1d, IType.FLOAT, true).in(NAME, RENDERING);
 
 		/**
-		 * Whether only the outward-facing faces of 3D objects should be rendered in OpenGL, hiding internal faces for a
-		 * potential performance gain.
+		 * Whether only the outward-facing faces of 3D objects should be rendered in OpenGL, hiding internal faces
+		 * for a potential performance gain.
 		 */
 		public static final Pref<Boolean> ONLY_VISIBLE_FACES =
 				create("pref_display_visible_faces", "Draw only the 'external' faces of objects in OpenGL", false,
@@ -950,8 +928,8 @@ public class GamaPreferences {
 						.in(Experimental.NAME, Experimental.GRAPHICAL).between(0d, 1d).step(0.001);
 
 		/**
-		 * Whether textures in OpenGL should be oriented to match the geometry on which they are displayed. This can
-		 * produce visual oddities on some geometry types.
+		 * Whether textures in OpenGL should be oriented to match the geometry on which they are displayed.
+		 * This can produce visual oddities on some geometry types.
 		 */
 		public static final Pref<Boolean> OPENGL_TEXTURE_ORIENTATION = create("pref_texture_orientation",
 				"In OpenGL, orient the textures according to the geometry on which they are displayed (may create visual oddities)",
@@ -962,18 +940,12 @@ public class GamaPreferences {
 				create("pref_display_zoom_factor", "Set the zoom factor (0 for slow, 1 fast)", 0.5, IType.FLOAT, true)
 						.in(NAME, RENDERING).between(0, 1).step(0.01);
 
-		/**
-		 * The keyboard movement sensitivity for OpenGL camera navigation, ranging from {@code 0.01} (slow) to {@code 1}
-		 * (fast).
-		 */
+		/** The keyboard movement sensitivity for OpenGL camera navigation, ranging from {@code 0.01} (slow) to {@code 1} (fast). */
 		public static final Pref<Double> OPENGL_KEYBOARD = create("pref_display_keyboard_factor",
 				"Set the sensitivity of the keyboard movements  (0 for slow, 1 for fast)", 0.5, IType.FLOAT, true)
 						.in(NAME, RENDERING).between(0.01, 1.0).step(0.01);
 
-		/**
-		 * The mouse/trackpad movement sensitivity for OpenGL camera navigation, ranging from {@code 0.01} (slow) to
-		 * {@code 1} (fast).
-		 */
+		/** The mouse/trackpad movement sensitivity for OpenGL camera navigation, ranging from {@code 0.01} (slow) to {@code 1} (fast). */
 		public static final Pref<Double> OPENGL_MOUSE = create("pref_display_mouse_factor",
 				"Set the sensitivity of the mouse/trackpad movements  (0 for slow, 1 fast)", 0.5, IType.FLOAT, true)
 						.in(NAME, RENDERING).between(0.01, 1.0).step(0.01);
@@ -1058,8 +1030,8 @@ public class GamaPreferences {
 						IType.INT, true).in(Network.NAME, Network.HTTP);
 
 		/**
-		 * Whether the local disk cache of files downloaded from the web should be emptied the next time GAMA makes an
-		 * HTTP request.
+		 * Whether the local disk cache of files downloaded from the web should be emptied the next time GAMA
+		 * makes an HTTP request.
 		 */
 		public static final Pref<Boolean> CORE_HTTP_EMPTY_CACHE =
 				create("pref_http_empty_cache", "Empty the local cache of files downloaded from the web", true,
@@ -1082,8 +1054,8 @@ public class GamaPreferences {
 						.activates("pref_rng_default_seed").in(NAME, RNG);
 
 		/**
-		 * The default seed value for the RNG when {@link #CORE_SEED_DEFINED} is {@code true}. A value of {@code 0} is
-		 * treated as "undefined" and causes a random seed to be chosen.
+		 * The default seed value for the RNG when {@link #CORE_SEED_DEFINED} is {@code true}. A value of {@code 0}
+		 * is treated as "undefined" and causes a random seed to be chosen.
 		 */
 		public static final Pref<Double> CORE_SEED =
 				create("pref_rng_default_seed", "Default seed value (0 is undefined)", 1d, IType.FLOAT, true).in(NAME,
@@ -1093,22 +1065,22 @@ public class GamaPreferences {
 		public static final String DATES = "Management of dates";
 
 		/**
-		 * The name of the GIS / GeoTools CRS (Coordinate Reference Systems) group. The label also contains a reference
-		 * URL for EPSG codes.
+		 * The name of the GIS / GeoTools CRS (Coordinate Reference Systems) group. The label also contains a
+		 * reference URL for EPSG codes.
 		 */
 		public static final String GEOTOOLS =
 				"GIS Coordinate Reference Systems (http://spatialreference.org/ref/epsg/ for EPSG codes)";
 
 		/**
-		 * Whether GAMA should automatically detect the appropriate CRS when projecting GIS data, rather than relying on
-		 * a user-specified CRS.
+		 * Whether GAMA should automatically detect the appropriate CRS when projecting GIS data, rather than
+		 * relying on a user-specified CRS.
 		 */
 		public static final Pref<Boolean> LIB_TARGETED = create("pref_gis_auto_crs",
 				"Let GAMA find which CRS to use to project GIS data", true, IType.BOOL, true).in(NAME, GEOTOOLS);
 
 		/**
-		 * Whether GIS data without an associated {@code .prj} file or explicit CRS should be assumed to already be in
-		 * the target projected CRS rather than needing reprojection. When active, deactivates
+		 * Whether GIS data without an associated {@code .prj} file or explicit CRS should be assumed to already be
+		 * in the target projected CRS rather than needing reprojection. When active, deactivates
 		 * {@code pref_gis_initial_crs}.
 		 */
 		public static final Pref<Boolean> LIB_PROJECTED = create("pref_gis_same_crs",
@@ -1116,16 +1088,16 @@ public class GamaPreferences {
 				IType.BOOL, true).deactivates("pref_gis_initial_crs").in(NAME, GEOTOOLS);
 
 		/**
-		 * Whether GIS data should be saved using the current simulation CRS when no explicit CRS is provided at export
-		 * time. When active, deactivates {@code pref_gis_output_crs}.
+		 * Whether GIS data should be saved using the current simulation CRS when no explicit CRS is provided at
+		 * export time. When active, deactivates {@code pref_gis_output_crs}.
 		 */
 		public static final Pref<Boolean> LIB_USE_DEFAULT =
 				create("pref_gis_save_crs", "When no CRS is provided, save the GIS data with the current CRS", true,
 						IType.BOOL, true).deactivates("pref_gis_output_crs").in(NAME, GEOTOOLS);
 
 		/**
-		 * The EPSG code of the default target CRS used when projecting GIS data. Also used as the fallback CRS when no
-		 * projection information is available in the source file. The listener rejects unknown EPSG codes.
+		 * The EPSG code of the default target CRS used when projecting GIS data. Also used as the fallback CRS when
+		 * no projection information is available in the source file. The listener rejects unknown EPSG codes.
 		 */
 		public static final Pref<Integer> LIB_TARGET_CRS = create("pref_gis_default_crs",
 				"...or use the following EPSG code (the one that will also be used if no projection information is found)",
@@ -1137,8 +1109,8 @@ public class GamaPreferences {
 						});
 
 		/**
-		 * The EPSG code assumed for the source (input) CRS of GIS data when no {@code .prj} file is found. Used when
-		 * {@link #LIB_PROJECTED} is inactive. The listener rejects unknown EPSG codes.
+		 * The EPSG code assumed for the source (input) CRS of GIS data when no {@code .prj} file is found. Used
+		 * when {@link #LIB_PROJECTED} is inactive. The listener rejects unknown EPSG codes.
 		 */
 		public static final Pref<Integer> LIB_INITIAL_CRS =
 				create("pref_gis_initial_crs", "...or use the following CRS (EPSG code)", 4326, IType.INT, true)
@@ -1189,8 +1161,8 @@ public class GamaPreferences {
 						.in(NAME, "JSON Format");
 
 		/**
-		 * When a JSON integer value overflows the 32-bit int range, whether it should be parsed as a GAML {@code float}
-		 * ({@code true}) or as a {@code string} ({@code false}).
+		 * When a JSON integer value overflows the 32-bit int range, whether it should be parsed as a GAML
+		 * {@code float} ({@code true}) or as a {@code string} ({@code false}).
 		 */
 		public static final Pref<Boolean> JSON_INT_OVERFLOW = create("pref_json_int_overflow_as_double",
 				"In case of an int overflow, parse the item as a", true, IType.BOOL, true).withLabels("float", "string")
@@ -1198,10 +1170,10 @@ public class GamaPreferences {
 	}
 
 	/**
-	 * The {@code Experimental} class groups all GAMA preferences that expose experimental or advanced features: spatial
-	 * index optimizations, expression constant folding, path computation shortcuts, tolerance settings, object pooling,
-	 * and miscellaneous graphical optimizations. These features are not fully tested and may be changed or removed in
-	 * future versions.
+	 * The {@code Experimental} class groups all GAMA preferences that expose experimental or advanced features:
+	 * spatial index optimizations, expression constant folding, path computation shortcuts, tolerance settings,
+	 * object pooling, and miscellaneous graphical optimizations. These features are not fully tested and may be
+	 * changed or removed in future versions.
 	 */
 	public static class Experimental {
 
@@ -1209,7 +1181,8 @@ public class GamaPreferences {
 		public static final String NAME = "Advanced";
 
 		/**
-		 * The label for the experimental features group, warning users that features within have not been fully tested.
+		 * The label for the experimental features group, warning users that features within have not been fully
+		 * tested.
 		 */
 		public static final String CATEGORY =
 				" These features have not been fully tested. Enable them at your own risks.";
@@ -1218,23 +1191,23 @@ public class GamaPreferences {
 		public static final String OPTIMIZATIONS = "These optimizations are considered safe";
 
 		/**
-		 * The label for the graphical optimizations group within the Advanced tab, noting that some optimizations can
-		 * produce visual oddities.
+		 * The label for the graphical optimizations group within the Advanced tab, noting that some optimizations
+		 * can produce visual oddities.
 		 */
 		public static final String GRAPHICAL =
 				"Various graphics optimizations to speed up displays and/or reduce memory usage. Some can produce visual oddities";
 
 		/**
-		 * Whether GAMA should automatically detect and add missing plug-in dependencies when a model is opened for
-		 * editing. Hidden from the preferences UI.
+		 * Whether GAMA should automatically detect and add missing plug-in dependencies when a model is opened
+		 * for editing. Hidden from the preferences UI.
 		 */
 		public static final Pref<Boolean> REQUIRED_PLUGINS = create("pref_required_plugins",
 				"Automatically add the plugins required to compile and run a model when editing it", false, IType.BOOL,
 				false).in(NAME, CATEGORY).hidden();
 
 		/**
-		 * Whether the spatial quadtree index should use a lazy insertion strategy (agents are added only when spatial
-		 * queries require it) rather than eager insertion. Still experimental.
+		 * Whether the spatial quadtree index should use a lazy insertion strategy (agents are added only when
+		 * spatial queries require it) rather than eager insertion. Still experimental.
 		 */
 		public static final Pref<Boolean> QUADTREE_OPTIMIZATION = create("pref_optimize_quadtree",
 				"Optimize spatial queries: add agents only when necessary in the quadtree (still experimental)", false,
@@ -1249,8 +1222,8 @@ public class GamaPreferences {
 				true, IType.BOOL, true).in(NAME, CATEGORY);
 
 		/**
-		 * Whether constant GAML expressions should be evaluated at compile time and replaced by their results (constant
-		 * folding). Enabling this triggers a clean rebuild of all models. Hidden from the preferences UI.
+		 * Whether constant GAML expressions should be evaluated at compile time and replaced by their results
+		 * (constant folding). Enabling this triggers a clean rebuild of all models. Hidden from the preferences UI.
 		 */
 		public static final Pref<Boolean> CONSTANT_OPTIMIZATION = create("pref_optimize_constant_expressions",
 				"Optimize constant expressions (experimental, performs a rebuild of models)", false, IType.BOOL, true)
@@ -1263,17 +1236,12 @@ public class GamaPreferences {
 
 		/**
 		 * Whether an optimized but potentially approximate path computation algorithm should be used for the GAML
-		 * {@code path_between} operators and {@code goto} action. May cause agents to "jump" over obstacles in some
-		 * edge cases.
+		 * {@code path_between} operators and {@code goto} action. May cause agents to "jump" over obstacles in
+		 * some edge cases.
 		 */
 		public static final Pref<Boolean> PATH_COMPUTATION_OPTIMIZATION = create("pref_optimize_path_computation",
 				"Optimize the path computation operators and goto action (but with possible 'jump' issues)", false,
 				IType.BOOL, true).in(NAME, OPTIMIZATIONS);
-
-		/** The Constant TRIANGULATION_OPTIMIZATION. */
-		public static final Pref<Boolean> TRIANGULATION_OPTIMIZATION = create("pref_optimize_triangulation",
-				"Triangulation algorithm to use (experimental)", false, IType.BOOL, true).in(NAME, OPTIMIZATIONS)
-						.withLabels("Ear Clipping (faster)", "Delaunay (more regular)");
 
 		/**
 		 * The tolerance (epsilon) used when comparing two GAML {@code point} values for equality. A value of
@@ -1284,32 +1252,32 @@ public class GamaPreferences {
 						.in(NAME, OPTIMIZATIONS);
 
 		/**
-		 * Whether shapefile data should be mapped and cached entirely in memory for faster repeated access. Disable
-		 * this if you are working with shapefiles that change on disk during a simulation.
+		 * Whether shapefile data should be mapped and cached entirely in memory for faster repeated access.
+		 * Disable this if you are working with shapefiles that change on disk during a simulation.
 		 */
 		public static final Pref<Boolean> SHAPEFILES_IN_MEMORY = create("pref_shapefiles_in_memory",
 				"Mapping and caching of shapefiles in memory (optimises access to shapefile data in exchange for increased memory usage). Disable this property if you are dealing with shapefiles that change frequently",
 				true, IType.BOOL, true).in(NAME, OPTIMIZATIONS);
 
 		/**
-		 * The default I/O buffering strategy applied to the GAML {@code save} statement. Corresponds to the preference
-		 * key {@link GamaPreferences#PREF_SAVE_BUFFERING_STRATEGY}.
+		 * The default I/O buffering strategy applied to the GAML {@code save} statement. Corresponds to the
+		 * preference key {@link GamaPreferences#PREF_SAVE_BUFFERING_STRATEGY}.
 		 */
 		public static final Pref<String> DEFAULT_SAVE_BUFFERING_STRATEGY = create(PREF_SAVE_BUFFERING_STRATEGY,
 				"Default buffering strategy for the save statement", BufferingUtils.NO_BUFFERING, IType.STRING, true)
 						.among(BufferingUtils.BUFFERING_STRATEGIES.stream().toList()).in(NAME, OPTIMIZATIONS);
 
 		/**
-		 * The default I/O buffering strategy applied to the GAML {@code write} statement. Corresponds to the preference
-		 * key {@link GamaPreferences#PREF_WRITE_BUFFERING_STRATEGY}.
+		 * The default I/O buffering strategy applied to the GAML {@code write} statement. Corresponds to the
+		 * preference key {@link GamaPreferences#PREF_WRITE_BUFFERING_STRATEGY}.
 		 */
 		public static final Pref<String> DEFAULT_WRITE_BUFFERING_STRATEGY = create(PREF_WRITE_BUFFERING_STRATEGY,
 				"Default buffering strategy for the write statement", BufferingUtils.NO_BUFFERING, IType.STRING, true)
 						.among(BufferingUtils.BUFFERING_STRATEGIES.stream().toList()).in(NAME, OPTIMIZATIONS);
 
 		/**
-		 * Whether object pooling should be used to reuse short-lived GAML runtime objects and reduce GC pressure. Still
-		 * experimental; may cause side effects if object state is not correctly reset.
+		 * Whether object pooling should be used to reuse short-lived GAML runtime objects and reduce GC pressure.
+		 * Still experimental; may cause side effects if object state is not correctly reset.
 		 */
 		public static final Pref<Boolean> USE_POOLING =
 				create("pref_use_pooling", "Use object pooling to reduce memory usage (still experimental)", false,
@@ -1333,7 +1301,8 @@ public class GamaPreferences {
 	 * @param type
 	 *            the GAML type identifier (e.g. {@link gama.api.gaml.types.IType#INT})
 	 * @param inGaml
-	 *            whether this preference should be accessible from GAML as a variable of the {@code platform} species
+	 *            whether this preference should be accessible from GAML as a variable of the {@code platform}
+	 *            species
 	 * @return the newly created and registered {@link Pref}
 	 */
 	public static <T> Pref<T> create(final String key, final String title, final T value, final int type,
@@ -1345,9 +1314,10 @@ public class GamaPreferences {
 
 	/**
 	 * Factory method that creates and registers a new {@link Pref} with a lazily evaluated initial value. The
-	 * {@code provider} supplier is not invoked until the preference value is first read, avoiding eager computation of
-	 * potentially expensive defaults (e.g., font or color objects). The preference is named {@code title} and placed in
-	 * the default {@link Interface} tab, then registered with the global preference store via {@link #register(Pref)}.
+	 * {@code provider} supplier is not invoked until the preference value is first read, avoiding eager
+	 * computation of potentially expensive defaults (e.g., font or color objects). The preference is named
+	 * {@code title} and placed in the default {@link Interface} tab, then registered with the global preference
+	 * store via {@link #register(Pref)}.
 	 *
 	 * @param <T>
 	 *            the type of the preference value
@@ -1360,7 +1330,8 @@ public class GamaPreferences {
 	 * @param type
 	 *            the GAML type identifier (e.g. {@link gama.api.gaml.types.IType#COLOR})
 	 * @param inGaml
-	 *            whether this preference should be accessible from GAML as a variable of the {@code platform} species
+	 *            whether this preference should be accessible from GAML as a variable of the {@code platform}
+	 *            species
 	 * @return the newly created and registered {@link Pref}
 	 */
 	public static <T> Pref<T> create(final String key, final String title, final Supplier<T> provider, final int type,
@@ -1371,9 +1342,9 @@ public class GamaPreferences {
 	}
 
 	/**
-	 * Registers the given {@link Pref} with the global preference store and, when applicable, exposes it as a variable
-	 * of the GAML {@code platform} built-in species. If the preference's key is {@code null} this method returns
-	 * silently.
+	 * Registers the given {@link Pref} with the global preference store and, when applicable, exposes it as a
+	 * variable of the GAML {@code platform} built-in species. If the preference's key is {@code null} this method
+	 * returns silently.
 	 *
 	 * @param gp
 	 *            the preference to register; must not be {@code null}
@@ -1393,10 +1364,10 @@ public class GamaPreferences {
 	 * @return the map
 	 */
 	/**
-	 * Builds a hierarchical map of all visible registered preferences, organized first by tab name, then by group name,
-	 * and finally as an ordered list of {@link Pref} instances within each group. The outer map is pre-seeded with tabs
-	 * in {@link #ORDER_OF_PREFERENCES} order; additional tabs encountered during iteration are appended at the end.
-	 * Hidden preferences are excluded from the result.
+	 * Builds a hierarchical map of all visible registered preferences, organized first by tab name, then by group
+	 * name, and finally as an ordered list of {@link Pref} instances within each group. The outer map is pre-seeded
+	 * with tabs in {@link #ORDER_OF_PREFERENCES} order; additional tabs encountered during iteration are appended
+	 * at the end. Hidden preferences are excluded from the result.
 	 *
 	 * @return a nested {@code Map<tabName, Map<groupName, List<Pref>>>} suitable for rendering the preferences UI;
 	 *         never {@code null}
@@ -1425,9 +1396,9 @@ public class GamaPreferences {
 
 	/**
 	 * Applies a batch of new preference values and persists them to the backing store. For each entry in
-	 * {@code modelValues}, the corresponding registered {@link Pref} (if found) is updated via {@link Pref#set(Object)}
-	 * and then written to the store via {@link IGamaPreferenceStore#write(Pref)}. Entries whose key does not match any
-	 * registered preference are silently ignored.
+	 * {@code modelValues}, the corresponding registered {@link Pref} (if found) is updated via
+	 * {@link Pref#set(Object)} and then written to the store via {@link IGamaPreferenceStore#write(Pref)}.
+	 * Entries whose key does not match any registered preference are silently ignored.
 	 *
 	 * @param modelValues
 	 *            a map of preference key to new value; must not be {@code null}
@@ -1443,8 +1414,8 @@ public class GamaPreferences {
 
 	/**
 	 * Resets all preferences to their compiled-in default values by clearing the entire backing store via
-	 * {@link IGamaPreferenceStore#clear()}. After this call the preferences will be re-read from their default value
-	 * suppliers the next time they are accessed.
+	 * {@link IGamaPreferenceStore#clear()}. After this call the preferences will be re-read from their default
+	 * value suppliers the next time they are accessed.
 	 *
 	 * @param modelValues
 	 *            currently unused; retained for API compatibility
@@ -1454,8 +1425,8 @@ public class GamaPreferences {
 	}
 
 	/**
-	 * The canonical display order of preference tabs in the GAMA preferences dialog. Tabs are listed in the order they
-	 * should appear from left to right (or top to bottom).
+	 * The canonical display order of preference tabs in the GAMA preferences dialog. Tabs are listed in
+	 * the order they should appear from left to right (or top to bottom).
 	 */
 	public final static List<String> ORDER_OF_PREFERENCES = Arrays.asList(Interface.NAME, Theme.NAME, Modeling.NAME,
 			Runtime.NAME, Displays.NAME, Network.NAME, External.NAME, Experimental.NAME);

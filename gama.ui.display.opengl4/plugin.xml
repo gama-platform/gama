@@ -11,16 +11,24 @@
              category="gama.ui.category.gama"
              class="gama.ui.display.opengl4.view.OpenGLDisplayView"
              icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.display.svg"
-             id="gama.ui.application.view.OpenGLDisplayView4"
-             name="3D4"
+             id="gama.ui.application.view.OpenGLDisplayView"
+             name="3D"
              restorable="false">
        </view>
     </extension>
     <extension
           point="gama.display">
        <implementation
-             class="gama.ui.display.opengl4.view.OpenGL4DisplaySurface"
+             class="gama.ui.display.opengl4.view.SWTOpenGLDisplaySurface"
              keyword="opengl4">
+       </implementation>
+       <implementation
+             class="gama.ui.display.opengl4.view.SWTOpenGLDisplaySurface"
+             keyword="3d">
+       </implementation>
+       <implementation
+             class="gama.ui.display.opengl4.view.SWTOpenGLDisplaySurface"
+             keyword="3D">
        </implementation>
     </extension>
 </plugin>

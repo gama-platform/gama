@@ -11,8 +11,8 @@
 package gama.api.utils.geometry;
 
 import static com.google.common.collect.Iterators.forArray;
-import static gama.api.utils.geometry.GeometryUtils.isRing;
-import static gama.api.utils.geometry.GeometryUtils.signedArea;
+import static gama.api.utils.geometry.GamaGeometryFactory.isRing;
+import static gama.api.utils.geometry.GamaGeometryFactory.signedArea;
 
 import java.util.Arrays;
 import java.util.Iterator;

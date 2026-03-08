@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * OpenGL4DisplaySurface.java, in gama.ui.display.opengl4, is part of the source code of the GAMA modeling and
+ * SWTOpenGLDisplaySurface.java, in gama.ui.display.opengl4, is part of the source code of the GAMA modeling and
  * simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -86,9 +86,9 @@ import gama.ui.shared.utils.WorkbenchHelper;
  *
  */
 @display (
-		value = { "opengl4" })
-@doc ("Displays that uses the OpenGL 4.1 technology to display their layers in 3D")
-public class OpenGL4DisplaySurface implements IDisplaySurface.OpenGL {
+		value = { "opengl", "3d" })
+@doc ("Displays that uses the OpenGL technology to display their layers in 3D")
+public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 
 	static {
 		DEBUG.OFF();
@@ -140,7 +140,7 @@ public class OpenGL4DisplaySurface implements IDisplaySurface.OpenGL {
 	 * @param objects
 	 *            the objects
 	 */
-	public OpenGL4DisplaySurface(final IOutput.Display output, final Object parent) {
+	public SWTOpenGLDisplaySurface(final IOutput.Display output, final Object parent) {
 		this.output = output;
 		this.parent = (Composite) parent;
 		this.output.getData().addListener(this);
