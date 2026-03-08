@@ -455,22 +455,24 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Alternatives cKeyAlternatives_0_0 = (Alternatives)cKeyAssignment_0.eContents().get(0);
 		private final RuleCall cKeyK_SpeciesParserRuleCall_0_0_0 = (RuleCall)cKeyAlternatives_0_0.eContents().get(0);
 		private final RuleCall cKeyK_GridParserRuleCall_0_0_1 = (RuleCall)cKeyAlternatives_0_0.eContents().get(1);
+		private final RuleCall cKeyK_ClassParserRuleCall_0_0_2 = (RuleCall)cKeyAlternatives_0_0.eContents().get(2);
+		private final RuleCall cKeyK_SkillParserRuleCall_0_0_3 = (RuleCall)cKeyAlternatives_0_0.eContents().get(3);
 		private final Assignment cNameAssignment_1 = (Assignment)cGroup.eContents().get(1);
 		private final RuleCall cNameIDTerminalRuleCall_1_0 = (RuleCall)cNameAssignment_1.eContents().get(0);
 		private final RuleCall cFacetsAndBlockParserRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
 		
-		//// Example: species agent_A { ... } or grid cell_grid { ... }
+		//// Example: species agent_A { ... } or grid cell_grid { ... } or class object_A { ... }
 		//S_Species:
-		//    key=(K_Species | K_Grid) name=ID FacetsAndBlock;
+		//    key=(K_Species | K_Grid | K_Class | K_Skill) name=ID FacetsAndBlock;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//key=(K_Species | K_Grid) name=ID FacetsAndBlock
+		//key=(K_Species | K_Grid | K_Class | K_Skill) name=ID FacetsAndBlock
 		public Group getGroup() { return cGroup; }
 		
-		//key=(K_Species | K_Grid)
+		//key=(K_Species | K_Grid | K_Class | K_Skill)
 		public Assignment getKeyAssignment_0() { return cKeyAssignment_0; }
 		
-		//(K_Species | K_Grid)
+		//(K_Species | K_Grid | K_Class | K_Skill)
 		public Alternatives getKeyAlternatives_0_0() { return cKeyAlternatives_0_0; }
 		
 		//K_Species
@@ -478,6 +480,12 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		
 		//K_Grid
 		public RuleCall getKeyK_GridParserRuleCall_0_0_1() { return cKeyK_GridParserRuleCall_0_0_1; }
+		
+		//K_Class
+		public RuleCall getKeyK_ClassParserRuleCall_0_0_2() { return cKeyK_ClassParserRuleCall_0_0_2; }
+		
+		//K_Skill
+		public RuleCall getKeyK_SkillParserRuleCall_0_0_3() { return cKeyK_SkillParserRuleCall_0_0_3; }
 		
 		//name=ID
 		public Assignment getNameAssignment_1() { return cNameAssignment_1; }
@@ -543,9 +551,10 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cS_ActionParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
 		private final RuleCall cS_SpeciesParserRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
 		private final RuleCall cS_ReflexParserRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
-		private final RuleCall cS_AssignmentParserRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
-		private final RuleCall cS_DefinitionParserRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
-		private final RuleCall cS_OtherParserRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
+		private final RuleCall cS_ActionCallParserRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
+		private final RuleCall cS_AssignmentParserRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
+		private final RuleCall cS_DefinitionParserRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
+		private final RuleCall cS_OtherParserRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
 		
 		///******************************************************************************************
 		// * *****************************************************************************************
@@ -563,7 +572,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//    // 2. Keywords that could also be variables.
 		//    => S_Species | => S_Reflex |
 		//    // 3. Assignments (e.g., status <- 5;). Checked before falling back to generic statements.
-		//    => S_Assignment |
+		//    => S_ActionCall | => S_Assignment |
 		//    // 4. Variable or type definitions (e.g., int my_var <- 5;). Starts with a TypeRef.
 		//    => S_Definition |
 		//    // 5. Universal fallback for any custom action or built-in statement (e.g., ask agents;).
@@ -575,7 +584,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//// 2. Keywords that could also be variables.
 		//=> S_Species | => S_Reflex |
 		//// 3. Assignments (e.g., status <- 5;). Checked before falling back to generic statements.
-		//=> S_Assignment |
+		//=> S_ActionCall | => S_Assignment |
 		//// 4. Variable or type definitions (e.g., int my_var <- 5;). Starts with a TypeRef.
 		//=> S_Definition |
 		//// 5. Universal fallback for any custom action or built-in statement (e.g., ask agents;).
@@ -621,16 +630,75 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		public RuleCall getS_ReflexParserRuleCall_11() { return cS_ReflexParserRuleCall_11; }
 		
 		//// 3. Assignments (e.g., status <- 5;). Checked before falling back to generic statements.
+		//=> S_ActionCall
+		public RuleCall getS_ActionCallParserRuleCall_12() { return cS_ActionCallParserRuleCall_12; }
+		
 		//=> S_Assignment
-		public RuleCall getS_AssignmentParserRuleCall_12() { return cS_AssignmentParserRuleCall_12; }
+		public RuleCall getS_AssignmentParserRuleCall_13() { return cS_AssignmentParserRuleCall_13; }
 		
 		//// 4. Variable or type definitions (e.g., int my_var <- 5;). Starts with a TypeRef.
 		//=> S_Definition
-		public RuleCall getS_DefinitionParserRuleCall_13() { return cS_DefinitionParserRuleCall_13; }
+		public RuleCall getS_DefinitionParserRuleCall_14() { return cS_DefinitionParserRuleCall_14; }
 		
 		//// 5. Universal fallback for any custom action or built-in statement (e.g., ask agents;).
 		//S_Other
-		public RuleCall getS_OtherParserRuleCall_14() { return cS_OtherParserRuleCall_14; }
+		public RuleCall getS_OtherParserRuleCall_15() { return cS_OtherParserRuleCall_15; }
+	}
+	public class S_ActionCallElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_ActionCall");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Assignment cTargetAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final RuleCall cTargetPrimaryParserRuleCall_0_0 = (RuleCall)cTargetAssignment_0.eContents().get(0);
+		private final Assignment cKeyAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final Keyword cKeyFullStopKeyword_1_0 = (Keyword)cKeyAssignment_1.eContents().get(0);
+		private final Assignment cExprAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cExprActionRefParserRuleCall_2_0 = (RuleCall)cExprAssignment_2.eContents().get(0);
+		private final Keyword cLeftParenthesisKeyword_3 = (Keyword)cGroup.eContents().get(3);
+		private final Assignment cArgsAssignment_4 = (Assignment)cGroup.eContents().get(4);
+		private final RuleCall cArgsExpressionListParserRuleCall_4_0 = (RuleCall)cArgsAssignment_4.eContents().get(0);
+		private final Keyword cRightParenthesisKeyword_5 = (Keyword)cGroup.eContents().get(5);
+		private final Keyword cSemicolonKeyword_6 = (Keyword)cGroup.eContents().get(6);
+		
+		//S_ActionCall returns S_Do:
+		//    target=Primary key='.' expr=ActionRef '(' args=ExpressionList? ')'';'
+		//;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//target=Primary key='.' expr=ActionRef '(' args=ExpressionList? ')'';'
+		public Group getGroup() { return cGroup; }
+		
+		//target=Primary
+		public Assignment getTargetAssignment_0() { return cTargetAssignment_0; }
+		
+		//Primary
+		public RuleCall getTargetPrimaryParserRuleCall_0_0() { return cTargetPrimaryParserRuleCall_0_0; }
+		
+		//key='.'
+		public Assignment getKeyAssignment_1() { return cKeyAssignment_1; }
+		
+		//'.'
+		public Keyword getKeyFullStopKeyword_1_0() { return cKeyFullStopKeyword_1_0; }
+		
+		//expr=ActionRef
+		public Assignment getExprAssignment_2() { return cExprAssignment_2; }
+		
+		//ActionRef
+		public RuleCall getExprActionRefParserRuleCall_2_0() { return cExprActionRefParserRuleCall_2_0; }
+		
+		//'('
+		public Keyword getLeftParenthesisKeyword_3() { return cLeftParenthesisKeyword_3; }
+		
+		//args=ExpressionList?
+		public Assignment getArgsAssignment_4() { return cArgsAssignment_4; }
+		
+		//ExpressionList
+		public RuleCall getArgsExpressionListParserRuleCall_4_0() { return cArgsExpressionListParserRuleCall_4_0; }
+		
+		//')'
+		public Keyword getRightParenthesisKeyword_5() { return cRightParenthesisKeyword_5; }
+		
+		//';'
+		public Keyword getSemicolonKeyword_6() { return cSemicolonKeyword_6; }
 	}
 	public class S_DoElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_Do");
@@ -1564,6 +1632,29 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		
 		//'grid'
 		public Keyword getGridKeyword() { return cGridKeyword; }
+	}
+	public class K_ClassElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.K_Class");
+		private final Keyword cClassKeyword = (Keyword)rule.eContents().get(1);
+		
+		//K_Class:
+		//    'class';
+		@Override public ParserRule getRule() { return rule; }
+		
+		//'class'
+		public Keyword getClassKeyword() { return cClassKeyword; }
+	}
+	public class K_SkillElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.K_Skill");
+		private final Keyword cSkillKeyword = (Keyword)rule.eContents().get(1);
+		
+		//K_Skill:
+		//    'skill'
+		//;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//'skill'
+		public Keyword getSkillKeyword() { return cSkillKeyword; }
 	}
 	public class K_InitElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.K_Init");
@@ -3823,6 +3914,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	private final S_SpeciesElements pS_Species;
 	private final S_ExperimentElements pS_Experiment;
 	private final StatementElements pStatement;
+	private final S_ActionCallElements pS_ActionCall;
 	private final S_DoElements pS_Do;
 	private final S_LoopElements pS_Loop;
 	private final S_IfElements pS_If;
@@ -3843,6 +3935,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	private final K_BuiltInElements pK_BuiltIn;
 	private final K_SpeciesElements pK_Species;
 	private final K_GridElements pK_Grid;
+	private final K_ClassElements pK_Class;
+	private final K_SkillElements pK_Skill;
 	private final K_InitElements pK_Init;
 	private final K_ExperimentElements pK_Experiment;
 	private final K_AssignmentElements pK_Assignment;
@@ -3929,6 +4023,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		this.pS_Species = new S_SpeciesElements();
 		this.pS_Experiment = new S_ExperimentElements();
 		this.pStatement = new StatementElements();
+		this.pS_ActionCall = new S_ActionCallElements();
 		this.pS_Do = new S_DoElements();
 		this.pS_Loop = new S_LoopElements();
 		this.pS_If = new S_IfElements();
@@ -3949,6 +4044,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		this.pK_BuiltIn = new K_BuiltInElements();
 		this.pK_Species = new K_SpeciesElements();
 		this.pK_Grid = new K_GridElements();
+		this.pK_Class = new K_ClassElements();
+		this.pK_Skill = new K_SkillElements();
 		this.pK_Init = new K_InitElements();
 		this.pK_Experiment = new K_ExperimentElements();
 		this.pK_Assignment = new K_AssignmentElements();
@@ -4198,9 +4295,9 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		return getS_GlobalAccess().getRule();
 	}
 	
-	//// Example: species agent_A { ... } or grid cell_grid { ... }
+	//// Example: species agent_A { ... } or grid cell_grid { ... } or class object_A { ... }
 	//S_Species:
-	//    key=(K_Species | K_Grid) name=ID FacetsAndBlock;
+	//    key=(K_Species | K_Grid | K_Class | K_Skill) name=ID FacetsAndBlock;
 	public S_SpeciesElements getS_SpeciesAccess() {
 		return pS_Species;
 	}
@@ -4236,7 +4333,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	//    // 2. Keywords that could also be variables.
 	//    => S_Species | => S_Reflex |
 	//    // 3. Assignments (e.g., status <- 5;). Checked before falling back to generic statements.
-	//    => S_Assignment |
+	//    => S_ActionCall | => S_Assignment |
 	//    // 4. Variable or type definitions (e.g., int my_var <- 5;). Starts with a TypeRef.
 	//    => S_Definition |
 	//    // 5. Universal fallback for any custom action or built-in statement (e.g., ask agents;).
@@ -4247,6 +4344,17 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	public ParserRule getStatementRule() {
 		return getStatementAccess().getRule();
+	}
+	
+	//S_ActionCall returns S_Do:
+	//    target=Primary key='.' expr=ActionRef '(' args=ExpressionList? ')'';'
+	//;
+	public S_ActionCallElements getS_ActionCallAccess() {
+		return pS_ActionCall;
+	}
+	
+	public ParserRule getS_ActionCallRule() {
+		return getS_ActionCallAccess().getRule();
 	}
 	
 	//// Example: do my_action; or invoke my_action(5);
@@ -4490,6 +4598,27 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	public ParserRule getK_GridRule() {
 		return getK_GridAccess().getRule();
+	}
+	
+	//K_Class:
+	//    'class';
+	public K_ClassElements getK_ClassAccess() {
+		return pK_Class;
+	}
+	
+	public ParserRule getK_ClassRule() {
+		return getK_ClassAccess().getRule();
+	}
+	
+	//K_Skill:
+	//    'skill'
+	//;
+	public K_SkillElements getK_SkillAccess() {
+		return pK_Skill;
+	}
+	
+	public ParserRule getK_SkillRule() {
+		return getK_SkillAccess().getRule();
 	}
 	
 	//K_Init:

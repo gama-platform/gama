@@ -250,8 +250,19 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_S_Display(context, (S_Display) semanticObject); 
 				return; 
 			case GamlPackage.SDO:
-				sequence_FacetsAndBlock_S_Do(context, (S_Do) semanticObject); 
-				return; 
+				if (rule == grammarAccess.getStatementRule()) {
+					sequence_FacetsAndBlock_S_ActionCall_S_Do(context, (S_Do) semanticObject); 
+					return; 
+				}
+				else if (rule == grammarAccess.getS_DoRule()) {
+					sequence_FacetsAndBlock_S_Do(context, (S_Do) semanticObject); 
+					return; 
+				}
+				else if (rule == grammarAccess.getS_ActionCallRule()) {
+					sequence_S_ActionCall(context, (S_Do) semanticObject); 
+					return; 
+				}
+				else break;
 			case GamlPackage.SEQUATIONS:
 				sequence_S_Equations(context, (S_Equations) semanticObject); 
 				return; 
@@ -898,6 +909,19 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Statement returns S_Do
+	 *
+	 * Constraint:
+	 *     ((target=Primary key='.' expr=ActionRef args=ExpressionList?) | ((key='do' | key='invoke') expr=AbstractRef facets+=Facet* block=Block?))
+	 * </pre>
+	 */
+	protected void sequence_FacetsAndBlock_S_ActionCall_S_Do(ISerializationContext context, S_Do semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
 	 *     S_Do returns S_Do
 	 *
 	 * Constraint:
@@ -1000,7 +1024,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     VarDefinition returns S_Species
 	 *
 	 * Constraint:
-	 *     ((key=K_Species | key=K_Grid) name=ID facets+=Facet* block=Block?)
+	 *     ((key=K_Species | key=K_Grid | key=K_Class | key=K_Skill) name=ID facets+=Facet* block=Block?)
 	 * </pre>
 	 */
 	protected void sequence_FacetsAndBlock_S_Species(ISerializationContext context, S_Species semanticObject) {
@@ -1283,6 +1307,20 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_Primary(ISerializationContext context, Point semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     S_ActionCall returns S_Do
+	 *
+	 * Constraint:
+	 *     (target=Primary key='.' expr=ActionRef args=ExpressionList?)
+	 * </pre>
+	 */
+	protected void sequence_S_ActionCall(ISerializationContext context, S_Do semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	

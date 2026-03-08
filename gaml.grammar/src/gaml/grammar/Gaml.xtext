@@ -83,9 +83,9 @@ S_Section returns Statement:
 S_Global:
 	key='global' FacetsAndBlock;
 
-// Example: species agent_A { ... } or grid cell_grid { ... }
+// Example: species agent_A { ... } or grid cell_grid { ... } or class object_A { ... }
 S_Species:
-	key=(K_Species | K_Grid) name=ID FacetsAndBlock;
+	key=(K_Species | K_Grid | K_Class | K_Skill) name=ID FacetsAndBlock;
 
 // Example: experiment exp1 type: gui { ... }
 S_Experiment:
@@ -107,11 +107,15 @@ Statement:
 	// 2. Keywords that could also be variables.
 	=> S_Species | => S_Reflex |
 	// 3. Assignments (e.g., status <- 5;). Checked before falling back to generic statements.
-	=> S_Assignment |
+	=> S_ActionCall | => S_Assignment |
 	// 4. Variable or type definitions (e.g., int my_var <- 5;). Starts with a TypeRef.
 	=> S_Definition |
 	// 5. Universal fallback for any custom action or built-in statement (e.g., ask agents;).
 	S_Other;
+	
+S_ActionCall returns S_Do: 
+	target=Primary key='.' expr=ActionRef '(' args=ExpressionList? ')'';'
+;
 
 // Example: do my_action; or invoke my_action(5);
 S_Do:
@@ -215,6 +219,13 @@ K_Species:
 
 K_Grid:
 	'grid';
+	
+K_Class: 
+	'class';
+	
+K_Skill:
+	'skill'
+;
 
 K_Init:
 	'init';
