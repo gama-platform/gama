@@ -3,7 +3,7 @@
  * UICleanupTasks.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -67,7 +67,7 @@ import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.wizards.IWizardCategory;
 import org.eclipse.ui.wizards.IWizardDescriptor;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
@@ -253,7 +253,7 @@ public class UICleanupTasks {
 
 		WorkbenchHelper.runInUI("Configuring GAMA UI", 0, p -> {
 			try {
-				DEBUG.TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Configuring GAMA UI", "done in", () -> {
+				DEBUG.TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Configuring GAMA UI", "completed in", () -> {
 					Workbench workbench = (Workbench) WorkbenchHelper.getWorkbench();
 					WorkbenchWindow window = (WorkbenchWindow) workbench.getActiveWorkbenchWindow();
 					if (window == null) return;
@@ -487,9 +487,6 @@ public class UICleanupTasks {
 		 * Replace images.
 		 */
 		static void run() {
-			replace(Dialog.DLG_IMG_ERROR, IGamaIcons.MARKER_ERROR);
-			replace(Dialog.DLG_IMG_WARNING, IGamaIcons.MARKER_WARNING);
-			replace(Dialog.DLG_IMG_INFO, IGamaIcons.MARKER_INFO);
 			replace(Dialog.DLG_IMG_MESSAGE_ERROR, IGamaIcons.MARKER_ERROR);
 			replace(Dialog.DLG_IMG_MESSAGE_WARNING, IGamaIcons.MARKER_WARNING);
 			replace(Dialog.DLG_IMG_MESSAGE_INFO, IGamaIcons.MARKER_INFO);

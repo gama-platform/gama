@@ -1,0 +1,13 @@
+#version 410 core
+
+in vec4 pass_textureCoords;
+
+out vec4 mgl_FragColor;
+
+uniform sampler2D textureSampler;
+
+void main(void)
+{
+	mgl_FragColor = texture(textureSampler, vec2(pass_textureCoords.x / pass_textureCoords.w,
+	                                             -pass_textureCoords.y / pass_textureCoords.w));
+}

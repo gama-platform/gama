@@ -10,16 +10,16 @@
  ********************************************************************************************************/
 package gama.extension.traffic.driving;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.core.metamodel.topology.graph.GamaSpatialGraph;
-import gama.core.runtime.IScope;
-import gama.core.util.IContainer;
-import gama.core.util.graph.IGraph;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ITypeProvider;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.graph.IGraph;
+import gama.api.types.misc.IContainer;
+import gama.core.topology.graph.GamaSpatialGraph;
 
 /**
  * The Class Operators.

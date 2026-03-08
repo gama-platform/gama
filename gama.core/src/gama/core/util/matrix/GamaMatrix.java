@@ -13,27 +13,28 @@ import java.util.List;
 
 import org.eclipse.core.runtime.ISafeRunnable;
 
-import gama.core.common.interfaces.ISafeConsumer;
-import gama.core.common.util.random.IRandom;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IContainerType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.StringUtils;
+import gama.api.utils.interfaces.ISafeConsumer;
+import gama.api.utils.random.IRandom;
 import gama.dev.FLAGS;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.operators.Strings;
-import gama.gaml.types.GamaPointType;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IContainerType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Written by drogoul Modified on 18 nov. 2008
@@ -53,10 +54,21 @@ import gama.gaml.types.Types;
 public abstract class GamaMatrix<T> implements IMatrix<T> {
 
 	/** The type. */
-	private final IContainerType<IMatrix> type;
+	private final IContainerType type;
 
 	@Override
-	public IContainerType<?> getGamlType() { return type; }
+	public final IContainerType<?> getGamlType() { return type; }
+
+	/**
+	 * Compute type with.
+	 *
+	 * @param contentsType
+	 *            the contents type
+	 * @return the i type
+	 */
+	protected IContainerType computeTypeWith(final IType contentsType) {
+		return Types.MATRIX.of(contentsType);
+	}
 
 	/**
 	 * Builds the value.
@@ -68,7 +80,8 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 * @return the t
 	 */
 	protected T buildValue(final IScope scope, final Object object) {
-		return FLAGS.CAST_CONTAINER_CONTENTS ? (T) type.getContentType().cast(scope, object, null, false) : (T) object;
+		return FLAGS.CAST_CONTAINER_CONTENTS ? (T) getGamlType().getContentType().cast(scope, object, null, false)
+				: (T) object;
 	}
 
 	/**
@@ -81,7 +94,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 * @return the gama point
 	 */
 	protected IPoint buildIndex(final IScope scope, final Object object) {
-		return GamaPointType.staticCast(scope, object, false);
+		return GamaPointFactory.castToPoint(scope, object, false);
 	}
 
 	@Override
@@ -182,7 +195,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	protected GamaMatrix(final int cols, final int rows, final IType contentsType) {
 		numRows = rows;
 		numCols = cols;
-		this.type = Types.MATRIX.of(contentsType);
+		this.type = computeTypeWith(contentsType);
 	}
 
 	/**
@@ -214,7 +227,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 						.error("" + objects.get(0) + " cannot be casted to a List (in matrix creation)", scope);
 			}
 		}
-		this.type = Types.MATRIX.of(contentsType);
+		this.type = computeTypeWith(contentsType);
 	}
 
 	/**
@@ -259,6 +272,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 * @param asInt
 	 * @return
 	 */
+	@Override
 	public abstract T getNthElement(Integer index);
 
 	@Override
@@ -276,7 +290,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	@Override
 	public final String stringValue(final IScope scope) throws GamaRuntimeException {
 		final StringBuilder sb = new StringBuilder(numRows * numCols * 5);
-		rowByRow(scope, v -> sb.append(Cast.asString(scope, v)), () -> sb.append(';'), () -> sb.append(Strings.LN));
+		rowByRow(scope, v -> sb.append(Cast.asString(scope, v)), () -> sb.append(';'), () -> sb.append(StringUtils.LN));
 		return sb.toString();
 	}
 
@@ -291,6 +305,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 * @param afterEachRow
 	 *            the after each row
 	 */
+	@Override
 	public void rowByRow(final IScope scope, final ISafeConsumer<T> forEachValue, final ISafeRunnable afterEachValue,
 			final ISafeRunnable afterEachRow) throws GamaRuntimeException {
 		for (int row = 0; row < numRows; row++) {
@@ -331,8 +346,8 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 
 	@Override
 	public IMap mapValue(final IScope scope, final IType keyType, final IType contentsType, final boolean copy) {
-		final IType kt = GamaType.findSpecificType(keyType, type.getContentType());
-		final IType ct = GamaType.findSpecificType(contentsType, type.getContentType());
+		final IType kt = GamaType.findSpecificType(keyType, getGamlType().getContentType());
+		final IType ct = GamaType.findSpecificType(contentsType, getGamlType().getContentType());
 		final IMap result = GamaMapFactory.create(kt, ct);
 		for (int i = 0; i < numRows; i++) {
 			// in case the matrix rows < 2, put null in value
@@ -495,7 +510,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 */
 	@Override
 	public final IList<T> listValue(final IScope scope, final IType contentsType, final boolean copy) {
-		final IType originalContentsType = type.getContentType();
+		final IType originalContentsType = getGamlType().getContentType();
 		if (!GamaType.requiresCasting(contentsType, originalContentsType)) // no need to take "copy" into account as the
 																			// list is created anyway
 			return _listValue(scope, originalContentsType, false);
@@ -504,7 +519,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 
 	@Override
 	public IList<T> asList(final IScope scope) {
-		return listValue(scope, type.getContentType(), false);
+		return listValue(scope, getGamlType().getContentType(), false);
 	}
 
 	/*
@@ -516,17 +531,6 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 			throws GamaRuntimeException {
 		return _matrixValue(scope, size, type, copy);
 	}
-
-	/**
-	 * @see java.lang.Iterable#iterator()
-	 */
-	// @Override
-	// public abstract Iterator<T> iterator();
-
-	// @Override
-	// public final Iterable<T> iterable(final IScope scope) {
-	// return this;
-	// }
 
 	/**
 	 * @see gama.interfaces.IMatrix#getRowsList()
@@ -611,7 +615,7 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 		return this.get(scope, x, y);
 	}
 
-	// PRIVATE METHODS INTENDED TO ALLOW MATRICES TO IMPLEMENT GAML OPERATORS
+	// PRIVATE SAMPLING INTENDED TO ALLOW MATRICES TO IMPLEMENT GAML OPERATORS
 	// POLYMORPHISM IS NOT REALLY SUPPORTED BY THE GAML COMPILER AND IS TAKEN
 	// IN CHARGE BY JAVA THROUGH THIS TRICK.
 
@@ -695,7 +699,8 @@ public abstract class GamaMatrix<T> implements IMatrix<T> {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected abstract IMatrix<T> _reverse(IScope scope) throws GamaRuntimeException;
+	@Override
+	public abstract IMatrix<T> _reverse(IScope scope) throws GamaRuntimeException;
 
 	/**
 	 * Checks if is empty.

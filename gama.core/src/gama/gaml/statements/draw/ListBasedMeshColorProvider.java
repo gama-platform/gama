@@ -10,8 +10,10 @@
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
-import java.awt.Color;
 import java.util.List;
+
+import gama.api.types.color.IColor;
+import gama.api.ui.layers.IMeshColorProvider;
 
 /**
  * A simple implementation of the color provider that picks a color using the index of the cell being drawn (in a cyclic
@@ -34,16 +36,16 @@ public class ListBasedMeshColorProvider implements IMeshColorProvider {
 	 * @param colors
 	 *            the colors
 	 */
-	public ListBasedMeshColorProvider(final List<? extends Color> colors) {
+	public ListBasedMeshColorProvider(final List<? extends IColor> colors) {
 		this.size = colors.size();
 		components = new double[size * 4];
 		for (int i = 0; i < size; ++i) {
-			Color color = colors.get(i);
+			IColor color = colors.get(i);
 			if (color != null) {
-				components[i * 3] = color.getRed() / 255d;
-				components[i * 3 + 1] = color.getGreen() / 255d;
-				components[i * 3 + 2] = color.getBlue() / 255d;
-				components[i * 3 + 3] = color.getAlpha() / 255d;
+				components[i * 4] = color.red() / 255d;
+				components[i * 4 + 1] = color.green() / 255d;
+				components[i * 4 + 2] = color.blue() / 255d;
+				components[i * 4 + 3] = color.alpha() / 255d;
 			}
 
 		}
@@ -55,10 +57,10 @@ public class ListBasedMeshColorProvider implements IMeshColorProvider {
 		double[] result = rgb;
 		if (result == null) { result = new double[4]; }
 		int i = index % size;
-		result[0] = components[i * 3];
-		result[1] = components[i * 3 + 1];
-		result[2] = components[i * 3 + 2];
-		result[3] = 1d; // components[i * 3 + 3];
+		result[0] = components[i * 4];
+		result[1] = components[i * 4 + 1];
+		result[2] = components[i * 4 + 2];
+		result[3] = components[i * 4 + 3];
 		return result;
 	}
 

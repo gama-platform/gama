@@ -3,7 +3,7 @@
  * WorkspaceModifyOperation.java, in gama.workspace, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,49 +15,62 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ICoreRunnable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 
+import gama.api.GAMA;
+
 /**
  * An operation which potentially makes changes to the workspace. All resource modification should be performed using
  * this operation. The primary consequence of using this operation is that events which typically occur as a result of
  * workspace changes (such as the firing of resource deltas, performance of autobuilds, etc.) are generally deferred
- * until the outermost operation has successfully completed. The platform may still decide to broadcast periodic
- * resource change notifications during the scope of the operation if the operation runs for a long time or another
- * thread modifies the workspace concurrently.
- * <p>
+ * until the outermost operation has successfully completed. 
+ * 
+ * The platform may still decide to broadcast periodic resource change notifications during the scope of the operation 
+ * if the operation runs for a long time or another thread modifies the workspace concurrently.
+ * 
+ * <h3>Scheduling Rules</h3>
  * If a scheduling rule is provided, the operation will obtain that scheduling rule for the duration of its
  * <code>execute</code> method. If no scheduling rule is provided, the operation will obtain a scheduling rule that
  * locks the entire workspace for the duration of the operation.
- * </p>
- * <p>
+ * 
+ * <h3>Usage</h3>
  * Subclasses must implement <code>execute</code> to do the work of the operation.
- * </p>
- *
+ * 
+ * <h3>Performance Considerations</h3>
+ * - Operations are executed atomically with respect to workspace modifications
+ * - Use specific scheduling rules when possible to avoid locking the entire workspace
+ * - Consider breaking long operations into smaller chunks to avoid blocking other operations
+ * 
  * @see ISchedulingRule
  * @see org.eclipse.core.resources.IWorkspace#run(ICoreRunnable, IProgressMonitor)
+ * 
+ * @author GAMA Development Team
+ * @version 2025-03
  */
 public abstract class WorkspaceModifyOperation {
 
-	/** The rule. */
+	/** The scheduling rule for this operation (can be null for workspace-wide lock) */
 	private final ISchedulingRule rule;
 
 	/**
-	 * Creates a new operation.
+	 * Creates a new operation that will lock the entire workspace during execution.
+	 * This is equivalent to calling {@link #WorkspaceModifyOperation(ISchedulingRule)} with 
+	 * the workspace root as the scheduling rule.
 	 */
 	protected WorkspaceModifyOperation() {
-		this(ResourcesPlugin.getWorkspace().getRoot());
+		this(GAMA.getWorkspaceManager().getRoot());
 	}
 
 	/**
 	 * Creates a new operation that will run using the provided scheduling rule.
-	 *
-	 * @param rule
-	 *            The ISchedulingRule to use or <code>null</code>.
+	 * 
+	 * @param rule The ISchedulingRule to use for this operation. Pass null to lock
+	 *             the entire workspace, or a more specific rule to allow concurrent
+	 *             operations on unrelated resources.
 	 * @since 3.0
 	 */
 	protected WorkspaceModifyOperation(final ISchedulingRule rule) {
@@ -86,46 +99,74 @@ public abstract class WorkspaceModifyOperation {
 			throws CoreException, InvocationTargetException, InterruptedException;
 
 	/**
-	 * The <code>WorkspaceModifyOperation</code> implementation of this <code>IRunnableWithProgress</code> method
-	 * initiates a batch of changes by invoking the <code>execute</code> method as a workspace runnable
-	 * (<code>IWorkspaceRunnable</code>).
+	 * Executes this workspace modify operation as a single logical workspace change.
+	 * This implementation initiates a batch of changes by invoking the <code>execute</code> 
+	 * method as a workspace runnable (<code>IWorkspaceRunnable</code>).
+	 * 
+	 * <h3>Exception Handling</h3>
+	 * <ul>
+	 * <li>CoreException: Wrapped in InvocationTargetException</li>
+	 * <li>OperationCanceledException: Converted to InterruptedException</li>
+	 * <li>InvocationTargetException: Re-thrown as-is</li>
+	 * <li>InterruptedException: Re-thrown as-is</li>
+	 * </ul>
+	 * 
+	 * @param monitor the progress monitor for tracking operation progress and cancellation
+	 * @throws InvocationTargetException if the operation fails due to an exception other than InterruptedException
+	 * @throws InterruptedException if the operation is cancelled or interrupted
 	 */
 	public synchronized final void run(final IProgressMonitor monitor)
 			throws InvocationTargetException, InterruptedException {
-		AtomicReference<InvocationTargetException> rethrownInvocationTargetException = new AtomicReference<>();
-		AtomicReference<InterruptedException> rethrownInterruptedException = new AtomicReference<>();
+		
+		// Use atomic references to capture exceptions from the workspace runnable
+		final AtomicReference<InvocationTargetException> capturedInvocationException = new AtomicReference<>();
+		final AtomicReference<InterruptedException> capturedInterruptedException = new AtomicReference<>();
+		
 		try {
-			IWorkspaceRunnable workspaceRunnable = pm -> {
+			// Create workspace runnable that delegates to the execute method
+			final IWorkspaceRunnable workspaceRunnable = progressMonitor -> {
 				try {
-					execute(pm);
-				} catch (InvocationTargetException e1) {
-					rethrownInvocationTargetException.set(e1);
-				} catch (InterruptedException e2) {
-					rethrownInterruptedException.set(e2);
+					execute(progressMonitor);
+				} catch (InvocationTargetException e) {
+					capturedInvocationException.set(e);
+				} catch (InterruptedException e) {
+					capturedInterruptedException.set(e);
 				}
-				// CoreException and unchecked exceptions (e.g. OperationCanceledException) are
-				// propagated to the outer catch
+				// Note: CoreException and unchecked exceptions (e.g. OperationCanceledException) 
+				// are propagated to the outer catch block
 			};
 
-			ResourcesPlugin.getWorkspace().run(workspaceRunnable, rule, IResource.NONE, monitor);
+			// Execute the operation within the workspace lock
+			GAMA.getWorkspaceManager().getWorkspace().run(workspaceRunnable, rule, IResource.NONE, monitor);
+			
 		} catch (CoreException e) {
 			throw new InvocationTargetException(e);
 		} catch (OperationCanceledException e) {
-			InterruptedException interruptedException = new InterruptedException(e.getMessage());
+			final InterruptedException interruptedException = new InterruptedException(e.getMessage());
 			interruptedException.initCause(e);
 			throw interruptedException;
 		}
 
-		// Re-throw any exceptions caught while running the IWorkspaceRunnable
-		if (rethrownInvocationTargetException.get() != null) throw rethrownInvocationTargetException.get();
-		if (rethrownInterruptedException.get() != null) throw rethrownInterruptedException.get();
+		// Re-throw any exceptions that were captured during execution
+		final InvocationTargetException invocationException = capturedInvocationException.get();
+		if (invocationException != null) {
+			throw invocationException;
+		}
+		
+		final InterruptedException interruptedException = capturedInterruptedException.get();
+		if (interruptedException != null) {
+			throw interruptedException;
+		}
 	}
 
 	/**
-	 * The scheduling rule. Should not be modified.
-	 *
-	 * @return the scheduling rule, or <code>null</code>.
+	 * Returns the scheduling rule for this operation. The rule determines which resources
+	 * will be locked during the operation's execution.
+	 * 
+	 * @return the scheduling rule, or <code>null</code> if the entire workspace will be locked
 	 * @since 3.4
 	 */
-	public ISchedulingRule getRule() { return rule; }
+	public ISchedulingRule getRule() { 
+		return rule; 
+	}
 }

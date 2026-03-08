@@ -10,11 +10,11 @@
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene.resources;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.util.IColor;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.geometry.Scaling3D;
 import gama.core.util.file.GamaGeometryFile;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
@@ -56,9 +56,9 @@ public class ResourceDrawer extends ObjectDrawer<ResourceObject> {
 				gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
 			}
 			if (initRotation != null) {
-				final IPoint initAxis = initRotation.axis;
+				final IPoint initAxis = initRotation.getAxis();
 				// AD Change to a negative rotation to fix Issue #1514
-				gl.rotateBy(-initRotation.angle, initAxis.getX(), initAxis.getY(), initAxis.getZ());
+				gl.rotateBy(-initRotation.getAngle(), initAxis.getX(), initAxis.getY(), initAxis.getZ());
 			}
 		} finally {
 			gl.translateBy(-lx, ly, -lz);

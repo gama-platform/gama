@@ -34,10 +34,10 @@ import org.locationtech.jts.geom.GeometryCollection;
 
 import com.github.weisj.jsvg.renderer.output.Output;
 
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.list.GamaListFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.utils.geometry.GeometryUtils;
 
 /**
  * The Class GamaShapeSVGOutput.
@@ -88,7 +88,7 @@ class GamaShapeSVGOutput implements Output, Iterable<IShape> {
 	private void addShape(final Shape shape) {
 		// NOTE: ShapeUtil.transformShape always returns a new shape hence we can safely modify shape.
 		Shape s = currentClip != null ? ShapeUtil.intersect(currentClip, shape, true, false) : shape;
-		Geometry g = ShapeReader.read(s.getPathIterator(null, 1.0), GeometryUtils.GEOMETRY_FACTORY);
+		Geometry g = ShapeReader.read(s.getPathIterator(null, 1.0), GeometryUtils.getGeometryFactory());
 		addShape(g);
 	}
 

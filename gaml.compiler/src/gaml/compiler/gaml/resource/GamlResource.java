@@ -10,9 +10,8 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.resource;
 
-import static gama.gaml.compilation.GAML.getModelFactory;
-import static gama.gaml.interfaces.IGamlIssue.GENERAL;
-import static gama.gaml.interfaces.IGamlIssue.IMPORT_ERROR;
+import static gama.api.constants.IGamlIssue.GENERAL;
+import static gama.api.constants.IGamlIssue.IMPORT_ERROR;
 import static gaml.compiler.gaml.indexer.GamlResourceIndexer.updateImports;
 import static gaml.compiler.gaml.resource.GamlResourceServices.properlyEncodedURI;
 import static gaml.compiler.gaml.resource.GamlResourceServices.updateState;
@@ -22,6 +21,7 @@ import static org.eclipse.xtext.nodemodel.util.NodeModelUtils.getNode;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -35,25 +35,48 @@ import org.eclipse.xtext.util.concurrent.IUnitOfWork;
 
 import com.google.common.base.Function;
 
-import gama.core.runtime.IExecutionContext;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.compilation.ast.ISyntacticElement;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.validation.IDocumentationContext;
+import gama.api.compilation.validation.IValidationContext;
+import gama.api.runtime.scope.IExecutionContext;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.compilation.IGamlCompilationError.GamlCompilationErrorType;
-import gama.gaml.compilation.ast.ISyntacticElement;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.descriptions.ValidationContext;
+import gaml.compiler.gaml.factories.ModelFactory;
 import gaml.compiler.gaml.indexer.GamlResourceIndexer;
+import gaml.compiler.gaml.preprocessor.GamlResourceOffsetMap;
 
 /**
- * The Class GamlResource.
- */
-/*
+ * The Class GamlResource - Represents a GAML source file resource with validation and compilation capabilities.
  *
- * The class GamlResource.
+ * <p>
+ * This class extends Xtext's {@link LazyLinkingResource} to provide GAML-specific resource management, including
+ * syntactic and semantic validation, model description building, and documentation generation.
+ * </p>
+ *
+ * <p>
+ * <b>Key Responsibilities:</b>
+ * </p>
+ * <ul>
+ * <li>Parse GAML source files into syntactic elements</li>
+ * <li>Build model descriptions from syntactic elements and imports</li>
+ * <li>Validate models and collect syntactic and semantic errors</li>
+ * <li>Manage resource lifecycle (loading, linking, unloading)</li>
+ * <li>Coordinate with documentation and indexing services</li>
+ * </ul>
+ *
+ * <p>
+ * <b>Thread Safety:</b> The {@code element} field is volatile and uses double-checked locking in
+ * {@link #getSyntacticContents()} for safe lazy initialization in concurrent environments. Other operations may not be
+ * thread-safe and should be externally synchronized if used concurrently.
+ * </p>
+ *
+ * <p>
+ * <b>Lifecycle:</b> Resources go through parsing → linking → validation → documentation phases. Use {@link #validate()}
+ * to trigger full validation. The resource maintains caches that are invalidated when the source changes.
+ * </p>
  *
  * @author drogoul
- *
  * @since 24 avr. 2012
  */
 public class GamlResource extends LazyLinkingResource implements IDiagnosticConsumer {
@@ -63,16 +86,37 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 		DEBUG.OFF();
 	}
 
+	/** Cache key for linking context. */
+	private static final String LINKING_CACHE_KEY = "linking";
+
+	/** Error message for import location failure. */
+	private static final String ERROR_IMPORT_LOCATION = "Impossible to locate import";
+
+	/** Error message template for validation failure. */
+	private static final String ERROR_VALIDATION_FAILED = "Impossible to validate %s (check the logs)";
+
 	/** The element. */
-	ISyntacticElement element;
+	volatile ISyntacticElement element;
+
+	/** The offset map. */
+	final GamlResourceOffsetMap offsetMap = new GamlResourceOffsetMap();
 
 	/**
 	 * Gets the validation context.
 	 *
 	 * @return the validation context
 	 */
-	public ValidationContext getValidationContext() {
+	public IValidationContext getValidationContext() {
 		return GamlResourceServices.getOrCreateValidationContext(this);
+	}
+
+	/**
+	 * Gets the documentation context.
+	 *
+	 * @return the documentation context
+	 */
+	public IDocumentationContext getDocumentationContext() {
+		return GamlResourceServices.getDocumentationContext(this.getURI());
 	}
 
 	/**
@@ -103,7 +147,8 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 */
 	@Override
 	public String toString() {
-		return "GamlResource[" + getURI().lastSegment() + "]";
+		final URI uri = getURI();
+		return "GamlResource[" + (uri != null ? uri.lastSegment() : "unknown") + "]";
 	}
 
 	/**
@@ -114,7 +159,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 * @param newState
 	 *            the new state
 	 */
-	public void updateWith(final ModelDescription model, final boolean newState) {
+	public void updateWith(final IModelDescription model, final boolean newState) {
 		updateState(getURI(), model, newState, getValidationContext());
 	}
 
@@ -124,10 +169,13 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 * @return the syntactic contents
 	 */
 	public ISyntacticElement getSyntacticContents() {
-		if (element != null) // DEBUG.OUT("Reusing existing contents for " + uri.lastSegment());
-			return element;
-		setElement(GamlResourceServices.buildSyntacticContents(this));
-		return element;
+		ISyntacticElement result = element;
+		if (result != null) return result;
+		synchronized (this) {
+			result = element;
+			if (result == null) { element = result = GamlResourceServices.buildSyntacticContents(this); }
+		}
+		return result;
 	}
 
 	/** The Constant TO_SYNTACTIC_CONTENTS. */
@@ -143,17 +191,16 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 *            the resources
 	 * @return the model description
 	 */
-	private ModelDescription buildModelDescription(final ImportedResources resources) {
-		GAML.getExpressionFactory().resetParser();
+	private IModelDescription buildModelDescription(final ImportedResources resources) {
 		final String model = GamlResourceServices.getModelPathOf(this);
 		final String project = GamlResourceServices.getProjectPathOf(this);
-		final ValidationContext context = getValidationContext();
-		context.shouldDocument(GamlResourceServices.isEdited(this));
-		if (resources == null) return getModelFactory().createModelDescription(project, model,
-				singleton(getSyntacticContents()), context, null);
+		final IValidationContext context = getValidationContext();
+		final IDocumentationContext doc = getDocumentationContext();
+		if (resources == null) return ModelFactory.getInstance().createModelDescription(project, model,
+				singleton(getSyntacticContents()), context, doc, null);
 		Iterable<ISyntacticElement> imports = resources.computeDirectImports(getSyntacticContents());
-		return getModelFactory().createModelDescription(project, model, imports, context,
-				resources.computeMicroModels(project, model, context));
+		return ModelFactory.getInstance().createModelDescription(project, model, imports, context, doc,
+				resources.computeMicroModels(project, model, context, doc));
 	}
 
 	/**
@@ -165,12 +212,9 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 *            the s
 	 */
 	public void invalidate(final GamlResource r, final String s) {
-		GamlCompilationError error = null;
-		if (GamlResourceServices.equals(r.getURI(), getURI())) {
-			error = new GamlCompilationError(s, GENERAL, r.getContents().get(0), GamlCompilationErrorType.Error);
-		} else {
-			error = new GamlCompilationError(s, GENERAL, r.getURI(), GamlCompilationErrorType.Error);
-		}
+		final GamlCompilationError error = GamlResourceServices.equals(r.getURI(), getURI())
+				? GamlCompilationError.create(s, GENERAL, r.getContents().get(0), GamlCompilationError.Type.Error)
+				: GamlCompilationError.create(s, GENERAL, r.getURI(), GamlCompilationError.Type.Error);
 		getValidationContext().add(error);
 		updateWith(null, true);
 	}
@@ -180,22 +224,14 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 *
 	 * @return the model description
 	 */
-	public ModelDescription buildCompleteDescription() {
+	public IModelDescription buildCompleteDescription() {
 		final ImportedResources imports = GamlResourceIndexer.validateImportsOf(this);
-		if (hasErrors() || hasSemanticErrors()) return null;
-		final ModelDescription model = buildModelDescription(imports);
-		// If, for whatever reason, the description is null, we stop the
-		// semantic validation
+		if (hasAnyErrors()) return null;
+		final IModelDescription model = buildModelDescription(imports);
+		// If, for whatever reason, the description is null, we stop the semantic validation
 		if (model == null) {
-			invalidate(this, "Impossible to validate " + URI.decode(getURI().lastSegment()) + " (check the logs)");
+			invalidate(this, String.format(ERROR_VALIDATION_FAILED, URI.decode(getURI().lastSegment())));
 		}
-		// Map<URI, URI> doubleImports = collectMultipleImportsOf(this);
-		// doubleImports.forEach((imported, importer) -> {
-		// String s = imported.lastSegment() + " is already imported by " + importer.lastSegment();
-		// EObject o = getImportObject(getContents().get(0), getURI(), imported);
-		// GamlCompilationError error = new GamlCompilationError(s, GENERAL, o, false, true);
-		// getValidationContext().add(error);
-		// });
 		return model;
 	}
 
@@ -210,8 +246,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 *
 	 */
 	public void validate() {
-		// DEBUG.LOG("Resource validating itself");
-		final ModelDescription model = buildCompleteDescription();
+		final IModelDescription model = buildCompleteDescription();
 		if (model == null) {
 			updateWith(null, true);
 			return;
@@ -226,7 +261,6 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 			} else {
 				model.dispose();
 			}
-			// }
 		}
 	}
 
@@ -243,8 +277,6 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	@Override
 	protected void updateInternalState(final IParseResult oldParseResult, final IParseResult newParseResult) {
 		if (oldParseResult != newParseResult) {
-			// if (oldParseResult != newParseResult) { DEBUG.OUT("===> Creating a new contents for " +
-			// uri.lastSegment()); }
 			super.updateInternalState(oldParseResult, newParseResult);
 			setElement(null);
 		}
@@ -260,6 +292,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	protected void clearInternalState() {
 		super.clearInternalState();
 		setElement(null);
+		offsetMap.clear();
 	}
 
 	/**
@@ -272,6 +305,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	protected void doUnload() {
 		super.doUnload();
 		setElement(null);
+		offsetMap.clear();
 	}
 
 	/**
@@ -293,7 +327,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 */
 	public void loadSynthetic(final InputStream is, final IExecutionContext additionalLinkingContext) {
 		final OnChangeEvictingCache r = getCache();
-		r.getOrCreate(this).set("linking", additionalLinkingContext);
+		r.getOrCreate(this).set(LINKING_CACHE_KEY, additionalLinkingContext);
 		getCache().execWithoutCacheClear(this, new IUnitOfWork.Void<GamlResource>() {
 
 			@Override
@@ -302,7 +336,7 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 				resolveAll(GamlResource.this);
 			}
 		});
-		r.getOrCreate(this).set("linking", null);
+		r.getOrCreate(this).set(LINKING_CACHE_KEY, null);
 
 	}
 
@@ -327,13 +361,33 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 		// If the imports are not correctly updated, we cannot proceed
 		final EObject faulty = updateImports(this);
 		if (faulty != null) {
-			getErrors()
-					.add(new XtextLinkingDiagnostic(getNode(faulty), "Impossible to locate import", IMPORT_ERROR, ""));
+			getErrors().add(new XtextLinkingDiagnostic(getNode(faulty), ERROR_IMPORT_LOCATION, IMPORT_ERROR, ""));
 			return;
 		}
 		EObject model = getParseResult().getRootASTElement();
 		if (model != null) { getLinker().linkModel(model, this); }
+
 	}
+
+	@Override
+	protected void doLoad(final InputStream inputStream, final Map<?, ?> options) throws IOException {
+		super.doLoad(inputStream, options);
+		// GamlEObjectImpl model = (GamlEObjectImpl) getParseResult().getRootASTElement();
+		// // if (model != null) {
+		// // try {
+		// // DEBUG.LOG("Serialization : \n" + model.asString());
+		// // } catch (Exception e) {
+		// // DEBUG.ERR("Error in serialization", e);
+		// // }
+		// // }
+	}
+
+	// Here we create a reader equipped with the offset map ?
+	// @Override
+	// protected Reader createReader(final InputStream inputStream) throws IOException {
+	// Reader reader = super.createReader(inputStream);
+	// return new GamlResourceReader(getURI(), reader, offsetMap);
+	// }
 
 	/**
 	 * Checks for errors.
@@ -342,6 +396,15 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 */
 	public boolean hasErrors() {
 		return !getErrors().isEmpty() || getParseResult().hasSyntaxErrors();
+	}
+
+	/**
+	 * Checks for any errors (syntactic or semantic).
+	 *
+	 * @return true, if this resource has any errors
+	 */
+	public boolean hasAnyErrors() {
+		return hasErrors() || hasSemanticErrors();
 	}
 
 	/**
@@ -368,8 +431,6 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 	 */
 	@Override
 	public void clearCache() {
-		// DEBUG.LINE();
-		// DEBUG.TITLE("CLEARING CACHE OF " + uri.lastSegment());
 		GamlResourceServices.getResourceDocumenter().invalidate(getURI());
 		super.clearCache();
 	}
@@ -383,12 +444,11 @@ public class GamlResource extends LazyLinkingResource implements IDiagnosticCons
 			default -> {
 			}
 		}
-
 	}
 
 	@Override
 	public boolean hasConsumedDiagnostics(final Severity severity) {
-		return !getErrors().isEmpty() && !getWarnings().isEmpty();
+		return !getErrors().isEmpty() || !getWarnings().isEmpty();
 	}
 
 }

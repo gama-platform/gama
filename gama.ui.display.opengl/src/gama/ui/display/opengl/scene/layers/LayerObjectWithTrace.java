@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * LayerObjectWithTrace.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,7 +12,7 @@ package gama.ui.display.opengl.scene.layers;
 
 import java.util.LinkedList;
 
-import gama.core.common.interfaces.ILayer;
+import gama.api.ui.layers.ILayer;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 
@@ -57,10 +57,10 @@ public class LayerObjectWithTrace extends LayerObject {
 			final int size = traces.size();
 			delta = size == 0 ? 0 : 1d / size;
 		}
-		double alpha = 0d;
+		double alpha1 = 0d;
 		for (final Trace list : traces) {
-			alpha = delta == 0d ? this.alpha : this.alpha * (alpha + delta);
-			drawObjects(gl, list, alpha, picking);
+			alpha1 = delta == 0d ? this.alpha : this.alpha * (alpha1 + delta);
+			drawObjects(gl, list, alpha1, picking);
 		}
 	}
 

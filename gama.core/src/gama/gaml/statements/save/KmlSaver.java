@@ -12,10 +12,11 @@ package gama.gaml.statements.save;
 import java.io.File;
 import java.util.Set;
 
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.types.GamaKmlExport;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.files.SaveOptions;
+import gama.api.utils.files.BufferingUtils.BufferingStrategies;
+import gama.core.util.file.GamaKmlExport;
 
 /**
  * The Class KmlSaver.

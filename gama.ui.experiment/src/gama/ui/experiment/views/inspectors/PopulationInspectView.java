@@ -53,27 +53,26 @@ import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 
-import gama.core.common.interfaces.IGui;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.FileUtils;
-import gama.core.common.util.StringUtils;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.outputs.IOutput;
+import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
+import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.IVariableDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.IGui;
+import gama.api.ui.IOutput;
+import gama.api.utils.StringUtils;
+import gama.api.utils.csv.CsvWriter;
+import gama.api.utils.files.FileUtils;
 import gama.core.outputs.InspectDisplayOutput;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.csv.CsvWriter;
 import gama.dev.DEBUG;
-import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.descriptions.VariableDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.types.SpeciesConstantExpression;
 import gama.gaml.operators.Files;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 import gama.ui.experiment.menus.AgentsMenu;
 import gama.ui.shared.controls.SwitchButton;
 import gama.ui.shared.menus.GamaMenu;
@@ -257,11 +256,11 @@ public class PopulationInspectView extends GamaViewPart
 	 * Update species.
 	 */
 	void updateSpecies() {
-		final SpeciesDescription species = getOutput().getSpeciesDescription();
+		final ISpeciesDescription species = getOutput().getSpeciesDescription();
 		final IExpression expr = getOutput().getValue();
 
 		final String name = species == null ? IKeyword.AGENT : species.getName();
-		final boolean isComplete = expr instanceof SpeciesConstantExpression;
+		final boolean isComplete = expr instanceof IExpression.Species;
 
 		if (!selectedColumns.containsKey(name)) {
 			selectedColumns.put(name, new ArrayList<>());
@@ -283,12 +282,6 @@ public class PopulationInspectView extends GamaViewPart
 
 	}
 
-	// @Override
-	// protected void setContentDescription(final String description) {
-	// if ( toolbar == null ) { return; }
-	// toolbar.status((Image) null, description, IGamaColors.BLUE);
-	// }
-
 	/**
 	 * Change part name.
 	 *
@@ -299,17 +292,11 @@ public class PopulationInspectView extends GamaViewPart
 	 */
 	private void changePartName(final String name, final boolean complete) {
 		if (name == null) return;
-		// this.setContentDescription(StringUtils.capitalize(name) + "
-		// population in macro-agent " +
-		// getOutput().getRootAgent().getName());
-		// WorkbenchHelper.runInUI("", 50, (m) -> {
 		if (!complete) {
 			setPartName(getOutput().getName() + ": set of " + name);
 		} else {
 			setPartName(getOutput().getName() + ": population of " + name);
 		}
-		// });
-
 	}
 
 	/**
@@ -357,7 +344,7 @@ public class PopulationInspectView extends GamaViewPart
 		attributesMenu.setToolTipText(tooltipText);
 		final boolean hasPreviousSelection = selectedColumns.get(speciesName) != null;
 		final InspectDisplayOutput output = getOutput();
-		final SpeciesDescription species = output.getSpeciesDescription();
+		final ISpeciesDescription species = output.getSpeciesDescription();
 		final List<String> names = new ArrayList(getOutput().getAttributes() == null ? species.getAttributeNames()
 				: getOutput().getAttributes().keySet());
 		Collections.sort(names);
@@ -453,7 +440,7 @@ public class PopulationInspectView extends GamaViewPart
 	 */
 	String getSpeciesName() {
 		if (getOutput() == null) return "";
-		final SpeciesDescription species = getOutput().getSpeciesDescription();
+		final ISpeciesDescription species = getOutput().getSpeciesDescription();
 		if (species == null) return IKeyword.AGENT;
 		return species.getName();
 	}
@@ -702,7 +689,7 @@ public class PopulationInspectView extends GamaViewPart
 						if (v2 == null) {
 							rc = 1;
 						} else {
-							final VariableDescription v = getOutput().getSpeciesDescription().getAttribute(attribute);
+							final IVariableDescription v = getOutput().getSpeciesDescription().getAttribute(attribute);
 							final int id = v.getGamlType().id();
 							rc = switch (id) {
 								case IType.INT -> ((Integer) v1).compareTo((Integer) v2);

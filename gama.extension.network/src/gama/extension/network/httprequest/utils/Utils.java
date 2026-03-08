@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * Utils.java, in gama.network, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * Utils.java, in gama.extension.network, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,13 +15,13 @@ import java.net.URISyntaxException;
 import java.net.http.HttpResponse;
 import java.util.List;
 
-import gama.core.runtime.IScope;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.ParseException;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
-import gama.gaml.types.Types;
+import gama.api.GAMA;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.core.util.json.ParseException;
 
 /**
  * The Class Utils.
@@ -101,7 +101,7 @@ public class Utils {
 				List<String> contentType = mapHeaders.get("content-type");
 				if (contentType != null) {
 					if (contentType.stream().anyMatch(e -> e.contains("json"))) {
-						jsonBody = Json.getNew().parse(response.body());
+						jsonBody = GAMA.getJsonEncoder().parse(response.body());
 					} else {
 						jsonBody = response.body();
 					}

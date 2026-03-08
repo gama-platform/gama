@@ -27,27 +27,27 @@ import static gama.extension.fipa.Performative.subscribe;
 import java.util.Iterator;
 import java.util.List;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.GamlAnnotations.action;
-import gama.annotations.precompiler.GamlAnnotations.arg;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.messaging.GamaMailbox;
-import gama.core.messaging.GamaMessage;
-import gama.core.messaging.MessagingSkill;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.GamaMessageType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.action;
+import gama.annotations.arg;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.skill;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaMessageType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.core.util.messaging.GamaMailbox;
+import gama.core.util.messaging.GamaMessage;
+import gama.core.util.messaging.MessagingSkill;
 
 /**
  * Agents capable of communicate are equipped with this skill. The CommunicatingSkill supplies the communicating agents
@@ -173,14 +173,14 @@ public class FIPASkill extends MessagingSkill {
 
 		final FIPAMessage message = new FIPAMessage(scope);
 
-		final IList receivers = Cast.asList(scope, scope.getArg(IKeyword.TO, IType.LIST));
+		final IList receivers = GamaListFactory.castToList(scope, scope.getArg(IKeyword.TO, IType.LIST));
 		if (receivers == null || receivers.isEmpty() || receivers.contains(null))
 			throw GamaRuntimeException.error("receivers can not be empty or null", scope);
 		message.setReceivers(receivers);
 
 		message.setSender(getCurrentAgent(scope));
 
-		final IList content = Cast.asList(scope, scope.getArg(GamaMessage.CONTENTS, IType.LIST));
+		final IList content = GamaListFactory.castToList(scope, scope.getArg(GamaMessage.CONTENTS, IType.LIST));
 		if (content != null) { message.setContents(content); }
 
 		final String performative = Cast.asString(scope, scope.getArg("performative", IType.STRING));
@@ -299,7 +299,7 @@ public class FIPASkill extends MessagingSkill {
 	 * @return the content arg
 	 */
 	private IList getContentArg(final IScope scope) {
-		return Cast.asList(scope, scope.getArg(GamaMessage.CONTENTS, IType.LIST));
+		return GamaListFactory.castToList(scope, scope.getArg(GamaMessage.CONTENTS, IType.LIST));
 	}
 
 	/**
@@ -310,7 +310,7 @@ public class FIPASkill extends MessagingSkill {
 	 * @return the message arg
 	 */
 	private IList<FIPAMessage> getMessageArg(final IScope scope) {
-		return Cast.asList(scope, scope.getArg(GamaMessageType.MESSAGE_STR, IType.LIST));
+		return GamaListFactory.castToList(scope, scope.getArg(GamaMessageType.MESSAGE_STR, IType.LIST));
 	}
 
 	/**
@@ -888,7 +888,7 @@ public class FIPASkill extends MessagingSkill {
 	 */
 	private IList<FIPAMessage> filter(final IScope scope, final IAgent agent, final Performative performative) {
 		final IList<FIPAMessage> inBox = getMessages(scope, agent);
-		if (inBox.isEmpty()) return GamaListFactory.EMPTY_LIST;
+		if (inBox.isEmpty()) return GamaListFactory.getEmptyList();
 		final IList<FIPAMessage> result = GamaListFactory.create(scope.getType(GamaMessageType.MESSAGE_STR));
 		for (final FIPAMessage m : inBox) {
 			final boolean unread = m.isUnread();

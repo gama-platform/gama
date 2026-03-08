@@ -10,9 +10,9 @@
  ********************************************************************************************************/
 package gama.ui.application.workbench;
 
-import static gama.core.common.preferences.GamaPreferences.create;
-import static gama.core.common.preferences.GamaPreferences.Theme.NAME;
-import static gama.core.common.preferences.GamaPreferences.Theme.UI;
+import static gama.api.utils.prefs.GamaPreferences.create;
+import static gama.api.utils.prefs.GamaPreferences.Theme.NAME;
+import static gama.api.utils.prefs.GamaPreferences.Theme.UI;
 import static org.eclipse.swt.widgets.Display.isSystemDarkTheme;
 
 import java.io.IOException;
@@ -48,10 +48,10 @@ import org.w3c.css.sac.CSSParseException;
 
 import com.google.common.collect.Iterables;
 
-import gama.core.common.preferences.Pref;
-import gama.core.util.GamaColorFactory;
+import gama.api.gaml.types.IType;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.utils.prefs.Pref;
 import gama.dev.DEBUG;
-import gama.gaml.types.IType;
 
 /**
  * The Class ThemeHelper.
@@ -109,7 +109,8 @@ public class ThemeHelper {
 			create("pref_theme_light", "Theme to apply (requires restart)", true, IType.BOOL, false).in(NAME, UI)
 					.restartRequired().onChange(yes -> {
 						chooseThemeBasedOnPreferences();
-					}).withLabels("Light", "Dark").withColors(GamaColorFactory.get("white"), GamaColorFactory.get("black"));
+					}).withLabels("Light", "Dark")
+					.withColors(() -> GamaColorFactory.get("white"), () -> GamaColorFactory.get("black"));
 
 	/**
 	 * Chooses a light/dark theme based on the GAMA preferences and the actual theme

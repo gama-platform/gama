@@ -10,16 +10,16 @@
  ********************************************************************************************************/
 package gama.extension.image.gif;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.matrix.IMatrix;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.matrix.IMatrix;
 import gama.extension.image.GamaImageFile;
 import gama.extension.image.ImageCache;
-import gama.gaml.types.IType;
 
 /**
  * The Class GamaGifFile.

@@ -10,8 +10,7 @@
  ********************************************************************************************************/
 package gama.extension.physics.common;
 
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IPoint ;
+import gama.api.types.geometry.IPoint;
 
 /**
  * The Interface IPhysicalEntity.

@@ -24,18 +24,18 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 
-import gama.core.common.interfaces.IClock;
-import gama.core.common.interfaces.IStatusControl;
-import gama.core.common.interfaces.IStatusDisplayer;
-import gama.core.common.interfaces.IStatusMessage;
-import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.root.PlatformAgent;
-import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.kernel.simulation.SimulationPopulation;
-import gama.core.runtime.GAMA;
-import gama.gaml.operators.Strings;
+import gama.api.GAMA;
+import gama.api.kernel.PlatformAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.simulation.IClock;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.ui.IStatusControl;
+import gama.api.ui.IStatusDisplayer;
+import gama.api.ui.IStatusMessage;
+import gama.api.utils.StringUtils;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
@@ -151,7 +151,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 		if (exp == null) return "";
 		text.setLength(0);
 		final IClock clock = exp.getClock();
-		clock.getInfo(text).append(Strings.LN);
+		clock.getInfo(text).append(StringUtils.LN);
 		text.append("Durations: cycle ").append(clock.getDuration()).append("ms; average ")
 				.append((int) clock.getAverageDuration()).append("ms; total ").append(clock.getTotalDuration())
 				.append("ms");
@@ -202,7 +202,7 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 	/**
 	 * Method updateWith()
 	 *
-	 * @see gama.ui.shared.factories.IStatusControl.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
+	 * @see gama.api.interfaces.IStatusControl.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
 	 */
 	@Override
 	public void updateWith(final IStatusMessage m) {
@@ -247,12 +247,12 @@ public class ExperimentControlContribution extends WorkbenchWindowControlContrib
 		if (exp == null) return "";
 		text.setLength(0);
 		agent.getClock().getInfo(text);
-		final SimulationPopulation pop = exp.getSimulationPopulation();
+		final IPopulation.Simulation pop = exp.getSimulationPopulation();
 		final int nbThreads = pop == null ? 1 : pop.getNumberOfActiveThreads();
 		if (agent.getScope().isOnUserHold()) {
 			text.append(" (waiting)");
 		} else if (nbThreads > 1) { text.append(" (" + nbThreads + " threads)"); }
-		final IExperimentPlan plan = exp.getSpecies();
+		final IExperimentSpecies plan = exp.getSpecies();
 		if (plan.shouldBeBenchmarked()) { text.append(" [benchmarking]"); }
 		return text.toString();
 	}

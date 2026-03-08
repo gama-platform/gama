@@ -3,7 +3,7 @@
  * TestsRunner.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,16 +17,15 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.jobs.Job;
 
-import gama.core.common.interfaces.IGui;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.gaml.statements.test.CompoundSummary;
-import gama.gaml.statements.test.TestExperimentSummary;
+import gama.api.GAMA;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IGui;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.tests.CompoundSummary;
+import gama.api.utils.tests.TestExperimentSummary;
 import gama.ui.shared.access.ModelsFinder;
 import gama.ui.shared.utils.SwtGui;
 import gama.workspace.nature.GamaNatures;
@@ -80,7 +79,7 @@ public class TestsRunner {
 	 */
 	private static List<IFile> findTestModels() throws CoreException {
 		final List<IFile> result = new ArrayList<>();
-		final IWorkspaceRoot w = ResourcesPlugin.getWorkspace().getRoot();
+		final IWorkspaceRoot w = GAMA.getWorkspaceManager().getRoot();
 		for (final IProject p : w.getProjects()) {
 			if (isInteresting(p)) { result.addAll(ModelsFinder.getAllGamaFilesInProject(p)); }
 		}

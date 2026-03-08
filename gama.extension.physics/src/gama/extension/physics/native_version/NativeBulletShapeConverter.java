@@ -31,12 +31,12 @@ import com.jme3.bullet.collision.shapes.SimplexCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.math.Vector3f;
 
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.util.matrix.IField;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.matrix.IField;
+import gama.api.utils.geometry.GeometryUtils;
 import gama.extension.physics.common.IShapeConverter;
 
 /**
@@ -76,9 +76,8 @@ public class NativeBulletShapeConverter
 			case SQUARE:
 				if (depth == 0)
 					return new Box2dShape(shape.getWidth().floatValue() / 2f, shape.getHeight().floatValue() / 2f);
-				else
-					return new BoxCollisionShape(new Vector3f(shape.getWidth().floatValue() / 2f,
-							shape.getHeight().floatValue() / 2f, depth / 2f));
+				return new BoxCollisionShape(new Vector3f(shape.getWidth().floatValue() / 2f,
+						shape.getHeight().floatValue() / 2f, depth / 2f));
 			case CONE:
 				// always oriented on the Z axis
 				return new ConeCollisionShape(shape.getWidth().floatValue() / 2f, depth, PhysicsSpace.AXIS_Z);
@@ -88,8 +87,7 @@ public class NativeBulletShapeConverter
 				LineSegment seg = new LineSegment(line.getCoordinateN(0), line.getCoordinateN(1));
 				if (seg.isVertical())
 					return new CylinderCollisionShape(new Vector3f(depth, (float) seg.getLength() / 2f, depth), AXIS_Y);
-				else
-					return new CylinderCollisionShape(new Vector3f((float) seg.getLength() / 2f, depth, depth), AXIS_X);
+				return new CylinderCollisionShape(new Vector3f((float) seg.getLength() / 2f, depth, depth), AXIS_X);
 			case CYLINDER:
 				// always oriented on the Z axis
 				return new CylinderCollisionShape(

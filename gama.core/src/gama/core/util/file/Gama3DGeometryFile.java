@@ -15,16 +15,16 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaPair;
-import gama.gaml.operators.Cast;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.pair.IPair;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  * The Class Gama3DGeometryFile.
@@ -63,12 +63,12 @@ public abstract class Gama3DGeometryFile extends GamaGeometryFile {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public Gama3DGeometryFile(final IScope scope, final String pathName, final GamaPair<Double, IPoint> initRotation)
+	public Gama3DGeometryFile(final IScope scope, final String pathName, final IPair<Double, IPoint> initRotation)
 			throws GamaRuntimeException {
 		super(scope, pathName);
 		if (initRotation != null) {
-			final Double angle = Cast.asFloat(null, initRotation.key);
-			final IPoint axis = initRotation.value;
+			final Double angle = Cast.asFloat(null, initRotation.getKey());
+			final IPoint axis = initRotation.getValue();
 			this.initRotation = new AxisAngle(axis, angle);
 		} else {
 			this.initRotation = null;
@@ -79,7 +79,7 @@ public abstract class Gama3DGeometryFile extends GamaGeometryFile {
 	protected IShape buildGeometry(final IScope scope) {
 		final List<Geometry> faces = new ArrayList<>();
 		for (final IShape shape : getBuffer().iterable(scope)) { faces.add(shape.getInnerGeometry()); }
-		return GamaShapeFactory.createFrom(GeometryUtils.GEOMETRY_FACTORY.buildGeometry(faces));
+		return GamaShapeFactory.createFrom(GeometryUtils.getGeometryFactory().buildGeometry(faces));
 	}
 
 	@Override
@@ -97,7 +97,7 @@ public abstract class Gama3DGeometryFile extends GamaGeometryFile {
 	public IEnvelope computeEnvelope(final IScope scope) {
 		if (envelope == null) {
 			fillBuffer(scope);
-			if (initRotation != null && initRotation.angle != 0.0) { envelope = envelope.rotate(initRotation); }
+			if (initRotation != null && initRotation.getAngle() != 0.0) { envelope = envelope.rotate(initRotation); }
 		}
 		return envelope;
 	}

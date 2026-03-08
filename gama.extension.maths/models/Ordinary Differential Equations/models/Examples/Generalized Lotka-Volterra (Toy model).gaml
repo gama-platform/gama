@@ -43,7 +43,7 @@ global {
 	bool showCumulatedGraph <- true;
 	
 	// names generator parameters
-	string language <- "French" among: ["French","English"];
+	string language <- "French" among: ["French","English"]; 
 
 	map<string,list<list<string>>> animal_names <- map(
 										"French"::
@@ -474,7 +474,7 @@ experiment Simulation type: gui autorun: true  {
 		layout value: horizontal([0::50,vertical([1::50,2::50])::50]) tabs:false;
 		
 		// left display: interaction matrix
-		display action_button name:"Species interactions" toolbar: false type:3d axes: false{
+		display action_button title:"Species interactions" toolbar: false type:3d axes: false{
 			camera 'default' location: {500.0,500.0231,1273.0} target: {500.0,500.0,0.0} locked: true;
 			light #default intensity: 120;
 			species button aspect: modern;
@@ -489,8 +489,8 @@ experiment Simulation type: gui autorun: true  {
 		}
 		
 		// top-right display: charts
-		display "Charts" name: "Charts" refresh: every(1#cycle) type: 3d toolbar: false axes: false{
-			camera name: "myCamera" locked: true;
+		display "Charts" title: "Charts" refresh: every(1#cycle) type: 3d toolbar: false axes: false{
+			camera  "myCamera" locked: true;
 			
 			// chart definition: cumulated population
 			chart "Cumulated population size" type: series style: area background: #white 

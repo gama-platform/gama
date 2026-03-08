@@ -190,15 +190,15 @@ experiment base virtual:true {
 	//Complete experiment that will inspect all ants in a table
 experiment "With Inspector" type: gui parent:base{
 	
-	parameter 'Number:' var: ants_number init: 100 unit: 'ants' category: 'Environment and Population';
-	parameter 'Grid dimension:' var: gridsize init: 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number:' var: ants_number <- 100 unit: 'ants' category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
 
 	
 	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
 	output {
 		layout #split editors: false;
 		display Ants type: 3d axes:false{
-			image terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
+			picture terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
 			agents "agents" transparency: 0.7 position: {0.05, 0.05} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant position: {0.05, 0.05, 0.05} size: {0.9, 0.9} aspect: icon_svg;
 			overlay transparency: 0.3 background: rgb(99, 85, 66, 255) position: {50 #px, 50 #px} size: {250 #px, 150 #px} border: rgb(99, 85, 66, 255) rounded: true {
@@ -230,7 +230,7 @@ experiment "Classic" type: gui record: every(10) parent:base{
 		display Ants antialias: false type: 3d {
 			light #ambient intensity: 127;
 			light #default intensity: 127;
-			image terrain refresh: false;
+			picture terrain refresh: false;
 			agents "Grid" transparency: 0.4 value: ant_grid where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant aspect: info;
 		}
@@ -241,9 +241,9 @@ experiment "Classic" type: gui record: every(10) parent:base{
 
 //Complete experiment that will inspect all ants in a table
 experiment "3D View" type: gui parent:base{
-	parameter 'Number:' var: ants_number init: 30 unit: 'ants' category: 'Environment and Population';
-	parameter 'Grid dimension:' var: gridsize init: 100 unit: '(number of rows and columns)' category: 'Environment and Population';
-	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
+	parameter 'Number:' var: ants_number <- 30 unit: 'ants' category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
 	output {
 		
 
@@ -260,15 +260,15 @@ experiment "3D View" type: gui parent:base{
 //Experiment to show how to make multi simulations
 experiment "3 Simulations" type: gui  parent:base{
 	
-	parameter 'Number:' var: ants_number init: 100 unit: 'ants' category: 'Environment and Population';
-	parameter 'Grid dimension:' var: gridsize init: 100 unit: '(number of rows and columns)' category: 'Environment and Population';
-	parameter 'Number of food depots:' var: number_of_food_places init: 5 min: 1 category: 'Environment and Population';
+	parameter 'Number:' var: ants_number <- 100 unit: 'ants' category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
 	
 
 	// We create 2 supplementary simulations using the species name 'ants_model' (automatically created from the name of the model + '_model')
 	init {
-		create ants_model with: [ants_number::200, evaporation_per_cycle::100, diffusion_rate::0.2];
-		create ants_model with: [ants_number::10, evaporation_per_cycle::72, diffusion_rate::0.6];
+		create ants_model with: (ants_number:200, evaporation_per_cycle:100, diffusion_rate:0.2);
+		create ants_model with: (ants_number:10, evaporation_per_cycle:72, diffusion_rate:0.6);
 	}
 
 
@@ -290,7 +290,7 @@ experiment "3 Simulations" type: gui  parent:base{
 	output {
 		layout #split editors: false consoles: false toolbars: true tabs: true tray: false parameters: true background: #red;
 		display Ants background: color type: 3d toolbar: color axes: false {
-			image terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
+			picture terrain position: {0.05, 0.05} size: {0.9, 0.9} refresh: false;
 			agents "agents" transparency: 0.5 position: {0.05, 0.05} size: {0.9, 0.9} value: (ant_grid as list) where ((each.food > 0) or (each.road > 0) or (each.is_nest));
 			species ant position: {0.05, 0.05} size: {0.9, 0.9} aspect: icon;
 		}

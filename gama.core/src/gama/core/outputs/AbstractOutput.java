@@ -3,7 +3,7 @@
  * AbstractOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,20 +13,21 @@ package gama.core.outputs;
 import java.util.Collections;
 import java.util.List;
 
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.Symbol;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IExpressionFactory;
-import gama.gaml.operators.Cast;
+import gama.annotations.inside;
+import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.symbols.Symbol;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IOutput;
 
 /**
  * The Class AbstractOutput.
@@ -77,7 +78,7 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 		if (hasFacet(IKeyword.REFRESH)) {
 			refresh = this.getFacet(IKeyword.REFRESH);
 		} else {
-			refresh = IExpressionFactory.TRUE_EXPR;
+			refresh = GAML.getExpressionFactory().getTrue();
 		}
 		if (desc != null) { name = desc.getName(); }
 		originalName = name;
@@ -203,11 +204,11 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	public void setScope(final IScope scope) {
 		if (this.outputScope != null) { GAMA.releaseScope(this.outputScope); }
 		if (scope.getModel() != null) {
-			final ModelDescription micro = this.getDescription().getModelDescription();
-			final ModelDescription main = scope.getModel().getDescription();
+			final IModelDescription micro = this.getDescription().getModelDescription();
+			final IModelDescription main = scope.getModel().getDescription();
 			final boolean fromMicroModel = main.getMicroModel(micro.getAlias()) != null;
 			if (fromMicroModel) {
-				final ExperimentAgent exp = (ExperimentAgent) scope.getRoot()
+				final IExperimentAgent exp = (IExperimentAgent) scope.getRoot()
 						.getExternMicroPopulationFor(micro.getAlias() + "." + this.getDescription().getOriginName())
 						.getAgent(0);
 				this.outputScope = exp.getSimulation().getScope();
@@ -251,7 +252,11 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 		return true;
 	}
 
-	@Override
+	/**
+	 * Gets the view.
+	 *
+	 * @return the view
+	 */
 	public IGamaView getView() { return view; }
 
 	@Override

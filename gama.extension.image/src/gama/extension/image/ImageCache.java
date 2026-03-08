@@ -31,8 +31,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.io.Files;
 import com.sun.media.jai.codec.FileSeekableStream;
 
+import gama.api.runtime.scope.IScope;
 import gama.core.outputs.display.AbstractDisplayGraphics;
-import gama.core.runtime.IScope;
 import gama.dev.DEBUG;
 import gama.extension.image.gif.GifImageContainer;
 

@@ -34,7 +34,7 @@ global {
 	rgb chaos_ball_color <- #red;
 	float ball_size <- float(3);
 	float ball_speed <- float(1);
-	float chaos_ball_speed <- 8 * ball_speed;
+	float chaos_ball_speed <- 8 * ball_speed; 
 	int ball_number <- 400 min: 2 max: 1000;
 	geometry ball_shape <- circle(ball_size);
 	float ball_separation <- 6 * ball_size;
@@ -406,7 +406,7 @@ species cloud {
 		if (target_group != nil) {
 			float direction_target <- self towards (target_group);
 			ask group_delegation {
-				do move2 with: [with_heading::float(direction_target), with_speed::float(cloud_speed)];
+				do move2 with: (with_heading:float(direction_target), with_speed:float(cloud_speed));
 			}
 
 		}
@@ -485,14 +485,14 @@ experiment group_experiment type: gui {
 			}
 
 		}
-
+ 
 		display 'Ball display' {
 			species ball;
 		}
 
 		display 'Group display' {
 			species group;
-			species group_agents_viewer;
+			species group_agents_viewer; 
 		}
 
 	}

@@ -3,7 +3,7 @@
  * AbstractQuickDialog.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,6 +13,8 @@ package gama.ui.viewers.json.eclipse;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+
+import gama.dev.DEBUG;
 
 /**
  * The Class AbstractQuickDialog.
@@ -68,9 +70,9 @@ abstract class AbstractQuickDialog extends PopupDialog {
 	 * @param infoText
 	 *            the info text
 	 */
-	AbstractQuickDialog(final Shell parent, final int shellStyle, final boolean takeFocusOnOpen, final boolean persistSize,
-			final boolean persistLocation, final boolean showDialogMenu, final boolean showPersistActions, final String titleText,
-			final String infoText) {
+	AbstractQuickDialog(final Shell parent, final int shellStyle, final boolean takeFocusOnOpen,
+			final boolean persistSize, final boolean persistLocation, final boolean showDialogMenu,
+			final boolean showPersistActions, final String titleText, final String infoText) {
 		super(parent, shellStyle, takeFocusOnOpen, persistSize, persistLocation, showDialogMenu, showPersistActions,
 				titleText, infoText);
 	}
@@ -108,7 +110,7 @@ abstract class AbstractQuickDialog extends PopupDialog {
 			try {
 				if (!display.readAndDispatch()) { display.sleep(); }
 			} catch (Throwable e) {
-				EclipseUtil.logError("UI problems on dispatch", e);
+				DEBUG.ERR("UI problems on dispatch", e);
 			}
 		}
 		if (!display.isDisposed()) { display.update(); }

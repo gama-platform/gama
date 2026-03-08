@@ -1,0 +1,746 @@
+/*******************************************************************************************************
+ *
+ * IShape.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.api.types.geometry;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.WKTWriter;
+
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IValue;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.geometry.IEnvelopeProvider;
+import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.interfaces.IAttributed;
+import gama.api.utils.interfaces.ILocated;
+
+/**
+ * Interface for geometric shapes in GAMA.
+ * 
+ * <p>{@code IShape} is the fundamental interface for all geometric entities in GAMA, representing objects that
+ * have spatial extent and can be manipulated geometrically. This includes:</p>
+ * <ul>
+ *   <li>Simple shapes: points, lines, polygons</li>
+ *   <li>Complex shapes: multi-geometries, geometries with holes</li>
+ *   <li>3D shapes: boxes, spheres, cylinders, polyhedra</li>
+ *   <li>Agent geometries: the spatial representation of agents</li>
+ * </ul>
+ * 
+ * <p>IShape extends multiple interfaces to provide comprehensive functionality:</p>
+ * <ul>
+ *   <li>{@link ILocated} - Provides location and geometry access</li>
+ *   <li>{@link IValue} - Integrates with GAMA's type system</li>
+ *   <li>{@link IAttributed} - Supports custom attributes</li>
+ *   <li>{@link IEnvelopeProvider} - Provides bounding box access</li>
+ * </ul>
+ * 
+ * <h2>Core Properties</h2>
+ * <p>Shapes expose numerous geometric properties via getters and GAML attributes:</p>
+ * 
+ * <h3>Spatial Properties</h3>
+ * <ul>
+ *   <li><b>area</b> - Total area (2D projection)</li>
+ *   <li><b>volume</b> - 3D volume (for 3D shapes)</li>
+ *   <li><b>perimeter</b> - Length of the boundary</li>
+ *   <li><b>centroid</b> - Center of mass</li>
+ *   <li><b>location</b> - Reference point (usually centroid)</li>
+ * </ul>
+ * 
+ * <h3>Bounding Properties</h3>
+ * <ul>
+ *   <li><b>envelope</b> - Minimum bounding rectangle</li>
+ *   <li><b>width</b> - Width of bounding box (x-axis)</li>
+ *   <li><b>height</b> - Height of bounding box (y-axis)</li>
+ *   <li><b>depth</b> - Depth of bounding box (z-axis)</li>
+ * </ul>
+ * 
+ * <h3>Structural Properties</h3>
+ * <ul>
+ *   <li><b>points</b> - Vertices of the shape</li>
+ *   <li><b>geometries</b> - Sub-geometries (for multi-geometries)</li>
+ *   <li><b>holes</b> - Interior holes (for polygons)</li>
+ *   <li><b>contour</b> - Boundary as a polyline</li>
+ *   <li><b>multiple</b> - Whether shape is a multi-geometry</li>
+ * </ul>
+ * 
+ * <h2>Spatial Operations</h2>
+ * 
+ * <h3>Predicates</h3>
+ * <ul>
+ *   <li>{@link #covers(IShape)} - Tests if this shape covers another</li>
+ *   <li>{@link #touches(IShape)} - Tests if boundaries touch</li>
+ *   <li>{@link #partiallyOverlaps(IShape)} - Tests for partial overlap</li>
+ *   <li>{@link #crosses(IShape)} - Tests for crossing</li>
+ * </ul>
+ * 
+ * <h3>Transformations</h3>
+ * <p>Most transformation methods modify the shape in place and return {@code this} for method chaining:</p>
+ * <ul>
+ *   <li>Translation: {@code translate}, {@code setLocation}</li>
+ *   <li>Rotation: {@code rotate}, various rotation methods</li>
+ *   <li>Scaling: {@code scale}, {@code setDepth}</li>
+ * </ul>
+ * 
+ * <h3>Geometric Operations</h3>
+ * <p>Operations that create new shapes:</p>
+ * <ul>
+ *   <li>Union, intersection, difference (via GAML operators)</li>
+ *   <li>Buffer, simplification, convex hull</li>
+ *   <li>Triangulation, skeletonization</li>
+ * </ul>
+ * 
+ * <h2>Type System</h2>
+ * <p>IShape defines an enum {@link Type} classifying shapes by geometry type:</p>
+ * <ul>
+ *   <li><b>2D JTS types:</b> POINT, LINESTRING, POLYGON, and multi-variants</li>
+ *   <li><b>3D types:</b> BOX, SPHERE, CYLINDER, PYRAMID, POLYHEDRON, etc.</li>
+ *   <li><b>Special types:</b> ROUNDED, GRIDLINE, NULL</li>
+ * </ul>
+ * 
+ * <h2>Attributes</h2>
+ * <p>Shapes can carry custom attributes (via {@link IAttributed}) which are preserved across copies
+ * and can be shared with agent attributes. This allows attaching metadata to geometries.</p>
+ * 
+ * <h2>Mutability</h2>
+ * <p>Most IShape implementations are mutable. Transformation methods typically modify the shape in place.
+ * Use {@link #copy(gama.api.runtime.scope.IScope)} to create independent copies when needed.</p>
+ * 
+ * <h2>Thread Safety</h2>
+ * <p>IShape implementations are generally NOT thread-safe. Concurrent access requires external synchronization
+ * or creating separate copies for each thread.</p>
+ * 
+ * <h2>JTS Integration</h2>
+ * <p>IShape wraps JTS {@link Geometry} objects accessible via {@link #getInnerGeometry()}. This enables
+ * leveraging JTS's robust geometric algorithms while maintaining GAMA's type system and additional features.</p>
+ * 
+ * <h2>Usage Examples</h2>
+ * 
+ * <h3>GAML Usage</h3>
+ * <pre>
+ * // Create shapes
+ * geometry circle &lt;- circle(10);
+ * geometry rect &lt;- rectangle(20, 15);
+ * 
+ * // Access properties
+ * float area &lt;- circle.area;
+ * point center &lt;- circle.centroid;
+ * 
+ * // Spatial predicates
+ * bool overlap &lt;- circle overlaps rect;
+ * 
+ * // Operations
+ * geometry union &lt;- circle union rect;
+ * geometry buffer &lt;- circle + 5.0;  // Buffer by 5
+ * </pre>
+ * 
+ * <h3>Java Usage</h3>
+ * <pre>
+ * // Create shapes
+ * IShape circle = GamaShapeFactory.buildCircle(10.0, center);
+ * 
+ * // Access properties
+ * double area = circle.getArea();
+ * IPoint centroid = circle.getCentroid();
+ * 
+ * // Transform
+ * circle.setLocation(newLocation);
+ * circle.rotate(scope, Math.PI / 4);  // Rotate 45 degrees
+ * 
+ * // Access inner geometry
+ * Geometry jtsGeom = circle.getInnerGeometry();
+ * </pre>
+ * 
+ * @author Alexis Drogoul
+ * @see GamaShapeFactory
+ * @see IPoint
+ * @see org.locationtech.jts.geom.Geometry
+ * @since GAMA 1.4 (April 16, 2011)
+ * @modified November 2011 - Added isPoint(), getInnerGeometry(), getEnvelope()
+ */
+@vars ({ @variable (
+		name = "area",
+		type = IType.FLOAT,
+		doc = { @doc ("Returns the total area of this geometry") }),
+		@variable (
+				name = "volume",
+				type = IType.FLOAT,
+				doc = { @doc ("Returns the total volume of this geometry") }),
+		@variable (
+				name = "centroid",
+				type = IType.POINT,
+				doc = { @doc ("Returns the centroid of this geometry") }),
+		@variable (
+				name = "width",
+				type = IType.FLOAT,
+				doc = { @doc ("Returns the width (length on the x-axis) of the rectangular envelope of this  geometry") }),
+		@variable (
+				name = "attributes",
+				type = IType.MAP,
+				index = IType.STRING,
+				doc = { @doc ("Returns the attributes kept by this geometry (the ones shared with the agent)") }),
+		@variable (
+				name = "depth",
+				type = IType.FLOAT,
+				doc = { @doc ("Returns the depth (length on the z-axis) of the rectangular envelope of this geometry") }),
+		@variable (
+				name = "height",
+				type = IType.FLOAT,
+				doc = { @doc ("Returns the height (length on the y-axis) of the rectangular envelope of this geometry") }),
+		@variable (
+				name = "points",
+				type = IType.LIST,
+				of = IType.POINT,
+				doc = { @doc ("Returns the list of points that delimit this geometry. A point will return a list with itself") }),
+		@variable (
+				name = "envelope",
+				type = IType.GEOMETRY,
+				doc = { @doc ("Returns the envelope of this geometry (the smallest rectangle that contains the geometry)") }),
+		@variable (
+				name = "geometries",
+				type = IType.LIST,
+				of = IType.GEOMETRY,
+				doc = { @doc ("Returns the list of geometries that compose this geometry, or a list containing the geometry itself if it is simple") }),
+		@variable (
+				name = "multiple",
+				type = IType.BOOL,
+				doc = { @doc ("Returns whether this geometry is composed of multiple geometries or not") }),
+		@variable (
+				name = "perimeter",
+				type = IType.FLOAT,
+				doc = { @doc ("Returns the length of the contour of this geometry") }),
+		@variable (
+				name = "holes",
+				type = IType.LIST,
+				of = IType.GEOMETRY,
+				doc = { @doc ("Returns the list of holes inside this geometry as a list of geometries, and an emptly list if this geometry is solid") }),
+		@variable (
+				name = "contour",
+				type = IType.GEOMETRY,
+				doc = { @doc ("Returns the polyline representing the contour of this geometry") }) })
+public interface IShape extends ILocated, IValue, IAttributed, IEnvelopeProvider {
+
+	/** The jts types. */
+	Map<String, Type> JTS_TYPES = new HashMap<>();
+
+	/** The threed types. */
+	Set<Type> THREED_TYPES = new HashSet<>();
+
+	/**
+	 * The Enum Type.
+	 */
+	enum Type {
+
+		/** The box. */
+		BOX("3D"),
+
+		/** The circle. */
+		CIRCLE("3D"),
+
+		/** The cone. */
+		CONE("3D"),
+
+		/** The cube. */
+		CUBE("3D"),
+
+		/** The square. */
+		SQUARE("3D"),
+
+		/** The rounded. */
+		ROUNDED(""),
+
+		/** The cylinder. */
+		CYLINDER("3D"),
+
+		/** The gridline. */
+		GRIDLINE(""),
+
+		/** The linearring. */
+		LINEARRING("LinearRing"),
+
+		/** The linestring. */
+		LINESTRING("LineString"),
+
+		/** The multilinestring. */
+		MULTILINESTRING("MultiLineString"),
+
+		/** The multipoint. */
+		MULTIPOINT("MultiPoint"),
+
+		/** The multipolygon. */
+		MULTIPOLYGON("MultiPolygon"),
+
+		/** The null. */
+		NULL(""),
+
+		/** The plan. */
+		PLAN("3D"),
+
+		/** The point. */
+		POINT("Point"),
+
+		/** The polygon. */
+		POLYGON("Polygon"),
+
+		/** The polyhedron. */
+		POLYHEDRON("3D"),
+
+		/** The polyplan. */
+		POLYPLAN("3D"),
+
+		/** The pyramid. */
+		PYRAMID("3D"),
+
+		/** The sphere. */
+		SPHERE("3D"),
+
+		/** The teapot. */
+		TEAPOT("3D"),
+
+		/** The linecylinder. */
+		LINECYLINDER("3D"),
+
+		/** The threed file. */
+		THREED_FILE("");
+
+		/**
+		 * Instantiates a new type.
+		 *
+		 * @param name
+		 *            the name
+		 */
+		Type(final String name) {
+			if (name.isEmpty()) return;
+			if ("3D".equals(name)) {
+				THREED_TYPES.add(this);
+			} else {
+				JTS_TYPES.put(name, this);
+			}
+		}
+	}
+
+	/** The shape writer. */
+	WKTWriter SHAPE_WRITER = new WKTWriter();
+
+	/**
+	 * Copy.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i shape
+	 */
+	@Override
+	IShape copy(IScope scope);
+
+	/**
+	 * Covers.
+	 *
+	 * @param g
+	 *            the g
+	 * @return true, if successful
+	 */
+	boolean covers(IShape g);
+
+	/**
+	 * Partially overlaps.
+	 *
+	 * @param g
+	 *            the g
+	 * @return true, if successful
+	 */
+	boolean partiallyOverlaps(IShape g);
+
+	/**
+	 * Touches.
+	 *
+	 * @param g
+	 *            the g
+	 * @return true, if successful
+	 */
+	boolean touches(IShape g);
+
+	/**
+	 * Crosses.
+	 *
+	 * @param g
+	 *            the g
+	 * @return true, if successful
+	 */
+	boolean crosses(IShape g);
+
+	/**
+	 * Dispose.
+	 */
+	void dispose();
+
+	/**
+	 * Euclidian distance to.
+	 *
+	 * @param g
+	 *            the g
+	 * @return the double
+	 */
+	double euclidianDistanceTo(IPoint g);
+
+	/**
+	 * Euclidian distance to.
+	 *
+	 * @param g
+	 *            the g
+	 * @return the double
+	 */
+	double euclidianDistanceTo(IShape g);
+
+	/**
+	 * Gets the agent.
+	 *
+	 * @return the agent
+	 */
+	IAgent getAgent();
+
+	/**
+	 * Gets the envelope.
+	 *
+	 * @return the envelope
+	 */
+	IEnvelope getEnvelope();
+
+	/**
+	 * Returns the geometrical type of this shape. May be computed dynamically (from the JTS inner geometry) or stored
+	 * somewhere (in the attributes of the shape, using TYPE_ATTRIBUTE)
+	 *
+	 * @param g
+	 * @return
+	 */
+	IShape.Type getGeometricalType();
+
+	/**
+	 * Gets the geometry.
+	 *
+	 * @return the geometry
+	 */
+	IShape getGeometry();
+
+	/**
+	 * Gets the inner geometry.
+	 *
+	 * @return the inner geometry
+	 */
+	Geometry getInnerGeometry();
+
+	/**
+	 * Intersects.
+	 *
+	 * @param g
+	 *            the g
+	 * @return true, if successful
+	 */
+	boolean intersects(IShape g);
+
+	/**
+	 * Checks if is line.
+	 *
+	 * @return true, if is line
+	 */
+	boolean isLine();
+
+	/**
+	 * Checks if is point.
+	 *
+	 * @return true, if is point
+	 */
+	boolean isPoint();
+
+	/**
+	 * Sets the agent.
+	 *
+	 * @param agent
+	 *            the new agent
+	 */
+	void setAgent(IAgent agent);
+
+	/**
+	 * Sets the geometry.
+	 *
+	 * @param g
+	 *            the new geometry
+	 */
+	void setGeometry(IShape g);
+
+	/**
+	 * Sets the inner geometry.
+	 *
+	 * @param intersection
+	 *            the new inner geometry
+	 */
+	void setInnerGeometry(Geometry intersection);
+
+	/**
+	 * Sets the depth.
+	 *
+	 * @param depth
+	 *            the new depth
+	 */
+	void setDepth(double depth);
+
+	/**
+	 * Gets the or create attributes.
+	 *
+	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * @return the or create attributes
+	 * @date 21 sept. 2023
+	 */
+	@getter ("attributes")
+	default IMap<String, Object> getOrCreateAttributes() { return getAttributes(true); }
+
+	/**
+	 * Checks if is multiple.
+	 *
+	 * @return true, if is multiple
+	 */
+	@getter ("multiple")
+	boolean isMultiple();
+
+	/**
+	 * Gets the area.
+	 *
+	 * @return the area
+	 */
+	@getter ("area")
+	Double getArea();
+
+	/**
+	 * Gets the volume.
+	 *
+	 * @return the volume
+	 */
+	@getter ("volume")
+	Double getVolume();
+
+	/**
+	 * Gets the perimeter.
+	 *
+	 * @return the perimeter
+	 */
+	@getter ("perimeter")
+	double getPerimeter();
+
+	/**
+	 * Float value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the double
+	 */
+	@Override
+	default double floatValue(final IScope scope) {
+		return getArea().doubleValue();
+	}
+
+	/**
+	 * Int value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the int
+	 */
+	@Override
+	default int intValue(final IScope scope) {
+		return getArea().intValue();
+	}
+
+	/**
+	 * Gets the holes.
+	 *
+	 * @return the holes
+	 */
+	@getter ("holes")
+	IList<IShape> getHoles();
+
+	/**
+	 * Gets the centroid.
+	 *
+	 * @return the centroid
+	 */
+	@getter ("centroid")
+	IPoint getCentroid();
+
+	/**
+	 * Gets the exterior ring.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the exterior ring
+	 */
+	@getter ("contour")
+	IShape getExteriorRing(IScope scope);
+
+	/**
+	 * Gets the width.
+	 *
+	 * @return the width
+	 */
+	@getter ("width")
+	default Double getWidth() { return getEnvelope().getWidth(); }
+
+	/**
+	 * Gets the height.
+	 *
+	 * @return the height
+	 */
+	@getter ("height")
+	default Double getHeight() { return getEnvelope().getHeight(); }
+
+	/**
+	 * Gets the depth.
+	 *
+	 * @return the depth
+	 */
+	@getter ("depth")
+	Double getDepth();
+
+	/**
+	 * Gets the max dimension.
+	 *
+	 * @return the max dimension
+	 */
+	default Double getMaxDimension() {
+		return Math.max(Math.max(getHeight(), getWidth()), getDepth() == null ? 0d : getDepth());
+	}
+
+	/**
+	 * Gets the geometric envelope.
+	 *
+	 * @return the geometric envelope
+	 */
+	@getter ("envelope")
+	default IShape getGeometricEnvelope() { return getEnvelope().toShape(); }
+
+	/**
+	 * Gets the points.
+	 *
+	 * @return the points
+	 */
+	@getter ("points")
+	IList<IPoint> getPoints();
+
+	/**
+	 * Gets the geometries.
+	 *
+	 * @return the geometries
+	 */
+	@getter ("geometries")
+	IList<? extends IShape> getGeometries();
+
+	/**
+	 * Copy only the attributes that support defining the shape
+	 *
+	 * @param other
+	 */
+	default void copyShapeAttributesFrom(final IShape other) {
+		final Double d = other.getDepth();
+		if (d != null) { setDepth(d); }
+		final Type t = other.getGeometricalType();
+		if (THREED_TYPES.contains(t)) { setGeometricalType(t); }
+	}
+
+	/**
+	 * Sets the geometrical type.
+	 *
+	 * @param t
+	 *            the new geometrical type
+	 */
+	void setGeometricalType(Type t);
+
+	/**
+	 * Compute envelope.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the envelope 3 D
+	 */
+	@Override
+	default IEnvelope computeEnvelope(final IScope scope) {
+		return getEnvelope();
+	}
+
+	/**
+	 * @param scope
+	 * @param absoluteLocation
+	 * @return
+	 */
+	IShape translatedTo(IScope scope, IPoint absoluteLocation);
+
+	/**
+	 * @param g1
+	 * @return
+	 */
+	default IShape withAttributesOf(final IShape source) {
+		if (source == null) return this;
+		copyShapeAttributesFrom(source);
+		source.forEachAttribute((key, val) -> {
+			if (val != source) { setAttribute(key, val); }
+			return true;
+		});
+		return this;
+	}
+
+	/**
+	 * @param rotation
+	 * @return
+	 */
+	default IShape withRotation(final AxisAngle rotation) {
+		return this;
+	}
+
+	/**
+	 * @param location
+	 * @return
+	 */
+	default IShape withLocation(final IPoint location) {
+		if (location != null) { setLocation(location); }
+		return this;
+	}
+
+	/**
+	 * @param coefficient
+	 * @return
+	 */
+	default IShape withScaling(final Double coefficient) {
+		return this;
+	}
+
+	/**
+	 * @param size
+	 * @param b
+	 * @return
+	 */
+	default IShape withScaling(final Scaling3D size, final boolean b) {
+		return this;
+	}
+
+	/**
+	 *
+	 */
+	default void losePredefinedProperty() {}
+
+}

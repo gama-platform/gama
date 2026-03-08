@@ -24,8 +24,8 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.WorkbenchWindow;
 
-import gama.core.common.interfaces.IStatusMessage;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.ui.IStatusMessage;
 import gama.dev.DEBUG;
 import gama.ui.shared.controls.StatusControlContribution;
 import gama.ui.shared.utils.WorkbenchHelper;

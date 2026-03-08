@@ -34,36 +34,37 @@ import javax.swing.JPanel;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Monitor;
 
-import gama.annotations.precompiler.GamlAnnotations.display;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ILayer;
-import gama.core.common.interfaces.ILayerManager;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.outputs.LayeredDisplayData;
-import gama.core.outputs.LayeredDisplayData.Changes;
-import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.outputs.display.AWTDisplayGraphics;
+import gama.annotations.display;
+import gama.annotations.doc;
+import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.GeneralSynchronizer;
+import gama.api.runtime.SystemInfo;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.ui.IOutput;
+import gama.api.ui.displays.IDisplayData;
+import gama.api.ui.displays.IDisplayData.Changes;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.IEventLayerListener;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ILayerManager;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.display.LayerManager;
-import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.outputs.layers.OverlayLayer;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.PlatformHelper;
-import gama.core.runtime.concurrent.GeneralSynchronizer;
-import gama.core.util.IColor;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.extension.image.GamaImage;
 import gama.extension.image.ImageHelper;
+import gama.extension.image.display.AWTDisplayGraphics;
 import gama.ui.experiment.views.displays.DisplaySurfaceMenu;
 import gama.ui.shared.utils.DPIHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -98,7 +99,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	}
 
 	/** The output. */
-	final LayeredDisplayOutput output;
+	final IOutput.Display output;
 
 	/** The view port. */
 	protected final Rectangle viewPort = new Rectangle();
@@ -149,8 +150,8 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	 * @param args
 	 *            the args
 	 */
-	public Java2DDisplaySurface(final Object... args) {
-		output = (LayeredDisplayOutput) args[0];
+	public Java2DDisplaySurface(final IOutput.Display output, final Object uiComponent) {
+		this.output = output;
 		output.setSurface(this);
 		setDisplayScope(output.getScope().copyForGraphics("in java2D display"));
 		output.getData().addListener(this);
@@ -604,7 +605,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	protected void setDisplayWidth(final int displayWidth) { viewPort.width = displayWidth /*- 2*/; }
 
 	@Override
-	public LayeredDisplayData getData() { return output.getData(); }
+	public IDisplayData getData() { return output.getData(); }
 
 	@Override
 	public double getDisplayHeight() { return viewPort.height; }
@@ -618,7 +619,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	protected void setDisplayHeight(final int displayHeight) { viewPort.height = displayHeight /*- 2*/; }
 
 	@Override
-	public LayeredDisplayOutput getOutput() { return output; }
+	public IOutput.Display getOutput() { return output; }
 
 	/**
 	 * New zoom level.
@@ -843,7 +844,10 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	public void changed(final Changes property, final Object value) {
 
 		switch (property) {
-			case BACKGROUND -> setBackground((Color) value);
+			case BACKGROUND -> {
+				Color cc = IColor.toAWTColor(GamaColorFactory.castToColor(getScope(), value));
+				setBackground(cc);
+			}
 			default -> {
 			}
 		}
@@ -856,7 +860,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	@Override
 	public Font computeFont(final Font f) {
 		if (f == null) return null;
-		if (monitor != null && PlatformHelper.isWindows() && DPIHelper.isHiDPI(monitor))
+		if (monitor != null && SystemInfo.isWindows() && DPIHelper.isHiDPI(monitor))
 			return f.deriveFont(DPIHelper.autoScaleUp(monitor, f.getSize()));
 		return f;
 

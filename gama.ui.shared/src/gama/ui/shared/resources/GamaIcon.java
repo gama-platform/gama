@@ -41,7 +41,7 @@ import org.osgi.framework.Bundle;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import gama.core.util.IColor;
+import gama.api.types.color.IColor;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
@@ -79,7 +79,7 @@ public class GamaIcon implements IGamaIcons {
 	 */
 	public static void preloadAllIcons() {
 		try {
-			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Preloading icons", "done in", () -> {
+			TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Preloading icons", "completed in", () -> {
 				if (PATH_TO_ICONS == null) return;
 				Files.walkFileTree(PATH_TO_ICONS, new SimpleFileVisitor<Path>() {
 

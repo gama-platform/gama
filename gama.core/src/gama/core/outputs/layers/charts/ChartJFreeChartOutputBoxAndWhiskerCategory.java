@@ -37,12 +37,13 @@ import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import org.jfree.data.xy.XYDataset;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IColor;
-import gama.gaml.expressions.IExpression;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.ui.displays.IChartDataSource;
+import gama.api.ui.displays.IDisplaySurface;
 
 /**
  * The Class ChartJFreeChartOutputHistogram.
@@ -113,13 +114,13 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 	}
 
 	@Override
-	public void setDefaultPropertiesFromType(final IScope scope, final ChartDataSource source, final int type_val) {
+	public void setDefaultPropertiesFromType(final IScope scope, final IChartDataSource source, final int type_val) {
 
 		source.setUseXErrValues(false);
-		source.setUseYErrValues(false);
+		source.setUseXErrValues(false);
 		source.setisBoxAndWhiskerData(true);
 		switch (type_val) {
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N, ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N, ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12, ChartDataSource.DATA_TYPE_LIST_POINT, ChartDataSource.DATA_TYPE_MATRIX_DOUBLE, ChartDataSource.DATA_TYPE_LIST_DOUBLE_3, ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3: {
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12, IChartDataSource.DATA_TYPE_LIST_POINT, IChartDataSource.DATA_TYPE_MATRIX_DOUBLE, IChartDataSource.DATA_TYPE_LIST_DOUBLE_3, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3: {
 				source.setCumulative(scope, false);
 				source.setUseSize(scope, false);
 				break;

@@ -17,19 +17,20 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.collect.ImmutableList;
 
-import gama.core.common.util.random.IRandom;
-import gama.core.metamodel.shape.IPoint ;
-import gama.core.metamodel.topology.grid.GamaSpatialMatrix;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.GamaMatrixType;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.random.IRandom;
+import gama.core.topology.grid.GamaSpatialMatrix;
 import one.util.streamex.StreamEx;
 
 /**
@@ -69,7 +70,7 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	 * @param contentsType
 	 *            the contents type
 	 */
-	public GamaObjectMatrix(final IPoint  p, final IType<?> contentsType) {
+	GamaObjectMatrix(final IPoint p, final IType<?> contentsType) {
 		this((int) p.getX(), (int) p.getY(), contentsType);
 	}
 
@@ -83,7 +84,7 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	 * @param contentsType
 	 *            the contents type
 	 */
-	public GamaObjectMatrix(final int cols, final int rows, final IType<?> contentsType) {
+	GamaObjectMatrix(final int cols, final int rows, final IType<?> contentsType) {
 		super(cols, rows, contentsType);
 		setMatrix(new Object[cols * rows]);
 	}
@@ -98,7 +99,7 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	 * @param objects
 	 *            the objects
 	 */
-	public GamaObjectMatrix(final int cols, final int rows, final double[] objects) {
+	GamaObjectMatrix(final int cols, final int rows, final double[] objects) {
 		this(cols, rows, Types.FLOAT);
 		final int n = Math.min(objects.length, rows * cols);
 		for (int i = 0; i < n; i++) { matrix[i] = objects[i]; }
@@ -114,7 +115,7 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	 * @param objects
 	 *            the objects
 	 */
-	public GamaObjectMatrix(final int cols, final int rows, final int[] objects) {
+	GamaObjectMatrix(final int cols, final int rows, final int[] objects) {
 		this(cols, rows, Types.INT);
 		final int n = Math.min(objects.length, rows * cols);
 		for (int i = 0; i < n; i++) { matrix[i] = objects[i]; }
@@ -132,7 +133,7 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	 * @param contentsType
 	 *            the contents type
 	 */
-	public GamaObjectMatrix(final int cols, final int rows, final Object[] objects, final IType<?> contentsType) {
+	GamaObjectMatrix(final int cols, final int rows, final Object[] objects, final IType<?> contentsType) {
 		this(cols, rows, contentsType);
 		java.lang.System.arraycopy(objects, 0, getMatrix(), 0, Math.min(objects.length, rows * cols));
 	}
@@ -149,7 +150,7 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	 * @param contentsType
 	 *            the contents type
 	 */
-	public GamaObjectMatrix(final IScope scope, final IList<?> objects, final IPoint  preferredSize,
+	GamaObjectMatrix(final IScope scope, final IList<?> objects, final IPoint preferredSize,
 			final IType<?> contentsType) {
 		super(scope, objects, preferredSize, contentsType);
 		setMatrix(new Object[numRows * numCols]);
@@ -207,7 +208,8 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	 * @return the matrix concatenated
 	 */
 
-	public IMatrix<?> _opAppendVertically(final IScope scope, final IMatrix<?> b) {
+	@Override
+	public IMatrix<?> _opAppendVertically(final IScope scope, final IMatrix b) {
 		final Object[] mab = ArrayUtils.addAll(getMatrix(), ((GamaObjectMatrix) b).getMatrix());
 		final IType<?> newContentsType =
 				GamaType.findCommonType(getGamlType().getContentType(), b.getGamlType().getContentType());
@@ -243,9 +245,9 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	}
 
 	@Override
-	protected IMatrix<Object> _matrixValue(final IScope scope, final IPoint  preferredSize, final IType type,
+	protected IMatrix<Object> _matrixValue(final IScope scope, final IPoint preferredSize, final IType type,
 			final boolean copy) {
-		return GamaMatrixType.from(scope, this, type, preferredSize, copy);
+		return GamaMatrixFactory.createFromMatrix(scope, this, type, preferredSize, copy);
 	}
 
 	@Override
@@ -258,7 +260,7 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 	}
 
 	@Override
-	public GamaObjectMatrix copy(final IScope scope, final IPoint  size, final boolean copy) {
+	public GamaObjectMatrix copy(final IScope scope, final IPoint size, final boolean copy) {
 		if (size == null) {
 			if (copy) return new GamaObjectMatrix(numCols, numRows, Arrays.copyOf(matrix, matrix.length),
 					getGamlType().getContentType());
@@ -275,11 +277,13 @@ public class GamaObjectMatrix extends GamaMatrix<Object> {
 		return Arrays.equals(this.getMatrix(), mat.getMatrix());
 	}
 
-	// Removed to improve performances
-	// @Override
-	// public int hashCode() {
-	// return Arrays.hashCode(getMatrix());
-	// }
+	/**
+	 * TODO Remove to improve performances if needed.
+	 */
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(getMatrix());
+	}
 
 	@Override
 	public void _putAll(final IScope scope, final Object o) {

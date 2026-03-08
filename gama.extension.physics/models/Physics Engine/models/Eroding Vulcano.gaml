@@ -22,7 +22,7 @@ global parent: physical_world {
 	float step <-  0.05;
 	//A boolean that controls whether or not the lava will erode the ground
 	bool erosion;
-	float uncertainty -> {rnd(10.0) - 5};
+	float uncertainty -> rnd(10.0) - 5;
 	// Support for display parameters
 	bool show_legend;
 	bool draw_inside;

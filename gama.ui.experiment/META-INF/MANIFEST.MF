@@ -17,8 +17,7 @@ Require-Bundle: gama.ui.application,
  org.eclipse.ui,
  org.eclipse.core.expressions,
  gama.extension.serialize
-Export-Package: gama.ui.experiment.activator,
- gama.ui.experiment.commands,
+Export-Package: gama.ui.experiment.commands,
  gama.ui.experiment.controls,
  gama.ui.experiment.factories,
  gama.ui.experiment.menus,
@@ -28,6 +27,5 @@ Export-Package: gama.ui.experiment.activator,
  gama.ui.experiment.views.displays,
  gama.ui.experiment.views.inspectors
 Bundle-ActivationPolicy: lazy
-Bundle-Activator: gama.ui.experiment.activator.ExperimentUIActivator
 Automatic-Module-Name: gama.ui.experiment
 Import-Package: gama.workspace.manager

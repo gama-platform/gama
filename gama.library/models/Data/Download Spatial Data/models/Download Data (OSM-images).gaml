@@ -267,7 +267,7 @@ global {
 				list<geometry> geom_markers <- generate_geoms(cells_type);
 							
 				//create the marker agents
-				create marker from: geom_markers with: [type::type];
+				create marker from: geom_markers with: (type:type);
 				float min_area <- marker mean_of each.shape.area;
 								
 				ask marker {	
@@ -484,7 +484,7 @@ experiment downloadGISdata type: gui autorun: true{
 	}
 	output {
 		display map type: 3d axes: false{
-			image file_exists(exporting_path + "satellite.png")? (exporting_path + "satellite.png") : default_background_image  transparency: 0.2 refresh: true;
+			picture file_exists(exporting_path + "satellite.png")? (exporting_path + "satellite.png") : default_background_image  transparency: 0.2 refresh: true;
 			species OSM_agent;
 			graphics "google map building" {
 				loop bd over: building_google {

@@ -25,15 +25,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 
-import gama.core.common.interfaces.IGui;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.kernel.experiment.parameters.ParameterAdapter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.outputs.IOutput;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IGui;
+import gama.api.ui.IOutput;
+import gama.core.experiment.parameters.ParameterAdapter;
 import gama.core.outputs.InspectDisplayOutput;
-import gama.core.runtime.IScope;
-import gama.gaml.types.Types;
 import gama.ui.experiment.menus.AgentsMenu;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.controls.ParameterExpandBar;
@@ -288,7 +288,7 @@ public class AgentInspectView extends AttributesEditorsView<IAgent> implements
     /**
      * Method handleMenu()
      *
-     * @see gama.core.common.interfaces.ItemList#handleMenu(java.lang.Object,
+     * @see gama.api.ui.IItemList#handleMenu(java.lang.Object,
      *      int, int)
      */
     @Override

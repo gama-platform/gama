@@ -29,30 +29,30 @@ import com.github.weisj.jsvg.renderer.NullPlatformSupport;
 import com.github.weisj.jsvg.view.FloatSize;
 import com.github.weisj.jsvg.view.ViewBox;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.file.IGamaFile;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
 import gama.core.util.file.GamaGeometryFile;
-import gama.core.util.file.IGamaFile;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
 import gama.dev.DEBUG;
 import gama.extension.image.GamaImage;
 import gama.extension.image.GamaImageFile;
 import gama.extension.image.ImageCache;
 import gama.extension.image.ImageHelper;
 import gama.extension.image.ImageOperators;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Class GamaSVGFile. Only loads vector shapes right now (and none of the associated elements: textures, colors, fonts,
@@ -108,7 +108,7 @@ public class GamaSVGFile extends GamaGeometryFile {
 
 	@Override
 	protected IShape buildGeometry(final IScope scope) {
-		return GamaGeometryType.geometriesToGeometry(scope, getBuffer());
+		return GamaShapeFactory.geometriesToGeometry(scope, getBuffer());
 	}
 
 	@Override

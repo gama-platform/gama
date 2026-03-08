@@ -40,7 +40,7 @@ global {
 		}
 		
 		create intersection from: shp_nodes
-				with: [is_traffic_signal::(read("type") = "traffic_signals")] {
+				with: (is_traffic_signal:(read("type") = "traffic_signals")) {
 			time_to_change <- traffic_light_interval;
 		}
 		
@@ -117,11 +117,11 @@ experiment ring type: gui {
 	parameter 'Traffic light interval' var:traffic_light_interval;
 	
 	action _init_{ 
-		create simulation with:[
-			map_name::"ring",
-			num_cars::50,
-			num_motorbikes::100
-		];
+		create simulation with:(
+			map_name:"ring",
+			num_cars:50,
+			num_motorbikes:100
+		);
 	}
 
 	output synchronized: true {
@@ -137,11 +137,11 @@ experiment ring type: gui {
 
 experiment city type: gui {
 	action _init_{
-		create simulation with:[
-			map_name::"rouen",
-			num_cars::100,
-			num_motorbikes::200
-		];
+		create simulation with:(
+			map_name:"rouen",
+			num_cars:100,
+			num_motorbikes:200
+		);
 	}
 
 	output synchronized: true {

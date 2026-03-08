@@ -36,7 +36,7 @@ experiment Display type: gui autorun: true {
 	output {
 		layout #split;
 		display shared type: 3d virtual: true {
-			image "../includes/wood.jpg";
+			picture "../includes/wood.jpg";
 			species object;
 		}
 		display "Changing every 500" parent: shared camera: [#from_up_front, #from_up_left, #from_up_right, #from_above, #from_front, #from_left, #from_right] at ((cycle / 500) mod 7) {
@@ -51,7 +51,7 @@ experiment Display type: gui autorun: true {
 			camera #default target: p distance: 150 / factor location: #from_above dynamic: true;
 		}
 		display "First person" type: opengl{
-			image "../includes/wood.jpg";
+			picture "../includes/wood.jpg";
 			camera #default dynamic: true location: {int(first(object).location.x), int(first(object).location.y), 5/factor} target:
 			{cos(first(object).heading) * first(object).speed + int(first(object).location.x), sin(first(object).heading) * first(object).speed + int(first(object).location.y), 5/factor};
 		}
@@ -66,4 +66,4 @@ experiment Display type: gui autorun: true {
 
 	}
 
-}
+} 

@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * IfStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * IfStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -11,26 +11,28 @@ package gama.gaml.statements;
 
 import com.google.common.collect.Iterables;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.StatementSerializer;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Strings;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.serializer;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.serialization.StatementSerializer;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
 import gama.gaml.statements.IfStatement.IfSerializer;
-import gama.gaml.types.IType;
 
 /**
  * IfPrototype.
@@ -156,13 +158,12 @@ public class IfStatement extends AbstractStatementSequence {
 	public static class IfSerializer extends StatementSerializer {
 
 		@Override
-		protected void serializeChildren(final IDescription desc, final StringBuilder sb,
-				final boolean includingBuiltIn) {
-			sb.append(' ').append('{').append(Strings.LN);
+		public void serializeChildren(final IDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
+			sb.append(' ').append('{').append(StringUtils.LN);
 			final String[] elseString = { null };
 			desc.visitChildren(s -> {
 				if (IKeyword.ELSE.equals(s.getKeyword())) {
-					elseString[0] = s.serializeToGaml(false) + Strings.LN;
+					elseString[0] = s.serializeToGaml(false) + StringUtils.LN;
 				} else {
 					serializeChild(s, sb, includingBuiltIn);
 				}
@@ -173,7 +174,7 @@ public class IfStatement extends AbstractStatementSequence {
 			if (elseString[0] != null) {
 				sb.append(elseString[0]);
 			} else {
-				sb.append(Strings.LN);
+				sb.append(StringUtils.LN);
 			}
 
 		}

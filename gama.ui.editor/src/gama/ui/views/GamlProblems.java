@@ -25,7 +25,7 @@ public class GamlProblems extends FiltersContributionParameters {
 			Map.of(IMarker.SEVERITY, IMarker.SEVERITY_WARNING | IMarker.SEVERITY_ERROR | IMarker.SEVERITY_INFO);
 
 	/**
-	 * Create a new instance of the receiver.
+	 * Create a new INSTANCE of the receiver.
 	 */
 
 	public GamlProblems() {}

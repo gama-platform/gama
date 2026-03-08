@@ -11,22 +11,23 @@ package gama.core.outputs.layers;
 
 import java.util.List;
 
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IShape;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaShapeFile;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
-import gama.gaml.types.IType;
 
 /**
  * The Class GisLayer.
@@ -52,7 +53,7 @@ public class GisLayer extends AbstractLayer {
 	public void privateDraw(final IGraphicsScope scope, final IGraphics g) {
 		final IColor color =
 				colorExpression == null ? GamaColorFactory.get(GamaPreferences.Displays.CORE_COLOR.getValue().getRGB())
-						: Cast.asColor(scope, colorExpression.value(scope));
+						: GamaColorFactory.castToColor(scope, colorExpression.value(scope));
 		final List<IShape> shapes = buildGisLayer(scope);
 		if (shapes != null) {
 			for (final IShape geom : shapes) {

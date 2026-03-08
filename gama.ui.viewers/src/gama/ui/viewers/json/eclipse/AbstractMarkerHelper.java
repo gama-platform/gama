@@ -3,7 +3,7 @@
  * AbstractMarkerHelper.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.texteditor.MarkerUtilities;
 
+import gama.dev.DEBUG;
 import gama.ui.viewers.json.SimpleStringUtils;
 
 /**
@@ -232,7 +233,7 @@ abstract class AbstractMarkerHelper {
 			for (IMarker task : tasks) { task.delete(); }
 
 		} catch (CoreException e) {
-			EclipseUtil.logError("Was not able to delete markers", e);
+			DEBUG.ERR("Was not able to delete markers", e);
 		}
 		if (tasks == null) { tasks = new IMarker[] {}; }
 		return tasks;

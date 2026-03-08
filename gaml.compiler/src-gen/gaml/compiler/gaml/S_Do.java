@@ -14,6 +14,6 @@ package gaml.compiler.gaml;
  * @model
  * @generated
  */
-public interface S_Do extends Statement
+public interface S_Do extends Statement, FacetsAndBlock
 {
 } // S_Do

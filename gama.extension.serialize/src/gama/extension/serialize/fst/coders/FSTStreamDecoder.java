@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * FSTStreamDecoder.java, in gama.serialize, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * FSTStreamDecoder.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -163,31 +163,31 @@ public class FSTStreamDecoder implements FSTDecoder {
 				long[] arr = (long[]) array;
 				readFLongArr(len, arr);
 				return arr;
-			} else if (componentType == char.class) {
+			}
+			if (componentType == char.class) {
 				char[] arr = (char[]) array;
 				for (int j = 0; j < len; j++) { arr[j] = readFChar(); }
 				return arr;
-			} else if (componentType == double.class) {
+			}
+			if (componentType == double.class) {
 				double[] arr = (double[]) array;
 				ensureReadAhead(arr.length * 8);
 				for (int j = 0; j < len; j++) { arr[j] = readFDouble(); }
 				return arr;
-			} else if (componentType == short.class) {
+			}
+			if (componentType == short.class) {
 				short[] arr = (short[]) array;
 				ensureReadAhead(arr.length * 2);
 				for (int j = 0; j < len; j++) { arr[j] = readFShort(); }
 				return arr;
-			} else if (componentType == float.class) {
+			}
+			if (componentType == float.class) {
 				float[] arr = (float[]) array;
 				ensureReadAhead(arr.length * 4);
 				for (int j = 0; j < len; j++) { arr[j] = readFFloat(); }
 				return arr;
-			} else if (componentType == boolean.class) {
-				boolean[] arr = (boolean[]) array;
-				ensureReadAhead(arr.length);
-				for (int j = 0; j < len; j++) { arr[j] = (readFByte() != 0); }
-				return arr;
-			} else
+			}
+			if (componentType != boolean.class)
 				throw new RuntimeException("unexpected primitive type " + componentType.getName());
 		} catch (IOException e) {
 			DEBUG.ERR("Failed to read primitive array", e);
@@ -209,7 +209,7 @@ public class FSTStreamDecoder implements FSTDecoder {
 	 * @date 29 sept. 2023
 	 */
 	// compressed version
-	public void _readFIntArr(final int len, final int[] arr) throws IOException {
+	public void _readFIntArr(final int len, final int[] arr) {
 		ensureReadAhead(5 * len);
 		final byte buf[] = input.buf;
 		int count = input.pos;
@@ -263,7 +263,7 @@ public class FSTStreamDecoder implements FSTDecoder {
 	 *             Signals that an I/O exception has occurred.
 	 * @date 29 sept. 2023
 	 */
-	public void readFLongArr(final int len, final long[] arr) throws IOException {
+	public void readFLongArr(final int len, final long[] arr) {
 		int bytelen = arr.length * 8;
 		ensureReadAhead(bytelen);
 		int count = input.pos;
@@ -397,44 +397,6 @@ public class FSTStreamDecoder implements FSTDecoder {
 		return (short) ((ch1 << 0) + (ch2 << 8));
 	}
 
-	/**
-	 * Read plain char.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the char
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @date 29 sept. 2023
-	 */
-	private char readPlainChar() throws IOException {
-		input.ensureReadAhead(2);
-		int count = input.pos;
-		final byte buf[] = input.buf;
-		int ch2 = buf[count++] + 256 & 0xff;
-		int ch1 = buf[count++] + 256 & 0xff;
-		input.pos = count;
-		return (char) ((ch1 << 8) + (ch2 << 0));
-	}
-
-	/**
-	 * Read plain short.
-	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
-	 * @return the short
-	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @date 29 sept. 2023
-	 */
-	private short readPlainShort() throws IOException {
-		input.ensureReadAhead(2);
-		int count = input.pos;
-		final byte buf[] = input.buf;
-		int ch1 = buf[count++] + 256 & 0xff;
-		int ch2 = buf[count++] + 256 & 0xff;
-		input.pos = count;
-		return (short) ((ch2 << 8) + (ch1 << 0));
-	}
-
 	@Override
 	public int readPlainInt() throws IOException {
 		input.ensureReadAhead(4);
@@ -458,7 +420,7 @@ public class FSTStreamDecoder implements FSTDecoder {
 	 *             Signals that an I/O exception has occurred.
 	 * @date 29 sept. 2023
 	 */
-	private long readPlainLong() throws IOException {
+	private long readPlainLong() {
 		input.ensureReadAhead(8);
 		int count = input.pos;
 		final byte buf[] = input.buf;

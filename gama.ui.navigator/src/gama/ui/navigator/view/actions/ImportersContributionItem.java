@@ -19,7 +19,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 import gama.dev.DEBUG;
 import gama.ui.navigator.view.contents.VirtualContent.IContentVisitor;
 import gama.ui.navigator.view.contents.WrappedGamaFile;

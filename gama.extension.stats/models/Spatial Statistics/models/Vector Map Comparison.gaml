@@ -28,7 +28,7 @@ global {
 	geometry shape <- envelope(data);
 	 
 	init {
-		create areaclc from: data with: [init_cover::string(read("CODE_00")),obs_cover::string(read("CODE_06"))] ;
+		create areaclc from: data with: (init_cover:string(read("CODE_00")),obs_cover:string(read("CODE_06"))) ;
 		ask areaclc {
 			if (not (init_cover in categories)) {categories << init_cover; }
 			if (not (obs_cover in categories)) {categories << obs_cover;}
@@ -85,7 +85,7 @@ species areaclc {
 	string sim_cover;
 	rgb color_fuzzy;
 	
-	aspect init {
+	aspect initial {
 		draw shape color: color_cat[init_cover];
 	}
 	aspect simulation {
@@ -110,7 +110,7 @@ experiment "Compare" type: gui {
 			species areaclc aspect: observed refresh: false;
 		}
 		display "Initial Map" type: 3d{
-			species areaclc aspect: init refresh: false;
+			species areaclc aspect: initial refresh: false;
 		}
 		display "Fuzzy Comparison Map" type: 3d background: #black{
 			species areaclc aspect: fuzzy_sim ;

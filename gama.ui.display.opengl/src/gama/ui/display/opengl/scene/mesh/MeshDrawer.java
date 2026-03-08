@@ -21,15 +21,16 @@ import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.fixedfunc.GLPointerFunc;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import gama.core.common.geometry.ICoordinates;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.matrix.IField;
+import gama.api.ui.layers.IMeshColorProvider;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.ICoordinates;
 import gama.core.outputs.layers.MeshLayerData;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
-import gama.core.util.matrix.IField;
 import gama.dev.DEBUG;
-import gama.gaml.statements.draw.IMeshColorProvider;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
 import one.util.streamex.DoubleStreamEx;
@@ -87,7 +88,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	/** Flags indicating what to output: textures, colors, lines ? */
 	private boolean outputsTextures, outputsColors, outputsLines, useFillForLines;
 
-	// COLORS
+	// NAME_REGISTRY
 	/** An array holding the 4 components of the line color */
 	private double[] lineColor;
 
@@ -104,7 +105,7 @@ public class MeshDrawer extends ObjectDrawer<MeshObject> {
 	final static double[] quadNormals = { 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1 };
 
 	/** A temporary coordinate sequence used to hold vertices in order to compute normals of triangles */
-	final ICoordinates surface = ICoordinates.ofLength(9);
+	final ICoordinates surface = GamaCoordinateSequenceFactory.ofLength(9);
 
 	/** A temporary transfer value for the normal */
 	final IPoint normal = GamaPointFactory.create();

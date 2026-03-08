@@ -151,7 +151,7 @@ global {
 	action from_polygons {
 		do clean;
 		// Create a set of lines (no need to create agent) to build network with
-		create regular_agent_node number: nb_nodes with: [shape::circle(rnd(5,20)) at_location any_location_in(world)];
+		create regular_agent_node number: nb_nodes with: (shape:circle(rnd(5,20)) at_location any_location_in(world));
 		write "\tas_intersection_graph(my_lines, tolerance)";
 		float tolerance <- 1.0;
 		g_graph <- as_intersection_graph(regular_agent_node, tolerance,regular_agent_edge);

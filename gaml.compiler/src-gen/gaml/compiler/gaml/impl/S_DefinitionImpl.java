@@ -4,17 +4,28 @@
 package gaml.compiler.gaml.impl;
 
 import gaml.compiler.gaml.ActionArguments;
+import gaml.compiler.gaml.ActionDefinition;
+import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.Expression;
+import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.S_Definition;
+import gaml.compiler.gaml.VarDefinition;
+
+import java.util.Collection;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
+
+import org.eclipse.emf.common.util.EList;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
+
+import org.eclipse.emf.ecore.util.EObjectContainmentEList;
+import org.eclipse.emf.ecore.util.InternalEList;
 
 /**
  * <!-- begin-user-doc -->
@@ -24,14 +35,45 @@ import org.eclipse.emf.ecore.impl.ENotificationImpl;
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link gaml.compiler.gaml.impl.S_DefinitionImpl#getTkey <em>Tkey</em>}</li>
  *   <li>{@link gaml.compiler.gaml.impl.S_DefinitionImpl#getArgs <em>Args</em>}</li>
+ *   <li>{@link gaml.compiler.gaml.impl.S_DefinitionImpl#getName <em>Name</em>}</li>
+ *   <li>{@link gaml.compiler.gaml.impl.S_DefinitionImpl#getTkey <em>Tkey</em>}</li>
  * </ul>
  *
  * @generated
  */
-public class S_DefinitionImpl extends S_DeclarationImpl implements S_Definition
+public class S_DefinitionImpl extends StatementImpl implements S_Definition
 {
+  /**
+   * The cached value of the '{@link #getArgs() <em>Args</em>}' containment reference list.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getArgs()
+   * @generated
+   * @ordered
+   */
+  protected EList<ArgumentDefinition> args;
+
+  /**
+   * The default value of the '{@link #getName() <em>Name</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getName()
+   * @generated
+   * @ordered
+   */
+  protected static final String NAME_EDEFAULT = null;
+
+  /**
+   * The cached value of the '{@link #getName() <em>Name</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @see #getName()
+   * @generated
+   * @ordered
+   */
+  protected String name = NAME_EDEFAULT;
+
   /**
    * The cached value of the '{@link #getTkey() <em>Tkey</em>}' containment reference.
    * <!-- begin-user-doc -->
@@ -41,16 +83,6 @@ public class S_DefinitionImpl extends S_DeclarationImpl implements S_Definition
    * @ordered
    */
   protected Expression tkey;
-
-  /**
-   * The cached value of the '{@link #getArgs() <em>Args</em>}' containment reference.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #getArgs()
-   * @generated
-   * @ordered
-   */
-  protected ActionArguments args;
 
   /**
    * <!-- begin-user-doc -->
@@ -71,6 +103,46 @@ public class S_DefinitionImpl extends S_DeclarationImpl implements S_Definition
   protected EClass eStaticClass()
   {
     return GamlPackage.Literals.SDEFINITION;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EList<ArgumentDefinition> getArgs()
+  {
+    if (args == null)
+    {
+      args = new EObjectContainmentEList<ArgumentDefinition>(ArgumentDefinition.class, this, GamlPackage.SDEFINITION__ARGS);
+    }
+    return args;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public String getName()
+  {
+    return name;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public void setName(String newName)
+  {
+    String oldName = name;
+    name = newName;
+    if (eNotificationRequired())
+      eNotify(new ENotificationImpl(this, Notification.SET, GamlPackage.SDEFINITION__NAME, oldName, name));
   }
 
   /**
@@ -129,64 +201,14 @@ public class S_DefinitionImpl extends S_DeclarationImpl implements S_Definition
    * @generated
    */
   @Override
-  public ActionArguments getArgs()
-  {
-    return args;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  public NotificationChain basicSetArgs(ActionArguments newArgs, NotificationChain msgs)
-  {
-    ActionArguments oldArgs = args;
-    args = newArgs;
-    if (eNotificationRequired())
-    {
-      ENotificationImpl notification = new ENotificationImpl(this, Notification.SET, GamlPackage.SDEFINITION__ARGS, oldArgs, newArgs);
-      if (msgs == null) msgs = notification; else msgs.add(notification);
-    }
-    return msgs;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public void setArgs(ActionArguments newArgs)
-  {
-    if (newArgs != args)
-    {
-      NotificationChain msgs = null;
-      if (args != null)
-        msgs = ((InternalEObject)args).eInverseRemove(this, EOPPOSITE_FEATURE_BASE - GamlPackage.SDEFINITION__ARGS, null, msgs);
-      if (newArgs != null)
-        msgs = ((InternalEObject)newArgs).eInverseAdd(this, EOPPOSITE_FEATURE_BASE - GamlPackage.SDEFINITION__ARGS, null, msgs);
-      msgs = basicSetArgs(newArgs, msgs);
-      if (msgs != null) msgs.dispatch();
-    }
-    else if (eNotificationRequired())
-      eNotify(new ENotificationImpl(this, Notification.SET, GamlPackage.SDEFINITION__ARGS, newArgs, newArgs));
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public NotificationChain eInverseRemove(InternalEObject otherEnd, int featureID, NotificationChain msgs)
   {
     switch (featureID)
     {
+      case GamlPackage.SDEFINITION__ARGS:
+        return ((InternalEList<?>)getArgs()).basicRemove(otherEnd, msgs);
       case GamlPackage.SDEFINITION__TKEY:
         return basicSetTkey(null, msgs);
-      case GamlPackage.SDEFINITION__ARGS:
-        return basicSetArgs(null, msgs);
     }
     return super.eInverseRemove(otherEnd, featureID, msgs);
   }
@@ -201,10 +223,12 @@ public class S_DefinitionImpl extends S_DeclarationImpl implements S_Definition
   {
     switch (featureID)
     {
-      case GamlPackage.SDEFINITION__TKEY:
-        return getTkey();
       case GamlPackage.SDEFINITION__ARGS:
         return getArgs();
+      case GamlPackage.SDEFINITION__NAME:
+        return getName();
+      case GamlPackage.SDEFINITION__TKEY:
+        return getTkey();
     }
     return super.eGet(featureID, resolve, coreType);
   }
@@ -214,16 +238,21 @@ public class S_DefinitionImpl extends S_DeclarationImpl implements S_Definition
    * <!-- end-user-doc -->
    * @generated
    */
+  @SuppressWarnings("unchecked")
   @Override
   public void eSet(int featureID, Object newValue)
   {
     switch (featureID)
     {
+      case GamlPackage.SDEFINITION__ARGS:
+        getArgs().clear();
+        getArgs().addAll((Collection<? extends ArgumentDefinition>)newValue);
+        return;
+      case GamlPackage.SDEFINITION__NAME:
+        setName((String)newValue);
+        return;
       case GamlPackage.SDEFINITION__TKEY:
         setTkey((Expression)newValue);
-        return;
-      case GamlPackage.SDEFINITION__ARGS:
-        setArgs((ActionArguments)newValue);
         return;
     }
     super.eSet(featureID, newValue);
@@ -239,11 +268,14 @@ public class S_DefinitionImpl extends S_DeclarationImpl implements S_Definition
   {
     switch (featureID)
     {
+      case GamlPackage.SDEFINITION__ARGS:
+        getArgs().clear();
+        return;
+      case GamlPackage.SDEFINITION__NAME:
+        setName(NAME_EDEFAULT);
+        return;
       case GamlPackage.SDEFINITION__TKEY:
         setTkey((Expression)null);
-        return;
-      case GamlPackage.SDEFINITION__ARGS:
-        setArgs((ActionArguments)null);
         return;
     }
     super.eUnset(featureID);
@@ -259,12 +291,113 @@ public class S_DefinitionImpl extends S_DeclarationImpl implements S_Definition
   {
     switch (featureID)
     {
+      case GamlPackage.SDEFINITION__ARGS:
+        return args != null && !args.isEmpty();
+      case GamlPackage.SDEFINITION__NAME:
+        return NAME_EDEFAULT == null ? name != null : !NAME_EDEFAULT.equals(name);
       case GamlPackage.SDEFINITION__TKEY:
         return tkey != null;
-      case GamlPackage.SDEFINITION__ARGS:
-        return args != null;
     }
     return super.eIsSet(featureID);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public int eBaseStructuralFeatureID(int derivedFeatureID, Class<?> baseClass)
+  {
+    if (baseClass == ActionArguments.class)
+    {
+      switch (derivedFeatureID)
+      {
+        case GamlPackage.SDEFINITION__ARGS: return GamlPackage.ACTION_ARGUMENTS__ARGS;
+        default: return -1;
+      }
+    }
+    if (baseClass == GamlDefinition.class)
+    {
+      switch (derivedFeatureID)
+      {
+        case GamlPackage.SDEFINITION__NAME: return GamlPackage.GAML_DEFINITION__NAME;
+        default: return -1;
+      }
+    }
+    if (baseClass == ActionDefinition.class)
+    {
+      switch (derivedFeatureID)
+      {
+        default: return -1;
+      }
+    }
+    if (baseClass == VarDefinition.class)
+    {
+      switch (derivedFeatureID)
+      {
+        default: return -1;
+      }
+    }
+    return super.eBaseStructuralFeatureID(derivedFeatureID, baseClass);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public int eDerivedStructuralFeatureID(int baseFeatureID, Class<?> baseClass)
+  {
+    if (baseClass == ActionArguments.class)
+    {
+      switch (baseFeatureID)
+      {
+        case GamlPackage.ACTION_ARGUMENTS__ARGS: return GamlPackage.SDEFINITION__ARGS;
+        default: return -1;
+      }
+    }
+    if (baseClass == GamlDefinition.class)
+    {
+      switch (baseFeatureID)
+      {
+        case GamlPackage.GAML_DEFINITION__NAME: return GamlPackage.SDEFINITION__NAME;
+        default: return -1;
+      }
+    }
+    if (baseClass == ActionDefinition.class)
+    {
+      switch (baseFeatureID)
+      {
+        default: return -1;
+      }
+    }
+    if (baseClass == VarDefinition.class)
+    {
+      switch (baseFeatureID)
+      {
+        default: return -1;
+      }
+    }
+    return super.eDerivedStructuralFeatureID(baseFeatureID, baseClass);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public String toString()
+  {
+    if (eIsProxy()) return super.toString();
+
+    StringBuilder result = new StringBuilder(super.toString());
+    result.append(" (name: ");
+    result.append(name);
+    result.append(')');
+    return result.toString();
   }
 
 } //S_DefinitionImpl

@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * PredicateType.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * PredicateType.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -12,14 +11,16 @@ package gama.extension.bdi;
 
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.type;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.map.IMap;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IType;
+import gama.annotations.doc;
+import gama.annotations.type;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.ITypesManager;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.map.IMap;
 
 /**
  * The Class PredicateType.
@@ -33,8 +34,19 @@ import gama.gaml.types.IType;
 @doc ("represents a predicate")
 public class PredicateType extends GamaType<Predicate> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public PredicateType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	/** The Constant id. */
-	public final static int id = IType.AVAILABLE_TYPES + 546654;
+	public final static int id = IType.BEGINNING_OF_CUSTOM_TYPES + 546654;
 
 	@Override
 	public boolean canCastToConst() {
@@ -50,10 +62,8 @@ public class PredicateType extends GamaType<Predicate> {
 		if (obj instanceof String s) return new Predicate(s);
 		if (obj instanceof Map) {
 			final Map<String, Object> map = (Map<String, Object>) obj;
-			String nm = (String) map.get("name");
-			if (nm == null) {
-				nm = SimpleBdiArchitecture.PREDICATE;
-			}
+			String nm = (String) map.get(IKeyword.NAME);
+			if (nm == null) { nm = SimpleBdiArchitecture.PREDICATE; }
 			final IMap values = (IMap) map.get("values");
 			return new Predicate(nm, values);
 		}

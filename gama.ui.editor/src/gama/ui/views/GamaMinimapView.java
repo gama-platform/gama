@@ -15,7 +15,7 @@ import org.eclipse.ui.part.IPage;
 import org.eclipse.ui.part.MessagePage;
 import org.eclipse.ui.part.PageBook;
 
-import gama.core.common.interfaces.IGui;
+import gama.api.ui.IGui;
 
 /**
  * The class GamaMinimapView.

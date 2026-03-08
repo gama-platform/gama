@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.extension.fipa;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.util.list.IList;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.list.IList;
 
 /**
  * The Message class represents the piece of information transfered between agents capable of communicating.
@@ -55,7 +55,7 @@ public class MessageData {
 		/*
 		 * (non-Javadoc)
 		 *
-		 * @see msi.misc.current_development.IMessage#setSender(gama.core.metamodel.agent .interfaces.BasicEntity)
+		 * @see msi.misc.current_development.IMessage#setSender(gama.core.agent .interfaces.BasicEntity)
 		 */
 	public void setSender(final IAgent sender) { this.sender = sender; }
 

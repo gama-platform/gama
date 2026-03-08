@@ -28,8 +28,8 @@ import org.eclipse.swt.widgets.MenuItem;
 
 import com.google.common.base.Objects;
 
-import gama.core.common.interfaces.ItemList;
-import gama.core.util.IColor;
+import gama.api.types.color.IColor;
+import gama.api.ui.IItemList;
 import gama.dev.DEBUG;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
@@ -78,7 +78,7 @@ public class ParameterExpandBar extends Composite {
 	boolean hasClosableToggle, hasPausableToggle, ignoreMouseUp, inDispose;
 
 	/** The underlying objects. */
-	private final ItemList underlyingObjects;
+	private final IItemList underlyingObjects;
 
 	/**
 	 * Instantiates a new parameter expand bar.
@@ -111,7 +111,7 @@ public class ParameterExpandBar extends Composite {
 	 *            the underlying objects
 	 */
 	public ParameterExpandBar(final Composite parent, final int style, final boolean isClosable,
-			final boolean isPausable, final ItemList underlyingObjects) {
+			final boolean isPausable, final IItemList underlyingObjects) {
 		super(parent, style | SWT.DOUBLE_BUFFERED);
 		items = new ParameterExpandItem[4];
 		this.hasClosableToggle = isClosable;

@@ -22,10 +22,10 @@ global {
 experiment urlImage {
 	output {
 		display 'Original' background: #white {
-			image im ;
+			picture im ;
 		}
 		display 'Shuffled_copy' background: #white {
-			image  shuffled_copy;
+			picture  shuffled_copy;
 		}
 
 	}

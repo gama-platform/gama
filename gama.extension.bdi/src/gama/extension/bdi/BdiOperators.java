@@ -13,21 +13,21 @@ package gama.extension.bdi;
 import java.util.ArrayList;
 import java.util.List;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
-import gama.gaml.types.IType;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 
 /**
  * The Class Operators.
@@ -422,7 +422,7 @@ public class BdiOperators {
 	@no_test
 	public static Boolean evalWhen(final IScope scope, final BDIPlan plan) {
 		return plan.getPlanStatement().getContextExpression() == null
-				|| gama.gaml.operators.Cast.asBool(scope, plan.getPlanStatement().getContextExpression().value(scope));
+				|| gama.api.gaml.types.Cast.asBool(scope, plan.getPlanStatement().getContextExpression().value(scope));
 	}
 
 

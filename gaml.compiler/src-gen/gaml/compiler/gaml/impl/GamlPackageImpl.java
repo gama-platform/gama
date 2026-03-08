@@ -9,7 +9,6 @@ import gaml.compiler.gaml.ActionDefinition;
 import gaml.compiler.gaml.ActionFakeDefinition;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.ArgumentDefinition;
-import gaml.compiler.gaml.ArgumentPair;
 import gaml.compiler.gaml.Array;
 import gaml.compiler.gaml.BinaryOperator;
 import gaml.compiler.gaml.Block;
@@ -19,15 +18,14 @@ import gaml.compiler.gaml.Entry;
 import gaml.compiler.gaml.EquationDefinition;
 import gaml.compiler.gaml.EquationFakeDefinition;
 import gaml.compiler.gaml.EquationRef;
-import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Facet;
+import gaml.compiler.gaml.FacetsAndBlock;
 import gaml.compiler.gaml.Function;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlFactory;
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.If;
 import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.IntLiteral;
@@ -38,9 +36,7 @@ import gaml.compiler.gaml.Pragma;
 import gaml.compiler.gaml.ReservedLiteral;
 import gaml.compiler.gaml.S_Action;
 import gaml.compiler.gaml.S_Assignment;
-import gaml.compiler.gaml.S_Declaration;
 import gaml.compiler.gaml.S_Definition;
-import gaml.compiler.gaml.S_DirectAssignment;
 import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Equations;
@@ -48,19 +44,18 @@ import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
 import gaml.compiler.gaml.S_If;
 import gaml.compiler.gaml.S_Loop;
-import gaml.compiler.gaml.S_Other;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
-import gaml.compiler.gaml.S_Set;
 import gaml.compiler.gaml.S_Solve;
 import gaml.compiler.gaml.S_Species;
+import gaml.compiler.gaml.S_Switch;
 import gaml.compiler.gaml.S_Try;
-import gaml.compiler.gaml.S_Var;
 import gaml.compiler.gaml.SkillFakeDefinition;
 import gaml.compiler.gaml.SkillRef;
 import gaml.compiler.gaml.StandaloneBlock;
+import gaml.compiler.gaml.StandaloneExperiment;
+import gaml.compiler.gaml.StandaloneExpression;
 import gaml.compiler.gaml.Statement;
-import gaml.compiler.gaml.StringEvaluator;
 import gaml.compiler.gaml.StringLiteral;
 import gaml.compiler.gaml.TerminalExpression;
 import gaml.compiler.gaml.TypeDefinition;
@@ -74,8 +69,6 @@ import gaml.compiler.gaml.UnitName;
 import gaml.compiler.gaml.VarDefinition;
 import gaml.compiler.gaml.VarFakeDefinition;
 import gaml.compiler.gaml.VariableRef;
-import gaml.compiler.gaml.imageDisplayStatement;
-import gaml.compiler.gaml.speciesOrGridDisplayStatement;
 
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EClass;
@@ -111,7 +104,14 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass stringEvaluatorEClass = null;
+  private EClass standaloneExpressionEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass standaloneExperimentEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -119,13 +119,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass modelEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass blockEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -146,14 +139,14 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass experimentFileStructureEClass = null;
+  private EClass facetsAndBlockEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass headlessExperimentEClass = null;
+  private EClass actionArgumentsEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -216,7 +209,7 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass s_OtherEClass = null;
+  private EClass s_SwitchEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -224,13 +217,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass s_ReturnEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass s_DeclarationEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -258,20 +244,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass s_DirectAssignmentEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass s_SetEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   private EClass s_EquationsEClass = null;
 
   /**
@@ -293,27 +265,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass speciesOrGridDisplayStatementEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass imageDisplayStatementEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass actionArgumentsEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   private EClass argumentDefinitionEClass = null;
 
   /**
@@ -328,14 +279,14 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass expressionEClass = null;
+  private EClass blockEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass argumentPairEClass = null;
+  private EClass expressionEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -384,14 +335,14 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass varDefinitionEClass = null;
+  private EClass actionDefinitionEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass actionDefinitionEClass = null;
+  private EClass varDefinitionEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -455,13 +406,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass s_ActionEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  private EClass s_VarEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -538,13 +482,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass typeRefEClass = null;
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
   private EClass skillRefEClass = null;
 
   /**
@@ -560,6 +497,13 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass equationRefEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass typeRefEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -690,9 +634,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getStringEvaluator()
+  public EClass getStandaloneExpression()
   {
-    return stringEvaluatorEClass;
+    return standaloneExpressionEClass;
   }
 
   /**
@@ -701,9 +645,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EAttribute getStringEvaluator_Toto()
+  public EReference getStandaloneExpression_Expr()
   {
-    return (EAttribute)stringEvaluatorEClass.getEStructuralFeatures().get(0);
+    return (EReference)standaloneExpressionEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -712,9 +656,31 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EReference getStringEvaluator_Expr()
+  public EClass getStandaloneExperiment()
   {
-    return (EReference)stringEvaluatorEClass.getEStructuralFeatures().get(1);
+    return standaloneExperimentEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getStandaloneExperiment_Name()
+  {
+    return (EAttribute)standaloneExperimentEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EAttribute getStandaloneExperiment_ImportURI()
+  {
+    return (EAttribute)standaloneExperimentEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -759,28 +725,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EReference getModel_Block()
   {
     return (EReference)modelEClass.getEStructuralFeatures().get(2);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getBlock()
-  {
-    return blockEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getBlock_Statements()
-  {
-    return (EReference)blockEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -844,9 +788,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getExperimentFileStructure()
+  public EClass getFacetsAndBlock()
   {
-    return experimentFileStructureEClass;
+    return facetsAndBlockEClass;
   }
 
   /**
@@ -855,9 +799,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EReference getExperimentFileStructure_Exp()
+  public EReference getFacetsAndBlock_Facets()
   {
-    return (EReference)experimentFileStructureEClass.getEStructuralFeatures().get(0);
+    return (EReference)facetsAndBlockEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -866,9 +810,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getHeadlessExperiment()
+  public EReference getFacetsAndBlock_Block()
   {
-    return headlessExperimentEClass;
+    return (EReference)facetsAndBlockEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -877,9 +821,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EAttribute getHeadlessExperiment_Key()
+  public EAttribute getFacetsAndBlock_Key()
   {
-    return (EAttribute)headlessExperimentEClass.getEStructuralFeatures().get(0);
+    return (EAttribute)facetsAndBlockEClass.getEStructuralFeatures().get(2);
   }
 
   /**
@@ -888,9 +832,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EAttribute getHeadlessExperiment_FirstFacet()
+  public EClass getActionArguments()
   {
-    return (EAttribute)headlessExperimentEClass.getEStructuralFeatures().get(1);
+    return actionArgumentsEClass;
   }
 
   /**
@@ -899,42 +843,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EAttribute getHeadlessExperiment_Name()
+  public EReference getActionArguments_Args()
   {
-    return (EAttribute)headlessExperimentEClass.getEStructuralFeatures().get(2);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getHeadlessExperiment_ImportURI()
-  {
-    return (EAttribute)headlessExperimentEClass.getEStructuralFeatures().get(3);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getHeadlessExperiment_Facets()
-  {
-    return (EReference)headlessExperimentEClass.getEStructuralFeatures().get(4);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getHeadlessExperiment_Block()
-  {
-    return (EReference)headlessExperimentEClass.getEStructuralFeatures().get(5);
+    return (EReference)actionArgumentsEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -954,53 +865,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EAttribute getStatement_Key()
-  {
-    return (EAttribute)statementEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getStatement_FirstFacet()
-  {
-    return (EAttribute)statementEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EReference getStatement_Expr()
   {
-    return (EReference)statementEClass.getEStructuralFeatures().get(2);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getStatement_Facets()
-  {
-    return (EReference)statementEClass.getEStructuralFeatures().get(3);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getStatement_Block()
-  {
-    return (EReference)statementEClass.getEStructuralFeatures().get(4);
+    return (EReference)statementEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -1108,9 +975,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getS_Other()
+  public EClass getS_Switch()
   {
-    return s_OtherEClass;
+    return s_SwitchEClass;
   }
 
   /**
@@ -1122,17 +989,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EClass getS_Return()
   {
     return s_ReturnEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getS_Declaration()
-  {
-    return s_DeclarationEClass;
   }
 
   /**
@@ -1174,17 +1030,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EReference getS_Definition_Args()
-  {
-    return (EReference)s_DefinitionEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EClass getS_Assignment()
   {
     return s_AssignmentEClass;
@@ -1199,28 +1044,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EReference getS_Assignment_Value()
   {
     return (EReference)s_AssignmentEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getS_DirectAssignment()
-  {
-    return s_DirectAssignmentEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getS_Set()
-  {
-    return s_SetEClass;
   }
 
   /**
@@ -1276,50 +1099,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EAttribute getS_Display_Name()
   {
     return (EAttribute)s_DisplayEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getspeciesOrGridDisplayStatement()
-  {
-    return speciesOrGridDisplayStatementEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getimageDisplayStatement()
-  {
-    return imageDisplayStatementEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getActionArguments()
-  {
-    return actionArgumentsEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getActionArguments_Args()
-  {
-    return (EReference)actionArgumentsEClass.getEStructuralFeatures().get(0);
   }
 
   /**
@@ -1405,42 +1184,31 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
+  public EClass getBlock()
+  {
+    return blockEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EReference getBlock_Statements()
+  {
+    return (EReference)blockEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
   public EClass getExpression()
   {
     return expressionEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getArgumentPair()
-  {
-    return argumentPairEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EAttribute getArgumentPair_Op()
-  {
-    return (EAttribute)argumentPairEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getArgumentPair_Right()
-  {
-    return (EReference)argumentPairEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -1570,9 +1338,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getVarDefinition()
+  public EClass getActionDefinition()
   {
-    return varDefinitionEClass;
+    return actionDefinitionEClass;
   }
 
   /**
@@ -1581,9 +1349,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getActionDefinition()
+  public EClass getVarDefinition()
   {
-    return actionDefinitionEClass;
+    return varDefinitionEClass;
   }
 
   /**
@@ -1694,17 +1462,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EClass getS_Action()
   {
     return s_ActionEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EClass getS_Var()
-  {
-    return s_VarEClass;
   }
 
   /**
@@ -2120,39 +1877,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getTypeRef()
-  {
-    return typeRefEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getTypeRef_Ref()
-  {
-    return (EReference)typeRefEClass.getEStructuralFeatures().get(0);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EReference getTypeRef_Parameter()
-  {
-    return (EReference)typeRefEClass.getEStructuralFeatures().get(1);
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EClass getSkillRef()
   {
     return skillRefEClass;
@@ -2211,6 +1935,39 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EReference getEquationRef_Ref()
   {
     return (EReference)equationRefEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getTypeRef()
+  {
+    return typeRefEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EReference getTypeRef_Ref()
+  {
+    return (EReference)typeRefEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EReference getTypeRef_Parameter()
+  {
+    return (EReference)typeRefEClass.getEStructuralFeatures().get(1);
   }
 
   /**
@@ -2293,17 +2050,17 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     standaloneBlockEClass = createEClass(STANDALONE_BLOCK);
     createEReference(standaloneBlockEClass, STANDALONE_BLOCK__BLOCK);
 
-    stringEvaluatorEClass = createEClass(STRING_EVALUATOR);
-    createEAttribute(stringEvaluatorEClass, STRING_EVALUATOR__TOTO);
-    createEReference(stringEvaluatorEClass, STRING_EVALUATOR__EXPR);
+    standaloneExpressionEClass = createEClass(STANDALONE_EXPRESSION);
+    createEReference(standaloneExpressionEClass, STANDALONE_EXPRESSION__EXPR);
+
+    standaloneExperimentEClass = createEClass(STANDALONE_EXPERIMENT);
+    createEAttribute(standaloneExperimentEClass, STANDALONE_EXPERIMENT__NAME);
+    createEAttribute(standaloneExperimentEClass, STANDALONE_EXPERIMENT__IMPORT_URI);
 
     modelEClass = createEClass(MODEL);
     createEReference(modelEClass, MODEL__PRAGMAS);
     createEReference(modelEClass, MODEL__IMPORTS);
     createEReference(modelEClass, MODEL__BLOCK);
-
-    blockEClass = createEClass(BLOCK);
-    createEReference(blockEClass, BLOCK__STATEMENTS);
 
     importEClass = createEClass(IMPORT);
     createEAttribute(importEClass, IMPORT__IMPORT_URI);
@@ -2312,23 +2069,16 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     createEAttribute(pragmaEClass, PRAGMA__NAME);
     createEReference(pragmaEClass, PRAGMA__PLUGINS);
 
-    experimentFileStructureEClass = createEClass(EXPERIMENT_FILE_STRUCTURE);
-    createEReference(experimentFileStructureEClass, EXPERIMENT_FILE_STRUCTURE__EXP);
+    facetsAndBlockEClass = createEClass(FACETS_AND_BLOCK);
+    createEReference(facetsAndBlockEClass, FACETS_AND_BLOCK__FACETS);
+    createEReference(facetsAndBlockEClass, FACETS_AND_BLOCK__BLOCK);
+    createEAttribute(facetsAndBlockEClass, FACETS_AND_BLOCK__KEY);
 
-    headlessExperimentEClass = createEClass(HEADLESS_EXPERIMENT);
-    createEAttribute(headlessExperimentEClass, HEADLESS_EXPERIMENT__KEY);
-    createEAttribute(headlessExperimentEClass, HEADLESS_EXPERIMENT__FIRST_FACET);
-    createEAttribute(headlessExperimentEClass, HEADLESS_EXPERIMENT__NAME);
-    createEAttribute(headlessExperimentEClass, HEADLESS_EXPERIMENT__IMPORT_URI);
-    createEReference(headlessExperimentEClass, HEADLESS_EXPERIMENT__FACETS);
-    createEReference(headlessExperimentEClass, HEADLESS_EXPERIMENT__BLOCK);
+    actionArgumentsEClass = createEClass(ACTION_ARGUMENTS);
+    createEReference(actionArgumentsEClass, ACTION_ARGUMENTS__ARGS);
 
     statementEClass = createEClass(STATEMENT);
-    createEAttribute(statementEClass, STATEMENT__KEY);
-    createEAttribute(statementEClass, STATEMENT__FIRST_FACET);
     createEReference(statementEClass, STATEMENT__EXPR);
-    createEReference(statementEClass, STATEMENT__FACETS);
-    createEReference(statementEClass, STATEMENT__BLOCK);
 
     s_GlobalEClass = createEClass(SGLOBAL);
 
@@ -2346,24 +2096,17 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_TryEClass = createEClass(STRY);
     createEReference(s_TryEClass, STRY__CATCH);
 
-    s_OtherEClass = createEClass(SOTHER);
+    s_SwitchEClass = createEClass(SSWITCH);
 
     s_ReturnEClass = createEClass(SRETURN);
-
-    s_DeclarationEClass = createEClass(SDECLARATION);
 
     s_ReflexEClass = createEClass(SREFLEX);
 
     s_DefinitionEClass = createEClass(SDEFINITION);
     createEReference(s_DefinitionEClass, SDEFINITION__TKEY);
-    createEReference(s_DefinitionEClass, SDEFINITION__ARGS);
 
     s_AssignmentEClass = createEClass(SASSIGNMENT);
     createEReference(s_AssignmentEClass, SASSIGNMENT__VALUE);
-
-    s_DirectAssignmentEClass = createEClass(SDIRECT_ASSIGNMENT);
-
-    s_SetEClass = createEClass(SSET);
 
     s_EquationsEClass = createEClass(SEQUATIONS);
     createEReference(s_EquationsEClass, SEQUATIONS__EQUATIONS);
@@ -2372,13 +2115,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     s_DisplayEClass = createEClass(SDISPLAY);
     createEAttribute(s_DisplayEClass, SDISPLAY__NAME);
-
-    speciesOrGridDisplayStatementEClass = createEClass(SPECIES_OR_GRID_DISPLAY_STATEMENT);
-
-    imageDisplayStatementEClass = createEClass(IMAGE_DISPLAY_STATEMENT);
-
-    actionArgumentsEClass = createEClass(ACTION_ARGUMENTS);
-    createEReference(actionArgumentsEClass, ACTION_ARGUMENTS__ARGS);
 
     argumentDefinitionEClass = createEClass(ARGUMENT_DEFINITION);
     createEReference(argumentDefinitionEClass, ARGUMENT_DEFINITION__TYPE);
@@ -2389,11 +2125,10 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     createEReference(facetEClass, FACET__EXPR);
     createEReference(facetEClass, FACET__BLOCK);
 
-    expressionEClass = createEClass(EXPRESSION);
+    blockEClass = createEClass(BLOCK);
+    createEReference(blockEClass, BLOCK__STATEMENTS);
 
-    argumentPairEClass = createEClass(ARGUMENT_PAIR);
-    createEAttribute(argumentPairEClass, ARGUMENT_PAIR__OP);
-    createEReference(argumentPairEClass, ARGUMENT_PAIR__RIGHT);
+    expressionEClass = createEClass(EXPRESSION);
 
     expressionListEClass = createEClass(EXPRESSION_LIST);
     createEReference(expressionListEClass, EXPRESSION_LIST__EXPRS);
@@ -2412,9 +2147,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     typeDefinitionEClass = createEClass(TYPE_DEFINITION);
 
-    varDefinitionEClass = createEClass(VAR_DEFINITION);
-
     actionDefinitionEClass = createEClass(ACTION_DEFINITION);
+
+    varDefinitionEClass = createEClass(VAR_DEFINITION);
 
     unitFakeDefinitionEClass = createEClass(UNIT_FAKE_DEFINITION);
 
@@ -2434,8 +2169,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     stringLiteralEClass = createEClass(STRING_LITERAL);
 
     s_ActionEClass = createEClass(SACTION);
-
-    s_VarEClass = createEClass(SVAR);
 
     binaryOperatorEClass = createEClass(BINARY_OPERATOR);
     createEReference(binaryOperatorEClass, BINARY_OPERATOR__LEFT);
@@ -2484,10 +2217,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     unitNameEClass = createEClass(UNIT_NAME);
     createEReference(unitNameEClass, UNIT_NAME__REF);
 
-    typeRefEClass = createEClass(TYPE_REF);
-    createEReference(typeRefEClass, TYPE_REF__REF);
-    createEReference(typeRefEClass, TYPE_REF__PARAMETER);
-
     skillRefEClass = createEClass(SKILL_REF);
     createEReference(skillRefEClass, SKILL_REF__REF);
 
@@ -2496,6 +2225,10 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     equationRefEClass = createEClass(EQUATION_REF);
     createEReference(equationRefEClass, EQUATION_REF__REF);
+
+    typeRefEClass = createEClass(TYPE_REF);
+    createEReference(typeRefEClass, TYPE_REF__REF);
+    createEReference(typeRefEClass, TYPE_REF__PARAMETER);
 
     intLiteralEClass = createEClass(INT_LITERAL);
 
@@ -2536,47 +2269,50 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     // Add supertypes to classes
     standaloneBlockEClass.getESuperTypes().add(this.getEntry());
-    stringEvaluatorEClass.getESuperTypes().add(this.getEntry());
+    standaloneExpressionEClass.getESuperTypes().add(this.getEntry());
+    standaloneExperimentEClass.getESuperTypes().add(this.getEntry());
+    standaloneExperimentEClass.getESuperTypes().add(this.getFacetsAndBlock());
     modelEClass.getESuperTypes().add(this.getEntry());
     modelEClass.getESuperTypes().add(this.getVarDefinition());
     importEClass.getESuperTypes().add(this.getVarDefinition());
-    experimentFileStructureEClass.getESuperTypes().add(this.getEntry());
+    statementEClass.getESuperTypes().add(this.getFacetsAndBlock());
     s_GlobalEClass.getESuperTypes().add(this.getStatement());
+    s_GlobalEClass.getESuperTypes().add(this.getFacetsAndBlock());
     s_SpeciesEClass.getESuperTypes().add(this.getStatement());
-    s_SpeciesEClass.getESuperTypes().add(this.getS_Declaration());
+    s_SpeciesEClass.getESuperTypes().add(this.getFacetsAndBlock());
     s_SpeciesEClass.getESuperTypes().add(this.getTypeDefinition());
+    s_SpeciesEClass.getESuperTypes().add(this.getVarDefinition());
     s_ExperimentEClass.getESuperTypes().add(this.getStatement());
+    s_ExperimentEClass.getESuperTypes().add(this.getFacetsAndBlock());
     s_ExperimentEClass.getESuperTypes().add(this.getVarDefinition());
     s_DoEClass.getESuperTypes().add(this.getStatement());
-    s_LoopEClass.getESuperTypes().add(this.getS_Declaration());
+    s_DoEClass.getESuperTypes().add(this.getFacetsAndBlock());
+    s_LoopEClass.getESuperTypes().add(this.getStatement());
+    s_LoopEClass.getESuperTypes().add(this.getVarDefinition());
     s_IfEClass.getESuperTypes().add(this.getStatement());
     s_TryEClass.getESuperTypes().add(this.getStatement());
-    s_OtherEClass.getESuperTypes().add(this.getStatement());
+    s_SwitchEClass.getESuperTypes().add(this.getStatement());
     s_ReturnEClass.getESuperTypes().add(this.getStatement());
-    s_DeclarationEClass.getESuperTypes().add(this.getStatement());
-    s_DeclarationEClass.getESuperTypes().add(this.getVarDefinition());
-    s_ReflexEClass.getESuperTypes().add(this.getS_Declaration());
-    s_DefinitionEClass.getESuperTypes().add(this.getS_Declaration());
+    s_ReflexEClass.getESuperTypes().add(this.getStatement());
+    s_ReflexEClass.getESuperTypes().add(this.getVarDefinition());
+    s_DefinitionEClass.getESuperTypes().add(this.getStatement());
+    s_DefinitionEClass.getESuperTypes().add(this.getActionArguments());
     s_DefinitionEClass.getESuperTypes().add(this.getActionDefinition());
+    s_DefinitionEClass.getESuperTypes().add(this.getVarDefinition());
     s_AssignmentEClass.getESuperTypes().add(this.getStatement());
-    s_DirectAssignmentEClass.getESuperTypes().add(this.getS_Assignment());
-    s_SetEClass.getESuperTypes().add(this.getS_Assignment());
     s_EquationsEClass.getESuperTypes().add(this.getStatement());
     s_EquationsEClass.getESuperTypes().add(this.getEquationDefinition());
     s_SolveEClass.getESuperTypes().add(this.getStatement());
     s_DisplayEClass.getESuperTypes().add(this.getStatement());
-    speciesOrGridDisplayStatementEClass.getESuperTypes().add(this.getStatement());
-    imageDisplayStatementEClass.getESuperTypes().add(this.getStatement());
     argumentDefinitionEClass.getESuperTypes().add(this.getVarDefinition());
     facetEClass.getESuperTypes().add(this.getVarDefinition());
-    argumentPairEClass.getESuperTypes().add(this.getExpression());
     expressionListEClass.getESuperTypes().add(this.getExpression());
     variableRefEClass.getESuperTypes().add(this.getExpression());
     equationDefinitionEClass.getESuperTypes().add(this.getGamlDefinition());
     typeDefinitionEClass.getESuperTypes().add(this.getGamlDefinition());
     typeDefinitionEClass.getESuperTypes().add(this.getActionDefinition());
-    varDefinitionEClass.getESuperTypes().add(this.getGamlDefinition());
     actionDefinitionEClass.getESuperTypes().add(this.getGamlDefinition());
+    varDefinitionEClass.getESuperTypes().add(this.getGamlDefinition());
     unitFakeDefinitionEClass.getESuperTypes().add(this.getGamlDefinition());
     typeFakeDefinitionEClass.getESuperTypes().add(this.getTypeDefinition());
     actionFakeDefinitionEClass.getESuperTypes().add(this.getActionDefinition());
@@ -2586,7 +2322,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     terminalExpressionEClass.getESuperTypes().add(this.getExpression());
     stringLiteralEClass.getESuperTypes().add(this.getTerminalExpression());
     s_ActionEClass.getESuperTypes().add(this.getS_Definition());
-    s_VarEClass.getESuperTypes().add(this.getS_Definition());
     binaryOperatorEClass.getESuperTypes().add(this.getExpression());
     ifEClass.getESuperTypes().add(this.getExpression());
     unitEClass.getESuperTypes().add(this.getExpression());
@@ -2597,10 +2332,10 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     functionEClass.getESuperTypes().add(this.getExpression());
     parameterEClass.getESuperTypes().add(this.getExpression());
     unitNameEClass.getESuperTypes().add(this.getExpression());
-    typeRefEClass.getESuperTypes().add(this.getExpression());
     skillRefEClass.getESuperTypes().add(this.getExpression());
     actionRefEClass.getESuperTypes().add(this.getExpression());
     equationRefEClass.getESuperTypes().add(this.getExpression());
+    typeRefEClass.getESuperTypes().add(this.getExpression());
     intLiteralEClass.getESuperTypes().add(this.getTerminalExpression());
     doubleLiteralEClass.getESuperTypes().add(this.getTerminalExpression());
     booleanLiteralEClass.getESuperTypes().add(this.getTerminalExpression());
@@ -2612,17 +2347,17 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(standaloneBlockEClass, StandaloneBlock.class, "StandaloneBlock", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getStandaloneBlock_Block(), this.getBlock(), null, "block", null, 0, 1, StandaloneBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(stringEvaluatorEClass, StringEvaluator.class, "StringEvaluator", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getStringEvaluator_Toto(), ecorePackage.getEString(), "toto", null, 0, 1, StringEvaluator.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getStringEvaluator_Expr(), this.getExpression(), null, "expr", null, 0, 1, StringEvaluator.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(standaloneExpressionEClass, StandaloneExpression.class, "StandaloneExpression", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getStandaloneExpression_Expr(), this.getExpression(), null, "expr", null, 0, 1, StandaloneExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(standaloneExperimentEClass, StandaloneExperiment.class, "StandaloneExperiment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEAttribute(getStandaloneExperiment_Name(), ecorePackage.getEString(), "name", null, 0, 1, StandaloneExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getStandaloneExperiment_ImportURI(), ecorePackage.getEString(), "importURI", null, 0, 1, StandaloneExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(modelEClass, Model.class, "Model", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getModel_Pragmas(), this.getPragma(), null, "pragmas", null, 0, -1, Model.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getModel_Imports(), this.getImport(), null, "imports", null, 0, -1, Model.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getModel_Block(), this.getBlock(), null, "block", null, 0, 1, Model.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-    initEClass(blockEClass, Block.class, "Block", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getBlock_Statements(), this.getStatement(), null, "statements", null, 0, -1, Block.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(importEClass, Import.class, "Import", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getImport_ImportURI(), ecorePackage.getEString(), "importURI", null, 0, 1, Import.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -2631,23 +2366,16 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEAttribute(getPragma_Name(), ecorePackage.getEString(), "name", null, 0, 1, Pragma.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getPragma_Plugins(), this.getExpressionList(), null, "plugins", null, 0, 1, Pragma.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(experimentFileStructureEClass, ExperimentFileStructure.class, "ExperimentFileStructure", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getExperimentFileStructure_Exp(), this.getHeadlessExperiment(), null, "exp", null, 0, 1, ExperimentFileStructure.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(facetsAndBlockEClass, FacetsAndBlock.class, "FacetsAndBlock", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getFacetsAndBlock_Facets(), this.getFacet(), null, "facets", null, 0, -1, FacetsAndBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getFacetsAndBlock_Block(), this.getBlock(), null, "block", null, 0, 1, FacetsAndBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEAttribute(getFacetsAndBlock_Key(), ecorePackage.getEString(), "key", null, 0, 1, FacetsAndBlock.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(headlessExperimentEClass, HeadlessExperiment.class, "HeadlessExperiment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getHeadlessExperiment_Key(), ecorePackage.getEString(), "key", null, 0, 1, HeadlessExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getHeadlessExperiment_FirstFacet(), ecorePackage.getEString(), "firstFacet", null, 0, 1, HeadlessExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getHeadlessExperiment_Name(), ecorePackage.getEString(), "name", null, 0, 1, HeadlessExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getHeadlessExperiment_ImportURI(), ecorePackage.getEString(), "importURI", null, 0, 1, HeadlessExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getHeadlessExperiment_Facets(), this.getFacet(), null, "facets", null, 0, -1, HeadlessExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getHeadlessExperiment_Block(), this.getBlock(), null, "block", null, 0, 1, HeadlessExperiment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(actionArgumentsEClass, ActionArguments.class, "ActionArguments", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getActionArguments_Args(), this.getArgumentDefinition(), null, "args", null, 0, -1, ActionArguments.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(statementEClass, Statement.class, "Statement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getStatement_Key(), ecorePackage.getEString(), "key", null, 0, 1, Statement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEAttribute(getStatement_FirstFacet(), ecorePackage.getEString(), "firstFacet", null, 0, 1, Statement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getStatement_Expr(), this.getExpression(), null, "expr", null, 0, 1, Statement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getStatement_Facets(), this.getFacet(), null, "facets", null, 0, -1, Statement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getStatement_Block(), this.getBlock(), null, "block", null, 0, 1, Statement.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(s_GlobalEClass, S_Global.class, "S_Global", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
@@ -2665,24 +2393,17 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(s_TryEClass, S_Try.class, "S_Try", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getS_Try_Catch(), this.getBlock(), null, "catch", null, 0, 1, S_Try.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(s_OtherEClass, S_Other.class, "S_Other", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEClass(s_SwitchEClass, S_Switch.class, "S_Switch", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_ReturnEClass, S_Return.class, "S_Return", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(s_DeclarationEClass, S_Declaration.class, "S_Declaration", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_ReflexEClass, S_Reflex.class, "S_Reflex", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_DefinitionEClass, S_Definition.class, "S_Definition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getS_Definition_Tkey(), this.getExpression(), null, "tkey", null, 0, 1, S_Definition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getS_Definition_Args(), this.getActionArguments(), null, "args", null, 0, 1, S_Definition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(s_AssignmentEClass, S_Assignment.class, "S_Assignment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getS_Assignment_Value(), this.getExpression(), null, "value", null, 0, 1, S_Assignment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-    initEClass(s_DirectAssignmentEClass, S_DirectAssignment.class, "S_DirectAssignment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(s_SetEClass, S_Set.class, "S_Set", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_EquationsEClass, S_Equations.class, "S_Equations", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getS_Equations_Equations(), this.getS_Assignment(), null, "equations", null, 0, -1, S_Equations.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -2691,13 +2412,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     initEClass(s_DisplayEClass, S_Display.class, "S_Display", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEAttribute(getS_Display_Name(), ecorePackage.getEString(), "name", null, 0, 1, S_Display.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
-    initEClass(speciesOrGridDisplayStatementEClass, speciesOrGridDisplayStatement.class, "speciesOrGridDisplayStatement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(imageDisplayStatementEClass, imageDisplayStatement.class, "imageDisplayStatement", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(actionArgumentsEClass, ActionArguments.class, "ActionArguments", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getActionArguments_Args(), this.getArgumentDefinition(), null, "args", null, 0, -1, ActionArguments.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(argumentDefinitionEClass, ArgumentDefinition.class, "ArgumentDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getArgumentDefinition_Type(), this.getExpression(), null, "type", null, 0, 1, ArgumentDefinition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -2708,11 +2422,10 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEReference(getFacet_Expr(), this.getExpression(), null, "expr", null, 0, 1, Facet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
     initEReference(getFacet_Block(), this.getBlock(), null, "block", null, 0, 1, Facet.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(expressionEClass, Expression.class, "Expression", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEClass(blockEClass, Block.class, "Block", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getBlock_Statements(), this.getStatement(), null, "statements", null, 0, -1, Block.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(argumentPairEClass, ArgumentPair.class, "ArgumentPair", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEAttribute(getArgumentPair_Op(), ecorePackage.getEString(), "op", null, 0, 1, ArgumentPair.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getArgumentPair_Right(), this.getExpression(), null, "right", null, 0, 1, ArgumentPair.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEClass(expressionEClass, Expression.class, "Expression", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(expressionListEClass, ExpressionList.class, "ExpressionList", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getExpressionList_Exprs(), this.getExpression(), null, "exprs", null, 0, -1, ExpressionList.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -2731,9 +2444,9 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     initEClass(typeDefinitionEClass, TypeDefinition.class, "TypeDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
-    initEClass(varDefinitionEClass, VarDefinition.class, "VarDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
     initEClass(actionDefinitionEClass, ActionDefinition.class, "ActionDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(varDefinitionEClass, VarDefinition.class, "VarDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(unitFakeDefinitionEClass, UnitFakeDefinition.class, "UnitFakeDefinition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
@@ -2753,8 +2466,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(stringLiteralEClass, StringLiteral.class, "StringLiteral", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_ActionEClass, S_Action.class, "S_Action", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
-    initEClass(s_VarEClass, S_Var.class, "S_Var", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(binaryOperatorEClass, BinaryOperator.class, "BinaryOperator", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getBinaryOperator_Left(), this.getExpression(), null, "left", null, 0, 1, BinaryOperator.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -2803,10 +2514,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEClass(unitNameEClass, UnitName.class, "UnitName", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getUnitName_Ref(), this.getUnitFakeDefinition(), null, "ref", null, 0, 1, UnitName.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
-    initEClass(typeRefEClass, TypeRef.class, "TypeRef", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-    initEReference(getTypeRef_Ref(), this.getTypeDefinition(), null, "ref", null, 0, 1, TypeRef.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-    initEReference(getTypeRef_Parameter(), this.getTypeInfo(), null, "parameter", null, 0, 1, TypeRef.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
-
     initEClass(skillRefEClass, SkillRef.class, "SkillRef", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getSkillRef_Ref(), this.getSkillFakeDefinition(), null, "ref", null, 0, 1, SkillRef.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
@@ -2815,6 +2522,10 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     initEClass(equationRefEClass, EquationRef.class, "EquationRef", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getEquationRef_Ref(), this.getEquationDefinition(), null, "ref", null, 0, 1, EquationRef.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(typeRefEClass, TypeRef.class, "TypeRef", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+    initEReference(getTypeRef_Ref(), this.getTypeDefinition(), null, "ref", null, 0, 1, TypeRef.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+    initEReference(getTypeRef_Parameter(), this.getTypeInfo(), null, "parameter", null, 0, 1, TypeRef.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(intLiteralEClass, IntLiteral.class, "IntLiteral", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 

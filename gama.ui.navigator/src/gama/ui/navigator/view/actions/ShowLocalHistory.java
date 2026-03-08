@@ -28,7 +28,7 @@ import org.eclipse.team.ui.history.IHistoryView;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceAction;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.shared.utils.WorkbenchHelper;
 

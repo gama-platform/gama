@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ValuedDisplayOutputFactory.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform (v.1.9.3).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,16 +12,16 @@ package gama.core.outputs;
 
 import java.util.Collection;
 
-import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.model.GamlModelSpecies;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.agent.IMacroAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.species.ISpecies;
+import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IMacroAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.species.GamlModelSpecies;
+import gama.api.kernel.species.ISpecies;
+import gama.core.experiment.ExperimentAgent;
 
 /**
  * A factory for creating ValuedDisplayOutput objects.
@@ -111,7 +111,7 @@ public class ValuedDisplayOutputFactory {
 	 *            the expr
 	 */
 	public static void browse(final IMacroAgent root, final IExpression expr, final IExpression attributes) {
-		final SpeciesDescription species = expr.getGamlType().isContainer()
+		final ISpeciesDescription species = expr.getGamlType().isContainer()
 				? expr.getGamlType().getContentType().getSpecies() : expr.getGamlType().getSpecies();
 		if (species == null) throw GamaRuntimeException
 				.error("Expression '" + expr.serializeToGaml(true) + "' does not reference agents", root.getScope());

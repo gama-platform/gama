@@ -15,19 +15,20 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.gaml.operators.Strings;
-import gama.gaml.statements.Facets;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.Facets;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.file.GamaFile;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.utils.StringUtils;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  * The Class GamaTextFile.
@@ -84,7 +85,7 @@ public class GamaTextFile extends GamaFile<IList<String>, String> {
 	public String _stringValue(final IScope scope) throws GamaRuntimeException {
 		getContents(scope);
 		final StringBuilder sb = new StringBuilder(getBuffer().length(scope) * 200);
-		for (final String s : getBuffer().iterable(scope)) { sb.append(s).append(Strings.LN); }
+		for (final String s : getBuffer().iterable(scope)) { sb.append(s).append(StringUtils.LN); }
 		sb.setLength(sb.length() - 1);
 		return sb.toString();
 	}
@@ -119,7 +120,7 @@ public class GamaTextFile extends GamaFile<IList<String>, String> {
 	protected void flushBuffer(final IScope scope, final Facets facets) throws GamaRuntimeException {
 		if (getBuffer() != null && !getBuffer().isEmpty()) {
 			try (BufferedWriter writer = new BufferedWriter(new FileWriter(getFile(scope)))) {
-				for (final String s : getBuffer()) { writer.append(s).append(Strings.LN); }
+				for (final String s : getBuffer()) { writer.append(s).append(StringUtils.LN); }
 				writer.flush();
 			} catch (final IOException e) {
 				throw GamaRuntimeException.create(e, scope);

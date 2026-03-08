@@ -12,10 +12,9 @@ package gama.ui.display.opengl.renderer;
 
 import com.jogamp.opengl.GLEventListener;
 
-import gama.core.common.interfaces.IGraphics;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IPoint ;
-import gama.core.outputs.LayeredDisplayData;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.displays.IDisplayData;
+import gama.api.ui.displays.IGraphics;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.helpers.CameraHelper;
 import gama.ui.display.opengl.renderer.helpers.KeystoneHelper;
@@ -128,7 +127,7 @@ public interface IOpenGLRenderer extends GLEventListener, IGraphics.ThreeD {
 	 *
 	 * @return the data
 	 */
-	default LayeredDisplayData getData() { return getSurface().getData(); }
+	default IDisplayData getData() { return getSurface().getData(); }
 
 	/**
 	 * Gets the layer width.

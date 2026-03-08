@@ -10,8 +10,9 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.layers.ICameraDefinition;
 
 /**
  * The Class GenericCameraDefinition. A simple holder of position, target and lens of the camera. All coordinates are
@@ -74,27 +75,65 @@ public class GenericCameraDefinition implements ICameraDefinition {
 		this.name = name;
 	}
 
+	/**
+	 * Gets the location.
+	 *
+	 * @return the location
+	 */
 	@Override
 	public IPoint getLocation() { return currentLocation; }
 
+	/**
+	 * Gets the target.
+	 *
+	 * @return the target
+	 */
 	@Override
 	public IPoint getTarget() { return currentTarget; }
 
+	/**
+	 * Gets the lens.
+	 *
+	 * @return the lens
+	 */
 	@Override
 	public Double getLens() { return lens; }
 
+	/**
+	 * Checks if is locked.
+	 *
+	 * @return the boolean
+	 */
 	@Override
 	public Boolean isLocked() { return isLocked; }
 
+	/**
+	 * Checks if is dynamic.
+	 *
+	 * @return the boolean
+	 */
 	@Override
 	public Boolean isDynamic() { return false; }
 
+	/**
+	 * Sets the locked.
+	 *
+	 * @param b
+	 *            the new locked
+	 */
 	@Override
 	public void setLocked(final Boolean b) {
 		isLocked = b;
 
 	}
 
+	/**
+	 * Sets the location.
+	 *
+	 * @param point
+	 *            the point
+	 * @return true, if successful
+	 */
 	@Override
 	public boolean setLocation(final IPoint point) {
 		if (currentLocation.equals(point)) return false;
@@ -102,6 +141,13 @@ public class GenericCameraDefinition implements ICameraDefinition {
 		return true;
 	}
 
+	/**
+	 * Sets the target.
+	 *
+	 * @param point
+	 *            the point
+	 * @return true, if successful
+	 */
 	@Override
 	public boolean setTarget(final IPoint point) {
 		if (currentTarget.equals(point)) return false;
@@ -109,9 +155,18 @@ public class GenericCameraDefinition implements ICameraDefinition {
 		return true;
 	}
 
+	/**
+	 * Sets the lens.
+	 *
+	 * @param cameraLens
+	 *            the new lens
+	 */
 	@Override
 	public void setLens(final Double cameraLens) { lens = cameraLens; }
 
+	/**
+	 * Reset.
+	 */
 	@Override
 	public void reset() {
 		currentLocation.setLocation(initialLocation);
@@ -119,6 +174,13 @@ public class GenericCameraDefinition implements ICameraDefinition {
 		isLocked = false;
 	}
 
+	/**
+	 * Sets the distance.
+	 *
+	 * @param distance
+	 *            the distance
+	 * @return true, if successful
+	 */
 	@Override
 	public boolean setDistance(final Double distance) {
 		if (distance.equals(currentLocation.distance3D(currentTarget))) return false;
@@ -127,10 +189,40 @@ public class GenericCameraDefinition implements ICameraDefinition {
 		return true;
 	}
 
+	/**
+	 * Gets the distance.
+	 *
+	 * @return the distance
+	 */
 	@Override
 	public Double getDistance() { return currentLocation.distance3D(currentTarget); }
 
+	/**
+	 * Gets the name.
+	 *
+	 * @return the name
+	 */
 	@Override
 	public String getName() { return name; }
+
+	@Override
+	public IPoint computeLocation(final String pos, final IPoint target, final double maxX, final double maxY,
+			final double maxZ) {
+
+		double tx = target.getX();
+		double ty = target.getY();
+		return switch (pos) {
+			case from_above -> GamaPointFactory.create(tx, ty, maxZ);
+			case from_left -> GamaPointFactory.create(tx - maxX, ty, 0);
+			case from_up_left -> GamaPointFactory.create(tx - maxX, ty, maxZ);
+			case from_right -> GamaPointFactory.create(tx + maxX, ty - maxY / 1000, 0);
+			case from_up_right -> GamaPointFactory.create(tx + maxX, ty - maxY / 1000, maxZ);
+			case from_front -> GamaPointFactory.create(tx, ty - maxY, 0);
+			case from_up_front -> GamaPointFactory.create(tx, ty - maxY, maxZ);
+			case isometric -> GamaPointFactory.create(tx + maxZ, -maxZ + ty, maxZ / 1.2);
+			default -> GamaPointFactory.create(tx, ty, maxZ); // FROM_ABOVE
+		};
+
+	}
 
 }

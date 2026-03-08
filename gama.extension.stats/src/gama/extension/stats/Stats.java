@@ -37,41 +37,41 @@ import cern.jet.math.Arithmetic;
 import cern.jet.stat.Descriptive;
 import cern.jet.stat.Gamma;
 import cern.jet.stat.Probability;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.util.FileUtils;
-import gama.core.common.util.StringUtils;
-import gama.core.kernel.batch.exploration.morris.Morris;
-import gama.core.kernel.batch.exploration.sobol.Sobol;
-import gama.core.kernel.batch.exploration.stochanalysis.Stochanalysis;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.Collector;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IContainer;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.annotations.validator;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.StringUtils;
+import gama.api.utils.collections.Collector;
+import gama.api.utils.files.FileUtils;
+import gama.core.experiment.batch.exploration.Morris;
+import gama.core.experiment.batch.exploration.Sobol;
+import gama.core.experiment.batch.exploration.Stochanalysis;
 import gama.core.util.matrix.GamaField;
-import gama.core.util.matrix.GamaMatrix;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
 import gama.gaml.operators.Containers;
 import gama.gaml.operators.Containers.ComparableValidator;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Written by drogoul Modified on 15 janv. 2011
@@ -1715,13 +1715,14 @@ public class Stats {
 				final DataSet g = new DataSet();
 				final DataSet b = new DataSet();
 				for (final Object o : values.iterable(scope)) {
-					final GamaColor p = (GamaColor) o;
+					final IColor p = (IColor) o;
 					r.addValue(p.red());
 					g.addValue(p.green());
 					b.addValue(p.blue());
 				}
-				if (r.getSize() == 0) return GamaColorFactory.get(0, 0, 0, 0);
-				return GamaColorFactory.get((int) r.getMedian(), (int) g.getMedian(), (int) b.getMedian(), 0);
+				if (r.getSize() == 0) return GamaColorFactory.createWithRGBA(0, 0, 0, 0);
+				return GamaColorFactory.createWithRGBA((int) r.getMedian(), (int) g.getMedian(), (int) b.getMedian(),
+						0);
 			default:
 				final DataSet d = new DataSet();
 				for (final Object o : values.iterable(scope)) { d.addValue(Cast.asFloat(scope, o)); }
@@ -2250,7 +2251,7 @@ public class Stats {
 					value = "build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0]]))",
 					isExecutable = false) })
 	@test ("build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0],[5.0,1.0,3.0,5.0],[3.0,4.0,5.0,1.0]])).parameters collect (each with_precision 5) = [0.5,2.5,0.0,-1.5]")
-	public static GamaRegression opRegression(final IScope scope, final GamaMatrix data) throws GamaRuntimeException {
+	public static GamaRegression opRegression(final IScope scope, final IMatrix data) throws GamaRuntimeException {
 		try {
 			return new GamaRegression(scope, data);
 		} catch (final Exception e) {

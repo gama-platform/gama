@@ -3,8 +3,8 @@ package gama.extension.database.utils.sql.sqlite;
 import java.util.HashMap;
 import java.util.Map;
 
-import gama.core.common.util.FileUtils;
-import gama.core.runtime.IScope;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.files.FileUtils;
 import gama.extension.database.utils.sql.ISqlConnector;
 import gama.extension.database.utils.sql.SqlConnection;
 

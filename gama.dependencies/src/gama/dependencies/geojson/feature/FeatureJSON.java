@@ -3,7 +3,7 @@
  * FeatureJSON.java, in gama.dependencies, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -45,6 +45,7 @@ import org.json.simple.parser.JSONParser;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
 
+import gama.annotations.constants.IKeyword;
 import gama.dependencies.geojson.GeoJSONUtil;
 import gama.dependencies.geojson.geom.GeometryJSON;
 
@@ -402,7 +403,7 @@ public class FeatureJSON {
 	 * @throws IOException
 	 *             In the event of a parsing error or if the input json is invalid.
 	 */
-	public FeatureIterator<SimpleFeature> streamFeatureCollection(final Object input) throws IOException {
+	public FeatureIterator<SimpleFeature> streamFeatureCollection(final Object input) {
 		return new FeatureCollectionIterator(input);
 	}
 
@@ -455,15 +456,15 @@ public class FeatureJSON {
 	 */
 	Map<String, Object> createCRS(final CoordinateReferenceSystem crs) throws IOException {
 		Map<String, Object> obj = new LinkedHashMap<>();
-		obj.put("type", "name");
+		obj.put(IKeyword.TYPE, IKeyword.NAME);
 
 		Map<String, Object> props = new LinkedHashMap<>();
 		if (crs == null) {
-			props.put("name", "EPSG:4326");
+			props.put(IKeyword.NAME, "EPSG:4326");
 		} else {
 			try {
 				String identifier = CRS.lookupIdentifier(crs, true);
-				props.put("name", identifier);
+				props.put(IKeyword.NAME, identifier);
 			} catch (FactoryException e) {
 				throw (IOException) new IOException("Error looking up crs identifier").initCause(e);
 			}
@@ -520,7 +521,8 @@ public class FeatureJSON {
 	 * @throws IOException
 	 *             In the event of a parsing error or if the input json is invalid.
 	 */
-	public SimpleFeatureType readFeatureCollectionSchema(final Object input, final boolean nullValuesEncoded) throws IOException {
+	public SimpleFeatureType readFeatureCollectionSchema(final Object input, final boolean nullValuesEncoded)
+			throws IOException {
 		return GeoJSONUtil.parse(new FeatureTypeHandler(nullValuesEncoded), input, false);
 	}
 
@@ -561,7 +563,7 @@ public class FeatureJSON {
 	class FeatureEncoder implements JSONAware {
 
 		/** The feature type. */
-		SimpleFeatureType featureType;
+		SimpleFeatureType featureType1;
 
 		/** The feature. */
 		SimpleFeature feature;
@@ -584,27 +586,27 @@ public class FeatureJSON {
 		 *            the feature type
 		 */
 		public FeatureEncoder(final SimpleFeatureType featureType) {
-			this.featureType = featureType;
+			this.featureType1 = featureType;
 		}
 
 		/**
 		 * To JSON string.
 		 *
-		 * @param feature
+		 * @param feature1
 		 *            the feature
 		 * @return the string
 		 */
-		public String toJSONString(final SimpleFeature feature) {
+		public String toJSONString(final SimpleFeature feature1) {
 			StringBuilder sb = new StringBuilder();
 			sb.append("{");
 
 			// type
-			entry("type", "Feature", sb);
+			entry(IKeyword.TYPE, "Feature", sb);
 			sb.append(",");
 
 			// crs
 			if (encodeFeatureCRS) {
-				CoordinateReferenceSystem crs = feature.getFeatureType().getCoordinateReferenceSystem();
+				CoordinateReferenceSystem crs = feature1.getFeatureType().getCoordinateReferenceSystem();
 				if (crs != null) {
 					try {
 						string("crs", sb).append(":");
@@ -616,30 +618,30 @@ public class FeatureJSON {
 			}
 			// bounding box
 			if (encodeFeatureBounds) {
-				BoundingBox bbox = feature.getBounds();
+				BoundingBox bbox = feature1.getBounds();
 				string("bbox", sb).append(":");
 				sb.append(gjson.toString(bbox)).append(",");
 			}
 
 			// geometry
-			if (feature.getDefaultGeometry() != null) {
-				string("geometry", sb).append(":").append(gjson.toString((Geometry) feature.getDefaultGeometry()));
+			if (feature1.getDefaultGeometry() != null) {
+				string("geometry", sb).append(":").append(gjson.toString((Geometry) feature1.getDefaultGeometry()));
 				sb.append(",");
 			}
 
 			// properties
-			int gindex = featureType.getGeometryDescriptor() != null
-					? featureType.indexOf(featureType.getGeometryDescriptor().getLocalName()) : -1;
+			int gindex = featureType1.getGeometryDescriptor() != null
+					? featureType1.indexOf(featureType1.getGeometryDescriptor().getLocalName()) : -1;
 
 			string("properties", sb).append(":").append("{");
 			boolean attributesWritten = false;
-			for (int i = 0; i < featureType.getAttributeCount(); i++) {
-				AttributeDescriptor ad = featureType.getDescriptor(i);
+			for (int i = 0; i < featureType1.getAttributeCount(); i++) {
+				AttributeDescriptor ad = featureType1.getDescriptor(i);
 
 				// skip the default geometry, it's already encoded
 				if (i == gindex) { continue; }
 
-				Object value = feature.getAttribute(i);
+				Object value = feature1.getAttribute(i);
 
 				if (!encodeNullValues && value == null) {
 					// skip
@@ -665,7 +667,7 @@ public class FeatureJSON {
 			sb.append("},");
 
 			// id
-			entry("id", feature.getID(), sb);
+			entry("id", feature1.getID(), sb);
 
 			sb.append("}");
 			return sb.toString();
@@ -686,7 +688,7 @@ public class FeatureJSON {
 		FeatureCollection features;
 
 		/** The gjson. */
-		GeometryJSON gjson;
+		GeometryJSON gjson1;
 
 		/**
 		 * Instantiates a new feature collection encoder.
@@ -698,7 +700,7 @@ public class FeatureJSON {
 		 */
 		public FeatureCollectionEncoder(final FeatureCollection features, final GeometryJSON gjson) {
 			this.features = features;
-			this.gjson = gjson;
+			this.gjson1 = gjson;
 		}
 
 		@Override

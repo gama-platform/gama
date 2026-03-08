@@ -23,7 +23,7 @@ package gama.ui.display.opengl.renderer.helpers;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import gama.core.common.interfaces.ILayer;
+import gama.api.ui.layers.ILayer;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;

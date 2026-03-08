@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.shared.menus;
 
-import static gama.core.util.GamaColorFactory.COLORS;
+import static gama.api.types.color.GamaColorFactory.NAME_REGISTRY;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,8 +30,8 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
@@ -106,18 +106,19 @@ public class GamaColorMenu extends GamaMenu {
 	private static Integer reverse = null;
 
 	/** The by RGB. */
-	public static final Comparator<String> byRGB = (a, b) -> getReverse() * COLORS.get(a).compareTo(COLORS.get(b));
+	public static final Comparator<String> byRGB =
+			(a, b) -> getReverse() * GamaColorFactory.get(a).compareTo(GamaColorFactory.get(b));
 
 	/** The by brightness. */
 	public static final Comparator<String> byBrightness =
-			(a, b) -> getReverse() * COLORS.get(a).compareBrightnessTo(COLORS.get(b));
+			(a, b) -> getReverse() * GamaColorFactory.get(a).compareBrightnessTo(GamaColorFactory.get(b));
 
 	/** The by name. */
 	public static final Comparator<String> byName = (a, b) -> getReverse() * a.compareTo(b);
 
 	/** The by luminescence. */
 	public static final Comparator<String> byLuminescence =
-			(a, b) -> getReverse() * GamaColorFactory.COLORS.get(a).compareTo(GamaColorFactory.COLORS.get(b));
+			(a, b) -> getReverse() * GamaColorFactory.get(a).compareTo(GamaColorFactory.get(b));
 
 	/** The color comp. */
 	public static Comparator colorComp = null;
@@ -193,7 +194,7 @@ public class GamaColorMenu extends GamaMenu {
 		check(sortMenu, SORT_NAMES[2], colorComp == byBrightness, chooseSort).setData(byBrightness);
 		check(sortMenu, SORT_NAMES[3], colorComp == byLuminescence, chooseSort).setData(byLuminescence);
 		sep();
-		final List<String> names = new ArrayList(GamaColorFactory.COLORS.keySet());
+		final List<String> names = new ArrayList(NAME_REGISTRY.keySet());
 		Collections.sort(names, colorComp);
 		Menu subMenu = mainMenu;
 		for (int i = 0; i < names.size(); i++) {
@@ -203,7 +204,7 @@ public class GamaColorMenu extends GamaMenu {
 				subMenu = sub(current.replace("#", "") + " to " + following);
 			}
 			final MenuItem item = action(subMenu, "#" + current, defaultListener);
-			final IColor color = GamaColorFactory.COLORS.get(current);
+			final IColor color = GamaColorFactory.get(current);
 			item.setImage(GamaIcon.ofColor(color).image());
 		}
 
@@ -221,12 +222,11 @@ public class GamaColorMenu extends GamaMenu {
 	 */
 	public static void addColorSubmenuTo(final Menu menu, final String text, final Consumer<IColor> selector) {
 		Menu subMenu = sub(menu, text, text, IGamaIcons.REFERENCE_COLORS);
-		final List<String> names = new ArrayList(GamaColorFactory.COLORS.keySet());
+		final List<String> names = new ArrayList(NAME_REGISTRY.keySet());
 		Collections.sort(names, colorComp);
 		for (final String current : names) {
-			final IColor color = GamaColorFactory.COLORS.get(current);
-			final MenuItem item =
-					action(subMenu, "#" + current, t -> selector.accept(GamaColorFactory.COLORS.get(current)));
+			final IColor color = GamaColorFactory.get(current);
+			final MenuItem item = action(subMenu, "#" + current, t -> selector.accept(color));
 			item.setImage(GamaIcon.ofColor(color).image());
 		}
 	}

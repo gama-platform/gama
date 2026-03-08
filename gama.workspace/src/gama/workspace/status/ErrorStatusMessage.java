@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gama.workspace.status;
 
-import gama.core.common.interfaces.IStatusMessage;
-import gama.core.common.interfaces.IStatusMessage.StatusType;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IColor;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.types.color.IColor;
+import gama.api.ui.IStatusMessage;
+import gama.api.ui.IStatusMessage.StatusType;
 
 /**
  *

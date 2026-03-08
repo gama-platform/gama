@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * PairEditor.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * PairEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -33,18 +33,19 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import gama.core.common.util.StringUtils;
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.util.GamaPair;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.pair.GamaPairFactory;
+import gama.api.types.pair.IPair;
+import gama.api.utils.StringUtils;
 import gama.ui.shared.interfaces.EditorListener;
 
 /**
  * The Class PointEditor.
  */
-public class PairEditor extends AbstractEditor<GamaPair> implements VerifyListener {
+public class PairEditor extends AbstractEditor<IPair> implements VerifyListener {
 
 	/** The Constant LABELS. */
 	private static final String[] LABELS = { "key", "value" };
@@ -85,7 +86,7 @@ public class PairEditor extends AbstractEditor<GamaPair> implements VerifyListen
 	 * @param l
 	 *            the l
 	 */
-	PairEditor(final IAgent agent, final IParameter param, final EditorListener<GamaPair> l) {
+	PairEditor(final IAgent agent, final IParameter param, final EditorListener<IPair> l) {
 		super(agent, param, l);
 	}
 
@@ -178,8 +179,7 @@ public class PairEditor extends AbstractEditor<GamaPair> implements VerifyListen
 	@Override
 	public void modifyText(final ModifyEvent me) {
 		if (internalModification || !allowVerification) return;
-		modifyAndDisplayValue(
-				new GamaPair(getScope(), ordinates[0].getText(), ordinates[1].getText(), Types.NO_TYPE, Types.NO_TYPE));
+		modifyAndDisplayValue(GamaPairFactory.createWith(ordinates[0].getText(), ordinates[1].getText()));
 
 	}
 
@@ -191,7 +191,7 @@ public class PairEditor extends AbstractEditor<GamaPair> implements VerifyListen
 	protected int[] getToolItems() { return new int[] { PLUS, MINUS, REVERT }; }
 
 	@Override
-	protected GamaPair applyRevert() {
+	protected IPair applyRevert() {
 		isReverting = true;
 		return super.applyRevert();
 	}

@@ -26,7 +26,7 @@ global {
 		int scale_factor <- palette_name = "Seaside" ? 20 : 10;
 		terrain <- generate_terrain(generator_seed, width, height, details, smoothness, scattering) * scale_factor;
 	}
-
+ 
 }
 
 experiment Terrain type: gui {

@@ -19,13 +19,13 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import gama.core.common.geometry.ICoordinates;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.outputs.LayeredDisplayData;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.ICoordinates;
+import gama.api.utils.geometry.Scaling3D;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.renderer.shaders.AbstractPostprocessingShader;
@@ -146,8 +146,8 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 * Switch corners.
 	 */
 	public void switchCorners() {
-		worldCorners =
-				!LayeredDisplayData.KEYSTONE_IDENTITY.getEnvelope().covers(getData().getKeystone().getEnvelope());
+		worldCorners = !GamaCoordinateSequenceFactory.getKeystoneIdentity().getEnvelope()
+				.covers(getData().getKeystone().getEnvelope());
 	}
 
 	/**
@@ -223,10 +223,9 @@ public class KeystoneHelper extends AbstractRendererHelper {
 		final double labelHeightIn01 = pixelHeightIn01 * (18 + 20);
 		ICoordinates vertices;
 		if (!worldCorners) {
-			vertices = LayeredDisplayData.KEYSTONE_IDENTITY;
-			// 0, 0, 0 | 0, 1, 0 | 1, 1, 0 | 1, 0, 0
+			vertices = GamaCoordinateSequenceFactory.getKeystoneIdentity();
 		} else {
-			vertices = ICoordinates.ofLength(4);
+			vertices = GamaCoordinateSequenceFactory.create(4, 3);
 			vertices.at(0).setLocation(xOffsetIn01, yOffsetIn01, 0);
 			vertices.at(1).setLocation(xOffsetIn01, 1 - yOffsetIn01, 0);
 			vertices.at(2).setLocation(1 - xOffsetIn01, 1 - yOffsetIn01, 0);
@@ -427,7 +426,7 @@ public class KeystoneHelper extends AbstractRendererHelper {
 	 *            the corner id
 	 */
 	public void resetCorner(final int cornerId) {
-		setKeystoneCoordinates(cornerId, LayeredDisplayData.KEYSTONE_IDENTITY.at(cornerId));
+		setKeystoneCoordinates(cornerId, GamaCoordinateSequenceFactory.getKeystoneIdentity().at(cornerId));
 		cornerSelected = -1;
 		cornerHovered = -1;
 	}

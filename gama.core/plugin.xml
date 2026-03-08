@@ -1,16 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="gaml.grammar.addition" name="Addition to the grammar of GAML" schema="schema/gaml.grammar.addition.exsd"/>
-   <extension-point id="gama.display" name="Implementations of IDisplaySurface" schema="schema/gama.display.exsd"/>
-   <extension-point id="gama.create" name="Implementations of ICreateDelegate" schema="schema/gama.create.exsd"/>
-   <extension-point id="gama.save" name="Implementations of ISaveDelegate" schema="schema/gama.save.exsd"/>
-   <extension-point id="gama.draw" name="Implementations of IDrawDelegate" schema="schema/gama.draw.exsd"/>
-   <extension-point id="gama.event_layer" name="Implementations of IEventLayerDelegate" schema="schema/gama.event_layer.exsd"/>
-   <extension-point id="gaml.extension" name="Additions to the GAML language" schema="schema/gaml.extension.exsd"/>
-   <extension-point id="gama.models" name="Allow plugins to add sample models to GAMA" schema="schema/gama.models.exsd"/>
-   <extension-point id="gama.experiment" name="Implementations of IExperimentAgent" schema="schema/gama.experiment.exsd"/>
-   <extension-point id="gama.constants" name="Implementations of IConstantsSupplier" schema="schema/gama.constants.exsd"/>
    <extension
          point="gama.create">
       <implementation
@@ -35,11 +25,11 @@
    <extension
          point="gama.experiment">
       <implementation
-            class="gama.core.kernel.experiment.ExperimentAgent"
+            class="gama.core.experiment.ExperimentAgent"
             keyword="gui">
       </implementation>
       <implementation
-            class="gama.core.kernel.experiment.BatchAgent"
+            class="gama.core.experiment.batch.BatchAgent"
             keyword="batch">
       </implementation>
    </extension>
@@ -54,13 +44,6 @@
       <implementation
             class="gama.core.outputs.layers.KeyboardEventLayerDelegate">
       </implementation>
-   </extension>
-   <extension
-         point="org.eclipse.core.resources.variableResolvers">
-      <variableResolver
-            class="gama.core.util.file.CacheLocationProvider"
-            variable="CACHE_LOC">
-      </variableResolver>
    </extension>
    <extension
          point="gama.save">
@@ -123,8 +106,31 @@
    <extension
          point="gama.constants">
       <implementation
-            class="gama.gaml.constants.CoreConstantsSupplier">
+            class="gama.api.gaml.constants.CoreConstantsSupplier">
       </implementation>
+   </extension>
+   <extension
+         point="gama.metadata">
+      <implementation
+            class="gama.core.util.json.JSONInfo"
+            content_type="gama.json.file.type">
+      </implementation>
+               <implementation
+                     class="gama.core.util.file.CSVInfo"
+                     content_type="gama.csv.file.type">
+               </implementation>
+               <implementation
+                     class="gama.core.util.file.OSMInfo"
+                     content_type="gama.osm.file.type">
+               </implementation>
+               <implementation
+                     class="gama.core.util.file.ShapeInfo"
+                     content_type="gama.shapefile.type">
+               </implementation>
+               <implementation
+                     class="gama.core.util.file.GMLInfo"
+                     content_type="gama.gml.file.type">
+               </implementation>
    </extension>
 
 </plugin>

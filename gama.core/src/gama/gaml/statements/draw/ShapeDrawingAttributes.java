@@ -12,13 +12,13 @@ package gama.gaml.statements.draw;
 
 import java.util.List;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.IColor;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.interfaces.IImageProvider;
 
 /**
  * The Class ShapeDrawingAttributes.

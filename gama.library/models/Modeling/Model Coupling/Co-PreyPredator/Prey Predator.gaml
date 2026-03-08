@@ -108,7 +108,7 @@ species predator parent: generic_species
 	{
 		if (goal = nil)
 		{
-			let tmp <- (lstPrey where (!dead(each) and each.shape distance_to self.shape < perceipt_radius));
+			list<prey> tmp <- (lstPrey where (!dead(each) and each.shape distance_to self.shape < perceipt_radius));
 			if (length(tmp) > 0)
 			{
 				agent a <- first(tmp sort (each.shape distance_to self.shape));

@@ -10,13 +10,13 @@
  ********************************************************************************************************/
 package gama.core.util.file;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.species.ISpecies;
-import gama.gaml.types.IType;
+import gama.annotations.doc;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class GamaGraphDotFile.

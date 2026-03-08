@@ -3,7 +3,7 @@
  * ChartDataSourceList.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,12 +13,14 @@ package gama.core.outputs.layers.charts;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.util.list.IList;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.ui.displays.IChartDataSource;
 import gama.dev.DEBUG;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
 
 /**
  * The Class ChartDataSourceList.
@@ -80,7 +82,7 @@ public class ChartDataSourceList extends ChartDataSource {
 		// type_val = get_data_type(scope, o);
 
 		if (o instanceof IList) {
-			final IList<?> lval = Cast.asList(scope, o);
+			final IList<?> lval = GamaListFactory.castToList(scope, o);
 
 			if (lval.size() > 0) {
 				for (int i = 0; i < lval.size(); i++) {
@@ -104,9 +106,10 @@ public class ChartDataSourceList extends ChartDataSource {
 	 *            the chart cycle
 	 */
 	private void updateserielist(final IScope scope, final int chartCycle) {
-		final IList<String> legends = legendExp == null ? null : Cast.asList(scope, legendExp.value(scope));
+		final IList<String> legends =
+				legendExp == null ? null : GamaListFactory.castToList(scope, legendExp.value(scope));
 		if (legends == null) return;
-		final IList<?> values = Cast.asList(scope, getValue().value(scope));
+		final IList<?> values = GamaListFactory.castToList(scope, getValue().value(scope));
 		final ArrayList<String> previousSeries = currentSeriesNames;
 		currentSeriesNames = new ArrayList<>();
 		boolean somethingChanged = false;
@@ -183,11 +186,11 @@ public class ChartDataSourceList extends ChartDataSource {
 	 */
 	public void inferDatasetProperties(final IScope scope) {
 		Object o = null;
-		int type_val = ChartDataSource.DATA_TYPE_NULL;
+		int type_val = IChartDataSource.DATA_TYPE_NULL;
 		if (this.getValue() != null) {
 			o = this.getValue().value(scope);
-			if (o instanceof IList && Cast.asList(scope, o).size() > 0) {
-				final Object o2 = Cast.asList(scope, o).get(0);
+			if (o instanceof IList && GamaListFactory.castToList(scope, o).size() > 0) {
+				final Object o2 = GamaListFactory.castToList(scope, o).get(0);
 				type_val = get_data_type(scope, o2);
 			}
 

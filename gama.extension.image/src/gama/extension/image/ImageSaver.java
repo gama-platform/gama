@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * ImageSaver.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ImageSaver.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -23,20 +22,20 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
 
-import gama.core.metamodel.topology.grid.GridPopulation;
-import gama.core.metamodel.topology.projection.IProjection;
-import gama.core.metamodel.topology.projection.ProjectionFactory;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.matrix.GamaField;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.species.ISpecies;
+import gama.api.kernel.topology.IProjection;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.matrix.IField;
+import gama.api.utils.files.SaveOptions;
+import gama.core.topology.gis.ProjectionFactory;
+import gama.core.topology.grid.GridPopulation;
 import gama.gaml.operators.Maths;
-import gama.gaml.species.ISpecies;
 import gama.gaml.statements.save.AbstractSaver;
-import gama.gaml.statements.save.SaveOptions;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class ImageSaver.
@@ -59,7 +58,8 @@ public class ImageSaver extends AbstractSaver {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions options) throws IOException {
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions options)
+			throws IOException {
 		File f = file;
 		String path = f.getAbsolutePath();
 		String t = "image".equals(options.type) ? "png" : "jpeg".equals(options.type) ? "jpg" : options.type;
@@ -69,13 +69,11 @@ public class ImageSaver extends AbstractSaver {
 			path += "." + t;
 			f = new File(path);
 		}
-		
-		if (f.exists() && !f.delete()) {
-			return; 
-		}
+
+		if (f.exists() && !f.delete()) return;
 		Object v = item.value(scope);
 		boolean saved = false;
-		if (v instanceof GamaField gf) {
+		if (v instanceof IField gf) {
 			saveField(scope, gf, f, t);
 			ProjectionFactory.saveTargetCRSAsPRJFile(scope, f.getAbsolutePath());
 			saved = true;
@@ -147,10 +145,10 @@ public class ImageSaver extends AbstractSaver {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	private void saveField(final IScope scope, final GamaField field, final File f, final String t) throws IOException {
+	private void saveField(final IScope scope, final IField field, final File f, final String t) throws IOException {
 		if (field.isEmpty(scope)) return;
-		final int cols = field.numCols;
-		final int rows = field.numRows;
+		final int cols = field.getCols(scope);
+		final int rows = field.getRows(scope);
 		IProjection worldProjection = scope.getSimulation().getProjectionFactory().getWorld();
 		double x = worldProjection == null ? 0 : worldProjection.getProjectedEnvelope().getMinX();
 		double y = worldProjection == null ? 0 : worldProjection.getProjectedEnvelope().getMinY();

@@ -41,7 +41,7 @@ experiment "Snapshot Depth" type: gui {
 	
 	output synchronized: true {
 		display "My Display" type:3d axes: false{
-			image background refresh: true;
+			picture background refresh: true;
 			species bug;
 		}
 	}

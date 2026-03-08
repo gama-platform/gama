@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
-import static gama.core.runtime.exceptions.GamaRuntimeException.create;
+import static gama.api.exceptions.GamaRuntimeException.create;
 
 import java.util.Objects;
 
@@ -26,18 +26,18 @@ import org.eclipse.swt.widgets.Control;
 
 import com.google.common.primitives.Ints;
 
-import gama.core.common.util.StringUtils;
-import gama.core.kernel.experiment.parameters.ExperimentParameter;
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.types.GamaStringType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
-import gama.gaml.variables.Variable;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.GamaStringType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.gaml.variables.Variable;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
+import gama.core.experiment.parameters.ExperimentParameter;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.interfaces.IParameterEditor;
 import gama.ui.shared.resources.GamaColors;

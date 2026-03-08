@@ -12,10 +12,11 @@ package gama.core.util.graph;
 
 import java.util.Collection;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.runtime.IScope;
-import gama.core.util.IContainer;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.graph.IGraph;
+import gama.api.types.misc.IContainer;
 
 /**
  * Syncs a graph with two populations of agents (one for edges, one for nodes).

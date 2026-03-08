@@ -13,7 +13,7 @@ package gama.extension.network.websocket;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import gama.core.metamodel.agent.IAgent;
+import gama.api.kernel.agent.IAgent;
 import gama.extension.network.common.IConnector;
 import gama.extension.network.common.MessageFactory;
 import gama.extension.network.common.MessageFactory.MessageType;

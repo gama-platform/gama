@@ -5,7 +5,7 @@ Bundle-SymbolicName: gama.dependencies;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Bundle-Vendor: UMMISCO
 Bundle-ActivationPolicy: lazy
-Bundle-Activator: gama.dependencies.Activator
+Bundle-Activator: gama.dependencies.DependenciesActivator
 Import-Package: org.osgi.framework
 Export-Package: com.bedatadriven.jackson.datatype.jts,
  com.bedatadriven.jackson.datatype.jts.parsers,
@@ -80,6 +80,7 @@ Export-Package: com.bedatadriven.jackson.datatype.jts,
  com.sun.media.jai.widget,
  crosby.binary.osmosis,
  de.micromata.opengis.kml.v_2_2_0,
+ gama.dependencies,
  gama.dependencies.geojson,
  gama.dependencies.geojson.feature,
  gama.dependencies.geojson.geom,

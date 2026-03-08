@@ -1,0 +1,504 @@
+grammar gaml.compiler.Gaml hidden(WS, ML_COMMENT, SL_COMMENT)
+
+import 'http://www.eclipse.org/emf/2002/Ecore' as ecore
+generate gaml 'http://www.compiler.gaml/Gaml'
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * GRAMMAR ENTRIES: STANDALONE EXPRESSION, BLOCK & EXPERIMENT.
+ * ****************************************************************************************** 
+ * ******************************************************************************************/
+/*
+ * Entry points for the parser. 
+ * 'Model' is the standard entry for a full .gaml file. 
+ * The others are used for dynamically parsing snippets (e.g., UI consoles).
+ */
+Entry:
+	->Model | StandaloneExpression | StandaloneBlock | StandaloneExperiment;
+
+// Parses a raw block without a model wrapper. Example: { do action; }
+StandaloneBlock:
+	'__standalone_block__' block=Block;
+
+// Parses a single assignment. Example: my_var <- 5 + 3;
+StandaloneExpression:
+	'__standalone_expression__' expr=Expression;
+
+// Parses an experiment independently. Example: experiment my_exp type: gui { }
+StandaloneExperiment:
+	key=K_Experiment name=(Valid_ID | STRING) ('model:' importURI=STRING)? FacetsAndBlock;
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * GRAMMAR ENTRIES: MODEL
+ * ****************************************************************************************** 
+ * ******************************************************************************************/
+/*
+ * Top-level structure of a GAML model.
+ * Example: 
+ * model MyModel
+ * import "other.gaml"
+ * global { }
+ */
+Model:
+	(pragmas+=Pragma)* 'model' name=Valid_ID (imports+=Import)* block=ModelBlock;
+
+// Example: import "other_model.gaml" as other_alias
+Import:
+	'import' importURI=STRING ('as' name=Valid_ID)?; // must be named importURI
+
+// Example: @doc(name="Documentation")
+Pragma:
+	'@' (name=ID ('[' plugins=ExpressionList? ']')?);
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * REUSABLE FRAGMENTS
+ * ****************************************************************************************** 
+ * ******************************************************************************************/
+/*
+ * Fragments inject their elements into the calling rule's AST node instead of 
+ * creating a new distinct node. This flattens the generated EMF model.
+ */
+// Captures zero or more facets, followed by either a code block or a semicolon.
+// Example 1: color: #red size: 5;
+// Example 2: name: "test" { do action; }
+fragment FacetsAndBlock:
+	(facets+=Facet)* (block=Block | ';');
+
+// Injects arguments directly into the calling action/definition.
+// Example: int arg1, string arg2 <- "default"
+fragment ActionArguments:
+	args+=ArgumentDefinition (',' args+=ArgumentDefinition)*;
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * TOP-LEVEL STATEMENTS: SPECIES, GLOBAL, EXPERIMENT
+ * ****************************************************************************************** 
+ * ******************************************************************************************/
+S_Section returns Statement:
+	S_Global | S_Species | S_Experiment;
+
+// Example: global { ... }
+S_Global:
+	key='global' FacetsAndBlock;
+
+// Example: species agent_A { ... } or grid cell_grid { ... }
+S_Species:
+	key=(K_Species | K_Grid) name=ID FacetsAndBlock;
+
+// Example: experiment exp1 type: gui { ... }
+S_Experiment:
+	key=K_Experiment name=(Valid_ID | STRING) FacetsAndBlock;
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * REGULAR STATEMENTS: IMPERATIVE, INSTRUCTIONS, CONTROL
+ * ****************************************************************************************** 
+ * ******************************************************************************************/
+/*
+ * Rule evaluation order for statements. 
+ * Specific rules are checked first. Predicates (=>) are used to resolve 
+ * LL(*) conflicts where statements share starting keywords with Valid_ID.
+ */
+Statement:
+	// 1. Unambiguous statements (no overlap with Valid_ID).
+	S_Display | S_Return | S_Solve | S_If | S_Try | S_Do | S_Loop | S_Switch | S_Equations | S_Action |
+	// 2. Keywords that could also be variables.
+	=> S_Species | => S_Reflex |
+	// 3. Assignments (e.g., status <- 5;). Checked before falling back to generic statements.
+	=> S_Assignment |
+	// 4. Variable or type definitions (e.g., int my_var <- 5;). Starts with a TypeRef.
+	=> S_Definition |
+	// 5. Universal fallback for any custom action or built-in statement (e.g., ask agents;).
+	S_Other;
+
+// Example: do my_action; or invoke my_action(5);
+S_Do:
+	key=('do' | 'invoke') expr=AbstractRef FacetsAndBlock;
+
+// Example: loop i from: 1 to: 5 { ... }
+S_Loop:
+	key='loop' (name=ID)? (facets+=Facet)* block=Block;
+
+// Example: if (a > b) { ... } else { ... }
+S_If:
+	key='if' expr=Expression block=Block (->'else' else=(S_If | Block))?;
+
+// Example: try { ... } catch { ... }
+S_Try:
+	key='try' block=Block (->'catch' catch=Block)?;
+
+// Example: switch my_var { ... }
+S_Switch:
+	key='switch' expr=Expression block=MatchBlock;
+
+// Example: match 5 { ... } or match_between [1, 5] { ... }
+S_Match returns Statement:
+	key=('match' | 'match_between' | 'match_one' | 'match_regex') expr=Expression block=Block;
+
+// Example: default { ... }
+S_Default returns Statement:
+	key='default' block=Block;
+
+// Example: return 5;
+S_Return:
+	key='return' expr=Expression? ';';
+
+/*
+ * Universal fallback rule.
+ * The full-path syntactic predicate =>(expr=Expression FacetsAndBlock) ensures that 
+ * the parser evaluates the expression and facets together. This prevents the parser 
+ * from incorrectly consuming facet keys (e.g., 'name' in 'name: "test"') as expressions.
+ * Example 1 (Expression Option): write "Hello";
+ * Example 2 (Facets Option): my_action name: "test";
+ */
+S_Other returns Statement:
+	key=Valid_ID (=>(expr=Expression FacetsAndBlock)
+	|
+	FacetsAndBlock);
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * REGULAR STATEMENTS: DECLARATIONS, DEFINITIONS, ASSIGNMENTS
+ * ****************************************************************************************** 
+ * ******************************************************************************************/
+// Example: reflex move when: time > 10 { ... }
+S_Reflex:
+	key=('reflex' | 'abort' | K_Init) (name=Valid_ID)? FacetsAndBlock;
+
+// Example: int my_var <- 5; or list<string> my_list;
+S_Definition:
+	tkey=TypeRef name=Valid_ID ('(' ActionArguments ')')? FacetsAndBlock;
+
+// Example: action do_something (int arg1) { ... }
+S_Action returns S_Definition:
+	{S_Action} key='action' name=Valid_ID ('(' ActionArguments ')')? FacetsAndBlock;
+
+// Example: my_var <- 5; or my_list[0] <- 10;
+S_Assignment:
+	expr=Expression key=K_Assignment value=Expression (facets+=Facet)* ';';
+
+// Example: equation eq1 { ... }
+S_Equations:
+	key='equation' name=Valid_ID (facets+=Facet)* ('{' (equations+=S_Equation ';')* '}' | ';');
+
+// Example: x = y + 5;
+S_Equation returns S_Assignment:
+	expr=(Function | VariableRef) key='=' value=Expression;
+
+// Example: solve eq1 method: "rk4";
+S_Solve:
+	key='solve' expr=EquationRef FacetsAndBlock;
+
+// Example: display my_disp type: java2D { ... }
+S_Display:
+	key='display' name=(Valid_ID | STRING) (facets+=Facet)* block=DisplayBlock;
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * STATEMENT KEYS
+ * * These keys represent two different cases: 
+ * * 1) Keywords that need to be included in Valid_ID, preventing the "lexer lock-in", so 
+ * * that they can be reused for facet names, variable names, etc. 
+ * * 2) Keywords that are not used for definition statements (e.g. 'create') but for which 
+ * * the parser cannot make the difference at its level, so that we 
+ * ****************************************************************************************** 
+ * ******************************************************************************************/
+K_BuiltIn:
+	'ask' | 'text' | 'assert' | 'setup' | 'add' | 'remove' | 'put' | 'draw' | 
+	'capture' | 'release' | 'migrate' | 'create' | 'error' | 'warn' | 'write' | 'status' |
+	'focus_on' | 'highlight' | 'layout' | 'save' | 'restore' | 'diffuse' | 'default';
+
+K_Species:
+	'species';
+
+K_Grid:
+	'grid';
+
+K_Init:
+	'init';
+
+K_Experiment:
+	'experiment';
+
+// Operators used in S_Assignment
+K_Assignment:
+	'<-' | '<<' | '>' '>' | '<<+' | '>' '>-' | '+<-' | '<+' | '>-';
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * PARAMETERS AND ARGUMENTS
+ * ****************************************************************************************** ******************************************************************************************/
+// Example: int my_arg <- 5
+ArgumentDefinition:
+	type=(TypeRef) name=Valid_ID ('<-' default=Expression)?;
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * FACETS
+ * ****************************************************************************************** ******************************************************************************************/
+Facet:
+	ActionFacet | DefinitionFacet | ClassicFacet | FunctionFacet;
+
+// Example: color: or as:
+ClassicFacetKey:
+	(Valid_ID ':') | 'as:';
+
+DefinitionFacetKey:
+	'returns:';
+
+ActionFacetKey:
+	'action:' | 'on_change:';
+
+// Example: color: #red or <- 5
+ClassicFacet returns Facet:
+	(key=ClassicFacetKey | key='<-') expr=Expression;
+
+// Example: returns: int
+DefinitionFacet returns Facet:
+	((->key=DefinitionFacetKey) name=Valid_ID);
+
+// Example: -> { ... }
+FunctionFacet returns Facet:
+	key='->' expr=Expression;
+
+// Example: action: my_action
+ActionFacet returns Facet:
+	key=ActionFacetKey (expr=ActionRef | block=Block);
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * BLOCKS
+ * ****************************************************************************************** ******************************************************************************************/
+Block:
+	{Block} '{' ((statements+=Statement)* '}');
+
+ModelBlock returns Block:
+	{Block} (statements+=(S_Section))*;
+
+DisplayBlock returns Block:
+	{Block} '{' (statements+=S_Other)* '}';
+
+MatchBlock returns Block:
+	{Block} '{' (statements+=(S_Match | S_Default)+) '}';
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * EXPRESSIONS
+ * ****************************************************************************************** ******************************************************************************************/
+/*
+ * Operator precedence parsing via cascading rule calls. 
+ * Lower precedence operators (like OR) wrap higher precedence operators (like Parentheses).
+ */
+Expression:
+	Pair;
+
+BinaryOperator returns Expression:
+	Or | And | Cast | Comparison | Addition | Multiplication | Binary | Pair | Unit;
+
+Pair returns Expression:
+	If ({BinaryOperator.left=current} op='::' right=If)?;
+
+If returns Expression:
+	Or ({If.left=current} op='?' right=Or (':' ifFalse=Or))?;
+
+Or returns Expression:
+	And ({BinaryOperator.left=current} op='or' right=And)*;
+
+And returns Expression:
+	Cast ({BinaryOperator.left=current} op='and' right=Cast)*;
+
+// Example: agent as species_A
+Cast returns Expression:
+	Comparison (({BinaryOperator.left=current} op='as') ((right=TypeRef) | ('(' right=TypeRef ')')))?;
+
+// Example: a != b or a >= 5
+Comparison returns Expression:
+	Addition (({BinaryOperator.left=current} op=('!=' | '=' | '>=' | '<=' | '<' | '>')) right=Addition)?;
+
+// Example: a + b
+Addition returns Expression:
+	Multiplication (({BinaryOperator.left=current} op=('+' | '-')) right=Multiplication)*;
+
+// Example: a * b or a ^ 2
+Multiplication returns Expression:
+	Binary (({BinaryOperator.left=current} op=('*' | '/' | '^')) right=Binary)*;
+
+// Custom operators. Example: a my_operator b
+Binary returns Expression:
+	Unit (({BinaryOperator.left=current} op=(Valid_ID)) right=Unit)*;
+
+// Values with units. Example: 5 #m or 10 #s
+Unit returns Expression:
+	Unary (({Unit.left=current} op=('#')) right=UnitRef)?;
+
+// Unary operations. Example: -5 or !true
+Unary returns Expression:
+	Access | {Unary} ((op=('#') right=UnitRef) | (op=('-' | '!' | 'not') right=Unary));
+
+// Field/array access. Example: my_list[0] or my_agent.name
+Access returns Expression:
+	Primary ({Access.left=current} ((op='[' right=ExpressionList? ']') | (op='.' right=(Primary))))*;
+
+// Base expressions
+Primary returns Expression:
+	TerminalExpression |
+	AbstractRef |
+	'(' ExpressionList ')' |
+	'[' {Array} exprs=ExpressionList? ']' | // Array declaration. Example: [1, 2, 3]
+	'{' {Point} left=Expression op=',' right=Expression (',' z=Expression)? '}'; // Point declaration. Example: {10, 20, 0}
+
+AbstractRef returns Expression:
+	=>Function | VariableRef;
+
+// Example: my_action(5, 10)
+Function returns Expression:
+	{Function} (left=ActionRef) (type=TypeInfo)? '(' right=ExpressionList? ')';
+
+ExpressionList:
+	(exprs+=Expression (',' exprs+=Expression)*) | (exprs+=Parameter (',' exprs+=Parameter)*);
+
+Parameter returns Expression:
+	{Parameter} ((builtInFacetKey=(DefinitionFacetKey | ActionFacetKey)) | (left=VariableRef ':')) right=Expression;
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * CROSS-REFERENCING AND SCOPING
+ * ****************************************************************************************** 
+ * ******************************************************************************************/
+/*
+ * Cross-references format: [Type|Identifier].
+ * The parser stores the string literal; the Java ScopeProvider resolves the actual object reference.
+ */
+UnitRef returns Expression:
+	{UnitName} ref=[UnitFakeDefinition|Valid_ID];
+
+VariableRef:
+	{VariableRef} ref=[VarDefinition|Valid_ID];
+
+SkillRef returns Expression:
+	{SkillRef} ref=[SkillFakeDefinition|Valid_ID];
+
+ActionRef returns Expression:
+	{ActionRef} ref=[ActionDefinition|Valid_ID];
+
+EquationRef returns Expression:
+	{EquationRef} ref=[EquationDefinition|Valid_ID];
+
+// Example: int, list<string>, or species<agent_A>
+TypeRef returns Expression:
+	{TypeRef} (ref=[TypeDefinition|ID] parameter=TypeInfo?) | {TypeRef} (K_Species parameter=TypeInfo);
+
+// Example: <int> or <int, string>
+TypeInfo:
+	('<' first=TypeRef (',' second=TypeRef)? ->'>');
+
+// Interfaces generated for the EMF model grouping.
+GamlDefinition:
+	TypeDefinition | VarDefinition | UnitFakeDefinition | SkillFakeDefinition | ActionDefinition | EquationDefinition;
+
+EquationDefinition:
+	S_Equations | EquationFakeDefinition;
+
+TypeDefinition:
+	S_Species | TypeFakeDefinition;
+
+ActionDefinition:
+	S_Action | ActionFakeDefinition | S_Definition | TypeDefinition;
+
+/*
+ * Groups all valid variable targets for the EMF interface.
+ * The syntactic predicates (=>) resolve static analyzer warnings during generation 
+ * but do not affect runtime parsing as this rule is only called inside cross-references.
+ */
+VarDefinition:
+	=> S_Definition | => S_Species | => S_Reflex | => S_Action | => S_Loop |
+	Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment;
+
+/*
+ * Explicitly allows specific keywords to be parsed as variable identifiers.
+ * Bypasses the Lexer's keyword tokenization.
+ */
+Valid_ID:
+	K_Species | K_Grid | K_BuiltIn | K_Init | K_Experiment | ID;
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * FAKE DEFINITIONS FOR SCOPE PROVIDER
+ * ****************************************************************************************** 
+ * ******************************************************************************************/
+/*
+ * Hooks used by the Java GlobalScopeProvider to link built-in GAML elements 
+ * (which are not defined within the textual model itself) to the AST.
+ */
+UnitFakeDefinition:
+	'**unit*' name=Valid_ID;
+
+TypeFakeDefinition:
+	'**type*' name=ID;
+
+ActionFakeDefinition:
+	'**action*' name=Valid_ID;
+
+SkillFakeDefinition:
+	'**skill*' name=Valid_ID;
+
+VarFakeDefinition:
+	'**var*' name=Valid_ID;
+
+EquationFakeDefinition:
+	'**equation*' name=Valid_ID;
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * TERMINALS: STRING, INT, FLOAT, ...
+ * ****************************************************************************************** 
+ * ******************************************************************************************/
+TerminalExpression:
+	StringLiteral |
+	{IntLiteral} op=INTEGER |
+	{DoubleLiteral} op=DOUBLE |
+	{BooleanLiteral} op=BOOLEAN |
+	{ReservedLiteral} op=KEYWORD;
+
+// Example: "Hello"
+StringLiteral:
+	op=STRING;
+
+terminal KEYWORD:
+	'each' | 'self' | 'myself' | 'nil' | 'super';
+
+// Example: 0, 42
+terminal INTEGER:
+	'0' | ('1'..'9' ('0'..'9')*);
+
+// Example: 1.5, 1e-4
+terminal DOUBLE:
+	('0' | ('1'..'9' ('0'..'9')*))
+	(('.' ('0'..'9')+) (('E' | 'e') ('+' | '-')? ('0'..'9')+)?
+	|
+	(('E' | 'e') ('+' | '-')? ('0'..'9')+));
+
+terminal BOOLEAN:
+	'true' | 'false';
+
+// Valid identifier characters. Example: my_var, $var
+terminal ID:
+	'2d' | '3d' | '2D' | '3D' | (('a'..'z' | 'A'..'Z' | '_' | '$') ('a'..'z' | 'A'..'Z' | '_' | '$' | '0'..'9')*);
+
+terminal STRING:
+	'"' ('\\' ('b' | 't' | 'n' | 'f' | 'r' | 'u' | '"' | '\\') | !('\\' | '"'))* '"' | "'" ('\\' ('b' | 't' | 'n' | 'f'
+	| 'r' | 'u' | "'" | '\\') | !('\\' | "'"))* "'";
+
+terminal ML_COMMENT:
+	'/*'->'*/';
+
+terminal SL_COMMENT:
+	'//' !('\n' | '\r')* ('\r'? '\n')?;
+
+terminal WS:
+	(' ' | '\t' | '\r' | '\n')+;
+
+terminal ANY_OTHER:
+	.;

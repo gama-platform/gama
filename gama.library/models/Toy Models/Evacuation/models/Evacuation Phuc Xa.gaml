@@ -38,7 +38,7 @@ global schedules: people_ordered{
 	float change_road_lane_perimeters <- 0 #m;
 				
 	
-	list<moving_agent> people -> {(pedestrian as list) + (car as list) + (motorbike as list) + (bicycle as list)};
+	list<moving_agent> people -> (pedestrian as list) + (car as list) + (motorbike as list) + (bicycle as list);
 	
 	string model_description_1 <- "This model is an agent-based simulation developed to analyze mass evacuation strategies\n in a densely populated district exposed to flood risks (Phúc Xá, Hanoi)";
 	string model_description_2 <- "It is built using the GAMA platform and the ESCAPE framework, and specifically accounts\n for mixed and non-normative traffic types (pedestrians, motorbikes, bicycles, cars), reflecting the Vietnamese context";

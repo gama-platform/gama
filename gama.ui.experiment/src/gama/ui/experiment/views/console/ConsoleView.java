@@ -27,11 +27,11 @@ import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.eclipse.ui.internal.console.IOConsoleViewer;
 
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.runtime.IScope;
-import gama.core.util.IColor;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.ui.IGamaView;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;

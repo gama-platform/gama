@@ -52,12 +52,14 @@ import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUtessellator;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.ICoordinates;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.util.IColor;
-import gama.gaml.statements.draw.TextDrawingAttributes;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.ICoordinates;
 import gama.ui.display.opengl.ITesselator;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
@@ -76,7 +78,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 
 	/** The temp. */
 	// Utilities
-	ICoordinates temp = ICoordinates.ofLength(4);
+	ICoordinates temp = GamaCoordinateSequenceFactory.ofLength(4);
 
 	/** The normal. */
 	IPoint normal = GamaPointFactory.create();
@@ -141,11 +143,11 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 
 	@Override
 	protected void _draw(final StringObject s) {
-		TextDrawingAttributes attributes = s.getAttributes();
+		IDrawingAttributes attributes = s.getAttributes();
 		if (!attributes.isPerspective()) {
 			drawBitmap(s.getObject(), attributes);
 		} else {
-			Font font = attributes.getFont();
+			Font font = attributes.getFont().getAwtFont();
 			final int fontSize = DPIHelper.autoScaleUp(gl.getRenderer().getCanvas().getMonitor(), font.getSize());
 			if (fontSize != font.getSize()) { font = font.deriveFont((float) fontSize); }
 			Shape shape = font.createGlyphVector(context, s.getObject()).getOutline();
@@ -173,9 +175,9 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 * @param attributes
 	 *            the attributes
 	 */
-	private void drawBitmap(final String object, final TextDrawingAttributes attributes) {
+	private void drawBitmap(final String object, final IDrawingAttributes attributes) {
 		int fontToUse = GLUT.BITMAP_HELVETICA_18;
-		final Font f = attributes.getFont();
+		final IFont f = attributes.getFont();
 		if (f != null) {
 			if (f.getSize() < 10) {
 				fontToUse = GLUT.BITMAP_HELVETICA_10;
@@ -258,7 +260,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 * @param y
 	 *            the y
 	 */
-	void drawText(final TextDrawingAttributes attributes, final double y) {
+	void drawText(final IDrawingAttributes attributes, final double y) {
 
 		final IPoint p = attributes.getLocation();
 
@@ -339,7 +341,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 * @param p
 	 *            the p
 	 */
-	private void applyRotation(final TextDrawingAttributes attributes, final IPoint p) {
+	private void applyRotation(final IDrawingAttributes attributes, final IPoint p) {
 		final AxisAngle rotation = attributes.getRotation();
 		if (rotation != null) {
 			gl.translateBy(p.getX(), p.getY(), p.getZ());

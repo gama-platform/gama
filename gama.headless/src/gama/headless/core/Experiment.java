@@ -10,19 +10,19 @@
  ********************************************************************************************************/
 package gama.headless.core;
 
-import gama.core.kernel.experiment.ExperimentPlan;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.experiment.parameters.ParametersSet;
-import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.outputs.IOutput;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.ui.IOutput;
+import gama.core.experiment.ExperimentSpecies;
+import gama.core.experiment.parameters.ParametersSet;
 import gama.core.outputs.MonitorOutput;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.IList;
-import gama.gaml.compilation.GAML;
-import gama.gaml.expressions.IExpression;
 import gama.headless.server.GamaServerExperimentJob;
 
 /**
@@ -34,13 +34,13 @@ public class Experiment implements IExperiment {
 	public static final double DEFAULT_SEED_VALUE = 0;
 
 	/** The current experiment. */
-	protected IExperimentPlan currentExperiment = null;
+	protected IExperimentSpecies currentExperiment = null;
 
 	/** The params. */
 	protected ParametersSet params = new ParametersSet();
 
 	/** The model. */
-	final protected IModel model;
+	final protected IModelSpecies model;
 
 	/** The experiment name. */
 	protected String experimentName = null;
@@ -57,7 +57,7 @@ public class Experiment implements IExperiment {
 	 * @param mdl
 	 *            the mdl
 	 */
-	public Experiment(final IModel mdl) {
+	public Experiment(final IModelSpecies mdl) {
 		this.model = mdl;
 	}
 
@@ -114,7 +114,7 @@ public class Experiment implements IExperiment {
 		this.experimentName = expName;
 		this.currentStep = 0;
 
-		final ExperimentPlan curExperiment = (ExperimentPlan) model.getExperiment(expName);
+		final ExperimentSpecies curExperiment = (ExperimentSpecies) model.getExperiment(expName);
 		curExperiment.setHeadless(true);
 		curExperiment.setController(ec.controller);
 		curExperiment.setParameterValues(p);
@@ -189,10 +189,10 @@ public class Experiment implements IExperiment {
 	}
 
 	@Override
-	public IModel getModel() { return this.model; }
+	public IModelSpecies getModel() { return this.model; }
 
 	@Override
-	public IExperimentPlan getExperimentPlan() { return this.currentExperiment; }
+	public IExperimentSpecies getExperimentPlan() { return this.currentExperiment; }
 
 	@Override
 	public IExpression compileExpression(final String expression) {

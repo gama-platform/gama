@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * Sanction.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * Sanction.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -12,23 +11,24 @@ package gama.extension.bdi;
 
 import java.util.Objects;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.IJSon;
-import gama.core.util.file.json.IJsonValue;
-import gama.gaml.interfaces.IValue;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.misc.IValue;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class Sanction.
  */
 @vars ({ @variable (
-		name = "name",
+		name = IKeyword.NAME,
 		type = IType.STRING,
 		doc = @doc ("The name of this sanction")),
 
@@ -36,8 +36,8 @@ import gama.gaml.types.Types;
 public class Sanction implements IValue {
 
 	@Override
-	public IJsonValue serializeToJson(final IJSon json) {
-		return json.typedObject(getGamlType(), "name", getName());
+	public IJsonValue serializeToJson(final IJson json) {
+		return json.typedObject(getGamlType(), IKeyword.NAME, getName());
 	}
 
 	/** The sanction statement. */
@@ -48,7 +48,7 @@ public class Sanction implements IValue {
 	 *
 	 * @return the name
 	 */
-	@getter ("name")
+	@getter (IKeyword.NAME)
 	public String getName() { return this.sanctionStatement.getName(); }
 
 	/**

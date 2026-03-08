@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * FLAGS.java, in gama.annotations, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * FLAGS.java, in gama.dev, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -29,17 +29,6 @@ package gama.dev;
  *
  */
 public class FLAGS {
-
-	/**
-	 * Load.
-	 */
-	public static void load() {
-		DEBUG.OFF();
-	}
-	//
-	// static {
-	//
-	// }
 
 	/**
 	 * Returns the value of a named system property if it is set in the system/VM properties/arguments, and otherwise
@@ -77,6 +66,9 @@ public class FLAGS {
 	 *
 	 */
 	public static final boolean ENABLE_LOGGING = get("enable_logging", true);
+
+	/** Used in DEBUG, set to true to enable legacy logging through GamaLogger, custom implementation of SLF4J. */
+	public static final boolean ENABLE_LEGACY_LOGGING = get("enable_legacy_logging", true);
 
 	/**
 	 * Used in GamaPreferences, true to save the preferences in the global (managed by the JRE) preference store or

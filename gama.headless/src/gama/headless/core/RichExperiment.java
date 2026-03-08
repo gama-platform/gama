@@ -10,11 +10,11 @@
  ********************************************************************************************************/
 package gama.headless.core;
 
-import gama.core.kernel.model.IModel;
-import gama.core.outputs.IOutput;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.ui.IOutput;
 import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.MonitorOutput;
-import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.headless.common.DataType;
 import gama.headless.common.DataTypeFactory;
 import gama.headless.job.ExperimentJob.OutputType;
@@ -31,7 +31,7 @@ public class RichExperiment extends Experiment implements IRichExperiment {
 	 * @param mdl
 	 *            the mdl
 	 */
-	public RichExperiment(final IModel mdl) {
+	public RichExperiment(final IModelSpecies mdl) {
 		super(mdl);
 	}
 

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlEditorState.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlEditorState.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,12 +20,12 @@ import org.eclipse.emf.common.util.URI;
 
 import com.google.common.collect.Iterables;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.gaml.descriptions.ExperimentDescription;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.ValidationContext;
-import gama.ui.shared.resources.IGamaColors;
+import gama.annotations.constants.IKeyword;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
+import gama.api.compilation.validation.IValidationContext;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
+import gama.ui.shared.resources.IGamaColors;
 
 /**
  * The Class GamlEditorState.
@@ -67,7 +67,7 @@ public class GamlEditorState {
 	 * @param descriptions
 	 *            the descriptions
 	 */
-	public GamlEditorState(final ValidationContext status, final Iterable<? extends IDescription> descriptions) {
+	public GamlEditorState(final IValidationContext status, final Iterable<? extends IDescription> descriptions) {
 
 		if (status != null) {
 			hasImportedErrors = status.hasImportedErrors();
@@ -91,7 +91,7 @@ public class GamlEditorState {
 				experiments.add(name);
 				abbreviations.add(name);
 				// abbreviations.add(name.replaceFirst("Experiment ", ""));
-				ExperimentDescription r = (ExperimentDescription) ep;
+				IExperimentDescription r = (IExperimentDescription) ep;
 				types.add(IKeyword.BATCH.equals(r.getLitteral(IKeyword.TYPE)) ? IKeyword.BATCH
 						: r.isMemorize() ? IKeyword.RECORD : IKeyword.GUI_);
 			}

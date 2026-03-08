@@ -12,16 +12,17 @@ package gama.gaml.statements.draw;
 
 import java.awt.geom.Rectangle2D;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IDrawDelegate;
-import gama.gaml.statements.IExecutable;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.constants.IKeyword;
+import gama.api.additions.delegates.IDrawDelegate;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.IExecutable;
+import gama.api.ui.displays.DrawingData;
+import gama.api.ui.displays.IGraphicsScope;
 
 /**
  * The Class AspectDrawer.

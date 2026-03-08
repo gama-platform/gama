@@ -10,20 +10,21 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
-import gama.core.util.matrix.IField;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.GamaFieldType;
-import gama.gaml.types.Types;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.interfaces.IImageProvider;
 
 /**
  * The Class MeshLayerData.
@@ -95,7 +96,7 @@ public class MeshLayerData extends LayerData {
 		size = create(IKeyword.SIZE, (scope, exp) -> {
 			Object result = exp.value(scope);
 			if (result instanceof Number) return GamaPointFactory.create(1, 1, ((Number) result).doubleValue());
-			return Cast.asPoint(scope, result);
+			return GamaPointFactory.castToPoint(scope, result);
 		}, Types.POINT, GamaPointFactory.create(1, 1, 1));
 		line = create(IKeyword.BORDER, Types.COLOR, null);
 		elevation = create(IKeyword.SOURCE, (scope, exp) -> {
@@ -142,7 +143,7 @@ public class MeshLayerData extends LayerData {
 	 */
 	private IField buildValues(final IScope scope, final Object from) {
 		if (values == null || shouldComputeValues) {
-			values = GamaFieldType.buildField(scope, from);
+			values = GamaMatrixFactory.castToField(scope, from);
 			dim.setLocation(values.getCols(scope), values.getRows(scope), 0);
 		}
 		return values;
@@ -197,6 +198,7 @@ public class MeshLayerData extends LayerData {
 	 *
 	 * @return true, if successful
 	 */
+	@Override
 	public boolean drawLines() {
 		return line.get() != null || wireframe.get();
 	}

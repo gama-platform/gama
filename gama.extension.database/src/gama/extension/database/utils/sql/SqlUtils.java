@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * SqlUtils.java, in gama.extension.database, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * SqlUtils.java, in gama.extension.database, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.database.utils.sql;
 
@@ -20,14 +20,13 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKBReader;
 
-import gama.core.metamodel.topology.projection.IProjection;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.topology.IProjection;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.dev.DEBUG;
-import gama.gaml.types.IType;
-
 
 /**
  * The Class SqlUtils.
@@ -39,15 +38,19 @@ import gama.gaml.types.IType;
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 public class SqlUtils {
 
-	public static final Map<String,ISqlConnector> externalConnectors = new HashMap<>();
-	
+	/** The Constant externalConnectors. */
+	public static final Map<String, ISqlConnector> externalConnectors = new HashMap<>();
+
 	/**
 	 * Creates the connection object.
 	 *
-	 * @param scope the scope
-	 * @param params the params
+	 * @param scope
+	 *            the scope
+	 * @param params
+	 *            the params
 	 * @return the sql connection
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	public static SqlConnection createConnectionObject(final IScope scope, final Map<String, Object> params)
 			throws GamaRuntimeException {
@@ -59,18 +62,13 @@ public class SqlUtils {
 		final String passwd = (String) params.get("passwd");
 		final boolean transform = params.containsKey("transform") ? (Boolean) params.get("transform") : true;
 
-		SqlConnection sqlConn = null;
 		// create connection
 		ISqlConnector connector = externalConnectors.get(dbtype);
-		if(connector == null) {
-			throw GamaRuntimeException.error("GAMA does not support databases of type: " + dbtype, scope);				
-		} else {
-			sqlConn = connector.connection(scope, dbtype, host, port, database, user, passwd, transform);				
-		}
-			
-		if (DEBUG.IS_ON()) {
-			DEBUG.OUT("SqlUtils.createConnection:" + sqlConn.toString());
-		}
+		if (connector == null)
+			throw GamaRuntimeException.error("GAMA does not support databases of type: " + dbtype, scope);
+		SqlConnection sqlConn = connector.connection(scope, dbtype, host, port, database, user, passwd, transform);
+
+		if (DEBUG.IS_ON()) { DEBUG.OUT("SqlUtils.createConnection:" + sqlConn.toString()); }
 		// AD: Added to be sure to remember the parameters
 		sqlConn.setParams(params);
 		return sqlConn;
@@ -79,9 +77,11 @@ public class SqlUtils {
 	/**
 	 * Creates the connection object.
 	 *
-	 * @param scope the scope
+	 * @param scope
+	 *            the scope
 	 * @return the sql connection
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	public static SqlConnection createConnectionObject(final IScope scope) throws GamaRuntimeException {
 		final java.util.Map params = (java.util.Map) scope.getArg("params", IType.MAP);
@@ -91,10 +91,13 @@ public class SqlUtils {
 	/**
 	 * Read.
 	 *
-	 * @param b the b
+	 * @param b
+	 *            the b
 	 * @return the geometry
-	 * @throws IOException Signals that an I/O exception has occurred.
-	 * @throws ParseException the parse exception
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 * @throws ParseException
+	 *             the parse exception
 	 */
 	/*
 	 * @Method: read(byte [] b)
@@ -107,7 +110,7 @@ public class SqlUtils {
 	 *
 	 * @throws IOException, ParseException
 	 */
-	public static Geometry read(final byte[] b) throws IOException, ParseException {
+	public static Geometry read(final byte[] b) throws ParseException {
 		final WKBReader wkb = new WKBReader();
 		final Geometry geom = wkb.read(b);
 		return geom;
@@ -116,9 +119,11 @@ public class SqlUtils {
 	/**
 	 * Input stream 2 geometry.
 	 *
-	 * @param inputStream the input stream
+	 * @param inputStream
+	 *            the input stream
 	 * @return the geometry
-	 * @throws Exception the exception
+	 * @throws Exception
+	 *             the exception
 	 */
 	/*
 	 * @Method: InputStream2Geometry(InputStream inputStream)
@@ -139,15 +144,11 @@ public class SqlUtils {
 			final byte[] buffer = new byte[255];
 			int bytesRead = 0;
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			while ((bytesRead = inputStream.read(buffer)) != -1) {
-				baos.write(buffer, 0, bytesRead);
-			}
+			while ((bytesRead = inputStream.read(buffer)) != -1) { baos.write(buffer, 0, bytesRead); }
 
 			final byte[] geometryAsBytes = baos.toByteArray();
 
-			if (geometryAsBytes.length < 5) {
-				throw new Exception("Invalid geometry inputStream - less than five bytes");
-			}
+			if (geometryAsBytes.length < 5) throw new Exception("Invalid geometry inputStream - less than five bytes");
 
 			// first four bytes of the geometry are the SRID,
 			// followed by the actual WKB. Determine the SRID
@@ -158,13 +159,9 @@ public class SqlUtils {
 
 			int srid = 0;
 			if (bigEndian) {
-				for (final byte sridByte : sridBytes) {
-					srid = (srid << 8) + (sridByte & 0xff);
-				}
+				for (final byte sridByte : sridBytes) { srid = (srid << 8) + (sridByte & 0xff); }
 			} else {
-				for (int i = 0; i < sridBytes.length; i++) {
-					srid += (sridBytes[i] & 0xff) << 8 * i;
-				}
+				for (int i = 0; i < sridBytes.length; i++) { srid += (sridBytes[i] & 0xff) << 8 * i; }
 			}
 
 			// use the JTS WKBReader for WKB parsing
@@ -190,12 +187,17 @@ public class SqlUtils {
 	/**
 	 * Transform.
 	 *
-	 * @param scope the scope
-	 * @param gis the gis
-	 * @param dataset the dataset
-	 * @param fromAbsoluteToGis the from absolute to gis
+	 * @param scope
+	 *            the scope
+	 * @param gis
+	 *            the gis
+	 * @param dataset
+	 *            the dataset
+	 * @param fromAbsoluteToGis
+	 *            the from absolute to gis
 	 * @return the i list
-	 * @throws GamaRuntimeException the gama runtime exception
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
 	 */
 	// final boolean fromAbsoluteToGis) throws GamaRuntimeException {
 	static IList<Object> transform(final IScope scope, final IProjection gis,

@@ -3,7 +3,7 @@
  * ResourceManager.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,7 +34,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -49,15 +48,14 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import gama.core.common.GamlFileExtension;
-import gama.core.runtime.GAMA;
-import gama.core.util.file.IFileMetaDataProvider;
+import gama.api.GAMA;
+import gama.api.constants.GamlFileExtension;
+import gama.api.utils.files.IFileMetadataProvider;
+import gama.api.utils.tests.CompoundSummary;
 import gama.dev.DEBUG;
-import gama.gaml.statements.test.CompoundSummary;
 import gama.ui.shared.commands.TestsRunner;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.workspace.manager.WorkspaceModelsManager;
-import gama.workspace.metadata.FileMetaDataProvider;
 import gama.workspace.nature.GamaNatures;
 
 /**
@@ -162,7 +160,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	 *            the navigator
 	 */
 	public ResourceManager(final IResourceChangeListener delegate, final CommonViewer navigator) {
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+		GAMA.getWorkspaceManager().getWorkspace().addResourceChangeListener(this);
 		this.viewer = navigator;
 		viewer.addSelectionChangedListener(this);
 		this.delegate = delegate;
@@ -392,7 +390,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 			case IResource.FOLDER:
 				folderAdded((IFolder) res);
 		}
-		final IFileMetaDataProvider provider = GAMA.getGui().getMetaDataProvider();
+		final IFileMetadataProvider provider = GAMA.getMetadataProvider();
 		provider.storeMetaData(res, null, true);
 		provider.getMetaData(res, false, true);
 
@@ -796,7 +794,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 		if (DEBUG.IS_ON()) { DEBUG.OUT("Creation of the wrapped instance of " + child.getName()); }
 		switch (child.getType()) {
 			case IResource.FILE:
-				if (FileMetaDataProvider.GAML_CT_ID.equals(getContentTypeId((IFile) child)))
+				if (IFileMetadataProvider.GAML_CT_ID.equals(getContentTypeId((IFile) child)))
 					return new WrappedGamaFile((WrappedContainer<?>) parent, (IFile) child);
 				if (child.isLinked()) return new WrappedLink((WrappedContainer<?>) parent, (IFile) child);
 				return new WrappedFile((WrappedContainer<?>) parent, (IFile) child);
@@ -819,7 +817,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 		if (!resource.isLinked()) return true;
 		if (DEBUG.IS_ON()) { DEBUG.OUT("Validating link location of " + resource); }
 		final boolean internal =
-				ResourcesPlugin.getWorkspace().validateLinkLocation(resource, resource.getLocation()).isOK();
+				GAMA.getWorkspaceManager().getWorkspace().validateLinkLocation(resource, resource.getLocation()).isOK();
 		if (!internal) return false;
 		final IFileStore file = EFS.getLocalFileSystem().getStore(resource.getLocation());
 		final IFileInfo info = file.fetchInfo();

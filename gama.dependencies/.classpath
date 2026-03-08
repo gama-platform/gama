@@ -25,7 +25,7 @@
 	<classpathentry exported="true" kind="lib" path="libs/jfreechart 1.5.6/jfreechart-1.5.6.jar" sourcepath="libs/jfreechart 1.5.6/jfreechart-1.5.6-sources.zip"/>
 	<classpathentry exported="true" kind="lib" path="libs/jgrapht 1.5.2/antlr4-runtime-4.12.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jgrapht 1.5.2/apfloat-1.10.1.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/jgrapht 1.5.2/jgrapht-core-1.5.2.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/jgrapht 1.5.2/jgrapht-core-1.5.2.jar" sourcepath="libs/jgrapht 1.5.2/src.zip"/>
 	<classpathentry exported="true" kind="lib" path="libs/jgrapht 1.5.2/jgrapht-io-1.5.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jgrapht 1.5.2/jgrapht-opt-1.5.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/jgrapht 1.5.2/jheaps-0.14.jar"/>
@@ -69,7 +69,7 @@
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/geo-0.7.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/geodb-0.9.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/GeographicLib-Java-1.49.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-api-33.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-api-33.4.jar" sourcepath="libs/geotools 33.4/src.zip"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-arcgrid-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-brewer-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-complex-33.4.jar"/>
@@ -99,7 +99,7 @@
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-jdbc-postgis-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-jdbc-sqlserver-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-jdbc-teradata-33.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-main-33.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-main-33.4.jar" sourcepath="libs/geotools 33.4/src.zip"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-metadata-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-mongodb-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-process-33.4.jar"/>
@@ -107,7 +107,7 @@
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-process-geometry-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-process-raster-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-property-33.4.jar"/>
-	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-referencing-33.4.jar"/>
+	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-referencing-33.4.jar" sourcepath="libs/geotools 33.4/src.zip"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-render-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-shapefile-33.4.jar"/>
 	<classpathentry exported="true" kind="lib" path="libs/geotools 33.4/gt-tile-client-33.4.jar"/>

@@ -44,7 +44,7 @@ global skills: [moving] control: fsm {
 
 	// Functions can be declared using the regular facet "->" / "function:" 
 	int b1 ->  100 + length(a1) ;
-	int b2 -> { 100 + length(a1) };
+	int b2 ->  100 + length(a1) ;
 	// ... or using a block (like a statement -- note the absence of semi-column at the end)
 	int b3 {
 		return 100 + length(a1);
@@ -75,18 +75,18 @@ global skills: [moving] control: fsm {
 	/**
 	  * ACTIONS
 	  */
-	// Actions can also be declared in different ways. Classic:
-	action dummy1 type: list of: int {
-		arg a type: int default: 100;
-		arg b type: float;
-		return [a, int(b)];
-	}
-	// Semi-classic (prefixed by the type)
-	list dummy2 of: int {
-		arg a type: int default: 100;
-		arg b type: float;
-		return [a, int(b)];
-	}
+//	// Actions can also be declared in different ways. Classic:
+//	action dummy1 type: list of: int {
+//		arg a type: int default: 100;
+//		arg b type: float;
+//		return [a, int(b)];
+//	}
+//	// Semi-classic (prefixed by the type)
+//	list dummy2 of: int {
+//		arg a type: int default: 100;
+//		arg b type: float;
+//		return [a, int(b)];
+//	}
 	//Compact
 	list<int> dummy1 (int a <- 100, float b) {
 		return [a, int(b)];
@@ -107,11 +107,7 @@ global skills: [moving] control: fsm {
 		// is equivalent to the more compact one:
 		int t2 <- length(a1);
 
-		// Assigning a value to variables is also sporting a new syntax 
-		set t2 value: 100;
-		// ... can be replaced by 
-		set t2 <- 100;
-		// ... or even by
+		// ... and vars can be set directly 
 		t2 <- 100;
 
 		// Species can now act as direct containers of their agents..
@@ -198,7 +194,7 @@ global skills: [moving] control: fsm {
 	reflex calling_actions {
 	// IN IMPERATIVE MODE (i.e. in a statement)
 	// The classic way
-		do dummy1 with: [a::10, b::100.0];
+		do dummy1 with: (a:10, b:100.0);
 
 		// Another by distributing the arguments
 		do dummy1 a: 10 b: 100.0;

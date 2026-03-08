@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * FSTConfiguration.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and simulation
- * platform (v.1.9.3).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -37,7 +37,8 @@ import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import gama.core.util.ByteArrayZipper;
+import gama.api.additions.GamaClassLoader;
+import gama.api.utils.files.CompressionUtils;
 import gama.dev.DEBUG;
 import gama.extension.serialize.fst.coders.FSTStreamDecoder;
 import gama.extension.serialize.fst.coders.FSTStreamEncoder;
@@ -58,7 +59,6 @@ import gama.extension.serialize.fst.serializers.FSTTimestampSerializer;
 import gama.extension.serialize.fst.util.DefaultFSTInt2ObjectMapFactory;
 import gama.extension.serialize.fst.util.FSTInt2ObjectMapFactory;
 import gama.extension.serialize.fst.util.FSTUtil;
-import gama.gaml.compilation.kernel.GamaClassLoader;
 
 /**
  * Created with IntelliJ IDEA. User: ruedi Date: 18.11.12 Time: 20:41
@@ -134,12 +134,12 @@ public class FSTConfiguration {
 
 		@Override
 		public boolean equals(final Object o) {
-			if (this == o) { return true; }
-			if (o == null || getClass() != o.getClass()) { return false; }
+			if (this == o) return true;
+			if (o == null || getClass() != o.getClass()) return false;
 
 			FieldKey fieldKey = (FieldKey) o;
 
-			if (!clazz.equals(fieldKey.clazz)) { return false; }
+			if (!clazz.equals(fieldKey.clazz)) return false;
 			return fieldName.equals(fieldKey.fieldName);
 
 		}
@@ -220,7 +220,8 @@ public class FSTConfiguration {
 
 	/**
 	 * register a custom serializer for a given class or the class and all of its subclasses. Serializers must be
-	 * configured identical on read/write side and should be set before actually making use of the Configuration.
+	 * configured identical on read/write side and should be set before actually making use of the
+	 * ConfigurationPreferenceStore.
 	 *
 	 * @param clazz
 	 * @param ser
@@ -297,12 +298,12 @@ public class FSTConfiguration {
 				// empty
 			}
 			List<SoftReference> li = cachedObjects.get(cl);
-			if (li == null) { return null; }
+			if (li == null) return null;
 			for (int i = li.size() - 1; i >= 0; i--) {
 				SoftReference<?> softReference = li.get(i);
 				Object res = softReference.get();
 				li.remove(i);
-				if (res != null) { return res; }
+				if (res != null) return res;
 			}
 		} finally {
 			cacheLock.set(false);
@@ -484,13 +485,8 @@ public class FSTConfiguration {
 	 */
 	public FSTObjectInput getObjectInput(final byte arr[], final int len) {
 		FSTObjectInput fstObjectInput = getIn();
-		try {
-			fstObjectInput.resetForReuseUseArray(arr, len);
-			return fstObjectInput;
-		} catch (IOException e) {
-			FSTUtil.<RuntimeException> rethrow(e);
-		}
-		return null;
+		fstObjectInput.resetForReuseUseArray(arr, len);
+		return fstObjectInput;
 	}
 
 	/**
@@ -663,10 +659,10 @@ public class FSTConfiguration {
 	 */
 	public Object asObject(final byte b[]) {
 		try {
-			final byte[] input = ByteArrayZipper.unzip(b);
+			final byte[] input = CompressionUtils.unzip(b);
 			return getObjectInput(input).readObject();
 		} catch (Exception e) {
-			DEBUG.LOG("unable to decode:" + new String(b, 0, 0, Math.min(b.length, 100)));
+			DEBUG.LOG("unable to decode:" + new String(b));
 			FSTUtil.<RuntimeException> rethrow(e);
 		}
 		return null;
@@ -679,7 +675,7 @@ public class FSTConfiguration {
 		FSTObjectOutput objectOutput = getObjectOutput();
 		try {
 			objectOutput.writeObject(object);
-			return ByteArrayZipper.zip(objectOutput.getCopyOfWrittenBuffer());
+			return CompressionUtils.zip(objectOutput.getCopyOfWrittenBuffer());
 		} catch (IOException e) {
 			FSTUtil.<RuntimeException> rethrow(e);
 		}

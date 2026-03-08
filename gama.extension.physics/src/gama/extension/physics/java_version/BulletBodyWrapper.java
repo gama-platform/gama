@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.extension.physics.java_version;
 
-import static gama.gaml.types.GamaGeometryType.buildBox;
 import static java.lang.Math.max;
 
 import javax.vecmath.AxisAngle4f;
@@ -27,14 +26,16 @@ import com.bulletphysics.linearmath.DefaultMotionState;
 import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.Transform;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaPair;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.pair.GamaPairFactory;
+import gama.api.types.pair.IPair;
 import gama.extension.physics.common.AbstractBodyWrapper;
 import gama.extension.physics.common.IBody;
-import gama.gaml.types.Types;
 
 /**
  * The Class BulletBodyWrapper.
@@ -92,15 +93,15 @@ public class BulletBodyWrapper extends AbstractBodyWrapper<DiscreteDynamicsWorld
 			info.linearDamping = previous.getLinearDamping();
 
 		}
-		RigidBody body = new RigidBody(info);
-		if (!isStatic) { body.setActivationState(CollisionObject.DISABLE_DEACTIVATION); }
+		RigidBody body1 = new RigidBody(info);
+		if (!isStatic) { body1.setActivationState(CollisionObject.DISABLE_DEACTIVATION); }
 		if (previous != null) {
 			IPoint pointTransfer = GamaPointFactory.create();
-			body.setLinearVelocity(toVector(previous.getLinearVelocity(pointTransfer)));
-			body.setAngularVelocity(toVector(previous.getAngularVelocity(pointTransfer)));
+			body1.setLinearVelocity(toVector(previous.getLinearVelocity(pointTransfer)));
+			body1.setAngularVelocity(toVector(previous.getAngularVelocity(pointTransfer)));
 		}
-		body.setCollisionFlags(CollisionFlags.CUSTOM_MATERIAL_CALLBACK);
-		return body;
+		body1.setCollisionFlags(CollisionFlags.CUSTOM_MATERIAL_CALLBACK);
+		return body1;
 	}
 
 	@Override
@@ -204,7 +205,7 @@ public class BulletBodyWrapper extends AbstractBodyWrapper<DiscreteDynamicsWorld
 	@Override
 	public IShape getAABB() {
 		body.getAabb(vtemp, vtemp2);
-		return buildBox(vtemp2.x - vtemp.x, vtemp2.y - vtemp.y, vtemp2.z - vtemp.z,
+		return GamaShapeFactory.buildBox(vtemp2.x - vtemp.x, vtemp2.y - vtemp.y, vtemp2.z - vtemp.z,
 				GamaPointFactory.create(vtemp.x + (vtemp2.x - vtemp.x) / 2, vtemp.y + (vtemp2.y - vtemp.y) / 2,
 						vtemp.z + (vtemp2.z - vtemp.z) / 2 + visualTranslation.z));
 	}
@@ -244,13 +245,13 @@ public class BulletBodyWrapper extends AbstractBodyWrapper<DiscreteDynamicsWorld
 				GamaPointFactory.create(vectorTransfer.x, vectorTransfer.y, vectorTransfer.z - aabbTranslation.z));
 		temp.getRotation(quatTransfer);
 		axisAngleTransfer.set(quatTransfer);
-		@SuppressWarnings ("unchecked") var rot = (GamaPair<Double, IPoint>) agent.getAttribute(ROTATION);
+		@SuppressWarnings ("unchecked") var rot = (IPair<Double, IPoint>) agent.getAttribute(ROTATION);
 		if (rot == null) {
-			rot = new GamaPair<>(0d, GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT);
+			rot = GamaPairFactory.createWith(0d, GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT);
 			agent.setAttribute(ROTATION, rot);
 		}
-		rot.key = Math.toDegrees(axisAngleTransfer.angle);
-		rot.value.setLocation(axisAngleTransfer.x, axisAngleTransfer.y, axisAngleTransfer.z);
+		rot.setKey(Math.toDegrees(axisAngleTransfer.angle));
+		rot.getValue().setLocation(axisAngleTransfer.x, axisAngleTransfer.y, axisAngleTransfer.z);
 	}
 
 }

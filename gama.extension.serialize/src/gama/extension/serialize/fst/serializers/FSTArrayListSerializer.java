@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * FSTArrayListSerializer.java, in gama.serialize, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * FSTArrayListSerializer.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -49,7 +49,7 @@ public class FSTArrayListSerializer extends FSTBasicObjectSerializer {
 			final FSTClazzInfo.FSTFieldInfo referencee, final int streamPosition) throws Exception {
 		try {
 			int len = in.readInt();
-			ArrayList res = new ArrayList(len);
+			ArrayList<Object> res = new ArrayList<>(len);
 			in.registerObject(res, streamPosition, serializationInfo, referencee);
 			for (int i = 0; i < len; i++) {
 				final Object o = in.readObjectInternal();

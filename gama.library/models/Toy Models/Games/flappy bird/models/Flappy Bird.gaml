@@ -196,7 +196,7 @@ experiment main {
 		
 		display main fullscreen:true type:2d {
 			
-			image_layer "../includes/background.png";
+			picture "../includes/background.png";
 			species bird aspect:png;
 			
 			species tuyau aspect:png;

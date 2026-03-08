@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 
-import gama.annotations.precompiler.IConcept;
+import gama.annotations.support.IConcept;
 
 /**
  * The Class ConceptManager.

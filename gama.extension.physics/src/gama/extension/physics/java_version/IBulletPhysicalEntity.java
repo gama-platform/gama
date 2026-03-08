@@ -12,8 +12,7 @@ package gama.extension.physics.java_version;
 
 import javax.vecmath.Vector3f;
 
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IPoint ;
+import gama.api.types.geometry.IPoint;
 import gama.extension.physics.common.IPhysicalEntity;
 import gama.extension.physics.common.VectorUtils;
 

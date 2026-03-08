@@ -15,14 +15,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 
 /**
  * The Class MessageBroker.
@@ -57,7 +57,7 @@ public class MessageBroker {
 	 */
 	public IList<FIPAMessage> deliverMessagesFor(final IScope scope, final IAgent a) throws GamaRuntimeException {
 		final List<FIPAMessage> messagesForA = messagesToDeliver.get(a);
-		if (messagesForA == null) return GamaListFactory.EMPTY_LIST;
+		if (messagesForA == null) return GamaListFactory.getEmptyList();
 
 		final IList<FIPAMessage> successfulDeliveries = GamaListFactory.create(Types.get(IType.MESSAGE));
 		final IList<FIPAMessage> failedDeliveries = GamaListFactory.create(Types.get(IType.MESSAGE));
@@ -186,7 +186,7 @@ public class MessageBroker {
 	 * @return the messages for
 	 */
 	public IList<FIPAMessage> getMessagesFor(final IAgent agent) {
-		if (!conversationsMessages.containsKey(agent)) return GamaListFactory.EMPTY_LIST;
+		if (!conversationsMessages.containsKey(agent)) return GamaListFactory.getEmptyList();
 
 		return conversationsMessages.get(agent).messages;
 	}
@@ -199,7 +199,7 @@ public class MessageBroker {
 	 * @return the conversations for
 	 */
 	public List<Conversation> getConversationsFor(final IAgent agent) {
-		if (!conversationsMessages.containsKey(agent)) return GamaListFactory.EMPTY_LIST;
+		if (!conversationsMessages.containsKey(agent)) return GamaListFactory.getEmptyList();
 
 		return conversationsMessages.get(agent).conversations;
 	}

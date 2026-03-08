@@ -24,11 +24,11 @@ experiment "Tests for gama.extension.network" type: test skills:[network] {
 	{
 		if(!already_build)
 		{
-			create Person with:[name::"Travis", myGroup::"manager"];
+			create Person with:(name:"Travis", myGroup:"manager");
 			
 			loop nm over:girls
 			{
-				create Person with:[name::nm, myGroup::group_spice];
+				create Person with:(name:nm, myGroup:group_spice);
 			}
 			already_build <- true;	
 		}

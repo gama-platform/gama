@@ -16,12 +16,12 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.statements.test.AbstractSummary;
-import gama.gaml.statements.test.AssertionSummary;
-import gama.gaml.statements.test.TestState;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.tests.AbstractSummary;
+import gama.api.utils.tests.AssertionSummary;
+import gama.api.utils.tests.TestState;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.resources.GamaColors;

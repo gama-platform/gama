@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * AbstractPhysicalWorld.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * AbstractPhysicalWorld.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,14 +16,14 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.SetMultimap;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.util.Collector;
-import gama.core.util.Collector.AsOrderedSet;
+import gama.api.compilation.descriptions.IActionDescription;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.Arguments;
+import gama.api.kernel.agent.IAgent;
+import gama.api.utils.collections.Collector;
+import gama.api.utils.collections.Collector.AsOrderedSet;
 import gama.extension.physics.gaml.PhysicalSimulationAgent;
-import gama.gaml.descriptions.ActionDescription;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.statements.Arguments;
-import gama.gaml.statements.IStatement;
 
 /**
  * The Class AbstractPhysicalWorld.
@@ -156,9 +156,9 @@ public abstract class AbstractPhysicalWorld<WorldType, ShapeType, VectorType>
 	 * @return true, if successful
 	 */
 	protected boolean emitsNotifications(final IAgent simulation) {
-		ModelDescription desc = (ModelDescription) simulation.getSpecies().getDescription();
+		IModelDescription desc = (IModelDescription) simulation.getSpecies().getDescription();
 		return desc.visitMicroSpecies(d -> {
-			ActionDescription ad = d.getAction(CONTACT_ADDED);
+			IActionDescription ad = d.getAction(CONTACT_ADDED);
 			boolean a = ad == null || ad.isBuiltIn();
 			ad = d.getAction(CONTACT_REMOVED);
 			boolean b = ad == null || ad.isBuiltIn();

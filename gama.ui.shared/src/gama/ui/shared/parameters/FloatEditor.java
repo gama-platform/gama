@@ -14,12 +14,12 @@ import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
 import gama.ui.shared.interfaces.EditorListener;
 
 /**

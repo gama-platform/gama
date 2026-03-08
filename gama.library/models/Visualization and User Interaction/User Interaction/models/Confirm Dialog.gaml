@@ -9,7 +9,7 @@ model Confirmdialog_example
 
 global {
 	init {
-		bool  result <- user_confirm("Confirmation dialog box","Do you want to confirm?");
+		bool result <- user_confirm("Confirmation dialog box","Do you want to confirm?");
 		write sample(result);
 	}
 }

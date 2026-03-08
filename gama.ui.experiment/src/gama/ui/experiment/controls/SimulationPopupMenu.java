@@ -34,15 +34,15 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
-import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.kernel.simulation.SimulationPopulation;
-import gama.core.runtime.GAMA;
-import gama.core.util.IColor;
+import gama.api.GAMA;
+import gama.api.compilation.documentation.GamlIdiomsProvider;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.types.color.IColor;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GamlIdiomsProvider;
 import gama.ui.experiment.menus.SimulationsMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
@@ -109,13 +109,13 @@ public class SimulationPopupMenu extends PopupDialog {
 	 * @date 25 août 2023
 	 */
 	List<ITopLevelAgent> getAgentsToDisplay() {
-		IExperimentPlan plan = GAMA.getExperiment();
+		IExperimentSpecies plan = GAMA.getExperiment();
 		if (plan == null) return Collections.EMPTY_LIST;
 		IExperimentAgent exp = GAMA.getExperiment().getAgent();
 		if (exp == null) return Collections.EMPTY_LIST;
 		List<ITopLevelAgent> agents = new ArrayList<>();
 		agents.add(exp);
-		SimulationPopulation simPop = exp.getSimulationPopulation();
+		IPopulation<ISimulationAgent> simPop = exp.getSimulationPopulation();
 		if (simPop == null) return agents;
 		agents.addAll(GAMA.getExperiment().getAgent().getSimulationPopulation());
 		return agents;

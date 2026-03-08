@@ -17,26 +17,22 @@ import org.locationtech.jts.geom.Geometry;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Rotation3D;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ILayer;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.matrix.IField;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ILayerData;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.Rotation3D;
+import gama.api.utils.geometry.Scaling3D;
 import gama.core.outputs.layers.FramedLayerData;
-import gama.core.outputs.layers.ILayerData;
-import gama.core.runtime.IScope;
 import gama.core.util.file.GamaGeometryFile;
-import gama.core.util.matrix.IField;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.units.PixelUnitExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.statements.draw.DrawingAttributes;
-import gama.gaml.statements.draw.MeshDrawingAttributes;
-import gama.gaml.statements.draw.TextDrawingAttributes;
-import gama.gaml.types.GamaGeometryType;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.AbstractObject;
@@ -210,9 +206,9 @@ public class LayerObject {
 		final IExpression expr = layer.getDefinition().getFacet(IKeyword.POSITION);
 
 		if (expr != null) {
-			final boolean containsPixels = expr.findAny(PixelUnitExpression.class::isInstance);
+			final boolean containsPixels = expr.containsPixels();
 			IPoint offset = list.offset;
-			offset.setLocation(Cast.asPoint(scope, expr.value(scope)));
+			offset.setLocation(GamaPointFactory.castToPoint(scope, expr.value(scope)));
 			if (Math.abs(offset.getX()) <= 1 && !containsPixels) {
 				offset.setX(offset.getX() * renderer.getEnvWidth());
 			}
@@ -328,7 +324,7 @@ public class LayerObject {
 			IPoint size = GamaPointFactory.create(renderer.getEnvWidth(), renderer.getEnvHeight());
 			final IScope scope = renderer.getSurface().getScope();
 			final IExpression expr = layer.getDefinition().getFacet(IKeyword.SIZE);
-			if (expr != null) { size = Cast.asPoint(scope, expr.value(scope)); }
+			if (expr != null) { size = GamaPointFactory.castToPoint(scope, expr.value(scope)); }
 			double sx = size.getX();
 			double sy = size.getY();
 			if (sx <= 1) { sx *= renderer.getEnvWidth(); }
@@ -451,7 +447,7 @@ public class LayerObject {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addString(final String string, final TextDrawingAttributes attributes) {
+	public void addString(final String string, final IDrawingAttributes attributes) {
 		currentList.add(new StringObject(string, attributes));
 	}
 
@@ -463,7 +459,7 @@ public class LayerObject {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addFile(final GamaGeometryFile file, final DrawingAttributes attributes) {
+	public void addFile(final GamaGeometryFile file, final IDrawingAttributes attributes) {
 		currentList.add(new ResourceObject(file, attributes));
 	}
 
@@ -475,7 +471,7 @@ public class LayerObject {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addImage(final Object o, final DrawingAttributes attributes) {
+	public void addImage(final Object o, final IDrawingAttributes attributes) {
 		// If no dimensions have been defined, then the image is considered as wide and tall as the environment
 		Scaling3D size = attributes.getSize();
 		if (size == null) {
@@ -486,7 +482,7 @@ public class LayerObject {
 		final IPoint newLoc = loc == null ? size.toGamaPoint().dividedBy(2) : loc;
 		// We build a rectangle that will serve as a "support" for the image (which will become its texture)
 		final Geometry geometry =
-				GamaGeometryType.buildRectangle(size.getX(), size.getY(), GamaPointFactory.create()).getInnerGeometry();
+				GamaShapeFactory.buildRectangle(size.getX(), size.getY(), GamaPointFactory.create()).getInnerGeometry();
 		attributes.setLocation(newLoc);
 		attributes.setTexture(o);
 		attributes.setSynthetic(true);
@@ -501,7 +497,7 @@ public class LayerObject {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addField(final IField fieldValues, final MeshDrawingAttributes attributes) {
+	public void addField(final IField fieldValues, final IDrawingAttributes attributes) {
 		currentList.add(new MeshObject(fieldValues, attributes));
 	}
 
@@ -513,7 +509,7 @@ public class LayerObject {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addGeometry(final Geometry geometry, final DrawingAttributes attributes) {
+	public void addGeometry(final Geometry geometry, final IDrawingAttributes attributes) {
 		isAnimated = /* isAnimated || ?? */attributes.isAnimated();
 		currentList.add(new GeometryObject(geometry, attributes));
 	}

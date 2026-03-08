@@ -89,8 +89,8 @@ import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.progress.UIJob;
 import org.osgi.framework.FrameworkUtil;
 
-import gama.gaml.compilation.GamlIdiomsProvider;
-import gama.gaml.interfaces.IGamlDescription;
+import gama.api.compilation.descriptions.IGamlDescription;
+import gama.api.compilation.documentation.GamlIdiomsProvider;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WebHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
@@ -501,11 +501,11 @@ public class GamlAccessContents2 extends PopupDialog {
 			// build regex like "^(:?Views|Perspective):\\s?(.*)"
 			StringBuilder sb = new StringBuilder();
 			sb.append("^(:?"); //$NON-NLS-1$
-			for (int i = 0; i < GamlIdiomsProvider.getProviders().size(); i++) {
+			for (int i = 0; i < GamlIdiomsProvider.getProviders().length; i++) {
 				if (i != 0) {
 					sb.append("|"); //$NON-NLS-1$
 				}
-				sb.append(GamlIdiomsProvider.getProviders().get(i).getSearchCategory());
+				sb.append(GamlIdiomsProvider.getProviders()[i].getSearchCategory());
 			}
 			sb.append("):\\s?(.*)"); //$NON-NLS-1$
 			String regex = sb.toString();

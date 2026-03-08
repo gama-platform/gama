@@ -20,10 +20,11 @@ import org.eclipse.ui.IStartup;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.GamaFont;
-import gama.core.util.IColor;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.font.GamaFontFactory;
+import gama.api.types.font.IFont;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.ui.shared.access.HeapControl;
 
@@ -54,9 +55,9 @@ public class AutoStartup implements IStartup {
 	 *
 	 * @return the default font data
 	 */
-	public static GamaFont getDefaultFontData() {
+	public static IFont getDefaultFontData() {
 		final FontData fd = PreferenceConverter.getFontData(EditorsPlugin.getDefault().getPreferenceStore(), TEXT_FONT);
-		return new GamaFont(fd.getName(), fd.getStyle(), fd.getHeight());
+		return GamaFontFactory.createFont(fd.getName(), fd.getStyle(), fd.getHeight());
 	}
 
 	@Override

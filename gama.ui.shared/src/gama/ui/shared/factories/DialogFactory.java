@@ -17,10 +17,10 @@ import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.eclipse.ui.services.AbstractServiceFactory;
 import org.eclipse.ui.services.IServiceLocator;
 
-import gama.core.common.interfaces.IDialogFactory;
-import gama.core.runtime.IScope;
-import gama.core.runtime.PlatformHelper;
-import gama.gaml.statements.IStatement;
+import gama.api.gaml.statements.IStatement;
+import gama.api.runtime.SystemInfo;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IDialogFactory;
 import gama.ui.application.workbench.PickWorkspaceDialog;
 import gama.ui.shared.dialogs.UserControlDialog;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -98,7 +98,7 @@ public class DialogFactory extends AbstractServiceFactory implements IDialogFact
 	@Override
 	public boolean modalQuestion(final IScope scope, final String title, final String message) {
 		return WorkbenchHelper.run(() -> MessageDialog.open(MessageDialog.QUESTION, null, title, message,
-				!PlatformHelper.isMac() ? SWT.NONE : SWT.SHEET));
+				!SystemInfo.isMac() ? SWT.NONE : SWT.SHEET));
 	}
 
 	/**

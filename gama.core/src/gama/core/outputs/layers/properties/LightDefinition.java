@@ -10,16 +10,16 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.layers.ILightDefinition;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.Types;
 
 /**
  * The Class CameraDefinition. Holds and updates the position, target and lens of a camera from the GAML definition in
@@ -86,10 +86,10 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 		intensityAttribute = create(IKeyword.INTENSITY, (scope, exp) -> {
 			if (exp.getGamlType() == Types.INT) {
 				int v = Cast.asInt(scope, exp.value(scope));
-				return GamaColorFactory.get(v, v, v, 255);
+				return GamaColorFactory.createWithRGBA(v, v, v, 255);
 			}
-			return Cast.asColor(scope, exp.value(scope));
-		}, Types.COLOR, GamaColorFactory.get(i, i, i, 255));
+			return GamaColorFactory.castToColor(scope, exp.value(scope));
+		}, Types.COLOR, GamaColorFactory.createWithRGBA(i, i, i, 255));
 
 	}
 

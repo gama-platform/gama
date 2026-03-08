@@ -27,7 +27,7 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchWindowAdvisor;
 
-import gama.core.kernel.root.SystemInfo;
+import gama.api.runtime.SystemInfo;
 import gama.dev.DEBUG;
 
 /**
@@ -46,7 +46,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 
 	@Override
 	public IStatus restoreState(final IMemento memento) {
-		// TODO Auto-generated method stub
+
 		return super.restoreState(memento);
 	}
 

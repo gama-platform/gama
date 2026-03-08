@@ -30,7 +30,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.SelectionListenerAction;
 import org.eclipse.ui.part.ResourceTransfer;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.workspace.metadata.FileMetaDataProvider;
 

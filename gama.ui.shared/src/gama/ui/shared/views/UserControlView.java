@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * UserControlView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
+ * UserControlView.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,14 +25,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ToolItem;
 
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IGui;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.gaml.architecture.user.UserInputStatement;
+import gama.api.GAMA;
+import gama.api.gaml.statements.IStatement;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IGui;
 import gama.gaml.architecture.user.UserPanelStatement;
-import gama.gaml.statements.IStatement;
 import gama.gaml.statements.UserCommandStatement;
+import gama.gaml.statements.UserInputStatement;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.parameters.EditorFactory;
 import gama.ui.shared.parameters.EditorsGroup;
@@ -65,8 +65,8 @@ public class UserControlView extends GamaViewPart implements IGamaView.User {
 	ToolItem inspectItem, continueItem;
 
 	@Override
-	public void initFor(final IScope scope, final UserPanelStatement panel) {
-		this.panel = panel;
+	public void initFor(final IScope scope, final IStatement panel) {
+		this.panel = (UserPanelStatement) panel;
 		this.scope = scope;
 
 		if (body != null && !body.isDisposed()) {
@@ -97,7 +97,7 @@ public class UserControlView extends GamaViewPart implements IGamaView.User {
 	@Override
 	public void ownCreatePartControl(final Composite parent) {
 		// parent.setBackground(IGamaColors.WHITE.color());
-		if (scope == null) { return; }
+		if (scope == null) return;
 		inspectItem.setEnabled(true);
 		continueItem.setEnabled(true);
 		setPartName(
@@ -114,9 +114,6 @@ public class UserControlView extends GamaViewPart implements IGamaView.User {
 				final EditorsGroup commandComposite = new EditorsGroup(body, SWT.NONE);
 				final GridData data = new GridData(SWT.FILL, SWT.FILL, true, false, 3, 1);
 				commandComposite.setLayoutData(data);
-				// layout = new GridLayout(3, false);
-				// commandComposite.setLayout(layout);
-				// commandComposite.setBackground(IGamaColors.WHITE.color());
 				final List<UserInputStatement> inputs = c.getInputs();
 				final int nbLines = inputs.size() > 1 ? inputs.size() : 1;
 				final int nbCol = inputs.size() > 0 ? 1 : 3;

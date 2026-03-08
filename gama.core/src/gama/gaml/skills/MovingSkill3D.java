@@ -10,29 +10,29 @@
  ********************************************************************************************************/
 package gama.gaml.skills;
 
-import gama.annotations.precompiler.GamlAnnotations.action;
-import gama.annotations.precompiler.GamlAnnotations.arg;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.ITopology;
-import gama.core.metamodel.topology.graph.GamaSpatialGraph;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.map.IMap;
-import gama.core.util.path.IPath;
+import gama.annotations.action;
+import gama.annotations.arg;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.annotations.skill;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IPath;
+import gama.api.types.map.IMap;
+import gama.api.types.topology.ITopology;
+import gama.core.topology.graph.GamaSpatialGraph;
 import gama.gaml.operators.Maths;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
 
 /**
  * MovingSkill3D : This class is intended to define the minimal set of behaviours required from an agent that is able to
@@ -253,12 +253,22 @@ public class MovingSkill3D extends MovingSkill {
 				if (scope.hasArg("proba_edges")) {
 					probaDeplacement = (IMap<IShape, Double>) scope.getVarValue("proba_edges");
 				}
-				moveToNextLocAlongPathSimplified(scope, agent, graph, dist, probaDeplacement);
+				PathMovementHelper.MovementResult result = 
+						PathMovementHelper.moveAlongGraph(scope, agent, graph, dist, probaDeplacement);
+				if (result != null) {
+					agent.setAttribute(IKeyword.REAL_SPEED, result.travelledDistance / scope.getClock().getStepInSeconds());
+					agent.setAttribute(MovementAttributes.INDEX_ON_PATH, result.finalIndex);
+					setCurrentEdge(agent, graph);
+					agent.setAttribute(MovementAttributes.INDEX_ON_PATH_SEGMENT, result.finalIndexSegment);
+					agent.setAttribute(MovementAttributes.REVERSE, result.finalReverse);
+					setLocation(agent, result.finalLocation);
+					setHeading(agent, result.computedHeading);
+				}
 				return true;
 			}
 			final Object bounds = scope.getArg(IKeyword.BOUNDS, IType.NONE);
 			if (bounds != null) {
-				IShape geom = GamaGeometryType.staticCast(scope, bounds, null, false);
+				IShape geom = GamaShapeFactory.castToShape(scope, bounds, false);
 
 				if (geom.getGeometries().size() > 1) {
 					for (final IShape g : geom.getGeometries()) {

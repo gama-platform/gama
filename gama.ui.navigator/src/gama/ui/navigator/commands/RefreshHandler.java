@@ -3,7 +3,7 @@
  * RefreshHandler.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,7 +25,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -37,9 +36,9 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.actions.WorkspaceModifyOperation;
 import org.eclipse.ui.internal.ide.dialogs.IDEResourceInfoUtils;
 
-import gama.core.common.interfaces.IGui;
-import gama.core.runtime.GAMA;
-import gama.core.util.file.IFileMetaDataProvider;
+import gama.api.GAMA;
+import gama.api.ui.IGui;
+import gama.api.utils.files.IFileMetadataProvider;
 import gama.dev.DEBUG;
 import gama.ui.navigator.view.GamaNavigator;
 import gama.ui.navigator.view.contents.NavigatorRoot;
@@ -112,8 +111,8 @@ public class RefreshHandler implements IRefreshHandler {
 	public void completeRefresh(final List<? extends IResource> list) {
 		final IStatus[] errorStatus = new IStatus[1];
 		errorStatus[0] = Status.OK_STATUS;
-		final List<? extends IResource> resources = list == null || list.isEmpty()
-				? Collections.singletonList(ResourcesPlugin.getWorkspace().getRoot()) : list;
+		final List<? extends IResource> resources =
+				list == null || list.isEmpty() ? Collections.singletonList(GAMA.getWorkspaceManager().getRoot()) : list;
 		final WorkspaceModifyOperation op = new WorkspaceModifyOperation() {
 			@Override
 			public void execute(final IProgressMonitor monitor) {
@@ -157,7 +156,7 @@ public class RefreshHandler implements IRefreshHandler {
 					NavigatorRoot.getInstance().resetVirtualFolders(NavigatorRoot.getInstance().getManager());
 					monitor.beginTask("Refreshing GAMA Workspace: refreshing the navigator", 1);
 					DEBUG.LOG("Refreshing GAMA Workspace: deleting virtual folders caches");
-					final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+					final IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
 					monitor.beginTask("Refreshing GAMA Workspace: rebuilding models", 100);
 					try {
 
@@ -195,7 +194,7 @@ public class RefreshHandler implements IRefreshHandler {
 	 */
 	public static void reconstructMetadata(final List<? extends IResource> resources, final IProgressMonitor monitor)
 			throws CoreException {
-		final IFileMetaDataProvider provider = GAMA.getGui().getMetaDataProvider();
+		final IFileMetadataProvider provider = GAMA.getMetadataProvider();
 		for (final IResource r : resources) {
 			r.accept(proxy -> {
 				final IResource file = proxy.requestResource();

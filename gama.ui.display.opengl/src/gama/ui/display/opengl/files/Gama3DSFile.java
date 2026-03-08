@@ -19,22 +19,21 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.utils.geometry.GeometryUtils;
 import gama.core.util.file.Gama3DGeometryFile;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
 import gama.dev.DEBUG;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  *
@@ -151,7 +150,7 @@ public class Gama3DSFile extends Gama3DGeometryFile {
 			DEBUG.ERR("Error:  File IO error in: Closing File");
 		}
 		for (final Obj obj : objects) {
-			final Geometry g = GeometryUtils.GEOMETRY_FACTORY.buildGeometry(obj.faces);
+			final Geometry g = GeometryUtils.getGeometryFactory().buildGeometry(obj.faces);
 			getBuffer().add(GamaShapeFactory.createFrom(g));
 		}
 
@@ -316,7 +315,7 @@ public class Gama3DSFile extends Gama3DGeometryFile {
 				points.add(object.verts[swap(dataInputStream.readShort())]);
 				points.add(object.verts[swap(dataInputStream.readShort())]);
 				points.add(object.verts[swap(dataInputStream.readShort())]);
-				final IShape face = GamaGeometryType.buildPolygon(points);
+				final IShape face = GamaShapeFactory.buildPolygon(points);
 				object.faces.add(face.getInnerGeometry());
 
 				// Read in the extra face info

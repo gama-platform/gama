@@ -10,10 +10,11 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.types.Types;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Types;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.layers.ILayerStatement;
 
 /**
  * The Class OverlayLayerData.

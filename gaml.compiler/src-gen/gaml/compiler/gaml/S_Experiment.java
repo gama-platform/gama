@@ -14,6 +14,6 @@ package gaml.compiler.gaml;
  * @model
  * @generated
  */
-public interface S_Experiment extends Statement, VarDefinition
+public interface S_Experiment extends Statement, FacetsAndBlock, VarDefinition
 {
 } // S_Experiment

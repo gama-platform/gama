@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ModelScene.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,16 +14,14 @@ import org.locationtech.jts.geom.Geometry;
 
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
-import gama.core.common.interfaces.ILayer;
-import gama.core.common.preferences.GamaPreferences;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IField;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.ILayer;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGeometryFile;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
-import gama.core.util.matrix.IField;
 import gama.dev.DEBUG;
-import gama.gaml.statements.draw.DrawingAttributes;
-import gama.gaml.statements.draw.MeshDrawingAttributes;
-import gama.gaml.statements.draw.TextDrawingAttributes;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.layers.AxesLayerObject;
@@ -185,7 +183,7 @@ public class ModelScene {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addString(final String string, final TextDrawingAttributes attributes) {
+	public void addString(final String string, final IDrawingAttributes attributes) {
 		if (increment()) { currentLayer.addString(string, attributes); }
 	}
 
@@ -197,7 +195,7 @@ public class ModelScene {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addGeometryFile(final GamaGeometryFile file, final DrawingAttributes attributes) {
+	public void addGeometryFile(final GamaGeometryFile file, final IDrawingAttributes attributes) {
 		if (increment()) { currentLayer.addFile(file, attributes); }
 	}
 
@@ -209,7 +207,7 @@ public class ModelScene {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addImage(final Object img, final DrawingAttributes attributes) {
+	public void addImage(final Object img, final IDrawingAttributes attributes) {
 		if (increment()) { currentLayer.addImage(img, attributes); }
 	}
 
@@ -221,7 +219,7 @@ public class ModelScene {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addGeometry(final Geometry geometry, final DrawingAttributes attributes) {
+	public void addGeometry(final Geometry geometry, final IDrawingAttributes attributes) {
 		if (increment()) { currentLayer.addGeometry(geometry, attributes); }
 	}
 
@@ -233,7 +231,7 @@ public class ModelScene {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addField(final IField fieldValues, final MeshDrawingAttributes attributes) {
+	public void addField(final IField fieldValues, final IDrawingAttributes attributes) {
 		if (increment()) { currentLayer.addField(fieldValues, attributes); }
 	}
 

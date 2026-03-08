@@ -43,60 +43,63 @@ import org.jgrapht.graph.Multigraph;
 import org.jgrapht.util.SupplierUtil;
 import org.locationtech.jts.geom.Coordinate;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.graph.GamaSpatialGraph;
-import gama.core.metamodel.topology.graph.GamaSpatialGraph.VertexRelationship;
-import gama.core.metamodel.topology.graph.ISpatialGraph;
-import gama.core.metamodel.topology.grid.IGridAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.Collector;
-import gama.core.util.GamaPair;
-import gama.core.util.ICollector;
-import gama.core.util.IContainer;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IGridAgent;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.EdgeToAdd;
+import gama.api.types.graph.GamaGraphFactory;
+import gama.api.types.graph.GamaPathFactory;
+import gama.api.types.graph.GraphObjectToAdd;
+import gama.api.types.graph.IGraph;
+import gama.api.types.graph.IGraphEventProvider;
+import gama.api.types.graph.IPath;
+import gama.api.types.graph.IPathComputer;
+import gama.api.types.graph.ISpatialGraph;
+import gama.api.types.graph.NodeToAdd;
+import gama.api.types.graph.VertexRelationship;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
+import gama.api.types.pair.IPair;
+import gama.api.types.topology.GamaTopologyFactory;
+import gama.api.utils.collections.Collector;
+import gama.api.utils.collections.ICollector;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.IEnvelope;
+import gama.core.topology.graph.GamaSpatialGraph;
+import gama.core.util.graph.EdgesToAdd;
 import gama.core.util.graph.GamaGraph;
 import gama.core.util.graph.GraphAlgorithmsHandmade;
 import gama.core.util.graph.GraphFromAgentContainerSynchronizer;
-import gama.core.util.graph.IGraph;
-import gama.core.util.graph.PathComputer;
-import gama.core.util.graph.layout.LayoutCircle;
-import gama.core.util.graph.layout.LayoutForceDirected;
-import gama.core.util.graph.layout.LayoutGrid;
-import gama.core.util.list.GamaList;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMap;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
-import gama.core.util.matrix.GamaFloatMatrix;
-import gama.core.util.matrix.GamaIntMatrix;
-import gama.core.util.matrix.GamaMatrix;
-import gama.core.util.path.GamaSpatialPath;
-import gama.core.util.path.IPath;
+import gama.core.util.graph.LayoutCircle;
+import gama.core.util.graph.LayoutForceDirected;
+import gama.core.util.graph.LayoutGrid;
+import gama.core.util.graph.NodesToAdd;
 import gama.gaml.operators.spatial.SpatialProperties;
 import gama.gaml.operators.spatial.SpatialPunctal;
 import gama.gaml.operators.spatial.SpatialRelations;
 import gama.gaml.operators.spatial.SpatialTransformations;
-import gama.gaml.species.ISpecies;
-import gama.gaml.types.GamaGraphType;
-import gama.gaml.types.GamaPathType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 import one.util.streamex.StreamEx;
 
 /**
@@ -126,12 +129,34 @@ public class Graphs {
 			tolerance = t;
 		}
 
+		/**
+		 * Related.
+		 *
+		 * @param scope
+		 *            the scope
+		 * @param p1
+		 *            the p 1
+		 * @param p2
+		 *            the p 2
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean related(final IScope scope, final IShape p1, final IShape p2) {
 			return SpatialProperties.intersects(SpatialTransformations.enlarged_by(scope, p1.getGeometry(), tolerance),
 					SpatialTransformations.enlarged_by(scope, p2.getGeometry(), tolerance));
 		}
 
+		/**
+		 * Equivalent.
+		 *
+		 * @param scope
+		 *            the scope
+		 * @param p1
+		 *            the p 1
+		 * @param p2
+		 *            the p 2
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean equivalent(final IScope scope, final IShape p1, final IShape p2) {
 			return p1 == null ? p2 == null : p1.getGeometry().equals(p2.getGeometry());
@@ -148,37 +173,39 @@ public class Graphs {
 		 */
 		GridNeighborsRelation() {}
 
+		/**
+		 * Related.
+		 *
+		 * @param scope
+		 *            the scope
+		 * @param p1
+		 *            the p 1
+		 * @param p2
+		 *            the p 2
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean related(final IScope scope, final IShape p1, final IShape p2) {
 			if (!(p1 instanceof IGridAgent)) return false;
 			return ((IGridAgent) p1).getNeighbors(scope).contains(p2);
 		}
 
+		/**
+		 * Equivalent.
+		 *
+		 * @param scope
+		 *            the scope
+		 * @param p1
+		 *            the p 1
+		 * @param p2
+		 *            the p 2
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean equivalent(final IScope scope, final IShape p1, final IShape p2) {
 			return p1 == p2;
 		}
 	}
-
-	// private static class IntersectionRelationLine implements
-	// VertexRelationship<IShape> {
-	//
-	// IntersectionRelationLine() {}
-	//
-	// @Override
-	// public boolean related(final IScope scope, final IShape p1, final IShape
-	// p2) {
-	// return p1.getInnerGeometry().relate(p2.getInnerGeometry(), "****1****");
-	// }
-	//
-	// @Override
-	// public boolean equivalent(final IScope scope, final IShape p1, final
-	// IShape p2) {
-	// return p1 == null ? p2 == null :
-	// p1.getGeometry().equals(p2.getGeometry());
-	// }
-	//
-	// };
 
 	/**
 	 * The Class IntersectionRelationLineTriangle.
@@ -198,6 +225,17 @@ public class Graphs {
 			this.optimizedForTriangulation = optimizedForTriangulation;
 		}
 
+		/**
+		 * Related.
+		 *
+		 * @param scope
+		 *            the scope
+		 * @param p1
+		 *            the p 1
+		 * @param p2
+		 *            the p 2
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean related(final IScope scope, final IShape p1, final IShape p2) {
 			if (optimizedForTriangulation) {
@@ -219,6 +257,17 @@ public class Graphs {
 			}
 		}
 
+		/**
+		 * Equivalent.
+		 *
+		 * @param scope
+		 *            the scope
+		 * @param p1
+		 *            the p 1
+		 * @param p2
+		 *            the p 2
+		 * @return true, if successful
+		 */
 		@Override
 		public boolean equivalent(final IScope scope, final IShape p1, final IShape p2) {
 			if (optimizedForTriangulation) return p1 == p2;
@@ -266,194 +315,6 @@ public class Graphs {
 	}
 
 	/**
-	 * Placeholders for fake expressions used to build complex items (like edges and nodes). These expressions are never
-	 * evaluated, and return special graph objects (node, edge, nodes and edges)
-	 */
-
-	public interface GraphObjectToAdd {
-
-		/**
-		 * Gets the object.
-		 *
-		 * @return the object
-		 */
-		Object getObject();
-	}
-
-	/**
-	 * The Class EdgeToAdd.
-	 */
-	public static class EdgeToAdd implements GraphObjectToAdd {
-
-		/** The target. */
-		public Object source, target;
-
-		/** The object. */
-		public Object object;
-
-		/** The weight. */
-		public Double weight;
-
-		/**
-		 * Instantiates a new edge to add.
-		 *
-		 * @param source
-		 *            the source
-		 * @param target
-		 *            the target
-		 * @param object
-		 *            the object
-		 * @param weight
-		 *            the weight
-		 */
-		public EdgeToAdd(final Object source, final Object target, final Object object, final Double weight) {
-			this.object = object;
-			this.weight = weight;
-			this.source = source;
-			this.target = target;
-		}
-
-		/**
-		 * Instantiates a new edge to add.
-		 *
-		 * @param source
-		 *            the source
-		 * @param target
-		 *            the target
-		 * @param object
-		 *            the object
-		 * @param weight
-		 *            the weight
-		 */
-		public EdgeToAdd(final Object source, final Object target, final Object object, final Integer weight) {
-			this.object = object;
-			this.weight = weight == null ? null : weight.doubleValue();
-			this.source = source;
-			this.target = target;
-		}
-
-		@Override
-		public Object getObject() { return object; }
-
-		/**
-		 * @param cast
-		 */
-		public EdgeToAdd(final Object o) {
-			this.object = o;
-		}
-	}
-
-	/**
-	 * The Class NodeToAdd.
-	 */
-	public static class NodeToAdd implements GraphObjectToAdd {
-
-		/** The object. */
-		public Object object;
-
-		/** The weight. */
-		public Double weight;
-
-		/**
-		 * Instantiates a new node to add.
-		 *
-		 * @param object
-		 *            the object
-		 * @param weight
-		 *            the weight
-		 */
-		public NodeToAdd(final Object object, final Double weight) {
-			this.object = object;
-			this.weight = weight;
-		}
-
-		/**
-		 * @param cast
-		 */
-		public NodeToAdd(final Object o) {
-			object = o;
-		}
-
-		@Override
-		public Object getObject() { return object; }
-
-	}
-
-	/**
-	 * The Class NodesToAdd.
-	 */
-	public static class NodesToAdd extends GamaList<GraphObjectToAdd> implements GraphObjectToAdd {
-
-		/**
-		 *
-		 */
-		private static final long serialVersionUID = 1L;
-
-		/**
-		 * Instantiates a new nodes to add.
-		 */
-		public NodesToAdd() {
-			super(0, Types.NO_TYPE);
-		}
-
-		/**
-		 * From.
-		 *
-		 * @param scope
-		 *            the scope
-		 * @param object
-		 *            the object
-		 * @return the nodes to add
-		 */
-		public static NodesToAdd from(final IScope scope, final IContainer object) {
-			final NodesToAdd n = new NodesToAdd();
-			for (final Object o : object.iterable(scope)) { n.add((GraphObjectToAdd) o); }
-			return n;
-		}
-
-		@Override
-		public Object getObject() { return this; }
-
-	}
-
-	/**
-	 * The Class EdgesToAdd.
-	 */
-	public static class EdgesToAdd extends GamaList<GraphObjectToAdd> implements GraphObjectToAdd {
-
-		/**
-		 *
-		 */
-		private static final long serialVersionUID = 1L;
-
-		/**
-		 * Instantiates a new edges to add.
-		 */
-		public EdgesToAdd() {
-			super(0, Types.NO_TYPE);
-		}
-
-		/**
-		 * From.
-		 *
-		 * @param scope
-		 *            the scope
-		 * @param object
-		 *            the object
-		 * @return the edges to add
-		 */
-		public static EdgesToAdd from(final IScope scope, final IContainer object) {
-			final EdgesToAdd n = new EdgesToAdd();
-			for (final Object o : object.iterable(scope)) { n.add((GraphObjectToAdd) o); }
-			return n;
-		}
-
-		@Override
-		public Object getObject() { return this; }
-
-	}
-
-	/**
 	 * Gets the agent from geom.
 	 *
 	 * @param path
@@ -484,7 +345,7 @@ public class Graphs {
 	}
 
 	/*
-	 * TO DO : CHECK THE VALIDITY OF THESE OPERATORS FOR ALL KINDS OF PATH
+	 * TO DO : CHECK THE VALIDITY OF THESE OPERATORS FOR ALL VARIABLES OF PATH
 	 *
 	 * @operator(value = "vertices") public static IList nodesOfPath(final GamaPath path) { if ( path == null ) { return
 	 * new IList(); } return path.getVertexList(); }
@@ -520,7 +381,7 @@ public class Graphs {
 	public static Boolean containsVertex(final IScope scope, final IGraph graph, final Object vertex) {
 		if (graph == null)
 			throw GamaRuntimeException.error("In the contains_vertex operator, the graph should not be null!", scope);
-		if (vertex instanceof Graphs.NodeToAdd) return graph.containsVertex(((Graphs.NodeToAdd) vertex).object);
+		if (vertex instanceof NodeToAdd) return graph.containsVertex(((NodeToAdd) vertex).object);
 		return graph.containsVertex(vertex);
 	}
 
@@ -551,7 +412,7 @@ public class Graphs {
 			see = { "contains_vertex" })
 	public static Boolean containsEdge(final IScope scope, final IGraph graph, final Object edge) {
 		if (graph == null) throw GamaRuntimeException.error("graph is nil", scope);
-		if (edge instanceof Graphs.EdgeToAdd edge2) {
+		if (edge instanceof EdgeToAdd edge2) {
 			if (edge2.object != null) return graph.containsEdge(edge2.object);
 			if (edge2.source != null && edge2.target != null) return graph.containsEdge(edge2.source, edge2.target);
 
@@ -585,7 +446,7 @@ public class Graphs {
 							isExecutable = false) }))
 	@test ("graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r\n"
 			+ "(g contains_edge ({10,5}::{20,3})) = true")
-	public static Boolean containsEdge(final IScope scope, final IGraph graph, final GamaPair edge) {
+	public static Boolean containsEdge(final IScope scope, final IGraph graph, final IPair edge) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 		return graph.containsEdge(edge.first(), edge.last());
 	}
@@ -692,14 +553,14 @@ public class Graphs {
 							equals = "1.0") })
 	public static Double weightOf(final IScope scope, final IGraph graph, final Object edge) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
-		if (edge instanceof Graphs.GraphObjectToAdd) {
-			if (edge instanceof Graphs.EdgeToAdd edge2) {
+		if (edge instanceof GraphObjectToAdd) {
+			if (edge instanceof EdgeToAdd edge2) {
 				if (edge2.object != null) return graph.getEdgeWeight(edge2.object);
 				if (edge2.source != null && edge2.target != null) {
 					final Object edge3 = graph.getEdge(edge2.source, edge2.target);
 					return graph.getEdgeWeight(edge3);
 				}
-			} else if (edge instanceof Graphs.NodeToAdd) return graph.getVertexWeight(((Graphs.NodeToAdd) edge).object);
+			} else if (edge instanceof NodeToAdd) return graph.getVertexWeight(((NodeToAdd) edge).object);
 		}
 		if (graph.containsEdge(edge)) return graph.getEdgeWeight(edge);
 		if (graph.containsVertex(edge)) return graph.getVertexWeight(edge);
@@ -768,10 +629,10 @@ public class Graphs {
 			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),\
 			edge({80,35}, {40,60}),edge({80,35}, {10,5}), node ({50,50})]));\r
 			(g edge_between ({10,5}::{20,3})) = g.edges[0]""")
-	public static Object edgeBetween(final IScope scope, final IGraph graph, final GamaPair verticePair) {
+	public static Object edgeBetween(final IScope scope, final IGraph graph, final IPair verticePair) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
-		if (graph.containsVertex(verticePair.key) && graph.containsVertex(verticePair.value))
-			return graph.getEdge(verticePair.key, verticePair.value);
+		if (graph.containsVertex(verticePair.getKey()) && graph.containsVertex(verticePair.getValue()))
+			return graph.getEdge(verticePair.getKey(), verticePair.getValue());
 		return null;
 	}
 
@@ -1309,7 +1170,7 @@ public class Graphs {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
 
 		final IMap mapResult = GamaMapFactory.create(graph.getGamlType().getKeyType(), Types.INT);
-		final IList vertices = Cast.asList(scope, graph.vertexSet());
+		final IList vertices = GamaListFactory.castToList(scope, graph.vertexSet());
 		for (final Object v : vertices) { mapResult.put(v, 0); }
 		final boolean directed = graph.isDirected();
 		for (int i = 0; i < vertices.size(); i++) {
@@ -1362,7 +1223,7 @@ public class Graphs {
 
 		final IMap mapResult = GamaMapFactory.create(graph.getGamlType().getContentType(), Types.INT);
 		for (final Object v : graph.edgeSet()) { mapResult.put(v, 0); }
-		final IList vertices = Cast.asList(scope, graph.vertexSet());
+		final IList vertices = GamaListFactory.castToList(scope, graph.vertexSet());
 		final boolean directed = graph.isDirected();
 		for (int i = 0; i < vertices.size(); i++) {
 			for (int j = directed ? 0 : i + 1; j < vertices.size(); j++) {
@@ -1632,7 +1493,7 @@ public class Graphs {
 	public static IGraph spatialFromEdges(final IScope scope, final IMap edges) {
 		// Edges are represented by pairs of vertex::vertex
 
-		return GamaGraphType.from(scope, edges, true);
+		return GamaGraphFactory.createFromMap(scope, edges, true);
 	}
 
 	/**
@@ -2023,7 +1884,7 @@ public class Graphs {
 	@no_test
 	public static IGraph asDirectedGraph(final IGraph g) {
 		g.getPathComputer().incVersion();
-		return GamaGraphType.asDirectedGraph(g);
+		return GamaGraphFactory.asDirectedGraph(g);
 	}
 
 	/**
@@ -2046,7 +1907,7 @@ public class Graphs {
 	@no_test
 	public static IGraph asUndirectedGraph(final IGraph g) {
 		g.getPathComputer().incVersion();
-		return GamaGraphType.asUndirectedGraph(g);
+		return GamaGraphFactory.asUndirectedGraph(g);
 	}
 
 	/**
@@ -2144,8 +2005,8 @@ public class Graphs {
 	@no_test
 	public static IGraph setKShortestPathAlgorithm(final IScope scope, final IGraph graph,
 			final String shortestpathAlgo) {
-		final List<String> existingAlgo = Arrays.asList(PathComputer.KShortestPathAlgorithmEnum.values()).stream()
-				.map(PathComputer.KShortestPathAlgorithmEnum::toString).toList();
+		final List<String> existingAlgo = Arrays.asList(IPathComputer.KShortestPathAlgorithmEnum.values()).stream()
+				.map(IPathComputer.KShortestPathAlgorithmEnum::toString).toList();
 		if (!existingAlgo.contains(shortestpathAlgo)) throw GamaRuntimeException.error("The K shortest paths algorithm "
 				+ shortestpathAlgo + " does not exist. Possible K shortest paths algorithms: " + existingAlgo, scope);
 		graph.getPathComputer().setKShortestPathAlgorithm(shortestpathAlgo);
@@ -2179,8 +2040,8 @@ public class Graphs {
 	@no_test
 	public static IGraph setShortestPathAlgorithm(final IScope scope, final IGraph graph,
 			final String shortestpathAlgo) {
-		final List<String> existingAlgo = Arrays.asList(PathComputer.ShortestPathAlgorithmEnum.values()).stream()
-				.map(PathComputer.ShortestPathAlgorithmEnum::toString).toList();
+		final List<String> existingAlgo = Arrays.asList(IPathComputer.ShortestPathAlgorithmEnum.values()).stream()
+				.map(IPathComputer.ShortestPathAlgorithmEnum::toString).toList();
 		if (!existingAlgo.contains(shortestpathAlgo)) throw GamaRuntimeException.error("The shortest path algorithm "
 				+ shortestpathAlgo + " does not exist. Possible shortest path algorithms: " + existingAlgo, scope);
 		graph.getPathComputer().setShortestPathAlgorithm(shortestpathAlgo);
@@ -2313,7 +2174,7 @@ public class Graphs {
 			graph<geometry, geometry> g <- directed(as_edge_graph([edge({10,5}, {20,3}), edge({10,5}, {30,30}),edge({30,30}, {80,35}),edge({80,35}, {40,60}),edge({80,35}, {10,5})]));\r
 			g <- g add_edge ({40,60}::{50,50}); \
 			 length(g.edges) = 6""")
-	public static IGraph addEdge(final IGraph g, final GamaPair nodes) {
+	public static IGraph addEdge(final IGraph g, final IPair nodes) {
 		g.addEdge(nodes.first(), nodes.last());
 		g.getPathComputer().incVersion();
 		return g;
@@ -2351,7 +2212,7 @@ public class Graphs {
 	public static IPath path_between(final IScope scope, final IGraph graph, final Object source, final Object target)
 			throws GamaRuntimeException {
 		if (graph instanceof GamaSpatialGraph)
-			return Cast.asTopology(scope, graph).pathBetween(scope, (IShape) source, (IShape) target);
+			return GamaTopologyFactory.createFrom(scope, graph).pathBetween(scope, (IShape) source, (IShape) target);
 		return graph.getPathComputer().computeShortestPathBetween(scope, source, target);
 	}
 
@@ -2396,10 +2257,11 @@ public class Graphs {
 			   length((paths_between(g, {10,5}:: {80,35}, 2))) = 2
 
 			""")
-	public static IList<GamaSpatialPath> kPathsBetween(final IScope scope, final GamaGraph graph,
-			final GamaPair sourTarg, final int k) throws GamaRuntimeException {
+	public static IList<IPath> kPathsBetween(final IScope scope, final IGraphEventProvider graph, final IPair sourTarg,
+			final int k) throws GamaRuntimeException {
 
-		return Cast.asTopology(scope, graph).kPathsBetween(scope, (IShape) sourTarg.key, (IShape) sourTarg.value, k);
+		return GamaTopologyFactory.castToTopology(scope, graph, false).kPathsBetween(scope, (IShape) sourTarg.getKey(),
+				(IShape) sourTarg.getValue(), k);
 	}
 
 	/**
@@ -2429,7 +2291,7 @@ public class Graphs {
 					value = "max_flow_between(my_graph, vertice1, vertice2)",
 					isExecutable = false) })
 	@no_test
-	public static IMap<Object, Double> maxFlowBetween(final IScope scope, final GamaGraph graph, final Object source,
+	public static IMap<Object, Double> maxFlowBetween(final IScope scope, final IGraph graph, final Object source,
 			final Object sink) throws GamaRuntimeException {
 		final EdmondsKarpMFImpl ek = new EdmondsKarpMFImpl(graph);
 		final MaximumFlow<IShape> mf = ek.getMaximumFlow(source, sink);
@@ -2464,9 +2326,9 @@ public class Graphs {
 					equals = "a path road1->road2->road3 of my_graph",
 					isExecutable = false) })
 	@no_test
-	public static IPath as_path(final IScope scope, final IList<IShape> edgesNodes, final GamaGraph graph)
+	public static IPath as_path(final IScope scope, final IList<IShape> edgesNodes, final IGraph graph)
 			throws GamaRuntimeException {
-		final IPath path = GamaPathType.staticCast(scope, edgesNodes, null, false);
+		final IPath path = GamaPathFactory.castToPath(scope, edgesNodes, null, false);
 		path.setGraph(graph);
 		return path;
 	}
@@ -2497,7 +2359,7 @@ public class Graphs {
 					equals = "return my_graph with all the shortest paths computed",
 					isExecutable = false) })
 	@no_test
-	public static IGraph primShortestPathFile(final IScope scope, final GamaGraph graph, final GamaMatrix matrix)
+	public static IGraph primShortestPathFile(final IScope scope, final IGraph graph, final IMatrix matrix)
 			throws GamaRuntimeException {
 		if (graph == null) throw GamaRuntimeException
 				.error("In the load_shortest_paths operator, the graph should not be null!", scope);
@@ -2529,8 +2391,7 @@ public class Graphs {
 					equals = "shortest_paths_matrix will contain all pairs of shortest paths",
 					isExecutable = false) })
 	@no_test
-	public static GamaIntMatrix primAllPairShortestPaths(final IScope scope, final GamaGraph graph)
-			throws GamaRuntimeException {
+	public static IMatrix primAllPairShortestPaths(final IScope scope, final IGraph graph) throws GamaRuntimeException {
 		if (graph == null) throw GamaRuntimeException
 				.error("In the all_pairs_shortest_paths operator, the graph should not be null!", scope);
 		return graph.getPathComputer().saveShortestPaths(scope);
@@ -2571,7 +2432,7 @@ public class Graphs {
 					cooling rate is the decreasing coefficient of the temperature, typical value is 0.01;  max_iteration is the maximal number of iterations; equilibirum criterion is the maximal\
 					distance of displacement for a vertice to be considered as in equilibrium""")
 	@no_test
-	public static IGraph layoutForce(final IScope scope, final GamaGraph graph, final IShape bounds,
+	public static IGraph layoutForce(final IScope scope, final IGraph graph, final IShape bounds,
 			final double coeffForce, final double coolingRate, final int maxIteration, final double criterion) {
 		final LayoutForceDirected sim =
 				new LayoutForceDirected(graph, bounds, coeffForce, coolingRate, maxIteration, true, criterion);
@@ -2609,7 +2470,7 @@ public class Graphs {
 					applied the layout;  bounds is the shape (geometry) in which the graph should be located; normalization_factor is the normalization factor for the optimal distance, typical value is 1.0; \
 					  max_iteration is the maximal number of iterations""")
 	@no_test
-	public static IGraph layoutForceFR(final IScope scope, final GamaGraph graph, final IShape bounds,
+	public static IGraph layoutForceFR(final IScope scope, final IGraph graph, final IShape bounds,
 			final double normalization_factor, final int maxIteration) {
 		final FRLayoutAlgorithm2D sim = new FRLayoutAlgorithm2D(maxIteration, normalization_factor,
 				scope.getSimulation().getRandomGenerator().getGenerator());
@@ -2650,7 +2511,7 @@ public class Graphs {
 					applied the layout;  bounds is the shape (geometry) in which the graph should be located; theta value for approximation using the Barnes-Hut technique, typical value is 0.5; normalization_factor is the normalization factor for the optimal distance, typical value is 1.0; \
 					  max_iteration is the maximal number of iterations""")
 	@no_test
-	public static IGraph indexedFRLayout(final IScope scope, final GamaGraph graph, final IShape bounds,
+	public static IGraph indexedFRLayout(final IScope scope, final IGraph graph, final IShape bounds,
 			final double theta, final double normalizationFactor, final int maxIteration) {
 		final IndexedFRLayoutAlgorithm2D sim = new IndexedFRLayoutAlgorithm2D(maxIteration, theta, normalizationFactor,
 				scope.getSimulation().getRandomGenerator().getGenerator());
@@ -2687,7 +2548,7 @@ public class Graphs {
 	 *            the bounds
 	 * @return the layout model 2 D
 	 */
-	static LayoutModel2D toModel(final GamaGraph graph, final IShape bounds) {
+	static LayoutModel2D toModel(final IGraph graph, final IShape bounds) {
 		IEnvelope env = bounds.getEnvelope();
 		LayoutModel2D model =
 				new MapLayoutModel2D<>(new Box2D(env.getMinY(), env.getMinY(), env.getWidth(), env.getHeight()));
@@ -2731,7 +2592,7 @@ public class Graphs {
 					cooling rate is the decreasing coefficient of the temperature, typical value is 0.01;  max_iteration is the maximal number of iterations\
 					distance of displacement for a vertice to be considered as in equilibrium""")
 	@no_test
-	public static IGraph layoutForce(final IScope scope, final GamaGraph graph, final IShape bounds,
+	public static IGraph layoutForce(final IScope scope, final IGraph graph, final IShape bounds,
 			final double coeffForce, final double coolingRate, final int maxIteration) {
 		final LayoutForceDirected sim =
 				new LayoutForceDirected(graph, bounds, coeffForce, coolingRate, maxIteration, false, 0);
@@ -2766,7 +2627,7 @@ public class Graphs {
 					value = "layout_circle(graph, world.shape, false);",
 					isExecutable = false) })
 	@no_test
-	public static IGraph layoutCircle(final IScope scope, final GamaGraph graph, final IShape bounds,
+	public static IGraph layoutCircle(final IScope scope, final IGraph graph, final IShape bounds,
 			final boolean shuffle) {
 		final LayoutCircle layouter = new LayoutCircle(graph, bounds);
 		layouter.applyLayout(scope, shuffle);
@@ -2801,8 +2662,7 @@ public class Graphs {
 					value = "layout_grid(graph, world.shape);",
 					isExecutable = false) })
 	@no_test
-	public static IGraph layoutGrid(final IScope scope, final GamaGraph graph, final IShape bounds,
-			final double coeffSq) {
+	public static IGraph layoutGrid(final IScope scope, final IGraph graph, final IShape bounds, final double coeffSq) {
 		final LayoutGrid layouter = new LayoutGrid(graph, bounds, Math.max(1.0, coeffSq));
 		layouter.applyLayout(scope);
 		return graph;
@@ -2824,7 +2684,7 @@ public class Graphs {
 	@doc (
 			value = "adjacency matrix of the given graph.")
 	@no_test
-	public static GamaFloatMatrix adjacencyMatrix(final IScope scope, final GamaGraph graph) {
+	public static IMatrix adjacencyMatrix(final IScope scope, final IGraph graph) {
 		return graph.toMatrix(scope);
 	}
 
@@ -2844,7 +2704,7 @@ public class Graphs {
 	@doc (
 			value = "retur for each edge, its strahler number")
 	@no_test
-	public static IMap strahlerNumber(final IScope scope, final GamaGraph graph) {
+	public static IMap strahlerNumber(final IScope scope, final IGraph graph) {
 		final IMap<Object, Integer> results = GamaMapFactory.create(Types.NO_TYPE, Types.INT);
 		if (graph == null || graph.isEmpty(scope)) return results;
 
@@ -2949,8 +2809,8 @@ public class Graphs {
 	@doc (
 			value = "Allows to create a wrapper (of type unknown) that wraps a pair of objects and a third and indicates  they should respectively be considered as the source (key of the pair), the target (value of the pair) and the actual object representing an edge of a graph. The third parameter indicates which weight this edge should have in the graph")
 	@no_test
-	public static Object edge(final GamaPair pair, final Object object, final Double weight) {
-		return edge(pair.key, pair.value, object, weight);
+	public static Object edge(final IPair pair, final Object object, final Double weight) {
+		return edge(pair.getKey(), pair.getValue(), object, weight);
 	}
 
 	/**
@@ -2971,8 +2831,8 @@ public class Graphs {
 	@doc (
 			value = "Allows to create a wrapper (of type unknown) that wraps a pair of objects and a third and indicates  they should respectively be considered as the source (key of the pair), the target (value of the pair) and the actual object representing an edge of a graph. The third parameter indicates which weight this edge should have in the graph")
 	@no_test
-	public static Object edge(final GamaPair pair, final Object object, final Integer weight) {
-		return edge(pair.key, pair.value, object, weight);
+	public static Object edge(final IPair pair, final Object object, final Integer weight) {
+		return edge(pair.getKey(), pair.getValue(), object, weight);
 	}
 
 	/**
@@ -3121,8 +2981,8 @@ public class Graphs {
 	@doc (
 			value = "Allows to create a wrapper (of type unknown) that wraps a pair of objects and indicates they should be considered as the source and target of an edge. The second parameter indicates which weight this edge should have in the graph")
 	@no_test
-	public static Object edge(final GamaPair pair, final Double weight) {
-		return edge(pair.key, pair.value, null, weight);
+	public static Object edge(final IPair pair, final Double weight) {
+		return edge(pair.getKey(), pair.getValue(), null, weight);
 	}
 
 	/**
@@ -3141,8 +3001,8 @@ public class Graphs {
 	@doc (
 			value = "Allows to create a wrapper (of type unknown) that wraps a pair of objects and indicates they should be considered as the source and target of an edge. The second parameter indicates which weight this edge should have in the graph")
 	@no_test
-	public static Object edge(final GamaPair pair, final Integer weight) {
-		return edge(pair.key, pair.value, null, weight);
+	public static Object edge(final IPair pair, final Integer weight) {
+		return edge(pair.getKey(), pair.getValue(), null, weight);
 	}
 
 	/**
@@ -3177,8 +3037,8 @@ public class Graphs {
 	@doc (
 			value = "Allows to create a wrapper (of type unknown) that wraps a pair of objects and indicates they should be considered as the source and target of an edge of a graph")
 	@no_test
-	public static Object edge(final GamaPair pair) {
-		return edge(pair.key, pair.value, null, (Double) null);
+	public static Object edge(final IPair pair) {
+		return edge(pair.getKey(), pair.getValue(), null, (Double) null);
 	}
 
 	/**
@@ -3456,7 +3316,7 @@ public class Graphs {
 		gen.generateGraph(graph);
 		IList l = nodes.listValue(scope, Types.NO_TYPE, false);
 
-		GamaMap nodesM = (GamaMap) GamaMapFactory.create();
+		IMap nodesM = GamaMapFactory.create();
 		List vs = new ArrayList<>(graph.vertexSet());
 		for (int i = 0; i < graph.vertexSet().size(); i++) { nodesM.put(vs.get(i), l.get(i)); }
 		return new GamaGraph<>(scope, graph, nodesM);
@@ -3836,7 +3696,7 @@ public class Graphs {
 				: new Multigraph(SupplierUtil.createStringSupplier(), SupplierUtil.DEFAULT_EDGE_SUPPLIER, true);
 		wsg.generateGraph(graph);
 		IList l = nodes.listValue(scope, Types.NO_TYPE, false);
-		GamaMap nodesM = (GamaMap) GamaMapFactory.create();
+		IMap nodesM = GamaMapFactory.create();
 		List vs = new ArrayList<>(graph.vertexSet());
 		for (int i = 0; i < graph.vertexSet().size(); i++) { nodesM.put(vs.get(i), l.get(i)); }
 		return new GamaGraph<>(scope, graph, nodesM);

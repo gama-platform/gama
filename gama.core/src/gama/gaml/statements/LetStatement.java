@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * LetStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * LetStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -9,28 +9,28 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.StringUtils;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.Assert;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IVarExpression;
+import gama.annotations.doc;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.serializer;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.validation.Assert;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.expressions.IVarExpression;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
 import gama.gaml.statements.LetStatement.LetSerializer;
 import gama.gaml.statements.LetStatement.LetValidator;
-import gama.gaml.types.IType;
 
 /**
  * Written by drogoul Modified on 6 févr. 2010
@@ -85,7 +85,7 @@ public class LetStatement extends SetStatement {
 	public static class LetSerializer extends AssignmentSerializer {
 
 		@Override
-		protected void serialize(final IDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
+		public void serialize(final IDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
 			sb.append(desc.getGamlType().serializeToGaml(includingBuiltIn)).append(" ");
 			super.serialize(desc, sb, includingBuiltIn);
 
@@ -101,7 +101,7 @@ public class LetStatement extends SetStatement {
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
 		public void validate(final IDescription cd) {

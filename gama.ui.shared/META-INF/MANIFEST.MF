@@ -21,7 +21,10 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.e4.ui.model.workbench,
  org.eclipse.e4.core.contexts,
  org.eclipse.ui.navigator,
- org.eclipse.e4.ui.workbench
+ org.eclipse.e4.ui.workbench,
+ org.eclipse.equinox.common;bundle-version="[3.20.0,4.0.0)",
+ org.eclipse.equinox.registry;bundle-version="[3.12.0,4.0.0)",
+ gama.workspace;bundle-version="[0.0.0,1.0.0)"
 Export-Package: gama.ui.shared,
  gama.ui.shared.access,
  gama.ui.shared.bindings,
@@ -37,7 +40,7 @@ Export-Package: gama.ui.shared,
  gama.ui.shared.utils,
  gama.ui.shared.views,
  gama.ui.shared.views.toolbar
-Bundle-Activator: gama.ui.shared.Activator
+Bundle-Activator: gama.ui.shared.UIActivator
 Automatic-Module-Name: gama.ui.shared 
 Import-Package: gama.workspace.manager,
  gama.workspace.nature,

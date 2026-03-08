@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * MatrixOperators.java, in gaml.extensions.maths, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * MatrixOperators.java, in gama.extension.maths, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,27 +16,26 @@ import org.apache.commons.math3.linear.EigenDecomposition;
 import org.apache.commons.math3.linear.LUDecomposition;
 import org.apache.commons.math3.linear.RealMatrix;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.matrix.GamaFloatMatrix;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
-import gama.core.util.matrix.GamaObjectMatrix;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class MatrixOperators.
@@ -234,19 +233,7 @@ public class MatrixOperators {
 					value = "matrix([[1,2],[3,4]]) append_vertically matrix([[1,2],[3,4]])",
 					equals = "matrix([[1,2,1,2],[3,4,3,4]])") })
 	public static IMatrix opAppendVertically(final IScope scope, final IMatrix a, final IMatrix b) {
-		if (a instanceof GamaIntMatrix) {
-			if (b instanceof GamaIntMatrix) return ((GamaIntMatrix) a)._opAppendVertically(scope, (GamaIntMatrix) b);
-			if (b instanceof GamaFloatMatrix)
-				return GamaFloatMatrix.from(scope, b)._opAppendVertically(scope, (GamaFloatMatrix) b);
-		} else if (a instanceof GamaFloatMatrix) {
-			if (b instanceof GamaIntMatrix)
-				return ((GamaFloatMatrix) a)._opAppendVertically(scope, GamaFloatMatrix.from(scope, b));
-			if (b instanceof GamaFloatMatrix)
-				return ((GamaFloatMatrix) a)._opAppendVertically(scope, (GamaFloatMatrix) b);
-		}
-		if (a instanceof GamaObjectMatrix && b instanceof GamaObjectMatrix)
-			return ((GamaObjectMatrix) a)._opAppendVertically(scope, b);
-		return a;
+		return a._opAppendVertically(scope, b);
 	}
 
 	/**
@@ -268,19 +255,7 @@ public class MatrixOperators {
 			masterDoc = false)
 	@no_test
 	public static IMatrix opAppendHorizontally(final IScope scope, final IMatrix a, final IMatrix b) {
-		if (a instanceof GamaIntMatrix) {
-			if (b instanceof GamaIntMatrix) return ((GamaIntMatrix) a)._opAppendHorizontally(scope, (GamaIntMatrix) b);
-			if (b instanceof GamaFloatMatrix)
-				return GamaFloatMatrix.from(scope, a)._opAppendHorizontally(scope, (GamaFloatMatrix) b);
-		} else if (a instanceof GamaFloatMatrix) {
-			if (b instanceof GamaIntMatrix)
-				return ((GamaFloatMatrix) a)._opAppendHorizontally(scope, GamaFloatMatrix.from(scope, b));
-			if (b instanceof GamaFloatMatrix)
-				return GamaFloatMatrix.from(scope, a)._opAppendHorizontally(scope, (GamaFloatMatrix) b);
-		}
-		if (a instanceof GamaObjectMatrix && b instanceof GamaObjectMatrix)
-			return ((GamaObjectMatrix) a)._opAppendHorizontally(scope, b);
-		return a;
+		return a._opAppendVertically(scope, b);
 	}
 
 	/**
@@ -324,7 +299,8 @@ public class MatrixOperators {
 	 * @return the gama int matrix
 	 */
 	public static GamaIntMatrix toGamaIntMatrix(final RealMatrix m) {
-		GamaIntMatrix result = new GamaIntMatrix(m.getColumnDimension(), m.getRowDimension());
+		GamaIntMatrix result =
+				(GamaIntMatrix) GamaMatrixFactory.createIntMatrix(m.getColumnDimension(), m.getRowDimension());
 		updateMatrix(result, m);
 		return result;
 	}
@@ -336,8 +312,8 @@ public class MatrixOperators {
 	 *            the m
 	 * @return the gama float matrix
 	 */
-	public static GamaFloatMatrix toGamaFloatMatrix(final RealMatrix m) {
-		GamaFloatMatrix result = new GamaFloatMatrix(m.getColumnDimension(), m.getRowDimension());
+	public static IMatrix toGamaFloatMatrix(final RealMatrix m) {
+		IMatrix result = GamaMatrixFactory.createFloatMatrix(m.getColumnDimension(), m.getRowDimension());
 		updateMatrix(result, m);
 		return result;
 	}

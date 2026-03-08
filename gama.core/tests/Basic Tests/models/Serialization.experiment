@@ -58,7 +58,7 @@ experiment SerializationTest type:test {
 	test from_json_empty {
 		bool exception <- false;
 		try{
-			let l <- from_json('');
+			unknown l <- from_json('');
 			
 		}
 		catch{
@@ -220,7 +220,7 @@ experiment SerializationTest type:test {
 	test from_unknown_literal {
 		bool exception <- false;
 		try{
-			let l <- from_json('{"x": UnknownLiteral}');
+			unknown l <- from_json('{"x": UnknownLiteral}');
 		}catch{
 			exception <- true;
 		}
@@ -230,7 +230,7 @@ experiment SerializationTest type:test {
 	test from_unclosed_json {
 		bool exception <- false;
 		try{
-			let l <- from_json('{"x": 123');
+			unknown l <- from_json('{"x": 123');
 		}catch{
 			exception <- true;
 		}
@@ -241,7 +241,7 @@ experiment SerializationTest type:test {
 	test from_forgotten_comma {
 		bool exception <- false;
 		try{
-			let l <- from_json('{"x": 123 "y":123}');
+			unknown l <- from_json('{"x": 123 "y":123}');
 		}catch{
 			exception <- true;
 		}
@@ -252,7 +252,7 @@ experiment SerializationTest type:test {
 	test from_trailing_comma {
 		bool exception <- false;
 		try{
-			let l <- from_json('{"x": 123, "y":123 , }');
+			unknown l <- from_json('{"x": 123, "y":123 , }');
 		}catch{
 			exception <- true;
 		}
@@ -262,7 +262,7 @@ experiment SerializationTest type:test {
 	test from_simple_quotes{
 		bool exception <- false;
 		try{
-			let l <- from_json("{'x': 123, 'y':123 }");
+			unknown l <- from_json("{'x': 123, 'y':123 }");
 		}catch{
 			exception <- true;
 		}

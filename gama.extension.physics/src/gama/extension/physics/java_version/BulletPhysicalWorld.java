@@ -26,8 +26,8 @@ import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
 import com.google.common.collect.Multimap;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IPoint;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.geometry.IPoint;
 import gama.extension.physics.common.AbstractPhysicalWorld;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IShapeConverter;

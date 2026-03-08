@@ -12,9 +12,10 @@ package gama.gaml.statements.draw;
 
 import java.util.Map;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.util.IColor;
-import gama.gaml.operators.Colors.GamaScale;
+import gama.api.types.color.IColor;
+import gama.api.ui.layers.IMeshColorProvider;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.core.util.color.GamaScale;
 
 /**
  * Colors are chosen in a discrete map where the "weights" of colors correspond to elevations. If z is smaller or larger

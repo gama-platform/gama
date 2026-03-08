@@ -30,11 +30,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.eclipse.ui.progress.UIJob;
 
-import gama.core.common.interfaces.IStatusControl;
-import gama.core.common.interfaces.IStatusDisplayer;
-import gama.core.common.interfaces.IStatusMessage;
-import gama.core.common.interfaces.IStatusMessage.StatusType;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.ui.IStatusControl;
+import gama.api.ui.IStatusDisplayer;
+import gama.api.ui.IStatusMessage;
+import gama.api.ui.IStatusMessage.StatusType;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.resources.GamaColors;
@@ -294,7 +294,7 @@ public class StatusControlContribution extends WorkbenchWindowControlContributio
 	/**
 	 * Method updateWith()
 	 *
-	 * @see gama.ui.shared.factories.IStatusControl.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
+	 * @see gama.api.interfaces.IStatusControl.swt.controls.ThreadedUpdater.IUpdaterTarget#updateWith(java.lang.Object)
 	 */
 	@Override
 	public void updateWith(final IStatusMessage m) {

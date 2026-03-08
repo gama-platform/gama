@@ -3,7 +3,7 @@
  * SpatialStatistics.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,34 +17,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.Reason;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.filter.IAgentFilter;
-import gama.core.metamodel.topology.filter.In;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.Collector;
-import gama.core.util.IContainer;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
-import gama.core.util.matrix.GamaMatrix;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.operators.Cast;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.annotations.support.Reason;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.collections.Collector;
+import gama.api.utils.interfaces.IAgentFilter;
+import gama.core.topology.filter.In;
 import gama.gaml.operators.Containers;
-import gama.gaml.types.Types;
 
 /**
  * The Class SpatialStatistics.
@@ -334,7 +334,7 @@ public class SpatialStatistics {
 			double sumNull = 0;
 			int nbNull = 0;
 			for (final Object obj : points.keySet()) {
-				final IPoint pt = Cast.asPoint(scope, obj);
+				final IPoint pt = GamaPointFactory.castToPoint(scope, obj);
 				final double dist = scope.getTopology().distanceBetween(scope, geom, pt);
 				if (dist == 0) {
 					nbNull++;
@@ -380,12 +380,12 @@ public class SpatialStatistics {
 							test = false,
 							isExecutable = false) }) })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
-	public static double moranIndex(final IScope scope, final IList<Double> vals, final IMatrix<Double> mat) {
-		final GamaMatrix<Double> weightMatrix = (GamaMatrix<Double>) mat;
-		if (weightMatrix == null || weightMatrix.numCols != weightMatrix.numRows) throw GamaRuntimeException
-				.error("A squared weight matrix should be given for the moran index computation", scope);
+	public static double moranIndex(final IScope scope, final IList<Double> vals, final IMatrix<Double> weightMatrix) {
+		if (weightMatrix == null || weightMatrix.getCols(scope) != weightMatrix.getRows(scope))
+			throw GamaRuntimeException.error("A squared weight matrix should be given for the moran index computation",
+					scope);
 		final int N = vals.size();
-		if (N != weightMatrix.numRows) throw GamaRuntimeException
+		if (N != weightMatrix.getRows(scope)) throw GamaRuntimeException
 				.error("The lengths of the value list and of the weight matrix do not match", scope);
 		double I = 0.0;
 		double sumWeights = 0.0;

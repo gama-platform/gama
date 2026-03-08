@@ -16,21 +16,23 @@ import java.util.LinkedHashMap;
 
 import org.jfree.chart.JFreeChart;
 
-import gama.core.common.interfaces.IClock;
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.simulation.IClock;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.displays.IChart;
+import gama.api.ui.displays.IChartDataSource;
+import gama.api.ui.displays.IDisplaySurface;
 
 /**
  * The Class ChartOutput.
  */
-public abstract class ChartOutput {
+public abstract class ChartOutput implements IChart {
 
 	/** The Constant SERIES_CHART. */
 	static final int SERIES_CHART = 0;
@@ -227,6 +229,7 @@ public abstract class ChartOutput {
 	 *            the anti alias
 	 * @return the image
 	 */
+	@Override
 	public abstract BufferedImage getImage(final int sizeX, final int sizeY, final boolean antiAlias);
 
 	/**
@@ -1135,6 +1138,7 @@ public abstract class ChartOutput {
 	 *
 	 * @return the JF chart
 	 */
+	@Override
 	public JFreeChart getJFChart() { return null; }
 
 	/**
@@ -1161,7 +1165,7 @@ public abstract class ChartOutput {
 	 * @param type_val
 	 *            the type val
 	 */
-	public void setDefaultPropertiesFromType(final IScope scope, final ChartDataSource source, final int type_val) {
+	public void setDefaultPropertiesFromType(final IScope scope, final IChartDataSource source, final int type_val) {
 
 	}
 
@@ -1230,6 +1234,7 @@ public abstract class ChartOutput {
 	 *            the sb
 	 * @return the model coordinates info
 	 */
+	@Override
 	public void getModelCoordinatesInfo(final int xOnScreen, final int yOnScreen, final IDisplaySurface g,
 			final Point positionInPixels, final StringBuilder sb) {}
 

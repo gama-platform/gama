@@ -14,26 +14,35 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatement;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ISymbolKind;
 import gama.extension.maths.ode.MathConstants;
 import gama.extension.maths.ode.statements.SolveStatement.SolveValidator;
 import gama.extension.maths.ode.utils.solver.AdamsBashforthSolver;
@@ -49,16 +58,7 @@ import gama.extension.maths.ode.utils.solver.MidpointSolver;
 import gama.extension.maths.ode.utils.solver.Rk4Solver;
 import gama.extension.maths.ode.utils.solver.Solver;
 import gama.extension.maths.ode.utils.solver.ThreeEighthesSolver;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.ConstantExpression;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.operators.Cast;
-import gama.gaml.statements.AbstractStatement;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gaml.compiler.gaml.expression.ConstantExpression;
 
 /**
  * The Class SolveStatement.
@@ -282,7 +282,7 @@ public class SolveStatement extends AbstractStatement implements MathConstants {
 		// if a not null
 		final IMap<String, IList<Double>> result = (IMap<String, IList<Double>>) a.getAttribute("__integrated_values");
 		if (result != null) return result.get(a + var.getName());
-		return GamaListFactory.EMPTY_LIST;
+		return GamaListFactory.getEmptyList();
 	}
 
 	@Override

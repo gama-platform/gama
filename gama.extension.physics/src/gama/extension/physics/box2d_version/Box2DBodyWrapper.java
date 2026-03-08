@@ -21,17 +21,18 @@ import org.jbox2d.dynamics.BodyType;
 import org.jbox2d.dynamics.FixtureDef;
 import org.jbox2d.dynamics.World;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaPair;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.pair.GamaPairFactory;
+import gama.api.types.pair.IPair;
 import gama.dev.DEBUG;
 import gama.extension.physics.common.AbstractBodyWrapper;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.gaml.PhysicalSimulationAgent;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.Types;
 
 /**
  * The Class Box2DBodyWrapper.
@@ -143,7 +144,7 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 	public IShape getAABB() {
 		AABB aabb = body.getFixtureList().getAABB(0);
 		Vec2 v = aabb.getExtents();
-		return GamaGeometryType.buildRectangle(toGama(v.x * 2), toGama(v.y * 2), toGamaPoint(body.getPosition()));
+		return GamaShapeFactory.buildRectangle(toGama(v.x * 2), toGama(v.y * 2), toGamaPoint(body.getPosition()));
 	}
 
 	@Override
@@ -229,12 +230,12 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 		Vec2 vectorTransfer = body.getPosition();
 		agent.setLocation(toGamaPoint(vectorTransfer));
 		Rot bodyRotation = body.getTransform().q;
-		@SuppressWarnings ("unchecked") var rot = (GamaPair<Double, IPoint>) agent.getAttribute(ROTATION);
+		@SuppressWarnings ("unchecked") var rot = (IPair<Double, IPoint>) agent.getAttribute(ROTATION);
 		if (rot == null) {
-			rot = new GamaPair<>(0d, GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT);
+			rot = GamaPairFactory.createWith(0d, GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT);
 			agent.setAttribute(ROTATION, rot);
 		}
-		rot.key = Math.toDegrees(bodyRotation.getAngle());
+		rot.setKey(Math.toDegrees(bodyRotation.getAngle()));
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * AddStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * AddStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -9,29 +9,31 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.SymbolSerializer;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IGamlIssue;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.serializer;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractContainerStatement;
+import gama.api.gaml.statements.AbstractContainerStatement.ContainerValidator;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.misc.IContainer;
 import gama.gaml.statements.AddStatement.AddSerializer;
 import gama.gaml.statements.AddStatement.AddValidator;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Written by drogoul Modified on 6 févr. 2010
@@ -222,10 +224,10 @@ public class AddStatement extends AbstractContainerStatement {
 	/**
 	 * The Class AddSerializer.
 	 */
-	public static class AddSerializer extends SymbolSerializer {
+	public static class AddSerializer implements ISymbolSerializer {
 
 		@Override
-		protected void serialize(final IDescription cd, final StringBuilder sb, final boolean includingBuiltIn) {
+		public void serialize(final IDescription cd, final StringBuilder sb, final boolean includingBuiltIn) {
 			final IExpression item = cd.getFacetExpr(ITEM);
 			final IExpression list = cd.getFacetExpr(TO);
 			final IExpression allFacet = cd.getFacetExpr(ALL);
@@ -292,14 +294,14 @@ public class AddStatement extends AbstractContainerStatement {
 
 	// @Override
 	// protected Object buildValue(final IScope scope, final
-	// IContainer.Modifiable container) {
+	// IContainer.ToSet container) {
 	// // AD: Added to fix issue 1043: a "add" + an index on a map is equivalent
 	// to a "put", so the same operation
 	// // is applied when building the value (see PutStatement#buildValue()).
 	// // 01/02/14: Not useful anymore
 	// // if ( this.list.getType().id() == IType.MAP && index != null ) { return
 	// container.buildValue(scope,
-	// // new GamaPair(null, this.item.value(scope), Types.NO_TYPE,
+	// // new IPair(null, this.item.value(scope), Types.NO_TYPE,
 	// Types.NO_TYPE)); }
 	// return super.buildValue(scope, container);
 	// }

@@ -77,7 +77,7 @@ global{
 			lines << line([{0, i*cell_h}, {environment_width,i*cell_h}]);
 		}
 		create road from: split_lines(lines) {
-			create road with: [shape:: line(reverse(shape.points))];
+			create road with: (shape: line(reverse(shape.points)));
 		}
 		do update_graphs;
 		block_size <- min([first(cell).shape.width,first(cell).shape.height]);
@@ -226,7 +226,7 @@ species building {
 	reflex populate when: (type = "residential"){
 		int pop <- int(population_level/100 * nb_people_per_size[size]);
 		if length(inhabitants) < pop{
-			create people number: 1 with: [location::any_location_in(bounds)] {
+			create people number: 1 with: (location:any_location_in(bounds)) {
 				origin <- myself;
 				origin.inhabitants << self;
 				

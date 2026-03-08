@@ -42,34 +42,34 @@ import com.jogamp.opengl.GLAnimatorControl;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLContext;
 
-import gama.annotations.precompiler.GamlAnnotations.display;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.ILayer;
-import gama.core.common.interfaces.ILayerManager;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.filter.Different;
-import gama.core.outputs.LayeredDisplayData;
-import gama.core.outputs.LayeredDisplayData.Changes;
-import gama.core.outputs.LayeredDisplayOutput;
+import gama.annotations.display;
+import gama.annotations.doc;
+import gama.api.GAMA;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.GeneralSynchronizer;
+import gama.api.runtime.SystemInfo;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.ui.IOutput;
+import gama.api.ui.displays.IDisplayData;
+import gama.api.ui.displays.IDisplayData.Changes;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.IEventLayerListener;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ILayerManager;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.display.LayerManager;
-import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.outputs.layers.OverlayLayer;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.PlatformHelper;
-import gama.core.runtime.concurrent.GeneralSynchronizer;
+import gama.core.topology.filter.Different;
 import gama.dev.DEBUG;
 import gama.extension.image.GamaImage;
 import gama.extension.image.ImageHelper;
-import gama.gaml.statements.draw.DrawingAttributes;
 import gama.ui.display.opengl.renderer.JOGLRenderer;
 import gama.ui.experiment.menus.AgentsMenu;
 import gama.ui.experiment.views.displays.DisplaySurfaceMenu;
@@ -108,7 +108,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	Set<IEventLayerListener> listeners = new HashSet<>();
 
 	/** The output. */
-	final LayeredDisplayOutput output;
+	final IOutput.Display output;
 
 	/** The layer manager. */
 	final LayerManager layerManager;
@@ -140,16 +140,16 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	 * @param objects
 	 *            the objects
 	 */
-	public SWTOpenGLDisplaySurface(final Object... objects) {
-		output = (LayeredDisplayOutput) objects[0];
-		parent = (Composite) objects[1];
-		output.getData().addListener(this);
-		output.setSurface(this);
-		setDisplayScope(output.getScope().copyForGraphics("in opengl display"));
+	public SWTOpenGLDisplaySurface(final IOutput.Display output, final Object parent) {
+		this.output = output;
+		this.parent = (Composite) parent;
+		this.output.getData().addListener(this);
+		this.output.setSurface(this);
+		setDisplayScope(this.output.getScope().copyForGraphics("in opengl display"));
 		layerManager = new LayerManager(this, output);
 		if (!layerManager.stayProportional()) { output.getData().setDrawEnv(false); }
 		renderer = createRenderer();
-		animator = new GamaGLCanvas(parent, renderer, getOutput().getName()).getAnimator();
+		animator = new GamaGLCanvas(this.parent, renderer, getOutput().getTitle()).getAnimator();
 		animator.start();
 	}
 
@@ -168,7 +168,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method getImage()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#getImage()
+	 * @see gama.api.ui.displays.IDisplaySurface#getImage()
 	 */
 	@Override
 	public GamaImage getImage(final int desiredWidth, final int desiredHeight) {
@@ -261,7 +261,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method updateDisplay()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#updateDisplay(boolean)
+	 * @see gama.api.ui.displays.IDisplaySurface#updateDisplay(boolean)
 	 */
 	@Override
 	public void updateDisplay(final boolean force, final GeneralSynchronizer synchronizer) {
@@ -284,7 +284,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method zoomIn()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#zoomIn()
+	 * @see gama.api.ui.displays.IDisplaySurface#zoomIn()
 	 */
 	@Override
 	public void zoomIn() {
@@ -295,7 +295,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method zoomOut()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#zoomOut()
+	 * @see gama.api.ui.displays.IDisplaySurface#zoomOut()
 	 */
 	@Override
 	public void zoomOut() {
@@ -306,16 +306,13 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method zoomFit()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#zoomFit()
+	 * @see gama.api.ui.displays.IDisplaySurface#zoomFit()
 	 */
 	@Override
 	public void zoomFit() {
-		// if (renderer.getData().cameraInteractionDisabled())
-		// return;
 		renderer.getCameraHelper().initialize();
 		output.getData().resetRotation();
 		output.getData().setZoomLevel(renderer.getCameraHelper().zoomLevel(), true);
-		// output.getData().setZoomLevel(LayeredDisplayData.INITIAL_ZOOM, true, true);
 		zoomFit = true;
 	}
 
@@ -327,7 +324,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method getManager()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#getManager()
+	 * @see gama.api.ui.displays.IDisplaySurface#getManager()
 	 */
 	@Override
 	public ILayerManager getManager() { return layerManager; }
@@ -335,7 +332,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method focusOn()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#focusOn(gama.core.metamodel.shape.IShape)
+	 * @see gama.api.ui.displays.IDisplaySurface#focusOn(gama.api.types.geometry.IShape)
 	 */
 	@Override
 	public void focusOn(final IShape geometry) {
@@ -350,7 +347,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method waitForUpdateAndRun()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#waitForUpdateAndRun(java.lang.Runnable)
+	 * @see gama.api.ui.displays.IDisplaySurface#waitForUpdateAndRun(java.lang.Runnable)
 	 */
 	@Override
 	public void runAndUpdate(final Runnable r) {
@@ -365,7 +362,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method getWidth()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#getWidth()
+	 * @see gama.api.ui.displays.IDisplaySurface#getWidth()
 	 */
 	@Override
 	public int getWidth() {
@@ -376,7 +373,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method getHeight()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#getHeight()
+	 * @see gama.api.ui.displays.IDisplaySurface#getHeight()
 	 */
 	@Override
 	public int getHeight() {
@@ -387,7 +384,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method outputReloaded()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#outputReloaded()
+	 * @see gama.api.ui.displays.IDisplaySurface#outputReloaded()
 	 */
 	@Override
 	public void outputReloaded() {
@@ -395,15 +392,13 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		if (!GamaPreferences.Runtime.ERRORS_IN_DISPLAYS.getValue()) { getScope().disableErrorReporting(); }
 		renderer.initScene();
 		layerManager.outputChanged();
-
-		// resizeImage(getWidth(), getHeight(), true);
 		if (zoomFit) { zoomFit(); }
 	}
 
 	/**
 	 * Method addMouseListener()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#addMouseListener(java.awt.event.MouseListener)
+	 * @see gama.api.ui.displays.IDisplaySurface#addMouseListener(java.awt.event.MouseListener)
 	 */
 	@Override
 	public void addListener(final IEventLayerListener listener) {
@@ -413,7 +408,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method removeMouseListener()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#removeMouseListener(java.awt.event.MouseListener)
+	 * @see gama.api.ui.displays.IDisplaySurface#removeMouseListener(java.awt.event.MouseListener)
 	 */
 	@Override
 	public void removeListener(final IEventLayerListener listener) {
@@ -427,7 +422,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method getEnvWidth()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#getEnvWidth()
+	 * @see gama.api.ui.displays.IDisplaySurface#getEnvWidth()
 	 */
 	@Override
 	public double getEnvWidth() { return output.getData().getEnvWidth(); }
@@ -435,7 +430,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method getEnvHeight()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#getEnvHeight()
+	 * @see gama.api.ui.displays.IDisplaySurface#getEnvHeight()
 	 */
 	@Override
 	public double getEnvHeight() { return output.getData().getEnvHeight(); }
@@ -443,30 +438,13 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method getModelCoordinates()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#getModelCoordinates()
+	 * @see gama.api.ui.displays.IDisplaySurface#getModelCoordinates()
 	 */
 	@Override
-	public IPoint getModelCoordinates() {
-		return world_position;
-		// final IPoint mp = renderer.getCameraHelper().getMousePosition();
-		// DEBUG.OUT("Coordinates in display " + mp);
-		// if (mp == null) return null;
-		// final IPoint p = renderer.getRealWorldPointFromWindowPoint(mp);
-		// DEBUG.OUT("Coordinates in env " + p);
-		// if (p == null) return null;
-		// return GamaPointFactory.create(p.x, -p.y);
-	}
+	public IPoint getModelCoordinates() { return world_position; }
 
 	@Override
-	public IPoint getWindowCoordinates() {
-		return renderer.getCameraHelper().getMousePosition();
-		// DEBUG.OUT("Coordinates in display " + mp);
-		// if (mp == null) return null;
-		// final IPoint p = renderer.getRealWorldPointFromWindowPoint(mp);
-		// DEBUG.OUT("Coordinates in env " + p);
-		// if (p == null) return null;
-		// return GamaPointFactory.create(p.x, -p.y);
-	}
+	public IPoint getWindowCoordinates() { return renderer.getCameraHelper().getMousePosition(); }
 
 	@Override
 	public void getModelCoordinatesInfo(final StringBuilder sb) {
@@ -508,8 +486,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method getModelCoordinatesFrom()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#getModelCoordinatesFrom(int, int, java.awt.Point,
-	 *      java.awt.Point)
+	 * @see gama.api.ui.displays.IDisplaySurface#getModelCoordinatesFrom(int, int, java.awt.Point, java.awt.Point)
 	 */
 	@Override
 	public IPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final Point sizeInPixels,
@@ -522,7 +499,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method selectAgent()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#selectAgent(int, int)
+	 * @see gama.api.ui.displays.IDisplaySurface#selectAgent(int, int)
 	 */
 	@Override
 	public Collection<IAgent> selectAgent(final int x, final int y) {
@@ -534,7 +511,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method getZoomLevel()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#getZoomLevel()
+	 * @see gama.api.ui.displays.IDisplaySurface#getZoomLevel()
 	 */
 	@Override
 	public double getZoomLevel() {
@@ -554,7 +531,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method getDisplayScope()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#getDisplayScope()
+	 * @see gama.api.ui.displays.IDisplaySurface#getDisplayScope()
 	 */
 	@Override
 	public IGraphicsScope getScope() { return scope; }
@@ -562,15 +539,15 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method getOutput()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#getOutput()
+	 * @see gama.api.ui.displays.IDisplaySurface#getOutput()
 	 */
 	@Override
-	public LayeredDisplayOutput getOutput() { return output; }
+	public IOutput.Display getOutput() { return output; }
 
 	/**
 	 * Method setPaused()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface.OpenGL#setPaused(boolean)
+	 * @see gama.api.ui.displays.IDisplaySurface.OpenGL#setPaused(boolean)
 	 */
 	@Override
 	public void setPaused(final boolean paused) {
@@ -584,10 +561,10 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method selectAgents()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface.OpenGL#selectAgents(gama.core.metamodel.agent.IAgent)
+	 * @see gama.api.ui.displays.IDisplaySurface.OpenGL#selectAgents(gama.api.kernel.agent.IAgent)
 	 */
 	@Override
-	public void selectAgent(final DrawingAttributes attributes) {
+	public void selectAgent(final IDrawingAttributes attributes) {
 		IAgent ag = null;
 		boolean withHighlight = true;
 		if (attributes != null) {
@@ -626,7 +603,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method selectSeveralAgents()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface.OpenGL#selectSeveralAgents(java.util.Collection, int)
+	 * @see gama.api.ui.displays.IDisplaySurface.OpenGL#selectSeveralAgents(java.util.Collection, int)
 	 */
 	@Override
 	public void selectionIn(final IEnvelope env) {
@@ -692,7 +669,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	}
 
 	@Override
-	public LayeredDisplayData getData() { return output.getData(); }
+	public IDisplayData getData() { return output.getData(); }
 
 	/**
 	 * Method changed()
@@ -716,7 +693,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method setSize()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#setSize(int, int)
+	 * @see gama.api.ui.displays.IDisplaySurface#setSize(int, int)
 	 */
 	@Override
 	public void setSize(final int x, final int y) {}
@@ -736,24 +713,10 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	/**
 	 * Method getFPS()
 	 *
-	 * @see gama.core.common.interfaces.IDisplaySurface#getFPS()
+	 * @see gama.api.ui.displays.IDisplaySurface#getFPS()
 	 */
 	@Override
 	public int getFPS() { return Math.round(renderer.getCanvas().getLastFPS()); }
-
-	// @Override
-	// public boolean isRealized() {
-	// if (renderer == null) return false;
-	// final GLAutoDrawable d = renderer.getCanvas();
-	// if (d == null) return false;
-	// return d.isRealized();
-	// }
-
-	// @Override
-	// public boolean isRendered() {
-	// if (renderer == null || renderer.getSceneHelper().getSceneToRender() == null) return false;
-	// return renderer.getSceneHelper().getSceneToRender().rendered();
-	// }
 
 	@Override
 	public boolean isDisposed() { return disposed; }
@@ -832,7 +795,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 	public Rectangle getBoundsForRobotSnapshot() {
 		var rect = WorkbenchHelper.displaySizeOf(renderer.getCanvas());
 		// For some reason, macOS requires the native dimension for the robot to snapshot correctly
-		if (PlatformHelper.isMac()) { rect = DPIHelper.autoScaleUp(renderer.getCanvas().getMonitor(), rect); }
+		if (SystemInfo.isMac()) { rect = DPIHelper.autoScaleUp(renderer.getCanvas().getMonitor(), rect); }
 		return new Rectangle(rect.x, rect.y, rect.width, rect.height);
 	}
 
@@ -847,7 +810,7 @@ public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 		var rect = WorkbenchHelper.displaySizeOf(renderer.getCanvas());
 		// For some reason, macOS and Windows require the native dimension for the internal process to snapshot
 		// correctly
-		if (PlatformHelper.isMac() || PlatformHelper.isWindows()) {
+		if (SystemInfo.isMac() || SystemInfo.isWindows()) {
 			rect = DPIHelper.autoScaleUp(renderer.getCanvas().getMonitor(), rect);
 		}
 		return new Rectangle(rect.x, rect.y, rect.width, rect.height);

@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * BreakStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * BreakStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -10,23 +10,23 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.descriptions.StatementWithChildrenDescription;
-import gama.gaml.descriptions.SymbolProto;
-import gama.gaml.descriptions.SymbolSerializer;
-import gama.gaml.interfaces.IGamlIssue;
+import gama.annotations.doc;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.annotations.serializer;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.statements.AbstractStatement;
+import gama.api.runtime.scope.IScope;
 import gama.gaml.statements.BreakStatement.BreakSerializer;
 import gama.gaml.statements.BreakStatement.BreakValidator;
 
@@ -53,10 +53,10 @@ public class BreakStatement extends AbstractStatement {
 	/**
 	 * The Class BreakSerializer.
 	 */
-	public static class BreakSerializer extends SymbolSerializer {
+	public static class BreakSerializer implements ISymbolSerializer {
 
 		@Override
-		protected void serialize(final IDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
+		public void serialize(final IDescription desc, final StringBuilder sb, final boolean includingBuiltIn) {
 			sb.append(BREAK).append(";");
 		}
 	}
@@ -64,21 +64,21 @@ public class BreakStatement extends AbstractStatement {
 	/**
 	 * The Class BreakValidator.
 	 */
-	public static class BreakValidator implements IDescriptionValidator<StatementDescription> {
+	public static class BreakValidator implements IDescriptionValidator<IStatementDescription> {
 
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
-		public void validate(final StatementDescription description) {
+		public void validate(final IStatementDescription description) {
 			IDescription superDesc = description.getEnclosingDescription();
-			while (superDesc instanceof StatementWithChildrenDescription) {
-				if (((StatementWithChildrenDescription) superDesc).isBreakable()) return;
+			while (superDesc instanceof IStatementDescription isd) {
+				if (isd.isBreakable()) return;
 				superDesc = superDesc.getEnclosingDescription();
 			}
-			description.error("'break' must be used in the context of " + SymbolProto.BREAKABLE_STATEMENTS,
+			description.error("'break' must be used in the context of " + ArtefactRegistry.BREAKABLE_STATEMENTS,
 					IGamlIssue.WRONG_CONTEXT);
 		}
 	}
@@ -91,7 +91,7 @@ public class BreakStatement extends AbstractStatement {
 	}
 
 	/**
-	 * @see gama.gaml.commands.AbstractCommand#privateExecuteIn(gama.core.runtime.IScope)
+	 * @see gama.gaml.commands.AbstractCommand#privateExecuteIn(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	protected Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {

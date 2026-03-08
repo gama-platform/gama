@@ -3,7 +3,7 @@
  * LoadCommand.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,21 +12,22 @@ package gama.headless.listener;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 import org.java_websocket.WebSocket;
 
-import gama.core.common.GamlFileExtension;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.server.CommandExecutor;
-import gama.core.runtime.server.CommandResponse;
-import gama.core.runtime.server.GamaWebSocketServer;
-import gama.core.runtime.server.IGamaServer;
-import gama.core.runtime.server.ISocketCommand;
-import gama.core.runtime.server.MessageType;
-import gama.core.util.list.IList;
-import gama.core.util.map.IMap;
+import gama.annotations.constants.IKeyword;
+import gama.api.constants.GamlFileExtension;
+import gama.api.exceptions.GamaCompilationFailedException;
+import gama.api.types.list.IList;
+import gama.api.utils.server.CommandExecutor;
+import gama.api.utils.server.CommandResponse;
+import gama.api.utils.server.GamaWebSocketServer;
+import gama.api.utils.server.IGamaServer;
+import gama.api.utils.server.ISocketCommand;
+import gama.api.utils.server.MessageType;
+import gama.api.utils.server.ReceivedMessage;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GamaCompilationFailedException;
 import gama.headless.core.GamaHeadlessException;
 import gama.headless.server.GamaServerExperimentJob;
 
@@ -38,8 +39,7 @@ import gama.headless.server.GamaServerExperimentJob;
  */
 public class LoadCommand implements ISocketCommand {
 	@Override
-	public CommandResponse execute(final IGamaServer server, final WebSocket socket,
-			final IMap<String, Object> map) {
+	public CommandResponse execute(final IGamaServer server, final WebSocket socket, final ReceivedMessage map) {
 		final Object model = map.get(IKeyword.MODEL);
 		final Object experiment = map.get(IKeyword.EXPERIMENT);
 		if (model == null || experiment == null) return new CommandResponse(MessageType.MalformedRequest,
@@ -78,7 +78,7 @@ public class LoadCommand implements ISocketCommand {
 	 * @date 15 oct. 2023
 	 */
 	public CommandResponse launchGamlSimulation(final IGamaServer gamaWebSocketServer, final WebSocket socket,
-			final IList params, final String end, final IMap<String, Object> map)
+			final IList params, final String end, final Map<String, Object> map)
 			throws IOException, GamaCompilationFailedException {
 
 		final String pathToModel = map.get("model").toString();
@@ -109,8 +109,8 @@ public class LoadCommand implements ISocketCommand {
 		var parametersError = CommandExecutor.checkLoadParameters(params, map);
 		if (parametersError != null) return parametersError;
 
-		GamaServerExperimentJob selectedJob = new GamaServerExperimentJob(ff.getAbsoluteFile().toString(), argExperimentName, socket, params,
-						end, console, status, dialog, runtime);
+		GamaServerExperimentJob selectedJob = new GamaServerExperimentJob(ff.getAbsoluteFile().toString(),
+				argExperimentName, socket, params, end, console, status, dialog, runtime);
 		selectedJob.load();
 		// we check if the experiment is present in the file
 		if (selectedJob.simulator.getModel().getExperiment(argExperimentName) == null)

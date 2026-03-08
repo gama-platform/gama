@@ -38,19 +38,19 @@ import org.w3c.dom.Document;
 
 import com.google.inject.Injector;
 
-import gama.core.common.GamlFileExtension;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.model.IModel;
-import gama.core.kernel.root.SystemInfo;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.NullGuiHandler;
-import gama.core.runtime.concurrent.GamaExecutorService;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.runtime.server.IGamaServer;
+import gama.api.GAMA;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.constants.GamlFileExtension;
+import gama.api.exceptions.GamaCompilationFailedException;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.SystemInfo;
+import gama.api.ui.NullGuiHandler;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.server.IGamaServer;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GamaCompilationFailedException;
-import gama.gaml.compilation.IGamlCompilationError;
 import gama.headless.batch.ModelLibraryRunner;
 import gama.headless.batch.ModelLibraryTester;
 import gama.headless.batch.ModelLibraryValidator;
@@ -525,7 +525,7 @@ public class HeadlessApplication implements IApplication {
 	 *             the gama headless exception
 	 */
 	public void buildXMLForModelLibrary(final ArrayList<File> modelPaths, final String outputPath)
-			throws ParserConfigurationException, TransformerException, IOException, GamaHeadlessException {
+			throws ParserConfigurationException, TransformerException, IOException {
 		// "arg[]" are the paths to the different models
 		final ArrayList<IExperimentJob> selectedJob = new ArrayList<>();
 		for (final File modelFile : modelPaths) {
@@ -639,14 +639,14 @@ public class HeadlessApplication implements IApplication {
 		final Injector injector = getInjector();
 		final GamlModelBuilder builder = new GamlModelBuilder(injector);
 
-		final List<IGamlCompilationError> errors = new ArrayList<>();
+		final List<GamlCompilationError> errors = new ArrayList<>();
 		URI uri;
 		try {
 			uri = URI.createFileURI(pathToModel);
 		} catch (Exception e) {
 			uri = URI.createURI(pathToModel);
 		}
-		final IModel mdl = builder.compile(uri, errors);
+		final IModelSpecies mdl = builder.compile(uri, errors);
 
 		if (mdl == null) {
 			DEBUG.LOG(
@@ -658,7 +658,7 @@ public class HeadlessApplication implements IApplication {
 		GamaExecutorService.CONCURRENCY_SIMULATIONS.set(true);
 		GamaExecutorService.THREADS_NUMBER.set(processorQueue.getCorePoolSize());
 
-		final IExperimentPlan expPlan = mdl.getExperiment(experimentName);
+		final IExperimentSpecies expPlan = mdl.getExperiment(experimentName);
 		assertIsExperiment(experimentName, expPlan);
 		expPlan.setHeadless(true);
 		expPlan.open();
@@ -730,7 +730,7 @@ public class HeadlessApplication implements IApplication {
 	 * @param expPlan
 	 *            the exp plan
 	 */
-	private void assertIsExperiment(final String experimentName, final IExperimentPlan expPlan) {
+	private void assertIsExperiment(final String experimentName, final IExperimentSpecies expPlan) {
 		if (expPlan == null) {
 			DEBUG.LOG("Experiment " + experimentName + " does not exist. Verify its name.");
 			System.exit(-1);

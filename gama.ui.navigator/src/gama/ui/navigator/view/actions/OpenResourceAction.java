@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * OpenResourceAction.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * OpenResourceAction.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.view.actions;
 
@@ -19,7 +19,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -35,6 +34,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.WorkspaceAction;
 import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.eclipse.ui.internal.ide.IIDEHelpContextIds;
+
+import gama.api.GAMA;
 
 /**
  * Standard action for opening the currently selected project(s).
@@ -80,29 +81,19 @@ public class OpenResourceAction extends WorkspaceAction implements IResourceChan
 	 */
 	int countClosedProjects() {
 		int count = 0;
-		final IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-		for (final IProject project : projects) {
-			if (!project.isOpen()) {
-				count++;
-			}
-		}
+		final IProject[] projects = GAMA.getWorkspaceManager().getRoot().getProjects();
+		for (final IProject project : projects) { if (!project.isOpen()) { count++; } }
 		return count;
 	}
 
 	@Override
-	protected String getOperationMessage() {
-		return IDEWorkbenchMessages.OpenResourceAction_operationMessage;
-	}
+	protected String getOperationMessage() { return IDEWorkbenchMessages.OpenResourceAction_operationMessage; }
 
 	@Override
-	protected String getProblemsMessage() {
-		return IDEWorkbenchMessages.OpenResourceAction_problemMessage;
-	}
+	protected String getProblemsMessage() { return IDEWorkbenchMessages.OpenResourceAction_problemMessage; }
 
 	@Override
-	protected String getProblemsTitle() {
-		return IDEWorkbenchMessages.OpenResourceAction_dialogTitle;
-	}
+	protected String getProblemsTitle() { return IDEWorkbenchMessages.OpenResourceAction_dialogTitle; }
 
 	/**
 	 * Returns whether there are closed projects in the workspace that are not part of the current selection.
@@ -113,9 +104,7 @@ public class OpenResourceAction extends WorkspaceAction implements IResourceChan
 		final Iterator<?> resources = getSelectedResources().iterator();
 		while (resources.hasNext()) {
 			final IProject project = (IProject) resources.next();
-			if (!project.isOpen()) {
-				closedInSelection++;
-			}
+			if (!project.isOpen()) { closedInSelection++; }
 		}
 		// there are other closed projects if the selection does
 		// not contain all closed projects in the workspace
@@ -162,11 +151,9 @@ public class OpenResourceAction extends WorkspaceAction implements IResourceChan
 			if (delta != null) {
 				final IResourceDelta[] projDeltas = delta.getAffectedChildren(IResourceDelta.CHANGED);
 				for (final IResourceDelta projDelta : projDeltas) {
-					if ((projDelta.getFlags() & IResourceDelta.OPEN) != 0) {
-						if (sel.contains(projDelta.getResource())) {
-							selectionChanged(getStructuredSelection());
-							return;
-						}
+					if ((projDelta.getFlags() & IResourceDelta.OPEN) != 0 && sel.contains(projDelta.getResource())) {
+						selectionChanged(getStructuredSelection());
+						return;
 					}
 				}
 			}
@@ -197,7 +184,7 @@ public class OpenResourceAction extends WorkspaceAction implements IResourceChan
 			 */
 			private void doOpenWithReferences(final IProject project, final IProgressMonitor monitor)
 					throws CoreException {
-				if (!project.exists() || project.isOpen()) { return; }
+				if (!project.exists() || project.isOpen()) return;
 				project.open(SubMonitor.convert(monitor, 1000));
 				final IProject[] references = project.getReferencedProjects();
 				if (!hasPrompted) {
@@ -218,13 +205,11 @@ public class OpenResourceAction extends WorkspaceAction implements IResourceChan
 							// remember that we have prompted to avoid repeating the analysis
 							hasPrompted = true;
 						});
-						if (canceled) { throw new OperationCanceledException(); }
+						if (canceled) throw new OperationCanceledException();
 					}
 				}
 				if (openProjectReferences) {
-					for (final IProject reference : references) {
-						doOpenWithReferences(reference, monitor);
-					}
+					for (final IProject reference : references) { doOpenWithReferences(reference, monitor); }
 				}
 			}
 
@@ -234,16 +219,14 @@ public class OpenResourceAction extends WorkspaceAction implements IResourceChan
 					// at most we can only open all projects currently closed
 					monitor.beginTask("", countClosedProjects() * 1000); //$NON-NLS-1$
 					monitor.setTaskName(getOperationMessage());
-					for (final Object name2 : resources) {
-						doOpenWithReferences((IProject) name2, monitor);
-					}
+					for (final Object name2 : resources) { doOpenWithReferences((IProject) name2, monitor); }
 				} finally {
 					monitor.done();
 				}
 				return Status.OK_STATUS;
 			}
 		};
-		job.setRule(ResourcesPlugin.getWorkspace().getRoot());
+		job.setRule(GAMA.getWorkspaceManager().getRoot());
 		job.setUser(true);
 		job.schedule();
 	}
@@ -262,12 +245,12 @@ public class OpenResourceAction extends WorkspaceAction implements IResourceChan
 		// don't call super since we want to enable if closed project is
 		// selected.
 
-		if (!selectionIsOfType(IResource.PROJECT)) { return false; }
+		if (!selectionIsOfType(IResource.PROJECT)) return false;
 
 		final Iterator<?> resources = getSelectedResources().iterator();
 		while (resources.hasNext()) {
 			final IProject currentResource = (IProject) resources.next();
-			if (!currentResource.isOpen()) { return true; }
+			if (!currentResource.isOpen()) return true;
 		}
 		return false;
 	}

@@ -11,21 +11,22 @@ package gama.gaml.statements.draw;
 
 import java.awt.geom.Rectangle2D;
 
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.interfaces.IAsset;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.additions.delegates.IDrawDelegate;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.displays.DrawingData;
+import gama.api.ui.displays.IAsset;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.interfaces.IImageProvider;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGisFile;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IDrawDelegate;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class FileExecuter.

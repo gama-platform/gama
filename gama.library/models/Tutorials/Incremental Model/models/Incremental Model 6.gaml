@@ -121,7 +121,7 @@ experiment main_experiment type: gui {
 		display map_3D type: 3d {
 			light #ambient intensity: 20;
 			light #default intensity:(is_night ? 127 : 255);
-			image "../includes/soil.jpg";
+			picture "../includes/soil.jpg";
 			species road;
 			species people aspect: sphere3D;
 			species building transparency: 0.5;

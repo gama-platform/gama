@@ -17,6 +17,7 @@ import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.referencing.CRS;
 import org.json.simple.parser.ParseException;
 
+import gama.annotations.constants.IKeyword;
 import gama.dependencies.geojson.HandlerBase;
 import gama.dependencies.geojson.IContentHandler;
 
@@ -46,7 +47,7 @@ public class CRSHandler extends HandlerBase implements IContentHandler<Coordinat
 	public boolean startObjectEntry(final String key) throws ParseException, IOException {
 		if ("properties".equals(key)) {
 			state = 1;
-		} else if (("name".equals(key) || "code".equals(key)) && state == 1) { state = 2; }
+		} else if ((IKeyword.NAME.equals(key) || "code".equals(key)) && state == 1) { state = 2; }
 		return true;
 	}
 

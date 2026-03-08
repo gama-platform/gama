@@ -3,7 +3,7 @@
  * DisplaySurfaceMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -35,17 +35,20 @@ import org.eclipse.swt.widgets.ToolItem;
 
 import com.google.common.collect.Iterables;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.ILayer;
-import gama.core.common.interfaces.ILayer.IGridLayer;
-import gama.core.metamodel.agent.IAgent;
+import gama.api.GAMA;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.SystemInfo;
+import gama.api.types.list.IList;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ILayerStatement;
 import gama.core.outputs.layers.AgentLayer;
 import gama.core.outputs.layers.EventLayer;
 import gama.core.outputs.layers.GraphicLayer;
 import gama.core.outputs.layers.GridLayer;
 import gama.core.outputs.layers.GridLayerStatement;
 import gama.core.outputs.layers.HexagonalGridLayer;
-import gama.core.outputs.layers.ILayerStatement;
 import gama.core.outputs.layers.ImageLayer;
 import gama.core.outputs.layers.MeshLayer;
 import gama.core.outputs.layers.OverlayLayer;
@@ -53,11 +56,7 @@ import gama.core.outputs.layers.SpeciesLayer;
 import gama.core.outputs.layers.SpeciesLayerStatement;
 import gama.core.outputs.layers.charts.ChartLayer;
 import gama.core.outputs.layers.charts.ChartLayerStatement;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.PlatformHelper;
-import gama.core.util.list.IList;
 import gama.dev.DEBUG;
-import gama.gaml.types.Types;
 import gama.ui.experiment.menus.AgentsMenu;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.menus.MenuAction;
@@ -280,7 +279,7 @@ public class DisplaySurfaceMenu {
 	 *            the actions to do after a "normal" selection
 	 */
 	private void fixForWindows(final Runnable cleanup) {
-		if (!PlatformHelper.isWindows()) return;
+		if (!SystemInfo.isWindows()) return;
 		WorkbenchHelper.runInUI("Testing if the menu is visible", 500, e -> {
 			// DEBUG.OUT("Testing if the menu is visible");
 			if (!menu.isVisible()) {
@@ -301,7 +300,7 @@ public class DisplaySurfaceMenu {
 	 *            the retries remaining
 	 */
 	private void fixForLinux(final Menu menu, final int retriesRemaining) {
-		if (!PlatformHelper.isLinux()) return;
+		if (!SystemInfo.isLinux()) return;
 		WorkbenchHelper.asyncRun(() -> {
 			if (!menu.isVisible() && retriesRemaining > 0) {
 				menu.setVisible(false);
@@ -419,9 +418,9 @@ public class DisplaySurfaceMenu {
 						GamaMenu.action(submenu, "Save history...", t -> chart.saveHistory(), IGamaIcons.MENU_BROWSE);
 					}
 				} else if (definition instanceof GridLayerStatement) {
-					boolean lines = ((IGridLayer) layer).getData().drawLines();
+					boolean lines = layer.getData().drawLines();
 					GamaMenu.action(submenu, lines ? "Hide lines" : "Draw lines", t -> {
-						((IGridLayer) layer).getData().setDrawLines(!lines);
+						layer.getData().setDrawLines(!lines);
 						surface.updateDisplay(true);
 					}, IGamaIcons.MENU_BROWSE);
 				}

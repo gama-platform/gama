@@ -10,21 +10,21 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import static gama.core.common.interfaces.IKeyword.LOCATION;
+import static gama.annotations.constants.IKeyword.LOCATION;
 
-import gama.core.common.geometry.Rotation3D;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IPoint ;
-import gama.core.runtime.IScope;
-import gama.gaml.compilation.GAML;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.types.Types;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.utils.geometry.IRotationDefinition;
+import gama.api.utils.geometry.Rotation3D;
 
 /**
- * The Class CameraDefinition. Holds and updates the position, target and lens of a camera from the GAML definition in
- * the "camera" statement.
+ * The Class RotationDefinition. Holds and updates the location, axis and angle of a rotation from the GAML definition
+ * in the "rotation" statement.
  */
-public class RotationDefinition extends AbstractDefinition {
+public class RotationDefinition extends AbstractDefinition implements IRotationDefinition {
 
 	static {
 		// DEBUG.OFF();
@@ -69,6 +69,7 @@ public class RotationDefinition extends AbstractDefinition {
 	 *
 	 * @return the angle
 	 */
+	@Override
 	public Double getAngleDelta() { return initialAngleAttribute.get(); }
 
 	/**
@@ -76,6 +77,7 @@ public class RotationDefinition extends AbstractDefinition {
 	 *
 	 * @return the current angle
 	 */
+	@Override
 	public Double getCurrentAngle() { return angleAttribute.get(); }
 
 	/**
@@ -91,14 +93,16 @@ public class RotationDefinition extends AbstractDefinition {
 	 *
 	 * @return the center
 	 */
-	public IPoint  getCenter() { return locationAttribute.get(); }
+	@Override
+	public IPoint getCenter() { return locationAttribute.get(); }
 
 	/**
 	 * Gets the axis.
 	 *
 	 * @return the axis
 	 */
-	public IPoint  getAxis() { return axisAttribute.get(); }
+	@Override
+	public IPoint getAxis() { return axisAttribute.get(); }
 
 	/**
 	 * Reset.
@@ -114,6 +118,7 @@ public class RotationDefinition extends AbstractDefinition {
 	 * @param val
 	 *            the new angle
 	 */
+	@Override
 	public void setAngle(final double val) { angleAttribute = new ConstantAttribute<>(val); }
 
 	/**
@@ -122,6 +127,7 @@ public class RotationDefinition extends AbstractDefinition {
 	 * @param r
 	 *            the new dynamic
 	 */
+	@Override
 	public void setDynamic(final boolean r) { dynamic = new ConstantAttribute<>(r); }
 
 	@Override

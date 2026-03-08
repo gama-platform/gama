@@ -10,11 +10,10 @@
  ********************************************************************************************************/
 package gama.core.util.path;
 
-import static gama.core.common.geometry.GeometryUtils.GEOMETRY_FACTORY;
-import static gama.core.common.geometry.GeometryUtils.getContourCoordinates;
-import static gama.core.common.geometry.GeometryUtils.getLastPointOf;
-import static gama.core.common.geometry.GeometryUtils.getPointsOf;
-import static gama.core.common.geometry.GeometryUtils.split_at;
+import static gama.api.utils.geometry.GeometryUtils.getGeometryFactory;
+import static gama.api.utils.geometry.GeometryUtils.getLastPointOf;
+import static gama.api.utils.geometry.GeometryUtils.getPointsOf;
+import static gama.api.utils.geometry.GeometryUtils.split_at;
 import static java.lang.Math.min;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -24,28 +23,28 @@ import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.geometry.ICoordinates;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.ITopology;
-import gama.core.metamodel.topology.graph.GamaSpatialGraph;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.util.Collector;
-import gama.core.util.graph.IGraph;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
-import gama.gaml.operators.Cast;
+import gama.api.GAMA;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IGraph;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.topology.ITopology;
+import gama.api.utils.collections.Collector;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.ICoordinates;
+import gama.core.topology.graph.GamaSpatialGraph;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialPunctal;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.Types;
 
 /**
  * The Class GamaSpatialPath.
@@ -144,7 +143,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 
 	@Override
 	protected IShape createEdge(final IShape v, final IShape v2) {
-		return GamaGeometryType.buildLine(v.getLocation(), v2.getLocation());
+		return GamaShapeFactory.buildLine(v.getLocation(), v2.getLocation());
 	}
 
 	@Override
@@ -197,15 +196,15 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 					Geometry geom2;
 					final IPoint c0 = points[0];
 					final IPoint c1 = points[points.length - 1];
-					final IPoint[] coords = getContourCoordinates(geom).toPointsArray().clone();
+					final IPoint[] coords = GamaCoordinateSequenceFactory.pointsOf(geom).toPointsArray().clone();
 					if ((g == null || !g.isDirected()) && pt.euclidianDistanceTo(c0) > pt.euclidianDistanceTo(c1)) {
 						ArrayUtils.reverse(coords);
 						pt = c0;
 					} else {
 						pt = c1;
 					}
-					final ICoordinates cc = GEOMETRY_FACTORY.getCoordinateSequenceFactory().create(coords, false);
-					geom2 = GEOMETRY_FACTORY.createLineString(cc);
+					final ICoordinates cc = GamaCoordinateSequenceFactory.create(coords, false);
+					geom2 = getGeometryFactory().createLineString(cc);
 					// geom2 = geom.reverse();
 					IShape edge2 = GamaShapeFactory.createFrom(geom2);
 					boolean threeDGeom = false;
@@ -225,7 +224,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 								falseSource = SpatialPunctal._closest_point_to(source, edge2);
 								falseSource.setZ(zVal(falseSource, edge2));
 							}
-							edge2 = split_at(edge2, falseSource).get(1);
+							edge2 = split_at(edge2.getInnerGeometry(), falseSource).get(1);
 						}
 						if (cpt == _edges.size() - 1 && !target.equals(getLastPointOf(edge2))) {
 							IPoint falseTarget = target.getLocation();
@@ -233,7 +232,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 								falseTarget = SpatialPunctal._closest_point_to(target, edge2);
 								falseTarget.setZ(zVal(falseTarget, edge2));
 							}
-							edge2 = split_at(edge2, falseTarget).get(0);
+							edge2 = split_at(edge2.getInnerGeometry(), falseTarget).get(0);
 						}
 					} else {
 						if (cpt == 0 && !source.equals(pt)) {
@@ -320,7 +319,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 		for (int i = 0; i < nbSp - 1; i++) {
 			temp[0] = edgePoints[i];
 			temp[1] = edgePoints[i + 1];
-			final LineString segment = GeometryUtils.GEOMETRY_FACTORY.createLineString(temp, true);
+			final LineString segment = GeometryUtils.getGeometryFactory().createLineString(temp, true);
 			final double distS = segment.distance(pointGeom);
 			if (distS < distanceS) {
 				distanceS = distS;
@@ -355,7 +354,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 		graph = g;
 
 		for (int i = 0, n = nodes.size(); i < n - 1; i++) {
-			final IShape geom = GamaGeometryType.buildLine(nodes.get(i).getLocation(), nodes.get(i + 1).getLocation());
+			final IShape geom = GamaShapeFactory.buildLine(nodes.get(i).getLocation(), nodes.get(i + 1).getLocation());
 			segments.add(geom);
 
 			final IAgent ag = nodes.get(i).getAgent();
@@ -552,7 +551,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 			for (int i = 0; i < nbSp - 1; i++) {
 				temp[0] = coords[i];
 				temp[1] = coords[i + 1];
-				final LineString segment = GeometryUtils.GEOMETRY_FACTORY.createLineString(temp);
+				final LineString segment = GeometryUtils.getGeometryFactory().createLineString(temp);
 				final double distS = segment.distance(pointGeom);
 				if (distS < distanceS) {
 					distanceS = distS;
@@ -588,7 +587,7 @@ public class GamaSpatialPath extends GamaPath<IShape, IShape, IGraph<IShape, ISh
 				for (final IShape ent : segments) {
 					for (final IPoint p : GeometryUtils.getPointsOf(ent)) { if (!pts.contains(p)) { pts.add(p); } }
 				}
-				if (pts.size() > 1) { shape = GamaGeometryType.buildPolyline(pts); }
+				if (pts.size() > 1) { shape = GamaShapeFactory.buildPolyline(pts); }
 			}
 
 		}

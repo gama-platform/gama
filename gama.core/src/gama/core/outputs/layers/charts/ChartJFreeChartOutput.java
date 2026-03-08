@@ -37,12 +37,12 @@ import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.VerticalAlignment;
 import org.jfree.data.general.Dataset;
 
-import gama.core.common.interfaces.IKeyword;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
 import gama.core.outputs.display.AbstractDisplayGraphics;
-import gama.core.runtime.IScope;
-import gama.core.util.IColor;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
 import gama.gaml.operators.Colors;
 
 /**

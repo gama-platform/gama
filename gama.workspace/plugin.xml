@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension
+         point="org.eclipse.core.resources.variableResolvers">
+      <variableResolver
+            class="gama.workspace.CacheLocationProvider"
+            variable="CACHE_LOC">
+      </variableResolver>
+   </extension>
       <extension
          id="gamaNature"
          name="GAMA project"
@@ -75,12 +82,6 @@
          </property>
       </content-type>
       <content-type
-            file-extensions="PNG,png,GIF,gif,JPEG,jpeg,JPG,jpg,BMP,bmp,ICO,ico,TIFF,tiff,TIF,tif,ASC,asc,PGM,pgm"
-            id="gama.images.file.type"
-            name="Image"
-            priority="high">
-      </content-type>
-      <content-type
             base-type="org.eclipse.core.runtime.text"
             default-charset="UTF-8"
             file-extensions="CSV,csv,TSV,tsv"
@@ -111,13 +112,6 @@
       </content-type>
       <content-type
             default-charset="UTF-8"
-            file-extensions="svg,SVG"
-            id="gama.svg.file.type"
-            name="SVG File"
-            priority="high">
-      </content-type>
-      <content-type
-            default-charset="UTF-8"
             file-extensions="json,JSON,geojson,GEOJSON"
             id="gama.json.file.type"
             name="JSON File"
@@ -131,5 +125,4 @@
             priority="high">
       </content-type>
    </extension>
-
 </plugin>

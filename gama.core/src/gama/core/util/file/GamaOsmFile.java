@@ -25,7 +25,6 @@ import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.crs.DefaultGeographicCRS;
@@ -44,27 +43,28 @@ import org.openstreetmap.osmosis.core.task.v0_6.Sink;
 import org.openstreetmap.osmosis.xml.v0_6.impl.OsmHandler;
 
 import crosby.binary.osmosis.OsmosisReader;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.GamaShape;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.topology.ICoordinateReferenceSystem;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
+import gama.core.topology.gis.GamaCRS;
 import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.operators.spatial.SpatialTransformations;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class GamaOsmFile.
@@ -170,7 +170,7 @@ public class GamaOsmFile extends GamaGisFile {
 	 * @return the feature iterator
 	 */
 	public void getFeatureIterator(final IScope scope, final boolean returnIt) {
-		final Map<Long, GamaShape> nodesPt = new HashMap<>();
+		final Map<Long, IShape> nodesPt = new HashMap<>();
 		final Map<Long, Node> nodesFromId = new HashMap<>();
 		final Set<Node> nodes = new LinkedHashSet<>();
 		final List<Way> ways = new ArrayList<>();
@@ -324,7 +324,7 @@ public class GamaOsmFile extends GamaGisFile {
 	 * @return the i list
 	 */
 	public IList<IShape> buildGeometries(final IScope scope, final Set<Node> nodes, final List<Way> ways,
-			final List<Relation> relations, final Set<Long> intersectionNodes, final Map<Long, GamaShape> nodesPt,
+			final List<Relation> relations, final Set<Long> intersectionNodes, final Map<Long, IShape> nodesPt,
 			final Map<Long, Node> nodesFromId) {
 
 		boolean toFilter = filteringOptions != null && !filteringOptions.isEmpty();
@@ -337,7 +337,7 @@ public class GamaOsmFile extends GamaGisFile {
 			computeProjection(scope, GamaEnvelopeFactory.of(env));
 			if (gis != null) {
 				for (Long id : nodesPt.keySet()) {
-					GamaShape sp = GamaShapeFactory.createFrom(gis.transform(nodesPt.get(id).getInnerGeometry()));
+					IShape sp = GamaShapeFactory.createFrom(gis.transform(nodesPt.get(id).getInnerGeometry()));
 					nodesPt.put(id, sp);
 				}
 			}
@@ -346,7 +346,7 @@ public class GamaOsmFile extends GamaGisFile {
 
 		for (final Node node : nodes) {
 			// geomMap.put(node.getId(), node);
-			final GamaShape pt = nodesPt.get(node.getId());
+			final IShape pt = nodesPt.get(node.getId());
 			final boolean hasAttributes = !node.getTags().isEmpty();
 			final Map<String, String> atts = new HashMap<>();
 			if (pt != null) {
@@ -428,13 +428,13 @@ public class GamaOsmFile extends GamaGisFile {
 			} else {
 				final List<IShape> points = GamaListFactory.create(Types.GEOMETRY);
 				for (final WayNode node : way.getWayNodes()) {
-					final GamaShape pp = nodesPt.get(node.getNodeId());
+					final IShape pp = nodesPt.get(node.getNodeId());
 					if (pp == null) { continue; }
 					points.add(pp);
 				}
 				if (points.size() < 3) { continue; }
 
-				final IShape geom = GamaGeometryType.buildPolygon(points);
+				final IShape geom = GamaShapeFactory.buildPolygon(points);
 
 				if (geom != null && geom.getInnerGeometry() != null && !geom.getInnerGeometry().isEmpty()
 						&& geom.getInnerGeometry().getArea() > 0) {
@@ -472,7 +472,7 @@ public class GamaOsmFile extends GamaGisFile {
 				if (RESERVED_KEYS.contains(key)) { continue; }
 				values.put(key, tg.getValue());
 			}
-			String type = (String) values.get("type");
+			String type = (String) values.get(IKeyword.TYPE);
 			if ("polygon".equals(type) || "multipolygon".equals(type)) {
 
 				managePolygonRelation(scope, relation, geometries, geomMap, values, nodesPt, intersectionNodes, atts);
@@ -508,7 +508,7 @@ public class GamaOsmFile extends GamaGisFile {
 	 *            the atts
 	 */
 	private void managePolygonRelation(final IScope scope, final Relation relation, final IList<IShape> geometries,
-			final Map<Long, Entity> geomMap, final Map<String, Object> values, final Map<Long, GamaShape> nodesPt,
+			final Map<Long, Entity> geomMap, final Map<String, Object> values, final Map<Long, IShape> nodesPt,
 			final Set<Long> intersectionNodes, final Map<String, String> atts) {
 		final List<IShape> points = GamaListFactory.create(Types.GEOMETRY);
 
@@ -519,7 +519,7 @@ public class GamaOsmFile extends GamaGisFile {
 			if (entity instanceof final Way way) {
 				IList<IShape> pts = GamaListFactory.create();
 				for (final WayNode node : way.getWayNodes()) {
-					final GamaShape pp = nodesPt.get(node.getNodeId());
+					final IShape pp = nodesPt.get(node.getNodeId());
 					if (pp == null) { continue; }
 					pts.add(pp);
 
@@ -527,7 +527,7 @@ public class GamaOsmFile extends GamaGisFile {
 				if ("outer".equals(member.getMemberRole())) {
 					ptsList.add(pts);
 				} else {
-					inner.add(GamaGeometryType.buildPolygon(pts));
+					inner.add(GamaShapeFactory.buildPolygon(pts));
 				}
 
 			}
@@ -553,7 +553,7 @@ public class GamaOsmFile extends GamaGisFile {
 
 		if (points.size() < 3) return;
 
-		IShape geomTmp = GamaGeometryType.buildPolygon(points);
+		IShape geomTmp = GamaShapeFactory.buildPolygon(points);
 
 		if (geomTmp != null && geomTmp.getInnerGeometry() != null && !geomTmp.getInnerGeometry().isEmpty()
 				&& geomTmp.getInnerGeometry().getArea() > 0) {
@@ -604,7 +604,7 @@ public class GamaOsmFile extends GamaGisFile {
 	 *            the intersection nodes
 	 */
 	private void manageNormalRelation(final IScope scope, final Relation relation, final IList<IShape> geometries,
-			final Map<Long, Entity> geomMap, final Map<String, Object> values, final Map<Long, GamaShape> nodesPt,
+			final Map<Long, Entity> geomMap, final Map<String, Object> values, final Map<Long, IShape> nodesPt,
 			final Set<Long> intersectionNodes) {
 		int order = 0;
 		for (final RelationMember member : relation.getMembers()) {
@@ -614,20 +614,20 @@ public class GamaOsmFile extends GamaGisFile {
 				final Map<String, Object> wayValues = GamaMapFactory.create();
 				wayValues.put("entity_order", order++);
 				// TODO FIXME AD: What's that ??
-				wayValues.put("gama_bus_line", values.get("name"));
+				wayValues.put("gama_bus_line", values.get(IKeyword.NAME));
 				wayValues.put("osm_way_id", entity.getId());
 				if (relationWays.size() > 0) {
 					final List<IShape> geoms = createSplitRoad(relationWays, wayValues, intersectionNodes, nodesPt);
 					geometries.addAll(geoms);
 				}
 			} else if (entity instanceof Node) {
-				final GamaShape pt = nodesPt.get(entity.getId());
-				final GamaShape pt2 = pt.copy(scope);
+				final IShape pt = nodesPt.get(entity.getId());
+				final IShape pt2 = pt.copy(scope);
 
-				final List objs = GamaListFactory.create(Types.GEOMETRY);
+				final List<IShape> objs = GamaListFactory.create(Types.GEOMETRY);
 				objs.add(pt2);
 
-				pt2.setAttribute("gama_bus_line", values.get("name"));
+				pt2.setAttribute("gama_bus_line", values.get(IKeyword.NAME));
 
 				geometries.add(pt2);
 
@@ -649,14 +649,14 @@ public class GamaOsmFile extends GamaGisFile {
 	 * @return the list
 	 */
 	public List<IShape> createSplitRoad(final List<WayNode> wayNodes, final Map<String, Object> values,
-			final Set<Long> intersectionNodes, final Map<Long, GamaShape> nodesPt) {
+			final Set<Long> intersectionNodes, final Map<Long, IShape> nodesPt) {
 		final List<List<IShape>> pointsList = GamaListFactory.create(Types.LIST.of(Types.GEOMETRY));
 		List<IShape> points = GamaListFactory.create(Types.GEOMETRY);
 		final IList<IShape> geometries = GamaListFactory.create(Types.GEOMETRY);
 		final WayNode endNode = wayNodes.get(wayNodes.size() - 1);
 		for (final WayNode node : wayNodes) {
 			final Long id = node.getNodeId();
-			final GamaShape pt = nodesPt.get(id);
+			final IShape pt = nodesPt.get(id);
 			if (pt == null) { continue; }
 			points.add(pt);
 			if (intersectionNodes.contains(id) || node == endNode) {
@@ -688,7 +688,7 @@ public class GamaOsmFile extends GamaGisFile {
 	 */
 	private IShape createRoad(final List<IShape> points, final Map<String, Object> values) {
 		if (points.size() < 2) return null;
-		final IShape geom = GamaGeometryType.buildPolyline(points);
+		final IShape geom = GamaShapeFactory.buildPolyline(points);
 		if (geom != null && geom.getInnerGeometry() != null && !geom.getInnerGeometry().isEmpty()
 				&& geom.getInnerGeometry().isSimple() && geom.getPerimeter() > 0) {
 			for (final String key : values.keySet()) { geom.setAttribute(key, values.get(key)); }
@@ -792,15 +792,18 @@ public class GamaOsmFile extends GamaGisFile {
 
 	}
 
+	/** The Constant DefaultCRS. */
+	private static final ICoordinateReferenceSystem DefaultCRS = new GamaCRS(DefaultGeographicCRS.WGS84);
+
 	/**
 	 * Method getExistingCRS()
 	 *
 	 * @see gama.core.util.file.GamaGisFile#getExistingCRS()
 	 */
 	@Override
-	public CoordinateReferenceSystem getOwnCRS(final IScope scope) {
+	public ICoordinateReferenceSystem getOwnCRS(final IScope scope) {
 		// Is it always true ?
-		return DefaultGeographicCRS.WGS84;
+		return DefaultCRS;
 	}
 
 	/**

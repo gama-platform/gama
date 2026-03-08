@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * CreateStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * CreateStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -10,62 +10,62 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import static gama.annotations.precompiler.ISymbolKind.SEQUENCE_STATEMENT;
-import static gama.core.common.interfaces.IKeyword.AS;
-import static gama.core.common.interfaces.IKeyword.CREATE;
-import static gama.core.common.interfaces.IKeyword.FROM;
-import static gama.core.common.interfaces.IKeyword.HEADER;
-import static gama.core.common.interfaces.IKeyword.NUMBER;
-import static gama.core.common.interfaces.IKeyword.RETURNS;
-import static gama.core.common.interfaces.IKeyword.SPECIES;
-import static gama.core.common.interfaces.IKeyword.WITH;
+import static gama.annotations.constants.IKeyword.AS;
+import static gama.annotations.constants.IKeyword.CREATE;
+import static gama.annotations.constants.IKeyword.FROM;
+import static gama.annotations.constants.IKeyword.HEADER;
+import static gama.annotations.constants.IKeyword.NUMBER;
+import static gama.annotations.constants.IKeyword.RETURNS;
+import static gama.annotations.constants.IKeyword.SPECIES;
+import static gama.annotations.constants.IKeyword.WITH;
+import static gama.annotations.support.ISymbolKind.SEQUENCE_STATEMENT;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.ExperimentPlan;
-import gama.core.kernel.experiment.ExperimentPlan.ExperimentPopulation;
-import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.kernel.simulation.SimulationPopulation;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.agent.IMacroAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.ExperimentDescription;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.descriptions.StatementSerializer;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.types.SpeciesConstantExpression;
-import gama.gaml.interfaces.ICreateDelegate;
-import gama.gaml.operators.Cast;
-import gama.gaml.species.ISpecies;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.additions.delegates.ICreateDelegate;
+import gama.api.additions.registries.GamaAdditionRegistry;
+import gama.api.annotations.serializer;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IExperimentDescription;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.serialization.StatementSerializer;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.Arguments;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IMacroAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.gaml.statements.CreateStatement.CreateSerializer;
 import gama.gaml.statements.CreateStatement.CreateValidator;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * This command is used to create agents.
@@ -227,66 +227,63 @@ import gama.gaml.types.Types;
 @validator (CreateValidator.class)
 @serializer (CreateSerializer.class)
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class CreateStatement extends AbstractStatementSequence implements IStatement.WithArgs {
+public class CreateStatement extends AbstractStatementSequence implements IStatement.Create {
 
 	/**
 	 * The Class CreateValidator.
 	 */
-	public static class CreateValidator implements IDescriptionValidator<StatementDescription> {
+	public static class CreateValidator implements IDescriptionValidator<IStatementDescription> {
 
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
-		public void validate(final StatementDescription cd) {
-			final IExpression species = cd.getFacetExpr(SPECIES);
+		public void validate(final IStatementDescription cd) {
+			final IExpression speciesExpr = cd.getFacetExpr(SPECIES);
 			// If the species cannot be determined, issue an error and leave validation
-			if (species == null) {
+			if (speciesExpr == null) {
 				cd.error("The species to instantiate cannot be determined", UNKNOWN_SPECIES, SPECIES);
 				return;
 			}
 
-			final SpeciesDescription sd = species.getGamlType().getDenotedSpecies();
+			final ISpeciesDescription sd = speciesExpr.getGamlType().getDenotedSpecies();
 			if (sd == null) {
 				cd.error("The species to instantiate cannot be determined", UNKNOWN_SPECIES, SPECIES);
 				return;
 			}
 
-			if (species instanceof SpeciesConstantExpression) {
+			if (speciesExpr instanceof IExpression.Species) {
 				final boolean abs = sd.isAbstract();
 				final boolean mir = sd.isMirror();
 				final boolean gri = sd.isGrid();
-				final boolean bui = sd.isBuiltIn();
-				if (abs || mir || gri /** see #4 || bui **/
-				) {
-					final String p = abs ? "abstract" : mir ? "a mirror" : gri ? "a grid" : bui ? "built-in" : "";
+				if (abs || mir || gri) {
+					final String p = abs ? "abstract" : mir ? "a mirror" : gri ? "a grid" : "";
 					cd.error(sd.getName() + " is " + p + " and cannot be instantiated", WRONG_TYPE, SPECIES);
 					return;
 				}
-			} else if (!(sd instanceof ModelDescription)) {
+			} else if (!(sd instanceof IModelDescription)) {
 				cd.info("The actual species will be determined at runtime. This can lead to errors if it cannot be instantiated",
 						WRONG_TYPE, SPECIES);
 			}
-
-			if (sd instanceof ModelDescription && !(cd.getSpeciesContext() instanceof ExperimentDescription)) {
+			final ISpeciesDescription callerSpecies = cd.getSpeciesContext();
+			if (sd instanceof IModelDescription && !(callerSpecies instanceof IExperimentDescription)) {
 				cd.error("Simulations can only be created within experiments", WRONG_CONTEXT, SPECIES);
 				return;
 			}
 
-			final SpeciesDescription callerSpecies = cd.getSpeciesContext();
-			final SpeciesDescription macro = sd.getMacroSpecies();
-			if (macro == null) {
-				cd.error("The macro-species of " + species + " cannot be determined");
+			final ISpeciesDescription macro = sd.getMacroSpecies();
+			if (macro == null && !(sd instanceof IModelDescription)) {
+				cd.error("The macro-species of " + speciesExpr + " cannot be determined");
 				return;
 				// hqnghi special case : create instances of model from
 				// model
 			}
-			if (macro instanceof ModelDescription && callerSpecies instanceof ModelDescription) {
+			if (macro instanceof IModelDescription && callerSpecies instanceof IModelDescription) {
 
 				// end-hqnghi
-			} else if (callerSpecies != macro && !callerSpecies.hasMacroSpecies(macro)
+			} else if (macro != null && callerSpecies != macro && !callerSpecies.hasMacroSpecies(macro)
 					&& !callerSpecies.hasParent(macro)) {
 				cd.error("No instance of " + macro.getName() + " available for creating instances of " + sd.getName());
 				return;
@@ -295,20 +292,20 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 			if (exp != null) {
 				final IType type = exp.getGamlType();
 				boolean found = false;
-				for (final IType delegateType : DELEGATE_TYPES) {
+				for (final IType delegateType : GamaAdditionRegistry.getCreateDelegateTypes()) {
 					found = delegateType.isAssignableFrom(type);
 					if (found) { break; }
 				}
 				if (!found) {
-					cd.warning("Facet 'from' expects an expression with one of the following types: " + DELEGATE_TYPES,
-							WRONG_TYPE, FROM);
+					cd.warning("Facet 'from' expects an expression with one of the following types: "
+							+ GamaAdditionRegistry.getCreateDelegateTypes(), WRONG_TYPE, FROM);
 				}
 			}
 			final Arguments facets = cd.getPassedArgs();
 			facets.forEachFacet((s, e) -> {
 				boolean error = !sd.isExperiment() && !sd.hasAttribute(s);
 				if (error) {
-					cd.error("Attribute " + s + " is not defined in species " + species.getName(), UNKNOWN_VAR);
+					cd.error("Attribute " + s + " is not defined in species " + speciesExpr.getName(), UNKNOWN_VAR);
 				}
 				return !error;
 			});
@@ -324,7 +321,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 
 		@Override
 		protected void serializeArgs(final IDescription s, final StringBuilder sb, final boolean includingBuiltIn) {
-			final StatementDescription desc = (StatementDescription) s;
+			final IStatementDescription desc = (IStatementDescription) s;
 			final Arguments args = desc.getPassedArgs();
 			if (args == null || args.isEmpty()) return;
 			sb.append("with: [");
@@ -340,7 +337,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 
 	/** The init. */
 	// private final ThreadLocal<Arguments> init = new ThreadLocal();
-	private IArguments init;
+	private Arguments init;
 
 	/** The header. */
 	private final IExpression from, number, species, header;
@@ -350,31 +347,6 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 
 	/** The sequence. */
 	private final RemoteSequence sequence;
-
-	/** The delegates. */
-	static List<ICreateDelegate> DELEGATES = new ArrayList<>();
-
-	/** The delegate types. */
-	static List<IType> DELEGATE_TYPES = new ArrayList<>();
-
-	/**
-	 * @param createExecutableExtension
-	 */
-	public static void addDelegate(final ICreateDelegate delegate) {
-		DELEGATES.add(delegate);
-		final IType delegateType = delegate.fromFacetType();
-		if (delegateType != null && delegateType != Types.NO_TYPE) { DELEGATE_TYPES.add(delegate.fromFacetType()); }
-	}
-
-	/**
-	 * Removes the delegate.
-	 *
-	 * @param cd
-	 *            the cd
-	 */
-	public static void removeDelegate(final ICreateDelegate cd) {
-		DELEGATES.remove(cd);
-	}
 
 	/**
 	 * Instantiates a new creates the statement.
@@ -425,8 +397,8 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 		IPopulation pop = executor.getPopulationFor(s);
 		// hqnghi population of micro-model's experiment is not exist, we
 		// must create the new one
-		if (pop == null && s instanceof ExperimentPlan ep && executor instanceof IMacroAgent) {
-			pop = ep.new ExperimentPopulation(s);
+		if (pop == null && s instanceof IExperimentSpecies ep && executor instanceof IMacroAgent) {
+			pop = ep.createPopulation(scope);
 			final IScope sc = ep.getExperimentScope();
 			pop.initializeFor(sc);
 			((IMacroAgent) executor).addExternMicroPopulation(
@@ -441,7 +413,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 
 		// First, we compute the number of agents to create
 		final Integer max = number == null ? null : Cast.asInt(scope, number.value(scope));
-		if (from == null && max != null && max <= 0) return GamaListFactory.EMPTY_LIST;
+		if (from == null && max != null && max <= 0) return GamaListFactory.getEmptyList();
 
 		// Next, we compute the species to instantiate
 		final IPopulation pop = findPopulation(scope);
@@ -454,7 +426,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 		final List<Map<String, Object>> inits = GamaListFactory.create(Types.MAP, max == null ? 10 : max);
 		final Object source = getSource(scope);
 		IList<? extends IAgent> agents = null;
-		for (final ICreateDelegate delegate : DELEGATES) {
+		for (final ICreateDelegate delegate : GamaAdditionRegistry.getCreateDelegates()) {
 			if (delegate.acceptSource(scope, source)) {
 				delegate.createFrom(scope, inits, max, source, init, this);
 				if (delegate.handlesCreation()) { agents = delegate.createAgents(scope, pop, inits, this, sequence); }
@@ -475,9 +447,9 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	 * @throws GamaRuntimeException
 	 */
 	protected void checkPopulationValidity(final IPopulation pop, final IScope scope) throws GamaRuntimeException {
-		if (pop instanceof SimulationPopulation && !(scope.getAgent() instanceof ExperimentAgent))
+		if (pop instanceof IPopulation.Simulation && !(scope.getAgent() instanceof IExperimentAgent))
 			throw GamaRuntimeException.error("Simulations can only be created within experiments", scope);
-		final SpeciesDescription sd = pop.getSpecies().getDescription();
+		final ISpeciesDescription sd = pop.getSpecies().getDescription();
 		final String error =
 				sd.isAbstract() ? "abstract" : sd.isMirror() ? "a mirror" : /** see #4 sd.isBuiltIn() ? "built-in" : **/
 						sd.isGrid() ? "a grid" : null;
@@ -514,13 +486,13 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	 */
 	public IList<? extends IAgent> createAgents(final IScope scope, final IPopulation<? extends IAgent> population,
 			final List<Map<String, Object>> inits) {
-		if (population == null) return GamaListFactory.EMPTY_LIST;
+		if (population == null) return GamaListFactory.getEmptyList();
 		// final boolean hasSequence = sequence != null && !sequence.isEmpty();
 		boolean shouldBeScheduled = false;
 		// If we create simulations within a single experiment, we must schedule
 		// them
-		if (population.getHost() instanceof ExperimentAgent) {
-			final ExperimentAgent exp = (ExperimentAgent) population.getHost();
+		if (population.getHost() instanceof IExperimentAgent) {
+			final IExperimentAgent exp = (IExperimentAgent) population.getHost();
 			if (exp.isScheduled()) { shouldBeScheduled = true; }
 		}
 		// As we are in the create statement, the agents are not restored
@@ -529,11 +501,11 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 
 		// hqnghi in case of creating experiment of micro-models, we must
 		// implicitely initialize it and its simulation output
-		if (population instanceof ExperimentPopulation) {
+		if (population instanceof IPopulation.Experiment pop) {
 			population.setHost(scope.getExperiment());
-			for (final IAgent a : population) {
-				((ExperimentAgent) a)._init_(scope);
-				final ISimulationAgent sim = ((ExperimentAgent) a).getSimulation();
+			for (final IExperimentAgent a : pop) {
+				a._init_(scope);
+				final ISimulationAgent sim = a.getSimulation();
 				sim.adoptTopologyOf(scope.getSimulation());
 
 				if (!sim.getScheduled()) { sim._init_(sim.getScope()); }
@@ -553,6 +525,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	 *            the values
 	 */
 	// TODO Call it before calling the ICreateDelegate createFrom method !
+	@Override
 	public void fillWithUserInit(final IScope scope, final Map values) {
 		if (init == null) return;
 		scope.pushReadAttributes(values);
@@ -567,14 +540,15 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	}
 
 	@Override
-	public void setFormalArgs(final IArguments args) { init = args; }
+	public void setFormalArgs(final Arguments args) { init = args; }
 
 	@Override
-	public void setRuntimeArgs(final IScope scope, final IArguments args) {}
+	public void setRuntimeArgs(final IScope scope, final Arguments args) {}
 
 	/**
 	 * @return
 	 */
+	@Override
 	public IExpression getHeader() { return header; }
 
 	@Override

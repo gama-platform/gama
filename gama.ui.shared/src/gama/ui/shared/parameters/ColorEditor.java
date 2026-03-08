@@ -18,12 +18,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.MenuItem;
 
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
-import gama.gaml.types.GamaColorType;
-import gama.gaml.types.Types;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.GamaColorType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.menus.GamaColorMenu;
@@ -38,7 +38,7 @@ import gama.ui.shared.resources.IGamaColors;
 public class ColorEditor extends AbstractEditor<IColor> {
 
 	/** The runnable. */
-	final IColorRunnable runnable = (r, g, b) -> modifyAndDisplayValue(GamaColorFactory.get(r, g, b, 255));
+	final IColorRunnable runnable = (r, g, b) -> modifyAndDisplayValue(GamaColorFactory.createWithRGBA(r, g, b, 255));
 
 	/** The listener. */
 	final SelectionListener listener = new SelectionAdapter() {
@@ -52,7 +52,7 @@ public class ColorEditor extends AbstractEditor<IColor> {
 		public void widgetSelected(final SelectionEvent e) {
 			final MenuItem i = (MenuItem) e.widget;
 			final String color = i.getText().replace("#", "");
-			final IColor c = GamaColorFactory.COLORS.get(color);
+			final IColor c = GamaColorFactory.get(color);
 			if (c == null) return;
 			modifyAndDisplayValue(c);
 		}

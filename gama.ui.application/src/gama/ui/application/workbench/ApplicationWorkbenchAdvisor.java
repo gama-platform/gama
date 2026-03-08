@@ -3,7 +3,7 @@
  * ApplicationWorkbenchAdvisor.java, in gama.ui.application, is part of the source code of the GAMA modeling and
  * simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,15 +24,15 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.PluginActionBuilder;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchAdvisor;
 
-import gama.core.common.interfaces.IGui;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.util.FileUtils;
-import gama.core.outputs.layers.EventLayerStatement;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.concurrent.GamaExecutorService;
-import gama.core.util.file.IGamaFile;
+import gama.api.GAMA;
+import gama.api.additions.delegates.IEventLayerDelegate;
+import gama.api.additions.registries.GamaAdditionRegistry;
+import gama.api.runtime.GamaExecutorService;
+import gama.api.types.file.IGamaFile;
+import gama.api.ui.IGui;
+import gama.api.utils.files.FileUtils;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.gaml.interfaces.IEventLayerDelegate;
 import gama.ui.application.Application;
 import gama.workspace.manager.WorkspaceModelsManager;
 
@@ -100,7 +100,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 					WorkspaceModelsManager.instance.openModelPassedAsArgument(args[args.length - 1]);
 					return;
 				}
-				for (final IEventLayerDelegate delegate : EventLayerStatement.delegates) {
+				for (final IEventLayerDelegate delegate : GamaAdditionRegistry.getEventLayerDelegates()) {
 					if (delegate.acceptSource(null, "launcher")) {
 						delegate.createFrom(null, args[args.length - 1], null);
 					}
@@ -129,7 +129,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 	 */
 	protected boolean checkCopyOfBuiltInModels() {
 
-		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		final IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
 		final IProject[] projects = workspace.getRoot().getProjects();
 		// If no projects are registered at all, we are facing a fresh new workspace
 		if (projects.length == 0) return true;

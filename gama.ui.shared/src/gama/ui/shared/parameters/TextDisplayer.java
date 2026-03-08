@@ -30,12 +30,12 @@ import org.eclipse.ui.forms.HyperlinkSettings;
 import org.eclipse.ui.forms.events.HyperlinkAdapter;
 import org.eclipse.ui.forms.events.HyperlinkEvent;
 
-import gama.core.kernel.experiment.parameters.InputParameter;
-import gama.core.kernel.experiment.parameters.TextStatement;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaFont;
-import gama.core.util.IColor;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.core.experiment.parameters.InputParameter;
+import gama.core.experiment.parameters.TextStatement;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.text.XmlText;
@@ -57,7 +57,7 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 	final Color back, front;
 
 	/** The font. */
-	final GamaFont font;
+	final IFont font;
 
 	/** The Constant MARGIN. */
 	final static int MARGIN = 0;
@@ -184,11 +184,11 @@ public class TextDisplayer extends AbstractEditor<TextStatement> {
 	 *            the text
 	 * @return the control
 	 */
-	private Control buildBrowser(final Composite composite, final String text) {
-		Composite cc = new Composite(composite, SWT.NONE);
+	private Control buildBrowser(final Composite composite1, final String text) {
+		Composite cc = new Composite(composite1, SWT.NONE);
 		cc.setLayout(new FillLayout());
 		Browser browser = new Browser(cc, SWT.NONE | SWT.READ_ONLY);
-		GridData bData = (GridData) composite.getLayoutData();
+		GridData bData = (GridData) composite1.getLayoutData();
 		browser.setText(text);
 		browser.addProgressListener(ProgressListener.completedAdapter(event -> {
 			try {

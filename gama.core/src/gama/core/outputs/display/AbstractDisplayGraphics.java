@@ -17,17 +17,17 @@ import java.awt.GraphicsEnvironment;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.ILayer;
-import gama.core.common.util.random.IRandom;
-import gama.core.common.util.random.RandomUtils;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.outputs.LayeredDisplayData;
+import gama.api.GAMA;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.displays.IDisplayData;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.layers.ILayer;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.random.IRandom;
+import gama.api.utils.random.RandomUtils;
 import gama.core.outputs.layers.OverlayLayer;
-import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 
 /**
@@ -45,13 +45,13 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	 */
 	public static GraphicsConfiguration getCachedGC() {
 		if (cachedGC == null) {
-			DEBUG.OUT("Creating cached Graphics Configuration");
+			DEBUG.OUT("Creating cached Graphics ConfigurationPreferenceStore");
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			DEBUG.OUT("Local Graphics Environment selected");
 			GraphicsDevice gd = ge.getDefaultScreenDevice();
 			DEBUG.OUT("Default Graphics Device selected");
 			cachedGC = gd.getDefaultConfiguration();
-			DEBUG.OUT("Default Graphics Configuration selected");
+			DEBUG.OUT("Default Graphics ConfigurationPreferenceStore selected");
 		}
 		return cachedGC;
 	}
@@ -111,7 +111,7 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	protected double currentLayerAlpha = 1;
 
 	/** The data. */
-	public LayeredDisplayData data;
+	public IDisplayData data;
 
 	/** The surface. */
 	protected IDisplaySurface surface;
@@ -235,7 +235,7 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	}
 
 	@Override
-	public void beginOverlay(final OverlayLayer layer) {}
+	public void beginOverlay(final ILayer layer) {}
 
 	@Override
 	public void endOverlay() {}
@@ -277,6 +277,7 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	 *
 	 * @return the layer width
 	 */
+	@Override
 	public int getLayerWidth() {
 		return currentLayer == null ? getDisplayWidth() : currentLayer.getData().getSizeInPixels().x;
 	}
@@ -286,6 +287,7 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	 *
 	 * @return the layer height
 	 */
+	@Override
 	public int getLayerHeight() {
 		return currentLayer == null ? getDisplayHeight() : currentLayer.getData().getSizeInPixels().y;
 	}

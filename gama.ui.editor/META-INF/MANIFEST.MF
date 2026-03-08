@@ -18,7 +18,10 @@ Require-Bundle: gaml.compiler;visibility:=reexport,
  gama.ui.navigator,
  gama.ui.application,
  gama.dependencies,
- org.eclipse.ui.workbench.texteditor
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.ui,
+ org.eclipse.ui.editors,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
 Export-Package: gama.ui.editor,
  gama.ui.editor.internal,
  gama.ui.perspective,

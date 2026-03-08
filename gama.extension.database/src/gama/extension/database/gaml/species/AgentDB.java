@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AgentDB.java, in gama.extension.database, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,19 +13,19 @@ package gama.extension.database.gaml.species;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import gama.annotations.precompiler.GamlAnnotations.action;
-import gama.annotations.precompiler.GamlAnnotations.arg;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.species;
-import gama.core.metamodel.agent.GamlAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.IList;
+import gama.annotations.action;
+import gama.annotations.arg;
+import gama.annotations.doc;
+import gama.annotations.species;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.core.agent.GamlAgent;
 import gama.dev.DEBUG;
 import gama.extension.database.utils.sql.SqlConnection;
 import gama.extension.database.utils.sql.SqlUtils;
-import gama.gaml.types.IType;
 
 /**
  * The Class AgentDB.
@@ -188,7 +188,9 @@ public class AgentDB extends GamlAgent {
 					value = "To test a database connection .",
 					returns = "Returns true if connection to the server was successfully established, otherwise, it returns false."))
 	public boolean testConnection(final IScope scope) throws GamaRuntimeException {
-		try (final Connection conn = SqlUtils.createConnectionObject(scope).connectDB()) {} catch (final Exception e) {
+		try (final Connection conn = SqlUtils.createConnectionObject(scope).connectDB()) {
+			if (conn == null) return false;
+		} catch (final Exception e) {
 			return false;
 		}
 		return true;

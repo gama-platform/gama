@@ -3,7 +3,7 @@
  * PickWorkspaceDialog.java, in gama.ui.application, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -39,8 +39,8 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import gama.core.runtime.GAMA;
-import gama.workspace.manager.WorkspaceHelper;
+import gama.api.GAMA;
+import gama.api.runtime.IWorkspaceManager;
 
 /**
  * Dialog that lets/forces a user to enter/select a workspace that will be used when saving all configuration files and
@@ -127,16 +127,16 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 			final GridData data = new GridData(SWT.FILL, SWT.CENTER, true, false);
 			// data.widthHint = 200;
 			workspacePathCombo.setLayoutData(data);
-			final String wsRoot = WorkspaceHelper.getLastSetWorkspaceDirectory();
+			final String wsRoot = GAMA.getWorkspaceManager().getLastSetWorkspaceDirectory();
 			workspacePathCombo.setText(wsRoot);
 
 			/* Checkbox below */
 			rememberWorkspaceButton = new Button(inner, SWT.CHECK);
 			rememberWorkspaceButton.setText("Remember");
 			rememberWorkspaceButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
-			rememberWorkspaceButton.setSelection(WorkspaceHelper.isRememberWorkspace());
+			rememberWorkspaceButton.setSelection(GAMA.getWorkspaceManager().isRememberWorkspace());
 
-			final String lastUsed = WorkspaceHelper.getLastUsedWorkspaces();
+			final String lastUsed = GAMA.getWorkspaceManager().getLastUsedWorkspaces();
 			lastUsedWorkspaces = new ArrayList<>();
 			if (lastUsed != null) {
 				final String[] all = lastUsed.split(splitChar);
@@ -224,7 +224,7 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 	 * Clone current workspace.
 	 */
 	protected void cloneCurrentWorkspace() {
-		final String currentLocation = WorkspaceHelper.getLastSetWorkspaceDirectory();
+		final String currentLocation = GAMA.getWorkspaceManager().getLastSetWorkspaceDirectory();
 		if (currentLocation == null || currentLocation.isEmpty()) {
 			GAMA.getGui().getDialogFactory()
 					.error("No current workspace exists. Can only clone from an existing workspace");
@@ -255,7 +255,7 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 			return;
 		}
 
-		final String ret = WorkspaceHelper.checkWorkspaceDirectory(str, true, true, cloning);
+		final String ret = GAMA.getWorkspaceManager().checkWorkspaceDirectory(str, true, true, cloning);
 		if (ret != null) {
 			setMessage(ret, IMessageProvider.ERROR);
 			return;
@@ -282,8 +282,8 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 		}
 
 		/* Save them onto our preferences */
-		WorkspaceHelper.isRememberWorkspace(rememberWorkspaceButton.getSelection());
-		WorkspaceHelper.setLastUsedWorkspaces(buf.toString());
+		GAMA.getWorkspaceManager().isRememberWorkspace(rememberWorkspaceButton.getSelection());
+		GAMA.getWorkspaceManager().setLastUsedWorkspaces(buf.toString());
 
 		/* Now create it */
 		final boolean ok = checkAndCreateWorkspaceRoot(str);
@@ -299,7 +299,7 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 		/* And on our preferences as well */
 		// scope.getGui().debug("Writing " + str + " in the preferences");
 		if (cloning) {
-			final String previousLocation = WorkspaceHelper.getLastSetWorkspaceDirectory();
+			final String previousLocation = GAMA.getWorkspaceManager().getLastSetWorkspaceDirectory();
 			File workspaceDirectory = new File(previousLocation);
 			if (!workspaceDirectory.exists() || previousLocation.equals(str)) {
 				final DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.OPEN);
@@ -324,7 +324,7 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 
 			}
 		}
-		WorkspaceHelper.setLastSetWorkspaceDirectory(str);
+		GAMA.getWorkspaceManager().setLastSetWorkspaceDirectory(str);
 
 		super.okPressed();
 	}
@@ -343,11 +343,11 @@ public class PickWorkspaceDialog extends TitleAreaDialog {
 			if (!fRoot.exists()) // scope.getGui().debug("Folder " + wsRoot + " does not exist");
 				return false;
 
-			File dotFile = new File(wsRoot + File.separator + WorkspaceHelper.WORKSPACE_IDENTIFIER);
+			File dotFile = new File(wsRoot + File.separator + IWorkspaceManager.WORKSPACE_IDENTIFIER);
 			if (!dotFile.exists()) {
 				final boolean created = dotFile.createNewFile();
 				if (!created) return false;
-				dotFile = new File(wsRoot + File.separator + WorkspaceHelper.getModelIdentifier());
+				dotFile = new File(wsRoot + File.separator + GAMA.getWorkspaceManager().getModelIdentifier());
 				if (!dotFile.createNewFile()) return false;
 			}
 			return true;

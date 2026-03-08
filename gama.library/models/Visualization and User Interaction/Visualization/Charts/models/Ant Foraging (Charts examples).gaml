@@ -25,7 +25,7 @@ global {
 	geometry shape <- square(gridsize);
 	init{  
 		//Ant are placed randomly in the nest
-		create ant number: ants_number with: [location::any_location_in (ant_grid(center))] ;
+		create ant number: ants_number with: (location:any_location_in (ant_grid(center))) ;
 	}
 	
 	//Reflex to diffuse the road of pheromon on the grid

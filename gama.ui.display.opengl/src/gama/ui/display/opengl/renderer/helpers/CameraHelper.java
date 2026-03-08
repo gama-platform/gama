@@ -19,18 +19,18 @@ import com.jogamp.opengl.GL2ES2;
 import com.jogamp.opengl.GLRunnable;
 import com.jogamp.opengl.glu.GLU;
 
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.PlatformHelper;
-import gama.core.util.list.GamaListFactory;
+import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.SystemInfo;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
-import gama.gaml.types.Types;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.camera.IMultiListener;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
@@ -433,7 +433,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @return true, if is control down
 	 */
 	private boolean isControlDown(final com.jogamp.newt.event.MouseEvent e) {
-		return e.isControlDown() || PlatformHelper.isMac() && e.isMetaDown();
+		return e.isControlDown() || SystemInfo.isMac() && e.isMetaDown();
 	}
 
 	/**
@@ -444,7 +444,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 * @return true, if is control down
 	 */
 	private boolean isControlDown(final com.jogamp.newt.event.KeyEvent e) {
-		return e.isControlDown() || PlatformHelper.isMac() && e.isMetaDown();
+		return e.isControlDown() || SystemInfo.isMac() && e.isMetaDown();
 	}
 
 	@Override
@@ -902,7 +902,7 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 
 				switch (e.getKeyChar()) {
 					case 0:
-						setCtrlPressed(e.isControlDown() || PlatformHelper.isMac() && e.isMetaDown());
+						setCtrlPressed(e.isControlDown() || SystemInfo.isMac() && e.isMetaDown());
 						setShiftPressed(e.isShiftDown());
 						break;
 					case '+':

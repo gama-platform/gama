@@ -18,7 +18,7 @@ global
     init
     {
         //instantiate three instant of micro-model PreyPredator
-        create Organism.Simple with: [shape::square(100), preyinit::10, predatorinit::1] number: 3;
+        create Organism.Simple with: (shape:square(100), preyinit:10, predatorinit:1) number: 3;
     
         //explicitly save the orginal population of predator and original population of prey of each micro-model
 

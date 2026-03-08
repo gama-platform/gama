@@ -33,15 +33,15 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
-import gama.core.common.util.StringUtils;
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.utils.StringUtils;
 import gama.ui.shared.interfaces.EditorListener;
 
 /**
@@ -184,9 +184,9 @@ public class PointEditor extends AbstractEditor<IPoint> implements VerifyListene
 
 	@Override
 	protected boolean modifyValue(final Object val) throws GamaRuntimeException {
-		IPoint i = Cast.asPoint(getScope(), val);
-		if (minValue != null && i.smallerThan(Cast.asPoint(getScope(), minValue))
-				|| getMaxValue() != null && i.biggerThan(Cast.asPoint(getScope(), getMaxValue())))
+		IPoint i = GamaPointFactory.castToPoint(getScope(), val);
+		if (minValue != null && i.smallerThan(GamaPointFactory.castToPoint(getScope(), minValue))
+				|| getMaxValue() != null && i.biggerThan(GamaPointFactory.castToPoint(getScope(), getMaxValue())))
 			return false;
 		return super.modifyValue(i);
 	}

@@ -16,15 +16,15 @@ import java.util.Set;
 
 import com.google.common.collect.Sets;
 
-import gama.core.common.interfaces.ISerialisationConstants;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
+import gama.api.additions.delegates.ISaveDelegate;
+import gama.api.constants.ISerialisationConstants;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.files.SaveOptions;
 import gama.extension.serialize.binary.BinarySerialisation;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.ISaveDelegate;
-import gama.gaml.statements.save.SaveOptions;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class SimulationSaveDelegate.

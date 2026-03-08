@@ -11,15 +11,15 @@
 package gama.ui.display.opengl.renderer.caches;
 
 import static com.google.common.cache.CacheBuilder.newBuilder;
-import static gama.core.common.geometry.GeometryUtils.getTypeOf;
-import static gama.core.metamodel.shape.IShape.Type.CIRCLE;
-import static gama.core.metamodel.shape.IShape.Type.CONE;
-import static gama.core.metamodel.shape.IShape.Type.CUBE;
-import static gama.core.metamodel.shape.IShape.Type.CYLINDER;
-import static gama.core.metamodel.shape.IShape.Type.POINT;
-import static gama.core.metamodel.shape.IShape.Type.PYRAMID;
-import static gama.core.metamodel.shape.IShape.Type.SPHERE;
-import static gama.core.metamodel.shape.IShape.Type.SQUARE;
+import static gama.api.types.geometry.IShape.Type.CIRCLE;
+import static gama.api.types.geometry.IShape.Type.CONE;
+import static gama.api.types.geometry.IShape.Type.CUBE;
+import static gama.api.types.geometry.IShape.Type.CYLINDER;
+import static gama.api.types.geometry.IShape.Type.POINT;
+import static gama.api.types.geometry.IShape.Type.PYRAMID;
+import static gama.api.types.geometry.IShape.Type.SPHERE;
+import static gama.api.types.geometry.IShape.Type.SQUARE;
+import static gama.api.utils.geometry.GeometryUtils.getTypeOf;
 import static java.util.concurrent.TimeUnit.MINUTES;
 
 import java.nio.DoubleBuffer;
@@ -40,16 +40,17 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL2GL3;
 import com.jogamp.opengl.fixedfunc.GLPointerFunc;
 
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.ICoordinates;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint ;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.shape.IShape.Type;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
+import gama.api.GAMA;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.geometry.IShape.Type;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.ICoordinates;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGeometryFile;
 import gama.core.util.file.GamaObjFile;
 import gama.dev.DEBUG;
@@ -360,8 +361,8 @@ public class GeometryCache {
 						.faces(gl.compileAsList(() -> {
 							drawCylinder(gl, 1.0, 0.0, 1.0, slices, stacks);
 						})));
-		final ICoordinates baseVertices = ICoordinates.ofLength(5);
-		final ICoordinates faceVertices = ICoordinates.ofLength(5);
+		final ICoordinates baseVertices = GamaCoordinateSequenceFactory.ofLength(5);
+		final ICoordinates faceVertices = GamaCoordinateSequenceFactory.ofLength(5);
 		baseVertices.setTo(-0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0, -0.5, -0.5, 0, -0.5, 0.5, 0);
 
 		put(CUBE, BuiltInGeometry.assemble().bottom(gl.compileAsList(() -> {
@@ -389,13 +390,13 @@ public class GeometryCache {
 			gl.drawSimpleShape(baseVertices, 4, true, true, null);
 		})));
 		put(CIRCLE, BuiltInGeometry.assemble().bottom(gl.compileAsList(() -> { drawDisk(gl, 0.0, 1.0, slices, 1); })));
-		final ICoordinates triangleVertices = ICoordinates.ofLength(4);
-		final ICoordinates vertices = ICoordinates.ofLength(5);
+		final ICoordinates triangleVertices = GamaCoordinateSequenceFactory.ofLength(4);
+		final ICoordinates vertices = GamaCoordinateSequenceFactory.ofLength(5);
 		vertices.setTo(-0.5, -0.5, 0, -0.5, 0.5, 0, 0.5, 0.5, 0, 0.5, -0.5, 0, -0.5, -0.5, 0);
 		put(PYRAMID, BuiltInGeometry.assemble().bottom(gl.compileAsList(() -> {
 			gl.drawSimpleShape(vertices, 4, false, true, null);
 		})).faces(gl.compileAsList(() -> {
-			final IPoint  top = GamaPointFactory.create(0, 0, 1);
+			final IPoint top = GamaPointFactory.create(0, 0, 1);
 			vertices.visit((pj, pk) -> {
 				triangleVertices.setTo(pj.getX(), pj.getY(), pj.getZ(), top.getX(), top.getY(), top.getZ(), pk.getX(),
 						pk.getY(), pk.getZ(), pj.getX(), pj.getY(), pj.getZ());

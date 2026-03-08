@@ -34,15 +34,15 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.dialogs.WorkbenchPreferenceDialog;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.preferences.Pref;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.Pref;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.controls.ParameterExpandBar;
@@ -111,7 +111,7 @@ public class GamaPreferencesView {
 	 * Preload.
 	 */
 	public static void preload() {
-		DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Preloading preferences view", "done in", () -> {
+		DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Preloading preferences view", "completed in", () -> {
 			WorkbenchHelper.run(() -> {
 				if (instance == null || instance.shell == null || instance.shell.isDisposed()) {
 					instance = new GamaPreferencesView(WorkbenchHelper.getShell());
@@ -373,7 +373,7 @@ public class GamaPreferencesView {
 			fd.setFilterExtensions("*.prefs");
 			final var path = fd.open();
 			if (path == null) return;
-			GamaPreferences.applyPreferencesFrom(path, modelValues);
+			GAMA.getPreferenceStore().applyPreferencesFrom(path, modelValues);
 			for (final IParameterEditor ed : editors.values()) { ed.updateWithValueOfParameter(true, false); }
 		});
 
@@ -381,12 +381,12 @@ public class GamaPreferencesView {
 		buttonExportToGaml.setToolTipText("Export preferences to a model that can be run to restore or share them...");
 		buttonExportToGaml.setSelectionListener(e -> {
 			final var fd = new FileDialog(shell, SWT.SAVE);
-			fd.setFileName("Preferences.gaml");
+			fd.setFileName("__PREFS__.gaml");
 			fd.setFilterExtensions("*.gaml");
 			fd.setOverwrite(false);
 			final var path = fd.open();
 			if (path == null) return;
-			GamaPreferences.savePreferencesToGAML(path);
+			GAMA.getPreferenceStore().saveToGAML(path);
 		});
 
 		final var buttonExport = FlatButton.button(group1, IGamaColors.LIGHT_GRAY, "Export to preferences");
@@ -399,7 +399,7 @@ public class GamaPreferencesView {
 			fd.setOverwrite(false);
 			final var path = fd.open();
 			if (path == null) return;
-			GamaPreferences.savePreferencesToProperties(path);
+			GAMA.getPreferenceStore().saveToProperties(path);
 		});
 
 		final var group2 = new Composite(shell, SWT.NONE);
@@ -548,7 +548,6 @@ public class GamaPreferencesView {
 	 */
 	public static void setRestartRequired() {
 		restartRequired = true;
-
 	}
 
 }

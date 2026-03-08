@@ -12,17 +12,18 @@ package gama.gaml.operators;
 
 import java.util.Objects;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.operators.IOperator;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IOperator;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
 
 /**
  * Written by drogoul Modified on 20 dec. 2010

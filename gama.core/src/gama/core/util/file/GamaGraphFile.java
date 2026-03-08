@@ -15,13 +15,14 @@ import org.jgrapht.graph.DirectedMultigraph;
 import org.jgrapht.nio.GraphImporter;
 import org.jgrapht.util.SupplierUtil;
 
-import gama.core.common.geometry.IEnvelope;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.file.GamaFile;
+import gama.api.types.graph.IGraph;
+import gama.api.utils.geometry.IEnvelope;
 import gama.core.util.graph.GamaGraph;
-import gama.core.util.graph.IGraph;
-import gama.core.util.graph.loader.GraphImporters;
-import gama.gaml.species.ISpecies;
+import gama.core.util.graph.GraphImporters;
 
 /**
  * The Class GamaGraphFile.

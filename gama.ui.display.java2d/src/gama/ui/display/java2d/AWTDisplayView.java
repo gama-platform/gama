@@ -13,8 +13,8 @@ package gama.ui.display.java2d;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 
+import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
-import gama.gaml.interfaces.IDisposable;
 import gama.ui.display.java2d.swing.SwingControl;
 import gama.ui.experiment.views.displays.LayeredDisplayView;
 import gama.ui.experiment.views.displays.SWTLayeredDisplayMultiListener;

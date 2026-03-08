@@ -3,7 +3,7 @@
  * BuiltinReferenceMenu.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,19 +22,22 @@ import org.eclipse.swt.widgets.Menu;
 
 import com.google.common.collect.Lists;
 
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.kernel.GamaSkillRegistry;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.descriptions.OperatorProto;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.descriptions.SymbolProto;
-import gama.gaml.descriptions.TypeDescription;
-import gama.gaml.descriptions.VariableDescription;
-import gama.gaml.interfaces.INamed;
-import gama.gaml.types.Types;
+import gama.annotations.constants.IKeyword;
+import gama.api.additions.registries.GamaSkillRegistry;
+import gama.api.compilation.artefacts.IArtefact;
+import gama.api.compilation.descriptions.IActionDescription;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
+import gama.api.compilation.descriptions.IVariableDescription;
+import gama.api.gaml.GAML;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.GamaMetaModel;
+import gama.api.utils.interfaces.INamed;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
+import gaml.compiler.gaml.descriptions.StatementDescription;
+import gaml.compiler.gaml.descriptions.VariableDescription;
+import gaml.compiler.gaml.prototypes.OperatorArtefact;
 import gaml.compiler.ui.templates.GamlTemplateFactory;
 
 /**
@@ -48,12 +51,13 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 
 	@Override
 	protected void fillMenu() {
-		final List<TypeDescription> list = new ArrayList<>(ModelDescription.ROOT.getMicroSpecies().values());
+		final List<ITypeDescription> list =
+				new ArrayList<>(GamaMetaModel.getSpeciesDescription(IKeyword.MODEL).getOwnMicroSpecies().values());
 		final List<String> speciesList = new ArrayList<>();
 		Collections.sort(list, INamed.COMPARATOR);
 		Menu m = sub("Built-in species");
 
-		for (final TypeDescription species : list) {
+		for (final ITypeDescription species : list) {
 			speciesList.add(species.getName());
 			fillSpeciesSubmenu(sub(m, species.getName()), species);
 		}
@@ -90,7 +94,7 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 			}
 
 		});
-		final Map<String, OperatorProto> getters = Types.get(type).getFieldGetters();
+		final Map<String, OperatorArtefact> getters = Types.get(type).getFieldGetters();
 		final List<String> names = new ArrayList<>(getters.keySet());
 		if (!names.isEmpty()) {
 			Collections.sort(names);
@@ -148,11 +152,11 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 			}
 		}
 		if (isControl) {
-			final List<SymbolProto> controls = new ArrayList<>(GAML.getStatementsForSkill(skill));
+			final List<IArtefact> controls = new ArrayList<>(GAML.getStatementsForSkill(skill));
 			Collections.sort(controls, INamed.COMPARATOR);
 			if (!controls.isEmpty()) {
 				title(submenu, "Control statements");
-				for (final SymbolProto control : controls) {
+				for (final IArtefact control : controls) {
 					fillProtoSubMenu(sub(submenu, control.getName()), control);
 				}
 			}
@@ -160,14 +164,14 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 	}
 
 	/**
-	 * Fill proto sub menu.
+	 * Fill artefact sub menu.
 	 *
 	 * @param menu
 	 *            the menu
 	 * @param statement
 	 *            the statement
 	 */
-	private void fillProtoSubMenu(final Menu menu, final SymbolProto statement) {
+	private void fillProtoSubMenu(final Menu menu, final IArtefact statement) {
 		action(menu, "Insert statement name", new SelectionAdapter() {
 
 			@Override
@@ -180,14 +184,14 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 	}
 
 	/**
-	 * Fill proto sub menu.
+	 * Fill artefact sub menu.
 	 *
 	 * @param menu
 	 *            the menu
 	 * @param attribute
 	 *            the attribute
 	 */
-	private void fillProtoSubMenu(final Menu menu, final OperatorProto attribute) {
+	private void fillProtoSubMenu(final Menu menu, final OperatorArtefact attribute) {
 		action(menu, "Insert attribute name", new SelectionAdapter() {
 
 			@Override
@@ -207,7 +211,7 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 	 * @param species
 	 *            the species
 	 */
-	private void fillSpeciesSubmenu(final Menu submenu, final TypeDescription species) {
+	private void fillSpeciesSubmenu(final Menu submenu, final ITypeDescription species) {
 		action(submenu, "Insert name", new SelectionAdapter() {
 
 			@Override
@@ -229,7 +233,7 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 		if (!vars.isEmpty()) {
 			title(submenu, "Attributes");
 			for (final String v : vars) {
-				final VariableDescription variable = species.getAttribute(v);
+				final IVariableDescription variable = species.getAttribute(v);
 				if (!variable.isSyntheticSpeciesContainer() && variable.getOriginName().endsWith(species.getName())) {
 					fillIDescriptionSubMenu(sub(submenu, v + " (" + variable.getGamlType() + ")"), variable);
 				}
@@ -240,7 +244,7 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 		if (!actions.isEmpty()) {
 			title(submenu, "Primitives");
 			for (final String v : actions) {
-				final StatementDescription prim = species.getAction(v);
+				final IActionDescription prim = species.getAction(v);
 				if (prim.getOriginName().endsWith(species.getName())) {
 					fillIDescriptionSubMenu(sub(submenu, v), prim);
 				}

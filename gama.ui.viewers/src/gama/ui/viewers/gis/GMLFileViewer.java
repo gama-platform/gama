@@ -49,8 +49,9 @@ import org.geotools.styling.StyleBuilder;
 import org.geotools.wfs.GML;
 import org.geotools.wfs.GML.Version;
 
-import gama.core.runtime.GAMA;
-import gama.core.util.IColor;
+import gama.api.GAMA;
+import gama.api.types.color.IColor;
+import gama.core.util.file.GMLInfo;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
@@ -60,7 +61,6 @@ import gama.ui.shared.views.toolbar.Selector;
 import gama.ui.viewers.gis.geotools.styling.Mode;
 import gama.ui.viewers.gis.geotools.styling.SLDs;
 import gama.ui.viewers.gis.geotools.styling.Utils;
-import gama.workspace.metadata.GMLInfo;
 
 /**
  * The Class GMLFileViewer.
@@ -111,7 +111,7 @@ public class GMLFileViewer extends GISFileViewer {
 			content.addLayer(layer);
 
 			// Load attributes from metadata
-			GMLInfo info = (GMLInfo) GAMA.getGui().getMetaDataProvider().getMetaData(file, false, true);
+			GMLInfo info = (GMLInfo) GAMA.getMetadataProvider().getMetaData(file, false, true);
 			if (info != null) { attributes = info.getAttributes(); }
 
 		} catch (final Exception e) {

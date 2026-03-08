@@ -13,4 +13,4 @@ Import-Package: org.osgi.framework;version="1.10.0"
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.extension.serialize
-Bundle-Activator: gama.extension.serialize.Activator
+Bundle-Activator: gama.extension.serialize.SerializeActivator

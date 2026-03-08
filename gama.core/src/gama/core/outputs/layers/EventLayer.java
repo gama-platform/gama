@@ -9,19 +9,21 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.GAMA;
+import gama.api.additions.delegates.IEventLayerDelegate;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.IExecutable;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.IEventLayerListener;
+import gama.api.ui.layers.ILayerStatement;
 import gama.dev.DEBUG;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.statements.IExecutable;
 
 /**
  * Written by marilleau
@@ -75,27 +77,27 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 	 */
 	private int getListeningEvent(final String eventTypeName) {
 		return switch (eventTypeName) {
-			case MouseEventLayerDelegate.MOUSE_DOWN -> MOUSE_PRESS;
-			case MouseEventLayerDelegate.MOUSE_UP -> MOUSE_RELEASED;
-			case MouseEventLayerDelegate.MOUSE_CLICKED -> MOUSE_CLICKED;
-			case MouseEventLayerDelegate.MOUSE_MOVED -> MOUSE_MOVED;
-			case MouseEventLayerDelegate.MOUSE_ENTERED -> MOUSE_ENTERED;
-			case MouseEventLayerDelegate.MOUSE_EXITED -> MOUSE_EXITED;
-			case MouseEventLayerDelegate.MOUSE_MENU -> MOUSE_MENU;
-			case MouseEventLayerDelegate.MOUSE_DRAGGED -> MOUSE_DRAGGED;
-			case KeyboardEventLayerDelegate.ARROW_DOWN -> ARROW_DOWN;
-			case KeyboardEventLayerDelegate.ARROW_UP -> ARROW_UP;
-			case KeyboardEventLayerDelegate.ARROW_LEFT -> ARROW_LEFT;
-			case KeyboardEventLayerDelegate.ARROW_RIGHT -> ARROW_RIGHT;
-			case KeyboardEventLayerDelegate.KEY_ESC -> KEY_ESC;
-			case KeyboardEventLayerDelegate.KEY_PAGE_DOWN -> KEY_PAGE_DOWN;
-			case KeyboardEventLayerDelegate.KEY_PAGE_UP -> KEY_PAGE_UP;
-			case KeyboardEventLayerDelegate.KEY_ENTER -> KEY_RETURN;
-			case KeyboardEventLayerDelegate.KEY_TAB -> KEY_TAB;
-			case KeyboardEventLayerDelegate.SHIFT_MODIFIER -> KEY_SHIFT;
-			case KeyboardEventLayerDelegate.CMD_MODIFIER -> KEY_CMD;
-			case KeyboardEventLayerDelegate.CONTROL_MODIFIER -> KEY_CTRL;
-			case KeyboardEventLayerDelegate.ALT_MODIFIER -> KEY_ALT;
+			case IEventLayerDelegate.MOUSE_DOWN -> MOUSE_PRESS;
+			case IEventLayerDelegate.MOUSE_UP -> MOUSE_RELEASED;
+			case IEventLayerDelegate.MOUSE_CLICKED -> MOUSE_CLICKED;
+			case IEventLayerDelegate.MOUSE_MOVED -> MOUSE_MOVED;
+			case IEventLayerDelegate.MOUSE_ENTERED -> MOUSE_ENTERED;
+			case IEventLayerDelegate.MOUSE_EXITED -> MOUSE_EXITED;
+			case IEventLayerDelegate.MOUSE_MENU -> MOUSE_MENU;
+			case IEventLayerDelegate.MOUSE_DRAGGED -> MOUSE_DRAGGED;
+			case IEventLayerDelegate.ARROW_DOWN -> ARROW_DOWN;
+			case IEventLayerDelegate.ARROW_UP -> ARROW_UP;
+			case IEventLayerDelegate.ARROW_LEFT -> ARROW_LEFT;
+			case IEventLayerDelegate.ARROW_RIGHT -> ARROW_RIGHT;
+			case IEventLayerDelegate.KEY_ESC -> KEY_ESC;
+			case IEventLayerDelegate.KEY_PAGE_DOWN -> KEY_PAGE_DOWN;
+			case IEventLayerDelegate.KEY_PAGE_UP -> KEY_PAGE_UP;
+			case IEventLayerDelegate.KEY_ENTER -> KEY_RETURN;
+			case IEventLayerDelegate.KEY_TAB -> KEY_TAB;
+			case IEventLayerDelegate.SHIFT_MODIFIER -> KEY_SHIFT;
+			case IEventLayerDelegate.CMD_MODIFIER -> KEY_CMD;
+			case IEventLayerDelegate.CONTROL_MODIFIER -> KEY_CTRL;
+			case IEventLayerDelegate.ALT_MODIFIER -> KEY_ALT;
 			default -> KEY_PRESSED;
 		};
 
@@ -105,7 +107,7 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 	public void firstLaunchOn(final IDisplaySurface surface) {
 		super.firstLaunchOn(surface);
 		this.surface = surface;
-		final IExpression eventType = definition.getFacet(IKeyword.NAME);
+		final IExpression eventType = definition.getFacet(ILayerStatement.Event.TRIGGER);
 		if (executionScope != null) { GAMA.releaseScope(executionScope); }
 		executionScope = surface.getScope().copy("of event layer");
 
@@ -186,9 +188,9 @@ public class EventLayer extends AbstractLayer implements IEventLayerListener {
 	 *            the y
 	 */
 	private void executeEvent(final int x, final int y) {
-		final IAgent agent = ((EventLayerStatement) definition).getExecuter(executionScope);
+		final IAgent agent = ((ILayerStatement.Event) definition).getExecuter(executionScope);
 		if (agent == null) return;
-		final IExecutable executer = ((EventLayerStatement) definition).getExecutable(executionScope);
+		final IExecutable executer = ((ILayerStatement.Event) definition).getExecutable(executionScope);
 		if (executer == null) return;
 		final IPoint pp = getModelCoordinatesFrom(x, y, surface);
 		if (pp == null) return;

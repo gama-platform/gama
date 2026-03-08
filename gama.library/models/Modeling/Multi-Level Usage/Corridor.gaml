@@ -40,7 +40,7 @@ global {
 	}
 
 	reflex generate_pedestrians when: every(4 #cycle) {
-		create pedestrian number: 30 with: [color::pedestrian_color] {
+		create pedestrian number: 30 with: (color:pedestrian_color) {
 			do init_location({0, rnd(environment_height)});
 		}
 	}
@@ -140,7 +140,7 @@ experiment "Corridor" type: gui autorun: true {
 				draw square(30) wireframe: false color: #white;
 			}
 
-			species pedestrian {
+			species pedestrian { 
 				draw square(20) wireframe: false color: color;
 			}
 

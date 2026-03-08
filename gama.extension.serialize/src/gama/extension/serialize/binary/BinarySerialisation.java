@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.extension.serialize.binary;
 
-import static gama.core.common.util.FileUtils.constructAbsoluteFilePath;
+import static gama.api.utils.files.FileUtils.constructAbsoluteFilePath;
 import static java.nio.file.Files.readAllBytes;
 import static java.nio.file.StandardOpenOption.CREATE;
 import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
@@ -22,14 +22,13 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import gama.core.common.interfaces.ISerialisationConstants;
-import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.agent.SerialisedAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.extension.serialize.fst.FSTConfiguration;
+import gama.api.GAMA;
+import gama.api.constants.ISerialisationConstants;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.serialization.SerialisedAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.runtime.scope.IScope;
 
 /**
  * The Class BinarySerialisationReader.
@@ -38,9 +37,6 @@ import gama.extension.serialize.fst.FSTConfiguration;
  * @date 31 oct. 2023
  */
 public class BinarySerialisation implements ISerialisationConstants {
-
-	/** The fst. */
-	private static FSTConfiguration FST = FSTConfiguration.createDefaultConfiguration();
 
 	/** The processor. */
 	private static BinarySerialiser PROCESSOR = new BinarySerialiser();
@@ -154,7 +150,7 @@ public class BinarySerialisation implements ISerialisationConstants {
 	 *             Signals that an I/O exception has occurred.
 	 * @date 8 août 2023
 	 */
-	public static void restoreFromBytes(final IAgent sim, final byte[] bytes) throws IOException {
+	public static void restoreFromBytes(final IAgent sim, final byte[] bytes) {
 		PROCESSOR.restoreAgentFromBytes(sim, bytes);
 	}
 

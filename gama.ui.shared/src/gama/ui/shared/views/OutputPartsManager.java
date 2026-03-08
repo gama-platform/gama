@@ -14,8 +14,8 @@ import org.eclipse.ui.IPartListener2;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartReference;
 
-import gama.core.common.interfaces.IGamaView;
-import gama.core.outputs.IOutput;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IOutput;
 import gama.dev.DEBUG;
 import gama.ui.shared.utils.WorkbenchHelper;
 

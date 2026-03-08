@@ -1,18 +1,18 @@
 /*******************************************************************************************************
  *
- * IGamlBuilderListener.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * IGamlBuilderListener.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gaml.compiler.gaml.validation;
 
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.descriptions.ValidationContext;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.validation.IValidationContext;
 
 /**
  * The class IGamlBuilder.
@@ -33,6 +33,6 @@ public interface IGamlBuilderListener {
 	 * @param status
 	 *            the status
 	 */
-	void validationEnded(ModelDescription model, final Iterable<? extends IDescription> experiments,
-			final ValidationContext status);
+	void validationEnded(IModelDescription model, final Iterable<? extends IDescription> experiments,
+			final IValidationContext status);
 }

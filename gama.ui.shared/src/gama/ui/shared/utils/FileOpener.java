@@ -21,8 +21,8 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IDE;
 
-import gama.core.common.util.FileUtils;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.utils.files.FileUtils;
 
 /**
  * Utility methods related to open file from different type of locations.

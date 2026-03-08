@@ -19,7 +19,7 @@ global {
 	weather weather_simu ;
 		
 	init {
-		create weather."Weather Co-Modeling" with: [grid_size::30,write_in_console_step::false];
+		create weather."Weather Co-Modeling" with: (grid_size:30,write_in_console_step:false);
 		weather_simu <- first(weather."Weather Co-Modeling").simulation; 
 	}
 

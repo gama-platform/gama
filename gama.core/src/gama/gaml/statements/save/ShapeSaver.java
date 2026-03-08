@@ -2,7 +2,7 @@
  *
  * ShapeSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,7 +24,6 @@ import org.geotools.api.data.FeatureWriter;
 import org.geotools.api.data.Transaction;
 import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.api.feature.simple.SimpleFeatureType;
-import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.data.DataUtilities;
 import org.geotools.data.shapefile.ShapefileDataStore;
 import org.geotools.feature.SchemaException;
@@ -39,11 +38,12 @@ import org.locationtech.jts.geom.Polygon;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.projection.IProjection;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.expressions.IExpression;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.kernel.topology.ICoordinateReferenceSystem;
+import gama.api.kernel.topology.IProjection;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
 
 /**
  * The Class ShapeSaver.
@@ -92,8 +92,8 @@ public class ShapeSaver extends AbstractShapeSaver {
 			}
 			// Writes the prj file
 			if (gis != null) {
-				final CoordinateReferenceSystem crs = gis.getInitialCRS(scope);
-				if (crs != null) {
+				final ICoordinateReferenceSystem crs = gis.getInitialCRS(scope);
+				if (crs != null && !crs.isNull()) {
 					try (FileWriter fw1 = new FileWriter(f.getAbsolutePath().replace(".shp", ".prj"))) {
 						fw1.write(crs.toString());
 					} catch (final IOException e) {

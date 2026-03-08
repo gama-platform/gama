@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * EventLayerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,35 +13,38 @@ package gama.core.outputs.layers;
 import java.util.ArrayList;
 import java.util.List;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.outputs.LayeredDisplayOutput;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.additions.delegates.IEventLayerDelegate;
+import gama.api.additions.registries.GamaAdditionRegistry;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IActionDescription;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.statements.ActionStatement;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.IExecutable;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IOutput;
+import gama.api.ui.layers.ILayerStatement;
 import gama.core.outputs.layers.EventLayerStatement.EventLayerValidator;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.factories.DescriptionFactory;
-import gama.gaml.interfaces.IEventLayerDelegate;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.statements.ActionStatement;
-import gama.gaml.statements.IExecutable;
-import gama.gaml.statements.IStatement;
-import gama.gaml.types.IType;
 
 /**
  * Written by Marilleau Modified on 16 novembre 2012
@@ -58,7 +61,7 @@ import gama.gaml.types.IType;
 		symbols = { IKeyword.DISPLAY })
 @facets (
 		value = { @facet (
-				name = IKeyword.NAME,
+				name = ILayerStatement.Event.TRIGGER,
 				type = { IType.STRING },
 				optional = false,
 				doc = @doc ("the type of event captured: basic events include #mouse_up, #mouse_down, #mouse_move, #mouse_exit, #mouse_enter, #mouse_menu, #mouse_drag, #arrow_down, #arrow_up, #arrow_left, #arrow_right, #escape, #tab, #enter, #page_up, #page_down or a character")),
@@ -72,7 +75,7 @@ import gama.gaml.types.IType;
 						type = IType.ACTION,
 						optional = true,
 						doc = @doc ("The identifier of the action to be executed in the context of the simulation. This action needs to be defined in 'global' or in the current experiment, without any arguments. The location of the mouse in the world can be retrieved in this action with the pseudo-constant #user_location")) },
-		omissible = IKeyword.NAME)
+		omissible = ILayerStatement.Event.TRIGGER)
 @validator (EventLayerValidator.class)
 @doc (
 		value = "`" + IKeyword.EVENT
@@ -132,25 +135,25 @@ import gama.gaml.types.IType;
 										isExecutable = false) }) },
 		see = { IKeyword.DISPLAY, IKeyword.AGENTS, IKeyword.CHART, "graphics", IKeyword.GRID_LAYER,
 				IKeyword.IMAGE_LAYER, IKeyword.OVERLAY, IKeyword.SPECIES_LAYER, })
-public class EventLayerStatement extends AbstractLayerStatement {
+public class EventLayerStatement extends AbstractLayerStatement implements ILayerStatement.Event {
 
 	/**
 	 * The Class EventLayerValidator.
 	 */
-	public static class EventLayerValidator implements IDescriptionValidator<StatementDescription> {
+	public static class EventLayerValidator implements IDescriptionValidator<IStatementDescription> {
 
 		@Override
-		public void validate(final StatementDescription description) {
-			IExpressionDescription nameDesc = description.getFacet(NAME);
+		public void validate(final IStatementDescription description) {
+			IExpressionDescription nameDesc = description.getFacet(TRIGGER);
 			final String name = nameDesc != null ? nameDesc.getExpression().literalValue() : null;
 			if (name == null) {
-				description.error("Impossible to find this action", IGamlIssue.UNKNOWN_ACTION, ACTION);
+				description.error("Impossible to find this trigger", IGamlIssue.UNKNOWN_ACTION, ACTION);
 				return;
 			}
 			if (name.length() > 1) { // If it is not a char
 				StringBuilder error = new StringBuilder();
 				boolean foundEventName = false;
-				for (final IEventLayerDelegate delegate : delegates) {
+				for (final IEventLayerDelegate delegate : GamaAdditionRegistry.getEventLayerDelegates()) {
 					error.append(delegate.getEvents()).append(" ");
 					if (delegate.getEvents().contains(name)) { foundEventName = true; }
 				}
@@ -168,7 +171,7 @@ public class EventLayerStatement extends AbstractLayerStatement {
 							"This use of 'action' is deprecated. Move the sequence to execute at the end of the 'event' statement instead.",
 							IGamlIssue.DEPRECATED, ACTION);
 				}
-				StatementDescription sd = description.getModelDescription().getAction(actionName);
+				IActionDescription sd = description.getModelDescription().getAction(actionName);
 				if (sd == null) {
 					// we look into the experiment
 					final IDescription superDesc = description.getSpeciesContext();
@@ -193,21 +196,14 @@ public class EventLayerStatement extends AbstractLayerStatement {
 	/** The type. */
 	private final IExpression type;
 
-	/** The delegates. */
-	public static final List<IEventLayerDelegate> delegates = new ArrayList<>();
-
 	/** The action name. */
 	private String actionName;
 
+	/** The trigger. */
+	private final String trigger;
+
 	/** The action. */
 	private ActionStatement action;
-
-	/**
-	 * @param createExecutableExtension
-	 */
-	public static void addDelegate(final IEventLayerDelegate delegate) {
-		delegates.add(delegate);
-	}
 
 	/**
 	 * Instantiates a new event layer statement.
@@ -222,9 +218,10 @@ public class EventLayerStatement extends AbstractLayerStatement {
 		executesInSimulation = false;
 		if (description.hasFacet(IKeyword.ACTION)) {
 			actionName = description.getLitteral(IKeyword.ACTION);
-			final StatementDescription sd = description.getSpeciesContext().getAction(actionName);
+			final IActionDescription sd = description.getSpeciesContext().getAction(actionName);
 			executesInSimulation = sd == null;
 		}
+		trigger = description.getLitteral(TRIGGER);
 
 		type = getFacet(IKeyword.TYPE);
 	}
@@ -236,6 +233,7 @@ public class EventLayerStatement extends AbstractLayerStatement {
 	 *            the scope
 	 * @return the executer
 	 */
+	@Override
 	public IAgent getExecuter(final IScope scope) {
 		return executesInSimulation ? scope.getSimulation() : scope.getExperiment();
 	}
@@ -256,6 +254,7 @@ public class EventLayerStatement extends AbstractLayerStatement {
 	 *            the scope
 	 * @return the executable
 	 */
+	@Override
 	public IExecutable getExecutable(final IScope scope) {
 		if (action != null) return action;
 		IAgent agent = getExecuter(scope);
@@ -267,26 +266,33 @@ public class EventLayerStatement extends AbstractLayerStatement {
 
 		final Object source = getSource(scope);
 
-		for (final IEventLayerDelegate delegate : delegates) {
+		for (final IEventLayerDelegate delegate : GamaAdditionRegistry.getEventLayerDelegates()) {
 			if (delegate.acceptSource(scope, source)) { delegate.createFrom(scope, source, this); }
 		}
 		return true;
 	}
 
+	/**
+	 * Gets the type.
+	 *
+	 * @param output
+	 *            the output
+	 * @return the type
+	 */
 	@Override
-	public LayerType getType(final LayeredDisplayOutput output) {
+	public LayerType getType(final IOutput output) {
 		return LayerType.EVENT;
 	}
 
 	@Override
 	public String toString() {
-		return "Event layer: " + this.getFacet(IKeyword.NAME).literalValue();
+		return "Event layer: " + this.getFacet(TRIGGER).literalValue();
 	}
 
 	/**
 	 * Method _step()
 	 *
-	 * @see gama.core.outputs.layers.AbstractLayerStatement#_step(gama.core.runtime.IScope)
+	 * @see gama.core.outputs.layers.AbstractLayerStatement#_step(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	protected boolean _step(final IScope scope) {
@@ -311,9 +317,20 @@ public class EventLayerStatement extends AbstractLayerStatement {
 		if (!statements.isEmpty()) {
 			actionName = "inline";
 			final IDescription d =
-					DescriptionFactory.create(IKeyword.ACTION, getDescription(), IKeyword.NAME, "inline");
+					GAML.getDescriptionFactory().create(IKeyword.ACTION, getDescription(), IKeyword.NAME, "inline");
 			action = new ActionStatement(d);
 			action.setChildren(statements);
 		}
 	}
+
+	/**
+	 * Gets the trigger.
+	 *
+	 * @return the trigger
+	 */
+	@Override
+	public String getTrigger() { // TODO Auto-generated method stub
+		return trigger;
+	}
+
 }

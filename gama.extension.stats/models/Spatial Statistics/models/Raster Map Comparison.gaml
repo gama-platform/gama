@@ -81,7 +81,7 @@ grid cell width: 50 height: 50 {
 	aspect fuzzy_sim {
 		draw shape color:color_fuzzy border: color_fuzzy;
 	}
-	aspect init {
+	aspect initial {
 		draw shape color:color_init border: color_init;
 	}
 	aspect observed {
@@ -99,7 +99,7 @@ experiment mapcomparison type: gui {
 			species cell aspect: observed refresh: false;
 		}
 		display map_init type: 2d{
-			species cell aspect: init refresh: false;
+			species cell aspect: initial refresh: false;
 		}
 		display map_fuzzy type: 2d{
 			species cell aspect: fuzzy_sim ;

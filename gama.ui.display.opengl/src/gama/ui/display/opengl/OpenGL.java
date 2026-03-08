@@ -11,7 +11,6 @@
 package gama.ui.display.opengl;
 
 import java.awt.image.BufferedImage;
-import java.nio.DoubleBuffer;
 import java.nio.BufferOverflowException;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +18,6 @@ import java.util.Map;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.Polygon;
 
-import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL2ES1;
@@ -32,26 +30,27 @@ import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.gl2.GLUT;
 import com.jogamp.opengl.util.texture.Texture;
 
-import gama.core.common.geometry.GamaEnvelopeFactory;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.geometry.ICoordinates;
-import gama.core.common.geometry.ICoordinates.VertexVisitor;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.common.geometry.Rotation3D;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.geometry.UnboundedCoordinateSequence;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.IDrawingAttributes.DrawerType;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.ICoordinates;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.geometry.Rotation3D;
+import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.geometry.UnboundedCoordinateSequence;
+import gama.api.utils.geometry.ICoordinates.VertexVisitor;
+import gama.api.utils.interfaces.IImageProvider;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGeometryFile;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
-import gama.gaml.statements.draw.DrawingAttributes;
-import gama.gaml.statements.draw.DrawingAttributes.DrawerType;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.renderer.caches.GeometryCache;
 import gama.ui.display.opengl.renderer.caches.GeometryCache.BuiltInGeometry;
@@ -274,8 +273,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 			// Assuming Signature is a lightweight object (record-like).
 			final var attributes = mo.getAttributes();
 			final IPoint dim = attributes.getXYDimension();
-			final MeshDrawer.Signature sig = new MeshDrawer.Signature((int) dim.getX(), (int) dim.getY(),
-					attributes.isTriangulated());
+			final MeshDrawer.Signature sig =
+					new MeshDrawer.Signature((int) dim.getX(), (int) dim.getY(), attributes.isTriangulated());
 			return meshDrawers.computeIfAbsent(sig, s -> new MeshDrawer(this));
 		}
 		return drawers.get(object.type);
@@ -834,7 +833,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		GLU.gluTessEndContour(tobj);
 		GeometryUtils.applyToInnerGeometries(p, geom -> {
 			GLU.gluTessBeginContour(tobj);
-			GeometryUtils.getContourCoordinates(geom).visitYNegatedCounterClockwise(glTesselatorDrawer);
+			GamaCoordinateSequenceFactory.pointsOf(geom).visitYNegatedCounterClockwise(glTesselatorDrawer);
 			GLU.gluTessEndContour(tobj);
 		});
 		GLU.gluTessEndPolygon(tobj);
@@ -1494,7 +1493,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void beginObject(final AbstractObject<?, ?> object, final boolean isPicking) {
 		// DEBUG.OUT("Object " + object + " begin and is " + (object.getAttributes().isEmpty() ? "empty" : "filled"));
-		DrawingAttributes att = object.getAttributes();
+		IDrawingAttributes att = object.getAttributes();
 		if (isPicking) { registerForSelection(att.getIndex()); }
 		boolean empty = att.isEmpty();
 		previousObjectWireframe = setObjectWireframe(empty);
@@ -1644,7 +1643,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		// gl.glEnable(GL2GL3.GL_POLYGON_SMOOTH);
 		// Enabling forced normalization of normal vectors (important)
 		gl.glEnable(GLLightingFunc.GL_NORMALIZE);
-		// Enabling multi-sampling (necessary ?)
+		// Enabling multi-SAMPLING (necessary ?)
 		// if (USE_MULTI_SAMPLE) {
 		gl.glEnable(GL.GL_MULTISAMPLE);
 		// Setting the default polygon mode

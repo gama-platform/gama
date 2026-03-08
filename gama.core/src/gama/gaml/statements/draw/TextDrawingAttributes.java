@@ -10,12 +10,13 @@
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape.Type;
-import gama.core.util.GamaFont;
-import gama.core.util.IColor;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape.Type;
+import gama.api.ui.layers.IDrawingAttributes.Flag;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.Scaling3D;
 
 /**
  * The Class TextDrawingAttributes.
@@ -24,7 +25,7 @@ import gama.core.util.IColor;
 public class TextDrawingAttributes extends DrawingAttributes implements Cloneable {
 
 	/** The font. */
-	private GamaFont font;
+	private IFont font;
 
 	/** The anchor. */
 	public IPoint anchor;
@@ -86,7 +87,8 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	 *
 	 * @return the font
 	 */
-	public GamaFont getFont() { return font; }
+	@Override
+	public IFont getFont() { return font; }
 
 	/**
 	 * Sets the font.
@@ -94,14 +96,7 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	 * @param font
 	 *            the new font
 	 */
-	public void setFont(final GamaFont font) { this.font = font; }
-
-	/**
-	 * Checks if is perspective.
-	 *
-	 * @return true, if is perspective
-	 */
-	public boolean isPerspective() { return isSet(Flag.Perspective); }
+	public void setFont(final IFont font) { this.font = font; }
 
 	@Override
 	public Double getDepth() { return depth == null ? 0d : depth; }
@@ -113,6 +108,7 @@ public class TextDrawingAttributes extends DrawingAttributes implements Cloneabl
 	 *            the p
 	 * @return the text drawing attributes
 	 */
+	@Override
 	public TextDrawingAttributes copyTranslatedBy(final IPoint p) {
 		try {
 			TextDrawingAttributes clone = (TextDrawingAttributes) this.clone();

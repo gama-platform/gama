@@ -10,11 +10,11 @@
  ********************************************************************************************************/
 package gama.headless.core;
 
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.ISimulationAgent;
-import gama.core.util.list.IList;
-import gama.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.types.list.IList;
 import gama.headless.server.GamaServerExperimentJob;
 
 /**
@@ -27,14 +27,14 @@ public interface IExperiment {
 	 *
 	 * @return the model
 	 */
-	IModel getModel();
+	IModelSpecies getModel();
 
 	/**
 	 * Gets the experiment plan.
 	 *
 	 * @return the experiment plan
 	 */
-	IExperimentPlan getExperimentPlan();
+	IExperimentSpecies getExperimentPlan();
 
 	/**
 	 * Gets the simulation.

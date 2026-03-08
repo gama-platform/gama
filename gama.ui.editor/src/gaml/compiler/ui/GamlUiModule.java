@@ -62,9 +62,9 @@ import com.google.inject.Binder;
 import com.google.inject.Provider;
 import com.google.inject.name.Names;
 
-import gama.core.common.interfaces.IModelsManager;
+import gama.api.compilation.IModelsManager;
+import gama.api.compilation.ast.IGamlLabelProvider;
 import gama.dev.DEBUG;
-import gama.gaml.interfaces.IGamlLabelProvider;
 import gaml.compiler.gaml.parsing.GamlSyntaxErrorMessageProvider;
 import gaml.compiler.gaml.resource.GamlEncodingProvider;
 import gaml.compiler.ide.contentassist.antlr.GamlParser;

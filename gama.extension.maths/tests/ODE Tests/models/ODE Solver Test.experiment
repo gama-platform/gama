@@ -198,7 +198,7 @@ global{
 	
 experiment test type: test {
 	test "Equations" {
-		create ODETest_model with: [with_viz::false,step::1#s];//, beta::1.0 /#s, delta::0.01 /#s];
+		create ODETest_model with: (with_viz:false,step:1#s);//, beta::1.0 /#s, delta::0.01 /#s];
 		// tests for consistency of the ODE solver with the same ODE solvers from Maple and Matlab
 		write "Testing solutions for equations using Euler, RK4 and DP solver in Gama:";
 		write "Error from Euler solver: " + euler_err;
@@ -212,13 +212,13 @@ experiment test type: test {
 		assert split_err = 0;
 		write "\nDifference between solutions (rk4) with defaut step_size\nand a user defined step_size (0.1): "+rk4_stepsize_err;
 		assert rk4_stepsize_err < 10^-3;
-		create ODETest_model with: [with_viz::false, step::2#s];//beta::1.0 /#s, delta::0.01 /#s];
+		create ODETest_model with: (with_viz:false, step:2#s);//beta::1.0 /#s, delta::0.01 /#s];
 		write "\nDifference between solutions obtained from Gama (rk4) and \nMaple, when changing the step (step = 2s): "+rk4_err;
 		assert rk4_err < 10^-7;
-		create ODETest_model with: [with_viz::false, with_t0_tf::true,step::2#s];//beta::1.0 /#s, delta::0.01 /#s];
+		create ODETest_model with: (with_viz:false, with_t0_tf:true,step:2#s);//beta::1.0 /#s, delta::0.01 /#s];
 		write "\nTest the behaviour of facets t0 and tf: "+rk4_err;
 		assert rk4_err < 10^-7;	
-		create ODETest_model with: [with_viz::false,step::1#h, beta::1.0 /#hour, delta::0.01 /#h];
+		create ODETest_model with: (with_viz:false,step:1#h, beta:1.0 /#hour, delta:0.01 /#h);
 		write "\nTest the behaviour with a changed timescale (step=1h) \nand rescaled parameters beta and delta.: "+rk4_err;
 		assert rk4_err < 10^-10;	
 	}	
@@ -226,8 +226,8 @@ experiment test type: test {
 
 experiment simulation type: gui {
 	action _init_ {
-		create ODETest_model with: [with_viz::true, step::1#s, name::"Simulation step=1s"];
-		create ODETest_model with: [with_viz::true, step::2#s, name::"Simulation step=2s"];
+		create ODETest_model with: (with_viz:true, step:1#s, name:"Simulation step=1s");
+		create ODETest_model with: (with_viz:true, step:2#s, name:"Simulation step=2s");
 	}
 	
 	output {

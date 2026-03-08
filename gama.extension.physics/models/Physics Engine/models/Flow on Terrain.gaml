@@ -34,7 +34,7 @@ global parent: physical_world {
 				int x <- int(min(terrain.columns - 1, max(0, origin_of_flow.x + 10)));
 				int y <- int(min(terrain.rows - 1, max(0, origin_of_flow.y + 10)));
 				point p <- origin_of_flow + {rnd(10) - 5, rnd(10 - 5), terrain[x, y] + 10};
-				create water number: number_of_water_units with: [location::p];
+				create water number: number_of_water_units with: (location:p);
 			}
 	}
 }
@@ -65,10 +65,10 @@ experiment "Four different scales" type: gui {
 	int distance <- 200;
 	
 	action _init_ {
-		create simulation with: [z_scale::0.3];
-		create simulation with: [z_scale::1.0];
-		create simulation with: [z_scale::2.0];
-		create simulation with: [z_scale::3.0];
+		create simulation with: (z_scale:0.3);
+		create simulation with: (z_scale:1.0);
+		create simulation with: (z_scale:2.0);
+		create simulation with: (z_scale:3.0);
 	} 
 	parameter "Location of the camera" var: camera_loc among: [#from_up_front, #from_above, #from_up_left, #from_up_right];
 	parameter "Distance of the camera" var: distance min: 1 max: 1000 slider: true;
@@ -102,7 +102,7 @@ experiment "Largest scale" type: gui {
 	int distance <- 200;
 	
 	action _init_ {
-		create simulation with: [z_scale::3.0];
+		create simulation with: (z_scale:3.0);
 	} 
 	
 	output {

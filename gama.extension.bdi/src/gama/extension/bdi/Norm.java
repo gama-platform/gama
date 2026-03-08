@@ -12,24 +12,24 @@ package gama.extension.bdi;
 
 import java.util.Objects;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.IJSon;
-import gama.core.util.file.json.IJsonValue;
-import gama.gaml.interfaces.IValue;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.misc.IValue;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class Norm.
  */
 @vars ({ @variable (
-		name = "name",
+		name = IKeyword.NAME,
 		type = IType.STRING,
 		doc = @doc ("The name of this norm")),
 		@variable (
@@ -57,8 +57,8 @@ import gama.gaml.types.Types;
 public class Norm implements IValue {
 
 	@Override
-	public IJsonValue serializeToJson(final IJSon json) {
-		return json.typedObject(getGamlType(), "name", getName());
+	public IJsonValue serializeToJson(final IJson json) {
+		return json.typedObject(getGamlType(), IKeyword.NAME, getName());
 	}
 
 	/** The norm statement. */
@@ -84,7 +84,7 @@ public class Norm implements IValue {
 	 *
 	 * @return the name
 	 */
-	@getter ("name")
+	@getter (IKeyword.NAME)
 	public String getName() { return this.normStatement.getName(); }
 
 	/**
@@ -154,7 +154,7 @@ public class Norm implements IValue {
 	 */
 	@getter (SimpleBdiArchitecture.INSTANTANEOUS)
 	public boolean getInstantaneous(final IScope scope) {
-		return normStatement._instantaneous == null ? false : gama.gaml.operators.Cast.asBool(scope, normStatement._instantaneous.value(scope)); 
+		return normStatement._instantaneous == null ? false : gama.api.gaml.types.Cast.asBool(scope, normStatement._instantaneous.value(scope)); 
 	}
 
 	/**

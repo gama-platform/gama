@@ -70,9 +70,9 @@ experiment exp_4_simulations type: gui schedules: shuffle(simulations) parallel:
 		write "====== Init of " + self color: #green;
 		write sample(seed) + " - of " + self.name color: #green;								
 		
-		create simulation with:[name::"Simu 1",nb_people::rnd(10),seed::rnd(1.0)];
-		create simulation with:[name::"Simu 2",nb_people::rnd(10),seed::rnd(1.0)];
-		create simulation with:[name::"Simu 3",nb_people::rnd(10),seed::rnd(1.0)];
+		create simulation with:(name:"Simu 1",nb_people:rnd(10),seed:rnd(1.0));
+		create simulation with:(name:"Simu 2",nb_people:rnd(10),seed:rnd(1.0));
+		create simulation with:(name:"Simu 3",nb_people:rnd(10),seed:rnd(1.0));
 				
 		write "The experiment contains " + length(simulations) + " simulations." color: #green;
 		write "The last created simulation is: " + simulation color: #green;
@@ -100,7 +100,7 @@ experiment exp_no_simulation type: gui {
 
 	action _init_ {
 		write "_init_ of " + self color: #green;
-		create simulation with:[name::"Simu 1",nb_people::rnd(10)];		
+		create simulation with:(name:"Simu 1",nb_people:rnd(10));		
 	}
 
 	init {

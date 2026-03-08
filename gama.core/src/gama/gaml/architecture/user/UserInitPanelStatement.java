@@ -10,13 +10,13 @@
  ********************************************************************************************************/
 package gama.gaml.architecture.user;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.core.common.interfaces.IKeyword;
-import gama.gaml.descriptions.IDescription;
+import gama.annotations.doc;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.descriptions.IDescription;
 
 /**
  * The Class UserInitPanelStatement.

@@ -6,9 +6,9 @@ package gaml.compiler.gaml.impl;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.GamlPackage;
 
-import org.eclipse.emf.ecore.EClass;
+import gaml.compiler.gaml.serializer.GamlEObjectImpl;
 
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
+import org.eclipse.emf.ecore.EClass;
 
 /**
  * <!-- begin-user-doc -->
@@ -17,7 +17,7 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  *
  * @generated
  */
-public class ExpressionImpl extends MinimalEObjectImpl.Container implements Expression
+public class ExpressionImpl extends GamlEObjectImpl implements Expression
 {
   /**
    * <!-- begin-user-doc -->

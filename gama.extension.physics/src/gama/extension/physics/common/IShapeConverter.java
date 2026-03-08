@@ -10,11 +10,11 @@
  ********************************************************************************************************/
 package gama.extension.physics.common;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.grid.IGridAgent;
-import gama.core.runtime.IScope;
-import gama.core.util.matrix.IField;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IGridAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
+import gama.api.types.matrix.IField;
 import gama.extension.physics.gaml.PhysicalSimulationAgent;
 
 /**

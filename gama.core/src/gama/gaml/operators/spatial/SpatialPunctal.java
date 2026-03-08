@@ -17,25 +17,25 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.operation.distance.DistanceOp;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.Reason;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.list.GamaListFactory;
-import gama.core.util.list.IList;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.Reason;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.utils.geometry.GeometryUtils;
 import gama.gaml.operators.Maths;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class Punctal.
@@ -91,7 +91,8 @@ public class SpatialPunctal {
 			see = { "closest_points_with", "farthest_point_to", "points_at" })
 	@no_test
 	public static IPoint any_location_in(final IScope scope, final IShape g) {
-		return GeometryUtils.pointInGeom(scope, g);
+		if (g == null) return null;
+		return GeometryUtils.pointInGeom(scope, g.getInnerGeometry());
 	}
 
 	/**

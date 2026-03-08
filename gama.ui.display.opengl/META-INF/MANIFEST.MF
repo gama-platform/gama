@@ -40,6 +40,8 @@ Export-Package:
  com.jogamp.graph.curve.tess,
  com.jogamp.graph.font,
  com.jogamp.graph.geom,
+ com.jogamp.math,
+ com.jogamp.math.util,
  com.jogamp.nativewindow,
  com.jogamp.nativewindow.awt,
  com.jogamp.nativewindow.egl,

@@ -15,7 +15,7 @@ species dummy {
 experiment loop_over type:test{
 	
 	test loop_over_list_int {
-		let l <- [1,2,3,4];
+		list<int> l <- [1,2,3,4];
 		int sum <- 0;
 		loop v over:l{
 			sum <- sum + v;
@@ -75,7 +75,7 @@ experiment loop_over type:test{
 	}
 	
 	test loop_over_list_int_break {
-		let l <- [1,2,3,4];
+		list<int> l <- [1,2,3,4];
 		int sum <- 0;
 		loop v over:l{
 			sum <- sum + v;

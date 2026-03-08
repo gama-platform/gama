@@ -56,7 +56,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import gama.core.common.interfaces.IGui;
+import gama.api.ui.IGui;
 import gama.dev.DEBUG;
 
 /**

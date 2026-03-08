@@ -17,23 +17,21 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.IEnvelope;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IModifiableContainer;
-import gama.core.util.file.json.IJsonConstants;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.ParseException;
-import gama.core.util.file.json.WriterConfig;
-import gama.core.util.map.GamaMapFactory;
-import gama.core.util.map.IMap;
-import gama.gaml.statements.Facets;
-import gama.gaml.types.IType;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.Facets;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.file.GamaFile;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.json.IJson;
+import gama.core.util.json.ParseException;
 
 /**
  * The Class GamaJsonFile.
@@ -45,7 +43,7 @@ import gama.gaml.types.IType;
 		buffer_index = IType.STRING,
 		concept = { IConcept.FILE })
 @doc ("Reads a JSON file into a map<string, unknown>. Either a direct map of the object denoted in the JSON file, or a map with only one key ('"
-		+ IJsonConstants.CONTENTS_WITH_REFERENCES_LABEL
+		+ IJson.Labels.CONTENTS_WITH_REFERENCES_LABEL
 		+ "') containing the list in the JSON file. All data structures (JSON object and JSON array) are properly converted into GAMA structures (map and list) recursively, or into direct GAMA objects when they sport the required tags. ")
 @SuppressWarnings ({ "rawtypes", "unchecked" })
 public class GamaJsonFile extends GamaFile<IMap<String, Object>, Object> {
@@ -100,12 +98,12 @@ public class GamaJsonFile extends GamaFile<IMap<String, Object>, Object> {
 		if (getBuffer() != null) return;
 		try (FileReader reader = new FileReader(getFile(scope))) {
 			final IMap<String, Object> map;
-			final Object o = Json.getNew().parse(reader).toGamlValue(scope);
+			final Object o = GAMA.getJsonEncoder().parse(reader).toGamlValue(scope);
 			if (o instanceof IMap) {
 				map = (IMap<String, Object>) o;
 			} else {
 				map = GamaMapFactory.create();
-				map.put(IJsonConstants.CONTENTS_WITH_REFERENCES_LABEL, o);
+				map.put(IJson.Labels.CONTENTS_WITH_REFERENCES_LABEL, o);
 			}
 			setBuffer(map);
 		} catch (final IOException | ParseException e) {
@@ -120,8 +118,8 @@ public class GamaJsonFile extends GamaFile<IMap<String, Object>, Object> {
 	protected void flushBuffer(final IScope scope, final Facets facets) throws GamaRuntimeException {
 		final IMap<String, Object> map = getBuffer();
 		Object toSave = map;
-		if (map.size() == 1 && map.containsKey(IJsonConstants.CONTENTS_WITH_REFERENCES_LABEL)) {
-			toSave = map.get(IJsonConstants.CONTENTS_WITH_REFERENCES_LABEL);
+		if (map.size() == 1 && map.containsKey(IJson.Labels.CONTENTS_WITH_REFERENCES_LABEL)) {
+			toSave = map.get(IJson.Labels.CONTENTS_WITH_REFERENCES_LABEL);
 		}
 		final File file = getFile(scope);
 		if (file.exists()) {
@@ -129,17 +127,17 @@ public class GamaJsonFile extends GamaFile<IMap<String, Object>, Object> {
 					false);
 		}
 		try (Writer writer = new OutputStreamWriter(Files.newOutputStream(file.toPath()), StandardCharsets.UTF_8)) {
-			writer.write(Json.getNew().valueOf(toSave).toString(WriterConfig.PRETTY_PRINT));
+			writer.write(GAMA.getJsonEncoder().valueOf(toSave).toPrettyPrint());
 		} catch (final IOException e) {
 			throw GamaRuntimeException.create(e, scope);
 		}
 	}
 
 	@Override
-	public IModifiableContainer ensureContentsIsCompatible(final IModifiableContainer contents) {
+	public Modifiable ensureContentsIsCompatible(final Modifiable contents) {
 		if (contents instanceof IMap) return contents;
 		IMap map = GamaMapFactory.create();
-		map.put(IJsonConstants.CONTENTS_WITH_REFERENCES_LABEL, contents);
+		map.put(IJson.Labels.CONTENTS_WITH_REFERENCES_LABEL, contents);
 		return map;
 	}
 

@@ -24,13 +24,11 @@ import org.eclipse.xtext.validation.ValidationMessageAcceptor;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.gaml.compilation.IGamlCompilationError;
-import gama.gaml.descriptions.ValidationContext;
-import gaml.compiler.gaml.ExperimentFileStructure;
+import gama.annotations.constants.IKeyword;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.compilation.validation.IValidationContext;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.impl.StatementImpl;
@@ -60,9 +58,9 @@ public class ErrorToDiagnoticTranslator {
 	 *            the mode
 	 * @return the diagnostic
 	 */
-	public Diagnostic translate(final ValidationContext errors, final GamlResource r, final CheckMode mode) {
+	public Diagnostic translate(final IValidationContext errors, final GamlResource r, final CheckMode mode) {
 		final BasicDiagnostic chain = new BasicDiagnostic();
-		for (final IGamlCompilationError e : errors) {
+		for (final GamlCompilationError e : errors) {
 			final Diagnostic d = translate(e, r, mode);
 			if (d != null) { chain.add(d); }
 		}
@@ -80,8 +78,8 @@ public class ErrorToDiagnoticTranslator {
 	 *            the mode
 	 * @return the diagnostic
 	 */
-	public Diagnostic translate(final IGamlCompilationError e, final GamlResource r, final CheckMode mode) {
-		final URI errorURI = e.getURI();
+	public Diagnostic translate(final GamlCompilationError e, final GamlResource r, final CheckMode mode) {
+		final URI errorURI = e.uri();
 		if (!GamlResourceServices.equals(errorURI, r.getURI())) // final String s = URI.decode(errorURI.lastSegment());
 			// final EObject m = r.getContents().get(0);
 			// final EObject eObject = findImportWith(m, s);
@@ -93,22 +91,24 @@ public class ErrorToDiagnoticTranslator {
 		// e.toString() + " (" + ValidationContext.IMPORTED_FROM + " " + s + ")", eObject, feature,
 		// ValidationMessageAcceptor.INSIGNIFICANT_INDEX, e.getCode(), e.getData());
 		EStructuralFeature feature = null;
-		final EObject object = e.getSource();
-		String[] data = e.getData();
+		final EObject object = e.source();
+		String[] data = e.data();
 		if (object instanceof GamlDefinition && data != null && data.length > 0 && IKeyword.NAME.equals(data[0])) {
 			feature = GamlPackage.Literals.GAML_DEFINITION__NAME;
 		} else if (object instanceof Statement) {
+
 			final StatementImpl s = (StatementImpl) object;
-			if (s.eIsSet(GamlPackage.Literals.STATEMENT__KEY)) {
-				feature = GamlPackage.Literals.STATEMENT__KEY;
+			// Not sure about this access to key ? Used to STATEMENT__KEY, but this feature seems to have disappeared
+			if (s.eIsSet(GamlPackage.Literals.FACETS_AND_BLOCK__KEY)) {
+				feature = GamlPackage.Literals.FACETS_AND_BLOCK__KEY;
 			} else if (s.eIsSet(GamlPackage.Literals.SDEFINITION__TKEY)) {
 				feature = GamlPackage.Literals.SDEFINITION__TKEY;
 			}
 		} else if (object instanceof Model) { feature = GamlPackage.Literals.GAML_DEFINITION__NAME; }
-		if (!Arrays.contains(e.getData(), null)) {
+		if (!Arrays.contains(e.data(), null)) {
 			final int index = ValidationMessageAcceptor.INSIGNIFICANT_INDEX;
-			return createDiagnostic(mode, toDiagnosticSeverity(e), e.toString(), object, feature, index, e.getCode(),
-					e.getData());
+			return createDiagnostic(mode, toDiagnosticSeverity(e), e.toString(), object, feature, index, e.code(),
+					e.data());
 		}
 		return null;
 	}
@@ -163,7 +163,7 @@ public class ErrorToDiagnoticTranslator {
 	 *            the e
 	 * @return the int
 	 */
-	protected int toDiagnosticSeverity(final IGamlCompilationError e) {
+	protected int toDiagnosticSeverity(final GamlCompilationError e) {
 		int diagnosticSeverity = -1;
 		if (e.isError()) {
 			diagnosticSeverity = Diagnostic.ERROR;
@@ -172,22 +172,6 @@ public class ErrorToDiagnoticTranslator {
 		} else if (e.isInfo()) { diagnosticSeverity = Diagnostic.INFO; }
 
 		return diagnosticSeverity;
-	}
-
-	/**
-	 * Find import with.
-	 *
-	 * @param m
-	 *            the m
-	 * @param s
-	 *            the s
-	 * @return the e object
-	 */
-	private EObject findImportWith(final EObject m, final String s) {
-		if (m instanceof Model) {
-			for (final Import i : ((Model) m).getImports()) { if (i.getImportURI().endsWith(s)) return i; }
-		} else if (m instanceof ExperimentFileStructure) return ((ExperimentFileStructure) m).getExp();
-		return m;
 	}
 
 }

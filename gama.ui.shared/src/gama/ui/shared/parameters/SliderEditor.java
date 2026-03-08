@@ -20,12 +20,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import gama.core.kernel.experiment.parameters.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IColor;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.color.IColor;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Cast;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.SimpleSlider;
 import gama.ui.shared.interfaces.EditorListener;

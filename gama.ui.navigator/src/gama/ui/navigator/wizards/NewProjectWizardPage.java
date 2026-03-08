@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * NewProjectWizardPage.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * NewProjectWizardPage.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.wizards;
 
@@ -24,7 +24,6 @@ import java.net.URI;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
@@ -39,6 +38,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
+
+import gama.api.GAMA;
 
 /**
  * The Class NewProjectWizardPage.
@@ -193,9 +194,7 @@ public class NewProjectWizardPage extends WizardPage {
 	 *
 	 * @return the new project resource handle
 	 */
-	public IProject getProjectHandle() {
-		return ResourcesPlugin.getWorkspace().getRoot().getProject(getProjectName());
-	}
+	public IProject getProjectHandle() { return GAMA.getWorkspaceManager().getRoot().getProject(getProjectName()); }
 
 	/**
 	 * Returns the current project name as entered by the user, or its anticipated initial value.
@@ -241,7 +240,7 @@ public class NewProjectWizardPage extends WizardPage {
 	 * @return <code>true</code> if all controls are valid, and <code>false</code> if at least one is invalid
 	 */
 	protected boolean validatePage() {
-		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		final IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
 
 		final String projectFieldContents = getProjectNameFieldValue();
 		if ("".equals(projectFieldContents)) { //$NON-NLS-1$

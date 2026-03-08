@@ -3,7 +3,7 @@
  * MonitorView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,21 +23,20 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 
-import gama.core.common.interfaces.ItemList;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.outputs.IOutput;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.misc.IValue;
+import gama.api.ui.IItemList;
+import gama.api.ui.IOutput;
 import gama.core.outputs.MonitorOutput;
 import gama.core.outputs.ValuedDisplayOutputFactory;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IColor;
 import gama.dev.COUNTER;
-import gama.gaml.compilation.GAML;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IExpressionFactory;
-import gama.gaml.interfaces.IValue;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 import gama.ui.shared.parameters.EditorFactory;
 import gama.ui.shared.parameters.EditorsGroup;
 import gama.ui.shared.resources.IGamaIcons;
@@ -98,7 +97,7 @@ public class MonitorView extends ExpandableItemsView<MonitorOutput> implements I
 		}
 
 		final Text c = (Text) EditorFactory.createExpression(output.getScope(), compo, "Expression:",
-				output.getValue() == null ? IExpressionFactory.NIL_EXPR : expr, newValue -> {
+				output.getValue() == null ? GAML.getExpressionFactory().getNil() : expr, newValue -> {
 					output.setNewExpression((IExpression) newValue);
 					update(output);
 				}, Types.NO_TYPE).getEditor();
@@ -145,7 +144,7 @@ public class MonitorView extends ExpandableItemsView<MonitorOutput> implements I
 	public String getItemDisplayName(final MonitorOutput o, final String previousName) {
 		final StringBuilder sb = new StringBuilder(100);
 		sb.setLength(0);
-		sb.append(o.getName()).append(ItemList.SEPARATION_CODE).append(getValueAsString(o));
+		sb.append(o.getName()).append(IItemList.SEPARATION_CODE).append(getValueAsString(o));
 		if (o.isPaused()) { sb.append(" (paused)"); }
 		return sb.toString();
 
@@ -160,7 +159,7 @@ public class MonitorView extends ExpandableItemsView<MonitorOutput> implements I
 	 */
 	public String getValueAsString(final MonitorOutput o) {
 		final Object v = o.getLastValue();
-		return v == null ? "nil" : v instanceof IValue ? ((IValue) v).serializeToGaml(true) : v.toString();
+		return v == null ? "nil" : v instanceof IValue i ? i.serializeToGaml(true) : v.toString();
 	}
 
 	@Override
@@ -232,7 +231,7 @@ public class MonitorView extends ExpandableItemsView<MonitorOutput> implements I
 	/**
 	 * Method handleMenu()
 	 *
-	 * @see gama.core.common.interfaces.ItemList#handleMenu(java.lang.Object, int, int)
+	 * @see gama.api.ui.IItemList#handleMenu(java.lang.Object, int, int)
 	 */
 	@Override
 	public Map<String, Runnable> handleMenu(final MonitorOutput data, final int x, final int y) {

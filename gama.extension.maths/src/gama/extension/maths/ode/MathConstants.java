@@ -10,10 +10,10 @@
  ********************************************************************************************************/
 package gama.extension.maths.ode;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IConstantCategory;
-import gama.annotations.precompiler.GamlAnnotations.constant;
-import gama.annotations.precompiler.GamlAnnotations.doc;
+import gama.annotations.constant;
+import gama.annotations.doc;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IConstantCategory;
 
 /**
  * The Interface MathConstants.

@@ -30,30 +30,29 @@ import java.util.Base64;
 
 import javax.imageio.ImageIO;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.root.PlatformAgent;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.outputs.IOutput;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.api.GAMA;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.PlatformAgent;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IMatrix;
+import gama.api.ui.IOutput;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.utils.server.MessageType;
 import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.server.MessageType;
-import gama.core.util.GamaColor;
-import gama.core.util.IColor;
-import gama.core.util.matrix.GamaIntMatrix;
-import gama.core.util.matrix.IMatrix;
 import gama.extension.image.ImageHelper.Mode;
 import gama.extension.image.ImageHelper.TransferableImage;
-import gama.gaml.types.IType;
 
 /**
  * The Class ImageOperators. largely inspired from imgscalr library
@@ -209,7 +208,7 @@ public class ImageOperators implements ImageConstants {
 	@no_test
 	public static GamaImage sendImageWebsocket(final IScope scope, final GamaImage image, final String format) {
 
-		PlatformAgent pa = GAMA.getPlatformAgent();
+		PlatformAgent pa = (PlatformAgent) GAMA.getPlatformAgent();
 
 		pa.sendMessage(scope, imgToBase64String(image, format), MessageType.SimulationImage);
 		return image;
@@ -568,7 +567,7 @@ public class ImageOperators implements ImageConstants {
 	@operator ({ "tinted_with", "*" })
 	@doc ("Returns the image tinted using the color passed in parameter. This effectively multiplies the colors of the image by it. The original image is left untouched")
 	@no_test
-	public static GamaImage tint(final IScope scope, final GamaImage image, final GamaColor color) {
+	public static GamaImage tint(final IScope scope, final GamaImage image, final IColor color) {
 		GamaImage result = GamaImage.ofDimensions(image.getWidth(), image.getHeight(), Transparency.TRANSLUCENT);
 		Graphics2D graphics = result.createGraphics();
 		graphics.drawImage(image, 0, 0, null);
@@ -892,7 +891,7 @@ public class ImageOperators implements ImageConstants {
 	public static IMatrix matrix(final IScope scope, final GamaImage image) {
 		final int xSize = image.getWidth();
 		final int ySize = image.getHeight();
-		final IMatrix matrix = new GamaIntMatrix(xSize, ySize);
+		final IMatrix matrix = GamaMatrixFactory.createIntMatrix(xSize, ySize);
 		for (int i = 0; i < xSize; i++) {
 			for (int j = 0; j < ySize; j++) { matrix.set(scope, i, j, image.getRGB(i, j)); }
 		}

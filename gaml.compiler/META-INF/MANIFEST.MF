@@ -4,13 +4,20 @@ Bundle-Name: Gama Modelling Language
 Bundle-Vendor: MSI
 Bundle-Version: 0.0.0.qualifier
 Bundle-SymbolicName: gaml.compiler;singleton:=true
-Require-Bundle: gama.core,
- org.eclipse.xtext,
+Require-Bundle: org.eclipse.xtext,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
  gama.dependencies,
- org.eclipse.xtext.xtext.generator;resolution:=optional
-Export-Package: gaml.compiler.gaml,
+ org.eclipse.xtext.xtext.generator;resolution:=optional,
+ gama.api;bundle-version="0.0.0",
+ org.eclipse.osgi;bundle-version="[3.24.0,4.0.0)",
+ org.eclipse.emf.ecore,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.41.0",
+ org.eclipse.emf.common,
+ org.antlr.runtime;bundle-version="[3.2.0,3.2.1)"
+Export-Package: gaml.compiler,
+ gaml.compiler.gaml,
+ gaml.compiler.gaml.descriptions,
  gaml.compiler.gaml.documentation,
  gaml.compiler.gaml.expression,
  gaml.compiler.gaml.formatting,
@@ -19,34 +26,23 @@ Export-Package: gaml.compiler.gaml,
  gaml.compiler.gaml.linking,
  gaml.compiler.gaml.naming,
  gaml.compiler.gaml.parsing,
+ gaml.compiler.gaml.prototypes,
  gaml.compiler.gaml.resource,
  gaml.compiler.gaml.scoping,
  gaml.compiler.gaml.serializer,
- gaml.compiler.gaml.validation,
- gaml.compiler.gaml,
- gaml.compiler.gaml.impl,
  gaml.compiler.gaml.util,
+ gaml.compiler.gaml.validation,
  gaml.compiler.parser.antlr,
  gaml.compiler.parser.antlr.internal,
+ gaml.compiler.scoping,
+ gaml.compiler.serializer,
  gaml.compiler.services,
  gaml.compiler.validation,
- gaml.compiler,
- gaml.compiler.scoping,
- gaml.compiler.generator,
- gaml.compiler.serializer,
- gaml.compiler.generator,
- gaml.compiler.scoping,
- gaml.compiler.parser.antlr,
- gaml.compiler,
- gaml.compiler.gaml.util,
- gaml.compiler.parser.antlr.internal,
  gaml.compiler.gaml.impl,
- gaml.compiler.serializer,
- gaml.compiler.validation,
- gaml.compiler.services
+ gaml.compiler.generator
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gaml.compiler
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gaml.compiler.GamlActivator
-Import-Package: gama.gaml.interfaces,
- gama.workspace.metadata
+Import-Package: gama.workspace.metadata,
+ org.apache.log4j

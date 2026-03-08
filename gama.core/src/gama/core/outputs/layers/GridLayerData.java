@@ -13,24 +13,25 @@ package gama.core.outputs.layers;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPointFactory;
-import gama.core.metamodel.shape.IPoint;
-import gama.core.metamodel.topology.grid.GridPopulation;
-import gama.core.metamodel.topology.grid.IGrid;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.topology.IGrid;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
+import gama.core.topology.grid.GridPopulation;
 import gama.core.util.matrix.GamaFloatMatrix;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class GridLayerData.
@@ -105,7 +106,8 @@ public class GridLayerData extends LayerData {
 			if (exp != null) {
 				switch (exp.getGamlType().id()) {
 					case IType.MATRIX:
-						return GamaFloatMatrix.from(scope, Cast.asMatrix(scope, exp.value(scope))).getMatrix();
+						return GamaFloatMatrix.from(scope, GamaMatrixFactory.castToMatrix(scope, exp.value(scope)))
+								.getMatrix();
 					case IType.FLOAT:
 					case IType.INT:
 						return grid.getTopology().getPlaces().getGridValueOf(scope, exp);
@@ -184,6 +186,7 @@ public class GridLayerData extends LayerData {
 	 *
 	 * @return true, if successful
 	 */
+	@Override
 	public boolean drawLines() {
 		return line.get() != null && turnGridOn;
 	}

@@ -120,7 +120,7 @@ experiment main type: gui {
 		}
 		display view3D type: 3d antialias: false {
 			light #ambient intensity: 80;
-			image "../includes/luneray.jpg" refresh:false; 
+			picture "../includes/luneray.jpg" refresh:false; 
 			species building aspect:geom3D refresh: false;
 			species road aspect: geom3D refresh: false;
 			species people aspect: geom3D ; 

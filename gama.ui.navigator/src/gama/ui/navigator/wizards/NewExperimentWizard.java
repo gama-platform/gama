@@ -1,34 +1,32 @@
 /*******************************************************************************************************
  *
- * NewExperimentWizard.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * NewExperimentWizard.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.wizards;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.ui.INewWizard;
 
+import gama.api.GAMA;
 import gama.gaml.operators.Strings;
 
 /**
  * The Class NewExperimentWizard.
  */
-public class NewExperimentWizard extends AbstractNewModelWizard implements INewWizard {
+public class NewExperimentWizard extends AbstractNewModelWizard {
 
 	@Override
 	protected String getHeader(final IContainer folder, final String str, final String title, final String author,
 			final String desc) {
-		final IResource model =
-				ResourcesPlugin.getWorkspace().getRoot().findMember(getPage().getExperimentedModelPath());
+		final IResource model = GAMA.getWorkspaceManager().getRoot().findMember(getPage().getExperimentedModelPath());
 		final IPath pathToModel;
 		if (model == null || model.getType() != IResource.FILE) {
 			pathToModel = null;
@@ -47,13 +45,9 @@ public class NewExperimentWizard extends AbstractNewModelWizard implements INewW
 	}
 
 	@Override
-	public NewExperimentWizardPage getPage() {
-		return (NewExperimentWizardPage) page;
-	}
+	public NewExperimentWizardPage getPage() { return (NewExperimentWizardPage) page; }
 
 	@Override
-	protected String getDefaultFolderForModels() {
-		return "models";
-	}
+	protected String getDefaultFolderForModels() { return "models"; }
 
 }

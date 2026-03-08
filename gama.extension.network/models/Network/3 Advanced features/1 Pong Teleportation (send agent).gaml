@@ -29,8 +29,8 @@ global {
 		create Pong number:10{
 			myColor <- rnd_color(255);		
 		}
-		create Buffer with:[zone::0];
-		create Buffer with:[zone::1];
+		create Buffer with:(zone:0);
+		create Buffer with:(zone:1);
 	}
 }
 
@@ -77,7 +77,7 @@ species Buffer skills:[network]
 		{
 			message msg <- fetch_message();
 			map<string, unknown> details <- map(msg.contents);
-			create Pong with:[name::details["name"],myColor::details["mcolor"],location::details["location"]]
+			create Pong with:(name:details["name"],myColor:details["mcolor"],location:details["location"])
 			{
 				location <- {myself.location.x,location.y};
 				last_zone <- myself.zone;
@@ -120,7 +120,7 @@ experiment start
 		seed <- 1.0;
 		loop i from:1 to: nb_simul -1
 		{
-			create simulation with: [simulation_id::i, seed::1+i, numberOfSimulation::nb_simul];
+			create simulation with: (simulation_id:i, seed:1+i, numberOfSimulation:nb_simul);
 						
 		}
 	}

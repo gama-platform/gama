@@ -17,8 +17,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Control;
 
-import gama.core.util.GamaColorFactory;
-import gama.core.util.IColor;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -161,7 +161,7 @@ public class GamaColors {
 		 * @date 20 août 2023
 		 */
 		public IColor gamaColor() {
-			return GamaColorFactory.get(active.getRed(), active.getGreen(), active.getBlue(), active.getAlpha());
+			return GamaColorFactory.createWithRGBA(active.getRed(), active.getGreen(), active.getBlue(), active.getAlpha());
 		}
 	}
 

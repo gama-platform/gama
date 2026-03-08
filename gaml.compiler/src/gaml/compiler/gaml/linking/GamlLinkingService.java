@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlLinkingService.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlLinkingService.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,11 +28,11 @@ import org.eclipse.xtext.scoping.IScope;
 
 import com.google.inject.Inject;
 
-import gama.core.runtime.IExecutionContext;
+import gama.api.runtime.scope.IExecutionContext;
 import gaml.compiler.gaml.EGaml;
-import gaml.compiler.gaml.resource.GamlResource;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
+import gaml.compiler.gaml.resource.GamlResource;
 
 /**
  * The class GamlLinkingService.
@@ -75,22 +75,13 @@ public class GamlLinkingService extends DefaultLinkingService {
 	 * @return the list
 	 */
 	public List<EObject> addSymbol(final String name, final EClass clazz) {
-		Map<String, List<EObject>> refLists = STUB_NAMES.get(clazz);
-		if (refLists == null) {
-			refLists = new ConcurrentHashMap<>();
-			STUB_NAMES.put(clazz, refLists);
-		}
-		List<EObject> list = refLists.get(name);
-		if (list == null) {
-			// DEBUG.LOG("Adding stub reference to " + name + " as a "
-			// + clazz.getName());
-			// DEBUG.LOG("****************************************************");
+		final Map<String, List<EObject>> refLists = STUB_NAMES.computeIfAbsent(clazz, k -> new ConcurrentHashMap<>());
+		return refLists.computeIfAbsent(name, k -> {
+			// DEBUG.LOG("Adding stub reference to " + name + " as a " + clazz.getName());
 			final EObject stub = create(name, clazz);
 			getResource().getContents().add(stub);
-			list = Collections.singletonList(stub);
-			refLists.put(name, list);
-		}
-		return list;
+			return Collections.singletonList(stub);
+		});
 	}
 
 	/**
@@ -109,15 +100,21 @@ public class GamlLinkingService extends DefaultLinkingService {
 	}
 
 	/**
-	 * Gets the resource.
+	 * Gets the resource in a thread-safe manner.
 	 *
 	 * @return the resource
 	 */
 	private Resource getResource() {
-		if (STUB_RESOURCE == null) {
-			STUB_RESOURCE = resourceSet.createResource(URI.createURI("gaml:/newSymbols.xmi", false));
+		Resource resource = STUB_RESOURCE;
+		if (resource == null) {
+			synchronized (GamlLinkingService.class) {
+				resource = STUB_RESOURCE;
+				if (resource == null) {
+					STUB_RESOURCE = resource = resourceSet.createResource(URI.createURI("gaml:/newSymbols.xmi", false));
+				}
+			}
 		}
-		return STUB_RESOURCE;
+		return resource;
 	}
 
 	@Override
@@ -140,17 +137,23 @@ public class GamlLinkingService extends DefaultLinkingService {
 			throws IllegalNodeException {
 		final List<EObject> result = super.getLinkedObjects(context, ref, node);
 		// If the default implementation resolved the link, return it
-		if (null != result && !result.isEmpty()) return result;
+		if (result != null && !result.isEmpty()) return result;
+		
 		final String name = getCrossRefNodeAsString(node);
-		EClass eclass = ref.getEReferenceType();
+		final EClass eclass = ref.getEReferenceType();
+		
+		// Check if this is a known symbol type that should be added to stubs
 		if (GamlPackage.eINSTANCE.getTypeDefinition().isSuperTypeOf(eclass)
 				|| GamlPackage.eINSTANCE.getActionDefinition().isSuperTypeOf(eclass)
 				|| GamlPackage.eINSTANCE.getVarDefinition().isSuperTypeOf(eclass))
-			return addSymbol(name, ref.getEReferenceType());
+			return addSymbol(name, eclass);
+		
+		// Check for local variables in the execution context
 		final GamlResource resource = (GamlResource) context.eResource();
 		final IExecutionContext additionalContext = resource.getCache().getOrCreate(resource).get("linking");
 		if (additionalContext != null && additionalContext.hasLocalVar(name))
-			return Collections.singletonList(create(name, ref.getEReferenceType()));
-		return Collections.EMPTY_LIST;
+			return Collections.singletonList(create(name, eclass));
+		
+		return Collections.emptyList();
 	}
 }

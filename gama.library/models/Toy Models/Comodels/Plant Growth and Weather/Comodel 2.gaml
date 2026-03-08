@@ -18,10 +18,10 @@ global {
 	plantGrow plantGrow_simu;
 		
 	init {
-		create weather."Weather Co-Modeling" with: [grid_size::20,write_in_console_step::false];
+		create weather."Weather Co-Modeling" with: (grid_size:20,write_in_console_step:false);
 		weather_simu <- first(weather."Weather Co-Modeling").simulation; 
 		
-		create plantGrow."Plant Growth Co-Modeling" with: [grid_size::40];
+		create plantGrow."Plant Growth Co-Modeling" with: (grid_size:40);
 		plantGrow_simu <- first(plantGrow."Plant Growth Co-Modeling").simulation; 		
 	}
 

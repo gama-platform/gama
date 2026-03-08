@@ -159,8 +159,8 @@ public class GeometryCollectionHandler extends DelegatingHandler<GeometryCollect
 	@Override
 	public boolean primitive(final Object value) throws ParseException, IOException {
 		/*
-		 * handle special case of "type" belonging to one of the collection's geometries being found after "coordinates"
-		 * for that geometry.
+		 * handle special case of IKeyword.TYPE belonging to one of the collection's geometries being found after
+		 * "coordinates" for that geometry.
 		 */
 		if (geoms == null || !(value instanceof String) || delegate != UNINITIALIZED) return super.primitive(value);
 		delegateClass = lookupDelegate(value.toString());

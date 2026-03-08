@@ -15,7 +15,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.PlatformUI;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 
 /**
  * The Class SwitchWorkspaceHandler.

@@ -12,24 +12,24 @@ package gama.core.outputs.layers;
 
 import java.awt.geom.Rectangle2D;
 
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ILayer.IGridLayer;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IExecutionResult;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IColor;
-import gama.gaml.operators.Cast;
-import gama.gaml.statements.IExecutable;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.IExecutable;
+import gama.api.runtime.scope.IExecutionResult;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IShape;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayerStatement;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 
 /**
  * The Class HexagonalGridLayer.
  */
-public class HexagonalGridLayer extends AgentLayer implements IGridLayer {
+public class HexagonalGridLayer extends AgentLayer {
 
 	/**
 	 * Instantiates a new grid agent layer.
@@ -58,7 +58,7 @@ public class HexagonalGridLayer extends AgentLayer implements IGridLayer {
 			final IGraphics g = sc.getGraphics();
 			try {
 				if (agent == sc.getGui().getHighlightedAgent()) { g.beginHighlight(); }
-				final IColor color = Cast.asColor(sc, agent.getDirectVarValue(sc, IKeyword.COLOR));
+				final IColor color = GamaColorFactory.castToColor(sc, agent.getDirectVarValue(sc, IKeyword.COLOR));
 				final IShape ag = agent.getGeometry();
 				final IShape ag2 = ag.copy(sc);
 				final DrawingAttributes attributes = new ShapeDrawingAttributes(ag2, agent, color, borderColor);

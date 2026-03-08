@@ -49,7 +49,7 @@ global {
 
 		Gama_shape_file <- shape_file("../includes/GamaVectorized.shp");
 		
-		create object from:Gama_shape_file with:[type::string(get("type")), name::string(get("name")),level::int(get("level"))]{
+		create object from:Gama_shape_file with:(type:string(get("type")), name:string(get("name")),level:int(get("level"))){
 		    origin <- myself.origin;
 		    color<-#white;
 		    if (name = "gamablue"){

@@ -46,7 +46,7 @@ species building {
 experiment exp {
 	output {
 		display main type: 3d {
-			image static_map_request;
+			picture static_map_request;
 			species building;
 		}
 
