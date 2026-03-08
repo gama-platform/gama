@@ -16,7 +16,7 @@ import gama.api.ui.displays.IDisplayData;
 import gama.ui.display.opengl4.OpenGL;
 import gama.ui.display.opengl4.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl4.view.GamaGLCanvas;
-import gama.ui.display.opengl4.view.SWTOpenGLDisplaySurface;
+import gama.ui.display.opengl4.view.OpenGL4DisplaySurface;
 
 /**
  * The Class AbstractRendererHelper.
@@ -93,7 +93,7 @@ public abstract class AbstractRendererHelper {
 	 *
 	 * @return the surface
 	 */
-	protected SWTOpenGLDisplaySurface getSurface() { return renderer.getSurface(); }
+	protected OpenGL4DisplaySurface getSurface() { return renderer.getSurface(); }
 
 	/**
 	 * Gets the max env dim.

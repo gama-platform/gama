@@ -48,7 +48,7 @@ import gama.ui.display.opengl4.renderer.helpers.PickingHelper;
 import gama.ui.display.opengl4.renderer.helpers.SceneHelper;
 import gama.ui.display.opengl4.scene.ModelScene;
 import gama.ui.display.opengl4.view.GamaGLCanvas;
-import gama.ui.display.opengl4.view.SWTOpenGLDisplaySurface;
+import gama.ui.display.opengl4.view.OpenGL4DisplaySurface;
 import gama.ui.shared.utils.DPIHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
 
@@ -142,7 +142,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	}
 
 	@Override
-	public SWTOpenGLDisplaySurface getSurface() { return (SWTOpenGLDisplaySurface) surface; }
+	public OpenGL4DisplaySurface getSurface() { return (OpenGL4DisplaySurface) surface; }
 
 	@Override
 	public final GamaGLCanvas getCanvas() { return canvas; }

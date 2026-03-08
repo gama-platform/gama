@@ -10,8 +10,6 @@
  ********************************************************************************************************/
 package gama.api.utils.geometry;
 
-import java.util.List;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
@@ -64,68 +62,6 @@ public class GamaGeometryFactory extends GeometryFactory {
 	}
 
 	/**
-	 * Checks if an array of coordinates forms a valid ring (closed loop). A valid ring must have at least 4 points and
-	 * the first point must equal the last.
-	 *
-	 * @param pts
-	 *            the array of coordinates.
-	 * @return true if the coordinates form a valid ring, false otherwise.
-	 */
-	public static boolean isRing(final Coordinate[] pts) {
-		if (pts.length < 4 || !pts[0].equals(pts[pts.length - 1])) return false;
-		return true;
-	}
-
-	/**
-	 * Checks if an array of {@link IPoint} forms a valid ring.
-	 *
-	 * @param pts
-	 *            the array of points.
-	 * @return true if the points form a valid ring, false otherwise.
-	 */
-	public static boolean isRing(final IPoint[] pts) {
-		if (pts.length < 4 || !pts[0].equals(pts[pts.length - 1])) return false;
-		return true;
-	}
-
-	/**
-	 * Checks if a list of {@link IPoint} forms a valid ring.
-	 *
-	 * @param pts
-	 *            the list of points.
-	 * @return true if the points form a valid ring, false otherwise.
-	 */
-	public static boolean isRing(final List<IPoint> pts) {
-		final int size = pts.size();
-		if (size < 4 || !pts.get(0).equals(pts.get(size - 1))) return false;
-		return true;
-	}
-
-	/**
-	 * Calculates the signed area of a ring defined by points using the Shoelace formula. The sign indicates the
-	 * orientation (positive for counter-clockwise, usually).
-	 *
-	 * @param ring
-	 *            the array of points forming the ring.
-	 * @return the signed area.
-	 */
-	public static double signedArea(final IPoint[] ring) {
-		if (ring.length < 3) return 0.0;
-		double sum = 0.0;
-		/*
-		 * Based on the Shoelace formula. http://en.wikipedia.org/wiki/Shoelace_formula
-		 */
-		double x0 = ring[0].getX();
-		for (int i = 1; i < ring.length - 1; i++) {
-			double x = ring[i].getX() - x0;
-			double y1 = ring[i + 1].getY();
-			double y2 = ring[i - 1].getY();
-			sum += x * (y2 - y1);
-		}
-		return sum / 2.0;
-	}
-
-	/**
 	 * Creates a {@link LinearRing} from an array of coordinates. If the coordinates do not form a closed ring, the
 	 * first point is appended to the end. No clockwiseness enforcement is performed here.
 	 *
@@ -136,7 +72,7 @@ public class GamaGeometryFactory extends GeometryFactory {
 	@Override
 	public LinearRing createLinearRing(final Coordinate[] coordinates) {
 		Coordinate[] coords = coordinates;
-		if (!isRing(coords)) { coords = ArrayUtils.add(coords, coords[0]); }
+		if (!GeometryUtils.isRing(coords)) { coords = ArrayUtils.add(coords, coords[0]); }
 		return createLinearRing(JTS_COORDINATES_FACTORY.create(coords));
 	}
 

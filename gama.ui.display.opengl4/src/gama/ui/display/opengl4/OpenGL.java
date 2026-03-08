@@ -35,11 +35,9 @@ import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.ui.layers.IDrawingAttributes;
 import gama.api.ui.layers.IDrawingAttributes.DrawerType;
-import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.EarCut2D;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
-import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.ICoordinates;
-import gama.api.utils.geometry.ICoordinates.VertexVisitor;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.Scaling3D;
@@ -128,27 +126,27 @@ public class OpenGL extends AbstractRendererHelper {
 	}
 
 	/**
-	 * Returns the current model-view {@link org.joml.Matrix4f}. Used by {@link gama.ui.display.opengl4.scene.text.TextDrawer}
-	 * to feed the scene matrices to the JOGL graph/curve {@code RegionRenderer}.
+	 * Returns the current model-view {@link org.joml.Matrix4f}. Used by
+	 * {@link gama.ui.display.opengl4.scene.text.TextDrawer} to feed the scene matrices to the JOGL graph/curve
+	 * {@code RegionRenderer}.
 	 *
 	 * @return the model-view matrix (live reference — do not mutate)
 	 */
-	public org.joml.Matrix4f getModelViewMatrix() {
-		return modelViewMatrix.getCurrentMatrix();
-	}
+	public org.joml.Matrix4f getModelViewMatrix() { return modelViewMatrix.getCurrentMatrix(); }
 
 	/**
-	 * Returns the current projection {@link org.joml.Matrix4f}. Used by {@link gama.ui.display.opengl4.scene.text.TextDrawer}
-	 * to feed the scene matrices to the JOGL graph/curve {@code RegionRenderer}.
+	 * Returns the current projection {@link org.joml.Matrix4f}. Used by
+	 * {@link gama.ui.display.opengl4.scene.text.TextDrawer} to feed the scene matrices to the JOGL graph/curve
+	 * {@code RegionRenderer}.
 	 *
 	 * @return the projection matrix (live reference — do not mutate)
 	 */
-	public org.joml.Matrix4f getProjectionMatrix() {
-		return projectionMatrix.getCurrentMatrix();
-	}
+	public org.joml.Matrix4f getProjectionMatrix() { return projectionMatrix.getCurrentMatrix(); }
 
-	/** The glu. Used for GLU tessellator callbacks ({@code gluTessCallback} etc.) and for {@code gluProject} in
-	 * {@link #reshape} and {@link #getPixelWidthAndHeightOfWorld}. Not used for any fixed-function rendering. */
+	/**
+	 * The glu. Used for GLU tessellator callbacks ({@code gluTessCallback} etc.) and for {@code gluProject} in
+	 * {@link #reshape} and {@link #getPixelWidthAndHeightOfWorld}. Not used for any fixed-function rendering.
+	 */
 	private final GLU glu;
 
 	/** The view height. */
@@ -591,8 +589,8 @@ public class OpenGL extends AbstractRendererHelper {
 	}
 
 	/**
-	 * Update light mode. In core GL4, per-vertex fixed-function lighting (GL_LIGHTING) has been removed.
-	 * Lighting is handled entirely in shaders; this method is intentionally empty.
+	 * Update light mode. In core GL4, per-vertex fixed-function lighting (GL_LIGHTING) has been removed. Lighting is
+	 * handled entirely in shaders; this method is intentionally empty.
 	 */
 	private void updateLightMode() {
 		// GL_LIGHTING is not available in OpenGL 4 core profile.
@@ -735,6 +733,12 @@ public class OpenGL extends AbstractRendererHelper {
 		}
 	}
 
+	/**
+	 * Begin drawing.
+	 *
+	 * @param style
+	 *            the style
+	 */
 	public void beginDrawing(final int style) {
 		currentDrawStyle = style;
 		currentVertices.clear();
@@ -743,8 +747,11 @@ public class OpenGL extends AbstractRendererHelper {
 		currentVertexCount = 0;
 	}
 
+	/**
+	 * End drawing.
+	 */
 	public void endDrawing() {
-		if ((currentVertices.position() == 0) || (basicShader == null) || vaoId < 0) return;
+		if (currentVertices.position() == 0 || basicShader == null || vaoId < 0) return;
 		basicShader.start();
 		gl.glBindVertexArray(vaoId);
 
@@ -933,41 +940,46 @@ public class OpenGL extends AbstractRendererHelper {
 	}
 
 	/**
-	 * Triangulates an arbitrary {@link Polygon} (with optional holes) using the {@link EarCut2D} tessellator
-	 * and emits the resulting triangles via {@link #beginDrawing}/{@link #outputVertex}/{@link #endDrawing}.
+	 * Triangulates an arbitrary {@link Polygon} (with optional holes) using the {@link EarCut2D} tessellator and emits
+	 * the resulting triangles via {@link #beginDrawing}/{@link #outputVertex}/{@link #endDrawing}.
 	 *
-	 * <p>Replaces the former GLU {@code gluTessBeginPolygon} / {@code gluTessEndPolygon} path. The outer ring
-	 * and each inner ring (hole) are collected as flat {@code double[]} coordinate arrays (x,y alternating)
-	 * and passed to {@link EarCut2D#triangulate(double[], int[][], int)}. The resulting triangle-index list
-	 * is used to look up vertices from the outer ring and hole rings.</p>
+	 * <p>
+	 * Replaces the former GLU {@code gluTessBeginPolygon} / {@code gluTessEndPolygon} path. The outer ring and each
+	 * inner ring (hole) are collected as flat {@code double[]} coordinate arrays (x,y alternating) and passed to
+	 * {@link EarCut2D#triangulate(double[], int[][], int)}. The resulting triangle-index list is used to look up
+	 * vertices from the outer ring and hole rings.
+	 * </p>
 	 *
-	 * @param p                 the JTS {@link Polygon} (provides the hole rings)
-	 * @param yNegatedVertices  the outer ring coordinates, already Y-negated and in clockwise order
-	 * @param clockwise         whether {@code yNegatedVertices} is in clockwise order
+	 * @param p
+	 *            the JTS {@link Polygon} (provides the hole rings)
+	 * @param yNegatedVertices
+	 *            the outer ring coordinates, already Y-negated and in clockwise order
+	 * @param clockwise
+	 *            whether {@code yNegatedVertices} is in clockwise order
 	 */
 	public void drawPolygon(final Polygon p, final ICoordinates yNegatedVertices, final boolean clockwise) {
 		// --- collect outer ring as flat (x,y) array ---
 		final int outerN = yNegatedVertices.size();
-		final double[] outer   = new double[outerN * 2];
+		final double[] outer = new double[outerN * 2];
 		final double[] zValues = new double[outerN];
 		yNegatedVertices.visit((id, x, y, z) -> {
-			outer[id * 2]     = x;
+			outer[id * 2] = x;
 			outer[id * 2 + 1] = y;
-			zValues[id]       = z;
+			zValues[id] = z;
 		}, outerN, clockwise);
 
 		// --- collect hole rings ---
 		final int holeCount = p.getNumInteriorRing();
 		final double[][] holeCoords = new double[holeCount][];
-		final double[][] holeZ      = new double[holeCount][];
+		final double[][] holeZ = new double[holeCount][];
 		for (int h = 0; h < holeCount; h++) {
 			final org.locationtech.jts.geom.Coordinate[] hc = p.getInteriorRingN(h).getCoordinates();
 			holeCoords[h] = new double[hc.length * 2];
-			holeZ[h]      = new double[hc.length];
+			holeZ[h] = new double[hc.length];
 			for (int i = 0; i < hc.length; i++) {
-				holeCoords[h][i * 2]     = hc[i].getX();
+				holeCoords[h][i * 2] = hc[i].getX();
 				holeCoords[h][i * 2 + 1] = -hc[i].getY(); // Y-negate to match outer ring
-				holeZ[h][i]              = hc[i].getZ();
+				holeZ[h][i] = hc[i].getZ();
 			}
 		}
 
@@ -977,12 +989,14 @@ public class OpenGL extends AbstractRendererHelper {
 
 		// Build a combined vertex lookup: indices 0..outerN-1 → outer ring, then hole rings
 		int totalVerts = outerN;
-		for (final double[] hc : holeCoords) { if (hc != null) totalVerts += hc.length / 2; }
+		for (final double[] hc : holeCoords) { if (hc != null) { totalVerts += hc.length / 2; } }
 		final double[] allX = new double[totalVerts];
 		final double[] allY = new double[totalVerts];
 		final double[] allZ = new double[totalVerts];
 		for (int i = 0; i < outerN; i++) {
-			allX[i] = outer[i * 2]; allY[i] = outer[i * 2 + 1]; allZ[i] = zValues[i];
+			allX[i] = outer[i * 2];
+			allY[i] = outer[i * 2 + 1];
+			allZ[i] = zValues[i];
 		}
 		int off = outerN;
 		for (int h = 0; h < holeCount; h++) {
@@ -999,9 +1013,7 @@ public class OpenGL extends AbstractRendererHelper {
 		setNormal(yNegatedVertices, clockwise);
 
 		beginDrawing(GL.GL_TRIANGLES);
-		for (final int idx : indices) {
-			outputVertex(allX[idx], allY[idx], allZ[idx]);
-		}
+		for (final int idx : indices) { outputVertex(allX[idx], allY[idx], allZ[idx]); }
 		endDrawing();
 	}
 
@@ -1113,6 +1125,18 @@ public class OpenGL extends AbstractRendererHelper {
 		outputVertex(coords.getX(), coords.getY(), coords.getZ());
 	}
 
+	/**
+	 * Draw vertex.
+	 *
+	 * @param i
+	 *            the i
+	 * @param x
+	 *            the x
+	 * @param y
+	 *            the y
+	 * @param z
+	 *            the z
+	 */
 	public void drawVertex(final int i, final double x, final double y, final double z) {
 		if (isTextured()) {
 			textureCoords.setLocation(x, y, z);
@@ -1428,17 +1452,22 @@ public class OpenGL extends AbstractRendererHelper {
 	 * Draws one string in raster at the given coords and with the given font.
 	 *
 	 * <p>
-	 * <b>GL4 core profile limitation:</b> GLUT bitmap strings rely on {@code glBitmap()} and
-	 * {@code glRasterPos3d()}, both removed from the OpenGL 4 core profile. This method is a no-op
-	 * in the current implementation. Text that must be visible should be drawn via
-	 * {@link gama.ui.display.opengl4.scene.text.TextDrawer} with {@code isPerspective = true}.
+	 * <b>GL4 core profile limitation:</b> GLUT bitmap strings rely on {@code glBitmap()} and {@code glRasterPos3d()},
+	 * both removed from the OpenGL 4 core profile. This method is a no-op in the current implementation. Text that must
+	 * be visible should be drawn via {@link gama.ui.display.opengl4.scene.text.TextDrawer} with
+	 * {@code isPerspective = true}.
 	 * </p>
 	 *
-	 * @param s    the string
-	 * @param font the GLUT font constant
-	 * @param x    x coordinate
-	 * @param y    y coordinate
-	 * @param z    z coordinate
+	 * @param s
+	 *            the string
+	 * @param font
+	 *            the GLUT font constant
+	 * @param x
+	 *            x coordinate
+	 * @param y
+	 *            y coordinate
+	 * @param z
+	 *            z coordinate
 	 */
 	public void rasterText(final String s, final int font, final double x, final double y, final double z) {
 		// No-op in GL4 core: glBitmap / glRasterPos3d have been removed.
@@ -1526,13 +1555,14 @@ public class OpenGL extends AbstractRendererHelper {
 
 	/**
 	 * Register for selection. Encodes the object index into the current colour using the colour-buffer picking
-	 * convention: red = low byte, green = high byte, blue = 0 (background uses blue = 0xFF).
-	 * This colour will be emitted by subsequent {@link #outputVertex} calls during the picking pass.
+	 * convention: red = low byte, green = high byte, blue = 0 (background uses blue = 0xFF). This colour will be
+	 * emitted by subsequent {@link #outputVertex} calls during the picking pass.
 	 *
-	 * @param index the object index (0…65535)
+	 * @param index
+	 *            the object index (0…65535)
 	 */
 	public void registerForSelection(final int index) {
-		setCurrentColor((index & 0xFF) / 255.0, ((index >> 8) & 0xFF) / 255.0, 0.0, 1.0);
+		setCurrentColor((index & 0xFF) / 255.0, (index >> 8 & 0xFF) / 255.0, 0.0, 1.0);
 	}
 
 	// LISTS
@@ -1549,11 +1579,12 @@ public class OpenGL extends AbstractRendererHelper {
 	private int nextListId = 1;
 
 	/**
-	 * Compile as list. Stores the provided {@link Runnable} under a new unique index and executes it immediately
-	 * (so that the first draw also initialises any state the lambda depends on). Returns the index that can be
-	 * passed to {@link #drawList(int)} to replay the geometry.
+	 * Compile as list. Stores the provided {@link Runnable} under a new unique index and executes it immediately (so
+	 * that the first draw also initialises any state the lambda depends on). Returns the index that can be passed to
+	 * {@link #drawList(int)} to replay the geometry.
 	 *
-	 * @param r the geometry-producing runnable
+	 * @param r
+	 *            the geometry-producing runnable
 	 * @return the list index
 	 */
 	public int compileAsList(final Runnable r) {
@@ -1565,7 +1596,8 @@ public class OpenGL extends AbstractRendererHelper {
 	/**
 	 * Draw list. Replays the {@link Runnable} stored under the given index.
 	 *
-	 * @param i the list index returned by {@link #compileAsList(Runnable)}
+	 * @param i
+	 *            the list index returned by {@link #compileAsList(Runnable)}
 	 */
 	public void drawList(final int i) {
 		final Runnable r = listCache.get(i);
@@ -1575,7 +1607,8 @@ public class OpenGL extends AbstractRendererHelper {
 	/**
 	 * Delete list. Removes the stored {@link Runnable} for the given index.
 	 *
-	 * @param index the list index to remove
+	 * @param index
+	 *            the list index to remove
 	 */
 	public void deleteList(final Integer index) {
 		if (index != null) { listCache.remove(index); }
@@ -1802,7 +1835,8 @@ public class OpenGL extends AbstractRendererHelper {
 		gl.glEnable(GL.GL_DEPTH_TEST);
 		// Disabling line smoothing to only rely on FSAA
 		gl.glEnable(GL.GL_LINE_SMOOTH);
-		// GL_NORMALIZE is a fixed-function lighting constant removed in GL4 core profile; normals are normalized in shaders.
+		// GL_NORMALIZE is a fixed-function lighting constant removed in GL4 core profile; normals are normalized in
+		// shaders.
 		// Enabling multi-sampling
 		gl.glEnable(GL.GL_MULTISAMPLE);
 		// Setting the default polygon mode
@@ -1834,32 +1868,37 @@ public class OpenGL extends AbstractRendererHelper {
 	public boolean isInRotationMode() { return rotationMode; }
 
 	/**
-	 * Draws a string in fixed screen-space (overlay) coordinates using the JOGL graph/curve renderer.
-	 * The position {@code (x, y)} is in pixels measured from the bottom-left corner of the viewport.
-	 * This replaces every former call to {@link #rasterText} which is a no-op in GL4 core.
+	 * Draws a string in fixed screen-space (overlay) coordinates using the JOGL graph/curve renderer. The position
+	 * {@code (x, y)} is in pixels measured from the bottom-left corner of the viewport. This replaces every former call
+	 * to {@link #rasterText} which is a no-op in GL4 core.
 	 *
-	 * @param s    the string to draw
-	 * @param font the AWT font to use
-	 * @param x    x position in pixels from the left edge of the viewport
-	 * @param y    y position in pixels from the bottom edge of the viewport
+	 * @param s
+	 *            the string to draw
+	 * @param font
+	 *            the AWT font to use
+	 * @param x
+	 *            x position in pixels from the left edge of the viewport
+	 * @param y
+	 *            y position in pixels from the bottom edge of the viewport
 	 */
 	public void drawScreenText(final String s, final java.awt.Font font, final double x, final double y) {
 		final TextDrawer td = (TextDrawer) drawers.get(DrawerType.STRING);
 		if (td == null) return;
 		// Build minimal IDrawingAttributes in overlay (screen-space) mode
-		final gama.gaml.statements.draw.TextDrawingAttributes attr = new gama.gaml.statements.draw.TextDrawingAttributes(
-				gama.api.utils.geometry.Scaling3D.of(1, 1, 1), null,
-				gama.api.types.geometry.GamaPointFactory.create(x, y, 0), getCurrentColor());
+		final gama.gaml.statements.draw.TextDrawingAttributes attr =
+				new gama.gaml.statements.draw.TextDrawingAttributes(gama.api.utils.geometry.Scaling3D.of(1, 1, 1), null,
+						gama.api.types.geometry.GamaPointFactory.create(x, y, 0), getCurrentColor());
 		attr.setFont(gama.api.types.font.GamaFontFactory.createFontFrom(font));
 		attr.setPerspective(false);
 		td.drawWithGraphLibraryPublic(s, attr, true);
 	}
 
 	/**
-	 * Draw FPS. Renders the current frames-per-second count in the top-left corner of the display
-	 * using the JOGL graph/curve screen-space renderer.
+	 * Draw FPS. Renders the current frames-per-second count in the top-left corner of the display using the JOGL
+	 * graph/curve screen-space renderer.
 	 *
-	 * @param doIt whether the FPS counter should be drawn
+	 * @param doIt
+	 *            whether the FPS counter should be drawn
 	 */
 	public void drawFPS(final boolean doIt) {
 		if (doIt) {
@@ -1914,285 +1953,6 @@ public class OpenGL extends AbstractRendererHelper {
 	public boolean isRenderingKeystone() {
 		KeystoneHelper k = getRenderer().getKeystoneHelper();
 		return k.isActive() || getRenderer().getData().isKeystoneDefined();
-	}
-
-	// =========================================================================
-	// EarCut2D — self-contained 2-D polygon triangulator (replaces GLU tessellator)
-	// =========================================================================
-
-	/**
-	 * Pure-Java 2-D ear-clipping triangulator for simple polygons with holes.
-	 *
-	 * <p>This replaces the former {@code GLU gluTessBeginPolygon / gluTessEndPolygon} path in
-	 * {@link OpenGL#drawPolygon} and the {@code GLU gluTessBeginPolygon} path in
-	 * {@link gama.ui.display.opengl4.scene.text.TextDrawer}. It has no GL dependency and runs
-	 * entirely on the CPU at draw-setup time.</p>
-	 *
-	 * <h3>Algorithm</h3>
-	 * <ol>
-	 * <li><b>Outer ring</b> is made counter-clockwise (positive signed area). Each <b>hole</b> ring is
-	 * made clockwise (negative signed area).</li>
-	 * <li>Each hole is connected to the outer ring via a <em>bridge edge</em>: the rightmost vertex of
-	 * the hole is found, a visible vertex on the outer ring is located, and the rings are merged into a
-	 * single simple polygon by inserting two bridge vertices.</li>
-	 * <li>Ear-clipping runs on the merged ring: at each step the "ear tip" with the smallest absolute
-	 * diagonal length (stable sort) is clipped, producing one triangle, until only a triangle remains.</li>
-	 * </ol>
-	 *
-	 * <p>This is the same O(n²) algorithm used by Three.js, Mapbox GL JS, and earcut.js for real-time
-	 * geometry tessellation. It correctly handles convex and concave polygons, multi-hole outlines, and
-	 * degenerate (zero-area) ears which are silently skipped.</p>
-	 *
-	 * <h3>Input format</h3>
-	 * <ul>
-	 * <li>{@code outer}: flat {@code double[]} of {@code [x0,y0, x1,y1, …]} for the outer boundary.
-	 *     The last vertex must not duplicate the first (open ring).</li>
-	 * <li>{@code holes}: array of flat {@code double[]} arrays, one per hole, same format as {@code outer}.
-	 *     May be {@code null} or empty.</li>
-	 * <li>{@code outerCount}: number of vertices in {@code outer} (i.e. {@code outer.length / 2}).</li>
-	 * </ul>
-	 *
-	 * <h3>Output format</h3>
-	 * A flat {@code int[]} of vertex indices into the <em>combined</em> vertex list
-	 * ({@code outer} vertices numbered {@code 0..outerCount-1}, then hole vertices in order).
-	 * Each group of three indices is one triangle: {@code [i0, i1, i2, i3, i4, i5, …]}.
-	 * Returns an empty array if the polygon has fewer than 3 vertices.
-	 */
-	public static final class EarCut2D {
-
-		/** Private constructor — utility class, never instantiated. */
-		private EarCut2D() {}
-
-		/**
-		 * Triangulates a 2-D polygon with optional holes.
-		 *
-		 * @param outer      flat {@code double[x0,y0,x1,y1,…]} outer ring (open, not closed)
-		 * @param holes      flat hole rings in the same format, or {@code null}
-		 * @param outerCount number of vertices in {@code outer}
-		 * @return flat {@code int[]} of triangle vertex indices, or empty array on failure
-		 */
-		public static int[] triangulate(final double[] outer, final double[][] holes, final int outerCount) {
-			if (outerCount < 3) return new int[0];
-
-			// ---- build the mutable linked-ring of nodes ----
-			// Each node: [x, y, globalIndex, prev, next] stored in parallel arrays for speed.
-			// We accumulate all vertices (outer + holes) into the same pool.
-
-			// Count total vertices
-			int total = outerCount;
-			if (holes != null) { for (final double[] h : holes) { if (h != null) total += h.length / 2; } }
-
-			final double[] nx = new double[total * 2]; // extra space for bridge duplication
-			final double[] ny = new double[total * 2];
-			final int[]    gi = new int   [total * 2]; // global index into caller's combined array
-			final int[]    pr = new int   [total * 2]; // prev node index in linked ring
-			final int[]    ne = new int   [total * 2]; // next node index in linked ring
-			int nodeCount = 0;
-
-			// Build outer ring
-			final int outerStart = nodeCount;
-			for (int i = 0; i < outerCount; i++) {
-				nx[nodeCount] = outer[i * 2];
-				ny[nodeCount] = outer[i * 2 + 1];
-				gi[nodeCount] = i;
-				nodeCount++;
-			}
-			linkRing(pr, ne, outerStart, outerStart + outerCount - 1);
-
-			// Ensure outer ring is CCW (positive signed area)
-			if (signedArea2(nx, ny, pr, ne, outerStart) < 0) { reverseRing(pr, ne, outerStart, outerStart + outerCount - 1); }
-
-			// Attach holes
-			int globalOff = outerCount;
-			if (holes != null) {
-				for (final double[] hole : holes) {
-					if (hole == null || hole.length < 6) { globalOff += (hole == null ? 0 : hole.length / 2); continue; }
-					final int holeN    = hole.length / 2;
-					final int holeStart = nodeCount;
-					for (int i = 0; i < holeN; i++) {
-						nx[nodeCount] = hole[i * 2];
-						ny[nodeCount] = hole[i * 2 + 1];
-						gi[nodeCount] = globalOff + i;
-						nodeCount++;
-					}
-					linkRing(pr, ne, holeStart, holeStart + holeN - 1);
-					// Ensure hole is CW (negative area)
-					if (signedArea2(nx, ny, pr, ne, holeStart) > 0) { reverseRing(pr, ne, holeStart, holeStart + holeN - 1); }
-					// Bridge: find the rightmost hole vertex and a visible outer vertex
-					final int bridge = findBridge(nx, ny, pr, ne, outerStart, holeStart);
-					if (bridge >= 0) { bridgeRings(nx, ny, gi, pr, ne, bridge, holeStart, nodeCount); nodeCount += 2; }
-					globalOff += holeN;
-				}
-			}
-
-			// ---- ear-clipping ----
-			final java.util.ArrayList<Integer> result = new java.util.ArrayList<>(total * 3);
-			earClip(nx, ny, gi, pr, ne, outerStart, result, nodeCount);
-
-			final int[] out = new int[result.size()];
-			for (int i = 0; i < out.length; i++) { out[i] = result.get(i); }
-			return out;
-		}
-
-		// ---- ring linking ----
-
-		private static void linkRing(final int[] pr, final int[] ne, final int first, final int last) {
-			for (int i = first; i <= last; i++) {
-				pr[i] = (i == first) ? last  : i - 1;
-				ne[i] = (i == last)  ? first : i + 1;
-			}
-		}
-
-		private static void reverseRing(final int[] pr, final int[] ne, final int first, final int last) {
-			// swap prev/next for every node in the ring
-			int cur = first;
-			do {
-				final int tmp = pr[cur]; pr[cur] = ne[cur]; ne[cur] = tmp;
-				cur = pr[cur]; // was next, now prev — follow the (now reversed) next
-			} while (cur != first);
-		}
-
-		// ---- signed area ----
-
-		private static double signedArea2(final double[] nx, final double[] ny,
-				final int[] pr, final int[] ne, final int start) {
-			double area = 0;
-			int cur = start;
-			do {
-				area += (nx[pr[cur]] - nx[cur]) * (ny[pr[cur]] + ny[cur]);
-				cur = ne[cur];
-			} while (cur != start);
-			return area;
-		}
-
-		// ---- bridge two rings ----
-
-		/**
-		 * Finds the outer-ring node closest (and mutually visible) to the rightmost vertex of the hole ring.
-		 *
-		 * @return the outer-ring node index to use as bridge start, or -1 if not found
-		 */
-		private static int findBridge(final double[] nx, final double[] ny,
-				final int[] pr, final int[] ne, final int outerStart, final int holeStart) {
-			// find rightmost hole vertex
-			int hMax = holeStart;
-			int cur  = ne[holeStart];
-			while (cur != holeStart) {
-				if (nx[cur] > nx[hMax]) { hMax = cur; }
-				cur = ne[cur];
-			}
-			final double hx = nx[hMax], hy = ny[hMax];
-
-			// scan outer ring for the closest visible vertex
-			int bridge = -1;
-			double minDist = Double.MAX_VALUE;
-			cur = outerStart;
-			do {
-				// basic visibility: vertex must be to the right of the hole vertex (x >= hx)
-				// and on the correct side in Y
-				if (nx[cur] >= hx) {
-					final double d = Math.abs(nx[cur] - hx) + Math.abs(ny[cur] - hy);
-					if (d < minDist) { minDist = d; bridge = cur; }
-				}
-				cur = ne[cur];
-			} while (cur != outerStart);
-			return bridge;
-		}
-
-		/**
-		 * Merges the hole ring into the outer ring by inserting two bridge edges.
-		 * Modifies {@code pr} and {@code ne} in-place. Two new duplicate nodes are appended at
-		 * positions {@code nodeCount} and {@code nodeCount+1}.
-		 */
-		private static void bridgeRings(final double[] nx, final double[] ny, final int[] gi,
-				final int[] pr, final int[] ne,
-				final int outerNode, final int holeNode, final int nodeCount) {
-			// Duplicate the two bridge-endpoint nodes
-			final int ob = nodeCount;     // copy of outerNode, inserted after holeNode's ring traversal
-			final int hb = nodeCount + 1; // copy of holeNode, inserted after outerNode
-			nx[ob] = nx[outerNode]; ny[ob] = ny[outerNode]; gi[ob] = gi[outerNode];
-			nx[hb] = nx[holeNode];  ny[hb] = ny[holeNode];  gi[hb] = gi[holeNode];
-
-			// Splice: outer → hb → [hole ring] → ob → [outer ring continues]
-			final int outerNext = ne[outerNode];
-			final int holePrev  = pr[holeNode];
-
-			ne[outerNode] = holeNode;  pr[holeNode]  = outerNode;
-			ne[holePrev]  = ob;        pr[ob]         = holePrev;
-			ne[ob]        = outerNext; pr[outerNext]  = ob;
-			ne[hb]        = outerNode; pr[outerNode]  = hb; // hb unused as ear tip, but keeps ring closed
-		}
-
-		// ---- ear clipping ----
-
-		private static void earClip(final double[] nx, final double[] ny, final int[] gi,
-				final int[] pr, final int[] ne, final int start,
-				final java.util.ArrayList<Integer> result, final int nodeCount) {
-			int cur = start;
-			int remaining = 0;
-			{
-				int c = start; do { remaining++; c = ne[c]; } while (c != start);
-			}
-
-			int guard = remaining * remaining + 4; // iteration safety limit
-
-			while (remaining > 2 && guard-- > 0) {
-				if (isEar(nx, ny, pr, ne, cur)) {
-					result.add(gi[pr[cur]]);
-					result.add(gi[cur]);
-					result.add(gi[ne[cur]]);
-					// remove the ear tip from the ring
-					ne[pr[cur]] = ne[cur];
-					pr[ne[cur]] = pr[cur];
-					cur = ne[cur];
-					remaining--;
-				} else {
-					cur = ne[cur];
-				}
-			}
-			// emit the last degenerate triangle if 3 nodes remain
-			if (remaining == 3) {
-				result.add(gi[pr[cur]]);
-				result.add(gi[cur]);
-				result.add(gi[ne[cur]]);
-			}
-		}
-
-		/**
-		 * Returns {@code true} if the node at {@code cur} is a valid ear tip: the triangle
-		 * (prev, cur, next) does not contain any other ring vertex.
-		 */
-		private static boolean isEar(final double[] nx, final double[] ny,
-				final int[] pr, final int[] ne, final int cur) {
-			final int a = pr[cur], b = cur, c = ne[cur];
-			// must be a convex (left-turn) vertex for CCW outer ring
-			if (cross(nx[a], ny[a], nx[b], ny[b], nx[c], ny[c]) >= 0) return false;
-
-			// check no other vertex is inside this triangle
-			int p = ne[c];
-			while (p != a) {
-				if (pointInTriangle(nx[p], ny[p], nx[a], ny[a], nx[b], ny[b], nx[c], ny[c])) return false;
-				p = ne[p];
-			}
-			return true;
-		}
-
-		/** 2-D cross product of vectors (a→b) × (a→c): positive = left turn (CCW). */
-		private static double cross(final double ax, final double ay,
-				final double bx, final double by,
-				final double cx, final double cy) {
-			return (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
-		}
-
-		/** Returns {@code true} if point {@code (px,py)} lies strictly inside or on the triangle. */
-		private static boolean pointInTriangle(final double px, final double py,
-				final double ax, final double ay,
-				final double bx, final double by,
-				final double cx, final double cy) {
-			return cross(ax, ay, bx, by, px, py) <= 0
-				&& cross(bx, by, cx, cy, px, py) <= 0
-				&& cross(cx, cy, ax, ay, px, py) <= 0;
-		}
 	}
 
 }
