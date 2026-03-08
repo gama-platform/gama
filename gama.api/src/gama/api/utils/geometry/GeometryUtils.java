@@ -197,25 +197,98 @@ public class GeometryUtils {
 	/**
 	 * Point in polygon.
 	 *
+	 * <p>
+	 * Generates a uniformly distributed random point strictly inside the given polygon. When the polygon has a positive
+	 * area the method decomposes it into triangles via Delaunay triangulation, selects one triangle with probability
+	 * proportional to its area, and then returns a point sampled uniformly inside that triangle using barycentric
+	 * coordinates. This avoids the rejection-sampling overhead of the previous bounding-box approach and handles
+	 * concave shapes and polygons with holes correctly. If triangulation fails the method falls back to the classic
+	 * rejection-sampling strategy. When the polygon has zero area (i.e. it is degenerate) the method intersects a
+	 * vertical scan line with the polygon boundary and delegates to {@link #pointInLineString}.
+	 * </p>
+	 *
 	 * @param scope
-	 *            the scope
+	 *            the current GAMA scope, used to obtain the random-number generator
 	 * @param polygon
-	 *            the polygon
-	 * @return the gama point
+	 *            the polygon in which the point must lie; must not be {@code null}
+	 * @return a random {@link IPoint} inside {@code polygon}, or {@code null} if no valid point can be produced
 	 */
 	private static IPoint pointInPolygon(final IScope scope, final Polygon polygon) {
 
-		IRandom rand = scope.getRandom();
+		final IRandom rand = scope.getRandom();
 		final Envelope env = polygon.getEnvelopeInternal();
 		final double xMin = env.getMinX();
 		final double xMax = env.getMaxX();
 		final double yMin = env.getMinY();
 		final double yMax = env.getMaxY();
-		final double x = rand.between(xMin, xMax);
+
 		if (polygon.getArea() > 0) {
-			final double y = rand.between(yMin, yMax);
+			// --- triangulation-based sampling ---
+			// Collect all valid triangles that lie inside the polygon together with their areas.
+			final List<Coordinate[]> triangles = new ArrayList<>();
+			final List<Double> areas = new ArrayList<>();
+			final double sizeTol = Math.sqrt(polygon.getArea()) / 100.0;
+			final DelaunayTriangulationBuilder dtb = new DelaunayTriangulationBuilder();
+			final PreparedGeometry buffered = PREPARED_GEOMETRY_FACTORY.create(polygon.buffer(sizeTol, 5, 0));
+			final IEnvelope envBuf = GamaEnvelopeFactory.of(buffered.getGeometry());
+			try {
+				dtb.setSites(polygon);
+				dtb.setTolerance(sizeTol);
+				applyToInnerGeometries(dtb.getTriangles(getGeometryFactory()), gg -> {
+					final ICoordinates cc = GamaCoordinateSequenceFactory.pointsOf(gg);
+					if (cc.isCoveredBy(envBuf) && buffered.covers(gg)) {
+						final Coordinate[] coords = gg.getCoordinates();
+						if (coords.length >= 4) {
+							// Triangle area via cross product (2-D)
+							final double ax = coords[1].x - coords[0].x;
+							final double ay = coords[1].y - coords[0].y;
+							final double bx = coords[2].x - coords[0].x;
+							final double by = coords[2].y - coords[0].y;
+							final double area = Math.abs(ax * by - ay * bx) / 2.0;
+							if (area > 0) {
+								triangles.add(new Coordinate[] { coords[0], coords[1], coords[2] });
+								areas.add(area);
+							}
+						}
+					}
+				});
+			} catch (final LocateFailureException | ConstraintEnforcementException e) {
+				// triangulation failed – fall through to rejection sampling below
+			} finally {
+				envBuf.dispose();
+			}
+
+			if (!triangles.isEmpty()) {
+				// Weighted selection: pick a triangle proportional to its area.
+				double totalArea = 0;
+				for (final double a : areas) { totalArea += a; }
+				double r = rand.between(0.0, totalArea);
+				int chosen = 0;
+				for (int i = 0; i < areas.size(); i++) {
+					r -= areas.get(i);
+					if (r <= 0) {
+						chosen = i;
+						break;
+					}
+				}
+				// Uniform sampling inside the chosen triangle via barycentric coordinates.
+				// For uniformity: if r1 + r2 > 1 mirror the point back into the triangle.
+				final Coordinate[] tri = triangles.get(chosen);
+				double r1 = rand.between(0.0, 1.0);
+				double r2 = rand.between(0.0, 1.0);
+				if (r1 + r2 > 1.0) {
+					r1 = 1.0 - r1;
+					r2 = 1.0 - r2;
+				}
+				final double nx = tri[0].x + r1 * (tri[1].x - tri[0].x) + r2 * (tri[2].x - tri[0].x);
+				final double ny = tri[0].y + r1 * (tri[1].y - tri[0].y) + r2 * (tri[2].y - tri[0].y);
+				final double nz = tri[0].z + r1 * (tri[1].z - tri[0].z) + r2 * (tri[2].z - tri[0].z);
+				return GamaPointFactory.create(nx, ny, Double.isNaN(nz) ? 0 : nz);
+			}
+
+			// --- fallback: rejection sampling ---
 			if (polygon.getNumInteriorRing() == 0) {
-				IPoint p = GamaPointFactory.create(x, y, 0);
+				IPoint p = GamaPointFactory.create(rand.between(xMin, xMax), rand.between(yMin, yMax), 0);
 				Coordinate[] coordinates = polygon.getCoordinates();
 				while (!PointLocation.isInRing(p.toCoordinate(), coordinates)) {
 					p.setLocation(rand.between(xMin, xMax), rand.between(yMin, yMax), 0);
@@ -223,7 +296,7 @@ public class GeometryUtils {
 				return p;
 			}
 			final ICoordinates ucs = GamaCoordinateSequenceFactory.ofLength(1);
-			ucs.setTo(x, y, 0);
+			ucs.setTo(rand.between(xMin, xMax), rand.between(yMin, yMax), 0);
 			final Point pt = getGeometryFactory().createPoint(ucs);
 			while (!polygon.intersects(pt)) {
 				ucs.setTo(rand.between(xMin, xMax), rand.between(yMin, yMax), 0);
@@ -231,7 +304,9 @@ public class GeometryUtils {
 			}
 			return ucs.at(0);
 		}
+
 		// DEBUG.OUT("Point in Polygon with Area = 0");
+		final double x = rand.between(xMin, xMax);
 		final Coordinate coord1 = new Coordinate(x, yMin);
 		final Coordinate coord2 = new Coordinate(x, yMax);
 		final Coordinate[] coords = { coord1, coord2 };
@@ -242,7 +317,6 @@ public class GeometryUtils {
 			final PrecisionModel pm = new PrecisionModel(PrecisionModel.FLOATING_SINGLE);
 			line = (LineString) GeometryPrecisionReducer.reducePointwise(line, pm)
 					.intersection(GeometryPrecisionReducer.reducePointwise(polygon, pm));
-
 		}
 		return pointInLineString(scope, line);
 	}

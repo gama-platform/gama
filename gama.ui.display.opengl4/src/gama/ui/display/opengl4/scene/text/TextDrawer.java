@@ -49,8 +49,8 @@ import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.dev.DEBUG;
+import gama.ui.display.opengl4.FastTriangulation;
 import gama.ui.display.opengl4.OpenGL;
-import gama.ui.display.opengl4.OpenGL.EarCut2D;
 import gama.ui.display.opengl4.scene.ObjectDrawer;
 import gama.ui.shared.utils.DPIHelper;
 
@@ -111,7 +111,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 	private final Map<Font, com.jogamp.graph.font.Font> fontCache = new HashMap<>();
 
 	// -------------------------------------------------------------------------
-	// Contour geometry state (used for 3-D extrusion side geometry and EarCut2D face tessellation)
+	// Contour geometry state (used for 3-D extrusion side geometry and FastTriangulation face tessellation)
 	// -------------------------------------------------------------------------
 
 	/** Temporary coordinate sequence used to compute side-face normals. */
@@ -739,7 +739,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 	 * Processes a {@link PathIterator} of an AWT glyph outline.
 	 *
 	 * <p>Contour vertices are collected into per-contour rings. In solid mode the rings are passed to
-	 * {@link EarCut2D#triangulate} to fill {@link #faceVertexBuffer} with triangle data (replaces
+	 * {@link FastTriangulation#triangulate} to fill {@link #faceVertexBuffer} with triangle data (replaces
 	 * the former GLU tessellator path). In wireframe mode only the side contour vertices are collected.
 	 * Side geometry (for depth > 0) is always collected into {@link #sideQuadsBuffer}.</p>
 	 *
@@ -794,7 +794,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 			pi.next();
 		}
 
-		// ---- face tessellation via EarCut2D (solid mode only) ----
+		// ---- face tessellation via FastTriangulation (solid mode only) ----
 		if (!wireframe && !contours.isEmpty()) {
 			// Determine outer ring: the one with the largest absolute signed area (CW in screen space)
 			// AWT uses a Y-down coordinate system after the AT (y-flip), so the outer ring has the largest area.
@@ -814,7 +814,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 			}
 			final double[][] holesArr = holes.isEmpty() ? null : holes.toArray(new double[0][]);
 
-			final int[] triIndices = EarCut2D.triangulate(outerRing, holesArr, outerN);
+			final int[] triIndices = FastTriangulation.triangulate(outerRing, holesArr, outerN);
 
 			// Build combined flat vertex arrays (outer first, then holes)
 			int totalV = outerN;
@@ -916,7 +916,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 	}
 
 	/**
-	 * Draws the front or back face of extruded text using the triangle data produced by {@link EarCut2D}.
+	 * Draws the front or back face of extruded text using the triangle data produced by {@link FastTriangulation}.
 	 *
 	 * @param up {@code true} to use the upward-facing normal (front face); {@code false} for back face
 	 */
