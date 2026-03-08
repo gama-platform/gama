@@ -1019,6 +1019,12 @@ public interface IKeyword {
 	/** The synthetic resources prefix. */
 	String SYNTHETIC_RESOURCES_PREFIX = "__synthetic__";
 
+	/** The synthetic do target. */
+	String SYNTHETIC_DO_TARGET = "__target__";
+
+	/** The synthetic do target species. */
+	String SYNTHETIC_DO_TARGET_SPECIES = "__target_species__";
+
 	/** The table. */
 	String TABLE = "table";
 

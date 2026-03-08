@@ -22,8 +22,6 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.annotations.serializer;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.ISpeciesDescription;
-import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.serialization.StatementSerializer;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -68,12 +66,20 @@ import gama.gaml.statements.DoStatement.DoSerializer;
 						name = IKeyword.RETURNS,
 						type = IType.NEW_TEMP_ID,
 						optional = true,
-						doc = @doc ("Specifies the name of the temporary variable that will contain the result.")),
+						doc = @doc (
+								value = "Specifies the name of the temporary variable that will contain the result.",
+								deprecated = "Use the functional form to assign the result to a variable")),
 				@facet (
 						name = IKeyword.ACTION,
 						type = IType.ID,
 						optional = false,
-						doc = @doc ("the name of an action or a primitive")),
+						doc = @doc ("the name of the action or primitive called")),
+				@facet (
+						name = IKeyword.SYNTHETIC_DO_TARGET,
+						type = IType.NONE,
+						optional = true,
+						internal = true,
+						doc = @doc ("the target agent for the action. Internal use only.")),
 				@facet (
 						name = IKeyword.INTERNAL_FUNCTION,
 						type = IType.NONE,
@@ -200,12 +206,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	 */
 	public DoStatement(final IDescription desc) {
 		super(desc);
-		if (((IStatementDescription) desc).isSuperInvocation()) {
-			final ISpeciesDescription s = desc.getSpeciesContext().getParent();
-			targetSpecies = s.getName();
-		} else {
-			targetSpecies = null;
-		}
+		targetSpecies = getLiteral(IKeyword.SYNTHETIC_DO_TARGET_SPECIES);
 		function = getFacet(IKeyword.INTERNAL_FUNCTION);
 		returns = getFacet(IKeyword.RETURNS);
 		setName(getLiteral(IKeyword.ACTION));
@@ -233,8 +234,8 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	}
 
 	/**
-	 * Returns the species on which to find the action. If a species target (desc) exists, then it is a super invocation
-	 * and we have to find the corresponding action. Otherwise, we return the species of the agent
+	 * Returns the species on which to find the action. If a species exists, we find the corresponding action.
+	 * Otherwise, we return the species of the agent
 	 */
 	private ISpecies getContext(final IScope scope) {
 		return targetSpecies != null ? scope.getModel().getSpecies(targetSpecies) : scope.getAgent().getSpecies();

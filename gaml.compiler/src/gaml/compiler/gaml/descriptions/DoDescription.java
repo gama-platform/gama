@@ -13,9 +13,6 @@ package gaml.compiler.gaml.descriptions;
 import static gama.annotations.constants.IKeyword.ACTION;
 import static gama.annotations.constants.IKeyword.WITH;
 
-import java.util.Collections;
-import java.util.List;
-
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.constants.IKeyword;
@@ -26,6 +23,7 @@ import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.IType;
@@ -34,13 +32,16 @@ import gama.api.gaml.types.Types;
 /**
  * The Class StatementWithChildrenDescription.
  */
-public class DoDescription extends StatementWithChildrenDescription {
+public class DoDescription extends StatementDescription {
 
 	/** The action. */
 	IActionDescription action;
 
 	/** The declaration context. */
-	ITypeDescription declarationContext;
+	ITypeDescription lookupContext;
+
+	/** The actual target species. */
+	ITypeDescription actualTargetSpecies;
 
 	/**
 	 * Instantiates a new statement representing the do
@@ -60,44 +61,17 @@ public class DoDescription extends StatementWithChildrenDescription {
 	 * @param alreadyComputedArgs
 	 *            the already computed args
 	 */
-	public DoDescription(final String keyword, final IDescription superDesc, final Iterable<IDescription> cp,
-			final boolean hasArgs, final EObject source, final Facets facets, final Arguments alreadyComputedArgs) {
-		super(keyword, superDesc, cp, hasArgs, source, facets, alreadyComputedArgs);
+	public DoDescription(final String keyword, final IDescription superDesc, final boolean hasArgs,
+			final EObject source, final Facets facets, final Arguments alreadyComputedArgs) {
+		super(keyword, superDesc, hasArgs, source, facets, alreadyComputedArgs);
 		setIf(Flag.IsSuperInvocation, IKeyword.INVOKE.equals(keyword));
-	}
-
-	@Override
-	public boolean visitChildren(final DescriptionVisitor<IDescription> visitor) {
-		return true;
-	}
-
-	@Override
-	public boolean visitOwnChildrenRecursively(final DescriptionVisitor<IDescription> visitor) {
-		return true;
-	}
-
-	@Override
-	public boolean visitOwnChildren(final DescriptionVisitor<IDescription> visitor) {
-		return true;
-	}
-
-	@Override
-	public Iterable<IDescription> getOwnChildren() { return Collections.EMPTY_LIST; }
-
-	@Override
-	public List<IDescription> getChildren() { return Collections.EMPTY_LIST; }
-
-	@Override
-	public IExpression addTemp(final IDescription declaration, final String facet, final String name,
-			final IType<?> type) {
-		return getEnclosingDescription() instanceof StatementWithChildrenDescription sc
-				? sc.addTemp(declaration, null, name, getGamlType()) : null;
 	}
 
 	@Override
 	protected IExpression createVarWithTypes(final String facetName) {
 		compileTypeProviderFacets();
-		return addTemp(this, facetName, getLitteral(facetName), getGamlType());
+		return getEnclosingDescription() instanceof StatementWithChildrenDescription sc
+				? sc.addTemp(this, null, getLitteral(facetName), getGamlType()) : null;
 	}
 
 	@Override
@@ -108,7 +82,7 @@ public class DoDescription extends StatementWithChildrenDescription {
 
 	@Override
 	public DoDescription copy(final IDescription into) {
-		final DoDescription desc = new DoDescription(getKeyword(), into, null, false, element, getFacetsCopy(),
+		final DoDescription desc = new DoDescription(getKeyword(), into, false, element, getFacetsCopy(),
 				passedArgs == null ? null : passedArgs.cleanCopy());
 		desc.originName = getOriginName();
 		return desc;
@@ -165,10 +139,35 @@ public class DoDescription extends StatementWithChildrenDescription {
 		if (action == null) {
 			final String actionName = getLitteral(ACTION);
 			if (actionName == null) return null;
-			declarationContext = getDescriptionDeclaringAction(actionName, isSuperInvocation());
-			if (declarationContext != null) { action = declarationContext.getAction(actionName); }
+			actualTargetSpecies = getDescriptionDeclaringAction(actionName, isSuperInvocation());
+			if (actualTargetSpecies != null) { action = actualTargetSpecies.getAction(actionName); }
 		}
 		return action;
+	}
+
+	/**
+	 * Gets the description that declares an action with the given name. Searches up the enclosing description
+	 * hierarchy.
+	 *
+	 * @param aName
+	 *            the action name to find
+	 * @param superInvocation
+	 *            whether to check super types
+	 * @return the description that declares the action, or null if not found
+	 */
+	@Override
+	public ITypeDescription getDescriptionDeclaringAction(final String aName, final boolean superInvocation) {
+		IExpressionDescription target = getFacet(IKeyword.SYNTHETIC_DO_TARGET);
+		if (target == null) {
+			lookupContext = getSpeciesContext();
+			return super.getDescriptionDeclaringAction(aName, superInvocation);
+		}
+		// Handle the case where target is not null (e.g., target-specific action)
+		IExpression agent = target.compile(this);
+		if (agent == null) return null;
+		lookupContext = agent.getGamlType().getDenotedSpecies();
+		if (lookupContext != null) return lookupContext.getDescriptionDeclaringAction(aName, superInvocation);
+		return null;
 	}
 
 	/**
@@ -176,8 +175,17 @@ public class DoDescription extends StatementWithChildrenDescription {
 	 *
 	 * @return the declaration context name
 	 */
-	private String getDeclarationContextName() {
-		return declarationContext == null ? getSpeciesContext().getName() : declarationContext.getName();
+	private String getLookupContextName() {
+		return lookupContext == null ? getSpeciesContext().getName() : lookupContext.getName();
+	}
+
+	/**
+	 * Gets the actual species name.
+	 *
+	 * @return the actual species name
+	 */
+	private String getActualSpeciesName() {
+		return actualTargetSpecies == null ? getSpeciesContext().getName() : actualTargetSpecies.getName();
 	}
 
 	@Override
@@ -187,14 +195,16 @@ public class DoDescription extends StatementWithChildrenDescription {
 		IActionDescription a = getAction();
 		if (a == null) {
 			String actionName = getLitteral(ACTION);
-			error("Action " + actionName + " does not exist in " + getDeclarationContextName(),
-					IGamlIssue.UNKNOWN_ACTION, ACTION, actionName, getDeclarationContextName());
+			error("Action " + actionName + " does not exist in " + getLookupContextName(), IGamlIssue.UNKNOWN_ACTION,
+					ACTION, actionName, getLookupContextName());
 			return null;
 		}
 		if (a instanceof PrimitiveDescription pd) {
 			final String dep = pd.getDeprecated();
 			if (dep != null) { warning("Action " + action + " is deprecated: " + dep, IGamlIssue.DEPRECATED, ACTION); }
 		}
+		setFacetExprDescription(IKeyword.SYNTHETIC_DO_TARGET_SPECIES,
+				GAML.getExpressionDescriptionFactory().createLabel(getActualSpeciesName()));
 		return result;
 	}
 

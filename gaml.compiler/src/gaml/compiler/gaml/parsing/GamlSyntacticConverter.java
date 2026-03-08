@@ -455,6 +455,7 @@ public class GamlSyntacticConverter {
 		// V1, ID2:V2)"
 		final Expression e = stm.getExpr();
 		addFacet(elt, ACTION, convertToLabel(e, EGAML.getKeyOf(e)));
+		if (stm.getTarget() != null) { addFacet(elt, IKeyword.SYNTHETIC_DO_TARGET, convExpr(stm.getTarget())); }
 		// Systematically adds the internal function (see #2915) in order to have the right documentation
 		// TODO AD: verify that 'ACTION' is still necessary in that case
 		addFacet(elt, INTERNAL_FUNCTION, convExpr(e));

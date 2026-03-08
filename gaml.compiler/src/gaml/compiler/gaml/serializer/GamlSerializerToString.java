@@ -251,7 +251,12 @@ public class GamlSerializerToString extends GamlSwitch<String> {
 	@Override
 	public String caseS_Do(final S_Do object) {
 		int m = mark();
-		sb().append(object.getKey()).append(" ").append(serialize(object.getExpr())).append(SEMI);
+		if (IKeyword._DOT.equals(object.getKey())) {
+			sb().append(serialize(object.getTarget())).append(".").append(serialize(object.getExpr()));
+		} else {
+			sb().append(object.getKey()).append(" ").append(serialize(object.getExpr()));
+		}
+		sb().append(SEMI);
 		return since(m);
 	}
 

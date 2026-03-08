@@ -129,7 +129,7 @@ public class ArtefactRegistry {
 	 * {@code with}).
 	 */
 	public static final Set<String> NON_SERIALIZABLE_FACETS =
-			new HashSet<>(Arrays.asList(IKeyword.INTERNAL_FUNCTION, IKeyword.WITH));
+			new HashSet<>(Arrays.asList(IKeyword.SYNTHETIC_DO_TARGET, IKeyword.INTERNAL_FUNCTION, IKeyword.WITH));
 
 	/**
 	 * Primary map from GAML statement keyword strings to their corresponding {@link IArtefact.Symbol} prototype
