@@ -19,12 +19,14 @@ import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ITypeProvider;
 import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.agent.IGridAgent;
 import gama.api.kernel.skill.Skill;
 import gama.api.kernel.topology.IGrid;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
+import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 
 /**
@@ -98,7 +100,7 @@ public class GridSkill extends Skill {
 	 */
 	@getter ("grid_x")
 	public final int getX(final IAgent agent) {
-		return ((IGridAgent) agent).getX();
+		return getGrid(agent).getX(agent);
 	}
 
 	/**
@@ -112,12 +114,14 @@ public class GridSkill extends Skill {
 			value = "grid_value",
 			initializer = true)
 	public final double getValue(final IAgent agent) {
-		return ((IGridAgent) agent).getValue();
+		return getGrid(agent).getValue(agent.getIndex());
 	}
 
 	/**
 	 * Gets the bands.
 	 *
+	 * @param scope
+	 *            the scope
 	 * @param agent
 	 *            the agent
 	 * @return the bands
@@ -125,8 +129,13 @@ public class GridSkill extends Skill {
 	@getter (
 			value = "bands",
 			initializer = true)
-	public final IList<Double> getBands(final IAgent agent) {
-		return ((IGridAgent) agent).getBands();
+	public final IList<Double> getBands(final IScope scope, final IAgent agent) {
+		if (getGrid(agent).getBandsNumber(scope) == 1) {
+			final IList<Double> bd = GamaListFactory.create(null, Types.FLOAT);
+			bd.add(getGrid(agent).getValue(agent.getIndex()));
+			return bd;
+		}
+		return GamaListFactory.create(scope, Types.FLOAT, getGrid(agent).getBand(scope, agent.getIndex()));
 	}
 
 	/**
@@ -151,7 +160,7 @@ public class GridSkill extends Skill {
 	 */
 	@getter ("grid_y")
 	public final int getY(final IAgent agent) {
-		return ((IGridAgent) agent).getY();
+		return getGrid(agent).getY(agent);
 	}
 
 	/**
@@ -175,7 +184,7 @@ public class GridSkill extends Skill {
 	 */
 	@setter ("grid_value")
 	public final void setValue(final IAgent agent, final Double d) {
-		((IGridAgent) agent).setValue(d);
+		getGrid(agent).setValue(agent.getIndex(), d);
 	}
 
 	/**
@@ -200,7 +209,8 @@ public class GridSkill extends Skill {
 			value = "color",
 			initializer = true)
 	public IColor getColor(final IAgent agent) {
-		return ((IGridAgent) agent).getColor();
+		if (getGrid(agent).isHexagon()) return (IColor) agent.getAttribute(IKeyword.COLOR);
+		return GamaColorFactory.get(getGrid(agent).supportImagePixels()[agent.getIndex()]);
 	}
 
 	/**
@@ -213,7 +223,11 @@ public class GridSkill extends Skill {
 	 */
 	@setter ("color")
 	public void setColor(final IAgent agent, final IColor color) {
-		((IGridAgent) agent).setColor(color);
+		if (getGrid(agent).isHexagon()) {
+			agent.setAttribute(IKeyword.COLOR, color);
+		} else {
+			getGrid(agent).supportImagePixels()[agent.getIndex()] = color.getRGB();
+		}
 	}
 
 	/**
@@ -229,7 +243,8 @@ public class GridSkill extends Skill {
 			value = IKeyword.NEIGHBORS,
 			initializer = true)
 	public IList<IAgent> getNeighbors(final IScope scope, final IAgent agent) {
-		return ((IGridAgent) agent).getNeighbors(scope);
+		return GamaListFactory.create(scope, Types.AGENT,
+				getGrid(agent).getNeighborhood().getNeighborsIn(scope, agent.getIndex(), 1));
 	}
 
 }

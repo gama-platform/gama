@@ -40,7 +40,6 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.agent.IGridAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.species.ISpecies;
 import gama.api.kernel.topology.ICoordinateReferenceSystem;
@@ -401,6 +400,52 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		}
 	}
 
+	@Override
+	public double getCellWidth() { return cellWidth; }
+
+	/**
+	 * Gets the cell height.
+	 *
+	 * @return the cell height
+	 */
+	@Override
+	public double getCellHeight() { return cellHeight; }
+
+	/**
+	 * Gets the support image pixels.
+	 *
+	 * @return the support image pixels
+	 */
+	@Override
+	public int[] supportImagePixels() {
+		return supportImagePixels;
+	}
+
+	/**
+	 * Gets the grid value.
+	 *
+	 * @param col
+	 *            the col
+	 * @param row
+	 *            the row
+	 * @return the grid value
+	 */
+	public double getGridValue(final int col, final int row) {
+		return getValue(getPlaceIndexAt(col, row));
+	}
+
+	@Override
+	public double getValue(final int index) {
+		if (index < 0 || index >= gridValue.length) return 0.0;
+		return gridValue[index];
+	}
+
+	@Override
+	public void setValue(final int index, final double value) {
+		if (index < 0 || index >= gridValue.length) return;
+		gridValue[index] = value;
+	}
+
 	/**
 	 * Creates the matrix.
 	 *
@@ -615,20 +660,20 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 		return result;
 	}
 
-	/**
-	 * Gets the grid value.
-	 *
-	 * @param col
-	 *            the col
-	 * @param row
-	 *            the row
-	 * @return the grid value
-	 */
-	public double getGridValue(final int col, final int row) {
-		final int index = getPlaceIndexAt(col, row);
-		if (index != -1) return gridValue[index];
-		return 0.0;
-	}
+	// /**
+	// * Gets the grid value.
+	// *
+	// * @param col
+	// * the col
+	// * @param row
+	// * the row
+	// * @return the grid value
+	// */
+	// public double getGridValue(final int col, final int row) {
+	// final int index = getPlaceIndexAt(col, row);
+	// if (index != -1) return gridValue[index];
+	// return 0.0;
+	// }
 
 	/**
 	 * Gets the place index at.
@@ -702,12 +747,20 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 
 	@Override
 	public final int getX(final IShape shape) {
-		return (int) hexAgentToLoc.get(shape).getX();
+		if (isHexagon) {
+			final IPoint pt = hexAgentToLoc.get(shape);
+			return (int) pt.getX();
+		}
+		return (int) (shape.getLocation().getX() / cellWidth);
 	}
 
 	@Override
 	public final int getY(final IShape shape) {
-		return (int) hexAgentToLoc.get(shape).getY();
+		if (isHexagon) {
+			final IPoint pt = hexAgentToLoc.get(shape);
+			return (int) pt.getY();
+		}
+		return (int) (shape.getLocation().getY() / cellHeight);
 	}
 
 	@Override
@@ -849,35 +902,33 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 	@Override
 	public int manhattanDistanceBetween(final IShape g1, final IShape g2) {
 
-		IGridAgent s1 = g1.getAgent() != null && g1.getAgent().getSpecies() == this.getCellSpecies()
-				? (IGridAgent) g1.getAgent() : null;
-		IGridAgent s2 = g2.getAgent() != null && g2.getAgent().getSpecies() == this.getCellSpecies()
-				? (IGridAgent) g2.getAgent() : null;
+		IAgent s1 = g1.getAgent() != null && g1.getAgent().getSpecies() == this.getCellSpecies() ? g1.getAgent() : null;
+		IAgent s2 = g2.getAgent() != null && g2.getAgent().getSpecies() == this.getCellSpecies() ? g2.getAgent() : null;
 
 		if (s1 == null || s2 == null) {
 			IPoint p1 = g1.isPoint() ? g1.getLocation() : null;
 			IPoint p2 = g2.isPoint() ? g2.getLocation() : null;
 			if (s1 == null) {
-				s1 = (IGridAgent) this.getPlaceAt(g1.getLocation());
+				s1 = (IAgent) this.getPlaceAt(g1.getLocation());
 				if (!s1.covers(g1)) { s1 = null; }
 			}
 			if (s2 == null) {
-				s2 = (IGridAgent) this.getPlaceAt(g2.getLocation());
+				s2 = (IAgent) this.getPlaceAt(g2.getLocation());
 				if (!s2.covers(g2)) { s2 = null; }
 			}
 			final Coordinate[] coord = new DistanceOp(g1.getInnerGeometry(), g2.getInnerGeometry()).nearestPoints();
 			if (s1 == null) {
 				p1 = GamaPointFactory.create(coord[0]);
-				s1 = (IGridAgent) this.getPlaceAt(p1);
+				s1 = (IAgent) this.getPlaceAt(p1);
 			}
 			if (s2 == null) {
 				p2 = GamaPointFactory.create(coord[1]);
-				s2 = (IGridAgent) this.getPlaceAt(p2);
+				s2 = (IAgent) this.getPlaceAt(p2);
 			}
 		}
 
-		final int dx = Math.abs(s1.getX() - s2.getX());
-		final int dy = Math.abs(s1.getY() - s2.getY());
+		final int dx = Math.abs(getX(s1) - getX(s2));
+		final int dy = Math.abs(getY(s1) - getY(s2));
 		if (usesVN) return dx + dy;
 		return Math.max(dx, dy);
 	}
@@ -1379,13 +1430,13 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 			final IAgent endAg) {
 		if (node == null || !open[node.getIndex()]) return null;
 		if (node == endAg) return node;
-		final int x = ((IGridAgent) node).getX();
-		final int y = ((IGridAgent) node).getY();
+		final int x = getX(node);
+		final int y = getY(node);
 		open[node.getIndex()] = true;
 		int px, py, dx, dy;
 
-		px = ((IGridAgent) parent).getX();
-		py = ((IGridAgent) parent).getY();
+		px = getX(parent);
+		py = getY(parent);
 		dx = (x - px) / Math.max(Math.abs(x - px), 1);
 		dy = (y - py) / Math.max(Math.abs(y - py), 1);
 		final IAgent next = (IAgent) this.get(scope, x + dx, y + dy);
@@ -1427,13 +1478,13 @@ public class GamaSpatialMatrix extends GamaMatrix<IShape> implements IGrid {
 			final boolean[] open) {
 		if (parent == null) return getNeighborhood().getNeighborsIn(scope, node.getIndex(), 1);
 		try (Collector.AsOrderedSet<IAgent> neighbors = Collector.getOrderedSet()) {
-			final int x = ((IGridAgent) node).getX();
-			final int y = ((IGridAgent) node).getY();
+			final int x = getX(node);
+			final int y = getY(node);
 
 			int px, py, dx, dy;
 
-			px = ((IGridAgent) parent).getX();
-			py = ((IGridAgent) parent).getY();
+			px = getX(parent);
+			py = getY(parent);
 
 			dx = (x - px) / Math.max(Math.abs(x - px), 1);
 			dy = (y - py) / Math.max(Math.abs(y - py), 1);

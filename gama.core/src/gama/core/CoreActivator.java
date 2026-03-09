@@ -26,8 +26,6 @@ import gama.core.agent.GamlAgent;
 import gama.core.agent.MinimalAgent;
 import gama.core.geometry.InternalGamaShapeFactory;
 import gama.core.topology.InternalTopologyFactory;
-import gama.core.topology.grid.GamlGridAgent;
-import gama.core.topology.grid.MinimalGridAgent;
 import gama.core.util.InternalGamaPairFactory;
 import gama.core.util.graph.InternalGamaGraphFactory;
 import gama.core.util.json.Json;
@@ -125,10 +123,8 @@ public class CoreActivator extends GamaBundleActivator {
 	 *
 	 */
 	void initializeAgentClasses() {
-		AgentConstructorsRegistry.register(GamlAgent.class, false, false);
-		AgentConstructorsRegistry.register(MinimalAgent.class, false, true);
-		AgentConstructorsRegistry.register(GamlGridAgent.class, true, false);
-		AgentConstructorsRegistry.register(MinimalGridAgent.class, true, true);
+		AgentConstructorsRegistry.register(GamlAgent.class, false);
+		AgentConstructorsRegistry.register(MinimalAgent.class, true);
 	}
 
 	/**

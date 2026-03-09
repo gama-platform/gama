@@ -36,12 +36,12 @@ import gama.api.utils.json.IJsonObject;
 
 /**
  * The Interface IPopulation.
- * 
+ *
  * <p>
- * A population is a managed collection of agents belonging to the same species in GAMA. It acts as both a container
- * for agents and a manager for their lifecycle (creation, initialization, scheduling, disposal).
+ * A population is a managed collection of agents belonging to the same species in GAMA. It acts as both a container for
+ * agents and a manager for their lifecycle (creation, initialization, scheduling, disposal).
  * </p>
- * 
+ *
  * <h3>Core Responsibilities</h3>
  * <ul>
  * <li><b>Agent Management:</b> Create, initialize, update, and dispose of agents</li>
@@ -50,7 +50,7 @@ import gama.api.utils.json.IJsonObject;
  * <li><b>Topology:</b> Maintains spatial organization of agents</li>
  * <li><b>Variable Management:</b> Handles species variables and attributes</li>
  * </ul>
- * 
+ *
  * <h3>Population Types</h3>
  * <p>
  * IPopulation has specialized sub-interfaces for different contexts:
@@ -60,18 +60,18 @@ import gama.api.utils.json.IJsonObject;
  * <li><b>Grid:</b> Population of grid cell agents with grid-specific operations</li>
  * <li><b>Experiment:</b> Population of experiment agents</li>
  * </ul>
- * 
+ *
  * <h3>Usage in GAML</h3>
- * 
+ *
  * <h4>1. Creating Agents in Population</h4>
- * 
+ *
  * <pre>
  * <code>
  * species person {
  *     int age;
  *     string name;
  * }
- * 
+ *
  * global {
  *     init {
  *         // Creates 100 persons in the person population
@@ -83,23 +83,23 @@ import gama.api.utils.json.IJsonObject;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>2. Accessing Population</h4>
- * 
+ *
  * <pre>
  * <code>
  * species person {
  *     int age;
  * }
- * 
+ *
  * global {
  *     reflex analyze {
  *         // Access the entire population
  *         list&lt;person&gt; all_people <- list(person);
- *         
+ *
  *         // Population size
  *         int population_size <- length(person);
- *         
+ *
  *         // Query population
  *         list&lt;person&gt; adults <- person where (each.age >= 18);
  *         float avg_age <- mean(person collect each.age);
@@ -107,9 +107,9 @@ import gama.api.utils.json.IJsonObject;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>3. Population with Topology</h4>
- * 
+ *
  * <pre>
  * <code>
  * species animal skills: [moving] {
@@ -117,10 +117,10 @@ import gama.api.utils.json.IJsonObject;
  *         do wander;
  *     }
  * }
- * 
+ *
  * global {
  *     geometry shape <- square(100);
- *     
+ *
  *     init {
  *         create animal number: 50 {
  *             location <- any_location_in(world.shape);
@@ -129,19 +129,19 @@ import gama.api.utils.json.IJsonObject;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>4. Grid Population</h4>
- * 
+ *
  * <pre>
  * <code>
  * grid cell width: 50 height: 50 {
  *     rgb color <- #white;
- *     
+ *
  *     reflex update {
  *         color <- flip(0.5) ? #black : #white;
  *     }
  * }
- * 
+ *
  * global {
  *     reflex analyze {
  *         // Access grid population
@@ -150,50 +150,50 @@ import gama.api.utils.json.IJsonObject;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>5. Population Events</h4>
- * 
+ *
  * <pre>
  * <code>
  * species person {
  *     int age;
- *     
+ *
  *     reflex birthday when: every(365 #cycle) {
  *         age <- age + 1;
  *     }
- *     
+ *
  *     reflex die when: age > 100 {
  *         do die;  // Removed from population
  *     }
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h3>Java Usage</h3>
- * 
+ *
  * <pre>
  * <code>
  * // Get population from species
  * IPopulation&lt;IAgent&gt; population = species.getPopulation(scope);
- * 
+ *
  * // Create agents programmatically
  * List&lt;Map&lt;String, Object&gt;&gt; initialValues = new ArrayList&lt;&gt;();
  * Map&lt;String, Object&gt; agentVars = new HashMap&lt;&gt;();
  * agentVars.put("age", 25);
  * initialValues.add(agentVars);
- * 
+ *
  * IList&lt;IAgent&gt; newAgents = population.createAgents(scope, 10, initialValues, false, true);
- * 
+ *
  * // Iterate over population
  * for (IAgent agent : population) {
  *     agent.setAttribute("energy", 100.0);
  * }
- * 
+ *
  * // Get agent by index
  * IAgent firstAgent = population.get(scope, 0);
  * </code>
  * </pre>
- * 
+ *
  * <h3>Lifecycle Management</h3>
  * <p>
  * Populations manage the complete lifecycle of their agents:
@@ -205,7 +205,7 @@ import gama.api.utils.json.IJsonObject;
  * <li><b>Updates:</b> Variables with 'update' facets are evaluated each step</li>
  * <li><b>Disposal:</b> Agents are properly cleaned up when killed or simulation ends</li>
  * </ol>
- * 
+ *
  * @param <T>
  *            the type of agents in this population
  * @see IAgent
@@ -233,7 +233,7 @@ public interface IPopulation<T extends IAgent>
 	/**
 	 * The Interface Grid.
 	 */
-	public interface Grid extends IPopulation<IGridAgent> {
+	public interface Grid extends IPopulation<IAgent> {
 
 		/**
 		 * @param matrix

@@ -420,13 +420,6 @@ public interface IAgent extends IDelegatingShape, INamed, Comparable<IAgent>, IS
 	int getIndex();
 
 	/**
-	 * Gets the species name.
-	 *
-	 * @return the species name
-	 */
-	String getSpeciesName();
-
-	/**
 	 * Gets the species.
 	 *
 	 * @return the species
@@ -577,5 +570,12 @@ public interface IAgent extends IDelegatingShape, INamed, Comparable<IAgent>, IS
 	 * @return the simulation
 	 */
 	default ISimulationAgent getSimulation() { return getPopulation().getHost().getSimulation(); }
+
+	/**
+	 * TODO : push it to IObject once the connection is done
+	 *
+	 * @return
+	 */
+	default String getSpeciesName() { return getSpecies().getName(); }
 
 }

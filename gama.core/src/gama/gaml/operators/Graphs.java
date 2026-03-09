@@ -58,8 +58,8 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.agent.IGridAgent;
 import gama.api.kernel.species.ISpecies;
+import gama.api.kernel.topology.IGrid;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.geometry.GamaPointFactory;
 import gama.api.types.geometry.IPoint;
@@ -186,8 +186,10 @@ public class Graphs {
 		 */
 		@Override
 		public boolean related(final IScope scope, final IShape p1, final IShape p2) {
-			if (!(p1 instanceof IGridAgent)) return false;
-			return ((IGridAgent) p1).getNeighbors(scope).contains(p2);
+			if (!(p1 instanceof IAgent ag)) return false;
+			IContainer<?, IShape> places = ag.getPopulation().getTopology().getPlaces();
+			if (!(places instanceof IGrid g)) return false;
+			return g.getNeighborhood().getNeighborsIn(scope, ag.getIndex(), 1).contains(p2);
 		}
 
 		/**

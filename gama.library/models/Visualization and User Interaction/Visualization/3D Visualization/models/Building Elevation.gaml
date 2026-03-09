@@ -103,7 +103,7 @@ species people skills: [moving] {
 
 		} }
 
-	aspect default {
+	aspect default { 
 		draw sphere(3) color: color;
 	} }
 

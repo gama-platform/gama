@@ -20,7 +20,6 @@ import java.util.Set;
 import gama.annotations.constants.IKeyword;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.agent.IGridAgent;
 import gama.api.kernel.agent.IMacroAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.ISimulationAgent;
@@ -32,13 +31,13 @@ import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class SerialisedAgent.
- * 
+ *
  * <p>
  * The main implementation of ISerialisedAgent, providing complete serialization and deserialization capabilities for
  * GAMA agents. This record class encapsulates an agent's state in a portable, immutable representation that can be
  * stored, transmitted, or used to restore agent state.
  * </p>
- * 
+ *
  * <h3>Structure</h3>
  * <p>
  * SerialisedAgent is a Java record with four components:
@@ -49,7 +48,7 @@ import gama.api.utils.json.IJsonValue;
  * <li><b>attributes:</b> Map of serializable attribute names and values</li>
  * <li><b>innerPopulations:</b> Nested populations for macro-agents</li>
  * </ul>
- * 
+ *
  * <h3>Attribute Filtering</h3>
  * <p>
  * Not all agent attributes are serialized. The following are excluded:
@@ -61,9 +60,9 @@ import gama.api.utils.json.IJsonValue;
  * <li><b>Populations:</b> When serializePopulations=true, population attributes are stored separately in
  * innerPopulations</li>
  * </ul>
- * 
+ *
  * <h3>Special Handling</h3>
- * 
+ *
  * <h4>Simulation Agents</h4>
  * <p>
  * Simulation agents have additional state serialized:
@@ -74,50 +73,49 @@ import gama.api.utils.json.IJsonValue;
  * <li>Resource usage statistics</li>
  * <li>Optionally: simulation history (controlled by SERIALISE_HISTORY attribute)</li>
  * </ul>
- * 
+ *
  * <h4>Grid Agents</h4>
  * <p>
- * Grid agents exclude grid-specific attributes (grid_x, grid_y, neighbors) as these are implicit in the grid
- * structure.
+ * Grid agents exclude grid-specific attributes (grid_x, grid_y, neighbors) as these are implicit in the grid structure.
  * </p>
- * 
+ *
  * <h4>Macro Agents</h4>
  * <p>
  * Macro-agents with micro-populations have those populations serialized recursively into innerPopulations map.
  * </p>
- * 
+ *
  * <h3>Usage Examples</h3>
- * 
+ *
  * <h4>1. Basic Serialization</h4>
- * 
+ *
  * <pre>
  * <code>
  * // Serialize an agent
  * IAgent agent = ...;
  * SerialisedAgent serialized = SerialisedAgent.of(agent, false);
- * 
+ *
  * // Access components
  * int index = serialized.index();
  * String species = serialized.species();
  * Map&lt;String, Object&gt; attrs = serialized.attributes();
  * </code>
  * </pre>
- * 
+ *
  * <h4>2. Serialization with Populations</h4>
- * 
+ *
  * <pre>
  * <code>
  * // Serialize macro-agent with its populations
  * IMacroAgent macroAgent = ...;
  * SerialisedAgent serialized = SerialisedAgent.of(macroAgent, true);
- * 
+ *
  * // Access inner populations
  * Map&lt;String, ISerialisedPopulation&gt; innerPops = serialized.innerPopulations();
  * </code>
  * </pre>
- * 
+ *
  * <h4>3. Restoration into Population</h4>
- * 
+ *
  * <pre>
  * <code>
  * // Restore agent as new member of population
@@ -125,9 +123,9 @@ import gama.api.utils.json.IJsonValue;
  * IAgent restored = serialized.restoreInto(scope, targetPop);
  * </code>
  * </pre>
- * 
+ *
  * <h4>4. Restoration onto Existing Agent</h4>
- * 
+ *
  * <pre>
  * <code>
  * // Update existing agent with serialized state
@@ -135,15 +133,15 @@ import gama.api.utils.json.IJsonValue;
  * serialized.restoreAs(scope, existingAgent);
  * </code>
  * </pre>
- * 
+ *
  * <h4>5. JSON Serialization</h4>
- * 
+ *
  * <pre>
  * <code>
  * // Convert to JSON
  * IJson json = ...;
  * IJsonValue jsonValue = serialized.serializeToJson(json);
- * 
+ *
  * // JSON structure:
  * // {
  * //   "species": "person",
@@ -153,20 +151,20 @@ import gama.api.utils.json.IJsonValue;
  * // }
  * </code>
  * </pre>
- * 
+ *
  * <h4>6. Creating from Manual Data</h4>
- * 
+ *
  * <pre>
  * <code>
  * // Create serialized agent from components
  * Map&lt;String, Object&gt; attrs = new HashMap&lt;&gt;();
  * attrs.put("name", "Alice");
  * attrs.put("age", 25);
- * 
+ *
  * SerialisedAgent serialized = SerialisedAgent.of(5, "person", attrs);
  * </code>
  * </pre>
- * 
+ *
  * <h3>Restoration Process</h3>
  * <ol>
  * <li><b>Create/Locate Agent:</b> Either create new agent or find existing by index</li>
@@ -174,7 +172,7 @@ import gama.api.utils.json.IJsonValue;
  * <li><b>Restore Populations:</b> For macro-agents, recursively restore inner populations</li>
  * <li><b>Update Simulation State:</b> For simulations, restore RNG, cycle, and usage</li>
  * </ol>
- * 
+ *
  * <h3>Best Practices</h3>
  * <ul>
  * <li>Use serializePopulations=true only when needed (increases size/complexity)</li>
@@ -183,7 +181,7 @@ import gama.api.utils.json.IJsonValue;
  * <li>Consider implementing custom serialization for complex custom types</li>
  * <li>Use SERIALISE_HISTORY flag carefully as history can be large</li>
  * </ul>
- * 
+ *
  * @param index
  *            The agent's unique index within its population
  * @param species
@@ -230,10 +228,11 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 	public static SerialisedAgent of(final IAgent target, final boolean serializePopulations) {
 		int index = target.getIndex();
 		String species = target.getSpeciesName();
-		Map<String, Object> attributes = filterAttributes(target, target instanceof IGridAgent,
-				target.getAttributes(true), serializePopulations);
-		Map<String, ISerialisedPopulation> populations = filterPopulations(target, target instanceof IGridAgent,
-				target.getAttributes(true), serializePopulations);
+		boolean isGrid = target.getPopulation().isGrid();
+		Map<String, Object> attributes =
+				filterAttributes(target, isGrid, target.getAttributes(true), serializePopulations);
+		Map<String, ISerialisedPopulation> populations =
+				filterPopulations(target, isGrid, target.getAttributes(true), serializePopulations);
 		SerialisedAgent result = new SerialisedAgent(index, species, attributes, populations);
 		if (target instanceof ISimulationAgent sa && !shouldSerializeHistory(sa)) {
 			result.attributes().remove(HISTORY_KEY);

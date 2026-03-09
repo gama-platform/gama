@@ -43,7 +43,6 @@ import gama.api.types.list.GamaListFactory;
 import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.ui.IStatusMessage;
-import gama.core.agent.AbstractAgent;
 import gama.core.experiment.ExperimentAgent;
 import gama.core.experiment.batch.exploration.AExplorationAlgorithm;
 import gama.core.experiment.batch.optimization.AOptimizationAlgorithm;
@@ -236,7 +235,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 			}
 		}
 
-		if (dispose && sim instanceof AbstractAgent agent) { agent.primDie(sim.getScope()); }
+		if (dispose) { sim.primDie(sim.getScope()); }
 		return out;
 	}
 

@@ -243,6 +243,20 @@ public interface IDelegatingShape extends IShape {
 	}
 
 	/**
+	 * Translated to.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param absoluteLocation
+	 *            the absolute location
+	 * @return the i shape
+	 */
+	@Override
+	default IShape translatedTo(final IScope scope, final IPoint absoluteLocation) {
+		return getGeometry().translatedTo(scope, absoluteLocation);
+	}
+
+	/**
 	 * Touches.
 	 *
 	 * @param g

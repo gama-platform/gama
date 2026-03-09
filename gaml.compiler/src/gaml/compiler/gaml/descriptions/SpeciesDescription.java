@@ -1264,14 +1264,8 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 				javaBase = getParent().getJavaBase();
 				// If the parent is a minimal agent, we need to use the minimal version
 			} else {
-				javaBase = AgentConstructorsRegistry.getBaseClass(isGrid(), useMinimalAgents());
+				javaBase = AgentConstructorsRegistry.getBaseClass(useMinimalAgents());
 			}
-		}
-		if (javaBase == null) {
-
-			DEBUG.OUT("");
-			javaBase = AgentConstructorsRegistry.getBaseClass(isGrid(), useMinimalAgents());
-
 		}
 		return javaBase;
 	}
