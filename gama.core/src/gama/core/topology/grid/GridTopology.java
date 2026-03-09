@@ -61,7 +61,6 @@ public class GridTopology extends AbstractTopology {
 	@Override
 	public void initialize(final IScope scope, final IPopulation<? extends IAgent> pop) throws GamaRuntimeException {
 		getPlaces().setCellSpecies(pop);
-		// ((ISpatialIndex.Compound) getSpatialIndex()).add(getPlaces(), pop);
 		super.initialize(scope, pop);
 	}
 

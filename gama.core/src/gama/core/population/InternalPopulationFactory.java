@@ -17,9 +17,6 @@ import gama.api.kernel.agent.IPopulationFactory;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
-import gama.api.types.topology.GamaTopologyFactory;
-import gama.api.types.topology.ITopology;
-import gama.core.topology.grid.GamaSpatialMatrix;
 import gama.core.topology.grid.GridPopulation;
 
 /**
@@ -37,9 +34,7 @@ public class InternalPopulationFactory implements IPopulationFactory {
 	@Override
 	public IPopulation<IAgent> createGridPopulation(final IScope scope, final IMacroAgent host,
 			final ISpecies species) {
-		final ITopology t = GamaTopologyFactory.createGrid(scope, species, host);
-		final GamaSpatialMatrix m = (GamaSpatialMatrix) t.getPlaces();
-		return new GridPopulation(m, t, host, species);
+		return new GridPopulation(host, species);
 	}
 
 	/**

@@ -13,8 +13,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import com.google.common.base.Predicate;
-
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.IVariable;
@@ -330,23 +328,6 @@ public interface IPopulation<T extends IAgent>
 	}
 
 	/**
-	 * The Class IsLiving.
-	 */
-	public static class IsLiving implements Predicate<IAgent> {
-
-		/**
-		 * Method apply()
-		 *
-		 * @see com.google.common.base.Predicate#apply(java.lang.Object)
-		 */
-		@Override
-		public boolean apply(final IAgent input) {
-			return input != null && !input.dead();
-		}
-
-	}
-
-	/**
 	 * Creates the variables for.
 	 *
 	 * @param scope
@@ -366,6 +347,21 @@ public interface IPopulation<T extends IAgent>
 	 * @return true, if successful
 	 */
 	boolean hasVar(final String n);
+
+	/**
+	 * Creates the one agent.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param initialValues
+	 *            the initial values
+	 * @return the t
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	default T createOneAgent(final IScope scope, final Map<String, Object> initialValues) throws GamaRuntimeException {
+		return createAgentAtIndex(scope, size(), initialValues, false, true);
+	}
 
 	/**
 	 * Gets the population.
@@ -456,7 +452,7 @@ public interface IPopulation<T extends IAgent>
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	T createAgentAt(final IScope s, int index, Map<String, Object> initialValues, boolean isRestored,
+	T createAgentAtIndex(final IScope s, int index, Map<String, Object> initialValues, boolean isRestored,
 			boolean toBeScheduled) throws GamaRuntimeException;
 
 	/**
@@ -665,7 +661,7 @@ public interface IPopulation<T extends IAgent>
 	 * @param agents
 	 *            the agents
 	 */
-	default <T extends IAgent> void fireAgentsAdded(final IScope scope, final IList<T> agents) {}
+	<T extends IAgent> void fireAgentsAdded(final IScope scope, final IList<T> agents);
 
 	/**
 	 * @return

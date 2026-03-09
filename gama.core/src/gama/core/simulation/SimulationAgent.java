@@ -1046,8 +1046,8 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 						} else { // the SavedAgent is not in the Simulation,
 									// then create it
 
-							simuMicroPop.createAgentAt(scope, e.getValue().getIndex(), e.getValue().attributes(), true,
-									true);
+							simuMicroPop.createAgentAtIndex(scope, e.getValue().getIndex(), e.getValue().attributes(),
+									true, true);
 						}
 
 						// Find the agt and all the references

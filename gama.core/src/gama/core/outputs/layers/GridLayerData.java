@@ -73,9 +73,6 @@ public class GridLayerData extends LayerData {
 
 	/** The text. */
 	Attribute<Boolean> text;
-	//
-	// /** The cell size. */
-	// private IPoint cellSize;
 
 	/** The wireframe. */
 	Attribute<Boolean> wireframe;
@@ -133,10 +130,9 @@ public class GridLayerData extends LayerData {
 	public boolean compute(final IScope scope, final IGraphics g) throws GamaRuntimeException {
 		if (grid == null) {
 			final IPopulation<? extends IAgent> gridPop = scope.getAgent().getPopulationFor(name);
-			if (gridPop == null)
-				throw GamaRuntimeException.error("No grid species named " + name + " can be found", scope);
-			if (!gridPop.isGrid()) throw GamaRuntimeException.error("Species named " + name + " is not a grid", scope);
-			grid = (GridPopulation) gridPop;
+			if (!(gridPop instanceof GridPopulation gp))
+				throw GamaRuntimeException.error(name + " is not a grid", scope);
+			grid = gp;
 			dim.setLocation(grid.getTopology().getPlaces().getDimensions());
 		}
 		boolean result = super.compute(scope, g);
