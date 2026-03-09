@@ -81,12 +81,15 @@ public enum ISymbolKind {
 	/** The platform. */
 	PLATFORM(16),
 
+	/** The class. */
+	CLASS(17),
+
 	/** The facet. Doesnt count */
 	FACET(9999);
 
 	/** The number. */
 	// Update this variable when adding a kind of symbol
-	final static int __NUMBER_OF_DECLARED_SYMBOL_KINDS__ = 17;
+	final static int __NUMBER_OF_DECLARED_SYMBOL_KINDS__ = 18;
 
 	/** The code. */
 	final int code;
@@ -129,7 +132,8 @@ public enum ISymbolKind {
 	 * STATEMENTS_DEFINING_ATTRIBUTES. A list of statements that consider the definitions as attributes instead of temp
 	 * variables. TODO needs to be adjusted soon for objects and skills
 	 */
-	private static final EnumSet<ISymbolKind> STATEMENTS_DEFINING_ATTRIBUTES = EnumSet.of(SPECIES, EXPERIMENT, MODEL);
+	private static final EnumSet<ISymbolKind> STATEMENTS_DEFINING_ATTRIBUTES =
+			EnumSet.of(SPECIES, EXPERIMENT, MODEL, CLASS);
 
 	/** VARIABLES. Which statements are considered variable declarations. */
 	private static final EnumSet<ISymbolKind> VARIABLES = EnumSet.of(NUMBER, CONTAINER, REGULAR);

@@ -710,6 +710,15 @@ public interface IKeyword {
 	/** The number. */
 	String NUMBER = "number";
 
+	/** The object. */
+	String OBJECT = "object";
+
+	/** The class. */
+	String CLASS = "class";
+
+	/** The instantiate. */
+	String INSTANTIATE = "instantiate";
+
 	/** The of. */
 	String OF = "of";
 
