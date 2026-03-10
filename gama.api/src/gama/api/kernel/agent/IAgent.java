@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.api.kernel.agent;
 
+import gama.annotations.action;
 import gama.annotations.doc;
 import gama.annotations.getter;
 import gama.annotations.setter;
@@ -16,10 +17,10 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ITypeProvider;
-import gama.api.compilation.IVarAndActionSupport;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.IType;
+import gama.api.kernel.object.IObject;
 import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
@@ -32,7 +33,6 @@ import gama.api.types.geometry.IDelegatingShape;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.types.list.IList;
-import gama.api.types.misc.IContainer;
 import gama.api.types.topology.ITopology;
 import gama.api.utils.interfaces.INamed;
 
@@ -206,6 +206,10 @@ import gama.api.utils.interfaces.INamed;
  * @author Alexis Drogoul
  * @since GAMA 1.0
  */
+
+/**
+ * The Interface IAgent.
+ */
 @vars ({ @variable (
 		name = IKeyword.NAME,
 		type = IType.STRING,
@@ -237,8 +241,7 @@ import gama.api.utils.interfaces.INamed;
 		The species hierarchy derives from a single built-in species, which is 'agent'. All its components (attributes, actions) will then be inherited by all direct \
 		or indirect children species (including 'model' and 'experiment' except species that explicitly set 'use_minimal_agents' facet to 'true', which inherit from
 		 a stripped-down version of 'agent'.\s""")
-public interface IAgent extends IDelegatingShape, INamed, Comparable<IAgent>, IStepable,
-		IContainer.ToGet<String, Object>, IVarAndActionSupport, IScoped {
+public interface IAgent extends IObject, IDelegatingShape, INamed, Comparable<IAgent>, IStepable, IScoped {
 
 	/**
 	 * Returns the topology which manages this agent.
@@ -424,6 +427,7 @@ public interface IAgent extends IDelegatingShape, INamed, Comparable<IAgent>, IS
 	 *
 	 * @return the species
 	 */
+	@Override
 	ISpecies getSpecies();
 
 	/**
@@ -432,17 +436,6 @@ public interface IAgent extends IDelegatingShape, INamed, Comparable<IAgent>, IS
 	 * @return the population
 	 */
 	IPopulation<? extends IAgent> getPopulation();
-
-	/**
-	 * Checks if is instance of.
-	 *
-	 * @param s
-	 *            the s
-	 * @param direct
-	 *            the direct
-	 * @return true, if is instance of
-	 */
-	boolean isInstanceOf(final ISpecies s, boolean direct);
 
 	/**
 	 * Gets the direct var value.
@@ -455,6 +448,7 @@ public interface IAgent extends IDelegatingShape, INamed, Comparable<IAgent>, IS
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@Override
 	Object getDirectVarValue(IScope scope, String s) throws GamaRuntimeException;
 
 	/**
@@ -469,6 +463,7 @@ public interface IAgent extends IDelegatingShape, INamed, Comparable<IAgent>, IS
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@Override
 	void setDirectVarValue(IScope scope, String s, Object v) throws GamaRuntimeException;
 
 	/**
@@ -550,6 +545,9 @@ public interface IAgent extends IDelegatingShape, INamed, Comparable<IAgent>, IS
 	 *             the gama runtime exception
 	 */
 
+	@action (
+			name = "die",
+			doc = @doc ("Kills the agent and disposes of it. Once dead, the agent cannot behave anymore"))
 	Object primDie(final IScope scope);
 
 	/**
@@ -570,12 +568,5 @@ public interface IAgent extends IDelegatingShape, INamed, Comparable<IAgent>, IS
 	 * @return the simulation
 	 */
 	default ISimulationAgent getSimulation() { return getPopulation().getHost().getSimulation(); }
-
-	/**
-	 * TODO : push it to IObject once the connection is done
-	 *
-	 * @return
-	 */
-	default String getSpeciesName() { return getSpecies().getName(); }
 
 }
