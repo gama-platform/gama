@@ -18,19 +18,17 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.ITypeDescription;
-import gama.api.gaml.statements.ActionStatement;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITyped;
 import gama.api.gaml.types.Types;
-import gama.api.kernel.species.GamlModelSpecies;
+import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
-import gama.api.utils.interfaces.IGamlable;
 import gama.api.utils.json.IJsonable;
 import one.util.streamex.StreamEx;
 
@@ -52,7 +50,7 @@ import one.util.streamex.StreamEx;
 				doc = @doc ("A list of the names of the attributes of this species/class (incl. the ones inherited from its parent)")),
 		@variable (
 				name = IKeyword.PARENT,
-				type = IType.SPECIES,
+				type = IType.CLASS,
 				doc = @doc ("The parent (if any) of this species/class - 'model' for models, 'experiment' for experiments and 'agent' for species with no explicit parent, 'object' for classes with no explicit parent")),
 		@variable (
 				name = IKeyword.NAME,
@@ -63,7 +61,7 @@ import one.util.streamex.StreamEx;
 				type = IType.LIST,
 				of = IType.SPECIES,
 				doc = @doc ("A list of the names of children of this species/class, i.e. its direct subspecies/subclasses")) })
-public interface IClass extends ISymbol, IGamlable, ITyped, IJsonable {
+public interface IClass extends ISymbol, ITyped, IJsonable {
 
 	/** The subspecies. */
 	String SUBSPECIES = "children";
@@ -148,10 +146,10 @@ public interface IClass extends ISymbol, IGamlable, ITyped, IJsonable {
 	 * @return a list of action names
 	 */
 	@getter (ACTIONS)
-	@doc ("retuns the list of actions defined in this species (incl. the ones inherited from its parent)")
+	@doc ("returns the list of actions defined in this species (incl. the ones inherited from its parent)")
 	default IList<String> getActionNames(final IScope scope) {
 		return GamaListFactory.create(scope, Types.STRING,
-				StreamEx.of(getActions()).map(ActionStatement::getName).toList());
+				StreamEx.of(getActions()).map(IStatement.Action::getName).toList());
 	}
 
 	/**
@@ -159,14 +157,7 @@ public interface IClass extends ISymbol, IGamlable, ITyped, IJsonable {
 	 *
 	 * @return a collection of actions
 	 */
-	Collection<ActionStatement> getActions();
-
-	/**
-	 * Gets the name of the parent species.
-	 *
-	 * @return the name of the parent species
-	 */
-	String getParentName();
+	Collection<IStatement.Action> getActions();
 
 	/**
 	 * Retrieves a variable by its name.
@@ -230,7 +221,7 @@ public interface IClass extends ISymbol, IGamlable, ITyped, IJsonable {
 	/**
 	 * @param gamlModelSpecies
 	 */
-	void setMacroSpecies(GamlModelSpecies model);
+	void setMacroSpecies(IModelSpecies model);
 
 	/**
 	 * @param scope
@@ -238,21 +229,5 @@ public interface IClass extends ISymbol, IGamlable, ITyped, IJsonable {
 	 * @return
 	 */
 	IObject createInstance(IScope scope, IMap<String, Object> args);
-
-	/**
-	 * @param scope
-	 * @param s
-	 * @param gamlObject
-	 * @return
-	 */
-	Object getVarValue(IScope scope, String s, IObject gamlObject);
-
-	/**
-	 * @param scope
-	 * @param s
-	 * @param v
-	 * @param gamlObject
-	 */
-	void setVarValue(IScope scope, String s, Object v, IObject gamlObject);
 
 }

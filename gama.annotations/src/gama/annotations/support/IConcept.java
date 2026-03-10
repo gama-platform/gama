@@ -486,6 +486,9 @@ public interface IConcept {
 	/** The Constant SPECIES. */
 	String SPECIES = IKeyword.SPECIES;
 
+	/** The class. */
+	String CLASS = IKeyword.CLASS;
+
 	/** The Constant SPORT. */
 	String SPORT = "sport";
 

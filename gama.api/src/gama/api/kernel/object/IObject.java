@@ -11,22 +11,24 @@ package gama.api.kernel.object;
 
 import gama.api.compilation.IVarAndActionSupport;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
 import gama.api.types.misc.IContainer;
+import gama.api.types.misc.IValue;
 import gama.api.utils.interfaces.IAttributed;
 
 /**
  *
  */
-public interface IObject<ClassOrSpecies extends IClass>
-		extends IAttributed, IContainer.Addressable<String, Object, String, Object>, IVarAndActionSupport {
+public interface IObject extends IAttributed, IContainer.ToGet<String, Object>, IVarAndActionSupport, IValue {
 
 	/**
 	 * Gets the species.
 	 *
 	 * @return the species
 	 */
-	ClassOrSpecies getSpecies();
+	IClass getSpecies();
 
 	/**
 	 * Gets the species name.
@@ -34,6 +36,15 @@ public interface IObject<ClassOrSpecies extends IClass>
 	 * @return the species name
 	 */
 	default String getSpeciesName() { return getSpecies().getName(); }
+
+	/**
+	 * Gets the gaml type. This is the type supported by the species/class of this object. Not the type of the
+	 * species/class used as a variable (i.e. typically a list<type supported>)
+	 *
+	 * @return the gaml type
+	 */
+	@Override
+	default IType<?> getGamlType() { return getSpecies().getDescription().getGamlType(); }
 
 	/**
 	 * Gets the direct var value.
@@ -71,6 +82,23 @@ public interface IObject<ClassOrSpecies extends IClass>
 	 *            the direct
 	 * @return true, if is instance of
 	 */
-	boolean isInstanceOf(final ClassOrSpecies s, boolean direct);
+	<T extends IClass> boolean isInstanceOf(final T s, boolean direct);
 
+	/**
+	 * Gets the from indices list.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param indices
+	 *            the indices
+	 * @return the from indices list
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	@Override
+	default Object getFromIndicesList(final IScope scope, final IList<String> indices) throws GamaRuntimeException {
+		if (indices == null || indices.isEmpty()) return null;
+		String key = indices.getFirst();
+		return get(scope, key);
+	}
 }
