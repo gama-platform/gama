@@ -197,6 +197,9 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	/** Type ID for the field type (continuous spatial fields). */
 	int FIELD = 31;
 
+	/** The class. */
+	int CLASS = 32;
+
 	// ==================== Type ID Ranges ====================
 
 	/** Starting ID for custom user-defined types. IDs >= this value are for custom types. */
