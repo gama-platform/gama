@@ -12,7 +12,6 @@ package gama.api.compilation.descriptions;
 
 import java.util.Map;
 
-import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IAgentConstructor;
@@ -22,7 +21,19 @@ import gama.api.utils.prefs.Pref;
 /**
  *
  */
-public interface ISpeciesDescription extends ITypeDescription {
+public interface ISpeciesDescription extends IClassDescription {
+
+	/**
+	 * The Interface Platform.
+	 */
+	interface Platform extends ISpeciesDescription {
+
+		/**
+		 * @param key
+		 * @param gp
+		 */
+		void addPrefAsVariable(Pref<?> gp);
+	}
 
 	/**
 	 * @param sd
@@ -128,23 +139,12 @@ public interface ISpeciesDescription extends ITypeDescription {
 	/**
 	 * @return
 	 */
-	@Override
-	boolean isAbstract();
-
-	/**
-	 * @return
-	 */
 	boolean isMirror();
 
 	/**
 	 * @return
 	 */
 	ISpeciesDescription getMacroSpecies();
-
-	/**
-	 * @param result
-	 */
-	void documentThis(IGamlDocumentation result);
 
 	/**
 	 *
@@ -155,18 +155,6 @@ public interface ISpeciesDescription extends ITypeDescription {
 	 *
 	 */
 	void inheritFromParent();
-
-	/**
-	 * The Interface Platform.
-	 */
-	interface Platform extends ISpeciesDescription {
-
-		/**
-		 * @param key
-		 * @param gp
-		 */
-		void addPrefAsVariable(Pref<?> gp);
-	}
 
 	/**
 	 * @param varName
@@ -190,11 +178,6 @@ public interface ISpeciesDescription extends ITypeDescription {
 	 * @return
 	 */
 	Map<String, ISpeciesDescription> getOwnMicroSpecies();
-
-	/**
-	 * @return
-	 */
-	String getParentName();
 
 	/**
 	 * @param skill

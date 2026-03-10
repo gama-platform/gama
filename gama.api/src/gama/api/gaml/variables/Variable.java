@@ -63,61 +63,68 @@ import gama.dev.DEBUG;
 
 /**
  * Represents a variable (attribute) declaration within a GAMA species or experiment.
- * 
- * <p>Variables are the fundamental way to define attributes in GAMA agents. They can have initial values,
- * be updated each cycle, computed on-demand as functions, or remain constant. Variables support
- * type constraints, value constraints (among), and change notifications.</p>
- * 
+ *
+ * <p>
+ * Variables are the fundamental way to define attributes in GAMA agents. They can have initial values, be updated each
+ * cycle, computed on-demand as functions, or remain constant. Variables support type constraints, value constraints
+ * (among), and change notifications.
+ * </p>
+ *
  * <h2>Variable Types</h2>
  * <ul>
- *   <li><b>Regular variables</b> - Standard attributes with optional init and update facets</li>
- *   <li><b>Constants</b> - Immutable attributes defined with const: true</li>
- *   <li><b>Functions</b> - Computed attributes evaluated on each access via function: facet</li>
- *   <li><b>Parameters</b> - Experiment variables exposed to the UI for user input</li>
+ * <li><b>Regular variables</b> - Standard attributes with optional init and update facets</li>
+ * <li><b>Constants</b> - Immutable attributes defined with const: true</li>
+ * <li><b>Functions</b> - Computed attributes evaluated on each access via function: facet</li>
+ * <li><b>Parameters</b> - Experiment variables exposed to the UI for user input</li>
  * </ul>
- * 
+ *
  * <h2>Lifecycle</h2>
  * <ol>
- *   <li><b>Initialization</b> - Value set from init: facet or default type value</li>
- *   <li><b>Update</b> - Optional automatic update each cycle via update: facet</li>
- *   <li><b>Access</b> - Value retrieved via getter or direct attribute access</li>
- *   <li><b>Modification</b> - Value changed via setter (unless const)</li>
- *   <li><b>Notification</b> - Change listeners triggered via on_change: facet</li>
+ * <li><b>Initialization</b> - Value set from init: facet or default type value</li>
+ * <li><b>Update</b> - Optional automatic update each cycle via update: facet</li>
+ * <li><b>Access</b> - Value retrieved via getter or direct attribute access</li>
+ * <li><b>Modification</b> - Value changed via setter (unless const)</li>
+ * <li><b>Notification</b> - Change listeners triggered via on_change: facet</li>
  * </ol>
- * 
+ *
  * <h2>Usage Examples</h2>
- * 
+ *
  * <h3>Basic Variable</h3>
+ *
  * <pre>{@code
  * species MySpecies {
  *     int age <- 0;
  *     string name <- "agent";
  * }
  * }</pre>
- * 
+ *
  * <h3>Variable with Update</h3>
+ *
  * <pre>{@code
  * species MySpecies {
  *     int energy <- 100 update: energy - 1;
  * }
  * }</pre>
- * 
+ *
  * <h3>Constant Variable</h3>
+ *
  * <pre>{@code
  * species MySpecies {
  *     const int max_speed <- 10;
  * }
  * }</pre>
- * 
+ *
  * <h3>Function Variable</h3>
+ *
  * <pre>{@code
  * species MySpecies {
  *     point location;
  *     float distance_to_center function: self distance_to {0,0};
  * }
  * }</pre>
- * 
+ *
  * <h3>Variable with Change Notification</h3>
+ *
  * <pre>{@code
  * species MySpecies {
  *     int health <- 100 on_change: {
@@ -125,18 +132,19 @@ import gama.dev.DEBUG;
  *     };
  * }
  * }</pre>
- * 
+ *
  * <h3>Variable with Constraints</h3>
+ *
  * <pre>{@code
  * species MySpecies {
  *     string color among: ["red", "green", "blue"] <- "red";
  * }
  * }</pre>
- * 
+ *
  * @see ContainerVariable for container-specific variables
  * @see NumberVariable for numeric variables with min/max/step constraints
  * @see IVariable for the variable interface
- * 
+ *
  * @author Alexis Drogoul
  * @since GAMA 1.0
  */
@@ -228,24 +236,24 @@ public class Variable extends Symbol implements IVariable {
 
 	/**
 	 * Validator for variable descriptions that enforces GAMA's variable declaration rules.
-	 * 
-	 * <p>This validator ensures that:
+	 *
+	 * <p>
+	 * This validator ensures that:
 	 * <ul>
-	 *   <li>Variable names are valid and not reserved keywords or type names</li>
-	 *   <li>Facets are used correctly (e.g., function cannot have init/update)</li>
-	 *   <li>Constants don't have update or function facets</li>
-	 *   <li>Parameters have required initial/min values</li>
-	 *   <li>Types are compatible for assignments</li>
-	 *   <li>Among values are valid</li>
+	 * <li>Variable names are valid and not reserved keywords or type names</li>
+	 * <li>Facets are used correctly (e.g., function cannot have init/update)</li>
+	 * <li>Constants don't have update or function facets</li>
+	 * <li>Parameters have required initial/min values</li>
+	 * <li>Types are compatible for assignments</li>
+	 * <li>Among values are valid</li>
 	 * </ul>
-	 * 
+	 *
 	 * @see IDescriptionValidator
 	 */
 	public static class VarValidator implements IDescriptionValidator {
 
-		/** 
-		 * List of facets that assign values to variables.
-		 * Used for type checking during validation. 
+		/**
+		 * List of facets that assign values to variables. Used for type checking during validation.
 		 */
 		public static final List<String> assignmentFacets = Arrays.asList(VALUE, INIT, FUNCTION, UPDATE, MIN, MAX);
 
@@ -512,43 +520,6 @@ public class Variable extends Symbol implements IVariable {
 				}
 			}
 
-			// IDescription oneExperiment = Iterables.getFirst(cd.getModelDescription().getExperiments(), null);
-			// if (oneExperiment != null) {
-			// for (String f : VariableDescription.INIT_DEPENDENCIES_FACETS) {
-			// IExpressionDescription initExpr = cd.getFacet(f);
-			// if (initExpr != null) {
-			// IExpressionDescription ed = initExpr.cleanCopy();
-			// if (GAML.getExpressionFactory().getParser().compile(ed, oneExperiment) == null) {
-			// // COMPLETEMENT FAUX == RENVOIE NULL dans le Cas de Month car ce n'est pas une constante,
-			// // mais c'est tout. Du coup 1#month passe sans problème ..car..car
-			// cd.error(
-			// "This expression cannot be used in the context of experiments. Please use a constant expression or
-			// redeclare this parameter in the experiments",
-			// IGamlIssue.WRONG_CONTEXT, f);
-			// }
-			// }
-			// }
-			// }
-
-			// AD 6/2/22 Restriction removed: non-boolean vars can "enable" or "disable" others based on the cast of
-			// their value to bool
-			// if (cd.hasFacet(ENABLES) && !cd.getGamlType().equals(Types.BOOL)) {
-			// cd.warning("The 'enables' facet has no meaning for non-boolean parameters",
-			// IGamlIssue.CONFLICTING_FACETS, ENABLES);
-			// }
-			// if (cd.hasFacet(DISABLES) && !cd.getGamlType().equals(Types.BOOL)) {
-			// cd.warning("The 'disables' facet has no meaning for non-boolean parameters",
-			// IGamlIssue.CONFLICTING_FACETS, DISABLES);
-			// }
-			// AD 15/04/14: special case for files
-			// AD 17/06/16 The restriction is temporarily removed
-			// if (!init.isConst() && init.getType().getType().id() !=
-			// IType.FILE) {
-			// final String p = "Parameter '" + cd.getParameterName() + "' ";
-			// cd.error(p + "initial value must be constant",
-			// IGamlIssue.NOT_CONST, INIT);
-			// return;
-			// }
 			if (cd.hasFacet(UPDATE) || cd.isFunction()) {
 				final String p = "Parameter '" + cd.getParameterName() + "' ";
 				cd.error(p + "cannot have an 'update' or 'function' facet", IGamlIssue.REMOVE_VALUE);
@@ -591,18 +562,20 @@ public class Variable extends Symbol implements IVariable {
 
 	/**
 	 * Constructs a new Variable from its description.
-	 * 
-	 * <p>This constructor extracts and stores all relevant facets from the description:
+	 *
+	 * <p>
+	 * This constructor extracts and stores all relevant facets from the description:
 	 * <ul>
-	 *   <li>Variable name and type</li>
-	 *   <li>Parameter metadata (if this is a parameter)</li>
-	 *   <li>Initialization, update, and function expressions</li>
-	 *   <li>Among constraint and on_change handler</li>
-	 *   <li>Modifiability status (const flag)</li>
+	 * <li>Variable name and type</li>
+	 * <li>Parameter metadata (if this is a parameter)</li>
+	 * <li>Initialization, update, and function expressions</li>
+	 * <li>Among constraint and on_change handler</li>
+	 * <li>Modifiability status (const flag)</li>
 	 * </ul>
-	 * 
-	 * @param sd the variable description containing facets and metadata
-	 * 
+	 *
+	 * @param sd
+	 *            the variable description containing facets and metadata
+	 *
 	 * @see IVariableDescription
 	 */
 	public Variable(final IDescription sd) {
@@ -676,17 +649,22 @@ public class Variable extends Symbol implements IVariable {
 
 	/**
 	 * Coerces (casts) a value to the type of this variable.
-	 * 
-	 * <p>This method converts the provided value to match the variable's declared type.
-	 * Type conversion follows GAMA's type system rules and may fail if the conversion
-	 * is not supported.</p>
-	 * 
-	 * @param agent the agent owning this variable
-	 * @param scope the current execution scope
-	 * @param v the value to coerce
+	 *
+	 * <p>
+	 * This method converts the provided value to match the variable's declared type. Type conversion follows GAMA's
+	 * type system rules and may fail if the conversion is not supported.
+	 * </p>
+	 *
+	 * @param agent
+	 *            the agent owning this variable
+	 * @param scope
+	 *            the current execution scope
+	 * @param v
+	 *            the value to coerce
 	 * @return the coerced value, compatible with this variable's type
-	 * @throws GamaRuntimeException if the value cannot be converted to the variable's type
-	 * 
+	 * @throws GamaRuntimeException
+	 *             if the value cannot be converted to the variable's type
+	 *
 	 * @see IType#cast(IScope, Object, Object, boolean)
 	 */
 	protected Object coerce(final IAgent agent, final IScope scope, final Object v) throws GamaRuntimeException {
@@ -735,39 +713,46 @@ public class Variable extends Symbol implements IVariable {
 
 	/**
 	 * Initializes this variable for the specified agent with the given value.
-	 * 
-	 * <p>The initialization process follows this priority:
+	 *
+	 * <p>
+	 * The initialization process follows this priority:
 	 * <ol>
-	 *   <li>Use the provided value v if not null</li>
-	 *   <li>Evaluate the init expression if defined</li>
-	 *   <li>Call the initer helper if defined</li>
-	 *   <li>Use the type's default value</li>
+	 * <li>Use the provided value v if not null</li>
+	 * <li>Evaluate the init expression if defined</li>
+	 * <li>Call the initer helper if defined</li>
+	 * <li>Use the type's default value</li>
 	 * </ol>
-	 * 
-	 * <p>The value is coerced to the variable's type and checked against
-	 * any among constraints before being set.</p>
-	 * 
-	 * @param scope the current execution scope
-	 * @param a the agent for which to initialize this variable
-	 * @param v the initial value, or null to use init expression/default
-	 * @throws GamaRuntimeException if initialization fails (e.g., type mismatch, invalid among value)
-	 * 
+	 *
+	 * <p>
+	 * The value is coerced to the variable's type and checked against any among constraints before being set.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @param a
+	 *            the agent for which to initialize this variable
+	 * @param v
+	 *            the initial value, or null to use init expression/default
+	 * @throws GamaRuntimeException
+	 *             if initialization fails (e.g., type mismatch, invalid among value)
+	 *
 	 * @see #coerce(IAgent, IScope, Object)
 	 * @see #checkAmong(IAgent, IScope, Object)
 	 */
 	@Override
-	public void initializeWith(final IScope scope, final IAgent a, final Object v) throws GamaRuntimeException {
+	public void initializeWith(final IScope scope, final IAgent gamaObject, final Object v)
+			throws GamaRuntimeException {
 		try (StopWatch w = GAMA.benchmark(scope, this)) {
 			scope.setCurrentSymbol(this);
 			if (v != null) {
-				_setVal(a, scope, v);
+				_setVal(gamaObject, scope, v);
 			} else if (initExpression != null) {
-				_setVal(a, scope, scope.evaluate(initExpression, a).getValue());
+				_setVal(gamaObject, scope, scope.evaluate(initExpression, gamaObject).getValue());
 			} else if (initer != null) {
-				final Object val = initer.run(scope, a, gSkill == null ? a : gSkill);
-				_setVal(a, scope, val);
+				final Object val = initer.run(scope, gamaObject, gSkill == null ? gamaObject : gSkill);
+				_setVal(gamaObject, scope, val);
 			} else {
-				_setVal(a, scope, getType().getDefault());
+				_setVal(gamaObject, scope, getType().getDefault());
 			}
 		} catch (final GamaRuntimeException e) {
 			e.addContext("in initializing attribute " + getName());
@@ -816,21 +801,26 @@ public class Variable extends Symbol implements IVariable {
 
 	/**
 	 * Sets the value of this variable for the specified agent.
-	 * 
-	 * <p>This method is the main entry point for changing a variable's value. It:
+	 *
+	 * <p>
+	 * This method is the main entry point for changing a variable's value. It:
 	 * <ul>
-	 *   <li>Prevents modification if the variable is constant</li>
-	 *   <li>Captures the old value if change notifications are needed</li>
-	 *   <li>Coerces the new value to the variable's type</li>
-	 *   <li>Validates the value against among constraints</li>
-	 *   <li>Triggers change listeners and on_change handlers if the value changed</li>
+	 * <li>Prevents modification if the variable is constant</li>
+	 * <li>Captures the old value if change notifications are needed</li>
+	 * <li>Coerces the new value to the variable's type</li>
+	 * <li>Validates the value against among constraints</li>
+	 * <li>Triggers change listeners and on_change handlers if the value changed</li>
 	 * </ul>
-	 * 
-	 * @param scope the current execution scope
-	 * @param agent the agent whose variable should be modified
-	 * @param v the new value to set
-	 * @throws GamaRuntimeException if the value is invalid or cannot be coerced
-	 * 
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @param agent
+	 *            the agent whose variable should be modified
+	 * @param v
+	 *            the new value to set
+	 * @throws GamaRuntimeException
+	 *             if the value is invalid or cannot be coerced
+	 *
 	 * @see #_setVal(IAgent, IScope, Object)
 	 * @see #notifyOfValueChange(IScope, IAgent, Object, Object)
 	 */
@@ -943,20 +933,24 @@ public class Variable extends Symbol implements IVariable {
 
 	/**
 	 * Retrieves the current value of this variable for the specified agent.
-	 * 
-	 * <p>The value retrieval process follows this priority:
+	 *
+	 * <p>
+	 * The value retrieval process follows this priority:
 	 * <ol>
-	 *   <li>Use the getter helper if defined (for skill-based variables)</li>
-	 *   <li>Evaluate the function expression if this is a function variable</li>
-	 *   <li>Get the initial value if the attribute hasn't been initialized yet</li>
-	 *   <li>Retrieve the stored attribute value from the agent</li>
+	 * <li>Use the getter helper if defined (for skill-based variables)</li>
+	 * <li>Evaluate the function expression if this is a function variable</li>
+	 * <li>Get the initial value if the attribute hasn't been initialized yet</li>
+	 * <li>Retrieve the stored attribute value from the agent</li>
 	 * </ol>
-	 * 
-	 * @param scope the current execution scope
-	 * @param agent the agent whose variable value should be retrieved
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @param agent
+	 *            the agent whose variable value should be retrieved
 	 * @return the current value of this variable for the specified agent
-	 * @throws GamaRuntimeException if value retrieval fails
-	 * 
+	 * @throws GamaRuntimeException
+	 *             if value retrieval fails
+	 *
 	 * @see #getInitialValue(IScope)
 	 */
 	@Override
@@ -1046,7 +1040,6 @@ public class Variable extends Symbol implements IVariable {
 		// No facets are available to describe whether or not a slider should be
 		// defined. AD change: if we are int or float and max, min and step are defined, we accept it for number
 		// variables;
-
 		return false;
 	}
 

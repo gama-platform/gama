@@ -23,9 +23,9 @@ import gama.api.runtime.scope.IScope;
  * The interface for GAML variable symbols, representing attributes and state of agents.
  * 
  * <p>
- * Variables in GAML represent the attributes, properties, and state of agents. They can be simple variables,
- * parameters (modifiable from experiments), functions (computed values), or micro-populations (collections of agents).
- * Variables extend both {@link ISymbol} (compilation structure) and {@link IParameter} (runtime behavior).
+ * Variables in GAML represent the attributes, properties, and state of agents. They can be simple variables, parameters
+ * (modifiable from experiments), functions (computed values), or micro-populations (collections of agents). Variables
+ * extend both {@link ISymbol} (compilation structure) and {@link IParameter} (runtime behavior).
  * </p>
  * 
  * <h2>Variable Types</h2>
@@ -159,8 +159,8 @@ public interface IVariable extends ISymbol, IParameter {
 	 * Checks if this variable represents a micro-population.
 	 * 
 	 * <p>
-	 * Micro-populations are collections of agents contained within a host agent. For example, a city agent might have
-	 * a micro-population of building agents. They are typically declared implicitly by species containment.
+	 * Micro-populations are collections of agents contained within a host agent. For example, a city agent might have a
+	 * micro-population of building agents. They are typically declared implicitly by species containment.
 	 * </p>
 	 *
 	 * @return true if this is a micro-population, false otherwise

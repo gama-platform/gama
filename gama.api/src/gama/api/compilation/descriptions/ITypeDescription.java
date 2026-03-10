@@ -48,6 +48,16 @@ public interface ITypeDescription extends IDescription {
 	ITypeDescription getParent();
 
 	/**
+	 * Gets the parent name.
+	 *
+	 * @return the parent name
+	 */
+	default String getParentName() {
+		ITypeDescription parent = getParent();
+		return parent == null ? null : parent.getName();
+	}
+
+	/**
 	 * @param varName
 	 * @param b
 	 * @return
@@ -127,4 +137,5 @@ public interface ITypeDescription extends IDescription {
 	 *            the children
 	 */
 	void addChildren(final Iterable<? extends IDescription> children);
+
 }
