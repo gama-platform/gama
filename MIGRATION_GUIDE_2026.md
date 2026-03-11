@@ -208,3 +208,71 @@ The central `Cast` class, which was previously a massive utility class in `gama.
     ```
 
 *Note: Some very generic casts or base type conversions (like `asInt`, `asFloat`, `asString`, `asAgent`) are still present in the new `gama.api.gaml.types.Cast` utility, but for structured types, always prefer using `Types.YOUR_TYPE.cast(...)`.*
+
+
+## 8. Flattening of GAML Annotations (`gama.annotations`)
+
+A significant syntactic change affects all GAMA extension and plugin developers: the global `GamlAnnotations` class (which previously contained all the `@interface` definitions as inner classes) has been flattened.
+
+Annotations are now top-level interfaces in the `gama.annotations` package.
+
+**Required Action:** You must update your imports and the way you declare annotations on your Java classes and methods.
+
+**Systematic Migration Examples for Annotations:**
+
+*   **Operator Definition**
+    ```java
+    // BEFORE
+    import gama.annotations.precompiler.GamlAnnotations.operator;
+    import gama.annotations.precompiler.GamlAnnotations.doc;
+
+    @operator(value = "my_operator", can_be_const = true)
+    @doc("Returns something")
+    public Object myOperator(...) { ... }
+
+    // AFTER
+    import gama.annotations.operator;
+    import gama.annotations.doc;
+
+    @operator(value = "my_operator", can_be_const = true)
+    @doc("Returns something")
+    public Object myOperator(...) { ... }
+    ```
+
+*   **Action Definition**
+    ```java
+    // BEFORE
+    import gama.annotations.precompiler.GamlAnnotations.action;
+
+    @action(name = "my_action")
+    public Object myAction(...) { ... }
+
+    // AFTER
+    import gama.annotations.action;
+
+    @action(name = "my_action")
+    public Object myAction(...) { ... }
+    ```
+
+*This applies systematically to all annotations: `@species`, `@skill`, `@getter`, `@setter`, `@variable`, `@vars`, `@type`, `@symbol`, `@display`, `@experiment`, etc.*
+
+---
+
+## 9. UI and Display Interfaces Extraction (`gama.api.ui`)
+
+In alignment with the core architecture extraction, the graphical and user interface APIs have been separated from their Eclipse RCP, SWT, Java2D, or OpenGL implementations. The core interfaces now reside in the `gama.api.ui` package.
+
+If your plugin interacts with the UI, dialogs, or display surfaces, you need to update the following references:
+
+*   **General UI and Dialogs:**
+    *   `gama.core.common.interfaces.IGui` $\rightarrow$ `gama.api.ui.IGui`
+    *   `gama.api.ui.IDialogFactory` (new factory for user dialogs, file dialogs, etc.)
+*   **Displays and Graphics:**
+    *   `gama.core.outputs.display.IDisplaySurface` $\rightarrow$ `gama.api.ui.displays.IDisplaySurface`
+    *   `gama.core.common.interfaces.IGraphics` $\rightarrow$ `gama.api.ui.displays.IGraphics`
+    *   `gama.core.outputs.LayeredDisplayData` $\rightarrow$ `gama.api.ui.displays.IDisplayData`
+*   **Layers:**
+    *   `gama.core.outputs.layers.ILayer` $\rightarrow$ `gama.api.ui.layers.ILayer`
+    *   `gama.api.ui.layers.IDrawingAttributes` (used to encapsulate styling when drawing shapes).
+
+---
