@@ -19,8 +19,8 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IMacroAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.species.GamlModelSpecies;
 import gama.api.kernel.species.ISpecies;
-import gama.core.agent.GamlModelSpecies;
 import gama.core.experiment.ExperimentAgent;
 
 /**
