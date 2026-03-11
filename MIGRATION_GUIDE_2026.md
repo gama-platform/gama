@@ -167,3 +167,44 @@ File management and utility libraries have been streamlined and isolated within 
 
 **Note for CI/CD developers:**
 Ensure that your local build environments (Maven Tycho) and CI pipelines use **JDK 25** (or higher) and the Eclipse 2025-12 target platform to successfully compile this new version of GAMA.
+
+## 7. Evolution of Casting Mechanisms (The `Cast` class)
+
+The central `Cast` class, which was previously a massive utility class in `gama.core.gaml.operators.Cast` handling almost all type conversions in Java, has been refactored.
+
+1.  **Moved to API:** The class is now located at `gama.api.gaml.types.Cast`.
+2.  **Decreased Role:** Its role has been significantly decreased. Many static cast methods specific to data structures (e.g., `asPoint`, `asList`, `asMap`, `asMatrix`, `asGeometry`) have been **removed** from the `Cast` class.
+3.  **Delegation to Types and Factories:** Type casting and conversions are now handled directly by the static methods within the target `IType` implementations or via the corresponding `Factory`.
+
+**Systematic Migration Examples for Casting:**
+
+*   **Casting to a Point (`IPoint`)**
+    ```java
+    // BEFORE
+    import gama.gaml.operators.Cast;
+    GamaPoint p = Cast.asPoint(scope, someObject);
+
+    // AFTER
+    import gama.api.gaml.types.Types;
+    IPoint p = Types.POINT.cast(scope, someObject, null, false);
+    ```
+
+*   **Casting to a List (`IList`)**
+    ```java
+    // BEFORE
+    IList list = Cast.asList(scope, someObject);
+
+    // AFTER
+    IList list = Types.LIST.cast(scope, someObject, null, false);
+    ```
+
+*   **Casting to a Geometry (`IShape`)**
+    ```java
+    // BEFORE
+    IShape shape = Cast.asGeometry(scope, someObject);
+
+    // AFTER
+    IShape shape = Types.GEOMETRY.cast(scope, someObject, null, false);
+    ```
+
+*Note: Some very generic casts or base type conversions (like `asInt`, `asFloat`, `asString`, `asAgent`) are still present in the new `gama.api.gaml.types.Cast` utility, but for structured types, always prefer using `Types.YOUR_TYPE.cast(...)`.*
