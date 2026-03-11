@@ -10,7 +10,7 @@ The goal of this massive update (over 10,000 files modified) is to modernize GAM
 
 The most impactful change for GAMA extension developers is the creation of the `gama.api` module. Previously, public interfaces, types, and utilities were mixed with implementation code inside `gama.core` and `gama.annotations`.
 
-**Required Action:** Most of your imports pointing to `gama.core.*` or `gama.annotations.*` will need to be updated to `gama.api.*`.
+**Required Action:** Most of your imports pointing to `gama.core.*` or `gama.annotations.*` will need to be systematically updated to `gama.api.*`.
 
 ### Package Correspondences: Core Types and Utilities
 
@@ -48,13 +48,17 @@ The root interface for agents, `IAgent`, has undergone profound structural modif
     *   It now extends **`IDelegatingShape`**, allowing a cleaner separation of concerns regarding the agent's geometry.
 3.  **Using Geometric Interfaces instead of Concrete Classes:**
     *   Methods like `getLocation()` and `setLocation(...)` now return and accept the `IPoint` interface rather than the concrete `GamaPoint` class.
-    *   **Example:**
+    *   **Systematic Migration Example:**
         ```java
         // BEFORE (GAMA 1.9 / main)
         GamaPoint location = agent.getLocation();
+        agent.setLocation(new GamaPoint(10, 20));
+        IShape geometry = agent.getGeometry();
 
         // AFTER (GAMA 2026)
         IPoint location = agent.getLocation();
+        agent.setLocation(GamaPointFactory.create(10, 20));
+        IShape geometry = agent.getGeometry(); // IShape interface is now in gama.api.types.geometry.IShape
         ```
 4.  **Attribute Management and Containers:**
     *   `IAgent` no longer extends `IContainer.Addressable<String, Object>`.
@@ -65,7 +69,53 @@ The root interface for agents, `IAgent`, has undergone profound structural modif
 
 ---
 
-## 3. Redesign of Populations (`IPopulation` and `AbstractPopulation`)
+## 3. Generalization of Factories for Instantiation
+
+A major architectural shift in GAMA 2026 is the **generalization of the Factory pattern** for creating core data structures and geometries.
+You should no longer use direct constructors (e.g., `new GamaList(...)`, `new GamaMap(...)`, `new GamaPoint(...)`) to create instances. This hides the internal implementations behind the `gama.api` and allows GAMA to inject optimized underlying structures.
+
+**Systematic Migration Examples:**
+
+*   **Creating Lists (`IList`)**
+    ```java
+    // BEFORE
+    IList<String> list = new GamaList<>();
+    IList<IAgent> listFromSet = new GamaList<>(mySet);
+
+    // AFTER
+    IList<String> list = GamaListFactory.create(Types.STRING);
+    IList<IAgent> listFromSet = GamaListFactory.create(scope, Types.AGENT, mySet);
+    ```
+
+*   **Creating Maps (`IMap`)**
+    ```java
+    // BEFORE
+    IMap<String, Object> map = new GamaMap<>();
+
+    // AFTER
+    IMap<String, Object> map = GamaMapFactory.create(Types.STRING, Types.NO_TYPE);
+    ```
+
+*   **Creating Geometry and Points (`IShape`, `IPoint`)**
+    ```java
+    // BEFORE
+    GamaPoint pt = new GamaPoint(1.0, 2.0);
+    IShape circle = GamaGeometryType.buildCircle(10, pt);
+
+    // AFTER
+    IPoint pt = GamaPointFactory.create(1.0, 2.0);
+    IShape circle = GamaShapeFactory.buildCircle(10, pt);
+    ```
+
+*   **Creating Graphs (`IGraph`)**
+    *   Use `GamaGraphFactory` to instantiate spatial graphs, generic graphs, etc.
+
+*   **Creating Colors (`IColor`)**
+    *   Use `GamaColorFactory` instead of `new GamaColor()`.
+
+---
+
+## 4. Redesign of Populations (`IPopulation` and `AbstractPopulation`)
 
 The internal management of agent populations has been refactored to reduce code duplication and clarify the API.
 
@@ -77,7 +127,7 @@ The internal management of agent populations has been refactored to reduce code 
     *   **Renamed:** The `createAgentAt(...)` method is renamed to `createAgentAtIndex(...)`. *All existing calls must be updated.*
     *   **Added:** A default `createOneAgent(...)` method has been added.
     *   **Behavior Change:** The `fireAgentsAdded` method is no longer a default method in the interface; its implementation is delegated to concrete classes.
-    *   **Example:**
+    *   **Systematic Migration Example:**
         ```java
         // BEFORE
         myPopulation.createAgentAt(scope, index, initialValues, isRestored);
@@ -88,7 +138,7 @@ The internal management of agent populations has been refactored to reduce code 
 
 ---
 
-## 4. GAML Compiler and Parser (`gaml.compiler`)
+## 5. GAML Compiler and Parser (`gaml.compiler`)
 
 Major changes occurred in the GAML Xtext compiler.
 
@@ -105,7 +155,7 @@ Major changes occurred in the GAML Xtext compiler.
 
 ---
 
-## 5. Utilities and I/O (`gama.api.utils.*`)
+## 6. Utilities and I/O (`gama.api.utils.*`)
 
 File management and utility libraries have been streamlined and isolated within `gama.api.utils`.
 
