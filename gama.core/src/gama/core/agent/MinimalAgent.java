@@ -33,6 +33,7 @@ import gama.api.kernel.agent.AgentReference;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IMacroAgent;
 import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.object.IClass;
 import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.kernel.species.GamlSpecies;
@@ -255,13 +256,24 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 		return geometry.getLocation();
 	}
 
+	/**
+	 * Checks if is instance of.
+	 *
+	 * @param <T>
+	 *            the generic type
+	 * @param s
+	 *            the s
+	 * @param direct
+	 *            the direct
+	 * @return true, if is instance of
+	 */
 	@Override
-	public boolean isInstanceOf(final ISpecies s, final boolean direct) {
+	public <T extends IClass> boolean isInstanceOf(final T s, final boolean direct) {
 		// TODO and direct ?
 		if (IKeyword.AGENT.equals(s.getName())) return true;
 		final ISpecies species = getSpecies();
 		if (species == s) return true;
-		if (!direct) return species.extendsSpecies(s);
+		if (!direct) return species.extendsClassOrSpecies(s);
 		return false;
 	}
 

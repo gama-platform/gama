@@ -46,13 +46,13 @@ import one.util.streamex.StreamEx;
 
 /**
  * Concrete implementation of a GAML species with full metadata and validation.
- * 
+ *
  * <p>
  * This class represents a standard species definition in GAML, providing the complete implementation for agent type
  * specifications including scheduling, concurrency, mirroring, and specialized topologies (grid, graph). It extends
  * {@link AbstractSpecies} with GAML-specific features and annotations.
  * </p>
- * 
+ *
  * <h2>Core Features</h2>
  * <ul>
  * <li><b>Scheduling:</b> Control when and how agents are executed (frequency, custom schedules)</li>
@@ -63,45 +63,48 @@ import one.util.streamex.StreamEx;
  * <li><b>Skills:</b> Reusable behavior modules (moving, communication, etc.)</li>
  * <li><b>Control Architecture:</b> Behavior execution patterns (reflex, FSM, BDI, etc.)</li>
  * </ul>
- * 
+ *
  * <h2>Species Types</h2>
- * 
+ *
  * <h3>Regular Species</h3>
  * <p>
  * Standard agent populations with custom behaviors:
  * </p>
+ *
  * <pre>
  * {@code
  * species animal skills: [moving] {
  *     float energy <- 100.0;
- *     
+ *
  *     reflex move {
  *         do wander;
  *     }
  * }
  * }
  * </pre>
- * 
+ *
  * <h3>Grid Species</h3>
  * <p>
  * Spatially organized agents in a regular lattice:
  * </p>
+ *
  * <pre>
  * {@code
  * grid cell width: 50 height: 50 neighbors: 8 {
  *     rgb color <- #white;
- *     
+ *
  *     reflex update {
  *         color <- mean(neighbors collect each.color);
  *     }
  * }
  * }
  * </pre>
- * 
+ *
  * <h3>Mirror Species</h3>
  * <p>
  * Species that automatically tracks another species' population:
  * </p>
+ *
  * <pre>
  * {@code
  * species node_agent mirrors: list(agent) {
@@ -113,11 +116,12 @@ import one.util.streamex.StreamEx;
  * }
  * }
  * </pre>
- * 
+ *
  * <h2>Scheduling Control</h2>
  * <p>
  * Species can control execution frequency and which agents are scheduled:
  * </p>
+ *
  * <pre>
  * {@code
  * species predator frequency: 2 schedules: shuffle(predator) {
@@ -125,7 +129,7 @@ import one.util.streamex.StreamEx;
  * }
  * }
  * </pre>
- * 
+ *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @since GAMA 1.0
  * @see AbstractSpecies
@@ -310,7 +314,7 @@ public class GamlSpecies extends AbstractSpecies {
 
 	/**
 	 * Validator for species descriptions.
-	 * 
+	 *
 	 * <p>
 	 * This validator ensures the consistency and correctness of species definitions, particularly for grid species. It
 	 * validates:
@@ -381,7 +385,7 @@ public class GamlSpecies extends AbstractSpecies {
 
 		/**
 		 * Processes and validates the neighbors facet for grid species.
-		 * 
+		 *
 		 * <p>
 		 * The neighbors facet specifies the neighborhood type for grid cells (typically 4, 6, or 8).
 		 * </p>
@@ -399,7 +403,7 @@ public class GamlSpecies extends AbstractSpecies {
 
 		/**
 		 * Validates that the torus facet is only defined on global species.
-		 * 
+		 *
 		 * <p>
 		 * Torus topology creates a wrapped world where agents crossing one edge appear on the opposite edge. This
 		 * should only be defined at the model level.
@@ -421,7 +425,7 @@ public class GamlSpecies extends AbstractSpecies {
 
 		/**
 		 * Validates file loading facets for grid species.
-		 * 
+		 *
 		 * <p>
 		 * Grid species can load initial values from image or raster files. This method ensures:
 		 * </p>
@@ -460,7 +464,7 @@ public class GamlSpecies extends AbstractSpecies {
 
 		/**
 		 * Validates the frequency facet and warns about unreachable code.
-		 * 
+		 *
 		 * <p>
 		 * If a species has a frequency of 0 (never scheduled), any variables with update expressions or behaviors will
 		 * never be executed. This method warns the modeler about such dead code.
@@ -498,7 +502,7 @@ public class GamlSpecies extends AbstractSpecies {
 
 	/**
 	 * Constructs a new GAML species from its description.
-	 * 
+	 *
 	 * <p>
 	 * This constructor initializes the species with scheduling and concurrency controls. For mirror species, it
 	 * automatically creates a default schedule expression that filters out agents whose mirrored targets are dead.

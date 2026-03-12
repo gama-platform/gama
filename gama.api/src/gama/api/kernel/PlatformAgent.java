@@ -38,6 +38,7 @@ import gama.api.kernel.agent.AgentReference;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IMacroAgent;
 import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.object.IClass;
 import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.serialization.SerialisedAgent;
 import gama.api.kernel.simulation.IClock;
@@ -77,83 +78,91 @@ import one.util.streamex.StreamEx;
 
 /**
  * The unique platform agent instance representing the GAMA platform itself.
- * 
- * <p>PlatformAgent is a singleton agent accessible as 'gama' in GAML models. It provides access to
- * platform-level information and capabilities such as:
+ *
+ * <p>
+ * PlatformAgent is a singleton agent accessible as 'gama' in GAML models. It provides access to platform-level
+ * information and capabilities such as:
  * <ul>
- *   <li>Platform metadata (version, operating system, plugins)</li>
- *   <li>System resources (memory, time)</li>
- *   <li>Workspace information</li>
- *   <li>Platform-wide preferences</li>
- *   <li>Server communication (in client-server mode)</li>
- *   <li>Memory monitoring and warnings</li>
+ * <li>Platform metadata (version, operating system, plugins)</li>
+ * <li>System resources (memory, time)</li>
+ * <li>Workspace information</li>
+ * <li>Platform-wide preferences</li>
+ * <li>Server communication (in client-server mode)</li>
+ * <li>Memory monitoring and warnings</li>
  * </ul>
- * 
+ *
  * <h2>Platform Attributes</h2>
- * 
- * <p>The platform agent exposes several read-only attributes:</p>
+ *
+ * <p>
+ * The platform agent exposes several read-only attributes:
+ * </p>
  * <ul>
- *   <li><b>machine_time:</b> Current system time in milliseconds since UNIX epoch</li>
- *   <li><b>workspace_path:</b> Absolute path to the GAMA workspace</li>
- *   <li><b>workspace:</b> File representing the workspace directory</li>
- *   <li><b>version:</b> Current GAMA version number</li>
- *   <li><b>platform:</b> Operating system name</li>
- *   <li><b>info:</b> Complete system information for bug reports</li>
- *   <li><b>plugins:</b> List of all installed plugin names</li>
- *   <li><b>free_memory:</b> Available memory in bytes</li>
- *   <li><b>max_memory:</b> Maximum memory available to GAMA in bytes</li>
+ * <li><b>machine_time:</b> Current system time in milliseconds since UNIX epoch</li>
+ * <li><b>workspace_path:</b> Absolute path to the GAMA workspace</li>
+ * <li><b>workspace:</b> File representing the workspace directory</li>
+ * <li><b>version:</b> Current GAMA version number</li>
+ * <li><b>platform:</b> Operating system name</li>
+ * <li><b>info:</b> Complete system information for bug reports</li>
+ * <li><b>plugins:</b> List of all installed plugin names</li>
+ * <li><b>free_memory:</b> Available memory in bytes</li>
+ * <li><b>max_memory:</b> Maximum memory available to GAMA in bytes</li>
  * </ul>
- * 
+ *
  * <h2>Platform Actions</h2>
- * 
+ *
  * <ul>
- *   <li><b>send(message):</b> Send a message through the server (client-server mode)</li>
- *   <li><b>die:</b> Shut down the entire GAMA platform</li>
+ * <li><b>send(message):</b> Send a message through the server (client-server mode)</li>
+ * <li><b>die:</b> Shut down the entire GAMA platform</li>
  * </ul>
- * 
+ *
  * <h2>Memory Monitoring</h2>
- * 
- * <p>The platform agent automatically monitors memory usage if configured in preferences.
- * When memory runs low, it emits warnings to help prevent out-of-memory errors.</p>
- * 
+ *
+ * <p>
+ * The platform agent automatically monitors memory usage if configured in preferences. When memory runs low, it emits
+ * warnings to help prevent out-of-memory errors.
+ * </p>
+ *
  * <h2>Usage Examples</h2>
- * 
+ *
  * <h3>Accessing Platform Information</h3>
+ *
  * <pre>{@code
  * global {
  *     init {
  *         // Get GAMA version
  *         write "GAMA version: " + gama.version;
- *         
+ *
  *         // Get available memory
  *         write "Free memory: " + (gama.free_memory / 1000000) + " MB";
- *         
+ *
  *         // Get workspace path
  *         write "Workspace: " + gama.workspace_path;
- *         
+ *
  *         // List plugins
  *         write "Installed plugins: " + gama.plugins;
  *     }
  * }
  * }</pre>
- * 
+ *
  * <h3>Using Machine Time</h3>
+ *
  * <pre>{@code
  * global {
  *     float start_time;
- *     
+ *
  *     init {
  *         start_time <- gama.machine_time;
  *     }
- *     
+ *
  *     reflex measure_time {
  *         float elapsed <- gama.machine_time - start_time;
  *         write "Elapsed time: " + elapsed + " ms";
  *     }
  * }
  * }</pre>
- * 
+ *
  * <h3>Accessing Workspace Files</h3>
+ *
  * <pre>{@code
  * global {
  *     init {
@@ -163,8 +172,9 @@ import one.util.streamex.StreamEx;
  *     }
  * }
  * }</pre>
- * 
+ *
  * <h3>Client-Server Communication</h3>
+ *
  * <pre>{@code
  * global {
  *     reflex send_data {
@@ -172,8 +182,9 @@ import one.util.streamex.StreamEx;
  *     }
  * }
  * }</pre>
- * 
+ *
  * <h3>Memory Monitoring</h3>
+ *
  * <pre>{@code
  * global {
  *     reflex check_memory when: every(100#cycle) {
@@ -184,10 +195,10 @@ import one.util.streamex.StreamEx;
  *     }
  * }
  * }</pre>
- * 
+ *
  * @see ITopLevelAgent.Platform
  * @see GamaMetaModel
- * 
+ *
  * @author Alexis Drogoul
  * @since GAMA 1.0
  */
@@ -796,7 +807,7 @@ public class PlatformAgent implements ITopLevelAgent.Platform {
 	public IPopulation<? extends IAgent> getPopulation() { return null; }
 
 	@Override
-	public boolean isInstanceOf(final ISpecies s, final boolean direct) {
+	public <T extends IClass> boolean isInstanceOf(final T s, final boolean direct) {
 		return s == getSpecies();
 	}
 

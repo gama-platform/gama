@@ -27,23 +27,25 @@ import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.agent.IPopulationSet;
+import gama.api.kernel.object.IClass;
 import gama.api.kernel.skill.IArchitecture;
 import gama.api.kernel.skill.ISkill;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
 import gama.api.types.misc.IContainer;
 import gama.api.ui.IExperimentDisplayable;
 
 /**
  * The Interface ISpecies.
- * 
+ *
  * <p>
- * Represents a species definition in GAMA - the fundamental organizing concept for agents. A species is like a class
- * in object-oriented programming: it defines the structure (attributes), behaviors (actions, reflexes), appearance
+ * Represents a species definition in GAMA - the fundamental organizing concept for agents. A species is like a class in
+ * object-oriented programming: it defines the structure (attributes), behaviors (actions, reflexes), appearance
  * (aspects), and control logic (architecture) for a category of agents. Each agent belongs to exactly one species.
  * </p>
- * 
+ *
  * <h3>Core Concept</h3>
  * <p>
  * In GAMA, a species is:
@@ -55,7 +57,7 @@ import gama.api.ui.IExperimentDisplayable;
  * <li><b>A Type:</b> Used for type checking and declarations</li>
  * <li><b>An Inheritance Hierarchy:</b> Can extend other species</li>
  * </ul>
- * 
+ *
  * <h3>Species Components</h3>
  * <table border="1">
  * <tr>
@@ -94,29 +96,29 @@ import gama.api.ui.IExperimentDisplayable;
  * <td>skills: [moving]</td>
  * </tr>
  * </table>
- * 
+ *
  * <h3>Usage in GAML</h3>
- * 
+ *
  * <h4>1. Basic Species Definition</h4>
- * 
+ *
  * <pre>
  * <code>
  * species person {
  *     // Attributes
  *     int age <- rnd(80);
  *     float energy <- 100.0;
- *     
+ *
  *     // Reflex (automatic behavior)
  *     reflex age_and_tire {
  *         age <- age + 1;
  *         energy <- energy - 0.1;
  *     }
- *     
+ *
  *     // Action (callable behavior)
  *     action eat(float amount) {
  *         energy <- min(100.0, energy + amount);
  *     }
- *     
+ *
  *     // Aspect (visualization)
  *     aspect default {
  *         draw circle(1) color: #blue;
@@ -124,50 +126,50 @@ import gama.api.ui.IExperimentDisplayable;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>2. Species Inheritance</h4>
- * 
+ *
  * <pre>
  * <code>
  * species animal {
  *     float energy <- 100.0;
- *     
+ *
  *     action move {
  *         energy <- energy - 1.0;
  *     }
  * }
- * 
+ *
  * species predator parent: animal {
  *     // Inherits 'energy' and 'move'
  *     float hunt_skill <- rnd(1.0);
- *     
+ *
  *     action hunt(animal prey) {
  *         // Predator-specific behavior
  *     }
  * }
- * 
+ *
  * species prey parent: animal {
  *     // Also inherits from animal
  *     float flee_speed <- rnd(10.0);
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>3. Multi-Level Species (Micro-Species)</h4>
- * 
+ *
  * <pre>
  * <code>
  * species city {
  *     // Micro-species defined inside city
  *     species building {
  *         int floors <- rnd(1, 20);
- *         
+ *
  *         // Nested micro-species
  *         species room {
  *             string type <- one_of(["office", "apartment"]);
  *         }
  *     }
- *     
+ *
  *     init {
  *         create building number: 50 {
  *             create room number: floors * 4;
@@ -176,25 +178,25 @@ import gama.api.ui.IExperimentDisplayable;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>4. Species with Skills and Architecture</h4>
- * 
+ *
  * <pre>
  * <code>
  * species robot skills: [moving] control: fsm {
  *     // Skills provide attributes and actions
  *     float speed <- 5.0;  // From 'moving' skill
- *     
+ *
  *     // FSM architecture uses states instead of reflexes
  *     state searching initial: true {
  *         transition to: moving when: target != nil;
  *     }
- *     
+ *
  *     state moving {
  *         do goto target: target;  // Action from 'moving' skill
  *         transition to: working when: location = target;
  *     }
- *     
+ *
  *     state working {
  *         do work;
  *         transition to: searching when: task_done;
@@ -202,78 +204,78 @@ import gama.api.ui.IExperimentDisplayable;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h4>5. Grid Species</h4>
- * 
+ *
  * <pre>
  * <code>
  * grid cell width: 100 height: 100 {
  *     // Special grid species
  *     rgb color <- #white;
  *     float value <- 0.0;
- *     
+ *
  *     reflex diffuse {
  *         value <- mean(neighbors collect each.value);
  *     }
- *     
+ *
  *     aspect default {
  *         draw shape color: rgb(255 * value, 0, 0);
  *     }
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h3>Java Usage</h3>
- * 
+ *
  * <pre>
  * <code>
  * ISpecies species = ...;
- * 
+ *
  * // Basic information
  * String name = species.getName();
  * ISpecies parent = species.getParentSpecies();
  * boolean isGrid = species.isGrid();
- * 
+ *
  * // Hierarchy
  * List&lt;ISpecies&gt; hierarchy = species.getSelfWithParents();
  * IList&lt;ISpecies&gt; subSpecies = species.getSubSpecies(scope);
  * boolean extends = species.extendsSpecies(otherSpecies);
- * 
+ *
  * // Micro-species
  * IList&lt;ISpecies&gt; microSpecies = species.getMicroSpecies();
  * ISpecies microSpec = species.getMicroSpecies("building");
  * boolean hasMicro = species.hasMicroSpecies();
- * 
+ *
  * // Attributes (variables)
  * IVariable var = species.getVar("age");
  * Collection&lt;String&gt; varNames = species.getVarNames();
  * IList&lt;String&gt; attributes = species.getAttributeNames(scope);
  * boolean hasVar = species.hasVar("energy");
- * 
+ *
  * // Actions
  * IStatement.WithArgs action = species.getAction("eat");
  * IList&lt;String&gt; actionNames = species.getActionNames(scope);
  * Collection&lt;? extends IStatement&gt; actions = species.getActions();
- * 
+ *
  * // Aspects
  * IExecutable aspect = species.getAspect("default");
  * IList&lt;String&gt; aspectNames = species.getAspectNames();
  * boolean hasAspect = species.hasAspect("3d");
- * 
+ *
  * // Architecture and skills
  * IArchitecture arch = species.getArchitecture();
  * String archName = species.getArchitectureName();
- * 
+ *
  * // Population
  * IPopulation&lt;? extends IAgent&gt; pop = species.getPopulation(scope);
- * 
+ *
  * // Scheduling
  * IExpression frequency = species.getFrequency();
  * IExpression schedule = species.getSchedule();
  * IExpression concurrency = species.getConcurrency();
  * </code>
  * </pre>
- * 
+ *
  * <h3>Species Hierarchy</h3>
  * <ul>
  * <li><b>agent:</b> The root species (all species inherit from agent)</li>
@@ -281,7 +283,7 @@ import gama.api.ui.IExperimentDisplayable;
  * <li><b>model:</b> The global/world species</li>
  * <li><b>User-defined:</b> All species defined in GAML models</li>
  * </ul>
- * 
+ *
  * <h3>Special Species Types</h3>
  * <ul>
  * <li><b>Grid Species:</b> Declared with 'grid', agents arranged in 2D matrix</li>
@@ -289,19 +291,19 @@ import gama.api.ui.IExperimentDisplayable;
  * <li><b>Mirror Species:</b> Mirror external data sources</li>
  * <li><b>Micro-Species:</b> Nested species that exist within macro-agents</li>
  * </ul>
- * 
+ *
  * <h3>Introspection</h3>
  * <p>
  * Species are themselves accessible as GAML values:
  * </p>
- * 
+ *
  * <pre>
  * <code>
  * global {
  *     init {
  *         // Access species as a value
  *         species person_spec <- person;
- *         
+ *
  *         // Get species information
  *         write "Person has " + length(person_spec.attributes) + " attributes";
  *         write "Actions: " + person_spec.actions;
@@ -310,7 +312,7 @@ import gama.api.ui.IExperimentDisplayable;
  * }
  * </code>
  * </pre>
- * 
+ *
  * <h3>Implementation Notes</h3>
  * <ul>
  * <li>Species implements ISymbol (has a description and belongs to a model)</li>
@@ -321,7 +323,7 @@ import gama.api.ui.IExperimentDisplayable;
  * <li>Attributes, actions, and aspects are inherited from parent</li>
  * <li>Architecture is not inherited (must be explicitly set)</li>
  * </ul>
- * 
+ *
  * @see IAgent
  * @see IPopulation
  * @see IArchitecture
@@ -370,7 +372,7 @@ import gama.api.ui.IExperimentDisplayable;
 				of = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 				doc = @doc ("The population that corresponds to this species in an instance of its host")) })
 public interface ISpecies
-		extends ISymbol, IContainer.Addressable<Integer, IAgent, Integer, IAgent>, IPopulationSet<IAgent> {
+		extends IClass, IContainer.Addressable<Integer, IAgent, Integer, IAgent>, IPopulationSet<IAgent> {
 
 	/** The step action name. */
 	String stepActionName = "_step_";
@@ -415,15 +417,6 @@ public interface ISpecies
 	IExpression getConcurrency();
 
 	/**
-	 * Extends species.
-	 *
-	 * @param s
-	 *            the s
-	 * @return true, if successful
-	 */
-	boolean extendsSpecies(final ISpecies s);
-
-	/**
 	 * Checks if is grid.
 	 *
 	 * @return true, if is grid
@@ -443,6 +436,7 @@ public interface ISpecies
 	 * @return
 	 */
 
+	@Override
 	IList<ISpecies> getSubSpecies(IScope scope);
 
 	/**
@@ -452,6 +446,7 @@ public interface ISpecies
 	 *            the scope
 	 * @return the sub species names
 	 */
+	@Override
 	@SuppressWarnings ("unchecked")
 	@getter (SUBSPECIES)
 	@doc ("Returns all the direct subspecies names of this species")
@@ -502,6 +497,7 @@ public interface ISpecies
 	 *
 	 * @return
 	 */
+	@Override
 	@getter (IKeyword.PARENT)
 	@doc ("Returns the direct parent of the species. Experiments, models and species with no explicit parents will return nil")
 	ISpecies getParentSpecies();
@@ -519,6 +515,7 @@ public interface ISpecies
 	 *
 	 * @return the self with parents
 	 */
+	@Override
 	List<ISpecies> getSelfWithParents();
 
 	/**
@@ -549,6 +546,7 @@ public interface ISpecies
 	 *            the name
 	 * @return the action
 	 */
+	@Override
 	IStatement.WithArgs getAction(final String name);
 
 	/**
@@ -558,6 +556,7 @@ public interface ISpecies
 	 *            the scope
 	 * @return the action names
 	 */
+	@Override
 	@getter (ACTIONS)
 	@doc ("retuns the list of actions defined in this species (incl. the ones inherited from its parent)")
 	IList<String> getActionNames(final IScope scope);
@@ -567,7 +566,8 @@ public interface ISpecies
 	 *
 	 * @return the actions
 	 */
-	Collection<? extends IStatement> getActions();
+	@Override
+	Collection<IStatement.Action> getActions();
 
 	/**
 	 * Gets the aspect.
@@ -629,6 +629,7 @@ public interface ISpecies
 	 *            the n
 	 * @return the var
 	 */
+	@Override
 	IVariable getVar(final String n);
 
 	/**
@@ -636,6 +637,7 @@ public interface ISpecies
 	 *
 	 * @return the var names
 	 */
+	@Override
 	Collection<String> getVarNames();
 
 	/**
@@ -644,6 +646,7 @@ public interface ISpecies
 	 * @param scope
 	 * @return the list of all the attributes defined in this species
 	 */
+	@Override
 	@getter (IKeyword.ATTRIBUTES)
 	@doc ("retuns the list of attributes defined in this species (incl. the ones inherited from its parent)")
 	IList<String> getAttributeNames(final IScope scope);
@@ -653,6 +656,7 @@ public interface ISpecies
 	 *
 	 * @return the vars
 	 */
+	@Override
 	Collection<IVariable> getVars();
 
 	/**
@@ -671,6 +675,7 @@ public interface ISpecies
 	 *            the name
 	 * @return true, if successful
 	 */
+	@Override
 	boolean hasVar(final String name);
 
 	/**
@@ -770,5 +775,19 @@ public interface ISpecies
 	 * @return true, if is built in
 	 */
 	default boolean isBuiltIn() { return getDescription() != null && getDescription().isBuiltIn(); }
+
+	/**
+	 * Creates the instance.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param args
+	 *            the args
+	 * @return the i agent
+	 */
+	@Override
+	default IAgent createInstance(final IScope scope, final IMap<String, Object> args) {
+		return getPopulation(scope).createOneAgent(scope, args);
+	}
 
 }

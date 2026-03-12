@@ -36,6 +36,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IGraphAgent;
 import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.object.IClass;
 import gama.api.kernel.skill.IArchitecture;
 import gama.api.kernel.skill.ISkill;
 import gama.api.runtime.IExecutable;
@@ -53,13 +54,13 @@ import one.util.streamex.StreamEx;
 
 /**
  * Abstract base class for all species implementations in GAMA.
- * 
+ *
  * <p>
  * A species in GAML represents a type of agent. This abstract class provides the core implementation for managing
  * species properties including variables, actions, behaviors, aspects, micro-species, and the control architecture.
  * Species can be organized hierarchically through inheritance (parent/child) and composition (macro/micro).
  * </p>
- * 
+ *
  * <h2>Key Responsibilities</h2>
  * <ul>
  * <li><b>Variables:</b> Manages attributes that define the state of agents of this species</li>
@@ -69,7 +70,7 @@ import one.util.streamex.StreamEx;
  * <li><b>Micro-species:</b> Species contained within this species' agents</li>
  * <li><b>Architecture:</b> Control structure governing agent behavior (FSM, BDI, etc.)</li>
  * </ul>
- * 
+ *
  * <h2>Species Hierarchy</h2>
  * <p>
  * Species can be organized in two types of hierarchies:
@@ -77,10 +78,10 @@ import one.util.streamex.StreamEx;
  * <ul>
  * <li><b>Inheritance (parent/child):</b> A species can extend another species, inheriting its attributes and
  * behaviors</li>
- * <li><b>Composition (macro/micro):</b> A species can contain other species (micro-species), creating nested
- * agent populations</li>
+ * <li><b>Composition (macro/micro):</b> A species can contain other species (micro-species), creating nested agent
+ * populations</li>
  * </ul>
- * 
+ *
  * <h2>Grid and Graph Specializations</h2>
  * <p>
  * The class handles two special types of species:
@@ -89,32 +90,32 @@ import one.util.streamex.StreamEx;
  * <li><b>Grid species:</b> Agents organized in a spatial grid topology</li>
  * <li><b>Graph species:</b> Agents representing nodes in a graph structure</li>
  * </ul>
- * 
+ *
  * <h2>Example Usage</h2>
  * <p>
  * In GAML, species are defined declaratively:
  * </p>
- * 
+ *
  * <pre>
  * {@code
  * species predator skills: [moving] {
  *     float energy <- 100.0;
- *     
+ *
  *     reflex hunt when: energy > 50 {
  *         // behavior code
  *     }
- *     
+ *
  *     action eat (prey target) {
  *         energy <- energy + target.energy;
  *     }
- *     
+ *
  *     aspect default {
  *         draw circle(2) color: #red;
  *     }
  * }
  * }
  * </pre>
- * 
+ *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @since GAMA 1.0
  * @see ISpecies
@@ -130,7 +131,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	/** Indicates whether this species represents a grid (spatial lattice of agents). */
 	protected final boolean isGrid;
-	
+
 	/** Indicates whether this species represents a graph (agents are nodes in a graph). */
 	protected final boolean isGraph;
 
@@ -154,7 +155,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	/** The macro-species (species that hosts this species as a micro-species). */
 	protected ISpecies macroSpecies;
-	
+
 	/** The parent species (species from which this species inherits). */
 	protected ISpecies parentSpecies;
 
@@ -163,7 +164,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	/**
 	 * Constructs a new species from its description.
-	 * 
+	 *
 	 * <p>
 	 * This constructor initializes the species by:
 	 * </p>
@@ -172,7 +173,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 	 * <li>Determining if the species is a grid or graph based on the keyword and Java base class</li>
 	 * <li>Creating and initializing the control architecture instance</li>
 	 * </ul>
-	 * 
+	 *
 	 * @param description
 	 *            the species description containing all metadata from GAML compilation
 	 */
@@ -199,11 +200,10 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	/**
 	 * Adds a temporary action to this species.
-	 * 
+	 *
 	 * <p>
-	 * Temporary actions are dynamically added actions that can be removed later. They are typically used for
-	 * on-the-fly action creation during runtime, such as when evaluating expressions that require temporary
-	 * executable code.
+	 * Temporary actions are dynamically added actions that can be removed later. They are typically used for on-the-fly
+	 * action creation during runtime, such as when evaluating expressions that require temporary executable code.
 	 * </p>
 	 *
 	 * @param action
@@ -217,12 +217,12 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	/**
 	 * Removes the temporary action previously added.
-	 * 
+	 *
 	 * <p>
 	 * This method removes both the action from the species' action map and from its description, ensuring complete
 	 * cleanup.
 	 * </p>
-	 * 
+	 *
 	 * @see #addTemporaryAction(IStatement)
 	 */
 	@Override
@@ -233,7 +233,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	/**
 	 * Gets the population of agents of this species in the given scope.
-	 * 
+	 *
 	 * <p>
 	 * The population is retrieved from the current agent in the scope. If the current agent doesn't directly contain a
 	 * population of this species, the method attempts to find it through the agent's hierarchy. This is particularly
@@ -304,12 +304,12 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	/**
 	 * Gets all micro-species defined within this species.
-	 * 
+	 *
 	 * <p>
 	 * Micro-species are species whose agents live inside agents of this species. This method returns all micro-species
 	 * including those inherited from parent species.
 	 * </p>
-	 * 
+	 *
 	 * @return a list of all micro-species
 	 */
 	@Override
@@ -323,7 +323,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	/**
 	 * Gets all sub-species (direct children) of this species through inheritance.
-	 * 
+	 *
 	 * <p>
 	 * Unlike micro-species (which are about composition), sub-species are those that directly extend this species
 	 * through the {@code parent:} facet. This method traverses the model to find all such species.
@@ -348,7 +348,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	/**
 	 * Gets a specific micro-species by name.
-	 * 
+	 *
 	 * <p>
 	 * Searches for a micro-species with the given name, first in this species' own micro-species, then recursively in
 	 * the parent species' micro-species if not found.
@@ -403,13 +403,13 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	/**
 	 * Gets the parent species from which this species inherits.
-	 * 
+	 *
 	 * <p>
 	 * The parent species is resolved lazily on first access. The method searches for the parent species by traversing
 	 * the macro-species hierarchy, starting from this species' macro-species and moving upward until the parent is
 	 * found or the hierarchy is exhausted.
 	 * </p>
-	 * 
+	 *
 	 * @return the parent species, or null if this species has no parent
 	 */
 	@Override
@@ -428,11 +428,11 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 	}
 
 	@Override
-	public boolean extendsSpecies(final ISpecies s) {
+	public <T extends IClass> boolean extendsClassOrSpecies(final T s) {
 		final ISpecies parent = getParentSpecies();
 		if (parent == null) return false;
 		if (parent == s) return true;
-		return parent.extendsSpecies(s);
+		return parent.extendsClassOrSpecies(s);
 	}
 
 	@Override
@@ -466,7 +466,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 	}
 
 	@Override
-	public Collection<? extends IStatement> getActions() { return actions.values(); }
+	public Collection<IStatement.Action> getActions() { return actions.values(); }
 
 	@Override
 	public boolean hasAspect(final String n) {
@@ -486,7 +486,7 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	/**
 	 * Organizes and assigns children symbols to this species.
-	 * 
+	 *
 	 * <p>
 	 * This method is called during species initialization to categorize and store all child symbols (variables,
 	 * actions, behaviors, aspects, micro-species, etc.) in their respective collections. The process:
@@ -664,10 +664,10 @@ public abstract class AbstractSpecies extends Symbol implements ISpecies {
 
 	/**
 	 * Gets the skill instance for a given skill class.
-	 * 
+	 *
 	 * <p>
-	 * Skills provide additional capabilities to agents. This method retrieves the singleton instance of a skill that
-	 * is either the control architecture or declared in the species (or its parents). The search proceeds as follows:
+	 * Skills provide additional capabilities to agents. This method retrieves the singleton instance of a skill that is
+	 * either the control architecture or declared in the species (or its parents). The search proceeds as follows:
 	 * </p>
 	 * <ol>
 	 * <li>Check if the control architecture is an instance of the requested skill class</li>

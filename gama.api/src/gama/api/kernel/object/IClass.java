@@ -24,7 +24,7 @@ import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITyped;
 import gama.api.gaml.types.Types;
-import gama.api.kernel.species.IModelSpecies;
+import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
@@ -76,7 +76,7 @@ public interface IClass extends ISymbol, ITyped, IJsonable {
 	 *            the species to check against
 	 * @return {@code true} if this species extends the given species, {@code false} otherwise
 	 */
-	boolean extendsSpecies(final IClass s);
+	<T extends IClass> boolean extendsClassOrSpecies(final T s);
 
 	/**
 	 * Returns all the direct subspecies of this species, properly typed for GAMA.
@@ -221,7 +221,7 @@ public interface IClass extends ISymbol, ITyped, IJsonable {
 	/**
 	 * @param gamlModelSpecies
 	 */
-	void setMacroSpecies(IModelSpecies model);
+	void setMacroSpecies(ISpecies model);
 
 	/**
 	 * @param scope
