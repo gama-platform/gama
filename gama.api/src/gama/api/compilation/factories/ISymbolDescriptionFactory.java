@@ -16,6 +16,7 @@ import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.artefacts.IArtefact;
+import gama.api.compilation.descriptions.IClassDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
@@ -157,6 +158,19 @@ public interface ISymbolDescriptionFactory {
 		 */
 		ISpeciesDescription createBuiltInSpeciesDescription(String name, Class clazz, ISpeciesDescription macro,
 				ISpeciesDescription parent, IAgentConstructor helper, Set<String> skills, String plugin);
+
+	}
+
+	/**
+	 * The Interface Clazz.
+	 */
+	interface Clazz extends ISymbolDescriptionFactory {
+
+		/**
+		 * @param plugin
+		 * @return
+		 */
+		IClassDescription createBuiltInClassDescription(String plugin);
 
 	}
 

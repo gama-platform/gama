@@ -20,6 +20,7 @@ import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.descriptions.DescriptionFactory;
 import gaml.compiler.gaml.expression.GamlExpressionFactory;
+import gaml.compiler.gaml.factories.ClassFactory;
 import gaml.compiler.gaml.factories.ExperimentFactory;
 import gaml.compiler.gaml.factories.ExpressionDescriptionFactory;
 import gaml.compiler.gaml.factories.ModelFactory;
@@ -109,6 +110,7 @@ public class GamlActivator implements BundleActivator {
 					GAML.registerSymbolFactory(StatementFactory.getInstance());
 					GAML.registerSymbolFactory(VariableFactory.getInstance());
 					GAML.registerSymbolFactory(SkillFactory.getInstance());
+					GAML.registerSymbolFactory(ClassFactory.getInstance());
 
 					// Configure expression compilation and parsing infrastructure
 					GAML.registerExpressionFactory(GamlExpressionFactory.getInstance());

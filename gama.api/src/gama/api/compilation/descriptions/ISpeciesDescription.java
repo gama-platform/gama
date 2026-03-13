@@ -196,7 +196,11 @@ public interface ISpeciesDescription extends IClassDescription {
 	Iterable<String> getSkillsNames();
 
 	/**
-	 * @return
+	 * Compile as built in.
+	 *
+	 * @return the i species
 	 */
+	@Override
 	ISpecies compileAsBuiltIn();
+
 }

@@ -292,6 +292,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 			final ISpeciesDescription parent, final IAgentConstructor helper, final Set<String> skills2,
 			final Facets ff, final String plugin) {
 		super(IKeyword.SPECIES, clazz, superDesc, null, null, null, new Facets(IKeyword.NAME, name), plugin);
+		set(Flag.Abstract);
 		set(Flag.CanUseMinimalAgents);
 		setIf(Flag.isMirror, hasFacet(IKeyword.MIRRORS));
 		setIf(Flag.isGrid, IKeyword.GRID.equals(getKeyword()));

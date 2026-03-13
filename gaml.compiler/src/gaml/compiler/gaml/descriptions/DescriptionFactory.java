@@ -24,6 +24,7 @@ import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.ast.ISyntacticElement.SyntacticVisitor;
+import gama.api.compilation.descriptions.IClassDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionFactory;
 import gama.api.compilation.descriptions.IExperimentDescription;
@@ -357,6 +358,30 @@ public class DescriptionFactory implements IDescriptionFactory {
 			final Set<String> skills, final String plugin) {
 		ISymbolDescriptionFactory.Species factory = (Species) getFactory(SPECIES);
 		return factory.createBuiltInSpeciesDescription(name, clazz, macro, parent, helper, skills, plugin);
+	}
+
+	/**
+	 * Creates a new Description object.
+	 *
+	 * @param name
+	 *            the name
+	 * @param clazz
+	 *            the clazz
+	 * @param superDesc
+	 *            the super desc
+	 * @param parent
+	 *            the parent
+	 * @param helper
+	 *            the helper
+	 * @param skills
+	 *            the skills
+	 * @param plugin
+	 *            the plugin
+	 * @return the species description
+	 */
+	public IClassDescription createBuiltInClassDescription(final String plugin) {
+		ISymbolDescriptionFactory.Clazz factory = (ISymbolDescriptionFactory.Clazz) getFactory(ISymbolKind.CLASS);
+		return factory.createBuiltInClassDescription(plugin);
 	}
 
 	/**

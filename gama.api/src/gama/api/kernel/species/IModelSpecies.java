@@ -20,6 +20,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.gaml.statements.IStatement.Test;
+import gama.api.kernel.object.IClass;
 
 /**
  * Written by drogoul Modified on 29 d�c. 2010
@@ -29,6 +30,26 @@ import gama.api.gaml.statements.IStatement.Test;
  */
 
 public interface IModelSpecies extends ISpecies {
+
+	/**
+	 * Gets the class.
+	 *
+	 * @param name
+	 *            the name
+	 * @return the class
+	 */
+	IClass getClass(String name);
+
+	/**
+	 * Gets the class.
+	 *
+	 * @param name
+	 *            the name
+	 * @param origin
+	 *            the origin
+	 * @return the class
+	 */
+	IClass getClass(String name, String origin);
 
 	/**
 	 * Gets the species.

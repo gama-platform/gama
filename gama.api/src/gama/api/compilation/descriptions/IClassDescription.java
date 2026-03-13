@@ -4,6 +4,7 @@
 package gama.api.compilation.descriptions;
 
 import gama.api.compilation.documentation.IGamlDocumentation;
+import gama.api.kernel.object.IClass;
 
 /**
  *
@@ -22,5 +23,10 @@ public interface IClassDescription extends ITypeDescription {
 	 * @param result
 	 */
 	void documentThis(IGamlDocumentation result);
+
+	/**
+	 * @return
+	 */
+	IClass compileAsBuiltIn();
 
 }

@@ -22,7 +22,6 @@
  * 
  * <ul>
  * <li>{@link gama.api.gaml.species.ISpecies} - Interface defining the species contract</li>
- * <li>{@link gama.api.kernel.species.AbstractSpecies} - Base implementation providing common functionality</li>
  * <li>{@link gama.api.kernel.species.GamlSpecies} - Standard GAML species implementation</li>
  * <li>{@link gama.api.kernel.species.GamlModelSpecies} - Special species representing the global/world agent</li>
  * </ul>

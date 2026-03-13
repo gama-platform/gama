@@ -26,28 +26,32 @@ import com.google.common.collect.Multimap;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.additions.GamaBundleLoader;
+import gama.api.compilation.descriptions.IClassDescription;
 import gama.api.compilation.descriptions.IDescriptionFactory;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.gaml.GAML;
 import gama.api.kernel.agent.IAgentConstructor;
+import gama.api.kernel.object.IClass;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.ISpecies;
 
 /**
  * The GAMA metamodel that defines and manages all built-in species in the platform.
- * 
- * <p>This singleton class is responsible for:
+ *
+ * <p>
+ * This singleton class is responsible for:
  * <ul>
- *   <li>Registering built-in species during platform initialization</li>
- *   <li>Building the species hierarchy (agent -> model, experiment, etc.)</li>
- *   <li>Providing access to built-in species descriptions and instances</li>
- *   <li>Managing species-skill associations</li>
+ * <li>Registering built-in species during platform initialization</li>
+ * <li>Building the species hierarchy (agent -> model, experiment, etc.)</li>
+ * <li>Providing access to built-in species descriptions and instances</li>
+ * <li>Managing species-skill associations</li>
  * </ul>
- * 
+ *
  * <h2>Built-in Species Hierarchy</h2>
+ *
  * <pre>
  * agent (root of all species)
  *   ├── model (simulation-level agent)
@@ -55,32 +59,32 @@ import gama.api.kernel.species.ISpecies;
  *   ├── platform (GAMA platform agent)
  *   └── [other built-in species]
  * </pre>
- * 
+ *
  * <h2>Initialization Process</h2>
  * <ol>
- *   <li>Species are registered via {@link #addSpecies} during plugin loading</li>
- *   <li>{@link #build()} is called to construct the hierarchy</li>
- *   <li>First, 'agent' is built as the root</li>
- *   <li>Then 'model' is built as a child of 'agent'</li>
- *   <li>The loop is closed by putting 'agent' inside 'model'</li>
- *   <li>'experiment' and 'platform' are built</li>
- *   <li>All other built-in species are built and attached to 'model'</li>
- *   <li>Types are built and descriptions finalized</li>
+ * <li>Species are registered via {@link #addSpecies} during plugin loading</li>
+ * <li>{@link #build()} is called to construct the hierarchy</li>
+ * <li>First, 'agent' is built as the root</li>
+ * <li>Then 'model' is built as a child of 'agent'</li>
+ * <li>The loop is closed by putting 'agent' inside 'model'</li>
+ * <li>'experiment' and 'platform' are built</li>
+ * <li>All other built-in species are built and attached to 'model'</li>
+ * <li>Types are built and descriptions finalized</li>
  * </ol>
- * 
+ *
  * <h2>Usage Example</h2>
+ *
  * <pre>{@code
  * // Get a built-in species description
  * ISpeciesDescription agentDesc = GamaMetaModel.getSpeciesDescription("agent");
- * 
+ *
  * // Get a compiled built-in species
  * ISpecies agentSpecies = GamaMetaModel.getSpecies("agent");
- * 
+ *
  * // Register a new built-in species (during plugin initialization)
- * GamaMetaModel.addSpecies("my_species", MyAgentClass.class, 
- *     MyAgentClass::new, new String[]{"skill1", "skill2"});
+ * GamaMetaModel.addSpecies("my_species", MyAgentClass.class, MyAgentClass::new, new String[] { "skill1", "skill2" });
  * }</pre>
- * 
+ *
  * @author Alexis Drogoul
  * @since GAMA 1.0
  */
@@ -92,6 +96,12 @@ public class GamaMetaModel {
 
 	/** The temp species. */
 	private final Map<String, SpeciesRecord> tempSpecies = new HashMap();
+
+	/** The abstract object class. */
+	private IClass abstractObjectClass;
+
+	/** The object. */
+	private IClassDescription abstractObjectClassDescription;
 
 	/** The species skills. */
 	private final Multimap<String, String> speciesSkills = HashMultimap.create();
@@ -107,12 +117,17 @@ public class GamaMetaModel {
 
 	/**
 	 * Internal record holding species registration information during initialization.
-	 * 
-	 * @param name the species name
-	 * @param plugin the plugin that contributed this species
-	 * @param clazz the Java class implementing the species
-	 * @param helper the agent constructor for creating instances
-	 * @param skills the initial skills assigned to this species
+	 *
+	 * @param name
+	 *            the species name
+	 * @param plugin
+	 *            the plugin that contributed this species
+	 * @param clazz
+	 *            the Java class implementing the species
+	 * @param helper
+	 *            the agent constructor for creating instances
+	 * @param skills
+	 *            the initial skills assigned to this species
 	 */
 	private record SpeciesRecord(String name, String plugin, Class clazz, IAgentConstructor helper, String[] skills) {}
 
@@ -122,17 +137,47 @@ public class GamaMetaModel {
 	private GamaMetaModel() {}
 
 	/**
+	 * Gets the object class description.
+	 *
+	 * @return the object class description
+	 */
+	public static IClassDescription getObjectClassDescription() {
+		if (INSTANCE.abstractObjectClassDescription == null) {
+			INSTANCE.abstractObjectClassDescription =
+					GAML.getDescriptionFactory().createBuiltInClassDescription(GamaBundleLoader.CURRENT_PLUGIN_NAME);
+			INSTANCE.abstractObjectClassDescription.validate();
+		}
+		return INSTANCE.abstractObjectClassDescription;
+	}
+
+	/**
+	 * Gets the abstract object class.
+	 *
+	 * @return the abstract object class
+	 */
+	public static IClass getAbstractObjectClass() {
+		IClassDescription desc = getObjectClassDescription();
+		if (INSTANCE.abstractObjectClass == null) { INSTANCE.abstractObjectClass = desc.compileAsBuiltIn(); }
+		return INSTANCE.abstractObjectClass;
+	}
+
+	/**
 	 * Registers a built-in species to be compiled during platform initialization.
-	 * 
-	 * <p>This method should be called during plugin loading, typically from
-	 * a plugin's activator or initialization code. Species are not compiled
-	 * immediately but stored for later processing during {@link #build()}.</p>
-	 * 
-	 * @param name the unique name of the species
-	 * @param clazz the Java class implementing this species (must implement IAgent)
-	 * @param helper the constructor function for creating agent instances
-	 * @param skills array of skill names to attach to this species
-	 * 
+	 *
+	 * <p>
+	 * This method should be called during plugin loading, typically from a plugin's activator or initialization code.
+	 * Species are not compiled immediately but stored for later processing during {@link #build()}.
+	 * </p>
+	 *
+	 * @param name
+	 *            the unique name of the species
+	 * @param clazz
+	 *            the Java class implementing this species (must implement IAgent)
+	 * @param helper
+	 *            the constructor function for creating agent instances
+	 * @param skills
+	 *            array of skill names to attach to this species
+	 *
 	 * @see #build()
 	 */
 	public static void addSpecies(final String name, final Class clazz, final IAgentConstructor helper,
@@ -143,10 +188,11 @@ public class GamaMetaModel {
 
 	/**
 	 * Retrieves the description of a built-in species by name.
-	 * 
-	 * @param name the name of the built-in species (e.g., "agent", "model", "experiment")
+	 *
+	 * @param name
+	 *            the name of the built-in species (e.g., "agent", "model", "experiment")
 	 * @return the species description, or null if not found
-	 * 
+	 *
 	 * @see ISpeciesDescription
 	 */
 	public static ISpeciesDescription getSpeciesDescription(final String name) {
@@ -155,13 +201,15 @@ public class GamaMetaModel {
 
 	/**
 	 * Retrieves a compiled instance of a built-in species.
-	 * 
-	 * <p>Species are lazily compiled on first access. The compiled species
-	 * is cached for subsequent calls.</p>
-	 * 
-	 * @param name the name of the built-in species
+	 *
+	 * <p>
+	 * Species are lazily compiled on first access. The compiled species is cached for subsequent calls.
+	 * </p>
+	 *
+	 * @param name
+	 *            the name of the built-in species
 	 * @return the compiled species instance, or null if not found
-	 * 
+	 *
 	 * @see ISpecies
 	 */
 	public static ISpecies getSpecies(final String name) {
@@ -177,22 +225,24 @@ public class GamaMetaModel {
 
 	/**
 	 * Builds the GAMA metamodel by compiling all registered built-in species.
-	 * 
-	 * <p>This method is called once during platform initialization. It constructs
-	 * the fundamental species hierarchy in the following order:
+	 *
+	 * <p>
+	 * This method is called once during platform initialization. It constructs the fundamental species hierarchy in the
+	 * following order:
 	 * <ol>
-	 *   <li>Build 'agent' as the root of all species</li>
-	 *   <li>Build 'model' as a child of 'agent'</li>
-	 *   <li>Close the circular reference by adding 'agent' to 'model'</li>
-	 *   <li>Build 'experiment' as a child of 'agent'</li>
-	 *   <li>Build 'platform' as a child of 'agent'</li>
-	 *   <li>Build all other built-in species and attach them to 'model'</li>
-	 *   <li>Build types and finalize descriptions</li>
+	 * <li>Build 'agent' as the root of all species</li>
+	 * <li>Build 'model' as a child of 'agent'</li>
+	 * <li>Close the circular reference by adding 'agent' to 'model'</li>
+	 * <li>Build 'experiment' as a child of 'agent'</li>
+	 * <li>Build 'platform' as a child of 'agent'</li>
+	 * <li>Build all other built-in species and attach them to 'model'</li>
+	 * <li>Build types and finalize descriptions</li>
 	 * </ol>
-	 * 
-	 * <p>After this method completes, {@link #isInitialized} is set to true
-	 * and the metamodel is ready for use.</p>
-	 * 
+	 *
+	 * <p>
+	 * After this method completes, {@link #isInitialized} is set to true and the metamodel is ready for use.
+	 * </p>
+	 *
 	 * @see #addSpecies(String, Class, IAgentConstructor, String[])
 	 */
 	public static void build() {

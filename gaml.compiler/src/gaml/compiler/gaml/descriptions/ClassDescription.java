@@ -15,15 +15,28 @@ import org.eclipse.emf.ecore.EObject;
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IClassDescription;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.gaml.symbols.Facets;
+import gama.api.kernel.GamaMetaModel;
+import gama.api.kernel.object.IClass;
 import gama.api.kernel.object.IObject;
 
 /**
  *
  */
 public class ClassDescription extends TypeDescription implements IClassDescription {
+
+	/**
+	 * Instantiates a new class description. ONLY USED FOR THE BUILT-IN OBJECT DESCRIPTION
+	 *
+	 * @param plugin
+	 *            the plugin
+	 */
+	public ClassDescription(final String plugin) {
+		this(IKeyword.OBJECT, IObject.class, GamaMetaModel.getSpeciesDescription(IKeyword.MODEL), null, null, null,
+				null, plugin);
+		set(Flag.Abstract);
+	}
 
 	/**
 	 * Instantiates a new class description.
@@ -46,9 +59,11 @@ public class ClassDescription extends TypeDescription implements IClassDescripti
 	 *            the plugin
 	 */
 	public ClassDescription(final String keyword, final Class clazz, final IDescription macroDesc,
-			final ITypeDescription parent, final Iterable<? extends IDescription> cp, final EObject source,
+			final IClassDescription parent, final Iterable<? extends IDescription> cp, final EObject source,
 			final Facets facets, final String plugin) {
-		super(keyword, clazz, macroDesc, parent, cp, source, facets, plugin);
+		super(keyword, clazz, macroDesc,
+				parent == null && keyword != IKeyword.OBJECT ? GamaMetaModel.getObjectClassDescription() : parent, cp,
+				source, facets, plugin);
 	}
 
 	@Override
@@ -59,6 +74,16 @@ public class ClassDescription extends TypeDescription implements IClassDescripti
 
 	@Override
 	public ClassDescription getParent() { return (ClassDescription) super.getParent(); }
+
+	/**
+	 * Compile as built in.
+	 *
+	 * @return the i species
+	 */
+	@Override
+	public IClass compileAsBuiltIn() {
+		return (IClass) super.compile();
+	}
 
 	@Override
 	public Class<? extends IObject> getJavaBase() { return IObject.class; }
