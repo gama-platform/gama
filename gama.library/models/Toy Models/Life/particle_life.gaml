@@ -2,32 +2,10 @@
  * ╔══════════════════════════════════════════════════════════════════════════╗
  * ║                    PARTICLE LIFE SIMULATION                             ║
  * ║                                                                          ║
- * ║  Inspiré de : OfficialCodeNoodles/Particle-Life-Simulation (Godot)      ║
- * ║               & hunar4321/particle-life                                  ║
+ * ║  Inspired by : OfficialCodeNoodles/Particle-Life-Simulation (Godot)     ║
+ * ║                & hunar4321/particle-life                                 ║
  * ║                                                                          ║
- * ║  Principe :                                                              ║
- * ║    Des particules de N types différents (distingués par couleur)         ║
- * ║    interagissent via une matrice d'attraction/répulsion A[i][j].         ║
- * ║    Chaque particule subit les forces exercées par ses voisines dans      ║
- * ║    un rayon donné, et se déplace selon une intégration d'Euler simple.   ║
- * ║    Des comportements émergents complexes (essaims, spirales, cellules)   ║
- * ║    naissent de ces règles locales minimales.                             ║
- * ║                                                                          ║
- * ║  Modèle physique :                                                       ║
- * ║    - Zone [0, min_radius[          : répulsion dure (anti-superposition) ║
- * ║    - Zone [min_radius, max_radius] : force selon attraction_matrix[i,j]  ║
- * ║    - Au-delà de max_radius         : aucune interaction                  ║
- * ║    - Mise à jour :                                                       ║
- * ║        v(t+1) = v(t) x friction + F x force_scale x dt                  ║
- * ║        x(t+1) = x(t) + v(t+1) x dt                                      ║
- * ║                                                                          ║
- * ║  MATRICE EDITABLE DEPUIS L'INTERFACE :                                   ║
- * ║    Chaque cellule A_i_j est exposee comme slider dans la categorie       ║
- * ║    "Matrice [Couleur]" du panneau Parametres. Les valeurs vont de -1.0   ║
- * ║    (repulsion max) a +1.0 (attraction max). La matrice interne est       ║
- * ║    synchronisee a chaque cycle via le reflex sync_matrix.                ║
- * ║                                                                          ║
- * ║  Compatible GAMA 1.9+        nb_types fixe a 5                          ║
+ * ║  Compatible GAMA 2025-06        nb_types fixed at 5                     ║
  * ╚══════════════════════════════════════════════════════════════════════════╝
  */
 
@@ -36,127 +14,127 @@ model ParticleLife
 global {
 
     // ════════════════════════════════════════════════════════════════════════
-    // PARAMETRES GENERAUX
+    // GENERAL PARAMETERS
     // ════════════════════════════════════════════════════════════════════════
     
-    // Taille du monde
+    // World size
     geometry shape <- envelope(50, 50);
 
-    // Nombre de types fixe a 5 pour exposer les 25 cellules comme sliders.
+    // Number of types fixed at 5 to expose the 25 cells as sliders.
     int nb_types <- 5;
 
     /**
-     * nb_particles  [int] - Nombre total de particules crees au demarrage.
-     * Reparties equitablement entre les 5 types (80 par type par defaut).
-     * Plage recommandee : 50 - 5000
+     * nb_particles  [int] - Total number of particles created at startup.
+     * Distributed evenly among the 5 types (80 per type by default).
+     * Recommended range : 50 - 5000
      */
     int nb_particles <- 2000;
 
     /**
-     * max_radius  [float] - Rayon d'interaction maximal (unites monde).
-     * Seules les particules dans ce rayon exercent une force.
-     * Plage recommandee : 5.0 - 20.0
+     * max_radius  [float] - Maximum interaction radius (world units).
+     * Only particles within this radius exert a force.
+     * Recommended range : 5.0 - 20.0
      */
     float max_radius <- 5.0;
 
     /**
-     * min_radius  [float] - Rayon de repulsion minimale (unites monde).
-     * En dessous, une repulsion universelle empeche la superposition.
-     * Doit etre < max_radius. Plage recommandee : 0.2 - 2.0
+     * min_radius  [float] - Minimum repulsion radius (world units).
+     * Below this distance, a universal repulsion prevents overlap.
+     * Must be < max_radius. Recommended range : 0.2 - 2.0
      */
     float min_radius <- 1.5;
 
     /**
-     * friction  [float] - Coefficient de friction cinetique.
-     * v <- v x friction a chaque pas. 0.5=tres dissipatif, 0.99=quasi-conservatif.
-     * Plage recommandee : 0.1 - 0.5
+     * friction  [float] - Kinetic friction coefficient.
+     * v <- v x friction at each step. 0.5=very dissipative, 0.99=near-conservative.
+     * Recommended range : 0.1 - 0.5
      */
     float friction <- 0.17;
 
     /**
-     * force_scale  [float] - Facteur d'echelle global des forces.
-     * Amplifie ou attenue toutes les interactions simultanement.
-     * Plage recommandee : 0.1 - 0.8
+     * force_scale  [float] - Global force scaling factor.
+     * Amplifies or attenuates all interactions simultaneously.
+     * Recommended range : 0.1 - 0.8
      */
     float force_scale <- 0.3;
 
     /**
-     * dt  [float] - Pas de temps de l'integration d'Euler.
-     * Regle de stabilite : dt x force_scale < 0.99
-     * Plage recommandee : 0.001 - 0.99
+     * dt  [float] - Euler integration time step.
+     * Stability rule : dt x force_scale < 0.99
+     * Recommended range : 0.001 - 0.99
      */
     float dt <- 0.5;
 
     /**
-     * wrap_borders  [bool] - Gestion des bords.
-     * true  -> toroidal (Pac-Man) : continuite spatiale complete.
-     * false -> rebond elastique sur les parois.
+     * wrap_borders  [bool] - Border handling mode.
+     * true  -> toroidal (Pac-Man) : full spatial continuity.
+     * false -> elastic bounce off walls.
      */
     bool wrap_borders <- true;
 
     /**
-     * density_limit  [float] - Seuil de densite locale au-dela duquel
-     * l'attraction est attenuee.
+     * density_limit  [float] - Local density threshold above which
+     * attraction is attenuated.
      *
-     * Principe (inspire du shader GPU du projet source) :
-     *   local_density = somme sur les voisins dans max_radius :
-     *     (1 - dist/max_radius)       si meme type
-     *     (1 - dist/max_radius) x 0.5 si type different
+     * Principle (inspired by the GPU shader of the source project) :
+     *   local_density = sum over neighbors within max_radius :
+     *     (1 - dist/max_radius)       if same type
+     *     (1 - dist/max_radius) x 0.5 if different type
      *
      *   density_factor = 1 - clamp(local_density - density_limit, 0, 1)
-     *   attraction_effective = attraction x density_factor
+     *   effective_attraction = attraction x density_factor
      *
-     * Effet :
-     *   faible (ex. 1.0)  -> l'attraction s'annule des qu'un petit groupe
-     *                         se forme : membranes fines, structures diffuses
-     *   eleve  (ex. 10.0) -> la densite n'a presque pas d'effet : clusters
-     *                         denses et compacts (comportement classique)
+     * Effect :
+     *   low  (e.g. 1.0)  -> attraction cancels as soon as a small group forms :
+     *                        thin membranes, diffuse structures
+     *   high (e.g. 10.0) -> density has almost no effect : dense, compact
+     *                        clusters (classic behaviour)
      *
-     * Valeur par defaut : 3.0
-     * Plage recommandee : 0.5 - 50.0
+     * Default value : 3.0
+     * Recommended range : 0.5 - 50.0
      */
     float density_limit <- 20.0;
 
     // ════════════════════════════════════════════════════════════════════════
-    // CELLULES DE LA MATRICE D'ATTRACTION  (editables depuis l'interface)
+    // ATTRACTION MATRIX CELLS  (editable from the interface)
     //
-    // Nommage : A_i_j = force exercee par le type j SUR le type i
-    //   Valeur  +1.0 -> type i est fortement ATTIRE vers type j
-    //   Valeur   0.0 -> indifference
-    //   Valeur  -1.0 -> type i FUIT fortement le type j
+    // Naming convention : A_i_j = force exerted by type j ON type i
+    //   Value  +1.0 -> type i is strongly ATTRACTED toward type j
+    //   Value   0.0 -> indifference
+    //   Value  -1.0 -> type i strongly FLEES type j
     //
-    // Types :  0=Rouge  1=Vert  2=Bleu  3=Jaune  4=Violet
+    // Types :  0=Red  1=Green  2=Blue  3=Yellow  4=Purple
     // ════════════════════════════════════════════════════════════════════════
 
-    // Ligne 0 : comment le Rouge reagit aux autres
+    // Row 0 : how Red reacts to others
     float A_0_0 <- 0.0;
     float A_0_1 <- 0.0;
     float A_0_2 <- 0.0;
     float A_0_3 <- 0.0;
     float A_0_4 <- 0.0;
 
-    // Ligne 1 : comment le Vert reagit aux autres
+    // Row 1 : how Green reacts to others
     float A_1_0 <- 0.0;
     float A_1_1 <- 0.0;
     float A_1_2 <- 0.0;
     float A_1_3 <- 0.0;
     float A_1_4 <- 0.0;
 
-    // Ligne 2 : comment le Bleu reagit aux autres
+    // Row 2 : how Blue reacts to others
     float A_2_0 <- 0.0;
     float A_2_1 <- 0.0;
     float A_2_2 <- 0.0;
     float A_2_3 <- 0.0;
     float A_2_4 <- 0.0;
 
-    // Ligne 3 : comment le Jaune reagit aux autres
+    // Row 3 : how Yellow reacts to others
     float A_3_0 <- 0.0;
     float A_3_1 <- 0.0;
     float A_3_2 <- 0.0;
     float A_3_3 <- 0.0;
     float A_3_4 <- 0.0;
 
-    // Ligne 4 : comment le Violet reagit aux autres
+    // Row 4 : how Purple reacts to others
     float A_4_0 <- 0.0;
     float A_4_1 <- 0.0;
     float A_4_2 <- 0.0;
@@ -164,7 +142,7 @@ global {
     float A_4_4 <- 0.0;
 
     // ════════════════════════════════════════════════════════════════════════
-    // DONNEES INTERNES
+    // INTERNAL DATA
     // ════════════════════════════════════════════════════════════════════════
 
     matrix<float> attraction_matrix;
@@ -182,6 +160,37 @@ global {
     // ════════════════════════════════════════════════════════════════════════
 
     init {
+        write "
+╔══════════════════════════════════════════════════════════════════════════╗
+║                    PARTICLE LIFE SIMULATION                             ║
+║                                                                          ║
+║  Inspired by : OfficialCodeNoodles/Particle-Life-Simulation (Godot)     ║
+║                & hunar4321/particle-life                                 ║
+║                                                                          ║
+║  Principle :                                                             ║
+║    Particles of N different types (distinguished by colour)              ║
+║    interact via an attraction/repulsion matrix A[i][j].                  ║
+║    Each particle is subject to the forces exerted by its neighbours      ║
+║    within a given radius, and moves according to simple Euler            ║
+║    integration. Complex emergent behaviours (swarms, spirals, cells)     ║
+║    arise from these minimal local rules.                                 ║
+║                                                                          ║
+║  Physical model :                                                        ║
+║    - Zone [0, min_radius[          : hard repulsion (anti-overlap)       ║
+║    - Zone [min_radius, max_radius] : force from attraction_matrix[i,j]  ║
+║    - Beyond max_radius             : no interaction                      ║
+║    - Update rule :                                                       ║
+║        v(t+1) = v(t) x friction + F x force_scale x dt                  ║
+║        x(t+1) = x(t) + v(t+1) x dt                                      ║
+║                                                                          ║
+║  EDITABLE MATRIX FROM THE INTERFACE :                                    ║
+║    Each cell A_i_j is exposed as a slider in the category               ║
+║    'Matrix [Colour]' of the Parameters panel. Values range from -1.0    ║
+║    (max repulsion) to +1.0 (max attraction). The internal matrix is      ║
+║    synchronised each cycle via the sync_matrix reflex.                   ║
+╚══════════════════════════════════════════════════════════════════════════╝
+        ";
+
         do sync_matrix_from_vars;
         loop t from: 0 to: nb_types - 1 {
             create particle number: int(nb_particles / nb_types) {
@@ -198,9 +207,9 @@ global {
     // ════════════════════════════════════════════════════════════════════════
 
     /**
-     * sync_matrix_from_vars - Recopie les 25 variables A_i_j dans la matrice interne.
-     * Appelee automatiquement a chaque cycle par le reflex sync_matrix,
-     * ce qui permet de modifier les sliders en cours de simulation.
+     * sync_matrix_from_vars - Copies the 25 A_i_j variables into the internal matrix.
+     * Called automatically each cycle by the sync_matrix reflex,
+     * allowing slider changes to take effect immediately during the simulation.
      */
     action sync_matrix_from_vars {
         attraction_matrix <- 0.0 as_matrix {nb_types, nb_types};
@@ -223,31 +232,31 @@ global {
 
 
     // ════════════════════════════════════════════════════════════════════════
-    // REFLEXES GLOBAUX
+    // GLOBAL REFLEXES
     // ════════════════════════════════════════════════════════════════════════
 
-    // Synchronise la matrice interne depuis les sliders a chaque cycle.
-    // Permet de voir l'effet des modifications immediatement.
+    // Synchronises the internal matrix from the sliders each cycle.
+    // Allows modifications to be seen immediately.
     reflex sync_matrix {
         do sync_matrix_from_vars;
     }
 	
-	// Calcul des forces et du mouvement. "parallel" doit prendre la valeur 
-	// maximale des coeurs disponnibles sur le processeur.
+	// Force and movement computation. "parallel" should be set to the
+	// maximum number of available CPU cores.
     reflex update_all {
         ask particle parallel: true { do compute_force; }
         ask particle parallel: true { do move; }
     }
 }
 
-// ── Espece particule ──────────────────────────────────────────────────────────
+// ── Particle species ──────────────────────────────────────────────────────────
 species particle {
 
     int   ptype;
     rgb   color;
     point velocity;
     point force_acc;
-    // Densite locale calculee a chaque cycle (passe 1 de compute_force)
+    // Local density computed each cycle (pass 1 of compute_force)
     float local_density;
 
     action compute_force {
@@ -255,9 +264,9 @@ species particle {
         local_density <- 0.0;
         list<particle> neighbors <- particle at_distance max_radius;
 
-        // ── Passe 1 : calcul de la densite locale ─────────────────────────
-        //   meme type      -> contribution pleine  (1 - dist/max_radius)
-        //   type different -> contribution reduite (x 0.5)
+        // ── Pass 1 : local density computation ────────────────────────────
+        //   same type      -> full contribution  (1 - dist/max_radius)
+        //   different type -> reduced contribution (x 0.5)
         loop other over: neighbors {
             if other != self {
                 float dx <- other.location.x - location.x;
@@ -282,7 +291,7 @@ species particle {
             }
         }
 
-        // ── Passe 2 : calcul des forces avec attenuation par densite ──────
+        // ── Pass 2 : force computation with density attenuation ───────────
         loop other over: neighbors {
             if other != self {
                 float dx <- other.location.x - location.x;
@@ -298,12 +307,13 @@ species particle {
                     float fx <- 0.0;
                     float fy <- 0.0;
                     if dist < min_radius {
+                        // Hard repulsion zone : prevents particle overlap
                         float repulsion <- (min_radius - dist) / min_radius;
                         fx <- -repulsion * (dx / dist);
                         fy <- -repulsion * (dy / dist);
                     } else {
                         float g <- attraction_matrix[ptype, other.ptype];
-                        // Attenuation de l'attraction si densite > density_limit
+                        // Attenuate attraction when local density exceeds density_limit
                         if g > 0.0 and density_limit != 0{
                             float excess         <- max(0.0, local_density - density_limit);
                             float density_factor <- 1.0 - min(excess, 1.0);
@@ -332,6 +342,7 @@ species particle {
             if new_y < 0                   { new_y <- new_y + world.shape.height; }
             if new_y >= world.shape.height { new_y <- new_y - world.shape.height; }
         } else {
+            // Elastic bounce off walls
             if new_x < 0 or new_x >= world.shape.width {
                 velocity <- {-velocity.x, velocity.y};
                 new_x <- max(0.0, min(new_x, world.shape.width - 1.0));
@@ -349,68 +360,69 @@ species particle {
     }
 }
 
-// ── Experience principale ─────────────────────────────────────────────────────
+// ── Main experiment ───────────────────────────────────────────────────────────
 experiment ParticleLife type: gui {
 
-    // Parametres generaux
-    parameter "Nombre de types" var: nb_types  min: 1    max: 5  category: "Modele";
-    parameter "Particules"          var: nb_particles  min: 2    max: 5000  category: "Modele";
-    parameter "Rayon interaction"   var: max_radius    min: 0.0  max: 100.0 category: "Physique";
-    parameter "Rayon repulsion"     var: min_radius    min: 0.0   max: 5.0  category: "Physique";
-    parameter "Friction"            var: friction      min: 0.0   max: 0.99  category: "Physique";
-    parameter "Echelle des forces"  var: force_scale   min: 0.0   max: 2.0   category: "Physique";
-    parameter "Pas de temps (dt)"   var: dt            min: 0.001  max: 0.99   category: "Physique";
-    parameter "Bords toroidaux"     var: wrap_borders                        category: "Physique";
-    parameter "Seuil de densite"    var: density_limit min: 0.0 max: 100.0   category: "Physique";
+    // General parameters
+    parameter "Number of types"     var: nb_types      min: 1    max: 5     category: "Model";
+    parameter "Particles"           var: nb_particles  min: 2    max: 5000  category: "Model";
+    parameter "Interaction radius"  var: max_radius    min: 0.0  max: 100.0 category: "Physics";
+    parameter "Repulsion radius"    var: min_radius    min: 0.0  max: 5.0   category: "Physics";
+    parameter "Friction"            var: friction      min: 0.0  max: 0.99  category: "Physics";
+    parameter "Force scale"         var: force_scale   min: 0.0  max: 2.0   category: "Physics";
+    parameter "Time step (dt)"      var: dt            min: 0.001 max: 0.99 category: "Physics";
+    parameter "Toroidal borders"    var: wrap_borders                        category: "Physics";
+    parameter "Density threshold"   var: density_limit min: 0.0  max: 100.0 category: "Physics";
 
     // ════════════════════════════════════════════════════════════════════════
-    // MATRICE D'ATTRACTION - sliders editables en cours de simulation
+    // ATTRACTION MATRIX - sliders editable during simulation
     //
-    // Lecture du nom : "X <- Y" signifie "comment X reagit a la presence de Y"
-    //   +1.0 = X est fortement attire par Y
-    //    0.0 = X est indifferent a Y
-    //   -1.0 = X fuit fortement Y
+    // Reading the label : "X <- Y" means "how X reacts to the presence of Y"
+    //   +1.0 = X is strongly attracted to Y
+    //    0.0 = X is indifferent to Y
+    //   -1.0 = X strongly flees Y
     //
-    // Types : Rouge=0  Vert=1  Bleu=2  Jaune=3  Violet=4
+    // Types : Red=0  Green=1  Blue=2  Yellow=3  Purple=4
     // ════════════════════════════════════════════════════════════════════════
 
-    parameter "Rouge  <- Rouge"   var: A_0_0 min: -1.0 max: 1.0 category: "Matrice Rouge";
-    parameter "Rouge  <- Vert"    var: A_0_1 min: -1.0 max: 1.0 category: "Matrice Rouge";
-    parameter "Rouge  <- Bleu"    var: A_0_2 min: -1.0 max: 1.0 category: "Matrice Rouge";
-    parameter "Rouge  <- Jaune"   var: A_0_3 min: -1.0 max: 1.0 category: "Matrice Rouge";
-    parameter "Rouge  <- Violet"  var: A_0_4 min: -1.0 max: 1.0 category: "Matrice Rouge";
+    parameter "Red    <- Red"     var: A_0_0 min: -1.0 max: 1.0 category: "Matrix Red";
+    parameter "Red    <- Green"   var: A_0_1 min: -1.0 max: 1.0 category: "Matrix Red";
+    parameter "Red    <- Blue"    var: A_0_2 min: -1.0 max: 1.0 category: "Matrix Red";
+    parameter "Red    <- Yellow"  var: A_0_3 min: -1.0 max: 1.0 category: "Matrix Red";
+    parameter "Red    <- Purple"  var: A_0_4 min: -1.0 max: 1.0 category: "Matrix Red";
 
-    parameter "Vert   <- Rouge"   var: A_1_0 min: -1.0 max: 1.0 category: "Matrice Vert";
-    parameter "Vert   <- Vert"    var: A_1_1 min: -1.0 max: 1.0 category: "Matrice Vert";
-    parameter "Vert   <- Bleu"    var: A_1_2 min: -1.0 max: 1.0 category: "Matrice Vert";
-    parameter "Vert   <- Jaune"   var: A_1_3 min: -1.0 max: 1.0 category: "Matrice Vert";
-    parameter "Vert   <- Violet"  var: A_1_4 min: -1.0 max: 1.0 category: "Matrice Vert";
+    parameter "Green  <- Red"     var: A_1_0 min: -1.0 max: 1.0 category: "Matrix Green";
+    parameter "Green  <- Green"   var: A_1_1 min: -1.0 max: 1.0 category: "Matrix Green";
+    parameter "Green  <- Blue"    var: A_1_2 min: -1.0 max: 1.0 category: "Matrix Green";
+    parameter "Green  <- Yellow"  var: A_1_3 min: -1.0 max: 1.0 category: "Matrix Green";
+    parameter "Green  <- Purple"  var: A_1_4 min: -1.0 max: 1.0 category: "Matrix Green";
 
-    parameter "Bleu   <- Rouge"   var: A_2_0 min: -1.0 max: 1.0 category: "Matrice Bleu";
-    parameter "Bleu   <- Vert"    var: A_2_1 min: -1.0 max: 1.0 category: "Matrice Bleu";
-    parameter "Bleu   <- Bleu"    var: A_2_2 min: -1.0 max: 1.0 category: "Matrice Bleu";
-    parameter "Bleu   <- Jaune"   var: A_2_3 min: -1.0 max: 1.0 category: "Matrice Bleu";
-    parameter "Bleu   <- Violet"  var: A_2_4 min: -1.0 max: 1.0 category: "Matrice Bleu";
+    parameter "Blue   <- Red"     var: A_2_0 min: -1.0 max: 1.0 category: "Matrix Blue";
+    parameter "Blue   <- Green"   var: A_2_1 min: -1.0 max: 1.0 category: "Matrix Blue";
+    parameter "Blue   <- Blue"    var: A_2_2 min: -1.0 max: 1.0 category: "Matrix Blue";
+    parameter "Blue   <- Yellow"  var: A_2_3 min: -1.0 max: 1.0 category: "Matrix Blue";
+    parameter "Blue   <- Purple"  var: A_2_4 min: -1.0 max: 1.0 category: "Matrix Blue";
 
-    parameter "Jaune  <- Rouge"   var: A_3_0 min: -1.0 max: 1.0 category: "Matrice Jaune";
-    parameter "Jaune  <- Vert"    var: A_3_1 min: -1.0 max: 1.0 category: "Matrice Jaune";
-    parameter "Jaune  <- Bleu"    var: A_3_2 min: -1.0 max: 1.0 category: "Matrice Jaune";
-    parameter "Jaune  <- Jaune"   var: A_3_3 min: -1.0 max: 1.0 category: "Matrice Jaune";
-    parameter "Jaune  <- Violet"  var: A_3_4 min: -1.0 max: 1.0 category: "Matrice Jaune";
+    parameter "Yellow <- Red"     var: A_3_0 min: -1.0 max: 1.0 category: "Matrix Yellow";
+    parameter "Yellow <- Green"   var: A_3_1 min: -1.0 max: 1.0 category: "Matrix Yellow";
+    parameter "Yellow <- Blue"    var: A_3_2 min: -1.0 max: 1.0 category: "Matrix Yellow";
+    parameter "Yellow <- Yellow"  var: A_3_3 min: -1.0 max: 1.0 category: "Matrix Yellow";
+    parameter "Yellow <- Purple"  var: A_3_4 min: -1.0 max: 1.0 category: "Matrix Yellow";
 
-    parameter "Violet <- Rouge"   var: A_4_0 min: -1.0 max: 1.0 category: "Matrice Violet";
-    parameter "Violet <- Vert"    var: A_4_1 min: -1.0 max: 1.0 category: "Matrice Violet";
-    parameter "Violet <- Bleu"    var: A_4_2 min: -1.0 max: 1.0 category: "Matrice Violet";
-    parameter "Violet <- Jaune"   var: A_4_3 min: -1.0 max: 1.0 category: "Matrice Violet";
-    parameter "Violet <- Violet"  var: A_4_4 min: -1.0 max: 1.0 category: "Matrice Violet";
+    parameter "Purple <- Red"     var: A_4_0 min: -1.0 max: 1.0 category: "Matrix Purple";
+    parameter "Purple <- Green"   var: A_4_1 min: -1.0 max: 1.0 category: "Matrix Purple";
+    parameter "Purple <- Blue"    var: A_4_2 min: -1.0 max: 1.0 category: "Matrix Purple";
+    parameter "Purple <- Yellow"  var: A_4_3 min: -1.0 max: 1.0 category: "Matrix Purple";
+    parameter "Purple <- Purple"  var: A_4_4 min: -1.0 max: 1.0 category: "Matrix Purple";
     
     // ════════════════════════════════════════════════════════════════════════
     // ACTIONS
     // ════════════════════════════════════════════════════════════════════════
+
     /**
-     * sync_matrix_from_vars - Recopie les 25 variables A_i_j dans la matrice interne.
-     * Appelee automatiquement a chaque cycle par le reflex sync_matrix,
-     * ce qui permet de modifier les sliders en cours de simulation.
+     * sync_matrix_from_vars - Copies the 25 A_i_j variables into the internal matrix.
+     * Called automatically each cycle by the sync_matrix reflex,
+     * allowing slider changes to take effect immediately during the simulation.
      */
     action sync_matrix_from_vars {
         attraction_matrix <- 0.0 as_matrix {nb_types, nb_types};
@@ -432,8 +444,8 @@ experiment ParticleLife type: gui {
     }
     
     /**
-     * randomize_matrix - Assigne des valeurs aleatoires a toutes les cellules.
-     * Disponible dans le panneau "Actions" de GAMA pendant la simulation.
+     * randomize_matrix - Assigns random values to all matrix cells.
+     * Available in the GAMA "Actions" panel during the simulation.
      */
     action randomize_matrix {
         A_0_0<-rnd(-1.0,1.0); A_0_1<-rnd(-1.0,1.0); A_0_2<-rnd(-1.0,1.0); A_0_3<-rnd(-1.0,1.0); A_0_4<-rnd(-1.0,1.0);
@@ -442,13 +454,13 @@ experiment ParticleLife type: gui {
         A_3_0<-rnd(-1.0,1.0); A_3_1<-rnd(-1.0,1.0); A_3_2<-rnd(-1.0,1.0); A_3_3<-rnd(-1.0,1.0); A_3_4<-rnd(-1.0,1.0);
         A_4_0<-rnd(-1.0,1.0); A_4_1<-rnd(-1.0,1.0); A_4_2<-rnd(-1.0,1.0); A_4_3<-rnd(-1.0,1.0); A_4_4<-rnd(-1.0,1.0);
         do sync_matrix_from_vars;
-        write "Nouvelle matrice aleatoire appliquee.";
+        write "New random matrix applied.";
     }
 
     /**
-     * preset_chains - Chaque type attire le type suivant (cycle en anneau).
-     * Produit des spirales et chaines tournantes caracteristiques.
-     * Rouge->Vert->Bleu->Jaune->Violet->Rouge
+     * preset_chains - Each type attracts the next type (ring cycle).
+     * Produces characteristic spirals and rotating chains.
+     * Red->Green->Blue->Yellow->Purple->Red
      */
     action preset_chains {
         A_0_0<- -0.3; A_0_1<-  0.9; A_0_2<-  0.0; A_0_3<-  0.0; A_0_4<-  0.0;
@@ -457,12 +469,12 @@ experiment ParticleLife type: gui {
         A_3_0<-  0.0; A_3_1<-  0.0; A_3_2<-  0.0; A_3_3<- -0.3; A_3_4<-  0.9;
         A_4_0<-  0.9; A_4_1<-  0.0; A_4_2<-  0.0; A_4_3<-  0.0; A_4_4<- -0.3;
         do sync_matrix_from_vars;
-        write "Preset 'Chaines' applique.";
+        write "Preset 'Chains' applied.";
     }
 
     /**
-     * preset_clusters - Chaque type s'attire lui-meme et repousse les autres.
-     * Produit des amas bien separes par couleur.
+     * preset_clusters - Each type attracts itself and repels the others.
+     * Produces well-separated colour clusters.
      */
     action preset_clusters {
         A_0_0<-  0.8; A_0_1<- -0.5; A_0_2<- -0.5; A_0_3<- -0.5; A_0_4<- -0.5;
@@ -471,11 +483,11 @@ experiment ParticleLife type: gui {
         A_3_0<- -0.5; A_3_1<- -0.5; A_3_2<- -0.5; A_3_3<-  0.8; A_3_4<- -0.5;
         A_4_0<- -0.5; A_4_1<- -0.5; A_4_2<- -0.5; A_4_3<- -0.5; A_4_4<-  0.8;
         do sync_matrix_from_vars;
-        write "Preset 'Clusters' applique.";
+        write "Preset 'Clusters' applied.";
     }
     
-    user_command "Matrice aleatoire"  action: randomize_matrix;
-    user_command "Preset : Chaines"   action: preset_chains;
+    user_command "Random matrix"      action: randomize_matrix;
+    user_command "Preset : Chains"    action: preset_chains;
     user_command "Preset : Clusters"  action: preset_clusters;
     
 
@@ -483,7 +495,7 @@ experiment ParticleLife type: gui {
         display "Particle Life" type: 2d antialias: true background: #black {
             species particle aspect: default;
         }
-        monitor "Densite moyenne"       value: with_precision(mean(particle collect each.local_density), 2);
-        monitor "Vitesse moyenne"       value: with_precision(mean(particle collect (sqrt(each.velocity.x^2 + each.velocity.y^2))), 2);
+        monitor "Average density"  value: with_precision(mean(particle collect each.local_density), 2);
+        monitor "Average speed"    value: with_precision(mean(particle collect (sqrt(each.velocity.x^2 + each.velocity.y^2))), 2);
     }
 }
