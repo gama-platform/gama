@@ -21,6 +21,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulationFactory;
+import gama.api.kernel.object.IObject;
 import gama.api.kernel.simulation.IClock;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
@@ -291,7 +292,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @param iAgent
 	 *            The agent to remove from the stack
 	 */
-	void pop(IAgent iAgent);
+	void pop(IObject iAgent);
 
 	/**
 	 * Pushes an agent onto the agent stack, making it the current agent context. Subsequent operations will be executed
@@ -301,7 +302,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The agent to push onto the stack
 	 * @return true if the agent was successfully pushed, false otherwise
 	 */
-	boolean push(IAgent iAgent);
+	boolean push(IObject agent);
 
 	/**
 	 * Returns the agent that is currently at the top of the agent stack, representing the immediate execution context.
@@ -394,7 +395,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The arguments to pass to the statement
 	 * @return The result of the execution
 	 */
-	default IExecutionResult execute(final IExecutable executable, final IAgent agent, final Arguments args) {
+	default IExecutionResult execute(final IExecutable executable, final IObject agent, final Arguments args) {
 		return execute(executable, agent, false, args);
 	}
 
@@ -409,7 +410,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @throws GamaRuntimeException
 	 *             If an error occurs during evaluation
 	 */
-	IExecutionResult evaluate(IExpression expr, IAgent agent) throws GamaRuntimeException;
+	IExecutionResult evaluate(IExpression expr, IObject agent) throws GamaRuntimeException;
 
 	/**
 	 * Returns the value of a variable in the current execution context. This may be a local variable, an agent
@@ -432,7 +433,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @throws GamaRuntimeException
 	 *             If the variable doesn't exist or cannot be accessed
 	 */
-	Object getAgentVarValue(IAgent agent, String name) throws GamaRuntimeException;
+	Object getAgentVarValue(IObject agent, String name) throws GamaRuntimeException;
 
 	/**
 	 * Sets the value of a variable of a specific agent.
@@ -446,7 +447,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @throws GamaRuntimeException
 	 *             If the variable doesn't exist or cannot be modified
 	 */
-	void setAgentVarValue(IAgent agent, String name, Object v) throws GamaRuntimeException;
+	void setAgentVarValue(IObject agent, String name, Object v) throws GamaRuntimeException;
 
 	/**
 	 * Returns the value of a global variable defined at the simulation level.
@@ -829,7 +830,7 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 *            The arguments to pass to the statement
 	 * @return The result of the execution
 	 */
-	IExecutionResult execute(IExecutable statement, IAgent target, boolean useTargetScopeForExecution, Arguments args);
+	IExecutionResult execute(IExecutable statement, IObject target, boolean useTargetScopeForExecution, Arguments args);
 
 	/**
 	 * Retrieves and clears the BREAK flow status.
@@ -967,5 +968,22 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @return The types manager, or the built-in types if no model is available
 	 */
 	ITypesManager getTypes();
+
+	/**
+	 * @param name
+	 * @param v
+	 */
+	void setCurrentAgentOrObjectAttributeValue(String name, Object v);
+
+	/**
+	 * @param name
+	 * @return
+	 */
+	Object getCurrentAgentOrObjectAttributeValue(String name);
+
+	/**
+	 * @return
+	 */
+	IObject getCurrentObjectOrAgent();
 
 }

@@ -38,6 +38,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.agent.IPopulationFactory;
+import gama.api.kernel.object.IObject;
 import gama.api.kernel.simulation.IClock;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.IExperimentRecorder;
@@ -1116,7 +1117,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 *            the value
 		 */
 		@Override
-		public void setAgentVarValue(final IAgent a, final String name, final Object value) {
+		public void setAgentVarValue(final IObject a, final String name, final Object value) {
 			if (a == ExperimentAgent.this) {
 				setGlobalVarValue(name, value);
 			} else {
@@ -1134,7 +1135,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		 * @return the agent var value
 		 */
 		@Override
-		public Object getAgentVarValue(final IAgent a, final String varName) {
+		public Object getAgentVarValue(final IObject a, final String varName) {
 			if (a == ExperimentAgent.this) return getGlobalVarValue(varName);
 			return super.getAgentVarValue(a, varName);
 		}

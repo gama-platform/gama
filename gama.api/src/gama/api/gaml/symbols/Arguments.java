@@ -17,12 +17,13 @@ import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.object.IObject;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.interfaces.BiConsumerWithPruning;
 
 /**
- * Argument list for GAML statements and expressions, extending Facets with caller context and ordering.
- * Maintains insertion order of arguments via a key list and associates them with a caller agent for evaluation.
+ * Argument list for GAML statements and expressions, extending Facets with caller context and ordering. Maintains
+ * insertion order of arguments via a key list and associates them with a caller agent for evaluation.
  *
  * @author drogoul
  */
@@ -35,16 +36,17 @@ public class Arguments extends Facets {
 	private List<String> keys;
 
 	/**
-	 * The caller represents the agent in the context of which the arguments need to be evaluated.
-	 * Uses ThreadLocal to support multi-threaded evaluation contexts.
+	 * The caller represents the agent in the context of which the arguments need to be evaluated. Uses ThreadLocal to
+	 * support multi-threaded evaluation contexts.
 	 */
-	private ThreadLocal<IAgent> caller = new ThreadLocal<>();
+	private final ThreadLocal<IObject> caller = new ThreadLocal<>();
 
 	/**
-	 * Instantiates a new arguments map from another arguments object.
-	 * Copies all argument mappings and the caller context.
+	 * Instantiates a new arguments map from another arguments object. Copies all argument mappings and the caller
+	 * context.
 	 *
-	 * @param args the source arguments (may be null)
+	 * @param args
+	 *            the source arguments (may be null)
 	 */
 	public Arguments(final Arguments args) {
 		if (args != null) {
@@ -54,10 +56,11 @@ public class Arguments extends Facets {
 	}
 
 	/**
-	 * Instantiates a new arguments map from a key-value map.
-	 * Values are automatically wrapped in constant expression descriptions.
+	 * Instantiates a new arguments map from a key-value map. Values are automatically wrapped in constant expression
+	 * descriptions.
 	 *
-	 * @param myArgs the source map
+	 * @param myArgs
+	 *            the source map
 	 */
 	public Arguments(final Map<String, Object> myArgs) {
 		this();
@@ -67,11 +70,13 @@ public class Arguments extends Facets {
 	}
 
 	/**
-	 * Instantiates a new arguments map with a caller context.
-	 * Values from the map are automatically wrapped in constant expression descriptions.
+	 * Instantiates a new arguments map with a caller context. Values from the map are automatically wrapped in constant
+	 * expression descriptions.
 	 *
-	 * @param caller the agent context for evaluation
-	 * @param args the source map
+	 * @param caller
+	 *            the agent context for evaluation
+	 * @param args
+	 *            the source map
 	 */
 	public Arguments(final IAgent caller, final Map<String, Object> args) {
 		this(args);
@@ -99,7 +104,8 @@ public class Arguments extends Facets {
 	/**
 	 * Resolves all argument expressions against a given scope.
 	 *
-	 * @param scope the evaluation scope
+	 * @param scope
+	 *            the evaluation scope
 	 * @return a new arguments map with resolved expressions
 	 */
 	public Arguments resolveAgainst(final IScope scope) {
@@ -107,9 +113,7 @@ public class Arguments extends Facets {
 		result.setCaller(caller.get());
 		forEach((s, e) -> {
 			final IExpression exp = getExpr(s);
-			if (exp != null) {
-				result.putExpression(s, exp.resolveAgainst(scope));
-			}
+			if (exp != null) { result.putExpression(s, exp.resolveAgainst(scope)); }
 		});
 		return result;
 	}
@@ -117,41 +121,39 @@ public class Arguments extends Facets {
 	/**
 	 * Puts an argument and maintains key insertion order.
 	 *
-	 * @param s the argument name
-	 * @param e the expression description
+	 * @param s
+	 *            the argument name
+	 * @param e
+	 *            the expression description
 	 * @return the previous expression, or null if none
 	 */
 	@Override
 	public IExpressionDescription put(final String s, final IExpressionDescription e) {
-		if (keys == null) {
-			keys = new ArrayList<>();
-		}
-		if (!keys.contains(s)) {
-			keys.add(s);
-		}
+		if (keys == null) { keys = new ArrayList<>(); }
+		if (!keys.contains(s)) { keys.add(s); }
 		return super.put(s, e);
 	}
 
 	/**
 	 * Removes an argument and its key from the ordering list.
 	 *
-	 * @param s the argument name
+	 * @param s
+	 *            the argument name
 	 * @return the removed expression description
 	 */
 	@Override
 	public IExpressionDescription remove(final String s) {
-		if (keys != null) {
-			keys.remove(s);
-		}
+		if (keys != null) { keys.remove(s); }
 		return super.remove(s);
 	}
 
 	/**
 	 * Sets the caller agent context for argument evaluation.
 	 *
-	 * @param caller the agent context
+	 * @param caller
+	 *            the agent context
 	 */
-	public void setCaller(final IAgent caller) {
+	public void setCaller(final IObject caller) {
 		this.caller.set(caller);
 	}
 
@@ -160,9 +162,7 @@ public class Arguments extends Facets {
 	 *
 	 * @return the caller, or null if not set
 	 */
-	public IAgent getCaller() {
-		return caller.get();
-	}
+	public IObject getCaller() { return caller.get(); }
 
 	/**
 	 * Clears all arguments and resets the caller context.
@@ -176,13 +176,12 @@ public class Arguments extends Facets {
 	/**
 	 * Gets the expression for an argument by positional index.
 	 *
-	 * @param index the position (0-based)
+	 * @param index
+	 *            the position (0-based)
 	 * @return the expression at that position, or null if out of bounds or key undefined
 	 */
 	public IExpression getExpr(final int index) {
-		if (index < 0 || index >= size() || keys == null || index >= keys.size()) {
-			return null;
-		}
+		if (index < 0 || index >= size() || keys == null || index >= keys.size()) return null;
 		final String key = keys.get(index);
 		final IExpressionDescription desc = get(key);
 		return desc == null ? null : desc.getExpression();
@@ -191,7 +190,8 @@ public class Arguments extends Facets {
 	/**
 	 * Iterates over all arguments with a visitor callback.
 	 *
-	 * @param visitor the visitor callback
+	 * @param visitor
+	 *            the visitor callback
 	 * @return true if all arguments were processed, false if visitor returned false
 	 */
 	public boolean forEachArgument(final BiConsumerWithPruning<String, IExpressionDescription> visitor) {
@@ -201,14 +201,13 @@ public class Arguments extends Facets {
 	/**
 	 * Adds arguments from another Arguments map without replacing existing keys.
 	 *
-	 * @param newFacets the arguments to merge
+	 * @param newFacets
+	 *            the arguments to merge
 	 */
 	public void complementWith(final Arguments newFacets) {
 		if (newFacets != null) {
 			newFacets.forEachArgument((s, v) -> {
-				if (!containsKey(s)) {
-					put(s, v);
-				}
+				if (!containsKey(s)) { put(s, v); }
 				return true;
 			});
 		}
