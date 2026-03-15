@@ -537,7 +537,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			case GLOBAL -> GlobalVariableExpression.create(name, type, isConst,
 					definitionDescription.getModelDescription());
 			// Agent variables are instance variables specific to each agent
-			case AGENT -> new AgentVariableExpression(name, type, isConst, definitionDescription);
+			case AGENT -> new TypeAttributeExpression(name, type, isConst, definitionDescription);
 			// Temporary variables exist only during the current execution block
 			case TEMP -> new TempVariableExpression(name, type, definitionDescription);
 			// 'each' is the iteration variable in loops

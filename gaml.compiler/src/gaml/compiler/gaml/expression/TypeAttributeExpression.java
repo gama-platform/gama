@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * AgentVariableExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * TypeAttributeExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -26,9 +26,9 @@ import gama.api.utils.GamlProperties;
 import gama.api.utils.collections.ICollector;
 
 /**
- * The Class AgentVariableExpression.
+ * The Class TypeAttributeExpression.
  */
-public class AgentVariableExpression extends VariableExpression implements IVarExpression.Agent {
+public class TypeAttributeExpression extends VariableExpression implements IVarExpression.Agent {
 
 	/**
 	 * Instantiates a new agent variable expression.
@@ -43,7 +43,7 @@ public class AgentVariableExpression extends VariableExpression implements IVarE
 	 *            the def
 	 */
 	@SuppressWarnings ("rawtypes")
-	public AgentVariableExpression(final String n, final IType type, final boolean notModifiable,
+	public TypeAttributeExpression(final String n, final IType type, final boolean notModifiable,
 			final IDescription def) {
 		super(n, type, notModifiable, def);
 	}

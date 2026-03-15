@@ -19,7 +19,6 @@ import gama.api.compilation.descriptions.IClassDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.types.GamaAgentType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.ITypesManager;
 import gama.api.kernel.GamaMetaModel;
@@ -127,7 +126,7 @@ public class GamaGenericObjectType extends GamaObjectType<IObject> {
 	 */
 	@Override
 	public boolean isSuperTypeOf(final IType<?> type) {
-		return type != this && type instanceof GamaAgentType;
+		return type != this && type instanceof GamaObjectType;
 	}
 
 }

@@ -39,7 +39,7 @@ import gama.api.utils.prefs.GamaPreferences;
  *   │   └── PrimitiveOperator (Java-backed operations)
  *   ├── Variables
  *   │   ├── GlobalVariableExpression
- *   │   ├── AgentVariableExpression
+ *   │   ├── TypeAttributeExpression
  *   │   ├── TempVariableExpression
  *   │   └── SelfExpression/SuperExpression/MyselfExpression
  *   ├── Constants

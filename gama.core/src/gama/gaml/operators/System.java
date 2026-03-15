@@ -42,6 +42,7 @@ import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.object.IObject;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.color.IColor;
 import gama.api.types.font.IFont;
@@ -434,11 +435,11 @@ public class System {
 			category = { IOperatorCategory.SYSTEM },
 			concept = { IConcept.SYSTEM, IConcept.ATTRIBUTE })
 	@doc (
-			value = "It has two different uses: it can be the dot product between 2 matrices or return an evaluation of the expression (right-hand operand) in the scope the given agent.",
+			value = "The dot operator can be the dot product between 2 matrices or return the value of the expression (right-hand operand) in the scope of the left-hand agent or object.",
 			masterDoc = true,
 			special_cases = "if the agent is nil or dead, throws an exception",
 			usages = @usage (
-					value = "if the left operand is an agent, it evaluates of the expression (right-hand operand) in the scope the given agent",
+					value = "if the left operand is an agent, the right hand expression is evaluated in the scope of that agent",
 					examples = { @example (
 							value = "agent1.location",
 							equals = "the location of the agent agent1",
@@ -464,16 +465,45 @@ public class System {
 	}
 
 	/**
-	 * Op copy.
+	 * Op get value.
 	 *
 	 * @param scope
 	 *            the scope
-	 * @param o
-	 *            the o
+	 * @param a
+	 *            the a
+	 * @param s
+	 *            the s
 	 * @return the object
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+	@operator (
+			value = { IKeyword._DOT, IKeyword.OF },
+			type = ITypeProvider.TYPE_AT_INDEX + 2,
+			content_type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 2,
+			index_type = ITypeProvider.KEY_TYPE_AT_INDEX + 2,
+			category = { IOperatorCategory.SYSTEM },
+			concept = { IConcept.SYSTEM, IConcept.ATTRIBUTE })
+	@doc (
+			value = "The dot operator can be the dot product between 2 matrices or return the value of the expression (right-hand operand) in the scope of the left-hand agent or object.",
+			masterDoc = true,
+			special_cases = "if the agent is nil or dead, throws an exception",
+			usages = @usage (
+					value = "if the left operand is an agent, the right hand expression is evaluated in the scope of that agent",
+					examples = { @example (
+							value = "object1.var1",
+							equals = "the value of the variable var1 of the object object1",
+							isExecutable = false),
+					// @example (value = "map(nil).keys", raises = "exception", isTestOnly = false)
+					}))
+	@no_test
+	public static Object opGetValue(final IScope scope, final IObject a, final IExpression s)
+			throws GamaRuntimeException {
+		if (a == null && !scope.interrupted()) throw GamaRuntimeException
+				.warning("Cannot evaluate " + s.serializeToGaml(false) + " as the target object is nil", scope);
+		return null; // FIXME ONLY FOR DEBUGGING PURPOSES. TO BE REMOVED ASAP
+		// return scope.evaluate(s, a).getValue();
+	}
 
 	/**
 	 * Op copy.

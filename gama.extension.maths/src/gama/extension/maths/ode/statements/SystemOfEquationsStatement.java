@@ -53,7 +53,7 @@ import gama.api.types.map.IMap;
 import gama.api.types.pair.GamaPairFactory;
 import gama.api.types.pair.IPair;
 import gama.api.utils.collections.Collector;
-import gaml.compiler.gaml.expression.AgentVariableExpression;
+import gaml.compiler.gaml.expression.TypeAttributeExpression;
 import gaml.compiler.gaml.expression.UnaryOperator;
 
 /**
@@ -322,8 +322,8 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 			if (s.getValue().getOrder() == 0) {
 				final IExpression tmp = ((UnaryOperator) s.getValue().getFunction()).arg(0);
 				final Object v = s.getValue().getExpression().value(currentScope);
-				if (tmp instanceof AgentVariableExpression) {
-					((AgentVariableExpression) tmp).setVal(currentScope, v, false);
+				if (tmp instanceof TypeAttributeExpression) {
+					((TypeAttributeExpression) tmp).setVal(currentScope, v, false);
 				}
 			}
 

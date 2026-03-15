@@ -914,4 +914,19 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 		return sd.hasParent(p);
 	}
 
+	@Override
+	protected boolean validateChildren() {
+		// We try to issue information about the state of the species: at first,
+		// abstract.
+
+		for (final IActionDescription a : getActions()) {
+			if (a.isAbstract()) {
+				this.info("Action '" + a.getName() + "' is defined or inherited as virtual. In consequence, "
+						+ getName() + " will be considered as abstract.", IGamlIssue.MISSING_ACTION);
+			}
+		}
+
+		return super.validateChildren();
+	}
+
 }

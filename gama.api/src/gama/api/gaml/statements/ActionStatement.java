@@ -49,6 +49,7 @@ import gama.api.runtime.scope.IScope;
  * </ul>
  * 
  * <h2>Declaration Syntax</h2>
+ *
  * <pre>
  * {@code
  * // Simple action with no parameters or return value
@@ -72,6 +73,7 @@ import gama.api.runtime.scope.IScope;
  * </pre>
  * 
  * <h2>Invocation</h2>
+ *
  * <pre>
  * {@code
  * // Call without parameters
@@ -111,7 +113,7 @@ import gama.api.runtime.scope.IScope;
 		unique_name = true,
 		concept = { IConcept.SPECIES, IConcept.ACTION })
 @inside (
-		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL })
+		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL, ISymbolKind.CLASS })
 @facets (
 		value = { @facet (
 				name = IKeyword.NAME,

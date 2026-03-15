@@ -488,10 +488,6 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		if (isBuiltIn()) return;
 		super.dispose();
 		experiments = null;
-		// if (validationContext != null) {
-		// validationContext.dispose();
-		// validationContext = null;
-		// }
 		types.dispose();
 
 	}
@@ -680,12 +676,14 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 
 	@Override
 	public boolean visitChildren(final DescriptionVisitor<IDescription> visitor) {
-		return super.visitChildren(visitor) && getOwnExperiments().forEachValue(visitor);
+		return super.visitChildren(visitor) && getClassesMap().forEachValue(visitor)
+				&& getOwnExperiments().forEachValue(visitor);
 	}
 
 	@Override
 	public boolean visitOwnChildren(final DescriptionVisitor<IDescription> visitor) {
-		return super.visitOwnChildren(visitor) && getOwnExperiments().forEachValue(visitor);
+		return super.visitOwnChildren(visitor) && getClassesMap().forEachValue(visitor)
+				&& getOwnExperiments().forEachValue(visitor);
 	}
 
 	@Override
@@ -694,7 +692,8 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 			if (!visitor.process(each)) return false;
 			return each.visitOwnChildrenRecursively(visitor);
 		};
-		return super.visitOwnChildrenRecursively(visitor) && getOwnExperiments().forEachValue(recursiveVisitor);
+		return super.visitOwnChildrenRecursively(visitor) && getClassesMap().forEachValue(recursiveVisitor)
+				&& getOwnExperiments().forEachValue(recursiveVisitor);
 	}
 
 	@Override

@@ -224,7 +224,7 @@ import gama.dev.DEBUG;
 		with_sequence = false,
 		concept = { IConcept.ATTRIBUTE })
 @inside (
-		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL })
+		kinds = { ISymbolKind.SPECIES, ISymbolKind.EXPERIMENT, ISymbolKind.MODEL, ISymbolKind.CLASS })
 @doc ("Declaration of an attribute of a species or an experiment")
 @validator (gama.api.gaml.variables.Variable.VarValidator.class)
 @SuppressWarnings ({ "rawtypes" })

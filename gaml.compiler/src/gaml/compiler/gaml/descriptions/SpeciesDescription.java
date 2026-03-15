@@ -891,14 +891,6 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 		});
 	}
 
-	/**
-	 * Checks if is grid.
-	 *
-	 * @return true, if is grid
-	 */
-	@Override
-	public boolean isGrid() { return isSet(Flag.isGrid); }
-
 	@Override
 	public String getTitle() { return StringUtils.capitalize(getKeyword()) + " " + getName(); }
 
@@ -962,15 +954,6 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	public boolean visitMicroSpecies(final DescriptionVisitor<ISpeciesDescription> visitor) {
 		return getOwnMicroSpecies().forEachValue(visitor);
 	}
-
-	// public boolean visitSortedMicroSpecies(final DescriptionVisitor<SpeciesDescription> visitor) {
-	// if (!hasMicroSpecies()) { return true; }
-	// final Iterable<SpeciesDescription> all = getSortedMicroSpecies();
-	// for (final SpeciesDescription sd : all) {
-	// if (!visitor.process(sd)) { return false; }
-	// }
-	// return true;
-	// }
 
 	/**
 	 * Sets the parent.
@@ -1159,21 +1142,6 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 
 		}
 
-	}
-
-	@Override
-	protected boolean validateChildren() {
-		// We try to issue information about the state of the species: at first,
-		// abstract.
-
-		for (final IActionDescription a : getActions()) {
-			if (a.isAbstract()) {
-				this.info("Action '" + a.getName() + "' is defined or inherited as virtual. In consequence, "
-						+ getName() + " will be considered as abstract.", IGamlIssue.MISSING_ACTION);
-			}
-		}
-
-		return super.validateChildren();
 	}
 
 	/**

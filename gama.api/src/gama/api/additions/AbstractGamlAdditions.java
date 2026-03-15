@@ -355,7 +355,9 @@ public abstract class AbstractGamlAdditions extends UtilsForGamlAdditions implem
 		final IType rt = returnType instanceof Class c2 ? Types.get(c2) : (IType) returnType;
 		for (final String kw : keywords) {
 			if (GAML.canRegisterOperator(kw, signature)) {
-				boolean isField = nbParam == 2 && (OF.equals(kw) || _DOT.equals(kw)) && signature.get(0).isAgentType();
+				IType left = signature.get(0);
+				boolean isField = nbParam == 2 && (OF.equals(kw) || _DOT.equals(kw))
+						&& (left.isObjectType() || left.isAgentType());
 				GAML.registerOperator(GAML.getArtefactFactory().createOperatorArtefact(kw, method, isField ? null : doc,
 						helper, c, isField, rt, signature, t, content, index, contentContentType, expectedContentTypes,
 						plugin));
