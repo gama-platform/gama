@@ -25,89 +25,36 @@
       </programArgs>
       <programArgsLin>--launcher.GTK_version 3
       </programArgsLin>
-      <vmArgs>-server
--Xms2G
--Xmx16G
--Xss128m
--XX:+UseG1GC 
--XX:+ParallelRefProcEnabled 
--XX:MaxGCPauseMillis=200 
+      <vmArgs>-server 
+-Xms2G -Xmx16G -Xss128m
 -XX:+UnlockExperimentalVMOptions 
--XX:+AlwaysActAsServerClassMachine
--XX:NmethodSweepActivity=1 
--XX:ReservedCodeCacheSize=400M
--XX:NonNMethodCodeHeapSize=12M 
--XX:ProfiledCodeHeapSize=194M
--XX:NonProfiledCodeHeapSize=194M 
--XX:-DontCompileHugeMethods
--XX:+UseFastUnorderedTimeStamps 
--XX:+AlwaysPreTouch 
--XX:G1HeapWastePercent=5 
--XX:G1MixedGCCountTarget=4 
--XX:InitiatingHeapOccupancyPercent=15 
--XX:G1MixedGCLiveThresholdPercent=90 
--XX:G1RSetUpdatingPauseTimePercent=5 
--XX:SurvivorRatio=32 
--XX:+PerfDisableSharedMem 
--XX:MaxTenuringThreshold=1 
--XX:G1NewSizePercent=40 
--XX:G1MaxNewSizePercent=50 
--XX:G1HeapRegionSize=16M 
--XX:G1ReservePercent=20
--XX:+UseStringDeduplication
+-XX:+UseG1GC -XX:+UseAdaptiveSizePolicy -XX:+OptimizeStringConcat
 -Dorg.eclipse.swt.graphics.Resource.reportNonDisposed=false
--XX:+UseAdaptiveSizePolicy
--XX:+OptimizeStringConcat
--Dosgi.locking=none
--Dswt.enable.themedScrollBar=true
--Dosgi.checkConfiguration=false
--Dosgi.requiredJavaVersion=25
+-Dosgi.locking=none -Dosgi.checkConfiguration=false -Dosgi.requiredJavaVersion=25
 -Declipse.log.level=ERROR
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=10
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=6000
 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=6000
--Denable_logging=true
--Denable_debug=true
--Duse_global_preference_store=true
+-Denable_logging=true -Denable_debug=true -Duse_global_preference_store=true -Dread_only=false -Duse_old_tabs=true
 -Dswt.autoScale=exact
--Dread_only=false
--Duse_old_tabs=true
--Duse_legacy_drawers=false
--Duse_delayed_resize=false
 -Declipse.e4.inject.javax.disabled=true
 -Djts.relate=ng
---add-exports=java.base/java.lang=ALL-UNNAMED
---add-exports=java.desktop/sun.awt=ALL-UNNAMED
---add-exports=java.desktop/sun.java2d=ALL-UNNAMED
---add-exports=java.desktop/sun.java2d.loops=ALL-UNNAMED
---add-exports=java.desktop/sun.awt.image=ALL-UNNAMED
---add-exports=java.base/java.math=ALL-UNNAMED
---add-exports=java.base/java.lang=ALL-UNNAMED
---add-exports=java.base/sun.nio.ch=ALL-UNNAMED
---add-exports=java.desktop/com.sun.imageio.plugins.jpeg=ALL-UNNAMED
---add-exports=java.desktop/com.sun.imageio.plugins.png=ALL-UNNAMED
---add-opens=java.base/jdk.internal.loader=ALL-UNNAMED
---add-opens=java.base/java.math=ALL-UNNAMED
---add-opens=java.base/java.util=ALL-UNNAMED
---add-opens=java.base/java.util.concurrent=ALL-UNNAMED
---add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED
---add-opens=java.base/java.net=ALL-UNNAMED
---add-opens=java.base/java.security=ALL-UNNAMED
---add-opens=java.desktop/java.awt=ALL-UNNAMED
---add-opens=java.desktop/java.awt.image=ALL-UNNAMED
---add-opens=java.desktop/java.awt.color=ALL-UNNAMED
---add-opens=java.desktop/sun.awt.image=ALL-UNNAMED
---add-opens=java.desktop/sun.java2d=ALL-UNNAMED
---add-opens=java.desktop/sun.java2d.loops=ALL-UNNAMED
---add-opens=java.base/java.io=ALL-UNNAMED
---add-opens=java.base/java.time=ALL-UNNAMED
---add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED
---add-opens=java.base/java.text=ALL-UNNAMED
---add-opens=java.base/java.lang.ref=ALL-UNNAMED
---add-opens=java.sql/java.sql=ALL-UNNAMED
---add-opens=java.base/java.lang=ALL-UNNAMED
---add-opens=java.desktop/javax.imageio.stream=ALL-UNNAMED
---add-opens=java.desktop/javax.imageio=ALL-UNNAMED
+--add-exports=java.base/java.lang=ALL-UNNAMED --add-exports=java.desktop/sun.awt=ALL-UNNAMED
+--add-exports=java.desktop/sun.java2d=ALL-UNNAMED --add-exports=java.desktop/sun.java2d.loops=ALL-UNNAMED
+--add-exports=java.desktop/sun.awt.image=ALL-UNNAMED --add-exports=java.base/java.math=ALL-UNNAMED
+--add-exports=java.base/java.lang=ALL-UNNAMED --add-exports=java.base/sun.nio.ch=ALL-UNNAMED
+--add-exports=java.desktop/com.sun.imageio.plugins.jpeg=ALL-UNNAMED --add-exports=java.desktop/com.sun.imageio.plugins.png=ALL-UNNAMED
+--add-opens=java.base/jdk.internal.loader=ALL-UNNAMED --add-opens=java.base/java.math=ALL-UNNAMED
+--add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED
+--add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED
+--add-opens=java.base/java.security=ALL-UNNAMED --add-opens=java.desktop/java.awt=ALL-UNNAMED
+--add-opens=java.desktop/java.awt.image=ALL-UNNAMED --add-opens=java.desktop/java.awt.color=ALL-UNNAMED
+--add-opens=java.desktop/sun.awt.image=ALL-UNNAMED --add-opens=java.desktop/sun.java2d=ALL-UNNAMED
+--add-opens=java.desktop/sun.java2d.loops=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED
+--add-opens=java.base/java.time=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.locks=ALL-UNNAMED
+--add-opens=java.base/java.text=ALL-UNNAMED --add-opens=java.base/java.lang.ref=ALL-UNNAMED
+--add-opens=java.sql/java.sql=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED
+--add-opens=java.desktop/javax.imageio.stream=ALL-UNNAMED --add-opens=java.desktop/javax.imageio=ALL-UNNAMED
 --enable-native-access=ALL-UNNAMED
 --sun-misc-unsafe-memory-access=allow
 --add-modules=jdk.incubator.vector
