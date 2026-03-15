@@ -764,9 +764,6 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 		return getOwnAspects().containsKey(a) || parent != null && parent != this && getParent().hasAspect(a);
 	}
 
-	@Override
-	public ISpeciesDescription getSpeciesContext() { return this; }
-
 	/**
 	 * Gets the micro species.
 	 *

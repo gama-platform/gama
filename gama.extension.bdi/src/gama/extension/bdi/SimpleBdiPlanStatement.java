@@ -24,6 +24,7 @@ import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -94,8 +95,12 @@ public class SimpleBdiPlanStatement extends AbstractStatementSequence {
 		@Override
 		public void validate(final IStatementDescription description) {
 			// Verify that the state is inside a species with fsm control
-			final ISpeciesDescription species = description.getSpeciesContext();
-			final ISkillDescription control = species.getControl();
+			final ITypeDescription species = description.getTypeContext();
+			if (!species.isSpecies()) {
+				description.error("A plan can only be defined in a species", IGamlIssue.WRONG_CONTEXT);
+				return;
+			}
+			final ISkillDescription control = ((ISpeciesDescription) species).getControl();
 			if (!SimpleBdiArchitecture.class.isAssignableFrom(control.getJavaBase())) {
 				description.error("A plan can only be defined in a simple_bdi architecture species",
 						IGamlIssue.WRONG_CONTEXT);

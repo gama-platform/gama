@@ -14,7 +14,7 @@ import gama.api.GAMA;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
@@ -74,7 +74,7 @@ public class PrimitiveOperator implements IOperator {
 			// target is not null
 			this.targetSpecies = target.getGamlType().getSpecies().getName();
 		} else if (target == null) {
-			targetSpecies = callerContext.getSpeciesContext().getName();
+			targetSpecies = callerContext.getTypeContext().getName();
 		} else {
 			targetSpecies = null;
 		}
@@ -220,7 +220,7 @@ public class PrimitiveOperator implements IOperator {
 	 *            the result
 	 */
 	@Override
-	public void collectUsedVarsOf(final ISpeciesDescription species,
+	public void collectUsedVarsOf(final ITypeDescription species,
 			final ICollector<IVarDescriptionUser> alreadyProcessed, final ICollector<IVariableDescription> result) {
 		if (alreadyProcessed.contains(this)) return;
 		alreadyProcessed.add(this);

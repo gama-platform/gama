@@ -29,7 +29,7 @@ import java.util.function.Predicate;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ITypeProvider;
 import gama.api.compilation.artefacts.IArtefact;
-import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
@@ -325,7 +325,7 @@ public abstract class AbstractNAryOperator extends AbstractExpression implements
 	public String getDefiningPlugin() { return prototype.getDefiningPlugin(); }
 
 	@Override
-	public void collectUsedVarsOf(final ISpeciesDescription species,
+	public void collectUsedVarsOf(final ITypeDescription species,
 			final ICollector<IVarDescriptionUser> alreadyProcessed, final ICollector<IVariableDescription> result) {
 		if (alreadyProcessed.contains(this)) return;
 		alreadyProcessed.add(this);

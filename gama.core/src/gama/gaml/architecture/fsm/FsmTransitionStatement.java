@@ -27,6 +27,7 @@ import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
@@ -134,8 +135,8 @@ public class FsmTransitionStatement extends AbstractStatementSequence {
 				return;
 			}
 			final String behavior = desc.getLitteral(TO);
-			final ISpeciesDescription sd = desc.getSpeciesContext();
-			if (!sd.hasBehavior(behavior)) {
+			final ITypeDescription sd = desc.getTypeContext();
+			if (!(sd instanceof ISpeciesDescription rsd) || !rsd.hasBehavior(behavior)) {
 				desc.error("Behavior " + behavior + " does not exist in " + sd.getName(), IGamlIssue.UNKNOWN_BEHAVIOR,
 						TO, behavior, sd.getName());
 			}

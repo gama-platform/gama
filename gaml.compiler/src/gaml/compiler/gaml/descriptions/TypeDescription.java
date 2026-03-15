@@ -538,6 +538,9 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 		getActionsMap().put(actionName, newAction);
 	}
 
+	@Override
+	public ITypeDescription getTypeContext() { return this; }
+
 	/**
 	 * Redefines action.
 	 *

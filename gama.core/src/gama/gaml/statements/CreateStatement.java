@@ -268,7 +268,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 				cd.info("The actual species will be determined at runtime. This can lead to errors if it cannot be instantiated",
 						WRONG_TYPE, SPECIES);
 			}
-			final ISpeciesDescription callerSpecies = cd.getSpeciesContext();
+			final ITypeDescription callerSpecies = cd.getTypeContext();
 			if (sd instanceof IModelDescription && !(callerSpecies instanceof IExperimentDescription)) {
 				cd.error("Simulations can only be created within experiments", WRONG_CONTEXT, SPECIES);
 				return;
@@ -284,8 +284,9 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 			if (macro instanceof IModelDescription && callerSpecies instanceof IModelDescription) {
 
 				// end-hqnghi
-			} else if (macro instanceof ISpeciesDescription callerSd && callerSpecies != macro
-					&& !callerSpecies.hasMacroSpecies(callerSd) && !callerSpecies.hasParent(macro)) {
+			} else if (macro instanceof ISpeciesDescription callerSd
+					&& callerSpecies instanceof ISpeciesDescription callerSpeciesDesc && callerSpeciesDesc != macro
+					&& !callerSpeciesDesc.hasMacroSpecies(callerSd) && !callerSpeciesDesc.hasParent(macro)) {
 				cd.error("No instance of " + macro.getName() + " available for creating instances of " + sd.getName());
 				return;
 			}
@@ -387,7 +388,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	 */
 	protected IPopulation findPopulation(final IScope scope) {
 		final IAgent executor = scope.getAgent();
-		if (species == null) return executor.getPopulationFor(description.getSpeciesContext().getName());
+		if (species == null) return executor.getPopulationFor(description.getTypeContext().getName());
 		ISpecies s = Cast.asSpecies(scope, species.value(scope));
 		if (s == null) {// A last attempt in order to fix #2466
 			final String potentialSpeciesName = species.getDenotedType().getSpeciesName();

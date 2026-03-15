@@ -31,6 +31,7 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.validation.Assert;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
@@ -172,9 +173,13 @@ public class FsmStateStatement extends AbstractStatementSequence {
 		@Override
 		public void validate(final IDescription description) {
 			// Verify that the state is inside a species with fsm control
-			final ISpeciesDescription species = description.getSpeciesContext();
+			final ITypeDescription species = description.getTypeContext();
+			if (!species.isSpecies()) {
+				description.error("A state can only be defined in a species", IGamlIssue.WRONG_CONTEXT);
+				return;
+			}
 			final String keyword = description.getKeyword();
-			final ISkillDescription control = species.getControl();
+			final ISkillDescription control = ((ISpeciesDescription) species).getControl();
 			if (!FsmArchitecture.class.isAssignableFrom(control.getJavaBase())) {
 				if (STATE.equals(keyword)) {
 					description.error("A state can only be defined in an fsm-controlled or user-controlled species",

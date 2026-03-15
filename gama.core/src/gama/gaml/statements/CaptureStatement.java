@@ -142,8 +142,13 @@ public class CaptureStatement extends AbstractStatementSequence {
 		public void validate(final IStatementDescription cd) {
 			final String microSpeciesName = cd.getLitteral(AS);
 			if (microSpeciesName != null) {
-				final ISpeciesDescription macroSpecies = cd.getSpeciesContext();
-				final ITypeDescription microSpecies = macroSpecies.getMicroSpecies(microSpeciesName);
+				final ITypeDescription macroSpecies = cd.getTypeContext();
+				if (!macroSpecies.isSpecies()) {
+					cd.error("A capture statement can only be defined in a species", IGamlIssue.WRONG_CONTEXT);
+					return;
+				}
+				final ITypeDescription microSpecies =
+						((ISpeciesDescription) macroSpecies).getMicroSpecies(microSpeciesName);
 				if (microSpecies == null) {
 					cd.error(macroSpecies.getName() + " species doesn't contain " + microSpeciesName
 							+ " as micro-species", IGamlIssue.UNKNOWN_SPECIES, AS, microSpeciesName);

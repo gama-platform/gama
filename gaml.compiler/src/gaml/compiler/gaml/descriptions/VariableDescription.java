@@ -39,6 +39,7 @@ import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
@@ -264,14 +265,14 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 			final String varName = getName();
 			final Collection<String> deps = dependencies.get(varName);
 			if (deps != null) {
-				final ISpeciesDescription speciesContext = getSpeciesContext();
+				final ITypeDescription speciesContext = getTypeContext();
 				for (final String s : deps) {
 					final IVariableDescription vd = speciesContext.getAttribute(s);
 					if (vd != null) { result.add(vd); }
 				}
 			}
 
-			final ISpeciesDescription speciesContext = getSpeciesContext();
+			final ITypeDescription speciesContext = getTypeContext();
 			this.visitFacets(facetsToVisit, (fName, exp) -> {
 				final IExpression expression = exp.getExpression();
 				if (expression != null) { expression.collectUsedVarsOf(speciesContext, alreadyProcessed, result); }

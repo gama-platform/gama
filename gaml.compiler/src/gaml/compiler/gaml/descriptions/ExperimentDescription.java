@@ -341,7 +341,7 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 				defined.addChild(in.copy(defined));
 			} else {
 				redefined.info("This definition of " + redefined.getName() + " supersedes the one in "
-						+ in.getSpeciesContext().getName(), IGamlIssue.REDEFINES, NAME);
+						+ in.getTypeContext().getName(), IGamlIssue.REDEFINES, NAME);
 			}
 			return true;
 		});

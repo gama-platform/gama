@@ -25,6 +25,7 @@ import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISkillDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.validation.Assert;
 import gama.api.compilation.validation.ValidNameValidator;
 import gama.api.constants.IGamlIssue;
@@ -86,8 +87,12 @@ public class WeightedTaskStatement extends AbstractStatementSequence {
 		public void validate(final IDescription description) {
 			if (!Assert.nameIsValid(description)) return;
 			// Verify that the task is inside a species with task-based control
-			final ISpeciesDescription species = description.getSpeciesContext();
-			final ISkillDescription control = species.getControl();
+			final ITypeDescription species = description.getTypeContext();
+			if (!species.isSpecies()) {
+				description.error("A " + description.getKeyword() + " can only be defined in a species",
+						IGamlIssue.WRONG_CONTEXT);
+			}
+			final ISkillDescription control = ((ISpeciesDescription) species).getControl();
 			if (!WeightedTasksArchitecture.class.isAssignableFrom(control.getJavaBase())) {
 				description.error("A " + description.getKeyword()
 						+ " can only be defined in a task-controlled species  (one of" + ALLOWED_ARCHITECTURES + ")",

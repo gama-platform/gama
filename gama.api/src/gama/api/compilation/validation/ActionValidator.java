@@ -149,7 +149,7 @@ public class ActionValidator implements IDescriptionValidator<IDescription> {
 							// See Issue #3059
 							ret.warning("The returned value (of type " + rt + ") will be casted to " + at,
 									IGamlIssue.WRONG_TYPE, VALUE);
-							ret.setFacet(VALUE, expressionFactory.createAs(cd.getSpeciesContext(), ie,
+							ret.setFacet(VALUE, expressionFactory.createAs(cd.getTypeContext(), ie,
 									expressionFactory.createTypeExpression(at)));
 						}
 					}

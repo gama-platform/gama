@@ -373,7 +373,7 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 			facets.remove(ORIGIN);
 		} else if (superDesc != null) { originName = superDesc.getName(); }
 		setEnclosingDescription(superDesc);
-		artefact = (SymbolArtefact) ArtefactRegistry.getArtefact(getKeyword(), getSpeciesContext());
+		artefact = (SymbolArtefact) ArtefactRegistry.getArtefact(getKeyword(), getTypeContext());
 
 	}
 
@@ -1060,10 +1060,10 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	 * @return the species context, or null if none exists
 	 */
 	@Override
-	public ISpeciesDescription getSpeciesContext() {
+	public ITypeDescription getTypeContext() {
 		IDescription desc = getEnclosingDescription();
 		if (desc == null) return null;
-		return desc.getSpeciesContext();
+		return desc.getTypeContext();
 	}
 
 	/**

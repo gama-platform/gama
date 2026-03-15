@@ -11,7 +11,6 @@
 package gaml.compiler.gaml.expression;
 
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
@@ -121,7 +120,7 @@ public class SpeciesConstantExpression extends ConstantExpression implements IEx
 	public boolean isAllowedInParameters() { return true; } // verify this
 
 	@Override
-	public void collectUsedVarsOf(final ISpeciesDescription species,
+	public void collectUsedVarsOf(final ITypeDescription species,
 			final ICollector<IVarDescriptionUser> alreadyProcessed, final ICollector<IVariableDescription> result) {
 		if (alreadyProcessed.contains(this)) return;
 		alreadyProcessed.add(this);

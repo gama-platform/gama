@@ -12,8 +12,8 @@ package gaml.compiler.gaml.descriptions;
 
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
@@ -40,7 +40,7 @@ public class BlockExpressionDescription extends EcoreBasedExpressionDescription 
 
 	@Override
 	public IExpression compile(final IDescription context) {
-		final ISpeciesDescription sd = context.getSpeciesContext();
+		final ITypeDescription sd = context.getTypeContext();
 		// if (sd.isExperiment())
 		// sd = sd.getModelDescription();
 		final IStatementDescription action =

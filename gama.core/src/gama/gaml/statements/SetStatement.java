@@ -133,7 +133,7 @@ public class SetStatement extends AbstractStatement {
 						+ " is a constant or a function and cannot be assigned a value.", IKeyword.NAME);
 			}
 
-			if (IKeyword.SHAPE.equals(var.getName()) && cd.getSpeciesContext() instanceof IModelDescription) {
+			if (IKeyword.SHAPE.equals(var.getName()) && cd.getTypeContext() instanceof IModelDescription) {
 				cd.warning(
 						"Dynamically changing the shape of the world can lead to unexpected results. It is advised to redefine the attribute instead (e.g. 'geometry shape <- "
 								+ (assigned == null ? "..." : assigned.serializeToGaml(false)) + "')",

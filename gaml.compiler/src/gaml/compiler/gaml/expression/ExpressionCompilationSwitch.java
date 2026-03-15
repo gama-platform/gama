@@ -233,7 +233,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		final TypeParameters typeParams = extractTypeParameters(typeObject, castingType);
 		final IType result = GamaType.from(castingType, typeParams.keyType, typeParams.contentType);
 
-		return FACTORY.createAs(context.getContext().getSpeciesContext(), toCast, FACTORY.createTypeExpression(result));
+		return FACTORY.createAs(context.getContext().getTypeContext(), toCast, FACTORY.createTypeExpression(result));
 	}
 
 	/** Helper class to hold resolved type parameters. */
@@ -875,8 +875,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			if (container instanceof IVarExpression.Agent && ((IVarExpression.Agent) container).getOwner() != null) {
 				varDiff = ((IVarExpression.Agent) container).getVar();
 
-				final ISpeciesDescription species =
-						((IVarExpression.Agent) varDiff).getDefinitionDescription().getSpeciesContext();
+				final ITypeDescription species =
+						((IVarExpression.Agent) varDiff).getDefinitionDescription().getTypeContext();
 				if (species != null) {
 					final Iterable<IDescription> equations = species.getChildrenWithKeyword(IKeyword.EQUATION);
 					for (final IDescription equation : equations) {
@@ -990,7 +990,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 * @return the i expression
 	 */
 	private IExpression tryActionCall(final String op, final Function object) {
-		ISpeciesDescription species = context.getContext().getSpeciesContext();
+		ITypeDescription species = context.getContext().getTypeContext();
 		if (species == null) return null;
 		final boolean isSuper = context.getContext() instanceof DoDescription st && st.isSuperInvocation();
 		IActionDescription action = isSuper ? species.getParent().getAction(op) : species.getAction(op);
@@ -1063,12 +1063,12 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	@Override
 	public IExpression caseActionRef(final ActionRef object) {
 		final String s = EGAML.getKeyOf(object);
-		final ISpeciesDescription sd = context.getContext().getSpeciesContext();
-		IActionDescription ad = sd.getAction(s);
+		final ITypeDescription td = context.getContext().getTypeContext();
+		IActionDescription ad = td.getAction(s);
 		if (ad == null) {
-			boolean isExp = sd instanceof IExperimentDescription;
+			boolean isExp = td instanceof IExperimentDescription;
 			if (!isExp) {
-				IDescription host = sd.getEnclosingDescription();
+				IDescription host = td.getEnclosingDescription();
 				if (host != null) { ad = host.getAction(s); }
 			}
 			if (ad == null) {
@@ -1228,10 +1228,11 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			final IVarDescriptionProvider temp_sd) {
 		if (!(temp_sd instanceof ISpeciesDescription)) return temp_sd.getVarExpr(varName, false);
 
-		final ISpeciesDescription remote_sd = context.getContext().getSpeciesContext();
+		final ITypeDescription remote_sd = context.getContext().getTypeContext();
 		if (remote_sd != null) {
 			final ISpeciesDescription found_sd = (ISpeciesDescription) temp_sd;
-			if (remote_sd != temp_sd && !remote_sd.isBuiltIn() && !remote_sd.hasMacroSpecies(found_sd)) {
+			if (remote_sd != temp_sd && !remote_sd.isBuiltIn() && remote_sd instanceof ISpeciesDescription rsd
+					&& !rsd.hasMacroSpecies(found_sd)) {
 				context.getContext()
 						.error("The variable " + varName + " is not accessible in this context (" + remote_sd.getName()
 								+ "), but in the context of " + found_sd.getName()
@@ -1291,10 +1292,12 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 * @return the i expression
 	 */
 	private IExpression resolveActionBehaviorAspect(final String varName, final IDescription ctx) {
-		final ISpeciesDescription sd = ctx.getSpeciesContext();
-		if (sd.hasAction(varName, false)) return new DenotedActionExpression(sd.getAction(varName));
-		if (sd.hasBehavior(varName)) return new DenotedActionExpression(sd.getBehavior(varName));
-		if (sd.hasAspect(varName)) return new DenotedActionExpression(sd.getAspect(varName));
+		final ITypeDescription td = ctx.getTypeContext();
+		if (td.hasAction(varName, false)) return new DenotedActionExpression(td.getAction(varName));
+		if (td instanceof ISpeciesDescription sd) {
+			if (sd.hasBehavior(varName)) return new DenotedActionExpression(sd.getBehavior(varName));
+			if (sd.hasAspect(varName)) return new DenotedActionExpression(sd.getAspect(varName));
+		}
 		return null;
 	}
 
@@ -1335,7 +1338,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 * @return the i expression
 	 */
 	private IExpression returnSelfOrSuper(final String name, final EObject object, final boolean isSuper) {
-		final ISpeciesDescription sd = context.getContext().getSpeciesContext();
+		final ITypeDescription sd = context.getContext().getTypeContext();
 		if (sd == null) {
 			context.getContext().error("Unable to determine the species of " + name, IGamlIssue.GENERAL, object);
 			return null;

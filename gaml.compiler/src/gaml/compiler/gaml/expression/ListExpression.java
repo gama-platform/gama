@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 import com.google.common.collect.Iterables;
 
 import gama.api.compilation.artefacts.IArtefact;
-import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
@@ -210,7 +210,7 @@ public class ListExpression extends AbstractExpression implements IOperator, IEx
 	}
 
 	@Override
-	public void collectUsedVarsOf(final ISpeciesDescription species,
+	public void collectUsedVarsOf(final ITypeDescription species,
 			final ICollector<IVarDescriptionUser> alreadyProcessed, final ICollector<IVariableDescription> result) {
 		if (alreadyProcessed.contains(this)) return;
 		alreadyProcessed.add(this);

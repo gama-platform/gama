@@ -46,27 +46,34 @@ import gama.api.utils.interfaces.IDisposable;
  * parsing, carries structural and type information, is validated against the GAML grammar and type system, and finally
  * compiled into a runnable {@link ISymbol}.
  *
- * <p>Descriptions form a tree that mirrors the syntactic structure of a model: a model description contains species
+ * <p>
+ * Descriptions form a tree that mirrors the syntactic structure of a model: a model description contains species
  * descriptions, which in turn contain variable and action descriptions, and so on. Each node in the tree knows its
  * {@linkplain #getEnclosingDescription() enclosing description} and provides navigational helpers to walk up and down
- * the tree.</p>
+ * the tree.
+ * </p>
  *
- * <p>A description also acts as a facet container: every GAML keyword can have a set of named
- * {@linkplain #getFacet(String) facets} (attributes), each backed by an {@link IExpressionDescription} that is
- * resolved and type-checked during validation.</p>
+ * <p>
+ * A description also acts as a facet container: every GAML keyword can have a set of named
+ * {@linkplain #getFacet(String) facets} (attributes), each backed by an {@link IExpressionDescription} that is resolved
+ * and type-checked during validation.
+ * </p>
  *
- * <p>Descriptions are disposable: once no longer needed they must be {@linkplain #dispose() disposed} to release
- * their internal state. The {@link #DISPOSING_VISITOR} constant provides a ready-to-use visitor for that
- * purpose.</p>
+ * <p>
+ * Descriptions are disposable: once no longer needed they must be {@linkplain #dispose() disposed} to release their
+ * internal state. The {@link #DISPOSING_VISITOR} constant provides a ready-to-use visitor for that purpose.
+ * </p>
  *
- * <p>This interface extends:</p>
+ * <p>
+ * This interface extends:
+ * </p>
  * <ul>
- *   <li>{@link IGamlDescription} – provides name and documentation access.</li>
- *   <li>{@link ITyped} – exposes the GAML type of the described element.</li>
- *   <li>{@link IDisposable} – lifecycle management.</li>
- *   <li>{@link IVarDescriptionProvider} – ability to declare and look up variable descriptions.</li>
- *   <li>{@link IVarDescriptionUser} – ability to reference variables declared elsewhere.</li>
- *   <li>{@link IBenchmarkable} – support for performance benchmarking.</li>
+ * <li>{@link IGamlDescription} – provides name and documentation access.</li>
+ * <li>{@link ITyped} – exposes the GAML type of the described element.</li>
+ * <li>{@link IDisposable} – lifecycle management.</li>
+ * <li>{@link IVarDescriptionProvider} – ability to declare and look up variable descriptions.</li>
+ * <li>{@link IVarDescriptionUser} – ability to reference variables declared elsewhere.</li>
+ * <li>{@link IBenchmarkable} – support for performance benchmarking.</li>
  * </ul>
  *
  * @author Alexis Drogoul, IRD/SU UMMISCO – initial design and implementation
@@ -101,8 +108,8 @@ public interface IDescription
 	ISymbolSerializer SPECIES_SERIALIZER = new SpeciesSerializer();
 
 	/**
-	 * Serializer dedicated to model descriptions. It handles the top-level {@code model} keyword and all its
-	 * structural children.
+	 * Serializer dedicated to model descriptions. It handles the top-level {@code model} keyword and all its structural
+	 * children.
 	 */
 	ISymbolSerializer MODEL_SERIALIZER = new ModelSerializer();
 
@@ -115,8 +122,10 @@ public interface IDescription
 	 * Immutable set of facet names whose value can influence the GAML type of the described symbol. When any of these
 	 * facets is present on a description, the type inference engine will consult it during type resolution.
 	 *
-	 * <p>Current members: {@code value}, {@code type}, {@code as}, {@code species}, {@code of}, {@code over},
-	 * {@code from}, {@code index}, {@code function}, {@code update}, {@code init}, {@code default}.</p>
+	 * <p>
+	 * Current members: {@code value}, {@code type}, {@code as}, {@code species}, {@code of}, {@code over},
+	 * {@code from}, {@code index}, {@code function}, {@code update}, {@code init}, {@code default}.
+	 * </p>
 	 */
 	Set<String> typeProviderFacets = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(IKeyword.VALUE,
 			IKeyword.TYPE, IKeyword.AS, IKeyword.SPECIES, IKeyword.OF, IKeyword.OVER, IKeyword.FROM, IKeyword.INDEX,
@@ -136,9 +145,12 @@ public interface IDescription
 	 * A visitor that can be applied to a tree of {@link IDescription} nodes. Implementations return {@code true} to
 	 * continue the traversal and {@code false} to prune the current branch (stop descending into children).
 	 *
-	 * <p>This is a specialisation of {@link ConsumerWithPruning} typed to {@code IDescription} sub-types.</p>
+	 * <p>
+	 * This is a specialisation of {@link ConsumerWithPruning} typed to {@code IDescription} sub-types.
+	 * </p>
 	 *
-	 * @param <T> the concrete {@code IDescription} sub-type accepted by this visitor
+	 * @param <T>
+	 *            the concrete {@code IDescription} sub-type accepted by this visitor
 	 */
 	@FunctionalInterface
 	public interface DescriptionVisitor<T extends IDescription> extends ConsumerWithPruning<T> {}
@@ -147,8 +159,9 @@ public interface IDescription
 	 * A visitor that is applied to the facets of a description. Each call receives the facet name and its
 	 * {@link IExpressionDescription}. Returning {@code false} stops the iteration.
 	 *
-	 * <p>This is a specialisation of {@link BiConsumerWithPruning} for {@code (String, IExpressionDescription)}
-	 * pairs.</p>
+	 * <p>
+	 * This is a specialisation of {@link BiConsumerWithPruning} for {@code (String, IExpressionDescription)} pairs.
+	 * </p>
 	 */
 	@FunctionalInterface
 	public interface IFacetVisitor extends BiConsumerWithPruning<String, IExpressionDescription> {}
@@ -158,8 +171,8 @@ public interface IDescription
 	// =========================================================================
 
 	/**
-	 * A ready-to-use {@link DescriptionVisitor} that {@linkplain #validate() validates} each description it visits.
-	 * The traversal continues as long as validation succeeds (returns a non-{@code null} description).
+	 * A ready-to-use {@link DescriptionVisitor} that {@linkplain #validate() validates} each description it visits. The
+	 * traversal continues as long as validation succeeds (returns a non-{@code null} description).
 	 */
 	DescriptionVisitor<IDescription> VALIDATING_VISITOR = desc -> (desc.validate() != null);
 
@@ -269,7 +282,8 @@ public interface IDescription
 	/**
 	 * Sets the origin name of this description.
 	 *
-	 * @param name the new origin name
+	 * @param name
+	 *            the new origin name
 	 */
 	void setOriginName(String name);
 
@@ -282,7 +296,8 @@ public interface IDescription
 	 * Records the identifier of the Eclipse plug-in that contributed this description. This is used by the
 	 * documentation and serialization frameworks to locate the source of built-in constructs.
 	 *
-	 * @param plugin the bundle symbolic name of the defining plug-in
+	 * @param plugin
+	 *            the bundle symbolic name of the defining plug-in
 	 */
 	void setDefiningPlugin(String plugin);
 
@@ -301,7 +316,8 @@ public interface IDescription
 	/**
 	 * Sets the enclosing description of this node, linking it into the description tree.
 	 *
-	 * @param desc the new enclosing description
+	 * @param desc
+	 *            the new enclosing description
 	 */
 	void setEnclosingDescription(final IDescription desc);
 
@@ -319,13 +335,14 @@ public interface IDescription
 	 *
 	 * @return the nearest species context, or {@code null}
 	 */
-	ISpeciesDescription getSpeciesContext();
+	ITypeDescription getTypeContext();
 
 	/**
 	 * Returns {@code true} if this description is a direct or indirect child of a description whose keyword equals
 	 * {@code ancestor}.
 	 *
-	 * @param ancestor the keyword to look for among ancestors
+	 * @param ancestor
+	 *            the keyword to look for among ancestors
 	 * @return {@code true} if such an ancestor exists in the enclosing chain
 	 */
 	default boolean isIn(final String ancestor) {
@@ -336,10 +353,11 @@ public interface IDescription
 	}
 
 	/**
-	 * Walks up the enclosing chain and returns the first {@link IDescription} whose keyword equals {@code ancestor},
-	 * or {@code null} if no such description exists.
+	 * Walks up the enclosing chain and returns the first {@link IDescription} whose keyword equals {@code ancestor}, or
+	 * {@code null} if no such description exists.
 	 *
-	 * @param ancestor the keyword to search for
+	 * @param ancestor
+	 *            the keyword to search for
 	 * @return the first enclosing description with the given keyword, or {@code null}
 	 */
 	default IDescription getParentWithKeyword(final String ancestor) {
@@ -364,7 +382,8 @@ public interface IDescription
 	/**
 	 * Returns all direct children whose keyword matches the given string.
 	 *
-	 * @param keyword the keyword to filter by
+	 * @param keyword
+	 *            the keyword to filter by
 	 * @return an {@link Iterable} of matching children; never {@code null}
 	 */
 	Iterable<IDescription> getChildrenWithKeyword(String keyword);
@@ -372,7 +391,8 @@ public interface IDescription
 	/**
 	 * Returns the first direct child whose keyword matches the given string, or {@code null} if none exists.
 	 *
-	 * @param keyword the keyword to search for
+	 * @param keyword
+	 *            the keyword to search for
 	 * @return the first matching child, or {@code null}
 	 */
 	IDescription getChildWithKeyword(String keyword);
@@ -381,15 +401,17 @@ public interface IDescription
 	 * Adds a child description to this node. Default implementation is a no-op; override in concrete classes that
 	 * support children.
 	 *
-	 * @param child the child description to add
+	 * @param child
+	 *            the child description to add
 	 */
 	default void addChild(final IDescription child) {}
 
 	/**
-	 * Replaces all current children of this description with the given collection. Existing children are discarded
-	 * (but <em>not</em> automatically disposed).
+	 * Replaces all current children of this description with the given collection. Existing children are discarded (but
+	 * <em>not</em> automatically disposed).
 	 *
-	 * @param array the new children; must not be {@code null}
+	 * @param array
+	 *            the new children; must not be {@code null}
 	 */
 	void replaceChildrenWith(Iterable<IDescription> array);
 
@@ -401,18 +423,21 @@ public interface IDescription
 	 * Walks up the description tree to find the nearest {@link IVarDescriptionProvider} that declares a variable with
 	 * the given name.
 	 *
-	 * @param name the variable name to look up
+	 * @param name
+	 *            the variable name to look up
 	 * @return the provider that declares the variable, or {@code null} if not found
 	 */
 	IVarDescriptionProvider getDescriptionDeclaringVar(final String name);
 
 	/**
-	 * Walks up the description tree to find the nearest {@link ITypeDescription} that declares an action with the
-	 * given name.
+	 * Walks up the description tree to find the nearest {@link ITypeDescription} that declares an action with the given
+	 * name.
 	 *
-	 * @param name            the action name to look up
-	 * @param superInvocation {@code true} if the lookup should start one level above the current description (used for
-	 *                        {@code super} calls)
+	 * @param name
+	 *            the action name to look up
+	 * @param superInvocation
+	 *            {@code true} if the lookup should start one level above the current description (used for
+	 *            {@code super} calls)
 	 * @return the type description that declares the action, or {@code null} if not found
 	 */
 	ITypeDescription getDescriptionDeclaringAction(final String name, boolean superInvocation);
@@ -420,7 +445,8 @@ public interface IDescription
 	/**
 	 * Looks up a species description by name, searching first in the enclosing model and then in known types.
 	 *
-	 * @param actualSpecies the species name
+	 * @param actualSpecies
+	 *            the species name
 	 * @return the matching {@link ISpeciesDescription}, or {@code null} if not found
 	 */
 	ISpeciesDescription getSpeciesDescription(String actualSpecies);
@@ -429,7 +455,8 @@ public interface IDescription
 	 * Returns the action description with the given name that is visible from within this description, or {@code null}
 	 * if no such action exists.
 	 *
-	 * @param name the action name
+	 * @param name
+	 *            the action name
 	 * @return the {@link IActionDescription}, or {@code null}
 	 */
 	IActionDescription getAction(String name);
@@ -438,7 +465,8 @@ public interface IDescription
 	 * Returns a named {@link IType} that is visible from within this description. The search follows the scoping rules
 	 * of GAML (current species → model → built-in types).
 	 *
-	 * @param s the type name
+	 * @param s
+	 *            the type name
 	 * @return the corresponding {@link IType}, or {@code null} if not found
 	 */
 	IType getTypeNamed(String s);
@@ -446,7 +474,8 @@ public interface IDescription
 	/**
 	 * Returns {@code true} if this description (or any scope it delegates to) provides a variable named {@code name}.
 	 *
-	 * @param name the variable name to test
+	 * @param name
+	 *            the variable name to test
 	 * @return {@code true} if the variable is visible from this description
 	 */
 	boolean manipulatesVar(final String name);
@@ -455,7 +484,8 @@ public interface IDescription
 	 * Attaches an alternate {@link IVarDescriptionProvider} to this description. The alternate provider is consulted
 	 * after the description itself when resolving variable references.
 	 *
-	 * @param vp the provider to attach; must not be {@code null}
+	 * @param vp
+	 *            the provider to attach; must not be {@code null}
 	 */
 	void attachAlternateVarDescriptionProvider(final IVarDescriptionProvider vp);
 
@@ -474,7 +504,8 @@ public interface IDescription
 	/**
 	 * Returns {@code true} if this description has a facet with the given name.
 	 *
-	 * @param name the facet name to test
+	 * @param name
+	 *            the facet name to test
 	 * @return {@code true} if the facet is present
 	 */
 	boolean hasFacet(String name);
@@ -483,7 +514,8 @@ public interface IDescription
 	 * Returns the {@link IExpressionDescription} associated with the given facet name, or {@code null} if the facet is
 	 * absent.
 	 *
-	 * @param name the facet name
+	 * @param name
+	 *            the facet name
 	 * @return the expression description, or {@code null}
 	 */
 	IExpressionDescription getFacet(String name);
@@ -492,7 +524,8 @@ public interface IDescription
 	 * Returns the {@link IExpressionDescription} associated with the first facet name (in argument order) that is
 	 * present on this description, or {@code null} if none is found.
 	 *
-	 * @param names one or more facet names to test, in priority order
+	 * @param names
+	 *            one or more facet names to test, in priority order
 	 * @return the first matching expression description, or {@code null}
 	 */
 	IExpressionDescription getFacet(String... names);
@@ -501,7 +534,8 @@ public interface IDescription
 	 * Returns the name of the first facet (among those provided) that is present on this description, or {@code null}
 	 * if none is found.
 	 *
-	 * @param names one or more facet names to test, in priority order
+	 * @param names
+	 *            one or more facet names to test, in priority order
 	 * @return the first present facet name, or {@code null}
 	 */
 	String firstFacetFoundAmong(final String... names);
@@ -510,7 +544,8 @@ public interface IDescription
 	 * Returns the compiled {@link IExpression} for the first facet name (in argument order) that is present and has
 	 * been compiled, or {@code null} if no such facet exists.
 	 *
-	 * @param names one or more facet names to test, in priority order
+	 * @param names
+	 *            one or more facet names to test, in priority order
 	 * @return the first compiled expression, or {@code null}
 	 */
 	IExpression getFacetExpr(final String... names);
@@ -519,7 +554,8 @@ public interface IDescription
 	 * Returns the literal string value of the facet with the given name (as written in the source model), or
 	 * {@code null} if the facet is absent or does not have a plain literal value.
 	 *
-	 * @param name the facet name
+	 * @param name
+	 *            the facet name
 	 * @return the literal value string, or {@code null}
 	 */
 	String getLitteral(String name);
@@ -527,8 +563,10 @@ public interface IDescription
 	/**
 	 * Assigns an {@link IExpressionDescription} to the named facet, replacing any existing value.
 	 *
-	 * @param name the facet name
-	 * @param exp  the new expression description; must not be {@code null}
+	 * @param name
+	 *            the facet name
+	 * @param exp
+	 *            the new expression description; must not be {@code null}
 	 */
 	void setFacetExprDescription(String name, IExpressionDescription exp);
 
@@ -536,15 +574,18 @@ public interface IDescription
 	 * Assigns a compiled {@link IExpression} to the named facet, wrapping it in an expression description
 	 * automatically.
 	 *
-	 * @param name the facet name
-	 * @param exp  the compiled expression; must not be {@code null}
+	 * @param name
+	 *            the facet name
+	 * @param exp
+	 *            the compiled expression; must not be {@code null}
 	 */
 	void setFacet(String name, IExpression exp);
 
 	/**
 	 * Removes one or more facets from this description. Has no effect for facet names that are not present.
 	 *
-	 * @param names the names of the facets to remove
+	 * @param names
+	 *            the names of the facets to remove
 	 */
 	void removeFacets(String... names);
 
@@ -555,7 +596,8 @@ public interface IDescription
 	/**
 	 * Visits all facets of this description. Equivalent to {@code visitFacets(null, visitor)}.
 	 *
-	 * @param visitor the facet visitor to apply; returning {@code false} stops the iteration
+	 * @param visitor
+	 *            the facet visitor to apply; returning {@code false} stops the iteration
 	 * @return {@code true} if all facets were visited, {@code false} if iteration was stopped early
 	 */
 	default boolean visitFacets(final IFacetVisitor visitor) {
@@ -566,17 +608,20 @@ public interface IDescription
 	 * Visits a restricted set of facets on this description. Only facets whose names are contained in {@code facets}
 	 * are passed to the visitor. If {@code facets} is {@code null} all facets are visited.
 	 *
-	 * @param facets  the set of facet names to restrict the visit to, or {@code null} to visit all facets
-	 * @param visitor the facet visitor to apply; returning {@code false} stops the iteration
+	 * @param facets
+	 *            the set of facet names to restrict the visit to, or {@code null} to visit all facets
+	 * @param visitor
+	 *            the facet visitor to apply; returning {@code false} stops the iteration
 	 * @return {@code true} if all targeted facets were visited, {@code false} if iteration was stopped early
 	 */
 	boolean visitFacets(Set<String> facets, IFacetVisitor visitor);
 
 	/**
-	 * Visits the direct children of this description that have been explicitly declared by the user (i.e. the
-	 * "own" children, as opposed to inherited ones).
+	 * Visits the direct children of this description that have been explicitly declared by the user (i.e. the "own"
+	 * children, as opposed to inherited ones).
 	 *
-	 * @param visitor the visitor to apply; returning {@code false} prunes the subtree
+	 * @param visitor
+	 *            the visitor to apply; returning {@code false} prunes the subtree
 	 * @return {@code true} if all own children were visited, {@code false} if the visit was pruned
 	 */
 	boolean visitOwnChildren(DescriptionVisitor<IDescription> visitor);
@@ -585,7 +630,8 @@ public interface IDescription
 	 * Recursively visits all own children of this description (depth-first). The visitor is called on each node;
 	 * returning {@code false} prunes that node's subtree.
 	 *
-	 * @param visitor the visitor to apply
+	 * @param visitor
+	 *            the visitor to apply
 	 * @return {@code true} if all nodes were visited, {@code false} if the visit was pruned somewhere
 	 */
 	boolean visitOwnChildrenRecursively(DescriptionVisitor<IDescription> visitor);
@@ -595,7 +641,8 @@ public interface IDescription
 	 * members). For most descriptions this is equivalent to {@link #visitOwnChildren}, but species and model
 	 * descriptions may include additional members.
 	 *
-	 * @param visitor the visitor to apply; returning {@code false} prunes the traversal
+	 * @param visitor
+	 *            the visitor to apply; returning {@code false} prunes the traversal
 	 * @return {@code true} if all children were visited, {@code false} if the visit was pruned
 	 */
 	boolean visitChildren(DescriptionVisitor<IDescription> visitor);
@@ -604,16 +651,19 @@ public interface IDescription
 	 * Collects variables of the given species that are referenced (used) by expressions in this description or any of
 	 * its children. Results are accumulated in {@code result}.
 	 *
-	 * <p>Overrides the default implementation in {@link IVarDescriptionUser} by walking both facets and own
-	 * children.</p>
+	 * <p>
+	 * Overrides the default implementation in {@link IVarDescriptionUser} by walking both facets and own children.
+	 * </p>
 	 *
-	 * @param species          the species whose variables are of interest
-	 * @param alreadyProcessed a collector used to avoid infinite recursion; descriptions already in this set are
-	 *                         skipped
-	 * @param result           accumulator for the variable descriptions found
+	 * @param species
+	 *            the species whose variables are of interest
+	 * @param alreadyProcessed
+	 *            a collector used to avoid infinite recursion; descriptions already in this set are skipped
+	 * @param result
+	 *            accumulator for the variable descriptions found
 	 */
 	@Override
-	default void collectUsedVarsOf(final ISpeciesDescription species,
+	default void collectUsedVarsOf(final ITypeDescription species,
 			final ICollector<IVarDescriptionUser> alreadyProcessed, final ICollector<IVariableDescription> result) {
 		if (alreadyProcessed.contains(this)) return;
 		alreadyProcessed.add(this);
@@ -653,7 +703,8 @@ public interface IDescription
 	 * Copies this description into the given target description. The copy is a deep structural clone whose enclosing
 	 * description is set to {@code into}.
 	 *
-	 * @param into the new enclosing description for the copy
+	 * @param into
+	 *            the new enclosing description for the copy
 	 * @return a new {@code IDescription} that is a copy of this one, enclosed in {@code into}
 	 */
 	IDescription copy(IDescription into);
@@ -681,73 +732,98 @@ public interface IDescription
 	/**
 	 * Reports an error on the primary element of this description using no specific error code.
 	 *
-	 * @param message the human-readable error message
+	 * @param message
+	 *            the human-readable error message
 	 */
 	void error(final String message);
 
 	/**
 	 * Reports an error on the primary element of this description.
 	 *
-	 * @param message the human-readable error message
-	 * @param code    a symbolic error code (used by the IDE for quick-fixes and filtering)
+	 * @param message
+	 *            the human-readable error message
+	 * @param code
+	 *            a symbolic error code (used by the IDE for quick-fixes and filtering)
 	 */
 	void error(final String message, String code);
 
 	/**
 	 * Reports an error on a named sub-element (facet) of this description.
 	 *
-	 * @param message the human-readable error message
-	 * @param code    a symbolic error code
-	 * @param element the name of the facet or sub-element on which the error should be placed
-	 * @param data    optional additional data passed to the error processor (e.g. quick-fix hints)
+	 * @param message
+	 *            the human-readable error message
+	 * @param code
+	 *            a symbolic error code
+	 * @param element
+	 *            the name of the facet or sub-element on which the error should be placed
+	 * @param data
+	 *            optional additional data passed to the error processor (e.g. quick-fix hints)
 	 */
 	void error(final String message, String code, String element, String... data);
 
 	/**
 	 * Reports an error on a specific {@link EObject} node inside this description's underlying EMF resource.
 	 *
-	 * @param message the human-readable error message
-	 * @param code    a symbolic error code
-	 * @param element the EMF object on which the error should be placed
-	 * @param data    optional additional data passed to the error processor
+	 * @param message
+	 *            the human-readable error message
+	 * @param code
+	 *            a symbolic error code
+	 * @param element
+	 *            the EMF object on which the error should be placed
+	 * @param data
+	 *            optional additional data passed to the error processor
 	 */
 	void error(final String message, String code, EObject element, String... data);
 
 	/**
 	 * Reports a warning on the primary element of this description.
 	 *
-	 * @param message the human-readable warning message
-	 * @param code    a symbolic warning code
+	 * @param message
+	 *            the human-readable warning message
+	 * @param code
+	 *            a symbolic warning code
 	 */
 	void warning(final String message, String code);
 
 	/**
 	 * Reports a warning on a named sub-element (facet) of this description.
 	 *
-	 * @param message the human-readable warning message
-	 * @param code    a symbolic warning code
-	 * @param element the name of the facet or sub-element on which the warning should be placed
-	 * @param data    optional additional data passed to the warning processor
+	 * @param message
+	 *            the human-readable warning message
+	 * @param code
+	 *            a symbolic warning code
+	 * @param element
+	 *            the name of the facet or sub-element on which the warning should be placed
+	 * @param data
+	 *            optional additional data passed to the warning processor
 	 */
 	void warning(final String message, String code, String element, String... data);
 
 	/**
 	 * Reports a warning on a specific {@link EObject} node inside this description's underlying EMF resource.
 	 *
-	 * @param message the human-readable warning message
-	 * @param code    a symbolic warning code
-	 * @param element the EMF object on which the warning should be placed
-	 * @param data    optional additional data passed to the warning processor
+	 * @param message
+	 *            the human-readable warning message
+	 * @param code
+	 *            a symbolic warning code
+	 * @param element
+	 *            the EMF object on which the warning should be placed
+	 * @param data
+	 *            optional additional data passed to the warning processor
 	 */
 	void warning(final String message, String code, EObject element, String... data);
 
 	/**
 	 * Reports an informational message associated with a named facet of this description.
 	 *
-	 * @param message the informational text
-	 * @param code    a symbolic info code
-	 * @param facet   the name of the facet the info is related to
-	 * @param data    optional additional data
+	 * @param message
+	 *            the informational text
+	 * @param code
+	 *            a symbolic info code
+	 * @param facet
+	 *            the name of the facet the info is related to
+	 * @param data
+	 *            optional additional data
 	 */
 	void info(final String message, final String code, final String facet, final String... data);
 
@@ -755,18 +831,24 @@ public interface IDescription
 	 * Reports an informational message associated with a specific {@link EObject} node inside this description's
 	 * underlying EMF resource.
 	 *
-	 * @param message the informational text
-	 * @param code    a symbolic info code
-	 * @param facet   the EMF object the info is related to
-	 * @param data    optional additional data
+	 * @param message
+	 *            the informational text
+	 * @param code
+	 *            a symbolic info code
+	 * @param facet
+	 *            the EMF object the info is related to
+	 * @param data
+	 *            optional additional data
 	 */
 	void info(final String message, final String code, final EObject facet, final String... data);
 
 	/**
 	 * Reports an informational message on the primary element of this description.
 	 *
-	 * @param message the informational text
-	 * @param code    a symbolic info code
+	 * @param message
+	 *            the informational text
+	 * @param code
+	 *            a symbolic info code
 	 */
 	void info(final String message, final String code);
 
@@ -779,10 +861,11 @@ public interface IDescription
 	 * expression object can be provided to retrieve the element that corresponds to a specific facet rather than the
 	 * root element of the description.
 	 *
-	 * @param facet       a facet name ({@link String}) or expression object whose underlying element is requested;
-	 *                    {@code null} returns the root element
-	 * @param returnFacet if {@code true}, return the element that represents the facet key itself rather than its
-	 *                    value
+	 * @param facet
+	 *            a facet name ({@link String}) or expression object whose underlying element is requested; {@code null}
+	 *            returns the root element
+	 * @param returnFacet
+	 *            if {@code true}, return the element that represents the facet key itself rather than its value
 	 * @return the underlying {@link EObject}; may be {@code null} for built-in descriptions
 	 */
 	EObject getUnderlyingElement(Object facet, boolean returnFacet);
@@ -796,8 +879,8 @@ public interface IDescription
 	default EObject getUnderlyingElement() { return getUnderlyingElement(null, false); }
 
 	/**
-	 * Returns the {@link IArtefact.Symbol} that represents this description in the compiled artefact model.
-	 * This is the bridge between the description tree and the platform's artefact representation.
+	 * Returns the {@link IArtefact.Symbol} that represents this description in the compiled artefact model. This is the
+	 * bridge between the description tree and the platform's artefact representation.
 	 *
 	 * @return the artefact symbol; may be {@code null} before compilation
 	 */
@@ -809,8 +892,7 @@ public interface IDescription
 
 	/**
 	 * Returns the {@link ISymbolSerializer} that knows how to serialize this description back into GAML source text.
-	 * The appropriate serializer is selected based on the kind of description (model, species, variable, statement,
-	 * …).
+	 * The appropriate serializer is selected based on the kind of description (model, species, variable, statement, …).
 	 *
 	 * @return the serializer; never {@code null}
 	 */

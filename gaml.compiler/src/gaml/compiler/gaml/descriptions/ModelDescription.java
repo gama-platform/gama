@@ -632,7 +632,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	public ITypesManager getTypesManager() { return types; }
 
 	@Override
-	public SpeciesDescription getSpeciesContext() { return this; }
+	public SpeciesDescription getTypeContext() { return this; }
 
 	/**
 	 * Gets the experiment names.

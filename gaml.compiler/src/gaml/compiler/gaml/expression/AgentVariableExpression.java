@@ -11,7 +11,7 @@
 package gaml.compiler.gaml.expression;
 
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
@@ -20,7 +20,6 @@ import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IVarExpression;
-import gama.api.gaml.expressions.IVarExpression.Agent;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.GamlProperties;
@@ -51,7 +50,7 @@ public class AgentVariableExpression extends VariableExpression implements IVarE
 
 	@Override
 	public IExpression getOwner() {
-		return new SelfExpression(this.getDefinitionDescription().getSpeciesContext().getGamlType());
+		return new SelfExpression(this.getDefinitionDescription().getTypeContext().getGamlType());
 	}
 
 	@Override
@@ -69,7 +68,7 @@ public class AgentVariableExpression extends VariableExpression implements IVarE
 		final IDescription desc = getDefinitionDescription();
 		if (desc == null) return new GamlConstantDocumentation("Type " + type.getTitle());
 		IGamlDocumentation doc = new GamlRegularDocumentation(new StringBuilder());
-		final IVariableDescription var = desc.getSpeciesContext().getAttribute(name);
+		final IVariableDescription var = desc.getTypeContext().getAttribute(name);
 		doc.append("Type ").append(type.getTitle()).append("<br/>");
 		String builtInDoc = null;
 		if (var != null) { builtInDoc = var.getBuiltInDoc(); }
@@ -90,11 +89,11 @@ public class AgentVariableExpression extends VariableExpression implements IVarE
 	}
 
 	@Override
-	public void collectUsedVarsOf(final ISpeciesDescription species,
+	public void collectUsedVarsOf(final ITypeDescription species,
 			final ICollector<IVarDescriptionUser> alreadyProcessed, final ICollector<IVariableDescription> result) {
 		if (alreadyProcessed.contains(this)) return;
 		alreadyProcessed.add(this);
-		final ISpeciesDescription sd = this.getDefinitionDescription().getSpeciesContext();
+		final ITypeDescription sd = this.getDefinitionDescription().getTypeContext();
 		if (species.equals(sd) || species.hasParent(sd)) { result.add(sd.getAttribute(getName())); }
 	}
 

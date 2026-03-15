@@ -15,7 +15,7 @@ import java.util.function.Predicate;
 import com.google.common.collect.Iterables;
 
 import gama.api.compilation.artefacts.IArtefact;
-import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
@@ -186,6 +186,7 @@ public class MapExpression extends AbstractExpression implements IOperator, IExp
 	 *
 	 * @return the i expression[]
 	 */
+	@Override
 	public IExpression[] getValues() { return vals; }
 
 	/**
@@ -193,6 +194,7 @@ public class MapExpression extends AbstractExpression implements IOperator, IExp
 	 *
 	 * @return the elements
 	 */
+	@Override
 	public IMap<IExpression, IExpression> getElements() {
 		// TODO Verify the key and content types in that case...
 		final IMap result = GamaMapFactory.create(type.getKeyType(), type.getContentType(), keys.length);
@@ -242,7 +244,7 @@ public class MapExpression extends AbstractExpression implements IOperator, IExp
 	}
 
 	@Override
-	public void collectUsedVarsOf(final ISpeciesDescription species,
+	public void collectUsedVarsOf(final ITypeDescription species,
 			final ICollector<IVarDescriptionUser> alreadyProcessed, final ICollector<IVariableDescription> result) {
 		if (alreadyProcessed.contains(this)) return;
 		alreadyProcessed.add(this);

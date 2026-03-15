@@ -174,7 +174,7 @@ public class EventLayerStatement extends AbstractLayerStatement implements ILaye
 				IActionDescription sd = description.getModelDescription().getAction(actionName);
 				if (sd == null) {
 					// we look into the experiment
-					final IDescription superDesc = description.getSpeciesContext();
+					final IDescription superDesc = description.getTypeContext();
 					sd = superDesc.getAction(actionName);
 				}
 				if (sd == null) {
@@ -218,7 +218,7 @@ public class EventLayerStatement extends AbstractLayerStatement implements ILaye
 		executesInSimulation = false;
 		if (description.hasFacet(IKeyword.ACTION)) {
 			actionName = description.getLitteral(IKeyword.ACTION);
-			final IActionDescription sd = description.getSpeciesContext().getAction(actionName);
+			final IActionDescription sd = description.getTypeContext().getAction(actionName);
 			executesInSimulation = sd == null;
 		}
 		trigger = description.getLitteral(TRIGGER);

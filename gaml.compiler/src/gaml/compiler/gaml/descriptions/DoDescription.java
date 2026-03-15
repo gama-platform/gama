@@ -152,7 +152,7 @@ public class DoDescription extends StatementDescription {
 	public ITypeDescription getDescriptionDeclaringAction(final String aName, final boolean superInvocation) {
 		IExpressionDescription target = getFacet(IKeyword.SYNTHETIC_DO_TARGET);
 		if (target == null) {
-			lookupContext = getSpeciesContext();
+			lookupContext = getTypeContext();
 			return super.getDescriptionDeclaringAction(aName, superInvocation);
 		}
 		// Handle the case where target is not null (e.g., target-specific action)
@@ -169,7 +169,7 @@ public class DoDescription extends StatementDescription {
 	 * @return the declaration context name
 	 */
 	private String getLookupContextName() {
-		return lookupContext == null ? getSpeciesContext().getName() : lookupContext.getName();
+		return lookupContext == null ? getTypeContext().getName() : lookupContext.getName();
 	}
 
 	/**
@@ -178,7 +178,7 @@ public class DoDescription extends StatementDescription {
 	 * @return the actual species name
 	 */
 	private String getActualSpeciesName() {
-		return actualTargetSpecies == null ? getSpeciesContext().getName() : actualTargetSpecies.getName();
+		return actualTargetSpecies == null ? getTypeContext().getName() : actualTargetSpecies.getName();
 	}
 
 	@Override

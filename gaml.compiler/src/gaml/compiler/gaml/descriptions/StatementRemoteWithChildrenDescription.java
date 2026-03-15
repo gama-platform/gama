@@ -80,7 +80,7 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 
 		final ITypeDescription sd = getGamlType().getDenotedSpecies();
 		if (sd != null) {
-			final IType t = getSpeciesContext().getGamlType();
+			final IType t = getTypeContext().getGamlType();
 			addTemp(this, null, MYSELF, t);
 			setEnclosingDescription(sd);
 		}
@@ -140,7 +140,7 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 		final ITypeDescription denotedSpecies = getGamlType().getDenotedSpecies();
 		IDescription previousEnclosingDescription = null;
 		if (denotedSpecies != null) {
-			final ITypeDescription s = getSpeciesContext();
+			final ITypeDescription s = getTypeContext();
 			if (s != null) {
 				final IType t = s.getGamlType();
 				addTemp(this, null, MYSELF, t);
