@@ -371,6 +371,7 @@ public class ModelFactory implements IModelFactory {
 			final Map<String, ISyntacticElement> experimentNodes,
 			final Map<String, ITypeDescription> tempSpeciesCache) {
 		speciesNodes.forEach((s, speciesNode) -> { addMicroSpecies(model, speciesNode, tempSpeciesCache); });
+		classNodes.forEach((s, classNode) -> { addClass(model, classNode, tempSpeciesCache); });
 		experimentNodes.forEach((s, experimentNode) -> { addExperiment(s, model, experimentNode, tempSpeciesCache); });
 	}
 
@@ -787,6 +788,27 @@ public class ModelFactory implements IModelFactory {
 		final SyntacticVisitor visitor = element -> addMicroSpecies(mDesc, element, cache);
 		micro.visitSpecies(visitor);
 		micro.visitExperiments(visitor);
+	}
+
+	/**
+	 * Adds the class.
+	 *
+	 * @param macro
+	 *            the macro
+	 * @param classNode
+	 *            the class node
+	 * @param cache
+	 *            the cache
+	 */
+	void addClass(final ISpeciesDescription macro, final ISyntacticElement classNode,
+			final Map<String, ITypeDescription> cache) {
+		// Create the class description without any children. Passing
+		// explicitly an empty list and not null;
+		final IClassDescription cDesc =
+				(IClassDescription) GAML.getDescriptionFactory().create(classNode, macro, Collections.emptyList());
+		cache.put(cDesc.getName(), cDesc);
+		// Add it to its macro-species
+		macro.addChild(cDesc);
 	}
 
 	/**

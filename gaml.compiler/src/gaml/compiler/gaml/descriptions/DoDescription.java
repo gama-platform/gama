@@ -11,6 +11,7 @@
 package gaml.compiler.gaml.descriptions;
 
 import static gama.annotations.constants.IKeyword.ACTION;
+import static gama.annotations.constants.IKeyword.INTERNAL_FUNCTION;
 import static gama.annotations.constants.IKeyword.WITH;
 
 import org.eclipse.emf.ecore.EObject;
@@ -123,14 +124,6 @@ public class DoDescription extends StatementDescription {
 	}
 
 	/**
-	 * Checks if is super invocation.
-	 *
-	 * @return true, if is super invocation
-	 */
-	@Override
-	public boolean isSuperInvocation() { return isSet(Flag.IsSuperInvocation); }
-
-	/**
 	 * Gets the action.
 	 *
 	 * @return the action
@@ -190,9 +183,15 @@ public class DoDescription extends StatementDescription {
 
 	@Override
 	public IDescription validate() {
+		IActionDescription a = getAction();
+		IExpressionDescription function = getFacet(INTERNAL_FUNCTION);
+		if (function != null) {
+			// Handle the internal function validation
+			function.compile(lookupContext);
+		}
 		IDescription result = super.validate();
 		if (result == null) return null;
-		IActionDescription a = getAction();
+
 		if (a == null) {
 			String actionName = getLitteral(ACTION);
 			error("Action " + actionName + " does not exist in " + getLookupContextName(), IGamlIssue.UNKNOWN_ACTION,
