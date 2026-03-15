@@ -91,11 +91,16 @@ public interface IExperimentDescription extends ISpeciesDescription {
 	/**
 	 * @return
 	 */
-	Boolean isBatch();
+	boolean isBatch();
 
 	/**
 	 * @return
 	 */
-	Boolean isMemorize();
+	boolean isMemorize();
+
+	/**
+	 * @return
+	 */
+	String getExperimentTitleFacet();
 
 }

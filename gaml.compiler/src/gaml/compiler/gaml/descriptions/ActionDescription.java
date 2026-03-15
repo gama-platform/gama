@@ -22,7 +22,6 @@ import java.util.stream.StreamSupport;
 import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IActionDescription;
@@ -46,9 +45,11 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 	/** The Constant NULL_ARGS. */
 	public static final Arguments NULL_ARGS = new Arguments();
 
-	/** 
+	/**
 	 * Cached list of argument names to avoid repeated stream operations.
-	 * <p><strong>Optimization:</strong> Computed once on first access and reused thereafter.</p>
+	 * <p>
+	 * <strong>Optimization:</strong> Computed once on first access and reused thereafter.
+	 * </p>
 	 */
 	private List<String> cachedArgNames;
 
@@ -69,10 +70,10 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 	public ActionDescription(final String keyword, final IDescription superDesc, final Iterable<IDescription> cp,
 			final EObject source, final Facets facets) {
 		super(keyword, superDesc, cp, true, source, facets, null);
-		setIf(Flag.Abstract, IKeyword.TRUE.equals(getLitteral(IKeyword.VIRTUAL)));
+		setIf(Flag.IsAbstract, IKeyword.TRUE.equals(getLitteral(IKeyword.VIRTUAL)));
 		if (getName() != null && getName().startsWith(IKeyword.SYNTHETIC)) {
-			set(Flag.Synthetic);
-			unSet(Flag.BuiltIn);
+			set(Flag.IsSynthetic);
+			unSet(Flag.IsBuiltIn);
 		}
 		removeFacets(IKeyword.VIRTUAL);
 	}
@@ -86,29 +87,19 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 	}
 
 	/**
-	 * Checks if is abstract.
-	 *
-	 * @return true, if is abstract
-	 */
-	@Override
-	public boolean isAbstract() { return isSet(Flag.Abstract); }
-
-	@Override
-	protected boolean isSynthetic() { return isSet(Flag.Synthetic); }
-
-	/**
 	 * Gets the list of argument names for this action.
-	 * 
-	 * <p><strong>Optimization:</strong> The result is cached on first call to avoid repeated
-	 * stream operations. This is safe because formal arguments don't change after construction.</p>
+	 *
+	 * <p>
+	 * <strong>Optimization:</strong> The result is cached on first call to avoid repeated stream operations. This is
+	 * safe because formal arguments don't change after construction.
+	 * </p>
 	 *
 	 * @return the list of argument names
 	 */
 	@Override
 	public List<String> getArgNames() {
 		if (cachedArgNames == null) {
-			cachedArgNames = StreamSupport.stream(getFormalArgs().spliterator(), false)
-					.map(TO_NAME)
+			cachedArgNames = StreamSupport.stream(getFormalArgs().spliterator(), false).map(TO_NAME)
 					.collect(Collectors.toList());
 		}
 		return cachedArgNames;
@@ -133,9 +124,7 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 			// Phase 2 Optimization: Replace stream with direct iteration
 			final List<IDescription> formalArgsWithoutDefault = new ArrayList<>();
 			for (final IDescription each : formalArgs) {
-				if (!each.hasFacet(DEFAULT)) {
-					formalArgsWithoutDefault.add(each);
-				}
+				if (!each.hasFacet(DEFAULT)) { formalArgsWithoutDefault.add(each); }
 			}
 			if (formalArgsWithoutDefault.isEmpty()) return true;
 		}

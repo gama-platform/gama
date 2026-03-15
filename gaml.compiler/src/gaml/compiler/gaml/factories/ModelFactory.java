@@ -38,11 +38,13 @@ import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.artefacts.IArtefact.Symbol;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.ast.ISyntacticElement.SyntacticVisitor;
+import gama.api.compilation.descriptions.IClassDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescription.DescriptionVisitor;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.factories.IModelFactory;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
@@ -53,6 +55,7 @@ import gama.api.kernel.GamaMetaModel;
 import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
+import gaml.compiler.gaml.ast.SyntacticClassElement;
 import gaml.compiler.gaml.ast.SyntacticFactory;
 import gaml.compiler.gaml.descriptions.ModelDescription;
 import gaml.compiler.gaml.validation.DocumentationContext;
@@ -240,11 +243,14 @@ public class ModelFactory implements IModelFactory {
 		/** The species nodes. */
 		final LinkedHashMap<String, ISyntacticElement> speciesNodes = new LinkedHashMap<>();
 
+		/** The class nodes. */
+		final LinkedHashMap<String, ISyntacticElement> classNodes = new LinkedHashMap<>();
+
 		/** The experiment nodes. */
 		final LinkedHashMap<String, ISyntacticElement> experimentNodes = new LinkedHashMap<>();
 
 		/** The temp species cache. */
-		final LinkedHashMap<String, ISpeciesDescription> tempSpeciesCache = new LinkedHashMap<>();
+		final LinkedHashMap<String, ITypeDescription> tempSpeciesCache = new LinkedHashMap<>();
 
 		final ISyntacticElement source = get(models, 0);
 
@@ -254,7 +260,7 @@ public class ModelFactory implements IModelFactory {
 		ISyntacticElement globalNodes = SyntacticFactory.getInstance().create(GLOBAL, (EObject) null, true);
 		for (int i = Iterables.size(models); i-- > 0;) {
 			globalFacets = extractAndAssembleElementsOf(collector, globalFacets, get(models, i), globalNodes,
-					speciesNodes, experimentNodes);
+					speciesNodes, classNodes, experimentNodes);
 		}
 
 		final String modelName = buildModelName(source.getName());
@@ -263,7 +269,6 @@ public class ModelFactory implements IModelFactory {
 		// be able to look for resources. These working paths come from the
 		// imported models
 
-		// DEBUG.OUT("In building " + modelName);
 		Set<String> absoluteAlternatePathAsStrings = buildWorkingPaths(mm, models);
 
 		final IModelDescription model = buildPrimaryModel(projectPath, modelPath, collector, doc, models, source,
@@ -277,12 +282,11 @@ public class ModelFactory implements IModelFactory {
 		// end-hqnghi
 		// recursively add user-defined species to world and down on to the
 		// hierarchy
-		addSpeciesAndExperiments(model, speciesNodes, experimentNodes, tempSpeciesCache);
+		addSpeciesAndExperiments(model, speciesNodes, classNodes, experimentNodes, tempSpeciesCache);
 
 		// Parent the species and the experiments of the model (all are now
 		// known).
-		parentSpeciesAndExperiments(model, speciesNodes, experimentNodes, tempSpeciesCache);
-
+		parentSpeciesAndExperiments(model, speciesNodes, classNodes, experimentNodes, tempSpeciesCache);
 		// Initialize the hierarchy of types
 		model.buildTypes();
 		// hqnghi build micro-models as types
@@ -295,7 +299,7 @@ public class ModelFactory implements IModelFactory {
 		// actions....
 		complementSpecies(model, globalNodes);
 
-		complementSpeciesAndExperiments(model, speciesNodes, experimentNodes);
+		complementSpeciesAndExperiments(model, speciesNodes, classNodes, experimentNodes);
 
 		// Complement recursively the different species (incl. the world). The
 		// recursion is hierarchical
@@ -304,13 +308,13 @@ public class ModelFactory implements IModelFactory {
 
 		for (final ISpeciesDescription sd : getSpeciesInHierarchicalOrder(model)) {
 			sd.inheritFromParent();
-			if (sd.isExperiment() && !sd.finalizeDescription()) return null;
+			if (sd.isExperiment() && !sd.initializeMirrorsAndSubSpecies()) return null;
 		}
 
 		// Issue #1708 (put before the finalization)
 		if (model.hasFacet(SCHEDULES) || model.hasFacet(FREQUENCY)) { createSchedulerSpecies(model); }
 
-		if (!model.finalizeDescription()) return null;
+		if (!model.initializeMirrorsAndSubSpecies()) return null;
 		return model;
 
 	}
@@ -332,10 +336,13 @@ public class ModelFactory implements IModelFactory {
 	 *            the map of experiment names to their syntactic elements
 	 */
 	private void complementSpeciesAndExperiments(final IModelDescription model,
-			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> experimentNodes) {
+			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> classNodes,
+			final Map<String, ISyntacticElement> experimentNodes) {
 		speciesNodes.forEach((s, speciesNode) -> {
 			complementSpecies(model.getMicroSpecies(speciesNode.getName()), speciesNode);
 		});
+		classNodes.forEach(
+				(s, classNode) -> { complementSpecies(model.getClassDescription(classNode.getName()), classNode); });
 		experimentNodes.forEach((s, experimentNode) -> {
 			complementSpecies(model.getExperiment(experimentNode.getName()), experimentNode);
 		});
@@ -360,8 +367,9 @@ public class ModelFactory implements IModelFactory {
 	 *            the temporary cache for storing species descriptions during construction
 	 */
 	private void addSpeciesAndExperiments(final IModelDescription model,
-			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> experimentNodes,
-			final Map<String, ISpeciesDescription> tempSpeciesCache) {
+			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> classNodes,
+			final Map<String, ISyntacticElement> experimentNodes,
+			final Map<String, ITypeDescription> tempSpeciesCache) {
 		speciesNodes.forEach((s, speciesNode) -> { addMicroSpecies(model, speciesNode, tempSpeciesCache); });
 		experimentNodes.forEach((s, experimentNode) -> { addExperiment(s, model, experimentNode, tempSpeciesCache); });
 	}
@@ -385,9 +393,11 @@ public class ModelFactory implements IModelFactory {
 	 *            the temporary cache for looking up species descriptions
 	 */
 	private void parentSpeciesAndExperiments(final IModelDescription model,
-			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> experimentNodes,
-			final Map<String, ISpeciesDescription> tempSpeciesCache) {
+			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> classNodes,
+			final Map<String, ISyntacticElement> experimentNodes,
+			final Map<String, ITypeDescription> tempSpeciesCache) {
 		speciesNodes.forEach((s, speciesNode) -> { parentSpecies(model, speciesNode, model, tempSpeciesCache); });
+		classNodes.forEach((s, classNode) -> { parentClass(model, classNode, tempSpeciesCache); });
 		experimentNodes.forEach((s, experimentNode) -> { parentExperiment(model, experimentNode); });
 	}
 
@@ -486,11 +496,13 @@ public class ModelFactory implements IModelFactory {
 	 *            the map collecting all species nodes
 	 * @param experimentNodes
 	 *            the map collecting all experiment nodes
+	 * @param experimentNodes2
 	 * @return the updated global facets after merging with the current model's facets
 	 */
 	private Facets extractAndAssembleElementsOf(final IValidationContext collector, Facets globalFacets,
 			final ISyntacticElement cm, final ISyntacticElement globalNodes,
-			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> experimentNodes) {
+			final Map<String, ISyntacticElement> speciesNodes, final Map<String, ISyntacticElement> classNodes,
+			final LinkedHashMap<String, ISyntacticElement> experimentNodes) {
 		if (cm == null) return globalFacets;
 
 		// Merge facets from current model
@@ -510,14 +522,42 @@ public class ModelFactory implements IModelFactory {
 		});
 
 		// Visit species and grids (grids last to support DiffusionStatement)
-		final SyntacticVisitor speciesVisitor = element -> addSpeciesNode(element, collector, speciesNodes);
-		cm.visitSpecies(speciesVisitor);
-		cm.visitGrids(speciesVisitor);
+		SyntacticVisitor visitor = element -> addSpeciesNode(element, collector, speciesNodes);
+		cm.visitSpecies(visitor);
+		cm.visitGrids(visitor);
+		// Visit classes
+		visitor = element -> addClassNode(element, collector, classNodes);
+		cm.visitClasses(visitor);
 
 		// Visit experiments
-		cm.visitExperiments(element -> addExperimentNode(element, cm.getName(), collector, experimentNodes));
+		visitor = element -> addExperimentNode(element, cm.getName(), collector, experimentNodes);
+		cm.visitExperiments(visitor);
 
 		return globalFacets;
+	}
+
+	/**
+	 * Adds the class node.
+	 *
+	 * @param sse
+	 *            the sse
+	 * @param collector
+	 *            the collector
+	 * @param classNodes
+	 *            the species nodes
+	 */
+	void addClassNode(final ISyntacticElement sse, final IValidationContext collector,
+			final Map<String, ISyntacticElement> classNodes) {
+		if (!(sse instanceof SyntacticClassElement element)) return;
+		final String name = element.getName();
+		ISyntacticElement node = classNodes.get(name);
+		if (node != null) {
+			collector.add(GamlCompilationError.create("Class " + name + " is declared twice",
+					IGamlIssue.DUPLICATE_DEFINITION, element.getElement(), GamlCompilationError.Type.Error));
+			collector.add(GamlCompilationError.create("Class " + name + " is declared twice",
+					IGamlIssue.DUPLICATE_DEFINITION, node.getElement(), GamlCompilationError.Type.Error));
+		}
+		classNodes.put(name, element);
 	}
 
 	/**
@@ -624,7 +664,7 @@ public class ModelFactory implements IModelFactory {
 	private void createSchedulerSpecies(final IModelDescription model) {
 		final ISpeciesDescription sd = (ISpeciesDescription) GAML.getDescriptionFactory().create(IKeyword.SPECIES,
 				model, NAME, "_internal_global_scheduler");
-		sd.finalizeDescription();
+		sd.initializeMirrorsAndSubSpecies();
 		if (model.hasFacet(SCHEDULES)) {
 			// remove the warning as GAMA integrates a working workaround to use this facet at the global level
 			// model.warning(
@@ -661,7 +701,7 @@ public class ModelFactory implements IModelFactory {
 	 *            the temporary cache for storing experiment descriptions
 	 */
 	void addExperiment(final String origin, final IModelDescription model, final ISyntacticElement experiment,
-			final Map<String, ISpeciesDescription> cache) {
+			final Map<String, ITypeDescription> cache) {
 		// Create the experiment description
 		final IDescription desc = GAML.getDescriptionFactory().create(experiment, model, Collections.emptyList());
 		final IExperimentDescription eDesc = (IExperimentDescription) desc;
@@ -735,7 +775,7 @@ public class ModelFactory implements IModelFactory {
 	 *            the temporary cache for storing species descriptions during construction
 	 */
 	void addMicroSpecies(final ISpeciesDescription macro, final ISyntacticElement micro,
-			final Map<String, ISpeciesDescription> cache) {
+			final Map<String, ITypeDescription> cache) {
 		// Create the species description without any children. Passing
 		// explicitly an empty list and not null;
 		final ISpeciesDescription mDesc =
@@ -802,23 +842,25 @@ public class ModelFactory implements IModelFactory {
 	 * <li>Java additions from annotations</li>
 	 * </ul>
 	 *
-	 * @param species
+	 * @param type
 	 *            the species description to complement
 	 * @param node
 	 *            the syntactic element containing the species structure and children
 	 */
-	void complementSpecies(final ISpeciesDescription species, final ISyntacticElement node) {
-		if (species == null) return;
-		species.copyJavaAdditions();
+	void complementSpecies(final ITypeDescription type, final ISyntacticElement node) {
+		if (type == null) return;
+		type.copyJavaAdditions();
 		node.visitChildren(element -> {
-			final IDescription childDesc = GAML.getDescriptionFactory().create(element, species, null);
-			if (childDesc != null) { species.addChild(childDesc); }
+			final IDescription childDesc = GAML.getDescriptionFactory().create(element, type, null);
+			if (childDesc != null) { type.addChild(childDesc); }
 		});
 		// recursively complement micro-species
-		node.visitSpecies(element -> {
-			final ISpeciesDescription sd = species.getMicroSpecies(element.getName());
-			if (sd != null) { complementSpecies(sd, element); }
-		});
+		if (type instanceof ISpeciesDescription species) {
+			node.visitSpecies(element -> {
+				final ISpeciesDescription sd = species.getMicroSpecies(element.getName());
+				if (sd != null) { complementSpecies(sd, element); }
+			});
+		}
 
 	}
 
@@ -866,9 +908,9 @@ public class ModelFactory implements IModelFactory {
 	 *            the temporary cache for species lookups during construction
 	 */
 	void parentSpecies(final ISpeciesDescription macro, final ISyntacticElement micro, final IModelDescription model,
-			final Map<String, ISpeciesDescription> cache) {
+			final Map<String, ITypeDescription> cache) {
 		// Gather the previously created species
-		final ISpeciesDescription speciesDesc = cache.get(micro.getName());
+		final ISpeciesDescription speciesDesc = (ISpeciesDescription) cache.get(micro.getName());
 		if (speciesDesc == null || speciesDesc.isExperiment()) return;
 
 		// Get parent name from facet, default to "agent" if not specified
@@ -899,8 +941,8 @@ public class ModelFactory implements IModelFactory {
 	 *            the temporary cache of species descriptions
 	 * @return the species description if found, null otherwise
 	 */
-	ISpeciesDescription lookupSpecies(final String name, final Map<String, ISpeciesDescription> cache) {
-		ISpeciesDescription result = cache.get(name);
+	ISpeciesDescription lookupSpecies(final String name, final Map<String, ITypeDescription> cache) {
+		ISpeciesDescription result = (ISpeciesDescription) cache.get(name);
 		if (result == null) { result = GamaMetaModel.getSpeciesDescription(name); }
 		return result;
 	}
@@ -933,5 +975,44 @@ public class ModelFactory implements IModelFactory {
 	 */
 	@Override
 	public ISymbolKind[] getKinds() { return new ISymbolKind[] { ISymbolKind.MODEL }; }
+
+	/**
+	 * Parent class.
+	 *
+	 * @param model
+	 *            the model
+	 * @param micro
+	 *            the micro
+	 * @param cache
+	 *            the cache
+	 */
+	void parentClass(final IModelDescription model, final ISyntacticElement micro,
+			final Map<String, ITypeDescription> cache) {
+		// Gather the previously created species
+		final ITypeDescription mDesc = cache.get(micro.getName());
+		if (!(mDesc instanceof IClassDescription cd)) return;
+		String p = cd.getLitteral(IKeyword.PARENT);
+		// If no parent is defined, we assume it is "agent"
+		if (p == null) { p = IKeyword.OBJECT; }
+		IClassDescription parent = lookupClass(p, cache);
+		if (parent == null) { parent = model.getClassDescription(p); }
+		cd.setParent(parent);
+	}
+
+	/**
+	 * Lookup class.
+	 *
+	 * @param name
+	 *            the name
+	 * @param cache
+	 *            the cache
+	 * @return the class description
+	 */
+	IClassDescription lookupClass(final String name, final Map<String, ITypeDescription> cache) {
+		ITypeDescription result = cache.get(name);
+		if (result instanceof IClassDescription cd) return cd;
+		if (IKeyword.OBJECT.equals(name)) return GamaMetaModel.getObjectClassDescription();
+		return null;
+	}
 
 }

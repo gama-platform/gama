@@ -17,7 +17,7 @@ import org.apache.commons.lang3.Strings;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
@@ -281,7 +281,7 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	 * @see gama.api.gaml.types.IType#getSpecies()
 	 */
 	@Override
-	public ISpeciesDescription getSpecies() {
+	public ITypeDescription getSpecies() {
 
 		// if (result != null)
 		return type.getSpecies();
@@ -289,8 +289,8 @@ public class ParametricType implements IContainerType<IContainer<?, ?>> {
 	}
 
 	@Override
-	public ISpeciesDescription getDenotedSpecies() {
-		final ISpeciesDescription result = type.getSpecies();
+	public ITypeDescription getDenotedSpecies() {
+		final ITypeDescription result = type.getSpecies();
 		if (result != null) return result;
 		return contentsType.getSpecies();
 	}

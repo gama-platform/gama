@@ -36,12 +36,6 @@ public interface ISpeciesDescription extends IClassDescription {
 	}
 
 	/**
-	 * @param sd
-	 * @return
-	 */
-	boolean hasParent(ISpeciesDescription sd);
-
-	/**
 	 * @return
 	 */
 	boolean isGrid();
@@ -129,7 +123,7 @@ public interface ISpeciesDescription extends IClassDescription {
 	/**
 	 * @return
 	 */
-	boolean finalizeDescription();
+	boolean initializeMirrorsAndSubSpecies();
 
 	/**
 	 * @return
@@ -145,11 +139,6 @@ public interface ISpeciesDescription extends IClassDescription {
 	 * @return
 	 */
 	ISpeciesDescription getMacroSpecies();
-
-	/**
-	 *
-	 */
-	void copyJavaAdditions();
 
 	/**
 	 *

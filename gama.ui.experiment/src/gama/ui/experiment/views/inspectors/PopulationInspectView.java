@@ -55,7 +55,7 @@ import org.eclipse.ui.PartInitException;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
-import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -256,7 +256,7 @@ public class PopulationInspectView extends GamaViewPart
 	 * Update species.
 	 */
 	void updateSpecies() {
-		final ISpeciesDescription species = getOutput().getSpeciesDescription();
+		final ITypeDescription species = getOutput().getSpeciesDescription();
 		final IExpression expr = getOutput().getValue();
 
 		final String name = species == null ? IKeyword.AGENT : species.getName();
@@ -344,7 +344,7 @@ public class PopulationInspectView extends GamaViewPart
 		attributesMenu.setToolTipText(tooltipText);
 		final boolean hasPreviousSelection = selectedColumns.get(speciesName) != null;
 		final InspectDisplayOutput output = getOutput();
-		final ISpeciesDescription species = output.getSpeciesDescription();
+		final ITypeDescription species = output.getSpeciesDescription();
 		final List<String> names = new ArrayList(getOutput().getAttributes() == null ? species.getAttributeNames()
 				: getOutput().getAttributes().keySet());
 		Collections.sort(names);
@@ -440,7 +440,7 @@ public class PopulationInspectView extends GamaViewPart
 	 */
 	String getSpeciesName() {
 		if (getOutput() == null) return "";
-		final ISpeciesDescription species = getOutput().getSpeciesDescription();
+		final ITypeDescription species = getOutput().getSpeciesDescription();
 		if (species == null) return IKeyword.AGENT;
 		return species.getName();
 	}

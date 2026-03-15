@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
 
-import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.types.Cast;
@@ -79,7 +79,7 @@ public class CSVSaver extends AbstractSaver {
 
 		StringBuilder sb = new StringBuilder();
 		final IType itemType = item.getGamlType();
-		final ISpeciesDescription sd;
+		final ITypeDescription sd;
 		if (itemType.isAgentType()) {
 			sd = itemType.getSpecies();
 		} else if (itemType.getContentType().isAgentType()) {

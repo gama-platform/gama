@@ -13,7 +13,6 @@ import java.util.Set;
 
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
-import gama.api.kernel.agent.IAgent;
 import gama.api.utils.interfaces.IDisposable;
 
 /**
@@ -51,7 +50,7 @@ import gama.api.utils.interfaces.IDisposable;
  * ITypesManager modelTypes = new TypesManager(BUILT_IN_TYPES);
  *
  * // Register a species type
- * modelTypes.addSpeciesType(speciesDescription);
+ * modelTypes.collectAndInitializeTypesFrom(modelDescription);
  *
  * // Use cached type relationship checks
  * boolean assignable = modelTypes.checkAssignability(Types.FLOAT, Types.INT);
@@ -158,36 +157,6 @@ public interface ITypesManager extends IDisposable {
 	IType<?> get(String type, IType<?> defaultValue);
 
 	/**
-	 * Registers a species description as a type in this manager.
-	 *
-	 * <p>
-	 * Species types allow agents of that species to be referenced by type in GAML code. The species name becomes a type
-	 * name that can be used in variable declarations.
-	 * </p>
-	 *
-	 * <p>
-	 * Example GAML usage after registration:
-	 * </p>
-	 *
-	 * <pre>
-	 * species mySpecies {
-	 *     // ...
-	 * }
-	 *
-	 * // After registration, can use as a type:
-	 * mySpecies agent1 <- create mySpecies;
-	 * list<mySpecies> agents <- mySpecies as list;
-	 * </pre>
-	 *
-	 * @param species
-	 *            the species description to register
-	 * @return the created species type
-	 *
-	 * @see ISpeciesDescription
-	 */
-	IType<? extends IAgent> addSpeciesType(ISpeciesDescription species);
-
-	/**
 	 * Initializes this types manager with a model description, registering all species defined in the model.
 	 *
 	 * <p>
@@ -204,7 +173,7 @@ public interface ITypesManager extends IDisposable {
 	 *
 	 * @see #addSpeciesType(ISpeciesDescription)
 	 */
-	void init(IModelDescription model);
+	void collectAndInitializeTypesFrom(IModelDescription model);
 
 	/**
 	 * Sets the parent types manager for delegation.

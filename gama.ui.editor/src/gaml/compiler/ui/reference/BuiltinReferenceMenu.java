@@ -234,7 +234,7 @@ public class BuiltinReferenceMenu extends GamlReferenceMenu {
 			title(submenu, "Attributes");
 			for (final String v : vars) {
 				final IVariableDescription variable = species.getAttribute(v);
-				if (!variable.isSyntheticSpeciesContainer() && variable.getOriginName().endsWith(species.getName())) {
+				if (!variable.isSynthetic() && variable.getOriginName().endsWith(species.getName())) {
 					fillIDescriptionSubMenu(sub(submenu, v + " (" + variable.getGamlType() + ")"), variable);
 				}
 			}

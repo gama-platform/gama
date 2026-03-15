@@ -26,7 +26,6 @@ import org.eclipse.emf.ecore.EObject;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.ArtefactRegistry;
-import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
@@ -39,7 +38,6 @@ import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.compilation.validation.IDocumentationContext;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
-import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
@@ -50,7 +48,6 @@ import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.utils.GamlProperties;
-import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.prototypes.SymbolArtefact;
@@ -194,26 +191,11 @@ import gaml.compiler.gaml.prototypes.SymbolArtefact;
  * @see DescriptionFactory
  * @see SymbolArtefact
  */
-public abstract class SymbolDescription implements IDescription {
+public abstract class SymbolDescription extends DescriptionStateManager {
 
 	static {
 		DEBUG.OFF();
 	}
-
-	/**
-	 * State flags for this description stored in a compact EnumSet.
-	 *
-	 * <p>
-	 * <strong>Memory Optimization:</strong> EnumSet uses a single long value for up to 64 flags, providing O(1)
-	 * operations with minimal memory overhead (~16 bytes vs ~40+ for HashSet).
-	 * </p>
-	 *
-	 * <p>
-	 * Common flags include: BuiltIn, Validated, Synthetic, Abstract, NoTypeInference. See {@link Flag} enum for
-	 * complete list.
-	 * </p>
-	 */
-	private final EnumSet<Flag> state = EnumSet.noneOf(Flag.class);
 
 	/**
 	 * The facets (attributes) associated with this symbol.
@@ -344,7 +326,7 @@ public abstract class SymbolDescription implements IDescription {
 	private IType<?> type;
 
 	/**
-	 * The prototype (meta-information) for this symbol type.
+	 * The artefact (meta-information) for this symbol type.
 	 *
 	 * <p>
 	 * Shared across all instances of the same symbol type. Contains information like: required/optional facets, allowed
@@ -379,7 +361,7 @@ public abstract class SymbolDescription implements IDescription {
 		this.facets = facets;
 
 		element = source;
-		setIf(Flag.BuiltIn, element == null);
+		setIf(Flag.IsBuiltIn, element == null);
 		// See #385 -- we need to remove the NO_TYPE_INFERENCE facet from the list of facets if it is present, after
 		// having set the flag
 		if (facets != null && facets.containsKey(NO_TYPE_INFERENCE)) {
@@ -393,55 +375,6 @@ public abstract class SymbolDescription implements IDescription {
 		setEnclosingDescription(superDesc);
 		artefact = (SymbolArtefact) ArtefactRegistry.getArtefact(getKeyword(), getSpeciesContext());
 
-	}
-
-	// ---- State management
-
-	/**
-	 * Sets a state flag for this description.
-	 *
-	 * @param flag
-	 *            the flag to set
-	 */
-	protected void set(final Flag flag) {
-		state.add(flag);
-	}
-
-	/**
-	 * Sets a state flag conditionally based on the given condition.
-	 *
-	 * @param flag
-	 *            the flag to set
-	 * @param condition
-	 *            if true, the flag is set; otherwise, it is unset
-	 */
-	protected void setIf(final Flag flag, final boolean condition) {
-		if (condition) {
-			set(flag);
-		} else {
-			unSet(flag);
-		}
-	}
-
-	/**
-	 * Removes a state flag from this description.
-	 *
-	 * @param flag
-	 *            the flag to unset
-	 */
-	protected void unSet(final Flag flag) {
-		state.remove(flag);
-	}
-
-	/**
-	 * Checks if a specific flag is set for this description.
-	 *
-	 * @param flag
-	 *            the flag to check
-	 * @return true if the flag is set, false otherwise
-	 */
-	protected boolean isSet(final Flag flag) {
-		return state.contains(flag);
 	}
 
 	/**
@@ -729,228 +662,6 @@ public abstract class SymbolDescription implements IDescription {
 	public final SymbolArtefact getArtefact() { return artefact; }
 
 	/**
-	 * Internal method to handle error, warning, and info flags during validation. Determines the proper reporting
-	 * method based on the error type and context.
-	 *
-	 * @param s
-	 *            the message text
-	 * @param code
-	 *            the issue code
-	 * @param type
-	 *            the error type (Error, Warning, or Info)
-	 * @param source
-	 *            the source object where the issue occurred
-	 * @param data
-	 *            additional data for the issue
-	 * @throws GamaRuntimeException
-	 *             if there's no way to report the error in compile time
-	 */
-	protected void flagError(final String s, final String code, final GamlCompilationError.Type type,
-			final EObject source, final String... data) throws GamaRuntimeException {
-
-		if (type == GamlCompilationError.Type.Warning && !GamaPreferences.Modeling.WARNINGS_ENABLED.getValue()
-				|| type == GamlCompilationError.Type.Info && !GamaPreferences.Modeling.INFO_ENABLED.getValue())
-			return;
-
-		IDescription desc = this;
-		EObject e = source;
-		if (e == null) { e = getUnderlyingElement(); }
-		while (e == null && desc != null) {
-			desc = desc.getEnclosingDescription();
-			if (desc != null) { e = desc.getUnderlyingElement(); }
-		}
-		// throws a runtime exception if there is no way to signal the error in the source
-		// (i.e. we are probably in a runtime scenario)
-		if (e == null || e.eResource() == null
-				|| e.eResource().getURI().path().contains(IKeyword.SYNTHETIC_RESOURCES_PREFIX)) {
-			if (type == GamlCompilationError.Type.Error)
-				throw GamaRuntimeException.error(s, gama.api.GAMA.getRuntimeScope());
-			return;
-
-		}
-		final IValidationContext c = getValidationContext();
-		if (c == null) {
-			DEBUG.ERR((type == GamlCompilationError.Type.Warning ? "Warning" : "Error") + ": " + s);
-			return;
-		}
-		c.add(GamlCompilationError.create(s, code, e, type, data));
-	}
-
-	// /**
-	// * Associates documentation with an EMF object in the current context.
-	// *
-	// * @param e
-	// * the EMF object to document
-	// * @param desc
-	// * the documentation to associate with the object
-	// */
-	// @Override
-	// public void document(final EObject e, final IGamlDescription desc) {
-	// final IDocumentationContext c = getDocumentationContext();
-	// if (c != null) { c.document(e, desc); }
-	// }
-
-	/**
-	 * Reports a general error with this description.
-	 *
-	 * @param message
-	 *            the error message
-	 */
-	@Override
-	public void error(final String message) {
-		error(message, IGamlIssue.GENERAL);
-	}
-
-	/** Constant for empty data arrays. */
-	final static String[] EMPTY_DATA = {};
-
-	/**
-	 * Reports an error with a specific issue code.
-	 *
-	 * @param message
-	 *            the error message
-	 * @param code
-	 *            the issue code
-	 */
-	@Override
-	public void error(final String message, final String code) {
-		flagError(message, code, GamlCompilationError.Type.Error, getUnderlyingElement(), EMPTY_DATA);
-	}
-
-	/**
-	 * Reports an error related to a specific EMF object.
-	 *
-	 * @param s
-	 *            the error message
-	 * @param code
-	 *            the issue code
-	 * @param facet
-	 *            the EMF object associated with the error
-	 * @param data
-	 *            additional data for the error
-	 */
-	@Override
-	public void error(final String s, final String code, final EObject facet, final String... data) {
-		flagError(s, code, GamlCompilationError.Type.Error, facet, data);
-	}
-
-	/**
-	 * Reports an error related to a specific facet.
-	 *
-	 * @param s
-	 *            the error message
-	 * @param code
-	 *            the issue code
-	 * @param facet
-	 *            the name of the facet with the error
-	 * @param data
-	 *            additional data for the error
-	 */
-	@Override
-	public void error(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, GamlCompilationError.Type.Error,
-				this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
-				data == null || data.length == 0 ? new String[] { facet } : data);
-	}
-
-	/**
-	 * Reports an informational message with a specific issue code.
-	 *
-	 * @param message
-	 *            the info message
-	 * @param code
-	 *            the issue code
-	 */
-	@Override
-	public void info(final String message, final String code) {
-		flagError(message, code, GamlCompilationError.Type.Info, getUnderlyingElement(), EMPTY_DATA);
-	}
-
-	/**
-	 * Reports an informational message related to a specific EMF object.
-	 *
-	 * @param s
-	 *            the info message
-	 * @param code
-	 *            the issue code
-	 * @param facet
-	 *            the EMF object associated with the info
-	 * @param data
-	 *            additional data for the info
-	 */
-	@Override
-	public void info(final String s, final String code, final EObject facet, final String... data) {
-		flagError(s, code, GamlCompilationError.Type.Info, facet, data);
-	}
-
-	/**
-	 * Reports an informational message related to a specific facet.
-	 *
-	 * @param s
-	 *            the info message
-	 * @param code
-	 *            the issue code
-	 * @param facet
-	 *            the name of the facet
-	 * @param data
-	 *            additional data for the info
-	 */
-	@Override
-	public void info(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, GamlCompilationError.Type.Info, this.getUnderlyingElement(facet, false),
-				data == null || data.length == 0 ? new String[] { facet } : data);
-	}
-
-	/**
-	 * Reports a warning with a specific issue code.
-	 *
-	 * @param message
-	 *            the warning message
-	 * @param code
-	 *            the issue code
-	 */
-	@Override
-	public void warning(final String message, final String code) {
-		flagError(message, code, GamlCompilationError.Type.Warning, null, EMPTY_DATA);
-	}
-
-	/**
-	 * Reports a warning related to a specific EMF object.
-	 *
-	 * @param s
-	 *            the warning message
-	 * @param code
-	 *            the issue code
-	 * @param object
-	 *            the EMF object associated with the warning
-	 * @param data
-	 *            additional data for the warning
-	 */
-	@Override
-	public void warning(final String s, final String code, final EObject object, final String... data) {
-		flagError(s, code, GamlCompilationError.Type.Warning, object, data);
-	}
-
-	/**
-	 * Reports a warning related to a specific facet.
-	 *
-	 * @param s
-	 *            the warning message
-	 * @param code
-	 *            the issue code
-	 * @param facet
-	 *            the name of the facet
-	 * @param data
-	 *            additional data for the warning
-	 */
-	@Override
-	public void warning(final String s, final String code, final String facet, final String... data) {
-		flagError(s, code, GamlCompilationError.Type.Warning,
-				this.getUnderlyingElement(facet, IGamlIssue.UNKNOWN_FACET.equals(code)),
-				data == null || data.length == 0 ? new String[] { facet } : data);
-	}
-
-	/**
 	 * Gets the keyword that defines this symbol.
 	 *
 	 * @return the keyword string
@@ -1023,20 +734,12 @@ public abstract class SymbolDescription implements IDescription {
 	// @Override
 	public final void addChildren(final Iterable<? extends IDescription> originalChildren) {
 		if (originalChildren == null) return;
-		for (final IDescription c : originalChildren) { addChild(c); }
-	}
-
-	/**
-	 * Adds a single child description to this description.
-	 *
-	 * @param child
-	 *            the child to add
-	 * @return the added child description
-	 */
-	// @Override
-	public IDescription addChild(final IDescription child) {
-		if (child != null) { child.setEnclosingDescription(this); }
-		return child;
+		for (final IDescription c : originalChildren) {
+			if (c != null) {
+				c.setEnclosingDescription(this);
+				addChild(c);
+			}
+		}
 	}
 
 	/**
@@ -1449,21 +1152,6 @@ public abstract class SymbolDescription implements IDescription {
 	}
 
 	/**
-	 * Checks if this description is for a built-in symbol.
-	 *
-	 * @return true if this is a built-in symbol, false otherwise
-	 */
-	@Override
-	public boolean isBuiltIn() { return state.contains(Flag.BuiltIn); }
-
-	/**
-	 * Checks if this description is synthetic (generated programmatically).
-	 *
-	 * @return true if this is a synthetic description, false otherwise
-	 */
-	protected boolean isSynthetic() { return state.contains(Flag.Synthetic); }
-
-	/**
 	 * Gets the origin name of this symbol.
 	 *
 	 * @return the origin name
@@ -1498,8 +1186,8 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	@Override
 	public IDescription validate() {
-		if (isSet(Flag.Validated)) return this;
-		set(Flag.Validated);
+		if (isSet(Flag.IsValidated)) return this;
+		set(Flag.IsValidated);
 
 		if (isBuiltIn()) {
 			// We simply make sure that the facets are correctly compiled
@@ -1884,22 +1572,4 @@ public abstract class SymbolDescription implements IDescription {
 	 */
 	private void setType(final IType<?> type) { this.type = type; }
 
-	/**
-	 * Checks if this description represents an action invocation (e.g., a "do" statement). Default implementation
-	 * returns false; subclasses may override.
-	 *
-	 * @return true if this is an invocation, false otherwise
-	 */
-	@Override
-	public boolean isInvocation() { return false; }
-
-	@Override
-	public boolean isAbstract() { return isSet(Flag.Abstract); }
-
-	/**
-	 * Checks if this description represents a "create" statement.
-	 *
-	 * @return true if this is a create statement, false otherwise
-	 */
-	public boolean isCreate() { return isSet(Flag.IsCreate); }
 }

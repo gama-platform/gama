@@ -84,8 +84,8 @@ public class ClassFactory implements ISymbolDescriptionFactory.Clazz {
 	 * @return the i class description
 	 */
 	@Override
-	public IClassDescription createBuiltInClassDescription(final String plugin) {
-		return new ClassDescription(plugin);
+	public IClassDescription createBuiltInClassDescription(final String name, final String plugin) {
+		return new ClassDescription(name, plugin);
 	}
 
 }

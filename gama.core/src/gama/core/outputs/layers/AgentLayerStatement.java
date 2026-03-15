@@ -26,8 +26,8 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
-import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
@@ -42,6 +42,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.IOutput;
 import gama.core.outputs.layers.AgentLayerStatement.AgentLayerValidator;
 import gama.gaml.statements.AspectStatement;
+import gaml.compiler.gaml.descriptions.SpeciesDescription;
 
 /**
  * Written by drogoul Modified on 9 nov. 2009
@@ -170,16 +171,16 @@ public class AgentLayerStatement extends AbstractLayerStatement {
 			// Should be broken down in subclasses
 			IExpressionDescription ed = description.getFacet(VALUE);
 			if (ed == null || ed.getExpression() == null) return;
-			ISpeciesDescription target = ed.getExpression().getGamlType().getContentType().getSpecies();
-			if (target == null) // Already caught by the type checking
+			ITypeDescription target = ed.getExpression().getGamlType().getContentType().getSpecies();
+			if (!(target instanceof SpeciesDescription sd)) // Already caught by the type checking
 				return;
 			ed = description.getFacet(ASPECT);
 			if (ed != null) {
 				final String a = description.getLitteral(ASPECT);
-				if (target.getAspect(a) != null) {
+				if (sd.getAspect(a) != null) {
 					ed.compileAsLabel();
 				} else if (a != null && !DEFAULT.equals(a)) {
-					description.error(a + " is not the name of an aspect of " + target.getName(), IGamlIssue.GENERAL,
+					description.error(a + " is not the name of an aspect of " + sd.getName(), IGamlIssue.GENERAL,
 							description.getFacet(ASPECT).getTarget());
 				}
 

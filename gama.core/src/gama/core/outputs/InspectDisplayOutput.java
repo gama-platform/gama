@@ -28,7 +28,7 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
-import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -358,12 +358,12 @@ public class InspectDisplayOutput extends AbstractValuedDisplayOutput implements
 	 *
 	 * @return the species description
 	 */
-	public ISpeciesDescription getSpeciesDescription() {
+	public ITypeDescription getSpeciesDescription() {
 		final IExpression valueExpr = getValue();
 		if (valueExpr == null) return null;
 		final IType theType = valueExpr.getGamlType().getContentType();
 		if (theType == Types.get(IKeyword.MODEL)) return getScope().getModel().getDescription();
-		final ISpeciesDescription sd = theType.getSpecies();
+		final ITypeDescription sd = theType.getSpecies();
 		if (sd instanceof IModelDescription) return sd;
 		if (sd == null) return Types.AGENT.getDenotedSpecies();
 		String speciesName = sd.getName();

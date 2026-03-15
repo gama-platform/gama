@@ -12,6 +12,7 @@ package gaml.compiler.gaml.expression;
 
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
@@ -106,7 +107,7 @@ public class SpeciesConstantExpression extends ConstantExpression implements IEx
 	 */
 	@Override
 	public void collectMetaInformation(final GamlProperties meta) {
-		final ISpeciesDescription sd = getGamlType().getContentType().getSpecies();
+		final ITypeDescription sd = getGamlType().getContentType().getSpecies();
 		if (sd != null) {
 			meta.put(GamlProperties.PLUGINS, sd.getDefiningPlugin());
 			if (sd.isBuiltIn()) { meta.put(GamlProperties.SPECIES, (String) value); }

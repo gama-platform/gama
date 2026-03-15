@@ -38,6 +38,14 @@ public interface ITypeDescription extends IDescription {
 	Collection<String> getAttributeNames();
 
 	/**
+	 * Document this.
+	 *
+	 * @param sb
+	 *            the sb
+	 */
+	void documentThis(final IGamlDocumentation sb);
+
+	/**
 	 * @param result
 	 */
 	void documentAttributes(IGamlDocumentation result);
@@ -58,6 +66,12 @@ public interface ITypeDescription extends IDescription {
 	}
 
 	/**
+	 * @param sd
+	 * @return
+	 */
+	boolean hasParent(ITypeDescription sd);
+
+	/**
 	 * @param varName
 	 * @param b
 	 * @return
@@ -68,11 +82,6 @@ public interface ITypeDescription extends IDescription {
 	 * @return
 	 */
 	Class getJavaBase();
-
-	/**
-	 * @param action
-	 */
-	IDescription addChild(IDescription action);
 
 	/**
 	 * @param varVisitor
@@ -137,5 +146,10 @@ public interface ITypeDescription extends IDescription {
 	 *            the children
 	 */
 	void addChildren(final Iterable<? extends IDescription> children);
+
+	/**
+	 *
+	 */
+	default void copyJavaAdditions() {}
 
 }

@@ -30,8 +30,8 @@ import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.gaml.GAML;
@@ -205,7 +205,7 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 
 	@Override
 	public IDescription validate() {
-		if (isSet(Flag.Validated)) return this;
+		if (isValidated()) return this;
 		final IDescription result = super.validate();
 		validatePassedArgs();
 		return result;
@@ -236,7 +236,7 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 	 */
 	private void verifyInits(final Arguments ca) {
 		if (ca == null) return;
-		final ISpeciesDescription denotedSpecies = getGamlType().getDenotedSpecies();
+		final ITypeDescription denotedSpecies = getGamlType().getDenotedSpecies();
 		if (denotedSpecies == null) {
 			if (!ca.isEmpty()) {
 				warning("Impossible to verify the validity of the arguments. Use them at your own risk.",

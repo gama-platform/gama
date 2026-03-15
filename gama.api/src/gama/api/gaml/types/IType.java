@@ -17,7 +17,7 @@ import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.artefacts.IArtefact.Operator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IGamlDescription;
-import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
@@ -199,6 +199,9 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 
 	/** The class. */
 	int CLASS = 32;
+
+	/** The object. */
+	int OBJECT = 33;
 
 	// ==================== Type ID Ranges ====================
 
@@ -484,7 +487,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 *
 	 * @see #getDenotedSpecies()
 	 */
-	ISpeciesDescription getSpecies();
+	ITypeDescription getSpecies();
 
 	/**
 	 * Returns the species description denoted by this type (for species container types).
@@ -496,7 +499,7 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 *
 	 * @return the denoted species, or null if not applicable
 	 */
-	ISpeciesDescription getDenotedSpecies();
+	ITypeDescription getDenotedSpecies();
 
 	// ==================== Type Hierarchy and Relationships ====================
 
@@ -1072,5 +1075,10 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @see ITypesManager
 	 */
 	ITypesManager getTypesManager();
+
+	/**
+	 * @return
+	 */
+	default boolean isObjectType() { return false; }
 
 }

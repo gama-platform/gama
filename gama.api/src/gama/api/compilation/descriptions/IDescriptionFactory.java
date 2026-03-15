@@ -369,6 +369,6 @@ public interface IDescriptionFactory {
 	 * @param cURRENT_PLUGIN_NAME
 	 * @return
 	 */
-	IClassDescription createBuiltInClassDescription(String plugin);
+	IClassDescription createBuiltInClassDescription(String name, String plugin);
 
 }

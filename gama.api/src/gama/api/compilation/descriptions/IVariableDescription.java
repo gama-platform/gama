@@ -204,7 +204,7 @@ public interface IVariableDescription extends IDescription {
 	 *
 	 * @return true, if is synthetic species container
 	 */
-	boolean isSyntheticSpeciesContainer();
+	boolean isSynthetic();
 
 	/**
 	 * @param initDependenciesFacets
@@ -217,7 +217,7 @@ public interface IVariableDescription extends IDescription {
 	/**
 	 * @return
 	 */
-	boolean isNotModifiable();
+	boolean isUnmodifiable();
 
 	/**
 	 * @return

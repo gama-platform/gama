@@ -37,6 +37,7 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.descriptions.IVariableDescription;
+import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.constants.IGamlIssue;
 import gama.api.gaml.GAML;
@@ -55,6 +56,9 @@ import gama.dev.DEBUG;
  *
  */
 
+/**
+ * The Class TypeDescription.
+ */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public abstract class TypeDescription extends SymbolDescription implements ITypeDescription {
 
@@ -66,9 +70,6 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 * The Constant TO_CLASS.
 	 */
 
-	// AD 08/16 : actions and attributes are now inherited dynamically and built
-	/** The actions. */
-	// lazily
 	protected IMap<String, IActionDescription> actions;
 
 	/** The attributes. */
@@ -76,9 +77,6 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 
 	/** The parent. */
 	protected ITypeDescription parent;
-
-	/** The is abstract. */
-	// protected final boolean isAbstract;
 
 	/**
 	 * Instantiates a new type description.
@@ -104,11 +102,11 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 			final ITypeDescription parent, final Iterable<? extends IDescription> cp, final EObject source,
 			final Facets facets, final String plugin) {
 		super(keyword, macroDesc, source, /* cp, */ facets);
-		setIf(Flag.Abstract, TRUE.equals(getLitteral(VIRTUAL)));
+		setIf(Flag.IsAbstract, TRUE.equals(getLitteral(VIRTUAL)));
 		addChildren(cp);
 		for (IActionDescription ad : getActions())
 			if (ad.isAbstract()) {
-				setIf(Flag.Abstract, true);
+				setIf(Flag.IsAbstract, true);
 				break;
 			}
 		// parent can be null
@@ -119,6 +117,17 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 			// + plugin + " of " + this);
 		}
 
+	}
+
+	@Override
+	public void addChild(final IDescription child) {
+		if (child instanceof IActionDescription ad) {
+			addAction(ad);
+		} else if (child instanceof IVariableDescription vd) {
+			addOwnAttribute(vd);
+		} else {
+			super.addChild(child);
+		}
 	}
 
 	/**
@@ -430,8 +439,8 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 		} catch (IllegalArgumentException e) {
 			// Thrown if a cycle is introduced
 			IVariableDescription errored;
-			if (source.isBuiltIn() || source.isSyntheticSpeciesContainer()) {
-				if (target.isBuiltIn() || target.isSyntheticSpeciesContainer()) return false;
+			if (source.isBuiltIn() || source.isSynthetic()) {
+				if (target.isBuiltIn() || target.isSynthetic()) return false;
 				errored = target;
 			} else {
 				errored = source;
@@ -459,7 +468,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 				shape == null ? Collections.EMPTY_SET : shape.getDependencies(INIT_DEPENDENCIES_FACETS, false, true);
 		Collection<IVariableDescription> varSet = getOwnAttributes().values();
 		for (IVariableDescription var : varSet) {
-			if (shape != null && var.isSyntheticSpeciesContainer() && !add(graph, shape, var, INIT)) return false;
+			if (shape != null && var.isSynthetic() && !add(graph, shape, var, INIT)) return false;
 			final Collection<IVariableDescription> varDeps =
 					var == shape ? shapeDeps : var.getDependencies(INIT_DEPENDENCIES_FACETS, false, true);
 			for (final IVariableDescription newVar : varDeps) {
@@ -519,7 +528,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 * @param newAction
 	 *            the new action
 	 */
-	protected void addAction(final ActionDescription newAction) {
+	protected void addAction(final IActionDescription newAction) {
 		final String actionName = newAction.getName();
 		final IActionDescription existing = getOwnActions().get(actionName);
 		if (existing != null) {
@@ -612,14 +621,6 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 		}
 		return hasAction(vn, false) ? this : null;
 	}
-
-	/**
-	 * Checks if is abstract.
-	 *
-	 * @return true, if is abstract
-	 */
-	@Override
-	public final boolean isAbstract() { return isSet(Flag.Abstract); }
 
 	@Override
 	protected IType computeType(final boolean doTypeInference) {
@@ -861,7 +862,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 
 	@Override
 	public IDescription validate() {
-		if (isSet(Flag.Validated)) return this;
+		if (isValidated()) return this;
 		final IDescription result = super.validate();
 		if (result != null && !verifyAttributeCycles()) return null;
 		return result;
@@ -887,6 +888,27 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 */
 	public IActionDescription getOwnAction(final String kw) {
 		return getOwnActions().get(kw);
+	}
+
+	@Override
+	public IGamlDocumentation getDocumentation() {
+		final IGamlDocumentation sb = new GamlRegularDocumentation();
+		documentThis(sb);
+		return sb;
+
+	}
+
+	/**
+	 * @param macro
+	 * @return
+	 */
+	@Override
+	public boolean hasParent(final ITypeDescription p) {
+		final ITypeDescription sd = getParent();
+		// Takes care of invalid species (see Issue 711)
+		if (sd == null || sd == this) return false;
+		if (sd.equals(p)) return true;
+		return sd.hasParent(p);
 	}
 
 }

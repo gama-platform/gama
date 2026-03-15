@@ -18,7 +18,6 @@ import com.google.common.collect.Iterables;
 
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
-import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.gaml.symbols.Arguments;
@@ -79,7 +78,7 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 	@Override
 	public Iterable<? extends ISymbol> compileChildren() {
 
-		final ISpeciesDescription sd = getGamlType().getDenotedSpecies();
+		final ITypeDescription sd = getGamlType().getDenotedSpecies();
 		if (sd != null) {
 			final IType t = getSpeciesContext().getGamlType();
 			addTemp(this, null, MYSELF, t);
@@ -138,10 +137,10 @@ public class StatementRemoteWithChildrenDescription extends StatementWithChildre
 	 * @return the i description
 	 */
 	public IDescription pushRemoteContext() {
-		final ISpeciesDescription denotedSpecies = getGamlType().getDenotedSpecies();
+		final ITypeDescription denotedSpecies = getGamlType().getDenotedSpecies();
 		IDescription previousEnclosingDescription = null;
 		if (denotedSpecies != null) {
-			final ISpeciesDescription s = getSpeciesContext();
+			final ITypeDescription s = getSpeciesContext();
 			if (s != null) {
 				final IType t = s.getGamlType();
 				addTemp(this, null, MYSELF, t);

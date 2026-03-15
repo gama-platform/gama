@@ -14,12 +14,9 @@ import static gama.api.compilation.descriptions.IVariableDescription.PREF_DEFINI
 
 import java.util.Set;
 
-import org.eclipse.emf.ecore.EObject;
-
 import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
 import gama.api.additions.IGamaHelper;
-import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IVarDescriptionProvider;
 import gama.api.compilation.validation.IValidationContext;
@@ -38,30 +35,6 @@ public class PlatformSpeciesDescription extends SpeciesDescription implements IS
 
 	/** The alternate var provider. */
 	IVarDescriptionProvider alternateVarProvider;
-
-	/**
-	 * Instantiates a new platform species description.
-	 *
-	 * @param keyword
-	 *            the keyword
-	 * @param clazz
-	 *            the clazz
-	 * @param macroDesc
-	 *            the macro desc
-	 * @param parent
-	 *            the parent
-	 * @param cp
-	 *            the cp
-	 * @param source
-	 *            the source
-	 * @param facets
-	 *            the facets
-	 */
-	public PlatformSpeciesDescription(final String keyword, final Class<?> clazz, final ISpeciesDescription macroDesc,
-			final ISpeciesDescription parent, final Iterable<? extends IDescription> cp, final EObject source,
-			final Facets facets) {
-		super(keyword, clazz, macroDesc, parent, cp, source, facets);
-	}
 
 	/**
 	 * Instantiates a new platform species description.

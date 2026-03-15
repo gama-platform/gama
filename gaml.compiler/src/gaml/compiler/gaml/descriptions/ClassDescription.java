@@ -32,10 +32,11 @@ public class ClassDescription extends TypeDescription implements IClassDescripti
 	 * @param plugin
 	 *            the plugin
 	 */
-	public ClassDescription(final String plugin) {
-		this(IKeyword.OBJECT, IObject.class, GamaMetaModel.getSpeciesDescription(IKeyword.MODEL), null, null, null,
-				null, plugin);
-		set(Flag.Abstract);
+	public ClassDescription(final String name, final String plugin) {
+		this(IKeyword.CLASS, IObject.class, GamaMetaModel.getSpeciesDescription(IKeyword.MODEL), null, null, null,
+				new Facets(IKeyword.NAME, name), plugin);
+		set(Flag.IsAbstract);
+		set(Flag.IsBuiltIn);
 	}
 
 	/**
@@ -61,9 +62,7 @@ public class ClassDescription extends TypeDescription implements IClassDescripti
 	public ClassDescription(final String keyword, final Class clazz, final IDescription macroDesc,
 			final IClassDescription parent, final Iterable<? extends IDescription> cp, final EObject source,
 			final Facets facets, final String plugin) {
-		super(keyword, clazz, macroDesc,
-				parent == null && keyword != IKeyword.OBJECT ? GamaMetaModel.getObjectClassDescription() : parent, cp,
-				source, facets, plugin);
+		super(keyword, clazz, macroDesc, parent, cp, source, facets, plugin);
 	}
 
 	@Override
@@ -103,5 +102,45 @@ public class ClassDescription extends TypeDescription implements IClassDescripti
 		documentAttributes(sb);
 		documentActions(sb);
 	}
+
+	/**
+	 * Checks if is class.
+	 *
+	 * @return true, if is class
+	 */
+	@Override
+	public boolean isClass() { return true; }
+
+	/**
+	 * Checks if is species.
+	 *
+	 * @return true, if is species
+	 */
+	@Override
+	public boolean isSpecies() { return false; }
+
+	/**
+	 * Checks if is experiment.
+	 *
+	 * @return true, if is experiment
+	 */
+	@Override
+	public boolean isExperiment() { return false; }
+
+	/**
+	 * Checks if is model.
+	 *
+	 * @return true, if is model
+	 */
+	@Override
+	public boolean isModel() { return false; }
+
+	/**
+	 * Checks if is skill.
+	 *
+	 * @return true, if is skill
+	 */
+	@Override
+	public boolean isSkill() { return false; }
 
 }

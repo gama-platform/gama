@@ -205,11 +205,11 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 
 	/** The behaviors. */
 	// AD 08/16: Behaviors are now inherited dynamically
-	private IMap<String, StatementDescription> behaviors;
+	private IMap<String, IStatementDescription> behaviors;
 
 	/** The aspects. */
 	// AD 08/16: Aspects are now inherited dynamically
-	private IMap<String, StatementDescription> aspects;
+	private IMap<String, IStatementDescription> aspects;
 
 	/** The micro species. */
 	private IMap<String, ISpeciesDescription> microSpecies;
@@ -278,7 +278,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 			final Facets facets, final Set<String> skills) {
 		super(keyword, clazz, macroDesc, parent, cp, source, facets, null);
 		set(Flag.CanUseMinimalAgents);
-		setIf(Flag.isMirror, hasFacet(IKeyword.MIRRORS));
+		setIf(Flag.IsMirror, hasFacet(IKeyword.MIRRORS));
 		setIf(Flag.isGrid, IKeyword.GRID.equals(getKeyword()));
 		setJavaBase(clazz);
 		setSkills(getFacet(IKeyword.SKILLS), skills);
@@ -292,9 +292,9 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 			final ISpeciesDescription parent, final IAgentConstructor helper, final Set<String> skills2,
 			final Facets ff, final String plugin) {
 		super(IKeyword.SPECIES, clazz, superDesc, null, null, null, new Facets(IKeyword.NAME, name), plugin);
-		set(Flag.Abstract);
+		set(Flag.IsAbstract);
 		set(Flag.CanUseMinimalAgents);
-		setIf(Flag.isMirror, hasFacet(IKeyword.MIRRORS));
+		setIf(Flag.IsMirror, hasFacet(IKeyword.MIRRORS));
 		setIf(Flag.isGrid, IKeyword.GRID.equals(getKeyword()));
 		setJavaBase(clazz);
 		setParent(parent);
@@ -445,7 +445,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	public IExpression getVarExpr(final String n, final boolean asField) {
 		IExpression result = super.getVarExpr(n, asField);
 		if (result == null) {
-			StatementDescription desc = getBehavior(n);
+			IStatementDescription desc = getBehavior(n);
 			if (desc != null) { result = GAML.getExpressionFactory().getExpressionDenoting(desc); }
 			desc = getAspect(n);
 			if (desc != null) { result = GAML.getExpressionFactory().getExpressionDenoting(desc); }
@@ -519,33 +519,21 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	}
 
 	@Override
-	public IDescription addChild(final IDescription child) {
-		final IDescription desc = super.addChild(child);
-		switch (desc) {
-			case null:
-				return null;
-			case ActionDescription action:
-				addAction(action);
-				break;
-			case StatementDescription statement:
-				final String kw = desc.getKeyword();
-				if (IKeyword.ASPECT.equals(kw)) {
-					addAspect(statement);
-				} else {
-					addBehavior(statement);
-				}
-				break;
-			case VariableDescription variable:
-				addOwnAttribute(variable);
-				break;
-			case SpeciesDescription species:
-				addMicroSpecies(species);
-				break;
-			default:
-				break;
-
+	public void addChild(final IDescription child) {
+		if (child instanceof IStatementDescription statement) {
+			final String kw = statement.getKeyword();
+			if (IKeyword.ASPECT.equals(kw)) {
+				addAspect(statement);
+			} else if (child instanceof IActionDescription ad) {
+				addAction(ad);
+			} else {
+				addBehavior(statement);
+			}
+		} else if (child.isSpecies()) {
+			addMicroSpecies((ISpeciesDescription) child);
+		} else {
+			super.addChild(child);
 		}
-		return desc;
 	}
 
 	/**
@@ -559,7 +547,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 * @param sd
 	 *            the micro-species description to add
 	 */
-	protected void addMicroSpecies(final SpeciesDescription sd) {
+	protected void addMicroSpecies(final ISpeciesDescription sd) {
 		if (!isModel() && sd.isGrid()) {
 			sd.error("For the moment, grids cannot be defined as micro-species anywhere else than in the model");
 		}
@@ -592,7 +580,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 *
 	 * @return the own behaviors
 	 */
-	public IMap<String, StatementDescription> getOwnBehaviors() {
+	public IMap<String, IStatementDescription> getOwnBehaviors() {
 		return behaviors == null ? GamaMapFactory.EMPTY : behaviors;
 	}
 
@@ -606,7 +594,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 *
 	 * @return the behaviors map, created if necessary
 	 */
-	private IMap<String, StatementDescription> getBehaviorsMap() {
+	private IMap<String, IStatementDescription> getBehaviorsMap() {
 		if (behaviors == null) { behaviors = GamaMapFactory.create(); }
 		return behaviors;
 	}
@@ -621,7 +609,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 *
 	 * @return the aspects map, created if necessary
 	 */
-	private IMap<String, StatementDescription> getAspectsMap() {
+	private IMap<String, IStatementDescription> getAspectsMap() {
 		if (aspects == null) { aspects = GamaMapFactory.create(); }
 		return aspects;
 	}
@@ -631,38 +619,42 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 *
 	 * @return the own aspects
 	 */
-	public IMap<String, StatementDescription> getOwnAspects() {
+	public IMap<String, IStatementDescription> getOwnAspects() {
 		return aspects == null ? GamaMapFactory.EMPTY : aspects;
 	}
 
 	/**
 	 * Adds the behavior.
 	 *
-	 * @param r
+	 * @param statement
 	 *            the r
 	 */
-	protected void addBehavior(final StatementDescription r) {
-		final String behaviorName = r.getName();
-		final IMap<String, StatementDescription> behaviorMap = getBehaviorsMap();
-		final StatementDescription existing = getBehavior(behaviorName);
-		if (existing != null && existing.getKeyword().equals(r.getKeyword())) { duplicateInfo(r, existing); }
-		behaviorMap.put(behaviorName, r);
+	protected void addBehavior(final IStatementDescription statement) {
+		final String behaviorName = statement.getName();
+		final IMap<String, IStatementDescription> behaviorMap = getBehaviorsMap();
+		final IStatementDescription existing = getBehavior(behaviorName);
+		if (existing != null && existing.getKeyword().equals(statement.getKeyword())) {
+			duplicateInfo(statement, existing);
+		}
+		behaviorMap.put(behaviorName, statement);
 	}
 
 	/**
 	 * Adds the aspect.
 	 *
-	 * @param ce
+	 * @param statement
 	 *            the ce
 	 */
-	private void addAspect(final StatementDescription ce) {
-		String aspectName = ce.getName();
+	private void addAspect(final IStatementDescription statement) {
+		String aspectName = statement.getName();
 		if (aspectName == null) {
 			aspectName = IKeyword.DEFAULT;
-			ce.setName(aspectName);
+			statement.setName(aspectName);
 		}
-		if (!IKeyword.DEFAULT.equals(aspectName) && hasAspect(aspectName)) { duplicateInfo(ce, getAspect(aspectName)); }
-		getAspectsMap().put(aspectName, ce);
+		if (!IKeyword.DEFAULT.equals(aspectName) && hasAspect(aspectName)) {
+			duplicateInfo(statement, getAspect(aspectName));
+		}
+		getAspectsMap().put(aspectName, statement);
 	}
 
 	/**
@@ -673,8 +665,8 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 * @return the behavior
 	 */
 	@Override
-	public StatementDescription getBehavior(final String aName) {
-		StatementDescription ownBehavior = getOwnBehaviors().get(aName);
+	public IStatementDescription getBehavior(final String aName) {
+		IStatementDescription ownBehavior = getOwnBehaviors().get(aName);
 		if (ownBehavior == null && parent != null && parent != this) { ownBehavior = getParent().getBehavior(aName); }
 		return ownBehavior;
 	}
@@ -699,8 +691,8 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 * @return the aspect
 	 */
 	@Override
-	public StatementDescription getAspect(final String aName) {
-		StatementDescription ownAspect = getOwnAspects().get(aName);
+	public IStatementDescription getAspect(final String aName) {
+		IStatementDescription ownAspect = getOwnAspects().get(aName);
 		if (ownAspect == null && parent != null && parent != this) { ownAspect = getParent().getAspect(aName); }
 		return ownAspect;
 	}
@@ -1029,6 +1021,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 		if (!parentIsVisible()) {
 			error(parent.getName() + " can't be a parent species of " + this.getName() + " species.",
 					IGamlIssue.WRONG_PARENT, IKeyword.PARENT);
+			parentIsVisible();
 			return false;
 		}
 		if (hierarchyContainsSelf()) {
@@ -1098,7 +1091,7 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 * @throws GamlException
 	 */
 	@Override
-	public boolean finalizeDescription() {
+	public boolean initializeMirrorsAndSubSpecies() {
 		if (isMirror()) {
 			addChild(GAML.getDescriptionFactory().create(IKeyword.AGENT, this, IKeyword.NAME, IKeyword.TARGET,
 					IKeyword.TYPE, String.valueOf(ITypeProvider.MIRROR_TYPE)));
@@ -1109,10 +1102,10 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 		final boolean isBuiltIn = this.isBuiltIn();
 
 		final DescriptionVisitor<ISpeciesDescription> visitor = microSpec -> {
-			if (!microSpec.finalizeDescription()) return false;
+			if (!microSpec.initializeMirrorsAndSubSpecies()) return false;
 			if (!microSpec.isExperiment() && !isBuiltIn) {
 				final String n = microSpec.getName();
-				if (hasAttribute(n) && !getAttribute(n).isSyntheticSpeciesContainer()) {
+				if (hasAttribute(n) && !getAttribute(n).isSynthetic()) {
 					microSpec.error(
 							microSpec.getName() + " is the name of an existing attribute in " + SpeciesDescription.this,
 							IGamlIssue.DUPLICATE_NAME, IKeyword.NAME);
@@ -1150,8 +1143,8 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	 *
 	 */
 	private void finalizeControl() {
-		if (isSet(Flag.ControlFinalized)) return;
-		set(Flag.ControlFinalized);
+		if (isControlFinalized()) return;
+		set(Flag.IsControlFinalized);
 
 		if (control == null && parent != this && parent instanceof SpeciesDescription) {
 			((SpeciesDescription) parent).finalizeControl();
@@ -1187,22 +1180,6 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	}
 
 	/**
-	 * Checks if is experiment.
-	 *
-	 * @return true, if is experiment
-	 */
-	@Override
-	public boolean isExperiment() { return false; }
-
-	/**
-	 * Checks if is model.
-	 *
-	 * @return true, if is model
-	 */
-	@Override
-	public boolean isModel() { return false; }
-
-	/**
 	 * Gets the micro-species map.
 	 *
 	 * <p>
@@ -1231,14 +1208,6 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 		if (microSpecies == null) { microSpecies = GamaMapFactory.createUnordered(); }
 		return microSpecies;
 	}
-
-	/**
-	 * Checks if is mirror.
-	 *
-	 * @return true, if is mirror
-	 */
-	@Override
-	public boolean isMirror() { return isSet(Flag.isMirror); }
 
 	/**
 	 * Returns whether or not a species implements (directly or indirectly through its parents) a skill named after the
@@ -1289,19 +1258,6 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 		if (sd == null) return false;
 		if (sd.equals(found_sd)) return true;
 		return sd.hasMacroSpecies(found_sd);
-	}
-
-	/**
-	 * @param macro
-	 * @return
-	 */
-	@Override
-	public boolean hasParent(final ISpeciesDescription p) {
-		final SpeciesDescription sd = getParent();
-		// Takes care of invalid species (see Issue 711)
-		if (sd == null || sd == this) return false;
-		if (sd.equals(p)) return true;
-		return sd.hasParent(p);
 	}
 
 	@Override
@@ -1397,5 +1353,45 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 	public ISpecies compileAsBuiltIn() {
 		return (ISpecies) super.compile();
 	}
+
+	/**
+	 * Checks if is class.
+	 *
+	 * @return true, if is class
+	 */
+	@Override
+	public boolean isClass() { return false; }
+
+	/**
+	 * Checks if is species.
+	 *
+	 * @return true, if is species
+	 */
+	@Override
+	public boolean isSpecies() { return true; }
+
+	/**
+	 * Checks if is experiment.
+	 *
+	 * @return true, if is experiment
+	 */
+	@Override
+	public boolean isExperiment() { return false; }
+
+	/**
+	 * Checks if is model.
+	 *
+	 * @return true, if is model
+	 */
+	@Override
+	public boolean isModel() { return false; }
+
+	/**
+	 * Checks if is skill.
+	 *
+	 * @return true, if is skill
+	 */
+	@Override
+	public boolean isSkill() { return false; }
 
 }

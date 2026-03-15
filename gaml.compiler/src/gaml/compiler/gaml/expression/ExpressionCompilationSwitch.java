@@ -506,8 +506,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	private boolean isTypeName(final String name) {
 		final IType t = context.getTypesManager().get(name, null);
 		if (t == null) return false;
-		final ISpeciesDescription sd = t.getSpecies();
-		if (sd != null && sd.isExperiment()) return false;
+		final ITypeDescription td = t.getSpecies();
+		if (td instanceof ISpeciesDescription sd && sd.isExperiment()) return false;
 		return true;
 	}
 
@@ -521,8 +521,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	private IType getType(final String name) {
 		final IType t = context.getTypesManager().get(name, null);
 		if (t == null) return null;
-		final ISpeciesDescription sd = t.getSpecies();
-		if (sd != null && sd.isExperiment()) return null;
+		final ITypeDescription td = t.getSpecies();
+		if (td instanceof ISpeciesDescription sd && sd.isExperiment()) return null;
 		return t;
 	}
 
@@ -546,7 +546,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		final IType type = owner.getGamlType();
 
 		if (fieldName != null && type.isParametricFormOf(Types.SPECIES)) {
-			final ISpeciesDescription sd = type.getContentType().getSpecies();
+			final ITypeDescription sd = type.getContentType().getSpecies();
 			if (sd instanceof IModelDescription md && md.hasExperiment(fieldName))
 				return FACTORY.createConst(fieldName, GamaType.from(md.getExperiment(fieldName)));
 		}
@@ -1100,7 +1100,10 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	public IExpression caseTypeRef(final TypeRef object) {
 		final IType t = fromTypeRef(object);
 		if (t == null) return null;
-		if (t.isAgentType()) return t.getSpecies().getSpeciesExpr();
+		if (t.isAgentType()) {
+			ITypeDescription td = t.getSpecies();
+			if (td instanceof ISpeciesDescription sd) return sd.getSpeciesExpr();
+		}
 		return FACTORY.createTypeExpression(t);
 	}
 

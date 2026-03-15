@@ -20,8 +20,8 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.ISymbolKind;
 import gama.api.compilation.artefacts.IArtefact;
+import gama.api.compilation.descriptions.IClassDescription;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
 import gama.api.compilation.documentation.GamlRegularDocumentation;
@@ -542,7 +542,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 * @return the species description, or null for non-agent types
 	 */
 	@Override
-	public ISpeciesDescription getSpecies() { return null; }
+	public IClassDescription getSpecies() { return null; }
 
 	/**
 	 * Returns the denoted species description for agent types.
@@ -550,7 +550,7 @@ public abstract class GamaType<Support> implements IType<Support> {
 	 * @return the denoted species description, delegates to getSpecies() by default
 	 */
 	@Override
-	public ISpeciesDescription getDenotedSpecies() { return getSpecies(); }
+	public ITypeDescription getDenotedSpecies() { return getSpecies(); }
 
 	/**
 	 * Checks if this type is a supertype of another type by walking up the parent chain.

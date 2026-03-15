@@ -29,6 +29,7 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.gaml.symbols.Facets;
@@ -48,10 +49,10 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 	private IMap<String, IVariableDescription> parameters;
 
 	/** The output. */
-	private StatementDescription output;
+	private IStatementDescription output;
 
 	/** The permanent. */
-	private StatementDescription permanent;
+	private IStatementDescription permanent;
 
 	/**
 	 * Instantiates a new experiment description.
@@ -239,10 +240,8 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 	 *
 	 * @return the experiment title facet
 	 */
-	public String getExperimentTitleFacet() { return getLitteral(IKeyword.TITLE); }
-
 	@Override
-	public boolean isExperiment() { return true; }
+	public String getExperimentTitleFacet() { return getLitteral(IKeyword.TITLE); }
 
 	@Override
 	public boolean visitOwnChildren(final DescriptionVisitor<IDescription> visitor) {
@@ -287,25 +286,6 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 		return result;
 	}
 
-	/**
-	 * @return
-	 */
-	// public Boolean isBatch() { return isSet(Flag.isBatch); }
-
-	/**
-	 * @return
-	 */
-	@Override
-	public Boolean isMemorize() { return isSet(Flag.isMemorize); }
-
-	/**
-	 * Checks if is batch.
-	 *
-	 * @return the boolean
-	 */
-	@Override
-	public Boolean isBatch() { return isSet(Flag.isBatch); }
-
 	@Override
 	public Class<? extends IExperimentAgent> getJavaBase() {
 		String type = getLitteral(IKeyword.TYPE);
@@ -332,14 +312,14 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 	private void inheritOutputsFrom(final ExperimentDescription parent) {
 		if (parent.output != null) {
 			if (output == null) {
-				output = parent.output.copy(this);
+				output = (IStatementDescription) parent.output.copy(this);
 			} else {
 				mergeOutputs(parent.output, output);
 			}
 		}
 		if (parent.permanent != null) {
 			if (permanent == null) {
-				permanent = parent.permanent.copy(this);
+				permanent = (IStatementDescription) parent.permanent.copy(this);
 			} else {
 				mergeOutputs(parent.permanent, permanent);
 			}
@@ -354,7 +334,7 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 	 * @param defined
 	 *            the defined
 	 */
-	private void mergeOutputs(final StatementDescription inherited, final StatementDescription defined) {
+	private void mergeOutputs(final IStatementDescription inherited, final IStatementDescription defined) {
 		inherited.visitChildren(in -> {
 			final IDescription redefined = getSimilarChild(defined, in);
 			if (redefined == null) {
@@ -369,7 +349,7 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 	}
 
 	@Override
-	protected void addBehavior(final StatementDescription r) {
+	protected void addBehavior(final IStatementDescription r) {
 		if (IKeyword.OUTPUT.equals(r.getKeyword())) {
 			output = r;
 		} else if (IKeyword.PERMANENT.equals(r.getKeyword())) {
@@ -399,5 +379,45 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 	public boolean visitMicroSpecies(final DescriptionVisitor<ISpeciesDescription> visitor) {
 		return true;
 	}
+
+	/**
+	 * Checks if is class.
+	 *
+	 * @return true, if is class
+	 */
+	@Override
+	public boolean isClass() { return false; }
+
+	/**
+	 * Checks if is species.
+	 *
+	 * @return true, if is species
+	 */
+	@Override
+	public boolean isSpecies() { return false; }
+
+	/**
+	 * Checks if is experiment.
+	 *
+	 * @return true, if is experiment
+	 */
+	@Override
+	public boolean isExperiment() { return true; }
+
+	/**
+	 * Checks if is model.
+	 *
+	 * @return true, if is model
+	 */
+	@Override
+	public boolean isModel() { return false; }
+
+	/**
+	 * Checks if is skill.
+	 *
+	 * @return true, if is skill
+	 */
+	@Override
+	public boolean isSkill() { return false; }
 
 }

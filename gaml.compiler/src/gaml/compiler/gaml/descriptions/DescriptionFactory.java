@@ -379,9 +379,10 @@ public class DescriptionFactory implements IDescriptionFactory {
 	 *            the plugin
 	 * @return the species description
 	 */
-	public IClassDescription createBuiltInClassDescription(final String plugin) {
+	@Override
+	public IClassDescription createBuiltInClassDescription(final String name, final String plugin) {
 		ISymbolDescriptionFactory.Clazz factory = (ISymbolDescriptionFactory.Clazz) getFactory(ISymbolKind.CLASS);
-		return factory.createBuiltInClassDescription(plugin);
+		return factory.createBuiltInClassDescription(name, plugin);
 	}
 
 	/**

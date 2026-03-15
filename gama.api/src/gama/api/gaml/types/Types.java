@@ -30,6 +30,7 @@ import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.object.GamaGenericObjectType;
 import gama.dev.DEBUG;
 
 /**
@@ -85,6 +86,9 @@ public class Types {
 
 	/** The singleton instance of the Topology type. */
 	public static GamaTopologyType TOPOLOGY;
+
+	/** The object. */
+	public static GamaGenericObjectType OBJECT;
 
 	/** The singleton instance of the Field type. */
 	public static GamaFieldType FIELD;
@@ -212,6 +216,9 @@ public class Types {
 			case IType.FIELD:
 				FIELD = (GamaFieldType) instance;
 				break;
+			case IType.OBJECT:
+				OBJECT = (GamaGenericObjectType) instance;
+				break;
 			default:
 		}
 	}
@@ -270,6 +277,8 @@ public class Types {
 				return ACTION;
 			case IType.TYPE:
 				return TYPE;
+			case IType.OBJECT:
+				return OBJECT;
 		}
 		return BUILT_IN_TYPES.get(String.valueOf(type));
 	}

@@ -12,7 +12,7 @@ package gama.core.outputs;
 
 import java.util.Collection;
 
-import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.kernel.agent.IAgent;
@@ -111,7 +111,7 @@ public class ValuedDisplayOutputFactory {
 	 *            the expr
 	 */
 	public static void browse(final IMacroAgent root, final IExpression expr, final IExpression attributes) {
-		final ISpeciesDescription species = expr.getGamlType().isContainer()
+		final ITypeDescription species = expr.getGamlType().isContainer()
 				? expr.getGamlType().getContentType().getSpecies() : expr.getGamlType().getSpecies();
 		if (species == null) throw GamaRuntimeException
 				.error("Expression '" + expr.serializeToGaml(true) + "' does not reference agents", root.getScope());

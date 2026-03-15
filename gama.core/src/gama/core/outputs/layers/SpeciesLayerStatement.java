@@ -29,6 +29,7 @@ import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.serialization.ISymbolSerializer;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
@@ -190,13 +191,13 @@ public class SpeciesLayerStatement extends AgentLayerStatement {
 
 		@Override
 		public void validate(final IStatementDescription description) {
-			ISpeciesDescription target = description.getGamlType().getDenotedSpecies();
-			if (target == null) // Already caught by the type checking
+			ITypeDescription target = description.getGamlType().getDenotedSpecies();
+			if (!(target instanceof ISpeciesDescription sd)) // Already caught by the type checking
 				return;
 			final IExpressionDescription ed = description.getFacet(ASPECT);
 			if (ed != null) {
 				final String a = description.getLitteral(ASPECT);
-				if (target.getAspect(a) != null) {
+				if (sd.getAspect(a) != null) {
 					ed.compileAsLabel();
 				} else {
 					description.error(a + " is not the name of an aspect of " + target.getName(), IGamlIssue.GENERAL,

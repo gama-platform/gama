@@ -55,6 +55,14 @@ public interface IModelDescription extends ISpeciesDescription {
 	void visitAllSpecies(final ConsumerWithPruning<ISpeciesDescription> visitor);
 
 	/**
+	 * Visit all classes.
+	 *
+	 * @param visitor
+	 *            the visitor
+	 */
+	void visitAllClasses(final ConsumerWithPruning<IClassDescription> visitor);
+
+	/**
 	 * @param alias
 	 * @return
 	 */
@@ -140,5 +148,11 @@ public interface IModelDescription extends ISpeciesDescription {
 	 * @return
 	 */
 	String getModelFolderPath();
+
+	/**
+	 * @param p
+	 * @return
+	 */
+	IClassDescription getClassDescription(String p);
 
 }

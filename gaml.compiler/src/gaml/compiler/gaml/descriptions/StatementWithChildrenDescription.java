@@ -66,8 +66,8 @@ public class StatementWithChildrenDescription extends StatementDescription {
 			final Iterable<IDescription> cp, final boolean hasArgs, final EObject source, final Facets facets,
 			final Arguments alreadyComputedArgs) {
 		super(keyword, superDesc, hasArgs, source, facets, alreadyComputedArgs);
-		setIf(Flag.Breakable, getArtefact().isBreakable());
-		setIf(Flag.Continuable, getArtefact().isContinuable());
+		setIf(Flag.IsBreakable, getArtefact().isBreakable());
+		setIf(Flag.IsContinuable, getArtefact().isContinuable());
 		addChildren(cp);
 	}
 
@@ -180,13 +180,9 @@ public class StatementWithChildrenDescription extends StatementDescription {
 	}
 
 	@Override
-	public IDescription addChild(final IDescription child) {
-		final IDescription d = super.addChild(child);
-		if (d != null) {
-			if (children == null) { children = new ArrayList<>(); }
-			children.add(child);
-		}
-		return d;
+	public void addChild(final IDescription child) {
+		if (children == null) { children = new ArrayList<>(); }
+		children.add(child);
 	}
 
 	/**
@@ -220,12 +216,6 @@ public class StatementWithChildrenDescription extends StatementDescription {
 		children.addAll(descs);
 	}
 
-	/**
-	 * @return
-	 */
-	@Override
-	public boolean isBreakable() { return isSet(Flag.Breakable); }
-
 	@Override
 	public IVarExpression addNewTempIfNecessary(final String facetName, final IType type) {
 		if (IKeyword.LOOP.equals(getKeyword()) && IKeyword.NAME.equals(facetName))
@@ -233,13 +223,5 @@ public class StatementWithChildrenDescription extends StatementDescription {
 			return (IVarExpression) addTemp(this, facetName, getLitteral(facetName), type);
 		return super.addNewTempIfNecessary(facetName, type);
 	}
-
-	/**
-	 * Checks if is continuable.
-	 *
-	 * @return true, if is continuable
-	 */
-	@Override
-	public boolean isContinuable() { return isSet(Flag.Continuable); }
 
 }

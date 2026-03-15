@@ -31,6 +31,7 @@ import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.factories.IExpressionFactory;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
@@ -395,7 +396,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	@Override
 	public SpeciesConstantExpression createSpeciesConstant(final IType type) {
 		if (type.getGamlType() != Types.SPECIES) return null;
-		final ISpeciesDescription sd = type.getContentType().getSpecies();
+		final ITypeDescription sd = type.getContentType().getSpecies();
 		if (sd == null) return null;
 		return new SpeciesConstantExpression(sd.getName(), type, sd);
 	}

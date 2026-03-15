@@ -168,9 +168,10 @@ public interface ISymbolDescriptionFactory {
 
 		/**
 		 * @param plugin
+		 * @param plugin2
 		 * @return
 		 */
-		IClassDescription createBuiltInClassDescription(String plugin);
+		IClassDescription createBuiltInClassDescription(String name, String plugin);
 
 	}
 

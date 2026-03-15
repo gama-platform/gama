@@ -684,14 +684,14 @@ public abstract class AbstractPopulation<T extends IAgent> implements IPopulatio
 				for (final IVariableDescription dep : var.getDependencies(facetsToConsider, false, true)) {
 					if (keep.apply(dep)) { tryAdd(graph, dep.getName(), name); }
 				}
-				if (var.isSyntheticSpeciesContainer()) { tryAdd(graph, IKeyword.SHAPE, name); }
+				if (var.isSynthetic()) { tryAdd(graph, IKeyword.SHAPE, name); }
 			}
 			return true;
 		});
 		final List<IVariableDescription> subs = new ArrayList<>();
 		ecd.visitAllAttributes(d -> {
 			IVariableDescription var = (IVariableDescription) d;
-			if (var.isSyntheticSpeciesContainer()) { subs.add(var); }
+			if (var.isSynthetic()) { subs.add(var); }
 			return true;
 		});
 		for (int i = 0; i < subs.size() - 1; i++) {

@@ -18,7 +18,6 @@ import gama.annotations.skill;
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ISkillDescription;
-import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.kernel.skill.IArchitecture;
 import gama.api.kernel.skill.ISkill;
@@ -63,22 +62,6 @@ public class SkillDescription extends TypeDescription implements ISkillDescripti
 
 	@Override
 	public String getName() { return name; }
-
-	@Override
-	public IDescription addChild(final IDescription child) {
-		child.setEnclosingDescription(this);
-		switch (child) {
-			case ActionDescription ad:
-				addAction(ad);
-				break;
-			case VariableDescription vd:
-				addOwnAttribute(vd);
-				break;
-			default:
-				break;
-		}
-		return child;
-	}
 
 	@Override
 	public boolean visitChildren(final DescriptionVisitor<IDescription> visitor) {
@@ -144,10 +127,15 @@ public class SkillDescription extends TypeDescription implements ISkillDescripti
 	@Override
 	public String getTitle() { return "skill " + getName(); }
 
+	/**
+	 * Gets the documentation without meta.
+	 *
+	 * @return the documentation without meta
+	 */
 	@Override
-	public IGamlDocumentation getDocumentation() {
+	public void documentThis(final IGamlDocumentation sb) {
 		final doc d = getDocAnnotation();
-		final IGamlDocumentation sb = new GamlRegularDocumentation();
+
 		if (d != null) {
 			String s = d.value();
 			if (s != null && !s.isEmpty()) {
@@ -161,9 +149,6 @@ public class SkillDescription extends TypeDescription implements ISkillDescripti
 		}
 		documentAttributes(sb);
 		documentActions(sb);
-
-		return sb;
-
 	}
 
 	/**
@@ -196,5 +181,45 @@ public class SkillDescription extends TypeDescription implements ISkillDescripti
 		if (s == null || s.isEmpty()) return null;
 		return s;
 	}
+
+	/**
+	 * Checks if is class.
+	 *
+	 * @return true, if is class
+	 */
+	@Override
+	public boolean isClass() { return false; }
+
+	/**
+	 * Checks if is species.
+	 *
+	 * @return true, if is species
+	 */
+	@Override
+	public boolean isSpecies() { return false; }
+
+	/**
+	 * Checks if is experiment.
+	 *
+	 * @return true, if is experiment
+	 */
+	@Override
+	public boolean isExperiment() { return false; }
+
+	/**
+	 * Checks if is model.
+	 *
+	 * @return true, if is model
+	 */
+	@Override
+	public boolean isModel() { return false; }
+
+	/**
+	 * Checks if is skill.
+	 *
+	 * @return true, if is skill
+	 */
+	@Override
+	public boolean isSkill() { return true; }
 
 }

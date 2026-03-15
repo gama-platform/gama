@@ -30,7 +30,7 @@ import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
 
-import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -156,7 +156,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 		final String geomType = GeometryUtils.getGeometryStringType(agents);
 		specs.append("geometry:" + geomType);
 		try {
-			final ISpeciesDescription species = agents instanceof IPopulation pop ? pop.getSpecies().getDescription()
+			final ITypeDescription species = agents instanceof IPopulation pop ? pop.getSpecies().getDescription()
 					: agents.getGamlType().getContentType().getSpecies();
 
 			final Map<String, IExpression> attributes = computeInits(scope, species, attributesToSave);
@@ -276,7 +276,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected final Map<String, IExpression> computeInits(final IScope scope, final ISpeciesDescription species,
+	protected final Map<String, IExpression> computeInits(final IScope scope, final ITypeDescription species,
 			final Object attributes) throws GamaRuntimeException {
 		if (attributes == null) return Collections.EMPTY_MAP;
 		final Map<String, IExpression> result = GamaMapFactory.create();

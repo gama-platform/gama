@@ -21,8 +21,6 @@ import static gama.annotations.constants.IKeyword.TRUE;
 import static gama.annotations.constants.IKeyword.TYPE;
 import static gama.annotations.constants.IKeyword.UPDATE;
 import static gama.annotations.constants.IKeyword.VALUE;
-import static gama.api.compilation.descriptions.IDescription.Flag.Unmodifiable;
-import static gama.api.compilation.descriptions.IDescription.Flag.Updatable;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -97,9 +95,10 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 			setIf(Flag.isFunction, hasFacet(FUNCTION));
 			setIf(Flag.IsParameter,
 					isExperimentParameter() || hasFacet(PARAMETER) && !iFacets.equals(PARAMETER, FALSE));
-			setIf(Flag.Global, superDesc instanceof ModelDescription);
-			setIf(Unmodifiable, (iFacets.containsKey(FUNCTION) || iFacets.equals(CONST, TRUE)) && !isParameter());
-			setIf(Updatable, !isSet(Unmodifiable) && (hasFacet(VALUE) || hasFacet(UPDATE)));
+			setIf(Flag.IsGlobal, superDesc instanceof ModelDescription);
+			setIf(Flag.IsUnmodifiable,
+					(iFacets.containsKey(FUNCTION) || iFacets.equals(CONST, TRUE)) && !isParameter());
+			setIf(Flag.IsUpdatable, !isUnmodifiable() && (hasFacet(VALUE) || hasFacet(UPDATE)));
 			if (isBuiltIn() && hasFacet("depends_on")) {
 				final IExpressionDescription desc = getFacet("depends_on");
 				final Collection<String> strings = desc.getStrings(this, false);
@@ -122,24 +121,8 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 	 * Sets the synthetic species container.
 	 */
 	public void setSyntheticSpeciesContainer() {
-		set(Flag.Synthetic);
+		set(Flag.IsSynthetic);
 	}
-
-	/**
-	 * Checks if is synthetic species container.
-	 *
-	 * @return true, if is synthetic species container
-	 */
-	@Override
-	public boolean isSyntheticSpeciesContainer() { return isSet(Flag.Synthetic); }
-
-	/**
-	 * Checks if is function.
-	 *
-	 * @return true, if is function
-	 */
-	@Override
-	public boolean isFunction() { return isSet(Flag.isFunction); }
 
 	/**
 	 * Checks if is defined in experiment.
@@ -294,41 +277,17 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 				if (expression != null) { expression.collectUsedVarsOf(speciesContext, alreadyProcessed, result); }
 				return true;
 			});
-			if (isSyntheticSpeciesContainer()) {
+			if (isSynthetic()) {
 				final ISpeciesDescription mySpecies = (ISpeciesDescription) getEnclosingDescription();
 				final ISpeciesDescription sd = mySpecies.getMicroSpecies(varName);
 				sd.collectUsedVarsOf(mySpecies, alreadyProcessed, result);
 			}
 			if (!includingThis) { result.remove(this); }
-			if (!includingSpecies) { result.removeIf(IVariableDescription::isSyntheticSpeciesContainer); }
+			if (!includingSpecies) { result.removeIf(IVariableDescription::isSynthetic); }
 			result.remove(null);
 			return result.items();
 		}
 	}
-
-	/**
-	 * Checks if is updatable.
-	 *
-	 * @return true, if is updatable
-	 */
-	@Override
-	public boolean isUpdatable() { return isSet(Flag.Updatable); }
-
-	/**
-	 * Checks if is not modifiable.
-	 *
-	 * @return true, if is not modifiable
-	 */
-	@Override
-	public boolean isNotModifiable() { return isSet(Flag.Unmodifiable); }
-
-	/**
-	 * Checks if is parameter.
-	 *
-	 * @return true, if is parameter
-	 */
-	@Override
-	public boolean isParameter() { return isSet(Flag.IsParameter); }
 
 	/**
 	 * Gets the var expr.
@@ -342,7 +301,7 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 	public IExpression getVarExpr(final boolean asField) {
 		final boolean asGlobal = isGlobal() && !asField;
 
-		return GAML.getExpressionFactory().createVar(getName(), getGamlType(), isNotModifiable(),
+		return GAML.getExpressionFactory().createVar(getName(), getGamlType(), isUnmodifiable(),
 				asGlobal ? IVarExpression.Category.GLOBAL : IVarExpression.Category.AGENT,
 				this.getEnclosingDescription());
 	}
@@ -366,7 +325,7 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 
 	@Override
 	public String getTitle() {
-		final String title = (isParameter() ? "Parameter " : isNotModifiable() ? "Constant " : "Attribute ") + getName()
+		final String title = (isParameter() ? "Parameter " : isUnmodifiable() ? "Constant " : "Attribute ") + getName()
 				+ ", of type " + getGamlType().getName() + ", ";
 		if (getEnclosingDescription() == null) return title;
 		return title + "defined in " + this.getEnclosingDescription().getTitle() + "<br/>";
@@ -392,7 +351,7 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 	@Override
 	public IGamlDocumentation getShortDocumentation() {
 		IGamlDocumentation result = new GamlRegularDocumentation(
-				isParameter() ? "parameter " : isNotModifiable() ? "constant " : "attribute ").append("of type ")
+				isParameter() ? "parameter " : isUnmodifiable() ? "constant " : "attribute ").append("of type ")
 						.append(getGamlType().getName());
 		final String doc = getBuiltInDoc();
 		if (doc != null) { result.append(". ").append(doc).append("<br/>"); }
@@ -511,13 +470,6 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 	@Override
 	public IGamaHelper<?> getSetter() { return set; }
 
-	/**
-	 * Checks if is global.
-	 *
-	 * @return true, if is global
-	 */
-	public boolean isGlobal() { return isSet(Flag.Global); }
-
 	@Override
 	public String getDefiningPlugin() { return plugin; }
 
@@ -540,13 +492,6 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 
 	@Override
 	public Iterable<IDescription> getOwnChildren() { return Collections.EMPTY_LIST; }
-
-	/**
-	 * Checks if is contextual type.
-	 *
-	 * @return true, if is contextual type
-	 */
-	public boolean isContextualType() { return isSet(Flag.isContextualType); }
 
 	/**
 	 * Sets the built in doc.

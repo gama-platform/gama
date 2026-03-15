@@ -22,11 +22,14 @@ import java.util.concurrent.ExecutionException;
 import com.google.common.cache.Cache;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.compilation.descriptions.IClassDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.object.IObject;
+import gama.api.types.object.GamaObjectType;
 import gama.dev.DEBUG;
 
 /**
@@ -369,7 +372,6 @@ public class TypesManager implements ITypesManager {
 	 *            the species description to register as a type
 	 * @return the created agent type for this species
 	 */
-	@Override
 	public IType<? extends IAgent> addSpeciesType(final ISpeciesDescription species) {
 		final String name = species.getName();
 		if (IKeyword.AGENT.equals(name)) return get(IKeyword.AGENT);
@@ -379,6 +381,27 @@ public class TypesManager implements ITypesManager {
 			return this.get(name);
 		}
 		GamaAgentType t = new GamaAgentType(this, species, ++CURRENT_INDEX);
+		Types.addClassTypeCorrespondance(species.getJavaBase(), name);
+		addType(t);
+		return t;
+	}
+
+	/**
+	 * Adds the class type.
+	 *
+	 * @param species
+	 *            the species
+	 * @return the i type<? extends I agent>
+	 */
+	public IType<? extends IObject> addClassType(final IClassDescription species) {
+		final String name = species.getName();
+		if (IKeyword.OBJECT.equals(name)) return get(IKeyword.OBJECT);
+		if (!species.isBuiltIn() && containsType(name)) {
+			species.error("Species " + name + " already declared. Species name must be unique",
+					IGamlIssue.DUPLICATE_NAME, species.getUnderlyingElement(), name);
+			return this.get(name);
+		}
+		GamaObjectType t = new GamaObjectType(this, species, name, ++CURRENT_INDEX, IObject.class);
 		Types.addClassTypeCorrespondance(species.getJavaBase(), name);
 		addType(t);
 		return t;
@@ -451,12 +474,17 @@ public class TypesManager implements ITypesManager {
 	 *            the model description containing species definitions
 	 */
 	@Override
-	public void init(final IModelDescription model) {
+	public void collectAndInitializeTypesFrom(final IModelDescription model) {
 		// We first add the species as types
 		model.visitAllSpecies(entry -> {
 			addSpeciesType(entry);
 			return true;
 		});
+		model.visitAllClasses(clazz -> {
+			addClassType(clazz);
+			return true;
+		});
+
 		// Then we parent the types
 		model.visitAllSpecies(entry -> {
 			final IType type = get(entry.getName());
@@ -467,6 +495,16 @@ public class TypesManager implements ITypesManager {
 			}
 			return true;
 		});
+		model.visitAllClasses(clazz -> {
+			final IType type = get(clazz.getName());
+			if (!IKeyword.OBJECT.equals(type.getName())) {
+				final ITypeDescription parent = clazz.getParent();
+				// Takes care of invalid classes
+				type.setParent(parent == null || parent == clazz ? get(IKeyword.OBJECT) : get(parent.getName()));
+			}
+			return true;
+		});
+
 	}
 
 	/**

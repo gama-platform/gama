@@ -321,7 +321,7 @@ public class ExperimentParameter extends Symbol implements IParameter.Batch {
 		labels = tab.length != 2 ? SWITCH_STRINGS : tab;
 		final IVariableDescription targetedGlobalVar = findTargetedVar(sd, varName);
 		init = hasFacet(IKeyword.INIT) ? getFacet(IKeyword.INIT) : targetedGlobalVar.getFacetExpr(IKeyword.INIT);
-		isEditable = !targetedGlobalVar.isNotModifiable();
+		isEditable = !targetedGlobalVar.isUnmodifiable();
 		if (isEditable) {
 			final IExpression ed = getFacet("read_only");
 			if (ed != null) { isEditable = !Cast.asBool(runtimeScope, ed.value(runtimeScope)); }

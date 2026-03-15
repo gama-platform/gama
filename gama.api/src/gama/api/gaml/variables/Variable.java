@@ -454,7 +454,7 @@ public class Variable extends Symbol implements IVariable {
 					return;
 				}
 				assertValueFacetsTypes(cd, targetedVar.getGamlType());
-				if (cd.isNotModifiable() || targetedVar.isNotModifiable()) {
+				if (cd.isUnmodifiable() || targetedVar.isUnmodifiable()) {
 					final String p = "Parameter '" + cd.getParameterName() + "' ";
 					cd.info(p + "Since the variable is declared as const, this parameter will be read-only.",
 							IGamlIssue.REMOVE_CONST);
@@ -589,7 +589,7 @@ public class Variable extends Symbol implements IVariable {
 		initExpression = getFacet(IKeyword.INIT);
 		amongExpression = getFacet(IKeyword.AMONG);
 		onChangeExpression = getFacet(IKeyword.ON_CHANGE);
-		isNotModifiable = desc.isNotModifiable();
+		isNotModifiable = desc.isUnmodifiable();
 		type = desc.getGamlType();
 	}
 
@@ -1052,7 +1052,7 @@ public class Variable extends Symbol implements IVariable {
 	public boolean isMicroPopulation() {
 		final IVariableDescription desc = getDescription();
 		if (desc == null) return false;
-		return desc.isSyntheticSpeciesContainer();
+		return desc.isSynthetic();
 	}
 
 	@Override

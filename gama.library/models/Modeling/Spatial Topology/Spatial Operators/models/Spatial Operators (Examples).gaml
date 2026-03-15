@@ -28,13 +28,13 @@ global {
 	geometry shape <- envelope(shape_file_name_background);
 	
 
-	reflex stop when: empty ( object ) {
+	reflex stop when: empty ( objects ) {
 		do pause;
   	} 
 
 }
 
-species object topology: topology(shape_file_name_init) {
+species objects topology: topology(shape_file_name_init) {
 	rgb color <- rgb ( [ rnd ( 255 ) , rnd ( 255 ) , rnd ( 255 ) ]);
 	point location_new_Ag <- nil;
 	rgb color_new_Ag <- nil;
@@ -60,7 +60,7 @@ species object topology: topology(shape_file_name_init) {
 	//Reflex to change the shape of the agent intersects an other agent and create a convex hull of the shape of the new agent resulting in the intersection of the shapes of the agent and an other one
 	reflex crossover when: ( shape.area > crossover_size ) and ( nb_last_rep > time_wthout_co ) { 
 		int nb_partners  <- 0;
-		list<object> list_people <- shuffle ( object );
+		list<objects> list_people <- shuffle ( objects );
 		loop p over: list_people {
 			if ( p != self ) and ( nb_partners <= nb_partners_max ) and (rnd ( 100 ) < ( crossover_rate * 100 ) ) and ( (p.shape).area > crossover_size ) and ( p . nb_last_rep > time_wthout_co ) and (shape intersects p.shape) {
 				nb_partners <- nb_partners + 1;
@@ -70,7 +70,7 @@ species object topology: topology(shape_file_name_init) {
 					ask p {
 						nb_last_rep <- 0;
 					}
-					create object  {
+					create objects  {
 						color <- (myself.color + p.color) / 2;
 						shape <-  convex_hull(new_ag);
 					}
@@ -103,7 +103,7 @@ experiment example_spatial_operators type: gui {
 
 	output {
 		display space_display {
-			species object aspect: geometry;
+			species objects aspect: geometry;
 		}
 	}
 }

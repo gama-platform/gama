@@ -230,4 +230,11 @@ public interface IClass extends ISymbol, ITyped, IJsonable {
 	 */
 	IObject createInstance(IScope scope, IMap<String, Object> args);
 
+	/**
+	 * Gets the parent name.
+	 *
+	 * @return the parent name
+	 */
+	default String getParentName() { return getDescription().getParentName(); }
+
 }

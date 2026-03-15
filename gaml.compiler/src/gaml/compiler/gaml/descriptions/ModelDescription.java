@@ -27,9 +27,12 @@ import com.google.common.collect.Iterables;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IActionDescription;
+import gama.api.compilation.descriptions.IClassDescription;
 import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.compilation.serialization.ISymbolSerializer;
@@ -234,7 +237,10 @@ import gama.api.utils.interfaces.ConsumerWithPruning;
 public class ModelDescription extends SpeciesDescription implements IModelDescription {
 
 	/** The experiments. */
-	private IMap<String, ExperimentDescription> experiments;
+	private IMap<String, IExperimentDescription> experiments;
+
+	/** The class descriptions. */
+	private IMap<String, IClassDescription> classDescriptions;
 
 	/** The types. */
 	final ITypesManager types;
@@ -317,9 +323,6 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 */
 	@Override
 	public boolean isMicroModel() { return alias != null && !alias.isEmpty(); }
-
-	@Override
-	public boolean isModel() { return true; }
 
 	// end-hqnghi
 
@@ -522,24 +525,23 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 */
 	@Override
 	public void buildTypes() {
-		types.init(this);
+		types.collectAndInitializeTypesFrom(this);
 	}
 
 	@Override
-	public IDescription addChild(final IDescription child) {
-		if (child == null) return null;
-		if (child instanceof ModelDescription md) {
-			md.getTypesManager().setParent(getTypesManager());
+	public void addChild(final IDescription child) {
+		if (child.isModel()) {
+			child.getModelDescription().getTypesManager().setParent(getTypesManager());
 			if (microModels == null) { microModels = GamaMapFactory.create(); }
 			microModels.put(((ModelDescription) child).getAlias(), (ModelDescription) child);
-		} // no else as models are also species, which should be added after.
-
-		if (child instanceof ExperimentDescription exp) {
-			getExperimentsMap().put(exp.getName(), exp);
+		} // no 'else' as models are also species, which should be added after.
+		if (child.isExperiment()) {
+			getExperimentsMap().put(child.getName(), (IExperimentDescription) child);
+		} else if (child.isClass()) {
+			getClassesMap().put(child.getName(), (IClassDescription) child);
 		} else {
 			super.addChild(child);
 		}
-		return child;
 	}
 
 	/**
@@ -547,7 +549,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 *
 	 * @return the own experiments
 	 */
-	public IMap<String, ExperimentDescription> getOwnExperiments() {
+	public IMap<String, IExperimentDescription> getOwnExperiments() {
 		return experiments == null ? GamaMapFactory.EMPTY : experiments;
 	}
 
@@ -556,9 +558,19 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 *
 	 * @return the experiments map
 	 */
-	public IMap<String, ExperimentDescription> getExperimentsMap() {
+	public IMap<String, IExperimentDescription> getExperimentsMap() {
 		if (experiments == null) { experiments = GamaMapFactory.create(); }
 		return experiments;
+	}
+
+	/**
+	 * Gets the classes map.
+	 *
+	 * @return the classes map
+	 */
+	public IMap<String, IClassDescription> getClassesMap() {
+		if (classDescriptions == null) { classDescriptions = GamaMapFactory.create(); }
+		return classDescriptions;
 	}
 
 	/**
@@ -569,17 +581,9 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 */
 	@Override
 	public void addOwnAttribute(final IVariableDescription vd) {
-		setIf(Flag.StartingDateDefined, !vd.isBuiltIn() && ISimulationAgent.STARTING_DATE.equals(vd.getName()));
+		setIf(Flag.IsStartingDateDefined, !vd.isBuiltIn() && ISimulationAgent.STARTING_DATE.equals(vd.getName()));
 		super.addOwnAttribute(vd);
 	}
-
-	/**
-	 * Checks if is starting date defined.
-	 *
-	 * @return true, if is starting date defined
-	 */
-	@Override
-	public boolean isStartingDateDefined() { return isSet(Flag.StartingDateDefined); }
 
 	/**
 	 * Checks for experiment.
@@ -591,7 +595,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	@Override
 	public boolean hasExperiment(final String nameOrTitle) {
 		if (getOwnExperiments().containsKey(nameOrTitle)) return true;
-		for (final ExperimentDescription exp : getOwnExperiments().values()) {
+		for (final IExperimentDescription exp : getOwnExperiments().values()) {
 			final String s = exp.getExperimentTitleFacet();
 			if (s != null && s.equals(nameOrTitle)) return true;
 		}
@@ -606,11 +610,11 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		if (spec.equals(getName()) || importedModelNames != null && importedModelNames.contains(spec)) return this;
 		if (IKeyword.EXPERIMENT.equals(spec) && gama.api.GAMA.getExperiment() != null)
 			return gama.api.GAMA.getExperiment().getDescription();
-		ISpeciesDescription result = null;
+		ITypeDescription result = null;
 		if (getTypesManager() != null) { result = getTypesManager().get(spec).getSpecies(); }
 		if (result == null) { result = getOwnMicroSpecies().get(spec); }
 		if (result == null) { result = GamaMetaModel.getSpeciesDescription(spec); }
-		return result;
+		return result instanceof ISpeciesDescription i ? i : null;
 	}
 
 	@Override
@@ -645,7 +649,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 */
 	public Set<String> getExperimentTitles() {
 		return getOwnExperiments().values().stream().filter(b -> b.getOriginName().equals(getName()))
-				.map(ExperimentDescription::getExperimentTitleFacet)
+				.map(IExperimentDescription::getExperimentTitleFacet)
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
@@ -663,10 +667,10 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 * @return the experiment
 	 */
 	@Override
-	public ExperimentDescription getExperiment(final String name) {
-		final ExperimentDescription desc = getOwnExperiments().get(name);
+	public IExperimentDescription getExperiment(final String name) {
+		final IExperimentDescription desc = getOwnExperiments().get(name);
 		if (desc == null) {
-			for (final ExperimentDescription ed : getOwnExperiments().values()) {
+			for (final IExperimentDescription ed : getOwnExperiments().values()) {
 				final String title = ed.getExperimentTitleFacet();
 				if (title != null && title.equals(name)) return ed;
 			}
@@ -694,8 +698,8 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	}
 
 	@Override
-	public boolean finalizeDescription() {
-		if (!super.finalizeDescription()) return false;
+	public boolean initializeMirrorsAndSubSpecies() {
+		if (!super.initializeMirrorsAndSubSpecies()) return false;
 		for (final IActionDescription action : getOwnActions().values()) {
 			if (action.isAbstract() && (action.getUnderlyingElement() == null
 					|| !action.getUnderlyingElement().eResource().equals(getUnderlyingElement().eResource()))) {
@@ -709,7 +713,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 
 	@Override
 	public ModelDescription validate() {
-		if (!isSet(Flag.Validated)) {
+		if (!isValidated()) {
 			super.validate();
 			if (documentationContext != null) { documentationContext.doDocument(this); }
 		}
@@ -725,7 +729,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 * @return
 	 */
 	@Override
-	public Collection<? extends ExperimentDescription> getExperiments() { return getOwnExperiments().values(); }
+	public Collection<? extends IExperimentDescription> getExperiments() { return getOwnExperiments().values(); }
 
 	/**
 	 * Sets the imported model names.
@@ -756,6 +760,11 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		getOwnExperiments().forEachValue(visitor);
 	}
 
+	@Override
+	public void visitAllClasses(final ConsumerWithPruning<IClassDescription> visitor) {
+		getClassesMap().forEachValue(visitor);
+	}
+
 	/**
 	 * Gets the all species.
 	 *
@@ -779,5 +788,50 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 
 		return false;
 	}
+
+	@Override
+	public IClassDescription getClassDescription(final String p) {
+		return getClassesMap().get(p);
+	}
+
+	/**
+	 * Checks if is class.
+	 *
+	 * @return true, if is class
+	 */
+	@Override
+	public boolean isClass() { return false; }
+
+	/**
+	 * Checks if is species.
+	 *
+	 * @return true, if is species
+	 */
+	@Override
+	public boolean isSpecies() { return false; }
+
+	/**
+	 * Checks if is experiment.
+	 *
+	 * @return true, if is experiment
+	 */
+	@Override
+	public boolean isExperiment() { return false; }
+
+	/**
+	 * Checks if is model.
+	 *
+	 * @return true, if is model
+	 */
+	@Override
+	public boolean isModel() { return true; }
+
+	/**
+	 * Checks if is skill.
+	 *
+	 * @return true, if is skill
+	 */
+	@Override
+	public boolean isSkill() { return false; }
 
 }

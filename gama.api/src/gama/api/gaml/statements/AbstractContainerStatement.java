@@ -14,7 +14,7 @@ import gama.annotations.constants.IKeyword;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
-import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
@@ -156,7 +156,7 @@ public abstract class AbstractContainerStatement extends AbstractStatement {
 			 */
 			if (index != null && list.getGamlType().isAgentType() && index.isConst()) {
 				final String s = index.literalValue();
-				final ISpeciesDescription sd = list.getGamlType().getSpecies();
+				final ITypeDescription sd = list.getGamlType().getSpecies();
 				if (sd.hasAttribute(s)) {
 					if (PUT.equals(keyword)) {
 						cd.warning(

@@ -29,8 +29,8 @@ import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
-import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.FlushBufferException;
 import gama.api.exceptions.GamaRuntimeException;
@@ -285,7 +285,7 @@ public class SaveStatement extends AbstractStatementSequence {
 			final IType<?> t = dataType.getContentType();
 
 			/** The species. */
-			final ISpeciesDescription species = t.getSpecies();
+			final ITypeDescription species = t.getSpecies();
 
 			if (species == null && isMap) {
 				desc.error("Attributes of geometries can only be specified with a list of attribute names",

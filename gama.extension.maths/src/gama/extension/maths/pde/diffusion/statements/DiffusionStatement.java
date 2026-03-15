@@ -25,7 +25,9 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.annotations.validator;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -187,7 +189,9 @@ public class DiffusionStatement extends AbstractStatement {
 		public void validate(final IStatementDescription desc) {
 			// final String kw = desc.getKeyword();
 			IExpression spec = desc.getFacetExpr(IKeyword.ON);
-			if (spec.getGamlType().isAgentType() && spec.getGamlType().getSpecies().isGrid()) {
+			IType type = spec.getGamlType();
+			ITypeDescription td = type.getSpecies();
+			if (type.isAgentType() && td instanceof ISpeciesDescription sd && !sd.isGrid()) {
 				desc.error("Diffusions can only be executed on grid species", IGamlIssue.GENERAL);
 			}
 

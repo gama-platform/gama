@@ -43,6 +43,7 @@ import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.serialization.StatementSerializer;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -248,19 +249,19 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 				return;
 			}
 
-			final ISpeciesDescription sd = speciesExpr.getGamlType().getDenotedSpecies();
-			if (sd == null) {
+			final ITypeDescription sd = speciesExpr.getGamlType().getDenotedSpecies();
+			if (!(sd instanceof ISpeciesDescription spec)) {
 				cd.error("The species to instantiate cannot be determined", UNKNOWN_SPECIES, SPECIES);
 				return;
 			}
 
 			if (speciesExpr instanceof IExpression.Species) {
-				final boolean abs = sd.isAbstract();
-				final boolean mir = sd.isMirror();
-				final boolean gri = sd.isGrid();
+				final boolean abs = spec.isAbstract();
+				final boolean mir = spec.isMirror();
+				final boolean gri = spec.isGrid();
 				if (abs || mir || gri) {
 					final String p = abs ? "abstract" : mir ? "a mirror" : gri ? "a grid" : "";
-					cd.error(sd.getName() + " is " + p + " and cannot be instantiated", WRONG_TYPE, SPECIES);
+					cd.error(spec.getName() + " is " + p + " and cannot be instantiated", WRONG_TYPE, SPECIES);
 					return;
 				}
 			} else if (!(sd instanceof IModelDescription)) {
@@ -273,7 +274,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 				return;
 			}
 
-			final ISpeciesDescription macro = sd.getMacroSpecies();
+			final ITypeDescription macro = spec.getMacroSpecies();
 			if (macro == null && !(sd instanceof IModelDescription)) {
 				cd.error("The macro-species of " + speciesExpr + " cannot be determined");
 				return;
@@ -283,8 +284,8 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 			if (macro instanceof IModelDescription && callerSpecies instanceof IModelDescription) {
 
 				// end-hqnghi
-			} else if (macro != null && callerSpecies != macro && !callerSpecies.hasMacroSpecies(macro)
-					&& !callerSpecies.hasParent(macro)) {
+			} else if (macro instanceof ISpeciesDescription callerSd && callerSpecies != macro
+					&& !callerSpecies.hasMacroSpecies(callerSd) && !callerSpecies.hasParent(macro)) {
 				cd.error("No instance of " + macro.getName() + " available for creating instances of " + sd.getName());
 				return;
 			}
@@ -303,7 +304,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 			}
 			final Arguments facets = cd.getPassedArgs();
 			facets.forEachFacet((s, e) -> {
-				boolean error = !sd.isExperiment() && !sd.hasAttribute(s);
+				boolean error = !spec.isExperiment() && !spec.hasAttribute(s);
 				if (error) {
 					cd.error("Attribute " + s + " is not defined in species " + speciesExpr.getName(), UNKNOWN_VAR);
 				}

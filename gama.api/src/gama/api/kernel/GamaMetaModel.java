@@ -14,12 +14,13 @@ import static com.google.common.collect.Sets.newHashSet;
 import static gama.annotations.constants.IKeyword.AGENT;
 import static gama.annotations.constants.IKeyword.EXPERIMENT;
 import static gama.annotations.constants.IKeyword.MODEL;
+import static gama.annotations.constants.IKeyword.OBJECT;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -95,22 +96,22 @@ public class GamaMetaModel {
 	private final static GamaMetaModel INSTANCE = new GamaMetaModel();
 
 	/** The temp species. */
-	private final Map<String, SpeciesRecord> tempSpecies = new HashMap();
-
-	/** The abstract object class. */
-	private IClass abstractObjectClass;
-
-	/** The object. */
-	private IClassDescription abstractObjectClassDescription;
+	private final Map<String, SpeciesRecord> tempSpecies = new ConcurrentHashMap<>();
 
 	/** The species skills. */
 	private final Multimap<String, String> speciesSkills = HashMultimap.create();
 
 	/** The built in species. */
-	private final Map<String, ISpecies> builtInSpecies = new HashMap<>();
+	private final Map<String, ISpecies> builtInSpecies = new ConcurrentHashMap<>();
+
+	/** The built in classes. */
+	private final Map<String, IClass> builtInClasses = new ConcurrentHashMap<>();
 
 	/** The built in species descriptions. */
-	private final Map<String, ISpeciesDescription> builtInSpeciesDescriptions = new HashMap<>();
+	private final Map<String, ISpeciesDescription> builtInSpeciesDescriptions = new ConcurrentHashMap<>();
+
+	/** The built in class descriptions. */
+	private final Map<String, IClassDescription> builtInClassDescriptions = new ConcurrentHashMap<>();
 
 	/** The is initialized. */
 	public volatile boolean isInitialized;
@@ -142,12 +143,14 @@ public class GamaMetaModel {
 	 * @return the object class description
 	 */
 	public static IClassDescription getObjectClassDescription() {
-		if (INSTANCE.abstractObjectClassDescription == null) {
-			INSTANCE.abstractObjectClassDescription =
-					GAML.getDescriptionFactory().createBuiltInClassDescription(GamaBundleLoader.CURRENT_PLUGIN_NAME);
-			INSTANCE.abstractObjectClassDescription.validate();
+		IClassDescription classDescription = INSTANCE.builtInClassDescriptions.get(OBJECT);
+		if (classDescription == null) {
+			classDescription = GAML.getDescriptionFactory().createBuiltInClassDescription(OBJECT,
+					GamaBundleLoader.CURRENT_PLUGIN_NAME);
+			INSTANCE.builtInClassDescriptions.put(OBJECT, classDescription);
+			classDescription.validate();
 		}
-		return INSTANCE.abstractObjectClassDescription;
+		return classDescription;
 	}
 
 	/**
@@ -156,9 +159,13 @@ public class GamaMetaModel {
 	 * @return the abstract object class
 	 */
 	public static IClass getAbstractObjectClass() {
-		IClassDescription desc = getObjectClassDescription();
-		if (INSTANCE.abstractObjectClass == null) { INSTANCE.abstractObjectClass = desc.compileAsBuiltIn(); }
-		return INSTANCE.abstractObjectClass;
+		IClass clazz = INSTANCE.builtInClasses.get(OBJECT);
+		if (clazz == null) {
+			IClassDescription desc = getObjectClassDescription();
+			clazz = desc.compileAsBuiltIn();
+			INSTANCE.builtInClasses.put(OBJECT, clazz);
+		}
+		return clazz;
 	}
 
 	/**
@@ -262,26 +269,37 @@ public class GamaMetaModel {
 		// We create "experiment" as the root of all experiments, sub-species of "agent"
 		final SpeciesRecord ep = INSTANCE.tempSpecies.remove(EXPERIMENT);
 		IExperimentDescription experiment = (IExperimentDescription) INSTANCE.buildSpecies(ep, null, agent);
-		experiment.finalizeDescription();
-
-		// We now can attach "experiment" as a child of "model"
+		experiment.initializeMirrorsAndSubSpecies();
+		// We attach "experiment" as a child of "model"
+		experiment.setEnclosingDescription(model);
 		model.addChild(experiment);
 
-		// We create "platform" as the root of all platforms, sub-species of "agent"
+		// We create "platform", sub-species of "agent"
 		final SpeciesRecord pp = INSTANCE.tempSpecies.remove(IKeyword.PLATFORM);
 		ISpeciesDescription.Platform platform = (ISpeciesDescription.Platform) INSTANCE.buildSpecies(pp, null, agent);
 		// Necessary to be able to use 'gama' in models
-		platform.finalizeDescription();
+		platform.initializeMirrorsAndSubSpecies();
+		platform.setEnclosingDescription(model);
 		model.addChild(platform);
+
+		// We create "object" as the root of all classes
+		IClassDescription object = getObjectClassDescription();
+		// We attach "object" as a child of "model"
+		object.setEnclosingDescription(model);
+		model.addChild(object);
 
 		// We then create all other built-in species and attach them to "model"
 		for (final SpeciesRecord proto : INSTANCE.tempSpecies.values()) {
 			ISpeciesDescription desc = INSTANCE.buildSpecies(proto, model, agent);
-			if (!(desc instanceof IModelDescription)) { model.addChild(desc); }
+			if (!(desc instanceof IModelDescription)) {
+				desc.setEnclosingDescription(model);
+				model.addChild(desc);
+			}
 		}
+
 		INSTANCE.tempSpecies.clear();
 		model.buildTypes();
-		model.finalizeDescription();
+		model.initializeMirrorsAndSubSpecies();
 		INSTANCE.isInitialized = true;
 	}
 
