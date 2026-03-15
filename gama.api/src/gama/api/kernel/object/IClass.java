@@ -237,4 +237,27 @@ public interface IClass extends ISymbol, ITyped, IJsonable {
 	 */
 	default String getParentName() { return getDescription().getParentName(); }
 
+	/**
+	 * @param scope
+	 * @param s
+	 * @param v
+	 * @param gamlObject
+	 */
+	default void setVarValue(final IScope scope, final String s, final Object v, final IObject gamlObject) {
+		IVariable var = getVar(s);
+		if (var != null) { var.setVal(scope, gamlObject, v); }
+	}
+
+	/**
+	 * @param scope
+	 * @param s
+	 * @param gamlObject
+	 * @return
+	 */
+	default Object getVarValue(final IScope scope, final String s, final IObject gamlObject) {
+		IVariable var = getVar(s);
+		if (var != null) return var.value(scope, gamlObject);
+		return null;
+	}
+
 }

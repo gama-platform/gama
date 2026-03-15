@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.api.kernel.object;
+package gama.core.object;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,7 +35,8 @@ import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.symbols.Symbol;
 import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
-import gama.api.kernel.object.GamlClass.ClassValidator;
+import gama.api.kernel.object.IClass;
+import gama.api.kernel.object.IObject;
 import gama.api.kernel.species.GamlModelSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
@@ -45,6 +46,7 @@ import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
+import gama.core.object.GamlClass.ClassValidator;
 
 /**
  * The {@code GamlClass} serves as a base class for species-related classes in the GAMA platform. It encapsulates shared
@@ -325,46 +327,7 @@ public class GamlClass extends Symbol implements IClass {
 
 	@Override
 	public IObject createInstance(final IScope scope, final IMap<String, Object> args) {
-		return null;
-
-		// ATTENTION FIXME Fake method for the moment
-
-		// return new GamlObject(scope, this, args);
+		return new GamlObject(scope, this, args);
 	}
 
-	// /**
-	// * Gets the var value.
-	// *
-	// * @param scope
-	// * the scope
-	// * @param s
-	// * the s
-	// * @param gamlObject
-	// * the gaml object
-	// * @return the var value
-	// */
-	// @Override
-	// public Object getVarValue(final IScope scope, final String s, final IObject gamlObject) {
-	// IVariable var = getVar(s);
-	// if (var != null) return var.value(scope, gamlObject);
-	// return null;
-	// }
-	//
-	// /**
-	// * Sets the var value.
-	// *
-	// * @param scope
-	// * the scope
-	// * @param s
-	// * the s
-	// * @param v
-	// * the v
-	// * @param gamlObject
-	// * the gaml object
-	// */
-	// @Override
-	// public void setVarValue(final IScope scope, final String s, final Object v, final IObject gamlObject) {
-	// IVariable var = getVar(s);
-	// if (var != null) { var.setVal(scope, gamlObject, v); }
-	// }
 }
