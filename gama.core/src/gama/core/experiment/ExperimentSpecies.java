@@ -457,13 +457,9 @@ public class ExperimentSpecies extends GamlSpecies implements IExperimentSpecies
 		displayables.clear();
 		// myScope.getGui().getStatus().neutralStatus("No simulation running");
 		GAMA.releaseScope(myScope);
-		// FIXME Should be put somewhere around here, but probably not here
-		// exactly.
-		// ProjectionFactory.reset();
 
 		super.dispose();
 		// DEBUG.LOG("ExperimentSpecies.dipose END");
-		// Addition 2021
 
 	}
 

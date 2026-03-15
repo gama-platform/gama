@@ -69,8 +69,7 @@ public class GamaPath<V, E, G extends IGraph<V, E>> implements Comparable, Graph
 	/**
 	 * Instantiates a new gama path.
 	 */
-	// FIXME virer le constructeur par d�faut... used for the inheritance...
-	public GamaPath() {}
+	protected GamaPath() {}
 
 	@Override
 	public IType getGamlType() { return Types.PATH; }
@@ -211,6 +210,7 @@ public class GamaPath<V, E, G extends IGraph<V, E>> implements Comparable, Graph
 	 * @param weight
 	 *            the new weight
 	 */
+	@Override
 	public void setWeight(final double weight) { this.weight = weight; }
 
 	@Override
@@ -307,7 +307,7 @@ public class GamaPath<V, E, G extends IGraph<V, E>> implements Comparable, Graph
 
 	@Override
 	public ITopology getTopology(final IScope scope) {
-		return graph instanceof GamaSpatialGraph ? ((GamaSpatialGraph) graph).getTopology(scope) : null;
+		return graph instanceof GamaSpatialGraph g ? g.getTopology(scope) : null;
 	}
 
 	@Override

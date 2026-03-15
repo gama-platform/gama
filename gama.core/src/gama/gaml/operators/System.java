@@ -501,8 +501,7 @@ public class System {
 			throws GamaRuntimeException {
 		if (a == null && !scope.interrupted()) throw GamaRuntimeException
 				.warning("Cannot evaluate " + s.serializeToGaml(false) + " as the target object is nil", scope);
-		return null; // FIXME ONLY FOR DEBUGGING PURPOSES. TO BE REMOVED ASAP
-		// return scope.evaluate(s, a).getValue();
+		return scope.evaluate(s, a).getValue();
 	}
 
 	/**
