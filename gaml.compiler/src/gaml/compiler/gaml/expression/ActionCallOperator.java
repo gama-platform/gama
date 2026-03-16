@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * PrimitiveOperator.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * ActionCallOperator.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -34,12 +34,12 @@ import gama.api.utils.StringUtils;
 import gama.api.utils.collections.ICollector;
 
 /**
- * PrimitiveOperator. An operator that wraps a primitive or an action.
+ * ActionCallOperator. An operator that wraps a primitive or an action.
  *
  * @author drogoul 4 sept. 07
  */
 
-public class PrimitiveOperator implements IOperator {
+public class ActionCallOperator implements IOperator {
 
 	/** The parameters. */
 	final Arguments parameters;
@@ -54,7 +54,7 @@ public class PrimitiveOperator implements IOperator {
 	final String targetSpecies;
 
 	/**
-	 * Instantiates a new primitive operator.
+	 * Instantiates a new action call operator.
 	 *
 	 * @param callerContext
 	 *            the caller context
@@ -67,7 +67,7 @@ public class PrimitiveOperator implements IOperator {
 	 * @param superInvocation
 	 *            the super invocation
 	 */
-	public PrimitiveOperator(final IDescription callerContext, final IActionDescription action,
+	public ActionCallOperator(final IDescription callerContext, final IActionDescription action,
 			final IExpression target, final Arguments args, final boolean superInvocation) {
 		this.target = target;
 		if (superInvocation) {
@@ -94,7 +94,7 @@ public class PrimitiveOperator implements IOperator {
 	 * @param targetSpecies
 	 *            the target species.
 	 */
-	public PrimitiveOperator(final IActionDescription action, final IExpression target, final Arguments args,
+	public ActionCallOperator(final IActionDescription action, final IExpression target, final Arguments args,
 			final String targetSpecies) {
 		this.target = target;
 		this.targetSpecies = targetSpecies;
@@ -255,7 +255,7 @@ public class PrimitiveOperator implements IOperator {
 
 	@Override
 	public IExpression resolveAgainst(final IScope scope) {
-		return new PrimitiveOperator(action, target == null ? null : target.resolveAgainst(scope),
+		return new ActionCallOperator(action, target == null ? null : target.resolveAgainst(scope),
 				parameters == null ? null : parameters.resolveAgainst(scope), targetSpecies);
 	}
 

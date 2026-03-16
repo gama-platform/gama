@@ -32,6 +32,7 @@ import gama.api.runtime.IStepable;
 import gama.api.types.list.IList;
 import gama.api.types.topology.ITopology;
 import gama.api.ui.IGui;
+import gama.api.ui.displays.IGraphics;
 import gama.api.ui.displays.IGraphicsScope;
 import gama.api.utils.benchmark.IBenchmarkable;
 import gama.api.utils.random.IRandom;
@@ -985,5 +986,12 @@ public interface IScope extends Closeable, IBenchmarkable {
 	 * @return
 	 */
 	IObject getCurrentObjectOrAgent();
+
+	/**
+	 * Returns the graphics context associated with this scope.
+	 *
+	 * @return The graphics object used for rendering. Null for normal scopes
+	 */
+	default IGraphics getGraphics() { return null; }
 
 }

@@ -13,6 +13,7 @@ package gaml.compiler.gaml.expression;
 
 import static com.google.common.collect.Iterables.any;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -27,6 +28,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheStats;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
@@ -48,6 +50,12 @@ import gama.api.kernel.agent.IAgent;
 import gama.api.runtime.scope.IExecutionContext;
 import gama.api.runtime.scope.IScope;
 import gama.api.runtime.scope.InScope;
+import gama.api.types.date.GamaDateFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IOutput;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.descriptions.ConstantExpressionDescription;
 import gaml.compiler.gaml.prototypes.OperatorArtefact;
@@ -323,49 +331,119 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		switch (unit) {
 			case "zoom":
 				// Current zoom level of the display
-				return new ZoomUnitExpression(unit, doc);
+				return new CustomExpression<>(unit, 1d, doc,
+						sc -> (sc.getGraphics() == null ? 1d : sc.getGraphics().getZoomLevel()));
 			case "fullscreen":
 				// Whether the display is in fullscreen mode
-				return new FullScreenExpression(unit, doc);
+				return new CustomExpression<>(unit, false, doc, sc -> {
+					final IGraphics g = sc.getGraphics();
+					if (g == null) return false;
+					IDisplaySurface surface = g.getSurface();
+					if (surface == null) return false;
+					IOutput.Display output = surface.getOutput();
+					if (output == null) return false;
+					IGamaView.Display view = output.getView();
+					if (view == null) return false;
+					return view.isFullScreen();
+				});
 			case "hidpi":
 				// Whether HiDPI/Retina display is active
-				return new HiDPIExpression(unit, doc);
+				return new CustomExpression<>(unit, false, doc, sc -> {
+					final IGraphics g = sc.getGraphics();
+					if (g == null) return false;
+					IDisplaySurface surface = g.getSurface();
+					if (surface == null) return false;
+					IOutput.Display output = surface.getOutput();
+					if (output == null) return false;
+					IGamaView.Display view = output.getView();
+					if (view == null) return false;
+					return view.isHiDPI();
+				});
 			case "pixels":
 			case "px":
 				// Pixel unit for display coordinates
-				return new PixelUnitExpression(unit, doc);
+				return new CustomExpression<>(unit, 1d, doc, sc -> {
+					final IGraphics g = sc.getGraphics();
+					return g == null ? 1d : 1d / g.getAbsoluteRatioBetweenPixelsAndModelsUnits();
+				});
 			case "display_width":
 				// Width of the current display
-				return new DisplayWidthUnitExpression(doc);
+				return new CustomExpression<>(unit, 0d, doc, sc -> {
+					if (sc == null || !sc.isGraphics()) {
+						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
+						if (surface != null) return surface.getDisplayWidth();
+						return 0d;
+					}
+					final IGraphics g = sc.getGraphics();
+					return g == null ? 0d : (double) g.getDisplayWidth();
+				});
 			case "display_height":
 				// Height of the current display
-				return new DisplayHeightUnitExpression(doc);
+				return new CustomExpression<>(unit, 0d, doc, sc -> {
+					if (sc == null || !sc.isGraphics()) {
+						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
+						if (surface != null) return surface.getDisplayWidth();
+						return 0d;
+					}
+					final IGraphics g = sc.getGraphics();
+					return g == null ? 0d : (double) g.getDisplayHeight();
+				});
 			case "now":
 				// Current simulation time
-				return new NowUnitExpression(unit, doc);
+				return new CustomExpression<>(unit, null, doc,
+						sc -> GamaDateFactory.createFromTemporal(LocalDateTime.now()));
 			case "camera_location":
 				// 3D camera position in world coordinates
-				return new CameraPositionUnitExpression(doc);
+				return new CustomExpression<>(unit, GamaPointFactory.create(), doc, sc -> {
+					if (sc == null || !sc.isGraphics()) {
+						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
+						if (surface != null) return surface.getData().getCameraPos().yNegated();
+						return null;
+					}
+					final IGraphics g = sc.getGraphics();
+					if (g == null || g.is2D()) return null;
+					return ((IGraphics.ThreeD) g).getCameraPos().yNegated();
+				});
 			case "camera_target":
 				// 3D camera target point
-				return new CameraTargetUnitExpression(doc);
+				return new CustomExpression<>(unit, GamaPointFactory.create(), doc, sc -> {
+					if (sc == null || !sc.isGraphics()) {
+						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
+						if (surface != null) return surface.getData().getCameraPos().yNegated();
+						return null;
+					}
+					final IGraphics g = sc.getGraphics();
+					if (g == null || g.is2D()) return null;
+					return ((IGraphics.ThreeD) g).getCameraTarget().yNegated();
+				});
 			case "camera_orientation":
 				// 3D camera orientation angles
-				return new CameraOrientationUnitExpression(doc);
+				return new CustomExpression<>(unit, GamaPointFactory.create(), doc, sc -> {
+					if (sc == null || !sc.isGraphics()) {
+						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
+						if (surface != null) return surface.getData().getCameraPos().yNegated();
+						return null;
+					}
+					final IGraphics g = sc.getGraphics();
+					if (g == null || g.is2D()) return null;
+					return ((IGraphics.ThreeD) g).getCameraOrientation().yNegated();
+				});
 			case "user_location":
 			case "user_location_in_world":
 				// Mouse cursor location in world coordinates
-				return new UserLocationUnitExpression(unit, doc);
+				return new CustomExpression<>(unit, GamaPointFactory.create(), doc,
+						sc -> (sc == null ? GamaPointFactory.create() : sc.getGui().getMouseLocationInModel()));
 			case "user_location_in_display":
 				// Mouse cursor location in display coordinates
-				return new UserLocationInDisplayUnitExpression(doc);
+				return new CustomExpression<>(unit, GamaPointFactory.create(), doc,
+						sc -> (sc == null ? GamaPointFactory.create() : sc.getGui().getMouseLocationInDisplay()));
 			case "current_error":
 				// Current error message if any
-				return new CurrentErrorUnitExpression(doc);
+				return new CustomExpression<>(unit, "", doc, sc -> (sc == null || sc.getCurrentError() == null ? "nil" : sc.getCurrentError().getMessage()));
 
 		}
 		// Handle time units (ms, s, h, etc.)
-		if (isTime) return new TimeUnitConstantExpression(val, t, unit, doc, names);
+		if (isTime) return new TimeUnitCustomExpression(val, t, unit, doc, names);
 		// Default unit constant
 		return new UnitConstantExpression(val, t, unit, doc, names);
 	}
@@ -934,7 +1012,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 *            the expression representing the target object (agent) on which to call the action
 	 * @param arguments
 	 *            the arguments to pass to the action
-	 * @return a new PrimitiveOperator expression for the action call, or null if argument verification fails
+	 * @return a new ActionCallOperator expression for the action call, or null if argument verification fails
 	 */
 	@Override
 	public IExpression createAction(final String op, final IDescription callerContext, final IActionDescription action,
@@ -943,7 +1021,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		if (action.verifyArgs(callerContext, arguments))
 			// Create primitive operator for the action call
 			// Special flag for super calls to maintain proper inheritance behavior
-			return new PrimitiveOperator(callerContext, action, call, arguments, call instanceof SuperExpression);
+			return new ActionCallOperator(callerContext, action, call, arguments, call instanceof SuperExpression);
 		// Argument verification failed - return null to signal error
 		return null;
 	}

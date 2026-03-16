@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.expression;
 
+import java.util.Set;
+
 import gama.api.GAMA;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
@@ -22,12 +24,12 @@ import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * Abstract base class for all GAML expression implementations.
- * 
+ *
  * <p>
  * This class provides the foundation for the expression evaluation system in GAMA, implementing common functionality
  * and defining the contract for concrete expression classes.
  * </p>
- * 
+ *
  * <h2>Architecture Overview</h2>
  *
  * <pre>
@@ -36,7 +38,7 @@ import gama.api.utils.prefs.GamaPreferences;
  *   │   ├── BinaryOperator (e.g., +, -, *, /)
  *   │   ├── UnaryOperator (e.g., -, not)
  *   │   ├── NAryOperator (e.g., min, max)
- *   │   └── PrimitiveOperator (Java-backed operations)
+ *   │   └── ActionCallOperator (Java-backed operations)
  *   ├── Variables
  *   │   ├── GlobalVariableExpression
  *   │   ├── TypeAttributeExpression
@@ -52,7 +54,7 @@ import gama.api.utils.prefs.GamaPreferences;
  *       ├── MapExpression
  *       └── DenotedActionExpression
  * </pre>
- * 
+ *
  * <h2>Key Features</h2>
  * <ul>
  * <li><strong>Type Management:</strong> Every expression has a GAML type computed at compile time</li>
@@ -61,7 +63,7 @@ import gama.api.utils.prefs.GamaPreferences;
  * <li><strong>Optimization:</strong> Constant folding and expression rewriting</li>
  * <li><strong>Serialization:</strong> Round-trip conversion to/from GAML source code</li>
  * </ul>
- * 
+ *
  * <h2>Evaluation Model</h2>
  * <p>
  * Expression evaluation follows the <strong>Template Method</strong> pattern:
@@ -71,7 +73,7 @@ import gama.api.utils.prefs.GamaPreferences;
  * <li>{@link #_value(IScope)} - Protected abstract method for actual computation</li>
  * <li>Subclasses implement only {@code _value()} for their specific logic</li>
  * </ol>
- * 
+ *
  * <h2>Type System Integration</h2>
  * <p>
  * Types are computed at compilation and cached:
@@ -81,7 +83,7 @@ import gama.api.utils.prefs.GamaPreferences;
  * IExpression expr = ...;
  * IType<?> type = expr.getGamlType();  // Cached, no computation
  * }</pre>
- * 
+ *
  * <h2>Optimization Framework</h2>
  * <p>
  * The {@link #optimized()} method enables constant folding when enabled:
@@ -92,7 +94,7 @@ import gama.api.utils.prefs.GamaPreferences;
  * IExpression expr = new BinaryOperator("+", const(2), const(3));
  * expr = expr.optimized();  // Returns ConstantExpression(5) if pref enabled
  * }</pre>
- * 
+ *
  * <h2>Performance Characteristics</h2>
  * <ul>
  * <li><strong>Type lookup:</strong> O(1) - cached in field</li>
@@ -100,20 +102,20 @@ import gama.api.utils.prefs.GamaPreferences;
  * <li><strong>Benchmarking overhead:</strong> ~100ns when enabled (try-with-resources)</li>
  * <li><strong>Memory:</strong> 24-48 bytes per instance plus type reference</li>
  * </ul>
- * 
+ *
  * <h2>Memory Optimization</h2>
  * <ul>
  * <li><strong>Type sharing:</strong> Type instances are flyweights, shared across expressions</li>
  * <li><strong>Constant folding:</strong> Reduces expression tree depth and evaluation cost</li>
  * <li><strong>Null type handling:</strong> Returns Types.NO_TYPE instead of null to avoid NPEs</li>
  * </ul>
- * 
+ *
  * <h2>Thread Safety</h2>
  * <p>
  * <strong>Expressions are immutable after construction.</strong> They can be safely shared across threads and evaluated
  * concurrently with different scopes. The {@code type} field is effectively final once set.
  * </p>
- * 
+ *
  * <h2>Serialization Contract</h2>
  * <p>
  * All expressions must implement {@link #serializeToGaml(boolean)} to support:
@@ -123,7 +125,7 @@ import gama.api.utils.prefs.GamaPreferences;
  * <li>Expression debugging and display</li>
  * <li>Code generation and transformation</li>
  * </ul>
- * 
+ *
  * <h2>Optimization Opportunities</h2>
  * <ol>
  * <li><strong>Type field initialization:</strong> Consider making {@code type} final and passing in constructor</li>
@@ -131,19 +133,19 @@ import gama.api.utils.prefs.GamaPreferences;
  * <li><strong>Serialization caching:</strong> Cache serialized form for frequently-displayed expressions</li>
  * <li><strong>Benchmark flag check:</strong> Add fast-path when benchmarking disabled</li>
  * </ol>
- * 
+ *
  * <h2>Usage Example</h2>
  *
  * <pre>{@code
  * // Creating an expression
  * IExpression expr = GAML.getExpressionFactory().createOperator("+", context, eObject, left, right);
- * 
+ *
  * // Evaluating
  * Object result = expr.value(scope);
- * 
+ *
  * // Type checking
  * if (expr.getGamlType().equals(Types.INT)) { Integer intResult = (Integer) result; }
- * 
+ *
  * // Serialization
  * String gamlCode = expr.serializeToGaml(false);
  * }</pre>
@@ -159,12 +161,12 @@ public abstract class AbstractExpression implements IExpression {
 
 	/**
 	 * The GAML type of this expression.
-	 * 
+	 *
 	 * <p>
 	 * <strong>Performance Note:</strong> Computed once at construction and cached. Making this field final would enable
 	 * additional JVM optimizations.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Optimization Opportunity:</strong> Consider using a final field set via constructor to enable better
 	 * constant propagation and inlining by the JIT compiler.
@@ -174,7 +176,7 @@ public abstract class AbstractExpression implements IExpression {
 
 	/**
 	 * Gets the GAML type of this expression.
-	 * 
+	 *
 	 * <p>
 	 * <strong>Performance:</strong> O(1) - returns cached type. The null check is optimized away by the JIT after first
 	 * invocation (branch prediction).
@@ -187,12 +189,12 @@ public abstract class AbstractExpression implements IExpression {
 
 	/**
 	 * Wraps expressions in parentheses when necessary for correct GAML serialization.
-	 * 
+	 *
 	 * <p>
 	 * <strong>Optimization Note:</strong> This method is called frequently during serialization. Consider pooling
 	 * StringBuilder instances or caching serialized forms.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Performance:</strong> Creates temporary StringBuilder, which may cause GC pressure for complex
 	 * expressions. Average cost: ~1-5 µs depending on expression complexity.
@@ -213,11 +215,11 @@ public abstract class AbstractExpression implements IExpression {
 
 	/**
 	 * Surrounds expressions with specified delimiters (e.g., parentheses, brackets).
-	 * 
+	 *
 	 * <p>
 	 * Used for serializing lists, maps, function calls, and parenthesized expressions.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Performance:</strong> Iterates through all expressions once. For n expressions, complexity is O(n) where
 	 * n is typically small (1-10).
@@ -254,12 +256,12 @@ public abstract class AbstractExpression implements IExpression {
 
 	/**
 	 * Evaluates this expression in the given scope with benchmarking and error handling.
-	 * 
+	 *
 	 * <p>
 	 * <strong>Template Method Pattern:</strong> This public method handles cross-cutting concerns (benchmarking, error
 	 * handling) while delegating actual computation to {@link #_value(IScope)}.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Performance Impact:</strong>
 	 * </p>
@@ -268,12 +270,12 @@ public abstract class AbstractExpression implements IExpression {
 	 * <li>OutOfMemoryError catching: JVM optimizes away when not thrown (unlikely path)</li>
 	 * <li>Scope parameter passing: Stack allocation, negligible cost</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Thread Safety:</strong> Safe for concurrent evaluation with different scopes. Expressions are immutable
 	 * after construction.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Optimization Opportunity:</strong> Add fast-path when benchmarking is disabled:
 	 * </p>
@@ -299,13 +301,13 @@ public abstract class AbstractExpression implements IExpression {
 
 	/**
 	 * Returns an optimized version of this expression if constant folding is enabled.
-	 * 
+	 *
 	 * <p>
 	 * <strong>Constant Folding Optimization:</strong> When this expression is constant (all operands are constants),
 	 * replaces it with a single ConstantExpression containing the pre-computed value. This eliminates runtime
 	 * evaluation cost.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Example:</strong>
 	 * </p>
@@ -315,7 +317,7 @@ public abstract class AbstractExpression implements IExpression {
 	 * expr.optimized();
 	 * // After: ConstantExpression(5) - if preference enabled
 	 * }</pre>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Performance Impact:</strong>
 	 * </p>
@@ -324,7 +326,7 @@ public abstract class AbstractExpression implements IExpression {
 	 * <li>Runtime: Much faster - O(1) constant lookup vs. O(depth) tree evaluation</li>
 	 * <li>Memory: Smaller - single object vs. expression tree</li>
 	 * </ul>
-	 * 
+	 *
 	 * <p>
 	 * <strong>When Applied:</strong> Only if {@code GamaPreferences.Experimental.CONSTANT_OPTIMIZATION} is enabled AND
 	 * {@link #isConst()} returns true.
@@ -340,12 +342,12 @@ public abstract class AbstractExpression implements IExpression {
 
 	/**
 	 * Actual expression evaluation implementation.
-	 * 
+	 *
 	 * <p>
 	 * <strong>Subclass Contract:</strong> Implement this method to provide expression-specific evaluation logic. This
 	 * method is called by {@link #value(IScope)} after benchmarking setup.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Performance Note:</strong> This is the hot path for expression evaluation. Keep implementations fast and
 	 * avoid unnecessary allocations.
@@ -359,34 +361,37 @@ public abstract class AbstractExpression implements IExpression {
 
 	/**
 	 * Checks if this expression contains pixel unit expressions.
-	 * 
+	 *
 	 * <p>
 	 * <strong>Use Case:</strong> Display-related expressions that need pixel resolution.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Performance:</strong> Traverses expression tree once. Result could be cached if called multiple times.
 	 * </p>
 	 *
 	 * @return true if any sub-expression is a PixelUnitExpression
 	 */
+
+	private static final Set<String> PIXELS = Set.of("px", "pixels");
+
 	@Override
 	public boolean containsPixels() {
-		return findAny(PixelUnitExpression.class::isInstance);
+		return findAny(e -> PIXELS.contains(e.getName()));
 	}
 
 	/**
 	 * Checks if this expression's value depends on simulation time.
-	 * 
+	 *
 	 * <p>
 	 * <strong>Use Case:</strong> Determines if expression needs re-evaluation at each step.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Performance:</strong> Traverses expression tree. Could be cached as expressions are immutable after
 	 * construction.
 	 * </p>
-	 * 
+	 *
 	 * <p>
 	 * <strong>Optimization Opportunity:</strong> Cache result in a boolean field set during construction via visitor
 	 * pattern.
@@ -395,8 +400,6 @@ public abstract class AbstractExpression implements IExpression {
 	 * @return true if depends on time units (excluding constants)
 	 */
 	@Override
-	public boolean isTimeDependent() {
-		return findAny(e -> e instanceof TimeUnitConstantExpression tu && !tu.isConst());
-	}
+	public boolean isTimeDependent() { return findAny(e -> e instanceof TimeUnitCustomExpression tu && !tu.isConst()); }
 
 }

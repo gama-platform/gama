@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * TimeUnitConstantExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation
+ * TimeUnitCustomExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
@@ -24,7 +24,7 @@ import gama.api.types.date.IDate;
  * @since 22 avr. 2014
  *
  */
-public class TimeUnitConstantExpression extends UnitConstantExpression {
+public class TimeUnitCustomExpression extends UnitConstantExpression {
 
 	/**
 	 * Approximal query.
@@ -59,7 +59,7 @@ public class TimeUnitConstantExpression extends UnitConstantExpression {
 	 * @param names
 	 *            the names
 	 */
-	public TimeUnitConstantExpression(final Object val, final IType<?> t, final String name, final String doc,
+	public TimeUnitCustomExpression(final Object val, final IType<?> t, final String name, final String doc,
 			final String[] names) {
 		super(val, t, name, doc, names);
 		isTimeDependent = UNCOMPUTABLE_DURATIONS.contains(name);

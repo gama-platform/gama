@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package gama.api.ui.displays;
 
@@ -27,13 +27,6 @@ public interface IGraphicsScope extends IScope {
 	 *            The graphics object to use for rendering
 	 */
 	void setGraphics(IGraphics val);
-
-	/**
-	 * Returns the graphics context associated with this scope.
-	 *
-	 * @return The graphics object used for rendering
-	 */
-	IGraphics getGraphics();
 
 	/**
 	 * Indicates that this scope supports graphical operations.
