@@ -779,11 +779,6 @@ public class SpeciesDescription extends TypeDescription implements ISpeciesDescr
 		return retVal;
 	}
 
-	@Override
-	public String toString() {
-		return "Description of " + getName();
-	}
-
 	/**
 	 * Gets the agent constructor.
 	 *

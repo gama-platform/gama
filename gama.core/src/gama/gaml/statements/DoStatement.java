@@ -30,7 +30,8 @@ import gama.api.gaml.statements.AbstractStatementSequence;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;
-import gama.api.kernel.species.ISpecies;
+import gama.api.kernel.object.IClass;
+import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
@@ -193,7 +194,13 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	Arguments args;
 
 	/** The target species. */
-	final String targetSpecies;
+	final String targetSpeciesName;
+
+	/** The target species. */
+	IClass targetSpecies;
+
+	/** The computed. */
+	boolean computed;
 
 	/** The function. */
 	final IExpression function, returns;
@@ -206,7 +213,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	 */
 	public DoStatement(final IDescription desc) {
 		super(desc);
-		targetSpecies = getLiteral(IKeyword.SYNTHETIC_DO_TARGET_SPECIES);
+		targetSpeciesName = getLiteral(IKeyword.SYNTHETIC_DO_TARGET_SPECIES);
 		function = getFacet(IKeyword.INTERNAL_FUNCTION);
 		returns = getFacet(IKeyword.RETURNS);
 		setName(getLiteral(IKeyword.ACTION));
@@ -237,15 +244,24 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	 * Returns the species on which to find the action. If a species exists, we find the corresponding action.
 	 * Otherwise, we return the species of the agent
 	 */
-	private ISpecies getContext(final IScope scope) {
-		return targetSpecies != null ? scope.getModel().getSpecies(targetSpecies) : scope.getAgent().getSpecies();
+	private IClass getContext(final IScope scope) {
+		if (computed) return targetSpecies;
+		computed = true;
+		if (targetSpeciesName != null) {
+			IModelSpecies model = scope.getModel();
+			targetSpecies = model.getClass(targetSpeciesName);
+			if (targetSpecies == null) { targetSpecies = model.getSpecies(targetSpeciesName); }
+		} else {
+			targetSpecies = scope.getAgent().getSpecies();
+		}
+		return targetSpecies;
 	}
 
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		final ISpecies species = getContext(scope);
+		final IClass species = getContext(scope);
 		if (species == null)
-			throw GamaRuntimeException.error("Impossible to find a species to execute " + getName(), scope);
+			throw GamaRuntimeException.error("Impossible to find a species or a class to execute " + getName(), scope);
 		final IStatement.WithArgs executer = species.getAction(name);
 		Object result = null;
 		if (executer != null) {

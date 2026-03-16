@@ -260,4 +260,18 @@ public interface IClass extends ISymbol, ITyped, IJsonable {
 		return null;
 	}
 
+	/**
+	 * Checks if is class.
+	 *
+	 * @return true, if is class
+	 */
+	default boolean isClass() { return true; }
+
+	/**
+	 * Checks if is species.
+	 *
+	 * @return true, if is species
+	 */
+	default boolean isSpecies() { return false; }
+
 }

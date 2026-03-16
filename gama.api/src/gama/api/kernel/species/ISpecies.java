@@ -792,4 +792,20 @@ public interface ISpecies
 		return getPopulation(scope).createOneAgent(scope, args);
 	}
 
+	/**
+	 * Checks if is class.
+	 *
+	 * @return true, if is class
+	 */
+	@Override
+	default boolean isClass() { return false; }
+
+	/**
+	 * Checks if is species.
+	 *
+	 * @return true, if is species
+	 */
+	@Override
+	default boolean isSpecies() { return true; }
+
 }

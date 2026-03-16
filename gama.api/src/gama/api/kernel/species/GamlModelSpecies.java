@@ -390,12 +390,14 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 
 		for (final Iterator<? extends ISymbol> it = children.iterator(); it.hasNext();) {
 			final ISymbol s = it.next();
-
 			if (s instanceof IExperimentSpecies) {
 				theExperiments.add((IExperimentSpecies) s);
 				it.remove();
 			} else if (s instanceof IOutputManager) {
 				forExperiment.add(s);
+				it.remove();
+			} else if (s instanceof IClass c && c.isClass()) {
+				classes.put(c.getName(), c);
 				it.remove();
 			}
 		}

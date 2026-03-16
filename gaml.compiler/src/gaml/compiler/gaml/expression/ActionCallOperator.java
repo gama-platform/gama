@@ -23,12 +23,11 @@ import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IOperator;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.Arguments;
-import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
-import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.object.IClass;
+import gama.api.kernel.object.IObject;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
-import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.collections.ICollector;
@@ -108,7 +107,17 @@ public class ActionCallOperator implements IOperator {
 	@Override
 	public Object value(final IScope scope) throws GamaRuntimeException {
 		if (scope == null) return null;
-		final IAgent target = this.target == null ? scope.getAgent() : Cast.asAgent(scope, this.target.value(scope));
+		IObject target;
+		if (this.target == null) {
+			target = scope.getAgent();
+		} else {
+			Object val = this.target.value(scope);
+			if (!(val instanceof IObject oo)) {
+				GAMA.reportError(scope, GamaRuntimeException.error("Invalid target : " + val, scope), true);
+				return null;
+			}
+			target = oo;
+		}
 		if (target == null) {
 			// Problem is that it is not shown at the very beginning as there is no agent available
 			GAMA.reportError(scope,
@@ -119,8 +128,7 @@ public class ActionCallOperator implements IOperator {
 		// the arguments will be (incorrectly)
 		// evaluated in its context, but how to prevent it ? See Issue 401.
 		// One way is (1) to gather the executer
-		final ISpecies species =
-				targetSpecies != null ? scope.getModel().getSpecies(targetSpecies) : target.getSpecies();
+		final IClass species = targetSpecies != null ? scope.getModel().getSpecies(targetSpecies) : target.getSpecies();
 		final IStatement.WithArgs executer = species.getAction(getName());
 		// Then, (2) to set the caller to the actual agent on the scope (in the
 		// context of which the arguments need to

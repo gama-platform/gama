@@ -929,4 +929,9 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 		return super.validateChildren();
 	}
 
+	@Override
+	public String toString() {
+		return "Description of " + getKeyword() + " " + getName();
+	}
+
 }

@@ -14,8 +14,6 @@ import java.util.Collections;
 import java.util.HashMap;
 
 import gama.api.compilation.artefacts.IArtefact;
-import gama.api.compilation.descriptions.IClassDescription;
-import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVarDescriptionUser;
 import gama.api.compilation.descriptions.IVariableDescription;
@@ -36,24 +34,28 @@ import gama.api.utils.collections.ICollector;
  * @author drogoul 4 sept. 07
  */
 
-public record ConstructorForClass(IClassDescription target, Arguments parameters) implements IOperator {
+public class Constructor implements IOperator {
+
+	/** The target. */
+	final ITypeDescription target;
+
+	/** The target class. */
+	IClass targetClass;
+
+	/** The parameters. */
+	final Arguments parameters;
+
+	/** The is class. */
+	boolean computed;
 
 	/**
-	 * Instantiates a new action call operator.
-	 *
-	 * @param callerContext
-	 *            the caller context
-	 * @param action
-	 *            the action
-	 * @param target
-	 *            the target
-	 * @param args
-	 *            the args
-	 * @param superInvocation
-	 *            the super invocation
+	 * @param species
+	 * @param argumentsForConstructor
+	 * @param class1
 	 */
-	public ConstructorForClass(final IDescription callerContext, final IClassDescription target, final Arguments args) {
-		this(target, args);
+	public Constructor(final ITypeDescription species, final Arguments parameters) {
+		this.target = species;
+		this.parameters = parameters;
 	}
 
 	@Override
@@ -61,9 +63,13 @@ public record ConstructorForClass(IClassDescription target, Arguments parameters
 
 	@Override
 	public Object value(final IScope scope) throws GamaRuntimeException {
-		IClass clazz = scope.getModel().getClass(getName());
-		if (clazz == null) return null;
-		return clazz.createInstance(scope, getRuntimeArgs(scope));
+		if (!computed) {
+			targetClass =
+					target.isClass() ? scope.getModel().getClass(getName()) : scope.getModel().getSpecies(getName());
+			computed = true;
+		}
+		if (targetClass == null) return null;
+		return targetClass.createInstance(scope, getRuntimeArgs(scope));
 	}
 
 	/**
@@ -176,7 +182,7 @@ public record ConstructorForClass(IClassDescription target, Arguments parameters
 
 	@Override
 	public IExpression resolveAgainst(final IScope scope) {
-		return new ConstructorForClass(target, parameters == null ? null : parameters.resolveAgainst(scope));
+		return new Constructor(target, parameters == null ? null : parameters.resolveAgainst(scope));
 	}
 
 	@Override

@@ -302,11 +302,6 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> {
 			for (final IVariable var : orderedVars) {
 				final Object initGet =
 						empty || !allowVarInitToBeOverridenByExternalInit(var) ? null : inits.get(var.getName());
-				if ("ant_grid".equals(var.getName())) {
-
-					DEBUG.OUT("");
-
-				}
 				var.initializeWith(scope, a, initGet);
 			}
 			// Added to fix #3266 -- saves the values of the "extra" attributes found in the files

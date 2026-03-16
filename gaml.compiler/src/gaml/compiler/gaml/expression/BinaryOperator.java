@@ -15,6 +15,7 @@ import java.util.Arrays;
 import gama.annotations.doc;
 import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
@@ -23,10 +24,8 @@ import gama.api.compilation.documentation.IGamlDocumentation;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IVarExpression;
-import gama.api.gaml.expressions.IVarExpression.Agent;
-import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.IType;
-import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.object.IObject;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 
@@ -186,17 +185,20 @@ public class BinaryOperator extends AbstractNAryOperator {
 		 * @param var
 		 *            the var
 		 */
-		public BinaryVarOperator(final IArtefact.Operator proto, final IDescription context,
-				final IExpression target, final IVarExpression var) {
+		public BinaryVarOperator(final IArtefact.Operator proto, final IDescription context, final IExpression target,
+				final IVarExpression var) {
 			super(proto, context, target, var);
 			definitionDescription = context;
 		}
 
 		@Override
 		public void setVal(final IScope scope, final Object v, final boolean create) throws GamaRuntimeException {
-			final IAgent agent = Cast.asAgent(scope, exprs[0].value(scope));
-			if (agent == null || agent.dead()) return;
-			scope.setAgentVarValue(agent, exprs[1].literalValue(), v);
+			Object object = exprs[0].value(scope);
+			if (!(object instanceof IObject oo)) {
+				GAMA.reportError(scope, GamaRuntimeException.error("Invalid object : " + object, scope), true);
+				return;
+			}
+			scope.setAgentVarValue(oo, exprs[1].literalValue(), v);
 		}
 
 		@Override

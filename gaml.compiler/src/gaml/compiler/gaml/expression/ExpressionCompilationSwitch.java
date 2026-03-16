@@ -31,6 +31,7 @@ import static gama.annotations.constants.IKeyword._DOT;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -717,6 +718,40 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	}
 
 	/**
+	 * Parses the arguments for constructor.
+	 *
+	 * @param target
+	 *            the target
+	 * @param o
+	 *            the o
+	 * @param command
+	 *            the command
+	 * @param compileArgValues
+	 *            the compile arg values
+	 * @return the arguments
+	 */
+	public Arguments parseArgumentsForConstructor(final ITypeDescription target, final List<Expression> parameters) {
+		if (parameters == null) return null;
+		final Collection<String> expectedArgs = target == null ? null : target.getAttributeNames();
+		final Arguments argMap = new Arguments();
+		final IExpressionDescriptionFactory builder = GAML.getExpressionDescriptionFactory();
+
+		for (final Expression exp : parameters) {
+			final ArgInfo argInfo = extractConstructorArgumentInfo(exp, expectedArgs);
+			if (argInfo == null) return argMap;
+			IExpressionDescription ed = builder.createFromEObject(argInfo.valueExpr);
+			if (ed != null) {
+				// We keep the same compilation context
+				ed.setExpression(compile(argInfo.valueExpr));
+				// ed.compile(command); would switch the compilation context
+			}
+			argMap.put(argInfo.name, ed);
+		}
+
+		return argMap;
+	}
+
+	/**
 	 * Extract parameters.
 	 *
 	 * @param o
@@ -799,6 +834,41 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		}
 
 		return null;
+	}
+
+	/**
+	 * Extract constructor argument info.
+	 *
+	 * @param exp
+	 *            the exp
+	 * @param expectedArgs
+	 *            the expected args
+	 * @param action
+	 *            the action
+	 * @param command
+	 *            the command
+	 * @return the arg info
+	 */
+	private ArgInfo extractConstructorArgumentInfo(final Expression exp, final Collection<String> expectedArgs) {
+		String key = null;
+		Expression value = null;
+		if (exp instanceof Parameter p) {
+			key = EGAML.getKeyOfParameter(p);
+			value = p.getRight();
+		} else if (exp instanceof BinaryOperator bo && "::".equals(bo.getOp())) {
+			key = EGAML.getKeyOf(bo.getLeft());
+			value = bo.getRight();
+		}
+		if (key == null) {
+			this.context.getContext().error("Impossible to compile argument");
+			return null;
+		}
+		if (expectedArgs != null && !expectedArgs.contains(key)) {
+			this.context.getContext().error("Not an attribute: " + key);
+			return null;
+		}
+
+		return new ArgInfo(key, value, false);
 	}
 
 	// ==================== Case Methods (Override from GamlSwitch) ====================
@@ -965,8 +1035,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			return null;
 		}
 		final List<Expression> args = EGaml.getInstance().getExprsOf(object.getRight());
+		if (allExpressionsAreParameters(args)) return tryConstructor(t.getSpecies(), args);
 		return switch (args.size()) {
-			case 0 -> null;
 			case 1 -> {
 				IExpression expr = compile(args.get(0));
 				if (FACTORY.hasExactOperator(op, expr)) { yield null; }
@@ -978,6 +1048,25 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 				yield casting(t, FACTORY.createList(exprs), object);
 			}
 		};
+	}
+
+	/**
+	 * @param species
+	 * @param args
+	 * @return
+	 */
+	private IExpression tryConstructor(final ITypeDescription species, final List<Expression> args) {
+		return new Constructor(species, parseArgumentsForConstructor(species, args));
+	}
+
+	/**
+	 * @param args
+	 * @return
+	 */
+	private boolean allExpressionsAreParameters(final List<Expression> args) {
+		if (args.size() == 0) return true;
+		for (Expression expr : args) { if (!(expr instanceof Parameter)) return false; }
+		return true;
 	}
 
 	/**
