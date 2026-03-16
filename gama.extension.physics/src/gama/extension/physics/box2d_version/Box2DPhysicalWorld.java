@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * Box2DPhysicalWorld.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * Box2DPhysicalWorld.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,11 +14,15 @@ import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vec2;
 import org.jbox2d.dynamics.Body;
 import org.jbox2d.dynamics.World;
+import org.jbox2d.dynamics.joints.DistanceJointDef;
+import org.jbox2d.dynamics.joints.Joint;
+import org.jbox2d.dynamics.joints.JointDef;
 
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.shape.GamaPoint;
 import gama.extension.physics.common.AbstractPhysicalWorld;
 import gama.extension.physics.common.IBody;
+import gama.extension.physics.common.IJointDefinition;
 import gama.extension.physics.common.IShapeConverter;
 import gama.extension.physics.gaml.PhysicalSimulationAgent;
 
@@ -121,4 +125,40 @@ public class Box2DPhysicalWorld extends AbstractPhysicalWorld<World, Shape, Vec2
 	@Override
 	public float getScale() { return scale; }
 
+	/**
+	 * Adds a joint to the Box2D world.
+	 *
+	 * @param jointDef
+	 *            the joint definition
+	 * @return the created joint
+	 */
+	public Joint addJoint(final JointDef jointDef) {
+		return world.createJoint(jointDef);
+	}
+
+	/**
+	 * Creates the joint.
+	 *
+	 * @param jointDefinition
+	 *            the joint definition
+	 * @return the object
+	 */
+	@Override
+	public Object createJoint(final IJointDefinition jointDefinition) {
+		JointDef jointDef = convertToBox2DJointDef(jointDefinition);
+		return world.createJoint(jointDef);
+	}
+
+	/**
+	 * Convert to box 2 D joint def.
+	 *
+	 * @param jointDefinition
+	 *            the joint definition
+	 * @return the joint def
+	 */
+	private JointDef convertToBox2DJointDef(final IJointDefinition jointDefinition) {
+		// Conversion logic for Box2D joint definitions
+		// Example: Create a DistanceJointDef, RevoluteJointDef, etc., based on jointDefinition
+		return new DistanceJointDef(); // Placeholder
+	}
 }
