@@ -43,7 +43,6 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
-import gama.api.types.map.IMap;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
 import gama.core.object.GamlClass.ClassValidator;
@@ -326,7 +325,7 @@ public class GamlClass extends Symbol implements IClass {
 	}
 
 	@Override
-	public IObject createInstance(final IScope scope, final IMap<String, Object> args) {
+	public IObject createInstance(final IScope scope, final Map<String, Object> args) {
 		return new GamlObject(scope, this, args);
 	}
 

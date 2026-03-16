@@ -11,6 +11,7 @@ package gama.api.kernel.species;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import gama.annotations.doc;
 import gama.annotations.getter;
@@ -33,7 +34,6 @@ import gama.api.kernel.skill.ISkill;
 import gama.api.runtime.IExecutable;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.IList;
-import gama.api.types.map.IMap;
 import gama.api.types.misc.IContainer;
 import gama.api.ui.IExperimentDisplayable;
 
@@ -620,6 +620,7 @@ public interface ISpecies
 	 *
 	 * @return the parent name
 	 */
+	@Override
 	String getParentName();
 
 	/**
@@ -684,6 +685,7 @@ public interface ISpecies
 	 * @param macroSpecies
 	 *            the new macro species
 	 */
+	@Override
 	void setMacroSpecies(final ISpecies macroSpecies);
 
 	/**
@@ -786,7 +788,7 @@ public interface ISpecies
 	 * @return the i agent
 	 */
 	@Override
-	default IAgent createInstance(final IScope scope, final IMap<String, Object> args) {
+	default IAgent createInstance(final IScope scope, final Map<String, Object> args) {
 		return getPopulation(scope).createOneAgent(scope, args);
 	}
 

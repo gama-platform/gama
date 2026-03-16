@@ -11,6 +11,7 @@ package gama.api.kernel.object;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import gama.annotations.doc;
 import gama.annotations.getter;
@@ -28,7 +29,6 @@ import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
-import gama.api.types.map.IMap;
 import gama.api.utils.json.IJsonable;
 import one.util.streamex.StreamEx;
 
@@ -228,7 +228,7 @@ public interface IClass extends ISymbol, ITyped, IJsonable {
 	 * @param args
 	 * @return
 	 */
-	IObject createInstance(IScope scope, IMap<String, Object> args);
+	IObject createInstance(IScope scope, Map<String, Object> args);
 
 	/**
 	 * Gets the parent name.
