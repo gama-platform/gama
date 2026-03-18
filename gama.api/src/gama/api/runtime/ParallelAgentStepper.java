@@ -11,7 +11,6 @@
 package gama.api.runtime;
 
 import java.util.Spliterator;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.agent.IAgent;
@@ -34,7 +33,7 @@ import gama.api.runtime.scope.IScope;
  * <li>Agents execute their reflexes and scheduled behaviors</li>
  * <li>Stepping continues until all agents complete or one fails</li>
  * <li>Returns true if all agents stepped successfully, false if any failed</li>
- * <li>Uses {@link AtomicBoolean} for thread-safe result accumulation</li>
+ * <li>Each partition is consumed sequentially on one thread; no shared state is needed</li>
  * </ol>
  * 
  * <p>
@@ -76,8 +75,8 @@ public class ParallelAgentStepper extends ParallelAgentRunner<Boolean> {
 	 * 
 	 * <p>
 	 * Iterates through the agents and calls {@link IScope#step(IAgent)} on each one, which executes the agent's
-	 * reflexes and other scheduled behaviors. Stops on the first failure. Uses an {@link AtomicBoolean} to safely
-	 * accumulate results across parallel executions.
+	 * reflexes and other scheduled behaviors. Stops early on the first failure. This partition is consumed by a single
+	 * thread, so a plain {@code boolean} is used instead of an {@link java.util.concurrent.atomic.AtomicBoolean}.
 	 * </p>
 	 * 
 	 * @param scope
@@ -88,13 +87,31 @@ public class ParallelAgentStepper extends ParallelAgentRunner<Boolean> {
 	 */
 	@Override
 	public Boolean executeOn(final IScope scope) throws GamaRuntimeException {
-		final AtomicBoolean result = new AtomicBoolean(true);
-		agents.forEachRemaining(each -> {
-			if (result.get()) {
-				result.set(scope.step(each).passed());
-			}
-		});
-		return result.get();
+		boolean result = true;
+		// Plain boolean is sufficient: forEachRemaining runs sequentially on this single thread
+		for (final IAgent[] box = { null }; agents.tryAdvance(a -> box[0] = a);) {
+			if (!result) break;
+			result = scope.step(box[0]).passed();
+		}
+		return result;
+	}
+
+	/**
+	 * Merges the Boolean results of two parallel partitions by performing a logical AND.
+	 * 
+	 * <p>
+	 * Both halves must have succeeded for the overall step to be considered successful.
+	 * </p>
+	 * 
+	 * @param leftResult
+	 *            result from the forked left sub-task
+	 * @param rightResult
+	 *            result from the current thread's computation
+	 * @return {@code true} only if both halves returned {@code true}
+	 */
+	@Override
+	protected Boolean mergeResults(final Boolean leftResult, final Boolean rightResult) {
+		return leftResult && rightResult;
 	}
 
 	/**

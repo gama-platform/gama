@@ -235,7 +235,8 @@ public class HeadlessExperimentController implements IExperimentController {
 	@Override
 	public void schedule(final IExperimentAgent agent) {
 		this.agent = agent;
-		IScope scope = agent.getScope();
+		final IScope scope = agent.getScope();
+		if (scope == null) return;
 		try {
 			if (!scope.init(agent).passed()) { scope.setDisposeStatus(); }
 		} catch (final Throwable e) {
@@ -243,7 +244,6 @@ public class HeadlessExperimentController implements IExperimentController {
 				GAMA.reportError(scope, GamaRuntimeException.create(e, scope), true);
 			}
 		}
-
 	}
 
 	@Override
@@ -284,7 +284,8 @@ public class HeadlessExperimentController implements IExperimentController {
 	@Override
 	public boolean processStart(final boolean andWait) {
 		if (agent == null) return false;
-		IScope scope = agent.getScope();
+		final IScope scope = agent.getScope();
+		if (scope == null) return false;
 		try {
 			while (scope.step(agent).passed()) {}
 		} catch (final Throwable e) {

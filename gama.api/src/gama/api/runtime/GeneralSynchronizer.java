@@ -128,8 +128,9 @@ public class GeneralSynchronizer {
 	 * Acquires one permit from the synchronizer, blocking if necessary until one is available.
 	 * 
 	 * <p>
-	 * This method blocks the calling thread until a permit becomes available. If interrupted while waiting, the
-	 * interruption is caught and the stack trace is printed, but the method continues to wait.
+	 * This method blocks the calling thread until a permit becomes available. If the thread is interrupted while
+	 * waiting, the interruption is logged and the thread's interrupt flag is restored before returning, so callers
+	 * can detect the interruption via {@link Thread#isInterrupted()}.
 	 * </p>
 	 */
 	public void acquire() {
@@ -137,6 +138,7 @@ public class GeneralSynchronizer {
 			semaphore.acquire();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+			Thread.currentThread().interrupt();
 		}
 	}
 
@@ -161,8 +163,9 @@ public class GeneralSynchronizer {
 	 * Acquires the specified number of permits from the synchronizer, blocking if necessary.
 	 * 
 	 * <p>
-	 * This method blocks the calling thread until the requested number of permits become available. If interrupted
-	 * while waiting, the interruption is caught and the stack trace is printed, but the method continues to wait.
+	 * This method blocks the calling thread until the requested number of permits become available. If the thread is
+	 * interrupted while waiting, the interruption is logged and the thread's interrupt flag is restored before
+	 * returning, so callers can detect the interruption via {@link Thread#isInterrupted()}.
 	 * </p>
 	 * 
 	 * @param n
@@ -173,6 +176,7 @@ public class GeneralSynchronizer {
 			semaphore.acquire(n);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+			Thread.currentThread().interrupt();
 		}
 	}
 

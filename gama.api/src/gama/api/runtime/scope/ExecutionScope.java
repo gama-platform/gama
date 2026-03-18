@@ -573,7 +573,7 @@ public class ExecutionScope implements IScope {
 	 */
 	// @Override
 	@Override
-	public synchronized void pop(final IObject agent) {
+	public void pop(final IObject agent) {
 		synchronized (lock) {
 			if (agentContext == null) {
 				DEBUG.OUT("Agents stack is empty");

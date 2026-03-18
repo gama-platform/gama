@@ -13,9 +13,9 @@ package gama.api.runtime;
 import static gama.api.runtime.GamaExecutorService.EXCEPTION_HANDLER;
 import static gama.api.runtime.GamaExecutorService.getParallelism;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.ISimulationAgent;
@@ -94,9 +94,6 @@ public class SimulationRunner implements ISimulationRunner {
 	/** Maps each simulation agent to its dedicated execution thread. */
 	final Map<ISimulationAgent, Thread> runnables;
 
-	/** Lock object for thread-safe operations on the runnables map. */
-	final Object lock = new Object();
-
 	/** Synchronizer controlling when simulations can execute their step. */
 	final GeneralSynchronizer simulationsSemaphore = GeneralSynchronizer.withInitialPermits(0);
 
@@ -144,7 +141,9 @@ public class SimulationRunner implements ISimulationRunner {
 	 */
 	private SimulationRunner(final int concurrency) {
 		this.concurrency = concurrency;
-		runnables = new LinkedHashMap<>();
+		// ConcurrentHashMap ensures that add(), remove(), step(), dispose(), and
+		// size() queries from different threads do not race on the underlying structure.
+		runnables = new ConcurrentHashMap<>();
 	}
 
 	/**
@@ -185,9 +184,11 @@ public class SimulationRunner implements ISimulationRunner {
 			@Override
 			public void run() {
 				while (!shutdown && !agent.dead()) {
-
 					// DEBUG.OUT("Waiting for " + agent);
 					simulationsSemaphore.acquire();
+					// Recheck after waking up: dispose() may have released the permit just to
+					// unblock this thread for shutdown — we must not step a dead/cleared runner.
+					if (shutdown || agent.dead()) { break; }
 					try {
 						agent.step();
 						experimentSemaphore.release();
@@ -199,7 +200,6 @@ public class SimulationRunner implements ISimulationRunner {
 		};
 		t.start();
 		runnables.put(agent, t);
-
 	}
 
 	/**

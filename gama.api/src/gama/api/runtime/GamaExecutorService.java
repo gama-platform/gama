@@ -13,6 +13,7 @@ package gama.api.runtime;
 import static gama.api.utils.prefs.GamaPreferences.create;
 
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ForkJoinPool;
@@ -388,9 +389,21 @@ public abstract class GamaExecutorService {
 						if (!scope.step(agent).passed()) return false;
 					}
 					break;
-				case 1:
-					for (final A agent : array) { executeThreaded(() -> scope.step((IAgent) agent)); }
+				case 1: {
+					// Each agent is submitted as a separate task; each task gets its own scope copy to
+					// avoid sharing mutable scope state across concurrent threads. All tasks are
+					// submitted to the pool and joined before returning so that the caller always sees
+					// completed results rather than fire-and-forget side effects.
+					final List<ForkJoinTask<?>> tasks = new ArrayList<>(array.length);
+					for (final A aa : array) {
+						final IAgent agent = (IAgent) aa;
+						if (agent == null || agent.dead()) { continue; }
+						final IScope agentScope = scope.copy(" - step - ");
+						tasks.add(AGENT_PARALLEL_EXECUTOR.submit(ForkJoinTask.adapt(() -> agentScope.step(agent))));
+					}
+					for (final ForkJoinTask<?> task : tasks) { task.join(); }
 					break;
+				}
 				default:
 					ParallelAgentRunner.step(scope, array, threshold);
 			}
@@ -426,9 +439,20 @@ public abstract class GamaExecutorService {
 				}
 				return;
 			// Break doesnt really make sense for parallel execution
-			case 1:
-				for (final A agent : array) { executeThreaded(() -> scope.execute(executable, (IAgent) agent, null)); }
+			case 1: {
+				// Each agent is submitted as a separate task; each task gets its own scope copy to
+				// avoid sharing mutable scope state across concurrent threads. All tasks are
+				// submitted to the pool and joined before returning.
+				final List<ForkJoinTask<?>> tasks = new ArrayList<>(array.length);
+				for (final A aa : array) {
+					final IAgent agent = (IAgent) aa;
+					final IScope agentScope = scope.copy(" - execute - ");
+					tasks.add(AGENT_PARALLEL_EXECUTOR
+							.submit(ForkJoinTask.adapt(() -> agentScope.execute(executable, agent, null))));
+				}
+				for (final ForkJoinTask<?> task : tasks) { task.join(); }
 				return;
+			}
 			default:
 				ParallelAgentRunner.execute(scope, executable, array, threshold);
 		}

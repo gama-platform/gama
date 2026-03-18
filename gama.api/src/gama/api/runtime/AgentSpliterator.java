@@ -33,10 +33,10 @@ import gama.api.types.geometry.IShape;
  * Key characteristics:
  * </p>
  * <ul>
- * <li>CONCURRENT: Supports concurrent access during iteration</li>
  * <li>ORDERED: Maintains the original ordering of agents</li>
- * <li>IMMUTABLE: The underlying agent array cannot be modified</li>
- * <li>SIZED: The size is known and reported accurately</li>
+ * <li>IMMUTABLE: The underlying agent array cannot be modified during iteration</li>
+ * <li>SIZED: The exact size is known and reported accurately</li>
+ * <li>SUBSIZED: All splits also report exact sizes</li>
  * </ul>
  * 
  * <p>
@@ -156,16 +156,19 @@ public class AgentSpliterator implements Spliterator<IAgent> {
 	 * Attempts to process the next agent in this spliterator's range.
 	 * 
 	 * <p>
-	 * Note: This implementation always returns true but doesn't actually advance. The primary iteration mechanism is
-	 * through {@link #forEachRemaining(Consumer)}.
+	 * If there are remaining agents (i.e., {@code begin < end}), this method applies the given action to the next
+	 * agent, advances the {@code begin} pointer, and returns {@code true}. Returns {@code false} when no agents
+	 * remain.
 	 * </p>
 	 * 
 	 * @param action
 	 *            the action to perform on the next agent
-	 * @return always returns true
+	 * @return {@code true} if an agent was processed, {@code false} if the range is exhausted
 	 */
 	@Override
 	public boolean tryAdvance(final Consumer<? super IAgent> action) {
+		if (begin >= end) return false;
+		action.accept((IAgent) agents[begin++]);
 		return true;
 	}
 
@@ -208,17 +211,22 @@ public class AgentSpliterator implements Spliterator<IAgent> {
 	 * This spliterator reports the following characteristics:
 	 * </p>
 	 * <ul>
-	 * <li>CONCURRENT: Can be safely used in concurrent contexts</li>
 	 * <li>ORDERED: Maintains the original order of agents</li>
 	 * <li>IMMUTABLE: The underlying array cannot be modified during iteration</li>
 	 * <li>SIZED: The exact size is known via {@link #estimateSize()}</li>
+	 * <li>SUBSIZED: All splits also report exact sizes</li>
 	 * </ul>
+	 * 
+	 * <p>
+	 * Note: {@code CONCURRENT} is intentionally absent. Each partition is consumed by a single thread — the
+	 * fork/join splitting happens at the spliterator level before any thread begins iterating.
+	 * </p>
 	 * 
 	 * @return a bitmask of characteristics
 	 */
 	@Override
 	public int characteristics() {
-		return Spliterator.CONCURRENT | Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.SIZED;
+		return Spliterator.ORDERED | Spliterator.IMMUTABLE | Spliterator.SIZED | Spliterator.SUBSIZED;
 	}
 
 }

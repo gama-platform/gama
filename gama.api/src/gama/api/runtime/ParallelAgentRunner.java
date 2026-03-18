@@ -239,7 +239,7 @@ public abstract class ParallelAgentRunner<T> extends RecursiveTask<T> implements
 	 * <li>Attempts to split the agent spliterator</li>
 	 * <li>If split successful, creates a sub-task for the first half and forks it</li>
 	 * <li>Recursively computes the result for the second half in the current thread</li>
-	 * <li>Waits for the forked sub-task to complete</li>
+	 * <li>Waits for the forked sub-task to complete and merges both results via {@link #mergeResults}</li>
 	 * <li>If no split possible (below threshold), executes sequentially via {@link #executeOn(IScope)}</li>
 	 * </ol>
 	 * 
@@ -250,16 +250,31 @@ public abstract class ParallelAgentRunner<T> extends RecursiveTask<T> implements
 	@Override
 	protected T compute() throws GamaRuntimeException {
 		final Spliterator<IAgent> sub = agents.trySplit();
-		T result;
-		if (sub == null) {
-			result = executeOn(originalScope);
-		} else {
-			final ParallelAgentRunner<T> left = subTask(sub);
-			left.fork();
-			result = compute();
-			left.join();
-		}
-		return result;
+		if (sub == null) { return executeOn(originalScope); }
+		final ParallelAgentRunner<T> left = subTask(sub);
+		left.fork();
+		final T rightResult = compute();
+		final T leftResult = left.join();
+		return mergeResults(leftResult, rightResult);
+	}
+
+	/**
+	 * Merges the results of two parallel sub-tasks into a combined result.
+	 * 
+	 * <p>
+	 * The default implementation returns the right (current-thread) result. Subclasses that need to combine results
+	 * from both halves (e.g., collect all values) should override this method. Boolean subclasses should override to
+	 * return {@code leftResult &amp;&amp; rightResult}.
+	 * </p>
+	 * 
+	 * @param leftResult
+	 *            the result produced by the forked left sub-task
+	 * @param rightResult
+	 *            the result produced by the current thread's recursive computation
+	 * @return the combined result
+	 */
+	protected T mergeResults(final T leftResult, final T rightResult) {
+		return rightResult;
 	}
 
 	/**

@@ -10,8 +10,6 @@
  ********************************************************************************************************/
 package gama.api.kernel.simulation;
 
-import java.util.concurrent.ArrayBlockingQueue;
-
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.species.IExperimentSpecies;
@@ -183,8 +181,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 
 	/** The execution thread. */
 
-	/** The agent. */
-	private IExperimentAgent agent;
+	/** The agent. Volatile so writes from schedule() on the calling thread are immediately visible to the execution thread. */
+	private volatile IExperimentAgent agent;
 
 	/** The r. */
 
@@ -198,9 +196,6 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 *            the experiment
 	 */
 	public DefaultExperimentController(final IExperimentSpecies experiment) {
-		// Optimization: Increased queue size from 10 to 50 to reduce command rejection probability
-		// under high command throughput scenarios (e.g., automated testing, batch operations)
-		commands = new ArrayBlockingQueue<>(50);
 		this.experiment = experiment;
 
 		// Execution thread runs simulation steps when not paused
@@ -288,10 +283,10 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				return true;
 
 			case _STEP:
-				previouslock.acquire();
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
-				lock.release();
+				lock.release();          // let the execution thread run one step
+				previouslock.acquire();  // then wait for that step to complete
 				return true;
 
 			case _BACK:
@@ -350,30 +345,24 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 */
 	@Override
 	public void dispose() {
-		// Set disposing flag early to prevent new operations
+		// Set disposing flag early so other threads stop accepting new work
 		disposing = true;
-
-		// Clear references first to fail-fast any pending operations
-		final IScope localScope = scope;
-		scope = null;
-		agent = null;
 
 		if (experiment != null) {
 			try {
 				paused = true;
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NOTREADY);
 
-				// Close dialogs if scope is available
+				// Close dialogs while scope is still valid
+				final IScope localScope = scope;
 				if (localScope != null) {
 					try {
 						localScope.getGui().closeDialogs(localScope);
 					} catch (final Exception e) {
-						// Log but don't fail disposal
 						DEBUG.ERR("Error closing dialogs during disposal", e);
 					}
 				}
 
-				// Dec 2015 This method is normally now called from ExperimentPlan.dispose()
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
 			} finally {
 				// Stop accepting new commands
@@ -382,43 +371,45 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				// Signal execution thread to stop
 				experimentAlive = false;
 
-				// Release lock to unblock execution thread if it's waiting
+				// Release lock to unblock execution thread if it is waiting
 				try {
 					lock.release();
 				} catch (final Exception e) {
-					// Lock might already be released - that's fine
+					// Lock might already be released – that's fine
 				}
 
-				// Send close command to command thread
+				// Signal command thread to exit its take() loop
 				if (commandThread != null && commandThread.isAlive()) {
 					commands.offer(ExperimentCommand._CLOSE);
-
-					// Optimization: Wait for command thread to finish with timeout
 					try {
-						commandThread.join(1000); // Wait up to 1 second
+						commandThread.join(1000);
 						if (commandThread.isAlive()) {
 							DEBUG.OUT("Command thread did not terminate gracefully, interrupting...");
 							commandThread.interrupt();
 						}
 					} catch (final InterruptedException e) {
 						DEBUG.ERR("Interrupted while waiting for command thread termination", e);
-						Thread.currentThread().interrupt(); // Restore interrupt status
+						Thread.currentThread().interrupt();
 					}
 				}
 
-				// Optimization: Wait for execution thread to finish with timeout
+				// Wait for execution thread to finish before nulling shared state
 				if (executionThread != null && executionThread.isAlive()) {
 					try {
-						executionThread.join(1000); // Wait up to 1 second
+						executionThread.join(1000);
 						if (executionThread.isAlive()) {
 							DEBUG.OUT("Execution thread did not terminate gracefully, interrupting...");
 							executionThread.interrupt();
 						}
 					} catch (final InterruptedException e) {
 						DEBUG.ERR("Interrupted while waiting for execution thread termination", e);
-						Thread.currentThread().interrupt(); // Restore interrupt status
+						Thread.currentThread().interrupt();
 					}
 				}
+
+				// Null references only after threads have stopped to avoid NPE in step()
+				scope = null;
+				agent = null;
 			}
 		}
 	}
@@ -430,13 +421,20 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	}
 
 	/**
-	 * Notify exception.
+	 * Notify exception and close experiment.
+	 * <p>
+	 * Captures {@code scope} into a local variable before any use to avoid a TOCTOU race where the field could be
+	 * set to {@code null} by a concurrent {@link #dispose()} call between the null-check and the dereference.
+	 * </p>
 	 *
 	 * @param e
-	 *            the e
+	 *            the throwable that caused the failure
 	 */
 	public void notifyExceptionAndCloseExperiment(final Throwable e) {
-		if (e != null) { getScope().getGui().getStatus().errorStatus(GamaRuntimeException.create(e, scope)); }
+		final IScope localScope = scope; // capture before concurrent dispose() can null it
+		if (e != null && localScope != null) {
+			localScope.getGui().getStatus().errorStatus(GamaRuntimeException.create(e, localScope));
+		}
 		GAMA.closeExperiment(experiment);
 		GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NONE);
 	}

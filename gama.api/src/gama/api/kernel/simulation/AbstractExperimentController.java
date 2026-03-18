@@ -17,6 +17,7 @@ import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.runtime.GeneralSynchronizer;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.server.IServerConfiguration;
+import gama.dev.DEBUG;
 
 /**
  * Abstract base class for experiment controllers in GAMA.
@@ -97,7 +98,7 @@ import gama.api.utils.server.IServerConfiguration;
  * <li><b>experimentAlive:</b> Whether the experiment is still running</li>
  * <li><b>paused:</b> Whether execution is currently paused</li>
  * <li><b>acceptingCommands:</b> Whether new commands are being accepted</li>
- * <li><b>disposing:</b> Whether the controller is being disposed</li>
+ * <li><b>disposing:</b> Whether the controller is being disposed (volatile; observed promptly by all threads)</li>
  * </ul>
  * 
  * <h3>Synchronization Mechanism</h3>
@@ -175,11 +176,11 @@ import gama.api.utils.server.IServerConfiguration;
  */
 public abstract class AbstractExperimentController implements IExperimentController {
 
-	/** The scope. */
-	protected IScope scope;
+	/** The scope. Volatile so writes from schedule() on the calling thread are immediately visible to the execution thread. */
+	protected volatile IScope scope;
 
-	/** The disposing. */
-	protected boolean disposing;
+	/** The disposing. Flag set when the controller is being shut down. Must be volatile so all threads observe it promptly. */
+	protected volatile boolean disposing;
 
 	/** The server configuration. */
 	protected IServerConfiguration serverConfiguration;
@@ -206,15 +207,22 @@ public abstract class AbstractExperimentController implements IExperimentControl
 	/** The experiment. */
 	protected IExperimentSpecies experiment;
 
-	/** The commands. */
-	protected volatile ArrayBlockingQueue<ExperimentCommand> commands = new ArrayBlockingQueue<>(50);
+	/** The commands. Blocking queue of pending experiment commands. {@link ArrayBlockingQueue} is thread-safe; the field itself must not be re-assigned after construction. */
+	protected final ArrayBlockingQueue<ExperimentCommand> commands = new ArrayBlockingQueue<>(50);
 
-	/** The command thread. */
+	/** The command thread. Processes commands from the {@link #commands} queue in a dedicated thread. */
 	protected Thread commandThread = new Thread(() -> {
 		while (acceptingCommands) {
 			try {
 				processUserCommand(commands.take());
-			} catch (final Exception e) {}
+			} catch (final InterruptedException e) {
+				// Restore the interrupted status so the thread can exit cleanly
+				Thread.currentThread().interrupt();
+				return;
+			} catch (final Exception e) {
+				// Log unexpected exceptions; do not silently swallow them
+				DEBUG.ERR("Unexpected error in command thread", e);
+			}
 		}
 	}, "Front end controller");
 

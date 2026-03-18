@@ -320,8 +320,9 @@ public class ExecutionContext implements IExecutionContext {
 	public ExecutionContext createCopy(final ISymbol command) {
 		final ExecutionContext r = create(scope, outer, command);
 		if (local != null) {
-			r.local = Collections.synchronizedMap(new HashMap<>());
-			if (local != null) { r.local.putAll(local); }
+			// ExecutionContext is used on a single thread; a plain HashMap is sufficient
+			// and avoids the overhead of Collections.synchronizedMap.
+			r.local = new HashMap<>(local);
 		}
 		return r;
 	}
@@ -352,7 +353,9 @@ public class ExecutionContext implements IExecutionContext {
 
 	@Override
 	public void putLocalVar(final String varName, final Object val) {
-		if (local == null) { local = Collections.synchronizedMap(new HashMap<>()); }
+		// ExecutionContext is used on a single thread; a plain HashMap avoids
+		// the unnecessary synchronization overhead of Collections.synchronizedMap.
+		if (local == null) { local = new HashMap<>(); }
 		local.put(varName, val);
 	}
 
