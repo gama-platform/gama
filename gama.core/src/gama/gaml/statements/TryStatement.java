@@ -107,8 +107,16 @@ public class TryStatement extends AbstractStatementSequence {
 
 	}
 
-	/** The catch statement. */
-	public IStatement catchStatement;
+	/**
+	 * The {@code catch} branch, if any.
+	 *
+	 * <p><b>Thread-safety:</b> declared {@code volatile} so that the single write performed by
+	 * {@link #setChildren(Iterable)} during construction (or the {@code null} written by
+	 * {@link #dispose()}) is guaranteed to be visible to all threads that subsequently call
+	 * {@link #privateExecuteIn(IScope)}, even when those threads belong to different parallel
+	 * simulations sharing this statement instance.</p>
+	 */
+	public volatile IStatement catchStatement;
 
 	/**
 	 * The Constructor.

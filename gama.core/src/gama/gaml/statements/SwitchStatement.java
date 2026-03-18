@@ -270,11 +270,23 @@ public class SwitchStatement extends AbstractStatementSequence implements Breaka
 
 	}
 
-	/** The matches. */
-	public MatchStatement[] matches;
+	/**
+	 * The array of {@code match} branches.
+	 *
+	 * <p><b>Thread-safety:</b> declared {@code volatile} so that the single write performed by
+	 * {@link #setChildren(Iterable)} during construction (or the {@code null} written by
+	 * {@link #dispose()}) is guaranteed to be visible to all threads that subsequently call
+	 * {@link #privateExecuteIn(IScope)}, even when those threads belong to different parallel
+	 * simulations sharing this statement instance.</p>
+	 */
+	public volatile MatchStatement[] matches;
 
-	/** The default match. */
-	public MatchStatement defaultMatch;
+	/**
+	 * The {@code default} branch, if any.
+	 *
+	 * <p><b>Thread-safety:</b> same visibility guarantee as {@link #matches}.</p>
+	 */
+	public volatile MatchStatement defaultMatch;
 
 	/** The value. */
 	final IExpression value;
@@ -314,8 +326,12 @@ public class SwitchStatement extends AbstractStatementSequence implements Breaka
 		final Object switchValue = value.value(scope);
 		Object lastResult = null;
 
+		// Snapshot the volatile field once into a local variable so that the
+		// JIT can keep it in a register and avoid repeated memory-barrier reads
+		// on every iteration of the loop.
+		final MatchStatement[] localMatches = matches;
 		try {
-			for (final MatchStatement matche : matches) {
+			for (final MatchStatement matche : localMatches) {
 
 				if (matche.matches(scope, switchValue)) {
 					final IExecutionResult er = scope.execute(matche);

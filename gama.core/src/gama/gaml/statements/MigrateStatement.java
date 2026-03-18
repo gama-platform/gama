@@ -127,8 +127,15 @@ public class MigrateStatement extends AbstractStatementSequence {
 	/** The return string. */
 	private final String returnString;
 
-	/** The sequence. */
-	private RemoteSequence sequence = null;
+	/**
+	 * The sequence of statements to execute on each migrated agent.
+	 *
+	 * <p><b>Thread-safety:</b> declared {@code volatile} so that the single write performed by
+	 * {@link #setChildren(Iterable)} during construction is guaranteed to be visible to all threads
+	 * that subsequently call {@link #privateExecuteIn(IScope)}, even when those threads belong to
+	 * different parallel simulations sharing this statement instance.</p>
+	 */
+	private volatile RemoteSequence sequence = null;
 
 	/**
 	 * Instantiates a new migrate statement.

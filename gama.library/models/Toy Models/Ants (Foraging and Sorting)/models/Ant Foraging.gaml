@@ -173,7 +173,7 @@ species ant skills: [moving] control: fsm {
 
 	aspect icon_svg {
 		draw (ant_shape_svg) size: {5, 7} at: (location)rotate:  heading + 90 color: #black;
-	} 
+	}  
 }
 
 experiment base virtual:true {

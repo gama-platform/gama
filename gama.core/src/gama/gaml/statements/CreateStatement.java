@@ -22,6 +22,7 @@ import static gama.annotations.support.ISymbolKind.SEQUENCE_STATEMENT;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import gama.annotations.doc;
 import gama.annotations.example;
@@ -84,6 +85,11 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
  * Creation of agents from CSV files: create toto from: "toto.csv" header: true with:[att1::read("NAME"),
  * att2::read("TYPE")]; or, without header: create toto from: "toto.csv"with:[att1::read(0), att2::read(1)]; //with the
  * read(int), the index of the column.
+ *
+ * <p><b>Thread-safety:</b> the {@link #init} field, which carries the formal {@link Arguments} set by
+ * {@link #setFormalArgs(Arguments)}, is held in an {@link java.util.concurrent.atomic.AtomicReference} so that
+ * concurrent reads from {@link #fillWithUserInit} and {@link #privateExecuteIn} always observe a consistent reference,
+ * even when multiple parallel simulations share the same statement instance.</p>
  */
 @symbol (
 		name = CREATE,
@@ -337,9 +343,9 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 		}
 	}
 
-	/** The init. */
-	// private final ThreadLocal<Arguments> init = new ThreadLocal();
-	private Arguments init;
+	/** The init. Uses {@link AtomicReference} so that {@link #setFormalArgs(Arguments)} and
+	 * {@link #fillWithUserInit(IScope, java.util.Map)} are safe when called from multiple threads simultaneously. */
+	private final AtomicReference<Arguments> init = new AtomicReference<>();
 
 	/** The header. */
 	private final IExpression from, number, species, header;
@@ -430,7 +436,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 		IList<? extends IAgent> agents = null;
 		for (final ICreateDelegate delegate : GamaAdditionRegistry.getCreateDelegates()) {
 			if (delegate.acceptSource(scope, source)) {
-				delegate.createFrom(scope, inits, max, source, init, this);
+				delegate.createFrom(scope, inits, max, source, init.get(), this);
 				if (delegate.handlesCreation()) { agents = delegate.createAgents(scope, pop, inits, this, sequence); }
 				break;
 			}
@@ -529,10 +535,11 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	// TODO Call it before calling the ICreateDelegate createFrom method !
 	@Override
 	public void fillWithUserInit(final IScope scope, final Map values) {
-		if (init == null) return;
+		final Arguments currentInit = init.get();
+		if (currentInit == null) return;
 		scope.pushReadAttributes(values);
 		try {
-			init.forEachArgument((k, v) -> {
+			currentInit.forEachArgument((k, v) -> {
 				values.put(k, v.getExpression().value(scope));
 				return true;
 			});
@@ -542,7 +549,7 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	}
 
 	@Override
-	public void setFormalArgs(final Arguments args) { init = args; }
+	public void setFormalArgs(final Arguments args) { init.set(args); }
 
 	@Override
 	public void setRuntimeArgs(final IScope scope, final Arguments args) {}
@@ -555,8 +562,8 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 
 	@Override
 	public void dispose() {
-		if (init != null) { init.dispose(); }
-		init = null;
+		final Arguments currentInit = init.getAndSet(null);
+		if (currentInit != null) { currentInit.dispose(); }
 		sequence.dispose();
 		super.dispose();
 	}

@@ -9,6 +9,8 @@
  ********************************************************************************************************/
 package gama.gaml.statements;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.facet;
@@ -38,10 +40,23 @@ import gama.api.utils.StringUtils;
 import gama.gaml.statements.DoStatement.DoSerializer;
 
 /**
- * Written by drogoul Modified on 7 févr. 2010
+ * Implements the {@code do} / {@code invoke} / {@code .} statement which lets an agent execute an action or
+ * primitive at runtime.
  *
- * @todo Description
+ * <p><b>Thread-safety:</b> this class is safe for concurrent use by multiple threads (e.g. parallel
+ * simulations). The two pieces of shared mutable state are protected as follows:
+ * <ul>
+ *   <li>{@link #args} – held in an {@link java.util.concurrent.atomic.AtomicReference} so that
+ *       {@link #setFormalArgs(Arguments)} and {@link #getRuntimeArgs(IScope)} never observe a
+ *       partially-written reference.</li>
+ *   <li>{@link #targetSpecies} – also held in an {@link java.util.concurrent.atomic.AtomicReference}
+ *       and lazily initialised via {@link java.util.concurrent.atomic.AtomicReference#compareAndSet}
+ *       inside {@link #getContext(IScope)}, ensuring that the resolution is performed exactly once even
+ *       when multiple threads race to initialise the field.</li>
+ * </ul>
+ * </p>
  *
+ * <p>Originally written by drogoul, modified on 7 févr. 2010.</p>
  */
 @symbol (
 		name = { IKeyword.DO, IKeyword.INVOKE, IKeyword._DOT },
@@ -191,17 +206,21 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 
 	}
 
-	/** The args. */
-	Arguments args;
+	/**
+	 * The args. Uses {@link AtomicReference} so that {@link #setFormalArgs(Arguments)} and
+	 * {@link #getRuntimeArgs(IScope)} are safe when called from multiple threads simultaneously.
+	 */
+	final AtomicReference<Arguments> args = new AtomicReference<>();
 
-	/** The target species. */
+	/** The target species name. Immutable after construction. */
 	final String targetSpeciesName;
 
-	/** The target species. */
-	IClass targetSpecies;
-
-	/** The computed. */
-	boolean computed;
+	/**
+	 * The resolved target species. Lazily initialised via double-checked locking inside
+	 * {@link #getContext(IScope)} so that exactly one initialisation happens even under concurrent
+	 * access.
+	 */
+	final AtomicReference<IClass> targetSpecies = new AtomicReference<>();
 
 	/** The function. */
 	final IExpression function, returns;
@@ -226,7 +245,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	}
 
 	@Override
-	public void setFormalArgs(final Arguments args) { this.args = args; }
+	public void setFormalArgs(final Arguments args) { this.args.set(args); }
 
 	/**
 	 * Gets the runtime args.
@@ -236,26 +255,34 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	 * @return the runtime args
 	 */
 	public Arguments getRuntimeArgs(final IScope scope) {
-		if (args == null) return null;
+		final Arguments currentArgs = args.get();
+		if (currentArgs == null) return null;
 		// Dynamic arguments necessary (see #2943, #2922, plus issue with multiple parallel simulations)
-		return args.resolveAgainst(scope);
+		return currentArgs.resolveAgainst(scope);
 	}
 
 	/**
 	 * Returns the species on which to find the action. If a species exists, we find the corresponding action.
-	 * Otherwise, we return the species of the agent
+	 * Otherwise, we return the species of the agent.
+	 * <p>
+	 * Thread-safe: uses {@link AtomicReference#compareAndSet} so that exactly one thread performs the
+	 * initialisation even when multiple threads call this method simultaneously on the same instance.
+	 * </p>
 	 */
 	private IClass getContext(final IScope scope) {
-		if (computed) return targetSpecies;
-		computed = true;
+		IClass current = targetSpecies.get();
+		if (current != null) return current;
+		IClass resolved;
 		if (targetSpeciesName != null) {
 			IModelSpecies model = scope.getModel();
-			targetSpecies = model.getClass(targetSpeciesName);
-			if (targetSpecies == null) { targetSpecies = model.getSpecies(targetSpeciesName); }
+			resolved = model.getClass(targetSpeciesName);
+			if (resolved == null) { resolved = model.getSpecies(targetSpeciesName); }
 		} else {
-			targetSpecies = scope.getAgent().getSpecies();
+			resolved = scope.getAgent().getSpecies();
 		}
-		return targetSpecies;
+		// Only store if not already set by another thread; either way, return the winner's value.
+		targetSpecies.compareAndSet(null, resolved);
+		return targetSpecies.get();
 	}
 
 	@Override
@@ -285,8 +312,8 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 
 	@Override
 	public void dispose() {
-		if (args != null) { args.dispose(); }
-		args = null;
+		final Arguments currentArgs = args.getAndSet(null);
+		if (currentArgs != null) { currentArgs.dispose(); }
 		super.dispose();
 	}
 

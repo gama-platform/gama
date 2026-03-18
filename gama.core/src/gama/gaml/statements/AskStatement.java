@@ -39,6 +39,11 @@ import gama.api.types.misc.IContainer;
 
 /**
  * The Class AskStatement.
+ *
+ * <p><b>Thread-safety:</b> declared {@code volatile} so that the single write performed by
+ * {@link #setChildren(Iterable)} during construction is guaranteed to be visible to all threads
+ * that subsequently call {@link #privateExecuteIn(IScope)}, even when those threads belong to
+ * different parallel simulations sharing this statement instance.</p>
  */
 @symbol (
 		name = IKeyword.ASK,
@@ -181,8 +186,15 @@ import gama.api.types.misc.IContainer;
 
 public class AskStatement extends AbstractStatementSequence implements Breakable {
 
-	/** The sequence. */
-	private RemoteSequence sequence = null;
+	/**
+	 * The sequence of statements to execute on each target agent.
+	 *
+	 * <p><b>Thread-safety:</b> declared {@code volatile} so that the single write performed by
+	 * {@link #setChildren(Iterable)} during construction is guaranteed to be visible to all threads
+	 * that subsequently call {@link #privateExecuteIn(IScope)}, even when those threads belong to
+	 * different parallel simulations sharing this statement instance.</p>
+	 */
+	private volatile RemoteSequence sequence = null;
 
 	/** The target. */
 	private final IExpression target;

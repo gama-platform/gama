@@ -12,6 +12,7 @@ package gama.gaml.statements;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.collect.FluentIterable;
 
@@ -51,8 +52,20 @@ import gama.gaml.statements.UserCommandStatement.UserCommandValidator;
 /**
  * Written by drogoul Modified on 7 févr. 2010
  *
- * @todo Description
- *
+ * <p><b>Thread-safety:</b> this class is safe for concurrent use by multiple threads (e.g. parallel
+ * simulations). The shared mutable state is protected as follows:
+ * <ul>
+ *   <li>{@link #args} – the formal {@link Arguments} set once by {@link #setFormalArgs(Arguments)} is
+ *       held in an {@link AtomicReference} so that concurrent reads inside
+ *       {@link #privateExecuteIn(IScope)} always observe a consistent reference.</li>
+ *   <li>{@link #runtimeArgs} – set by {@link #setRuntimeArgs(IScope, Arguments)} and consumed (read
+ *       then cleared) inside {@link #privateExecuteIn(IScope)}; held in an {@link AtomicReference}
+ *       and consumed atomically via {@link AtomicReference#getAndSet} to eliminate the read-then-clear
+ *       race.</li>
+ *   <li>{@link #category} – lazily initialised; declared {@code volatile} so the initialised value
+ *       is immediately visible to all threads.</li>
+ * </ul>
+ * </p>
  */
 @symbol (
 		name = { IKeyword.USER_COMMAND },
@@ -157,17 +170,26 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 		}
 	}
 
-	/** The args. */
-	Arguments args;
+	/**
+	 * The formal args. Uses {@link AtomicReference} so that {@link #setFormalArgs(Arguments)} and
+	 * the reads inside {@link #privateExecuteIn(IScope)} are safe when called from multiple threads.
+	 */
+	final AtomicReference<Arguments> args = new AtomicReference<>();
 
-	/** The runtime args. */
-	Arguments runtimeArgs;
+	/**
+	 * The runtime args. Uses {@link AtomicReference} so that {@link #setRuntimeArgs(IScope, Arguments)}
+	 * and the read-then-clear in {@link #privateExecuteIn(IScope)} are safe across threads.
+	 */
+	final AtomicReference<Arguments> runtimeArgs = new AtomicReference<>();
 
 	/** The action name. */
 	final String actionName;
 
-	/** The category. */
-	String category;
+	/**
+	 * The category. Declared {@code volatile} because it can be lazily initialised by
+	 * {@link #getCategory()} after construction.
+	 */
+	volatile String category;
 
 	/** The when. */
 	final IExpression when;
@@ -203,7 +225,7 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 	 *            the new formal args
 	 */
 	@Override
-	public void setFormalArgs(final Arguments args) { this.args = args; }
+	public void setFormalArgs(final Arguments args) { this.args.set(args); }
 
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {
@@ -216,12 +238,12 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 		if (isEnabled(scope)) {
 			// Addition of a simplification to the definition of this statement.
 			if (actionName == null) {
-				if (runtimeArgs != null) { scope.stackArguments(runtimeArgs); }
+				// Atomically consume runtimeArgs so another thread cannot observe the stale value.
+				final Arguments currentRuntimeArgs = runtimeArgs.getAndSet(null);
+				if (currentRuntimeArgs != null) { scope.stackArguments(currentRuntimeArgs); }
 				// AD 2/1/16 : Addition of this to address Issue #1339
 				for (final IStatement s : inputs) { if (!scope.execute(s).passed()) return null; }
-				final Object result = super.privateExecuteIn(scope);
-				runtimeArgs = null;
-				return result;
+				return super.privateExecuteIn(scope);
 			}
 			ISpecies context = scope.getAgent().getSpecies();
 			IStatement.WithArgs executer = context.getAction(actionName);
@@ -234,12 +256,12 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 				executer = context.getAction(actionName);
 				isWorkaroundForIssue1595 = true;
 			}
-			final Arguments tempArgs = new Arguments(args);
-			if (runtimeArgs != null) { tempArgs.complementWith(runtimeArgs); }
+			// Atomically consume runtimeArgs.
+			final Arguments currentRuntimeArgs = runtimeArgs.getAndSet(null);
+			final Arguments tempArgs = new Arguments(args.get());
+			if (currentRuntimeArgs != null) { tempArgs.complementWith(currentRuntimeArgs); }
 			if (!isWorkaroundForIssue1595) {
-				final Object result = scope.execute(executer, tempArgs).getValue();
-				runtimeArgs = null;
-				return result;
+				return scope.execute(executer, tempArgs).getValue();
 			}
 			final IPopulation<ISimulationAgent> simulations = scope.getExperiment().getSimulationPopulation();
 			for (final ISimulationAgent sim : simulations.iterable(scope)) { scope.execute(executer, sim, tempArgs); }
@@ -249,7 +271,7 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 
 	@Override
 	public void setRuntimeArgs(final IScope scope, final Arguments args) {
-		this.runtimeArgs = args;
+		this.runtimeArgs.set(args);
 	}
 
 	/**

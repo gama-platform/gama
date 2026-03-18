@@ -224,22 +224,34 @@ public class MatchStatement extends AbstractStatementSequence {
 
 	/**
 	 * The Class MatchRegex.
+	 *
+	 * <p><b>Performance:</b> when the pattern expression is a compile-time constant, the
+	 * {@link Pattern} is compiled once inside {@link #acceptValue()} and reused on every call to
+	 * {@link #matches(IScope, Object)}, avoiding the cost of {@link Pattern#compile} on every
+	 * switch evaluation. When the pattern is dynamic (non-constant) the {@code Pattern} is
+	 * compiled on each invocation as before.</p>
 	 */
 	class MatchRegex extends MatchExecuter {
 
+		/**
+		 * The pre-compiled pattern, non-null only when the value expression is a constant.
+		 * Reused on every call to {@link #matches(IScope, Object)} to avoid repeated compilation.
+		 */
+		private Pattern compiledPattern;
+
 		@Override
 		public boolean matches(final IScope scope, final Object switchValue) throws GamaRuntimeException {
-			final Object val = getValue(scope);
-			if (!(switchValue instanceof String)) throw GamaRuntimeException.error(
+			if (!(switchValue instanceof String target)) throw GamaRuntimeException.error(
 					"Can only match strings against a regular expression. " + switchValue + " is not a string", scope);
-			if (!(val instanceof String)) throw GamaRuntimeException
+			// Fast path: use the pre-compiled pattern for constant patterns.
+			if (compiledPattern != null) { return compiledPattern.matcher(target).find(); }
+			// Dynamic path: compile on every call.
+			final Object val = getValue(scope);
+			if (!(val instanceof String pattern)) throw GamaRuntimeException
 					.error("Can only match strings against a regular expression. " + val + " is not a string", scope);
-			String target = (String) switchValue;
-			String pattern = (String) val;
 			if (pattern.isEmpty()) return false;
 			try {
-				Pattern p = Pattern.compile(pattern);
-				return p.matcher(target).find();
+				return Pattern.compile(pattern).matcher(target).find();
 			} catch (PatternSyntaxException e) {
 				return target.contains(pattern);
 			}
@@ -250,6 +262,16 @@ public class MatchStatement extends AbstractStatementSequence {
 			super.acceptValue();
 			if (constantValue != null && !(constantValue instanceof String)) {
 				constantValue = Types.STRING.cast(null, constantValue, null, false);
+			}
+			// Pre-compile the pattern when the value is a constant non-empty string.
+			if (constantValue instanceof String pattern && !pattern.isEmpty()) {
+				try {
+					compiledPattern = Pattern.compile(pattern);
+				} catch (PatternSyntaxException e) {
+					// Invalid regex at compile time: leave compiledPattern null so that the
+					// dynamic path (which falls back to String.contains) is used at runtime.
+					compiledPattern = null;
+				}
 			}
 		}
 	}

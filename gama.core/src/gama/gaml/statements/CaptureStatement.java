@@ -49,6 +49,12 @@ import gama.gaml.statements.CaptureStatement.CaptureValidator;
 
 /**
  * The Class CaptureStatement.
+ *
+ * <p><b>Thread-safety:</b> the fields {@link #target}, {@link #microSpeciesName} and {@link #sequence}
+ * are all written during construction (constructor or {@link #setChildren(Iterable)}) and then read
+ * during execution by potentially many threads in parallel simulations. They are declared
+ * {@code volatile} so that every thread always observes the most-recently written value, including
+ * the {@code null} written by {@link #dispose()}.</p>
  */
 @symbol (
 		name = IKeyword.CAPTURE,
@@ -158,17 +164,25 @@ public class CaptureStatement extends AbstractStatementSequence {
 		}
 	}
 
-	/** The target. */
-	private IExpression target;
+	/**
+	 * The target expression. {@code volatile} for safe publication across threads sharing this instance.
+	 */
+	private volatile IExpression target;
 
 	/** The return string. */
 	private final String returnString;
 
-	/** The micro species name. */
-	private String microSpeciesName = null;
+	/**
+	 * The micro-species name from the {@code as} facet. {@code volatile} for safe publication and
+	 * safe read of the {@code null} written by {@link #dispose()}.
+	 */
+	private volatile String microSpeciesName = null;
 
-	/** The sequence. */
-	private RemoteSequence sequence = null;
+	/**
+	 * The sequence of statements to execute on each captured agent. {@code volatile} so that the
+	 * single write from {@link #setChildren(Iterable)} is visible to all executing threads.
+	 */
+	private volatile RemoteSequence sequence = null;
 
 	/**
 	 * Instantiates a new capture statement.

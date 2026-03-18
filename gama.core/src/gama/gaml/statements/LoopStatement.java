@@ -601,6 +601,12 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 
 	/**
 	 * The Class IntBounded.
+	 *
+	 * <p><b>Performance:</b> the {@link #intFrom(IScope)}, {@link #intTo(IScope)} and
+	 * {@link #intStep(IScope)} helpers return primitive {@code int} values, avoiding the
+	 * unboxing overhead that would result from calling the inherited
+	 * {@link Bounded#computeFrom}/{@code computeTo}/{@code computeStep} methods which return
+	 * boxed {@link Integer} objects.</p>
 	 */
 	class IntBounded extends Bounded<Integer> {
 
@@ -624,13 +630,44 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			return 1;
 		}
 
+		/**
+		 * Returns the loop start value as a primitive {@code int}, avoiding an unbox of
+		 * the inherited {@link Bounded#computeFrom(IScope)} result.
+		 *
+		 * @param scope the scope
+		 * @return the from value as a primitive int
+		 */
+		private int intFrom(final IScope scope) {
+			return constantFrom != null ? constantFrom : Cast.asInt(scope, fromExpression.value(scope));
+		}
+
+		/**
+		 * Returns the loop end value as a primitive {@code int}.
+		 *
+		 * @param scope the scope
+		 * @return the to value as a primitive int
+		 */
+		private int intTo(final IScope scope) {
+			return constantTo != null ? constantTo : Cast.asInt(scope, toExpression.value(scope));
+		}
+
+		/**
+		 * Returns the loop step value as a primitive {@code int}.
+		 *
+		 * @param scope the scope
+		 * @return the step value as a primitive int
+		 */
+		private int intStep(final IScope scope) {
+			return constantStep != null ? constantStep : Cast.asInt(scope, stepExpression.value(scope));
+		}
+
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
-			final int from = computeFrom(scope);
-			final int to = computeTo(scope);
-			boolean reverse = from > to;
-			final int step = computeStep(scope) * stepSign(reverse);
+			final int from = intFrom(scope);
+			final int to = intTo(scope);
+			final boolean reverse = from > to;
+			final int step = intStep(scope) * stepSign(reverse);
 			for (int i = from; reverse ? i >= to : i <= to; i += step) {
 				if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
 			}
@@ -641,6 +678,12 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 
 	/**
 	 * The Class FloatBounded.
+	 *
+	 * <p><b>Performance:</b> the {@link #doubleFrom(IScope)}, {@link #doubleTo(IScope)} and
+	 * {@link #doubleStep(IScope)} helpers return primitive {@code double} values, avoiding the
+	 * unboxing overhead that would result from calling the inherited
+	 * {@link Bounded#computeFrom}/{@code computeTo}/{@code computeStep} methods which return
+	 * boxed {@link Double} objects.</p>
 	 */
 	class FloatBounded extends Bounded<Double> {
 
@@ -664,13 +707,44 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			return Cast.asFloat(scope, exp.value(scope));
 		}
 
+		/**
+		 * Returns the loop start value as a primitive {@code double}, avoiding an unbox of
+		 * the inherited {@link Bounded#computeFrom(IScope)} result.
+		 *
+		 * @param scope the scope
+		 * @return the from value as a primitive double
+		 */
+		private double doubleFrom(final IScope scope) {
+			return constantFrom != null ? constantFrom : Cast.asFloat(scope, fromExpression.value(scope));
+		}
+
+		/**
+		 * Returns the loop end value as a primitive {@code double}.
+		 *
+		 * @param scope the scope
+		 * @return the to value as a primitive double
+		 */
+		private double doubleTo(final IScope scope) {
+			return constantTo != null ? constantTo : Cast.asFloat(scope, toExpression.value(scope));
+		}
+
+		/**
+		 * Returns the loop step value as a primitive {@code double}.
+		 *
+		 * @param scope the scope
+		 * @return the step value as a primitive double
+		 */
+		private double doubleStep(final IScope scope) {
+			return constantStep != null ? constantStep : Cast.asFloat(scope, stepExpression.value(scope));
+		}
+
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
-			final double from = computeFrom(scope);
-			final double to = computeTo(scope);
-			boolean reverse = from > to;
-			final double step = computeStep(scope) * stepSign(reverse);
+			final double from = doubleFrom(scope);
+			final double to = doubleTo(scope);
+			final boolean reverse = from > to;
+			final double step = doubleStep(scope) * stepSign(reverse);
 			for (double i = from; reverse ? i >= to : i <= to; i += step) {
 				if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
 			}
@@ -691,13 +765,12 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		 * Instantiates a new over.
 		 *
 		 * @param over
-		 *            the over
+		 *            the over expression (already retrieved by the caller; stored directly to
+		 *            avoid a redundant {@code getFacet} call)
 		 */
 		Over(final IExpression over) {
-			overExpression = getFacet(IKeyword.OVER);
+			overExpression = over;
 		}
-
-		/** The over. */
 
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
