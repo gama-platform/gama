@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.stream.DoubleStream;
 
 import org.jfree.data.statistics.Statistics;
@@ -358,7 +357,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 
 		int nb = Math.min(sims.size(), numberOfCores);
 
-		List<Map<String, Object>> simsToRun = new Vector<>();
+		List<Map<String, Object>> simsToRun = new ArrayList<>();
 
 		for (int i = 0; i < nb; i++) { simsToRun.add(sims.remove(0)); }
 		Map<IAgent, ParametersSet> simToParameter = GamaMapFactory.create();

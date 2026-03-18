@@ -72,7 +72,7 @@ species road {
 
 }
 
-species people skills: [moving] {
+species people skills: [moving] parallel: true {
 	float speed <- min_speed + rnd(max_speed - min_speed);
 	rgb color <- rnd_color(255);
 	building living_place <- one_of(residential_buildings);

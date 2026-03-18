@@ -141,7 +141,7 @@ public class ActionExecuter {
 	 * @param action
 	 *            the action
 	 */
-	public synchronized void executeOneAction(final IExecutable action) {
+	public void executeOneAction(final IExecutable action) {
 		final boolean paused = scope.isPaused();
 		if (paused) {
 			action.executeOn(scope);

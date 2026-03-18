@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.common.primitives.Ints;
 
@@ -81,7 +82,7 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	protected volatile boolean dying = false;
 
 	/** The attributes. */
-	protected IMap<String, Object> attributes;
+	protected final AtomicReference<IMap<String, Object>> attributes = new AtomicReference<>();
 
 	/** The population that this agent belongs to. */
 	protected final IPopulation<? extends IAgent> population;
@@ -699,8 +700,10 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	 */
 	@Override
 	public IMap<String, Object> getAttributes(final boolean createIfNeeded) {
-		if (attributes == null && createIfNeeded) { attributes = GamaMapFactory.create(Types.STRING, Types.NO_TYPE); }
-		return attributes;
+		if (createIfNeeded) {
+			attributes.compareAndSet(null, GamaMapFactory.create(Types.STRING, Types.NO_TYPE));
+		}
+		return attributes.get();
 	}
 
 	/**
@@ -803,10 +806,8 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 		if (p != null && !p.isDisposing()) { p.removeValue(null, this); }
 		final IShape s = getGeometry();
 		if (s != null) { s.dispose(); }
-		if (attributes != null) {
-			attributes.clear();
-			attributes = null;
-		}
+		final IMap<String, Object> attrs = attributes.getAndSet(null);
+		if (attrs != null) { attrs.clear(); }
 		BufferingUtils.getInstance().flushSaveFilesOfAgent(this);
 		BufferingUtils.getInstance().flushWriteOfAgent(this);
 	}

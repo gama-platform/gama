@@ -202,7 +202,7 @@ global{
 }
 
 
-species building {
+species building parallel: true {
 	string size <- "S" among: ["S", "M", "L"];
 	string type <- "residential" among: ["residential", "office"];
 	list<people> inhabitants;
@@ -272,7 +272,7 @@ species road {
 	init {
 	}
 	
-	int total_traffic{
+	int total_traffic() {
 		return sum(traffic_density.keys collect(sum(traffic_density[each])));
 	}
 	
@@ -307,7 +307,7 @@ species road {
 	}
 }
 
-species people skills: [moving]{
+species people skills: [moving] parallel: true{
 
 	int heading_index <- 0;
 	string mobility_mode <- "walk"; 
@@ -449,7 +449,7 @@ grid cell width: grid_width height: grid_height {
 }
 
 experiment MondrianCity type: gui autorun: true{
-	float minimum_cycle_duration <- 0.05;
+	//float minimum_cycle_duration <- 0.05;
 	parameter "mobility1 level" var: weight_mobility1 min: 0.1 max: 1.0 step: 0.1 colors: [#gamablue] <-0.5;
 	parameter "mobility2 level" var: weight_mobility2 min: 0.1 max: 1.0 step: 0.1 colors: [#gamablue] <-0.5;
 	parameter "mobility3 level" var: weight_mobility3 min: 0.1 max: 1.0 step: 0.1 colors: [#gamablue] <-0.5;

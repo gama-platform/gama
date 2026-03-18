@@ -39,7 +39,7 @@ import gama.gaml.operators.Dates;
 public class SimulationClock implements IClock {
 
 	/** The number of simulation cycles elapsed so far. */
-	private volatile AtomicInteger cycle = new AtomicInteger(0);
+	private final AtomicInteger cycle = new AtomicInteger(0);
 
 	/**
 	 * The current value of time in the model timescale. The base unit is the second (see <link>IUnits</link>). This
@@ -79,10 +79,10 @@ public class SimulationClock implements IClock {
 	// private volatile boolean displayCycles = true;
 
 	/** The starting date. */
-	protected IDate startingDate = null;
+	protected volatile IDate startingDate = null;
 
 	/** The current date. */
-	protected IDate currentDate = null;
+	protected volatile IDate currentDate = null;
 
 	/** The output current date as duration. */
 	private final boolean outputAsDuration;

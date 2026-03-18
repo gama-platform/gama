@@ -200,7 +200,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	private RootTopology topology;
 
 	/** The Simulation local map. */
-	private Map simulationLocalMap;
+	private Map<SimulationLocal<?>, Object> simulationLocalMap;
 
 	/**
 	 * The external inits and parameters. Holds a memory of the values provided from outside, initially and during
@@ -430,12 +430,10 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		// and then its outputs
 
 		if (externMicroPopulations != null) { externMicroPopulations.clear(); }
-		GAMA.getGui().getStatus().beginTask("Disposing " + this, IStatusMessage.SIMULATION_ICON);
 		if (outputs != null) {
 			outputs.dispose();
 			outputs = null;
 		}
-		GAMA.getGui().getStatus().beginTask("Disposing " + this, IStatusMessage.SIMULATION_ICON);
 		if (topology != null) {
 			if (!isMicroSimulation()) {
 				topology.dispose();
@@ -451,7 +449,6 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		BufferingUtils.getInstance().flushWriteOfAgent(this);
 		GAMA.releaseScope(getScope());
 		// scope = null;
-		GAMA.getGui().getStatus().beginTask("Disposing " + this, IStatusMessage.SIMULATION_ICON);
 		super.dispose();
 
 	}
@@ -985,8 +982,9 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 
 		// Update Attribute
 		final Map<String, Object> attr = sa.attributes();
-		for (final String varName : attr.keySet()) {
-			final Object attrValue = attr.get(varName);
+		for (final Entry<String, Object> attrEntry : attr.entrySet()) {
+			final String varName = attrEntry.getKey();
+			final Object attrValue = attrEntry.getValue();
 
 			final boolean isReference = IReference.isReference(attrValue);
 			final boolean isPopulation = attrValue instanceof ISerialisedPopulation;
@@ -1053,8 +1051,9 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 						// Find the agt and all the references
 						final IAgent currentAgent = agt == null ? simuMicroPop.getAgent(e.getValue().getIndex()) : agt;
 
-						for (final String name : e.getValue().attributes().keySet()) {
-							final Object attrValue = e.getValue().getAttributeValue(name);
+						for (final Entry<String, Object> nameEntry : e.getValue().attributes().entrySet()) {
+							final String name = nameEntry.getKey();
+							final Object attrValue = nameEntry.getValue();
 							final boolean isReference2 = IReference.isReference(attrValue);
 
 							if (isReference2) {
@@ -1115,7 +1114,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 */
 	@Override
 	@SuppressWarnings ("unchecked")
-	public <T> Map<SimulationLocal<T>, T> getSimulationLocalMap() { return simulationLocalMap; }
+	public <T> Map<SimulationLocal<T>, T> getSimulationLocalMap() { return (Map<SimulationLocal<T>, T>) (Map<?, ?>) simulationLocalMap; }
 
 	/**
 	 * Sets the Simulation local map.
@@ -1124,7 +1123,8 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 *            the new Simulation local map
 	 */
 	@Override
-	public <T> void setSimulationLocalMap(final Map<SimulationLocal<T>, T> map) { simulationLocalMap = map; }
+	@SuppressWarnings ("unchecked")
+	public <T> void setSimulationLocalMap(final Map<SimulationLocal<T>, T> map) { simulationLocalMap = (Map<SimulationLocal<?>, Object>) (Map<?, ?>) map; }
 
 	@Override
 	public String getFamilyName() { return IKeyword.SIMULATION; }

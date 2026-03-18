@@ -12,6 +12,7 @@ package gama.core.experiment.parameters;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.symbols.IParameter;
@@ -62,11 +63,11 @@ public class ParametersSet extends GamaMap<String, Object> {
 	public ParametersSet(final IScope scope, final Map<String, IParameter> variables, final boolean reinit)
 			throws GamaRuntimeException {
 		this();
-		for (final String var : variables.keySet()) {
-			final IParameter varBat = variables.get(var);
+		for (final Entry<String, IParameter> entry : variables.entrySet()) {
+			final IParameter varBat = entry.getValue();
 			if (varBat instanceof ExperimentParameter ep) { scope.setCurrentSymbol(ep); }
 			if (reinit && varBat instanceof IParameter.Batch) { ((IParameter.Batch) varBat).reinitRandomly(scope); }
-			put(var, varBat.value(scope));
+			put(entry.getKey(), varBat.value(scope));
 		}
 
 	}

@@ -489,7 +489,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 			setAttribute(model.getName(), pop);
 			pop.initializeFor(ownScope);
 		}
-		microPopulations = new IPopulation[] { pop };
+		microPopulations.set(new IPopulation[] { pop });
 	}
 
 	/**

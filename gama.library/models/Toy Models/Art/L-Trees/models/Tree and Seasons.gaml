@@ -77,7 +77,7 @@ species seasons {
 
 }
 
-species tree_part {
+species tree_part parallel: true {
 	tree_part parent <- nil;
 	point vector <- {0, 0, 0};
 	point base <- {0, 0, 0};
@@ -89,7 +89,7 @@ species tree_part {
 	float energy <- 0.0;
 }
 
-species plant_seed parent: tree_part {
+species plant_seed parent: tree_part parallel: true{
 	bool has_tree <- false;
 	point end -> self.location;
 	point vector <- {0, 0, 1};
@@ -128,7 +128,7 @@ species plant_seed parent: tree_part {
 
 }
 
-species burgeon parent: tree_part {
+species burgeon parent: tree_part parallel: true{
 
 	reflex growth {
 		energy <- energy + first(season).energy;
@@ -166,7 +166,7 @@ species burgeon parent: tree_part {
 
 }
 
-species trunk parent: tree_part {
+species trunk parent: tree_part parallel: true{
 	float length <- 0.0;
 	float width <- 0.0;
 	bool can_split <- true;
@@ -224,7 +224,7 @@ species trunk parent: tree_part {
 
 }
 
-species branch parent: tree_part {
+species branch parent: tree_part parallel: true{
 	float length <- 0.0;
 	float width <- 0.0;
 	bool can_split <- true;
@@ -247,7 +247,7 @@ species branch parent: tree_part {
 
 }
 
-species leaf {
+species leaf parallel: true{
 	int creation_cycle <- -1;
 	float level <- 1.0;
 	branch parent;
@@ -366,7 +366,7 @@ species leaf {
 
 }
 
-species fruit {
+species fruit parallel: true{
 	branch parent;
 	point base;
 	point end;

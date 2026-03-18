@@ -12,6 +12,7 @@ package gama.core.agent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.exceptions.GamaRuntimeException;
@@ -47,7 +48,7 @@ public class GamlAgent extends MinimalAgent implements IMacroAgent {
 	// Added to optimize the traversal of "non-minimal" agents that contain
 	/** The micro populations. */
 	// micropopulations
-	protected IPopulation<? extends IAgent>[] microPopulations;
+	protected final AtomicReference<IPopulation<? extends IAgent>[]> microPopulations = new AtomicReference<>();
 
 	/** The Constant NO_POP. */
 	static final IPopulation<? extends IAgent>[] NO_POP = new IPopulation[0];
@@ -85,20 +86,24 @@ public class GamlAgent extends MinimalAgent implements IMacroAgent {
 
 	@Override
 	public IPopulation<? extends IAgent>[] getMicroPopulations() {
-		if (microPopulations == null) {
+		IPopulation<? extends IAgent>[] current = microPopulations.get();
+		if (current == null) {
 			final List<IPopulation<?>> pops = new ArrayList<>();
 			forEachAttribute((s, o) -> {
 				if (isPopulation(s)) { pops.add((IPopulation<?>) o); }
 				return true;
 			});
-			microPopulations = pops.toArray(new IPopulation[pops.size()]);
-			if (microPopulations.length == 0) {
-				microPopulations = NO_POP;
+			IPopulation<? extends IAgent>[] computed = pops.toArray(new IPopulation[pops.size()]);
+			if (computed.length == 0) {
+				computed = NO_POP;
 			} else {
-				Arrays.sort(microPopulations, (p1, p2) -> p1.isGrid() ? p2.isGrid() ? 0 : 1 : p2.isGrid() ? -1 : 0);
+				Arrays.sort(computed, (p1, p2) -> p1.isGrid() ? p2.isGrid() ? 0 : 1 : p2.isGrid() ? -1 : 0);
 			}
+			// If another thread already set it, use that result; otherwise ours wins.
+			microPopulations.compareAndSet(null, computed);
+			current = microPopulations.get();
 		}
-		return microPopulations;
+		return current;
 	}
 
 	@Override
@@ -242,6 +247,8 @@ public class GamlAgent extends MinimalAgent implements IMacroAgent {
 	protected void registerMicropopulation(final IScope scope, final ISpecies microSpec,
 			final IPopulation<? extends IAgent> microPop) {
 		setAttribute(microSpec.getName(), microPop);
+		// Invalidate the cached micro-populations array so it will be recomputed on next access
+		microPopulations.set(null);
 		microPop.initializeFor(scope);
 	}
 
@@ -258,7 +265,7 @@ public class GamlAgent extends MinimalAgent implements IMacroAgent {
 	}
 
 	@Override
-	public synchronized IPopulation<? extends IAgent> getMicroPopulation(final String microSpeciesName) {
+	public IPopulation<? extends IAgent> getMicroPopulation(final String microSpeciesName) {
 		final Object o = getAttribute(microSpeciesName);
 		if (o instanceof IPopulation) return (IPopulation<? extends IAgent>) o;
 		return null;
