@@ -42,12 +42,12 @@ species watershed schedules: [] {
 
 	float volume_watershed ;
 
-	action init_watershed {
+	action init_watershed() {
 		// Find ZH in the upstream 
 		watershed_upstream <- watershed where(each.id_watershed_outlet = id_watershed);
 	}
 		
-	action model_hydro {	
+	action model_hydro() {	
 		volume_watershed <- 0.7 * rain * self.shape.area  + (watershed_upstream sum_of(each.volume_watershed));	
 	}	
 

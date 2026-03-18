@@ -76,7 +76,7 @@ species support {
 
 experiment ImageManipulation type: gui {
 
-	action _init_ {
+	action _init_() {
 		image im <- copy_from_clipboard(image);
 		if im = nil {
 			im <- image("../includes/Kandinsky.jpeg");

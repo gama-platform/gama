@@ -37,7 +37,7 @@ global {
 	}
 	
 	// 
-	action access_attribute {
+	action access_attribute() {
 		write "============== ACCESS ATTRIBUTES ==============";		
 		
 		// The access to agents' attributes can be done in several ways
@@ -51,7 +51,7 @@ global {
 		
 	}
 	
-	action built_in_attributes {
+	action built_in_attributes() {
 		write "============== Built-in ATTRIBUTES ==============";		
 		
 		// Any species has some built-in attributes
@@ -65,7 +65,7 @@ global {
 		}
 	}
 	
-	action attributes_from_data {
+	action attributes_from_data() {
 		write "============== ATTRIBUTES read from a shapefile ==============";		
 		
 		// Agents created from a shapefile can initialize attribute values from the shapefile attributes, 
@@ -82,7 +82,7 @@ global {
 		}	
 	}
 	
-	action built_in_attributes_with_species {
+	action built_in_attributes_with_species() {
 		write "============== Built-in ATTRIBUTES for a species with skills ==============";		
 		
 		// Any species has some built-in attributes

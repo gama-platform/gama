@@ -59,10 +59,10 @@ global{
 	}
 	
 	reflex add_infected when: (cycle = 5) {
-		do add_infected;
+		do add_infected();
 	}	
 	
-	action add_infected {
+	action add_infected (){
 		first(SIR_model).Im <- 5.0;
 		if !dynamics_creation{
 			first(I).Isize <- 5.0;
@@ -75,7 +75,7 @@ global{
 		do remove_infected;
 	}
 	
-	action remove_infected {
+	action remove_infected() {
 		first(SIR_model).Im <- 0.0;
 		if !dynamics_creation{
 			first(I).Isize <- 0.0;
@@ -88,15 +88,15 @@ global{
 		do compute_err;
 	}
 	
-	action compute_err {
+	action compute_err (){
 		error <- max([error, abs(first(SIR_model).Im - sum(I collect each.Isize))]);
 	}
 	
-	float event_monitor {
+	float event_monitor() {
 		return (cycle = 4 or cycle = 14)?500.0:0.0;
 	}
 	
-	float i_count {
+	float i_count() {
 		return sum(I collect each.Isize);
 	}
 	
@@ -123,7 +123,7 @@ global{
 			do solveEquation;
 		}
 		
-		action solveEquation{
+		action solveEquation(){
 			solve SIR method: "rk4";
 		}
 		
@@ -141,7 +141,7 @@ global{
 			do solveEquation;
 		}
 		
-		action solveEquation{
+		action solveEquation(){
 			solve evol method: "rk4";
 		}
 	}
@@ -184,7 +184,7 @@ experiment normal type: gui {
 
 
 experiment dynamical_creation type: gui {
-	action _init_ {
+	action _init_ (){
 		create SplitTest_model with: (dynamics_creation:true);
 	}
 	

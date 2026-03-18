@@ -76,7 +76,7 @@ global {
 		do compute_shortest_path;
 	}
 	
-	action compute_shortest_path {
+	action compute_shortest_path() {
 		source <- one_of(the_graph.vertices);
 		target <- one_of(the_graph.vertices);
 		

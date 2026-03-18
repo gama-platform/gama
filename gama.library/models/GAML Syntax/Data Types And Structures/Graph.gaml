@@ -31,7 +31,7 @@ global {
 		g_graph <- first(builtin_node).my_graph;
 	}
 
-	action clean {
+	action clean() {
 		ask regular_agent_node {
 			do die;
 		}
@@ -54,7 +54,7 @@ global {
 	 * Generate a random graph based on the G(n,M) Erdős-Rényi model
 	 * https://en.wikipedia.org/wiki/Erdős–Rényi_model
 	 */
-	action random {
+	action random (){
 		write "- random graph : Erdős-Rényi = generate_random_graph(nb_nodes,nb_edges,directed,node_species,edge_species)";
 		do clean;
 		if no_species { g_graph <- as_spatial_graph(generate_random_graph(nb_nodes,nb_nodes*av_degree,directed_graph));}
@@ -77,7 +77,7 @@ global {
 	 * https://en.wikipedia.org/wiki/Barabási–Albert_model
 	 * 
 	 */
-	action scale_free {
+	action scale_free (){
 		write "- Scale-free : Barabási–Albert = generate_barabasi_albert(node_species, edge_species, nb_nodes, new_edges, synchronize)";
 		do clean;
 		int new_edges_addition_per_node_introduction <- 4 > init_nb_nodes ? init_nb_nodes : 4;
@@ -100,7 +100,7 @@ global {
 	 * https://en.wikipedia.org/wiki/Small-world_network
 	 * 
 	 */
-	action small_world {
+	action small_world (){
 		write "- Small-world : Watts-Strogatz = generate_watts_strogatz(node_species, edge_species, nb_nodes, rewire_proba, start_degree, synchronize)";
 		do clean;
 		float rewirering_probability <- 0.1;
@@ -122,7 +122,7 @@ global {
 	/*
 	 * Generate a complete graph where each node is connected to all other nodes
 	 */
-	action complete {
+	action complete (){
 		write "- Complete = generate_complete_graph(node_species, edge_species, nb_node)";
 		do clean;
 		if no_species {g_graph <- as_spatial_graph(generate_complete_graph(nb_nodes,directed_graph));}
@@ -137,7 +137,7 @@ global {
 		}
 	}
 
-	action from_nodes {
+	action from_nodes (){
 		do clean;
 		create regular_agent_node number: nb_nodes;
 		write "\tas_distance_graph(my_species, distance)";
@@ -148,7 +148,7 @@ global {
 );
 	}
 
-	action from_polygons {
+	action from_polygons() {
 		do clean;
 		// Create a set of lines (no need to create agent) to build network with
 		create regular_agent_node number: nb_nodes with: (shape:circle(rnd(5,20)) at_location any_location_in(world));
@@ -178,7 +178,7 @@ global {
 
 	}
 
-	action access_and_modify_edge_and_node {
+	action access_and_modify_edge_and_node (){
 		write "\n==================";
 		write "GRAPH MANIPULATION\n";
 		the_path <- nil;
@@ -220,7 +220,7 @@ global {
 		g_graph <- undirected(g_graph);
 	}
 
-	action connectivity_of_node_and_edge {
+	action connectivity_of_node_and_edge() {
 		write "\n==================";
 		write "NODES CONNECTIVITY\n";
 		geometry a_node <- one_of(g_graph.vertices);
@@ -237,7 +237,7 @@ global {
 		list out_e <- g_graph out_edges_of a_node;
 	}
 
-	action connectivity_of_graph {
+	action connectivity_of_graph (){
 		write "\n==================";
 		write "GRAPH CONNECTIVITY\n";
 		write "Compute the betweenness centrality of each node: correspond to the number of shortest path " + "that pass by the node";
@@ -255,7 +255,7 @@ global {
 		list cliques_big <- biggest_cliques_of(g_graph);
 	}
 
-	action layout_graph {
+	action layout_graph (){
 		write "\n==================";
 		write "GRAPH LAYOUT\n";
 		switch the_layout {
@@ -275,14 +275,14 @@ global {
 
 	}
 
-	action c_layout {
+	action c_layout (){
 		write "Circle classical layout : nodes are randomly placed on a circle";
 		g_graph <- layout_circle(g_graph, world.shape, // The geometry to spatialize nodes in 
 		false // Shuffle or not the nodes
 );
 	}
 
-	action f_layout {
+	action f_layout (){
 		write "Forced based layout : connected node pull each other, while unconnected node push each other away";
 		g_graph <- layout_force(g_graph, world.shape, // The geometry to spatialize nodes in 
 		0.4, // The pull/push force
@@ -291,7 +291,7 @@ global {
 );
 	}
 
-	action g_layout {
+	action g_layout() {
 		write "Homemade grid based layout : distributes nodes over a grid to minimize edge crossing";
 		graph q <- layout_grid(g_graph, world.shape, // The geometry to spatialize nodes in
 		1.5 // The ratio of possible grid position over the total number of nodes (should be higher than 1.0 )
@@ -300,7 +300,7 @@ global {
 	}
 
 	path the_path <- nil;
-	action path_finding_graph {
+	action path_finding_graph() {
 		write "\n====================";
 		write "GRAPH PATH OPERATORS\n";
 		write "The matrix of predecessor in all shortest path: ";

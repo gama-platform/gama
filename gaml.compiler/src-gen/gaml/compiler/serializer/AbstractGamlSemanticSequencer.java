@@ -36,6 +36,7 @@ import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
 import gaml.compiler.gaml.S_If;
 import gaml.compiler.gaml.S_Loop;
+import gaml.compiler.gaml.S_Method;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
 import gaml.compiler.gaml.S_Solve;
@@ -244,7 +245,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				}
 				else break;
 			case GamlPackage.SDEFINITION:
-				sequence_ActionArguments_FacetsAndBlock_S_Definition(context, (S_Definition) semanticObject); 
+				sequence_S_Definition(context, (S_Definition) semanticObject); 
 				return; 
 			case GamlPackage.SDISPLAY:
 				sequence_S_Display(context, (S_Display) semanticObject); 
@@ -277,6 +278,9 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				return; 
 			case GamlPackage.SLOOP:
 				sequence_S_Loop(context, (S_Loop) semanticObject); 
+				return; 
+			case GamlPackage.SMETHOD:
+				sequence_ActionArguments_FacetsAndBlock_S_Method(context, (S_Method) semanticObject); 
 				return; 
 			case GamlPackage.SREFLEX:
 				sequence_FacetsAndBlock_S_Reflex(context, (S_Reflex) semanticObject); 
@@ -403,6 +407,7 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * <pre>
 	 * Contexts:
 	 *     Statement returns S_Action
+	 *     S_Callable returns S_Action
 	 *     S_Action returns S_Action
 	 *     GamlDefinition returns S_Action
 	 *     ActionDefinition returns S_Action
@@ -420,17 +425,18 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Statement returns S_Definition
-	 *     S_Definition returns S_Definition
-	 *     GamlDefinition returns S_Definition
-	 *     ActionDefinition returns S_Definition
-	 *     VarDefinition returns S_Definition
+	 *     Statement returns S_Method
+	 *     S_Callable returns S_Method
+	 *     S_Method returns S_Method
+	 *     GamlDefinition returns S_Method
+	 *     ActionDefinition returns S_Method
+	 *     VarDefinition returns S_Method
 	 *
 	 * Constraint:
 	 *     (tkey=TypeRef name=Valid_ID (args+=ArgumentDefinition args+=ArgumentDefinition*)? facets+=Facet* block=Block?)
 	 * </pre>
 	 */
-	protected void sequence_ActionArguments_FacetsAndBlock_S_Definition(ISerializationContext context, S_Definition semanticObject) {
+	protected void sequence_ActionArguments_FacetsAndBlock_S_Method(ISerializationContext context, S_Method semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -1372,6 +1378,23 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 		feeder.accept(grammarAccess.getS_DefaultAccess().getKeyDefaultKeyword_0_0(), semanticObject.getKey());
 		feeder.accept(grammarAccess.getS_DefaultAccess().getBlockBlockParserRuleCall_1_0(), semanticObject.getBlock());
 		feeder.finish();
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     Statement returns S_Definition
+	 *     S_Definition returns S_Definition
+	 *     GamlDefinition returns S_Definition
+	 *     VarDefinition returns S_Definition
+	 *
+	 * Constraint:
+	 *     (tkey=TypeRef name=Valid_ID facets+=Facet*)
+	 * </pre>
+	 */
+	protected void sequence_S_Definition(ISerializationContext context, S_Definition semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
 	}
 	
 	

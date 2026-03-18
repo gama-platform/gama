@@ -4,25 +4,25 @@
 package gaml.compiler.gaml.impl;
 
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.S_Action;
+import gaml.compiler.gaml.S_Method;
 
 import org.eclipse.emf.ecore.EClass;
 
 /**
  * <!-- begin-user-doc -->
- * An implementation of the model object '<em><b>SAction</b></em>'.
+ * An implementation of the model object '<em><b>SMethod</b></em>'.
  * <!-- end-user-doc -->
  *
  * @generated
  */
-public class S_ActionImpl extends S_CallableImpl implements S_Action
+public class S_MethodImpl extends S_CallableImpl implements S_Method
 {
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  protected S_ActionImpl()
+  protected S_MethodImpl()
   {
     super();
   }
@@ -35,7 +35,7 @@ public class S_ActionImpl extends S_CallableImpl implements S_Action
   @Override
   protected EClass eStaticClass()
   {
-    return GamlPackage.Literals.SACTION;
+    return GamlPackage.Literals.SMETHOD;
   }
 
-} //S_ActionImpl
+} //S_MethodImpl

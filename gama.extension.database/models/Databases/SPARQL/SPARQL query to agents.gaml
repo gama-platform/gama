@@ -82,7 +82,7 @@ global {
 		do layout_philosophers;
 	}
 
-	action layout_philosophers {
+	action layout_philosophers() {
 		
 		// we are going to scale the dates on the x axis
 		float min <- float(philosopher min_of each.date_of_birth);

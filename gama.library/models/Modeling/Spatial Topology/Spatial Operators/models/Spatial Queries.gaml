@@ -36,12 +36,12 @@ global {
 		do apply_query;
 	}
 	
-	action change_agent {
+	action change_agent() {
 		selected_agent <- (polygon_agent + polyline_agent + point_agent) closest_to #user_location; 	
 		do apply_query;
 	}
 	
-	action apply_query {
+	action apply_query() {
 		list<agent_base> agents_concerned;
 		switch type_query {
 			match "overlapping" {
@@ -99,7 +99,7 @@ species polyline_agent parent:agent_base {
 	rgb color <- #black;
 	aspect default {
 		if (self = selected_agent) {
-			draw shape + 0.5 color: #magenta; 
+			draw shape + 0.5 color: #magenta;  
 		}
 		draw shape color: is_concerned ? #red : color; 
 	}
@@ -116,7 +116,7 @@ species point_agent parent:agent_base {
 }
 
 experiment Spatialqueries type: gui {
-	parameter Query var: type_query on_change: {ask simulation{do apply_query;} do update_outputs();};
+	parameter "Query" var: type_query on_change: {ask simulation{do apply_query;} do update_outputs();};
 	output {
 		display map {
 			species polygon_agent;

@@ -84,8 +84,9 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.STRY: return createS_Try();
       case GamlPackage.SSWITCH: return createS_Switch();
       case GamlPackage.SRETURN: return createS_Return();
-      case GamlPackage.SREFLEX: return createS_Reflex();
       case GamlPackage.SDEFINITION: return createS_Definition();
+      case GamlPackage.SCALLABLE: return createS_Callable();
+      case GamlPackage.SREFLEX: return createS_Reflex();
       case GamlPackage.SASSIGNMENT: return createS_Assignment();
       case GamlPackage.SEQUATIONS: return createS_Equations();
       case GamlPackage.SSOLVE: return createS_Solve();
@@ -110,6 +111,7 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
       case GamlPackage.EQUATION_FAKE_DEFINITION: return createEquationFakeDefinition();
       case GamlPackage.TERMINAL_EXPRESSION: return createTerminalExpression();
       case GamlPackage.STRING_LITERAL: return createStringLiteral();
+      case GamlPackage.SMETHOD: return createS_Method();
       case GamlPackage.SACTION: return createS_Action();
       case GamlPackage.BINARY_OPERATOR: return createBinaryOperator();
       case GamlPackage.IF: return createIf();
@@ -368,10 +370,10 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
    * @generated
    */
   @Override
-  public S_Reflex createS_Reflex()
+  public S_Definition createS_Definition()
   {
-    S_ReflexImpl s_Reflex = new S_ReflexImpl();
-    return s_Reflex;
+    S_DefinitionImpl s_Definition = new S_DefinitionImpl();
+    return s_Definition;
   }
 
   /**
@@ -380,10 +382,22 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
    * @generated
    */
   @Override
-  public S_Definition createS_Definition()
+  public S_Callable createS_Callable()
   {
-    S_DefinitionImpl s_Definition = new S_DefinitionImpl();
-    return s_Definition;
+    S_CallableImpl s_Callable = new S_CallableImpl();
+    return s_Callable;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public S_Reflex createS_Reflex()
+  {
+    S_ReflexImpl s_Reflex = new S_ReflexImpl();
+    return s_Reflex;
   }
 
   /**
@@ -672,6 +686,18 @@ public class GamlFactoryImpl extends EFactoryImpl implements GamlFactory
   {
     StringLiteralImpl stringLiteral = new StringLiteralImpl();
     return stringLiteral;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public S_Method createS_Method()
+  {
+    S_MethodImpl s_Method = new S_MethodImpl();
+    return s_Method;
   }
 
   /**

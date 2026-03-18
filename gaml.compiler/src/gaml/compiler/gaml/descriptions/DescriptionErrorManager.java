@@ -179,6 +179,16 @@ public abstract class DescriptionErrorManager implements IDescription {
 	}
 
 	/**
+	 * Warning.
+	 *
+	 * @param message
+	 *            the message
+	 */
+	public void warning(final String message) {
+		warning(message, IGamlIssue.GENERAL);
+	}
+
+	/**
 	 * Reports a warning with a specific issue code.
 	 *
 	 * @param message

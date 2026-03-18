@@ -29,7 +29,7 @@ global {
 	}
 	
 	// The action that first cleans the previous painting, then generates a new one. 
-	action new_paint {
+	action new_paint() {
 		float x_max <- world.shape.width;
 		float y_max <- world.shape.height;
 		

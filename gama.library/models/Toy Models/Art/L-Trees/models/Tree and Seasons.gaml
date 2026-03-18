@@ -62,7 +62,7 @@ species seasons {
 		do change_color;
 	}
 
-	action change_color {
+	action change_color() {
 		leaf_color <- blend(leaf_color_list[se], leaf_color_list[next_se], 1 - shift_current_day / season_duration);
 		sky_color <- blend(sky_color_list[se], sky_color_list[next_se], 1 - shift_current_day / season_duration);
 		ground_color <- blend(ground_color_list[se], ground_color_list[next_se], 1 - shift_current_day / season_duration);

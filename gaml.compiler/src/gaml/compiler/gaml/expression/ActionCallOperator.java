@@ -10,6 +10,9 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.expression;
 
+import static gama.api.exceptions.GamaRuntimeException.error;
+import static gama.api.exceptions.GamaRuntimeException.warning;
+
 import gama.api.GAMA;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
@@ -28,6 +31,7 @@ import gama.api.kernel.object.IClass;
 import gama.api.kernel.object.IObject;
 import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.species.IModelSpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.api.utils.collections.ICollector;
@@ -50,7 +54,13 @@ public class ActionCallOperator implements IOperator {
 	final IActionDescription action;
 
 	/** The target species. */
-	final String targetSpecies;
+	final String targetSpeciesName;
+
+	/** The target species. */
+	IClass targetSpecies;
+
+	/** The computed. */
+	boolean computed;
 
 	/**
 	 * Instantiates a new action call operator.
@@ -69,14 +79,9 @@ public class ActionCallOperator implements IOperator {
 	public ActionCallOperator(final IDescription callerContext, final IActionDescription action,
 			final IExpression target, final Arguments args, final boolean superInvocation) {
 		this.target = target;
-		if (superInvocation) {
-			// target is not null
-			this.targetSpecies = target.getGamlType().getSpecies().getName();
-		} else if (target == null) {
-			targetSpecies = callerContext.getTypeContext().getName();
-		} else {
-			targetSpecies = null;
-		}
+		ITypeDescription type = target == null ? callerContext.getTypeContext() : target.getGamlType().getSpecies();
+		// DEBUG.LOG("action in " + action.getEnclosingDescription() + " - type = " + type);
+		this.targetSpeciesName = superInvocation ? type.getParent().getName() : type.getName();
 		this.action = action;
 		parameters = args;
 	}
@@ -90,13 +95,13 @@ public class ActionCallOperator implements IOperator {
 	 *            the target.
 	 * @param args
 	 *            the args
-	 * @param targetSpecies
+	 * @param targetSpeciesName
 	 *            the target species.
 	 */
 	public ActionCallOperator(final IActionDescription action, final IExpression target, final Arguments args,
 			final String targetSpecies) {
 		this.target = target;
-		this.targetSpecies = targetSpecies;
+		this.targetSpeciesName = targetSpecies;
 		this.action = action;
 		parameters = args;
 	}
@@ -109,32 +114,27 @@ public class ActionCallOperator implements IOperator {
 		if (scope == null) return null;
 		IObject target;
 		if (this.target == null) {
-			target = scope.getAgent();
+			target = scope.getCurrentObjectOrAgent();
 		} else {
 			Object val = this.target.value(scope);
 			if (!(val instanceof IObject oo)) {
-				GAMA.reportError(scope, GamaRuntimeException.error("Invalid target : " + val, scope), true);
+				GAMA.reportError(scope, error("Invalid target : " + val, scope), true);
 				return null;
 			}
 			target = oo;
 		}
 		if (target == null) {
-			// Problem is that it is not shown at the very beginning as there is no agent available
-			GAMA.reportError(scope,
-					GamaRuntimeException.error("No agent is available to execute operator " + getName(), scope), false);
+			GAMA.reportError(scope, error("No agent is available to execute operator " + getName(), scope), false);
 			return null;
 		}
-		// AD 13/05/13 The target should not be pushed so early to the scope, as
-		// the arguments will be (incorrectly)
-		// evaluated in its context, but how to prevent it ? See Issue 401.
-		// One way is (1) to gather the executer
-		final IClass species = targetSpecies != null ? scope.getModel().getSpecies(targetSpecies) : target.getSpecies();
+		final IClass species = getContext(scope);
+		if (species == null) {
+			GAMA.reportError(scope, error("No species/class is available to execute operator " + getName(), scope),
+					false);
+			return null;
+		}
 		final IStatement.WithArgs executer = species.getAction(getName());
-		// Then, (2) to set the caller to the actual agent on the scope (in the
-		// context of which the arguments need to
-		// be evaluated
-		if (executer != null) { // And finally, (3) to execute the executer on the target (it will
-			// be pushed in the scope)
+		if (executer != null) {
 			boolean useTargetScopeForExecution =
 					scope.getRoot() instanceof IExperimentAgent && target instanceof ISimulationAgent;
 			//
@@ -142,10 +142,26 @@ public class ActionCallOperator implements IOperator {
 		}
 		// the executer is not available. Can happen in rare cases (like the one evoked in Issue #3493).
 		GAMA.reportError(scope,
-				GamaRuntimeException.warning(
-						"The operator " + getName() + " is not available in the context of " + scope.getAgent(), scope),
+				warning("The operator " + getName() + " is not available in the context of " + scope.getAgent(), scope),
 				false);
 		return null;
+	}
+
+	/**
+	 * @return
+	 */
+	private IClass getContext(final IScope scope) {
+		if (computed) return targetSpecies;
+		computed = true;
+		if (targetSpeciesName != null) {
+			IModelSpecies model = scope.getModel();
+			targetSpecies = model.getClass(targetSpeciesName);
+			if (targetSpecies == null) { targetSpecies = model.getSpecies(targetSpeciesName); }
+		} else {
+			targetSpecies = scope.getCurrentObjectOrAgent().getSpecies();
+		}
+		return targetSpecies;
+
 	}
 
 	/**
@@ -264,7 +280,7 @@ public class ActionCallOperator implements IOperator {
 	@Override
 	public IExpression resolveAgainst(final IScope scope) {
 		return new ActionCallOperator(action, target == null ? null : target.resolveAgainst(scope),
-				parameters == null ? null : parameters.resolveAgainst(scope), targetSpecies);
+				parameters == null ? null : parameters.resolveAgainst(scope), targetSpeciesName);
 	}
 
 	@Override

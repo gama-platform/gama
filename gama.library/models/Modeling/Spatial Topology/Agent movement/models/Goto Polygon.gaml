@@ -16,7 +16,7 @@ global {
 	
 	init {    
 		create objects from: shape_file_in ;
-		object the_object <- first(objects);
+		objects the_object <- first(objects);
 		
 		//triangulation of the object to get the different triangles of the polygons
 		list<geometry> triangles <- list(triangulate(the_object, 0.01));

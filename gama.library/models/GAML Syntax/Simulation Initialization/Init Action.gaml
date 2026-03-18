@@ -35,7 +35,7 @@ species my_agents {
 
 experiment InitAction type: gui {
 	
-	action _init_ {
+	action _init_ (){
 		map<string, unknown> params <- user_input_dialog([enter("Number of agents",100), enter("Color",#red), enter("2D",true)]);
 		create InitAction_model with: (agent_number:int(params["Number of agents"]), agent_color:rgb(params["Color"]), 2d:bool(params["2D"]));
 	}

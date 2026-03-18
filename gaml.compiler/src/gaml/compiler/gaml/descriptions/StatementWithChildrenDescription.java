@@ -118,8 +118,9 @@ public class StatementWithChildrenDescription extends StatementDescription {
 
 	@Override
 	public IVarDescriptionProvider getDescriptionDeclaringVar(final String aName) {
+		if (hasAttribute(aName)) return this;
 		IDescription enc = getEnclosingDescription();
-		return hasAttribute(aName) ? this : enc == null ? null : enc.getDescriptionDeclaringVar(aName);
+		return enc == null ? null : enc.getDescriptionDeclaringVar(aName);
 	}
 
 	@Override

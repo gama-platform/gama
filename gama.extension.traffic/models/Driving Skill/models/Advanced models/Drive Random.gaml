@@ -116,7 +116,7 @@ experiment ring type: gui {
 
 	parameter 'Traffic light interval' var:traffic_light_interval;
 	
-	action _init_{ 
+	action _init_(){ 
 		create simulation with:(
 			map_name:"ring",
 			num_cars:50,
@@ -136,7 +136,7 @@ experiment ring type: gui {
 
 
 experiment city type: gui {
-	action _init_{
+	action _init_(){
 		create simulation with:(
 			map_name:"rouen",
 			num_cars:100,

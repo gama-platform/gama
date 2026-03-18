@@ -174,15 +174,16 @@ public class FsmStateStatement extends AbstractStatementSequence {
 		public void validate(final IDescription description) {
 			// Verify that the state is inside a species with fsm control
 			final ITypeDescription species = description.getTypeContext();
-			if (!species.isSpecies()) {
-				description.error("A state can only be defined in a species", IGamlIssue.WRONG_CONTEXT);
+			if (!species.isSpecies() && !species.isModel()) {
+				description.error("A state can only be defined in a species or a model", IGamlIssue.WRONG_CONTEXT);
 				return;
 			}
 			final String keyword = description.getKeyword();
 			final ISkillDescription control = ((ISpeciesDescription) species).getControl();
 			if (!FsmArchitecture.class.isAssignableFrom(control.getJavaBase())) {
 				if (STATE.equals(keyword)) {
-					description.error("A state can only be defined in an fsm-controlled or user-controlled species",
+					description.error(
+							"A state can only be defined in an fsm-controlled or user-controlled species or model",
 							IGamlIssue.WRONG_CONTEXT);
 					return;
 				}

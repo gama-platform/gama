@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
-import static gama.annotations.constants.IKeyword.NO_TYPE_INFERENCE;
-import static gama.annotations.constants.IKeyword.ORIGIN;
+import static gaml.compiler.gaml.IInternalFacets.NO_TYPE_INFERENCE;
+import static gaml.compiler.gaml.IInternalFacets.ORIGIN;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -50,6 +50,7 @@ import gama.api.gaml.types.Types;
 import gama.api.utils.GamlProperties;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.EGaml;
+import gaml.compiler.gaml.IInternalFacets;
 import gaml.compiler.gaml.prototypes.SymbolArtefact;
 
 /**
@@ -1414,12 +1415,23 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	 * @return true if the facet can be accepted, false otherwise
 	 */
 	private boolean processUnknowFacet(final boolean isDo, final String facet) {
-		if (facet.contains(IGamlIssue.DOUBLED_CODE)) {
-			final String correct = facet.replace(IGamlIssue.DOUBLED_CODE, "");
-			final String error = "Facet " + correct + " is declared twice. Please correct.";
-			error(error, IGamlIssue.DUPLICATE_DEFINITION, facet, "1");
-			error(error, IGamlIssue.DUPLICATE_DEFINITION, correct, "2");
-			return false;
+		switch (facet) {
+			case IInternalFacets.DUPLICATE_FACET: {
+				final String correct = getLitteral(facet);
+				final String error = "Facet " + correct + " is declared twice. Please correct.";
+				error(error, IGamlIssue.DUPLICATE_DEFINITION, facet, "1");
+				error(error, IGamlIssue.DUPLICATE_DEFINITION, correct, "2");
+				return false;
+			}
+			case IInternalFacets.GAML_ERROR:
+				this.error(getLitteral(facet));
+				return false;
+			case IInternalFacets.GAML_WARNING:
+				this.warning(getLitteral(facet));
+				return true;
+			case null:
+			default:
+				break;
 		}
 		if (!isDo) {
 			error("Unknown facet " + facet, IGamlIssue.UNKNOWN_FACET, facet);

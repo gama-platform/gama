@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * SuperExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * SuperExpression.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -34,7 +33,7 @@ public class SuperExpression extends VariableExpression {
 
 	@Override
 	public Object _value(final IScope scope) {
-		return scope.getAgent();
+		return scope.getCurrentObjectOrAgent();
 	}
 
 	@Override

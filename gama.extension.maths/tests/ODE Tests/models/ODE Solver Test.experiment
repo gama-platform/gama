@@ -119,7 +119,7 @@ global{
 			do solveEquation;
 		}
 		
-		action solveEquation{
+		action solveEquation() {
 			solve evol method: "rk4";
 		}
 	}
@@ -161,7 +161,7 @@ global{
 			do solveEquation;
 		}
 		
-		action solveEquation{
+		action solveEquation() {
 		if !with_t0_tf{
 			solve SIR method: "rk4";
 		}else{
@@ -169,7 +169,7 @@ global{
 		}
 	}
 		
-		action solveEquation{
+		action solveEquation() {
 			switch integrator{
 				match "rk4" {
 					if !with_t0_tf{
@@ -225,7 +225,7 @@ experiment test type: test {
 }
 
 experiment simulation type: gui {
-	action _init_ {
+	action _init_() {
 		create ODETest_model with: (with_viz:true, step:1#s, name:"Simulation step=1s");
 		create ODETest_model with: (with_viz:true, step:2#s, name:"Simulation step=2s");
 	}

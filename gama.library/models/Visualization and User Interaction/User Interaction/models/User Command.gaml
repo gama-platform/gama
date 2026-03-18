@@ -45,12 +45,12 @@ species cell {
 	user_command "change shape" action: change_shape;
 	
 	//Action to change the color of the agent triggered by change color user command
-	action change_color 
+	action change_color ()
     {
      color <- color = #green ? #pink : #green;
     } 
 	//Action to change the shape of the agent triggered by change shape user command
-    action change_shape
+    action change_shape()
     {
        is_square <- not (is_square);
     }

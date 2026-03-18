@@ -64,7 +64,7 @@ experiment "Four different scales" type: gui {
 	string camera_loc <- #from_up_front;
 	int distance <- 200;
 	
-	action _init_ {
+	action _init_() {
 		create simulation with: (z_scale:0.3);
 		create simulation with: (z_scale:1.0);
 		create simulation with: (z_scale:2.0);
@@ -101,7 +101,7 @@ experiment "Largest scale" type: gui {
 	string camera_loc <- #from_up_front;
 	int distance <- 200;
 	
-	action _init_ {
+	action _init_() {
 		create simulation with: (z_scale:3.0);
 	} 
 	

@@ -60,9 +60,10 @@ import gama.gaml.statements.DoStatement.DoSerializer;
 				of = IType.NONE,
 				index = IType.STRING,
 				optional = true,
+				internal = true,
 				doc = @doc (
 						value = "a map expression containing the parameters of the action",
-						deprecated = "Use the imperative (with facets) or functional (with comma separated values inside parentheses, optionally prefixed by the argument name) form to pass the arguments")),
+						deprecated = "Use the functional (with comma separated values inside parentheses, optionally prefixed by the argument name) form to pass the arguments")),
 				@facet (
 						name = IKeyword.RETURNS,
 						type = IType.NEW_TEMP_ID,

@@ -47,7 +47,7 @@ species userSIR {
 experiment examples type: gui {
 	float minimum_cycle_duration <- 0.1#s;
 	
-	action _init_ {
+	action _init_() {
 		create simulation with: (step:2#s,name:"s2s")   ;
 		create simulation with: (step:10#s,name:"s10s") ;		
 	}

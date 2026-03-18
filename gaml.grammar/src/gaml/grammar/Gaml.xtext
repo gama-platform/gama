@@ -103,13 +103,14 @@ S_Experiment:
  */
 Statement:
 	// 1. Unambiguous statements (no overlap with Valid_ID).
-	S_Display | S_Return | S_Solve | S_If | S_Try | S_Do | S_Loop | S_Switch | S_Equations | S_Action |
+	S_Display | S_Return | S_Solve | S_If | S_Try | S_Do | S_Loop | S_Switch | S_Equations |
 	// 2. Keywords that could also be variables.
 	=> S_Species | => S_Reflex |
 	// 3. Assignments (e.g., status <- 5;). Checked before falling back to generic statements.
 	=> S_ActionCall | => S_Assignment |
 	// 4. Variable or type definitions (e.g., int my_var <- 5;). Starts with a TypeRef.
-	=> S_Definition |
+	=> S_Callable |      // MUST come first! Checks if a '(' follows the name. Checks for typed methods OR keyword actions
+	=> S_Definition |  // If no '(', it falls back safely to a standard variable.
 	// 5. Universal fallback for any custom action or built-in statement (e.g., ask agents;).
 	S_Other;
 	
@@ -164,22 +165,38 @@ S_Other returns Statement:
 
 /******************************************************************************************
  * *****************************************************************************************
- * * REGULAR STATEMENTS: DECLARATIONS, DEFINITIONS, ASSIGNMENTS
+ * * DECLARATION STATEMENTS: VARIABLES & ACTIONS
  * ****************************************************************************************** 
  * ******************************************************************************************/
+// 1. Variable Definition: NO parentheses and no block allowed here.
+// Example: int my_var <- 5; or list<string> my_list;
+S_Definition:
+	tkey=TypeRef name=Valid_ID (facets+=Facet)* ';';
+	
+// 2. The shared interface for anything that can take arguments
+S_Callable returns S_Definition:
+	S_Method | S_Action;
+
+// 3. Typed Action (Method) Definition: Parentheses are MANDATORY.
+// Example: int toto(); or int toto(int a) { ... }
+S_Method returns S_Callable:
+	{S_Method} tkey=TypeRef name=Valid_ID '(' ActionArguments? ')' FacetsAndBlock;
+
+// 4. Keyword Action Definition: Parentheses are MANDATORY.
+// Example: action do_something (int arg1) { ... }
+S_Action returns S_Callable:
+	{S_Action} key='action' name=Valid_ID '(' ActionArguments? ')' FacetsAndBlock;
+
+/******************************************************************************************
+ * *****************************************************************************************
+ * * REGULAR STATEMENTS
+ * ****************************************************************************************** 
+ * ******************************************************************************************/
+// Example: my_var <- 5; or my_list[0] <- 10;
 // Example: reflex move when: time > 10 { ... }
 S_Reflex:
 	key=('reflex' | 'abort' | K_Init) (name=Valid_ID)? FacetsAndBlock;
-
-// Example: int my_var <- 5; or list<string> my_list;
-S_Definition:
-	tkey=TypeRef name=Valid_ID ('(' ActionArguments ')')? FacetsAndBlock;
-
-// Example: action do_something (int arg1) { ... }
-S_Action returns S_Definition:
-	{S_Action} key='action' name=Valid_ID ('(' ActionArguments ')')? FacetsAndBlock;
-
-// Example: my_var <- 5; or my_list[0] <- 10;
+	
 S_Assignment:
 	expr=Expression key=K_Assignment value=Expression (facets+=Facet)* ';';
 
@@ -206,13 +223,13 @@ S_Display:
  * * 1) Keywords that need to be included in Valid_ID, preventing the "lexer lock-in", so 
  * * that they can be reused for facet names, variable names, etc. 
  * * 2) Keywords that are not used for definition statements (e.g. 'create') but for which 
- * * the parser cannot make the difference at its level, so that we 
+ * * the parser cannot make the difference at its level, so that we force it 
  * ****************************************************************************************** 
  * ******************************************************************************************/
 K_BuiltIn:
 	'ask' | 'text' | 'assert' | 'setup' | 'add' | 'remove' | 'put' | 'draw' | 
 	'capture' | 'release' | 'migrate' | 'create' | 'error' | 'warn' | 'write' | 'status' |
-	'focus_on' | 'highlight' | 'layout' | 'save' | 'restore' | 'diffuse' | 'default';
+	'focus_on' | 'highlight' | 'layout' | 'save' | 'restore' | 'diffuse' | 'default' | 'data' | 'method';
 
 K_Species:
 	'species';
@@ -416,7 +433,7 @@ TypeDefinition:
 	S_Species | TypeFakeDefinition;
 
 ActionDefinition:
-	S_Action | ActionFakeDefinition | S_Definition | TypeDefinition;
+	S_Callable | ActionFakeDefinition | TypeDefinition;
 
 /*
  * Groups all valid variable targets for the EMF interface.
@@ -424,7 +441,7 @@ ActionDefinition:
  * but do not affect runtime parsing as this rule is only called inside cross-references.
  */
 VarDefinition:
-	=> S_Definition | => S_Species | => S_Reflex | => S_Action | => S_Loop |
+	=> S_Definition | => S_Callable | => S_Species | => S_Reflex | => S_Loop |
 	Model | ArgumentDefinition | DefinitionFacet | VarFakeDefinition | Import | S_Experiment;
 
 /*

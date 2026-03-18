@@ -90,7 +90,7 @@ species rps_bot {
 	
 	string bp;
 	
-	action bot_play {
+	action bot_play() {
 		bp <- ["ROCK","PAPER","SCISSORS"][rnd_choice(strategy)];
 	}
 	

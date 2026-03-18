@@ -21,7 +21,7 @@ global {
 		do generate();
 	}
 
-	action generate {
+	action generate() {
 		// the generate_terrain operator returns a field where the elevations are between 0 and 1. It can be scaled afterwards.
 		int scale_factor <- palette_name = "Seaside" ? 20 : 10;
 		terrain <- generate_terrain(generator_seed, width, height, details, smoothness, scattering) * scale_factor;
@@ -62,19 +62,19 @@ experiment Terrain type: gui {
 		do save_tif();
 	}
 
-	action update {
+	action update() {
 		ask simulation {
 			do generate();
 		}
 		do update_outputs();
 	}
 	
-	action save_tif {
+	action save_tif() {
 		string file_name <- "seed"+generator_seed+"w"+width+"h"+height+"d"+(details with_precision 2)+"smooth"+(smoothness with_precision 2)+"scatter"+(scattering with_precision 2)+".tif";
 		save grid_file(file_name, terrain);
 	}
 
-	action _init_ {
+	action _init_ (){
 		
 	// A trick to make sure the parameters are expanded and visible when the simulation is launched.
 		bool previous <- gama.pref_experiment_expand_params;

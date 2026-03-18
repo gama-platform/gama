@@ -33,7 +33,7 @@ experiment "2. Reload Simulation" type: gui parent: Base{
 	parameter "File to read" var: input <- file("../includes/saved_simulation.simulation");
 	
 	// We create the initial simulation from the file
-	action _init_ {
+	action _init_() {
 		create simulation from: input;	
 	}
 

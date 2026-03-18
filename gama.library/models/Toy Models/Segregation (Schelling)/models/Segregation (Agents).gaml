@@ -20,12 +20,12 @@ global {
 	geometry shape <- square(dimensions);
 	
 	//Action to initialize the people agents
-	action initialize_people { 
+	action initialize_people() { 
 		create people number: number_of_people; 
 		all_people <- people as list ;  
 	} 
 	//Action to initialize the places
-	action initialize_places { 
+	action initialize_places() { 
 		all_places <- shuffle (space);
 		free_places <- all_places;  
 	} 

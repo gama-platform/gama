@@ -44,14 +44,11 @@ import gama.gaml.statements.SetStatement.AssignmentValidator;
  */
 
 @facets (
-		value = { /*
-					 * @facet(name = IKeyword.VAR, type = IType.NONE, optional = true),
-					 */
-				@facet (
-						name = IKeyword.NAME,
-						type = IType.NONE,
-						optional = false,
-						doc = @doc ("the name of an existing variable or attribute to be modified")),
+		value = { @facet (
+				name = IKeyword.NAME,
+				type = IType.NONE,
+				optional = false,
+				doc = @doc ("the name of an existing variable or attribute to be modified")),
 				@facet (
 						name = IKeyword.VALUE,
 						type = { IType.NONE },

@@ -3,29 +3,20 @@
  */
 package gaml.compiler.gaml.impl;
 
-import gaml.compiler.gaml.ActionArguments;
 import gaml.compiler.gaml.ActionDefinition;
-import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.VarDefinition;
 
-import java.util.Collection;
-
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
-
-import org.eclipse.emf.common.util.EList;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-
-import org.eclipse.emf.ecore.util.EObjectContainmentEList;
-import org.eclipse.emf.ecore.util.InternalEList;
 
 /**
  * <!-- begin-user-doc -->
@@ -35,7 +26,6 @@ import org.eclipse.emf.ecore.util.InternalEList;
  * The following features are implemented:
  * </p>
  * <ul>
- *   <li>{@link gaml.compiler.gaml.impl.S_DefinitionImpl#getArgs <em>Args</em>}</li>
  *   <li>{@link gaml.compiler.gaml.impl.S_DefinitionImpl#getName <em>Name</em>}</li>
  *   <li>{@link gaml.compiler.gaml.impl.S_DefinitionImpl#getTkey <em>Tkey</em>}</li>
  * </ul>
@@ -44,16 +34,6 @@ import org.eclipse.emf.ecore.util.InternalEList;
  */
 public class S_DefinitionImpl extends StatementImpl implements S_Definition
 {
-  /**
-   * The cached value of the '{@link #getArgs() <em>Args</em>}' containment reference list.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @see #getArgs()
-   * @generated
-   * @ordered
-   */
-  protected EList<ArgumentDefinition> args;
-
   /**
    * The default value of the '{@link #getName() <em>Name</em>}' attribute.
    * <!-- begin-user-doc -->
@@ -103,21 +83,6 @@ public class S_DefinitionImpl extends StatementImpl implements S_Definition
   protected EClass eStaticClass()
   {
     return GamlPackage.Literals.SDEFINITION;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
-  public EList<ArgumentDefinition> getArgs()
-  {
-    if (args == null)
-    {
-      args = new EObjectContainmentEList<ArgumentDefinition>(ArgumentDefinition.class, this, GamlPackage.SDEFINITION__ARGS);
-    }
-    return args;
   }
 
   /**
@@ -205,8 +170,6 @@ public class S_DefinitionImpl extends StatementImpl implements S_Definition
   {
     switch (featureID)
     {
-      case GamlPackage.SDEFINITION__ARGS:
-        return ((InternalEList<?>)getArgs()).basicRemove(otherEnd, msgs);
       case GamlPackage.SDEFINITION__TKEY:
         return basicSetTkey(null, msgs);
     }
@@ -223,8 +186,6 @@ public class S_DefinitionImpl extends StatementImpl implements S_Definition
   {
     switch (featureID)
     {
-      case GamlPackage.SDEFINITION__ARGS:
-        return getArgs();
       case GamlPackage.SDEFINITION__NAME:
         return getName();
       case GamlPackage.SDEFINITION__TKEY:
@@ -238,16 +199,11 @@ public class S_DefinitionImpl extends StatementImpl implements S_Definition
    * <!-- end-user-doc -->
    * @generated
    */
-  @SuppressWarnings("unchecked")
   @Override
   public void eSet(int featureID, Object newValue)
   {
     switch (featureID)
     {
-      case GamlPackage.SDEFINITION__ARGS:
-        getArgs().clear();
-        getArgs().addAll((Collection<? extends ArgumentDefinition>)newValue);
-        return;
       case GamlPackage.SDEFINITION__NAME:
         setName((String)newValue);
         return;
@@ -268,9 +224,6 @@ public class S_DefinitionImpl extends StatementImpl implements S_Definition
   {
     switch (featureID)
     {
-      case GamlPackage.SDEFINITION__ARGS:
-        getArgs().clear();
-        return;
       case GamlPackage.SDEFINITION__NAME:
         setName(NAME_EDEFAULT);
         return;
@@ -291,8 +244,6 @@ public class S_DefinitionImpl extends StatementImpl implements S_Definition
   {
     switch (featureID)
     {
-      case GamlPackage.SDEFINITION__ARGS:
-        return args != null && !args.isEmpty();
       case GamlPackage.SDEFINITION__NAME:
         return NAME_EDEFAULT == null ? name != null : !NAME_EDEFAULT.equals(name);
       case GamlPackage.SDEFINITION__TKEY:
@@ -309,14 +260,6 @@ public class S_DefinitionImpl extends StatementImpl implements S_Definition
   @Override
   public int eBaseStructuralFeatureID(int derivedFeatureID, Class<?> baseClass)
   {
-    if (baseClass == ActionArguments.class)
-    {
-      switch (derivedFeatureID)
-      {
-        case GamlPackage.SDEFINITION__ARGS: return GamlPackage.ACTION_ARGUMENTS__ARGS;
-        default: return -1;
-      }
-    }
     if (baseClass == GamlDefinition.class)
     {
       switch (derivedFeatureID)
@@ -350,14 +293,6 @@ public class S_DefinitionImpl extends StatementImpl implements S_Definition
   @Override
   public int eDerivedStructuralFeatureID(int baseFeatureID, Class<?> baseClass)
   {
-    if (baseClass == ActionArguments.class)
-    {
-      switch (baseFeatureID)
-      {
-        case GamlPackage.ACTION_ARGUMENTS__ARGS: return GamlPackage.SDEFINITION__ARGS;
-        default: return -1;
-      }
-    }
     if (baseClass == GamlDefinition.class)
     {
       switch (baseFeatureID)

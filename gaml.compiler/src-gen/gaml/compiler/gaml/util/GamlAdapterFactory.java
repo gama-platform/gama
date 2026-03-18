@@ -171,14 +171,19 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
         return createS_ReturnAdapter();
       }
       @Override
-      public Adapter caseS_Reflex(S_Reflex object)
-      {
-        return createS_ReflexAdapter();
-      }
-      @Override
       public Adapter caseS_Definition(S_Definition object)
       {
         return createS_DefinitionAdapter();
+      }
+      @Override
+      public Adapter caseS_Callable(S_Callable object)
+      {
+        return createS_CallableAdapter();
+      }
+      @Override
+      public Adapter caseS_Reflex(S_Reflex object)
+      {
+        return createS_ReflexAdapter();
       }
       @Override
       public Adapter caseS_Assignment(S_Assignment object)
@@ -299,6 +304,11 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
       public Adapter caseStringLiteral(StringLiteral object)
       {
         return createStringLiteralAdapter();
+      }
+      @Override
+      public Adapter caseS_Method(S_Method object)
+      {
+        return createS_MethodAdapter();
       }
       @Override
       public Adapter caseS_Action(S_Action object)
@@ -703,21 +713,6 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
   }
 
   /**
-   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_Reflex <em>SReflex</em>}'.
-   * <!-- begin-user-doc -->
-   * This default implementation returns null so that we can easily ignore cases;
-   * it's useful to ignore a case when inheritance will catch all the cases anyway.
-   * <!-- end-user-doc -->
-   * @return the new adapter.
-   * @see gaml.compiler.gaml.S_Reflex
-   * @generated
-   */
-  public Adapter createS_ReflexAdapter()
-  {
-    return null;
-  }
-
-  /**
    * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_Definition <em>SDefinition</em>}'.
    * <!-- begin-user-doc -->
    * This default implementation returns null so that we can easily ignore cases;
@@ -728,6 +723,36 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createS_DefinitionAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_Callable <em>SCallable</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.S_Callable
+   * @generated
+   */
+  public Adapter createS_CallableAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_Reflex <em>SReflex</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.S_Reflex
+   * @generated
+   */
+  public Adapter createS_ReflexAdapter()
   {
     return null;
   }
@@ -1088,6 +1113,21 @@ public class GamlAdapterFactory extends AdapterFactoryImpl
    * @generated
    */
   public Adapter createStringLiteralAdapter()
+  {
+    return null;
+  }
+
+  /**
+   * Creates a new adapter for an object of class '{@link gaml.compiler.gaml.S_Method <em>SMethod</em>}'.
+   * <!-- begin-user-doc -->
+   * This default implementation returns null so that we can easily ignore cases;
+   * it's useful to ignore a case when inheritance will catch all the cases anyway.
+   * <!-- end-user-doc -->
+   * @return the new adapter.
+   * @see gaml.compiler.gaml.S_Method
+   * @generated
+   */
+  public Adapter createS_MethodAdapter()
   {
     return null;
   }

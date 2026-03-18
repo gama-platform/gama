@@ -29,6 +29,7 @@ import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
+import gaml.compiler.gaml.IInternalFacets;
 
 /**
  * The Class StatementWithChildrenDescription.
@@ -104,6 +105,10 @@ public class DoDescription extends StatementDescription {
 		}
 		final Arguments args = new Arguments();
 		visitFacets((facet, b) -> {
+			if (IInternalFacets.GAML_ERROR.equals(facet)) {
+				error(getLitteral(facet));
+				return false;
+			}
 			if (!ArtefactRegistry.getDoFacets().contains(facet)) { args.put(facet, b); }
 			return true;
 		});
@@ -187,7 +192,7 @@ public class DoDescription extends StatementDescription {
 		IExpressionDescription function = getFacet(INTERNAL_FUNCTION);
 		if (function != null) {
 			// Handle the internal function validation
-			function.compile(lookupContext);
+			function.compile(this);
 		}
 		IDescription result = super.validate();
 		if (result == null) return null;

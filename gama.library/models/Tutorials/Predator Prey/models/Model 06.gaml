@@ -45,6 +45,11 @@ species generic_species {
 	init {
 		location <- my_cell.location;
 	}
+	
+	
+	float energy_from_eat {
+		return 0.0;
+	}
 
 	reflex basic_move {
 		my_cell <- one_of(my_cell.neighbors2);
@@ -70,9 +75,6 @@ species generic_species {
 		energy <- energy / nb_offsprings;
 	}
 
-	float energy_from_eat {
-		return 0.0;
-	}
 
 	aspect base {
 		draw circle(size) color: color;
@@ -88,7 +90,7 @@ species prey parent: generic_species {
 	int nb_max_offsprings <- prey_nb_max_offsprings;
 	float energy_reproduce <- prey_energy_reproduce;
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		float energy_transfer <- 0.0;
 		if(my_cell.food > 0) {
 			energy_transfer <- min([max_transfer, my_cell.food]);
@@ -107,7 +109,7 @@ species predator parent: generic_species {
 	int nb_max_offsprings <- predator_nb_max_offsprings;
 	float energy_reproduce <- predator_energy_reproduce;
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		list<prey> reachable_preys <- prey inside (my_cell);
 		if(! empty(reachable_preys)) {
 			ask one_of (reachable_preys) {

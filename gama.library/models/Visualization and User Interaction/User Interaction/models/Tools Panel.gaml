@@ -24,7 +24,7 @@ global {
 	]; 
 	
 	
-	action activate_act {
+	action activate_act() {
 		button selected_but <- first(button overlapping (circle(1) at_location #user_location));
 		if(selected_but != nil) {
 			ask selected_but {
@@ -40,7 +40,7 @@ global {
 		}
 	}
 	
-	action cell_management {
+	action cell_management() {
 		cell selected_cell <- first(cell overlapping (circle(1.0) at_location #user_location));
 		if(selected_cell != nil) {
 			ask selected_cell {

@@ -16,7 +16,7 @@ global {
 		do agent_usage;
 	}
 	
-	action basic_usage {
+	action basic_usage() {
 		write "=== Basic Usage ===";
 		
 		// 1. Creation
@@ -40,7 +40,7 @@ global {
 		write "Has age 30? " + has_30;
 	}
 	
-	action modification_examples {
+	action modification_examples() {
 		write "\n=== Modification Examples ===";
 		map<string, string> capitals <- ["France"::"Paris", "Japan"::"Tokyo"];
 		write "Original: " + capitals;
@@ -61,7 +61,7 @@ global {
 		write "After removing Japan: " + capitals;
 	}
 	
-	action iteration_examples {
+	action iteration_examples() {
 		write "\n=== Iteration Examples ===";
 		map<string, float> prices <- ["Apple"::1.2, "Banana"::0.8, "Orange"::1.5];
 		
@@ -81,7 +81,7 @@ global {
 		}
 	}
 	
-	action advanced_usage {
+	action advanced_usage() {
 		write "\n=== Advanced Usage ===";
 		
 		// Grouping agents or objects
@@ -110,7 +110,7 @@ global {
 		write "Name lengths: " + name_lengths;
 	}
 
-	action agent_usage {
+	action agent_usage() {
 		write "\n=== Agent Usage ===";
 		create person number: 5;
 		

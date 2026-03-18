@@ -114,7 +114,7 @@ global {
 		the_graph <- directed(layout_circle(the_graph,rectangle(world.shape.width * 0.7, world.shape.height*0.7),false));
 	}
 	
-	action updateInteractionsTypes{
+	action updateInteractionsTypes(){
 		//reset interaction map
 		ask animal{
 			interactionMap <- [];
@@ -153,7 +153,7 @@ global {
 	}
 	
 	// apply actions for the buttons that have been pressed since the last time step
-	action buttonPressed {
+	action buttonPressed (){
 		// identify which button has been pressed
 		// **********************************************************************//
 		// previously this part of the code was in the solve statement           //
@@ -210,7 +210,7 @@ species animal{
 	}
 	
 	// compute the natural growth rate of the population
-	float growth{
+	float growth(){
 		if (isPredator and !externalFoodForPredators){
 			return - r * pop; // predator dies out if there is no prey
 		}else{
@@ -226,7 +226,7 @@ species animal{
 	}
 	
 	// compute the population increase due to predation/competition
-	float populationVariationDueToInteractions{
+	float populationVariationDueToInteractions(){
 		if (saturation){
 			return 10*r/2*pop * sum((positive_species where (!dead(each))) collect(interaction_coef[each]*each.pop/k)) 
 			- 0.1*pop/(1 + saturationCoeff * pop/k) * sum((negative_species where (!dead(each))) collect(interaction_coef[each]*each.pop));				
@@ -325,7 +325,7 @@ grid button width:maxSpecies+1 height:maxSpecies+1
 	}
 	
 	// action for species modification button
-	action speciesButtonAction{
+	action speciesButtonAction(){
 		if (active) {
 		// remove animal species and reset interactions
 			animal species_to_be_removed <- speciesList[grid_y - 1];
@@ -376,7 +376,7 @@ grid button width:maxSpecies+1 height:maxSpecies+1
 	}
 	
 	// action for type of interaction modification button
-	action interactionButtonAction{
+	action interactionButtonAction(){
 		string new_type <- possible_type[mod(possible_type index_of(type)+1,length(possible_type))];
 		// change the button to the new type
 		type <- new_type;

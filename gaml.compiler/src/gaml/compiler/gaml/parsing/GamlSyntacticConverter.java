@@ -38,7 +38,6 @@ import static gama.annotations.constants.IKeyword.ITEM;
 import static gama.annotations.constants.IKeyword.LET;
 import static gama.annotations.constants.IKeyword.MODEL;
 import static gama.annotations.constants.IKeyword.NAME;
-import static gama.annotations.constants.IKeyword.NO_TYPE_INFERENCE;
 import static gama.annotations.constants.IKeyword.PUT;
 import static gama.annotations.constants.IKeyword.REMOVE;
 import static gama.annotations.constants.IKeyword.SET;
@@ -54,6 +53,7 @@ import static gama.annotations.constants.IKeyword.ZERO;
 import static gama.annotations.support.ISymbolKind.isDefiningAttributes;
 import static gama.api.additions.registries.ArtefactRegistry.getStatementArtefact;
 import static gama.api.gaml.GAML.getExpressionDescriptionFactory;
+import static gaml.compiler.gaml.IInternalFacets.NO_TYPE_INFERENCE;
 
 import java.util.List;
 import java.util.Map;
@@ -68,7 +68,6 @@ import gama.annotations.constants.IKeyword;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.ast.ISyntacticElement;
-import gama.api.constants.IGamlIssue;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Facets;
@@ -84,8 +83,10 @@ import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.Function;
 import gaml.compiler.gaml.GamlPackage;
+import gaml.compiler.gaml.IInternalFacets;
 import gaml.compiler.gaml.Pragma;
 import gaml.compiler.gaml.S_Assignment;
+import gaml.compiler.gaml.S_Callable;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Equations;
@@ -132,6 +133,8 @@ import gaml.compiler.gaml.resource.GamlResourceServices;
  * <li>Transform various assignment operations into standard GAMA statements</li>
  * <li>Handle special cases like synthetic models, experiment files, and pragmas</li>
  * <li>Maintain proper parent-child relationships in the syntactic tree</li>
+ * <li>A new feature allows this converter to pass errors and warnings to the descriptions, through specialized facets
+ * available in {@code IInternalFacets}</li>
  * </ul>
  *
  * <p>
@@ -144,6 +147,7 @@ import gaml.compiler.gaml.resource.GamlResourceServices;
  * @see ISyntacticElement
  * @see SyntacticFactory
  * @see ExpressionDescriptionBuilder
+ * @see IInternalFacets
  */
 public class GamlSyntacticConverter {
 
@@ -300,18 +304,21 @@ public class GamlSyntacticConverter {
 	private final ISyntacticElement convStatement(final ISyntacticElement upper, final Statement stm) {
 		// We catch its keyword
 		String keyword = computeKeyword(upper, stm);
+
 		final IArtefact.Symbol upperArtefact = getStatementArtefact(upper.getKeyword());
 
-		final boolean isDefinition = stm instanceof S_Definition;
 		final boolean upperContainsAttributes = upperArtefact != null && isDefiningAttributes(upperArtefact.getKind());
-		final boolean isVarOrAction = isDefinition && !GAML.isAStatement(keyword) || ACTION.equals(keyword);
-		final boolean isVar = isVarOrAction && upperContainsAttributes && !EGAML.hasChildren(stm);
+		final boolean isWronglyClassifiedInStatements = !(stm instanceof S_Definition) && GAML.isADeclaration(keyword);
+		final boolean isWronglyClassifiedInDefinitions = stm instanceof S_Definition && !GAML.isADeclaration(keyword);
 
-		final ISyntacticElement elt = isVar ? FACTORY.createVar(keyword, ((S_Definition) stm).getName(), stm)
-				: FACTORY.create(keyword, stm, true);
-		final String kkk = keyword;
+		// if (isWronglyClassifiedInDefinitions) { DEBUG.LOG("Wrongly classified in definitions: " + stm); }
+		// if (isWronglyClassifiedInStatements) { DEBUG.LOG("Wrongly classified in statements: " + stm); }
+
+		ISyntacticElement elt = null;
+		final String finalKeyword = keyword;
 		switch (stm) {
-			case S_Species ss when "species_layer".equals(kkk) -> {
+			case S_Species ss when "species_layer".equals(finalKeyword) -> {
+				elt = FACTORY.create(keyword, stm, true);
 				// Create a VarDefinition with the species name, wrap it in a VariableRef,
 				// and assign it as the expression of the statement so that the species_layer
 				// facet resolution can find the referenced species by name. It is a very bad fix...
@@ -325,37 +332,52 @@ public class GamlSyntacticConverter {
 					ss.setName(null);
 				}
 			}
-			case S_Definition def when isVarOrAction -> {
+			case S_Callable call when upperContainsAttributes -> {
+				// If we define an action with this statement
+				final Expression t = call.getTkey();
+				keyword = ACTION;
+				elt = FACTORY.create(ACTION, stm, true);
+				processTypeKey(elt, t);
+				convertArgs(call.getArgs(), elt);
+				break;
+			}
+			case S_Definition def when !isWronglyClassifiedInDefinitions -> {
 				// If we define a variable with this statement
 				final Expression t = def.getTkey();
-				if (t != null) {
-					addFacet(elt, TYPE, convExpr(t));
-					// If the type should not be inferred, we add a facet to specify it (see #385)
-					elt.setFacet(NO_TYPE_INFERENCE, getExpressionDescriptionFactory().getTrue());
-					if (!upperContainsAttributes) {
-						// Translation of "type var ..." to "let var type: type ..." if we are not in a top-level
-						// statement (i.e. not in the declaration of a species or an experiment)
-						elt.setKeyword(keyword = LET);
-					} else // Translation of "type1 ID1 (type2 ID2, type3 ID3) {...}" to "action ID1 type: type1 { arg
-					// ID2 type: type2; arg ID3 type: type3; ...}"
-					if (EGAML.hasChildren(def)) { elt.setKeyword(keyword = ACTION); }
-				}
-				if (ACTION.equals(keyword)) { convertArgs(def.getArgs(), elt); }
+				keyword = !upperContainsAttributes ? LET : keyword;
+				elt = !upperContainsAttributes ? FACTORY.create(LET, stm, true)
+						: FACTORY.createVar(keyword, ((S_Definition) stm).getName(), stm);
+				processTypeKey(elt, t);
 			}
-			case S_Assignment sa -> keyword = convertAssignment(sa, keyword, elt, stm.getExpr());
-			case S_Do sdo -> processDo(sdo, elt);
+			case S_Assignment sa -> {
+				elt = FACTORY.create(keyword, stm, false);
+				keyword = convertAssignment(sa, keyword, elt, stm.getExpr());
+			}
+			case S_Do sdo -> {
+				elt = FACTORY.create(keyword, stm, false);
+				processDo(sdo, elt);
+			}
 			// If the statement is "if", we convert its "else" part and put it as a child (as GAML expects it)
-			case S_If sif -> convElse(sif, elt);
-			case S_Try st -> convCatch(st, elt);
+			case S_If sif -> {
+				elt = FACTORY.create(keyword, stm, true);
+				convElse(sif, elt);
+			}
+			case S_Try st -> {
+				elt = FACTORY.create(keyword, stm, true);
+				convCatch(st, elt);
+			}
 			case null, default -> {
 				switch (keyword) {
-					case IKeyword.PARAMETER -> processParameter(stm, elt);
+					case IKeyword.PARAMETER -> {
+						elt = FACTORY.create(keyword, stm, false);
+						processParameter(stm, elt);
+					}
 					case IKeyword.METHOD -> {// We apply conversion to get the name instead of the "method" keyword
-						final String type = EGAML.getNameOf(stm);
-						if (type != null) {
-							elt.setKeyword(type);
-							keyword = type;
-						}
+						keyword = EGAML.getNameOf(stm);
+						elt = FACTORY.create(keyword, stm, true);
+					}
+					default -> {
+						elt = FACTORY.create(keyword, stm, EGaml.getInstance().hasChildren(stm));
 					}
 				}
 			}
@@ -363,6 +385,17 @@ public class GamlSyntacticConverter {
 
 		// We apply some conversions to the facets expressed in the statement
 		convertFacets(stm, keyword, elt);
+		if (isWronglyClassifiedInStatements) {
+			// We mark the element with a GAML warning facet
+			// Will mark for instance: int my_action {...}
+			// This is a temporary feature to ease the transitioning towards the full functional syntax
+			elt.setFacet(IInternalFacets.GAML_WARNING,
+					GAML.getExpressionDescriptionFactory().createConstant("Action declaration is missing parentheses"));
+			String type = elt.getKeyword();
+			elt.setKeyword(ACTION);
+			elt.setFacet(TYPE, GAML.getExpressionDescriptionFactory().createStringBased(type));
+			elt.setFacet(NAME, GAML.getExpressionDescriptionFactory().createFromEObject(stm.getExpr()));
+		}
 
 		if (stm instanceof S_Experiment) {
 			processExperiment(elt);
@@ -370,6 +403,22 @@ public class GamlSyntacticConverter {
 		// We convert the block of statements (if any)
 		if (!IKeyword.PARAMETER.equals(keyword)) { convertBlock(elt, stm.getBlock()); }
 		return elt;
+	}
+
+	/**
+	 * Process type key.
+	 *
+	 * @param elt
+	 *            the elt
+	 * @param t
+	 *            the t
+	 */
+	private void processTypeKey(final ISyntacticElement elt, final Expression t) {
+		if (t != null) {
+			addFacet(elt, TYPE, convExpr(t));
+			// If the type should not be inferred, we add a facet to specify it (see #385)
+			elt.setFacet(NO_TYPE_INFERENCE, getExpressionDescriptionFactory().getTrue());
+		}
 	}
 
 	/** The Constant DISPLAY_UPPER. */
@@ -463,6 +512,11 @@ public class GamlSyntacticConverter {
 			final ExpressionList list = f.getRight();
 			if (list != null) { addFacet(elt, WITH, convExpr(list)); }
 		}
+		// Not yet implemented but maybe we should in the near future.
+		// if (EGaml.getInstance().hasFacets(stm)) {
+		// addFacet(elt, IInternalFacets.GAML_ERROR, GAML.getExpressionDescriptionFactory()
+		// .createConstant("Deprecated facets used. Use the functional form instead."));
+		// }
 	}
 
 	/**
@@ -489,7 +543,7 @@ public class GamlSyntacticConverter {
 	 */
 	private void addFacet(final ISyntacticElement e, final String key, final IExpressionDescription expr) {
 		if (e.hasFacet(key)) {
-			e.setFacet(IGamlIssue.DOUBLED_CODE + key, expr);
+			e.setFacet(IInternalFacets.DUPLICATE_FACET, GAML.getExpressionDescriptionFactory().createConstant(key));
 		} else {
 			e.setFacet(key, expr);
 		}
@@ -795,7 +849,7 @@ public class GamlSyntacticConverter {
 			if (ed != null) { elt.setFacet(def, ed); }
 		}
 		if (LET.equals(keyword) && elt.hasFacet(TYPE)) {
-			elt.setFacet(IKeyword.NO_TYPE_INFERENCE, GAML.getExpressionDescriptionFactory().createConstant(true));
+			elt.setFacet(NO_TYPE_INFERENCE, GAML.getExpressionDescriptionFactory().createConstant(true));
 		}
 	}
 
@@ -946,10 +1000,10 @@ public class GamlSyntacticConverter {
 	 * @return the resolved {@link IExpressionDescription}, or {@code null} if {@code stm} is null or nothing can be
 	 *         resolved
 	 */
-	private IExpressionDescription findExpr(final EObject stm, final boolean nameOnly) {
+	private IExpressionDescription findExpr(final EObject stm, final boolean nameOnly, final boolean nameAsLabel) {
 		if (stm == null) return null;
 		final String name = EGAML.getNameOf(stm);
-		if (name != null) return convertToLabel(stm, name);
+		if (name != null) return nameAsLabel ? convertToLabel(stm, name) : convExpr(stm);
 		if (nameOnly) return null;
 		// Only reachable for Statement objects that carry an expression
 		final Expression expr = stm instanceof Statement s ? s.getExpr() : null;
@@ -964,7 +1018,7 @@ public class GamlSyntacticConverter {
 	 * @return the resolved {@link IExpressionDescription}, or {@code null}
 	 */
 	private IExpressionDescription findExpr(final Statement stm) {
-		return findExpr(stm, false);
+		return findExpr(stm, false, false);
 	}
 
 	/**
@@ -975,7 +1029,7 @@ public class GamlSyntacticConverter {
 	 * @return the resolved {@link IExpressionDescription}, or {@code null}
 	 */
 	private IExpressionDescription findExpr(final StandaloneExperiment stm) {
-		return findExpr(stm, true);
+		return findExpr(stm, true, true);
 	}
 
 }

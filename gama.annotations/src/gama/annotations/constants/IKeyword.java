@@ -9,6 +9,8 @@
  ********************************************************************************************************/
 package gama.annotations.constants;
 
+import java.util.Set;
+
 /**
  * Interface defining all keywords and constants used in the GAML language.
  * <p>
@@ -453,9 +455,6 @@ public interface IKeyword {
 	/** The header. */
 	String HEADER = "header";
 
-	/** The headless ui. */
-	// String HEADLESS_UI = "headless";
-
 	/** The heading. */
 	String HEADING = "heading";
 
@@ -686,9 +685,6 @@ public interface IKeyword {
 	/** The multiply. */
 	String MULTIPLY = "*";
 
-	/** The my. */
-	String MY = "my";
-
 	/** The mygraph. */
 	String MYGRAPH = "my_graph";
 
@@ -733,12 +729,6 @@ public interface IKeyword {
 
 	/** The optional. */
 	String OPTIONAL = "optional";
-
-	/** The origin. */
-	String ORIGIN = "**origin**";
-
-	/** The no type inference keyword. Used to flag declarations that have a type explicitly set */
-	String NO_TYPE_INFERENCE = "**no_type_inference**";
 
 	/** The orthogonal SAMPLING */
 	String ORTHOGONAL = "orthogonal";
@@ -1246,5 +1236,8 @@ public interface IKeyword {
 
 	/** The top. */
 	String TOP = "top";
+
+	/** The assignments. */
+	Set<String> ASSIGNMENTS = Set.of("<-", "<<", "<+", "+<-", ">>", ">-", "=", "<<+", ">>-");
 
 }

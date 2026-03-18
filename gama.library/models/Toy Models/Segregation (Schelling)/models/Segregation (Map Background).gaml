@@ -31,12 +31,12 @@ global {
 	matrix<int> map_colors;
  
  	//Action to initialize the people agents
-	action initialize_people {
+	action initialize_people() {
 		create people number: number_of_people ;  
 		all_people <- people as list ;  
 	}
 	//Action to initialize the places using the color in the image
-	action initialize_places { 
+	action initialize_places() { 
 		map_colors <- (bitmap_file_name) as_matrix {dimensions,dimensions} ;
 		ask space as list {
 			color <- rgb(map_colors at {grid_x,grid_y}) ;

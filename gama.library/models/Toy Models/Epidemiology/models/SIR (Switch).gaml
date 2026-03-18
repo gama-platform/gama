@@ -165,11 +165,11 @@ species SIR_model schedules: [] {
 	int N;
 	string model_type <- 'none';
 	
-	action remove_model {
+	action remove_model() {
 		do die;
 	}
 
-	action initialize ;
+	action initialize() ;
 
 }
 
@@ -178,7 +178,7 @@ species IBM_model schedules: [] parent: SIR_model {
 	string model_type <- 'IBM';
 	
 	//Action to initialize the Model with SIR compartiments
-	action initialize {
+	action initialize() {
 		
 		write 'Initializing IBM model with S=' + round(S) + ', I=' + round(I) + ', R=' + round(R) + '\n';
 		//Creation of the host agents
@@ -209,13 +209,13 @@ species IBM_model schedules: [] parent: SIR_model {
 		do count;
 	}
 	//Action to update the different compartiments
-	action count {
+	action count() {
 		S <- float(Host count (each.is_susceptible));
 		I <- float(Host count (each.is_infected));
 		R <- float(Host count (each.is_immune));
 	}
 	//Action to remove the model and kill all the agents it contains
-	action remove_model {
+	action remove_model() {
 		ask Host {
 			do die;
 		}
@@ -230,7 +230,7 @@ species Math_model schedules: [] parent: SIR_model {
 	string model_type <- 'Maths';
 	float t;
 	
-	action initialize {
+	action initialize() {
 		write 'Initializing Maths model with S=' + S + ', I=' + I + ', R=' + R + '\n';
 	}
 

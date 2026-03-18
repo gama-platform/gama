@@ -39,6 +39,7 @@ import gaml.compiler.gaml.Pragma;
 import gaml.compiler.gaml.ReservedLiteral;
 import gaml.compiler.gaml.S_Action;
 import gaml.compiler.gaml.S_Assignment;
+import gaml.compiler.gaml.S_Callable;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
@@ -326,6 +327,14 @@ public class GamlSerializerToString extends GamlSwitch<String> {
 		EObject tkey = object.getTkey();
 		String type = tkey == null ? object.getKey() : tkey.toString();
 		sb().append(type).append(' ').append(object.getName()).append(" ");
+		sb().append(facets(object.getFacets()));
+		appendBlock(object.getBlock(), false);
+		return since(m);
+	}
+
+	public String caseS_Callable(final S_Callable object) {
+		int m = mark();
+		sb().append(object.getKey()).append(" ").append(object.getName()).append(" ");
 		if (object.getArgs() != null && !object.getArgs().isEmpty()) {
 			sb().append(parenthesize(join(object.getArgs(), ", "))).append(" ");
 		}

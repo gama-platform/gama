@@ -129,7 +129,7 @@ global {
 		}
 	}
 	
-	action reinit_phase {
+	action reinit_phase() {
 		ask player {
 			location <- init_pos;
 			previous_pos <- init_pos;
@@ -234,7 +234,7 @@ species player skills:[moving] {
 		}
 	}
 	
-	action apply_inertia {
+	action apply_inertia (){
 		point prev_pos <- location;
 		point inertia_vect <- {(location.x-previous_pos.x)*0.8,(location.y-previous_pos.y)*0.8};
 		float max_inertia <- running_speed_without_ball;
@@ -249,7 +249,7 @@ species player skills:[moving] {
 		previous_pos <- prev_pos;
 	}
 	
-	action run_to_ball {
+	action run_to_ball(){
 		point targetPos;
 		if (ball_agent.ball_direction intersects circle(1)) {
 			targetPos <- ball_agent.location;
@@ -257,7 +257,7 @@ species player skills:[moving] {
 		else {
 			targetPos <- (ball_agent.ball_direction closest_points_with self) at 0;
 		}
-		do goto with:(target:targetPos, speed:running_speed_without_ball);
+		do goto(target:targetPos, speed:running_speed_without_ball);
 		
 		status <- "run to the ball";
 		
@@ -288,7 +288,7 @@ species player skills:[moving] {
 		}
 	}
 	
-	action run_with_ball {
+	action run_with_ball() {
 		status <- "run with the ball";
 		point goal_pos;
 		ask goal {
@@ -296,11 +296,11 @@ species player skills:[moving] {
 				goal_pos <- location;
 			}
 		}
-		do goto with:(target:goal_pos, speed:running_speed_with_ball);
+		do goto(target:goal_pos, speed:running_speed_with_ball);
 		ball_agent.location <- location;
 	}
 	
-	action offensive_move {
+	action offensive_move() {
 		// try to reach an offensive postion
 		point target_location;
 		geometry possible_pos <- (team="red") ? world inter (rectangle({blue_offside_pos,0},{120,90}))
@@ -329,26 +329,26 @@ species player skills:[moving] {
 				target_location <- any_location_in(offensive_pos inter possible_pos);
 			}
 		}
-		do goto target:target_location speed:running_speed_without_ball;
+		do goto (target:target_location, speed:running_speed_without_ball);
 	}
 	
-	action defensive_move {
+	action defensive_move() {
 		// try to mark an ennemy player
 		status <- "mark ennemy player";
 		if (not (marked_player = nil)) {
-			do goto with:(target:marked_player.location+((team="red")?{2+rnd(5.0),rnd(2.0)-1} : {-2-rnd(5.0),rnd(2.0)-1}), speed:running_speed_without_ball);
+			do goto (target:marked_player.location+((team="red")?{2+rnd(5.0),rnd(2.0)-1} : {-2-rnd(5.0),rnd(2.0)-1}), speed:running_speed_without_ball);
 		}
 	}
 	
-	action kick_ball_to_goal {
-		do loose_ball;
+	action kick_ball_to_goal() {
+		do loose_ball();
 		ask ball_agent {
-			do shooted speed_atr:4.0 target_position:((goal where (each.team != myself.team)) at 0).location;
+			do shooted (speed_atr:4.0, target_position:((goal where (each.team != myself.team)) at 0).location);
 		}
 		inactivity_time <- 20;
 	}
 	
-	action pass_the_ball {
+	action pass_the_ball() {
 		float wisest_choice_mark <- -100.0;
 		player wisest_target;
 		ask player  where(each.team = team and each != self and (self distance_to each > 15)) {
@@ -361,9 +361,9 @@ species player skills:[moving] {
 		}
 		if (wisest_choice_mark > -100.0) {
 			// a target has been found
-			do loose_ball;
+			do loose_ball();
 			ask ball_agent {
-				do shooted target_position:wisest_target.location speed_atr:wisest_target.distance_to_ball/8;
+				do shooted (target_position:wisest_target.location, speed_atr:wisest_target.distance_to_ball/8);
 			}
 			called_player <- wisest_target;
 			inactivity_time <- 20;
@@ -372,7 +372,7 @@ species player skills:[moving] {
 		}
 	}
 	
-	action take_ball {
+	action take_ball() {
 		if (ball_agent.belong_to_team != "" and ball_agent.belong_to_team != team) {
 			ask ball_agent.belong_to_player {
 				do loose_ball;
@@ -394,7 +394,7 @@ species player skills:[moving] {
 		called_player <- nil;
 	}
 	
-	action loose_ball {
+	action loose_ball() {
 		possess_ball <- false;
 		ball_agent.belong_to_team <- "";
 	}
@@ -421,7 +421,7 @@ species area {
 		shape <- ((team="red") ? square(red_size_play_area) : square(blue_size_play_area)) inter world;
 	}
 	
-	action update_size {
+	action update_size() {
 		location <- position;
 		shape <- ((team="red") ? square(red_size_play_area) : square(blue_size_play_area)) inter world;
 	}
@@ -459,11 +459,11 @@ species ball skills:[moving]{
 				do reinit_phase;
 			}
 		}
-		do wander amplitude:1.0;
+		do wander (amplitude:1.0);
 	}
 	action shooted (point target_position, float speed_atr) {
 		speed <- speed_atr;
-		do goto target:target_position;
+		do goto (target:target_position);
 	}
 	aspect base {
 		draw circle(0.5) color:#white border:#black;

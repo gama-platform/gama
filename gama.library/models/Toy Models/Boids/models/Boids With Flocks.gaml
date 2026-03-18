@@ -162,7 +162,7 @@ species flock skills: [moving] {
 		reflex wind when: apply_wind {
 		}
 
-		action do_move {
+		action do_move() {
 		}
 
 		reflex movement {

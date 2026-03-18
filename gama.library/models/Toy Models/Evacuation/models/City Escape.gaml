@@ -125,7 +125,7 @@ species crisis_manager {
 	 * The conditions to send an alert : return true at cycle = 0 and then every(alert_range)
 	 * depending on the strategy used
 	 */
-	bool alert_conditional {
+	bool alert_conditional() {
 		if(the_alert_strategy = "STAGED" or the_alert_strategy = "SPATIAL"){
 			return every(alert_range);
 		} else {
@@ -140,7 +140,7 @@ species crisis_manager {
 	/*
 	 * Who to send the alert to: return a list of inhabitant according to the strategy used
 	 */
-	list<inhabitant> alert_target {
+	list<inhabitant> alert_target (){
 		switch the_alert_strategy {
 			match "STAGED" {
 				return nb_per_stage among (inhabitant where (each.alerted = false));

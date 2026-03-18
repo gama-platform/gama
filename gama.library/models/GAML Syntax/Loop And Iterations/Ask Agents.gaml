@@ -42,7 +42,7 @@ global {
 }
 
 species dummy_species {
-	action introduce_myself {
+	action introduce_myself() {
 		write "Hello! I am " + name + " and my number is " + int(self);
 	}
 }

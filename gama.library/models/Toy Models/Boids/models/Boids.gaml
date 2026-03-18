@@ -37,7 +37,7 @@ global {
 	int ymax <- (width_and_height_of_environment - bounds);   
 	
 	//Action to move the goal to the mouse location
-	action move_goal {
+	action move_goal() {
 		ask first(boids_goal) {
 			do goto target: #user_location speed: 30.0;
 		}
@@ -112,13 +112,13 @@ species boids skills: [moving] {
 		point acc <- {0,0};
 		list<obstacle> nearby_obstacles <- (obstacle overlapping (circle (range)) );
 		loop obs over: nearby_obstacles {
-			acc <- acc - ((location of obs) - my (location));
+			acc <- acc - ((location of obs) -  location);
 		}
 		velocity <- velocity + acc; 
 	}
 	
 	//action to represent the bounding of the environment considering the velocity of the boid
-	action bounding {
+	action bounding() {
 		if  (location.x) < xmin {
 			velocity <- velocity + {bounds,0};
 		} else if (location.x) > xmax {
@@ -141,7 +141,7 @@ species boids skills: [moving] {
 	}
 	
 	//Action to move the agent  
-	action do_move {  
+	action do_move() {  
 		if (((velocity.x) as int) = 0) and (((velocity.y) as int) = 0) {
 			velocity <- {(rnd(4)) -2, (rnd(4)) - 2};
 		}

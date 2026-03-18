@@ -16,6 +16,7 @@ import static gama.annotations.constants.IKeyword.GLOBAL;
 import static gama.annotations.constants.IKeyword.NAME;
 import static gama.annotations.constants.IKeyword.PARENT;
 import static gama.annotations.constants.IKeyword.SCHEDULES;
+import static gaml.compiler.gaml.IInternalFacets.ORIGIN;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -518,7 +519,7 @@ public class ModelFactory implements IModelFactory {
 
 		// Add children with origin information
 		cm.visitChildren(element -> {
-			element.setFacet(IKeyword.ORIGIN, GAML.getExpressionDescriptionFactory().createConstant(cm.getName()));
+			element.setFacet(ORIGIN, GAML.getExpressionDescriptionFactory().createConstant(cm.getName()));
 			globalNodes.addChild(element);
 		});
 

@@ -41,7 +41,7 @@ global {
 		do degreeMax_computation;
 	}
 
-	action degreeMax_computation {
+	action degreeMax_computation() {
 		my_graph <- node_agent as_distance_graph(distance);
 		degreeMax <- 1;
 		ask node_agent {
@@ -66,7 +66,7 @@ species node_agent skills: [moving3D] {
 	}
 	
 	
-	action compute_degree {
+	action compute_degree() {
 		degree <- my_graph = nil ? 0 : (my_graph) degree_of (self);
 		radius <- ((((degree + 1) ^ 1.4) / (degreeMax))) * 5;
 		color <- hsb(0.66,degree / (degreeMax + 1), 0.5);

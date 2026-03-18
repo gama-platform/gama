@@ -12,22 +12,19 @@ package gama.api.constants;
 /**
  * Interface defining constants for GAML compilation and validation issue codes.
  * <p>
- * This interface provides a centralized location for all issue codes that can be raised during
- * GAML model compilation, validation, and execution. These codes are used by the GAMA compiler
- * and IDE to identify and categorize different types of errors, warnings, and issues in GAML models.
+ * This interface provides a centralized location for all issue codes that can be raised during GAML model compilation,
+ * validation, and execution. These codes are used by the GAMA compiler and IDE to identify and categorize different
+ * types of errors, warnings, and issues in GAML models.
  * </p>
  * <p>
- * Issue codes are organized by category (e.g., missing elements, type mismatches, unknown references)
- * and follow a consistent naming pattern "gaml.[category].[detail].issue".
+ * Issue codes are organized by category (e.g., missing elements, type mismatches, unknown references) and follow a
+ * consistent naming pattern "gaml.[category].[detail].issue".
  * </p>
  *
  * @author drogoul
  * @since 26 avr. 2012
  */
 public interface IGamlIssue {
-
-	/** The doubled code. */
-	String DOUBLED_CODE = "***DOUBLED***";
 
 	/** The as array. */
 	String AS_ARRAY = "gaml.as.array.issue";
@@ -127,15 +124,12 @@ public interface IGamlIssue {
 	String UNKNOWN_SPECIES = "gaml.unknown.species.issue";
 
 	/** The unknown var. */
-	// String UNKNOWN_SUBSPECIES = "gaml.unknown.subspecies.issue";
 	String UNKNOWN_VAR = "gaml.unknown.var.issue";
 
 	/** The unmatched operands. */
-	// public static String UNMATCHED_BINARY = "gaml.unmatched.unary.issue";
 	String UNMATCHED_OPERANDS = "gaml.unmatched.operands.issue";
 
 	/** The unmatched types. */
-	// String UNMATCHED_UNARY = "gaml.unmatched.unary.issue";
 	String UNMATCHED_TYPES = "gaml.unmatched.types.issue";
 
 	/** The wrong context. */

@@ -227,14 +227,14 @@ public class ArtefactRegistry {
 
 	/**
 	 * Returns {@code true} if the given keyword is registered as a statement artefact, or is the special
-	 * {@link IKeyword#METHOD} keyword.
+	 * {@link IKeyword#METHOD} keyword. Assignments are added because they are translated early on
 	 *
 	 * @param s
 	 *            the GAML keyword to test
 	 * @return {@code true} if {@code s} maps to a statement artefact or equals {@code "method"}
 	 */
 	public final static boolean isStatementArtefact(final String s) {
-		return STATEMENT_ARTEFACTS.containsKey(s) || IKeyword.METHOD.equals(s);
+		return STATEMENT_ARTEFACTS.containsKey(s) || IKeyword.METHOD.equals(s) || IKeyword.ASSIGNMENTS.contains(s);
 	}
 
 	/**

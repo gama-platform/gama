@@ -195,15 +195,6 @@ public interface GamlFactory extends EFactory
   S_Return createS_Return();
 
   /**
-   * Returns a new object of class '<em>SReflex</em>'.
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @return a new object of class '<em>SReflex</em>'.
-   * @generated
-   */
-  S_Reflex createS_Reflex();
-
-  /**
    * Returns a new object of class '<em>SDefinition</em>'.
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
@@ -211,6 +202,24 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   S_Definition createS_Definition();
+
+  /**
+   * Returns a new object of class '<em>SCallable</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>SCallable</em>'.
+   * @generated
+   */
+  S_Callable createS_Callable();
+
+  /**
+   * Returns a new object of class '<em>SReflex</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>SReflex</em>'.
+   * @generated
+   */
+  S_Reflex createS_Reflex();
 
   /**
    * Returns a new object of class '<em>SAssignment</em>'.
@@ -427,6 +436,15 @@ public interface GamlFactory extends EFactory
    * @generated
    */
   StringLiteral createStringLiteral();
+
+  /**
+   * Returns a new object of class '<em>SMethod</em>'.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return a new object of class '<em>SMethod</em>'.
+   * @generated
+   */
+  S_Method createS_Method();
 
   /**
    * Returns a new object of class '<em>SAction</em>'.

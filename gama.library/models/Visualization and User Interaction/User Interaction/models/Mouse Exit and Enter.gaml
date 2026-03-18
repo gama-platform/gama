@@ -19,7 +19,7 @@ global {
 species eyes {
 	point look_at <- location;
 	
-	action follow {
+	action follow() {
 		float heading <- location towards #user_location;
 		look_at <- location + {5*cos(heading), 5*sin(heading)};
 	}

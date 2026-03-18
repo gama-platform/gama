@@ -35,7 +35,7 @@ global torus: torus_environment {
 	
 	//Initialization of the model by writing the description of the model in the console
 	init {
-		do description;
+		do description();
 	}
 	
 	//Ask at each life_cell to evolve and update
@@ -46,7 +46,7 @@ global torus: torus_environment {
 		}
 	}
 	//Write the description of the model in the console
-	action description {
+	action description() {
 		write 'Description:'  ;
 		write 'The Game of Life is a cellular automaton devised by the British mathematician John Horton Conway in 1970.';
 		write 'It is the best-known example of a cellular automaton.';
@@ -80,7 +80,7 @@ use_neighbors_cache: false parallel: parallel{
 	rgb color <- alive ? livingcolor : deadcolor;
 	
 	//Action to evolve the cell considering its neighbours
-	action evolve {
+	action evolve() {
 		//Count the number of living neighbours of the cells
 		int living <- neighbours count each.alive;
 		if alive {

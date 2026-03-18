@@ -63,11 +63,12 @@
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="S_Switch" eSuperTypes="#//Statement"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Return" eSuperTypes="#//Statement"/>
-  <eClassifiers xsi:type="ecore:EClass" name="S_Reflex" eSuperTypes="#//Statement #//VarDefinition"/>
-  <eClassifiers xsi:type="ecore:EClass" name="S_Definition" eSuperTypes="#//Statement #//ActionArguments #//ActionDefinition #//VarDefinition">
+  <eClassifiers xsi:type="ecore:EClass" name="S_Definition" eSuperTypes="#//Statement #//ActionDefinition #//VarDefinition">
     <eStructuralFeatures xsi:type="ecore:EReference" name="tkey" eType="#//Expression"
         containment="true"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="S_Callable" eSuperTypes="#//S_Definition #//ActionArguments"/>
+  <eClassifiers xsi:type="ecore:EClass" name="S_Reflex" eSuperTypes="#//Statement #//VarDefinition"/>
   <eClassifiers xsi:type="ecore:EClass" name="S_Assignment" eSuperTypes="#//Statement">
     <eStructuralFeatures xsi:type="ecore:EReference" name="value" eType="#//Expression"
         containment="true"/>
@@ -128,7 +129,8 @@
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="op" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="StringLiteral" eSuperTypes="#//TerminalExpression"/>
-  <eClassifiers xsi:type="ecore:EClass" name="S_Action" eSuperTypes="#//S_Definition"/>
+  <eClassifiers xsi:type="ecore:EClass" name="S_Method" eSuperTypes="#//S_Callable"/>
+  <eClassifiers xsi:type="ecore:EClass" name="S_Action" eSuperTypes="#//S_Callable"/>
   <eClassifiers xsi:type="ecore:EClass" name="BinaryOperator" eSuperTypes="#//Expression">
     <eStructuralFeatures xsi:type="ecore:EReference" name="left" eType="#//Expression"
         containment="true"/>

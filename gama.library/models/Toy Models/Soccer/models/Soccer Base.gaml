@@ -30,7 +30,7 @@ species soccer_game {
 		back_goal <- first(var_goal2);
 	}
 	
-	action reinit_phase {
+	action reinit_phase() {
 		// this action is called when a goal has been scored : the players are placed with their initial position, and the ball is reset to the center
 		ask players {
 			location <- init_pos;
@@ -117,7 +117,7 @@ species base_player skills:[moving] {
 	}
 	
 	// action to run to the ball
-	action run_to_ball {
+	action run_to_ball() {
 		point targetPos;
 		if (ball.ball_direction intersects circle(1)) {
 			targetPos <- ball.location;
@@ -129,12 +129,12 @@ species base_player skills:[moving] {
 	}
 	
 	// action to run to the ennemy goal
-	action run_to_ennemy_goal {
+	action run_to_ennemy_goal() {
 		do run_to( ennemy_goal.location );
 	}
 	
 	// action to run to its own goal
-	action run_to_own_goal {
+	action run_to_own_goal() {
 		do run_to( own_goal.location );
 	}
 	
@@ -146,7 +146,7 @@ species base_player skills:[moving] {
 	}
 	
 	// action ot shoot the ball to the ennemy goal
-	action shoot {
+	action shoot() {
 		do loose_ball;
 		ask ball {
 			do shooted speed_atr:3.0 target_position:myself.ennemy_goal.location;
@@ -175,7 +175,7 @@ species base_player skills:[moving] {
 	
 	// ACTION AUTOMATICALLY CALLED IN THE BASE CLASSE
 	// try to take the ball if it is close enough
-	action try_to_take_ball {
+	action try_to_take_ball() {
 		// if no player has the ball
 		if (!team.possess_ball and !ennemy_team.possess_ball) {
 			// if the player is the one called (result of a pass)
@@ -199,7 +199,7 @@ species base_player skills:[moving] {
 	}
 	
 	// action of taking the ball
-	action take_ball {
+	action take_ball() {
 		if (ennemy_team.possess_ball) {
 			ask ennemy_team.player_with_ball {
 				do loose_ball;
@@ -214,14 +214,14 @@ species base_player skills:[moving] {
 	}
 	
 	// action of loosing the ball
-	action loose_ball {
+	action loose_ball() {
 		possess_ball <- false;
 		team.player_with_ball <- nil;
 		team.possess_ball <- false;
 	}
 	
 	// apply the inertia
-	action apply_inertia {
+	action apply_inertia() {
 		point prev_pos <- location;
 		point inertia_vect <- {(location.x-previous_pos.x)*0.7,(location.y-previous_pos.y)*0.7};
 		float max_inertia <- current_speed;
@@ -289,14 +289,10 @@ species base_player skills:[moving] {
 	
 	// defensive behavior, need to be redefined in the strategy file.
 	// this action is called when the last player who was holding the ball was a player of the ennemy team
-	action defensive_behavior virtual:true {
-		
-	}
+	action defensive_behavior() virtual:true;
 	// defensive behavior, need to be redefined in the strategy file.
 	// this action is called when the last player who was holding the ball was a player of this team
-	action offensive_behavior virtual:true {
-		
-	}
+	action offensive_behavior() virtual:true;
 	
 	
 	// ASPECT ////////////////////////////////////////////////////////
@@ -407,10 +403,10 @@ species goal_keeper {
 		location <- {45,(position="front") ? 117 : 3};
 	}
 	
-	action offensive_behavior {
+	action offensive_behavior() {
 	}
 	
-	action defensive_behavior {
+	action defensive_behavior() {
 	}
 	
 	aspect goal_keeper {

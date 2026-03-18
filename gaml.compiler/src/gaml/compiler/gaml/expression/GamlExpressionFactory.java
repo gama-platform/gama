@@ -331,11 +331,11 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		switch (unit) {
 			case "zoom":
 				// Current zoom level of the display
-				return new CustomExpression<>(unit, 1d, doc,
+				return new CustomExpression<>(unit, Types.FLOAT, 1d, doc,
 						sc -> (sc.getGraphics() == null ? 1d : sc.getGraphics().getZoomLevel()));
 			case "fullscreen":
 				// Whether the display is in fullscreen mode
-				return new CustomExpression<>(unit, false, doc, sc -> {
+				return new CustomExpression<>(unit, Types.BOOL, false, doc, sc -> {
 					final IGraphics g = sc.getGraphics();
 					if (g == null) return false;
 					IDisplaySurface surface = g.getSurface();
@@ -348,7 +348,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				});
 			case "hidpi":
 				// Whether HiDPI/Retina display is active
-				return new CustomExpression<>(unit, false, doc, sc -> {
+				return new CustomExpression<>(unit, Types.BOOL, false, doc, sc -> {
 					final IGraphics g = sc.getGraphics();
 					if (g == null) return false;
 					IDisplaySurface surface = g.getSurface();
@@ -362,13 +362,13 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			case "pixels":
 			case "px":
 				// Pixel unit for display coordinates
-				return new CustomExpression<>(unit, 1d, doc, sc -> {
+				return new CustomExpression<>(unit, Types.FLOAT, 1d, doc, sc -> {
 					final IGraphics g = sc.getGraphics();
 					return g == null ? 1d : 1d / g.getAbsoluteRatioBetweenPixelsAndModelsUnits();
 				});
 			case "display_width":
 				// Width of the current display
-				return new CustomExpression<>(unit, 0d, doc, sc -> {
+				return new CustomExpression<>(unit, Types.FLOAT, 0d, doc, sc -> {
 					if (sc == null || !sc.isGraphics()) {
 						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
 						if (surface != null) return surface.getDisplayWidth();
@@ -379,10 +379,10 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				});
 			case "display_height":
 				// Height of the current display
-				return new CustomExpression<>(unit, 0d, doc, sc -> {
+				return new CustomExpression<>(unit, Types.FLOAT, 0d, doc, sc -> {
 					if (sc == null || !sc.isGraphics()) {
 						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
-						if (surface != null) return surface.getDisplayWidth();
+						if (surface != null) return surface.getDisplayHeight();
 						return 0d;
 					}
 					final IGraphics g = sc.getGraphics();
@@ -390,11 +390,11 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				});
 			case "now":
 				// Current simulation time
-				return new CustomExpression<>(unit, null, doc,
+				return new CustomExpression<>(unit, Types.DATE, null, doc,
 						sc -> GamaDateFactory.createFromTemporal(LocalDateTime.now()));
 			case "camera_location":
 				// 3D camera position in world coordinates
-				return new CustomExpression<>(unit, GamaPointFactory.create(), doc, sc -> {
+				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
 					if (sc == null || !sc.isGraphics()) {
 						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
 						if (surface != null) return surface.getData().getCameraPos().yNegated();
@@ -406,7 +406,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				});
 			case "camera_target":
 				// 3D camera target point
-				return new CustomExpression<>(unit, GamaPointFactory.create(), doc, sc -> {
+				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
 					if (sc == null || !sc.isGraphics()) {
 						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
 						if (surface != null) return surface.getData().getCameraPos().yNegated();
@@ -418,7 +418,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				});
 			case "camera_orientation":
 				// 3D camera orientation angles
-				return new CustomExpression<>(unit, GamaPointFactory.create(), doc, sc -> {
+				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
 					if (sc == null || !sc.isGraphics()) {
 						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
 						if (surface != null) return surface.getData().getCameraPos().yNegated();
@@ -431,15 +431,16 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			case "user_location":
 			case "user_location_in_world":
 				// Mouse cursor location in world coordinates
-				return new CustomExpression<>(unit, GamaPointFactory.create(), doc,
+				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc,
 						sc -> (sc == null ? GamaPointFactory.create() : sc.getGui().getMouseLocationInModel()));
 			case "user_location_in_display":
 				// Mouse cursor location in display coordinates
-				return new CustomExpression<>(unit, GamaPointFactory.create(), doc,
+				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc,
 						sc -> (sc == null ? GamaPointFactory.create() : sc.getGui().getMouseLocationInDisplay()));
 			case "current_error":
 				// Current error message if any
-				return new CustomExpression<>(unit, "", doc, sc -> (sc == null || sc.getCurrentError() == null ? "nil" : sc.getCurrentError().getMessage()));
+				return new CustomExpression<>(unit, Types.STRING, "", doc,
+						sc -> (sc == null || sc.getCurrentError() == null ? "nil" : sc.getCurrentError().getMessage()));
 
 		}
 		// Handle time units (ms, s, h, etc.)

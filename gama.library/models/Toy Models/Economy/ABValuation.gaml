@@ -75,7 +75,7 @@ global{
 		}		
 	}
 	
-	action create_firm {
+	action create_firm() {
 		if (firmDeleteMode=false) {
 			building toKill<- (building closest_to(#user_location));
 			reflexPause<-true;
@@ -217,7 +217,7 @@ species city {
 	float maxWage;
 	float maxSupportedDensity;
 	
-	action updateCityParams{
+	action updateCityParams(){
 		maxRent <- max(building collect each.rent);
 		maxDensity <- max(building collect each.density);
 		maxSupportedDensity <- max(building collect each.supportedDensity);
@@ -237,7 +237,7 @@ species firm{
 	float advertiseRatio;
 	rgb color;
 	
-	action advertise {
+	action advertise() {
 		int nEmployees <- int(advertiseRatio*length(worker where (each.skillType>=skillType)));
 		int i<-0;
 		loop while: (i<nEmployees) {
@@ -369,7 +369,7 @@ species worker {
 		return outValue; 
 	}
 	
-	action checkMyStuff {
+	action checkMyStuff() {
 		do checkSkillFirm;
 		if (myFirm=nil){
 			myFirm <- one_of(firm where (each.skillType=skillType));
@@ -379,20 +379,19 @@ species worker {
 		}
 	}
 	
-	action checkSkillFirm {
+	action checkSkillFirm (){
 		if (length(firm where (each.skillType<=skillType))=0) {
 			write "kill skilltype: "+skillType;
 			skillType<-1;
 		}
 	}
 	
-	action forceFirmUpdate {
-		firm newFirm;
-		newFirm <- one_of(firm where (each.skillType<=skillType and each!=myFirm));
+	action forceFirmUpdate() {
+		firm newFirm <- one_of(firm where (each.skillType<=skillType and each!=myFirm));
 		do attemptFirmUpdate(newFirm);
 	}
 	
-	action forceBuildingUpdate {
+	action forceBuildingUpdate (){
 		bool updateSuccess<-false;
 		building newBuilding;
 		

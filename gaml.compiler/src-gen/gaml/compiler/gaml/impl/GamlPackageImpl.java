@@ -36,6 +36,7 @@ import gaml.compiler.gaml.Pragma;
 import gaml.compiler.gaml.ReservedLiteral;
 import gaml.compiler.gaml.S_Action;
 import gaml.compiler.gaml.S_Assignment;
+import gaml.compiler.gaml.S_Callable;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Display;
 import gaml.compiler.gaml.S_Do;
@@ -44,6 +45,7 @@ import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_Global;
 import gaml.compiler.gaml.S_If;
 import gaml.compiler.gaml.S_Loop;
+import gaml.compiler.gaml.S_Method;
 import gaml.compiler.gaml.S_Reflex;
 import gaml.compiler.gaml.S_Return;
 import gaml.compiler.gaml.S_Solve;
@@ -223,14 +225,21 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass s_ReflexEClass = null;
+  private EClass s_DefinitionEClass = null;
 
   /**
    * <!-- begin-user-doc -->
    * <!-- end-user-doc -->
    * @generated
    */
-  private EClass s_DefinitionEClass = null;
+  private EClass s_CallableEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass s_ReflexEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -399,6 +408,13 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   private EClass stringLiteralEClass = null;
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  private EClass s_MethodEClass = null;
 
   /**
    * <!-- begin-user-doc -->
@@ -1008,17 +1024,6 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
    * @generated
    */
   @Override
-  public EClass getS_Reflex()
-  {
-    return s_ReflexEClass;
-  }
-
-  /**
-   * <!-- begin-user-doc -->
-   * <!-- end-user-doc -->
-   * @generated
-   */
-  @Override
   public EClass getS_Definition()
   {
     return s_DefinitionEClass;
@@ -1033,6 +1038,28 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EReference getS_Definition_Tkey()
   {
     return (EReference)s_DefinitionEClass.getEStructuralFeatures().get(0);
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getS_Callable()
+  {
+    return s_CallableEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getS_Reflex()
+  {
+    return s_ReflexEClass;
   }
 
   /**
@@ -1462,6 +1489,17 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
   public EClass getStringLiteral()
   {
     return stringLiteralEClass;
+  }
+
+  /**
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @generated
+   */
+  @Override
+  public EClass getS_Method()
+  {
+    return s_MethodEClass;
   }
 
   /**
@@ -2112,10 +2150,12 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     s_ReturnEClass = createEClass(SRETURN);
 
-    s_ReflexEClass = createEClass(SREFLEX);
-
     s_DefinitionEClass = createEClass(SDEFINITION);
     createEReference(s_DefinitionEClass, SDEFINITION__TKEY);
+
+    s_CallableEClass = createEClass(SCALLABLE);
+
+    s_ReflexEClass = createEClass(SREFLEX);
 
     s_AssignmentEClass = createEClass(SASSIGNMENT);
     createEReference(s_AssignmentEClass, SASSIGNMENT__VALUE);
@@ -2179,6 +2219,8 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     createEAttribute(terminalExpressionEClass, TERMINAL_EXPRESSION__OP);
 
     stringLiteralEClass = createEClass(STRING_LITERAL);
+
+    s_MethodEClass = createEClass(SMETHOD);
 
     s_ActionEClass = createEClass(SACTION);
 
@@ -2305,12 +2347,13 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     s_TryEClass.getESuperTypes().add(this.getStatement());
     s_SwitchEClass.getESuperTypes().add(this.getStatement());
     s_ReturnEClass.getESuperTypes().add(this.getStatement());
-    s_ReflexEClass.getESuperTypes().add(this.getStatement());
-    s_ReflexEClass.getESuperTypes().add(this.getVarDefinition());
     s_DefinitionEClass.getESuperTypes().add(this.getStatement());
-    s_DefinitionEClass.getESuperTypes().add(this.getActionArguments());
     s_DefinitionEClass.getESuperTypes().add(this.getActionDefinition());
     s_DefinitionEClass.getESuperTypes().add(this.getVarDefinition());
+    s_CallableEClass.getESuperTypes().add(this.getS_Definition());
+    s_CallableEClass.getESuperTypes().add(this.getActionArguments());
+    s_ReflexEClass.getESuperTypes().add(this.getStatement());
+    s_ReflexEClass.getESuperTypes().add(this.getVarDefinition());
     s_AssignmentEClass.getESuperTypes().add(this.getStatement());
     s_EquationsEClass.getESuperTypes().add(this.getStatement());
     s_EquationsEClass.getESuperTypes().add(this.getEquationDefinition());
@@ -2333,7 +2376,8 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     equationFakeDefinitionEClass.getESuperTypes().add(this.getEquationDefinition());
     terminalExpressionEClass.getESuperTypes().add(this.getExpression());
     stringLiteralEClass.getESuperTypes().add(this.getTerminalExpression());
-    s_ActionEClass.getESuperTypes().add(this.getS_Definition());
+    s_MethodEClass.getESuperTypes().add(this.getS_Callable());
+    s_ActionEClass.getESuperTypes().add(this.getS_Callable());
     binaryOperatorEClass.getESuperTypes().add(this.getExpression());
     ifEClass.getESuperTypes().add(this.getExpression());
     unitEClass.getESuperTypes().add(this.getExpression());
@@ -2410,10 +2454,12 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
 
     initEClass(s_ReturnEClass, S_Return.class, "S_Return", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
-    initEClass(s_ReflexEClass, S_Reflex.class, "S_Reflex", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-
     initEClass(s_DefinitionEClass, S_Definition.class, "S_Definition", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getS_Definition_Tkey(), this.getExpression(), null, "tkey", null, 0, 1, S_Definition.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+
+    initEClass(s_CallableEClass, S_Callable.class, "S_Callable", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(s_ReflexEClass, S_Reflex.class, "S_Reflex", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_AssignmentEClass, S_Assignment.class, "S_Assignment", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
     initEReference(getS_Assignment_Value(), this.getExpression(), null, "value", null, 0, 1, S_Assignment.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, !IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -2477,6 +2523,8 @@ public class GamlPackageImpl extends EPackageImpl implements GamlPackage
     initEAttribute(getTerminalExpression_Op(), ecorePackage.getEString(), "op", null, 0, 1, TerminalExpression.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
     initEClass(stringLiteralEClass, StringLiteral.class, "StringLiteral", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+    initEClass(s_MethodEClass, S_Method.class, "S_Method", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
     initEClass(s_ActionEClass, S_Action.class, "S_Action", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 

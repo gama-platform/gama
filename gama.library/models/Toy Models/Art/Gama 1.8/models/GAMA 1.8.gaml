@@ -49,7 +49,7 @@ global control: fsm {
 		runners <- list(runner);
 	}
 
-	action one_step {
+	action one_step() {
 		ask runners {
 			do goto target: target speed: 2 * size / #s;
 		}

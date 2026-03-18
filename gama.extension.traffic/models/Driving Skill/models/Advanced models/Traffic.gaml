@@ -32,7 +32,7 @@ species intersection skills: [intersection_skill] {
 	bool is_green;
 	rgb color_fire;
 
-	action initialize {
+	action initialize() {
 		if (is_traffic_signal) {
 			do compute_crossing;
 			stop << [];
@@ -44,7 +44,7 @@ species intersection skills: [intersection_skill] {
 		}
 	}
 
-	action compute_crossing {
+	action compute_crossing() {
 		if (length(roads_in) >= 2) {
 			road rd0 <- road(roads_in[0]);
 			list<point> pts <- rd0.shape.points;
@@ -66,13 +66,13 @@ species intersection skills: [intersection_skill] {
 		}
 	}
 
-	action to_green {
+	action to_green() {
 		stop[0] <- ways2;
 		color_fire <- #green;
 		is_green <- true;
 	}
 
-	action to_red {
+	action to_red() {
 		stop[0] <- ways1;
 		color_fire <- #red;
 		is_green <- false;
@@ -103,7 +103,7 @@ species base_vehicle skills: [driving] {
 	rgb color <- rnd_color(255);
 	graph road_graph;
 	
-	point compute_position {
+	point compute_position() {
 		// Shifts the position of the vehicle perpendicularly to the road,
 		// in order to visualize different lanes
 		if (current_road != nil) {

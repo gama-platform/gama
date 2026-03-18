@@ -83,7 +83,7 @@ global{
 		block_size <- min([first(cell).shape.width,first(cell).shape.height]);
 	}
 	
-	action update_graphs {
+	action update_graphs() {
 		loop mode over: ["walk", "mobility1", "mobility2"] {
 			graph_per_mode[mode] <- directed(as_edge_graph(road where (mode in each.allowed_mobility)));
 		}
@@ -130,7 +130,7 @@ global{
 		}		
 	}
 		
-	action manage_road{
+	action manage_road() {
 		road selected_road <- first(road overlapping (circle(sqrt(shape.area)/100.0) at_location #user_location));
 		if (selected_road != nil) {
 			bool with_mobility1 <- "mobility1" in selected_road.allowed_mobility;
@@ -179,7 +179,7 @@ global{
 		}
 	} 
 	
-   action randomGrid{
+   action randomGrid() {
    	int id;
    	loop i from: 0 to: 5 {
 		loop j from: 0 to: 5 {
@@ -240,7 +240,7 @@ species building {
 		}
 	}
 	
-	action remove {
+	action remove() {
 		if (type = "office") {
 			offices[] >- self;
 			ask people {
@@ -255,7 +255,7 @@ species building {
 		do die;
 		
 	}
-	action define_color {
+	action define_color() {
 		color <- color_per_id[type+size];
 	}
 	aspect default {
@@ -322,7 +322,7 @@ species people skills: [moving]{
 	float max_dist_walk <- 1000.0;
 	float max_dist_mobility2 <- 3000.0;
 	float max_dist_mobility3 <- 5000.0;
-	action choose_mobility {
+	action choose_mobility() {
 		if (origin != nil and dest != nil) {
 			float dist <- manhattan_distance(origin.location, dest.location);
 			if (dist <= max_dist_walk ) {
@@ -350,29 +350,29 @@ species people skills: [moving]{
 						heading_index <- 1;
 					}
 	}
-	action reinit_destination {
+	action reinit_destination() {
 		dest <- empty(offices) ? nil : offices.keys[rnd_choice(offices.values)];
 		target <- nil;
 	}
 	
-	action mobility {
+	action mobility() {
 		do unregister;
 		do goto target: target on: graph_per_mode[(mobility_mode = "mobility3") ? "mobility2" : mobility_mode] recompute_path: false ;
 		do register;
 	}
-	action update_target {
+	action update_target() {
 		if (to_destination) {target <- any_location_in(dest);}//centroid(dest);}
 		else {target <- any_location_in(origin);}//centroid(origin);}
 		do choose_mobility;
 		do mobility;
 	}
 	
-	action register {
+	action register() {
 		if ((mobility_mode = "mobility1") and current_edge != nil) {
 			road(current_edge).nb_people <- road(current_edge).nb_people + 1;
 		}
 	}
-	action unregister {
+	action unregister() {
 		if ((mobility_mode = "mobility1") and current_edge != nil) {
 			road(current_edge).nb_people <- road(current_edge).nb_people - 1;
 		}
@@ -439,7 +439,7 @@ grid cell width: grid_width height: grid_height {
 			}
 		}
 	}
-	action erase_building {
+	action erase_building() {
 		if (my_building != nil) {ask my_building {do remove;}}
 	}
 	

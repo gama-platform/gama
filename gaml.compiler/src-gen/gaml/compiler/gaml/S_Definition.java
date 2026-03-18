@@ -20,7 +20,7 @@ package gaml.compiler.gaml;
  * @model
  * @generated
  */
-public interface S_Definition extends Statement, ActionArguments, ActionDefinition, VarDefinition
+public interface S_Definition extends Statement, ActionDefinition, VarDefinition
 {
   /**
    * Returns the value of the '<em><b>Tkey</b></em>' containment reference.

@@ -102,7 +102,7 @@ global {
 		create macroGraph;
 	 }
 	 //Action to initialize the interaction Matrix according to the number of type of classes
-	 action InitInteractionMatrix{
+	 action InitInteractionMatrix(){
 		 loop i from:0 to:nbTypeOfClass-1{
 				interactionMatrix[i] <- 0 as_matrix({nbValuePerClass,nbValuePerClass});
  		  }	
@@ -176,7 +176,7 @@ species macroNode{
 		do updatemyNodes;
 	}
 	//For each classes, find all the nodes with the same classes
-	action updatemyNodes{
+	action updatemyNodes(){
 		loop i from:0 to: nbTypeOfClass-1{			
 			nbAggregatedNodes[i]<-0;
 			ask node_agent as list{
@@ -200,7 +200,7 @@ species macroNode{
 	}
 	
 	//This action only works when having nbTypeOfClass=1
-	action removeMicroNode{
+	action removeMicroNode(){
 		ask node_agent as list{
 			  if	(classVector[0] = myself.my_class) {
 			      do die;
@@ -230,7 +230,7 @@ species macroEdge  {
 	}
 	
 	//Action to remove a micro edge
-	action removeMicroEdge{
+	action removeMicroEdge(){
 		ask edge_agent as list{
 			  if	((self.src.classVector[0] =  myself.src.my_class) and (self.dest.classVector[0] =  myself.dest.my_class)) {
 			      do die;

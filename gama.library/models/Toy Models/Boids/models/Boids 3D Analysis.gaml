@@ -160,7 +160,7 @@ species flock {
 		list<boids> others -> ((boids_delegation overlapping (shape + range))) - self;
 
 		//Action to compute the mass center of the flock
-		action compute_mass_center type: point {
+		point compute_mass_center() {
 			loop o over: others {
 				if dead(o) {
 					write 'in ' + name + ' agent with others contains death agents';
@@ -293,13 +293,13 @@ species boids skills: [moving] {
 		point acc <- {0, 0};
 		list<obstacle> nearby_obstacles <- (obstacle overlapping (circle(range)));
 		loop obs over: nearby_obstacles {
-			acc <- acc - ((location of obs) - my (location));
+			acc <- acc - ((location of obs) - (location));
 		}
 
 		velocity <- velocity + acc;
 	}
 	//action to represent the bounding of the movement of the boids
-	action bounding {
+	action bounding() {
 		if !(torus_environment) {
 			if (location.x) < xmin {
 				velocity <- velocity + {bounds, 0};
@@ -325,7 +325,7 @@ species boids skills: [moving] {
 		velocity <- velocity + wind_vector;
 	}
 	//action to move  
-	action do_move {
+	action do_move() {
 		if (((velocity.x) as int) = 0) and (((velocity.y) as int) = 0) {
 			velocity <- {(rnd(4)) - 2, (rnd(4)) - 2};
 		}

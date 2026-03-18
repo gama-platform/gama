@@ -36,7 +36,7 @@ global {
 	tetrimino initial;
 	int next_te <- rnd(6);
 	
-	action reload {
+	action reload (){
 		ask agents - cell - world{
 					do die;
 				}
@@ -47,7 +47,7 @@ global {
 	
 	
 	
-	action do_init {
+	action do_init (){
 		do create_tetri;
 		initial <- tetrimino(0);
 		
@@ -169,7 +169,7 @@ global {
 			
 		}
 	}
-	action pause_action {
+	action pause_action() {
 		ask tetrimino {
 			is_active <- false;
 			do die;
@@ -177,7 +177,7 @@ global {
 		do pause;
 	}
 	
-	action create_tetri{
+	action create_tetri(){
 		int j <- rnd(6);
 		stats[next_te] <- stats[next_te] + 1;
 		create tetrimino {
@@ -307,7 +307,7 @@ species tetrimino {
 	
 	
 	
-	action stop {
+	action stop() {
 		ask fixed[0] {
 			
 			
@@ -393,7 +393,7 @@ species tetrimino {
 		do kill_reflex;
 	}
 	
-	action kill_reflex {
+	action kill_reflex() {
 		
 			bool intersec <- false;
 			loop p over: last(fixed).fixed_cells.keys collect each.location {

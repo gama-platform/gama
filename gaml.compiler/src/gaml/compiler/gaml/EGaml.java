@@ -137,6 +137,7 @@ public class EGaml {
 				String s = r.getName();
 				yield s == null ? IKeyword.INTERNAL + getKeyOf(r) + COUNTER.COUNT() : s;
 			}
+			case Statement s when IKeyword.METHOD.equals(s.getKey()) -> getNameOf(s.getExpr());
 			case GamlDefinition g -> g.getName();
 			case Function f -> getNameOf(f.getLeft());
 			case S_Display d -> d.getName();
@@ -193,6 +194,16 @@ public class EGaml {
 		} else if (s instanceof StandaloneExperimentImpl sei && sei.eIsSet(GamlPackage.STANDALONE_EXPERIMENT__FACETS))
 			return sei.getFacets();
 		return EMPTY_FACET_LIST;
+	}
+
+	/**
+	 * @param stm
+	 * @return
+	 */
+	public boolean hasFacets(final EObject s) {
+		if (s instanceof StatementImpl si) return si.eIsSet(GamlPackage.STATEMENT__FACETS);
+		if (s instanceof StandaloneExperimentImpl sei) return sei.eIsSet(GamlPackage.STANDALONE_EXPERIMENT__FACETS);
+		return false;
 	}
 
 	/**

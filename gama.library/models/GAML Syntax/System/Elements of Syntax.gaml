@@ -46,7 +46,7 @@ global skills: [moving] control: fsm {
 	int b1 ->  100 + length(a1) ;
 	int b2 ->  100 + length(a1) ;
 	// ... or using a block (like a statement -- note the absence of semi-column at the end)
-	int b3 {
+	int b3() {
 		return 100 + length(a1);
 	}
 	state first_state initial: true {
@@ -58,7 +58,7 @@ global skills: [moving] control: fsm {
 	}
 	
 
-	/**
+	/** 
 	 * UNITS
 	 */
 // The usage of units is improved and they can be combined
@@ -93,7 +93,7 @@ global skills: [moving] control: fsm {
 	}
 
 	// An action that returns nothing can still be called "action"
-	action dummy_void {
+	action dummy_void() {
 		write "dummy_void";
 	}
 
@@ -194,10 +194,11 @@ global skills: [moving] control: fsm {
 	reflex calling_actions {
 	// IN IMPERATIVE MODE (i.e. in a statement)
 	// The classic way
-		do dummy1 with: (a:10, b:100.0);
+		//do dummy1 with: (a:10, b:100.0);
 
 		// Another by distributing the arguments
-		do dummy1 a: 10 b: 100.0;
+		do dummy1 (a: 10, b: 100.0);
+		self.dummy1(a:10,b:1000);
 
 		// The new alternative one 
 		do dummy1(a: 10, b: 100.0);
@@ -314,7 +315,7 @@ species species1 mirrors: species0 skills: [moving] {
 	point location update: target.location + { 10, 10 };
 	float speed1 update: self.compute_speed_using_an_action(); // No parameter as "max" is defaulted
 	float speed2 update: compute_speed_using_a_functional_attribute;
-	float compute_speed_using_a_functional_attribute {
+	float compute_speed_using_a_functional_attribute() {
 		return speed of target;
 	}
 	float compute_speed_using_an_action (int max <- 100) {

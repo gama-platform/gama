@@ -16,8 +16,7 @@ global {
 	int map_zoom <- 8 max: 20 min: 0;
 	point map_size <-{600,600};
 
-	action load_map
-	{ 
+	action load_map() { 
 		string zoom_request <- "zoom=" + map_zoom;
 		string center_request <- "locations=" + map_center;
 		string size_request <- "size=" + int(map_size.x) + "," + int(map_size.y) + "@2x";

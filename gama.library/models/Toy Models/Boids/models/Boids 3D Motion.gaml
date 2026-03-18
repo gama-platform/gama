@@ -107,7 +107,7 @@ species boids skills: [moving3D] {
 		velocity <- velocity + acc; 
 	}
 	//Action to make the agent location within the environment
-	action bounding {
+	action bounding() {
 		if (location.z) < 0 {
 			location <- {location.x,location.y,0};
 		} else if (location.z) > z_max {
@@ -123,7 +123,7 @@ species boids skills: [moving3D] {
 		velocity <- velocity + wind_vector;
 	}
 	//Action to make the agent moving
-	action do_move {  
+	action do_move() {  
 		if (((velocity.x) as int) = 0) and (((velocity.y) as int) = 0) and (((velocity.z) as int) = 0) {
 			velocity <- {(rnd(4)) -2, (rnd(4)) - 2,  ((rnd(4)) - 2)} ; 
 		}
@@ -133,8 +133,8 @@ species boids skills: [moving3D] {
 	}
 	//Reflex to move the agent, calling both bounding and do_move action
 	reflex movement {
-		do bounding;
-		do do_move;
+		do bounding();
+		do do_move();
 	}
 	
 	aspect sphere {

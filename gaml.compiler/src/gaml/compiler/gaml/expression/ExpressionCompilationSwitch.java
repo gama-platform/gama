@@ -17,8 +17,6 @@ import static gama.annotations.constants.IKeyword.EACH;
 import static gama.annotations.constants.IKeyword.EXPERIMENT;
 import static gama.annotations.constants.IKeyword.IS;
 import static gama.annotations.constants.IKeyword.IS_SKILL;
-import static gama.annotations.constants.IKeyword.MY;
-import static gama.annotations.constants.IKeyword.MYSELF;
 import static gama.annotations.constants.IKeyword.NULL;
 import static gama.annotations.constants.IKeyword.OF;
 import static gama.annotations.constants.IKeyword.POINT;
@@ -67,6 +65,7 @@ import gama.api.gaml.types.ParametricType;
 import gama.api.gaml.types.Signature;
 import gama.api.gaml.types.Types;
 import gama.api.utils.collections.Collector;
+import gama.dev.DEBUG;
 import gaml.compiler.gaml.Access;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.Array;
@@ -188,9 +187,6 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		final IExpression expr = compile(e);
 		if (expr == null) return null;
 
-		// Handle special 'my' operator
-		if (MY.equals(op)) return handleMyOperator(e, expr);
-
 		// The unary "unit" operator should let the value of its child pass through
 		if ("#".equals(op)) return expr;
 
@@ -208,20 +204,6 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		}
 
 		return FACTORY.createOperator(op, context.getContext(), e, expr);
-	}
-
-	/**
-	 * Handles the special 'my' operator for remote context access.
-	 */
-	private IExpression handleMyOperator(final Expression e, final IExpression expr) {
-		final IVarDescriptionProvider desc = context.getContext().getDescriptionDeclaringVar(MYSELF);
-		if (desc instanceof IDescription) {
-			final IExpression myself = desc.getVarExpr(MYSELF, false);
-			final IDescription species = myself.getGamlType().getSpecies();
-			final IExpression var = species.getVarExpr(EGAML.getKeyOf(e), true);
-			return FACTORY.createOperator(_DOT, (IDescription) desc, e, myself, var);
-		}
-		return expr;
 	}
 
 	/**
@@ -1259,6 +1241,13 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 * Handles compilation of variable references by name.
 	 */
 	private IExpression caseVar(final String varName, final EObject object) {
+
+		if ("my_elector".equals(varName)) {
+
+			DEBUG.OUT("");
+
+		}
+
 		if (varName == null) {
 			context.getContext().error("Unknown variable", IGamlIssue.UNKNOWN_VAR, object);
 			return null;
@@ -1429,7 +1418,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	private IExpression returnSelfOrSuper(final String name, final EObject object, final boolean isSuper) {
 		final ITypeDescription sd = context.getContext().getTypeContext();
 		if (sd == null) {
-			context.getContext().error("Unable to determine the species of " + name, IGamlIssue.GENERAL, object);
+			context.getContext().error("Unable to determine the species or class of " + name, IGamlIssue.GENERAL,
+					object);
 			return null;
 		}
 		IType type = isSuper ? sd.getParent().getGamlType() : sd.getGamlType();

@@ -63,7 +63,7 @@ global
 		do normalize_distances;
 	}
 	//Action to normalize the distance
-	action normalize_distances {
+	action normalize_distances() {
 		//Maximum distance from the road of all the plots
 		float max_road_dist <- empty_plots max_of each.dist_route;
 		//Maximum distance from the city center for all the plots
@@ -102,7 +102,7 @@ species roads
 {
 	float dist_cv;
 	//Action to compute the city center distance for the road
-	action compute_cc_dist {
+	action compute_cc_dist() {
 		using topology(roads_network)
 		{
 			dist_cv <- self distance_to first(city_center);
@@ -124,15 +124,13 @@ grid plot file: asc_grid use_individual_shapes: false use_regular_agents: false 
 	float constructability;
 	
 	//Action to compute all the distances for the cell
-	action compute_distances
-	{
+	action compute_distances() {
 		roads route_pp <- roads closest_to self;
 		dist_route <- (self distance_to route_pp) using topology(world);
 		dist_cv <- dist_route + route_pp.dist_cv;
 	}
 	//Action to build on the cell
-	action build
-	{
+	action build() {
 		grid_value <- 1.0;
 		color <- plot_colors[1];
 	}

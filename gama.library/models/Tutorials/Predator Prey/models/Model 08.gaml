@@ -71,11 +71,11 @@ species generic_species {
 		energy <- energy / nb_offsprings;
 	}
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		return 0.0;
 	}
 
-	vegetation_cell choose_cell {
+	vegetation_cell choose_cell() {
 		return nil;
 	}
 

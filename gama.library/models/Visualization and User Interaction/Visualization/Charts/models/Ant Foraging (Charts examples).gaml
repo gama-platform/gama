@@ -62,18 +62,18 @@ species ant skills: [moving] control: fsm {
       ant_grid(location).road <- ant_grid(location).road + 100.0;
    }
    //Action to pick food
-	action pick {
+	action pick() {
 		hasFood <- true ;
 		place.food <- place.food - 1 ;
 	}
 	//Action to drop food
-	action drop {
+	action drop() {
 		food_gathered <- food_gathered + 1 ;
 		hasFood <- false ;
 		heading <- heading - 180 ;
 	}
 	//Action to chose the best place according to the possible food in the neighbour cells
-	action choose_best_place type: ant_grid {
+	ant_grid choose_best_place () {
 		list<ant_grid> list_places <- place.neighbors ;
 		if (list_places count (each.food > 0)) > 0  {
 			return (list_places first_with (each.food > 0)) ;

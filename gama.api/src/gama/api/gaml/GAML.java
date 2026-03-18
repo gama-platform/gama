@@ -9,7 +9,6 @@
  ********************************************************************************************************/
 package gama.api.gaml;
 
-import static gama.annotations.constants.IKeyword.MY;
 import static gama.api.utils.JavaUtils.collectImplementationClasses;
 
 import java.io.File;
@@ -111,11 +110,6 @@ public class GAML {
 	 * </p>
 	 */
 	private static final Map<String, Map<Signature, IArtefact.Operator>> OPERATORS = new ConcurrentHashMap<>();
-
-	static {
-		// Trick to accept "my" as an operator
-		OPERATORS.put(MY, Collections.emptyMap());
-	}
 
 	/**
 	 * Thread-safe set of all registered iterator names in GAML.
@@ -723,7 +717,7 @@ public class GAML {
 	 * @return true, if is a declaration
 	 */
 	public static boolean isADeclaration(final String name) {
-		return !isAStatement(name);
+		return IKeyword.ACTION.equals(name) || !isAStatement(name);
 	}
 
 	/**

@@ -33,7 +33,7 @@ global {
 }
 
 species people {
-	action get_closest_people {
+	action get_closest_people (){
 		people neigh <- people closest_to self;
 	} 
 }

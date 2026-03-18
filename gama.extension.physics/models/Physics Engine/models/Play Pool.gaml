@@ -96,7 +96,7 @@ global parent: physical_world {
 
 	}
 	
-	action create_white_ball {
+	action create_white_ball() {
 		create ball {
 			location <- {width / 2, 4 * height / 5, 0};
 			white <- self;
@@ -171,7 +171,7 @@ experiment "Play !" type: gui autorun: true   {
 	// Ensure that the simulation does not go too fast
 	float minimum_cycle_duration <- 1.0/120;
 	
-	action _init_ {
+	action _init_() {
 		// A trick to make sure the parameters are expanded and visible when the simulation is launched.
 		bool previous <- gama.pref_experiment_expand_params;
 		gama.pref_experiment_expand_params <- true;

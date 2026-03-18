@@ -198,7 +198,7 @@ species group {
 	agent target update: get_nearer_target();
 
 	//Function to return the closest ball or small group of balls that the agent could capture
-	agent get_nearer_target {
+	agent get_nearer_target() {
 		int size <- length(members);
 		ball nearest_free_ball <- (ball where ((each.state = 'follow_nearest_ball'))) closest_to self;
 		group nearest_smaller_group <- ((group - self) where ((length(each.members)) < size)) closest_to self;
@@ -212,7 +212,7 @@ species group {
 	}
 
 	//Action to use when the group of balls explode
-	action separate_components {
+	action separate_components() {
 		loop com over: (list(ball_in_group)) {
 			list<ball_in_group> nearby_balls <- ((ball_in_group overlapping (com.shape + ball_separation)) - com) where (each in members);
 			float repulsive_dx <- 0.0;
@@ -254,12 +254,12 @@ species group {
 	}
 
 	//Action to do when the group is disaggregated
-	action disaggregate {
+	action disaggregate() {
 		release list<agent>(members) as: ball in: world {
 			state <- 'chaos';
 		}
 
-		do die;
+		do die();
 	}
 
 	//Reflex to merge the group close to the agent when the cycle is in the frequency of merging
@@ -272,12 +272,12 @@ species group {
 					release list(ball_in_group) as: ball in: world {
 						released_balls << self;
 					}
-					do die;
+					do die();
 				}
 				capture released_balls as: ball_in_group;
 			} else {
 				ask target as group {
-					do disaggregate;
+					do disaggregate();
 				}
 
 			}
@@ -483,7 +483,7 @@ experiment group_experiment type: gui {
 			species group aspect: default transparency: 0.5 {
 				species ball_in_group;
 			}
-
+ 
 		}
  
 		display 'Ball display' {
@@ -495,7 +495,7 @@ experiment group_experiment type: gui {
 			species group_agents_viewer; 
 		}
 
-	}
+	} 
 
 }
 
@@ -514,7 +514,7 @@ experiment cloud_experiment type: gui {
 				species group_delegation transparency: 0.9 {
 					species ball_in_cloud;
 					species ball_in_group;
-				}
+				} 
 
 			}
 

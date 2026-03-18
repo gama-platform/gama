@@ -24,7 +24,7 @@ global
 		do update_chart();
 	}
 
-	action update_chart
+	action update_chart()
 	{
 		myldata <- [];
 		mylldata <- [];

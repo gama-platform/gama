@@ -21,7 +21,7 @@ global{
 
 	}
 
-	action create_server {
+	action create_server() {
 		create Server number: 2 {
 			do connect protocol: "websocket_server" port: 3001 with_name:name force_network_use:true;
 			do join_group with_name: "server_group";
@@ -35,7 +35,7 @@ global{
 
 	}
 
-	action create_client {
+	action create_client() {
 		create Client number: 2 {
 		// replace the "localhost" address by the IP address of the other computer 
 			do connect to: "localhost" protocol: "websocket_client" port: 3001 with_name: name  force_network_use:true;

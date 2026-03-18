@@ -127,7 +127,7 @@ experiment "Test Restitution !" type: gui {
 
 	}
 	
-	action _init_ {
+	action _init_() {
 		bool prev0 <- gama.pref_experiment_expand_params;
 		bool prev1 <- gama.pref_append_simulation_name;
  		gama.pref_append_simulation_name <- true;
