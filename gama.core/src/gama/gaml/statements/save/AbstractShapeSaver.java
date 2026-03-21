@@ -93,7 +93,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
 			throws GamaRuntimeException {
-		save(scope, item, file, saveOptions.code, saveOptions.attributesToSave);
+		save(scope, item, file, saveOptions.code(), saveOptions.attributesToSave());
 	}
 
 	/**

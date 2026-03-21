@@ -15,7 +15,6 @@ import java.util.Set;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.files.SaveOptions;
-import gama.api.utils.files.BufferingUtils.BufferingStrategies;
 import gama.core.util.file.GamaKmlExport;
 
 /**
@@ -40,7 +39,7 @@ public class KmlSaver extends AbstractSaver {
 		final Object kml = item.value(scope);
 		String path = file.getAbsolutePath();
 		if (!(kml instanceof GamaKmlExport export)) return;
-		if ("kml".equals(options.type)) {
+		if ("kml".equals(options.type())) {
 			export.saveAsKml(scope, path);
 		} else {
 			export.saveAsKmz(scope, path);

@@ -26,10 +26,10 @@ import gama.api.utils.json.IJsonValue;
 public class CommandResponse extends GamaServerMessage {
 
 	/** The command parameters. */
-	public final Map<String, Object> commandParameters;
+	private final Map<String, Object> commandParameters;
 
 	/** The is json. */
-	protected boolean isJson = false;
+	private final boolean isJson;
 
 	/**
 	 * Instantiates a new command response.

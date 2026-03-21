@@ -62,7 +62,7 @@ public class ImageSaver extends AbstractSaver {
 			throws IOException {
 		File f = file;
 		String path = f.getAbsolutePath();
-		String t = "image".equals(options.type) ? "png" : "jpeg".equals(options.type) ? "jpg" : options.type;
+		String t = "image".equals(options.type()) ? "png" : "jpeg".equals(options.type()) ? "jpg" : options.type();
 		if ("image".equals(t)) { t = "png"; }
 		if ("jpeg".equals(t)) { t = "jpg"; }
 		if (!path.contains("." + t)) {

@@ -216,23 +216,23 @@ public class BufferingUtils {
 	public synchronized boolean askWriteFile(final String fileId, final IScope scope, final CharSequence content,
 			final SaveOptions options) {
 		IAgent owner = scope.getSimulation();
-		switch (options.bufferingStrategy) {
+		switch (options.bufferingStrategy()) {
 			case PER_AGENT, PER_SIMULATION_BUFFERING:
 				// in case it's per agent we just switch the owner to the calling agent
 				// instead of the whole simulation
-				if (options.bufferingStrategy == BufferingStrategies.PER_AGENT) { owner = scope.getAgent(); }
+				if (options.bufferingStrategy() == BufferingStrategies.PER_AGENT) { owner = scope.getAgent(); }
 				return appendSaveFileRequestToMap(owner, getOrInitBufferingMap(fileId, fileBufferPerAgent), content,
 						options);
 			case PER_CYCLE_BUFFERING:
 				return appendSaveFileRequestToMap(owner, getOrInitBufferingMap(fileId, fileBufferPerAgentForCycles),
 						content, options);
 			case NO_BUFFERING:
-				return directWriteFile(fileId, content, options.getCharset(), !options.rewrite);
+				return directWriteFile(fileId, content, options.writeCharset(), !options.rewrite());
 			default:
 				IScope ownerScope = owner.getScope();
 				throw GamaRuntimeException.create(
 						new UnsupportedOperationException("This buffering strategie has not been implemented yet: "
-								+ options.bufferingStrategy.toString()),
+								+ options.bufferingStrategy().toString()),
 						ownerScope);
 		}
 	}
@@ -321,7 +321,7 @@ public class BufferingUtils {
 		TextBuffer request = bufferingMap.get(owner);
 		if (request == null) {
 			try {
-				bufferingMap.put(owner, new TextBuffer(content, options.getCharset(), options.rewrite));
+				bufferingMap.put(owner, new TextBuffer(content, options.writeCharset(), options.rewrite()));
 				return true;
 			} catch (Exception ex) {
 				GAMA.reportError(owner.getScope(), GamaRuntimeException.create(ex, owner.getScope()), false);
@@ -329,7 +329,7 @@ public class BufferingUtils {
 			}
 		}
 		// If we are not in append mode, we empty the buffer
-		if (options.rewrite) {
+		if (options.rewrite()) {
 			request.setRewrite(true);
 			request.content.setLength(0);
 		}

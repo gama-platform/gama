@@ -10,7 +10,6 @@
 package gama.gaml.statements.save;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
@@ -61,10 +60,8 @@ public class TextSaver extends AbstractSaver {
 		Charset ch = id == ISerialisationConstants.GAMA_AGENT_IDENTIFIER
 				|| id == ISerialisationConstants.GAMA_OBJECT_IDENTIFIER
 						? ISerialisationConstants.STRING_BYTE_ARRAY_CHARSET : StandardCharsets.UTF_8;
-		options.setCharSet(ch);
-
 		try {
-			BufferingUtils.getInstance().askWriteFile(file.getAbsolutePath(), scope, toSave, options);
+			BufferingUtils.getInstance().askWriteFile(file.getAbsolutePath(), scope, toSave, options.withCharset(ch));
 		} catch (final GamaRuntimeException e) {
 			throw e;
 		} catch (final Exception e) {

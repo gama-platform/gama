@@ -10,7 +10,6 @@
 package gama.gaml.statements.save;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
@@ -45,11 +44,11 @@ public class GraphSaver extends AbstractSaver {
 	@Override
 	@SuppressWarnings ("unchecked")
 	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions) {
-		GraphExporter<?, ?> exp = GraphExporters.getGraphWriter(saveOptions.type);
+		GraphExporter<?, ?> exp = GraphExporters.getGraphWriter(saveOptions.type());
 		final var g = GamaGraphFactory.castToGraph(scope, item, null, false);
 		if (g != null) {
 			if (exp == null)
-				throw GamaRuntimeException.error("Format is not recognized ('" + saveOptions.type + "')", scope);
+				throw GamaRuntimeException.error("Format is not recognized ('" + saveOptions.type() + "')", scope);
 			exp.exportGraph(g, file.getAbsoluteFile());
 		}
 	}

@@ -95,7 +95,7 @@ public class CSVSaver extends AbstractSaver {
 		if (sd != null) {
 			final Collection<String> attributeNames = sd.getAttributeNames();
 			attributeNames.removeAll(SaveStatement.NON_SAVEABLE_ATTRIBUTE_NAMES);
-			if (saveOptions.addHeader) {
+			if (saveOptions.addHeader()) {
 				sb.append("cycle" + del + "name;location.x" + del + "location.y" + del + "location.z");
 				for (final String v : attributeNames) { sb.append(del + v); }
 				sb.append(StringUtils.LN);
@@ -116,7 +116,7 @@ public class CSVSaver extends AbstractSaver {
 				}
 			}
 		} else {
-			if (saveOptions.addHeader) {
+			if (saveOptions.addHeader()) {
 				sb.append(item.serializeToGaml(true).replace("]", "").replace("[", "").replace(',', del));
 				sb.append(StringUtils.LN);
 			}
