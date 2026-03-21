@@ -107,7 +107,7 @@ species cells{
     }
 
 	aspect default {
-		draw cube(1) color:color;
+		draw cube(0.8) color:color;
 	}	
 }
 
@@ -116,8 +116,8 @@ experiment Display type: gui autorun:true{
 	output {
 		display View1 type:3d axes:false background:#black {
 			camera 'default' location: {26.889,23.7693,37.0687} target: {2.2036,3.0558,0.0};
-			species cells transparency:0.1;
-			graphics "di"{
+			species cells transparency:0.3;
+			graphics "di" refresh: false{
 			 draw "black(0,0,0)" at:{0,0,0} color:#black perspective:false;
 			 draw "red(1,0,0)" at:{world.shape.width,0,0} color:#red perspective:false;
 			 draw "green(0,1,0)" at:{0,world.shape.height,0} color:#green perspective:false;

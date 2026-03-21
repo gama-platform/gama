@@ -308,68 +308,59 @@ public class SpatialOperators {
 		if (p == null || g == null) return g;
 		final Coordinate point = p.toCoordinate();
 		final Geometry geometry = g.getInnerGeometry();
+		final org.locationtech.jts.geom.GeometryFactory gf = GeometryUtils.getGeometryFactory();
 		Geometry geom_Tmp = null;
 		if (geometry instanceof Point) {
-			final Coordinate[] coord = new Coordinate[2];
-			coord[0] = geometry.getCoordinate();
-			coord[1] = point;
-			geom_Tmp = GeometryUtils.getGeometryFactory().createLineString(coord);
+			final Coordinate[] coord = { geometry.getCoordinate(), point };
+			geom_Tmp = gf.createLineString(coord);
 		} else if (geometry instanceof MultiPoint) {
 			final Coordinate[] existingCoords = geometry.getCoordinates();
 			final Coordinate[] coordinates = new Coordinate[existingCoords.length + 1];
 			System.arraycopy(existingCoords, 0, coordinates, 0, existingCoords.length);
-			coordinates[coordinates.length - 1] = p.toCoordinate();
-			geom_Tmp = GeometryUtils.getGeometryFactory().createMultiPointFromCoords(coordinates);
+			coordinates[existingCoords.length] = point;
+			geom_Tmp = gf.createMultiPointFromCoords(coordinates);
 		} else if (geometry instanceof LineString) {
 			geom_Tmp = createLineStringWithPoint(geometry, point);
 		} else if (geometry instanceof MultiLineString) {
-			Geometry closestGeom = null;
-			double distMin = Double.MAX_VALUE;
+			// find closest sub-geometry using a single shared Point object
+			final Point pt = gf.createPoint(point);
 			int id = -1;
-			final Point pt = GeometryUtils.getGeometryFactory().createPoint(point);
-			for (int i = 0; i < geometry.getNumGeometries(); i++) {
-				final Geometry geom = geometry.getGeometryN(i);
-				final double dist = geom.distance(pt);
+			double distMin = Double.MAX_VALUE;
+			final int numGeoms = geometry.getNumGeometries();
+			for (int i = 0; i < numGeoms; i++) {
+				final double dist = geometry.getGeometryN(i).distance(pt);
 				if (dist < distMin) {
 					distMin = dist;
-					closestGeom = geom;
 					id = i;
 				}
 			}
-			final LineString[] lineStrings = new LineString[geometry.getNumGeometries()];
-			for (int i = 0; i < geometry.getNumGeometries(); i++) {
-				if (i != id) {
-					lineStrings[i] = (LineString) geometry.getGeometryN(i);
-				} else {
-					lineStrings[i] = (LineString) createLineStringWithPoint(closestGeom, point);
-				}
+			final LineString[] lineStrings = new LineString[numGeoms];
+			for (int i = 0; i < numGeoms; i++) {
+				final Geometry sub = geometry.getGeometryN(i);
+				lineStrings[i] = i != id ? (LineString) sub : (LineString) createLineStringWithPoint(sub, point);
 			}
-			geom_Tmp = GeometryUtils.getGeometryFactory().createMultiLineString(lineStrings);
+			geom_Tmp = gf.createMultiLineString(lineStrings);
 		} else if (geometry instanceof Polygon) {
 			geom_Tmp = createPolygonWithPoint(geometry, point);
 		} else if (geometry instanceof MultiPolygon) {
-			Geometry closestGeom = null;
-			double distMin = Double.MAX_VALUE;
+			// find closest sub-geometry using a single shared Point object
+			final Point pt = gf.createPoint(point);
 			int id = -1;
-			final Point pt = GeometryUtils.getGeometryFactory().createPoint(point);
-			for (int i = 0; i < geometry.getNumGeometries(); i++) {
-				final Geometry geom = geometry.getGeometryN(i);
-				final double dist = geom.distance(pt);
+			double distMin = Double.MAX_VALUE;
+			final int numGeoms = geometry.getNumGeometries();
+			for (int i = 0; i < numGeoms; i++) {
+				final double dist = geometry.getGeometryN(i).distance(pt);
 				if (dist < distMin) {
 					distMin = dist;
-					closestGeom = geom;
 					id = i;
 				}
 			}
-			final Polygon[] polygons = new Polygon[geometry.getNumGeometries()];
-			for (int i = 0; i < geometry.getNumGeometries(); i++) {
-				if (i != id) {
-					polygons[i] = (Polygon) geometry.getGeometryN(i);
-				} else {
-					polygons[i] = (Polygon) createPolygonWithPoint(closestGeom, point);
-				}
+			final Polygon[] polygons = new Polygon[numGeoms];
+			for (int i = 0; i < numGeoms; i++) {
+				final Geometry sub = geometry.getGeometryN(i);
+				polygons[i] = i != id ? (Polygon) sub : (Polygon) createPolygonWithPoint(sub, point);
 			}
-			geom_Tmp = GeometryUtils.getGeometryFactory().createMultiPolygon(polygons);
+			geom_Tmp = gf.createMultiPolygon(polygons);
 		}
 		if (geom_Tmp != null) {
 			final IShape result = GamaShapeFactory.createFrom(geom_Tmp).withAttributesOf(g);
@@ -393,17 +384,19 @@ public class SpatialOperators {
 		Geometry simpleMinGeom = null;
 		double complexMinLength = Double.MAX_VALUE;
 		Geometry complexMinGeom = null;
+		final org.locationtech.jts.geom.GeometryFactory gf = GeometryUtils.getGeometryFactory();
+		final Polygon poly = (Polygon) geometry;
 		final Coordinate[] geomCoords = geometry.getCoordinates();
-		final int nbPts = ((Polygon) geometry).getExteriorRing().getCoordinates().length;
+		final int nbPts = poly.getExteriorRing().getCoordinates().length;
+		final int numRings = poly.getNumInteriorRing();
+		final LinearRing[] lrs = new LinearRing[numRings];
+		for (int i = 0; i < numRings; i++) { lrs[i] = poly.getInteriorRingN(i); }
 		for (int index = 0; index <= nbPts; index++) {
 			final Coordinate[] coord = new Coordinate[nbPts + 1];
 			for (int i = 0; i < index; i++) { coord[i] = geomCoords[i]; }
 			coord[index] = point;
 			for (int i = index + 1; i < coord.length; i++) { coord[i] = geomCoords[i - 1]; }
-			final LinearRing[] lrs = new LinearRing[((Polygon) geometry).getNumInteriorRing()];
-			for (int i = 0; i < lrs.length; i++) { lrs[i] = ((Polygon) geometry).getInteriorRingN(i); }
-			final Geometry g = GeometryUtils.getGeometryFactory()
-					.createPolygon(GeometryUtils.getGeometryFactory().createLinearRing(coord), lrs);
+			final Geometry g = gf.createPolygon(gf.createLinearRing(coord), lrs);
 			if (g.isValid()) {
 				if (simpleMinLength > g.getArea()) {
 					simpleMinLength = g.getArea();
@@ -432,13 +425,14 @@ public class SpatialOperators {
 		Geometry simpleMinGeom = null;
 		double complexMinLength = Double.MAX_VALUE;
 		Geometry complexMinGeom = null;
+		final org.locationtech.jts.geom.GeometryFactory gf = GeometryUtils.getGeometryFactory();
 		final Coordinate[] geomCoords = geometry.getCoordinates();
 		for (int index = 0; index <= geomCoords.length; index++) {
 			final Coordinate[] coord = new Coordinate[geomCoords.length + 1];
 			for (int i = 0; i < index; i++) { coord[i] = geomCoords[i]; }
 			coord[index] = point;
 			for (int i = index + 1; i < coord.length; i++) { coord[i] = geomCoords[i - 1]; }
-			final Geometry g = GeometryUtils.getGeometryFactory().createLineString(coord);
+			final Geometry g = gf.createLineString(coord);
 			if (g.isValid()) {
 				if (simpleMinLength > g.getLength()) {
 					simpleMinLength = g.getLength();
@@ -491,12 +485,12 @@ public class SpatialOperators {
 			final Integer prec) {
 		final int precision = prec == null ? 120 : prec;
 		final IAgent a = scope.getAgent();
-		final List<IShape> obst =
-				obstacles == null ? new ArrayList<>() : obstacles.listValue(scope, Types.GEOMETRY, false);
 		final IPoint location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
 		final Geometry visiblePercept = GeometryUtils.getGeometryFactory().createGeometry(source.getInnerGeometry());
 		final boolean isPoint = source.isPoint();
 		if (obstacles != null && !obstacles.isEmpty(scope)) {
+			// Defer list conversion to inside the non-null/non-empty branch
+			final List<IShape> obst = obstacles.listValue(scope, Types.GEOMETRY, false);
 			final Geometry pt = GeometryUtils.getGeometryFactory().createPoint(location.toCoordinate());
 			final Geometry locG = pt.buffer(0.01).getEnvelope();
 			double percepDist = 0;
@@ -505,12 +499,20 @@ public class SpatialOperators {
 				if (dist > percepDist) { percepDist = dist; }
 			}
 			final Geometry gbuff = pt.buffer(percepDist, precision / 4);
+			// Pre-wrap all obstacles in PreparedGeometry to accelerate repeat intersection tests
+			final List<PreparedGeometry> preparedObst = new ArrayList<>(obst.size());
+			for (final IShape s : obst) {
+				if (s != null && s.getInnerGeometry() != null) {
+					preparedObst.add(PreparedGeometryFactory.prepare(s.getInnerGeometry()));
+				}
+			}
 			final List<IShape> geoms = new ArrayList<>();
+			final Coordinate[] gbuffCoords = gbuff.getCoordinates();
 			for (int k = 1; k < gbuff.getNumPoints(); k++) {
 				final IList<IPoint> coordinates = GamaListFactory.create(Types.POINT, 4);
 				coordinates.add(location);
-				coordinates.add(GamaPointFactory.create(gbuff.getCoordinates()[k - 1]));
-				coordinates.add(GamaPointFactory.create(gbuff.getCoordinates()[k]));
+				coordinates.add(GamaPointFactory.create(gbuffCoords[k - 1]));
+				coordinates.add(GamaPointFactory.create(gbuffCoords[k]));
 				coordinates.add(location);
 				final IShape gg = SpatialOperators.inter(scope, source, SpatialCreation.polygon(scope, coordinates));
 
@@ -524,7 +526,7 @@ public class SpatialOperators {
 			final PreparedGeometry ref = PreparedGeometryFactory.prepare(locG);
 
 			for (final IShape geom : geoms) {
-				if (!intersection(geom, obst)) {
+				if (!intersectionPrepared(geom, preparedObst)) {
 					geomsVisible.addValue(scope, geom);
 				} else {
 					final IShape perceptReal = difference(scope, geom, obst, ref);
@@ -556,7 +558,8 @@ public class SpatialOperators {
 			if (geomVisibleF.isEmpty(scope)) return null;
 			IShape result = GamaShapeFactory.castToShape(scope, geomVisibleF, false);
 			if (result == null || result.getInnerGeometry() == null) {
-				geomVisibleF.stream().forEach(g -> SpatialTransformations.enlarged_by(scope, g, 0.1));
+				geomVisibleF = geomVisibleF.stream().map(g -> SpatialTransformations.enlarged_by(scope, g, 0.1))
+						.collect(GamaListFactory.toGamaList());
 				result = GamaShapeFactory.castToShape(scope, geomVisibleF, false);
 			}
 			if (result == null || result.getInnerGeometry() == null) return null;
@@ -570,17 +573,13 @@ public class SpatialOperators {
 	}
 
 	/**
-	 * Intersection.
-	 *
-	 * @param geom
-	 *            the geom
-	 * @param geoms
-	 *            the geoms
-	 * @return true, if successful
+	 * Intersection check using pre-built PreparedGeometry for each obstacle, avoiding per-call preparation overhead.
 	 */
-	private static boolean intersection(final IShape geom, final List<IShape> geoms) {
+	private static boolean intersectionPrepared(final IShape geom, final List<PreparedGeometry> preparedGeoms) {
 		if (geom == null) return false;
-		for (final IShape g : geoms) { if (g != null && geom.intersects(g)) return true; }
+		final Geometry inner = geom.getInnerGeometry();
+		if (inner == null) return false;
+		for (final PreparedGeometry pg : preparedGeoms) { if (pg.intersects(inner)) return true; }
 		return false;
 	}
 
@@ -667,94 +666,60 @@ public class SpatialOperators {
 	public static IList<IShape> split_at(final IShape geom, final IPoint pt) {
 		final IList<IShape> lines = GamaListFactory.create(Types.GEOMETRY);
 		List<Geometry> geoms = null;
-		if (geom.getInnerGeometry() instanceof LineString) {
-			final Coordinate[] coords = ((LineString) geom.getInnerGeometry()).getCoordinates();
-			final Point pt1 = GeometryUtils.getGeometryFactory().createPoint(pt.getLocation().toCoordinate());
-			final int nb = coords.length;
-			int indexTarget = -1;
-			double distanceT = Double.MAX_VALUE;
-			for (int i = 0; i < nb - 1; i++) {
-				final Coordinate s = coords[i];
-				final Coordinate t = coords[i + 1];
-				final Coordinate[] seg = { s, t };
-				final Geometry segment = GeometryUtils.getGeometryFactory().createLineString(seg);
-				final double distT = segment.distance(pt1);
-				if (distT < distanceT) {
-					distanceT = distT;
-					indexTarget = i;
-				}
-			}
-			// Compute the split coordinate once and share it
-			final Coordinate splitCoord = pt.getLocation().toCoordinate();
-			int nbSp = indexTarget + 2;
-			final Coordinate[] coords1 = new Coordinate[nbSp];
-			for (int i = 0; i <= indexTarget; i++) { coords1[i] = coords[i]; }
-			coords1[indexTarget + 1] = splitCoord;
-
-			nbSp = coords.length - indexTarget;
-			final Coordinate[] coords2 = new Coordinate[nbSp];
-			coords2[0] = splitCoord;
-			int k = 1;
-			for (int i = indexTarget + 1; i < coords.length; i++) {
-				coords2[k] = coords[i];
-				k++;
-			}
-			final List<Geometry> geoms1 = new ArrayList<>();
-			geoms1.add(GeometryUtils.getGeometryFactory().createLineString(coords1));
-			geoms1.add(GeometryUtils.getGeometryFactory().createLineString(coords2));
-			geoms = geoms1;
-		} else if (geom.getInnerGeometry() instanceof MultiLineString) {
-			final Point point = GeometryUtils.getGeometryFactory().createPoint(pt.toCoordinate());
-			final MultiLineString ml = (MultiLineString) geom.getInnerGeometry();
-			Geometry geom2 = ml.getGeometryN(0);
-			double distMin = geom2.distance(point);
+		// Compute split coordinate once, shared between both branches
+		final Coordinate splitCoord = pt.toCoordinate();
+		if (geom.getInnerGeometry() instanceof LineString ls) {
+			geoms = splitLineAt(ls.getCoordinates(), splitCoord);
+		} else if (geom.getInnerGeometry() instanceof MultiLineString ml) {
+			// Find the closest constituent LineString — create the Point only once
+			final Point splitPt = GeometryUtils.getGeometryFactory().createPoint(splitCoord);
+			Geometry closest = ml.getGeometryN(0);
+			double distMin = closest.distance(splitPt);
 			for (int i = 1; i < ml.getNumGeometries(); i++) {
-				final Geometry gg = ml.getGeometryN(i);
-				final double dist = gg.distance(point);
-				if (dist <= distMin) {
-					geom2 = gg;
-					distMin = dist;
+				final Geometry sub = ml.getGeometryN(i);
+				final double d = sub.distance(splitPt);
+				if (d < distMin) {
+					distMin = d;
+					closest = sub;
 				}
 			}
-			final Coordinate[] coords = ((LineString) geom2).getCoordinates();
-			final Point pt1 = GeometryUtils.getGeometryFactory().createPoint(pt.getLocation().toCoordinate());
-			final int nb = coords.length;
-			int indexTarget = -1;
-			double distanceT = Double.MAX_VALUE;
-			for (int i = 0; i < nb - 1; i++) {
-				final Coordinate s = coords[i];
-				final Coordinate t = coords[i + 1];
-				final Coordinate[] seg = { s, t };
-				final Geometry segment = GeometryUtils.getGeometryFactory().createLineString(seg);
-				final double distT = segment.distance(pt1);
-				if (distT < distanceT) {
-					distanceT = distT;
-					indexTarget = i;
-				}
-			}
-			// Compute the split coordinate once and share it
-			final Coordinate splitCoord = pt.getLocation().toCoordinate();
-			int nbSp = indexTarget + 2;
-			final Coordinate[] coords1 = new Coordinate[nbSp];
-			for (int i = 0; i <= indexTarget; i++) { coords1[i] = coords[i]; }
-			coords1[indexTarget + 1] = splitCoord;
-
-			nbSp = coords.length - indexTarget;
-			final Coordinate[] coords2 = new Coordinate[nbSp];
-			coords2[0] = splitCoord;
-			int k = 1;
-			for (int i = indexTarget + 1; i < coords.length; i++) {
-				coords2[k] = coords[i];
-				k++;
-			}
-			final List<Geometry> geoms1 = new ArrayList<>();
-			geoms1.add(GeometryUtils.getGeometryFactory().createLineString(coords1));
-			geoms1.add(GeometryUtils.getGeometryFactory().createLineString(coords2));
-			geoms = geoms1;
+			geoms = splitLineAt(((LineString) closest).getCoordinates(), splitCoord);
 		}
 		if (geoms != null) { for (final Geometry g : geoms) { lines.add(GamaShapeFactory.createFrom(g)); } }
 		for (final IShape li : lines) { li.copyAttributesOf(geom); }
-
 		return lines;
 	}
+
+	/**
+	 * Builds the two sub-LineStrings that result from splitting <code>coords</code> at the given point. The closest
+	 * segment is found using {@link org.locationtech.jts.algorithm.Distance#pointToSegment} to avoid allocating any JTS
+	 * geometry object inside the hot loop.
+	 */
+	private static List<Geometry> splitLineAt(final Coordinate[] coords, final Coordinate split) {
+		final int nb = coords.length;
+		int indexTarget = -1;
+		double distanceT = Double.MAX_VALUE;
+		for (int i = 0; i < nb - 1; i++) {
+			final double distT =
+					org.locationtech.jts.algorithm.Distance.pointToSegment(split, coords[i], coords[i + 1]);
+			if (distT < distanceT) {
+				distanceT = distT;
+				indexTarget = i;
+			}
+		}
+		final org.locationtech.jts.geom.GeometryFactory gf = GeometryUtils.getGeometryFactory();
+		final Coordinate[] coords1 = new Coordinate[indexTarget + 2];
+		for (int i = 0; i <= indexTarget; i++) { coords1[i] = coords[i]; }
+		coords1[indexTarget + 1] = split;
+
+		final Coordinate[] coords2 = new Coordinate[nb - indexTarget];
+		coords2[0] = split;
+		for (int i = indexTarget + 1, k = 1; i < nb; i++, k++) { coords2[k] = coords[i]; }
+
+		final List<Geometry> result = new ArrayList<>(2);
+		result.add(gf.createLineString(coords1));
+		result.add(gf.createLineString(coords2));
+		return result;
+	}
+
 }

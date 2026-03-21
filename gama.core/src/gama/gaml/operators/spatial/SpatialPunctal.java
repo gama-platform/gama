@@ -195,12 +195,13 @@ public class SpatialPunctal {
 		final IList<IPoint> locations = GamaListFactory.create(Types.POINT);
 		final IPoint loc = scope.getAgent().getLocation();
 		final double angle1 = scope.getRandom().between(0, 2 * Math.PI);
+		// Precompute the angular step to avoid dividing by nbLoc on every iteration
+		final double angleStep = 2 * Math.PI / nbLoc;
 
 		for (int i = 0; i < nbLoc; i++) {
-			final IPoint p =
-					GamaPointFactory.create(loc.getX() + distance * Math.cos(angle1 + (double) i / nbLoc * 2 * Math.PI),
-							loc.getY() + distance * Math.sin(angle1 + (double) i / nbLoc * 2 * Math.PI));
-			locations.add(p);
+			final double angle = angle1 + i * angleStep;
+			locations.add(GamaPointFactory.create(loc.getX() + distance * Math.cos(angle),
+					loc.getY() + distance * Math.sin(angle)));
 		}
 		return locations;
 
@@ -333,8 +334,9 @@ public class SpatialPunctal {
 		final double Ya = p1.getY() - p0.getY();
 		final double Xb = p2.getX() - p0.getX();
 		final double Yb = p2.getY() - p0.getY();
-		final double Na = Maths.sqrt(scope, Xa * Xa + Ya * Ya);
-		final double Nb = Maths.sqrt(scope, Xb * Xb + Yb * Yb);
+		// Math.hypot is faster and more numerically stable than Maths.sqrt(scope, ...)
+		final double Na = Math.hypot(Xa, Ya);
+		final double Nb = Math.hypot(Xb, Yb);
 		final double C = Maths.round((Xa * Xb + Ya * Yb) / (Na * Nb), 10);
 		final double S = Xa * Yb - Ya * Xb;
 		final double result = S > 0 ? Maths.acos(C) : -1 * Maths.acos(C);

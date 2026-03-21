@@ -205,10 +205,10 @@ public class SpatialQueries {
 			final Double distance) {
 		final IShape ag = scope.getAgent();
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
-		for (final Object shape : list.listValue(scope, Types.GEOMETRY, false)) {
-			if (!(shape instanceof IShape)) { continue; }
-			if (scope.getTopology().distanceBetween(scope, ag, (IShape) shape) <= distance) {
-				geoms.add((IShape) shape);
+		for (final IShape shape : list.iterable(scope)) {
+			if (shape == null) { continue; }
+			if (scope.getTopology().distanceBetween(scope, ag, shape) <= distance) {
+				geoms.add(shape);
 			}
 		}
 		return geoms;
@@ -460,11 +460,11 @@ public class SpatialQueries {
 	public static IList<? extends IShape> geomsRelated(final IScope scope, final IContainer<?, ? extends IShape> list,
 			final IShape source, final ITopology.SpatialRelation relation) {
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
-		PreparedGeometry pg = PreparedGeometryFactory.prepare(source.getInnerGeometry());
-		for (final Object shape : list.listValue(scope, Types.GEOMETRY, false)) {
-			if (!(shape instanceof IShape)) { continue; }
-			if (AbstractTopology.accept(pg, ((IShape) shape).getInnerGeometry(), relation)) {
-				geoms.add((IShape) shape);
+		final PreparedGeometry pg = PreparedGeometryFactory.prepare(source.getInnerGeometry());
+		for (final IShape shape : list.iterable(scope)) {
+			if (shape == null) { continue; }
+			if (AbstractTopology.accept(pg, shape.getInnerGeometry(), relation)) {
+				geoms.add(shape);
 			}
 		}
 		return geoms;
@@ -606,11 +606,11 @@ public class SpatialQueries {
 			final IShape source) {
 		IShape shp = null;
 		double distMin = Double.MAX_VALUE;
-		for (final Object shape : list.listValue(scope, Types.GEOMETRY, false)) {
-			if (!(shape instanceof IShape)) { continue; }
-			final double dist = scope.getTopology().distanceBetween(scope, source, (IShape) shape);
+		for (final IShape shape : list.iterable(scope)) {
+			if (shape == null) { continue; }
+			final double dist = scope.getTopology().distanceBetween(scope, source, shape);
 			if (dist < distMin) {
-				shp = (IShape) shape;
+				shp = shape;
 				distMin = dist;
 			}
 		}
@@ -656,11 +656,11 @@ public class SpatialQueries {
 			final IShape source) {
 		IShape shp = null;
 		double distMax = Double.MIN_VALUE;
-		for (final Object shape : list.listValue(scope, Types.GEOMETRY, false)) {
-			if (!(shape instanceof IShape)) { continue; }
-			final double dist = scope.getTopology().distanceBetween(scope, source, (IShape) shape);
+		for (final IShape shape : list.iterable(scope)) {
+			if (shape == null) { continue; }
+			final double dist = scope.getTopology().distanceBetween(scope, source, shape);
 			if (dist > distMax) {
-				shp = (IShape) shape;
+				shp = shape;
 				distMax = dist;
 			}
 		}

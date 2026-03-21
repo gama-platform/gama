@@ -480,9 +480,9 @@ public class SpatialTransformations {
 		final IPoint axis = rot.getValue();
 
 		final double norm = axis.norm();
-		double signum = Math.signum(rot.getKey());
+		final double signum = Math.signum(rot.getKey());
 		axis.setLocation(signum * axis.getX() / norm, signum * axis.getY() / norm, signum * axis.getZ() / norm);
-		return GamaPairFactory.createWith(Math.signum(rot.getKey()) * rot.getKey(), axis, Types.FLOAT, Types.POINT);
+		return GamaPairFactory.createWith(signum * rot.getKey(), axis, Types.FLOAT, Types.POINT);
 	}
 
 	/**
@@ -519,11 +519,13 @@ public class SpatialTransformations {
 	// }
 	@test ("normalized_rotation(rotation_composition(38.0::{1,1,1},90.0::{1,0,0}))=normalized_rotation(115.22128507898108::{0.9491582126366207,0.31479943993669307,-0.0})")
 	public static IPair<Double, IPoint> rotation_composition(final IScope scope, final IList<IPair> rotation_list) {
+		// Precompute the degree-to-radians factor to avoid recomputing it per iteration
+		final double DEG_TO_RAD = Math.PI / 180.0;
 		Rotation3D rotation = new Rotation3D(GamaPointFactory.create(1, 0, 0), 0.0);
 		for (final IPair element : rotation_list) {
 			final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType
 					.from(Types.PAIR, Types.FLOAT, Types.POINT).cast(scope, element, null, false);
-			rotation = rotation.applyTo(new Rotation3D(rot.getValue(), 2 * Math.PI / 360 * rot.getKey()));
+			rotation = rotation.applyTo(new Rotation3D(rot.getValue(), DEG_TO_RAD * rot.getKey()));
 		}
 		return GamaPairFactory.createWith(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT,
 				Types.POINT);
@@ -589,7 +591,7 @@ public class SpatialTransformations {
 		final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType.from(Types.PAIR, Types.FLOAT, Types.POINT)
 				.cast(scope, rotation, null, false);
 		final IPoint p2 = GamaPointFactory.create(p1);
-		new Rotation3D(rot.getValue(), 2 * Math.PI / 360 * rot.getKey()).applyTo(p2);
+		new Rotation3D(rot.getValue(), Math.PI / 180.0 * rot.getKey()).applyTo(p2);
 		return p2;
 	}
 
@@ -764,18 +766,17 @@ public class SpatialTransformations {
 	public static IShape without_holes(final IScope scope, final IShape g) {
 		if (g == null) return null;
 		final Geometry geom = g.getInnerGeometry();
+		final org.locationtech.jts.geom.GeometryFactory gf = GeometryUtils.getGeometryFactory();
 		Geometry result = geom;
-		if (geom instanceof Polygon) {
-			result = GeometryUtils.getGeometryFactory().createPolygon(GeometryUtils.getGeometryFactory()
-					.createLinearRing(((Polygon) geom).getExteriorRing().getCoordinates()), null);
+		if (geom instanceof Polygon poly) {
+			result = gf.createPolygon(gf.createLinearRing(poly.getExteriorRing().getCoordinates()), null);
 		} else if (geom instanceof MultiPolygon mp) {
 			final Polygon[] polys = new Polygon[mp.getNumGeometries()];
-			for (int i = 0; i < mp.getNumGeometries(); i++) {
+			for (int i = 0; i < polys.length; i++) {
 				final Polygon p = (Polygon) mp.getGeometryN(i);
-				polys[i] = GeometryUtils.getGeometryFactory().createPolygon(
-						GeometryUtils.getGeometryFactory().createLinearRing(p.getExteriorRing().getCoordinates()), null);
+				polys[i] = gf.createPolygon(gf.createLinearRing(p.getExteriorRing().getCoordinates()), null);
 			}
-			result = GeometryUtils.getGeometryFactory().createMultiPolygon(polys);
+			result = gf.createMultiPolygon(polys);
 		}
 		return GamaShapeFactory.createFrom(result).withAttributesOf(g);
 	}
