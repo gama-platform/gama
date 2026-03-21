@@ -438,7 +438,19 @@ public class GamaShape implements IShape {
 	@Override
 	public IEnvelope getEnvelope() {
 		if (geometry == null) return null;
-		return GamaEnvelopeFactory.of(this);
+		final IEnvelope env = GamaEnvelopeFactory.of(this);
+		// If the shape has a depth attribute but the inner geometry is flat (all Z = 0),
+		// extend the envelope Z range to correctly represent the 3D extent of shapes such
+		// as BOX or CUBE that store their depth as an attribute rather than in the JTS
+		// geometry coordinates. Without this fix, a cube(n) world produces a flat envelope
+		// that causes the OctTree to miss all agents whose Z coordinate is > 0.
+		final Double d = getDepth();
+		if (d != null && d > 0 && env.getDepth() == 0) {
+			final double centerZ = getLocation().getZ();
+			env.init(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY(), centerZ - d / 2.0,
+					centerZ + d / 2.0);
+		}
+		return env;
 	}
 
 	@Override

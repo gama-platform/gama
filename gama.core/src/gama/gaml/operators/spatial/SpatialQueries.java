@@ -182,7 +182,10 @@ public class SpatialQueries {
 	public static IList<? extends IShape> at_distance(final IScope scope, final IContainer<?, ? extends IShape> list,
 			final Double distance) {
 		final IType contentType = list.getGamlType().getContentType();
-		if (contentType.isAgentType()) return _neighbors(scope, In.list(scope, list), scope.getAgent(), distance);
+		if (contentType.isAgentType()) {
+			IList<IAgent> agents = _neighbors(scope, In.list(scope, list), scope.getAgent(), distance);
+			return agents;
+		}
 		if (contentType == Types.GEOMETRY) return geomAtDistance(scope, list, distance);
 		return GamaListFactory.create();
 	}
@@ -457,8 +460,7 @@ public class SpatialQueries {
 	public static IList<? extends IShape> geomsRelated(final IScope scope, final IContainer<?, ? extends IShape> list,
 			final IShape source, final ITopology.SpatialRelation relation) {
 		final IList<IShape> geoms = GamaListFactory.create(Types.GEOMETRY);
-		PreparedGeometryFactory pgFact = new PreparedGeometryFactory();
-		PreparedGeometry pg = pgFact.create(source.getInnerGeometry());
+		PreparedGeometry pg = PreparedGeometryFactory.prepare(source.getInnerGeometry());
 		for (final Object shape : list.listValue(scope, Types.GEOMETRY, false)) {
 			if (!(shape instanceof IShape)) { continue; }
 			if (AbstractTopology.accept(pg, ((IShape) shape).getInnerGeometry(), relation)) {
@@ -989,7 +991,8 @@ public class SpatialQueries {
 	 */
 	private static IAgent _farthest(final IScope scope, final IAgentFilter filter, final Object source) {
 		if (filter == null || source == null) return null;
-		return scope.getTopology().getAgentFarthestTo(scope, GamaShapeFactory.castToShape(scope, source, false), filter);
+		return scope.getTopology().getAgentFarthestTo(scope, GamaShapeFactory.castToShape(scope, source, false),
+				filter);
 	}
 
 	/**

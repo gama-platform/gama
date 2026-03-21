@@ -404,12 +404,20 @@ public class GamaPoint extends Coordinate implements IPoint {
 	public IEnvelope getEnvelope() { return GamaEnvelopeFactory.of(this.toCoordinate()); }
 
 	/**
-	 * Returns the envelope considering this point as bounds
+	 * Returns the envelope considering this point as bounds (i.e. an envelope from the origin to this point).
+	 *
+	 * <p>
+	 * Since {@code z} is guaranteed never to be {@link Double#NaN} (normalised to {@code 0.0} on construction/set),
+	 * no NaN guard is needed.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @return an envelope spanning from (0,0,0) to (x, y, z)
 	 */
 	@Override
 	public IEnvelope computeEnvelope(final IScope scope) {
-		final double sz = Double.isNaN(z) ? 0.0d : z;
-		return GamaEnvelopeFactory.of(0, x, 0, y, 0, sz);
+		return GamaEnvelopeFactory.of(0, x, 0, y, 0, z);
 	}
 
 	@Override
@@ -424,13 +432,16 @@ public class GamaPoint extends Coordinate implements IPoint {
 	/**
 	 * Equals with tolerance.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * <p>
+	 * Tests whether this point equals another within the given numeric tolerance. Since {@code z} is guaranteed never
+	 * to be {@link Double#NaN} (normalised to {@code 0.0} on construction/set), NaN guards on z are not needed.
+	 * </p>
+	 *
 	 * @param c
-	 *            the c
+	 *            the other point
 	 * @param tolerance
-	 *            the tolerance
-	 * @return true, if successful
-	 * @date 17 sept. 2023
+	 *            the numeric tolerance for each coordinate
+	 * @return true if all three coordinates are equal within the tolerance
 	 */
 	@Override
 	public boolean equalsWithTolerance(final IPoint c, final double tolerance) {
@@ -438,10 +449,7 @@ public class GamaPoint extends Coordinate implements IPoint {
 		if (!NumberUtil.equalsWithTolerance(this.x, c.getX(), tolerance)
 				|| !NumberUtil.equalsWithTolerance(this.y, c.getY(), tolerance))
 			return false;
-		if (!Double.isNaN(z) && !Double.isNaN(c.getZ()) && !NumberUtil.equalsWithTolerance(this.z, c.getZ(), tolerance))
-			return false;
-
-		return true;
+		return NumberUtil.equalsWithTolerance(this.z, c.getZ(), tolerance);
 	}
 
 	@Override
@@ -616,24 +624,37 @@ public class GamaPoint extends Coordinate implements IPoint {
 	}
 
 	/**
-	 * Norm.
+	 * Computes the Euclidean norm (length) of this point treated as a vector.
 	 *
-	 * @return the double
+	 * <p>
+	 * Always computes the 3D norm {@code sqrt(x² + y² + z²)}. Since the constructor and {@link #setZ(double)}
+	 * guarantee that {@code z} is never {@link Double#NaN} (it is normalised to {@code 0.0} on entry), there is no
+	 * need for a NaN guard here.
+	 * </p>
+	 *
+	 * @return the 3D Euclidean norm of this vector
 	 */
 	@Override
 	public double norm() {
-		if (Double.isNaN(z)) return Math.sqrt(x * x + y * y);
 		return Math.sqrt(x * x + y * y + z * z);
 	}
 
+	/**
+	 * Returns a hash code consistent with {@link #equals(Object)} and {@link #equals3D(IPoint)}.
+	 *
+	 * <p>
+	 * Since {@code z} is guaranteed never to be {@link Double#NaN} (normalised to {@code 0.0} on construction/set),
+	 * no NaN guard is required.
+	 * </p>
+	 *
+	 * @return the hash code for this point
+	 */
 	@Override
 	public int hashCode() {
 		int result = 17;
 		result = 37 * result + hashCode(x);
 		result = 370 * result + hashCode(y);
-		// Keep consistent with `equals3D` and `setZ`
-		final double hz = Double.isNaN(z) ? 0.0d : z;
-		return 3700 * result + hashCode(hz);
+		return 3700 * result + hashCode(z);
 	}
 
 	/**
@@ -699,15 +720,17 @@ public class GamaPoint extends Coordinate implements IPoint {
 	/**
 	 * Dot product with.
 	 *
+	 * <p>
+	 * Since {@code z} is guaranteed never to be {@link Double#NaN} (normalised to {@code 0.0} on construction/set),
+	 * no NaN guard is required.
+	 * </p>
+	 *
 	 * @param v2
 	 *            the v 2
 	 */
 	@Override
 	public final double dotProductWith(final IPoint v2) {
-		final double sz = Double.isNaN(z) ? 0.0d : z;
-		final double oz = v2.getZ();
-		final double oz2 = Double.isNaN(oz) ? 0.0d : oz;
-		return x * v2.getX() + y * v2.getY() + sz * oz2;
+		return x * v2.getX() + y * v2.getY() + z * v2.getZ();
 	}
 
 	/**
@@ -726,16 +749,19 @@ public class GamaPoint extends Coordinate implements IPoint {
 	/**
 	 * Cross product with.
 	 *
+	 * <p>
+	 * Since {@code z} is guaranteed never to be {@link Double#NaN} (normalised to {@code 0.0} on construction/set),
+	 * no NaN guard is required.
+	 * </p>
+	 *
 	 * @param v2
 	 *            the other
-	 * @return the gama point
+	 * @return the cross product as a new point
 	 */
 	@Override
 	public final IPoint crossProductWith(final IPoint v2) {
-		final double sz = Double.isNaN(z) ? 0.0d : z;
 		final double oz = v2.getZ();
-		final double oz2 = Double.isNaN(oz) ? 0.0d : oz;
-		return GamaPointFactory.create(y * oz2 - sz * v2.getY(), v2.getX() * sz - oz2 * x,
+		return GamaPointFactory.create(y * oz - z * v2.getY(), v2.getX() * z - oz * x,
 				x * v2.getY() - y * v2.getX());
 	}
 
@@ -889,20 +915,24 @@ public class GamaPoint extends Coordinate implements IPoint {
 	/**
 	 * Orthogonal.
 	 *
-	 * @return the gama point
+	 * <p>
+	 * Returns a vector orthogonal to this one. Since {@code z} is guaranteed never to be {@link Double#NaN}
+	 * (normalised to {@code 0.0} on construction/set), no NaN guard is required.
+	 * </p>
+	 *
+	 * @return a new point that is orthogonal to this vector
 	 */
 	@Override
 	public IPoint orthogonal() {
-		final double sz = Double.isNaN(z) ? 0.0d : z;
 		final double threshold = 0.6 * norm();
 		if (threshold == 0) return this;
 		if (Math.abs(x) <= threshold) {
-			final double inverse = 1 / sqrt(y * y + sz * sz);
-			return GamaPointFactory.create(0, inverse * sz, -inverse * y);
+			final double inverse = 1 / sqrt(y * y + z * z);
+			return GamaPointFactory.create(0, inverse * z, -inverse * y);
 		}
 		if (Math.abs(y) <= threshold) {
-			final double inverse = 1 / sqrt(x * x + sz * sz);
-			return GamaPointFactory.create(-inverse * sz, 0, inverse * x);
+			final double inverse = 1 / sqrt(x * x + z * z);
+			return GamaPointFactory.create(-inverse * z, 0, inverse * x);
 		}
 		final double inverse = 1 / sqrt(x * x + y * y);
 		return GamaPointFactory.create(inverse * y, -inverse * x, 0);
@@ -939,6 +969,24 @@ public class GamaPoint extends Coordinate implements IPoint {
 		return env.intersects(this.toCoordinate());
 	}
 
+	/**
+	 * Tests whether this point lies inside the envelope considering only X and Y (Z is ignored).
+	 *
+	 * <p>
+	 * This is required for 2D spatial indexes (quadtrees) that store 3D agents but partition space in XY only. A
+	 * point at Z=30 must still be found by a 2D search envelope at Z=[0,0].
+	 * </p>
+	 *
+	 * @param env
+	 *            the envelope to test against (Z is ignored)
+	 * @return {@code true} if the XY projection of this point lies within the XY bounds of {@code env}
+	 */
+	@Override
+	public boolean intersects2D(final IEnvelope env) {
+		if (env instanceof Envelope e) return e.intersects(x, y);
+		return x >= env.getMinX() && x <= env.getMaxX() && y >= env.getMinY() && y <= env.getMaxY();
+	}
+
 	@Override
 	public boolean intersects(final Coordinate env) {
 		return this.equals3D(env);
@@ -957,10 +1005,15 @@ public class GamaPoint extends Coordinate implements IPoint {
 	/**
 	 * Checks if is null.
 	 *
-	 * @return true, if is null
+	 * <p>
+	 * A point is considered "null" if all coordinates are zero. Since {@code z} is guaranteed never to be
+	 * {@link Double#NaN} (normalised to {@code 0.0} on construction/set), the NaN check is not needed.
+	 * </p>
+	 *
+	 * @return true if x == 0, y == 0, and z == 0
 	 */
 	@Override
-	public boolean isNull() { return x == 0d && y == 0d && (Double.isNaN(z) || z == 0d); }
+	public boolean isNull() { return x == 0d && y == 0d && z == 0d; }
 
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
@@ -982,30 +1035,47 @@ public class GamaPoint extends Coordinate implements IPoint {
 		return this;
 	}
 
+	/**
+	 * Checks strict 3D equality with another point.
+	 *
+	 * <p>
+	 * Since {@code z} is guaranteed never to be {@link Double#NaN} (normalised to {@code 0.0} on construction/set),
+	 * NaN guards are not needed. For the other point, however, its Z may come from external JTS sources that can
+	 * carry NaN; those are normalised to {@code 0.0} here for symmetric comparison.
+	 * </p>
+	 *
+	 * @param other
+	 *            the other point; may be null
+	 * @return true if x, y, and (NaN-normalised) z coordinates are identical
+	 */
 	@Override
 	public boolean equals3D(final IPoint other) {
 		if (other == null) return false;
 		final double oz = other.getZ();
-		final double z1 = Double.isNaN(this.z) ? 0.0d : this.z;
 		final double z2 = Double.isNaN(oz) ? 0.0d : oz;
-		return this.x == other.getX() && this.y == other.getY() && z1 == z2;
+		return this.x == other.getX() && this.y == other.getY() && this.z == z2;
 	}
 
 	/**
-	 * Distance 3 D.
+	 * Computes the 3D Euclidean distance between this point and another.
+	 *
+	 * <p>
+	 * Since {@code z} is guaranteed never to be {@link Double#NaN} (normalised to {@code 0.0} on construction/set),
+	 * no NaN guard is needed for {@code this.z}. The other point's Z may carry NaN from external JTS sources;
+	 * it is normalised to {@code 0.0} for a symmetric comparison.
+	 * </p>
 	 *
 	 * @param p
-	 *            the p
-	 * @return the distance between this point and {@code p} in 3D, treating NaN z as 0
+	 *            the other point
+	 * @return the 3D Euclidean distance between this point and {@code p}
 	 */
 	@Override
 	public double distance3D(final IPoint p) {
-		final double sz = Double.isNaN(z) ? 0.0d : z;
 		final double oz = p.getZ();
 		final double oz2 = Double.isNaN(oz) ? 0.0d : oz;
 		final double dx = x - p.getX();
 		final double dy = y - p.getY();
-		final double dz = sz - oz2;
+		final double dz = z - oz2;
 		return Math.sqrt(dx * dx + dy * dy + dz * dz);
 	}
 
@@ -1014,6 +1084,19 @@ public class GamaPoint extends Coordinate implements IPoint {
 		return this;
 	}
 
+	/**
+	 * Compares this point to another {@link IPoint}.
+	 *
+	 * <p>
+	 * Ordering is: X first, then Y, then Z. Since {@code z} is guaranteed never to be {@link Double#NaN}
+	 * (normalised to {@code 0.0} on construction/set), no NaN guard is needed for {@code this.z}. The other
+	 * point's Z may carry NaN from external JTS sources; it is normalised to {@code 0.0} here.
+	 * </p>
+	 *
+	 * @param p
+	 *            the other point
+	 * @return negative if this &lt; p, positive if this &gt; p, zero if equal
+	 */
 	@Override
 	public int compareTo(final IPoint p) {
 		double px = p.getX();
@@ -1022,14 +1105,26 @@ public class GamaPoint extends Coordinate implements IPoint {
 		double py = p.getY();
 		if (y < py) return -1;
 		if (y > py) return 1;
-		final double sz = Double.isNaN(z) ? 0.0d : z;
 		double pz = p.getZ();
 		final double oz = Double.isNaN(pz) ? 0.0d : pz;
-		if (sz < oz) return -1;
-		if (sz > oz) return 1;
+		if (z < oz) return -1;
+		if (z > oz) return 1;
 		return 0;
 	}
 
+	/**
+	 * Compares this point to a JTS {@link Coordinate}.
+	 *
+	 * <p>
+	 * Ordering is: X first, then Y, then Z. Since {@code z} is guaranteed never to be {@link Double#NaN}
+	 * (normalised to {@code 0.0} on construction/set), no NaN guard is needed for {@code this.z}. The other
+	 * coordinate's Z may carry NaN from external JTS sources; it is normalised to {@code 0.0} here.
+	 * </p>
+	 *
+	 * @param p
+	 *            the other coordinate
+	 * @return negative if this &lt; p, positive if this &gt; p, zero if equal
+	 */
 	@Override
 	public int compareTo(final Coordinate p) {
 		double px = p.getX();
@@ -1038,14 +1133,25 @@ public class GamaPoint extends Coordinate implements IPoint {
 		double py = p.getY();
 		if (y < py) return -1;
 		if (y > py) return 1;
-		final double sz = Double.isNaN(z) ? 0.0d : z;
 		double pz = p.getZ();
 		final double oz = Double.isNaN(pz) ? 0.0d : pz;
-		if (sz < oz) return -1;
-		if (sz > oz) return 1;
+		if (z < oz) return -1;
+		if (z > oz) return 1;
 		return 0;
 	}
 
+	/**
+	 * Computes the 2D Euclidean distance to another point (ignoring Z).
+	 *
+	 * <p>
+	 * This method intentionally ignores the Z coordinate to support 2D spatial operations. For the full 3D
+	 * distance use {@link #distance3D(IPoint)} or {@link #euclidianDistanceTo(IPoint)}.
+	 * </p>
+	 *
+	 * @param pt2
+	 *            the other point
+	 * @return the 2D Euclidean distance between this point and {@code pt2}
+	 */
 	@Override
 	public double distance(final IPoint pt2) {
 		double dx = x - pt2.getX();

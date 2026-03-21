@@ -22,11 +22,47 @@ import gama.api.types.geometry.IShape;
 public interface IEnvelope extends IIntersectable {
 
 	/**
-	 * Checks if is flat.
+	 * Checks whether this envelope has no extent in the Z dimension.
 	 *
-	 * @return true, if is flat
+	 * <p>
+	 * Returns {@code true} when:
+	 * </p>
+	 * <ul>
+	 *   <li>The envelope is <em>null</em> (empty geometry) — it has no extent in any dimension.</li>
+	 *   <li>The envelope is <em>2D</em> — {@code minZ == maxZ} (depth is zero).</li>
+	 * </ul>
+	 *
+	 * @return {@code true} if the envelope is null or has zero depth
 	 */
 	boolean isFlat();
+
+	/**
+	 * Returns {@code true} when this envelope has meaningful extent in the Z dimension, i.e. it is the logical
+	 * complement of {@link #isFlat()}.
+	 *
+	 * <p>
+	 * This convenience predicate is used to choose the right spatial index implementation: a {@code GamaOctTree}
+	 * (which partitions all three axes) is appropriate when the world has genuine depth; a {@code GamaQuadTree}
+	 * (XY-only) is sufficient for flat/2D worlds.
+	 * </p>
+	 *
+	 * @return {@code true} if {@code getDepth() > 0}, {@code false} otherwise
+	 */
+	default boolean is3D() { return !isFlat(); }
+
+	/**
+	 * Tests intersection considering only the X and Y dimensions (Z is ignored).
+	 *
+	 * <p>
+	 * Required for 2D spatial indexes (such as the quadtree) that partition space in XY only but may store agents
+	 * with non-zero Z coordinates (3D worlds). A full 3D intersection check would incorrectly exclude those agents.
+	 * </p>
+	 *
+	 * @param env
+	 *            the envelope to test against (Z is ignored)
+	 * @return {@code true} if the XY projections overlap
+	 */
+	boolean intersects2D(IEnvelope env);
 
 	/**
 	 * Checks if is null.
@@ -336,10 +372,18 @@ public interface IEnvelope extends IIntersectable {
 	double getMinY();
 
 	/**
+	 * Initialize an <code>Envelope</code> for a 2D region defined by X and Y bounds. The Z range is set to
+	 * {@code [0, 0]}, producing a <em>flat</em> (2D) envelope. Calls {@link #init(double, double, double, double,
+	 * double, double)} with {@code z1 = z2 = 0}.
+	 *
 	 * @param minX
+	 *            the minimum X coordinate
 	 * @param maxX
+	 *            the maximum X coordinate
 	 * @param minY
+	 *            the minimum Y coordinate
 	 * @param maxY
+	 *            the maximum Y coordinate
 	 */
 	default void init(final double minX, final double maxX, final double minY, final double maxY) {
 		init(minX, maxX, minY, maxY, 0.0, 0.0);

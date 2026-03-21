@@ -151,34 +151,34 @@ import gama.extension.maths.pde.diffusion.statements.DiffusionStatement.Diffusio
 public class DiffusionStatement extends AbstractStatement {
 
 	/** The variation. */
-	private static final String VARIATION = "variation";
+	protected static final String VARIATION = "variation";
 
 	/** The avoid mask. */
-	private static final String AVOID_MASK = "avoid_mask";
+	protected static final String AVOID_MASK = "avoid_mask";
 
 	/** The cycle length. */
-	private static final String CYCLE_LENGTH = "cycle_length";
+	protected static final String CYCLE_LENGTH = "cycle_length";
 
 	/** The propagation. */
-	private static final String PROPAGATION = "propagation";
+	protected static final String PROPAGATION = "propagation";
 
 	/** The gradient. */
-	private static final String GRADIENT = "gradient";
+	protected static final String GRADIENT = "gradient";
 
 	/** The diffusion. */
-	private static final String DIFFUSION = "diffusion";
+	protected static final String DIFFUSION = "diffusion";
 
 	/** The mask. */
-	private static final String MASK = "mask";
+	protected static final String MASK = "mask";
 
 	/** The radius. */
-	private final static String RADIUS = "radius";
+	protected final static String RADIUS = "radius";
 
 	/** The proportion. */
-	private final static String PROPORTION = "proportion";
+	protected final static String PROPORTION = "proportion";
 
 	/** The convolution. */
-	private final static String CONVOLUTION = "convolution";
+	protected final static String CONVOLUTION = "convolution";
 
 	/**
 	 * The Class DiffusionValidator.

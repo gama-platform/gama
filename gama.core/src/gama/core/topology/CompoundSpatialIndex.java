@@ -34,7 +34,6 @@ import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.interfaces.IAgentFilter;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.topology.grid.GridPopulation;
-
 /**
  * The Class CompoundSpatialIndex.
  */
@@ -244,6 +243,26 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 	 *            the insert agents
 	 * @return the i spatial index
 	 */
+	/**
+	 * Creates the appropriate spatial index for the current world bounds.
+	 *
+	 * <p>
+	 * When the world bounds have a non-zero depth ({@link IEnvelope#is3D()} returns {@code true}) a
+	 * {@link GamaOctTree} is chosen, which partitions all three spatial dimensions. For flat/2D worlds a
+	 * {@link GamaQuadTree} is used instead, which is faster and uses less memory for the common case where all agents
+	 * live at the same Z level.
+	 * </p>
+	 *
+	 * @param envelope
+	 *            the 3D bounding envelope of the simulation world
+	 * @param parallel
+	 *            {@code true} to create a thread-safe index
+	 * @return a new {@link ISpatialIndex} appropriate for the dimensionality of the world
+	 */
+	private ISpatialIndex createIndex(final IEnvelope envelope, final boolean parallel) {
+		return envelope.is3D() ? GamaOctTree.create(envelope, parallel) : GamaQuadTree.create(envelope, parallel);
+	}
+
 	private ISpatialIndex add(final IPopulation<? extends IAgent> pop, final boolean insertAgents) {
 		if (disposed || pop == null) return null;
 		ISpecies spec = pop.getSpecies();
@@ -252,7 +271,7 @@ public class CompoundSpatialIndex implements ISpatialIndex.Compound {
 			if (pop.isGrid()) {
 				index = ((GridPopulation) pop).getTopology().getPlaces();
 			} else {
-				index = GamaQuadTree.create(bounds, parallel);
+				index = createIndex(bounds, parallel);
 			}
 			spatialIndexes.put(spec, index);
 			if (insertAgents) { for (final IAgent ag : pop) { index.insert(ag); } }

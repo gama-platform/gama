@@ -23,6 +23,7 @@ import gama.annotations.support.IOperatorCategory;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IShape;
 import gama.api.types.misc.IContainer;
 
@@ -62,8 +63,9 @@ public class SpatialThreeD {
 		if (g == null) return geom;
 		if (index < 0 || index > g.getNumPoints() - 1)
 			throw GamaRuntimeException.warning("Trying to modify a point outside the bounds of the geometry", scope);
-
-		g.apply(new CoordinateSequenceFilter() {
+		// Copy the geometry before mutating to avoid modifying a potentially shared JTS object
+		final Geometry copy = (Geometry) g.clone();
+		copy.apply(new CoordinateSequenceFilter() {
 
 			boolean done = false;
 
@@ -81,8 +83,9 @@ public class SpatialThreeD {
 			@Override
 			public boolean isGeometryChanged() { return done; }
 		});
-
-		return geom;
+		copy.geometryChanged();
+		final IShape result = GamaShapeFactory.createFrom(copy).withAttributesOf(geom);
+		return result;
 	}
 
 	/**
@@ -117,7 +120,9 @@ public class SpatialThreeD {
 		final double[] zs = new double[coords.length(scope)];
 		int i = 0;
 		for (final Object o : coords.iterable(scope)) { zs[i++] = Types.FLOAT.cast(scope, o, null, false); }
-		g.apply(new CoordinateSequenceFilter() {
+		// Copy the geometry before mutating to avoid modifying a potentially shared JTS object
+		final Geometry copy = (Geometry) g.clone();
+		copy.apply(new CoordinateSequenceFilter() {
 
 			@Override
 			public void filter(final CoordinateSequence seq, final int i) {
@@ -130,8 +135,8 @@ public class SpatialThreeD {
 			@Override
 			public boolean isGeometryChanged() { return true; }
 		});
-
-		return geom;
+		copy.geometryChanged();
+		return GamaShapeFactory.createFrom(copy).withAttributesOf(geom);
 	}
 
 }

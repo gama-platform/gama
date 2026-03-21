@@ -2010,11 +2010,13 @@ public class SpatialCreation {
 	 */
 	private static List<IShape> quadraticBezierCurve(final IPoint p0, final IPoint p1, final IPoint p2,
 			final int nbPoints) {
-		final List<IShape> points = new ArrayList<>();
+		final List<IShape> points = new ArrayList<>(nbPoints);
+		final double denom = nbPoints - 1;
 		for (int i = 0; i < nbPoints; i++) {
-			final double x = quadraticBezier(p0.getX(), p1.getX(), p2.getX(), (double) i / (nbPoints - 1));
-			final double y = quadraticBezier(p0.getY(), p1.getY(), p2.getY(), (double) i / (nbPoints - 1));
-			final double z = quadraticBezier(p0.getZ(), p1.getZ(), p2.getZ(), (double) i / (nbPoints - 1));
+			final double t = i / denom;
+			final double x = quadraticBezier(p0.getX(), p1.getX(), p2.getX(), t);
+			final double y = quadraticBezier(p0.getY(), p1.getY(), p2.getY(), t);
+			final double z = quadraticBezier(p0.getZ(), p1.getZ(), p2.getZ(), t);
 			points.add(GamaPointFactory.create(x, y, z));
 		}
 		return points;
@@ -2037,11 +2039,13 @@ public class SpatialCreation {
 	 */
 	private static List<IShape> cubicBezierCurve(final IPoint p0, final IPoint p1, final IPoint p2, final IPoint p3,
 			final int nbPoints) {
-		final List<IShape> points = new ArrayList<>();
+		final List<IShape> points = new ArrayList<>(nbPoints);
+		final double denom = nbPoints - 1;
 		for (int i = 0; i < nbPoints; i++) {
-			final double x = cubicBezier(p0.getX(), p1.getX(), p2.getX(), p3.getX(), (double) i / (nbPoints - 1));
-			final double y = cubicBezier(p0.getY(), p1.getY(), p2.getY(), p3.getY(), (double) i / (nbPoints - 1));
-			final double z = cubicBezier(p0.getZ(), p1.getZ(), p2.getZ(), p3.getZ(), (double) i / (nbPoints - 1));
+			final double t = i / denom;
+			final double x = cubicBezier(p0.getX(), p1.getX(), p2.getX(), p3.getX(), t);
+			final double y = cubicBezier(p0.getY(), p1.getY(), p2.getY(), p3.getY(), t);
+			final double z = cubicBezier(p0.getZ(), p1.getZ(), p2.getZ(), p3.getZ(), t);
 			points.add(GamaPointFactory.create(x, y, z));
 		}
 		return points;
@@ -2081,8 +2085,10 @@ public class SpatialCreation {
 	 */
 	private static double cubicBezier(final double v0, final double v1, final double v2, final double v3,
 			final double t) {
-		return Math.pow(1 - t, 3) * v0 + 3 * (1 - t) * (1 - t) * t * v1 + 3 * (1 - t) * t * t * v2
-				+ Math.pow(t, 3) * v3;
+		final double mt = 1.0 - t;
+		final double mt2 = mt * mt;
+		final double t2 = t * t;
+		return mt2 * mt * v0 + 3.0 * mt2 * t * v1 + 3.0 * mt * t2 * v2 + t2 * t * v3;
 	}
 
 	/**

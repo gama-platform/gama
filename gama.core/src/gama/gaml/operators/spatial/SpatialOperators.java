@@ -315,7 +315,9 @@ public class SpatialOperators {
 			coord[1] = point;
 			geom_Tmp = GeometryUtils.getGeometryFactory().createLineString(coord);
 		} else if (geometry instanceof MultiPoint) {
-			final Coordinate[] coordinates = new Coordinate[geometry.getNumPoints() + 1];
+			final Coordinate[] existingCoords = geometry.getCoordinates();
+			final Coordinate[] coordinates = new Coordinate[existingCoords.length + 1];
+			System.arraycopy(existingCoords, 0, coordinates, 0, existingCoords.length);
 			coordinates[coordinates.length - 1] = p.toCoordinate();
 			geom_Tmp = GeometryUtils.getGeometryFactory().createMultiPointFromCoords(coordinates);
 		} else if (geometry instanceof LineString) {
@@ -391,12 +393,13 @@ public class SpatialOperators {
 		Geometry simpleMinGeom = null;
 		double complexMinLength = Double.MAX_VALUE;
 		Geometry complexMinGeom = null;
+		final Coordinate[] geomCoords = geometry.getCoordinates();
 		final int nbPts = ((Polygon) geometry).getExteriorRing().getCoordinates().length;
 		for (int index = 0; index <= nbPts; index++) {
 			final Coordinate[] coord = new Coordinate[nbPts + 1];
-			for (int i = 0; i < index; i++) { coord[i] = geometry.getCoordinates()[i]; }
+			for (int i = 0; i < index; i++) { coord[i] = geomCoords[i]; }
 			coord[index] = point;
-			for (int i = index + 1; i < coord.length; i++) { coord[i] = geometry.getCoordinates()[i - 1]; }
+			for (int i = index + 1; i < coord.length; i++) { coord[i] = geomCoords[i - 1]; }
 			final LinearRing[] lrs = new LinearRing[((Polygon) geometry).getNumInteriorRing()];
 			for (int i = 0; i < lrs.length; i++) { lrs[i] = ((Polygon) geometry).getInteriorRingN(i); }
 			final Geometry g = GeometryUtils.getGeometryFactory()
@@ -429,11 +432,12 @@ public class SpatialOperators {
 		Geometry simpleMinGeom = null;
 		double complexMinLength = Double.MAX_VALUE;
 		Geometry complexMinGeom = null;
-		for (int index = 0; index <= geometry.getCoordinates().length; index++) {
-			final Coordinate[] coord = new Coordinate[geometry.getCoordinates().length + 1];
-			for (int i = 0; i < index; i++) { coord[i] = geometry.getCoordinates()[i]; }
+		final Coordinate[] geomCoords = geometry.getCoordinates();
+		for (int index = 0; index <= geomCoords.length; index++) {
+			final Coordinate[] coord = new Coordinate[geomCoords.length + 1];
+			for (int i = 0; i < index; i++) { coord[i] = geomCoords[i]; }
 			coord[index] = point;
-			for (int i = index + 1; i < coord.length; i++) { coord[i] = geometry.getCoordinates()[i - 1]; }
+			for (int i = index + 1; i < coord.length; i++) { coord[i] = geomCoords[i - 1]; }
 			final Geometry g = GeometryUtils.getGeometryFactory().createLineString(coord);
 			if (g.isValid()) {
 				if (simpleMinLength > g.getLength()) {
@@ -680,14 +684,16 @@ public class SpatialOperators {
 					indexTarget = i;
 				}
 			}
+			// Compute the split coordinate once and share it
+			final Coordinate splitCoord = pt.getLocation().toCoordinate();
 			int nbSp = indexTarget + 2;
 			final Coordinate[] coords1 = new Coordinate[nbSp];
 			for (int i = 0; i <= indexTarget; i++) { coords1[i] = coords[i]; }
-			coords1[indexTarget + 1] = GamaPointFactory.create(pt.getLocation()).toCoordinate();
+			coords1[indexTarget + 1] = splitCoord;
 
 			nbSp = coords.length - indexTarget;
 			final Coordinate[] coords2 = new Coordinate[nbSp];
-			coords2[0] = GamaPointFactory.create(pt.getLocation()).toCoordinate();
+			coords2[0] = splitCoord;
 			int k = 1;
 			for (int i = indexTarget + 1; i < coords.length; i++) {
 				coords2[k] = coords[i];
@@ -726,14 +732,16 @@ public class SpatialOperators {
 					indexTarget = i;
 				}
 			}
+			// Compute the split coordinate once and share it
+			final Coordinate splitCoord = pt.getLocation().toCoordinate();
 			int nbSp = indexTarget + 2;
 			final Coordinate[] coords1 = new Coordinate[nbSp];
 			for (int i = 0; i <= indexTarget; i++) { coords1[i] = coords[i]; }
-			coords1[indexTarget + 1] = GamaPointFactory.create(pt.getLocation()).toCoordinate();
+			coords1[indexTarget + 1] = splitCoord;
 
 			nbSp = coords.length - indexTarget;
 			final Coordinate[] coords2 = new Coordinate[nbSp];
-			coords2[0] = GamaPointFactory.create(pt.getLocation()).toCoordinate();
+			coords2[0] = splitCoord;
 			int k = 1;
 			for (int i = indexTarget + 1; i < coords.length; i++) {
 				coords2[k] = coords[i];

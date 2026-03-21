@@ -538,7 +538,7 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	public IPopulation<? extends IAgent> getPopulationFor(final String speciesName) {
 		final IMacroAgent a = getHost();
 		if (a == null) return null;
-		return getHost().getPopulationFor(speciesName);
+		return a.getPopulationFor(speciesName);
 	}
 
 	@Override
@@ -700,9 +700,7 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	 */
 	@Override
 	public IMap<String, Object> getAttributes(final boolean createIfNeeded) {
-		if (createIfNeeded) {
-			attributes.compareAndSet(null, GamaMapFactory.create(Types.STRING, Types.NO_TYPE));
-		}
+		if (createIfNeeded) { attributes.compareAndSet(null, GamaMapFactory.create(Types.STRING, Types.NO_TYPE)); }
 		return attributes.get();
 	}
 

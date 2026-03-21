@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -99,16 +100,17 @@ public class SpatialStatistics {
 		for (var key : agents.getKeys()) { result.add(new DistanceCalc(agent, key, agents.get(key))); }
 		Collections.sort(result);
 		// store k nearest neighbors
-		ArrayList<Object> K_neighbors = new ArrayList<>();
+		ArrayList<Object> K_neighbors = new ArrayList<>(Math.min(k, result.size()));
 		for (int i = 0; i < Math.min(k, result.size()); i++) { K_neighbors.add(result.get(i).label); }
-		// find most frequent element (majority voting)
-		int mostFrequent = 0;
+		// find most frequent element (majority voting) in O(k) instead of O(k²)
+		final java.util.Map<Object, Integer> freqMap = new java.util.HashMap<>();
+		for (final Object label : K_neighbors) { freqMap.merge(label, 1, Integer::sum); }
 		Object predictedLabel = null;
-		for (int i = 0; i < k; i++) {
-			int temp = Collections.frequency(K_neighbors, K_neighbors.get(i));
-			if (temp > mostFrequent) {
-				mostFrequent = temp;
-				predictedLabel = K_neighbors.get(i);
+		int mostFrequent = 0;
+		for (final java.util.Map.Entry<Object, Integer> entry : freqMap.entrySet()) {
+			if (entry.getValue() > mostFrequent) {
+				mostFrequent = entry.getValue();
+				predictedLabel = entry.getKey();
 			}
 		}
 		return predictedLabel;
@@ -219,7 +221,7 @@ public class SpatialStatistics {
 
 		IList<IAgent>[] minFusion = null;
 
-		final Map<IList[], Double> distances = new HashMap<>();
+		final Map<IList[], Double> distances = new IdentityHashMap<>();
 		for (final IAgent ag : agents.iterable(scope)) {
 			final IList<IAgent> group = GamaListFactory.create(Types.AGENT);
 			group.add(ag);

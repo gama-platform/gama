@@ -25,10 +25,31 @@ import gama.api.types.geometry.IShape;
 /**
  * A 3D envelope that extends the 2D JTS Envelope.
  *
+ * <p>
+ * A {@code GamaEnvelope} is considered <em>2D (flat)</em> when {@code minz == maxz} (depth is zero). It becomes
+ * <em>3D</em> as soon as a point or envelope with a differing Z coordinate is included via any of the
+ * {@code expandToInclude} methods. All operations ({@link #getDepth()}, {@link #getVolume()},
+ * {@link #minExtent()}, {@link #maxExtent()}, {@link #intersects}, {@link #covers}, {@link #distance}) are
+ * coherent with respect to this 2D/3D distinction:
+ * </p>
+ * <ul>
+ *   <li>{@link #isFlat()} returns {@code true} for both null envelopes and envelopes with depth zero.</li>
+ *   <li>Plain JTS {@link Envelope} instances (which carry no Z information) are treated as flat (Z = [0, 0])
+ *       in all operations that accept them.</li>
+ *   <li>Re-initializing a {@code GamaEnvelope} from a plain JTS {@link Envelope} resets the Z range to [0, 0],
+ *       preventing stale Z values from pooled instances from leaking.</li>
+ * </ul>
+ *
+ * <h2>Z-coordinate semantics</h2>
+ * <ul>
+ *   <li>After {@link #setToNull()}: {@code minz = 0, maxz = -1} (standard "null" sentinel — depth = 0 since
+ *       {@link #getDepth()} guards against null).</li>
+ *   <li>After 2D initialization (4-arg {@code init} or factory methods that do not supply Z): {@code minz = maxz = 0}.</li>
+ *   <li>After 3D initialization: {@code minz <= maxz} with at least one of them non-zero (or both non-zero).</li>
+ * </ul>
  *
  * @author Niels Charlier
  * @adapted for GAMA by A. Drogoul
- *
  */
 public class GamaEnvelope extends Envelope implements IEnvelope {
 
@@ -61,6 +82,11 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 	/**
 	 * Initialize an <code>Envelope</code> for a region defined by maximum and minimum values.
 	 *
+	 * <p>
+	 * {@link Double#NaN} values for Z are treated as {@code 0.0}, ensuring the envelope never holds NaN in its Z
+	 * range (consistent with {@link GamaPoint}'s invariant that Z is never NaN).
+	 * </p>
+	 *
 	 * @param x1
 	 *            the first x-value
 	 * @param x2
@@ -70,20 +96,22 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 	 * @param y2
 	 *            the second y-value
 	 * @param z1
-	 *            the first z-value
+	 *            the first z-value (NaN is treated as 0.0)
 	 * @param z2
-	 *            the second z-value
+	 *            the second z-value (NaN is treated as 0.0)
 	 */
 	@Override
 	public void init(final double x1, final double x2, final double y1, final double y2, final double z1,
 			final double z2) {
 		init(x1, x2, y1, y2);
-		if (z1 < z2) {
-			minz = z1;
-			maxz = z2;
+		final double sz1 = Double.isNaN(z1) ? 0.0d : z1;
+		final double sz2 = Double.isNaN(z2) ? 0.0d : z2;
+		if (sz1 < sz2) {
+			minz = sz1;
+			maxz = sz2;
 		} else {
-			minz = z2;
-			maxz = z1;
+			minz = sz2;
+			maxz = sz1;
 		}
 	}
 
@@ -111,12 +139,28 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 		init(p.x, p.x, p.y, p.y, p.z, p.z);
 	}
 
+	/**
+	 * Initialize this envelope from a JTS {@link Envelope}.
+	 *
+	 * <p>
+	 * If {@code env} is a {@link GamaEnvelope}, its Z range is preserved. Otherwise (plain JTS {@link Envelope},
+	 * which carries no Z information), the Z range is explicitly reset to {@code [0, 0]}, preventing stale Z values
+	 * from a previously used pooled instance from leaking into the new 2D envelope.
+	 * </p>
+	 *
+	 * @param env
+	 *            the source envelope; must not be {@code null}
+	 */
 	@Override
 	public void init(final Envelope env) {
 		super.init(env);
 		if (env instanceof GamaEnvelope e) {
-			this.minz = e.getMinZ();
-			this.maxz = e.getMaxZ();
+			this.minz = e.minz;
+			this.maxz = e.maxz;
+		} else {
+			// Plain JTS Envelope has no Z information — treat it as flat (2D).
+			this.minz = 0d;
+			this.maxz = 0d;
 		}
 	}
 
@@ -148,6 +192,12 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 
 	/**
 	 * Makes this <code>Envelope</code> a "null" envelope, that is, the envelope of the empty geometry.
+	 *
+	 * <p>
+	 * After calling this method, {@code minz = 0} and {@code maxz = -1}, which are sentinels signalling the null
+	 * state. {@link #isFlat()} returns {@code true} for a null envelope. {@link #getDepth()} guards against null and
+	 * returns {@code 0}.
+	 * </p>
 	 */
 	@Override
 	public void setToNull() {
@@ -200,22 +250,35 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 	/**
 	 * Gets the minimum extent of this envelope across all three dimensions.
 	 *
+	 * <p>
+	 * For a 3D (non-flat) envelope, returns the minimum of width, height, and depth. For a flat (2D) envelope whose
+	 * depth is zero, returns the minimum of width and height (depth is excluded since it is zero and would trivially
+	 * dominate the result).
+	 * </p>
+	 *
 	 * @return the minimum extent of this envelope
 	 */
 	@Override
 	public double minExtent() {
 		if (isNull()) return 0.0;
+		if (isFlat()) return Math.min(getWidth(), getHeight());
 		return Math.min(getWidth(), Math.min(getHeight(), getDepth()));
 	}
 
 	/**
 	 * Gets the maximum extent of this envelope across all three dimensions.
 	 *
+	 * <p>
+	 * For a 3D (non-flat) envelope, returns the maximum of width, height, and depth. For a flat (2D) envelope, returns
+	 * the maximum of width and height only.
+	 * </p>
+	 *
 	 * @return the maximum extent of this envelope
 	 */
 	@Override
 	public double maxExtent() {
 		if (isNull()) return 0.0;
+		if (isFlat()) return Math.max(getWidth(), getHeight());
 		return Math.max(getWidth(), Math.max(getHeight(), getDepth()));
 	}
 
@@ -232,10 +295,23 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 	}
 
 	/**
-	 * Expands this envelope by a given distance in all directions. Both positive and negative distances are supported.
+	 * Expands this envelope by a given distance in all three dimensions (X, Y and Z).
+	 *
+	 * <p>
+	 * The expansion is always applied in all three dimensions, regardless of whether the envelope is flat (2D) or
+	 * already 3D. This is required so that spatial search code (e.g. {@code GamaQuadTree.allAtDistance}) can use a
+	 * distance-expanded envelope as a candidate set that captures agents at any Z level — including agents at Z=0 when
+	 * the searching agent is at a non-zero Z, or vice versa. Restricting expansion to 2D would silently miss agents on
+	 * the other Z level and break distance-based queries in mixed 2D/3D scenarios.
+	 * </p>
+	 *
+	 * <p>
+	 * Callers that need to keep an envelope explicitly 2D (e.g. to record a 2D bounding box) should use
+	 * {@link #expandBy(double, double)} directly.
+	 * </p>
 	 *
 	 * @param distance
-	 *            the distance to expand the envelope
+	 *            the distance to expand the envelope in each axis
 	 */
 	@Override
 	public void expandBy(final double distance) {
@@ -315,11 +391,32 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 	}
 
 	/**
-	 * Check if the region defined by <code>other</code> overlaps (intersects) the region of this <code>Envelope</code>.
+	 * Tests intersection considering only the X and Y dimensions (Z is ignored).
+	 *
+	 * <p>
+	 * Overrides the default to delegate directly to the JTS {@link Envelope#intersects(Envelope)} method, which is
+	 * purely 2D. This is correct because the quadtree partitions space in XY only; agents may carry non-zero Z in 3D
+	 * environments, but those should still be found by any 2D proximity search.
+	 * </p>
+	 *
+	 * @param env
+	 *            the envelope to test against (Z is ignored)
+	 * @return {@code true} if the XY projections overlap
+	 */
+	@Override
+	public boolean intersects2D(final IEnvelope env) {
+		if (env instanceof Envelope other) return super.intersects(other);
+		// Fallback for non-Envelope IEnvelope implementations
+		return super.intersects(new org.locationtech.jts.geom.Envelope(env.getMinX(), env.getMaxX(), env.getMinY(), env.getMaxY()));
+	}
+
+	/**
+	 * Check if the region defined by <code>other</code> overlaps (intersects) the region of this <code>Envelope</code>
+	 * in full 3D (X, Y and Z are all considered).
 	 *
 	 * @param other
 	 *            the <code>Envelope</code> which this <code>Envelope</code> is being checked for overlapping
-	 * @return <code>true</code> if the <code>Envelope</code>s overlap
+	 * @return <code>true</code> if the <code>Envelope</code>s overlap in all three dimensions
 	 */
 	@Override
 	public boolean intersects(final Envelope other) {
@@ -498,8 +595,13 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 	}
 
 	/**
+	 * Returns the maximum Z coordinate of the given envelope. Plain JTS {@link Envelope} instances, which carry no Z
+	 * information, are treated as flat (Z = 0), consistent with the contract that a non-{@link GamaEnvelope} is a 2D
+	 * envelope whose Z range is {@code [0, 0]}.
+	 *
 	 * @param other
-	 * @return
+	 *            the envelope to query; must not be {@code null}
+	 * @return the maximum Z value, or {@code 0d} if {@code other} is not a {@link GamaEnvelope}
 	 */
 	private double getMaxZOf(final Envelope other) {
 		if (other instanceof GamaEnvelope e) return e.maxz;
@@ -507,8 +609,13 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 	}
 
 	/**
+	 * Returns the minimum Z coordinate of the given envelope. Plain JTS {@link Envelope} instances, which carry no Z
+	 * information, are treated as flat (Z = 0), consistent with the contract that a non-{@link GamaEnvelope} is a 2D
+	 * envelope whose Z range is {@code [0, 0]}.
+	 *
 	 * @param other
-	 * @return
+	 *            the envelope to query; must not be {@code null}
+	 * @return the minimum Z value, or {@code 0d} if {@code other} is not a {@link GamaEnvelope}
 	 */
 	private double getMinZOf(final Envelope other) {
 		if (other instanceof GamaEnvelope e) return e.minz;
@@ -540,12 +647,20 @@ public class GamaEnvelope extends Envelope implements IEnvelope {
 	}
 
 	/**
-	 * Checks if is flat.
+	 * Checks if this envelope is flat, i.e. has no extent in the Z dimension.
 	 *
-	 * @return true, if is flat
+	 * <p>
+	 * Returns {@code true} in two cases:
+	 * </p>
+	 * <ul>
+	 *   <li>The envelope is <em>null</em> (empty geometry) — a null envelope has no extent at all, including in Z.</li>
+	 *   <li>The envelope is <em>2D</em>, i.e. {@code minz == maxz} (depth is zero).</li>
+	 * </ul>
+	 *
+	 * @return {@code true} if the envelope is null or has zero depth
 	 */
 	@Override
-	public boolean isFlat() { return minz == maxz; }
+	public boolean isFlat() { return isNull() || minz == maxz; }
 
 	/**
 	 * To geometry.

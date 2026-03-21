@@ -17,6 +17,8 @@ import org.geotools.geometry.jts.JTS;
 import org.geotools.referencing.CRS;
 import org.locationtech.jts.geom.Geometry;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 import gama.annotations.doc;
 import gama.annotations.example;
 import gama.annotations.no_test;
@@ -41,6 +43,41 @@ public class SpatialProjections {
 
 	/** The Constant THE_CODE. */
 	private static final String THE_CODE = "The code ";
+
+	/**
+	 * Thread-safe cache for decoded CoordinateReferenceSystem instances, keyed by EPSG code string.
+	 * CRS.decode() is expensive (involves registry lookup and parsing) so results are cached.
+	 */
+	private static final ConcurrentHashMap<String, CoordinateReferenceSystem> CRS_CACHE = new ConcurrentHashMap<>();
+
+	/**
+	 * Thread-safe cache for MathTransform instances, keyed by "sourceCode->targetCode".
+	 * CRS.findMathTransform() is expensive so results are cached.
+	 */
+	private static final ConcurrentHashMap<String, MathTransform> TRANSFORM_CACHE = new ConcurrentHashMap<>();
+
+	/**
+	 * Returns a cached CoordinateReferenceSystem for the given EPSG code, decoding it on first use.
+	 *
+	 * @param code
+	 *            the EPSG code string
+	 * @param scope
+	 *            the current scope (for error reporting)
+	 * @return the CoordinateReferenceSystem
+	 */
+	private static CoordinateReferenceSystem decodeCRS(final String code, final gama.api.runtime.scope.IScope scope) {
+		try {
+			return CRS_CACHE.computeIfAbsent(code, k -> {
+				try {
+					return CRS.decode(k);
+				} catch (final FactoryException e) {
+					throw new RuntimeException(e);
+				}
+			});
+		} catch (final RuntimeException e) {
+			throw gama.api.exceptions.GamaRuntimeException.error(THE_CODE + code + " does not correspond to a known EPSG code", scope);
+		}
+	}
 
 	/**
 	 * Crs from file.
@@ -237,25 +274,21 @@ public class SpatialProjections {
 	public static IShape transform_CRS(final IScope scope, final IShape g, final String sourceCode,
 			final String targetcode) {
 		if (g == null) return g;
-		CoordinateReferenceSystem sourceCRS;
-		try {
-			sourceCRS = CRS.decode(sourceCode);
-		} catch (final FactoryException e) {
-			throw GamaRuntimeException.error(THE_CODE + sourceCode + " does not correspond to a known EPSG code",
-					scope);
-		}
-		CoordinateReferenceSystem targetCRS;
-		try {
-			targetCRS = CRS.decode(targetcode);
-		} catch (final FactoryException e) {
-			throw GamaRuntimeException.error(THE_CODE + targetcode + " does not correspond to a known EPSG code",
-					scope);
-		}
+		final CoordinateReferenceSystem sourceCRS = decodeCRS(sourceCode, scope);
+		final CoordinateReferenceSystem targetCRS = decodeCRS(targetcode, scope);
 
-		MathTransform transform;
+		final String transformKey = sourceCode + "->" + targetcode;
+		MathTransform transform = TRANSFORM_CACHE.get(transformKey);
+		if (transform == null) {
+			try {
+				transform = CRS.findMathTransform(sourceCRS, targetCRS);
+				TRANSFORM_CACHE.put(transformKey, transform);
+			} catch (final Exception e) {
+				throw GamaRuntimeException.error("No transformation found from " + sourceCode + " to " + targetcode, scope);
+			}
+		}
 		Geometry targetGeometry = null;
 		try {
-			transform = CRS.findMathTransform(sourceCRS, targetCRS);
 			targetGeometry = JTS.transform(g.getInnerGeometry(), transform);
 		} catch (final Exception e) {
 			throw GamaRuntimeException.error("No transformation found from " + sourceCode + " to " + targetcode, scope);

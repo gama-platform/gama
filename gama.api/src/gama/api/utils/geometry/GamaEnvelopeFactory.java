@@ -41,12 +41,23 @@ public class GamaEnvelopeFactory {
 			PoolUtils.create("Envelope", true, GamaEnvelope::new, (from, to) -> to.set(from), null);
 
 	/**
-	 * The Class Immutable.
+	 * An immutable 2D {@link GamaEnvelope} that rejects all mutating operations.
+	 *
+	 * <p>
+	 * The Z range of an {@code Immutable} envelope is always {@code [0, 0]} (flat/2D), since no 3D initialization
+	 * path is exposed. All mutating methods are no-ops.
+	 * </p>
 	 */
 	static class Immutable extends GamaEnvelope {
 
 		/**
-		 * Instantiates a new immutable.
+		 * Instantiates a new immutable 2D envelope.
+		 *
+		 * <p>
+		 * Uses {@code super.init} (the JTS {@link Envelope#init}) directly to bypass the
+		 * {@link GamaEnvelope#init(double, double, double, double, double, double)} override. The Z fields
+		 * {@code minz} and {@code maxz} remain at their Java default of {@code 0.0}, so the envelope is flat.
+		 * </p>
 		 *
 		 * @param minX
 		 *            the min X
