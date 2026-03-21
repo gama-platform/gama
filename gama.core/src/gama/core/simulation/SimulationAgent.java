@@ -479,7 +479,8 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		// We systematically translate the geometry to {0,0}
 		IShape geom = g;
 		if (geom == null) {
-			geom = GamaShapeFactory.buildBox(100, 100, 100, GamaPointFactory.create(50, 50, 50));
+			geom = GamaShapeFactory.buildSquare(100, GamaPointFactory.create(50, 50));
+			// geom = GamaShapeFactory.buildBox(100, 100, 100, GamaPointFactory.create(50, 50, 50));
 		} else {
 			// See Issue #2787, #2795
 			final Geometry gg = geom.getInnerGeometry();
@@ -1114,7 +1115,9 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 */
 	@Override
 	@SuppressWarnings ("unchecked")
-	public <T> Map<SimulationLocal<T>, T> getSimulationLocalMap() { return (Map<SimulationLocal<T>, T>) (Map<?, ?>) simulationLocalMap; }
+	public <T> Map<SimulationLocal<T>, T> getSimulationLocalMap() {
+		return (Map<SimulationLocal<T>, T>) (Map<?, ?>) simulationLocalMap;
+	}
 
 	/**
 	 * Sets the Simulation local map.
@@ -1124,7 +1127,9 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	 */
 	@Override
 	@SuppressWarnings ("unchecked")
-	public <T> void setSimulationLocalMap(final Map<SimulationLocal<T>, T> map) { simulationLocalMap = (Map<SimulationLocal<?>, Object>) (Map<?, ?>) map; }
+	public <T> void setSimulationLocalMap(final Map<SimulationLocal<T>, T> map) {
+		simulationLocalMap = (Map<SimulationLocal<?>, Object>) (Map<?, ?>) map;
+	}
 
 	@Override
 	public String getFamilyName() { return IKeyword.SIMULATION; }
