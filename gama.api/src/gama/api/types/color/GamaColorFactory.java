@@ -22,6 +22,8 @@ import gama.api.gaml.types.Cast;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
 import gama.api.types.misc.IContainer;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * A static factory for creating and managing {@link IColor} instances. This class serves as a central point for
@@ -62,10 +64,7 @@ public class GamaColorFactory {
 	 * This allows colors defined with names like "red" or "blue" to maintain their semantic meaning when serialized.
 	 * </p>
 	 */
-	public static class NamedGamaColor extends GamaColor {
-
-		/** The color's name (e.g., "red", "blue", "lightgray"). */
-		final String name;
+	public static record NamedGamaColor(String name, IColor internal) implements IColor {
 
 		/**
 		 * Creates a new named color.
@@ -76,8 +75,7 @@ public class GamaColorFactory {
 		 *            array containing [red, green, blue, alpha] components (0-255)
 		 */
 		NamedGamaColor(final String name, final int... rgba) {
-			super(rgba[0], rgba[1], rgba[2], rgba[3]);
-			this.name = name;
+			this(name, createWithRGBA(rgba[0], rgba[1], rgba[2], rgba[3]));
 		}
 
 		@Override
@@ -94,6 +92,14 @@ public class GamaColorFactory {
 		public String stringValue(final IScope scope) {
 			return name;
 		}
+
+		@Override
+		public IJsonValue serializeToJson(final IJson json) {
+			return internal.serializeToJson(json);
+		}
+
+		@Override
+		public Color getAWTColor() { return internal.getAWTColor(); }
 
 	}
 

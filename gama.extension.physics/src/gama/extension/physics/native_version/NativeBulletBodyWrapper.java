@@ -30,7 +30,6 @@ import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.types.pair.GamaPairFactory;
-import gama.api.types.pair.IPair;
 import gama.extension.physics.common.AbstractBodyWrapper;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IShapeConverter;
@@ -193,11 +192,6 @@ public class NativeBulletBodyWrapper
 		agent.setLocation(
 				GamaPointFactory.create(vectorTransfer.x, vectorTransfer.y, vectorTransfer.z - aabbTranslation.z));
 		body.getPhysicsRotation(quatTransfer);
-		@SuppressWarnings ("unchecked") var rot = (IPair<Double, IPoint>) agent.getAttribute(ROTATION);
-		if (rot == null) {
-			rot = GamaPairFactory.createWith(0d, GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT);
-			agent.setAttribute(ROTATION, rot);
-		}
 		float qx = quatTransfer.getX();
 		float qy = quatTransfer.getY();
 		float qz = quatTransfer.getZ();
@@ -205,8 +199,12 @@ public class NativeBulletBodyWrapper
 		if (mag > EPS) {
 			mag = Math.sqrt(mag);
 			double invMag = 1.0 / mag;
-			rot.getValue().setLocation(qx * invMag, qy * invMag, qz * invMag);
-			rot.setKey(Math.toDegrees(2.0 * Math.atan2(mag, quatTransfer.getW())));
+			agent.setAttribute(ROTATION,
+					GamaPairFactory.createWith(Math.toDegrees(2.0 * Math.atan2(mag, quatTransfer.getW())),
+							GamaPointFactory.create(qx * invMag, qy * invMag, qz * invMag), Types.FLOAT, Types.POINT));
+		} else {
+			agent.setAttribute(ROTATION,
+					GamaPairFactory.createWith(0d, GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT));
 		}
 	}
 

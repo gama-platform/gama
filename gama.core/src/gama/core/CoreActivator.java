@@ -20,13 +20,11 @@ import gama.api.types.graph.GamaGraphFactory;
 import gama.api.types.graph.GamaPathFactory;
 import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.message.GamaMessageFactory;
-import gama.api.types.pair.GamaPairFactory;
 import gama.api.types.topology.GamaTopologyFactory;
 import gama.core.agent.GamlAgent;
 import gama.core.agent.MinimalAgent;
 import gama.core.geometry.InternalGamaShapeFactory;
 import gama.core.topology.InternalTopologyFactory;
-import gama.core.util.InternalGamaPairFactory;
 import gama.core.util.graph.InternalGamaGraphFactory;
 import gama.core.util.json.Json;
 import gama.core.util.matrix.InternalGamaMatrixFactory;
@@ -164,7 +162,6 @@ public class CoreActivator extends GamaBundleActivator {
 		// GamaListFactory.setBuilder(new InternalGamaListFactory());
 		// GamaMapFactory.setBuilder(new InternalGamaMapFactory());
 		GamaMatrixFactory.setBuilder(new InternalGamaMatrixFactory());
-		GamaPairFactory.setBuilder(new InternalGamaPairFactory());
 
 		// Geometry and spatial factories
 		// GamaPointFactory.setBuilder(new InternalGamaPointFactory());

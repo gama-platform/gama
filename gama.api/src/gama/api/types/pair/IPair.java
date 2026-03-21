@@ -9,22 +9,19 @@
  ********************************************************************************************************/
 package gama.api.types.pair;
 
-import java.util.Map;
-
 import gama.annotations.doc;
 import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.support.ITypeProvider;
 import gama.api.types.misc.IContainer;
-import gama.api.types.misc.IContainer.ToGet;
 
 /**
  * The Interface IPair.
- * 
+ *
  * Represents a pair (or tuple) of two values: a key and a value. This interface extends both {@link IContainer} and
  * {@link Map.Entry}, allowing it to be used as a container and as a map entry. Pairs are used throughout GAMA to
  * represent two-element associations, coordinates, or simple key-value relationships.
- * 
+ *
  * <p>
  * The interface provides access to both elements through different naming conventions:
  * <ul>
@@ -33,12 +30,12 @@ import gama.api.types.misc.IContainer.ToGet;
  * <li>As named attributes: "key" and "value" variables</li>
  * </ul>
  * </p>
- * 
+ *
  * @param <K>
  *            the type of the key (first element)
  * @param <V>
  *            the type of the value (second element)
- * 
+ *
  * @author drogoul
  * @since GAMA 1.0
  */
@@ -50,8 +47,7 @@ import gama.api.types.misc.IContainer.ToGet;
 				name = IPair.VALUE,
 				type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 				doc = { @doc ("Returns the value of this pair (can be nil)") }) })
-public interface IPair<K, V>
-		extends IContainer<Integer, Object>, IContainer.ToGet<Integer, Object>, Map.Entry<K, V> {
+public interface IPair<K, V> extends IContainer<Integer, Object>, IContainer.ToGet<Integer, Object> {
 
 	/** The constant name for the key attribute. */
 	String KEY = "key";
@@ -61,7 +57,7 @@ public interface IPair<K, V>
 
 	/**
 	 * Returns the first element of the pair (the key).
-	 * 
+	 *
 	 * @return the key (first element) of this pair, which can be null
 	 */
 	K first();
@@ -74,11 +70,17 @@ public interface IPair<K, V>
 	V last();
 
 	/**
-	 * Sets the key (first element) of this pair.
-	 * 
-	 * @param key
-	 *            the new key to set (can be null)
+	 * Gets the key.
+	 *
+	 * @return the key
 	 */
-	void setKey(Object key);
+	default K getKey() { return first(); }
+
+	/**
+	 * Gets the value.
+	 *
+	 * @return the value
+	 */
+	default V getValue() { return last(); }
 
 }

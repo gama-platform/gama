@@ -28,7 +28,6 @@ import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.types.pair.GamaPairFactory;
-import gama.api.types.pair.IPair;
 import gama.dev.DEBUG;
 import gama.extension.physics.common.AbstractBodyWrapper;
 import gama.extension.physics.common.IBody;
@@ -226,16 +225,13 @@ public class Box2DBodyWrapper extends AbstractBodyWrapper<World, Body, Shape, Ve
 	}
 
 	@Override
+	@SuppressWarnings ("unchecked")
 	public void transferLocationAndRotationToAgent() {
 		Vec2 vectorTransfer = body.getPosition();
 		agent.setLocation(toGamaPoint(vectorTransfer));
 		Rot bodyRotation = body.getTransform().q;
-		@SuppressWarnings ("unchecked") var rot = (IPair<Double, IPoint>) agent.getAttribute(ROTATION);
-		if (rot == null) {
-			rot = GamaPairFactory.createWith(0d, GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT);
-			agent.setAttribute(ROTATION, rot);
-		}
-		rot.setKey(Math.toDegrees(bodyRotation.getAngle()));
+		agent.setAttribute(ROTATION, GamaPairFactory.createWith(Math.toDegrees(bodyRotation.getAngle()),
+				GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT));
 	}
 
 	@Override

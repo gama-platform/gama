@@ -33,7 +33,6 @@ import gama.api.types.geometry.GamaShapeFactory;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.types.pair.GamaPairFactory;
-import gama.api.types.pair.IPair;
 import gama.extension.physics.common.AbstractBodyWrapper;
 import gama.extension.physics.common.IBody;
 
@@ -245,13 +244,10 @@ public class BulletBodyWrapper extends AbstractBodyWrapper<DiscreteDynamicsWorld
 				GamaPointFactory.create(vectorTransfer.x, vectorTransfer.y, vectorTransfer.z - aabbTranslation.z));
 		temp.getRotation(quatTransfer);
 		axisAngleTransfer.set(quatTransfer);
-		@SuppressWarnings ("unchecked") var rot = (IPair<Double, IPoint>) agent.getAttribute(ROTATION);
-		if (rot == null) {
-			rot = GamaPairFactory.createWith(0d, GamaPointFactory.create(0, 0, 1), Types.FLOAT, Types.POINT);
-			agent.setAttribute(ROTATION, rot);
-		}
-		rot.setKey(Math.toDegrees(axisAngleTransfer.angle));
-		rot.getValue().setLocation(axisAngleTransfer.x, axisAngleTransfer.y, axisAngleTransfer.z);
+		agent.setAttribute(ROTATION,
+				GamaPairFactory.createWith(axisAngleTransfer.angle,
+						GamaPointFactory.create(axisAngleTransfer.x, axisAngleTransfer.y, axisAngleTransfer.z),
+						Types.FLOAT, Types.POINT));
 	}
 
 }

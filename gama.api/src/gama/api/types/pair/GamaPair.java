@@ -7,7 +7,7 @@
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
-package gama.core.util;
+package gama.api.types.pair;
 
 import static java.util.Objects.hash;
 
@@ -27,8 +27,6 @@ import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IMatrix;
-import gama.api.types.pair.GamaPairFactory;
-import gama.api.types.pair.IPair;
 import gama.api.utils.StringUtils;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonValue;
@@ -38,21 +36,12 @@ import gama.api.utils.json.IJsonValue;
  */
 
 @SuppressWarnings ({ "unchecked", "rawtypes" })
-public class GamaPair<K, V> implements IPair<K, V> {
+public record GamaPair<K, V>(K key, V value, IContainerType type) implements IPair<K, V> {
 
 	// TODO Makes it inherit from Map.Entry<K,V> in order to tighten the link
 	// between it and GamaMap
 	// (have the entrySet() of GamaMap built from IPairs)
 	// FIXME: This has still to be implemented
-
-	/** The type. */
-	private final IContainerType type;
-
-	/** The key. */
-	public K key;
-
-	/** The value. */
-	public V value;
 
 	/**
 	 * Instantiates a new gama pair.
@@ -67,9 +56,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	 *            the contents type
 	 */
 	GamaPair(final K k, final V v, final IType keyType, final IType contentsType) {
-		key = k;
-		value = v;
-		type = Types.PAIR.of(keyType, contentsType);
+		this(k, v, Types.PAIR.of(keyType, contentsType));
 	}
 
 	/**
@@ -87,9 +74,8 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	 *            the contents type
 	 */
 	GamaPair(final IScope scope, final K k, final V v, final IType keyType, final IType contentsType) {
-		key = (K) keyType.cast(scope, k, null, false);
-		value = (V) contentsType.cast(scope, v, null, false);
-		type = Types.PAIR.of(keyType, contentsType);
+		this((K) keyType.cast(scope, k, null, false), (V) contentsType.cast(scope, v, null, false),
+				Types.PAIR.of(keyType, contentsType));
 	}
 
 	@Override
@@ -157,12 +143,6 @@ public class GamaPair<K, V> implements IPair<K, V> {
 		return GamaPairFactory.createWith(key, value, type.getKeyType(), type.getContentType());
 	}
 
-	@Override
-	public V setValue(final V value) {
-		this.value = value;
-		return value;
-	}
-
 	/**
 	 * Method get()
 	 *
@@ -176,8 +156,7 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	/**
 	 * Method getFromIndicesList()
 	 *
-	 * @see gama.api.types.misc.IContainer#getFromIndicesList(gama.api.runtime.scope.IScope,
-	 *      gama.api.types.list.IList)
+	 * @see gama.api.types.misc.IContainer#getFromIndicesList(gama.api.runtime.scope.IScope, gama.api.types.list.IList)
 	 */
 	@Override
 	public Object getFromIndicesList(final IScope scope, final IList indices) throws GamaRuntimeException {
@@ -319,14 +298,5 @@ public class GamaPair<K, V> implements IPair<K, V> {
 	public IJsonValue serializeToJson(final IJson json) {
 		return json.typedObject(getGamlType(), "key", key, "value", value);
 	}
-
-	/**
-	 * Sets the key.
-	 *
-	 * @param key
-	 *            the new key
-	 */
-	@Override
-	public void setKey(final Object key) { this.key = (K) key; }
 
 }

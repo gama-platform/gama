@@ -36,140 +36,162 @@ import gama.api.utils.interfaces.ILocated;
 
 /**
  * Interface for geometric shapes in GAMA.
- * 
- * <p>{@code IShape} is the fundamental interface for all geometric entities in GAMA, representing objects that
- * have spatial extent and can be manipulated geometrically. This includes:</p>
+ *
+ * <p>
+ * {@code IShape} is the fundamental interface for all geometric entities in GAMA, representing objects that have
+ * spatial extent and can be manipulated geometrically. This includes:
+ * </p>
  * <ul>
- *   <li>Simple shapes: points, lines, polygons</li>
- *   <li>Complex shapes: multi-geometries, geometries with holes</li>
- *   <li>3D shapes: boxes, spheres, cylinders, polyhedra</li>
- *   <li>Agent geometries: the spatial representation of agents</li>
+ * <li>Simple shapes: points, lines, polygons</li>
+ * <li>Complex shapes: multi-geometries, geometries with holes</li>
+ * <li>3D shapes: boxes, spheres, cylinders, polyhedra</li>
+ * <li>Agent geometries: the spatial representation of agents</li>
  * </ul>
- * 
- * <p>IShape extends multiple interfaces to provide comprehensive functionality:</p>
+ *
+ * <p>
+ * IShape extends multiple interfaces to provide comprehensive functionality:
+ * </p>
  * <ul>
- *   <li>{@link ILocated} - Provides location and geometry access</li>
- *   <li>{@link IValue} - Integrates with GAMA's type system</li>
- *   <li>{@link IAttributed} - Supports custom attributes</li>
- *   <li>{@link IEnvelopeProvider} - Provides bounding box access</li>
+ * <li>{@link ILocated} - Provides location and geometry access</li>
+ * <li>{@link IValue} - Integrates with GAMA's type system</li>
+ * <li>{@link IAttributed} - Supports custom attributes</li>
+ * <li>{@link IEnvelopeProvider} - Provides bounding box access</li>
  * </ul>
- * 
+ *
  * <h2>Core Properties</h2>
- * <p>Shapes expose numerous geometric properties via getters and GAML attributes:</p>
- * 
+ * <p>
+ * Shapes expose numerous geometric properties via getters and GAML attributes:
+ * </p>
+ *
  * <h3>Spatial Properties</h3>
  * <ul>
- *   <li><b>area</b> - Total area (2D projection)</li>
- *   <li><b>volume</b> - 3D volume (for 3D shapes)</li>
- *   <li><b>perimeter</b> - Length of the boundary</li>
- *   <li><b>centroid</b> - Center of mass</li>
- *   <li><b>location</b> - Reference point (usually centroid)</li>
+ * <li><b>area</b> - Total area (2D projection)</li>
+ * <li><b>volume</b> - 3D volume (for 3D shapes)</li>
+ * <li><b>perimeter</b> - Length of the boundary</li>
+ * <li><b>centroid</b> - Center of mass</li>
+ * <li><b>location</b> - Reference point (usually centroid)</li>
  * </ul>
- * 
+ *
  * <h3>Bounding Properties</h3>
  * <ul>
- *   <li><b>envelope</b> - Minimum bounding rectangle</li>
- *   <li><b>width</b> - Width of bounding box (x-axis)</li>
- *   <li><b>height</b> - Height of bounding box (y-axis)</li>
- *   <li><b>depth</b> - Depth of bounding box (z-axis)</li>
+ * <li><b>envelope</b> - Minimum bounding rectangle</li>
+ * <li><b>width</b> - Width of bounding box (x-axis)</li>
+ * <li><b>height</b> - Height of bounding box (y-axis)</li>
+ * <li><b>depth</b> - Depth of bounding box (z-axis)</li>
  * </ul>
- * 
+ *
  * <h3>Structural Properties</h3>
  * <ul>
- *   <li><b>points</b> - Vertices of the shape</li>
- *   <li><b>geometries</b> - Sub-geometries (for multi-geometries)</li>
- *   <li><b>holes</b> - Interior holes (for polygons)</li>
- *   <li><b>contour</b> - Boundary as a polyline</li>
- *   <li><b>multiple</b> - Whether shape is a multi-geometry</li>
+ * <li><b>points</b> - Vertices of the shape</li>
+ * <li><b>geometries</b> - Sub-geometries (for multi-geometries)</li>
+ * <li><b>holes</b> - Interior holes (for polygons)</li>
+ * <li><b>contour</b> - Boundary as a polyline</li>
+ * <li><b>multiple</b> - Whether shape is a multi-geometry</li>
  * </ul>
- * 
+ *
  * <h2>Spatial Operations</h2>
- * 
+ *
  * <h3>Predicates</h3>
  * <ul>
- *   <li>{@link #covers(IShape)} - Tests if this shape covers another</li>
- *   <li>{@link #touches(IShape)} - Tests if boundaries touch</li>
- *   <li>{@link #partiallyOverlaps(IShape)} - Tests for partial overlap</li>
- *   <li>{@link #crosses(IShape)} - Tests for crossing</li>
+ * <li>{@link #covers(IShape)} - Tests if this shape covers another</li>
+ * <li>{@link #touches(IShape)} - Tests if boundaries touch</li>
+ * <li>{@link #partiallyOverlaps(IShape)} - Tests for partial overlap</li>
+ * <li>{@link #crosses(IShape)} - Tests for crossing</li>
  * </ul>
- * 
+ *
  * <h3>Transformations</h3>
- * <p>Most transformation methods modify the shape in place and return {@code this} for method chaining:</p>
+ * <p>
+ * Most transformation methods modify the shape in place and return {@code this} for method chaining:
+ * </p>
  * <ul>
- *   <li>Translation: {@code translate}, {@code setLocation}</li>
- *   <li>Rotation: {@code rotate}, various rotation methods</li>
- *   <li>Scaling: {@code scale}, {@code setDepth}</li>
+ * <li>Translation: {@code translate}, {@code setLocation}</li>
+ * <li>Rotation: {@code rotate}, various rotation methods</li>
+ * <li>Scaling: {@code scale}, {@code setDepth}</li>
  * </ul>
- * 
+ *
  * <h3>Geometric Operations</h3>
- * <p>Operations that create new shapes:</p>
+ * <p>
+ * Operations that create new shapes:
+ * </p>
  * <ul>
- *   <li>Union, intersection, difference (via GAML operators)</li>
- *   <li>Buffer, simplification, convex hull</li>
- *   <li>Triangulation, skeletonization</li>
+ * <li>Union, intersection, difference (via GAML operators)</li>
+ * <li>Buffer, simplification, convex hull</li>
+ * <li>Triangulation, skeletonization</li>
  * </ul>
- * 
+ *
  * <h2>Type System</h2>
- * <p>IShape defines an enum {@link Type} classifying shapes by geometry type:</p>
+ * <p>
+ * IShape defines an enum {@link Type} classifying shapes by geometry type:
+ * </p>
  * <ul>
- *   <li><b>2D JTS types:</b> POINT, LINESTRING, POLYGON, and multi-variants</li>
- *   <li><b>3D types:</b> BOX, SPHERE, CYLINDER, PYRAMID, POLYHEDRON, etc.</li>
- *   <li><b>Special types:</b> ROUNDED, GRIDLINE, NULL</li>
+ * <li><b>2D JTS types:</b> POINT, LINESTRING, POLYGON, and multi-variants</li>
+ * <li><b>3D types:</b> BOX, SPHERE, CYLINDER, PYRAMID, POLYHEDRON, etc.</li>
+ * <li><b>Special types:</b> ROUNDED, GRIDLINE, NULL</li>
  * </ul>
- * 
+ *
  * <h2>Attributes</h2>
- * <p>Shapes can carry custom attributes (via {@link IAttributed}) which are preserved across copies
- * and can be shared with agent attributes. This allows attaching metadata to geometries.</p>
- * 
+ * <p>
+ * Shapes can carry custom attributes (via {@link IAttributed}) which are preserved across copies and can be shared with
+ * agent attributes. This allows attaching metadata to geometries.
+ * </p>
+ *
  * <h2>Mutability</h2>
- * <p>Most IShape implementations are mutable. Transformation methods typically modify the shape in place.
- * Use {@link #copy(gama.api.runtime.scope.IScope)} to create independent copies when needed.</p>
- * 
+ * <p>
+ * Most IShape implementations are mutable. Transformation methods typically modify the shape in place. Use
+ * {@link #copy(gama.api.runtime.scope.IScope)} to create independent copies when needed.
+ * </p>
+ *
  * <h2>Thread Safety</h2>
- * <p>IShape implementations are generally NOT thread-safe. Concurrent access requires external synchronization
- * or creating separate copies for each thread.</p>
- * 
+ * <p>
+ * IShape implementations are generally NOT thread-safe. Concurrent access requires external synchronization or creating
+ * separate copies for each thread.
+ * </p>
+ *
  * <h2>JTS Integration</h2>
- * <p>IShape wraps JTS {@link Geometry} objects accessible via {@link #getInnerGeometry()}. This enables
- * leveraging JTS's robust geometric algorithms while maintaining GAMA's type system and additional features.</p>
- * 
+ * <p>
+ * IShape wraps JTS {@link Geometry} objects accessible via {@link #getInnerGeometry()}. This enables leveraging JTS's
+ * robust geometric algorithms while maintaining GAMA's type system and additional features.
+ * </p>
+ *
  * <h2>Usage Examples</h2>
- * 
+ *
  * <h3>GAML Usage</h3>
+ *
  * <pre>
  * // Create shapes
  * geometry circle &lt;- circle(10);
  * geometry rect &lt;- rectangle(20, 15);
- * 
+ *
  * // Access properties
  * float area &lt;- circle.area;
  * point center &lt;- circle.centroid;
- * 
+ *
  * // Spatial predicates
  * bool overlap &lt;- circle overlaps rect;
- * 
+ *
  * // Operations
  * geometry union &lt;- circle union rect;
  * geometry buffer &lt;- circle + 5.0;  // Buffer by 5
  * </pre>
- * 
+ *
  * <h3>Java Usage</h3>
+ *
  * <pre>
  * // Create shapes
  * IShape circle = GamaShapeFactory.buildCircle(10.0, center);
- * 
+ *
  * // Access properties
  * double area = circle.getArea();
  * IPoint centroid = circle.getCentroid();
- * 
+ *
  * // Transform
  * circle.setLocation(newLocation);
- * circle.rotate(scope, Math.PI / 4);  // Rotate 45 degrees
- * 
+ * circle.rotate(scope, Math.PI / 4); // Rotate 45 degrees
+ *
  * // Access inner geometry
  * Geometry jtsGeom = circle.getInnerGeometry();
  * </pre>
- * 
+ *
  * @author Alexis Drogoul
  * @see GamaShapeFactory
  * @see IPoint

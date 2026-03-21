@@ -11,17 +11,22 @@
 package gama.api.types.pair;
 
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.ILink;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.map.IMap;
 
 /**
  * The Class GamaPairFactory.
- * 
+ *
  * A static factory for creating and managing {@link IPair} instances. This class serves as a frontend for pair
  * creation, delegating to an {@link IPairFactory} implementation. It provides a unified API for creating pairs with
  * specific types or inferred types, and converting objects to pairs.
- * 
+ *
  * <p>
  * This factory supports multiple creation patterns:
  * <ul>
@@ -31,34 +36,19 @@ import gama.api.runtime.scope.IScope;
  * <li>Default/null pairs: {@link #createDefault()}, {@link #createNull()}</li>
  * </ul>
  * </p>
- * 
+ *
  * <p>
  * The actual implementation is delegated to an {@link IPairFactory} that must be set using
  * {@link #setBuilder(IPairFactory)} before using the factory methods.
  * </p>
- * 
+ *
  * @author drogoul
  * @since GAMA 1.0
- * 
+ *
  * @see IPair
  * @see IPairFactory
  */
 public class GamaPairFactory {
-
-	/**
-	 * The internal factory used for creating pair instances.
-	 */
-	private static IPairFactory InternalFactory;
-
-	/**
-	 * Configures the internal factory implementation.
-	 *
-	 * @param internalGamaPairFactory
-	 *            the {@link IPairFactory} to be used as the internal builder.
-	 */
-	public static void setBuilder(final IPairFactory internalGamaPairFactory) {
-		InternalFactory = internalGamaPairFactory;
-	}
 
 	/**
 	 * Converts an arbitrary object into a pair, with specific key and value types.
@@ -79,7 +69,35 @@ public class GamaPairFactory {
 	 */
 	public static IPair castToPair(final IScope scope, final Object obj, final IType keyType, final IType contentsType,
 			final boolean copy) throws GamaRuntimeException {
-		return InternalFactory.createFrom(scope, obj, keyType, contentsType, copy);
+		Object key, value;
+		switch (obj) {
+			case IPair p -> {
+				key = p.getKey();
+				value = p.getValue();
+			}
+			case IShape s when s.getInnerGeometry() instanceof ILink isl -> {
+				key = isl.getSource();
+				value = isl.getTarget();
+			}
+			case IMap<?, ?> m -> {
+				if (m.containsKey("key") && m.containsKey("value")) {
+					key = m.get("key");
+					value = m.get("value");
+				} else {
+					key = GamaListFactory.<Object> create(scope, m.getGamlType().getKeyType(), m.keySet());
+					value = GamaListFactory.<Object> create(scope, m.getGamlType().getContentType(), m.values());
+				}
+			}
+			case null, default -> {
+				// 8/01/14 : Change of behavior: now returns a pair object::object
+				key = obj;
+				value = obj;
+			}
+		}
+		final IType kt = keyType == null || keyType == Types.NO_TYPE ? GamaType.of(key) : keyType;
+		final IType ct = contentsType == null || contentsType == Types.NO_TYPE ? GamaType.of(value) : contentsType;
+		return new GamaPair<>(GamaType.toType(scope, key, kt, copy), GamaType.toType(scope, value, ct, copy), kt, ct);
+
 	}
 
 	/**
@@ -92,7 +110,7 @@ public class GamaPairFactory {
 	 * @return the created {@link IPair}.
 	 */
 	public static IPair castToPair(final IScope scope, final Object val) {
-		return InternalFactory.createFrom(scope, val, Types.NO_TYPE, Types.NO_TYPE, true);
+		return castToPair(scope, val, Types.NO_TYPE, Types.NO_TYPE, true);
 	}
 
 	/**
@@ -107,7 +125,7 @@ public class GamaPairFactory {
 	 * @return the created {@link IPair}.
 	 */
 	public static IPair castToPair(final IScope scope, final Object val, final boolean copy) {
-		return InternalFactory.createFrom(scope, val, Types.NO_TYPE, Types.NO_TYPE, copy);
+		return castToPair(scope, val, Types.NO_TYPE, Types.NO_TYPE, copy);
 	}
 
 	/**
@@ -116,7 +134,7 @@ public class GamaPairFactory {
 	 * @return the default {@link IPair}.
 	 */
 	public static IPair createDefault() {
-		return InternalFactory.createDefault();
+		return new GamaPair<>(null, null, Types.NO_TYPE, Types.NO_TYPE);
 	}
 
 	/**
@@ -129,7 +147,7 @@ public class GamaPairFactory {
 	 * @return the created {@link IPair}.
 	 */
 	public static IPair createWith(final Object key, final Object value) {
-		return InternalFactory.create(key, value);
+		return new GamaPair<>(key, value, GamaType.of(key), GamaType.of(value));
 	}
 
 	/**
@@ -145,8 +163,8 @@ public class GamaPairFactory {
 	 *            the type of the second element.
 	 * @return the created {@link IPair}.
 	 */
-	public static IPair createWith(final Object v1, final Object v2, final IType keyType, final IType contentsType) {
-		return InternalFactory.createFrom(v1, v2, keyType, contentsType);
+	public static IPair createWith(final Object v1, final Object v2, final IType keyType, final IType valueType) {
+		return new GamaPair<>(v1, v2, keyType, valueType);
 	}
 
 	/**

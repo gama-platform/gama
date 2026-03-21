@@ -53,6 +53,8 @@ public class EdgesToAdd extends GamaList<GraphObjectToAdd> implements GraphObjec
 	 * @return the object
 	 */
 	@Override
-	public Object getObject() { return this; }
+	public Object object() {
+		return this;
+	}
 
 }

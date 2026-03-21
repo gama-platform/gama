@@ -22,8 +22,6 @@ import gama.api.types.graph.IGraphFactory;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
-import gama.api.types.pair.GamaPairFactory;
-import gama.api.types.pair.IPair;
 import gama.core.topology.graph.GamaSpatialGraph;
 
 /**
@@ -77,12 +75,7 @@ public class InternalGamaGraphFactory implements IGraphFactory {
 						obj.getGamlType().getKeyType(), Types.NO_TYPE)
 				: new GamaGraph(scope, GamaListFactory.create(Types.NO_TYPE), false, false, false, null, null,
 						obj.getGamlType().getKeyType(), Types.NO_TYPE);
-		final IPair p = GamaPairFactory.createNull();
-		for (final Map.Entry<?, ?> k : obj.entrySet()) {
-			p.setKey(k.getKey());
-			p.setValue(k.getValue());
-			result.addEdge(p);
-		}
+		for (final Map.Entry<?, ?> k : obj.entrySet()) { result.addEdge(k.getKey(), k.getValue()); }
 		return result;
 	}
 

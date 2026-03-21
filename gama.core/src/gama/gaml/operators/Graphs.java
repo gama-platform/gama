@@ -383,7 +383,7 @@ public class Graphs {
 	public static Boolean containsVertex(final IScope scope, final IGraph graph, final Object vertex) {
 		if (graph == null)
 			throw GamaRuntimeException.error("In the contains_vertex operator, the graph should not be null!", scope);
-		if (vertex instanceof NodeToAdd) return graph.containsVertex(((NodeToAdd) vertex).object);
+		if (vertex instanceof NodeToAdd) return graph.containsVertex(((NodeToAdd) vertex).object());
 		return graph.containsVertex(vertex);
 	}
 
@@ -562,7 +562,7 @@ public class Graphs {
 					final Object edge3 = graph.getEdge(edge2.source, edge2.target);
 					return graph.getEdgeWeight(edge3);
 				}
-			} else if (edge instanceof NodeToAdd) return graph.getVertexWeight(((NodeToAdd) edge).object);
+			} else if (edge instanceof NodeToAdd) return graph.getVertexWeight(((NodeToAdd) edge).object());
 		}
 		if (graph.containsEdge(edge)) return graph.getEdgeWeight(edge);
 		if (graph.containsVertex(edge)) return graph.getVertexWeight(edge);
@@ -2924,7 +2924,7 @@ public class Graphs {
 			value = "Allows to create a wrapper (of type unknown) that wraps two objects and indicates they should be considered as the source and the target of a new edge of a graph. The fourth parameter indicates which weight this edge should have in the graph")
 	@no_test
 	public static Object edge(final Object source, final Object target, final Object object, final Integer weight) {
-		return new EdgeToAdd(source, target, object, weight);
+		return new EdgeToAdd(source, target, object, weight == null ? 0d : weight.doubleValue());
 	}
 
 	/**

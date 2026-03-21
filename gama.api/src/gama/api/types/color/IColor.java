@@ -18,6 +18,7 @@ import gama.annotations.vars;
 import gama.annotations.constants.IKeyword;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
 import gama.api.types.misc.IValue;
 
 /**
@@ -26,7 +27,7 @@ import gama.api.types.misc.IValue;
  * This interface defines the contract for color objects used throughout GAMA models and simulations. It extends
  * {@link IValue} to integrate with the GAML type system and implements {@link Comparable} to allow color ordering.
  * </p>
- * 
+ *
  * <h2>Color Components</h2>
  * <p>
  * Colors are represented using the RGBA color model:
@@ -37,7 +38,7 @@ import gama.api.types.misc.IValue;
  * <li><strong>Blue:</strong> Blue component (0-255)</li>
  * <li><strong>Alpha:</strong> Transparency/opacity (0 = fully transparent, 255 = fully opaque)</li>
  * </ul>
- * 
+ *
  * <h2>Color Transformations</h2>
  * <p>
  * The interface provides methods to create color variants:
@@ -47,7 +48,7 @@ import gama.api.types.misc.IValue;
  * <li>{@link #darker()} - Creates a darker version by decreasing luminance</li>
  * <li>{@link #withAlpha(double)} - Creates a variant with modified transparency</li>
  * </ul>
- * 
+ *
  * <h2>Color Comparison</h2>
  * <p>
  * Multiple comparison strategies are available for ordering colors:
@@ -59,7 +60,7 @@ import gama.api.types.misc.IValue;
  * <li>{@link #compareBrightnessTo(IColor)} - Based on HSB color model brightness component</li>
  * <li>{@link #compareLumaTo(IColor)} - Based on luma calculation (0.21R + 0.72G + 0.07B)</li>
  * </ul>
- * 
+ *
  * <h2>GAML Variable Access</h2>
  * <p>
  * When used in GAML models, color objects expose the following attributes through the {@code @vars} annotation:
@@ -72,7 +73,7 @@ import gama.api.types.misc.IValue;
  * <li>{@code brighter} - A brighter color variant (color)</li>
  * <li>{@code darker} - A darker color variant (color)</li>
  * </ul>
- * 
+ *
  * @author GAMA Development Team
  * @since 1.0
  * @see GamaColorFactory
@@ -105,6 +106,39 @@ import gama.api.types.misc.IValue;
 public interface IColor extends IValue, Comparable<IColor> {
 
 	/**
+	 * The brightness factor used for darkening and brightening operations.
+	 * <p>
+	 * A value of 0.7 means that darkening reduces each component to 70% of its original value, while brightening
+	 * divides by 0.7 (multiplies by ~1.43).
+	 * </p>
+	 */
+	float BRIGHTNESS_FACTOR = 0.7f;
+
+	/**
+	 * Serialize to gaml.
+	 *
+	 * @param includingBuiltIn
+	 *            the including built in
+	 * @return the string
+	 */
+	@Override
+	default String serializeToGaml(final boolean includingBuiltIn) {
+		return "rgb (" + red() + ", " + green() + ", " + blue() + ", " + alpha() + ")";
+	}
+
+	/**
+	 * String value.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the string
+	 */
+	@Override
+	default String stringValue(final IScope scope) {
+		return toString();
+	}
+
+	/**
 	 * Converts an {@link IColor} instance to a Java AWT {@link Color}.
 	 * <p>
 	 * This static utility method provides a null-safe conversion from GAMA's color representation to Java's standard
@@ -120,36 +154,44 @@ public interface IColor extends IValue, Comparable<IColor> {
 	}
 
 	/**
-	 * Returns the red component of this color.
+	 * Red.
 	 *
-	 * @return the red component value in the range 0-255
+	 * @return the integer
 	 */
 	@getter (IKeyword.COLOR_RED)
-	Integer red();
+	default Integer red() {
+		return getAWTColor().getRed();
+	}
 
 	/**
-	 * Returns the blue component of this color.
+	 * Blue.
 	 *
-	 * @return the blue component value in the range 0-255
+	 * @return the integer
 	 */
 	@getter (IKeyword.COLOR_BLUE)
-	Integer blue();
+	default Integer blue() {
+		return getAWTColor().getBlue();
+	}
 
 	/**
-	 * Returns the green component of this color.
+	 * Green.
 	 *
-	 * @return the green component value in the range 0-255
+	 * @return the integer
 	 */
 	@getter (IKeyword.COLOR_GREEN)
-	Integer green();
+	default Integer green() {
+		return getAWTColor().getGreen();
+	}
 
 	/**
-	 * Returns the alpha (transparency) component of this color.
+	 * Alpha.
 	 *
-	 * @return the alpha component value in the range 0-255, where 0 is fully transparent and 255 is fully opaque
+	 * @return the integer
 	 */
 	@getter (IKeyword.ALPHA)
-	Integer alpha();
+	default Integer alpha() {
+		return getAWTColor().getAlpha();
+	}
 
 	/**
 	 * Creates and returns a brighter version of this color.
@@ -165,7 +207,21 @@ public interface IColor extends IValue, Comparable<IColor> {
 	 * @return a new IColor instance that is brighter than this color
 	 */
 	@getter (IKeyword.BRIGHTER)
-	IColor brighter();
+	default IColor brighter() {
+		int r = red();
+		int g = green();
+		int b = blue();
+		int alpha = alpha();
+
+		int i = (int) (1.0 / (1.0 - BRIGHTNESS_FACTOR));
+		if (r == 0 && g == 0 && b == 0) return GamaColorFactory.createWithRGBA(i, i, i, alpha);
+		if (r > 0 && r < i) { r = i; }
+		if (g > 0 && g < i) { g = i; }
+		if (b > 0 && b < i) { b = i; }
+
+		return GamaColorFactory.createWithRGBA(Math.min((int) (r / BRIGHTNESS_FACTOR), 255),
+				Math.min((int) (g / BRIGHTNESS_FACTOR), 255), Math.min((int) (b / BRIGHTNESS_FACTOR), 255), alpha);
+	}
 
 	/**
 	 * Creates and returns a darker version of this color.
@@ -177,82 +233,141 @@ public interface IColor extends IValue, Comparable<IColor> {
 	 * @return a new IColor instance that is darker than this color
 	 */
 	@getter (IKeyword.DARKER)
-	IColor darker();
+	default IColor darker() {
+		return GamaColorFactory.createWithRGBA(Math.max((int) (red() * BRIGHTNESS_FACTOR), 0),
+				Math.max((int) (green() * BRIGHTNESS_FACTOR), 0), Math.max((int) (blue() * BRIGHTNESS_FACTOR), 0),
+				alpha());
+	}
 
 	/**
-	 * Compares this color to another based on their RGB integer values.
+	 * Copy.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the i color
+	 */
+	@Override
+	default IColor copy(final IScope scope) {
+		return GamaColorFactory.get(getRGB());
+	}
+
+	/**
+	 * Default comparison method using RGB integer values.
 	 * <p>
-	 * This comparison treats the entire RGBA value as a single 32-bit integer and compares them numerically. This is
-	 * the fastest comparison method but may not correspond to visual perception.
+	 * Delegates to {@link #compareRgbTo(IColor)}.
 	 * </p>
 	 *
 	 * @param c2
 	 *            the color to compare with
-	 * @return a negative integer, zero, or a positive integer if this color is less than, equal to, or greater than
-	 *         the specified color
+	 * @return the comparison result
 	 */
-	int compareRgbTo(IColor c2);
+	@Override
+	default int compareTo(final IColor c2) {
+		return compareRgbTo(c2);
+	}
 
 	/**
-	 * Compares this color to another based on luminescence (perceived brightness).
+	 * Compares this color to another based on RGB integer values.
 	 * <p>
-	 * Uses the NTSC formula: 0.299*R + 0.587*G + 0.114*B, which approximates how the human eye perceives brightness.
-	 * Green contributes most to perceived brightness, followed by red, then blue.
+	 * Returns -1, 0, or 1 based on the comparison of the packed RGBA integers.
 	 * </p>
 	 *
 	 * @param c2
 	 *            the color to compare with
-	 * @return a negative integer, zero, or a positive integer if this color is less luminescent than, equal to, or
-	 *         more luminescent than the specified color
+	 * @return the sign of the difference between the RGB values
 	 */
-	int compareLuminescenceTo(IColor c2);
+	default int compareRgbTo(final IColor c2) {
+		return Integer.signum(getRGB() - c2.getRGB());
+	}
 
 	/**
-	 * Compares this color to another based on HSB brightness.
+	 * Compares colors based on luminescence using the NTSC formula.
 	 * <p>
-	 * Converts both colors to HSB (Hue, Saturation, Brightness) color space and compares the brightness component.
-	 * This represents the maximum of the RGB values normalized to 0-1 range.
+	 * Formula: 0.299*R + 0.587*G + 0.114*B
+	 * </p>
+	 * <p>
+	 * This formula weights colors according to human eye sensitivity, where green contributes most to perceived
+	 * brightness.
 	 * </p>
 	 *
 	 * @param c2
 	 *            the color to compare with
-	 * @return a negative integer, zero, or a positive integer if this color is less bright than, equal to, or brighter
-	 *         than the specified color
+	 * @return a negative, zero, or positive value based on relative luminescence
 	 */
-	int compareBrightnessTo(IColor c2);
+	default int compareLuminescenceTo(final IColor c2) {
+		return Double.compare(this.red() * 0.299d + this.green() * 0.587d + this.blue() * 0.114d,
+				c2.red() * 0.299d + c2.green() * 0.587d + c2.blue() * 0.114d);
+	}
 
 	/**
-	 * Compares this color to another based on luma.
+	 * Compares colors based on HSB brightness component.
 	 * <p>
-	 * Uses the formula: 0.21*R + 0.72*G + 0.07*B, which is another perceptual brightness measure commonly used in
-	 * video and image processing.
+	 * Converts both colors to HSB (Hue, Saturation, Brightness) and compares the brightness values.
 	 * </p>
 	 *
 	 * @param c2
 	 *            the color to compare with
-	 * @return a negative integer, zero, or a positive integer if this color has less luma than, equal to, or more luma
-	 *         than the specified color
+	 * @return a negative, zero, or positive value based on relative brightness
 	 */
-	int compareLumaTo(IColor c2);
+	default int compareBrightnessTo(final IColor c2) {
+		final float[] hsb = Color.RGBtoHSB(red(), green(), blue(), null);
+		final float[] hsb2 = Color.RGBtoHSB(c2.red(), c2.green(), c2.blue(), null);
+		return Float.compare(hsb[2], hsb2[2]);
+	}
 
 	/**
-	 * Creates a new color with the same RGB components but with a different alpha (transparency) value.
+	 * Compares colors based on luma calculation.
+	 * <p>
+	 * Formula: 0.21*R + 0.72*G + 0.07*B
+	 * </p>
+	 * <p>
+	 * This is an alternative perceptual brightness measure commonly used in video processing.
+	 * </p>
+	 *
+	 * @param c2
+	 *            the color to compare with
+	 * @return a negative, zero, or positive value based on relative luma
+	 */
+	default int compareLumaTo(final IColor c2) {
+		return Double.compare(this.red() * 0.21d + this.green() * 0.72d + this.blue() * 0.07d,
+				c2.red() * 0.21d + c2.green() * 0.72d + c2.blue() * 0.07d);
+	}
+
+	/**
+	 * Creates a new color with the same RGB components but different alpha.
 	 *
 	 * @param d
-	 *            the new alpha value as a double in the range 0.0 (fully transparent) to 1.0 (fully opaque)
-	 * @return a new IColor instance with the modified alpha channel
+	 *            the new alpha value as a double (0.0 = transparent, 1.0 = opaque)
+	 * @return a new IColor with modified transparency
 	 */
-	IColor withAlpha(double d);
+	default IColor withAlpha(final double d) {
+		return GamaColorFactory.createWithDoubleAlpha(red(), green(), blue(), d);
+	}
 
 	/**
-	 * Checks if this color is pure black (all RGB components are zero).
+	 * Returns the color as a packed integer value in RGBA format.
 	 * <p>
-	 * Note: This method ignores the alpha channel. A transparent black will still return true.
+	 * This is equivalent to {@link #getRGB()} and returns the AWT-compatible 32-bit representation.
 	 * </p>
 	 *
-	 * @return true if red, green, and blue are all zero; false otherwise
+	 * @param scope
+	 *            the execution scope (unused)
+	 * @return the packed RGBA integer value
 	 */
-	boolean isZero();
+	@Override
+	default int intValue(final IScope scope) {
+		return getRGB();
+	}
+
+	/**
+	 * Checks if this is a pure black color (all RGB components are zero).
+	 * <p>
+	 * Note: Alpha is ignored. A fully transparent black still returns true.
+	 * </p>
+	 *
+	 * @return true if RGB = (0,0,0), false otherwise
+	 */
+	default boolean isZero() { return red() == 0 && green() == 0 && blue() == 0; }
 
 	/**
 	 * Returns the RGBA color value as a single integer.
@@ -263,7 +378,8 @@ public interface IColor extends IValue, Comparable<IColor> {
 	 *
 	 * @return the RGBA color encoded as a 32-bit integer
 	 */
-	int getRGB();
+
+	default int getRGB() { return getAWTColor().getRGB(); }
 
 	/**
 	 * Returns this color as a Java AWT {@link Color} object.

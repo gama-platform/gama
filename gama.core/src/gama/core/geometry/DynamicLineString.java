@@ -25,6 +25,7 @@ import org.locationtech.jts.geom.GeometryFilter;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 
+import gama.api.types.geometry.ILink;
 import gama.api.types.geometry.IShape;
 
 /**
@@ -33,7 +34,7 @@ import gama.api.types.geometry.IShape;
  * @author drogoul
  *
  */
-public class DynamicLineString extends LineString {
+public class DynamicLineString extends LineString implements ILink {
 
 	// static {
 	// try {

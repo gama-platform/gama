@@ -48,15 +48,16 @@ import gama.api.types.geometry.IShape;
 import gama.api.types.graph.EdgeToAdd;
 import gama.api.types.graph.GamaPathFactory;
 import gama.api.types.graph.GraphEvent;
+import gama.api.types.graph.GraphEvent.GraphEventType;
 import gama.api.types.graph.GraphObjectToAdd;
 import gama.api.types.graph.IGraph;
 import gama.api.types.graph.IGraphEventListener;
 import gama.api.types.graph.IPath;
 import gama.api.types.graph.IPathComputer;
+import gama.api.types.graph.NodeToAdd;
 import gama.api.types.graph.VertexRelationship;
 import gama.api.types.graph._Edge;
 import gama.api.types.graph._Vertex;
-import gama.api.types.graph.GraphEvent.GraphEventType;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.types.map.GamaMapFactory;
@@ -530,7 +531,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		if (edges != null) {
 			for (final Object p : edges.iterable(scope)) {
 				addEdge(p);
-				final Object p2 = p instanceof GraphObjectToAdd g ? g.getObject() : p;
+				final Object p2 = p instanceof GraphObjectToAdd g ? g.object() : p;
 				if (p2 instanceof IShape) {
 					final _Edge ed = getEdge(p2);
 					if (ed != null) { ed.setWeight(((IShape) p2).getPerimeter()); }
@@ -553,7 +554,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		if (vertices != null) {
 			for (final Object p : vertices.iterable(scope)) {
 				addEdge(p);
-				final Object p2 = p instanceof GraphObjectToAdd g ? g.getObject() : p;
+				final Object p2 = p instanceof GraphObjectToAdd g ? g.object() : p;
 				if (p2 instanceof IShape) {
 					final _Edge ed = getEdge(p2);
 					if (ed != null) { ed.setWeight(((IShape) p2).getPerimeter()); }
@@ -605,7 +606,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		if (e instanceof IPair p) return addEdge(p.first(), p.last());
 		if (e instanceof GraphObjectToAdd) {
 			addValue(graphScope, (GraphObjectToAdd) e);
-			return ((GraphObjectToAdd) e).getObject();
+			return ((GraphObjectToAdd) e).object();
 		}
 		return addEdge(null, null, e) ? e : null;
 
@@ -619,8 +620,8 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 			if (edge.weight != null) { setEdgeWeight(edge.object, edge.weight); }
 		} else {
 			final gama.api.types.graph.NodeToAdd node = (gama.api.types.graph.NodeToAdd) value;
-			this.addVertex(node.object);
-			if (node.weight != null) { this.setVertexWeight(node.object, node.weight); }
+			this.addVertex(node.object());
+			if (node.weight() != null) { this.setVertexWeight(node.object(), node.weight()); }
 		}
 
 	}
@@ -629,9 +630,9 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	public void addValueAtIndex(final IScope scope, final Object idx, final GraphObjectToAdd value) {
 		final IPair index = buildIndex(scope, idx);
 		final EdgeToAdd edge = new EdgeToAdd(index.getKey(), index.getValue(), null, (Double) null);
-		if (value instanceof EdgeToAdd) {
-			edge.object = ((EdgeToAdd) value).object;
-			edge.weight = ((EdgeToAdd) value).weight;
+		if (value instanceof EdgeToAdd eta) {
+			edge.object = eta.object;
+			edge.weight = eta.weight;
 		} else {
 			edge.object = value;
 		}
@@ -670,7 +671,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 				removeEdge(edge.object);
 			} else if (edge.source != null && edge.target != null) { removeAllEdges(edge.source, edge.target); }
 		} else if (value instanceof gama.api.types.graph.NodeToAdd) {
-			removeVertex(((gama.api.types.graph.NodeToAdd) value).object);
+			removeVertex(((gama.api.types.graph.NodeToAdd) value).object());
 		} else if (!removeVertex(value)) { removeEdge(value); }
 	}
 
@@ -829,7 +830,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 
 		if (v instanceof GraphObjectToAdd) {
 			addValue(graphScope, (GraphObjectToAdd) v);
-			return ((GraphObjectToAdd) v).getObject() != null;
+			return ((GraphObjectToAdd) v).object() != null;
 		}
 		if (v == null || containsVertex(v)) return false;
 		_Vertex<V, E> vertex;
@@ -1394,16 +1395,13 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	 */
 	@Override
 	public GraphObjectToAdd buildValue(final IScope scope, final Object object) {
-		if (object instanceof gama.api.types.graph.NodeToAdd) return new gama.api.types.graph.NodeToAdd(
-				type.getKeyType().cast(scope, ((gama.api.types.graph.NodeToAdd) object).object, null, false),
-				((gama.api.types.graph.NodeToAdd) object).weight);
-		if (object instanceof gama.api.types.graph.EdgeToAdd) return new gama.api.types.graph.EdgeToAdd(
-				type.getKeyType().cast(scope, ((gama.api.types.graph.EdgeToAdd) object).source, null, false),
-				type.getKeyType().cast(scope, ((gama.api.types.graph.EdgeToAdd) object).target, null, false),
-				type.getContentType().cast(scope, ((gama.api.types.graph.EdgeToAdd) object).object, null, false),
-				((gama.api.types.graph.EdgeToAdd) object).weight);
-		return new gama.api.types.graph.EdgeToAdd(null, null,
-				type.getContentType().cast(scope, object, null, false), 0.0);
+		if (object instanceof NodeToAdd nta)
+			return new NodeToAdd(type.getKeyType().cast(scope, nta.object(), null, false), nta.weight());
+		if (object instanceof EdgeToAdd eta)
+			return new EdgeToAdd(type.getKeyType().cast(scope, eta.source, null, false),
+					type.getKeyType().cast(scope, eta.target, null, false),
+					type.getContentType().cast(scope, eta.object(), null, false), eta.weight);
+		return new EdgeToAdd(null, null, type.getContentType().cast(scope, object, null, false), 0.0);
 	}
 
 	/**
@@ -1418,9 +1416,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 			if (!(objects instanceof gama.core.util.graph.NodesToAdd)) {
 				for (final Object o : objects.iterable(scope)) { list.add(buildValue(scope, o)); }
 			} else {
-				for (final Object o : objects.iterable(scope)) {
-					list.add(buildValue(scope, new gama.api.types.graph.NodeToAdd(o)));
-				}
+				for (final Object o : objects.iterable(scope)) { list.add(buildValue(scope, new NodeToAdd(o, 0d))); }
 			}
 			return list.items();
 		}
