@@ -34,7 +34,6 @@ import gama.api.utils.json.IJsonValue;
  *
  * <h2>Features</h2>
  * <ul>
- * <li>Full compatibility with AWT {@link Font} - can be used directly in Swing/AWT rendering</li>
  * <li>Serialization to GAML syntax for model persistence</li>
  * <li>JSON serialization for data exchange</li>
  * <li>Integration with GAMA's type system via {@link IFont}</li>
@@ -71,53 +70,89 @@ import gama.api.utils.json.IJsonValue;
  * @see java.awt.Font
  * @since GAMA 1.7 (March 22, 2015)
  */
-class GamaFont extends Font implements IFont {
+/**
+ * The underlying AWT {@link Font} instance that holds the font's name, style, and size.
+ *
+ * <p>
+ * This component is the canonical representation of the font data and is used by all accessors and
+ * serialization methods. It is set once at construction time and never replaced, ensuring the immutability
+ * of {@code GamaFont} instances.
+ * </p>
+ *
+ * @see java.awt.Font
+ */
+record GamaFont(Font internal) implements IFont {
 
 	/**
-	 * Constructs a new GamaFont with the specified name, style, and size.
+	 * Returns the logical name of this font.
 	 *
 	 * <p>
-	 * This constructor is package-private. Use {@link GamaFontFactory} to create font instances.
+	 * The logical name is the name that was used to create the font, which may be either a physical font
+	 * family name (e.g., {@code "Helvetica Neue"}, {@code "Arial"}) or a platform-independent logical name
+	 * (e.g., {@code "Dialog"}, {@code "SansSerif"}, {@code "Serif"}, {@code "Monospaced"}).
 	 * </p>
 	 *
-	 * @param name
-	 *            the font name (family name or logical name)
-	 * @param style
-	 *            the font style (0=plain, 1=bold, 2=italic, 3=bold+italic)
-	 * @param size
-	 *            the font size in points
-	 * @see GamaFontFactory#createFont(String, Integer, Integer)
+	 * <p>
+	 * To obtain the full font face name including style information, use {@link #getFontName()} instead.
+	 * </p>
+	 *
+	 * @return the logical name of this font, never {@code null}
+	 * @see #getFontName()
+	 * @see java.awt.Font#getName()
 	 */
-	public GamaFont(final String name, final int style, final int size) {
-		super(name, style, size);
-	}
+	@Override
+	public String getName() { return internal.getName(); }
 
 	/**
-	 * Constructs a new GamaFont from an existing AWT Font.
+	 * Returns the point size of this font, rounded to an integer.
 	 *
 	 * <p>
-	 * This constructor wraps an existing Font object, copying its attributes. This is package-private; use
-	 * {@link GamaFontFactory#createFontFrom(Font)} instead.
+	 * The size is expressed in typographic points (pt). On screen, one point typically corresponds to one
+	 * device-independent pixel at 72 dpi. Common display sizes in GAMA models range from 8 to 72 points.
 	 * </p>
 	 *
-	 * @param font
-	 *            the AWT font to wrap
-	 * @see GamaFontFactory#createFontFrom(Font)
+	 * <p>
+	 * In GAML, when a font is cast to an integer, this value is returned:
+	 * </p>
+	 *
+	 * <pre>
+	 * int sz &lt;- int(font("Arial", 14, #bold)); // sz = 14
+	 * </pre>
+	 *
+	 * @return the size of this font in points, always a positive integer
+	 * @see java.awt.Font#getSize()
+	 * @see #intValue(IScope)
 	 */
-	public GamaFont(final Font font) {
-		super(font);
-	}
-
 	@Override
-	public String getName() { return name; }
+	public int getSize() { return internal.getSize(); }
 
+	/**
+	 * Returns the style of this font as a bitfield integer.
+	 *
+	 * <p>
+	 * The style is a bitwise combination of the following constants from {@link java.awt.Font}:
+	 * </p>
+	 * <ul>
+	 * <li>{@link java.awt.Font#PLAIN} ({@code 0}) - Normal weight and upright</li>
+	 * <li>{@link java.awt.Font#BOLD} ({@code 1}) - Bold weight</li>
+	 * <li>{@link java.awt.Font#ITALIC} ({@code 2}) - Italic/oblique style</li>
+	 * <li>{@code Font.BOLD | Font.ITALIC} ({@code 3}) - Both bold and italic</li>
+	 * </ul>
+	 *
+	 * <p>
+	 * These correspond to the GAML constants {@code #plain}, {@code #bold}, {@code #italic}, and
+	 * {@code #bold + #italic} respectively.
+	 * </p>
+	 *
+	 * @return the style bitfield of this font; one of {@code 0} (plain), {@code 1} (bold), {@code 2} (italic),
+	 *         or {@code 3} (bold+italic)
+	 * @see java.awt.Font#getStyle()
+	 * @see java.awt.Font#PLAIN
+	 * @see java.awt.Font#BOLD
+	 * @see java.awt.Font#ITALIC
+	 */
 	@Override
-
-	public int getSize() { return size; }
-
-	@Override
-
-	public int getStyle() { return style; }
+	public int getStyle() { return internal.getStyle(); }
 
 	/**
 	 * Serializes this font to valid GAML syntax.
@@ -145,14 +180,12 @@ class GamaFont extends Font implements IFont {
 	@Override
 	public String serializeToGaml(final boolean includingBuiltIn) {
 		String strStyle;
-
-		if (isBold()) {
-			strStyle = isItalic() ? "#bold + #italic" : "#bold";
+		if (internal.isBold()) {
+			strStyle = internal.isItalic() ? "#bold + #italic" : "#bold";
 		} else {
-			strStyle = isItalic() ? "#italic" : "#plain";
+			strStyle = internal.isItalic() ? "#italic" : "#plain";
 		}
-
-		return "font('" + name + "'," + pointSize + "," + strStyle + ")";
+		return "font('" + internal.getName() + "'," + internal.getSize() + "," + strStyle + ")";
 	}
 
 	/**
@@ -201,12 +234,12 @@ class GamaFont extends Font implements IFont {
 	@Override
 	public String toString() {
 		String strStyle;
-		if (isBold()) {
-			strStyle = isItalic() ? "bolditalic" : "bold";
+		if (internal.isBold()) {
+			strStyle = internal.isItalic() ? "bolditalic" : "bold";
 		} else {
-			strStyle = isItalic() ? "italic" : "plain";
+			strStyle = internal.isItalic() ? "italic" : "plain";
 		}
-		return name + "-" + strStyle + "-" + size;
+		return internal.getName() + "-" + strStyle + "-" + internal.getSize();
 	}
 
 	/**
@@ -225,7 +258,7 @@ class GamaFont extends Font implements IFont {
 	 */
 	@Override
 	public IFont copy(final IScope scope) throws GamaRuntimeException {
-		return GamaFontFactory.createFont(name, style, size);
+		return GamaFontFactory.createFontFrom(internal);
 	}
 
 	/**
@@ -262,20 +295,45 @@ class GamaFont extends Font implements IFont {
 	 */
 	@Override
 	public IJsonValue serializeToJson(final IJson json) {
-		return json.typedObject(getGamlType(), IKeyword.NAME, this.name, IKeyword.STYLE, this.style, IKeyword.SIZE,
-				this.size);
+		return json.typedObject(getGamlType(), IKeyword.NAME, getName(), IKeyword.STYLE, getStyle(), IKeyword.SIZE,
+				getSize());
 	}
 
 	/**
-	 * Returns this font as an AWT Font.
+	 * Returns the underlying AWT {@link Font} instance for this GAMA font.
 	 *
 	 * <p>
-	 * Since GamaFont extends Font, this simply returns {@code this}.
+	 * This method provides interoperability with AWT/Swing rendering code that requires a {@link java.awt.Font}
+	 * directly. The returned instance is the same object stored in the {@link #internal} record component.
 	 * </p>
 	 *
-	 * @return this font instance
+	 * @return the AWT {@link Font} wrapped by this instance, never {@code null}
+	 * @see java.awt.Font
+	 * @see IFont#getAwtFont()
 	 */
 	@Override
-	public Font getAwtFont() { return this; }
+	public Font getAwtFont() { return internal; }
+
+	/**
+	 * Returns the full font face name of this font.
+	 *
+	 * <p>
+	 * Unlike {@link #getName()}, which returns the logical name used to construct the font, this method
+	 * returns the actual face name of the underlying typeface as known to the platform's font subsystem.
+	 * For example, a font constructed with the logical name {@code "Helvetica"} and style {@code Font.BOLD}
+	 * may return {@code "Helvetica-Bold"} here, whereas {@link #getName()} would return {@code "Helvetica"}.
+	 * </p>
+	 *
+	 * <p>
+	 * If the requested font was substituted by the platform (e.g., because the family is not installed),
+	 * the face name of the substitute font is returned.
+	 * </p>
+	 *
+	 * @return the full font face name as reported by the platform, never {@code null}
+	 * @see java.awt.Font#getFontName()
+	 * @see #getName()
+	 */
+	@Override
+	public String getFontName() { return internal.getFontName(); }
 
 }
