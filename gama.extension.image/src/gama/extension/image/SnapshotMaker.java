@@ -241,19 +241,19 @@ public class SnapshotMaker implements ISnapshotMaker {
 		}
 	}
 
-	/** The instance. */
-
-	private static SnapshotMaker instance;
+	/** Initialization-on-demand holder for the singleton instance. */
+	private static final class InstanceHolder {
+		/** The single instance, created exactly once by the class loader. */
+		static final SnapshotMaker INSTANCE = new SnapshotMaker();
+	}
 
 	/**
 	 * Gets the single instance of SnapshotMaker.
 	 *
 	 * @return single instance of SnapshotMaker
 	 */
-	public static synchronized SnapshotMaker getInstance() {
-		if (instance == null) { instance = new SnapshotMaker(); }
-
-		return instance;
+	public static SnapshotMaker getInstance() {
+		return InstanceHolder.INSTANCE;
 	}
 
 	/**

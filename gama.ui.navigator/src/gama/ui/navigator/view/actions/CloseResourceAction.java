@@ -159,7 +159,7 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	 * Handles a resource changed event by updating the enablement if one of the selected projects is opened or closed.
 	 */
 	@Override
-	public synchronized void resourceChanged(final IResourceChangeEvent event) {
+	public void resourceChanged(final IResourceChangeEvent event) {
 		// Warning: code duplicated in OpenResourceAction
 		final List<? extends IResource> sel = getSelectedResources();
 		// don't bother looking at delta if selection not applicable
@@ -178,10 +178,10 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	}
 
 	@Override
-	protected synchronized List<? extends IResource> getSelectedResources() { return super.getSelectedResources(); }
+	protected List<? extends IResource> getSelectedResources() { return super.getSelectedResources(); }
 
 	@Override
-	protected synchronized List<?> getSelectedNonResources() { return super.getSelectedNonResources(); }
+	protected List<?> getSelectedNonResources() { return super.getSelectedNonResources(); }
 
 	/**
 	 * Returns the model provider ids that are known to the client that instantiated this operation.

@@ -246,7 +246,7 @@ public class GridPopulation extends AbstractPopulation<IAgent> implements IPopul
 	}
 
 	@Override
-	public synchronized IAgent[] toArray() {
+	public IAgent[] toArray() {
 		return Arrays.copyOf(agentsContainer.matrix, agentsContainer.matrix.length, IAgent[].class);
 	}
 

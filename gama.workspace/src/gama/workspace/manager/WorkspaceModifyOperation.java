@@ -115,7 +115,7 @@ public abstract class WorkspaceModifyOperation {
 	 * @throws InvocationTargetException if the operation fails due to an exception other than InterruptedException
 	 * @throws InterruptedException if the operation is cancelled or interrupted
 	 */
-	public synchronized final void run(final IProgressMonitor monitor)
+	public final void run(final IProgressMonitor monitor)
 			throws InvocationTargetException, InterruptedException {
 		
 		// Use atomic references to capture exceptions from the workspace runnable

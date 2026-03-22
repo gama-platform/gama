@@ -129,7 +129,7 @@ public class ExperimentOutputManager extends AbstractOutputManager {
 	}
 
 	@Override
-	public synchronized void dispose() {
+	public void dispose() {
 		GAMA.getGui().cleanAfterExperiment();
 		super.dispose();
 	}

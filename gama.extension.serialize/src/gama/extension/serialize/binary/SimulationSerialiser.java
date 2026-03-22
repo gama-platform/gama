@@ -11,6 +11,8 @@
 package gama.extension.serialize.binary;
 
 import java.util.LinkedList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import gama.api.constants.ISerialisationConstants;
 import gama.api.kernel.serialization.SerialisedAgent;
@@ -20,7 +22,15 @@ import gama.dev.DEBUG;
 import gama.extension.serialize.binary.SimulationHistory.SimulationHistoryNode;
 
 /**
- * The Class SimulationSerialiser. Used to record, store, and retrieve simulation states
+ * The Class SimulationSerialiser. Used to record, store, and retrieve simulation states.
+ *
+ * <p>
+ * <b>Thread safety:</b> {@link #record(ISimulationAgent)} and {@link #restore(ISimulationAgent)} may be
+ * called from different threads (the scheduler thread and the UI step-back thread respectively). A
+ * per-simulation {@link ReentrantLock}, stored in {@link #simulationLocks}, ensures that the two
+ * operations are mutually exclusive for the same simulation while allowing parallelism across different
+ * simulations.
+ * </p>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @date 8 août 2023
@@ -35,6 +45,24 @@ public class SimulationSerialiser implements IExperimentRecorder, ISerialisation
 	final BinarySerialiser processor = new BinarySerialiser();
 
 	/**
+	 * Per-simulation locks. Allows {@link #record} and {@link #restore} to be mutually exclusive for the
+	 * same simulation without blocking operations on unrelated simulations. Entries are lazily created via
+	 * {@link ConcurrentHashMap#computeIfAbsent}.
+	 */
+	private final ConcurrentHashMap<ISimulationAgent, ReentrantLock> simulationLocks = new ConcurrentHashMap<>();
+
+	/**
+	 * Returns (creating if necessary) the lock associated with the given simulation.
+	 *
+	 * @param sim
+	 *            the simulation agent
+	 * @return the per-simulation lock
+	 */
+	private ReentrantLock lockFor(final ISimulationAgent sim) {
+		return simulationLocks.computeIfAbsent(sim, s -> new ReentrantLock());
+	}
+
+	/**
 	 * Record.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -44,12 +72,16 @@ public class SimulationSerialiser implements IExperimentRecorder, ISerialisation
 	 */
 	@Override
 	public void record(final ISimulationAgent sim) {
+		final ReentrantLock l = lockFor(sim);
+		l.lock();
 		try {
 			byte[] state = processor.saveObjectToBytes(sim.getScope(), sim);
 			SimulationHistory history = getSimulationHistory(sim);
 			history.push(state, sim.getClock().getCycle());
 		} catch (Throwable e) {
 			e.printStackTrace();
+		} finally {
+			l.unlock();
 		}
 	}
 
@@ -81,20 +113,19 @@ public class SimulationSerialiser implements IExperimentRecorder, ISerialisation
 	 */
 	@Override
 	public void restore(final ISimulationAgent sim) {
+		final ReentrantLock l = lockFor(sim);
+		l.lock();
 		try {
-			synchronized (sim) {
-				LinkedList<SimulationHistoryNode> history = getSimulationHistory(sim);
-				SimulationHistoryNode node = history.pop();
-				if (node != null && node.cycle() == sim.getClock().getCycle()) { node = history.pop(); }
-				if (node != null) {
-					// long startTime = System.nanoTime();
-					processor.restoreAgentFromBytes(sim, node.bytes());
-					// DEBUG.OUT("Deserialised in " + TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startTime) +
-					// "ms");
-				}
+			LinkedList<SimulationHistoryNode> history = getSimulationHistory(sim);
+			SimulationHistoryNode node = history.pop();
+			if (node != null && node.cycle() == sim.getClock().getCycle()) { node = history.pop(); }
+			if (node != null) {
+				processor.restoreAgentFromBytes(sim, node.bytes());
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
+		} finally {
+			l.unlock();
 		}
 	}
 

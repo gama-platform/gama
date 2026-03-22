@@ -49,8 +49,16 @@ import gama.api.types.list.IList;
  */
 public class CommandExecutor implements ICommandExecuter {
 
-	/** The Constant DEFAULT_COMMANDS. */
-	private static Map<String, ISocketCommand> DEFAULT_COMMANDS = null;
+	/** The Constant DEFAULT_COMMANDS. Eagerly initialized to avoid the need for synchronization. */
+	private static final Map<String, ISocketCommand> DEFAULT_COMMANDS = Map.ofEntries(
+			entry(LOAD, DefaultServerCommands::LOAD), entry(PLAY, DefaultServerCommands::PLAY),
+			entry(PAUSE, DefaultServerCommands::PAUSE), entry(STEP, DefaultServerCommands::STEP),
+			entry(BACK, DefaultServerCommands::BACK), entry(STEPBACK, DefaultServerCommands::BACK),
+			entry(STOP, DefaultServerCommands::STOP), entry(RELOAD, DefaultServerCommands::RELOAD),
+			entry(EXPRESSION, DefaultServerCommands::EVAL), entry(EVALUATE, DefaultServerCommands::EVAL),
+			entry(EXIT, DefaultServerCommands::EXIT), entry(DOWNLOAD, DefaultServerCommands::DOWNLOAD),
+			entry(UPLOAD, DefaultServerCommands::UPLOAD), entry(ASK, DefaultServerCommands::ASK),
+			entry(VALIDATE, DefaultServerCommands::VALIDATE), entry(DESCRIBE, DefaultServerCommands::DESCRIBE));
 
 	/** The commands. */
 	protected final Map<String, ISocketCommand> commands;
@@ -148,19 +156,7 @@ public class CommandExecutor implements ICommandExecuter {
 	 * @return the default commands
 	 * @date 15 oct. 2023
 	 */
-	public static synchronized Map<String, ISocketCommand> getDefaultCommands() {
-		if (DEFAULT_COMMANDS == null) {
-
-			DEFAULT_COMMANDS = Map.ofEntries(entry(LOAD, DefaultServerCommands::LOAD),
-					entry(PLAY, DefaultServerCommands::PLAY), entry(PAUSE, DefaultServerCommands::PAUSE),
-					entry(STEP, DefaultServerCommands::STEP), entry(BACK, DefaultServerCommands::BACK),
-					entry(STEPBACK, DefaultServerCommands::BACK), entry(STOP, DefaultServerCommands::STOP),
-					entry(RELOAD, DefaultServerCommands::RELOAD), entry(EXPRESSION, DefaultServerCommands::EVAL),
-					entry(EVALUATE, DefaultServerCommands::EVAL), entry(EXIT, DefaultServerCommands::EXIT),
-					entry(DOWNLOAD, DefaultServerCommands::DOWNLOAD), entry(UPLOAD, DefaultServerCommands::UPLOAD),
-					entry(ASK, DefaultServerCommands::ASK), entry(VALIDATE, DefaultServerCommands::VALIDATE),
-					entry(DESCRIBE, DefaultServerCommands::DESCRIBE));
-		}
+	public static Map<String, ISocketCommand> getDefaultCommands() {
 		return DEFAULT_COMMANDS;
 	}
 

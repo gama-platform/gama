@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.core.filesystem.EFS;
@@ -45,7 +46,6 @@ import org.eclipse.ui.navigator.CommonViewer;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import gama.api.GAMA;
@@ -86,8 +86,13 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	/** The in initialization phase. */
 	private static volatile boolean IN_INITIALIZATION_PHASE = false;
 
-	/** The post event actions. */
-	private final List<Runnable> postEventActions = new ArrayList<>();
+	/**
+	 * Actions accumulated during a resource-change event, drained and executed on the UI thread by
+	 * {@link #runPostEventActions()}. {@link ConcurrentLinkedQueue} is used so that {@link #post(Runnable)}
+	 * (called from any thread) and the drain in {@link #runPostEventActions()} (called on the UI thread)
+	 * are both lock-free.
+	 */
+	private final ConcurrentLinkedQueue<Runnable> postEventActions = new ConcurrentLinkedQueue<>();
 
 	/** The to refresh. */
 	private final Set<VirtualContent<?>> toRefresh = Collections.synchronizedSet(new HashSet<>());
@@ -200,7 +205,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	 *            the run
 	 */
 	public void post(final Runnable run) {
-		postEventActions.add(run);
+		postEventActions.offer(run);
 	}
 
 	@Override
@@ -224,28 +229,25 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 		WorkbenchHelper.runInUI("Check for workspace changes", 5, m -> {
 			if (viewer.getControl().isDisposed()) return;
 			viewer.getControl().setRedraw(false);
-			final List<Runnable> runnables;
-			synchronized (postEventActions) {
-				runnables = ImmutableList.copyOf(postEventActions);
-				postEventActions.clear();
-			}
+			// ConcurrentLinkedQueue: drain all currently-queued runnables without a lock.
+			Runnable r;
+			while ((r = postEventActions.poll()) != null) { r.run(); }
 
-			for (final Runnable r : runnables) { r.run(); }
 			final Set<VirtualContent<?>> refreshables;
 			synchronized (toRefresh) {
 				refreshables = ImmutableSet.copyOf(toRefresh);
 				toRefresh.clear();
 			}
-			for (final VirtualContent<?> r : refreshables) {
-				if (!viewer.getControl().isDisposed()) { viewer.refresh(r); }
+			for (final VirtualContent<?> vc : refreshables) {
+				if (!viewer.getControl().isDisposed()) { viewer.refresh(vc); }
 			}
 			final Set<VirtualContent<?>> updatables;
 			synchronized (toUpdate) {
 				updatables = ImmutableSet.copyOf(toUpdate);
 				toUpdate.clear();
 			}
-			for (final VirtualContent<?> r : updatables) {
-				if (!viewer.getControl().isDisposed()) { viewer.update(r, null); }
+			for (final VirtualContent<?> vc : updatables) {
+				if (!viewer.getControl().isDisposed()) { viewer.update(vc, null); }
 			}
 			if (toReveal != null) {
 				final VirtualContent<?> vc = findWrappedInstanceOf(toReveal);

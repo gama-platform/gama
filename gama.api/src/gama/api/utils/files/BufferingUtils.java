@@ -20,11 +20,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
@@ -34,6 +35,16 @@ import gama.api.types.color.IColor;
 
 /**
  * The Class BufferingUtils.
+ *
+ * <h3>Thread-safety design</h3>
+ * <p>
+ * The four collections are {@link ConcurrentHashMap}s, so individual reads and single-key writes
+ * are lock-free. The only operations that touch multiple entries atomically (the flush methods) are
+ * protected by dedicated per-map {@link ReentrantLock}s — one for file-per-agent buffers, one for
+ * file-per-cycle buffers, one for console-per-agent buffers, and one for console-per-cycle buffers.
+ * This eliminates the single global lock that previously serialised every write and flush, allowing
+ * concurrent writes on different files/agents to proceed in parallel.
+ * </p>
  */
 public class BufferingUtils {
 
@@ -85,8 +96,11 @@ public class BufferingUtils {
 	 * Converts a string into a BufferingStrategies if it matches the corresponding static variables. If not it returns
 	 * NO_BUFFERING
 	 *
+	 * @param scope
+	 *            the current scope
 	 * @param s
-	 * @return
+	 *            the strategy string
+	 * @return the matching BufferingStrategies constant
 	 */
 	public static BufferingStrategies stringToBufferingStrategies(final IScope scope, final String s) {
 		return switch (s) {
@@ -101,9 +115,9 @@ public class BufferingUtils {
 	}
 
 	/**
-	 * Represents a buffer of text on a file or on the console. Buffers for console text have a color. Buffers for files
-	 * have an encoding charset and also contain a variable rewrite that should be used to indicate if the file must be
-	 * recreated or just appended (when rewrite is false).
+	 * Represents a buffer of text on a file or on the console. Buffers for console text have a color. Buffers for
+	 * files have an encoding charset and also contain a variable rewrite that should be used to indicate if the file
+	 * must be recreated or just appended (when rewrite is false).
 	 */
 	public static class TextBuffer {
 
@@ -120,16 +134,15 @@ public class BufferingUtils {
 		protected boolean rewrite;
 
 		/**
-		 * Instantiates a new text buffer.
+		 * Instantiates a new text buffer (file variant).
 		 *
 		 * @param initialContent
 		 *            the initial content
 		 * @param encodingType
 		 *            the encoding type
 		 * @param rewriteFile
-		 *            the rewrite file
+		 *            whether to rewrite the file
 		 */
-		// Constructor for a text buffer on a file
 		public TextBuffer(final CharSequence initialContent, final Charset encodingType, final boolean rewriteFile) {
 			content = new StringBuilder(initialContent);
 			encoding = encodingType;
@@ -138,14 +151,13 @@ public class BufferingUtils {
 		}
 
 		/**
-		 * Instantiates a new text buffer.
+		 * Instantiates a new text buffer (console variant).
 		 *
 		 * @param initialContent
 		 *            the initial content
 		 * @param textColor
 		 *            the text color
 		 */
-		// Constructor for a text buffer on the console
 		public TextBuffer(final CharSequence initialContent, final IColor textColor) {
 			content = new StringBuilder(initialContent);
 			color = textColor;
@@ -157,43 +169,67 @@ public class BufferingUtils {
 		 * Sets the rewrite.
 		 *
 		 * @param rewrite
-		 *            the new rewrite
+		 *            the new rewrite flag
 		 */
 		public void setRewrite(final boolean rewrite) { this.rewrite = rewrite; }
 
 		/**
 		 * Checks if is rewriting.
 		 *
-		 * @return true, if is rewriting
+		 * @return true if this buffer will overwrite the target file
 		 */
 		public boolean isRewriting() { return rewrite; }
 	}
 
-	// those are the maps that are mapping a file to one or multiple agents each responsible for a buffer of text.
-	/** The file buffer per agent. */
-	// the files in those maps MUST be absolute paths for it to work
-	protected Map<String, Map<IAgent, TextBuffer>> fileBufferPerAgent;
-
-	/** The file buffer per agent for cycles. */
-	protected Map<String, Map<IAgent, TextBuffer>> fileBufferPerAgentForCycles;
-
-	// the maps that manage console writing, per agent and per agent for cycle buffering.
-	/** The console buffer list per agent. */
-	// each agent is responsible for a list of buffers (one each color change)
-	protected Map<IAgent, List<TextBuffer>> consoleBufferListPerAgent;
-
-	/** The console buffer list per agent for cycles. */
-	protected Map<IAgent, List<TextBuffer>> consoleBufferListPerAgentForCycles;
+	// -------------------------------------------------------------------------
+	// Fields — ConcurrentHashMap replaces plain HashMap for lock-free reads/writes.
+	// Per-map ReentrantLocks guard the compound flush operations.
+	// -------------------------------------------------------------------------
 
 	/**
-	 * Instantiates a new buffering controller.
+	 * Maps an absolute file path to a per-agent map of pending write buffers, for
+	 * PER_AGENT / PER_SIMULATION_BUFFERING strategies.
 	 */
-	public BufferingUtils() {
-		fileBufferPerAgent = new HashMap<>();
-		fileBufferPerAgentForCycles = new HashMap<>();
-		consoleBufferListPerAgent = new HashMap<>();
-		consoleBufferListPerAgentForCycles = new HashMap<>();
-	}
+	protected final Map<String, Map<IAgent, TextBuffer>> fileBufferPerAgent = new ConcurrentHashMap<>();
+
+	/** Lock protecting compound operations (iterate + remove) on {@link #fileBufferPerAgent}. */
+	private final ReentrantLock filePerAgentLock = new ReentrantLock();
+
+	/**
+	 * Maps an absolute file path to a per-agent map of pending write buffers, for
+	 * PER_CYCLE_BUFFERING strategy.
+	 */
+	protected final Map<String, Map<IAgent, TextBuffer>> fileBufferPerAgentForCycles = new ConcurrentHashMap<>();
+
+	/** Lock protecting compound operations on {@link #fileBufferPerAgentForCycles}. */
+	private final ReentrantLock fileCycleLock = new ReentrantLock();
+
+	/**
+	 * Maps each agent to its ordered list of pending console buffers, for
+	 * PER_AGENT / PER_SIMULATION_BUFFERING strategies.
+	 */
+	protected final Map<IAgent, List<TextBuffer>> consoleBufferListPerAgent = new ConcurrentHashMap<>();
+
+	/** Lock protecting compound operations on {@link #consoleBufferListPerAgent}. */
+	private final ReentrantLock consolePerAgentLock = new ReentrantLock();
+
+	/**
+	 * Maps each agent to its ordered list of pending console buffers, for
+	 * PER_CYCLE_BUFFERING strategy.
+	 */
+	protected final Map<IAgent, List<TextBuffer>> consoleBufferListPerAgentForCycles = new ConcurrentHashMap<>();
+
+	/** Lock protecting compound operations on {@link #consoleBufferListPerAgentForCycles}. */
+	private final ReentrantLock consoleCycleLock = new ReentrantLock();
+
+	/**
+	 * Instantiates a new buffering controller. All maps are ConcurrentHashMaps.
+	 */
+	public BufferingUtils() {}
+
+	// -------------------------------------------------------------------------
+	// Write requests
+	// -------------------------------------------------------------------------
 
 	/**
 	 * Ask to write on a file following a given buffering strategy and some saving options. This method will take care
@@ -204,28 +240,26 @@ public class BufferingUtils {
 	 * written.
 	 *
 	 * @param fileId
-	 *            The id used to represent the file, it should be its absolute path
+	 *            the id used to represent the file; should be its absolute path
 	 * @param scope
-	 *            the scope from which the save statement was called, used to identify the "owner" of the request
+	 *            the scope from which the save statement was called
 	 * @param content
 	 *            the text to write in the file
 	 * @param options
-	 *            the saving options (rewrite, buffering strategy etc. )
+	 *            the saving options (rewrite, buffering strategy, etc.)
 	 * @return true if the operation was successful, false otherwise
 	 */
-	public synchronized boolean askWriteFile(final String fileId, final IScope scope, final CharSequence content,
+	public boolean askWriteFile(final String fileId, final IScope scope, final CharSequence content,
 			final SaveOptions options) {
 		IAgent owner = scope.getSimulation();
 		switch (options.bufferingStrategy()) {
 			case PER_AGENT, PER_SIMULATION_BUFFERING:
-				// in case it's per agent we just switch the owner to the calling agent
-				// instead of the whole simulation
 				if (options.bufferingStrategy() == BufferingStrategies.PER_AGENT) { owner = scope.getAgent(); }
 				return appendSaveFileRequestToMap(owner, getOrInitBufferingMap(fileId, fileBufferPerAgent), content,
 						options);
 			case PER_CYCLE_BUFFERING:
-				return appendSaveFileRequestToMap(owner, getOrInitBufferingMap(fileId, fileBufferPerAgentForCycles),
-						content, options);
+				return appendSaveFileRequestToMap(owner,
+						getOrInitBufferingMap(fileId, fileBufferPerAgentForCycles), content, options);
 			case NO_BUFFERING:
 				return directWriteFile(fileId, content, options.writeCharset(), !options.rewrite());
 			default:
@@ -254,13 +288,11 @@ public class BufferingUtils {
 	 *            the buffering strategy to apply
 	 * @return true if the operation is successful, false otherwise
 	 */
-	public synchronized boolean askWriteConsole(final IScope scope, final StringBuilder content, final IColor color,
+	public boolean askWriteConsole(final IScope scope, final StringBuilder content, final IColor color,
 			final BufferingStrategies bufferingStrategy) {
 		IAgent owner = scope.getSimulation();
 		switch (bufferingStrategy) {
 			case PER_AGENT, PER_SIMULATION_BUFFERING:
-				// in case it's per agent we just switch the owner to the calling agent
-				// instead of the whole simulation
 				if (bufferingStrategy == BufferingStrategies.PER_AGENT) { owner = scope.getAgent(); }
 				return appendWriteConsoleRequestToMap(owner, consoleBufferListPerAgent, content, color);
 			case PER_CYCLE_BUFFERING:
@@ -276,48 +308,43 @@ public class BufferingUtils {
 		}
 	}
 
+	// -------------------------------------------------------------------------
+	// Internal helpers
+	// -------------------------------------------------------------------------
+
 	/**
-	 * Tries to get the existing map of agent/buffer for one given file. If it doesn't exist it will be created and
-	 * added to the map in which it was looking in.
+	 * Tries to get the existing per-agent map for one given file. If it doesn't exist it will be created and
+	 * added to the outer map. Uses {@link ConcurrentHashMap#computeIfAbsent} for an atomic, lock-free
+	 * creation of the inner map.
 	 *
 	 * @param fileId
-	 *            the id of the file, it should be its absolute path
+	 *            the id of the file (absolute path)
 	 * @param map
-	 *            the map in which to look in
-	 * @return the corresponding map of agent/buffer
+	 *            the outer map in which to look
+	 * @return the corresponding per-agent buffer map
 	 */
-	protected synchronized Map<IAgent, TextBuffer> getOrInitBufferingMap(final String fileId,
+	protected Map<IAgent, TextBuffer> getOrInitBufferingMap(final String fileId,
 			final Map<String, Map<IAgent, TextBuffer>> map) {
-		// If we don't have any map for this file yet we create one
-		Map<IAgent, TextBuffer> bufferingMap = map.get(fileId);
-		if (bufferingMap == null) {
-			bufferingMap = new HashMap<>();
-			map.put(fileId, bufferingMap);
-		}
-		return bufferingMap;
+		return map.computeIfAbsent(fileId, k -> new ConcurrentHashMap<>());
 	}
 
 	/**
 	 * Takes care of properly adding the content of a file saving request into the map. It will create a buffer if none
 	 * exists or append the content if one is already present. It will also take care of resetting the content in case
-	 * the new request has the rewrite option set to true
+	 * the new request has the rewrite option set to true.
 	 *
 	 * @param owner
-	 *            the agent that is responsible for asking to write, will be used later to flush
+	 *            the agent responsible for the request
 	 * @param bufferingMap
 	 *            the map containing already present buffers
 	 * @param content
 	 *            the text to write
 	 * @param options
-	 *            the saving options (used to get the rewrite option)
+	 *            the saving options
 	 * @return true if the operation was successful, false otherwise
 	 */
 	protected static boolean appendSaveFileRequestToMap(final IAgent owner, final Map<IAgent, TextBuffer> bufferingMap,
 			final CharSequence content, final SaveOptions options) {
-
-		// We look up for the previous request of the owner simulation in the map
-		// if there's already one we append our content or rewrite, depending on the append parameter
-		// else we create one with the content as its initial value
 		TextBuffer request = bufferingMap.get(owner);
 		if (request == null) {
 			try {
@@ -328,7 +355,6 @@ public class BufferingUtils {
 				return false;
 			}
 		}
-		// If we are not in append mode, we empty the buffer
 		if (options.rewrite()) {
 			request.setRewrite(true);
 			request.content.setLength(0);
@@ -342,7 +368,7 @@ public class BufferingUtils {
 	 * none exists or append the content into the last one if it is compatible (same color).
 	 *
 	 * @param owner
-	 *            the agent that is responsible for asking to write, will be used later to flush
+	 *            the agent responsible for the request
 	 * @param bufferingMap
 	 *            the map containing the list of already created buffers
 	 * @param content
@@ -353,18 +379,11 @@ public class BufferingUtils {
 	 */
 	protected static boolean appendWriteConsoleRequestToMap(final IAgent owner,
 			final Map<IAgent, List<TextBuffer>> bufferingMap, final StringBuilder content, final IColor color) {
-
-		// We look up for the previous request of the owner simulation in the map
 		List<TextBuffer> requests = bufferingMap.get(owner);
-
-		// If there's no list yet we create one and add it to the map
 		if (requests == null) {
 			requests = new ArrayList<>();
 			bufferingMap.put(owner, requests);
 		}
-
-		// If the last element of the list is not of the same color as the currently requested color we append a new
-		// task with the new color
 		if (requests.size() != 0 && (requests.get(requests.size() - 1).color == null && color == null
 				|| requests.get(requests.size() - 1).color != null
 						&& requests.get(requests.size() - 1).color.equals(color))) {
@@ -390,7 +409,7 @@ public class BufferingUtils {
 	 * @param charset
 	 *            the charset used to write
 	 * @param append
-	 *            if true the content will be appened, else it will replace the current file content (if any)
+	 *            if true the content will be appended, else it will replace the current file content (if any)
 	 * @return true if no exception, false otherwise
 	 */
 	protected static boolean directWriteFile(final String fileId, final CharSequence content, final Charset charset,
@@ -403,7 +422,6 @@ public class BufferingUtils {
 				Files.write(Paths.get(fileId), content.toString().getBytes(charset), StandardOpenOption.CREATE,
 						StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
 			}
-			// FileUtils.write(new File(fileId), content, charset, append);
 			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -411,125 +429,139 @@ public class BufferingUtils {
 		}
 	}
 
-	/**
-	 * Flushes all the save requests linked to an agent (per_agent or per_simulation buffering)
-	 *
-	 * @param owner
-	 *            the agent in which the save statements have been executed
-	 * @param map
-	 *            the map in which to look up
-	 * @return true if everything went well, false in case of error
-	 */
-	protected static boolean flushAllFilesOfAgent(final IAgent owner, final Map<String, Map<IAgent, TextBuffer>> map) {
-		boolean success = true;
-		for (var entry : map.entrySet()) {
-			var writeTask = entry.getValue().get(owner);
-			if (writeTask != null) {
-				var writeSuccess =
-						directWriteFile(entry.getKey(), writeTask.content, writeTask.encoding, !writeTask.rewrite);
-				// we don't return false directly because we try to flush as much files as possible
-				success &= writeSuccess;
-				// if the write was successful we remove the operation from the map
-				if (writeSuccess) { entry.getValue().remove(owner); }
-			}
-		}
-		return success;
-	}
+	// -------------------------------------------------------------------------
+	// Flush helpers — protected by per-map ReentrantLocks
+	// -------------------------------------------------------------------------
 
 	/**
-	 * Flushes all the write requests linked to an agent (per_agent or per_simulation buffering)
+	 * Flushes all the save requests linked to an agent in the given map.
+	 * The per-map lock prevents a concurrent flush of the same map from removing entries
+	 * that are still being iterated.
 	 *
 	 * @param owner
-	 *            the agent in which the write statements have been executed
+	 *            the agent whose entries should be flushed
 	 * @param map
-	 *            the map in which to look up
+	 *            the outer map to flush from
+	 * @param lock
+	 *            the per-map lock to acquire
+	 * @return true if everything went well, false in case of error
 	 */
-	protected static void flushAllWriteOfAgent(final IAgent owner, final Map<IAgent, List<TextBuffer>> map) {
-		var tasks = map.get(owner);
-		if (tasks != null) {
-			var scope = owner.getScope();
-			for (var task : tasks) {
-				scope.getGui().getConsole().informConsole(task.content.toString(), scope.getRoot(), task.color);
+	private static boolean flushAllFilesOfAgent(final IAgent owner,
+			final Map<String, Map<IAgent, TextBuffer>> map, final ReentrantLock lock) {
+		lock.lock();
+		try {
+			boolean success = true;
+			for (var entry : map.entrySet()) {
+				var writeTask = entry.getValue().get(owner);
+				if (writeTask != null) {
+					var writeSuccess =
+							directWriteFile(entry.getKey(), writeTask.content, writeTask.encoding, !writeTask.rewrite);
+					success &= writeSuccess;
+					if (writeSuccess) { entry.getValue().remove(owner); }
+				}
 			}
-			tasks.clear();
+			return success;
+		} finally {
+			lock.unlock();
 		}
 	}
 
 	/**
-	 * Flushes all the save requests made by an agent with the 'per_simulation' or 'per_agent' strategy
+	 * Flushes all the console write requests linked to an agent in the given map.
 	 *
 	 * @param owner
-	 *            the simulation or agent in which the save statements have been executed
+	 *            the agent whose entries should be flushed
+	 * @param map
+	 *            the map to flush from
+	 * @param lock
+	 *            the per-map lock to acquire
+	 */
+	private static void flushAllWriteOfAgent(final IAgent owner,
+			final Map<IAgent, List<TextBuffer>> map, final ReentrantLock lock) {
+		lock.lock();
+		try {
+			var tasks = map.get(owner);
+			if (tasks != null) {
+				var scope = owner.getScope();
+				for (var task : tasks) {
+					scope.getGui().getConsole().informConsole(task.content.toString(), scope.getRoot(), task.color);
+				}
+				tasks.clear();
+			}
+		} finally {
+			lock.unlock();
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Public flush API
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Flushes all the save requests made by an agent with the 'per_simulation' or 'per_agent' strategy.
+	 *
+	 * @param owner
+	 *            the simulation or agent whose save statements should be flushed
 	 * @return true if everything went well, false in case of error
 	 */
-	public synchronized boolean flushSaveFilesOfAgent(final IAgent owner) {
-		return flushAllFilesOfAgent(owner, fileBufferPerAgent);
+	public boolean flushSaveFilesOfAgent(final IAgent owner) {
+		return flushAllFilesOfAgent(owner, fileBufferPerAgent, filePerAgentLock);
 	}
 
 	/**
-	 * Flushes all the save requests made in a simulation with the 'per_cycle' strategy
+	 * Flushes all the save requests made in a simulation with the 'per_cycle' strategy.
 	 *
 	 * @param owner
-	 *            the simulation in which the save statements have been executed
+	 *            the simulation whose save statements should be flushed
 	 * @return true if everything went well, false in case of error
 	 */
-	public synchronized boolean flushSaveFilesInCycle(final IAgent owner) {
-		return flushAllFilesOfAgent(owner, fileBufferPerAgentForCycles);
+	public boolean flushSaveFilesInCycle(final IAgent owner) {
+		return flushAllFilesOfAgent(owner, fileBufferPerAgentForCycles, fileCycleLock);
 	}
 
 	/**
-	 * Flushes all the write statement requests made in a simulation with the 'per_cycle' strategy
+	 * Flushes all the write statement requests made in a simulation with the 'per_cycle' strategy.
 	 *
 	 * @param owner
-	 *            the simulation in which the write statements have been executed
+	 *            the simulation whose write statements should be flushed
 	 */
-	public synchronized void flushWriteInCycle(final IAgent owner) {
-		flushAllWriteOfAgent(owner, consoleBufferListPerAgentForCycles);
+	public void flushWriteInCycle(final IAgent owner) {
+		flushAllWriteOfAgent(owner, consoleBufferListPerAgentForCycles, consoleCycleLock);
 	}
 
 	/**
-	 * Flushes all the write requests made by an agent with the 'per_simulation' or 'per_agent' strategy
+	 * Flushes all the write requests made by an agent with the 'per_simulation' or 'per_agent' strategy.
 	 *
-	 * @param owner:
-	 *            the agent or simulation in which the write statements have been executed
+	 * @param owner
+	 *            the agent or simulation whose write statements should be flushed
 	 */
-	public synchronized void flushWriteOfAgent(final IAgent owner) {
-		flushAllWriteOfAgent(owner, consoleBufferListPerAgent);
+	public void flushWriteOfAgent(final IAgent owner) {
+		flushAllWriteOfAgent(owner, consoleBufferListPerAgent, consolePerAgentLock);
 	}
 
 	/**
-	 * Flushes all buffers that are waiting. Flushes write and save buffers, whether registered per cycle or per agent
+	 * Flushes all buffers that are waiting — write and save buffers, whether registered per cycle or per agent.
 	 */
-	public synchronized void flushAllBuffers() {
-		// flushes the console per cycle first
+	public void flushAllBuffers() {
 		for (var agent : consoleBufferListPerAgentForCycles.keySet()) { flushWriteInCycle(agent); }
-		// flushes the others for the console
 		for (var agent : consoleBufferListPerAgent.keySet()) { flushWriteOfAgent(agent); }
-		// flushes the files registered for the cycle
 		var agents = fileBufferPerAgentForCycles.entrySet().stream().map(s -> s.getValue().keySet())
 				.flatMap(Collection::stream).toArray(length -> new IAgent[length]);
 		for (IAgent agent : agents) { flushSaveFilesInCycle(agent); }
-		// finally flushes the files registered per agent
 		agents = fileBufferPerAgent.entrySet().stream().map(s -> s.getValue().keySet()).flatMap(Collection::stream)
 				.toArray(length -> new IAgent[length]);
 		for (IAgent agent : agents) { flushSaveFilesOfAgent(agent); }
 	}
 
 	/**
-	 * Check if a file is currently buffered, which means it may not exist yet on the disk, but will be at some point
+	 * Check if a file is currently buffered, which means it may not exist yet on the disk, but will be at some point.
 	 *
 	 * @param f
 	 *            the file to test
 	 * @return true if there are pending writing operations for this file, false otherwise
 	 */
-	public synchronized boolean isFileWaitingToBeWritten(final File f) {
-		// visits all files that are registered by agents
-		// visits all files that are registered by cycle
-		if (fileBufferPerAgent.keySet().parallelStream()
-				.anyMatch(registeredFile -> registeredFile.equals(f.getAbsolutePath()))
-				|| fileBufferPerAgentForCycles.keySet().parallelStream()
-						.anyMatch(registeredFile -> registeredFile.equals(f.getAbsolutePath())))
-			return true;
-		return false;
+	public boolean isFileWaitingToBeWritten(final File f) {
+		return fileBufferPerAgent.containsKey(f.getAbsolutePath())
+				|| fileBufferPerAgentForCycles.containsKey(f.getAbsolutePath());
 	}
 }

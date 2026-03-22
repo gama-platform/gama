@@ -340,7 +340,7 @@ public abstract class AbstractOutputManager extends Symbol implements IOutputMan
 	}
 
 	@Override
-	public synchronized void dispose() {
+	public void dispose() {
 		super.dispose();
 		try {
 			GAMA.desynchronizeFrontmostExperiment();

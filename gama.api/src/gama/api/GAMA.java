@@ -229,12 +229,17 @@ public class GAMA {
 	}
 
 	/**
-	 * Gets the platform agent instance.
+	 * Gets the platform agent instance. Uses double-checked locking on the volatile {@code __AGENT__}
+	 * field so that the {@link PlatformAgent} constructor is called at most once.
 	 *
 	 * @return the platform agent
 	 */
 	public static ITopLevelAgent.Platform getPlatformAgent() {
-		if (__AGENT__ == null) { __AGENT__ = new PlatformAgent(); }
+		if (__AGENT__ == null) {
+			synchronized (GAMA.class) {
+				if (__AGENT__ == null) { __AGENT__ = new PlatformAgent(); }
+			}
+		}
 		return __AGENT__;
 	}
 
@@ -428,7 +433,7 @@ public class GAMA {
 	 * @throws GamaRuntimeException
 	 *             if the experiment doesn't exist
 	 */
-	public static synchronized IExperimentSpecies addHeadlessExperiment(final IModelSpecies model, final String expName,
+	public static IExperimentSpecies addHeadlessExperiment(final IModelSpecies model, final String expName,
 			final IMap<String, Object> params, final Double seed) {
 		final IExperimentSpecies currentExperiment = model.getExperiment(expName);
 		if (currentExperiment == null) throw GamaRuntimeException

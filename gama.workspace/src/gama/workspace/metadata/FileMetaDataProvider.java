@@ -15,16 +15,16 @@ import static org.eclipse.core.runtime.Path.fromOSString;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import org.eclipse.core.resources.IContainer;
@@ -55,7 +55,6 @@ import gama.api.utils.files.IGamaFileMetaData;
 import gama.api.utils.files.IGamlFileInfo;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
-import gama.dev.THREADS;
 import gama.workspace.manager.WorkspaceManager;
 
 /**
@@ -151,11 +150,14 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 		metadataDecoders.put(contentType, retriever);
 	}
 
-	/** The processing. */
-	private static volatile Set<Object> processing = Collections.synchronizedSet(new HashSet<>());
-
-	/** The metadata retrieval lock for preventing concurrent access. */
-	private final Object metadataLock = new Object();
+	/**
+	 * Tracks in-flight metadata computations. Maps an element to a {@link CompletableFuture} that will
+	 * complete with the computed {@link IGamaFileMetaData} (or {@code null} on failure). Using a
+	 * {@link ConcurrentHashMap} avoids both the spin-wait and the need for a separate lock: callers that
+	 * arrive while a computation is already running simply join the existing future.
+	 */
+	private final ConcurrentHashMap<Object, CompletableFuture<IGamaFileMetaData>> inFlight =
+			new ConcurrentHashMap<>();
 
 	/**
 	 * Adapt the specific object to the specified classes, supporting the IAdaptable interface as well.
@@ -255,7 +257,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 				Thread.currentThread().interrupt();
 			}
 		}
-		processing.clear();
+		inFlight.clear();
 		metadataBuilders.clear();
 		metadataDecoders.clear();
 		started = false;
@@ -284,28 +286,24 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 
 	/**
 	 * Gets the meta data for a given element. Handles various types including files, URIs, and projects.
-	 * Uses a caching mechanism with session and persistent properties.
+	 * Uses a two-level cache (session and persistent properties) and a {@link ConcurrentHashMap} of
+	 * {@link CompletableFuture}s to deduplicate concurrent build requests for the same element without
+	 * blocking or spin-waiting.
 	 *
-	 * @param element the element to get metadata for
-	 * @param includeOutdated whether to include outdated metadata in results  
-	 * @param immediately whether to process metadata immediately or asynchronously
+	 * @param element
+	 *            the element to get metadata for
+	 * @param includeOutdated
+	 *            whether to include outdated metadata in results
+	 * @param immediately
+	 *            whether to process metadata immediately or asynchronously
 	 * @return the metadata or null if not available
 	 */
 	@Override
 	public IGamaFileMetaData getMetaData(final Object element, final boolean includeOutdated,
 			final boolean immediately) {
 		startup();
-		
-		if (element == null) {
-			return null;
-		}
-		
-		// Wait for processing with timeout to avoid infinite blocking
-		int waitCount = 0;
-		while (processing.contains(element) && waitCount < 50) {
-			THREADS.WAIT(100);
-			waitCount++;
-		}
+
+		if (element == null) return null;
 
 		try {
 			switch (element) {
@@ -323,56 +321,80 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 				default -> {
 				}
 			}
-			
+
 			final IFile file = adaptTo(element, IFile.class, IFile.class);
 			if (file == null || !file.isAccessible()) return null;
-			
+
 			final String ct = getContentTypeId(file);
 			if (ct == null) return null;
-			
-			final IGamaFileMetaData[] data = { readMetadata(ct, file, includeOutdated) };
-			
-			if (data[0] == null) {
-				synchronized (metadataLock) {
-					// Double-check pattern to avoid race conditions
-					data[0] = readMetadata(ct, file, includeOutdated);
-					if (data[0] == null) {
-						processing.add(element);
-						
-						final Runnable create = () -> {
-							try {
-								Function<IFile, IGamaFileMetaData> metadata = metadataBuilders.get(ct);
-								if (data[0] == null && metadata != null) { 
-									data[0] = metadata.apply(file); 
-								}
-								if (data[0] == null) { 
-									data[0] = createGenericFileMetaData(file); 
-								}
-								storeMetaData(file, data[0], immediately);
-								try {
-									file.refreshLocal(IResource.DEPTH_ZERO, null);
-								} catch (final CoreException e) {
-									DEBUG.ERR("Error refreshing file " + file.getName() + ": " + e.getMessage());
-								}
-							} catch (Exception e) {
-								DEBUG.ERR("Error in processing " + file.getName() + ": " + e.getMessage());
-							} finally {
-								processing.remove(element);
-							}
-						};
 
-						if (immediately) {
-							create.run();
-						} else {
-							executor.submit(create);
-						}
-					}
-				}
+			// Fast path: already cached in session/persistent properties.
+			final IGamaFileMetaData cached = readMetadata(ct, file, includeOutdated);
+			if (cached != null) return cached;
+
+			// Slow path: compute (or join an already-running computation) via CompletableFuture.
+			if (immediately) {
+				// Run synchronously; no need to track in inFlight.
+				return buildAndStore(ct, file, element);
 			}
-			return data[0];
+
+			// For async requests: use computeIfAbsent so that only the first caller submits
+			// the task; subsequent callers for the same element receive the same future.
+			final CompletableFuture<IGamaFileMetaData> future = inFlight.computeIfAbsent(element, key -> {
+				final CompletableFuture<IGamaFileMetaData> f2 = new CompletableFuture<>();
+				executor.submit(() -> {
+					try {
+						f2.complete(buildAndStore(ct, file, key));
+					} catch (Exception e) {
+						f2.complete(null);
+					} finally {
+						inFlight.remove(key, f2);
+					}
+				});
+				return f2;
+			});
+
+			// Wait at most 5 s so the caller does not block indefinitely.
+			return future.get(5, TimeUnit.SECONDS);
+
 		} catch (Exception e) {
 			DEBUG.ERR("Error in getMetaData for " + element + ": " + e.getMessage());
-			processing.remove(element);
+			inFlight.remove(element);
+			return null;
+		}
+	}
+
+	/**
+	 * Builds metadata for {@code file} using the registered builder for {@code contentType}, stores it,
+	 * and returns it. Falls back to a generic descriptor when no builder is registered.
+	 *
+	 * @param contentType
+	 *            the content-type identifier
+	 * @param file
+	 *            the workspace file
+	 * @param element
+	 *            the original element (used for cache invalidation)
+	 * @return the built metadata, or {@code null} on failure
+	 */
+	private IGamaFileMetaData buildAndStore(final String contentType, final IFile file, final Object element) {
+		try {
+			// Re-check: another thread may have stored it while we were waiting.
+			IGamaFileMetaData data = readMetadata(contentType, file, true);
+			if (data != null) return data;
+
+			final Function<IFile, IGamaFileMetaData> builder = metadataBuilders.get(contentType);
+			data = builder != null ? builder.apply(file) : null;
+			if (data == null) { data = createGenericFileMetaData(file); }
+
+			storeMetaData(file, data, true);
+			try {
+				file.refreshLocal(IResource.DEPTH_ZERO, null);
+			} catch (final CoreException e) {
+				DEBUG.ERR("Error refreshing file " + file.getName() + ": " + e.getMessage());
+			}
+			return data;
+		} catch (Exception e) {
+			DEBUG.ERR("Error building metadata for " + file.getName() + ": " + e.getMessage());
 			return null;
 		}
 	}
