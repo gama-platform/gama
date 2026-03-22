@@ -16,6 +16,7 @@ import static gama.api.runtime.GamaExecutorService.getParallelism;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.ISimulationAgent;
@@ -108,10 +109,12 @@ public class SimulationRunner implements ISimulationRunner {
 
 	/**
 	 * O(1) count of currently active simulations. Maintained in sync with {@link #runnables} via
-	 * {@link #add(ISimulationAgent)} and {@link #remove(ISimulationAgent)}. Replaces
-	 * {@code ConcurrentHashMap.size()} (which is O(n)) on the hot {@link #step()} / {@link #hasSimulations()} path.
+	 * {@link #add(ISimulationAgent)} and {@link #remove(ISimulationAgent)}. Uses {@link AtomicInteger} so that
+	 * concurrent calls to {@link #add(ISimulationAgent)}, {@link #remove(ISimulationAgent)}, and {@link #step()} are
+	 * always consistent without external locking — {@code volatile int} would allow a stale snapshot of
+	 * {@code activeCount} to be used in {@link #step()}, releasing the wrong number of permits.
 	 */
-	private volatile int activeCount = 0;
+	private final AtomicInteger activeCount = new AtomicInteger(0);
 
 	/**
 	 * Creates a SimulationRunner configured for the given simulation population.
@@ -166,7 +169,7 @@ public class SimulationRunner implements ISimulationRunner {
 	 */
 	@Override
 	public void remove(final ISimulationAgent agent) {
-		if (runnables.remove(agent) != null) { activeCount--; }
+		if (runnables.remove(agent) != null) { activeCount.decrementAndGet(); }
 	}
 
 	/**
@@ -192,7 +195,7 @@ public class SimulationRunner implements ISimulationRunner {
 			public void run() {
 				while (!shutdown && !agent.dead()) {
 					// DEBUG.OUT("Waiting for " + agent);
-					simulationsSemaphore.acquire();
+					if (!simulationsSemaphore.acquire()) { break; }
 					// Recheck after waking up: dispose() may have released the permit just to
 					// unblock this thread for shutdown — we must not step a dead/cleared runner.
 					if (shutdown || agent.dead()) { break; }
@@ -207,7 +210,7 @@ public class SimulationRunner implements ISimulationRunner {
 		};
 		t.start();
 		runnables.put(agent, t);
-		activeCount++;
+		activeCount.incrementAndGet();
 	}
 
 	/**
@@ -219,7 +222,8 @@ public class SimulationRunner implements ISimulationRunner {
 	 * <ol>
 	 * <li>Releases permits to allow all simulation threads to execute</li>
 	 * <li>Blocks waiting for all simulations to complete their step</li>
-	 * <li>Returns when all simulations have finished stepping</li>
+	 * <li>Returns when all simulations have finished stepping, or immediately if the experiment thread is interrupted
+	 * (in which case the interrupt flag is left set for the caller to detect)</li>
 	 * </ol>
 	 * <p>
 	 * This provides the synchronization needed for coordinated multi-simulation execution where all simulations
@@ -229,8 +233,10 @@ public class SimulationRunner implements ISimulationRunner {
 	@Override
 	public void step() {
 		// DEBUG.OUT("Releasing to all simulations");
-		int nb = activeCount;
+		int nb = activeCount.get();
 		simulationsSemaphore.release(nb);
+		// If the experiment thread is interrupted while waiting, abort the step.
+		// The interrupt flag is already restored by acquire(nb); callers can check it.
 		experimentSemaphore.acquire(nb);
 	}
 
@@ -245,8 +251,7 @@ public class SimulationRunner implements ISimulationRunner {
 	@Override
 	public void dispose() {
 		shutdown = true;
-		int nb = activeCount;
-		activeCount = 0;
+		int nb = activeCount.getAndSet(0);
 		runnables.clear();
 		// DEBUG.OUT("Disposing simulation runner and releasing " + nb + " threads");
 		experimentSemaphore.release(nb);
@@ -265,15 +270,16 @@ public class SimulationRunner implements ISimulationRunner {
 	 * Returns the number of active simulation threads.
 	 *
 	 * <p>
-	 * Uses a dedicated {@code volatile int} counter maintained by {@link #add(ISimulationAgent)} and
+	 * Uses a dedicated {@link AtomicInteger} counter maintained by {@link #add(ISimulationAgent)} and
 	 * {@link #remove(ISimulationAgent)} rather than calling {@code ConcurrentHashMap.size()} (which is O(n)) on
-	 * every simulation cycle.
+	 * every simulation cycle. The atomic counter also ensures that concurrent calls to {@code add}, {@code remove},
+	 * and {@link #step()} always observe a consistent count.
 	 * </p>
 	 *
 	 * @return the count of simulations currently registered
 	 */
 	@Override
-	public int getActiveThreads() { return activeCount; }
+	public int getActiveThreads() { return activeCount.get(); }
 
 	/**
 	 * Checks whether this runner has any active simulations.
@@ -282,7 +288,7 @@ public class SimulationRunner implements ISimulationRunner {
 	 */
 	@Override
 	public boolean hasSimulations() {
-		return activeCount > 0;
+		return activeCount.get() > 0;
 	}
 
 }

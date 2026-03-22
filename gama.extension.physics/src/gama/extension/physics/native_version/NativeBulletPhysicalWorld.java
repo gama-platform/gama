@@ -116,7 +116,8 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 			// DEBUG.OUT("Creating world in thread " + Thread.currentThread().getName());
 		}
 		while (doUpdate) {
-			semaphore.acquire();
+			// If the thread is interrupted while waiting, exit the loop cleanly.
+			if (!semaphore.acquire()) { break; }
 			PhysicsSpace world = getWorld();
 			if (world != null) { world.update(timeStep.floatValue(), maxSubSteps, false, false, true); }
 			// DEBUG.OUT("Actually updating world in thread " + Thread.currentThread().getName());
@@ -132,6 +133,9 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 	 */
 	public NativeBulletPhysicalWorld(final PhysicalSimulationAgent physicalSimulationAgent) {
 		super(physicalSimulationAgent);
+		// Arm the semaphore so the physics thread blocks until updateEngine() triggers it.
+		// If interrupted here the interrupt flag is already restored by acquire(); the
+		// physics thread will break immediately on its first loop iteration.
 		semaphore.acquire();
 	}
 

@@ -378,7 +378,8 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		if (GAMA.isSynchronized() && !WorkbenchHelper.isDisplayThread()) {
 			// Should we put a time out in case ?
 			// syncSemaphore.tryAcquire(5, TimeUnit.SECONDS);
-			syncSemaphore.acquire();
+			// If interrupted, return early: the interrupt flag is already restored by acquire().
+			if (!syncSemaphore.acquire()) return;
 		}
 		// displaySemaphore.release();
 		updateSnapshot();

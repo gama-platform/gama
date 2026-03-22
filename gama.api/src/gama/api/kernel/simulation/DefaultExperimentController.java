@@ -205,8 +205,10 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		executionThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
 		commandThread.setUncaughtExceptionHandler(GamaExecutorService.EXCEPTION_HANDLER);
 
-		// Acquire lock initially to ensure execution thread blocks until explicitly started
-		// This prevents premature execution before experiment is properly scheduled
+		// Acquire lock initially to ensure execution thread blocks until explicitly started.
+		// If acquisition fails due to interruption the thread's interrupt flag is already
+		// restored by acquire(); nothing more to do here — the execution thread will exit
+		// immediately on its first loop iteration because experimentAlive will be false.
 		lock.acquire();
 
 		commandThread.start();
@@ -286,7 +288,8 @@ public class DefaultExperimentController extends AbstractExperimentController {
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.PAUSED);
 				paused = true;
 				lock.release();          // let the execution thread run one step
-				previouslock.acquire();  // then wait for that step to complete
+				// Wait for that step to complete; abort command if interrupted.
+				if (!previouslock.acquire()) return false;
 				return true;
 
 			case _BACK:
@@ -488,8 +491,10 @@ public class DefaultExperimentController extends AbstractExperimentController {
 	 * </ul>
 	 */
 	protected void step() {
-		// Block if paused - wait for START or STEP command to release lock
-		if (paused) { lock.acquire(); }
+		// Block if paused - wait for START or STEP command to release lock.
+		// If the execution thread is interrupted while waiting, return immediately
+		// so it can exit the while(experimentAlive) loop cleanly.
+		if (paused) { if (!lock.acquire()) return; }
 
 		// Cache scope reference to avoid repeated volatile reads
 		final IScope currentScope = scope;

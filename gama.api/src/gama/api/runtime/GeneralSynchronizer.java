@@ -124,27 +124,42 @@ public class GeneralSynchronizer {
 	 * {@code max} value is {@link Integer#MAX_VALUE} and the cap check is skipped entirely to avoid the
 	 * {@code availablePermits()} volatile read on every release.
 	 * </p>
+	 *
+	 * <p>
+	 * When a maximum cap is in effect the check-then-act is performed inside a {@code synchronized} block so that two
+	 * concurrent callers cannot both pass the guard and together push the permit count above {@code max} (TOCTOU fix).
+	 * </p>
 	 */
 	public void release() {
-		if (max != Integer.MAX_VALUE && semaphore.availablePermits() >= max) return;
-		semaphore.release();
+		if (max == Integer.MAX_VALUE) {
+			semaphore.release();
+			return;
+		}
+		synchronized (this) {
+			if (semaphore.availablePermits() < max) { semaphore.release(); }
+		}
 	}
 
 	/**
 	 * Acquires one permit from the synchronizer, blocking if necessary until one is available.
-	 * 
+	 *
 	 * <p>
 	 * This method blocks the calling thread until a permit becomes available. If the thread is interrupted while
-	 * waiting, the interruption is logged and the thread's interrupt flag is restored before returning, so callers
-	 * can detect the interruption via {@link Thread#isInterrupted()}.
+	 * waiting, the interruption is logged, the thread's interrupt flag is restored, and {@code false} is returned so
+	 * the caller can react (e.g. abort the current step) rather than silently proceeding as if a permit was acquired.
 	 * </p>
+	 *
+	 * @return {@code true} if a permit was successfully acquired; {@code false} if the calling thread was interrupted
+	 *         before a permit became available
 	 */
-	public void acquire() {
+	public boolean acquire() {
 		try {
 			semaphore.acquire();
+			return true;
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			Thread.currentThread().interrupt();
+			return false;
 		}
 	}
 
@@ -162,6 +177,11 @@ public class GeneralSynchronizer {
 	 * are released directly, avoiding the {@code availablePermits()} volatile read on the hot simulation-step path.
 	 * </p>
 	 *
+	 * <p>
+	 * When a maximum cap is in effect the check-then-act is performed inside a {@code synchronized} block so that two
+	 * concurrent callers cannot both pass the guard and together push the permit count above {@code max} (TOCTOU fix).
+	 * </p>
+	 *
 	 * @param nb
 	 *            the number of permits to release
 	 */
@@ -171,29 +191,36 @@ public class GeneralSynchronizer {
 			semaphore.release(nb);
 			return;
 		}
-		int already = semaphore.availablePermits();
-		if (already >= max) return;
-		semaphore.release(Math.min(max - already, nb));
+		synchronized (this) {
+			int already = semaphore.availablePermits();
+			if (already >= max) return;
+			semaphore.release(Math.min(max - already, nb));
+		}
 	}
 
 	/**
 	 * Acquires the specified number of permits from the synchronizer, blocking if necessary.
-	 * 
+	 *
 	 * <p>
 	 * This method blocks the calling thread until the requested number of permits become available. If the thread is
-	 * interrupted while waiting, the interruption is logged and the thread's interrupt flag is restored before
-	 * returning, so callers can detect the interruption via {@link Thread#isInterrupted()}.
+	 * interrupted while waiting, the interruption is logged, the thread's interrupt flag is restored, and
+	 * {@code false} is returned so the caller can react (e.g. abort the current step) rather than silently
+	 * proceeding as if all permits were acquired.
 	 * </p>
-	 * 
+	 *
 	 * @param n
 	 *            the number of permits to acquire
+	 * @return {@code true} if all permits were successfully acquired; {@code false} if the calling thread was
+	 *         interrupted before all permits became available
 	 */
-	public void acquire(final int n) {
+	public boolean acquire(final int n) {
 		try {
 			semaphore.acquire(n);
+			return true;
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			Thread.currentThread().interrupt();
+			return false;
 		}
 	}
 
