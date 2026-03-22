@@ -51,6 +51,7 @@ import gama.api.types.graph.IGraph;
 import gama.api.types.graph.IPath;
 import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
+import gama.api.types.topology.ITopology;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.dev.DEBUG;
 import gama.extension.traffic.driving.carfollowing.MOBIL;
@@ -2168,9 +2169,22 @@ public class DrivingSkill extends MovingSkill {
 				: GamaPointFactory.create(coords[currentSegment]);
 		while (remainingDist >= distToGoal || distToGoal < EPSILON) {
 			if (endPt.equals(currentTarget.getLocation())) {
-				// Return to the main loop in `drive` to continue moving across
-				// the intersection
-				setLocation(vehicle, endPt);
+				// Return to the main loop in `drive` to continue moving across the intersection.
+				// Use setLocation only when the position actually changes (it also updates heading).
+				// When distToGoal < EPSILON the vehicle is already at endPt so setLocation would
+				// compute atan2(0,0)=0 — in that case set heading explicitly from the segment coords.
+				if (distToGoal >= EPSILON) {
+					// Park at loc (current segment start) first so that setLocation computes
+					// heading along this segment rather than from the step-start position.
+					if (!loc.equals(vehicle.getLocation())) { vehicle.setLocation(loc); }
+					setLocation(vehicle, endPt);
+				} else {
+					vehicle.setLocation(endPt);
+					final IPoint segStart = !violatingOneway ? GamaPointFactory.create(coords[currentSegment])
+							: GamaPointFactory.create(coords[currentSegment + 1]);
+					final Double segHeading = getTopology(vehicle).directionInDegreesTo(vehicle.getScope(), segStart, endPt);
+					if (segHeading != null) { setHeading(vehicle, segHeading); }
+				}
 				setDistanceToGoal(vehicle, 0.0);
 				setDistanceToCurrentTarget(vehicle, 0.0);
 				updateVehicleOrdering(scope, newLowestLane, 0.0);
@@ -2188,6 +2202,11 @@ public class DrivingSkill extends MovingSkill {
 		double ratio = remainingDist / distToGoal;
 		double newX = loc.getX() + ratio * (endPt.getX() - loc.getX());
 		double newY = loc.getY() + ratio * (endPt.getY() - loc.getY());
+		// When the vehicle has crossed one or more segments during this step, agent.getLocation()
+		// is still the step-start position, not the start of the current segment. setLocation uses
+		// agent.getLocation() as oldLocation for heading computation, so we first park the agent
+		// silently at loc (the current segment start) so the heading is computed along this segment.
+		if (!loc.equals(vehicle.getLocation())) { vehicle.setLocation(loc); }
 		setLocation(vehicle, GamaPointFactory.create(newX, newY));
 		setSpeed(vehicle, newSpeed);
 		setAcceleration(vehicle, accel);

@@ -409,7 +409,6 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 		}
 		final Shape s = sw.toShape(geometry);
 		try {
-			final Rectangle2D r = s.getBounds2D();
 			currentRenderer.setColor(IColor.toAWTColor(attributes.getColor()));
 			if (!isLine && !attributes.isEmpty()) {
 				BufferedImage texture = null;
@@ -420,7 +419,8 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 					} else if (obj.get(obj.size() - 1) instanceof BufferedImage im) { texture = im; }
 				} else if (obj instanceof BufferedImage im) { texture = im; }
 				if (texture != null) {
-					TexturePaint tp = new TexturePaint(texture, r);
+					// getBounds2D() only needed as the anchor rectangle for TexturePaint
+					TexturePaint tp = new TexturePaint(texture, s.getBounds2D());
 					currentRenderer.setPaint(tp);
 				}
 				currentRenderer.fill(s);
@@ -429,7 +429,7 @@ public class AWTDisplayGraphics extends AbstractDisplayGraphics implements Image
 				if (border != null) { currentRenderer.setColor(IColor.toAWTColor(border)); }
 				currentRenderer.draw(s);
 			}
-			return r;
+			return s.getBounds2D();
 		} catch (final Exception e) {
 			e.printStackTrace();
 			return null;

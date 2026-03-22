@@ -35,6 +35,13 @@ public abstract class AttributeHolder {
 	/** The attributes. */
 	final Map<String, Attribute<?>> attributes = new HashMap<>(10);
 
+	/**
+	 * Cached array of attribute entries for fast iteration during refresh(). Built lazily on the first refresh() call
+	 * and rebuilt whenever new attributes are added via create(). Eliminates per-frame HashMap traversal and lambda
+	 * allocation in the hot drawing path.
+	 */
+	private Attribute<?>[] attributeArray;
+
 	/** The symbol. */
 	protected final ISymbol symbol;
 
@@ -285,8 +292,13 @@ public abstract class AttributeHolder {
 	 *            the scope
 	 * @return the attribute holder
 	 */
+	@SuppressWarnings ("unchecked")
 	public void refresh(final IScope scope) {
-		attributes.forEach((name, attribute) -> { attribute.refresh(name, scope); });
+		// Build the array cache on first call (or after a new attribute was added)
+		if (attributeArray == null) { attributeArray = attributes.values().toArray(new Attribute[0]); }
+		final Attribute<?>[] arr = attributeArray;
+		final int n = arr.length;
+		for (int i = 0; i < n; i++) { arr[i].refresh(null, scope); }
 	}
 
 	/**
@@ -298,6 +310,16 @@ public abstract class AttributeHolder {
 	public AttributeHolder(final ISymbol symbol) {
 		this.symbol = symbol;
 	}
+
+	/**
+	 * Registers an attribute and invalidates the iteration cache so that the next refresh() rebuilds it.
+	 */
+	private <V> void putAttribute(final String facet, final Attribute<V> attr) {
+		attributes.put(facet, attr);
+		attributeArray = null; // invalidate cache
+	}
+
+	// ...existing code...
 
 	/**
 	 * Creates the.
@@ -312,7 +334,7 @@ public abstract class AttributeHolder {
 	 */
 	protected <V> Attribute<V> create(final String facet, final V def) {
 		final Attribute<V> result = new ConstantAttribute<>(def);
-		attributes.put(facet, result);
+		putAttribute(facet, result);
 		return result;
 	}
 
@@ -336,6 +358,8 @@ public abstract class AttributeHolder {
 		return create(facet, exp, type, def);
 	}
 
+	// ...existing code...
+
 	/**
 	 * Creates the.
 	 *
@@ -351,26 +375,21 @@ public abstract class AttributeHolder {
 	 *            the type
 	 * @param def
 	 *            the def
-	 * @param constCaster
-	 *            the const caster
 	 * @return the attribute
 	 */
 	protected <T extends IType<V>, V> Attribute<V> create(final String facet, final IExpression exp, final T type,
 			final V def) {
 		Attribute<V> result;
-		// Function<IExpression, V> constCaster =
-		// /* cc == null ? */ e -> type.cast(null, e.getConstValue(), null, true) /* : cc */;
-		// AD 10/12/19 Changed because it was creating problems with constant
-		// boolean values meant to indicate the presence or absence of the property
-		// see #2902 and #2913
 		if (exp == null || exp.isConst() && exp.isContextIndependant() && type != Types.BOOL) {
 			result = new ConstantAttribute<>(exp == null ? def : type.cast(null, exp.getConstValue(), null, true));
 		} else {
 			result = new ExpressionAttribute<>(type, exp, def);
 		}
-		attributes.put(facet, result);
+		putAttribute(facet, result);
 		return result;
 	}
+
+	// ...existing code...
 
 	/**
 	 * Creates the.
@@ -387,24 +406,18 @@ public abstract class AttributeHolder {
 	 *            the type
 	 * @param def
 	 *            the def
-	 * @param constCaster
-	 *            the const caster
 	 * @return the attribute
 	 */
 	protected <T extends IType<V>, V> Attribute<V> create(final String facet, final IExpressionWrapper<V> ev,
-			final T type, final V def/* , final Function<IExpression, V> constCaster */) {
+			final T type, final V def) {
 		final IExpression exp = symbol.getFacet(facet);
 		Attribute<V> result;
-		// AD 10/12/19 Changed because it was creating problems with constant
-		// boolean values meant to indicate the presence or absence of the property
-		// see #2902 and #2913
-		if (exp == null /* || exp.isConst() && exp.isContextIndependant() && exp.getGamlType() != Types.BOOL */) {
-			result = new ConstantAttribute<>(
-					/* exp == null ? def : constCaster != null ? constCaster.apply(exp) : */ def);
+		if (exp == null) {
+			result = new ConstantAttribute<>(def);
 		} else {
 			result = new ExpressionEvaluator<>(ev, exp);
 		}
-		attributes.put(facet, result);
+		putAttribute(facet, result);
 		return result;
 	}
 

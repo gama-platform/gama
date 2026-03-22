@@ -65,29 +65,44 @@ public class ShapeDrawer implements IDrawDelegate {
 		final IDrawingAttributes attributes = computeAttributes(scope, data, shape);
 		Geometry gg = shape.getInnerGeometry();
 		if (gg == null) return null;
+
+		// Early visibility culling: skip all transform work for shapes outside the visible region
+		if (GamaPreferences.Displays.DISPLAY_ONLY_VISIBLE.getValue() && !scope.getExperiment().isHeadless()) {
+			final IEnvelope e = shape.getEnvelope();
+			try {
+				final IEnvelope visible = scope.getGraphics().getVisibleRegion();
+				if (visible != null && !visible.intersects(e)) return null;
+			} finally {
+				e.dispose();
+			}
+		}
+
 		final ICoordinates ic = GamaCoordinateSequenceFactory.pointsOf(gg);
 		ic.ensureClockwiseness();
 
 		// If the graphics is 2D, we pre-translate and pre-rotate the geometry
 		if (scope.getGraphics().is2D()) {
-			/** The center. */
 			final IPoint center = ic.getCenter();
 			final AxisAngle rot = attributes.getRotation();
 			final IPoint location = attributes.getLocation();
-			if (rot != null || location != null) {
+			if (rot != null) {
 				// Do this instead of copy() or clone() to avoid the exception quoted in #3602
 				// Seems to work...
 				gg = gg.buffer(0.0, BufferParameters.DEFAULT_QUADRANT_SEGMENTS, BufferParameters.CAP_FLAT);
+				// Negate the angle to match the OpenGL renderer behavior, which also negates it (see ObjectDrawer#applyRotation)
+				GeometryUtils.rotate(gg, center, new AxisAngle(rot.getAxis(), -rot.getAngle()));
 			}
-			GeometryUtils.rotate(gg, center, rot);
 			if (location != null) {
 				if (gg.getNumPoints() == 1) {
 					gg = GeometryUtils.getGeometryFactory().createPoint(location.toCoordinate());
 				} else {
+					// Copy only if not already copied by the rotation branch above
+					if (rot == null) {
+						gg = gg.buffer(0.0, BufferParameters.DEFAULT_QUADRANT_SEGMENTS, BufferParameters.CAP_FLAT);
+					}
 					GeometryUtils.translate(gg, center, location);
 				}
 			}
-			// gg.geometryChanged();
 		}
 		// Items is of length 3 , but let's verify anyway
 		if (items.length > 1) {
@@ -101,17 +116,6 @@ public class ShapeDrawer implements IDrawDelegate {
 		if (withTorus != gg) {
 			gg = withTorus;
 			attributes.setType(IShape.Type.NULL);
-		}
-
-		// XXX EXPERIMENTAL See Issue #1521
-		if (GamaPreferences.Displays.DISPLAY_ONLY_VISIBLE.getValue() && !scope.getExperiment().isHeadless()) {
-			final IEnvelope e = shape.getEnvelope();
-			try {
-				final IEnvelope visible = scope.getGraphics().getVisibleRegion();
-				if (visible != null && !visible.intersects(e)) return null;
-			} finally {
-				e.dispose();
-			}
 		}
 
 		// The textures are computed as well in advance

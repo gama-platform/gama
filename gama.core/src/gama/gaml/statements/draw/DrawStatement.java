@@ -26,7 +26,6 @@ import static gama.annotations.constants.IKeyword.TEXTURE;
 import java.awt.geom.Rectangle2D;
 import java.util.Arrays;
 import java.util.Map.Entry;
-import java.util.WeakHashMap;
 
 import gama.annotations.doc;
 import gama.annotations.example;
@@ -308,8 +307,14 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 	/** The delegate. */
 	private IDrawDelegate delegate;
 
-	/** The data. */
-	private final WeakHashMap<IGraphics, DrawingData> data = new WeakHashMap<>();
+	/**
+	 * Inline two-slot cache replacing the former WeakHashMap. A draw statement is shared across all agents of a
+	 * species and is called once per agent per frame. Since 2D and 3D displays are never active simultaneously,
+	 * there are at most two distinct IGraphics instances in practice. A direct identity comparison is far cheaper
+	 * than a WeakHashMap get() called thousands of times per frame.
+	 */
+	private IGraphics cachedGraphics0, cachedGraphics1;
+	private DrawingData cachedData0, cachedData1;
 
 	/**
 	 * Instantiates a new draw statement.
@@ -353,10 +358,19 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 		if (scope.interrupted() || g == null || scope.getAgent() == null) return null;
 		try {
 			if (delegate == null) { delegate = (IDrawDelegate) getFacet(INTERNAL_DELEGATE).value(scope); }
-			DrawingData d = data.get(g);
-			if (d == null) {
+			// Inline two-slot cache: avoids WeakHashMap lookup per agent per frame
+			DrawingData d;
+			if (g == cachedGraphics0) {
+				d = cachedData0;
+			} else if (g == cachedGraphics1) {
+				d = cachedData1;
+			} else {
 				d = new DrawingData(this);
-				data.put(g, d);
+				// Evict slot 1, shift slot 0 → slot 1, put new entry in slot 0
+				cachedGraphics1 = cachedGraphics0;
+				cachedData1 = cachedData0;
+				cachedGraphics0 = g;
+				cachedData0 = d;
 			}
 			d.refresh(scope);
 			final IExpression item = getFacet(IKeyword.GEOMETRY);
@@ -374,7 +388,8 @@ public class DrawStatement extends AbstractStatementSequence implements IStateme
 
 	@Override
 	public void dispose() {
-		data.clear();
+		cachedGraphics0 = null; cachedData0 = null;
+		cachedGraphics1 = null; cachedData1 = null;
 		super.dispose();
 	}
 

@@ -132,8 +132,13 @@ public class LayerObject {
 		 *
 		 * @return the abstract object[]
 		 */
+		/** Cached backing array — reallocated only when the list size changes. */
+		private AbstractObject[] cachedArray = new AbstractObject[0];
+
 		public AbstractObject[] asArray() {
-			return toArray(new AbstractObject[size()]);
+			final int n = size();
+			if (cachedArray.length != n) { cachedArray = toArray(new AbstractObject[n]); }
+			return cachedArray;
 		}
 	}
 
