@@ -343,6 +343,16 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 					} else if (dY == null && line.contains("dy")) {
 						dY = doubleVal(line);
 						ascInfo[1] = dY;
+					} else if ((dX == null || dY == null) && line.contains("cellsize")) {
+						Double cellSize = doubleVal(line);
+						if (dX == null) {
+							dX = cellSize;
+							ascInfo[0] = dX;
+						}
+						if (dY == null) {
+							dY = cellSize;
+							ascInfo[1] = dY;
+						}
 					} else if (nbCols == null && line.contains("ncols")) {
 						nbCols = intVal(line);
 					} else if (nbRows == null && line.contains("nrows")) {
@@ -858,7 +868,6 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
 	@Override
 	public void save(final IScope scope, final Facets parameters) {
-
 
 	}
 
