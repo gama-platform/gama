@@ -320,6 +320,41 @@ public class AgentExecutionContext implements IDisposable {
 	}
 
 	/**
+	 * Creates a shallow (single-level) copy of this execution context, sharing the original outer context chain
+	 * rather than recursively copying it.
+	 *
+	 * <p>
+	 * This is the preferred copy strategy for forked parallel scopes where the outer context chain is read-only
+	 * during the step (no structural mutations are made to the chain above the current agent). It avoids the O(depth)
+	 * allocation cost of {@link #createCopy()}, replacing it with a single pool-allocated object.
+	 * </p>
+	 *
+	 * <p>
+	 * <b>Important:</b> The returned context shares the {@code outer} reference with the original. It must not be
+	 * used from code that mutates the outer context chain (i.e. push/pop on outer contexts) concurrently. In
+	 * practice, forked step scopes only push/pop the current agent level, which is safe.
+	 * </p>
+	 *
+	 * <h3>Example</h3>
+	 *
+	 * <pre>{@code
+	 * // Create a shallow copy for a short-lived forked scope
+	 * AgentExecutionContext shallow = original.createShallowCopy();
+	 *
+	 * // Same agent, same outer reference (not a copy)
+	 * assert shallow.getAgent() == original.getAgent();
+	 * assert shallow.getOuterContext() == original.getOuterContext();
+	 * }</pre>
+	 *
+	 * @return a new single-level AgentExecutionContext that shares the outer context chain with this instance
+	 */
+	public AgentExecutionContext createShallowCopy() {
+		// Share the outer chain rather than recursively copying it. Safe for forked scopes
+		// because they only push/pop at the current agent level.
+		return create(agent, outer);
+	}
+
+	/**
 	 * Returns the simulation agent by traversing the context chain.
 	 *
 	 * <p>

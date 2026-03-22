@@ -113,14 +113,20 @@ public class GeneralSynchronizer {
 
 	/**
 	 * Releases one permit, returning it to the synchronizer.
-	 * 
+	 *
 	 * <p>
 	 * If the current number of available permits has already reached the maximum, this call has no effect. Otherwise,
 	 * one permit is added, potentially unblocking a thread waiting in {@link #acquire()}.
 	 * </p>
+	 *
+	 * <p>
+	 * When this synchronizer was created with the default (no maximum) via {@link #withInitialPermits(int)}, the
+	 * {@code max} value is {@link Integer#MAX_VALUE} and the cap check is skipped entirely to avoid the
+	 * {@code availablePermits()} volatile read on every release.
+	 * </p>
 	 */
 	public void release() {
-		if (semaphore.availablePermits() >= max) return;
+		if (max != Integer.MAX_VALUE && semaphore.availablePermits() >= max) return;
 		semaphore.release();
 	}
 
@@ -144,16 +150,27 @@ public class GeneralSynchronizer {
 
 	/**
 	 * Releases the specified number of permits, up to the maximum allowed.
-	 * 
+	 *
 	 * <p>
 	 * This method adds up to {@code nb} permits to the synchronizer. If adding all permits would exceed the maximum,
 	 * only enough permits are added to reach the maximum. If the maximum is already reached, no permits are added.
 	 * </p>
-	 * 
+	 *
+	 * <p>
+	 * When this synchronizer was created with the default (no maximum) via {@link #withInitialPermits(int)}, the
+	 * {@code max} value is {@link Integer#MAX_VALUE}. In that case the cap check is skipped and {@code nb} permits
+	 * are released directly, avoiding the {@code availablePermits()} volatile read on the hot simulation-step path.
+	 * </p>
+	 *
 	 * @param nb
 	 *            the number of permits to release
 	 */
 	public void release(final int nb) {
+		if (max == Integer.MAX_VALUE) {
+			// Fast path: no cap — release all permits immediately without reading availablePermits().
+			semaphore.release(nb);
+			return;
+		}
 		int already = semaphore.availablePermits();
 		if (already >= max) return;
 		semaphore.release(Math.min(max - already, nb));

@@ -153,8 +153,29 @@ public abstract class GamaExecutorService {
 	/** The agent parallel executor. */
 	public static volatile ForkJoinPool AGENT_PARALLEL_EXECUTOR;
 
-	/** Cache for parallelism decisions on constant expressions to avoid repeated evaluations */
-	private static final ConcurrentHashMap<String, Integer> PARALLELISM_CACHE = new ConcurrentHashMap<>();
+	/**
+	 * Identity-based cache for constant-expression parallelism decisions.
+	 *
+	 * <p>
+	 * Keyed by {@code (System.identityHashCode(expr) as long) << 32 | caller.ordinal()} so that we avoid the
+	 * cost of {@link IExpression#serializeToGaml(boolean)} (which may involve string allocation and traversal)
+	 * on every call. Constant expressions are compiled once per model and their identity never changes, so
+	 * identity-hash-code is a stable, collision-rare key for a small number of species.
+	 * </p>
+	 */
+	private static final ConcurrentHashMap<Long, Integer> PARALLELISM_IDENTITY_CACHE = new ConcurrentHashMap<>();
+
+	/**
+	 * Per-thread reusable list of {@link ForkJoinTask} references used in {@link #doStep} case 1.
+	 *
+	 * <p>
+	 * Allocating a fresh {@code ArrayList} per species per cycle (case 1) is wasteful when populations are large.
+	 * Using a {@code ThreadLocal} means the list is allocated once per thread and reused across steps; the list is
+	 * cleared at the start of each use so its internal array is retained between cycles.
+	 * </p>
+	 */
+	private static final ThreadLocal<ArrayList<ForkJoinTask<?>>> TASK_LIST_CACHE =
+			ThreadLocal.withInitial(ArrayList::new);
 
 	/** The Constant CONCURRENCY_SIMULATIONS. */
 	public static final Pref<Boolean> CONCURRENCY_SIMULATIONS =
@@ -230,8 +251,10 @@ public abstract class GamaExecutorService {
 			return worker;
 		};
 
-		// Use async mode for better throughput with independent tasks
-		AGENT_PARALLEL_EXECUTOR = new ForkJoinPool(nb, factory, EXCEPTION_HANDLER, true);
+		// Use FIFO (asyncMode = false) for better throughput with RecursiveTask-based
+		// divide-and-conquer (ParallelAgentRunner). FIFO keeps forked subtasks closer in
+		// cache and reduces work-stealing distance compared to the previous LIFO async mode.
+		AGENT_PARALLEL_EXECUTOR = new ForkJoinPool(nb, factory, EXCEPTION_HANDLER, false);
 	}
 
 	/**
@@ -260,10 +283,14 @@ public abstract class GamaExecutorService {
 	 *         threshold of n
 	 */
 	public static int getParallelism(final IScope scope, final IExpression concurrency, final Caller caller) {
-		// Cache constant expressions to avoid repeated evaluations
 		if (concurrency != null && concurrency.isConst()) {
-			final String cacheKey = concurrency.serializeToGaml(false) + "_" + caller.name();
-			return PARALLELISM_CACHE.computeIfAbsent(cacheKey, k -> computeParallelism(scope, concurrency, caller));
+			// Use the expression's object identity as cache key. Constant expressions are
+			// compiled once; using System.identityHashCode avoids the serializeToGaml()
+			// string allocation of the previous string-concatenation approach.
+			final long cacheKey =
+					((long) System.identityHashCode(concurrency) << 32) | (caller.ordinal() & 0xFFFFFFFFL);
+			return PARALLELISM_IDENTITY_CACHE.computeIfAbsent(cacheKey,
+					k -> computeParallelism(scope, concurrency, caller));
 		}
 		return computeParallelism(scope, concurrency, caller);
 	}
@@ -394,7 +421,9 @@ public abstract class GamaExecutorService {
 					// avoid sharing mutable scope state across concurrent threads. All tasks are
 					// submitted to the pool and joined before returning so that the caller always sees
 					// completed results rather than fire-and-forget side effects.
-					final List<ForkJoinTask<?>> tasks = new ArrayList<>(array.length);
+					// Reuse the per-thread task list to avoid allocating a new ArrayList every cycle.
+					final ArrayList<ForkJoinTask<?>> tasks = TASK_LIST_CACHE.get();
+					tasks.clear();
 					for (final A aa : array) {
 						final IAgent agent = (IAgent) aa;
 						if (agent == null || agent.dead()) { continue; }
@@ -439,20 +468,22 @@ public abstract class GamaExecutorService {
 				}
 				return;
 			// Break doesnt really make sense for parallel execution
-			case 1: {
-				// Each agent is submitted as a separate task; each task gets its own scope copy to
-				// avoid sharing mutable scope state across concurrent threads. All tasks are
-				// submitted to the pool and joined before returning.
-				final List<ForkJoinTask<?>> tasks = new ArrayList<>(array.length);
-				for (final A aa : array) {
-					final IAgent agent = (IAgent) aa;
-					final IScope agentScope = scope.copy(" - execute - ");
-					tasks.add(AGENT_PARALLEL_EXECUTOR
-							.submit(ForkJoinTask.adapt(() -> agentScope.execute(executable, agent, null))));
-				}
-				for (final ForkJoinTask<?> task : tasks) { task.join(); }
-				return;
+		case 1: {
+			// Each agent is submitted as a separate task; each task gets its own scope copy to
+			// avoid sharing mutable scope state across concurrent threads. All tasks are
+			// submitted to the pool and joined before returning.
+			// Reuse the per-thread task list to avoid allocating a new ArrayList every cycle.
+			final ArrayList<ForkJoinTask<?>> tasks = TASK_LIST_CACHE.get();
+			tasks.clear();
+			for (final A aa : array) {
+				final IAgent agent = (IAgent) aa;
+				final IScope agentScope = scope.copy(" - execute - ");
+				tasks.add(AGENT_PARALLEL_EXECUTOR
+						.submit(ForkJoinTask.adapt(() -> agentScope.execute(executable, agent, null))));
 			}
+			for (final ForkJoinTask<?> task : tasks) { task.join(); }
+			return;
+		}
 			default:
 				ParallelAgentRunner.execute(scope, executable, array, threshold);
 		}

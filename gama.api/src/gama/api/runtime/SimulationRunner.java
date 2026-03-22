@@ -107,6 +107,13 @@ public class SimulationRunner implements ISimulationRunner {
 	volatile boolean shutdown = false;
 
 	/**
+	 * O(1) count of currently active simulations. Maintained in sync with {@link #runnables} via
+	 * {@link #add(ISimulationAgent)} and {@link #remove(ISimulationAgent)}. Replaces
+	 * {@code ConcurrentHashMap.size()} (which is O(n)) on the hot {@link #step()} / {@link #hasSimulations()} path.
+	 */
+	private volatile int activeCount = 0;
+
+	/**
 	 * Creates a SimulationRunner configured for the given simulation population.
 	 * 
 	 * <p>
@@ -148,23 +155,23 @@ public class SimulationRunner implements ISimulationRunner {
 
 	/**
 	 * Removes a simulation agent from the runner.
-	 * 
+	 *
 	 * <p>
 	 * The simulation's thread will complete its current step and then terminate. The simulation is removed from the
 	 * active set.
 	 * </p>
-	 * 
+	 *
 	 * @param agent
 	 *            the simulation agent to remove
 	 */
 	@Override
 	public void remove(final ISimulationAgent agent) {
-		runnables.remove(agent);
+		if (runnables.remove(agent) != null) { activeCount--; }
 	}
 
 	/**
 	 * Adds a simulation agent to the runner and starts its dedicated execution thread.
-	 * 
+	 *
 	 * <p>
 	 * Creates a new thread for the simulation that will:
 	 * </p>
@@ -174,7 +181,7 @@ public class SimulationRunner implements ISimulationRunner {
 	 * <li>Release a permit to experimentSemaphore</li>
 	 * <li>Repeat until the simulation dies or the runner shuts down</li>
 	 * </ol>
-	 * 
+	 *
 	 * @param agent
 	 *            the simulation agent to add
 	 */
@@ -200,11 +207,12 @@ public class SimulationRunner implements ISimulationRunner {
 		};
 		t.start();
 		runnables.put(agent, t);
+		activeCount++;
 	}
 
 	/**
 	 * Executes one synchronized step for all active simulations.
-	 * 
+	 *
 	 * <p>
 	 * This method:
 	 * </p>
@@ -221,14 +229,14 @@ public class SimulationRunner implements ISimulationRunner {
 	@Override
 	public void step() {
 		// DEBUG.OUT("Releasing to all simulations");
-		int nb = getActiveThreads();
+		int nb = activeCount;
 		simulationsSemaphore.release(nb);
 		experimentSemaphore.acquire(nb);
 	}
 
 	/**
 	 * Disposes of the runner, shutting down all simulation threads.
-	 * 
+	 *
 	 * <p>
 	 * Sets the shutdown flag, clears the simulation map, and releases semaphores to allow any waiting threads to
 	 * terminate gracefully.
@@ -237,7 +245,8 @@ public class SimulationRunner implements ISimulationRunner {
 	@Override
 	public void dispose() {
 		shutdown = true;
-		int nb = runnables.size();
+		int nb = activeCount;
+		activeCount = 0;
 		runnables.clear();
 		// DEBUG.OUT("Disposing simulation runner and releasing " + nb + " threads");
 		experimentSemaphore.release(nb);
@@ -254,20 +263,26 @@ public class SimulationRunner implements ISimulationRunner {
 
 	/**
 	 * Returns the number of active simulation threads.
-	 * 
+	 *
+	 * <p>
+	 * Uses a dedicated {@code volatile int} counter maintained by {@link #add(ISimulationAgent)} and
+	 * {@link #remove(ISimulationAgent)} rather than calling {@code ConcurrentHashMap.size()} (which is O(n)) on
+	 * every simulation cycle.
+	 * </p>
+	 *
 	 * @return the count of simulations currently registered
 	 */
 	@Override
-	public int getActiveThreads() { return runnables.size(); }
+	public int getActiveThreads() { return activeCount; }
 
 	/**
 	 * Checks whether this runner has any active simulations.
-	 * 
+	 *
 	 * @return true if at least one simulation is registered, false otherwise
 	 */
 	@Override
 	public boolean hasSimulations() {
-		return runnables.size() > 0;
+		return activeCount > 0;
 	}
 
 }

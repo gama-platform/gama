@@ -327,6 +327,12 @@ public class ExecutionScope implements IScope {
 	/** The Constant ATTRIBUTES. */
 	private static final String ATTRIBUTES = "%_attributes_%";
 
+	/**
+	 * Placeholder scope name returned when detailed naming is disabled (tracing off). Avoids the costly
+	 * StringBuilder/COUNTER/stringValue allocations on every scope construction.
+	 */
+	private static final String ANONYMOUS_SCOPE_NAME = "<scope>";
+
 	/** The scope name. */
 	private final String scopeName;
 
@@ -344,6 +350,13 @@ public class ExecutionScope implements IScope {
 
 	/** The flow status. */
 	private volatile FlowStatus flowStatus = FlowStatus.NORMAL;
+
+	/**
+	 * When {@code true}, this scope is used exclusively by a single thread (e.g. a forked parallel-step scope). In
+	 * that case {@link #push(IObject)} and {@link #pop(IObject)} skip their {@code synchronized} block to avoid
+	 * unnecessary monitor contention.
+	 */
+	boolean exclusive = false;
 
 	/** The current symbol. */
 	// private ISymbol currentSymbol;
@@ -373,6 +386,14 @@ public class ExecutionScope implements IScope {
 	/**
 	 * Instantiates a new execution scope.
 	 *
+	 * <p>
+	 * The expensive scope-name string (which involves a stack walk via {@code COUNTER.COUNT()} and a
+	 * {@code stringValue()} call on the root agent) is only built when tracing is enabled (i.e. the {@code _trace}
+	 * flag has been set via {@link #setTrace(boolean)}). When tracing is off the scope name is set to the lightweight
+	 * constant {@value #ANONYMOUS_SCOPE_NAME} so that the constructor is allocation-free with respect to name
+	 * computation.
+	 * </p>
+	 *
 	 * @param root
 	 *            the root
 	 * @param otherName
@@ -386,11 +407,19 @@ public class ExecutionScope implements IScope {
 	 */
 	public ExecutionScope(final ITopLevelAgent root, final String otherName, final IExecutionContext context,
 			final AgentExecutionContext agentContext, final SpecialContext specialContext) {
-		StringBuilder name = new StringBuilder("Scope #").append(COUNTER.COUNT());
-		setRoot(root);
-		if (root != null) { name.append(" of ").append(root.stringValue(root.getScope())); }
-		name.append(otherName == null || otherName.isEmpty() ? "" : " (" + otherName + ")");
-		this.scopeName = name.toString();
+		// Only build the detailed name when tracing is enabled — COUNTER.COUNT() performs a
+		// stack walk and root.stringValue() may be non-trivial; skipping them on every
+		// parallel scope copy is a meaningful saving.
+		if (_trace) {
+			StringBuilder name = new StringBuilder("Scope #").append(COUNTER.COUNT());
+			setRoot(root);
+			if (root != null) { name.append(" of ").append(root.stringValue(root.getScope())); }
+			name.append(otherName == null || otherName.isEmpty() ? "" : " (" + otherName + ")");
+			this.scopeName = name.toString();
+		} else {
+			setRoot(root);
+			this.scopeName = ANONYMOUS_SCOPE_NAME;
+		}
 		this.setExecutionContext(context == null ? ExecutionContext.create(this, null) : context.createCopy(null));
 		this.agentContext = agentContext == null ? AgentExecutionContext.create(root, null) : agentContext;
 		this.additionalContext.copyFrom(specialContext);
@@ -537,12 +566,27 @@ public class ExecutionScope implements IScope {
 	/**
 	 * Push.
 	 *
+	 * <p>
+	 * When {@link #exclusive} is {@code true} (i.e. this scope was created as a forked parallel copy that is owned
+	 * by exactly one thread) the {@code synchronized} block is skipped to avoid unnecessary monitor overhead.
+	 * </p>
+	 *
 	 * @param agent
 	 *            the agent
 	 * @return true, if successful
 	 */
 	@Override
 	public boolean push(final IObject agent) {
+		if (exclusive) {
+			// Fast path: no synchronization needed for thread-exclusive scopes
+			final IAgent a = agentContext == null ? null : agentContext.getFirstAgent();
+			if (a == null) {
+				if (agent instanceof ITopLevelAgent tla) { setRoot(tla); }
+				agentContext = null;
+			} else if (a == agent) return false;
+			agentContext = createChildContext(agent);
+			return true;
+		}
 		synchronized (lock) {
 			final IAgent a = agentContext == null ? null : agentContext.getFirstAgent();
 			if (a == null) {
@@ -574,6 +618,18 @@ public class ExecutionScope implements IScope {
 	// @Override
 	@Override
 	public void pop(final IObject agent) {
+		if (exclusive) {
+			// Fast path: no synchronization needed for thread-exclusive scopes
+			if (agentContext == null) {
+				DEBUG.OUT("Agents stack is empty");
+				return;
+			}
+			final AgentExecutionContext previous = agentContext;
+			agentContext = agentContext.getOuterContext();
+			previous.dispose();
+			getAndClearDeathStatus();
+			return;
+		}
 		synchronized (lock) {
 			if (agentContext == null) {
 				DEBUG.OUT("Agents stack is empty");
@@ -1252,8 +1308,12 @@ public class ExecutionScope implements IScope {
 	public IScope copy(final String additionalName) {
 		final ExecutionScope scope = new ExecutionScope(getRoot(), additionalName);
 		scope.setExecutionContext(executionContext == null ? null : executionContext.createCopy(null));
-		scope.agentContext = agentContext == null ? null : agentContext.createCopy();
+		// A forked scope is owned by exactly one thread; use a shallow copy of the agent
+		// context chain to avoid the recursive allocation of createCopy(), and mark the
+		// scope as exclusive so push/pop skip their synchronized block.
+		scope.agentContext = agentContext == null ? null : agentContext.createShallowCopy();
 		scope.additionalContext.copyFrom(additionalContext);
+		scope.exclusive = true;
 		return scope;
 	}
 
@@ -1268,8 +1328,9 @@ public class ExecutionScope implements IScope {
 	public IGraphicsScope copyForGraphics(final String additionalName) {
 		final GraphicsScope scope = new GraphicsScope(this, additionalName);
 		scope.setExecutionContext(executionContext == null ? null : executionContext.createCopy(null));
-		scope.agentContext = agentContext == null ? null : agentContext.createCopy();
+		scope.agentContext = agentContext == null ? null : agentContext.createShallowCopy();
 		scope.additionalContext.copyFrom(additionalContext);
+		scope.exclusive = true;
 		return scope;
 	}
 

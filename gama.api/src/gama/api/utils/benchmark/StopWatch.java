@@ -14,12 +14,37 @@ import java.io.Closeable;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * The Class StopWatch.
+ * A lightweight stopwatch used during benchmarking to measure execution time of GAML symbols and agents.
+ *
+ * <p>
+ * The {@link #NULL} singleton is returned by {@code GAMA.benchmark()} whenever benchmarking is disabled (i.e.
+ * no experiment is being benchmarked). Its {@link #start()} and {@link #close()} methods are no-ops, so
+ * {@code try (StopWatch w = GAMA.benchmark(scope, symbol)) { ... }} incurs zero allocation and zero timing
+ * overhead when benchmarking is off.
+ * </p>
+ *
+ * <p>
+ * When benchmarking is active a fresh {@code StopWatch} instance is allocated per call to
+ * {@link gama.api.utils.benchmark.Benchmark#record(gama.api.runtime.scope.IScope, IBenchmarkable)}.
+ * </p>
  */
 public class StopWatch implements Closeable {
 	
-	/** The Constant NULL. */
-	public final static StopWatch NULL = new StopWatch(BenchmarkRecord.NULL, BenchmarkRecord.NULL);
+	/**
+	 * Singleton no-op stopwatch. Returned by {@code GAMA.benchmark()} when benchmarking is inactive.
+	 * Its {@link #start()} and {@link #close()} methods are cheaply no-op: {@code start()} records a timestamp but
+	 * that is never read because {@code close()} checks {@code lastStart != notRunning} (which is always
+	 * {@code false} for the NULL instance since its initial {@code lastStart} is {@code notRunning}).
+	 */
+	public final static StopWatch NULL = new StopWatch(BenchmarkRecord.NULL, BenchmarkRecord.NULL) {
+		/** Overridden to be a true no-op — avoids the volatile write to {@code lastStart} on every call. */
+		@Override
+		public StopWatch start() { return this; }
+
+		/** Overridden to be a true no-op — avoids the {@code reentrant} CAS and timestamp subtraction. */
+		@Override
+		public void close() {}
+	};
 	
 	/** The Constant notRunning. */
 	final static long notRunning = -1;
