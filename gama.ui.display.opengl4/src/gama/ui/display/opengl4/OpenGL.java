@@ -106,6 +106,14 @@ public class OpenGL extends AbstractRendererHelper {
 	/** The basic shader. */
 	private BasicShader basicShader;
 
+	/**
+	 * Gets the basic shader. Used by {@link gama.ui.display.opengl4.renderer.helpers.LightHelper} to push
+	 * per-frame light uniforms.
+	 *
+	 * @return the BasicShader program, or {@code null} if not yet initialised
+	 */
+	public BasicShader getBasicShader() { return basicShader; }
+
 	/** The model view matrix. */
 	private final MatrixStack modelViewMatrix = new MatrixStack();
 
@@ -344,7 +352,7 @@ public class OpenGL extends AbstractRendererHelper {
 			newGL.glGenVertexArrays(1, vao, 0);
 			vaoId = vao[0];
 			newGL.glBindVertexArray(vaoId);
-			newGL.glGenBuffers(3, vboIds, 0);
+			newGL.glGenBuffers(4, vboIds, 0);
 		}
 		// newGL.glViewport(0, 0, width, height);
 		viewWidth = width;
@@ -704,6 +712,9 @@ public class OpenGL extends AbstractRendererHelper {
 	/** The current tex coords. */
 	private final FloatBuffer currentTexCoords = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
 
+	/** The current normals (one vec3 per vertex, replicated from the face normal set by {@link #outputNormal}). */
+	private final FloatBuffer currentNormals = Buffers.newDirectFloatBuffer(INITIAL_BUFFER_SIZE);
+
 	/** The current draw style. */
 	private int currentDrawStyle = GL4.GL_TRIANGLES;
 
@@ -713,8 +724,8 @@ public class OpenGL extends AbstractRendererHelper {
 	/** The vao id. */
 	private int vaoId = -1;
 
-	/** The vbo ids. */
-	private final int[] vboIds = new int[3];
+	/** The vbo ids. Index 0 = positions, 1 = colours, 2 = tex-coords, 3 = normals. */
+	private final int[] vboIds = new int[4];
 
 	/**
 	 * Ensure capacity.
@@ -743,6 +754,7 @@ public class OpenGL extends AbstractRendererHelper {
 		currentVertices.clear();
 		currentColors.clear();
 		currentTexCoords.clear();
+		currentNormals.clear();
 		currentVertexCount = 0;
 	}
 
@@ -781,13 +793,46 @@ public class OpenGL extends AbstractRendererHelper {
 			gl.glDisableVertexAttribArray(2);
 		}
 
+		// --- normals (location 3) ---
+		boolean hasNormals = currentNormals.position() > 0 && getLighting();
+		if (hasNormals) {
+			gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboIds[3]);
+			currentNormals.flip();
+			gl.glBufferData(GL.GL_ARRAY_BUFFER, (long) currentNormals.limit() * 4, currentNormals,
+					GL.GL_DYNAMIC_DRAW);
+			gl.glVertexAttribPointer(3, 3, GL.GL_FLOAT, false, 0, 0);
+			gl.glEnableVertexAttribArray(3);
+		} else {
+			gl.glDisableVertexAttribArray(3);
+			// Provide a default up-facing normal so the shader doesn't read garbage
+			gl.glVertexAttrib3f(3, 0.0f, 0.0f, 1.0f);
+		}
+
 		basicShader.loadModelMatrix(modelViewMatrix.getCurrentMatrix());
 		// Pass the projection matrix; the model-view matrix already contains camera+model transforms.
 		basicShader.loadViewMatrix(new org.joml.Matrix4f().identity());
 		basicShader.loadProjectionMatrix(projectionMatrix.getCurrentMatrix());
 		basicShader.loadUseTexture(hasTex);
 
+		// --- lighting uniforms ---
+		basicShader.loadUseLighting(hasNormals);
+		gama.api.types.geometry.IPoint camPos = getData().getCameraPos();
+		basicShader.loadViewPos((float) camPos.getX(), (float) -camPos.getY(), (float) camPos.getZ());
+		basicShader.loadShininess(32.0f);
+
+		// Enable blending so that the alpha written into per-vertex colours (including
+		// layer/object alpha and per-color transparency) is actually respected by the
+		// hardware compositing stage. Use standard src-alpha blending; for pre-multiplied
+		// textures beginObject overrides this to GL_ONE / GL_ONE_MINUS_SRC_ALPHA.
+		gl.glEnable(GL.GL_BLEND);
+		// For transparent draws, disable depth-buffer writes so that objects behind a
+		// semi-transparent surface remain visible (depth *testing* is kept on).
+		boolean transparent = currentObjectAlpha < 1.0 || (currentColor != null && currentColor.alpha() < 255);
+		if (transparent) { gl.glDepthMask(false); }
+
 		gl.glDrawArrays(currentDrawStyle, 0, currentVertices.limit() / 3);
+
+		if (transparent) { gl.glDepthMask(true); }
 
 		gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
 		gl.glBindVertexArray(0);
@@ -1075,7 +1120,14 @@ public class OpenGL extends AbstractRendererHelper {
 		currentColors.put((float) (currentColor.red() / 255.0));
 		currentColors.put((float) (currentColor.green() / 255.0));
 		currentColors.put((float) (currentColor.blue() / 255.0));
-		currentColors.put((float) (currentColor.alpha() / 255.0));
+		// Multiply the color's own alpha by the current object (layer) alpha so that
+		// both per-color transparency and layer-level transparency are honoured.
+		currentColors.put((float) (currentColor.alpha() / 255.0 * currentObjectAlpha));
+		// Replicate the current face normal for this vertex
+		ensureCapacity(currentNormals, 3);
+		currentNormals.put((float) currentNormal.getX());
+		currentNormals.put((float) currentNormal.getY());
+		currentNormals.put((float) currentNormal.getZ());
 		currentVertexCount++;
 	}
 
@@ -1104,8 +1156,9 @@ public class OpenGL extends AbstractRendererHelper {
 	 *            the z
 	 */
 	public void outputNormal(final double x, final double y, final double z) {
+		// Store the current face normal; it is replicated into currentNormals for every
+		// subsequent outputVertex call until the next outputNormal.
 		currentNormal.setLocation(x, y, z);
-		// gl.outputNormal(x, y, z);
 	}
 
 	/**
@@ -1231,7 +1284,12 @@ public class OpenGL extends AbstractRendererHelper {
 	 */
 	public void setCurrentColor(final IColor c, final double alpha) {
 		if (c == null) return;
-		setCurrentColor(c.red() / 255d, c.green() / 255d, c.blue() / 255d, c.alpha() / 255d * alpha);
+		// When an explicit alpha is supplied (e.g. from a layer's setAlpha call) store the
+		// product of the colour's own alpha and the caller-supplied alpha directly.  The
+		// resulting stored alpha is then further multiplied by currentObjectAlpha in
+		// outputVertex, so currentObjectAlpha is always applied exactly once.
+		currentColor = GamaColorFactory.getWithDoubles(c.red() / 255d, c.green() / 255d, c.blue() / 255d,
+				c.alpha() / 255d * alpha);
 	}
 
 	/**
@@ -1241,7 +1299,11 @@ public class OpenGL extends AbstractRendererHelper {
 	 *            the new current color
 	 */
 	public void setCurrentColor(final IColor c) {
-		setCurrentColor(c, currentObjectAlpha);
+		// Store the colour's own alpha as-is; currentObjectAlpha is applied later in
+		// outputVertex so it is never applied more than once.
+		if (c == null) return;
+		currentColor = GamaColorFactory.getWithDoubles(c.red() / 255d, c.green() / 255d, c.blue() / 255d,
+				c.alpha() / 255d);
 	}
 
 	/**
@@ -1257,8 +1319,10 @@ public class OpenGL extends AbstractRendererHelper {
 	 *            the alpha
 	 */
 	public void setCurrentColor(final double red, final double green, final double blue, final double alpha) {
+		// Store the colour as-is. currentObjectAlpha is applied at the point of use
+		// (outputVertex) so that it is never applied more than once regardless of which
+		// setCurrentColor overload is used.
 		currentColor = GamaColorFactory.getWithDoubles(Math.max(red, 0), Math.max(green, 0), Math.max(blue, 0), alpha);
-		// gl.setCurrentColor(red, green, blue, alpha);
 	}
 
 	/**
@@ -1699,7 +1763,15 @@ public class OpenGL extends AbstractRendererHelper {
 		previousObjectLighting = setObjectLighting(att.isLighting());
 		previousObjectLineWidth = setLineWidth(att.getLineWidth().floatValue());
 		setCurrentTextures(object.getPrimaryTexture(this), object.getAlternateTexture(this));
-		if (isTextured()) { gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA); }
+		// Always enable blending so that alpha (both per-color and layer/object alpha) is
+		// respected. Use pre-multiplied blending for textured objects (textures may already
+		// carry pre-multiplied alpha) and standard src-alpha blending for plain colored ones.
+		gl.glEnable(GL.GL_BLEND);
+		if (isTextured()) {
+			gl.glBlendFunc(GL.GL_ONE, GL.GL_ONE_MINUS_SRC_ALPHA);
+		} else {
+			gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+		}
 		// Only set the visual colour when NOT in picking mode; during picking
 		// the colour is the ID-encoded value set by registerForSelection() above.
 		if (!isPicking) {
@@ -1743,6 +1815,13 @@ public class OpenGL extends AbstractRendererHelper {
 				backgroundColor.blue() / 255.0f, 1.0f);
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
 		gl.glClearDepth(1.0f);
+		// Enable blending once for the whole scene with the standard src-alpha equation.
+		// Individual draw calls (beginObject/endDrawing) may override the blend function
+		// for specific cases (e.g. pre-multiplied textures) and must restore it afterwards.
+		gl.glEnable(GL.GL_BLEND);
+		gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+		// Depth mask on by default; transparent draws will temporarily turn it off.
+		gl.glDepthMask(true);
 		resetMatrix(GLMatrixFunc.GL_PROJECTION);
 		updatePerspective();
 		resetMatrix(GLMatrixFunc.GL_MODELVIEW);
