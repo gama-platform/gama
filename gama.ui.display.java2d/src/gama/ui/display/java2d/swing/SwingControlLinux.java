@@ -12,8 +12,6 @@ package gama.ui.display.java2d.swing;
 
 import java.awt.EventQueue;
 
-import javax.swing.JApplet;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.awt.SWT_AWT;
 import org.eclipse.swt.widgets.Composite;
@@ -24,24 +22,50 @@ import gama.ui.display.java2d.WorkaroundForIssue2476;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
- * The Class SwingControl.
+ * Linux-specific implementation of {@link SwingControl} that embeds a {@link Java2DDisplaySurface} inside a
+ * SWT-AWT bridge frame. The surface is added directly to the AWT {@link java.awt.Frame} (no intermediate
+ * Swing panel is needed, as the surface manages its own layout via {@link java.awt.BorderLayout}).
+ * The mouse-wheel and mouse-event workaround for Linux rendering artefacts (issue #2476) is installed on
+ * the frame via {@link gama.ui.display.java2d.WorkaroundForIssue2476}.
  */
 public class SwingControlLinux extends SwingControl {
 
     /**
-     * Instantiates a new swing control.
+     * Instantiates a new SwingControlLinux.
      *
      * @param parent
-     *            the parent
-     * @param awtDisplayView
+     *            the SWT parent composite into which the AWT frame will be embedded
+     * @param view
+     *            the {@link AWTDisplayView} that owns this control, used by the parent class to track
+     *            part-visibility events
+     * @param component
+     *            the {@link Java2DDisplaySurface} (a {@link javax.swing.JPanel} subclass) that will be
+     *            added to the embedded Swing hierarchy
      * @param style
-     *            the style
+     *            the SWT style bits forwarded to the parent {@link SwingControl}
      */
     public SwingControlLinux(final Composite parent, final AWTDisplayView view, final Java2DDisplaySurface component,
 	    final int style) {
 	super(parent, view, component, style);
     }
 
+    /**
+     * Lazily builds the embedded Swing component hierarchy the first time the control needs to be laid out.
+     * <p>
+     * On the first call (guarded by {@code populated}), this method:
+     * <ol>
+     * <li>Creates an AWT {@link java.awt.Frame} via {@code SWT_AWT.new_Frame} and registers any key and
+     * mouse-motion listeners directly on it.</li>
+     * <li>Adds the {@link Java2DDisplaySurface} directly to the frame (no intermediate panel is required,
+     * as the surface manages its own {@link java.awt.BorderLayout}) and installs the Linux mouse
+     * workaround via
+     * {@link gama.ui.display.java2d.WorkaroundForIssue2476#installOn(java.awt.Container, gama.api.ui.displays.IDisplaySurface)}.</li>
+     * <li>Registers a {@code SWT.Dispose} listener that removes all listeners and properly disposes of
+     * the frame and surface when the SWT control is destroyed (see issue #489).</li>
+     * </ol>
+     * All Swing-side operations are executed on the AWT Event Dispatch Thread via
+     * {@link gama.ui.shared.utils.WorkbenchHelper#asyncRun(Runnable)}.
+     */
     @Override
     protected void populate() {
 	if (isDisposed()) {
@@ -50,29 +74,27 @@ public class SwingControlLinux extends SwingControl {
 	if (!populated) {
 	    populated = true;
 	    WorkbenchHelper.asyncRun(() -> {
-		JApplet applet = new JApplet();
 		frame = SWT_AWT.new_Frame(SwingControlLinux.this);
 		frame.setAlwaysOnTop(false);
 		if (swingKeyListener != null) {
 		    frame.addKeyListener(swingKeyListener);
 		}
 		if (swingMouseListener != null) {
-		    applet.addMouseMotionListener(swingMouseListener);
+		    frame.addMouseMotionListener(swingMouseListener);
 		}
 		surface.setVisibility(() -> visible);
-		applet.getContentPane().add(surface);
-		WorkaroundForIssue2476.installOn(applet, surface);
-		frame.add(applet);
+		frame.add(surface);
+		WorkaroundForIssue2476.installOn(frame, surface);
+		frame.validate();
 		addListener(SWT.Dispose, e -> EventQueue.invokeLater(() -> {
 		    try {
 			if (swingKeyListener != null) {
 			    frame.removeKeyListener(swingKeyListener);
 			}
 			if (swingMouseListener != null) {
-			    applet.removeMouseMotionListener(swingMouseListener);
+			    frame.removeMouseMotionListener(swingMouseListener);
 			}
-			applet.getContentPane().remove(surface);
-			frame.remove(applet);
+			frame.removeAll();
 			surface.dispose();
 			frame.dispose();
 			// Removes the reference to the different objects

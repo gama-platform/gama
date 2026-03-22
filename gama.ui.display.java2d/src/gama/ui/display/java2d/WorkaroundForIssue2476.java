@@ -49,8 +49,8 @@ public class WorkaroundForIssue2476 {
 	/**
 	 * Install on.
 	 *
-	 * @param applet
-	 *            the applet
+	 * @param container
+	 *            the AWT container on which to install the mouse listeners (e.g. a {@link javax.swing.JPanel})
 	 * @param surface
 	 *            the surface
 	 */
