@@ -108,18 +108,20 @@ public abstract class AbstractPhysicalWorld<WorldType, ShapeType, VectorType>
 		// Map<IBody, IBody> newContacts = new HashMap<>();
 		collectContacts(newContacts);
 		// Check for added contacts... (i.e. not in the previous ones)
-		newContacts.forEach((b0, b1) -> {
+		for (Map.Entry<IBody, IBody> e : newContacts.entries()) {
+			IBody b0 = e.getKey();
+			IBody b1 = e.getValue();
 			if (!previousContacts.containsEntry(b0, b1)) {
-				// Tell the listener of a added contact (ContactInfo)
+				// Tell the listener of an added contact (ContactInfo)
 				contactUpdate(b0, b1, true);
 			} else {
 				previousContacts.remove(b0, b1);
 			}
-		});
-		previousContacts.forEach((b0, b1) -> {
+		}
+		for (Map.Entry<IBody, IBody> e : previousContacts.entries()) {
 			// Tell the listener of a removed contact (ContactInfo)
-			contactUpdate(b0, b1, false);
-		});
+			contactUpdate(e.getKey(), e.getValue(), false);
+		}
 		previousContacts.clear();
 		previousContacts.putAll(newContacts);
 		newContacts.clear();

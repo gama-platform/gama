@@ -409,7 +409,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
 					if (sc == null || !sc.isGraphics()) {
 						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
-						if (surface != null) return surface.getData().getCameraPos().yNegated();
+						if (surface != null) return surface.getData().getCameraTarget().yNegated();
 						return null;
 					}
 					final IGraphics g = sc.getGraphics();
@@ -419,12 +419,13 @@ public class GamlExpressionFactory implements IExpressionFactory {
 			case "camera_orientation":
 				// 3D camera orientation angles
 				return new CustomExpression<>(unit, Types.POINT, GamaPointFactory.create(), doc, sc -> {
-					if (sc == null || !sc.isGraphics()) {
+					IScope scope = sc;
+					if (scope == null || !scope.isGraphics()) {
 						IDisplaySurface surface = GAMA.getGui().getFrontmostDisplaySurface();
-						if (surface != null) return surface.getData().getCameraPos().yNegated();
-						return null;
+						if (surface == null) return null;
+						scope = surface.getScope();
 					}
-					final IGraphics g = sc.getGraphics();
+					final IGraphics g = scope.getGraphics();
 					if (g == null || g.is2D()) return null;
 					return ((IGraphics.ThreeD) g).getCameraOrientation().yNegated();
 				});

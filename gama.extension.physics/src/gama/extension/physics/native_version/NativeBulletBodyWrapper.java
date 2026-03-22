@@ -63,6 +63,24 @@ public class NativeBulletBodyWrapper
 	Quaternion quatTransfer = new Quaternion();
 
 	/**
+	 * Pre-allocated temporary Vector3f instances used to avoid per-call heap allocations in hot-path methods
+	 * ({@link #getLinearVelocity}, {@link #getAngularVelocity}, {@link #setCCD}, {@link #getAABB}).
+	 */
+	private final Vector3f vtemp1 = new Vector3f();
+
+	/** Pre-allocated second temporary vector for methods that need two vectors simultaneously (e.g. AABB). */
+	private final Vector3f vtemp2 = new Vector3f();
+
+	/** Pre-allocated bounding box reused across {@link #setCCD} and {@link #getAABB} calls. */
+	private final BoundingBox bbTemp = new BoundingBox();
+
+	/**
+	 * Pre-allocated vector for {@link #transferLocationAndRotationToAgent()} to avoid allocating a new Vector3f on
+	 * every simulation step.
+	 */
+	private final Vector3f locationTransfer = new Vector3f();
+
+	/**
 	 * Instantiates a new native bullet body wrapper.
 	 *
 	 * @param agent
@@ -101,13 +119,13 @@ public class NativeBulletBodyWrapper
 	@Override
 	public void setCCD(final boolean v) {
 		if (v) {
-			Vector3f min = new Vector3f();
-			Vector3f max = new Vector3f();
-			BoundingBox bb = new BoundingBox();
-			body.boundingBox(bb);
-			bb.getMax(max);
-			bb.getMax(min);
-			float ccd = max(max(max.x, max.y), max.z);
+			body.boundingBox(bbTemp);
+			bbTemp.getMax(vtemp1);
+			bbTemp.getMin(vtemp2);
+			float dx = vtemp1.x - vtemp2.x;
+			float dy = vtemp1.y - vtemp2.y;
+			float dz = vtemp1.z - vtemp2.z;
+			float ccd = max(max(dx, dy), dz);
 			body.setCcdSweptSphereRadius(ccd / 2);
 			body.setCcdMotionThreshold(ccd / 4);
 		} else {
@@ -188,9 +206,9 @@ public class NativeBulletBodyWrapper
 
 	@Override
 	public void transferLocationAndRotationToAgent() {
-		Vector3f vectorTransfer = body.getPhysicsLocation(null);
-		agent.setLocation(
-				GamaPointFactory.create(vectorTransfer.x, vectorTransfer.y, vectorTransfer.z - aabbTranslation.z));
+		body.getPhysicsLocation(locationTransfer);
+		agent.setLocation(GamaPointFactory.create(locationTransfer.x, locationTransfer.y,
+				locationTransfer.z - aabbTranslation.z));
 		body.getPhysicsRotation(quatTransfer);
 		float qx = quatTransfer.getX();
 		float qy = quatTransfer.getY();
@@ -210,16 +228,12 @@ public class NativeBulletBodyWrapper
 
 	@Override
 	public IShape getAABB() {
-		Vector3f min = new Vector3f();
-		Vector3f max = new Vector3f();
-		BoundingBox bb = new BoundingBox();
-		body.boundingBox(bb);
-		bb.getMax(max);
-		bb.getMin(min);
-		return GamaShapeFactory.buildBox(max.x - min.x, max.y - min.y, max.z - min.z,
-				GamaPointFactory.create(min.x + (max.x - min.x) / 2, min.y + (max.y - min.y) / 2,
-						min.z + (max.z - min.z) / 2 + visualTranslation.z));
-
+		body.boundingBox(bbTemp);
+		bbTemp.getMax(vtemp1);
+		bbTemp.getMin(vtemp2);
+		return GamaShapeFactory.buildBox(vtemp1.x - vtemp2.x, vtemp1.y - vtemp2.y, vtemp1.z - vtemp2.z,
+				GamaPointFactory.create(vtemp2.x + (vtemp1.x - vtemp2.x) / 2, vtemp2.y + (vtemp1.y - vtemp2.y) / 2,
+						vtemp2.z + (vtemp1.z - vtemp2.z) / 2 + visualTranslation.z));
 	}
 
 	/**
@@ -246,17 +260,15 @@ public class NativeBulletBodyWrapper
 
 	@Override
 	public IPoint getAngularVelocity(final IPoint v) {
-		Vector3f vectorTransfer = new Vector3f();
-		body.getAngularVelocity(vectorTransfer);
-		return toGamaPoint(vectorTransfer, v);
+		body.getAngularVelocity(vtemp1);
+		return toGamaPoint(vtemp1, v);
 	}
 
 	@Override
 	public IPoint getLinearVelocity(final IPoint v) {
 		IPoint result = v == null ? GamaPointFactory.create() : v;
-		Vector3f vectorTransfer = new Vector3f();
-		body.getLinearVelocity(vectorTransfer);
-		result.setLocation(vectorTransfer.x, vectorTransfer.y, vectorTransfer.z);
+		body.getLinearVelocity(vtemp1);
+		result.setLocation(vtemp1.x, vtemp1.y, vtemp1.z);
 		return result;
 	}
 

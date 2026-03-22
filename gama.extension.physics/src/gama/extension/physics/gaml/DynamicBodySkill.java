@@ -212,7 +212,7 @@ public class DynamicBodySkill extends StaticBodySkill {
 	public IPoint getAngularVelocity(final IAgent a) {
 		IBody body = getBody(a);
 		if (body == null) return GamaPointFactory.create();
-		return body.getAngularVelocity(GamaPointFactory.create());
+		return body.getAngularVelocity(null);
 	}
 
 	/**
