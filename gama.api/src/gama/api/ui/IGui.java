@@ -42,63 +42,70 @@ import gama.api.utils.tests.CompoundSummary;
 
 /**
  * The main interface for GUI operations in GAMA.
- * 
- * <p>This interface represents the abstraction layer between the GAMA platform core and
- * concrete GUI implementations (Eclipse RCP, headless mode, web interface, etc.). It provides
- * a comprehensive set of methods for managing the user interface, including views, dialogs,
- * displays, status messages, and user interactions.</p>
- * 
+ *
+ * <p>
+ * This interface represents the abstraction layer between the GAMA platform core and concrete GUI implementations
+ * (Eclipse RCP, headless mode, web interface, etc.). It provides a comprehensive set of methods for managing the user
+ * interface, including views, dialogs, displays, status messages, and user interactions.
+ * </p>
+ *
  * <h2>Main Responsibilities:</h2>
  * <ul>
- *   <li>Manage views (show, hide, update)</li>
- *   <li>Create and manage display surfaces</li>
- *   <li>Handle user dialogs and input</li>
- *   <li>Display status and progress information</li>
- *   <li>Control perspective and layout</li>
- *   <li>Manage errors and runtime exceptions</li>
- *   <li>Handle clipboard operations</li>
- *   <li>Control experiment lifecycle and UI state</li>
+ * <li>Manage views (show, hide, update)</li>
+ * <li>Create and manage display surfaces</li>
+ * <li>Handle user dialogs and input</li>
+ * <li>Display status and progress information</li>
+ * <li>Control perspective and layout</li>
+ * <li>Manage errors and runtime exceptions</li>
+ * <li>Handle clipboard operations</li>
+ * <li>Control experiment lifecycle and UI state</li>
  * </ul>
- * 
+ *
  * <h2>GUI Modes:</h2>
- * <p>GAMA can run in different GUI modes:</p>
+ * <p>
+ * GAMA can run in different GUI modes:
+ * </p>
  * <ul>
- *   <li><strong>Full GUI (RCP):</strong> Complete Eclipse-based user interface</li>
- *   <li><strong>Headless:</strong> No GUI, using {@link NullGuiHandler} for server/batch mode</li>
- *   <li><strong>Web:</strong> Web-based interface for remote access</li>
+ * <li><strong>Full GUI (RCP):</strong> Complete Eclipse-based user interface</li>
+ * <li><strong>Headless:</strong> No GUI, using {@link NullGuiHandler} for server/batch mode</li>
+ * <li><strong>Web:</strong> Web-based interface for remote access</li>
  * </ul>
- * 
+ *
  * <h2>Null Object Pattern:</h2>
- * <p>The interface provides NULL instances for components that may not be available
- * in certain modes (e.g., headless), allowing the core to work seamlessly without
- * checking for null values:</p>
+ * <p>
+ * The interface provides NULL instances for components that may not be available in certain modes (e.g., headless),
+ * allowing the core to work seamlessly without checking for null values:
+ * </p>
  * <ul>
- *   <li>{@link #NULL_MODELS_MANAGER}</li>
- *   <li>{@link #NULL_STATUS_DISPLAYER}</li>
- *   <li>{@link #NULL_PROGRESS_INDICATOR}</li>
- *   <li>{@link #NULL_DIALOG_FACTORY}</li>
- *   <li>{@link #NULL_SNAPSHOT_MAKER}</li>
+ * <li>{@link #NULL_MODELS_MANAGER}</li>
+ * <li>{@link #NULL_STATUS_DISPLAYER}</li>
+ * <li>{@link #NULL_PROGRESS_INDICATOR}</li>
+ * <li>{@link #NULL_DIALOG_FACTORY}</li>
+ * <li>{@link #NULL_SNAPSHOT_MAKER}</li>
  * </ul>
- * 
+ *
  * <h2>View IDs:</h2>
- * <p>The interface defines standard view identifiers used throughout GAMA:</p>
+ * <p>
+ * The interface defines standard view identifiers used throughout GAMA:
+ * </p>
  * <ul>
- *   <li>{@link #MONITOR_VIEW_ID} - Monitor view for displaying variables</li>
- *   <li>{@link #AGENT_VIEW_ID} - Agent inspector view</li>
- *   <li>{@link #CONSOLE_VIEW_ID} - Console output view</li>
- *   <li>{@link #ERROR_VIEW_ID} - Error display view</li>
- *   <li>{@link #PARAMETER_VIEW_ID} - Parameter editor view</li>
- *   <li>And many more...</li>
+ * <li>{@link #MONITOR_VIEW_ID} - Monitor view for displaying variables</li>
+ * <li>{@link #AGENT_VIEW_ID} - Agent inspector view</li>
+ * <li>{@link #CONSOLE_VIEW_ID} - Console output view</li>
+ * <li>{@link #ERROR_VIEW_ID} - Error display view</li>
+ * <li>{@link #PARAMETER_VIEW_ID} - Parameter editor view</li>
+ * <li>And many more...</li>
  * </ul>
- * 
+ *
  * <h2>Usage Example:</h2>
+ *
  * <pre>{@code
  * IGui gui = GAMA.getGui();
  * gui.getStatus().informStatus("Starting simulation...", "status.simulation");
  * IDisplaySurface surface = gui.createDisplaySurfaceFor(displayOutput, null);
  * gui.showView(scope, IGui.MONITOR_VIEW_ID, "Monitors", 0);
  * }</pre>
- * 
+ *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @since 18 dec. 2011
  */

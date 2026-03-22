@@ -63,7 +63,7 @@ public interface IDisplayData {
 	}
 
 	/** The Constant OPENGL2. */
-	String OPENGL2 = "opengl2";
+	String OPENGL2 = "opengl4";
 	/** The Constant WEB. */
 	String WEB = "web";
 	/** The Constant INITIAL_ZOOM. */

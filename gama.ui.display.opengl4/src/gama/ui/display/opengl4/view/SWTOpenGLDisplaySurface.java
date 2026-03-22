@@ -86,7 +86,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
  *
  */
 @display (
-		value = { "opengl", "3d" })
+		value = { "opengl4" })
 @doc ("Displays that uses the OpenGL technology to display their layers in 3D")
 public class SWTOpenGLDisplaySurface implements IDisplaySurface.OpenGL {
 

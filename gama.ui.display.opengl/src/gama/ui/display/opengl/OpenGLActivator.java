@@ -91,7 +91,8 @@ public class OpenGLActivator extends GamaBundleActivator {
 		String property = "Loading";
 		BANNER_CATEGORY prefix = BANNER_CATEGORY.OpenGL;
 		try {
-			GLCapabilities cap = new GLCapabilities(OpenGL.PROFILE);
+			// GLCapabilities cap = new GLCapabilities(OpenGL.PROFILE);
+			GLCapabilities cap = new GLCapabilities(GLProfile.getMaxProgrammable(true));
 			cap.setDepthBits(24);
 			cap.setDoubleBuffered(true);
 			cap.setHardwareAccelerated(true);

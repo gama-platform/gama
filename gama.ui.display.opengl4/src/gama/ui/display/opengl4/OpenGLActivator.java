@@ -29,6 +29,10 @@ public class OpenGLActivator extends GamaBundleActivator {
 	 */
 	@Override
 	public void initialize(final BundleContext context) {
+		// Enable JOGL debugging of GLSL shader compilation and GL calls
+		// System.setProperty( "jogl.debug.GLSLCode", "");
+		// System.setProperty( "jogl.debug.DebugGL", "");
+
 		//
 		// // // Necessary to load the native libraries correctly (see
 		// // //
