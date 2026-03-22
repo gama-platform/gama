@@ -450,7 +450,7 @@ public class Graphs {
 			+ "(g contains_edge ({10,5}::{20,3})) = true")
 	public static Boolean containsEdge(final IScope scope, final IGraph graph, final IPair edge) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
-		return graph.containsEdge(edge.first(), edge.last());
+		return graph.containsEdge(edge.key(), edge.value());
 	}
 
 	/**
@@ -633,8 +633,8 @@ public class Graphs {
 			(g edge_between ({10,5}::{20,3})) = g.edges[0]""")
 	public static Object edgeBetween(final IScope scope, final IGraph graph, final IPair verticePair) {
 		if (graph == null) throw GamaRuntimeException.error("The graph is nil", scope);
-		if (graph.containsVertex(verticePair.getKey()) && graph.containsVertex(verticePair.getValue()))
-			return graph.getEdge(verticePair.getKey(), verticePair.getValue());
+		if (graph.containsVertex(verticePair.key()) && graph.containsVertex(verticePair.value()))
+			return graph.getEdge(verticePair.key(), verticePair.value());
 		return null;
 	}
 
@@ -2177,7 +2177,7 @@ public class Graphs {
 			g <- g add_edge ({40,60}::{50,50}); \
 			 length(g.edges) = 6""")
 	public static IGraph addEdge(final IGraph g, final IPair nodes) {
-		g.addEdge(nodes.first(), nodes.last());
+		g.addEdge(nodes.key(), nodes.value());
 		g.getPathComputer().incVersion();
 		return g;
 	}
@@ -2262,8 +2262,8 @@ public class Graphs {
 	public static IList<IPath> kPathsBetween(final IScope scope, final IGraphEventProvider graph, final IPair sourTarg,
 			final int k) throws GamaRuntimeException {
 
-		return GamaTopologyFactory.castToTopology(scope, graph, false).kPathsBetween(scope, (IShape) sourTarg.getKey(),
-				(IShape) sourTarg.getValue(), k);
+		return GamaTopologyFactory.castToTopology(scope, graph, false).kPathsBetween(scope, (IShape) sourTarg.key(),
+				(IShape) sourTarg.value(), k);
 	}
 
 	/**
@@ -2812,7 +2812,7 @@ public class Graphs {
 			value = "Allows to create a wrapper (of type unknown) that wraps a pair of objects and a third and indicates  they should respectively be considered as the source (key of the pair), the target (value of the pair) and the actual object representing an edge of a graph. The third parameter indicates which weight this edge should have in the graph")
 	@no_test
 	public static Object edge(final IPair pair, final Object object, final Double weight) {
-		return edge(pair.getKey(), pair.getValue(), object, weight);
+		return edge(pair.key(), pair.value(), object, weight);
 	}
 
 	/**
@@ -2834,7 +2834,7 @@ public class Graphs {
 			value = "Allows to create a wrapper (of type unknown) that wraps a pair of objects and a third and indicates  they should respectively be considered as the source (key of the pair), the target (value of the pair) and the actual object representing an edge of a graph. The third parameter indicates which weight this edge should have in the graph")
 	@no_test
 	public static Object edge(final IPair pair, final Object object, final Integer weight) {
-		return edge(pair.getKey(), pair.getValue(), object, weight);
+		return edge(pair.key(), pair.value(), object, weight);
 	}
 
 	/**
@@ -2984,7 +2984,7 @@ public class Graphs {
 			value = "Allows to create a wrapper (of type unknown) that wraps a pair of objects and indicates they should be considered as the source and target of an edge. The second parameter indicates which weight this edge should have in the graph")
 	@no_test
 	public static Object edge(final IPair pair, final Double weight) {
-		return edge(pair.getKey(), pair.getValue(), null, weight);
+		return edge(pair.key(), pair.value(), null, weight);
 	}
 
 	/**
@@ -3004,7 +3004,7 @@ public class Graphs {
 			value = "Allows to create a wrapper (of type unknown) that wraps a pair of objects and indicates they should be considered as the source and target of an edge. The second parameter indicates which weight this edge should have in the graph")
 	@no_test
 	public static Object edge(final IPair pair, final Integer weight) {
-		return edge(pair.getKey(), pair.getValue(), null, weight);
+		return edge(pair.key(), pair.value(), null, weight);
 	}
 
 	/**
@@ -3040,7 +3040,7 @@ public class Graphs {
 			value = "Allows to create a wrapper (of type unknown) that wraps a pair of objects and indicates they should be considered as the source and target of an edge of a graph")
 	@no_test
 	public static Object edge(final IPair pair) {
-		return edge(pair.getKey(), pair.getValue(), null, (Double) null);
+		return edge(pair.key(), pair.value(), null, (Double) null);
 	}
 
 	/**

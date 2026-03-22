@@ -293,20 +293,20 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 		for (int i = 0, n = myEQ.size(); i < n; i++) {
 
 			final IPair<IAgent, SingleEquationStatement> s = myEQ.get(i);
-			if (s.getValue().getOrder() == 0) { continue; }
+			if (s.value().getOrder() == 0) { continue; }
 
-			final IAgent remoteAgent = s.getKey();// getEquationAgents(scope).get(i);
+			final IAgent remoteAgent = s.key();// getEquationAgents(scope).get(i);
 			boolean pushed = false;
 			if (null != remoteAgent && !remoteAgent.dead()) {
 				pushed = scope.push(remoteAgent);
 				try {
-					if (s.getValue().getVarTime() instanceof IVarExpression) {
-						((IVarExpression) s.getValue().getVarTime()).setVal(scope, time, false);
+					if (s.value().getVarTime() instanceof IVarExpression) {
+						((IVarExpression) s.value().getVarTime()).setVal(scope, time, false);
 					}
-					if (myVar.get(i).getValue() instanceof IVarExpression) {
+					if (myVar.get(i).value() instanceof IVarExpression) {
 						// if (OWN_DEBUG)
-						// DEBUG.LOG(remoteAgent + " assign " + myVar.get(i).getValue() + " " + y[i]);
-						((IVarExpression) myVar.get(i).getValue()).setVal(scope, y[i], false);
+						// DEBUG.LOG(remoteAgent + " assign " + myVar.get(i).value() + " " + y[i]);
+						((IVarExpression) myVar.get(i).value()).setVal(scope, y[i], false);
 					}
 				} catch (final Throwable ex1) {
 					GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.create(ex1, scope), true);
@@ -319,9 +319,9 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 
 		for (int i = 0, n = myEQ.size(); i < n; i++) {
 			final IPair<IAgent, SingleEquationStatement> s = myEQ.get(i);
-			if (s.getValue().getOrder() == 0) {
-				final IExpression tmp = ((UnaryOperator) s.getValue().getFunction()).arg(0);
-				final Object v = s.getValue().getExpression().value(currentScope);
+			if (s.value().getOrder() == 0) {
+				final IExpression tmp = ((UnaryOperator) s.value().getFunction()).arg(0);
+				final Object v = s.value().getExpression().value(currentScope);
 				if (tmp instanceof TypeAttributeExpression) {
 					((TypeAttributeExpression) tmp).setVal(currentScope, v, false);
 				}
@@ -360,7 +360,7 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 		for (int i = 0, n = getDimension(); i < n; i++) {
 			if (myEQ.get(i) == null) { continue; }
 			try {
-				final IExecutionResult result = currentScope.execute(myEQ.get(i).getValue(), equaAgents.get(i), null);
+				final IExecutionResult result = currentScope.execute(myEQ.get(i).value(), equaAgents.get(i), null);
 				ydot[i] = Cast.asFloat(currentScope, result.getValue());
 			} catch (final Throwable e2) {
 				GAMA.reportAndThrowIfNeeded(currentScope, GamaRuntimeException.create(e2, currentScope), true);
@@ -380,7 +380,7 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 		int count = 0;
 		final IMap<Integer, IPair<IAgent, SingleEquationStatement>> myEQ = getEquations(currentScope.getAgent());
 		for (final IPair<IAgent, SingleEquationStatement> s : myEQ.values()) {
-			if (s.getValue().getOrder() > 0) { count++; }
+			if (s.value().getOrder() > 0) { count++; }
 		}
 
 		return count;
@@ -607,7 +607,7 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 		final IMap<Integer, IPair<IAgent, IExpression>> myVar = getVariableDiff(currentScope.getAgent());
 		// if (remoteAgent.equals(currentScope.getAgent())) {
 		for (final IPair<IAgent, SingleEquationStatement> e : myEQ.values()) {
-			if (e.getKey().equals(remoteAgent)) return;
+			if (e.key().equals(remoteAgent)) return;
 		}
 		// if (OWN_DEBUG)
 		// DEBUG.LOG(currentScope.getAgent() + " addEquationsOf " + remoteAgent);
@@ -620,16 +620,16 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 				}
 			}
 			for (final IPair<IAgent, SingleEquationStatement> s : ses.equations.values()) {
-				// final String name = remoteAgent.getName() + s.getKey();
-				final SingleEquationStatement eq = s.getValue();
+				// final String name = remoteAgent.getName() + s.key();
+				final SingleEquationStatement eq = s.value();
 				// if (OWN_DEBUG)
 				// DEBUG.LOG("eq " + eq);
 				final IPair p1 = GamaPairFactory.createWith(remoteAgent, eq, Types.AGENT, Types.NO_TYPE);
 				myEQ.put(myEQ.size(), p1);
 			}
 			for (final IPair<IAgent, IExpression> s : ses.variables_diff.values()) {
-				// final String name = remoteAgent.getName() + s.getKey();
-				final IExpression v = s.getValue();
+				// final String name = remoteAgent.getName() + s.key();
+				final IExpression v = s.value();
 				// if (OWN_DEBUG)
 				// DEBUG.LOG("v " + v);
 				final IPair p1 = GamaPairFactory.createWith(remoteAgent, v, Types.AGENT, Types.NO_TYPE);
@@ -699,7 +699,7 @@ public class SystemOfEquationsStatement extends AbstractStatementSequence implem
 			// // }
 			// }
 			// }
-			myEQ.values().removeIf(e -> e.getKey().equals(remoteAgent));
+			myEQ.values().removeIf(e -> e.key().equals(remoteAgent));
 			// for (final Integer s : ses.equations.keySet()) {
 			// equations.remove(n - s - 1);
 			// variables_diff.remove(n - s - 1);

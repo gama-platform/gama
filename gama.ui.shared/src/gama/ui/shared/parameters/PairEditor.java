@@ -165,10 +165,10 @@ public class PairEditor extends AbstractEditor<IPair> implements VerifyListener 
 		final var p = currentValue;
 		for (var i = 0; i < 3; i++) {
 			if (isReverting || !ordinates[0].isFocusControl()) {
-				ordinates[0].setText(currentValue == null ? "nil" : StringUtils.toGaml(p.getKey(), false));
+				ordinates[0].setText(currentValue == null ? "nil" : StringUtils.toGaml(p.key(), false));
 			}
 			if (isReverting || !ordinates[1].isFocusControl()) {
-				ordinates[1].setText(currentValue == null ? "nil" : StringUtils.toGaml(p.getValue(), false));
+				ordinates[1].setText(currentValue == null ? "nil" : StringUtils.toGaml(p.value(), false));
 			}
 		}
 		isReverting = false;

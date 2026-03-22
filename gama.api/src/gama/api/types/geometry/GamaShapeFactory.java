@@ -641,9 +641,9 @@ public class GamaShapeFactory {
 	 *             the gama runtime exception
 	 */
 	public static IShape pairToGeometry(final IScope scope, final IPair p) throws GamaRuntimeException {
-		final IShape first = castToShape(scope, p.first(), false);
+		final IShape first = castToShape(scope, p.key(), false);
 		if (first == null) return null;
-		final IShape second = castToShape(scope, p.last(), false);
+		final IShape second = castToShape(scope, p.value(), false);
 		if (second == null) return null;
 		return buildLink(scope, first, second);
 	}

@@ -28,9 +28,6 @@ import gama.api.types.map.IMap;
 import gama.api.types.matrix.GamaMatrixFactory;
 import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
-import gama.api.types.misc.IContainer.Addressable;
-import gama.api.types.misc.IContainer.Modifiable;
-import gama.api.types.misc.IContainer.ToSet;
 import gama.api.types.pair.GamaPairFactory;
 import gama.api.types.pair.IPair;
 import gama.api.utils.StringUtils;
@@ -40,7 +37,7 @@ import gama.dev.FLAGS;
 
 /**
  * The main interface for type-safe, indexed lists in the GAMA modeling platform.
- * 
+ *
  * <p>
  * {@code IList} extends Java's {@link List} interface while integrating with GAMA's type system and runtime
  * capabilities. It provides:
@@ -53,65 +50,65 @@ import gama.dev.FLAGS;
  * <li><b>Scope-Aware Operations</b>: Most operations accept an {@link IScope} for proper context and random number
  * generation</li>
  * </ul>
- * 
+ *
  * <h2>Core Features</h2>
- * 
+ *
  * <h3>1. Type Conversions</h3>
  * <p>
  * Provides seamless conversion to other GAMA container types:
  * </p>
- * 
+ *
  * <pre>
  * IList&lt;Integer&gt; numbers = GamaListFactory.create(Types.INT, 1, 2, 3);
- * 
+ *
  * // Convert to matrix
  * IMatrix&lt;Integer&gt; matrix = numbers.matrixValue(scope, Types.INT, false);
- * 
+ *
  * // Convert to map (elements become key-value pairs)
  * IMap&lt;?, ?&gt; map = numbers.mapValue(scope, Types.INT, Types.INT, false);
  * </pre>
- * 
+ *
  * <h3>2. Indexed Operations</h3>
  * <p>
  * All indexed operations are type-safe and scope-aware:
  * </p>
- * 
+ *
  * <pre>
  * // Add with automatic type casting
  * list.addValueAtIndex(scope, 0, "42"); // Casts "42" to content type
- * 
+ *
  * // Set with type casting
  * list.setValueAtIndex(scope, 1, someValue);
- * 
+ *
  * // Remove by index
  * list.removeIndex(scope, 2);
  * </pre>
- * 
+ *
  * <h3>3. GAML Serialization</h3>
  * <p>
  * Supports serialization to GAML code and JSON:
  * </p>
- * 
+ *
  * <pre>
  * String gaml = list.serializeToGaml(false); // "[1, 2, 3]"
  * IJsonValue json = list.serializeToJson(jsonContext);
  * </pre>
- * 
+ *
  * <h3>4. Random Access</h3>
  * <p>
  * Provides scope-aware random element selection:
  * </p>
- * 
+ *
  * <pre>
  * E random = list.anyValue(scope); // Uses scope's random generator
  * </pre>
- * 
+ *
  * <h2>Default Implementations</h2>
  * <p>
  * Most methods provide default implementations that delegate to standard {@link List} operations while ensuring proper
  * type handling via {@link #buildValue(IScope, Object)} and {@link #buildIndex(IScope, Object)}.
  * </p>
- * 
+ *
  * <h2>Type Building</h2>
  * <p>
  * The interface provides methods to convert values and indices according to the list's content type:
@@ -121,18 +118,18 @@ import gama.dev.FLAGS;
  * <li>{@link #buildIndex(IScope, Object)} - Casts indices to Integer</li>
  * <li>{@link #buildValues(IScope, IContainer)} - Casts entire containers</li>
  * </ul>
- * 
+ *
  * <h2>Usage in GAML</h2>
  * <p>
  * In GAML language, lists are created and manipulated using GAML syntax:
  * </p>
- * 
+ *
  * <pre>
  * list&lt;int&gt; myList &lt;- [1, 2, 3];
  * add 4 to: myList;
  * remove index: 0 from: myList;
  * </pre>
- * 
+ *
  * <h2>Implementation Notes</h2>
  * <ul>
  * <li><b>Content Type Casting</b>: Controlled by {@code FLAGS.CAST_CONTAINER_CONTENTS}. When enabled, all operations
@@ -144,15 +141,15 @@ import gama.dev.FLAGS;
  * <li><b>Runtime Type</b>: The runtime type is computed dynamically from actual elements via
  * {@link #computeRuntimeType(IScope)}.</li>
  * </ul>
- * 
+ *
  * @param <E>
  *            the element type
- * 
+ *
  * @see GamaListFactory for creating IList instances
  * @see GamaList for the primary implementation
  * @see IContainer for parent container interfaces
  * @see List for Java List interface
- * 
+ *
  * @author drogoul
  * @since 14 déc. 2011
  */
@@ -352,7 +349,7 @@ public interface IList<E>
 	 */
 	// See Issue #3099
 	default void replaceRange(final IScope scope, final IPair range, final E value) {
-		this.subList(Cast.asInt(scope, range.getKey()), Cast.asInt(scope, range.getValue()))
+		this.subList(Cast.asInt(scope, range.key()), Cast.asInt(scope, range.value()))
 				.replaceAll(v -> buildValue(scope, value));
 	}
 

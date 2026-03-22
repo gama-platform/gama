@@ -706,26 +706,24 @@ public class Containers {
 			// TODO: this definition relies on the submatrix that uses lists of indices, could be optimized to avoid
 			// creating the intermediate lists
 			final IPoint initialDimensions = notNull(scope, m1).getDimensions();
-			final int startCol = convertToListIndex(columns.getKey(), (int) initialDimensions.getX());
-			final int endCol = convertToListIndex(columns.getValue(), (int) initialDimensions.getX());
-			final int startRow = convertToListIndex(rows.getKey(), (int) initialDimensions.getY());
-			final int endRow = convertToListIndex(rows.getValue(), (int) initialDimensions.getY());
+			final int startCol = convertToListIndex(columns.key(), (int) initialDimensions.getX());
+			final int endCol = convertToListIndex(columns.value(), (int) initialDimensions.getX());
+			final int startRow = convertToListIndex(rows.key(), (int) initialDimensions.getY());
+			final int endRow = convertToListIndex(rows.value(), (int) initialDimensions.getY());
 
-			final boolean positiveColStep = steps.getKey() > 0;
-			final boolean positiveRowStep = steps.getValue() > 0;
-
+			final boolean positiveColStep = steps.key() > 0;
+			final boolean positiveRowStep = steps.value() > 0;
 			// Eliminating nonsensical cases
-			if (steps.getKey() == 0 || steps.getValue() == 0
-					|| (positiveColStep ? startCol > endCol : startCol < endCol)
+			if (steps.key() == 0 || steps.value() == 0 || (positiveColStep ? startCol > endCol : startCol < endCol)
 					|| (positiveRowStep ? startRow > endRow : startRow < endRow))
 				return GamaMatrixFactory.createMatrixLike(scope, m1, GamaPointFactory.create(0, 0));
 
 			IList<Integer> cols = GamaListFactory.create(Types.INT);
 			IList<Integer> rowsList = GamaListFactory.create(Types.INT);
-			for (int col = startCol; positiveColStep ? col <= endCol : col >= endCol; col += steps.getKey()) {
+			for (int col = startCol; positiveColStep ? col <= endCol : col >= endCol; col += steps.key()) {
 				cols.add(col);
 			}
-			for (int row = startRow; positiveRowStep ? row <= endRow : row >= endRow; row += steps.getValue()) {
+			for (int row = startRow; positiveRowStep ? row <= endRow : row >= endRow; row += steps.value()) {
 				rowsList.add(row);
 			}
 
@@ -799,10 +797,10 @@ public class Containers {
 		@test ("slice (matrix([[1, 4, 7], [2, 5, 8], [3, 6, 9 ], [1, 1, 1]]), 1::3, 0::1) = matrix([[2, 5], [3, 6], [1, 1]])")
 		public static IMatrix submatrix(final IScope scope, final IMatrix m1, final IPair<Integer, Integer> columns,
 				final IPair<Integer, Integer> rows) {
-			final int firstCol = convertToListIndex(columns.getKey(), (int) m1.getDimensions().getX());
-			final int lastCol = convertToListIndex(columns.getValue(), (int) m1.getDimensions().getX());
-			final int firstRow = convertToListIndex(rows.getKey(), (int) m1.getDimensions().getY());
-			final int lastRow = convertToListIndex(rows.getValue(), (int) m1.getDimensions().getY());
+			final int firstCol = convertToListIndex(columns.key(), (int) m1.getDimensions().getX());
+			final int lastCol = convertToListIndex(columns.value(), (int) m1.getDimensions().getX());
+			final int firstRow = convertToListIndex(rows.key(), (int) m1.getDimensions().getY());
+			final int lastRow = convertToListIndex(rows.value(), (int) m1.getDimensions().getY());
 			IPair<Integer, Integer> steps =
 					GamaPairFactory.createWith(lastCol == firstCol ? 1 : (int) Math.signum(lastCol - firstCol),
 							lastRow == firstRow ? 1 : (int) Math.signum(lastRow - firstRow), Types.INT, Types.INT);
@@ -865,7 +863,7 @@ public class Containers {
 				value = "For internal use only. Corresponds to the implementation, for containers, of the access with [begin::end]",
 				masterDoc = true)
 		public static IList copy_between(final IScope scope, final IList l1, final IPair p) {
-			return copy_between(scope, l1, Cast.asInt(scope, p.getKey()), Cast.asInt(scope, p.getValue()));
+			return copy_between(scope, l1, Cast.asInt(scope, p.key()), Cast.asInt(scope, p.value()));
 		}
 
 	}
@@ -3316,7 +3314,7 @@ public class Containers {
 	public static IMap plus(final IScope scope, final IMap m1, final IPair m2) {
 		final IType type = GamaType.findCommonType(notNull(scope, m1).getGamlType(), notNull(scope, m2).getGamlType());
 		final IMap res = GamaMapFactory.createWithoutCasting(type.getKeyType(), type.getContentType(), m1);
-		res.put(m2.getKey(), m2.getValue());
+		res.put(m2.key(), m2.value());
 		return res;
 	}
 
@@ -3382,7 +3380,7 @@ public class Containers {
 			see = { "" + IKeyword.MINUS })
 	public static IMap minus(final IScope scope, final IMap m1, final IPair m2) {
 		final IMap res = notNull(scope, m1).copy(scope);
-		res.remove(m2.getKey());
+		res.remove(m2.key());
 		return res;
 	}
 

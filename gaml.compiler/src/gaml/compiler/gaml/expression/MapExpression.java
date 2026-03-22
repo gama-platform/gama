@@ -88,8 +88,8 @@ public class MapExpression extends AbstractExpression implements IOperator, IExp
 				vals[i] = pair.exprs[1];
 			} else if (e instanceof ConstantExpression && e.getGamlType().getGamlType() == Types.PAIR) {
 				final IPair pair = (IPair) e.getConstValue();
-				final Object left = pair.first();
-				final Object right = pair.last();
+				final Object left = pair.key();
+				final Object right = pair.value();
 				keys[i] = GAML.getExpressionFactory().createConst(left, e.getGamlType().getKeyType());
 				vals[i] = GAML.getExpressionFactory().createConst(right, e.getGamlType().getContentType());
 			}

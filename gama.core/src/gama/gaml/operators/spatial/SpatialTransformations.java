@@ -446,7 +446,7 @@ public class SpatialTransformations {
 			see = { "rotation_composition, normalized_rotation" })
 	@test ("inverse_rotation(38.0::{1,1,1}) = (-38.0::{1,1,1})")
 	public static IPair<Double, IPoint> inverse_rotation(final IScope scope, final IPair<Double, IPoint> rotation) {
-		return GamaPairFactory.createWith(-rotation.getKey(), rotation.getValue(), Types.FLOAT, Types.POINT);
+		return GamaPairFactory.createWith(-rotation.key(), rotation.value(), Types.FLOAT, Types.POINT);
 	}
 
 	/**
@@ -477,12 +477,12 @@ public class SpatialTransformations {
 	public static IPair<Double, IPoint> normalized_rotation(final IScope scope, final IPair rotation) {
 		final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType.from(Types.PAIR, Types.FLOAT, Types.POINT)
 				.cast(scope, rotation, null, false);
-		final IPoint axis = rot.getValue();
+		final IPoint axis = rot.value();
 
 		final double norm = axis.norm();
-		final double signum = Math.signum(rot.getKey());
+		final double signum = Math.signum(rot.key());
 		axis.setLocation(signum * axis.getX() / norm, signum * axis.getY() / norm, signum * axis.getZ() / norm);
-		return GamaPairFactory.createWith(signum * rot.getKey(), axis, Types.FLOAT, Types.POINT);
+		return GamaPairFactory.createWith(signum * rot.key(), axis, Types.FLOAT, Types.POINT);
 	}
 
 	/**
@@ -525,7 +525,7 @@ public class SpatialTransformations {
 		for (final IPair element : rotation_list) {
 			final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType
 					.from(Types.PAIR, Types.FLOAT, Types.POINT).cast(scope, element, null, false);
-			rotation = rotation.applyTo(new Rotation3D(rot.getValue(), DEG_TO_RAD * rot.getKey()));
+			rotation = rotation.applyTo(new Rotation3D(rot.value(), DEG_TO_RAD * rot.key()));
 		}
 		return GamaPairFactory.createWith(180 / Math.PI * rotation.getAngle(), rotation.getAxis(), Types.FLOAT,
 				Types.POINT);
@@ -591,7 +591,7 @@ public class SpatialTransformations {
 		final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType.from(Types.PAIR, Types.FLOAT, Types.POINT)
 				.cast(scope, rotation, null, false);
 		final IPoint p2 = GamaPointFactory.create(p1);
-		new Rotation3D(rot.getValue(), Math.PI / 180.0 * rot.getKey()).applyTo(p2);
+		new Rotation3D(rot.value(), Math.PI / 180.0 * rot.key()).applyTo(p2);
 		return p2;
 	}
 
@@ -622,7 +622,7 @@ public class SpatialTransformations {
 		final IPair<Double, IPoint> rot = (IPair<Double, IPoint>) GamaType.from(Types.PAIR, Types.FLOAT, Types.POINT)
 				.cast(scope, rotation, null, false);
 		if (g1 == null || rot == null) return null;
-		return GamaShapeFactory.createFrom(g1).withRotation(new AxisAngle(rot.getValue(), rot.getKey()))
+		return GamaShapeFactory.createFrom(g1).withRotation(new AxisAngle(rot.value(), rot.key()))
 				.withLocation(g1.getLocation());
 	}
 
@@ -927,8 +927,10 @@ public class SpatialTransformations {
 				for (final Object o : cc) {
 					final IShape node = (IShape) o;
 					final Coordinate[] coordsArr = GeometryUtils.extractPoints(node,
-							new LinkedHashSet<IShape>(Graphs.neighborsOf(scope, graph, node)));
-					if (coordsArr != null) { network.add(GeometryUtils.getGeometryFactory().createLineString(coordsArr)); }
+							new LinkedHashSet<>(Graphs.neighborsOf(scope, graph, node)));
+					if (coordsArr != null) {
+						network.add(GeometryUtils.getGeometryFactory().createLineString(coordsArr));
+					}
 				}
 			} else if (cc.size() == 2) {
 				final Coordinate[] coordsArr = GeometryUtils.extractPoints((IShape) cc.get(0), (IShape) cc.get(1));
@@ -1199,7 +1201,8 @@ public class SpatialTransformations {
 	public static IShape smooth(final IScope scope, final IShape geometry, final Double fit) {
 		if (geometry == null) return null;
 		final double param = fit == null ? 0d : fit < 0 ? 0d : fit > 1 ? 1d : fit;
-		return GamaShapeFactory.createFrom(JTS.smooth(geometry.getInnerGeometry(), param, GeometryUtils.getGeometryFactory()));
+		return GamaShapeFactory
+				.createFrom(JTS.smooth(geometry.getInnerGeometry(), param, GeometryUtils.getGeometryFactory()));
 	}
 
 	/**

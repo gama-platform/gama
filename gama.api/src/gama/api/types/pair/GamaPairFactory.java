@@ -72,8 +72,8 @@ public class GamaPairFactory {
 		Object key, value;
 		switch (obj) {
 			case IPair p -> {
-				key = p.getKey();
-				value = p.getValue();
+				key = p.key();
+				value = p.value();
 			}
 			case IShape s when s.getInnerGeometry() instanceof ILink isl -> {
 				key = isl.getSource();

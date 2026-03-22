@@ -43,13 +43,13 @@ import gama.api.utils.json.IJsonValue;
 
 /**
  * An abstract base class for simple map wrappers that do not track specific key and value types.
- * 
+ *
  * <p>
- * {@code GamaMapSimpleWrapper} extends {@link ForwardingMap} to provide a minimal {@link IMap} implementation that
- * uses generic {@link Types#NO_TYPE} for both keys and values. This is useful for wrapping maps where type information
- * is not important or not available, such as utility maps or internal data structures.
+ * {@code GamaMapSimpleWrapper} extends {@link ForwardingMap} to provide a minimal {@link IMap} implementation that uses
+ * generic {@link Types#NO_TYPE} for both keys and values. This is useful for wrapping maps where type information is
+ * not important or not available, such as utility maps or internal data structures.
  * </p>
- * 
+ *
  * <h2>Key Features</h2>
  * <ul>
  * <li><b>Abstract Base Class</b>: Intended for subclassing, not direct instantiation</li>
@@ -58,7 +58,7 @@ import gama.api.utils.json.IJsonValue;
  * <li><b>Minimal Overhead</b>: Simplest possible IMap wrapper implementation</li>
  * <li><b>ForwardingMap-based</b>: Delegates to underlying map via Guava pattern</li>
  * </ul>
- * 
+ *
  * <h2>Comparison with GamaMapWrapper</h2>
  * <table border="1">
  * <tr>
@@ -92,27 +92,27 @@ import gama.api.utils.json.IJsonValue;
  * <td>Small (type info + flag)</td>
  * </tr>
  * </table>
- * 
+ *
  * <h2>Usage Pattern</h2>
  * <p>
  * Extend this class to create simple map wrappers:
  * </p>
- * 
+ *
  * <pre>
  * public class MySimpleMap extends GamaMapSimpleWrapper&lt;String, Object&gt; {
- *     private final Map&lt;String, Object&gt; data = new HashMap&lt;&gt;();
- *     
- *     &#64;Override
- *     protected Map&lt;String, Object&gt; delegate() {
- *         return data;
- *     }
- * }
+ * 	private final Map&lt;String, Object&gt; data = new HashMap&lt;&gt;();
  * 
+ * 	&#64;Override
+ * 	protected Map&lt;String, Object&gt; delegate() {
+ * 		return data;
+ * 	}
+ * }
+ *
  * // Usage
  * IMap&lt;String, Object&gt; map = new MySimpleMap();
  * map.put("key", value); // No type checking
  * </pre>
- * 
+ *
  * <h2>Type Methods</h2>
  * <p>
  * Type-related methods have minimal implementations:
@@ -122,25 +122,25 @@ import gama.api.utils.json.IJsonValue;
  * <li>{@code buildValue(scope, object)} - Returns object unchanged (no casting)</li>
  * <li>{@code buildIndex(scope, object)} - Returns object unchanged (no casting)</li>
  * </ul>
- * 
+ *
  * <pre>
  * IMap&lt;?, ?&gt; simpleMap = new MySimpleMap();
  * IContainerType type = simpleMap.getGamlType();
  * // type.getKeyType() returns Types.NO_TYPE
  * // type.getContentType() returns Types.NO_TYPE
  * </pre>
- * 
+ *
  * <h2>GAML Pseudo-Variables</h2>
  * <p>
  * Provides basic implementations:
  * </p>
- * 
+ *
  * <pre>
- * IList&lt;?&gt; keys = simpleMap.getKeys();      // Wraps keySet() with NO_TYPE
- * IList&lt;?&gt; values = simpleMap.getValues();  // Wraps values() with NO_TYPE
- * IPairList pairs = simpleMap.getPairs();    // Creates GamaPairList
+ * IList&lt;?&gt; keys = simpleMap.getKeys(); // Wraps keySet() with NO_TYPE
+ * IList&lt;?&gt; values = simpleMap.getValues(); // Wraps values() with NO_TYPE
+ * IPairList pairs = simpleMap.getPairs(); // Creates GamaPairList
  * </pre>
- * 
+ *
  * <h2>Container Operations</h2>
  * <p>
  * Implements standard IContainer operations with minimal type handling:
@@ -151,20 +151,20 @@ import gama.api.utils.json.IJsonValue;
  * <li>{@code contains} - Checks for key existence</li>
  * <li>{@code copy} - Creates shallow copy via {@code createWithoutCasting}</li>
  * </ul>
- * 
+ *
  * <h2>Iteration Methods</h2>
  * <p>
  * Provides pruning-capable iteration:
  * </p>
- * 
+ *
  * <pre>
  * simpleMap.forEachPair((key, value) -&gt; {
- *     if (condition(key, value)) return false; // Stop
- *     process(key, value);
- *     return true; // Continue
+ * 	if (condition(key, value)) return false; // Stop
+ * 	process(key, value);
+ * 	return true; // Continue
  * });
  * </pre>
- * 
+ *
  * <h2>When to Use</h2>
  * <p>
  * Use {@code GamaMapSimpleWrapper} when:
@@ -176,7 +176,7 @@ import gama.api.utils.json.IJsonValue;
  * <li>Minimizing memory overhead is critical</li>
  * <li>Type safety is ensured externally</li>
  * </ul>
- * 
+ *
  * <p>
  * <b>Do not use</b> when:
  * </p>
@@ -186,7 +186,7 @@ import gama.api.utils.json.IJsonValue;
  * <li>Full IMap contract must be satisfied</li>
  * <li>Ordering information needs to be tracked</li>
  * </ul>
- * 
+ *
  * <h2>Performance Characteristics</h2>
  * <p>
  * Inherits performance from the delegated map plus minimal wrapper overhead:
@@ -197,17 +197,17 @@ import gama.api.utils.json.IJsonValue;
  * <li><b>Direct delegation</b> for all Map operations</li>
  * <li><b>Minimal memory</b> - no type fields stored</li>
  * </ul>
- * 
+ *
  * <h2>Thread Safety</h2>
  * <p>
  * Not thread-safe unless the delegated map is thread-safe.
  * </p>
- * 
+ *
  * <h2>Equality</h2>
  * <p>
  * Uses {@link GamaMapFactory#equals} for comparison, same as other IMap implementations.
  * </p>
- * 
+ *
  * <h2>Abstract Method</h2>
  * <p>
  * Subclasses must implement:
@@ -215,23 +215,23 @@ import gama.api.utils.json.IJsonValue;
  * <ul>
  * <li>{@code protected Map<K, V> delegate()} - Returns the wrapped map</li>
  * </ul>
- * 
+ *
  * <h2>Implementation Notes</h2>
  * <ul>
  * <li>Does not override {@code isOrdered()} - subclasses should override if needed</li>
  * <li>Serialization uses default implementations from delegated methods</li>
  * <li>No constructor defined - subclasses define their own</li>
  * </ul>
- * 
+ *
  * @param <K>
  *            the key type
  * @param <V>
  *            the value type
- * 
+ *
  * @see GamaMapWrapper for type-tracking wrapper
  * @see IMap
  * @see ForwardingMap
- * 
+ *
  * @author drogoul
  */
 @SuppressWarnings ("unchecked")
@@ -329,7 +329,7 @@ public abstract class GamaMapSimpleWrapper<K, V> extends ForwardingMap<K, V> imp
 	@Override
 	public void addValue(final IScope scope, final V v) {
 		if (v instanceof IPair) {
-			setValueAtIndex(scope, (K) ((IPair) v).first(), (V) ((IPair) v).last());
+			setValueAtIndex(scope, (K) ((IPair) v).key(), (V) ((IPair) v).value());
 		} else {
 			setValueAtIndex(scope, v, v);
 		}

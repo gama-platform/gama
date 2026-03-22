@@ -289,7 +289,7 @@ public class GamaMap<K, V> extends LinkedHashMap<K, V> implements IMap<K, V> {
 	@Override
 	public void addValue(final IScope scope, final V v) {
 		if (v instanceof IPair) {
-			setValueAtIndex(scope, (K) ((IPair) v).first(), (V) ((IPair) v).last());
+			setValueAtIndex(scope, (K) ((IPair) v).key(), (V) ((IPair) v).value());
 		} else {
 			setValueAtIndex(scope, v, v);
 		}

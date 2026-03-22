@@ -67,8 +67,8 @@ public abstract class Gama3DGeometryFile extends GamaGeometryFile {
 			throws GamaRuntimeException {
 		super(scope, pathName);
 		if (initRotation != null) {
-			final Double angle = Cast.asFloat(null, initRotation.getKey());
-			final IPoint axis = initRotation.getValue();
+			final Double angle = Cast.asFloat(null, initRotation.key());
+			final IPoint axis = initRotation.value();
 			this.initRotation = new AxisAngle(axis, angle);
 		} else {
 			this.initRotation = null;

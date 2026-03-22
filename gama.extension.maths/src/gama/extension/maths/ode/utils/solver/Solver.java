@@ -67,7 +67,7 @@ public abstract class Solver {
 					final double time = interpolator.getCurrentTime();
 					final double[] y = interpolator.getInterpolatedState();
 
-					if ((lastT < 0) || (Maths.abs(lastT - time) > 10E-12)) {
+					if (lastT < 0 || Maths.abs(lastT - time) > 10E-12) {
 						storeIntegratedValues(time, y, integrated_val);
 					}
 					lastT = time;
@@ -114,14 +114,14 @@ public abstract class Solver {
 			final int n = myVar.size();
 			for (i = 0; i < n; i++) {
 				final IAgent a = equationAgents.get(i);
-				final String eqkeyname = a + myVar.get(i).getValue().toString();
+				final String eqkeyname = a + myVar.get(i).value().toString();
 				if (integrationValues.get(eqkeyname) == null) {
 					integrationValues.put(eqkeyname, GamaListFactory.create(Double.class));
 				}
 				if (!a.dead()) {
 					final boolean pushed = scope.push(a);
 					try {
-						y[i] = Cast.asFloat(scope, myVar.get(i).getValue().value(scope));
+						y[i] = Cast.asFloat(scope, myVar.get(i).value().value(scope));
 
 						if (Double.isInfinite(y[i])) {
 							GAMA.reportAndThrowIfNeeded(scope,

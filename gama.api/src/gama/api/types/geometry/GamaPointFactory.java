@@ -32,85 +32,99 @@ import gama.api.types.pair.IPair;
 
 /**
  * A static factory for creating and managing {@link IPoint} instances.
- * 
- * <p>This class provides the primary API for creating 3D points in GAMA, offering multiple creation methods
- * from various sources including coordinates, coordinate sequences, GAML strings, maps, and other types.
- * It handles both mutable and immutable point creation.</p>
- * 
+ *
+ * <p>
+ * This class provides the primary API for creating 3D points in GAMA, offering multiple creation methods from various
+ * sources including coordinates, coordinate sequences, GAML strings, maps, and other types. It handles both mutable and
+ * immutable point creation.
+ * </p>
+ *
  * <h2>Factory Methods</h2>
- * 
+ *
  * <h3>Basic Creation</h3>
  * <ul>
- *   <li>{@link #create()} - Creates a point at origin (0,0,0)</li>
- *   <li>{@link #create(double, double)} - Creates a 2D point (z=0)</li>
- *   <li>{@link #create(double, double, double)} - Creates a 3D point</li>
- *   <li>{@link #create(IPoint)} - Creates a copy of an existing point</li>
- *   <li>{@link #create(Coordinate)} - Creates from JTS Coordinate</li>
+ * <li>{@link #create()} - Creates a point at origin (0,0,0)</li>
+ * <li>{@link #create(double, double)} - Creates a 2D point (z=0)</li>
+ * <li>{@link #create(double, double, double)} - Creates a 3D point</li>
+ * <li>{@link #create(IPoint)} - Creates a copy of an existing point</li>
+ * <li>{@link #create(Coordinate)} - Creates from JTS Coordinate</li>
  * </ul>
- * 
+ *
  * <h3>Immutable Points</h3>
  * <ul>
- *   <li>{@link #createImmutable(double, double, double)} - Creates immutable 3D point</li>
- *   <li>{@link #createImmutable(double, double)} - Creates immutable 2D point</li>
- *   <li>{@link #createImmutable(IPoint)} - Creates immutable copy</li>
- *   <li>{@link #createImmutable(Coordinate)} - Creates immutable from Coordinate</li>
+ * <li>{@link #createImmutable(double, double, double)} - Creates immutable 3D point</li>
+ * <li>{@link #createImmutable(double, double)} - Creates immutable 2D point</li>
+ * <li>{@link #createImmutable(IPoint)} - Creates immutable copy</li>
+ * <li>{@link #createImmutable(Coordinate)} - Creates immutable from Coordinate</li>
  * </ul>
- * 
+ *
  * <h3>Type Conversion</h3>
  * <ul>
- *   <li>{@link #castToPoint(IScope, Object, boolean)} - Converts various types to point</li>
- *   <li>{@link #createFromGamlString(IScope, String)} - Parses GAML point syntax</li>
- *   <li>{@link #createFromXYZMap(IScope, Map)} - Creates from map with x,y,z keys</li>
+ * <li>{@link #castToPoint(IScope, Object, boolean)} - Converts various types to point</li>
+ * <li>{@link #createFromGamlString(IScope, String)} - Parses GAML point syntax</li>
+ * <li>{@link #createFromXYZMap(IScope, Map)} - Creates from map with x,y,z keys</li>
  * </ul>
- * 
+ *
  * <h2>GAML Integration</h2>
- * <p>This class provides the {@code point} operator used in GAML:</p>
+ * <p>
+ * This class provides the {@code point} operator used in GAML:
+ * </p>
+ *
  * <pre>
  * point p1 &lt;- point(10, 20);         // 2D point
  * point p2 &lt;- point(10, 20, 5);      // 3D point
  * point p3 &lt;- {10, 20, 5};           // Literal syntax (calls castToPoint)
  * </pre>
- * 
+ *
  * <h2>Type Casting</h2>
- * <p>The {@link #castToPoint(IScope, Object, boolean)} method handles conversion from various types:</p>
+ * <p>
+ * The {@link #castToPoint(IScope, Object, boolean)} method handles conversion from various types:
+ * </p>
  * <ul>
- *   <li><b>IPoint:</b> Returns directly or creates copy</li>
- *   <li><b>IShape:</b> Returns the shape's location</li>
- *   <li><b>List:</b> Interprets elements as x, y, z coordinates</li>
- *   <li><b>IColor:</b> Creates point from RGB values</li>
- *   <li><b>Map:</b> Extracts "x", "y", "z" keys</li>
- *   <li><b>String:</b> Parses GAML syntax like "{1.0, 2.0, 3.0}"</li>
- *   <li><b>IPair:</b> Uses first and last as x and y</li>
- *   <li><b>Number:</b> Creates point with same value for x, y, and z</li>
+ * <li><b>IPoint:</b> Returns directly or creates copy</li>
+ * <li><b>IShape:</b> Returns the shape's location</li>
+ * <li><b>List:</b> Interprets elements as x, y, z coordinates</li>
+ * <li><b>IColor:</b> Creates point from RGB values</li>
+ * <li><b>Map:</b> Extracts "x", "y", "z" keys</li>
+ * <li><b>String:</b> Parses GAML syntax like "{1.0, 2.0, 3.0}"</li>
+ * <li><b>IPair:</b> Uses first and last as x and y</li>
+ * <li><b>Number:</b> Creates point with same value for x, y, and z</li>
  * </ul>
- * 
+ *
  * <h2>Immutable vs Mutable Points</h2>
- * <p>By default, factory methods create mutable {@link GamaPoint} instances. For immutable points
- * (useful for constants, shared references, or thread-safe code), use the {@code createImmutable} methods
- * which return {@link Immutable} instances.</p>
- * 
- * <p>Immutable points ignore all setter operations and return themselves unchanged from modification methods.</p>
- * 
+ * <p>
+ * By default, factory methods create mutable {@link GamaPoint} instances. For immutable points (useful for constants,
+ * shared references, or thread-safe code), use the {@code createImmutable} methods which return {@link Immutable}
+ * instances.
+ * </p>
+ *
+ * <p>
+ * Immutable points ignore all setter operations and return themselves unchanged from modification methods.
+ * </p>
+ *
  * <h2>Thread Safety</h2>
- * <p>All factory methods are thread-safe. However, the created mutable points themselves are NOT thread-safe.
- * For concurrent usage, create immutable points or provide external synchronization.</p>
- * 
+ * <p>
+ * All factory methods are thread-safe. However, the created mutable points themselves are NOT thread-safe. For
+ * concurrent usage, create immutable points or provide external synchronization.
+ * </p>
+ *
  * <h2>Example Usage</h2>
+ *
  * <pre>
  * // Create mutable points
  * IPoint origin = GamaPointFactory.create();
  * IPoint point2D = GamaPointFactory.create(10.0, 20.0);
  * IPoint point3D = GamaPointFactory.create(10.0, 20.0, 5.0);
- * 
+ *
  * // Create immutable points
  * IPoint constPoint = GamaPointFactory.createImmutable(10.0, 20.0, 5.0);
- * 
+ *
  * // Type conversion
  * IPoint fromList = GamaPointFactory.castToPoint(scope, Arrays.asList(10, 20, 5));
  * IPoint fromString = GamaPointFactory.createFromGamlString(scope, "{10, 20, 5}");
  * IPoint fromColor = GamaPointFactory.castToPoint(scope, someColor);
  * </pre>
- * 
+ *
  * @author drogoul
  * @see IPoint
  * @see GamaPoint
@@ -121,40 +135,52 @@ public class GamaPointFactory {
 
 	/**
 	 * Immutable point implementation that ignores all modification attempts.
-	 * 
-	 * <p>This class extends {@link GamaPoint} but overrides all setter and modification methods to be no-ops,
-	 * making instances effectively immutable. Immutable points are useful for:</p>
+	 *
+	 * <p>
+	 * This class extends {@link GamaPoint} but overrides all setter and modification methods to be no-ops, making
+	 * instances effectively immutable. Immutable points are useful for:
+	 * </p>
 	 * <ul>
-	 *   <li>Constants and default values</li>
-	 *   <li>Shared references across multiple objects</li>
-	 *   <li>Thread-safe code without synchronization</li>
-	 *   <li>Preventing accidental modifications</li>
+	 * <li>Constants and default values</li>
+	 * <li>Shared references across multiple objects</li>
+	 * <li>Thread-safe code without synchronization</li>
+	 * <li>Preventing accidental modifications</li>
 	 * </ul>
-	 * 
-	 * <p>All modification methods ({@code setX}, {@code add}, {@code multiply}, etc.) return {@code this}
-	 * unchanged, maintaining the method chaining API while preventing state changes.</p>
-	 * 
+	 *
+	 * <p>
+	 * All modification methods ({@code setX}, {@code add}, {@code multiply}, etc.) return {@code this} unchanged,
+	 * maintaining the method chaining API while preventing state changes.
+	 * </p>
+	 *
 	 * <h3>Usage</h3>
-	 * <p>Create immutable points using factory methods:</p>
+	 * <p>
+	 * Create immutable points using factory methods:
+	 * </p>
+	 *
 	 * <pre>
 	 * IPoint immutable = GamaPointFactory.createImmutable(10, 20, 5);
-	 * immutable.setX(100);  // No effect
-	 * immutable.add(offset);  // No effect
+	 * immutable.setX(100); // No effect
+	 * immutable.add(offset); // No effect
 	 * </pre>
-	 * 
+	 *
 	 * @see GamaPointFactory#createImmutable(double, double, double)
 	 */
 	public static class Immutable extends GamaPoint {
 
 		/**
 		 * Constructs a new immutable point with the specified coordinates.
-		 * 
-		 * <p>This constructor is public but typically should be accessed via
-		 * {@link GamaPointFactory#createImmutable(double, double, double)}.</p>
 		 *
-		 * @param x the x-coordinate
-		 * @param y the y-coordinate
-		 * @param z the z-coordinate
+		 * <p>
+		 * This constructor is public but typically should be accessed via
+		 * {@link GamaPointFactory#createImmutable(double, double, double)}.
+		 * </p>
+		 *
+		 * @param x
+		 *            the x-coordinate
+		 * @param y
+		 *            the y-coordinate
+		 * @param z
+		 *            the z-coordinate
 		 */
 		public Immutable(final double x, final double y, final double z) {
 			super(x, y, z);
@@ -498,7 +524,7 @@ public class GamaPointFactory {
 			case IColor c -> create(c.red(), c.green(), c.blue());
 			case Map m -> createFromXYZMap(scope, m);
 			case String s -> createFromGamlString(scope, s);
-			case IPair p -> create(Cast.asFloat(scope, p.first()), Cast.asFloat(scope, p.last()));
+			case IPair p -> create(Cast.asFloat(scope, p.key()), Cast.asFloat(scope, p.value()));
 			default -> {
 				Double dval = Cast.asFloat(scope, obj);
 				yield create(dval, dval, dval);

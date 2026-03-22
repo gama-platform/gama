@@ -603,7 +603,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	public Object addEdge(final Object e) {
 		getPathComputer().incVersion();
 
-		if (e instanceof IPair p) return addEdge(p.first(), p.last());
+		if (e instanceof IPair p) return addEdge(p.key(), p.value());
 		if (e instanceof GraphObjectToAdd) {
 			addValue(graphScope, (GraphObjectToAdd) e);
 			return ((GraphObjectToAdd) e).object();
@@ -629,7 +629,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	@Override
 	public void addValueAtIndex(final IScope scope, final Object idx, final GraphObjectToAdd value) {
 		final IPair index = buildIndex(scope, idx);
-		final EdgeToAdd edge = new EdgeToAdd(index.getKey(), index.getValue(), null, (Double) null);
+		final EdgeToAdd edge = new EdgeToAdd(index.key(), index.value(), null, (Double) null);
 		if (value instanceof EdgeToAdd eta) {
 			edge.object = eta.object;
 			edge.weight = eta.weight;
@@ -677,7 +677,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 
 	@Override
 	public void removeIndex(final IScope scope, final Object index) {
-		if (index instanceof IPair p) { removeAllEdges(p.getKey(), p.getValue()); }
+		if (index instanceof IPair p) { removeAllEdges(p.key(), p.value()); }
 	}
 
 	/**
@@ -709,7 +709,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	@Override
 	public Object addEdge(final Object v1, final Object v2) {
 		if (v1 instanceof IPair p) {
-			if (addEdge(p.first(), p.last(), v2)) return v2;
+			if (addEdge(p.key(), p.value(), v2)) return v2;
 			return null;
 		}
 		final Object p = createNewEdgeObjectFromVertices(v1, v2);
@@ -1011,7 +1011,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	public boolean removeEdge(final Object e) {
 		if (e == null) return false;
 		final _Edge<V, E> edge = getEdge(e);
-		if (edge == null && e instanceof IPair) return removeEdge(((IPair) e).first(), ((IPair) e).last()) != null;
+		if (edge == null && e instanceof IPair) return removeEdge(((IPair) e).key(), ((IPair) e).value()) != null;
 
 		if (edge == null) return false;
 		getPathComputer().incVersion();
@@ -1139,8 +1139,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	 */
 	@Override
 	public List<E> get(final IScope scope, final IPair<V, V> index) {
-		return GamaListFactory.create(scope, getGamlType().getContentType(),
-				getAllEdges(index.getKey(), index.getValue()));
+		return GamaListFactory.create(scope, getGamlType().getContentType(), getAllEdges(index.key(), index.value()));
 	}
 
 	/**
@@ -1172,9 +1171,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 	@Override
 	public E lastValue(final IScope scope) {
 		// Solution d�bile. On devrait conserver le dernier entr�.
-		return listValue(scope, Types.NO_TYPE, false).lastValue(scope);// Attention
-																		// a
-																		// l'ordre
+		return listValue(scope, Types.NO_TYPE, false).lastValue(scope);
 	}
 
 	@Override
@@ -1262,7 +1259,7 @@ public class GamaGraph<V, E> implements IGraph<V, E> {
 		for (final Map.Entry<Object, Double> entry : weights.entrySet()) {
 			Object target = entry.getKey();
 			if (target instanceof IPair) {
-				target = getEdge(((IPair) target).first(), ((IPair) target).last());
+				target = getEdge(((IPair) target).key(), ((IPair) target).value());
 				setEdgeWeight(target, Cast.asFloat(graphScope, entry.getValue()));
 			} else if (containsEdge(target)) {
 				setEdgeWeight(target, Cast.asFloat(graphScope, entry.getValue()));

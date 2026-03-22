@@ -10,8 +10,10 @@
 package gama.api.types.pair;
 
 import gama.annotations.doc;
+import gama.annotations.getter;
 import gama.annotations.variable;
 import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ITypeProvider;
 import gama.api.types.misc.IContainer;
 
@@ -40,47 +42,35 @@ import gama.api.types.misc.IContainer;
  * @since GAMA 1.0
  */
 @vars ({ @variable (
-		name = IPair.KEY,
+		name = IKeyword.KEY,
 		type = ITypeProvider.KEY_TYPE_AT_INDEX + 1,
 		doc = { @doc ("Returns the key of this pair (can be nil)") }),
 		@variable (
-				name = IPair.VALUE,
+				name = IKeyword.VALUE,
 				type = ITypeProvider.CONTENT_TYPE_AT_INDEX + 1,
 				doc = { @doc ("Returns the value of this pair (can be nil)") }) })
 public interface IPair<K, V> extends IContainer<Integer, Object>, IContainer.ToGet<Integer, Object> {
-
-	/** The constant name for the key attribute. */
-	String KEY = "key";
-
-	/** The constant name for the value attribute. */
-	String VALUE = "value";
 
 	/**
 	 * Returns the first element of the pair (the key).
 	 *
 	 * @return the key (first element) of this pair, which can be null
 	 */
-	K first();
+	@getter (IKeyword.KEY)
+	K key();
+
+	/**
+	 * Value.
+	 *
+	 * @return the v
+	 */
 
 	/**
 	 * Returns the second element of the pair (the value).
 	 *
 	 * @return the value (second element) of this pair, which can be null
 	 */
-	V last();
-
-	/**
-	 * Gets the key.
-	 *
-	 * @return the key
-	 */
-	default K getKey() { return first(); }
-
-	/**
-	 * Gets the value.
-	 *
-	 * @return the value
-	 */
-	default V getValue() { return last(); }
+	@getter (IKeyword.VALUE)
+	V value();
 
 }

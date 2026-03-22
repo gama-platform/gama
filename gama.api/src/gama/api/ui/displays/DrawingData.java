@@ -147,8 +147,8 @@ public class DrawingData extends AttributeHolder {
 	private AxisAngle castRotation(final IScope scope, final IExpression exp) throws GamaRuntimeException {
 		if (exp.getGamlType().getGamlType() == Types.PAIR) {
 			final IPair currentRotation = GamaPairFactory.castToPair(scope, exp.value(scope), true);
-			return new AxisAngle(GamaPointFactory.castToPoint(scope, currentRotation.getValue()),
-					Cast.asFloat(scope, currentRotation.getKey()));
+			return new AxisAngle(GamaPointFactory.castToPoint(scope, currentRotation.value()),
+					Cast.asFloat(scope, currentRotation.key()));
 		}
 		return new AxisAngle(Rotation3D.PLUS_K, Cast.asFloat(scope, exp.value(scope)));
 	}
