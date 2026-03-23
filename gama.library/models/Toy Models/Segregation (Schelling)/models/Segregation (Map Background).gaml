@@ -31,12 +31,12 @@ global {
 	matrix<int> map_colors;
  
  	//Action to initialize the people agents
-	action initialize_people {
+	action initialize_people() {
 		create people number: number_of_people ;  
 		all_people <- people as list ;  
 	}
 	//Action to initialize the places using the color in the image
-	action initialize_places { 
+	action initialize_places() { 
 		map_colors <- (bitmap_file_name) as_matrix {dimensions,dimensions} ;
 		ask space as list {
 			color <- rgb(map_colors at {grid_x,grid_y}) ;
@@ -82,7 +82,7 @@ experiment schelling type: gui parent:base_exp{
 	
 	output {
 		display Segregation type:2d{
-			image bitmap_file_name.path ;
+			picture bitmap_file_name.path ;
 			species people transparency: 0.5 aspect: geom;
 		}	
 		display Charts  type: 2d {

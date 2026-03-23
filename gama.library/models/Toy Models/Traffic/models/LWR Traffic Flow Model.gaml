@@ -34,7 +34,7 @@ global {
 	   		// Creation of the nb_sections sections which compose the road. 
 	   		
 		   loop i from: 0 to: (nb_sections - 1){
-		   	  create section with: [shape:: line([{i * section_size , 100},{(i +1) * section_size , 100}])];
+		   	  create section with: (shape: line([{i * section_size , 100},{(i +1) * section_size , 100}]));
 		   }
 		   	
 		   	// For each section, as we need to have information concerning the previous and the next one, we define which section is the previous and which is the next.

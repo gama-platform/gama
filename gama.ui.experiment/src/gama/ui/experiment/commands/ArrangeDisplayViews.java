@@ -3,7 +3,7 @@
  * ArrangeDisplayViews.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -31,11 +31,11 @@ import org.eclipse.e4.ui.workbench.modeling.EPartService.PartState;
 
 import com.google.common.collect.Iterables;
 
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.runtime.PlatformHelper;
-import gama.core.util.tree.GamaNode;
-import gama.core.util.tree.GamaTree;
+import gama.api.runtime.SystemInfo;
+import gama.api.ui.IGamaView;
+import gama.api.utils.collections.GamaNode;
+import gama.api.utils.collections.GamaTree;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.application.workbench.ThemeHelper;
@@ -164,7 +164,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	public static MPartStack getDisplaysPlaceholder() {
 		final Object displayStack = getModelService().find("displays", getApplication());
 		// DEBUG.OUT("Element displays found : " + displayStack);
-		return displayStack instanceof MPartStack ? (MPartStack) displayStack : null;
+		return displayStack instanceof MPartStack m ? m : null;
 	}
 
 	/**
@@ -204,7 +204,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		// on the canvases at least once. Modified to only target 2d displays as it was creating a problem on macOS
 		// (perspective not able to go back to modeling and forth)
 
-		if (PlatformHelper.isWindows() || PlatformHelper.isMac()) {
+		if (SystemInfo.isWindows() || SystemInfo.isMac()) {
 			displays.forEach(d -> { if (d.is2D()) { d.focusCanvas(); } });
 		}
 

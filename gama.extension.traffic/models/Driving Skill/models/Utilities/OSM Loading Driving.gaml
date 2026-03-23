@@ -32,7 +32,7 @@ global{
 				if (length(geom.points) = 1 ) {
 					if ( highway_str != nil ) {
 						string crossing <- string(geom get ("crossing"));
-						create intersection with: [shape ::geom, type:: highway_str, crossing::crossing] {
+						create intersection with: (shape :geom, type: highway_str, crossing:crossing) {
 							nodes_map[location] <- self;
 						}
 					}
@@ -41,7 +41,7 @@ global{
 					float maxspeed_val <- float(geom get ("maxspeed"));
 					string lanes_str <- string(geom get ("lanes"));
 					int lanes_val <- empty(lanes_str) ? 1 : ((length(lanes_str) > 1) ? int(first(lanes_str)) : int(lanes_str));
-					create road with: [shape ::geom, type:: highway_str, oneway::oneway, maxspeed::maxspeed_val, lanes::lanes_val] {
+					create road with: (shape :geom, type: highway_str, oneway:oneway, maxspeed:maxspeed_val, lanes:lanes_val) {
 						if lanes < 1 {lanes <- 1;} //default value for the lanes attribute
 						if maxspeed = 0 {maxspeed <- 50.0;} //default value for the maxspeed attribute
 					}
@@ -53,13 +53,13 @@ global{
 		ask road {
 			point ptF <- first(shape.points);
 			if (not(ptF in nodes_map.keys)) {
-				create intersection with:[location::ptF] {
+				create intersection with:(location:ptF) {
 					nodes_map[location] <- self;
 				}	
 			}
 			point ptL <- last(shape.points);
 			if (not(ptL in nodes_map.keys)) {
-				create intersection with:[location::ptL] {
+				create intersection with:(location:ptL) {
 					nodes_map[location] <- self;
 				}
 			}

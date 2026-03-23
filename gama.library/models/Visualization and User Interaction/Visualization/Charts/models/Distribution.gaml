@@ -90,7 +90,7 @@ global {
 	}
 }
 
-experiment "Example of Distribution" type: gui {
+experiment "Example of Distribution" type: gui autorun:true {
 	output {
 		layout #split;
 		display "Gauss Distribution"  type: 2d {

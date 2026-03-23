@@ -11,15 +11,15 @@ model MouseExitandEnter
 global {
 	bool closed <- false;
 	init {
-		create eyes with: [location::{25,30}];
-		create eyes with: [location::{65,30}];
+		create eyes with: (location:{25,30});
+		create eyes with: (location:{65,30});
 	}
 }
 
 species eyes {
 	point look_at <- location;
 	
-	action follow {
+	action follow() {
 		float heading <- location towards #user_location;
 		look_at <- location + {5*cos(heading), 5*sin(heading)};
 	}

@@ -9,10 +9,10 @@
  ********************************************************************************************************/
 package gama.extension.network.serial;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
 import gama.dev.DEBUG;
 import gama.extension.network.common.Connector;
 import gama.extension.network.common.GamaNetworkException;

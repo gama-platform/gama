@@ -1,19 +1,20 @@
 /*******************************************************************************************************
  *
  * ObjectDrawer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Envelope3D;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.geometry.Scaling3D;
 import gama.ui.display.opengl.OpenGL;
 
 /**
@@ -46,7 +47,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 	 *            the is picking
 	 */
 	@SuppressWarnings ("unchecked")
-	public final void draw(final AbstractObject<?,?> object, final boolean isPicking) {
+	public final void draw(final AbstractObject<?, ?> object, final boolean isPicking) {
 		gl.beginObject(object, isPicking);
 		_draw((T) object);
 		gl.endObject(object, isPicking);
@@ -65,7 +66,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 
 		final Scaling3D size = object.getAttributes().getSize();
 		if (size != null) {
-			final Envelope3D env = gl.getEnvelopeFor(object.getObject());
+			final IEnvelope env = gl.getEnvelopeFor(object.getObject());
 			if (env != null) {
 				// try {
 				final boolean in2D = isDrawing2D(size, env, object);
@@ -78,7 +79,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 				}
 				if (factor != 1d) {
 					object.getTranslationForScalingInto(loc);
-					gl.translateBy(loc.x * (1 - factor), -loc.y * (1 - factor), loc.z * (1 - factor));
+					gl.translateBy(loc.getX() * (1 - factor), -loc.getY() * (1 - factor), loc.getZ() * (1 - factor));
 					gl.scaleBy(factor, factor, factor);
 
 				}
@@ -94,7 +95,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 	}
 
 	/** The loc. */
-	private final GamaPoint loc = new GamaPoint();
+	private final IPoint loc = GamaPointFactory.create();
 
 	/**
 	 * Applies a translation to the gl context
@@ -105,7 +106,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 	 */
 	protected boolean applyTranslation(final T object) {
 		object.getTranslationInto(loc);
-		gl.translateBy(loc.x, -loc.y, loc.z);
+		gl.translateByYNegated(loc);
 		return true;
 	}
 
@@ -120,7 +121,7 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 	 *            the object
 	 * @return true, if is drawing 2 D
 	 */
-	protected boolean isDrawing2D(final Scaling3D size, final Envelope3D env, final T object) {
+	protected boolean isDrawing2D(final Scaling3D size, final IEnvelope env, final T object) {
 		return env.isFlat() || size.getZ() == 0d;
 	}
 
@@ -136,11 +137,11 @@ public abstract class ObjectDrawer<T extends AbstractObject<?, ?>> {
 		final AxisAngle rotation = object.getAttributes().getRotation();
 		if (rotation == null) return false;
 		object.getTranslationForRotationInto(loc);
-		gl.translateBy(+loc.x, -loc.y, +loc.z);
-		final GamaPoint axis = rotation.getAxis();
+		gl.translateByYNegated(loc);
+		final IPoint axis = rotation.getAxis();
 		// AD Change to a negative rotation to fix Issue #1514
-		gl.rotateBy(-rotation.getAngle(), axis.x, axis.y, axis.z);
-		gl.translateBy(-loc.x, loc.y, -loc.z);
+		gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
+		gl.translateBy(-loc.getX(), loc.getY(), -loc.getZ());
 		return true;
 	}
 

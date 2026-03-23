@@ -34,7 +34,7 @@ global {
 	list<rgb> DivergingColors <- brewer_colors(divergingPalette);
 	list<rgb> QualitativeColors <- brewer_colors(qualitativePalette);
 	
-	action update_colors{
+	action update_colors(){
 		SequentialColors <-  brewer_colors(sequentialPalette);
 		DivergingColors <- brewer_colors(divergingPalette);
 		QualitativeColors <- brewer_colors(qualitativePalette);

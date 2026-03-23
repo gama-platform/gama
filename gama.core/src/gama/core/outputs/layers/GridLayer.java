@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GridLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GridLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,26 +15,26 @@ import java.awt.image.DataBufferInt;
 import java.util.Collections;
 import java.util.Set;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.interfaces.ILayer.IGridLayer;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.util.Collector;
-import gama.core.util.GamaColor;
-import gama.core.util.IList;
-import gama.core.util.matrix.GamaField;
-import gama.core.util.matrix.IField;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IField;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.collections.Collector;
+import gama.api.utils.interfaces.IImageProvider;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.MeshDrawingAttributes;
 
 /**
  * The Class GridLayer.
  */
-public class GridLayer extends AbstractLayer implements IGridLayer {
+public class GridLayer extends AbstractLayer {
 
 	static {
 		DEBUG.OFF();
@@ -73,7 +73,7 @@ public class GridLayer extends AbstractLayer implements IGridLayer {
 
 	@Override
 	public void privateDraw(final IGraphicsScope scope, final IGraphics dg) {
-		GamaColor lineColor = null;
+		IColor lineColor = null;
 		final GridLayerData data = getData();
 		if (data.drawLines()) { lineColor = data.getLineColor(); }
 		final double[] gridValueMatrix = data.getElevationMatrix(scope);
@@ -100,8 +100,8 @@ public class GridLayer extends AbstractLayer implements IGridLayer {
 		if (gridValueMatrix == null) {
 			dg.drawImage(image, attributes);
 		} else {
-			dg.drawField(new GamaField(scope, (int) data.getDimensions().x, (int) data.getDimensions().y,
-					gridValueMatrix, IField.NO_NO_DATA), attributes);
+			dg.drawField(GamaMatrixFactory.createField(scope, (int) data.getDimensions().getX(),
+					(int) data.getDimensions().getY(), gridValueMatrix, IField.NO_NO_DATA), attributes);
 		}
 	}
 

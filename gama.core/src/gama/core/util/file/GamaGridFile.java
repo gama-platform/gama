@@ -2,15 +2,14 @@
  *
  * GamaGridFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.util.file;
 
-import static gama.core.common.geometry.Envelope3D.of;
-import static gama.core.metamodel.topology.projection.ProjectionFactory.getTargetCRSOrDefault;
+import static gama.core.topology.gis.ProjectionFactory.getTargetCRSOrDefault;
 import static org.geotools.util.factory.Hints.DEFAULT_COORDINATE_REFERENCE_SYSTEM;
 
 import java.io.File;
@@ -25,51 +24,52 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 
+import org.geotools.api.coverage.grid.GridCoverageWriter;
+import org.geotools.api.data.DataSourceException;
+import org.geotools.api.geometry.Position;
+import org.geotools.api.parameter.GeneralParameterValue;
+import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.crs.ProjectedCRS;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.coverage.grid.io.AbstractGridCoverage2DReader;
-import org.geotools.data.DataSourceException;
 import org.geotools.data.PrjFileReader;
 import org.geotools.data.simple.SimpleFeatureCollection;
 import org.geotools.gce.arcgrid.ArcGridReader;
 import org.geotools.gce.arcgrid.ArcGridWriter;
 import org.geotools.gce.geotiff.GeoTiffFormat;
 import org.geotools.gce.geotiff.GeoTiffReader;
-import org.geotools.geometry.DirectPosition2D;
-import org.geotools.geometry.Envelope2D;
-import org.geotools.geometry.GeneralEnvelope;
+import org.geotools.geometry.Envelope2DArchived;
+import org.geotools.geometry.GeneralBounds;
+import org.geotools.geometry.Position2D;
 import org.geotools.util.factory.Hints;
-import org.locationtech.jts.geom.Envelope;
-import org.opengis.coverage.grid.GridCoverageWriter;
-import org.opengis.geometry.DirectPosition;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.referencing.FactoryException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.ProjectedCRS;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.IStatusMessage;
-import gama.core.common.geometry.Envelope3D;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.GamaShape;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
-import gama.core.util.matrix.GamaField;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.Facets;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.topology.ICoordinateReferenceSystem;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
+import gama.api.ui.IStatusMessage;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.interfaces.IFieldMatrixProvider;
+import gama.core.topology.gis.GamaCRS;
 import gama.core.util.matrix.GamaFloatMatrix;
-import gama.core.util.matrix.IField;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.statements.Facets;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class GamaGridFile.
@@ -131,7 +131,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	Number noData = IField.NO_NO_DATA;
 
 	/** The genv. */
-	GeneralEnvelope genv;
+	GeneralBounds genv;
 
 	/** The records. */
 	Records records;
@@ -233,7 +233,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			examples = { @example (
 					value = "file f <- grid_file(\"file.tif\",my_field); save f;",
 					isExecutable = false) })
-	public GamaGridFile(final IScope scope, final String pathName, final GamaField field) {
+	public GamaGridFile(final IScope scope, final String pathName, final IField field) {
 		super(scope, pathName, false);
 		setWritable(scope, true);
 		createCoverage(scope, field);
@@ -242,7 +242,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	@Override
 	public IList<String> getAttributes(final IScope scope) {
 		// No attributes
-		return GamaListFactory.EMPTY_LIST;
+		return GamaListFactory.getEmptyList();
 	}
 
 	/**
@@ -262,9 +262,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			try {
 				privateCreateCoverage(scope, fis);
 			} catch (final Exception e) {
-				String name = getName(scope);
 				if (isTiff(scope)) throw GamaRuntimeException
-						.error("The format of " + name + " seems incorrect: " + e.getMessage(), scope);
+						.error("The format of " + getName(scope) + " seems incorrect: " + e.getMessage(), scope);
 				// A problem appeared, likely related to the wrong format of the file (see Issue 412)
 				// reportError(scope, warning("Format of " + name + " seems incorrect. Trying to read it anyway.",
 				// scope),
@@ -344,29 +343,30 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 					} else if (dY == null && line.contains("dy")) {
 						dY = doubleVal(line);
 						ascInfo[1] = dY;
+					} else if ((dX == null || dY == null) && line.contains("cellsize")) {
+						Double cellSize = doubleVal(line);
+						if (dX == null) {
+							dX = cellSize;
+							ascInfo[0] = dX;
+						}
+						if (dY == null) {
+							dY = cellSize;
+							ascInfo[1] = dY;
+						}
 					} else if (nbCols == null && line.contains("ncols")) {
 						nbCols = intVal(line);
 					} else if (nbRows == null && line.contains("nrows")) {
 						nbRows = intVal(line);
 					} else if (noDataD == null && (line.contains("nodata") || line.contains("nodata_value"))) {
-						
-						noDataD = line.contains("nan")? Double.NaN :doubleVal(line);
+						noDataD = line.contains("nan") ? Double.NaN : doubleVal(line);
 					} else if (xCorner == null && xCenter == null && line.contains("xllcorner")) {
 						xCorner = doubleVal(line);
 						ascInfo[2] = xCorner;
 					} else if (yCorner == null && yCenter == null && line.contains("yllcorner")) {
 						yCorner = doubleVal(line);
-						// TODO: very suspicious, probably xllcenter and yllcenter
-					} else if (xCorner == null && xCenter == null && line.contains("xllcorner")) { // AD To verify: the
-																									// conditions are
-																									// the same as two
-																									// lines above...
+					} else if (xCorner == null && xCenter == null && line.contains("xllcenter")) {
 						xCenter = doubleVal(line);
-						// ascInfo[2] = xCorner;
-					} else if (yCorner == null && yCenter == null && line.contains("yllcorner")) { // AD To verify: the
-																									// conditions are
-																									// the same as two
-																									// lines above...
+					} else if (yCorner == null && yCenter == null && line.contains("yllcenter")) {
 						yCenter = doubleVal(line);
 					} else if (line.replace(" ", "").length() > 0) {
 						if (nbCols == null || nbCols == 0 || nbRows == null || nbRows == 0)
@@ -380,11 +380,12 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 
 						if (yCorner != null && dY != null) { ascInfo[3] = yCorner + nbRows * dY; }
 
-						ascData = new GamaFloatMatrix(nbCols, nbRows);
+						ascData = (GamaFloatMatrix) GamaMatrixFactory.createFloatMatrix(nbCols, nbRows);
 						if (noData != null) { this.noData = noDataD; }
 						double xC = xCorner == null ? 0 : xCorner;
 						double yC = yCorner == null ? 0 : yCorner;
-						final Envelope3D env = of(xC, yC, xC + nbCols * (dX == null ? 0 : dX), ascInfo[3], 0, 0);
+						final IEnvelope env =
+								GamaEnvelopeFactory.of(xC, yC, xC + nbCols * (dX == null ? 0 : dX), ascInfo[3], 0, 0);
 						computeProjection(scope, env);
 						numRows = nbRows;
 						numCols = nbCols;
@@ -395,18 +396,17 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				if (headingComplete) {
 					String[] l = line.split(" ");
 					for (int i = 0; i < l.length; i++) {
-						if (noDataD.isNaN()) {
+						if (noDataD != null && noDataD.isNaN()) {
 							Double v = 0.0;
 							try {
 								v = Double.valueOf(l[i]);
 							} catch (Exception e) {
-								v = Double.NaN; 
+								v = Double.NaN;
 							}
 							ascData.set(scope, i, j, v);
 						} else {
 							ascData.set(scope, i, j, Double.valueOf(l[i]));
 						}
- 						
 
 					}
 					j++;
@@ -427,7 +427,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 * @param field
 	 *            the field
 	 */
-	private void createCoverage(final IScope scope, final GamaField field) {
+	private void createCoverage(final IScope scope, final IField field) {
 		// temporary fixes #3128 - the code comes from the save statement... maybe we can do better
 
 		// old code
@@ -443,8 +443,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		 */
 		final boolean nullProjection = scope.getSimulation().getProjectionFactory().getWorld() == null;
 
-		final int cols = field.numCols;
-		final int rows = field.numRows;
+		final int cols = field.getCols(scope);
+		final int rows = field.getRows(scope);
 		double x = nullProjection ? 0
 				: scope.getSimulation().getProjectionFactory().getWorld().getProjectedEnvelope().getMinX();
 		double y = nullProjection ? 0
@@ -458,7 +458,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		final double width = scope.getSimulation().getEnvelope().getWidth();
 		final double height = scope.getSimulation().getEnvelope().getHeight();
 
-		Envelope2D refEnvelope = new Envelope2D(getTargetCRSOrDefault(scope), x, y, width, height);
+		Envelope2DArchived refEnvelope =
+				new Envelope2DArchived(getTargetCRSOrDefault(scope).getCRS(), x, y, width, height);
 
 		coverage = new GridCoverageFactory().create("data", imagePixelData, refEnvelope);
 
@@ -501,19 +502,19 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		AbstractGridCoverage2DReader store = null;
 		try {
 			// Necessary to compute it here, because it needs to be passed to the Hints
-			final CoordinateReferenceSystem crs = getExistingCRS(scope);
+			final ICoordinateReferenceSystem crs = getExistingCRS(scope);
 			if (isTiff(scope)) {
-				store = crs == null ? new GeoTiffReader(getFile(scope))
+				store = crs == null || crs.isNull() ? new GeoTiffReader(getFile(scope))
 						: new GeoTiffReader(getFile(scope), new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, crs));
 				noData = ((GeoTiffReader) store).getMetadata().getNoData();
-			} else if (crs == null) {
+			} else if (crs == null || crs.isNull()) {
 				store = new ArcGridReader(fis);
 			} else {
 				store = new ArcGridReader(fis, new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, crs));
 			}
 			genv = store.getOriginalEnvelope();
-			final Envelope3D env =
-					of(genv.getMinimum(0), genv.getMaximum(0), genv.getMinimum(1), genv.getMaximum(1), 0, 0);
+			final IEnvelope env = GamaEnvelopeFactory.of(genv.getMinimum(0), genv.getMaximum(0), genv.getMinimum(1),
+					genv.getMaximum(1), 0, 0);
 			computeProjection(scope, env);
 			numRows = store.getOriginalGridRange().getHigh(1) + 1;
 			numCols = store.getOriginalGridRange().getHigh(0) + 1;
@@ -542,8 +543,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 * @date 31 août 2023
 	 */
 	private double[] getValue(final IScope scope, final Double locX, final Double locY, final int i, final int j) {
-		if (coverage != null)
-			return coverage.evaluate((DirectPosition) new DirectPosition2D(locX, locY), (double[]) null);
+		if (coverage != null) return coverage.evaluate((Position) new Position2D(locX, locY), (double[]) null);
 		double[] v = new double[1];
 		v[0] = ascData.get(scope, i, j);
 		return v;
@@ -565,7 +565,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			String task = "Reading file " + getName(scope);
 			scope.getGui().getStatus().beginTask(task, IStatusMessage.DOWNLOAD_ICON);
 
-			final Envelope envP = gis == null ? scope.getSimulation().getEnvelope() : gis.getProjectedEnvelope();
+			final IEnvelope envP = gis == null ? scope.getSimulation().getEnvelope() : gis.getProjectedEnvelope();
 			if (gis != null && !(gis.getInitialCRS(scope) instanceof ProjectedCRS)) {
 				GAMA.reportError(scope, GamaRuntimeException.warning("Try to project a grid -" + this.originalPath
 						+ "-  that is not projected. Projection of grids can lead to errors in the cell coordinates. ",
@@ -578,12 +578,12 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			final double originY = envP.getMinY();
 			final double maxY = envP.getMaxY();
 			final double maxX = envP.getMaxX();
-			shapes.add(new GamaPoint(originX, originY));
-			shapes.add(new GamaPoint(maxX, originY));
-			shapes.add(new GamaPoint(maxX, maxY));
-			shapes.add(new GamaPoint(originX, maxY));
+			shapes.add(GamaPointFactory.create(originX, originY));
+			shapes.add(GamaPointFactory.create(maxX, originY));
+			shapes.add(GamaPointFactory.create(maxX, maxY));
+			shapes.add(GamaPointFactory.create(originX, maxY));
 			shapes.add(shapes.get(0));
-			geom = GamaGeometryType.buildPolygon(shapes);
+			geom = GamaShapeFactory.buildPolygon(shapes);
 			if (!readAll) return;
 
 			final double cmx = cellWidth / 2;
@@ -636,8 +636,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				// Building geometries
 				for (int i = 0, n = numRows * numCols; i < n; i++) {
 					setBuffer(GamaListFactory.<IShape> create(Types.GEOMETRY));
-					final GamaPoint p = new GamaPoint(records.x[i], records.y[i]);
-					GamaShape rect = (GamaShape) GamaGeometryType.buildRectangle(cellWidth, cellHeight, p);
+					final IPoint p = GamaPointFactory.create(records.x[i], records.y[i]);
+					IShape rect = GamaShapeFactory.buildRectangle(cellWidth, cellHeight, p);
 					if (gis == null) {
 						rect = GamaShapeFactory.createFrom(rect.getInnerGeometry());
 					} else {
@@ -660,7 +660,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	}
 
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		if (gis == null) { createCoverage(scope); }
 		return gis.getProjectedEnvelope();
 		// OLD : see what it changes to not do it
@@ -706,7 +706,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	}
 
 	@Override
-	protected CoordinateReferenceSystem getOwnCRS(final IScope scope) {
+	protected ICoordinateReferenceSystem getOwnCRS(final IScope scope) {
 		final File source = getFile(scope);
 		final String sourceAsString = source.getAbsolutePath();
 		final int index = sourceAsString.lastIndexOf('.');
@@ -725,7 +725,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			try (FileInputStream fip = new FileInputStream(prjFile);
 					final FileChannel channel = fip.getChannel();
 					PrjFileReader projReader = new PrjFileReader(channel);) {
-				return projReader.getCoordinateReferenceSystem();
+				return new GamaCRS(projReader.getCoordinateReferenceSystem());
 			} catch (final IOException | FactoryException e) {
 				// warn about the error but proceed, it is not fatal
 				// we have at least the default crs to use
@@ -735,7 +735,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		if (isTiff(scope)) {
 			try {
 				final GeoTiffReader store = new GeoTiffReader(getFile(scope));
-				return store.getCoordinateReferenceSystem();
+				return new GamaCRS(store.getCoordinateReferenceSystem());
 			} catch (final DataSourceException e) {
 				GAMA.reportError(scope,
 						GamaRuntimeException.warning(
@@ -763,7 +763,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	 *            the loc
 	 * @return the double
 	 */
-	public Double valueOf(final IScope scope, final GamaPoint loc) {
+	public Double valueOf(final IScope scope, final IPoint loc) {
 		return valueOf(scope, loc.getX(), loc.getY());
 	}
 
@@ -782,7 +782,7 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		if (getBuffer() == null) { fillBuffer(scope); }
 		Object vals = null;
 		try {
-			vals = coverage.evaluate(new DirectPosition2D(x, y));
+			vals = coverage.evaluate(new Position2D(x, y));
 		} catch (final Exception e) {
 			vals = noData.doubleValue();
 		}
@@ -860,10 +860,15 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 	}
 
 	@Override
-	protected IMatrix _matrixValue(final IScope scope, final IType contentsType, final GamaPoint preferredSize,
+	protected IMatrix _matrixValue(final IScope scope, final IType contentsType, final IPoint preferredSize,
 			final boolean copy) throws GamaRuntimeException {
 		getContents(scope);
-		return new GamaField(scope, this);
+		return getField(scope);
+	}
+
+	@Override
+	public void save(final IScope scope, final Facets parameters) {
+
 	}
 
 }

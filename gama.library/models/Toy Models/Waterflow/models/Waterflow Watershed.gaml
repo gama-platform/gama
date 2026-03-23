@@ -18,7 +18,7 @@ global {
 	float rain <- rnd(10.0) update: every(20#cycle) ? rnd(10.0) : 0.0;
 	
 	init {
-		create watershed from: watershed_shape_file with: [id_watershed::int(read("ID_ZH")), id_watershed_outlet::int(read("ID_ND_EXUT")),order::int(read("order"))];
+		create watershed from: watershed_shape_file with: (id_watershed:int(read("ID_ZH")), id_watershed_outlet:int(read("ID_ND_EXUT")),order:int(read("order")));
 		
 		ask watershed {
 			do init_watershed;
@@ -42,12 +42,12 @@ species watershed schedules: [] {
 
 	float volume_watershed ;
 
-	action init_watershed {
+	action init_watershed() {
 		// Find ZH in the upstream 
 		watershed_upstream <- watershed where(each.id_watershed_outlet = id_watershed);
 	}
 		
-	action model_hydro {	
+	action model_hydro() {	
 		volume_watershed <- 0.7 * rain * self.shape.area  + (watershed_upstream sum_of(each.volume_watershed));	
 	}	
 

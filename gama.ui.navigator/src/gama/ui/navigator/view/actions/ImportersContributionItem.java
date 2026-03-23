@@ -19,7 +19,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 import gama.dev.DEBUG;
 import gama.ui.navigator.view.contents.VirtualContent.IContentVisitor;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
@@ -74,7 +74,7 @@ public class ImportersContributionItem extends ContributionItem {
 					MenuItem item2 = new MenuItem(menu, SWT.PUSH);
 					item2.setText(r.getName());
 					item2.setImage(GamaIcon.named(IGamaIcons.FILE_ICON).image());
-					item2.addSelectionListener((Selector) eee -> GAMA.getGui().editModel(r));
+					item2.addSelectionListener((Selector) eee -> GAMA.getGui().getModelsManager().editModel(r));
 				}
 			}
 

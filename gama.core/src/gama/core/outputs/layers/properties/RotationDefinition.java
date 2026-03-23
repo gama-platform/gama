@@ -1,37 +1,40 @@
 /*******************************************************************************************************
  *
  * RotationDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import static gama.core.common.interfaces.IKeyword.LOCATION;
+import static gama.annotations.constants.IKeyword.LOCATION;
 
-import gama.core.common.geometry.Rotation3D;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.IScope;
-import gama.gaml.types.Types;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.utils.geometry.IRotationDefinition;
+import gama.api.utils.geometry.Rotation3D;
 
 /**
- * The Class CameraDefinition. Holds and updates the position, target and lens of a camera from the GAML definition in
- * the "camera" statement.
+ * The Class RotationDefinition. Holds and updates the location, axis and angle of a rotation from the GAML definition
+ * in the "rotation" statement.
  */
-public class RotationDefinition extends AbstractDefinition {
+public class RotationDefinition extends AbstractDefinition implements IRotationDefinition {
 
 	static {
 		// DEBUG.OFF();
 	}
 
 	/** The location. */
-	final Attribute<GamaPoint> locationAttribute;
+	final Attribute<IPoint> locationAttribute;
 
 	/** The target. */
-	final Attribute<GamaPoint> axisAttribute;
+	final Attribute<IPoint> axisAttribute;
 
 	/** The angle. Can be changed from outside to another value */
 	Attribute<Double> angleAttribute;
@@ -48,9 +51,10 @@ public class RotationDefinition extends AbstractDefinition {
 	@SuppressWarnings ("unchecked")
 	public RotationDefinition(final RotationStatement symbol) {
 		super(symbol);
-		locationAttribute = create(LOCATION,
-				symbol.hasFacet(LOCATION) ? symbol.getFacet(LOCATION) : scope -> scope.getSimulation().getCentroid(),
-				Types.POINT, null);
+		IExpression expr =
+				GAML.getExpressionFactory().createExpr(scope -> scope.getSimulation().getCentroid(), Types.POINT);
+		locationAttribute =
+				create(LOCATION, symbol.hasFacet(LOCATION) ? symbol.getFacet(LOCATION) : expr, Types.POINT, null);
 		axisAttribute = create("axis", Types.POINT, Rotation3D.PLUS_K);
 		angleAttribute = initialAngleAttribute = create("angle", Types.FLOAT, 0d);
 	}
@@ -65,6 +69,7 @@ public class RotationDefinition extends AbstractDefinition {
 	 *
 	 * @return the angle
 	 */
+	@Override
 	public Double getAngleDelta() { return initialAngleAttribute.get(); }
 
 	/**
@@ -72,6 +77,7 @@ public class RotationDefinition extends AbstractDefinition {
 	 *
 	 * @return the current angle
 	 */
+	@Override
 	public Double getCurrentAngle() { return angleAttribute.get(); }
 
 	/**
@@ -87,14 +93,16 @@ public class RotationDefinition extends AbstractDefinition {
 	 *
 	 * @return the center
 	 */
-	public GamaPoint getCenter() { return locationAttribute.get(); }
+	@Override
+	public IPoint getCenter() { return locationAttribute.get(); }
 
 	/**
 	 * Gets the axis.
 	 *
 	 * @return the axis
 	 */
-	public GamaPoint getAxis() { return axisAttribute.get(); }
+	@Override
+	public IPoint getAxis() { return axisAttribute.get(); }
 
 	/**
 	 * Reset.
@@ -110,6 +118,7 @@ public class RotationDefinition extends AbstractDefinition {
 	 * @param val
 	 *            the new angle
 	 */
+	@Override
 	public void setAngle(final double val) { angleAttribute = new ConstantAttribute<>(val); }
 
 	/**
@@ -118,6 +127,7 @@ public class RotationDefinition extends AbstractDefinition {
 	 * @param r
 	 *            the new dynamic
 	 */
+	@Override
 	public void setDynamic(final boolean r) { dynamic = new ConstantAttribute<>(r); }
 
 	@Override

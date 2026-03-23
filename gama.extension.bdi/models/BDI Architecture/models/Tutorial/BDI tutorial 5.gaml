@@ -169,7 +169,7 @@ species miner skills: [moving] control:simple_bdi {
 	float threshold_norm <- 0.5;
 	
 	init {
-		do add_desire(find_gold);
+		self.add_desire(find_gold);
 	}
 	
 	perceive target: self {

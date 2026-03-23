@@ -3,7 +3,7 @@
  * ExperimentParametersView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,23 +24,23 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.simulation.SimulationAgent;
+import gama.api.GAMA;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IGui;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.MonitorOutput;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
 import gama.dev.COUNTER;
 import gama.dev.DEBUG;
-import gama.ui.experiment.parameters.EditorsList;
-import gama.ui.experiment.parameters.ExperimentsParametersList;
 import gama.ui.shared.controls.ParameterExpandItem;
 import gama.ui.shared.interfaces.IParameterEditor;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.parameters.EditorsGroup;
+import gama.ui.shared.parameters.EditorsList;
+import gama.ui.shared.parameters.ExperimentsParametersList;
 import gama.ui.shared.parameters.MonitorDisplayer;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -248,7 +248,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 		}
 
 		if (newTopLevelAgent.isSimulation()) {
-			SimulationAgent newSimulation = (SimulationAgent) newTopLevelAgent;
+			ISimulationAgent newSimulation = (ISimulationAgent) newTopLevelAgent;
 			if (agent == null || agent.isPlatform() || !agent.getExperiment().getSpecies().isBatch()) {
 				// Platform ==> Simulation
 				reset();
@@ -313,7 +313,7 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	 * @date 12 août 2023
 	 */
 	private void saveParameterValuesForCurrentAgent() {
-		if (!(agent instanceof SimulationAgent sim)) return;
+		if (!(agent instanceof ISimulationAgent sim)) return;
 		sim.setExternalInits(getEditorsList().getItemValues());
 		// DEBUG.OUT("Saving " + sim.getName() + " " + sim.getExternalInits());
 	}
@@ -321,10 +321,6 @@ public class ExperimentParametersView extends AttributesEditorsView<String> impl
 	@Override
 	public void createToolItems(final GamaToolbar2 tb) {
 		super.createToolItems(tb);
-		GridData data = (GridData) tb.getToolbar(SWT.LEFT).getLayoutData();
-		data.grabExcessHorizontalSpace = true;
-		data.horizontalAlignment = SWT.FILL;
-
 		if (GAMA.getExperiment() == null || GAMA.getExperiment().isBatch()) return;
 		GamaToolbarSimple tbs = toolbar.getToolbar(SWT.RIGHT);
 		tbs.button("editor/local.menu", "More...", "More options", e -> {

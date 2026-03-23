@@ -3,7 +3,7 @@
  * OutputsMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,14 +16,14 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.outputs.IOutput;
-import gama.core.outputs.IOutputManager;
+import gama.api.GAMA;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IOutput;
+import gama.api.ui.IOutputManager;
 import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
@@ -43,11 +43,11 @@ public class OutputsMenu extends ContributionItem {
 
 	@Override
 	public void fill(final Menu main, final int index) {
-		IExperimentPlan exp = GAMA.getExperiment();
+		IExperimentSpecies exp = GAMA.getExperiment();
 		if (exp == null) return;
-		ExperimentAgent agent = exp.getAgent();
+		IExperimentAgent agent = exp.getAgent();
 		if (agent == null) return;
-		for (final SimulationAgent sim : agent.getSimulationPopulation()) {
+		for (final ISimulationAgent sim : agent.getSimulationPopulation()) {
 			managementSubMenu(main, sim.getScope(), sim.getOutputManager());
 		}
 		GamaMenu.separate(main);

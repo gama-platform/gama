@@ -24,7 +24,7 @@ global
 	int current_zoom <- 15;
 	string current_lat_lon <- "48.8566140,2.3522219";
 	
-	action load_map
+	action load_map()
 	{ 
 		map	answers <- user_input_dialog("Address can be a pair lat,lon (e.g; '48.8566140,2.3522219')", [enter(lat_lon_title,current_lat_lon),enter(zoom_title,current_zoom)]);
 		current_zoom <- max(min(20,int(answers[zoom_title])),1);
@@ -51,7 +51,7 @@ experiment Display
 	{
 		display "Bing Map" type: 3d axes:false
 		{
-			image static_map_request refresh:true;
+			picture static_map_request refresh:true;
 		}
 
 	}

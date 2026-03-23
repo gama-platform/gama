@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * TextDrawer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -40,7 +40,6 @@ import static java.awt.geom.PathIterator.SEG_LINETO;
 import static java.awt.geom.PathIterator.SEG_MOVETO;
 import static java.awt.geom.PathIterator.WIND_EVEN_ODD;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
@@ -53,10 +52,14 @@ import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUtessellator;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.ICoordinates;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.gaml.statements.draw.TextDrawingAttributes;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.ICoordinates;
 import gama.ui.display.opengl.ITesselator;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
@@ -75,10 +78,10 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 
 	/** The temp. */
 	// Utilities
-	ICoordinates temp = ICoordinates.ofLength(4);
+	ICoordinates temp = GamaCoordinateSequenceFactory.ofLength(4);
 
 	/** The normal. */
-	GamaPoint normal = new GamaPoint();
+	IPoint normal = GamaPointFactory.create();
 
 	/** The tobj. */
 	final GLUtessellator tobj = GLU.gluNewTess();
@@ -117,7 +120,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 
 	/** The border. */
 	// Properties
-	Color border;
+	IColor border;
 
 	/** The depth. */
 	double width, height, depth;
@@ -140,11 +143,11 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 
 	@Override
 	protected void _draw(final StringObject s) {
-		TextDrawingAttributes attributes = s.getAttributes();
+		IDrawingAttributes attributes = s.getAttributes();
 		if (!attributes.isPerspective()) {
 			drawBitmap(s.getObject(), attributes);
 		} else {
-			Font font = attributes.getFont();
+			Font font = attributes.getFont().getAwtFont();
 			final int fontSize = DPIHelper.autoScaleUp(gl.getRenderer().getCanvas().getMonitor(), font.getSize());
 			if (fontSize != font.getSize()) { font = font.deriveFont((float) fontSize); }
 			Shape shape = font.createGlyphVector(context, s.getObject()).getOutline();
@@ -172,9 +175,9 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 * @param attributes
 	 *            the attributes
 	 */
-	private void drawBitmap(final String object, final TextDrawingAttributes attributes) {
+	private void drawBitmap(final String object, final IDrawingAttributes attributes) {
 		int fontToUse = GLUT.BITMAP_HELVETICA_18;
-		final Font f = attributes.getFont();
+		final IFont f = attributes.getFont();
 		if (f != null) {
 			if (f.getSize() < 10) {
 				fontToUse = GLUT.BITMAP_HELVETICA_10;
@@ -182,18 +185,18 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 		}
 		gl.pushMatrix();
 		final AxisAngle rotation = attributes.getRotation();
-		final GamaPoint p = attributes.getLocation();
+		final IPoint p = attributes.getLocation();
 
 		if (rotation != null) {
-			gl.translateBy(p.x, p.y, p.z);
-			final GamaPoint axis = rotation.getAxis();
+			gl.translateBy(p.getX(), p.getY(), p.getZ());
+			final IPoint axis = rotation.getAxis();
 			// AD Change to a negative rotation to fix Issue #1514
-			gl.rotateBy(-rotation.getAngle(), axis.x, axis.y, axis.z);
+			gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
 			// Voids the location so as to make only one translation
 			p.setLocation(0, 0, 0);
 		}
 
-		gl.rasterText(object, fontToUse, p.x, p.y, p.z);
+		gl.rasterText(object, fontToUse, p.getX(), p.getY(), p.getZ());
 		gl.popMatrix();
 	}
 
@@ -257,19 +260,19 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 * @param y
 	 *            the y
 	 */
-	void drawText(final TextDrawingAttributes attributes, final double y) {
+	void drawText(final IDrawingAttributes attributes, final double y) {
 
-		final GamaPoint p = attributes.getLocation();
+		final IPoint p = attributes.getLocation();
 
-		Color previous = null;
+		IColor previous = null;
 		gl.pushMatrix();
 		try {
-			GamaPoint anchor = attributes.getAnchor();
+			IPoint anchor = attributes.getAnchor();
 			applyRotation(attributes, p);
 			final float scale = 1f / (float) DPIHelper.autoScaleUp(gl.getRenderer().getCanvas().getMonitor(),
 					gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits());
-			gl.translateBy(p.x - width * scale * anchor.x, p.y + y * scale * anchor.y,
-					p.z + gl.getCurrentZTranslation());
+			gl.translateBy(p.getX() - width * scale * anchor.getX(), p.getY() + y * scale * anchor.getY(),
+					p.getZ() + gl.getCurrentZTranslation());
 			gl.scaleBy(scale, scale, scale);
 			if (!gl.isWireframe()) {
 				previous = drawFacesAndBorder(previous);
@@ -289,7 +292,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 *            the previous
 	 * @return the color
 	 */
-	private Color drawWireframe(Color previous) {
+	private IColor drawWireframe(IColor previous) {
 		// Wireframe case
 		if (border != null) {
 			previous = gl.getCurrentColor();
@@ -311,7 +314,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 *            the previous
 	 * @return the color
 	 */
-	private Color drawFacesAndBorder(Color previous) {
+	private IColor drawFacesAndBorder(IColor previous) {
 		// Solid case
 		drawFace(depth == 0);
 		if (depth > 0) {
@@ -338,13 +341,13 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 * @param p
 	 *            the p
 	 */
-	private void applyRotation(final TextDrawingAttributes attributes, final GamaPoint p) {
+	private void applyRotation(final IDrawingAttributes attributes, final IPoint p) {
 		final AxisAngle rotation = attributes.getRotation();
 		if (rotation != null) {
-			gl.translateBy(p.x, p.y, p.z);
-			final GamaPoint axis = rotation.getAxis();
+			gl.translateBy(p.getX(), p.getY(), p.getZ());
+			final IPoint axis = rotation.getAxis();
 			// AD Change to a negative rotation to fix Issue #1514
-			gl.rotateBy(-rotation.getAngle(), axis.x, axis.y, axis.z);
+			gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
 			// Voids the location so as to make only one translation
 			p.setLocation(0, 0, 0);
 		}
@@ -379,7 +382,8 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 				temp.setTo(previousX, previousY, 0, previousX, previousY, depth, x, y, 0, previousX, previousY, 0);
 				temp.getNormal(true, 1, normal);
 				// We add two normal vectors as the vertex buffer will be filled by 2 coordinates
-				sideNormalBuffer.put(new double[] { normal.x, normal.y, normal.z, normal.x, normal.y, normal.z });
+				sideNormalBuffer.put(new double[] { normal.getX(), normal.getY(), normal.getZ(), normal.getX(),
+						normal.getY(), normal.getZ() });
 			}
 			// And we store the upper face
 			sideQuadsBuffer.put(x).put(y).put(depth);

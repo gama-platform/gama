@@ -20,7 +20,7 @@ global {
 	}
 	
 	/** Insert the global definitions, variables and actions here */
-	action mouse_down {
+	action mouse_down() {
 		ask DraggedAgent {
 			if( self covers #user_location) {
 				// Selects the agent
@@ -29,13 +29,13 @@ global {
 		}
 	}
 	
-	action mouse_up {
+	action mouse_up() {
 		if(selected_agent != nil) {
 			selected_agent <- nil;
 		}
 	}
 	
-	action mouse_drag {
+	action mouse_drag() {
 		// Makes the agent follow the mouse while the mouse button is down
 		if(selected_agent != nil) {
 			ask selected_agent {

@@ -3,7 +3,7 @@
  * SyntaxErrorsView.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,7 +14,6 @@ import static gama.ui.shared.resources.IGamaIcons.BUILD_ALL;
 import static gama.ui.shared.resources.IGamaIcons.TEST_RUN;
 import static gama.ui.shared.resources.IGamaIcons.TOGGLE_INFOS;
 import static gama.ui.shared.resources.IGamaIcons.TOGGLE_WARNINGS;
-import static gaml.compiler.gaml.validation.GamlResourceValidator.DURATION;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
@@ -24,7 +23,6 @@ import org.eclipse.core.expressions.EvaluationContext;
 import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IToolBarManager;
@@ -39,10 +37,11 @@ import org.eclipse.ui.ISources;
 import org.eclipse.ui.views.markers.MarkerItem;
 import org.eclipse.ui.views.markers.MarkerSupportView;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
+import gama.api.GAMA;
+import gama.api.compilation.validation.IValidationContext;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.dev.DEBUG;
-import gama.gaml.descriptions.ValidationContext;
 import gama.ui.shared.commands.TestsRunner;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaIcon;
@@ -98,12 +97,12 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 		viewer.addFilter(new ViewerFilter() {
 
 			@Override
-			public boolean select(final Viewer viewer, final Object parentElement, final Object element) {
+			public boolean select(final Viewer viewer1, final Object parentElement, final Object element) {
 				if (element instanceof MarkerItem item) {
 					IMarker marker = item.getMarker();
 					if (marker == null) return true;
 					String text = marker.getAttribute(IMarker.MESSAGE, "");
-					if (text.contains(ValidationContext.IMPORTED_FROM)) return false;
+					if (text.contains(IValidationContext.IMPORTED_FROM)) return false;
 				}
 				return true;
 			}
@@ -131,7 +130,7 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 		 *
 		 * /**
 		 *
-		 * @see gama.core.common.preferences.IPreferenceChangeListener#afterValueChange(java.lang.Object)
+		 * @see gama.api.utils.prefs.IPreferenceChangeListener#afterValueChange(java.lang.Object)
 		 */
 		@Override
 		public void afterValueChange(final Boolean newValue) {
@@ -155,16 +154,16 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 				@Override
 				protected void fillMenu() {
 					boolean show = GamaPreferences.Modeling.WARNINGS_ENABLED.getValue();
-					GamaCommand.build(TOGGLE_WARNINGS, show ? "Hide warnings" : "Show warnings", null, e -> {
-						GamaPreferences.Modeling.WARNINGS_ENABLED.set(((MenuItem) e.widget).getSelection()).save();
+					GamaCommand.build(TOGGLE_WARNINGS, show ? "Hide warnings" : "Show warnings", null, e1 -> {
+						GamaPreferences.Modeling.WARNINGS_ENABLED.set(((MenuItem) e1.widget).getSelection()).save();
 					}).toCheckItem(mainMenu).setSelection(show);
 					show = GamaPreferences.Modeling.INFO_ENABLED.getValue();
-					GamaCommand.build(TOGGLE_INFOS, show ? "Hide info markers" : "Show info markers", null, e -> {
-						GamaPreferences.Modeling.INFO_ENABLED.set(((MenuItem) e.widget).getSelection()).save();
+					GamaCommand.build(TOGGLE_INFOS, show ? "Hide info markers" : "Show info markers", null, e1 -> {
+						GamaPreferences.Modeling.INFO_ENABLED.set(((MenuItem) e1.widget).getSelection()).save();
 					}).toCheckItem(mainMenu).setSelection(show);
 					GamaMenu.separate(mainMenu);
-					GamaCommand.build(BUILD_ALL, "Validate all projects", null, e -> { build(); }).toItem(mainMenu);
-					GamaCommand.build(TEST_RUN, "Run all tests", null, e -> TestsRunner.start()).toItem(mainMenu);
+					GamaCommand.build(BUILD_ALL, "Validate all projects", null, e1 -> { build(); }).toItem(mainMenu);
+					GamaCommand.build(TEST_RUN, "Run all tests", null, e1 -> TestsRunner.start()).toItem(mainMenu);
 				}
 
 			};
@@ -194,9 +193,10 @@ public class SyntaxErrorsView extends MarkerSupportView implements IToolbarDecor
 		GamlResourceIndexer.eraseIndex();
 
 		try {
-			DEBUG.BANNER("COMPIL", "Last compilation of all models", "in", String.valueOf(DURATION()));
+			// DEBUG.BANNER(BANNER_CATEGORY.COMPIL, "Last compilation of all models", "in",
+			// String.valueOf(DURATION()) + "ms");
 			GamlResourceValidator.RESET();
-			ResourcesPlugin.getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
+			GAMA.getWorkspaceManager().getWorkspace().build(IncrementalProjectBuilder.CLEAN_BUILD, monitor);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}

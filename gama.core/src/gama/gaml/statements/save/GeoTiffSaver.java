@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * GeoTiffSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GeoTiffSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,23 +13,23 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
+import org.geotools.api.coverage.grid.GridCoverageWriter;
+import org.geotools.api.parameter.GeneralParameterValue;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
 import org.geotools.gce.geotiff.GeoTiffFormat;
-import org.geotools.geometry.Envelope2D;
-import org.opengis.coverage.grid.GridCoverageWriter;
-import org.opengis.parameter.GeneralParameterValue;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.geotools.geometry.Envelope2DArchived;
 
-import gama.core.metamodel.topology.grid.GridPopulation;
-import gama.core.metamodel.topology.projection.IProjection;
-import gama.core.metamodel.topology.projection.ProjectionFactory;
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
-import gama.core.util.matrix.GamaField;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.species.ISpecies;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.species.ISpecies;
+import gama.api.kernel.topology.ICoordinateReferenceSystem;
+import gama.api.kernel.topology.IProjection;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.matrix.IField;
+import gama.api.utils.files.SaveOptions;
+import gama.core.topology.gis.ProjectionFactory;
+import gama.core.topology.grid.GridPopulation;
 
 /**
  * The Class GeoTiffSaver.
@@ -61,17 +60,16 @@ public class GeoTiffSaver extends AbstractSaver {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions) throws IOException {
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
+			throws IOException {
 		if (file == null) return;
 		File f = file;
 		// in case it already exists we delete it, if deletion fail we cancel the saving
-		if (f.exists() && !f.delete()) {
-			return;
-		}
-		
+		if (f.exists() && !f.delete()) return;
+
 		try {
 			Object v = item.value(scope);
-			if (v instanceof GamaField gf) {
+			if (v instanceof IField gf) {
 				saveField(scope, gf, f);
 			} else {
 				final ISpecies species = Cast.asSpecies(scope, v);
@@ -103,7 +101,7 @@ public class GeoTiffSaver extends AbstractSaver {
 		final int cols = gp.getNbCols();
 		final int rows = gp.getNbRows();
 		IProjection worldProjection = scope.getSimulation().getProjectionFactory().getWorld();
-		CoordinateReferenceSystem crs = ProjectionFactory.getTargetCRSOrDefault(scope);
+		ICoordinateReferenceSystem crs = ProjectionFactory.getTargetCRSOrDefault(scope);
 		double x = worldProjection == null ? 0 : worldProjection.getProjectedEnvelope().getMinX();
 		double y = worldProjection == null ? 0 : worldProjection.getProjectedEnvelope().getMinY();
 
@@ -115,8 +113,7 @@ public class GeoTiffSaver extends AbstractSaver {
 		final double width = scope.getSimulation().getEnvelope().getWidth();
 		final double height = scope.getSimulation().getEnvelope().getHeight();
 
-		Envelope2D refEnvelope;
-		refEnvelope = new Envelope2D(crs, x, y, width, height);
+		Envelope2DArchived refEnvelope = new Envelope2DArchived(crs == null ? null : crs.getCRS(), x, y, width, height);
 
 		// In order to fix issue #2793, it seems that (before the GAMA 1.8 release), GAMA is only able,
 		// to read GeoTiff files with Byte format data.
@@ -148,23 +145,22 @@ public class GeoTiffSaver extends AbstractSaver {
 	 * @throws IOException
 	 *             Signals that an I/O exception has occurred.
 	 */
-	private void saveField(final IScope scope, final GamaField field, final File f)
+	private void saveField(final IScope scope, final IField field, final File f)
 			throws IllegalArgumentException, IOException {
 		if (field.isEmpty(scope)) return;
-		final int cols = field.numCols;
-		final int rows = field.numRows;
+		final int cols = field.getCols(scope);
+		final int rows = field.getRows(scope);
 		IProjection worldProjection = scope.getSimulation().getProjectionFactory().getWorld();
 		double x = worldProjection == null ? 0 : worldProjection.getProjectedEnvelope().getMinX();
 		double y = worldProjection == null ? 0 : worldProjection.getProjectedEnvelope().getMinY();
-		CoordinateReferenceSystem crs = ProjectionFactory.getTargetCRSOrDefault(scope);
+		ICoordinateReferenceSystem crs = ProjectionFactory.getTargetCRSOrDefault(scope);
 		final float[][] imagePixelData = new float[rows][cols];
 		for (int row = 0; row < rows; row++) {
 			for (int col = 0; col < cols; col++) { imagePixelData[row][col] = field.get(scope, col, row).floatValue(); }
 		}
 		final double width = scope.getSimulation().getEnvelope().getWidth();
 		final double height = scope.getSimulation().getEnvelope().getHeight();
-		Envelope2D refEnvelope;
-		refEnvelope = new Envelope2D(crs, x, y, width, height);
+		Envelope2DArchived refEnvelope = new Envelope2DArchived(crs == null ? null : crs.getCRS(), x, y, width, height);
 
 		// In order to fix issue #2793, it seems that (before the GAMA 1.8 release), GAMA is only able,
 		// to read GeoTiff files with Byte format data.

@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * EmotionType.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * EmotionType.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -10,14 +9,15 @@
  ********************************************************************************************************/
 package gama.extension.bdi;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.type;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IMap;
-import gama.gaml.types.GamaType;
-import gama.gaml.types.IType;
+import gama.annotations.doc;
+import gama.annotations.type;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.ITypesManager;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.map.IMap;
 
 /**
  * The Class EmotionType.
@@ -30,8 +30,19 @@ import gama.gaml.types.IType;
 @doc ("represents the type emotion")
 public class EmotionType extends GamaType<Emotion> {
 
+	/**
+	 * @param typesManager
+	 * @param varKind
+	 * @param id
+	 * @param name
+	 * @param support
+	 */
+	public EmotionType(final ITypesManager typesManager) {
+		super(typesManager);
+	}
+
 	/** The Constant id. */
-	public final static int EMOTIONTYPE_ID = IType.AVAILABLE_TYPES + 546656;
+	public final static int EMOTIONTYPE_ID = IType.BEGINNING_OF_CUSTOM_TYPES + 546656;
 
 	@Override
 	public boolean canCastToConst() {

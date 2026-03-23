@@ -3,7 +3,7 @@
  * GamaNavigator.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,7 +11,6 @@
 package gama.ui.navigator.view;
 
 import static gama.ui.navigator.view.contents.NavigatorRoot.getInstance;
-import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +43,7 @@ import org.eclipse.ui.navigator.CommonNavigator;
 import org.eclipse.ui.navigator.CommonNavigatorManager;
 import org.eclipse.ui.navigator.CommonViewer;
 
+import gama.api.GAMA;
 import gama.ui.navigator.view.contents.NavigatorRoot;
 import gama.ui.navigator.view.contents.Tag;
 import gama.ui.navigator.view.contents.TopLevelFolder;
@@ -66,7 +66,7 @@ import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
  * The Class GamaNavigator.
  */
 public class GamaNavigator extends CommonNavigator
-		implements IToolbarDecoratedView, ISelectionChangedListener, IToolbarDecoratedView.Expandable {
+		implements ISelectionChangedListener, IToolbarDecoratedView.Expandable {
 
 	/** The link item. */
 	ToolItem linkItem, sortItem;
@@ -172,7 +172,7 @@ public class GamaNavigator extends CommonNavigator
 			for (final Object o : getCommonViewer().getExpandedElements()) {
 				final String name =
 						o instanceof WrappedContainer ? ((WrappedContainer<?>) o).getResource().getFullPath().toString()
-								: o instanceof TopLevelFolder ? ((TopLevelFolder) o).getName() : null;
+								: o instanceof TopLevelFolder t ? t.getName() : null;
 				if (name != null) {
 					sb.append(name);
 					sb.append("@@");
@@ -195,8 +195,8 @@ public class GamaNavigator extends CommonNavigator
 		final String[] names = saved.split("@@");
 		for (final String s : names) {
 			if (s.startsWith("/")) {
-				final WrappedResource<?, ?> resource = getInstance().getManager()
-						.findWrappedInstanceOf(getWorkspace().getRoot().findMember(new Path(s)));
+				final WrappedResource<?, ?> resource = getInstance().getManager().findWrappedInstanceOf(
+						GAMA.getWorkspaceManager().getWorkspace().getRoot().findMember(new Path(s)));
 				if (resource != null) { contents.add(resource); }
 			} else {
 				final TopLevelFolder folder = getInstance().getFolder(s);

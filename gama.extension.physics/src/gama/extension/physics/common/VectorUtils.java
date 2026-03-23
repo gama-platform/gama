@@ -1,16 +1,17 @@
 /*******************************************************************************************************
  *
- * VectorUtils.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * VectorUtils.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.extension.physics.common;
 
-import gama.core.metamodel.shape.GamaPoint;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
 
 /**
  * A class required because all the physics engines out there use different classes for their vectors :( A good
@@ -57,7 +58,7 @@ public class VectorUtils {
 	 *            the v
 	 * @return the javax.vecmath. vector 3 f
 	 */
-	public static javax.vecmath.Vector3f toBulletVector(final GamaPoint v) {
+	public static javax.vecmath.Vector3f toBulletVector(final IPoint v) {
 		return toBulletVector(v, newBulletVector());
 	}
 
@@ -70,12 +71,12 @@ public class VectorUtils {
 	 *            the to
 	 * @return the javax.vecmath. vector 3 f
 	 */
-	public static javax.vecmath.Vector3f toBulletVector(final GamaPoint from, final javax.vecmath.Vector3f to) {
+	public static javax.vecmath.Vector3f toBulletVector(final IPoint from, final javax.vecmath.Vector3f to) {
 		javax.vecmath.Vector3f result = to == null ? newBulletVector() : to;
 		if (from != null) {
-			result.x = (float) from.x;
-			result.y = (float) from.y;
-			result.z = (float) from.z;
+			result.x = (float) from.getX();
+			result.y = (float) from.getY();
+			result.z = (float) from.getZ();
 		}
 		return result;
 	}
@@ -87,7 +88,7 @@ public class VectorUtils {
 	 *            the v
 	 * @return the com.jme 3 .math. vector 3 f
 	 */
-	public static com.jme3.math.Vector3f toNativeBulletVector(final GamaPoint v) {
+	public static com.jme3.math.Vector3f toNativeBulletVector(final IPoint v) {
 		return toNativeBulletVector(v, new com.jme3.math.Vector3f());
 	}
 
@@ -100,12 +101,12 @@ public class VectorUtils {
 	 *            the to
 	 * @return the com.jme 3 .math. vector 3 f
 	 */
-	public static com.jme3.math.Vector3f toNativeBulletVector(final GamaPoint from, final com.jme3.math.Vector3f to) {
+	public static com.jme3.math.Vector3f toNativeBulletVector(final IPoint from, final com.jme3.math.Vector3f to) {
 		com.jme3.math.Vector3f result = to == null ? newNativeBulletVector() : to;
 		if (from != null) {
-			result.x = (float) from.x;
-			result.y = (float) from.y;
-			result.z = (float) from.z;
+			result.x = (float) from.getX();
+			result.y = (float) from.getY();
+			result.z = (float) from.getZ();
 		}
 		return result;
 	}
@@ -117,8 +118,8 @@ public class VectorUtils {
 	 *            the v
 	 * @return the gama point
 	 */
-	public static GamaPoint toGamaPoint(final com.jme3.math.Vector3f v) {
-		return toGamaPoint(v, new GamaPoint());
+	public static IPoint toGamaPoint(final com.jme3.math.Vector3f v) {
+		return toGamaPoint(v, GamaPointFactory.create());
 	}
 
 	/**
@@ -130,13 +131,9 @@ public class VectorUtils {
 	 *            the to
 	 * @return the gama point
 	 */
-	public static GamaPoint toGamaPoint(final com.jme3.math.Vector3f v, final GamaPoint to) {
-		GamaPoint result = to == null ? new GamaPoint() : to;
-		if (v != null) {
-			result.x = v.x;
-			result.y = v.y;
-			result.z = v.z;
-		}
+	public static IPoint toGamaPoint(final com.jme3.math.Vector3f v, final IPoint to) {
+		IPoint result = to == null ? GamaPointFactory.create() : to;
+		if (v != null) { result.setLocation(v.x, v.y, v.z); }
 		return result;
 	}
 
@@ -147,8 +144,8 @@ public class VectorUtils {
 	 *            the v
 	 * @return the gama point
 	 */
-	public static GamaPoint toGamaPoint(final javax.vecmath.Vector3f v) {
-		return toGamaPoint(v, new GamaPoint());
+	public static IPoint toGamaPoint(final javax.vecmath.Vector3f v) {
+		return toGamaPoint(v, GamaPointFactory.create());
 	}
 
 	/**
@@ -160,14 +157,10 @@ public class VectorUtils {
 	 *            the to
 	 * @return the gama point
 	 */
-	public static GamaPoint toGamaPoint(final javax.vecmath.Vector3f v, final GamaPoint to) {
-		GamaPoint result = to == null ? new GamaPoint() : to;
+	public static IPoint toGamaPoint(final javax.vecmath.Vector3f v, final IPoint to) {
+		IPoint result = to == null ? GamaPointFactory.create() : to;
 
-		if (v != null) {
-			result.x = v.x;
-			result.y = v.y;
-			result.z = v.z;
-		}
+		if (v != null) { result.setLocation(v.x, v.y, v.z); }
 		return result;
 	}
 
@@ -178,8 +171,8 @@ public class VectorUtils {
 	 *            the v
 	 * @return the gama point
 	 */
-	public static GamaPoint toGamaPoint(final org.jbox2d.common.Vec2 v, final float scale) {
-		return toGamaPoint(v, new GamaPoint(), scale);
+	public static IPoint toGamaPoint(final org.jbox2d.common.Vec2 v, final float scale) {
+		return toGamaPoint(v, GamaPointFactory.create(), scale);
 	}
 
 	/**
@@ -191,13 +184,9 @@ public class VectorUtils {
 	 *            the to
 	 * @return the gama point
 	 */
-	public static GamaPoint toGamaPoint(final org.jbox2d.common.Vec2 v, final GamaPoint to, final float scale) {
-		GamaPoint result = to == null ? new GamaPoint() : to;
-
-		if (v != null) {
-			result.x = (double) v.x / scale;
-			result.y = (double) -v.y / scale;
-		}
+	public static IPoint toGamaPoint(final org.jbox2d.common.Vec2 v, final IPoint to, final float scale) {
+		IPoint result = to == null ? GamaPointFactory.create() : to;
+		if (v != null) { result.setLocation((double) v.x / scale, (double) -v.y / scale, 0); }
 		return result;
 	}
 
@@ -208,7 +197,7 @@ public class VectorUtils {
 	 *            the v
 	 * @return the org.jbox 2 d.common. vec 2
 	 */
-	public static org.jbox2d.common.Vec2 toBox2DVector(final GamaPoint v, final float scale) {
+	public static org.jbox2d.common.Vec2 toBox2DVector(final IPoint v, final float scale) {
 		return toBox2DVector(v, new org.jbox2d.common.Vec2(), scale);
 	}
 
@@ -221,13 +210,10 @@ public class VectorUtils {
 	 *            the to
 	 * @return the org.jbox 2 d.common. vec 2
 	 */
-	public static org.jbox2d.common.Vec2 toBox2DVector(final GamaPoint from, final org.jbox2d.common.Vec2 to,
+	public static org.jbox2d.common.Vec2 toBox2DVector(final IPoint from, final org.jbox2d.common.Vec2 to,
 			final float scale) {
 		org.jbox2d.common.Vec2 result = to == null ? newBox2DVector() : to;
-		if (from != null) {
-			result.x = (float) from.x * scale;
-			result.y = (float) -from.y * scale;
-		}
+		if (from != null) { from.setLocation((float) from.getX() * scale, (float) -from.getY() * scale, 0); }
 		return result;
 	}
 

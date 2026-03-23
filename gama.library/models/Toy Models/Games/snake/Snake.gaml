@@ -27,7 +27,7 @@ global {
 
 	}
 	
-	action init_game {
+	action init_game() {
 		game_is_running <- false;
 		
 		ask snake{
@@ -49,7 +49,7 @@ global {
 		}
 	}
 	
-	action move_up {
+	action move_up() {
 		
 		if ( ! empty(the_snake.headings) and last(the_snake.headings) != 90
 			or empty(the_snake.headings) and the_snake.current_heading != 90
@@ -57,33 +57,33 @@ global {
 			the_snake.headings <+ -90.0;
 		}
 	}
-	action move_down {
+	action move_down() {
 		if ( ! empty(the_snake.headings) and last(the_snake.headings) != -90
 			or empty(the_snake.headings) and the_snake.current_heading != -90
 		) {
 			the_snake.headings <+ 90.0;
 		}
 	}
-	action move_left {
+	action move_left() {
 		if ( ! empty(the_snake.headings) and length(the_snake.headings) > 0 and last(the_snake.headings) != 0
 			or empty(the_snake.headings) and the_snake.current_heading != 0
 		) {
 			the_snake.headings <+ 180.0;
 		}
 	}
-	action move_right {
+	action move_right() {
 		if ( ! empty(the_snake.headings) and last(the_snake.headings)!= 180
 			or empty(the_snake.headings) and the_snake.current_heading != 180
 		) {
 			the_snake.headings <+ 0.0;
 		}
 	}
-	action start_count_down {
+	action start_count_down() {
 		ask HUD{
 			do start_count_down;
 		}
 	}
-	list<cell> free_cells {
+	list<cell> free_cells() {
 		return cells_not_wall - the_snake.cells;
 	}
 }
@@ -121,11 +121,11 @@ species snake  {
 		}
 	}
 	
-	action end_of_game {
+	action end_of_game (){
 		
 		ask world {
 			do tell("End of game, score: " + length(myself.cells), false);
-			do init_game;
+			do init_game();
 		}
 	}
 	
@@ -196,7 +196,7 @@ species HUD skills:[thread]{
 		}
 	}
 	
-	action start_count_down {
+	action start_count_down (){
 		count <- 5;
 		is_counting <- true;
 		
@@ -204,7 +204,7 @@ species HUD skills:[thread]{
 	}
 	
 	//counting down
-	action thread_action {
+	action thread_action (){
 		count <- count - 1;
 		if count = 0 {
 			do end_thread;

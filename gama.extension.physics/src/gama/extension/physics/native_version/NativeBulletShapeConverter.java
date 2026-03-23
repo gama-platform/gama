@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * NativeBulletShapeConverter.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * NativeBulletShapeConverter.java, in gama.extension.physics, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -31,12 +31,12 @@ import com.jme3.bullet.collision.shapes.SimplexCollisionShape;
 import com.jme3.bullet.collision.shapes.SphereCollisionShape;
 import com.jme3.math.Vector3f;
 
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.util.matrix.IField;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.matrix.IField;
+import gama.api.utils.geometry.GeometryUtils;
 import gama.extension.physics.common.IShapeConverter;
 
 /**
@@ -76,9 +76,8 @@ public class NativeBulletShapeConverter
 			case SQUARE:
 				if (depth == 0)
 					return new Box2dShape(shape.getWidth().floatValue() / 2f, shape.getHeight().floatValue() / 2f);
-				else
-					return new BoxCollisionShape(new Vector3f(shape.getWidth().floatValue() / 2f,
-							shape.getHeight().floatValue() / 2f, depth / 2f));
+				return new BoxCollisionShape(new Vector3f(shape.getWidth().floatValue() / 2f,
+						shape.getHeight().floatValue() / 2f, depth / 2f));
 			case CONE:
 				// always oriented on the Z axis
 				return new ConeCollisionShape(shape.getWidth().floatValue() / 2f, depth, PhysicsSpace.AXIS_Z);
@@ -88,8 +87,7 @@ public class NativeBulletShapeConverter
 				LineSegment seg = new LineSegment(line.getCoordinateN(0), line.getCoordinateN(1));
 				if (seg.isVertical())
 					return new CylinderCollisionShape(new Vector3f(depth, (float) seg.getLength() / 2f, depth), AXIS_Y);
-				else
-					return new CylinderCollisionShape(new Vector3f((float) seg.getLength() / 2f, depth, depth), AXIS_X);
+				return new CylinderCollisionShape(new Vector3f((float) seg.getLength() / 2f, depth, depth), AXIS_X);
 			case CYLINDER:
 				// always oriented on the Z axis
 				return new CylinderCollisionShape(
@@ -104,7 +102,7 @@ public class NativeBulletShapeConverter
 			case CUBE:
 				return new BoxCollisionShape(depth / 2f);
 			default:
-				GamaPoint[] points = GeometryUtils.getPointsOf(shape);
+				IPoint[] points = GeometryUtils.getPointsOf(shape);
 				switch (points.length) {
 					case 0:
 						return null;
@@ -120,10 +118,10 @@ public class NativeBulletShapeConverter
 					default:
 						float[] vertices = new float[points.length * 3];
 						int i = 0;
-						for (final GamaPoint p : points) {
-							vertices[i++] = (float) p.x;
-							vertices[i++] = (float) p.y;
-							vertices[i++] = (float) p.z;
+						for (final IPoint p : points) {
+							vertices[i++] = (float) p.getX();
+							vertices[i++] = (float) p.getY();
+							vertices[i++] = (float) p.getZ();
 						}
 						return new HullCollisionShape(vertices);
 				}
@@ -137,7 +135,7 @@ public class NativeBulletShapeConverter
 			final Double height, final float depth) {
 		double[] minMax = field.getMinMax();
 		float max = (float) minMax[1], min = (float) minMax[0];
-		GamaPoint dim = field.getDimensions();
+		IPoint dim = field.getDimensions();
 		float[] data = toFloats(field.getMatrix());
 		// We apply some "translation" here as the center is automatically computed and there is no way to translate the
 		// shape. The data is a copy anyway
@@ -145,8 +143,8 @@ public class NativeBulletShapeConverter
 
 		// AD TODO: verify if it is necessary to compute min and max two times
 		float scale = max == min ? 1f : depth / (max - min);
-		return new HeightfieldCollisionShape((int) dim.y, (int) dim.x, data,
-				new Vector3f(width.floatValue() / (float) dim.x, height.floatValue() / (float) dim.y, scale),
+		return new HeightfieldCollisionShape((int) dim.getY(), (int) dim.getX(), data,
+				new Vector3f(width.floatValue() / (float) dim.getX(), height.floatValue() / (float) dim.getY(), scale),
 				PhysicsSpace.AXIS_Z, false, false, false, false);
 	}
 

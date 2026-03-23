@@ -13,23 +13,23 @@ package gama.core.outputs.layers.charts;
 import java.math.BigDecimal;
 import java.util.Arrays;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.core.util.IMap;
-import gama.gaml.operators.Cast;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IContainer;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
 import gama.gaml.operators.Maths;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class Distribution.
@@ -395,13 +395,13 @@ public class Distribution {
 			final Integer nbbarsx, final Integer nbbarsy) throws GamaRuntimeException {
 
 		if (valuesx == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
-		final IList lvaluex = Cast.asList(scope, valuesx);
+		final IList lvaluex = GamaListFactory.castToList(scope, valuesx);
 		if (lvaluex.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
 
 		int nbBarresx = 10;
 		nbBarresx = nbbarsx.intValue();
 
-		final IList lvaluey = Cast.asList(scope, valuesy);
+		final IList lvaluey = GamaListFactory.castToList(scope, valuesy);
 		if (lvaluey.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
 
 		int nbBarresy = 10;
@@ -448,13 +448,13 @@ public class Distribution {
 			final Double startvaluey, final Double endvaluey) throws GamaRuntimeException {
 
 		if (valuesx == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
-		final IList lvaluex = Cast.asList(scope, valuesx);
+		final IList lvaluex = GamaListFactory.castToList(scope, valuesx);
 		if (lvaluex.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
 
 		int nbBarresx = 10;
 		nbBarresx = nbbarsx.intValue();
 
-		final IList lvaluey = Cast.asList(scope, valuesy);
+		final IList lvaluey = GamaListFactory.castToList(scope, valuesy);
 		if (lvaluey.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
 
 		int nbBarresy = 10;
@@ -503,9 +503,9 @@ public class Distribution {
 			throws GamaRuntimeException {
 
 		if (valuesx == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
-		final IList lvaluex = Cast.asList(scope, valuesx);
+		final IList lvaluex = GamaListFactory.castToList(scope, valuesx);
 		if (lvaluex.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
-		final IList lvaluey = Cast.asList(scope, valuesy);
+		final IList lvaluey = GamaListFactory.castToList(scope, valuesy);
 		if (lvaluey.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
 
 		final int nbBarres = 10;
@@ -714,7 +714,7 @@ public class Distribution {
 			throws GamaRuntimeException {
 
 		if (values == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
-		final IList lvalue = Cast.asList(scope, values);
+		final IList lvalue = GamaListFactory.castToList(scope, values);
 		if (lvalue.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
 
 		int nbBarres = 10;
@@ -753,7 +753,7 @@ public class Distribution {
 	public static IMap DistributionOf(final IScope scope, final IContainer values) throws GamaRuntimeException {
 
 		if (values == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
-		final IList lvalue = Cast.asList(scope, values);
+		final IList lvalue = GamaListFactory.castToList(scope, values);
 		if (lvalue.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
 
 		final int nbBarres = 10;
@@ -795,7 +795,7 @@ public class Distribution {
 			final Double startvalue, final Double endvalue) throws GamaRuntimeException {
 
 		if (values == null) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
-		final IList lvalue = Cast.asList(scope, values);
+		final IList lvalue = GamaListFactory.castToList(scope, values);
 		if (lvalue.length(scope) < 1) { return GamaMapFactory.create(Types.STRING, Types.LIST); }
 
 		int nbBarres = 10;

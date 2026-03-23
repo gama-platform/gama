@@ -19,7 +19,7 @@ import org.eclipse.xtext.ui.editor.preferences.IPreferenceStoreInitializer;
 
 import com.google.inject.Singleton;
 
-import gama.core.common.preferences.GamaPreferences;
+import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * The class GamlMarkOccurrenceActionContributor.

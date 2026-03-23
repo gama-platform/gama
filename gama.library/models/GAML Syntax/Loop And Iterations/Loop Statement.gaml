@@ -74,14 +74,14 @@ global {
 			// id should be incremented ... otherwise the loop while never end.
 			id <- id + 1;
 		}					
-		do break_loop;
+		do break_loop();
 	}
 	
 	
 	
 	// You can interrupt a loop at any time by using the break statement.	
 	// The following loop will continue until 
-	action break_loop {
+	action break_loop() {
 		int i <- 0;
 		loop while: true {
 			write "" + i + "th iteration!" ;

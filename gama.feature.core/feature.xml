@@ -41,6 +41,7 @@
       <import plugin="org.eclipse.xtext.xbase.lib"/>
       <import plugin="gama.extension.maths"/>
       <import plugin="gama.dependencies"/>
+      <import plugin="gama.workspace"/>
    </requires>
 
    <plugin
@@ -65,6 +66,18 @@
 
    <plugin
          id="gama.extension.stats"
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.dev"
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.api"
+         version="0.0.0"/>
+
+   <plugin
+         id="gama.workspace"
          version="0.0.0"/>
 
 </feature>

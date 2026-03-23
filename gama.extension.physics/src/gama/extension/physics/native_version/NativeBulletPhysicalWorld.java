@@ -11,6 +11,8 @@
 package gama.extension.physics.native_version;
 
 import java.lang.Thread.State;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.collision.PersistentManifolds;
@@ -19,9 +21,9 @@ import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.math.Vector3f;
 
-import gama.core.common.interfaces.GeneralSynchronizer;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.GeneralSynchronizer;
+import gama.api.types.geometry.IPoint;
 import gama.dev.DEBUG;
 import gama.extension.physics.common.AbstractPhysicalWorld;
 import gama.extension.physics.common.IBody;
@@ -96,6 +98,12 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 	/** The lock. */
 	volatile GeneralSynchronizer semaphore = GeneralSynchronizer.withInitialAndMaxPermits(1, 1);
 
+	/**
+	 * Local list of all registered dynamic (non-static) body wrappers. Maintained alongside the physics space to avoid
+	 * allocating a new list on every call to {@link #updatePositionsAndRotations()}.
+	 */
+	private final List<NativeBulletBodyWrapper> dynamicBodies = new ArrayList<>();
+
 	@Override
 	public void run() {
 		if (doInit) {
@@ -108,7 +116,8 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 			// DEBUG.OUT("Creating world in thread " + Thread.currentThread().getName());
 		}
 		while (doUpdate) {
-			semaphore.acquire();
+			// If the thread is interrupted while waiting, exit the loop cleanly.
+			if (!semaphore.acquire()) { break; }
 			PhysicsSpace world = getWorld();
 			if (world != null) { world.update(timeStep.floatValue(), maxSubSteps, false, false, true); }
 			// DEBUG.OUT("Actually updating world in thread " + Thread.currentThread().getName());
@@ -124,6 +133,9 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 	 */
 	public NativeBulletPhysicalWorld(final PhysicalSimulationAgent physicalSimulationAgent) {
 		super(physicalSimulationAgent);
+		// Arm the semaphore so the physics thread blocks until updateEngine() triggers it.
+		// If interrupted here the interrupt flag is already restored by acquire(); the
+		// physics thread will break immediately on its first loop iteration.
 		semaphore.acquire();
 	}
 
@@ -157,6 +169,7 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 			NativeBulletBodyWrapper b = new NativeBulletBodyWrapper(agent, this);
 			world.addCollisionObject(b.getBody());
 			b.setCCD(simulation.getCCD(simulation.getScope()));
+			if (!b.isStatic) { dynamicBodies.add(b); }
 		}
 	}
 
@@ -164,22 +177,25 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 	public void unregisterAgent(final IAgent agent) {
 		Object body = agent.getAttribute(BODY);
 		PhysicsSpace world = getWorld();
-		if (world != null && body instanceof NativeBulletBodyWrapper wrapper) { world.remove(wrapper.getBody()); }
+		if (world != null && body instanceof NativeBulletBodyWrapper wrapper) {
+			world.remove(wrapper.getBody());
+			dynamicBodies.remove(wrapper);
+		}
 	}
 
 	@Override
 	public void setCCD(final boolean ccd) {
 		if (world != null) {
-			world.getRigidBodyList().forEach(b -> {
-				if (b.isStatic()) return;
+			for (PhysicsRigidBody b : world.getRigidBodyList()) {
+				if (b.isStatic()) continue;
 				Object o = b.getUserObject();
 				if (o instanceof IBody) { ((IBody) o).setCCD(ccd); }
-			});
+			}
 		}
 	}
 
 	@Override
-	public void setGravity(final GamaPoint g) {
+	public void setGravity(final IPoint g) {
 		PhysicsSpace world = getWorld();
 		if (world != null) { world.setGravity(toVector(g)); }
 	}
@@ -199,6 +215,7 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		dynamicBodies.clear();
 		world = null;
 		// The goal here is to get rid of bridge Java/C++ objects as soon as possible
 		System.gc();
@@ -207,11 +224,10 @@ public class NativeBulletPhysicalWorld extends AbstractPhysicalWorld<PhysicsSpac
 
 	@Override
 	public void updatePositionsAndRotations() {
-		PhysicsSpace world = getWorld();
-		if (world == null) return;
-		for (PhysicsRigidBody b : world.getRigidBodyList()) {
-			NativeBulletBodyWrapper bw = (NativeBulletBodyWrapper) b.getUserObject();
-			if (b.isActive() && !b.isStatic()) { bw.transferLocationAndRotationToAgent(); }
+		int n = dynamicBodies.size();
+		for (int i = 0; i < n; i++) {
+			NativeBulletBodyWrapper bw = dynamicBodies.get(i);
+			if (bw.body.isActive()) { bw.transferLocationAndRotationToAgent(); }
 		}
 	}
 

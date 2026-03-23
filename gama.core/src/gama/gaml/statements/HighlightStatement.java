@@ -1,41 +1,43 @@
 /*******************************************************************************************************
  *
- * HighlightStatement.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * HighlightStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.GAMA;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatement;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * Written by drogoul Modified on 6 févr. 2010
- * 
+ *
  * @todo Description
- * 
+ *
  */
 
 @symbol (
@@ -72,14 +74,15 @@ public class HighlightStatement extends AbstractStatement {
 
 	/** The value. */
 	final IExpression value;
-	
+
 	/** The color. */
 	final IExpression color;
 
 	/**
 	 * Instantiates a new highlight statement.
 	 *
-	 * @param desc the desc
+	 * @param desc
+	 *            the desc
 	 */
 	public HighlightStatement(final IDescription desc) {
 		super(desc);
@@ -93,10 +96,8 @@ public class HighlightStatement extends AbstractStatement {
 		if (agent != null && !agent.dead()) {
 			final IAgent o = Cast.asAgent(scope, value.value(scope));
 			if (color != null) {
-				final GamaColor c = Cast.asColor(scope, color.value(scope));
-				if (c != null) {
-					GamaPreferences.Displays.CORE_HIGHLIGHT.set(c);
-				}
+				final IColor c = GamaColorFactory.castToColor(scope, color.value(scope));
+				if (c != null) { GamaPreferences.Displays.CORE_HIGHLIGHT.set(c); }
 			}
 			GAMA.getGui().setHighlightedAgent(o);
 		}

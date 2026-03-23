@@ -3,7 +3,7 @@
  * ImageViewer.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,7 +30,6 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceRuleFactory;
 import org.eclipse.core.resources.IStorage;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -73,10 +72,9 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.part.FileEditorInput;
 
-import gama.core.runtime.GAMA;
-import gama.core.util.file.IGamaFileMetaData;
+import gama.api.GAMA;
+import gama.api.utils.files.IGamaFileMetaData;
 import gama.dev.DEBUG;
-import gama.ui.navigator.metadata.ImageDataLoader;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -206,7 +204,7 @@ public class ImageViewer extends EditorPart
 	 */
 	void displayInfoString() {
 		final IGamaFileMetaData md =
-				GAMA.getGui().getMetaDataProvider().getMetaData(getFileFor(getEditorInput()), false, true);
+				GAMA.getMetadataProvider().getMetaData(getFileFor(getEditorInput()), false, true);
 		final String result = md == null ? "" : md.getSuffix();
 		IEditorSite site = getEditorSite();
 		IHandlerService service = site.getService(IHandlerService.class);
@@ -363,8 +361,6 @@ public class ImageViewer extends EditorPart
 					WorkbenchHelper.asyncRun(r);
 
 					return Status.OK_STATUS;
-				} catch (final CoreException ex) {
-					return ex.getStatus();
 				} catch (final SWTException ex) {
 					return new Status(IStatus.ERROR, "gama.ui.application", ex.getMessage());
 				} finally {
@@ -380,7 +376,7 @@ public class ImageViewer extends EditorPart
 	 * Load the image data from the current editor input. This operation can take time and should not be called on the
 	 * ui thread.
 	 */
-	void loadImageData() throws CoreException {
+	void loadImageData() {
 		final IEditorInput input = getEditorInput();
 		final Object o = input.getAdapter(ImageData.class);
 		if (o instanceof ImageData) {
@@ -473,7 +469,7 @@ public class ImageViewer extends EditorPart
 		// add a file extension if there isn't one
 		if (path.getFileExtension() == null) { path = path.addFileExtension(d.getSaveAsImageExt()); }
 
-		final IFile dest = ResourcesPlugin.getWorkspace().getRoot().getFile(path);
+		final IFile dest = GAMA.getWorkspaceManager().getRoot().getFile(path);
 		if (dest == null || origFile != null && dest.equals(origFile)) return;
 		final int imageType = d.getSaveAsImageType();
 

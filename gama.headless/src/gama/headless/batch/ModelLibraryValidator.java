@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ModelLibraryValidator.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ModelLibraryValidator.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,18 +22,18 @@ import org.osgi.framework.Bundle;
 import com.google.common.collect.Multimap;
 import com.google.inject.Injector;
 
+import gama.api.additions.GamaBundleLoader;
+import gama.api.compilation.GamlCompilationError;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.headless.runtime.HeadlessApplication;
-import gaml.compiler.gaml.validation.GamlModelBuilder; 
+import gaml.compiler.gaml.validation.GamlModelBuilder;
 
 /**
  * The Class ModelLibraryValidator.
  */
 public class ModelLibraryValidator extends AbstractModelLibraryRunner {
 
-	/** The instance. */
+	/** The INSTANCE. */
 	private static ModelLibraryValidator instance;
 
 	/**
@@ -122,16 +122,15 @@ public class ModelLibraryValidator extends AbstractModelLibraryRunner {
 		builder.compile(pathToModel, errors);
 		countOfModelsValidated[0]++;
 		errors.stream().filter(GamlCompilationError::isError).forEach(e -> {
-			// log("Error in " + e.getURI().lastSegment() + ": " + e);
-			DEBUG.ERR("Error in " + e.getURI() + ":\n " + e.toString() + " \n " + e.getStatement().toString() + "\n");
+			DEBUG.ERR("Error in " + e.uri() + ":\n " + e.toString() + " \n " + e.source().toString() + "\n");
 			returnCode[0]++;
 		});
 	}
 
 	/**
-	 * Gets the single instance of ModelLibraryValidator.
+	 * Gets the single INSTANCE of ModelLibraryValidator.
 	 *
-	 * @return single instance of ModelLibraryValidator
+	 * @return single INSTANCE of ModelLibraryValidator
 	 */
 	public static ModelLibraryValidator getInstance() {
 		if (instance == null) { instance = new ModelLibraryValidator(); }

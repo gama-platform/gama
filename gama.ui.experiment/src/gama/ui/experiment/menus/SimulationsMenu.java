@@ -3,14 +3,12 @@
  * SimulationsMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.experiment.menus;
-
-import java.io.IOException;
 
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.swt.SWT;
@@ -18,14 +16,14 @@ import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-import gama.core.common.interfaces.ISerialisationConstants;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.ParametersSet;
-import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.constants.ISerialisationConstants;
+import gama.api.gaml.constants.GamlCoreConstants;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.core.experiment.parameters.ParametersSet;
 import gama.extension.serialize.binary.BinarySerialisation;
-import gama.gaml.constants.GamlCoreConstants;
 import gama.ui.experiment.commands.ArrangeDisplayViews;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -42,7 +40,8 @@ public class SimulationsMenu extends ContributionItem {
 	/** The create new simulation. */
 	public static final GamaCommand addNewSimulation = new GamaCommand("experiment/experiment.simulations.add",
 			"Add Simulation", "Add a new simulation (with the current parameters) to this experiment", e -> {
-				final SimulationAgent sim = GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
+				final ISimulationAgent sim =
+						GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
 				if (sim == null) return;
 				WorkbenchHelper.runInUI("Adding simulation", 0, m -> {
 					if ("None".equals(GamaPreferences.Displays.CORE_DISPLAY_LAYOUT.getValue())) {
@@ -59,21 +58,15 @@ public class SimulationsMenu extends ContributionItem {
 			new GamaCommand("experiment/experiment.simulations.duplicate", "Duplicate Simulation",
 					"Duplicate the current simulation and add it to the experiment", e -> {
 						byte[] bytes = BinarySerialisation.saveToBytes(GAMA.getRuntimeScope(), GAMA.getSimulation());
-						final SimulationAgent sim =
+						final ISimulationAgent sim =
 								GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
-						GAMA.runAndUpdateAll(() -> {
-							try {
-								BinarySerialisation.restoreFromBytes(sim, bytes);
-							} catch (IOException e1) {
-								e1.printStackTrace();
-							}
-						});
+						GAMA.runAndUpdateAll(() -> { BinarySerialisation.restoreFromBytes(sim, bytes); });
 					});
 
 	/** The kill current simulation. */
 	public static final GamaCommand killCurrentSimulation = new GamaCommand("experiment/experiment.simulations.kill",
 			"Kill Simulation", "Kill and remove the current simulation from the experiment", e -> {
-				SimulationAgent sim = GAMA.getSimulation();
+				ISimulationAgent sim = GAMA.getSimulation();
 				if (sim == null) return;
 				sim.primDie(sim.getScope());
 			});
@@ -81,16 +74,15 @@ public class SimulationsMenu extends ContributionItem {
 	/** The save current simulation. */
 	public static final GamaCommand saveCurrentSimulation = new GamaCommand("experiment/experiment.simulations.save",
 			"Save Simulation...", "Save the current simulation to disk", e -> {
-				SimulationAgent sim = GAMA.getSimulation();
+				ISimulationAgent sim = GAMA.getSimulation();
 				if (sim == null) return;
 				FileDialog fileSave = new FileDialog(e.display.getActiveShell(), SWT.SAVE);
-				fileSave.setFilterNames(new String[] {
+				fileSave.setFilterNames(
 						"Simulation files"/*
 											 * SerialisationConstants.BINARY_FORMAT ,
 											 * SerialisationConstants.JSON_FORMAT, SerialisationConstants.XML_FORMAT
-											 */ });
-				fileSave.setFilterExtensions(
-						new String[] { "*.simulation"/* , "*.simulation; *.json", "*.simulation; *.xml" */ });
+											 */ );
+				fileSave.setFilterExtensions("*.simulation"/* , "*.simulation; *.json", "*.simulation; *.xml" */ );
 				fileSave.setFileName(
 						sim.getModel().getName() + "_cycle" + sim.getCycle(sim.getScope()) + ".simulation");
 				String open = fileSave.open();
@@ -107,12 +99,12 @@ public class SimulationsMenu extends ContributionItem {
 	public static final GamaCommand saveCurrentSimulationAndHistory =
 			new GamaCommand("experiment/experiment.simulations.save.history", "Save Simulation with its History...",
 					"Save the current simulation and its history to disk", e -> {
-						SimulationAgent sim = GAMA.getSimulation();
+						ISimulationAgent sim = GAMA.getSimulation();
 						if (sim == null) return;
 						FileDialog fileSave = new FileDialog(e.display.getActiveShell(), SWT.SAVE);
 						// Only binary allowed when saving history
-						fileSave.setFilterNames(new String[] { ISerialisationConstants.BINARY_FORMAT });
-						fileSave.setFilterExtensions(new String[] { "*.simulation" });
+						fileSave.setFilterNames(ISerialisationConstants.BINARY_FORMAT);
+						fileSave.setFilterExtensions("*.simulation");
 						fileSave.setFileName(sim.getModel().getName() + "_" + sim.getCycle(sim.getScope()) + "_cycles"
 								+ ".simulation");
 						String open = fileSave.open();
@@ -124,11 +116,11 @@ public class SimulationsMenu extends ContributionItem {
 			new GamaCommand("experiment/experiment.simulations.load.replace", "Load and Replace Simulation...",
 					"Load a previously saved simulation and replace the current one", e -> {
 
-						SimulationAgent sim = GAMA.getSimulation();
+						ISimulationAgent sim = GAMA.getSimulation();
 						if (sim == null) return;
 						FileDialog fileOpen = new FileDialog(e.display.getActiveShell(), SWT.OPEN);
-						fileOpen.setFilterExtensions(new String[] { "*.simulation" });
-						fileOpen.setFilterNames(new String[] { "Simulation files" });
+						fileOpen.setFilterExtensions("*.simulation");
+						fileOpen.setFilterNames("Simulation files");
 						String open = fileOpen.open();
 						if (open != null) {
 							GAMA.runAndUpdateAll(() -> { BinarySerialisation.restoreFromFile(sim, open); });
@@ -140,11 +132,11 @@ public class SimulationsMenu extends ContributionItem {
 	public static final GamaCommand loadNewSimulation = new GamaCommand("experiment/experiment.simulations.load.new",
 			"Load New Simulation...", "Load a previously saved simulation and add it to the experiment", e -> {
 				FileDialog fileOpen = new FileDialog(e.display.getActiveShell(), SWT.OPEN);
-				fileOpen.setFilterExtensions(new String[] { "*.simulation" });
-				fileOpen.setFilterNames(new String[] { "Simulation files" });
+				fileOpen.setFilterExtensions("*.simulation");
+				fileOpen.setFilterNames("Simulation files");
 				String open = fileOpen.open();
 				if (open != null) {
-					final SimulationAgent sim =
+					final ISimulationAgent sim =
 							GAMA.getExperiment().getAgent().createSimulation(new ParametersSet(), true);
 					BinarySerialisation.restoreFromFile(sim, open);
 				}
@@ -185,7 +177,7 @@ public class SimulationsMenu extends ContributionItem {
 		MenuItem loadAndReplace = SimulationsMenu.replaceCurrentSimulation.toItem(menu);
 		MenuItem loadNew = SimulationsMenu.loadNewSimulation.toItem(menu);
 		boolean isExperiment = GAMA.getCurrentTopLevelAgent() instanceof IExperimentAgent;
-		boolean isSimulation = GAMA.getCurrentTopLevelAgent() instanceof SimulationAgent;
+		boolean isSimulation = GAMA.getCurrentTopLevelAgent() instanceof ISimulationAgent;
 		boolean isBackward = isSimulation && GAMA.getExperiment() != null && GAMA.getExperiment().isMemorize();
 		add.setEnabled(isExperiment || isSimulation);
 		kill.setEnabled(isSimulation);

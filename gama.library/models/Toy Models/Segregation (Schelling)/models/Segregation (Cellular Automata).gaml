@@ -22,12 +22,12 @@ global torus: true{
 	geometry shape <- square(dimensions);
 	
 	//Action to initialize the places
-	action initialize_places {
+	action initialize_places() {
 		all_places <- shuffle(space);
 		free_places <- shuffle(all_places);
 	}
 	//Action to initialize the people agents
-	action initialize_people {
+	action initialize_people() {
 		//Place all the people agent in the cellular automata
 		loop i from: 0 to: number_of_people - 1 {
 			space pp <- all_places at i;
@@ -53,7 +53,7 @@ grid space parent: base width: dimensions height: dimensions neighbors: 8  {
 	//List of the neighbours of the places
 	list<space> my_neighbours <- self neighbors_at neighbours_distance;
 	//Action to migrate the agent in another cell if it is not happy
-	action migrate {
+	action migrate() {
 		if !is_happy {
 			//Change the space of the agent to a free space
 			space pp <- any(my_neighbours where (each.color = #black));

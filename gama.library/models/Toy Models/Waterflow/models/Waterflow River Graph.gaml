@@ -54,7 +54,7 @@ species poi {
 	string type;
 	river closest_river ;
 	
-	action give_water {
+	action give_water() {
 		closest_river.water_volume <- 200.0;
 	}
 	
@@ -68,13 +68,13 @@ species river {
 	float water_volume;
 	float water_volume_from_other;
 	
-	action water_flow {
+	action water_flow() {
 		if (next_river != nil) {
 			next_river.water_volume_from_other <- next_river.water_volume_from_other + 0.9 * water_volume;
 		}
 	}
 	
-	action update_water_level {
+	action update_water_level() {
 		water_volume <- 0.1 * water_volume + water_volume_from_other;
 		water_volume_from_other <- 0.0;
 	}

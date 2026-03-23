@@ -38,7 +38,7 @@ global {
 	float float_on_change <- 1.0;
 	
 	// Action that will be called from the parameter pane
-	action writing_parameters {
+	action writing_parameters() {
 		write "Float on change: " + float_on_change;
 	}
 } 

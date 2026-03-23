@@ -11,7 +11,7 @@ global {
 	float prey_max_energy <- 1.0;
 	float prey_max_transfer <- 0.1;
 	float prey_energy_consum <- 0.05;
-	int nb_preys -> {length (prey)};
+	int nb_preys -> length (prey);
 	
 	init {
 		create prey number: nb_preys_init;

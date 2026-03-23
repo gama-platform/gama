@@ -194,8 +194,8 @@ experiment big_crowd type: gui {
 	
 	
 	float minimum_cycle_duration <- 0.02;
-	action _init_ {
-		create simulation with: [scenario :: "big crowd", nb_people::500];
+	action _init_() {
+		create simulation with: (scenario : "big crowd", nb_people:500);
 	}
 	output {
 		display map  {
@@ -207,8 +207,8 @@ experiment big_crowd type: gui {
 
 experiment frontal_crossing type: gui {
 	float minimum_cycle_duration <- 0.02;
-	action _init_ {
-		create simulation with: [scenario :: "frontal crossing", nb_people::100];
+	action _init_() {
+		create simulation with: (scenario : "frontal crossing", nb_people:100);
 	}
 	output {
 		display map  {
@@ -223,8 +223,8 @@ experiment frontal_crossing type: gui {
 }
 experiment perpendicular_crossing type: gui {
 	float minimum_cycle_duration <- 0.02;
-	action _init_ {
-		create simulation with: [scenario :: "perpendicular crossing", nb_people::100];
+	action _init_() {
+		create simulation with: (scenario : "perpendicular crossing", nb_people:100);
 	}
 	
 	output {

@@ -21,10 +21,10 @@ import java.util.List;
 
 import org.sqlite.SQLiteConfig;
 
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 import gama.dev.DEBUG;
 import gama.extension.database.utils.sql.SqlConnection;
 import gama.extension.database.utils.sql.SqlUtils;
@@ -103,7 +103,7 @@ public class SqliteConnection extends SqlConnection {
 		// convert Geometry in SQL to Geometry type in GeoTool
 
 		final IList<IList<Object>> repRequest =
-				GamaListFactory.create(gama.gaml.types.Types.LIST.of(gama.gaml.types.Types.LIST));
+				GamaListFactory.create(gama.api.gaml.types.Types.LIST.of(gama.api.gaml.types.Types.LIST));
 		try {
 			final List<Integer> geoColumn = getGeometryColumns(rsmd);
 			final int nbCol = rsmd.getColumnCount();

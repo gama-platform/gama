@@ -51,7 +51,7 @@ grid cell width: env_width height: env_height neighbors: num_neighbours use_neig
 
 }
 //Species representing the center of a Voronoi polygon
-species center skills: [moving] {
+species center skills: [moving] parallel: true {
 	rgb color <- colors[int(self) mod length(colors)]; //rnd_color(255);
 	//Make the center of the cluster wander in the environment       
 	reflex wander {

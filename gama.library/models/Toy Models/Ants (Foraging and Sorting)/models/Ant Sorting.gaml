@@ -43,7 +43,7 @@ global {
 
 }
 //Species ant that will move and follow a final state machine
-species ant skills: [moving] control: fsm {
+species ant skills: [moving] control: fsm parallel: true{
 	rgb color <- #white;
 	ant_grid place -> ant_grid(location);
 	image_file img <- image_file("../images/ant.png");

@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * JsonSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * JsonSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,17 +11,15 @@ package gama.gaml.statements.save;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.WriterConfig;
-import gama.gaml.expressions.IExpression;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.files.SaveOptions;
 
 /**
  * The Class JsonSaver.
@@ -34,8 +32,8 @@ public class JsonSaver extends AbstractSaver {
 	@Override
 	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
 			throws GamaRuntimeException {
-		try (Writer fw = new FileWriter(file, StandardCharsets.UTF_8, !saveOptions.rewrite)) {
-			Json.getNew().valueOf(item.value(scope)).writeTo(fw, WriterConfig.PRETTY_PRINT);
+		try (Writer fw = new FileWriter(file, StandardCharsets.UTF_8, !saveOptions.rewrite())) {
+			fw.write(GAMA.getJsonEncoder().valueOf(item.value(scope)).toPrettyPrint());
 		} catch (final GamaRuntimeException e) {
 			throw e;
 		} catch (final Exception e) {

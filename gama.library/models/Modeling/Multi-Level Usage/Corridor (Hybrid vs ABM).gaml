@@ -122,7 +122,7 @@ species corridor  {
 	
 	init 
 	{ 
-		create corridor_info_drawer number: 1 with: [target :: self];
+		create corridor_info_drawer number: 1 with: (target : self);
 	}
 	//Reflex to capture the pedestrians overlapping the corridor ie entering the corridor 
 	reflex aggregate when: capture_pedestrians 

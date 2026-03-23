@@ -15,30 +15,32 @@ import java.util.List;
 
 import com.google.common.collect.Iterables;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.ExecutionResult;
-import gama.core.runtime.FlowStatus;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.statements.IStatement.Breakable;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.statements.IStatement.Breakable;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.FlowStatus;
+import gama.api.runtime.scope.IExecutionResult;
+import gama.api.runtime.scope.IScope;
 import gama.gaml.statements.SwitchStatement.SwitchValidator;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * IfPrototype.
@@ -231,7 +233,7 @@ public class SwitchStatement extends AbstractStatementSequence implements Breaka
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
 		public void validate(final IDescription desc) {
@@ -268,11 +270,23 @@ public class SwitchStatement extends AbstractStatementSequence implements Breaka
 
 	}
 
-	/** The matches. */
-	public MatchStatement[] matches;
+	/**
+	 * The array of {@code match} branches.
+	 *
+	 * <p><b>Thread-safety:</b> declared {@code volatile} so that the single write performed by
+	 * {@link #setChildren(Iterable)} during construction (or the {@code null} written by
+	 * {@link #dispose()}) is guaranteed to be visible to all threads that subsequently call
+	 * {@link #privateExecuteIn(IScope)}, even when those threads belong to different parallel
+	 * simulations sharing this statement instance.</p>
+	 */
+	public volatile MatchStatement[] matches;
 
-	/** The default match. */
-	public MatchStatement defaultMatch;
+	/**
+	 * The {@code default} branch, if any.
+	 *
+	 * <p><b>Thread-safety:</b> same visibility guarantee as {@link #matches}.</p>
+	 */
+	public volatile MatchStatement defaultMatch;
 
 	/** The value. */
 	final IExpression value;
@@ -312,11 +326,15 @@ public class SwitchStatement extends AbstractStatementSequence implements Breaka
 		final Object switchValue = value.value(scope);
 		Object lastResult = null;
 
+		// Snapshot the volatile field once into a local variable so that the
+		// JIT can keep it in a register and avoid repeated memory-barrier reads
+		// on every iteration of the loop.
+		final MatchStatement[] localMatches = matches;
 		try {
-			for (final MatchStatement matche : matches) {
+			for (final MatchStatement matche : localMatches) {
 
 				if (matche.matches(scope, switchValue)) {
-					final ExecutionResult er = scope.execute(matche);
+					final IExecutionResult er = scope.execute(matche);
 					if (!er.passed()) return lastResult;
 					lastResult = er.getValue();
 					hasMatched = true;

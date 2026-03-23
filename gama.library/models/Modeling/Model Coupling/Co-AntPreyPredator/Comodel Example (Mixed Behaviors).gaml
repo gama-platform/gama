@@ -22,13 +22,13 @@ global
 	init
 	{
 		//create the Ants micro-model with the size of grid is 100 and the population have 500 ants.
-		create Ant.Base with: [gridsize::100,ants_number::500]{
+		create Ant.Base with: (gridsize:100,ants_number:500){
 			write self;
 		}
 		
 //		write Ant.Simple collect each.simulations as list;
 		//create the PreyPredator micro-model with the parameters and the number of the prey is equal with the size of ants population
-		create Organism.Simple with: [shape::square(100), preyinit::Ant.Base[0].simulation.ants_number, predatorinit::2]  
+		create Organism.Simple with: (shape:square(100), preyinit:Ant.Base[0].simulation.ants_number, predatorinit:2)  
 		{
 			// set the size of micro-model PreyPredator equal with the size of the grid of myAnt
 			shape <- square(100);

@@ -28,7 +28,7 @@ global {
 species bug skills:[moving]{
 	float size <- 1.0 + rnd(4) min: 1.0 max: 5.0;
 	float speed <- 1.0 + rnd(4.0);
-	
+	 
 	reflex update_size {
 		int nb_neigh <- length(bug at_distance 20.0);
 		if (nb_neigh > 5) {

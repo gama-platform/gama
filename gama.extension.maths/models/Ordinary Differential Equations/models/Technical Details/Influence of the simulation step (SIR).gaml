@@ -13,7 +13,7 @@ global {
 	init {
 		write name + "" + step;
 		step_string <- string(step)+"s";
-		create userSIR with: [h::0.1,N::500,I::1.0];
+		create userSIR with: (h:0.1,N:500,I:1.0);
 	}
 	
 	reflex w {
@@ -47,9 +47,9 @@ species userSIR {
 experiment examples type: gui {
 	float minimum_cycle_duration <- 0.1#s;
 	
-	action _init_ {
-		create simulation with: [step::2#s,name::"s2s"]   ;
-		create simulation with: [step::10#s,name::"s10s"] ;		
+	action _init_() {
+		create simulation with: (step:2#s,name:"s2s")   ;
+		create simulation with: (step:10#s,name:"s10s") ;		
 	}
 	
 	output {

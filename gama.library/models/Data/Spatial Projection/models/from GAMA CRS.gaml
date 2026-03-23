@@ -16,7 +16,7 @@ global {
 		
 		point poi_location <- first(building).location; //location of the first building in the GAMA reference system
 		
-		create poi with: [location::poi_location];
+		create poi with: (location:poi_location);
 		
 		point poi_location_WGS84 <- CRS_transform(poi_location, "EPSG:4326").location; //project the point to WGS84 CRS
 		

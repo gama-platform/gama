@@ -2,7 +2,7 @@
  *
  * AgentLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -10,26 +10,36 @@
 package gama.core.outputs.layers;
 
 import java.awt.geom.Rectangle2D;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.ExecutionResult;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.Collector;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.core.util.IMap;
-import gama.gaml.species.ISpecies;
-import gama.gaml.statements.AspectStatement;
-import gama.gaml.statements.IExecutable;
-import gama.gaml.types.Types;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.IExecutable;
+import gama.api.runtime.scope.IExecutionResult;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IContainer;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.collections.Collector;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.gaml.statements.draw.ShapeDrawingAttributes;
 import one.util.streamex.StreamEx;
 
 /**
@@ -39,6 +49,74 @@ import one.util.streamex.StreamEx;
  *
  */
 public class AgentLayer extends AbstractLayer {
+
+	/** The Constant SHAPES. */
+	static final Map<String, Integer> SHAPES = new HashMap<>() {
+
+		{
+			put("circle", 1);
+			put("square", 2);
+			put("triangle", 3);
+			put("sphere", 4);
+			put("cube", 5);
+			put("point", 6);
+		}
+	};
+
+	/** The border color. */
+	public static final IColor borderColor = GamaColorFactory.BLACK;
+
+	/** The default aspect. */
+	public static final IExecutable DEFAULT_ASPECT = sc -> {
+		if (!sc.isGraphics()) return null;
+		IGraphicsScope scope = (IGraphicsScope) sc;
+		final IAgent agent = scope.getAgent();
+		if (agent != null && !agent.dead()) {
+			final IGraphics g = scope.getGraphics();
+			if (g == null) return null;
+			try {
+				if (agent == scope.getGui().getHighlightedAgent()) { g.beginHighlight(); }
+				final boolean hasColor = agent.getSpecies().hasVar(IKeyword.COLOR);
+				IColor color;
+				if (hasColor) {
+					final Object value = agent.getDirectVarValue(scope, IKeyword.COLOR);
+					color = GamaColorFactory.castToColor(scope, value);
+				} else {
+					color = GamaColorFactory.get(GamaPreferences.Displays.CORE_COLOR.getValue().getRGB());
+				}
+				final String defaultShape = GamaPreferences.Displays.CORE_SHAPE.getValue();
+				final Integer index = SHAPES.get(defaultShape);
+				IShape ag;
+
+				if (index != null) {
+					final Double defaultSize = GamaPreferences.Displays.CORE_SIZE.getValue();
+					final IPoint point = agent.getLocation();
+
+					ag = switch (SHAPES.get(defaultShape)) {
+						case 1 -> GamaShapeFactory.buildCircle(defaultSize, point);
+						case 2 -> GamaShapeFactory.buildSquare(defaultSize, point);
+						case 3 -> GamaShapeFactory.buildTriangle(defaultSize, point);
+						case 4 -> GamaShapeFactory.buildSphere(defaultSize, point);
+						case 5 -> GamaShapeFactory.buildCube(defaultSize, point);
+						case 6 -> GamaShapeFactory.buildPoint(point);
+						default -> agent.getGeometry();
+					};
+				} else {
+					ag = agent.getGeometry();
+				}
+
+				final IShape ag2 = ag.copy(scope);
+				final IDrawingAttributes attributes = new ShapeDrawingAttributes(ag2, agent, color, borderColor);
+				return g.drawShape(ag2.getInnerGeometry(), attributes);
+			} catch (final GamaRuntimeException e) {
+				// cf. Issue 1052: exceptions are not thrown, just displayed
+				e.printStackTrace();
+			} finally {
+				g.endHighlight();
+			}
+		}
+		return null;
+	};
 
 	/**
 	 * Instantiates a new agent layer.
@@ -75,8 +153,8 @@ public class AgentLayer extends AbstractLayer {
 				aspect = def.getAspect();
 				if (aspect == null) { aspect = a.getSpecies().getAspect(aspectName); }
 			}
-			if (aspect == null) { aspect = AspectStatement.DEFAULT_ASPECT; }
-			final ExecutionResult result = scope.execute(aspect, a, null);
+			if (aspect == null) { aspect = DEFAULT_ASPECT; }
+			final IExecutionResult result = scope.execute(aspect, a, null);
 			final Object r = result.getValue();
 			if (r instanceof Rectangle2D r2d) { shapes.put(a, r2d); }
 		});

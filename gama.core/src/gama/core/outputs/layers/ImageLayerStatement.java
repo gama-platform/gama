@@ -1,37 +1,37 @@
 /*******************************************************************************************************
  *
  * ImageLayerStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.outputs.LayeredDisplayOutput;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IOutput;
 import gama.core.outputs.layers.ImageLayerStatement.ImageLayerValidator;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IExpressionFactory;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
 
 /**
  * Written by drogoul Modified on 9 nov. 2009
@@ -46,12 +46,11 @@ import gama.gaml.types.IType;
 		concept = { IConcept.DISPLAY, IConcept.FILE, IConcept.LOAD_FILE })
 
 @facets (
-		value = {
-				@facet (
-						name = IKeyword.ROTATE,
-						type = { IType.FLOAT },
-						optional = true,
-						doc = @doc ("Defines the angle of rotation of this layer, in degrees, around the z-axis.")),
+		value = { @facet (
+				name = IKeyword.ROTATE,
+				type = { IType.FLOAT },
+				optional = true,
+				doc = @doc ("Defines the angle of rotation of this layer, in degrees, around the z-axis.")),
 				@facet (
 						name = IKeyword.POSITION,
 						type = IType.POINT,
@@ -165,16 +164,13 @@ public class ImageLayerStatement extends AbstractLayerStatement {
 	/**
 	 * The Class ImageLayerValidator.
 	 */
-	public static class ImageLayerValidator implements IDescriptionValidator<StatementDescription> {
+	public static class ImageLayerValidator implements IDescriptionValidator<IStatementDescription> {
 
 		@Override
-		public void validate(final StatementDescription description) {
-			if (!description.hasFacet(GIS)) {
-				if (!description.hasFacet(NAME)) {
-					description.error(
-							"Missing facet " + IKeyword.NAME,
-							IGamlIssue.MISSING_FACET, description.getUnderlyingElement(), FILE, "\"\"");
-				}
+		public void validate(final IStatementDescription description) {
+			if (!description.hasFacet(GIS) && !description.hasFacet(NAME)) {
+				description.error("Missing facet " + IKeyword.NAME, IGamlIssue.MISSING_FACET,
+						description.getUnderlyingElement(), FILE, "\"\"");
 			}
 		}
 
@@ -202,12 +198,12 @@ public class ImageLayerStatement extends AbstractLayerStatement {
 	@Override
 	public IExpression getRefreshFacet() {
 		IExpression exp = super.getRefreshFacet();
-		if (exp == null) { exp = IExpressionFactory.FALSE_EXPR; }
+		if (exp == null) { exp = GAML.getExpressionFactory().getFalse(); }
 		return exp;
 	}
 
 	@Override
-	public LayerType getType(final LayeredDisplayOutput output) {
+	public LayerType getType(final IOutput output) {
 		if (hasFacet(IKeyword.GIS)) return LayerType.GIS;
 		return LayerType.IMAGE;
 	}

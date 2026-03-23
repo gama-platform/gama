@@ -27,7 +27,7 @@ global skills: [thread]{
   
 	
 	//the action run in the thread 
-	action thread_action {
+	action thread_action() {
 		write "current time: " + #now;
 	}	 
 }
@@ -40,7 +40,7 @@ species thread_agent skills: [thread] {
 	}
 	
 	//the action run in the thread
-	action thread_action {
+	action thread_action() {
 		write " > " + self + "current time: " + #now;
 	}	
 }
@@ -48,7 +48,7 @@ species thread_agent skills: [thread] {
 experiment "Run global thread" autorun: true;
 
 experiment "Run several threads" autorun: true {
-	action _init_ {
-		create simulation with: [create_agents:: true];
+	action _init_() {
+		create simulation with: (create_agents: true);
 	}
 }

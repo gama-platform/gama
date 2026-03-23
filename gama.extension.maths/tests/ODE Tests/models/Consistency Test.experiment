@@ -63,7 +63,7 @@ global{
 		do compute_diff;
 	}
 	
-	action compute_diff{
+	action compute_diff(){
 		diff1 <- max([diff1,max(EDO_model collect each.Im)-min(EDO_model collect each.Im)]);
 		diff2 <- max([diff2,max((EDO_model where (each.my_method !="Euler")) collect each.Im)-min((EDO_model where (each.my_method !="Euler")) collect each.Im)]);
 	}
@@ -95,7 +95,7 @@ global{
 			do solveEquation;
 		}
 				
-		action solveEquation{
+		action solveEquation(){
 			switch my_method{
 				match "rk4" {solve SIR method: #rk4 step_size: stepsize ;}
 				match "Euler" {solve SIR method: #Euler step_size: 0.1*stepsize ;}
@@ -122,8 +122,8 @@ experiment consistency_test type: test {
 }
 
 experiment with_visualization type: gui {
-	action _init_ {
-		create consistencyTest_model with: [with_viz::true];
+	action _init_ (){
+		create consistencyTest_model with: (with_viz:true);
 	}
 	output {
 		display "Numerical solutions" refresh: every(1 #cycle)  type: 2d {

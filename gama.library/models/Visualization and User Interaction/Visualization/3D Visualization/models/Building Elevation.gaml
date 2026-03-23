@@ -35,7 +35,7 @@ global {
 	graph the_graph;
 
 	init {
-		create building from: shape_file_buildings with: [type:: string(read('NATURE'))] {
+		create building from: shape_file_buildings with: (type: string(read('NATURE'))) {
 			if type = "Industrial" {
 				color <- #blue;
 			}
@@ -72,7 +72,7 @@ species road {
 
 }
 
-species people skills: [moving] {
+species people skills: [moving] parallel: true {
 	float speed <- min_speed + rnd(max_speed - min_speed);
 	rgb color <- rnd_color(255);
 	building living_place <- one_of(residential_buildings);
@@ -103,11 +103,11 @@ species people skills: [moving] {
 
 		} }
 
-	aspect default {
+	aspect default { 
 		draw sphere(3) color: color;
 	} }
 
-experiment "Road Traffic" type: gui record: true{
+experiment "Road Traffic" type: gui {
 	parameter 'Shapefile for the buildings:' var: shape_file_buildings category: 'GIS';
 	parameter 'Shapefile for the roads:' var: shape_file_roads category: 'GIS';
 	parameter 'Shapefile for the bounds:' var: shape_file_bounds category: 'GIS';

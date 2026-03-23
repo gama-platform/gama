@@ -1,51 +1,65 @@
 /*******************************************************************************************************
  *
- * DoStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * DoStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.statements;
 
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.ExecutionResult;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.descriptions.DoDescription;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.descriptions.SymbolDescription;
-import gama.gaml.descriptions.SymbolSerializer.StatementSerializer;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.factories.DescriptionFactory;
-import gama.gaml.operators.Strings;
-import gama.gaml.species.ISpecies;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.annotations.serializer;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.serialization.StatementSerializer;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.Arguments;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.object.IClass;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.runtime.scope.IExecutionResult;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
 import gama.gaml.statements.DoStatement.DoSerializer;
-import gama.gaml.types.IType;
 
 /**
- * Written by drogoul Modified on 7 févr. 2010
+ * Implements the {@code do} / {@code invoke} / {@code .} statement which lets an agent execute an action or
+ * primitive at runtime.
  *
- * @todo Description
+ * <p><b>Thread-safety:</b> this class is safe for concurrent use by multiple threads (e.g. parallel
+ * simulations). The two pieces of shared mutable state are protected as follows:
+ * <ul>
+ *   <li>{@link #args} – held in an {@link java.util.concurrent.atomic.AtomicReference} so that
+ *       {@link #setFormalArgs(Arguments)} and {@link #getRuntimeArgs(IScope)} never observe a
+ *       partially-written reference.</li>
+ *   <li>{@link #targetSpecies} – also held in an {@link java.util.concurrent.atomic.AtomicReference}
+ *       and lazily initialised via {@link java.util.concurrent.atomic.AtomicReference#compareAndSet}
+ *       inside {@link #getContext(IScope)}, ensuring that the resolution is performed exactly once even
+ *       when multiple threads race to initialise the field.</li>
+ * </ul>
+ * </p>
  *
+ * <p>Originally written by drogoul, modified on 7 févr. 2010.</p>
  */
 @symbol (
-		name = { IKeyword.DO, IKeyword.INVOKE },
+		name = { IKeyword.DO, IKeyword.INVOKE, IKeyword._DOT },
 		kind = ISymbolKind.SINGLE_STATEMENT,
 		with_sequence = true,
 		with_scope = false,
@@ -61,19 +75,28 @@ import gama.gaml.types.IType;
 				of = IType.NONE,
 				index = IType.STRING,
 				optional = true,
+				internal = true,
 				doc = @doc (
 						value = "a map expression containing the parameters of the action",
-						deprecated = "Use the imperative (with facets) or functional (with comma separated values inside parentheses, optionally prefixed by the argument name) form to pass the arguments")),
+						deprecated = "Use the functional (with comma separated values inside parentheses, optionally prefixed by the argument name) form to pass the arguments")),
 				@facet (
 						name = IKeyword.RETURNS,
 						type = IType.NEW_TEMP_ID,
 						optional = true,
-						doc = @doc ("Specifies the name of the temporary variable that will contain the result.")),
+						doc = @doc (
+								value = "Specifies the name of the temporary variable that will contain the result.",
+								deprecated = "Use the functional form to assign the result to a variable")),
 				@facet (
 						name = IKeyword.ACTION,
 						type = IType.ID,
 						optional = false,
-						doc = @doc ("the name of an action or a primitive")),
+						doc = @doc ("the name of the action or primitive called")),
+				@facet (
+						name = IKeyword.SYNTHETIC_DO_TARGET,
+						type = IType.NONE,
+						optional = true,
+						internal = true,
+						doc = @doc ("the target agent for the action. Internal use only.")),
 				@facet (
 						name = IKeyword.INTERNAL_FUNCTION,
 						type = IType.NONE,
@@ -167,7 +190,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 				final boolean includingBuiltIn) {
 			final String name = arg.getName();
 			final IExpressionDescription value = arg.getFacet(VALUE);
-			if (Strings.isGamaNumber(name)) {
+			if (StringUtils.isGamaNumber(name)) {
 				sb.append(value.serializeToGaml(includingBuiltIn));
 			} else {
 				sb.append(name).append(":").append(value.serializeToGaml(includingBuiltIn));
@@ -176,25 +199,31 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 		}
 
 		@Override
-		protected String serializeFacetValue(final SymbolDescription s, final String key,
-				final boolean includingBuiltIn) {
-			if (!DO_FACETS.contains(key)) return null;
+		public String serializeFacetValue(final IDescription s, final String key, final boolean includingBuiltIn) {
+			if (!ArtefactRegistry.DO_FACETS.contains(key)) return null;
 			return super.serializeFacetValue(s, key, includingBuiltIn);
 		}
 
 	}
 
-	/** The args. */
-	Arguments args;
+	/**
+	 * The args. Uses {@link AtomicReference} so that {@link #setFormalArgs(Arguments)} and
+	 * {@link #getRuntimeArgs(IScope)} are safe when called from multiple threads simultaneously.
+	 */
+	final AtomicReference<Arguments> args = new AtomicReference<>();
 
-	/** The target species. */
-	final String targetSpecies;
+	/** The target species name. Immutable after construction. */
+	final String targetSpeciesName;
+
+	/**
+	 * The resolved target species. Lazily initialised via double-checked locking inside
+	 * {@link #getContext(IScope)} so that exactly one initialisation happens even under concurrent
+	 * access.
+	 */
+	final AtomicReference<IClass> targetSpecies = new AtomicReference<>();
 
 	/** The function. */
 	final IExpression function, returns;
-
-	/** The Constant DO_FACETS. */
-	public static final Set<String> DO_FACETS = DescriptionFactory.getAllowedFacetsFor(IKeyword.DO, IKeyword.INVOKE);
 
 	/**
 	 * Instantiates a new do statement.
@@ -204,12 +233,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	 */
 	public DoStatement(final IDescription desc) {
 		super(desc);
-		if (((DoDescription) desc).isSuperInvocation()) {
-			final SpeciesDescription s = desc.getSpeciesContext().getParent();
-			targetSpecies = s.getName();
-		} else {
-			targetSpecies = null;
-		}
+		targetSpeciesName = getLiteral(IKeyword.SYNTHETIC_DO_TARGET_SPECIES);
 		function = getFacet(IKeyword.INTERNAL_FUNCTION);
 		returns = getFacet(IKeyword.RETURNS);
 		setName(getLiteral(IKeyword.ACTION));
@@ -221,7 +245,7 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	}
 
 	@Override
-	public void setFormalArgs(final Arguments args) { this.args = args; }
+	public void setFormalArgs(final Arguments args) { this.args.set(args); }
 
 	/**
 	 * Gets the runtime args.
@@ -231,28 +255,45 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 	 * @return the runtime args
 	 */
 	public Arguments getRuntimeArgs(final IScope scope) {
-		if (args == null) return null;
+		final Arguments currentArgs = args.get();
+		if (currentArgs == null) return null;
 		// Dynamic arguments necessary (see #2943, #2922, plus issue with multiple parallel simulations)
-		return args.resolveAgainst(scope);
+		return currentArgs.resolveAgainst(scope);
 	}
 
 	/**
-	 * Returns the species on which to find the action. If a species target (desc) exists, then it is a super invocation
-	 * and we have to find the corresponding action. Otherwise, we return the species of the agent
+	 * Returns the species on which to find the action. If a species exists, we find the corresponding action.
+	 * Otherwise, we return the species of the agent.
+	 * <p>
+	 * Thread-safe: uses {@link AtomicReference#compareAndSet} so that exactly one thread performs the
+	 * initialisation even when multiple threads call this method simultaneously on the same instance.
+	 * </p>
 	 */
-	private ISpecies getContext(final IScope scope) {
-		return targetSpecies != null ? scope.getModel().getSpecies(targetSpecies) : scope.getAgent().getSpecies();
+	private IClass getContext(final IScope scope) {
+		IClass current = targetSpecies.get();
+		if (current != null) return current;
+		IClass resolved;
+		if (targetSpeciesName != null) {
+			IModelSpecies model = scope.getModel();
+			resolved = model.getClass(targetSpeciesName);
+			if (resolved == null) { resolved = model.getSpecies(targetSpeciesName); }
+		} else {
+			resolved = scope.getAgent().getSpecies();
+		}
+		// Only store if not already set by another thread; either way, return the winner's value.
+		targetSpecies.compareAndSet(null, resolved);
+		return targetSpecies.get();
 	}
 
 	@Override
 	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		final ISpecies species = getContext(scope);
+		final IClass species = getContext(scope);
 		if (species == null)
-			throw GamaRuntimeException.error("Impossible to find a species to execute " + getName(), scope);
+			throw GamaRuntimeException.error("Impossible to find a species or a class to execute " + getName(), scope);
 		final IStatement.WithArgs executer = species.getAction(name);
 		Object result = null;
 		if (executer != null) {
-			final ExecutionResult er = scope.execute(executer, getRuntimeArgs(scope));
+			final IExecutionResult er = scope.execute(executer, getRuntimeArgs(scope));
 			result = er.getValue();
 		} else if (function != null) {
 			result = function.value(scope);
@@ -271,8 +312,8 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 
 	@Override
 	public void dispose() {
-		if (args != null) { args.dispose(); }
-		args = null;
+		final Arguments currentArgs = args.getAndSet(null);
+		if (currentArgs != null) { currentArgs.dispose(); }
 		super.dispose();
 	}
 

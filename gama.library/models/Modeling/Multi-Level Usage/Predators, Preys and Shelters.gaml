@@ -103,7 +103,7 @@ species predator skills: [moving] schedules: shuffle (list (predator)) {
 	prey target_prey update: self.choose_target_prey();
 	
 	//Change the target prey according to the prey who aren't fleeing if it doesn't have any yet
-	action choose_target_prey type: prey {
+	prey choose_target_prey () {
 		if ( (target_prey = nil) or (dead (target_prey) ) ) {
 			return one_of ( (list (prey)) where (each.state = 'move_around') );
 		}

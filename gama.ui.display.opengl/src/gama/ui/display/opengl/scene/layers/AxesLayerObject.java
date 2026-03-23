@@ -1,35 +1,35 @@
 /*******************************************************************************************************
  *
- * AxesLayerObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * AxesLayerObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.display.opengl.scene.layers;
 
-import static gama.core.common.geometry.Rotation3D.MINUS_I;
-import static gama.core.common.geometry.Rotation3D.PLUS_J;
-import static gama.core.common.geometry.Scaling3D.of;
-import static gama.gaml.constants.GamlCoreConstants.bottom_center;
-import static gama.gaml.constants.GamlCoreConstants.left_center;
-import static gama.gaml.constants.GamlCoreConstants.top_center;
-import static gama.gaml.types.GamaGeometryType.buildCone3D;
-import static gama.gaml.types.GamaGeometryType.buildLineCylinder;
+import static gama.api.gaml.constants.GamlCoreConstants.bottom_center;
+import static gama.api.gaml.constants.GamlCoreConstants.left_center;
+import static gama.api.gaml.constants.GamlCoreConstants.top_center;
+import static gama.api.utils.geometry.Rotation3D.MINUS_I;
+import static gama.api.utils.geometry.Rotation3D.PLUS_J;
+import static gama.api.utils.geometry.Scaling3D.of;
 
 import java.util.List;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.GamaShape;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaFont;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.font.GamaFontFactory;
+import gama.api.types.font.IFont;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.gaml.statements.draw.DrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
 import gama.gaml.statements.draw.TextDrawingAttributes;
@@ -48,32 +48,32 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	public final static String[] LABELS = { "X", "Y", "Z" };
 
 	/** The Constant ANCHORS. */
-	public final static GamaPoint[] ANCHORS = { left_center, top_center, bottom_center };
+	public final static IPoint[] ANCHORS = { left_center, top_center, bottom_center };
 
 	/** The Constant ROTATIONS. */
 	public final static AxisAngle[] ROTATIONS = { new AxisAngle(PLUS_J, 90), new AxisAngle(MINUS_I, 90), null };
 
-	/** The Constant COLORS. */
-	public final static GamaColor[] COLORS =
-			{ GamaColor.get("gamared"), GamaColor.get("gamaorange"), GamaColor.get("gamablue") };
+	/** The Constant NAME_REGISTRY. */
+	public final static IColor[] COLORS =
+			{ GamaColorFactory.get("gamared"), GamaColorFactory.get("gamaorange"), GamaColorFactory.get("gamablue") };
 
 	/** The Constant DEFAULT_SCALE. */
-	protected final static GamaPoint DEFAULT_SCALE = new GamaPoint(.15, .15, .15);
+	protected final static IPoint DEFAULT_SCALE = GamaPointFactory.create(.15, .15, .15);
 
 	/** The Constant ORIGIN. */
-	protected final static GamaPoint ORIGIN = new GamaPoint(0, 0, 0);
+	protected final static IPoint ORIGIN = GamaPointFactory.create(0, 0, 0);
 
 	/** The Constant AXES_FONT. */
-	protected final static GamaFont AXES_FONT = new GamaFont("Helvetica", 0, 18);
+	protected final static IFont AXES_FONT = GamaFontFactory.createFont("Helvetica", 0, 18);
 
 	/** The arrow. */
-	final GamaShape arrow;
+	final IShape arrow;
 
 	/** The dirs. */
-	final GamaPoint[] dirs;
+	final IPoint[] dirs;
 
 	/** The axes. */
-	final GamaShape[] axes = new GamaShape[3];
+	final IShape[] axes = new IShape[3];
 
 	/**
 	 * Instantiates a new axes layer object.
@@ -86,14 +86,14 @@ public class AxesLayerObject extends StaticLayerObject.World {
 		// Addition to fix #2227
 		currentList.scale.setLocation(DEFAULT_SCALE);
 		final double max = renderer.getMaxEnvDim();
-		arrow = (GamaShape) buildCone3D(max / 20, max / 8, ORIGIN);
-		dirs = new GamaPoint[] { new GamaPoint(max / 2, 0, 0), new GamaPoint(0, max / 2, 0),
-				new GamaPoint(0, 0, max / 2) };
-		for (int i = 0; i < 3; i++) { axes[i] = (GamaShape) buildLineCylinder(ORIGIN, dirs[i], max / 60); }
+		arrow = GamaShapeFactory.buildCone3D(max / 20, max / 8, ORIGIN);
+		dirs = new IPoint[] { GamaPointFactory.create(max / 2, 0, 0), GamaPointFactory.create(0, max / 2, 0),
+				GamaPointFactory.create(0, 0, max / 2) };
+		for (int i = 0; i < 3; i++) { axes[i] = GamaShapeFactory.buildLineCylinder(ORIGIN, dirs[i], max / 60); }
 	}
 
 	@Override
-	public void setScale(final GamaPoint s) {
+	public void setScale(final IPoint s) {
 		if (s == null) {
 			currentList.scale.setLocation(DEFAULT_SCALE);
 		} else {
@@ -105,11 +105,11 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	public void draw(final OpenGL gl) {
 		boolean previous = gl.setObjectWireframe(false);
 		if (gl.isInRotationMode()) {
-			final GamaPoint pivotPoint = renderer.getCameraTarget();
+			final IPoint pivotPoint = renderer.getCameraTarget();
 			setOffset(pivotPoint.yNegated());
 			final double size = gl.sizeOfRotationElements();
 			final double ratio = size / gl.getMaxEnvDim();
-			setScale(new GamaPoint(ratio, ratio, ratio));
+			setScale(GamaPointFactory.create(ratio, ratio, ratio));
 		} else {
 			setOffset(null);
 			setScale(null);
@@ -121,7 +121,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	@Override
 	public void fillWithObjects(final List<AbstractObject<?, ?>> list) {
 		for (int i = 0; i < 3; i++) {
-			final GamaPoint p = dirs[i];
+			final IPoint p = dirs[i];
 			// build axis
 			addSyntheticObject(list, axes[i], COLORS[i], IShape.Type.LINECYLINDER);
 			// build labels
@@ -132,8 +132,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 			text.setPerspective(false);
 			list.add(new StringObject(LABELS[i], text));
 			// build arrows
-			final GamaShape s =
-					GamaShapeFactory.createFrom(arrow).withRotation(ROTATIONS[i]).withLocation(p.times(0.98));
+			final IShape s = GamaShapeFactory.createFrom(arrow).withRotation(ROTATIONS[i]).withLocation(p.times(0.98));
 			addSyntheticObject(list, s, COLORS[i], IShape.Type.CONE);
 		}
 	}
@@ -152,7 +151,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	 * @param empty
 	 *            the empty
 	 */
-	protected void addSyntheticObject(final List<AbstractObject<?, ?>> list, final IShape shape, final GamaColor color,
+	protected void addSyntheticObject(final List<AbstractObject<?, ?>> list, final IShape shape, final IColor color,
 			final IShape.Type type) {
 		final DrawingAttributes att = new ShapeDrawingAttributes(shape, (IAgent) null, color, color, type,
 				GamaPreferences.Displays.CORE_LINE_WIDTH.getValue(), null);

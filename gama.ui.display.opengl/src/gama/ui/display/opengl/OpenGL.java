@@ -3,14 +3,13 @@
  * OpenGL.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.display.opengl;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.nio.BufferOverflowException;
 import java.util.HashMap;
@@ -31,22 +30,27 @@ import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.gl2.GLUT;
 import com.jogamp.opengl.util.texture.Texture;
 
-import gama.core.common.geometry.Envelope3D;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.geometry.ICoordinates;
-import gama.core.common.geometry.ICoordinates.VertexVisitor;
-import gama.core.common.geometry.Rotation3D;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.geometry.UnboundedCoordinateSequence;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.IDrawingAttributes.DrawerType;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.ICoordinates;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.geometry.Rotation3D;
+import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.geometry.UnboundedCoordinateSequence;
+import gama.api.utils.geometry.ICoordinates.VertexVisitor;
+import gama.api.utils.interfaces.IImageProvider;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGeometryFile;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
-import gama.gaml.statements.draw.DrawingAttributes;
-import gama.gaml.statements.draw.DrawingAttributes.DrawerType;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.renderer.caches.GeometryCache;
 import gama.ui.display.opengl.renderer.caches.GeometryCache.BuiltInGeometry;
@@ -129,7 +133,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	private final ITextureCache textureCache = new TextureCache2(this);
 
 	/** The texture envelope. */
-	private final Envelope3D textureEnvelope = Envelope3D.create();
+	private final IEnvelope textureEnvelope = GamaEnvelopeFactory.create();
 
 	/** The current texture rotation. */
 	private final Rotation3D currentTextureRotation = Rotation3D.identity();
@@ -151,7 +155,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	/** The current color. */
 	// Colors
-	private Color currentColor;
+	private IColor currentColor;
 
 	/** The current object alpha. */
 	private double currentObjectAlpha = 1d;
@@ -195,18 +199,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	/** The ratios. */
 	// World
-	final GamaPoint ratios = new GamaPoint();
+	final IPoint ratios = GamaPointFactory.create();
 
 	/** The rotation mode. */
 	private boolean rotationMode;
 
 	/** The current normal. */
-	// Working objects
-	final GamaPoint currentNormal = new GamaPoint();
+	final IPoint currentNormal = GamaPointFactory.create();
 
 	/** The texture coords. */
-	// final GamaPoint currentScale = new GamaPoint(1, 1, 1);
-	final GamaPoint textureCoords = new GamaPoint();
+	final IPoint textureCoords = GamaPointFactory.create();
 
 	/** The working vertices. */
 	final UnboundedCoordinateSequence workingVertices = new UnboundedCoordinateSequence();
@@ -247,6 +249,15 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		drawers.put(DrawerType.RESOURCE, rd);
 	}
 
+	/** The last bound texture ID for optimization. */
+	private int lastBoundTexture = NO_TEXTURE;
+
+	/** The last anti-aliasing setting for optimization. */
+	private boolean lastAntiAliasSetting = false;
+
+	/** The gl drawer. */
+	private final ICoordinates.IndexedVisitor glDrawer = this::drawVertex;
+
 	/**
 	 * Gets the drawer for.
 	 *
@@ -255,17 +266,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @return the drawer for
 	 */
 	public ObjectDrawer<? extends AbstractObject<?, ?>> getDrawerFor(final AbstractObject<?, ?> object) {
+		// Only create signature and checking mesh drawers if the object is indeed a mesh.
 		if (object instanceof MeshObject mo) {
-			int cols = (int) mo.getAttributes().getXYDimension().x;
-			int rows = (int) mo.getAttributes().getXYDimension().y;
-			boolean triangles = mo.getAttributes().isTriangulated();
-			MeshDrawer.Signature sig = new MeshDrawer.Signature(cols, rows, triangles);
-			MeshDrawer md = meshDrawers.get(sig);
-			if (md == null) {
-				md = new MeshDrawer(this);
-				meshDrawers.put(sig, md);
-			}
-			return md;
+			// Optimize: avoid creating a new Signature every time if possible or rely on efficient map operations.
+			// Currently, creating new Signature(cols, rows, triangles) is necessary for lookup.
+			// Assuming Signature is a lightweight object (record-like).
+			final var attributes = mo.getAttributes();
+			final IPoint dim = attributes.getXYDimension();
+			final MeshDrawer.Signature sig =
+					new MeshDrawer.Signature((int) dim.getX(), (int) dim.getY(), attributes.isTriangulated());
+			return meshDrawers.computeIfAbsent(sig, s -> new MeshDrawer(this));
 		}
 		return drawers.get(object.type);
 	}
@@ -665,6 +675,16 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	}
 
 	/**
+	 * Translate by Y negated.
+	 *
+	 * @param p
+	 *            the p
+	 */
+	public void translateByYNegated(final IPoint p) {
+		translateBy(p.getX(), -p.getY(), p.getZ());
+	}
+
+	/**
 	 * Translate by.
 	 *
 	 * @param x
@@ -705,8 +725,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param p
 	 *            the p
 	 */
-	public void translateBy(final GamaPoint p) {
-		translateBy(p.x, p.y, p.z);
+	public void translateBy(final IPoint p) {
+		translateBy(p.getX(), p.getY(), p.getZ());
 	}
 
 	/**
@@ -722,7 +742,11 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the z
 	 */
 	public void rotateBy(final double angle, final double x, final double y, final double z) {
-		gl.glRotated(angle, x, y, z);
+		if (x == 0d && y == 0d && z == 0d) {
+			gl.glRotated(angle, 0, 0, 1);
+		} else {
+			gl.glRotated(angle, x, y, z);
+		}
 	}
 
 	/**
@@ -732,9 +756,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the rotation
 	 */
 	public void rotateBy(final Rotation3D rotation) {
-		final GamaPoint axis = rotation.getAxis();
+		final IPoint axis = rotation.getAxis();
 		final double angle = rotation.getAngle() * Maths.toDeg;
-		rotateBy(angle, axis.x, axis.y, axis.z);
+		rotateBy(angle, axis.getX(), axis.getY(), axis.getZ());
 	}
 
 	/**
@@ -782,14 +806,14 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            if not null, will be used to draw the contour
 	 */
 	public void drawSimpleShape(final ICoordinates yNegatedVertices, final int number, final boolean clockwise,
-			final boolean computeNormal, final Color border) {
+			final boolean computeNormal, final IColor border) {
 		if (!isWireframe()) {
 			if (computeNormal) { setNormal(yNegatedVertices, clockwise); }
 			final int style = number == 4 ? GL2ES3.GL_QUADS : number == -1 ? GL2.GL_POLYGON : GL.GL_TRIANGLES;
 			drawVertices(style, yNegatedVertices, number, clockwise);
 		}
 		if (border != null || isWireframe()) {
-			final Color colorToUse = border != null ? border : getCurrentColor();
+			final IColor colorToUse = border != null ? border : getCurrentColor();
 			drawClosedLine(yNegatedVertices, colorToUse, -1);
 		}
 	}
@@ -809,7 +833,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		GLU.gluTessEndContour(tobj);
 		GeometryUtils.applyToInnerGeometries(p, geom -> {
 			GLU.gluTessBeginContour(tobj);
-			GeometryUtils.getContourCoordinates(geom).visitYNegatedCounterClockwise(glTesselatorDrawer);
+			GamaCoordinateSequenceFactory.pointsOf(geom).visitYNegatedCounterClockwise(glTesselatorDrawer);
 			GLU.gluTessEndContour(tobj);
 		});
 		GLU.gluTessEndPolygon(tobj);
@@ -838,9 +862,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param number
 	 *            the number
 	 */
-	public void drawClosedLine(final ICoordinates yNegatedVertices, final Color color, final int number) {
+	public void drawClosedLine(final ICoordinates yNegatedVertices, final IColor color, final int number) {
 		if (color == null) return;
-		final Color previous = swapCurrentColor(color);
+		final IColor previous = swapCurrentColor(color);
 		drawClosedLine(yNegatedVertices, number);
 		setCurrentColor(previous);
 	}
@@ -907,10 +931,10 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param tex
 	 *            the tex
 	 */
-	public void drawVertex(final GamaPoint coords, final GamaPoint normal, final GamaPoint tex) {
-		if (normal != null) { outputNormal(normal.x, normal.y, normal.z); }
-		if (tex != null) { gl.glTexCoord3d(tex.x, tex.y, tex.z); }
-		outputVertex(coords.x, coords.y, coords.z);
+	public void drawVertex(final IPoint coords, final IPoint normal, final IPoint tex) {
+		if (normal != null) { outputNormal(normal.getX(), normal.getY(), normal.getZ()); }
+		if (tex != null) { gl.glTexCoord3d(tex.getX(), tex.getY(), tex.getZ()); }
+		outputVertex(coords.getX(), coords.getY(), coords.getZ());
 	}
 
 	@Override
@@ -922,8 +946,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 			} else {
 				nullTextureRotation.applyTo(textureCoords);
 			}
-			final double u = 1 - (textureCoords.x - textureEnvelope.getMinX()) / textureEnvelope.getWidth();
-			final double v = (textureCoords.y - textureEnvelope.getMinY()) / textureEnvelope.getHeight();
+			final double u = 1 - (textureCoords.getX() - textureEnvelope.getMinX()) / textureEnvelope.getWidth();
+			final double v = (textureCoords.getY() - textureEnvelope.getMinY()) / textureEnvelope.getHeight();
 			outputTexCoord(u, v);
 		}
 		outputVertex(x, y, z);
@@ -944,7 +968,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	public void drawVertices(final int style, final ICoordinates yNegatedVertices, final int number,
 			final boolean clockwise) {
 		beginDrawing(style);
-		yNegatedVertices.visit(this::drawVertex, number, clockwise);
+		yNegatedVertices.visit(glDrawer, number, clockwise);
 		endDrawing();
 	}
 
@@ -952,13 +976,13 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * Replaces the current color by the parameter, sets the alpha of the parameter to be the one of the current color,
 	 * and returns the ex-current color
 	 *
-	 * @param color
+	 * @param iColor
 	 *            a Color
 	 * @return the previous current color
 	 */
-	public Color swapCurrentColor(final Color color) {
-		final Color old = currentColor;
-		setCurrentColor(color, old == null ? 1 : old.getAlpha() / 255d);
+	public IColor swapCurrentColor(final IColor iColor) {
+		final IColor old = currentColor;
+		setCurrentColor(iColor, old == null ? 1 : old.alpha() / 255d);
 		return old;
 	}
 
@@ -971,9 +995,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the clockwise
 	 * @return the gama point
 	 */
-	public GamaPoint setNormal(final ICoordinates yNegatedVertices, final boolean clockwise) {
+	public IPoint setNormal(final ICoordinates yNegatedVertices, final boolean clockwise) {
 		yNegatedVertices.getNormal(clockwise, 1, currentNormal);
-		outputNormal(currentNormal.x, currentNormal.y, currentNormal.z);
+		outputNormal(currentNormal.getX(), currentNormal.getY(), currentNormal.getZ());
 		if (isTextured()) { computeTextureCoordinates(yNegatedVertices, clockwise); }
 		return currentNormal;
 	}
@@ -1007,9 +1031,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param alpha
 	 *            the alpha
 	 */
-	public void setCurrentColor(final Color c, final double alpha) {
+	public void setCurrentColor(final IColor c, final double alpha) {
 		if (c == null) return;
-		setCurrentColor(c.getRed() / 255d, c.getGreen() / 255d, c.getBlue() / 255d, c.getAlpha() / 255d * alpha);
+		setCurrentColor(c.red() / 255d, c.green() / 255d, c.blue() / 255d, c.alpha() / 255d * alpha);
 	}
 
 	/**
@@ -1018,7 +1042,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param c
 	 *            the new current color
 	 */
-	public void setCurrentColor(final Color c) {
+	public void setCurrentColor(final IColor c) {
 		setCurrentColor(c, currentObjectAlpha);
 	}
 
@@ -1035,8 +1059,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the alpha
 	 */
 	public void setCurrentColor(final double red, final double green, final double blue, final double alpha) {
-		currentColor = new Color((float) Math.max(red, 0), (float) Math.max(green, 0), (float) Math.max(blue, 0),
-				(float) alpha);
+		currentColor = GamaColorFactory.getWithDoubles(Math.max(red, 0), Math.max(green, 0), Math.max(blue, 0), alpha);
 		gl.glColor4d(red, green, blue, alpha);
 	}
 
@@ -1045,7 +1068,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *
 	 * @return the current color
 	 */
-	public Color getCurrentColor() { return currentColor; }
+	public IColor getCurrentColor() { return currentColor; }
 
 	// LINE WIDTH
 
@@ -1103,8 +1126,11 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void bindTexture(final int texture) {
 		gl.glBindTexture(GL.GL_TEXTURE_2D, texture);
-		// Apply antialas to the texture based on the current preferences
-		final boolean isAntiAlias = getData().isAntialias();
+		boolean isAntiAlias = getData().isAntialias();
+		if (texture == lastBoundTexture && isAntiAlias == lastAntiAliasSetting) return;
+
+		lastBoundTexture = texture;
+		lastAntiAliasSetting = isAntiAlias;
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, isAntiAlias ? GL.GL_LINEAR : GL.GL_NEAREST);
 		gl.glTexParameterf(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAX_ANISOTROPY_EXT, isAntiAlias ? ANISOTROPIC_LEVEL : 0);
@@ -1216,9 +1242,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *            the obj
 	 * @return the envelope for
 	 */
-	public Envelope3D getEnvelopeFor(final Object obj) {
+	public IEnvelope getEnvelopeFor(final Object obj) {
 		if (obj instanceof GamaGeometryFile) return geometryCache.getEnvelope((GamaGeometryFile) obj);
-		if (obj instanceof Geometry) return Envelope3D.of((Geometry) obj);
+		if (obj instanceof Geometry) return GamaEnvelopeFactory.of((Geometry) obj);
 		return null;
 	}
 
@@ -1398,14 +1424,14 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param border
 	 *            the border
 	 */
-	public void drawCachedGeometry(final GamaGeometryFile file, final Color border) {
+	public void drawCachedGeometry(final GamaGeometryFile file, final IColor border) {
 		if (file == null) return;
 		final Integer index = geometryCache.get(file);
 		if (index != null) {
 			drawList(index);
 			if (border != null || isWireframe()) {
-				final Color colorToUse = border != null ? border : getCurrentColor();
-				final Color old = swapCurrentColor(colorToUse);
+				final IColor colorToUse = border != null ? border : getCurrentColor();
+				final IColor old = swapCurrentColor(colorToUse);
 				boolean previous = setObjectWireframe(true);
 				try {
 					drawList(index);
@@ -1425,14 +1451,14 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param border
 	 *            the border
 	 */
-	public void drawCachedGeometry(final IShape.Type id, /* final boolean solid, */ final Color border) {
+	public void drawCachedGeometry(final IShape.Type id, /* final boolean solid, */ final IColor border) {
 		if (geometryCache == null || id == null) return;
 		final BuiltInGeometry object = geometryCache.get(id);
 		if (object == null) return;
 		if (!isWireframe()) { object.draw(this); }
 		if (border != null || isWireframe()) {
-			final Color colorToUse = border != null ? border : getCurrentColor();
-			final Color old = swapCurrentColor(colorToUse);
+			final IColor colorToUse = border != null ? border : getCurrentColor();
+			final IColor old = swapCurrentColor(colorToUse);
 			boolean previous = setObjectWireframe(true);
 			try {
 				object.draw(this);
@@ -1467,7 +1493,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void beginObject(final AbstractObject<?, ?> object, final boolean isPicking) {
 		// DEBUG.OUT("Object " + object + " begin and is " + (object.getAttributes().isEmpty() ? "empty" : "filled"));
-		DrawingAttributes att = object.getAttributes();
+		IDrawingAttributes att = object.getAttributes();
 		if (isPicking) { registerForSelection(att.getIndex()); }
 		boolean empty = att.isEmpty();
 		previousObjectWireframe = setObjectWireframe(empty);
@@ -1510,9 +1536,9 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		previousDisplayWireframe = setDisplayWireframe(getData().isWireframe());
 		previousDisplayLighting = setDisplayLighting(getData().isLightOn());
 		processUnloadedCacheObjects();
-		final Color backgroundColor = getData().getBackgroundColor();
-		gl.glClearColor(backgroundColor.getRed() / 255.0f, backgroundColor.getGreen() / 255.0f,
-				backgroundColor.getBlue() / 255.0f, 1.0f);
+		final IColor backgroundColor = getData().getBackgroundColor();
+		gl.glClearColor(backgroundColor.red() / 255.0f, backgroundColor.green() / 255.0f,
+				backgroundColor.blue() / 255.0f, 1.0f);
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
 		gl.glClearDepth(1.0f);
 		resetMatrix(GLMatrixFunc.GL_PROJECTION);
@@ -1552,15 +1578,18 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void rotateModel() {
 		if (getData().hasRotation()) {
-			GamaPoint c = getData().getRotationCenter();
-			translateBy(c.x, c.y, c.z);
-			GamaPoint p = getData().getRotationAxis();
+			IPoint c = getData().getRotationCenter();
+			double cx = c.getX();
+			double cy = c.getY();
+			double cz = c.getZ();
+			translateBy(cx, cy, cz);
+			IPoint p = getData().getRotationAxis();
 			if (p == null) {
 				rotateBy(getData().getRotationAngle(), 0, 0, 1);
 			} else {
-				rotateBy(getData().getRotationAngle(), p.x, p.y, p.z);
+				rotateBy(getData().getRotationAngle(), p.getX(), p.getY(), p.getZ());
 			}
-			translateBy(-c.x, -c.y, -c.z);
+			translateBy(-cx, -cy, -cz);
 		}
 	}
 
@@ -1570,8 +1599,8 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 * @param bg
 	 *            the bg
 	 */
-	public void initializeGLStates(final Color bg) {
-		gl.glClearColor(bg.getRed() / 255.0f, bg.getGreen() / 255.0f, bg.getBlue() / 255.0f, 1.0f);
+	public void initializeGLStates(final IColor bg) {
+		gl.glClearColor(bg.red() / 255.0f, bg.green() / 255.0f, bg.blue() / 255.0f, 1.0f);
 		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
 
 		// Putting the swap interval to 0 (instead of 1) seems to cure some of
@@ -1614,7 +1643,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		// gl.glEnable(GL2GL3.GL_POLYGON_SMOOTH);
 		// Enabling forced normalization of normal vectors (important)
 		gl.glEnable(GLLightingFunc.GL_NORMALIZE);
-		// Enabling multi-sampling (necessary ?)
+		// Enabling multi-SAMPLING (necessary ?)
 		// if (USE_MULTI_SAMPLE) {
 		gl.glEnable(GL.GL_MULTISAMPLE);
 		// Setting the default polygon mode
@@ -1628,7 +1657,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 *
 	 * @return the ratios
 	 */
-	public GamaPoint getRatios() { return ratios; }
+	public IPoint getRatios() { return ratios; }
 
 	/**
 	 *
@@ -1653,7 +1682,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void drawFPS(final boolean doIt) {
 		if (doIt) {
-			setCurrentColor(Color.black);
+			setCurrentColor(GamaColorFactory.BLACK);
 			final int nb = (int) getCanvas().getAnimator().getLastFPS();
 			final String s = nb == 0 ? "(computing FPS...)" : nb + " FPS";
 			rasterText(s, GLUT.BITMAP_HELVETICA_12, -5, 5, 0);
@@ -1687,7 +1716,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 	 */
 	public void drawRotation(final boolean doIt) {
 		if (doIt) {
-			final GamaPoint target = getData().getCameraTarget();
+			final IPoint target = getData().getCameraTarget();
 			final double distance = getData().getCameraPos().minus(target).norm();
 			getGeometryDrawer().drawRotationHelper(target, distance, Math.min(getMaxEnvDim() / 4d, distance / 8d));
 		}

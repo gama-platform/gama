@@ -7,6 +7,8 @@ import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.TypeInfo;
 
+import gaml.compiler.gaml.serializer.GamlEObjectImpl;
+
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
 
@@ -14,7 +16,6 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
@@ -30,7 +31,7 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  *
  * @generated
  */
-public class TypeInfoImpl extends MinimalEObjectImpl.Container implements TypeInfo
+public class TypeInfoImpl extends GamlEObjectImpl implements TypeInfo
 {
   /**
    * The cached value of the '{@link #getFirst() <em>First</em>}' containment reference.

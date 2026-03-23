@@ -31,7 +31,7 @@ global {
 	
 	reflex pauseAtConvergence when: converged { }
 	
-	action activate_act {
+	action activate_act() {
 		button selected_but <- first(button overlapping (circle(1) at_location #user_location));
 		if(selected_but != nil) {
 			ask selected_but {
@@ -51,7 +51,7 @@ global {
 	// No need to register the type of action as the simulation is supposed to run fast, so that 
 	// the user doesnt have the time, in one step, to click two times and change the action type in-between.
 	// See issue #3626 on GAMA platform Github
-	action register_click {
+	action register_click() {
 		clicks << #user_location;
 	}
 	
@@ -137,7 +137,7 @@ experiment SelectPoints2Cluster2D type: gui autorun: true{
 			}
 		}
 		//display the action buttons
-		display action_buton background:#white name:"Tools panel" type:2d	{
+		display action_buton background:#white title:"Tools panel" type:2d	{
 			species button aspect:normal ;
 			event #mouse_down {ask simulation {do activate_act;}}   
 		}

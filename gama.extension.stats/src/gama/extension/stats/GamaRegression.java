@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * GamaRegression.java, in gama.extension.stats, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamaRegression.java, in gama.extension.stats, is part of the source code of the GAMA modeling and simulation platform
+ * .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -13,21 +13,21 @@ package gama.extension.stats;
 import org.apache.commons.math3.stat.regression.OLSMultipleLinearRegression;
 import org.apache.commons.math3.stat.regression.RegressionResults;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IValue;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
-import gama.core.util.matrix.GamaMatrix;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IValue;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class GamaRegression.
@@ -77,12 +77,12 @@ public class GamaRegression implements IValue {
 	 * @throws Exception
 	 *             the exception
 	 */
-	public GamaRegression(final IScope scope, final GamaMatrix<?> data) throws Exception {
+	public GamaRegression(final IScope scope, final IMatrix<?> data) throws Exception {
 		final OLSMultipleLinearRegression regressionMethod = new OLSMultipleLinearRegression();
-		final int nbFeatures = data.numCols - 1;
-		final int nbInstances = data.numRows;
+		final int nbFeatures = data.getCols(scope) - 1;
+		final int nbInstances = data.getRows(scope);
 
-		final double[] instances = new double[data.numCols * data.numRows];
+		final double[] instances = new double[data.getCols(scope) * data.getRows(scope)];
 
 		for (int i = 0; i < data.length(scope); i++) { instances[i] = Cast.asFloat(scope, data.getNthElement(i)); }
 		regressionMethod.newSampleData(instances, nbInstances, nbFeatures);
@@ -196,7 +196,7 @@ public class GamaRegression implements IValue {
 	}
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
+	public IJsonValue serializeToJson(final IJson json) {
 		return json.typedObject(getGamlType(), "nb_features", nbFeatures, "parameters", json.array(param), "RSquare",
 				rsquare, "residuals", json.array(error));
 	}

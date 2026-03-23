@@ -19,7 +19,7 @@ grid cell width: 10 height: 10 {
 	string type <- one_of(color_per_type.keys);
 	rgb color <- color_per_type[type];
 }
-experiment overlay type: gui
+experiment "Overlay" type: gui
 {
     output 
     {
@@ -44,3 +44,4 @@ experiment overlay type: gui
 
     }
 }
+ 

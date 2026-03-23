@@ -10,7 +10,8 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.ui.layers.ILayerStatement;
 
 /**
  * The Class ImageLayerData.

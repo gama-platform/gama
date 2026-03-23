@@ -27,7 +27,7 @@ species boat skills: [moving]{
 		//the location of a obj file is centroid of the bounding box, so we add with the "at" facet a translated along the z axis to place the boat on the water and not inside
 		//the size represents here the max size of the bounding box
 		//at last, we dynamically apply a rotation to the boat to make it head in direction of the heading of the agents. 
-		pair<float,point> r0 <-  -90::{1,0,0};	
+		pair<float,point> r0 <-  90::{1,0,0};	
 		pair<float,point> pitch <-  5 * cos(cycle*10) ::{1,0,0};
 		pair<float,point> roll <- 20*sin(cycle*3)::{0,1,0};
 		pair<float,point> yaw <- 1*sin(cycle*7)::{0,0,1};

@@ -24,11 +24,11 @@ experiment Show {
 	output {
 		layout #split;
 		display im type: 3d {
-			image im;
+			picture im;
 		}
 		
 		display mat {
-			image mat;
+			picture mat;
 		}
 		
 		display field type: 3d {

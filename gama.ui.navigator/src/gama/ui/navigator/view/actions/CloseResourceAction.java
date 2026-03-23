@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * CloseResourceAction.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * CloseResourceAction.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.view.actions;
 
@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceRuleFactory;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.mapping.IResourceChangeDescriptionFactory;
 import org.eclipse.core.resources.mapping.ResourceChangeValidator;
 import org.eclipse.core.runtime.Assert;
@@ -50,6 +49,7 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchMessages;
 import org.eclipse.ui.internal.ide.IIDEHelpContextIds;
 import org.eclipse.ui.part.FileEditorInput;
 
+import gama.api.GAMA;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
@@ -91,19 +91,13 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	}
 
 	@Override
-	protected String getOperationMessage() {
-		return IDEWorkbenchMessages.CloseResourceAction_operationMessage;
-	}
+	protected String getOperationMessage() { return IDEWorkbenchMessages.CloseResourceAction_operationMessage; }
 
 	@Override
-	protected String getProblemsMessage() {
-		return IDEWorkbenchMessages.CloseResourceAction_problemMessage;
-	}
+	protected String getProblemsMessage() { return IDEWorkbenchMessages.CloseResourceAction_problemMessage; }
 
 	@Override
-	protected String getProblemsTitle() {
-		return IDEWorkbenchMessages.CloseResourceAction_title;
-	}
+	protected String getProblemsTitle() { return IDEWorkbenchMessages.CloseResourceAction_title; }
 
 	@SuppressWarnings ("deprecation")
 	@Override
@@ -119,22 +113,19 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	public void run() {
 		// Get the items to close.
 		final List<? extends IResource> projects = getSelectedResources();
-		if (projects == null || projects.isEmpty()) {
-			// no action needs to be taken since no projects are selected
+		if (projects == null || projects.isEmpty()) // no action needs to be taken since no projects are selected
 			return;
-		}
 
 		final IResource[] projectArray = projects.toArray(new IResource[projects.size()]);
 
-		if (!IDE.saveAllEditors(projectArray, true)) { return; }
-		if (!validateClose()) { return; }
+		if (!IDE.saveAllEditors(projectArray, true) || !validateClose()) return;
 
 		closeMatchingEditors(projects, false);
 
 		// be conservative and include all projects in the selection - projects
 		// can change state between now and when the job starts
 		ISchedulingRule rule = null;
-		final IResourceRuleFactory factory = ResourcesPlugin.getWorkspace().getRuleFactory();
+		final IResourceRuleFactory factory = GAMA.getWorkspaceManager().getWorkspace().getRuleFactory();
 		for (final IResource element : projectArray) {
 			final IProject project = (IProject) element;
 			rule = MultiRule.combine(rule, factory.modifyRule(project));
@@ -154,12 +145,12 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	@Override
 	protected boolean updateSelection(final IStructuredSelection s) {
 		// don't call super since we want to enable if open project is selected.
-		if (!selectionIsOfType(IResource.PROJECT)) { return false; }
+		if (!selectionIsOfType(IResource.PROJECT)) return false;
 
 		final Iterator<? extends IResource> resources = getSelectedResources().iterator();
 		while (resources.hasNext()) {
 			final IProject currentResource = (IProject) resources.next();
-			if (currentResource.isOpen()) { return true; }
+			if (currentResource.isOpen()) return true;
 		}
 		return false;
 	}
@@ -168,7 +159,7 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	 * Handles a resource changed event by updating the enablement if one of the selected projects is opened or closed.
 	 */
 	@Override
-	public synchronized void resourceChanged(final IResourceChangeEvent event) {
+	public void resourceChanged(final IResourceChangeEvent event) {
 		// Warning: code duplicated in OpenResourceAction
 		final List<? extends IResource> sel = getSelectedResources();
 		// don't bother looking at delta if selection not applicable
@@ -177,11 +168,9 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 			if (delta != null) {
 				final IResourceDelta[] projDeltas = delta.getAffectedChildren(IResourceDelta.CHANGED);
 				for (final IResourceDelta projDelta : projDeltas) {
-					if ((projDelta.getFlags() & IResourceDelta.OPEN) != 0) {
-						if (sel.contains(projDelta.getResource())) {
-							selectionChanged(getStructuredSelection());
-							return;
-						}
+					if (((projDelta.getFlags() & IResourceDelta.OPEN) != 0) && sel.contains(projDelta.getResource())) {
+						selectionChanged(getStructuredSelection());
+						return;
 					}
 				}
 			}
@@ -189,14 +178,10 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	}
 
 	@Override
-	protected synchronized List<? extends IResource> getSelectedResources() {
-		return super.getSelectedResources();
-	}
+	protected List<? extends IResource> getSelectedResources() { return super.getSelectedResources(); }
 
 	@Override
-	protected synchronized List<?> getSelectedNonResources() {
-		return super.getSelectedNonResources();
-	}
+	protected List<?> getSelectedNonResources() { return super.getSelectedNonResources(); }
 
 	/**
 	 * Returns the model provider ids that are known to the client that instantiated this operation.
@@ -204,9 +189,7 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	 * @return the model provider ids that are known to the client that instantiated this operation.
 	 * @since 3.2
 	 */
-	public String[] getModelProviderIds() {
-		return modelProviderIds;
-	}
+	public String[] getModelProviderIds() { return modelProviderIds; }
 
 	/**
 	 * Sets the model provider ids that are known to the client that instantiated this operation. Any potential side
@@ -216,9 +199,7 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	 *            the model providers known to the client who is using this operation.
 	 * @since 3.2
 	 */
-	public void setModelProviderIds(final String[] modelProviderIds) {
-		this.modelProviderIds = modelProviderIds;
-	}
+	public void setModelProviderIds(final String[] modelProviderIds) { this.modelProviderIds = modelProviderIds; }
 
 	/**
 	 * Validates the operation against the model providers.
@@ -229,8 +210,7 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 		final IResourceChangeDescriptionFactory factory = ResourceChangeValidator.getValidator().createDeltaFactory();
 		final List<? extends IResource> resources = getActionResources();
 		for (final IResource resource : resources) {
-			if (resource instanceof IProject) {
-				final IProject project = (IProject) resource;
+			if (resource instanceof final IProject project) {
 				factory.close(project);
 			}
 		}
@@ -254,14 +234,14 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	 *            true to close only editors on resources which do not exist
 	 */
 	static void closeMatchingEditors(final List<? extends IResource> resourceRoots, final boolean deletedOnly) {
-		if (resourceRoots.isEmpty()) { return; }
+		if (resourceRoots.isEmpty()) return;
 		final Runnable runnable = () -> SafeRunner.run(new SafeRunnable(IDEWorkbenchMessages.ErrorOnCloseEditors) {
 			@Override
 			public void run() {
 				final IWorkbenchWindow w = getActiveWindow();
 				if (w != null) {
 					final List<IEditorReference> toClose = getMatchingEditors(resourceRoots, w, deletedOnly);
-					if (toClose.isEmpty()) { return; }
+					if (toClose.isEmpty()) return;
 					closeEditors(toClose, w);
 				}
 			}
@@ -278,9 +258,7 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 		IWorkbenchWindow w = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
 		if (w == null) {
 			final IWorkbenchWindow[] windows = PlatformUI.getWorkbench().getWorkbenchWindows();
-			if (windows.length > 0) {
-				w = windows[0];
-			}
+			if (windows.length > 0) { w = windows[0]; }
 		}
 		return w;
 	}
@@ -288,9 +266,12 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	/**
 	 * Gets the matching editors.
 	 *
-	 * @param resourceRoots the resource roots
-	 * @param w the w
-	 * @param deletedOnly the deleted only
+	 * @param resourceRoots
+	 *            the resource roots
+	 * @param w
+	 *            the w
+	 * @param deletedOnly
+	 *            the deleted only
 	 * @return the matching editors
 	 */
 	static List<IEditorReference> getMatchingEditors(final List<? extends IResource> resourceRoots,
@@ -301,9 +282,7 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 			final IResource resource = getAdapter(ref);
 			// only collect editors for non existing resources
 			if (resource != null && belongsTo(resourceRoots, resource)) {
-				if (deletedOnly && resource.exists()) {
-					continue;
-				}
+				if (deletedOnly && resource.exists()) { continue; }
 				toClose.add(ref);
 			}
 		}
@@ -313,13 +292,14 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	/**
 	 * Gets the editors.
 	 *
-	 * @param w the w
+	 * @param w
+	 *            the w
 	 * @return the editors
 	 */
 	static IEditorReference[] getEditors(final IWorkbenchWindow w) {
 		if (w != null) {
 			final IWorkbenchPage page = w.getActivePage();
-			if (page != null) { return page.getEditorReferences(); }
+			if (page != null) return page.getEditorReferences();
 		}
 		return new IEditorReference[0];
 	}
@@ -327,7 +307,8 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	/**
 	 * Gets the adapter.
 	 *
-	 * @param ref the ref
+	 * @param ref
+	 *            the ref
 	 * @return the adapter
 	 */
 	static IResource getAdapter(final IEditorReference ref) {
@@ -338,33 +319,33 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 			// ignore if factory can't restore input, see bug 461786
 			return null;
 		}
-		if (input instanceof FileEditorInput) {
-			final FileEditorInput fi = (FileEditorInput) input;
+		if (input instanceof final FileEditorInput fi) {
 			final IFile file = fi.getFile();
-			if (file != null) { return file; }
+			if (file != null) return file;
 		}
 		// here we can only guess how the input might be related to a resource
 		final IFile adapter = getAdapter(input, IFile.class);
-		if (adapter != null) { return adapter; }
+		if (adapter != null) return adapter;
 		return getAdapter(input, IResource.class);
 	}
 
 	/**
 	 * Gets the adapter.
 	 *
-	 * @param <T> the generic type
-	 * @param sourceObject the source object
-	 * @param adapterType the adapter type
+	 * @param <T>
+	 *            the generic type
+	 * @param sourceObject
+	 *            the source object
+	 * @param adapterType
+	 *            the adapter type
 	 * @return the adapter
 	 */
 	public final static <T> T getAdapter(final Object sourceObject, final Class<T> adapterType) {
 		Assert.isNotNull(adapterType);
-		if (sourceObject == null) { return null; }
-		if (adapterType.isInstance(sourceObject)) { return adapterType.cast(sourceObject); }
+		if (sourceObject == null) return null;
+		if (adapterType.isInstance(sourceObject)) return adapterType.cast(sourceObject);
 
-		if (sourceObject instanceof IAdaptable) {
-			final IAdaptable adaptable = (IAdaptable) sourceObject;
-
+		if (sourceObject instanceof final IAdaptable adaptable) {
 			final T result = adaptable.getAdapter(adapterType);
 			if (result != null) {
 				// Sanity-check
@@ -375,7 +356,7 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 
 		if (!(sourceObject instanceof PlatformObject)) {
 			final T result = Platform.getAdapterManager().getAdapter(sourceObject, adapterType);
-			if (result != null) { return result; }
+			if (result != null) return result;
 		}
 
 		return null;
@@ -384,26 +365,28 @@ public class CloseResourceAction extends WorkspaceAction implements IResourceCha
 	/**
 	 * Belongs to.
 	 *
-	 * @param roots the roots
-	 * @param leaf the leaf
+	 * @param roots
+	 *            the roots
+	 * @param leaf
+	 *            the leaf
 	 * @return true, if successful
 	 */
 	static boolean belongsTo(final List<? extends IResource> roots, final IResource leaf) {
-		for (final IResource resource : roots) {
-			if (resource.contains(leaf)) { return true; }
-		}
+		for (final IResource resource : roots) { if (resource.contains(leaf)) return true; }
 		return false;
 	}
 
 	/**
 	 * Close editors.
 	 *
-	 * @param toClose the to close
-	 * @param w the w
+	 * @param toClose
+	 *            the to close
+	 * @param w
+	 *            the w
 	 */
 	static void closeEditors(final List<IEditorReference> toClose, final IWorkbenchWindow w) {
 		final IWorkbenchPage page = w.getActivePage();
-		if (page == null) { return; }
+		if (page == null) return;
 		page.closeEditors(toClose.toArray(new IEditorReference[toClose.size()]), false);
 	}
 }

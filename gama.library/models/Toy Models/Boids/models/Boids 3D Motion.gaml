@@ -107,7 +107,7 @@ species boids skills: [moving3D] {
 		velocity <- velocity + acc; 
 	}
 	//Action to make the agent location within the environment
-	action bounding {
+	action bounding() {
 		if (location.z) < 0 {
 			location <- {location.x,location.y,0};
 		} else if (location.z) > z_max {
@@ -123,7 +123,7 @@ species boids skills: [moving3D] {
 		velocity <- velocity + wind_vector;
 	}
 	//Action to make the agent moving
-	action do_move {  
+	action do_move() {  
 		if (((velocity.x) as int) = 0) and (((velocity.y) as int) = 0) and (((velocity.z) as int) = 0) {
 			velocity <- {(rnd(4)) -2, (rnd(4)) - 2,  ((rnd(4)) - 2)} ; 
 		}
@@ -133,15 +133,15 @@ species boids skills: [moving3D] {
 	}
 	//Reflex to move the agent, calling both bounding and do_move action
 	reflex movement {
-		do bounding;
-		do do_move;
+		do bounding();
+		do do_move();
 	}
 	
 	aspect sphere {
 		draw sphere(10) color: #green;
 	}
 	
-	aspect image {
+	aspect icon {
 		draw bird0_gif_file size: boids_size rotate: heading::(location - boids_goal[0].location) color: #black ;      
 	}
 }
@@ -174,7 +174,7 @@ experiment "3D" type: gui {
 		
 		display Sky1 type:3d {
 			camera 'default' location: {555.5176,1479.257,750.4308} target: {442.2293,184.3665,0.0};
-			species boids aspect: image;
+			species boids aspect: icon;
 			species boids_goal;	
 		}
 		

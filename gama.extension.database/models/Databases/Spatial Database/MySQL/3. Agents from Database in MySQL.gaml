@@ -36,7 +36,7 @@ global {
 		
 		create DB_accessor {
 			create buildings from: select(PARAMS,QUERY) 
-							 with:[ type::"type", shape:: "geom"];
+							 with:( type:"type", shape: "geom");
 		 }
 	}
 }

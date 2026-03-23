@@ -1,35 +1,37 @@
 /*******************************************************************************************************
  *
  * GridLayerData.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.util.Collection;
 
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.topology.grid.GridPopulation;
-import gama.core.metamodel.topology.grid.IGrid;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.topology.IGrid;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.core.topology.grid.GridPopulation;
 import gama.core.util.matrix.GamaFloatMatrix;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class GridLayerData.
@@ -37,7 +39,7 @@ import gama.gaml.types.Types;
 public class GridLayerData extends LayerData {
 
 	/** The default line color. */
-	static GamaColor defaultLineColor = GamaColor.get(Color.black);
+	static IColor defaultLineColor = GamaColorFactory.BLACK;
 
 	/** The grid. */
 	GridPopulation grid;
@@ -52,7 +54,7 @@ public class GridLayerData extends LayerData {
 	private final boolean shouldComputeImage;
 
 	/** The line. */
-	Attribute<GamaColor> line;
+	Attribute<IColor> line;
 
 	/** The texture. */
 	Attribute<IImageProvider> texture;
@@ -71,9 +73,6 @@ public class GridLayerData extends LayerData {
 
 	/** The text. */
 	Attribute<Boolean> text;
-	//
-	// /** The cell size. */
-	// private GamaPoint cellSize;
 
 	/** The wireframe. */
 	Attribute<Boolean> wireframe;
@@ -82,7 +81,7 @@ public class GridLayerData extends LayerData {
 	BufferedImage image;
 
 	/** The dim. */
-	private final GamaPoint dim = new GamaPoint();
+	private final IPoint dim = GamaPointFactory.create();
 
 	/**
 	 * Instantiates a new grid layer data.
@@ -104,7 +103,8 @@ public class GridLayerData extends LayerData {
 			if (exp != null) {
 				switch (exp.getGamlType().id()) {
 					case IType.MATRIX:
-						return GamaFloatMatrix.from(scope, Cast.asMatrix(scope, exp.value(scope))).getMatrix();
+						return GamaFloatMatrix.from(scope, GamaMatrixFactory.castToMatrix(scope, exp.value(scope)))
+								.getMatrix();
 					case IType.FLOAT:
 					case IType.INT:
 						return grid.getTopology().getPlaces().getGridValueOf(scope, exp);
@@ -130,10 +130,9 @@ public class GridLayerData extends LayerData {
 	public boolean compute(final IScope scope, final IGraphics g) throws GamaRuntimeException {
 		if (grid == null) {
 			final IPopulation<? extends IAgent> gridPop = scope.getAgent().getPopulationFor(name);
-			if (gridPop == null)
-				throw GamaRuntimeException.error("No grid species named " + name + " can be found", scope);
-			if (!gridPop.isGrid()) throw GamaRuntimeException.error("Species named " + name + " is not a grid", scope);
-			grid = (GridPopulation) gridPop;
+			if (!(gridPop instanceof GridPopulation gp))
+				throw GamaRuntimeException.error(name + " is not a grid", scope);
+			grid = gp;
 			dim.setLocation(grid.getTopology().getPlaces().getDimensions());
 		}
 		boolean result = super.compute(scope, g);
@@ -176,13 +175,14 @@ public class GridLayerData extends LayerData {
 	 *
 	 * @return the line color
 	 */
-	public GamaColor getLineColor() { return line.get() == null ? defaultLineColor : line.get(); }
+	public IColor getLineColor() { return line.get() == null ? defaultLineColor : line.get(); }
 
 	/**
 	 * Draw lines.
 	 *
 	 * @return true, if successful
 	 */
+	@Override
 	public boolean drawLines() {
 		return line.get() != null && turnGridOn;
 	}
@@ -270,7 +270,7 @@ public class GridLayerData extends LayerData {
 	 *
 	 * @return the dimensions
 	 */
-	public GamaPoint getDimensions() { return dim; }
+	public IPoint getDimensions() { return dim; }
 
 	/**
 	 * Checks if is smooth.

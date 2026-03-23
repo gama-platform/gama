@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ModelLibraryRunner.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ModelLibraryRunner.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,12 +24,12 @@ import org.osgi.framework.Bundle;
 import com.google.common.collect.Multimap;
 import com.google.inject.Injector;
 
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.model.IModel;
+import gama.api.additions.GamaBundleLoader;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.kernel.species.IModelSpecies;
 import gama.dev.DEBUG;
 import gama.dev.STRINGS;
-import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.compilation.kernel.GamaBundleLoader;
 import gama.headless.core.Experiment;
 import gama.headless.runtime.HeadlessApplication;
 import gaml.compiler.gaml.validation.GamlModelBuilder;
@@ -39,7 +39,7 @@ import gaml.compiler.gaml.validation.GamlModelBuilder;
  */
 public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 
-	/** The instance. */
+	/** The INSTANCE. */
 	private static ModelLibraryRunner instance;
 
 	/**
@@ -88,7 +88,6 @@ public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 		return code[0] + code[1];
 	}
 
-
 	/**
 	 * Validate and run.
 	 *
@@ -110,17 +109,15 @@ public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 	private void validateAndRun(final GamlModelBuilder builder, final Map<String, Exception> executionErrors,
 			final int[] countOfModelsValidated, final int[] returnCode, final URL pathToModel, final boolean expGUIOnly,
 			final int nbCycles) {
-		if (pathToModel.toString().contains("Database")) {
-			return;
-		}
+		if (pathToModel.toString().contains("Database")) return;
 		STRINGS.PAD("", 80, '=');
 
 		final List<GamlCompilationError> errors = new ArrayList<>();
-		final IModel mdl = builder.compile(pathToModel, errors);
+		final IModelSpecies mdl = builder.compile(pathToModel, errors);
 
 		countOfModelsValidated[0]++;
 		errors.stream().filter(GamlCompilationError::isError).forEach(e -> {
-			DEBUG.OUT("Error in " + e.getURI() + ":\n " + e.toString() + " \n " + e.getStatement().toString() + "\n");
+			DEBUG.OUT("Error in " + e.uri() + ":\n " + e.toString() + " \n " + e.source().toString() + "\n");
 			returnCode[0]++;
 		});
 
@@ -133,7 +130,7 @@ public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 		}
 
 		for (final String expName : mdl.getDescription().getExperimentNames()) {
-			final IExperimentPlan exp = mdl.getExperiment(expName);
+			final IExperimentSpecies exp = mdl.getExperiment(expName);
 			if (!exp.isBatch() || !expGUIOnly) {
 				DEBUG.OUT("*********** Run experiment " + exp + " from model: " + mdl.getName());
 				if (experiment != null) {
@@ -156,9 +153,9 @@ public class ModelLibraryRunner extends AbstractModelLibraryRunner {
 	}
 
 	/**
-	 * Gets the single instance of ModelLibraryRunner.
+	 * Gets the single INSTANCE of ModelLibraryRunner.
 	 *
-	 * @return single instance of ModelLibraryRunner
+	 * @return single INSTANCE of ModelLibraryRunner
 	 */
 	public static ModelLibraryRunner getInstance() {
 		if (instance == null) { instance = new ModelLibraryRunner(); }

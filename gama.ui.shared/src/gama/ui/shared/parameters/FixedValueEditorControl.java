@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
-import static gama.core.common.util.StringUtils.toGaml;
+import static gama.api.utils.StringUtils.toGaml;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ChartJFreeChartOutputHeatmap.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -36,6 +36,7 @@ import org.jfree.chart.renderer.LookupPaintScale;
 import org.jfree.chart.renderer.xy.XYBlockRenderer;
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.title.PaintScaleLegend;
+import org.jfree.chart.title.Title;
 import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.category.CategoryDataset;
@@ -44,10 +45,12 @@ import org.jfree.data.xy.MatrixSeries;
 import org.jfree.data.xy.MatrixSeriesCollection;
 import org.jfree.data.xy.XYDataset;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.gaml.expressions.IExpression;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.ui.displays.IChartDataSource;
+import gama.api.ui.displays.IDisplaySurface;
 
 /**
  * The Class ChartJFreeChartOutputHeatmap.
@@ -84,22 +87,22 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 	}
 
 	@Override
-	public void setDefaultPropertiesFromType(final IScope scope, final ChartDataSource source, final int type_val) {
+	public void setDefaultPropertiesFromType(final IScope scope, final IChartDataSource source, final int type_val) {
 
 		switch (type_val) {
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N:
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_12: {
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N:
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_12: {
 				source.setCumulative(scope, false);
 				source.setCumulativeY(scope, true);
 				source.setUseSize(scope, true);
 				break;
 			}
-			case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N:
-			case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
-			case ChartDataSource.DATA_TYPE_LIST_POINT:
-			case ChartDataSource.DATA_TYPE_MATRIX_DOUBLE:
-			case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3:
+			case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N:
+			case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
+			case IChartDataSource.DATA_TYPE_LIST_POINT:
+			case IChartDataSource.DATA_TYPE_MATRIX_DOUBLE:
+			case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3:
 			default: {
 				source.setCumulative(scope, false);
 				source.setUseSize(scope, true);
@@ -123,22 +126,16 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 		final String style = this.getChartdataset().getDataSeries(scope, serieid).getStyle(scope);
 		AbstractRenderer newr;
 		switch (style) {
-			case IKeyword.SPLINE:
-			case IKeyword.STEP:
-			case IKeyword.DOT:
-			case IKeyword.WHISKER:
-			case IKeyword.AREA:
-			case IKeyword.BAR:
-			case IKeyword.STACK:
-			case IKeyword.RING:
-			case IKeyword.EXPLODED:
-			case IKeyword.THREE_D:
-			default: {
+			case IKeyword.SPLINE, IKeyword.STEP, IKeyword.DOT, IKeyword.WHISKER, IKeyword.AREA, IKeyword.BAR, IKeyword.STACK, IKeyword.RING, IKeyword.EXPLODED, IKeyword.THREE_D -> {
 				newr = new XYBlockRenderer();
 				break;
-
+			}
+			default -> {
+				newr = new XYBlockRenderer();
+				break;
 			}
 		}
+
 		return newr;
 	}
 
@@ -166,7 +163,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 						{ med.getRed() / 255f, med.getGreen() / 255f, med.getBlue() / 255f, med.getAlpha() / 255f },
 						{ end.getRed() / 255f, end.getGreen() / 255f, end.getBlue() / 255f, end.getAlpha() / 255f } };
 		final float[] limits = { 0, 0.5f, 1 };
-		if (vmin >= vmax) { return new LookupPaintScale(); } 
+		if (vmin >= vmax) return new LookupPaintScale();
 		final LookupPaintScale lut = new LookupPaintScale(vmin, vmax, med);
 		float val;
 		float r, g, b, a;
@@ -205,7 +202,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 				{ { start.getRed() / 255f, start.getGreen() / 255f, start.getBlue() / 255f, start.getAlpha() / 255f },
 						{ end.getRed() / 255f, end.getGreen() / 255f, end.getBlue() / 255f, end.getAlpha() / 255f } };
 		final float[] limits = { 0, 1 };
-		if (vmin >= vmax) { return new LookupPaintScale(); } 
+		if (vmin >= vmax) return new LookupPaintScale();
 		final LookupPaintScale lut = new LookupPaintScale(vmin, vmax, start);
 		float val;
 		float r, g, b, a;
@@ -235,32 +232,33 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 		// newr.setSeriesStroke(0, new BasicStroke(0));
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
 
-		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, myserie.getMycolor()); }
+		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, IColor.toAWTColor(myserie.getMycolor())); }
 		if (myserie.getSValues(scope).size() > 0) {
 			final double maxval = Collections.max(myserie.getSValues(scope));
 			final double minval = Collections.min(myserie.getSValues(scope));
 			Color cdeb = new Color(0, 0, 0, 0);
-			if (myserie.getMyMincolor() != null) { cdeb = myserie.getMyMincolor(); }
+			if (myserie.getMyMincolor() != null) { cdeb = IColor.toAWTColor(myserie.getMyMincolor()); }
 			Color cend = new Color(0.9f, 0.9f, 0.9f, 1.0f);
-			if (myserie.getMycolor() != null) { cend = myserie.getMycolor(); }
+			if (myserie.getMycolor() != null) { cend = IColor.toAWTColor(myserie.getMycolor()); }
 
 			LookupPaintScale paintscale = createLUT(100, (float) minval, (float) maxval, cdeb, cend);
 			if (myserie.getMyMedcolor() != null) {
-				paintscale = createLUT(100, (float) minval, (float) maxval, cdeb, myserie.getMyMedcolor(), cend);
+				paintscale = createLUT(100, (float) minval, (float) maxval, cdeb,
+						IColor.toAWTColor(myserie.getMyMedcolor()), cend);
 			}
 
 			newr.setPaintScale(paintscale);
 
 			final NumberAxis scaleAxis = new NumberAxis(myserie.getName());
-			scaleAxis.setAxisLinePaint(this.axesColor);
-			scaleAxis.setTickMarkPaint(this.axesColor);
+			scaleAxis.setAxisLinePaint(IColor.toAWTColor(this.axesColor));
+			scaleAxis.setTickMarkPaint(IColor.toAWTColor(this.axesColor));
 			scaleAxis.setTickLabelFont(this.getTickFont());
 			scaleAxis.setRange(paintscale.getLowerBound(), paintscale.getUpperBound());
-			scaleAxis.setAxisLinePaint(axesColor);
+			scaleAxis.setAxisLinePaint(IColor.toAWTColor(axesColor));
 			scaleAxis.setLabelFont(getLabelFont());
 			if (textColor != null) {
-				scaleAxis.setLabelPaint(textColor);
-				scaleAxis.setTickLabelPaint(textColor);
+				scaleAxis.setLabelPaint(IColor.toAWTColor(textColor));
+				scaleAxis.setTickLabelPaint(IColor.toAWTColor(textColor));
 			}
 			if (!this.getXTickValueVisible(scope)) {
 				scaleAxis.setTickMarksVisible(false);
@@ -276,7 +274,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 			// legend.setPadding(new RectangleInsets(10, 10, 10, 10));
 			// legend.setStripWidth(10);
 			legend.setPosition(RectangleEdge.RIGHT);
-			legend.setBackgroundPaint(this.backgroundColor);
+			legend.setBackgroundPaint(IColor.toAWTColor(this.backgroundColor));
 			// ArrayList<PaintScaleLegend> caxe=new
 			// ArrayList<PaintScaleLegend>();
 			// caxe.add(legend);
@@ -341,7 +339,7 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 	@Override
 	public void preResetSeries(final IScope scope) {
 		this.clearDataSet(scope);
-		final ArrayList<PaintScaleLegend> caxe = new ArrayList<>();
+		final ArrayList<Title> caxe = new ArrayList<>();
 		chart.setSubtitles(caxe);
 
 	}
@@ -523,34 +521,35 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 	@Override
 	public void initChart(final IScope scope, final String chartname) {
 		super.initChart(scope, chartname);
-
+		Color ac = IColor.toAWTColor(axesColor);
+		Color tc = IColor.toAWTColor(textColor);
 		final XYPlot pp = (XYPlot) chart.getPlot();
-		pp.setDomainGridlinePaint(axesColor);
-		pp.setRangeGridlinePaint(axesColor);
-		pp.setDomainCrosshairPaint(axesColor);
-		pp.setRangeCrosshairPaint(axesColor);
+		pp.setDomainGridlinePaint(ac);
+		pp.setRangeGridlinePaint(ac);
+		pp.setDomainCrosshairPaint(ac);
+		pp.setRangeCrosshairPaint(ac);
 		pp.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
 		pp.setDomainCrosshairVisible(false);
 		pp.setRangeCrosshairVisible(false);
 		pp.setRangeGridlinesVisible(false);
 		pp.setDomainGridlinesVisible(false);
 
-		pp.getDomainAxis().setAxisLinePaint(axesColor);
+		pp.getDomainAxis().setAxisLinePaint(ac);
 
 		pp.getDomainAxis().setTickLabelFont(getTickFont());
 		pp.getDomainAxis().setLabelFont(getLabelFont());
-		if (textColor != null) {
-			pp.getDomainAxis().setLabelPaint(textColor);
-			pp.getDomainAxis().setTickLabelPaint(textColor);
+		if (tc != null) {
+			pp.getDomainAxis().setLabelPaint(tc);
+			pp.getDomainAxis().setTickLabelPaint(tc);
 		}
 		if (xtickunit > 0) { ((NumberAxis) pp.getDomainAxis()).setTickUnit(new NumberTickUnit(xtickunit)); }
 
-		pp.getRangeAxis().setAxisLinePaint(axesColor);
+		pp.getRangeAxis().setAxisLinePaint(ac);
 		pp.getRangeAxis().setLabelFont(getLabelFont());
 		pp.getRangeAxis().setTickLabelFont(getTickFont());
-		if (textColor != null) {
-			pp.getRangeAxis().setLabelPaint(textColor);
-			pp.getRangeAxis().setTickLabelPaint(textColor);
+		if (tc != null) {
+			pp.getRangeAxis().setLabelPaint(tc);
+			pp.getRangeAxis().setTickLabelPaint(tc);
 		}
 		if (ytickunit > 0) { ((NumberAxis) pp.getRangeAxis()).setTickUnit(new NumberTickUnit(ytickunit)); }
 
@@ -568,38 +567,44 @@ public class ChartJFreeChartOutputHeatmap extends ChartJFreeChartOutput {
 		final int y = yOnScreen - positionInPixels.y;
 		final ChartEntity entity = info.getEntityCollection().getEntity(x, y);
 		// getChart().handleClick(x, y, info);
-		if (entity instanceof XYItemEntity xyie) {
-			final XYDataset data = xyie.getDataset();
-			final int index = xyie.getItem();
-			final int series = xyie.getSeriesIndex();
-			final double xx = data.getXValue(series, index);
-			final double yy = data.getYValue(series, index);
-			final XYPlot plot = (XYPlot) getJFChart().getPlot();
-			final ValueAxis xAxis = plot.getDomainAxis(series);
-			final ValueAxis yAxis = plot.getRangeAxis(series);
-			final boolean xInt = xx % 1 == 0;
-			final boolean yInt = yy % 1 == 0;
-			String xTitle = xAxis.getLabel();
-			if (StringUtils.isBlank(xTitle)) { xTitle = "X"; }
-			String yTitle = yAxis.getLabel();
-			if (StringUtils.isBlank(yTitle)) { yTitle = "Y"; }
-			sb.append(xTitle).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-			sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
-		} else if (entity instanceof PieSectionEntity pse) {
-			final String title = pse.getSectionKey().toString();
-			final PieDataset data = pse.getDataset();
-			final int index = pse.getSectionIndex();
-			final double xx = data.getValue(index).doubleValue();
-			final boolean xInt = xx % 1 == 0;
-			sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-		} else if (entity instanceof CategoryItemEntity cie) {
-			final Comparable<?> columnKey = cie.getColumnKey();
-			final String title = columnKey.toString();
-			final CategoryDataset data = cie.getDataset();
-			final Comparable<?> rowKey = cie.getRowKey();
-			final double xx = data.getValue(rowKey, columnKey).doubleValue();
-			final boolean xInt = xx % 1 == 0;
-			sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+		switch (entity) {
+			case XYItemEntity xyie -> {
+				final XYDataset data = xyie.getDataset();
+				final int index = xyie.getItem();
+				final int series = xyie.getSeriesIndex();
+				final double xx = data.getXValue(series, index);
+				final double yy = data.getYValue(series, index);
+				final XYPlot plot = (XYPlot) getJFChart().getPlot();
+				final ValueAxis xAxis = plot.getDomainAxis(series);
+				final ValueAxis yAxis = plot.getRangeAxis(series);
+				final boolean xInt = xx % 1 == 0;
+				final boolean yInt = yy % 1 == 0;
+				String xTitle = xAxis.getLabel();
+				if (StringUtils.isBlank(xTitle)) { xTitle = "X"; }
+				String yTitle = yAxis.getLabel();
+				if (StringUtils.isBlank(yTitle)) { yTitle = "Y"; }
+				sb.append(xTitle).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+				sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
+			}
+			case PieSectionEntity pse -> {
+				final String title = pse.getSectionKey().toString();
+				final PieDataset data = pse.getDataset();
+				final int index = pse.getSectionIndex();
+				final double xx = data.getValue(index).doubleValue();
+				final boolean xInt = xx % 1 == 0;
+				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+			}
+			case CategoryItemEntity cie -> {
+				final Comparable<?> columnKey = cie.getColumnKey();
+				final String title = columnKey.toString();
+				final CategoryDataset data = cie.getDataset();
+				final Comparable<?> rowKey = cie.getRowKey();
+				final double xx = data.getValue(rowKey, columnKey).doubleValue();
+				final boolean xInt = xx % 1 == 0;
+				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+			}
+			case null, default -> {
+			}
 		}
 	}
 

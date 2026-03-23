@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ShapeDrawingAttributes.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ShapeDrawingAttributes.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,13 +12,13 @@ package gama.gaml.statements.draw;
 
 import java.util.List;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.util.GamaColor;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.interfaces.IImageProvider;
 
 /**
  * The Class ShapeDrawingAttributes.
@@ -61,8 +61,8 @@ public class ShapeDrawingAttributes extends AssetDrawingAttributes {
 	 *            the lighting
 	 */
 	public ShapeDrawingAttributes(final Scaling3D size, final Double depth, final AxisAngle rotation,
-			final GamaPoint location, final Boolean empty, final GamaColor color, /* final List<GamaColor> colors, */
-			final GamaColor border, final List<IImageProvider> textures,
+			final IPoint location, final Boolean empty, final IColor color, /* final List<GamaColor> colors, */
+			final IColor border, final List<IImageProvider> textures,
 			/* final GamaMaterial material, */ final IAgent agent, final IShape.Type type, final Double lineWidth,
 			final Boolean lighting) {
 		super(size, rotation, location, color, border, agent, lineWidth, false, lighting);
@@ -86,7 +86,7 @@ public class ShapeDrawingAttributes extends AssetDrawingAttributes {
 	 * @param type
 	 *            the type
 	 */
-	public ShapeDrawingAttributes(final GamaPoint location, final GamaColor color, final GamaColor border,
+	public ShapeDrawingAttributes(final IPoint location, final IColor color, final IColor border,
 			final IShape.Type type) {
 		super(null, null, location, color, border, null, null, false, null);
 		setHeight(null);
@@ -110,8 +110,7 @@ public class ShapeDrawingAttributes extends AssetDrawingAttributes {
 	 * @param border
 	 *            the border
 	 */
-	public ShapeDrawingAttributes(final IShape shape, final IAgent agent, final GamaColor color,
-			final GamaColor border) {
+	public ShapeDrawingAttributes(final IShape shape, final IAgent agent, final IColor color, final IColor border) {
 		this(shape, agent, color, border, shape.getGeometricalType(), null, shape.getDepth());
 	}
 
@@ -133,7 +132,7 @@ public class ShapeDrawingAttributes extends AssetDrawingAttributes {
 	 * @param depth
 	 *            the depth
 	 */
-	public ShapeDrawingAttributes(final IShape shape, final IAgent agent, final GamaColor color, final GamaColor border,
+	public ShapeDrawingAttributes(final IShape shape, final IAgent agent, final IColor color, final IColor border,
 			final IShape.Type type, final Double lineWidth, final Double depth) {
 		this(null, depth, null, shape.getLocation(), color == null, color, /* null, */ border, null, agent, type,
 				lineWidth, null);

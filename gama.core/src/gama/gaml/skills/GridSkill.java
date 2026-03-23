@@ -1,30 +1,33 @@
 /*******************************************************************************************************
  *
- * GridSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * GridSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.skills;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.topology.grid.IGrid;
-import gama.core.metamodel.topology.grid.IGridAgent;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
-import gama.core.util.IList;
-import gama.gaml.types.IType;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.annotations.skill;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ITypeProvider;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.skill.Skill;
+import gama.api.kernel.topology.IGrid;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
 
 /**
  * Written by drogoul Modified on 24 juin 2010
@@ -97,7 +100,7 @@ public class GridSkill extends Skill {
 	 */
 	@getter ("grid_x")
 	public final int getX(final IAgent agent) {
-		return ((IGridAgent) agent).getX();
+		return getGrid(agent).getX(agent);
 	}
 
 	/**
@@ -111,12 +114,14 @@ public class GridSkill extends Skill {
 			value = "grid_value",
 			initializer = true)
 	public final double getValue(final IAgent agent) {
-		return ((IGridAgent) agent).getValue();
+		return getGrid(agent).getValue(agent.getIndex());
 	}
 
 	/**
 	 * Gets the bands.
 	 *
+	 * @param scope
+	 *            the scope
 	 * @param agent
 	 *            the agent
 	 * @return the bands
@@ -124,8 +129,13 @@ public class GridSkill extends Skill {
 	@getter (
 			value = "bands",
 			initializer = true)
-	public final IList<Double> getBands(final IAgent agent) {
-		return ((IGridAgent) agent).getBands();
+	public final IList<Double> getBands(final IScope scope, final IAgent agent) {
+		if (getGrid(agent).getBandsNumber(scope) == 1) {
+			final IList<Double> bd = GamaListFactory.create(null, Types.FLOAT);
+			bd.add(getGrid(agent).getValue(agent.getIndex()));
+			return bd;
+		}
+		return GamaListFactory.create(scope, Types.FLOAT, getGrid(agent).getBand(scope, agent.getIndex()));
 	}
 
 	/**
@@ -150,7 +160,7 @@ public class GridSkill extends Skill {
 	 */
 	@getter ("grid_y")
 	public final int getY(final IAgent agent) {
-		return ((IGridAgent) agent).getY();
+		return getGrid(agent).getY(agent);
 	}
 
 	/**
@@ -174,7 +184,7 @@ public class GridSkill extends Skill {
 	 */
 	@setter ("grid_value")
 	public final void setValue(final IAgent agent, final Double d) {
-		((IGridAgent) agent).setValue(d);
+		getGrid(agent).setValue(agent.getIndex(), d);
 	}
 
 	/**
@@ -198,8 +208,9 @@ public class GridSkill extends Skill {
 	@getter (
 			value = "color",
 			initializer = true)
-	public GamaColor getColor(final IAgent agent) {
-		return ((IGridAgent) agent).getColor();
+	public IColor getColor(final IAgent agent) {
+		if (getGrid(agent).isHexagon()) return (IColor) agent.getAttribute(IKeyword.COLOR);
+		return GamaColorFactory.get(getGrid(agent).supportImagePixels()[agent.getIndex()]);
 	}
 
 	/**
@@ -211,8 +222,12 @@ public class GridSkill extends Skill {
 	 *            the color
 	 */
 	@setter ("color")
-	public void setColor(final IAgent agent, final GamaColor color) {
-		((IGridAgent) agent).setColor(color);
+	public void setColor(final IAgent agent, final IColor color) {
+		if (getGrid(agent).isHexagon()) {
+			agent.setAttribute(IKeyword.COLOR, color);
+		} else {
+			getGrid(agent).supportImagePixels()[agent.getIndex()] = color.getRGB();
+		}
 	}
 
 	/**
@@ -228,7 +243,8 @@ public class GridSkill extends Skill {
 			value = IKeyword.NEIGHBORS,
 			initializer = true)
 	public IList<IAgent> getNeighbors(final IScope scope, final IAgent agent) {
-		return ((IGridAgent) agent).getNeighbors(scope);
+		return GamaListFactory.create(scope, Types.AGENT,
+				getGrid(agent).getNeighborhood().getNeighborsIn(scope, agent.getIndex(), 1));
 	}
 
 }

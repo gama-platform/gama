@@ -3,7 +3,7 @@
  * GamaPreferencesView.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,18 +34,19 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.dialogs.WorkbenchPreferenceDialog;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.preferences.Pref;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.Pref;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.FlatButton;
 import gama.ui.shared.controls.ParameterExpandBar;
 import gama.ui.shared.controls.ParameterExpandItem;
-import gama.ui.shared.dialogs.Messages;
 import gama.ui.shared.interfaces.IParameterEditor;
 import gama.ui.shared.parameters.AbstractEditor;
 import gama.ui.shared.parameters.EditorFactory;
@@ -71,12 +72,13 @@ public class GamaPreferencesView {
 	}
 
 	/** The dialog location. */
-	static final Pref<GamaPoint> DIALOG_LOCATION = GamaPreferences.create("dialog_location",
-			"Location of the preferences dialog on screen", new GamaPoint(-1, -1), IType.POINT, false).hidden();
+	static final Pref<IPoint> DIALOG_LOCATION =
+			GamaPreferences.create("dialog_location", "Location of the preferences dialog on screen",
+					GamaPointFactory.create(-1, -1), IType.POINT, false).hidden();
 
 	/** The dialog size. */
-	static final Pref<GamaPoint> DIALOG_SIZE = GamaPreferences.create("dialog_size",
-			"Size of the preferences dialog on screen", new GamaPoint(-1, -1), IType.POINT, false).hidden();
+	static final Pref<IPoint> DIALOG_SIZE = GamaPreferences.create("dialog_size",
+			"Size of the preferences dialog on screen", GamaPointFactory.create(-1, -1), IType.POINT, false).hidden();
 
 	/** The dialog tab. */
 	static final Pref<Integer> DIALOG_TAB = GamaPreferences
@@ -109,7 +111,7 @@ public class GamaPreferencesView {
 	 * Preload.
 	 */
 	public static void preload() {
-		DEBUG.TIMER("GAMA", "Preloading preferences view", "done in", () -> {
+		DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Preloading preferences view", "completed in", () -> {
 			WorkbenchHelper.run(() -> {
 				if (instance == null || instance.shell == null || instance.shell.isDisposed()) {
 					instance = new GamaPreferencesView(WorkbenchHelper.getShell());
@@ -236,7 +238,7 @@ public class GamaPreferencesView {
 	 *            the value
 	 */
 	void checkRefreshables(final Pref e) {
-		if (!WorkbenchHelper.isDisplayThread()) { return; }
+		if (!WorkbenchHelper.isDisplayThread()) return;
 		for (final String activable : e.getRefreshment()) {
 			final var ed = editors.get(activable);
 			if (ed != null && WorkbenchHelper.isDisplayThread()) { ed.updateWithValueOfParameter(false, false); }
@@ -368,10 +370,10 @@ public class GamaPreferencesView {
 		buttonImport.setToolTipText("Import preferences from a file...");
 		buttonImport.setSelectionListener(e -> {
 			final var fd = new FileDialog(shell, SWT.OPEN);
-			fd.setFilterExtensions(new String[] { "*.prefs" });
+			fd.setFilterExtensions("*.prefs");
 			final var path = fd.open();
-			if (path == null) { return; }
-			GamaPreferences.applyPreferencesFrom(path, modelValues);
+			if (path == null) return;
+			GAMA.getPreferenceStore().applyPreferencesFrom(path, modelValues);
 			for (final IParameterEditor ed : editors.values()) { ed.updateWithValueOfParameter(true, false); }
 		});
 
@@ -379,12 +381,12 @@ public class GamaPreferencesView {
 		buttonExportToGaml.setToolTipText("Export preferences to a model that can be run to restore or share them...");
 		buttonExportToGaml.setSelectionListener(e -> {
 			final var fd = new FileDialog(shell, SWT.SAVE);
-			fd.setFileName("Preferences.gaml");
-			fd.setFilterExtensions(new String[] { "*.gaml" });
+			fd.setFileName("__PREFS__.gaml");
+			fd.setFilterExtensions("*.gaml");
 			fd.setOverwrite(false);
 			final var path = fd.open();
-			if (path == null) { return; }
-			GamaPreferences.savePreferencesToGAML(path);
+			if (path == null) return;
+			GAMA.getPreferenceStore().saveToGAML(path);
 		});
 
 		final var buttonExport = FlatButton.button(group1, IGamaColors.LIGHT_GRAY, "Export to preferences");
@@ -393,11 +395,11 @@ public class GamaPreferencesView {
 		buttonExport.setSelectionListener(e -> {
 			final var fd = new FileDialog(shell, SWT.SAVE);
 			fd.setFileName("gama.prefs");
-			fd.setFilterExtensions(new String[] { "*.prefs" });
+			fd.setFilterExtensions("*.prefs");
 			fd.setOverwrite(false);
 			final var path = fd.open();
-			if (path == null) { return; }
-			GamaPreferences.savePreferencesToProperties(path);
+			if (path == null) return;
+			GAMA.getPreferenceStore().saveToProperties(path);
 		});
 
 		final var group2 = new Composite(shell, SWT.NONE);
@@ -419,7 +421,7 @@ public class GamaPreferencesView {
 			GamaPreferences.setNewPreferences(modelValues);
 			if (restartRequired) {
 				restartRequired = false;
-				final var restart = Messages.confirm("Restart GAMA",
+				final var restart = GAMA.getGui().getDialogFactory().confirm("Restart GAMA",
 						"It is advised to restart GAMA after these changes. Restart now ?");
 				if (restart) {
 					close();
@@ -440,10 +442,9 @@ public class GamaPreferencesView {
 		// this.shell.setDefaultButton(buttonOK);
 
 		buttonRevert.setSelectionListener(e -> {
-			if (!Messages.question("Revert to default",
-					"Do you want to revert all preferences to their default values ? A restart of the platform will be performed immediately")) {
+			if (!GAMA.getGui().getDialogFactory().question("Revert to default",
+					"Do you want to revert all preferences to their default values ? A restart of the platform will be performed immediately"))
 				return;
-			}
 			GamaPreferences.revertToDefaultValues(modelValues);
 			PlatformUI.getWorkbench().restart(true);
 		});
@@ -473,7 +474,7 @@ public class GamaPreferencesView {
 	 */
 	private void saveLocation() {
 		final var p = shell.getLocation();
-		DIALOG_LOCATION.set(new GamaPoint(p.x, p.y)).save();
+		DIALOG_LOCATION.set(GamaPointFactory.create(p.x, p.y)).save();
 	}
 
 	/**
@@ -481,7 +482,7 @@ public class GamaPreferencesView {
 	 */
 	private void saveSize() {
 		final var s = shell.getSize();
-		DIALOG_SIZE.set(new GamaPoint(s.x, s.y)).save();
+		DIALOG_SIZE.set(GamaPointFactory.create(s.x, s.y)).save();
 	}
 
 	/**
@@ -496,7 +497,7 @@ public class GamaPreferencesView {
 	 * Save dialog properties.
 	 */
 	private void saveDialogProperties() {
-		if (shell.isDisposed()) { return; }
+		if (shell.isDisposed()) return;
 		saveLocation();
 		saveSize();
 		saveTab();
@@ -513,15 +514,15 @@ public class GamaPreferencesView {
 		final var loc = DIALOG_LOCATION.getValue();
 		final var size = DIALOG_SIZE.getValue();
 		final int tab = DIALOG_TAB.getValue();
-		var x = (int) loc.x;
-		var y = (int) loc.y;
-		var width = (int) size.x;
-		var height = (int) size.y;
+		var x = (int) loc.getX();
+		var y = (int) loc.getY();
+		var width = (int) size.getX();
+		var height = (int) size.getY();
 		Rectangle savedBounds = new Rectangle(x, y, width, height);
 		Rectangle monitorBounds = WorkbenchHelper.getShell().getMonitor().getBounds();
 		Rectangle shellBounds = WorkbenchHelper.getShell().getBounds();
-		if (!(savedBounds.intersects(monitorBounds))) {
-			final var p = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
+		if (!savedBounds.intersects(monitorBounds)) {
+			// final Point p = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
 			x = shellBounds.x + 100;
 			y = shellBounds.y + 100;
 			width = shellBounds.width - 200;
@@ -547,7 +548,6 @@ public class GamaPreferencesView {
 	 */
 	public static void setRestartRequired() {
 		restartRequired = true;
-
 	}
 
 }

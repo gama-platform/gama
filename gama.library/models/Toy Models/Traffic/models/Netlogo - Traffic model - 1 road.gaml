@@ -95,7 +95,7 @@ species car skills: [moving] {
 		speed <- max(speed_min, car_ahead.speed - deceleration) ;
 	}
 	
-	action speed_up {
+	action speed_up() {
 		speed <- min(speed + acceleration, speed_limit);
 	}
 

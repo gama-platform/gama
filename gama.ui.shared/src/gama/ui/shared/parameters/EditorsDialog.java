@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * EditorsDialog.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * EditorsDialog.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,13 +27,13 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
-import gama.core.kernel.experiment.IParameter;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaFont;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
-import gama.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -57,7 +57,7 @@ public class EditorsDialog extends Dialog {
 	private final String title;
 
 	/** The font. */
-	private final GamaFont font;
+	private final IFont font;
 
 	/** The scope. */
 	private final IScope scope;
@@ -82,7 +82,7 @@ public class EditorsDialog extends Dialog {
 	 *            the color
 	 */
 	public EditorsDialog(final IScope scope, final Shell parentShell, final List<IParameter> parameters,
-			final String title, final GamaFont font, final GamaColor color, final Boolean showTitle) {
+			final String title, final IFont font, final IColor color, final Boolean showTitle) {
 		super(parentShell);
 		this.scope = scope;
 		this.title = title;
@@ -108,7 +108,7 @@ public class EditorsDialog extends Dialog {
 		var data = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1);
 		text.setLayoutData(data);
 		if (font != null) {
-			text.setFont(new Font(WorkbenchHelper.getDisplay(), font.getFontName(), font.getSize(), font.getStyle()));
+			text.setFont(new Font(WorkbenchHelper.getDisplay(), font.getName(), font.getSize(), font.getStyle()));
 		}
 		final var sep = new Label(composite, SWT.NONE);
 		data = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1);

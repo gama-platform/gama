@@ -15,8 +15,8 @@ global {
 	float predator_max_energy <- 1.0;
 	float predator_energy_transfer <- 0.5;
 	float predator_energy_consum <- 0.02;
-	int nb_preys -> {length(prey)};
-	int nb_predators -> {length(predator)};
+	int nb_preys -> length(prey);
+	int nb_predators -> length(predator);
 
 	init {
 		create prey number: nb_preys_init;
@@ -50,7 +50,7 @@ species generic_species {
 		do die;
 	}
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		return 0.0;
 	} 
 
@@ -65,7 +65,7 @@ species prey parent: generic_species {
 	float max_transfer <- prey_max_transfer;
 	float energy_consum <- prey_energy_consum;
 	
-	float energy_from_eat {
+	float energy_from_eat() {
 		float energy_transfer <- 0.0;
 		if(my_cell.food > 0) {
 			energy_transfer <- min([max_transfer, my_cell.food]);
@@ -81,7 +81,7 @@ species predator parent: generic_species {
 	float energy_transfer <- predator_energy_transfer;
 	float energy_consum <- predator_energy_consum;
 		
-	float energy_from_eat {
+	float energy_from_eat() {
 		list<prey> reachable_preys <- prey inside (my_cell);	
 		if(! empty(reachable_preys)) {
 			ask one_of (reachable_preys) {

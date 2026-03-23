@@ -20,7 +20,7 @@ global {
 	reflex reimport {
 		do importation;
 	}
-	action importation {
+	action importation() {
 		
 		switch type {
 			match "graphml" {

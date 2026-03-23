@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlResourceIndexer.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GamlResourceIndexer.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,20 +20,20 @@ import java.util.Set;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.xtext.EcoreUtil2;
 
 import com.google.inject.Singleton;
 
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
+import gama.api.GAMA;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
 import gama.dev.DEBUG;
-import gaml.compiler.gaml.ExperimentFileStructure;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.Model;
+import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.impl.ModelImpl;
 import gaml.compiler.gaml.resource.GamlResource;
 import gaml.compiler.gaml.resource.ImportedResources;
@@ -50,7 +50,7 @@ public class GamlResourceIndexer {
 
 	static {
 		DEBUG.OFF();
-		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
+		final IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
 		workspace.addResourceChangeListener(event -> {
 			if (event.getBuildKind() == IncrementalProjectBuilder.CLEAN_BUILD) { eraseIndex(); }
 		}, IResourceChangeEvent.PRE_BUILD);
@@ -90,8 +90,8 @@ public class GamlResourceIndexer {
 					result.put(uri, e.getName());
 				}
 			}
-		} else if (m instanceof ExperimentFileStructure expe) {
-			final String u = expe.getExp().getImportURI();
+		} else if (m instanceof StandaloneExperiment expe) {
+			final String u = expe.getImportURI();
 			if (u != null) {
 				URI uri = URI.createURI(u, true);
 				uri = properlyEncodedURI(uri.resolve(baseURI));
@@ -111,8 +111,8 @@ public class GamlResourceIndexer {
 	 * @return the e object
 	 */
 	static private EObject findImport(final EObject contents, final URI baseURI, final URI uri) {
-		if (contents instanceof ExperimentFileStructure expe) {
-			String u = expe.getExp().getImportURI();
+		if (contents instanceof StandaloneExperiment expe) {
+			String u = expe.getImportURI();
 			String lastSegment = URI.decode(uri.lastSegment());
 			if (lastSegment != null && u.contains(lastSegment) || uri.equals(baseURI) && u.isEmpty()) return contents;
 		} else if (contents instanceof Model model) {
@@ -124,36 +124,58 @@ public class GamlResourceIndexer {
 	}
 
 	/**
-	 * Synchronized method to avoid concurrent errors in the graph in case of a parallel resource loader
+	 * Updates the import graph for a given resource with finer-grained synchronization. Only graph modification
+	 * operations are synchronized to reduce contention.
 	 */
-	public static synchronized EObject updateImports(final GamlResource r) {
+	public static EObject updateImports(final GamlResource r) {
 		final URI baseURI = r.getURI();
+
+		// Read current edges outside of sync block (graph reads are thread-safe)
 		final Map<URI, String> existingEdges = index.outgoingEdgesOf(baseURI);
+
 		if (r.getContents().isEmpty()) return null;
 		final EObject contents = r.getContents().get(0);
 		if (contents == null) return null;
+
+		// Parse new imports outside of sync block (no graph access)
 		final Map<URI, String> newEdges = getImportsAsAbsoluteURIS(baseURI, contents);
+
+		// Prepare data for validation outside sync block
 		for (Map.Entry<URI, String> entry : newEdges.entrySet()) {
 			URI uri = entry.getKey();
 			if (baseURI.equals(uri)) { continue; }
 			String label = entry.getValue();
+
 			if (!existingEdges.containsKey(uri)) {
+				// Validate URI before graph modification
 				if (!EcoreUtil2.isValidUri(r, uri)) return findImport(contents, baseURI, uri);
-				final boolean alreadyThere = index.imports.containsVertex(uri);
-				final URI to = uri;
-				final String label1 = label;
-				index.addEdge(baseURI, to, label1);
+
+				// Only synchronize graph modifications
+				final boolean alreadyThere;
+				synchronized (index) {
+					alreadyThere = index.imports.containsVertex(uri);
+					index.addEdge(baseURI, uri, label);
+				}
+
 				if (!alreadyThere) {
 					// This call should trigger the recursive call to updateImports()
+					// No need to synchronize - resource loading is handled separately
 					r.getResourceSet().getResource(uri, true);
 				}
 			} else {
-				index.addEdge(baseURI, uri, existingEdges.remove(uri));
+				// Re-add existing edge with same label
+				synchronized (index) {
+					index.addEdge(baseURI, uri, existingEdges.remove(uri));
+				}
 			}
 		}
-		index.removeAllEdges(baseURI, existingEdges);
-		return null;
 
+		// Remove obsolete edges in one synchronized block
+		synchronized (index) {
+			index.removeAllEdges(baseURI, existingEdges);
+		}
+
+		return null;
 	}
 
 	/**

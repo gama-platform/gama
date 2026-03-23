@@ -65,20 +65,20 @@ public class GamlScopeProvider extends org.eclipse.xtext.scoping.impl.SimpleLoca
 		public Iterable<IEObjectDescription> getExportedObjectsByObject(final EObject object) {
 			if (descriptions == null) { return Collections.emptyList(); }
 			final URI uri = EcoreUtil2.getPlatformResourceOrNormalizedURI(object);
-			return Iterables.filter(descriptions, input -> {
-				if (input.getEObjectOrProxy() == object) { return true; }
-				if (uri.equals(input.getEObjectURI())) { return true; }
-				return false;
-			});
+			return Iterables.filter(descriptions, input -> 
+				input.getEObjectOrProxy() == object || uri.equals(input.getEObjectURI())
+			);
 		}
 
 		@Override
 		public Iterable<IEObjectDescription> getExportedObjects(final EClass type, final QualifiedName name,
 				final boolean ignoreCase) {
 			if (nameToObjects == null) { return Collections.emptyList(); }
-			if (nameToObjects.containsKey(name)) {
-				for (final IEObjectDescription desc : nameToObjects.get(name)) {
-					if (EcoreUtil2.isAssignableFrom(type, desc.getEClass())) { return Collections.singleton(desc); }
+			if (!nameToObjects.containsKey(name)) { return Collections.emptyList(); }
+			
+			for (final IEObjectDescription desc : nameToObjects.get(name)) {
+				if (EcoreUtil2.isAssignableFrom(type, desc.getEClass())) { 
+					return Collections.singleton(desc); 
 				}
 			}
 			return Collections.emptyList();
@@ -86,7 +86,7 @@ public class GamlScopeProvider extends org.eclipse.xtext.scoping.impl.SimpleLoca
 
 		@Override
 		public Iterable<IEObjectDescription> getExportedObjects() {
-			return descriptions == null ? Collections.EMPTY_LIST : descriptions;
+			return descriptions == null ? Collections.emptyList() : descriptions;
 		}
 
 		/**
@@ -97,8 +97,8 @@ public class GamlScopeProvider extends org.eclipse.xtext.scoping.impl.SimpleLoca
 		 */
 		private void add(final QualifiedName name, final EObjectDescription e) {
 			if (descriptions == null) {
-				descriptions = new ArrayList<>();
-				nameToObjects = LinkedHashMultimap.create();
+				descriptions = new ArrayList<>(32);
+				nameToObjects = LinkedHashMultimap.create(32, 2);
 			}
 			descriptions.add(e);
 			nameToObjects.put(name, e);
@@ -110,7 +110,7 @@ public class GamlScopeProvider extends org.eclipse.xtext.scoping.impl.SimpleLoca
 	protected ISelectable getAllDescriptions(final Resource resource) {
 		final GamlMultimapBasedSelectable result = new GamlMultimapBasedSelectable();
 		final IQualifiedNameProvider provider = getNameProvider();
-		final Iterator<EObject> iterator = resource.getAllContents();
+		final Iterator<EObject> iterator = EcoreUtil2.getAllContents(resource, true);
 		while (iterator.hasNext()) {
 			final EObject from = iterator.next();
 			final QualifiedName qualifiedName = provider.apply(from);

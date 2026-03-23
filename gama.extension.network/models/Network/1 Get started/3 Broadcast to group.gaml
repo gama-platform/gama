@@ -21,7 +21,7 @@ global {
 		write "The default broket is for test only, limit the number of connections otherwise connection will be refused." color: #red;
 		write "To connect to your local/remote server, change the parameters of the connect statement" color: #blue;		
 		
-		create Teacher with: [name:: "Victoria"] {
+		create Teacher with: (name: "Victoria") {
 			do connect with_name: name;
 			//default ActiveMQ MQTT login is "admin", the password is "admin" and the port is 1883
 			//do connect to:"localhost" with_name:name login:"admin" password:"admin" port: 1883;

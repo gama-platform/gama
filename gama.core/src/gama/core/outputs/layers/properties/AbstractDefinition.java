@@ -10,11 +10,11 @@
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.statements.draw.AttributeHolder;
-import gama.gaml.types.Types;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.AttributeHolder;
 
 /**
  * The Class AbstractDefinition.

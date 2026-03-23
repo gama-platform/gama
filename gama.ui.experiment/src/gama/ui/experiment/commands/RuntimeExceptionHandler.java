@@ -22,11 +22,11 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
-import gama.core.common.interfaces.IRuntimeExceptionHandler;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.IRuntimeExceptionHandler;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 
@@ -100,10 +100,10 @@ public class RuntimeExceptionHandler extends Job implements IRuntimeExceptionHan
 				List<GamaRuntimeException> list = entry.getValue();
 
 				// DEBUG.LOG("Processing exceptions for " + root);
-				if (GamaPreferences.Runtime.CORE_REVEAL_AND_STOP.getValue()) {
+				if (GamaPreferences.Runtime.CORE_STOP_AT_FIRST_ERROR.getValue()) {
 					final GamaRuntimeException firstEx = list.get(0);
 					if (GamaPreferences.Runtime.CORE_ERRORS_EDITOR_LINK.getValue()) {
-						GAMA.getGui().editModel(firstEx.getEditorContext());
+						GAMA.getGui().getModelsManager().editModel(firstEx.getEditorContext());
 					}
 					firstEx.setReported();
 					if (GamaPreferences.Runtime.CORE_SHOW_ERRORS.getValue()) {

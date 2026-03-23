@@ -4,10 +4,8 @@ Bundle-Name: Viewers
 Bundle-SymbolicName: gama.ui.viewers;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Bundle-Vendor: UMMISCO
-Bundle-RequiredExecutionEnvironment: JavaSE-21
-Require-Bundle: org.eclipse.jface,
- org.eclipse.ui.workbench,
- org.eclipse.core.resources,
+Bundle-RequiredExecutionEnvironment: JavaSE-25
+Require-Bundle: org.eclipse.core.resources,
  org.eclipse.core.runtime,
  gama.core,
  gama.dependencies,
@@ -15,11 +13,13 @@ Require-Bundle: org.eclipse.jface,
  org.eclipse.ui.editors,
  org.eclipse.jface.text,
  org.eclipse.ui.ide,
- org.eclipse.ui.browser,
  gama.ui.shared,
- gama.ui.application,
- gama.ui.navigator
+ gama.ui.navigator,
+ gama.workspace;bundle-version="0.0.0",
+ com.github.weisj.jsvg,
+ org.eclipse.ui.views;bundle-version="3.12.800"
 Bundle-ActivationPolicy: lazy
+Bundle-Activator: gama.ui.viewers.json.eclipse.JsonEditorActivator
 Automatic-Module-Name: gama.ui.viewers
 Export-Package: gama.ui.viewers.csv,
  gama.ui.viewers.csv.model,

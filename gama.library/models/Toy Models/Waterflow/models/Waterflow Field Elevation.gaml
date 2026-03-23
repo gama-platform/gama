@@ -75,7 +75,7 @@ global {
 
 
 	float height (point c) {
-		return h[c] + flow[c];
+		return h[c] + flow[c]; 
 	}
 
 	//Reflex to flow the water according to the altitude and the obstacle

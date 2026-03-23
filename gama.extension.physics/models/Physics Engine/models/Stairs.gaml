@@ -40,7 +40,7 @@ global parent: physical_world {
 	}
 
 	reflex when: every(500 #cycle) {
-		create ball with: [type::one_of(0, 1, 2, 3)] {
+		create ball with: (type:one_of(0, 1, 2, 3)) {
 			location <- {dimension * 3 / 2 + rnd(4) - 2, dimension + rnd(4) - 2, max_height + dimension + rnd(4) - 2};
 		}
 

@@ -3,7 +3,7 @@
  * GamaViewPart.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -28,17 +28,17 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.progress.UIJob;
 
-import gama.core.common.IStatusMessage;
-import gama.core.common.interfaces.IGamaView;
-import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.outputs.IOutput;
-import gama.core.outputs.IOutputManager;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
+import gama.api.GAMA;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IOutput;
+import gama.api.ui.IOutputManager;
+import gama.api.ui.IStatusMessage;
+import gama.core.experiment.ExperimentAgent;
 import gama.dev.DEBUG;
 import gama.ui.shared.controls.ITooltipDisplayer;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -105,19 +105,12 @@ public abstract class GamaViewPart extends ViewPart
 			setSystem(true);
 			final UpdatePriority p = jobPriority();
 			switch (p) {
-				case HIGHEST:
-					setPriority(INTERACTIVE);
-					break;
-				case LOWEST:
-					setPriority(DECORATE);
-					break;
-				case HIGH:
-					setPriority(SHORT);
-					break;
-				case LOW:
-					setPriority(LONG);
-					break;
+				case HIGHEST -> setPriority(INTERACTIVE);
+				case LOWEST -> setPriority(DECORATE);
+				case HIGH -> setPriority(SHORT);
+				case LOW -> setPriority(LONG);
 			}
+
 		}
 
 		/**
@@ -190,7 +183,7 @@ public abstract class GamaViewPart extends ViewPart
 		final String id = site.getId() + (s_id == null ? "" : s_id);
 		IOutput out = null;
 
-		final IExperimentPlan experiment = GAMA.getExperiment();
+		final IExperimentSpecies experiment = GAMA.getExperiment();
 
 		if (experiment != null) {
 			for (final IOutputManager manager : concat(
@@ -201,7 +194,7 @@ public abstract class GamaViewPart extends ViewPart
 
 			// hqngh in case of micro-model
 			if (out == null) {
-				final SimulationAgent sim = GAMA.getExperiment().getCurrentSimulation();
+				final ISimulationAgent sim = GAMA.getExperiment().getCurrentSimulation();
 				if (sim != null) {
 					final String[] stemp = id.split("#");
 					if (stemp.length > 1) {
@@ -209,7 +202,7 @@ public abstract class GamaViewPart extends ViewPart
 								sim.getExternMicroPopulationFor(stemp[1] + "." + stemp[2]);
 						if (externPop != null) {
 							for (final IAgent expAgent : externPop) {
-								final SimulationAgent spec = ((ExperimentAgent) expAgent).getSimulation();
+								final ISimulationAgent spec = ((ExperimentAgent) expAgent).getSimulation();
 								if (spec != null) {
 									final IOutputManager manager = spec.getOutputManager();
 									if (manager != null) { out = manager.getOutputWithId(s_id); }
@@ -259,7 +252,7 @@ public abstract class GamaViewPart extends ViewPart
 		// DEBUG.OUT("Root Composite is " + composite.getClass().getSimpleName());
 		composite.addDisposeListener(this);
 		// getTopComposite().addControlListener(this);
-		if (needsOutput() && getOutput() == null) { return; }
+		if (needsOutput() && getOutput() == null) return;
 		this.setParentComposite(GamaToolbarFactory.createToolbars(this, composite));
 		ownCreatePartControl(getParentComposite());
 		// activateContext();
@@ -326,7 +319,7 @@ public abstract class GamaViewPart extends ViewPart
 
 	@Override
 	public IOutput getOutput() {
-		if (outputs.isEmpty()) { return null; }
+		if (outputs.isEmpty()) return null;
 		return outputs.get(0);
 	}
 
@@ -338,7 +331,7 @@ public abstract class GamaViewPart extends ViewPart
 	 */
 	@Override
 	public void addOutput(final IOutput out) {
-		if (out == null) { return; }
+		if (out == null) return;
 		if (!outputs.contains(out)) {
 			outputs.add(out);
 		} else if (toolbar != null) {
@@ -372,13 +365,13 @@ public abstract class GamaViewPart extends ViewPart
 	 */
 	@Override
 	public void stopDisplayingTooltips() {
-		if (toolbar == null || toolbar.isDisposed()) { return; }
+		if (toolbar == null || toolbar.isDisposed()) return;
 		if (toolbar.hasTooltip()) { toolbar.wipe(SWT.LEFT, false); }
 	}
 
 	@Override
 	public void displayTooltip(final String text, final GamaUIColor color) {
-		if (toolbar == null || toolbar.isDisposed()) { return; }
+		if (toolbar == null || toolbar.isDisposed()) return;
 		toolbar.tooltip(text, color, SWT.LEFT);
 	}
 
@@ -407,14 +400,13 @@ public abstract class GamaViewPart extends ViewPart
 	}
 
 	@Override
-	public void changePartNameWithSimulation(final SimulationAgent agent) {
+	public void changePartNameWithSimulation(final ISimulationAgent agent) {
 		final String old = getPartName();
 		final int first = old.lastIndexOf('(');
 		final int second = old.lastIndexOf(')');
 		if (first == -1) {
 			if (agent.getPopulation().size() > 1) { setPartName(old + " (" + agent.getName() + ")"); }
 		} else {
-
 			setPartName(overlay(old, agent.getName(), first + 1, second));
 		}
 	}
@@ -437,7 +429,7 @@ public abstract class GamaViewPart extends ViewPart
 		String overlay = over;
 		int start = s;
 		int end = e;
-		if (str == null) { return null; }
+		if (str == null) return null;
 		if (overlay == null) { overlay = ""; }
 		final int len = str.length();
 		if (start < 0) { start = 0; }

@@ -12,8 +12,8 @@ global torus: true{
 	field terrain <- field(300, 300);
 
 	init {
-		create increaser with: [location::location];
-		create decreaser with: [location::location];
+		create increaser with: (location:location);
+		create decreaser with: (location:location);
 	}
 
 	species increaser skills: [moving] {

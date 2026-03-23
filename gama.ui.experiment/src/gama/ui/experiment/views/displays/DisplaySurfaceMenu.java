@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * DisplaySurfaceMenu.java, in gama.ui.shared.experiment, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * DisplaySurfaceMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -35,17 +35,20 @@ import org.eclipse.swt.widgets.ToolItem;
 
 import com.google.common.collect.Iterables;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.ILayer;
-import gama.core.common.interfaces.ILayer.IGridLayer;
-import gama.core.metamodel.agent.IAgent;
+import gama.api.GAMA;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.SystemInfo;
+import gama.api.types.list.IList;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ILayerStatement;
 import gama.core.outputs.layers.AgentLayer;
 import gama.core.outputs.layers.EventLayer;
 import gama.core.outputs.layers.GraphicLayer;
-import gama.core.outputs.layers.HexagonalGridLayer;
 import gama.core.outputs.layers.GridLayer;
 import gama.core.outputs.layers.GridLayerStatement;
-import gama.core.outputs.layers.ILayerStatement;
+import gama.core.outputs.layers.HexagonalGridLayer;
 import gama.core.outputs.layers.ImageLayer;
 import gama.core.outputs.layers.MeshLayer;
 import gama.core.outputs.layers.OverlayLayer;
@@ -53,11 +56,7 @@ import gama.core.outputs.layers.SpeciesLayer;
 import gama.core.outputs.layers.SpeciesLayerStatement;
 import gama.core.outputs.layers.charts.ChartLayer;
 import gama.core.outputs.layers.charts.ChartLayerStatement;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.PlatformHelper;
-import gama.core.util.IList;
 import gama.dev.DEBUG;
-import gama.gaml.types.Types;
 import gama.ui.experiment.menus.AgentsMenu;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.menus.MenuAction;
@@ -182,7 +181,7 @@ public class DisplaySurfaceMenu {
 	 *            the displays
 	 */
 	public void buildMenu(final int mousex, final int mousey, final int x, final int y, final List<ILayer> displays) {
-		if (displays.isEmpty()) { return; }
+		if (displays.isEmpty()) return;
 		final Set<IAgent> all = new LinkedHashSet<>();
 		for (final ILayer display : displays) {
 			if (display.getData().isSelectable()) {
@@ -275,13 +274,13 @@ public class DisplaySurfaceMenu {
 	 * Fix for Windows menu disappearing with Radeon graphic cards. AD 06/0/25. See Issue #10
 	 * (https://github.com/gama-platform/gama/issues/10). If the menu is not visible after some time, we cleanup the
 	 * selection. May result in some flickering or missed clicks, but better than an invisible menu !
-	 * 
+	 *
 	 * @param cleanup
 	 *            the actions to do after a "normal" selection
 	 */
 	private void fixForWindows(final Runnable cleanup) {
-		if (!PlatformHelper.isWindows()) { return; }
-		WorkbenchHelper.runInUI("Testing if the menu is visible", 500, (e) -> {
+		if (!SystemInfo.isWindows()) return;
+		WorkbenchHelper.runInUI("Testing if the menu is visible", 500, e -> {
 			// DEBUG.OUT("Testing if the menu is visible");
 			if (!menu.isVisible()) {
 				// DEBUG.OUT("Cleaning up because the menu is not visible");
@@ -301,7 +300,7 @@ public class DisplaySurfaceMenu {
 	 *            the retries remaining
 	 */
 	private void fixForLinux(final Menu menu, final int retriesRemaining) {
-		if (!PlatformHelper.isLinux()) { return; }
+		if (!SystemInfo.isLinux()) return;
 		WorkbenchHelper.asyncRun(() -> {
 			if (!menu.isVisible() && retriesRemaining > 0) {
 				menu.setVisible(false);
@@ -339,7 +338,7 @@ public class DisplaySurfaceMenu {
 			final Collection<IAgent> filteredList, final MenuAction... actions) {
 		if (withWorld) {
 			AgentsMenu.cascadingAgentMenuItem(menu, surface.getScope().getSimulation(), "World", actions);
-			if (filteredList == null || filteredList.isEmpty()) { return; }
+			if (filteredList == null || filteredList.isEmpty()) return;
 			GamaMenu.separate(menu);
 			if (byLayer) { GamaMenu.separate(menu, "Layers"); }
 		}
@@ -347,9 +346,8 @@ public class DisplaySurfaceMenu {
 			// If the list is null or empty, no need to display anything more
 			// If only the world is selected, no need to display anything more
 			if (filteredList == null || filteredList.isEmpty()
-					|| filteredList.size() == 1 && filteredList.contains(surface.getScope().getSimulation())) {
+					|| filteredList.size() == 1 && filteredList.contains(surface.getScope().getSimulation()))
 				return;
-			}
 			final FocusOnSelection adapter = new FocusOnSelection(surface);
 			final MenuAction focus =
 					new MenuAction(adapter, GamaIcon.named(IGamaIcons.MENU_FOCUS).image(), "Focus on this display");
@@ -379,12 +377,12 @@ public class DisplaySurfaceMenu {
 				GamaMenu.action(submenu, visible ? "Hide" : "Show", t -> {
 					layer.getData().setVisible(!visible);
 					surface.updateDisplay(true);
-				}, (IGamaIcons.MENU_INSPECT));
+				}, IGamaIcons.MENU_INSPECT);
 				if (!pop.isEmpty()) {
 					GamaMenu.action(submenu, select ? "Forbid selection" : "Allow selection",
-							t -> layer.getData().setSelectable(!select), (IGamaIcons.LAYER_SELECTION));
+							t -> layer.getData().setSelectable(!select), IGamaIcons.LAYER_SELECTION);
 				}
-				Menu transparency = GamaMenu.sub(submenu, "Transparency", "", (IGamaIcons.LAYER_TRANSPARENCY));
+				Menu transparency = GamaMenu.sub(submenu, "Transparency", "", IGamaIcons.LAYER_TRANSPARENCY);
 				transparency.setEnabled(layer.getData().isDynamic());
 				Double td = layer.getData().getTransparency(GAMA.getRuntimeScope());
 				int ti = (int) (td == null ? 0 : Math.round(td * 10) * 10);
@@ -415,29 +413,29 @@ public class DisplaySurfaceMenu {
 								((ChartLayerStatement) definition).getChart(), p);
 						editor.open();
 						surface.updateDisplay(true);
-					}, (IGamaIcons.CHART_PARAMETERS));
+					}, IGamaIcons.CHART_PARAMETERS);
 					if (chart.keepsHistory()) {
-						GamaMenu.action(submenu, "Save history...", t -> chart.saveHistory(), (IGamaIcons.MENU_BROWSE));
+						GamaMenu.action(submenu, "Save history...", t -> chart.saveHistory(), IGamaIcons.MENU_BROWSE);
 					}
-				} else if (definition instanceof GridLayerStatement grid) {
-					boolean lines = ((IGridLayer) layer).getData().drawLines();
+				} else if (definition instanceof GridLayerStatement) {
+					boolean lines = layer.getData().drawLines();
 					GamaMenu.action(submenu, lines ? "Hide lines" : "Draw lines", t -> {
-						((IGridLayer) layer).getData().setDrawLines(!lines);
+						layer.getData().setDrawLines(!lines);
 						surface.updateDisplay(true);
-					}, (IGamaIcons.MENU_BROWSE));
+					}, IGamaIcons.MENU_BROWSE);
 				}
 				if (select) {
 					final FocusOnSelection adapter = new FocusOnSelection(surface);
 					final MenuAction focus = new MenuAction(adapter, GamaIcon.named(IGamaIcons.MENU_FOCUS).image(),
 							"Focus on this display");
 					final MenuAction[] actions2 = { focus };
-					Menu agentsMenu = GamaMenu.sub(submenu, "Agents", "", (IGamaIcons.MENU_POPULATION));
+					Menu agentsMenu = GamaMenu.sub(submenu, "Agents", "", IGamaIcons.MENU_POPULATION);
 					AgentsMenu.fillPopulationSubMenu(agentsMenu, pop, actions2);
 				}
 			}
 			Iterable<EventLayer> eventLayers = Iterables.filter(surface.getManager().getItems(), EventLayer.class);
 			if (Iterables.size(eventLayers) > 0) {
-				Menu mm = GamaMenu.sub(menu, "Event Layers","", IGamaIcons.LAYER_EVENT);
+				Menu mm = GamaMenu.sub(menu, "Event Layers", "", IGamaIcons.LAYER_EVENT);
 				for (final ILayer layer : eventLayers) {
 					final MenuItem layerMenu = new MenuItem(mm, SWT.CASCADE);
 					layerMenu.setText(layer.getType() + ": " + layer.getName());

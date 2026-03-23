@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import gama.annotations.precompiler.doc.utils.XMLElements;
+import gama.annotations.constants.XMLElements;
 
 /**
  * The Class Operands.

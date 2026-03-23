@@ -3,7 +3,7 @@
  * ConsoleView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,11 +27,11 @@ import org.eclipse.ui.console.IOConsole;
 import org.eclipse.ui.console.IOConsoleOutputStream;
 import org.eclipse.ui.internal.console.IOConsoleViewer;
 
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.ui.IGamaView;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
@@ -141,8 +141,7 @@ public class ConsoleView extends GamaViewPart implements IToolbarDecoratedView.S
 	 */
 
 	@Override
-	public void append(final String text, final ITopLevelAgent agent, final GamaColor color) {
-		// DEBUG.OUT("Agent " + agent + " asking to display in the console ");
+	public void append(final String text, final ITopLevelAgent agent, final IColor color) {
 		append(text, agent, GamaColors.get(color));
 	}
 

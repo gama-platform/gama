@@ -26,7 +26,7 @@ global {
 		write "This model will work only if the corresponding database is installed" color:#red; 
 		write "The model \"Create Spatial Table in PostGIS.gaml\" can be run previously to create the database and tables.";
 		
-		create buildings from: buildingsShp with: [type::string(read ('NATURE'))];
+		create buildings from: buildingsShp with: (type:string(read ('NATURE')));
 		create bounds from: boundsShp;
 		
 		create DB_Accessor

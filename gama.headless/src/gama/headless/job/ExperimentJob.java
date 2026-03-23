@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * ExperimentJob.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
- * (v.1.9.3).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,21 +22,22 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.annotations.constants.IKeyword;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IExperimentDescription;
+import gama.api.exceptions.GamaCompilationFailedException;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.runtime.scope.IScope;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.COUNTER;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GamaCompilationFailedException;
-import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.descriptions.ExperimentDescription;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.expressions.IExpressionFactory;
-import gama.gaml.operators.Cast;
 import gama.headless.common.Display2D;
 import gama.headless.common.Globals;
 import gama.headless.core.GamaHeadlessException;
@@ -266,7 +267,7 @@ public class ExperimentJob implements IExperimentJob {
 	public void load() throws IOException, GamaCompilationFailedException {
 		System.setProperty("user.dir", this.sourcePath);
 		final List<GamlCompilationError> errors = new ArrayList<>();
-		final IModel mdl = GamlModelBuilder.getDefaultInstance().compile(new File(this.sourcePath), errors, null);
+		final IModelSpecies mdl = GamlModelBuilder.getInstance().compile(new File(this.sourcePath), errors, null);
 		this.modelName = mdl.getName();
 		this.simulator = new RichExperiment(mdl);
 	}
@@ -281,7 +282,7 @@ public class ExperimentJob implements IExperimentJob {
 
 	@Override
 	public void playAndDispose() {
-		DEBUG.TIMER("GAMA", "Simulation running ", "for: ", () -> {
+		DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Simulation running ", "for: ", () -> {
 			play();
 			dispose();
 		});
@@ -299,8 +300,8 @@ public class ExperimentJob implements IExperimentJob {
 			while (finalStep >= 0 ? step < finalStep : true) {
 				if (step % affDelay == 0) { DEBUG.LOG(".", false); }
 				if (simulator.isInterrupted()) { break; }
-				final SimulationAgent sim = simulator.getSimulation();
-				final ExperimentAgent exp = simulator.getExperimentPlan().getAgent();
+				final ISimulationAgent sim = simulator.getSimulation();
+				final IExperimentAgent exp = simulator.getExperimentPlan().getAgent();
 				final IScope scope = sim == null ? exp.getScope() : sim.getScope();
 				if (Cast.asBool(scope, exp.getStopCondition().value(scope))) { break; }
 				doStep();
@@ -358,15 +359,14 @@ public class ExperimentJob implements IExperimentJob {
 	 */
 	protected void exportVariables() {
 		final int size = this.listenedVariables.length;
-		if (size == 0) {
-			return;
-		}
+		if (size == 0) return;
 		for (int i = 0; i < size; i++) {
 			final ListenedVariable v = this.listenedVariables[i];
 			if (this.step % v.getFrameRate() == 0) {
 				final RichOutput out = simulator.getRichOutput(v);
 				if (out == null || out.getValue() == null) {} else if (out.getValue() instanceof BufferedImage) {
-					v.setValue(writeImageInFile((BufferedImage) out.getValue(), v.getName(), v.getPath()), out.getType());
+					v.setValue(writeImageInFile((BufferedImage) out.getValue(), v.getName(), v.getPath()),
+							out.getType());
 				} else {
 					v.setValue(out.getValue(), out.getType());
 				}
@@ -395,7 +395,7 @@ public class ExperimentJob implements IExperimentJob {
 	protected Display2D writeImageInFile(final BufferedImage img, final String name, final String outputPath) {
 		final String fileName = name + this.getExperimentID() + "-" + step + ".png";
 		String fileFullName = Globals.IMAGES_PATH + "/" + fileName;
-		if (!"".equals(outputPath)  && outputPath != null) {
+		if (!"".equals(outputPath) && outputPath != null) {
 			// a specific output path has been specified with the "output_path"
 			// keyword in the xml
 			fileFullName = outputPath + "-" + step + ".png";
@@ -498,8 +498,8 @@ public class ExperimentJob implements IExperimentJob {
 	 *            the model
 	 * @return the experiment job
 	 */
-	public static ExperimentJob loadAndBuildJob(final ExperimentDescription expD, final String path,
-			final IModel model) {
+	public static ExperimentJob loadAndBuildJob(final IExperimentDescription expD, final String path,
+			final IModelSpecies model) {
 		final String expName = expD.getName();
 		final IExpressionDescription seedDescription = expD.getFacet(IKeyword.SEED);
 		double mseed = 0.0;
@@ -514,7 +514,7 @@ public class ExperimentJob implements IExperimentJob {
 
 			final Iterable<IDescription> displays = d.getChildrenWithKeyword(IKeyword.DISPLAY);
 			for (final IDescription disp : displays) {
-				if (disp.getFacetExpr(IKeyword.VIRTUAL) != IExpressionFactory.TRUE_EXPR) {
+				if (disp.getFacetExpr(IKeyword.VIRTUAL) != GAML.getExpressionFactory().getTrue()) {
 					expJob.addOutput(Output.loadAndBuildOutput(disp));
 				}
 			}
@@ -542,9 +542,7 @@ public class ExperimentJob implements IExperimentJob {
 	 * @return the parameter
 	 */
 	private Parameter getParameter(final String name) {
-		for (final Parameter p : parameters) { if (p.getName().equals(name)) {
-			return p;
-		} }
+		for (final Parameter p : parameters) { if (p.getName().equals(name)) return p; }
 		return null;
 	}
 
@@ -559,9 +557,7 @@ public class ExperimentJob implements IExperimentJob {
 	 * @return the output
 	 */
 	private Output getOutput(final String name) {
-		for (final Output p : outputs) { if (p.getName().equals(name)) {
-			return p;
-		} }
+		for (final Output p : outputs) { if (p.getName().equals(name)) return p; }
 		return null;
 	}
 

@@ -37,7 +37,7 @@ species node_agent mirrors: list(bug) {
 		draw sphere(1.1) color: #green; 
 	}
 }
-//Species to represent the edge of the graph
+//Species to represent the edge of the graph 
 species edge_agent {
 	aspect base {
 		draw shape color: #green;

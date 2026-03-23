@@ -24,7 +24,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import gama.gaml.compilation.GamaCompilationFailedException;
+import gama.api.exceptions.GamaCompilationFailedException;
 import gama.headless.core.GamaHeadlessException;
 import gama.headless.job.IExperimentJob;
 import gama.headless.job.JobListFactory;

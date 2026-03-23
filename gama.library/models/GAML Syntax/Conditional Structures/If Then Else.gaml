@@ -30,7 +30,7 @@ global {
 		
 	}
 	
-	action condional_hello_world {
+	action condional_hello_world (){
 		write "------------------------";
 		write "Test : if condition1 is true then print 'hello world'";
 		string result;
@@ -40,7 +40,7 @@ global {
 		write "Result : "+result;
 	}
 		
-	action bi_conditional_hello_world {
+	action bi_conditional_hello_world (){
 		write "------------------------";
 		write "Test : if condition1 and condition2 are true then print 'hello world'";
 		string result;
@@ -50,7 +50,7 @@ global {
 		write "Result : "+result;
 	}
 	
-	action or_conditional_hello_world {
+	action or_conditional_hello_world (){
 		write "------------------------";
 		write "Test : if condition1 or condition2 are true then print 'hello world'";
 		string result;
@@ -60,7 +60,7 @@ global {
 		write "Result : "+result;
 	}
 	
-	action if_then_hello_world_else_goodbye {
+	action if_then_hello_world_else_goodbye (){
 		write "------------------------";
 		write "Test : if condition1 is true then print 'hello world' else print 'Goodbye'";
 		string result;
@@ -72,7 +72,7 @@ global {
 		write "Result : "+result;
 	}
 	
-	action if_then_tic_elseif_then_tac_else_toc {
+	action if_then_tic_elseif_then_tac_else_toc() {
 		write "------------------------";
 		write "Test : if condition1 is true then print 'tic !' else if condition2 is true then print 'tac !' else print 'toc !'";
 		string result;
@@ -86,7 +86,7 @@ global {
 		write "Result : "+result;
 	}
 	
-	action tertiary_hello_world {
+	action tertiary_hello_world (){
 		write "------------------------";
 		write "Test tertiary operator (condition ? then : else)";
 		write "If condition1 true print 'Hello world !'";

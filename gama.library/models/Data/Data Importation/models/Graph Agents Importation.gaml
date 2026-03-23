@@ -21,7 +21,7 @@ global {
 		do importation;
 	}
 	
-	action importation {	
+	action importation() {	
 		// Up to now, attributes importation are only available for graphml	datafiles.
 		switch type {
 			match "graphml" {
@@ -46,7 +46,7 @@ species edge_graph {
 	rgb my_color <- #green;
     map<string,string> attEdges;	
     
-    action init_agt {
+    action init_agt (){
     	name <- attEdges["name"]; 
     	prob <- float(attEdges["prob"]);		
     }
@@ -55,7 +55,7 @@ species edge_graph {
 species node_graph {
     map<string,string> att;
     
-    action init_agt {
+    action init_agt() {
     	location <- {att["xpoint"] as float,att["ypoint"] as float}; 		
     }
 }

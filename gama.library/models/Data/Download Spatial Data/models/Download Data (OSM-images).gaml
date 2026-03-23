@@ -267,7 +267,7 @@ global {
 				list<geometry> geom_markers <- generate_geoms(cells_type);
 							
 				//create the marker agents
-				create marker from: geom_markers with: [type::type];
+				create marker from: geom_markers with: (type:type);
 				float min_area <- marker mean_of each.shape.area;
 								
 				ask marker {	
@@ -397,7 +397,7 @@ global {
 		save info to: exporting_path +"satellite.pgw" format:"text";
 	}
 	
-	action load_satellite_image
+	action load_satellite_image()
 	{ 
 		point top_left <- CRS_transform({0,0}, "EPSG:4326").location;
 		point bottom_right <- CRS_transform({shape.width, shape.height}, "EPSG:4326").location;
@@ -420,7 +420,7 @@ global {
 
 
 //action for vectorizing an existing google image
-	action load_google_image {
+	action load_google_image() {
 		image_file im <- image_file(googlemap_path);
 		ask cell_google {		
 			color <-rgb( (im) at {grid_x ,grid_y }) ;
@@ -472,7 +472,7 @@ species Boundary {
 }
 
 experiment downloadGISdata type: gui autorun: true{
-	action _init_ {
+	action _init_ (){
 		bool pref_gis <- gama.pref_gis_auto_crs ;
 		int crs <- gama.pref_gis_default_crs;
 	
@@ -484,7 +484,7 @@ experiment downloadGISdata type: gui autorun: true{
 	}
 	output {
 		display map type: 3d axes: false{
-			image file_exists(exporting_path + "satellite.png")? (exporting_path + "satellite.png") : default_background_image  transparency: 0.2 refresh: true;
+			picture file_exists(exporting_path + "satellite.png")? (exporting_path + "satellite.png") : default_background_image  transparency: 0.2 refresh: true;
 			species OSM_agent;
 			graphics "google map building" {
 				loop bd over: building_google {

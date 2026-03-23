@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * Predicate.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * Predicate.java, in gama.extension.bdi, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,29 +14,28 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IValue;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaMap;
-import gama.core.util.IMap;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IValue;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class Predicate.
  */
 @vars ({ @variable (
-		name = "name",
+		name = IKeyword.NAME,
 		type = IType.STRING,
 		doc = @doc ("the name of the predicate")),
 		@variable (
@@ -70,8 +69,8 @@ import gama.gaml.types.Types;
 public class Predicate implements IValue {
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
-		return json.typedObject(getGamlType(), "name", name, "is_true", is_true, "values", values, "date", date)
+	public IJsonValue serializeToJson(final IJson json) {
+		return json.typedObject(getGamlType(), IKeyword.NAME, name, "is_true", is_true, "values", values, "date", date)
 				.add(SimpleBdiArchitecture.SUBINTENTIONS, subintentions)
 				.add(SimpleBdiArchitecture.ON_HOLD_UNTIL, onHoldUntil)
 				.add(SimpleBdiArchitecture.SUPERINTENTION, superIntention)
@@ -107,7 +106,7 @@ public class Predicate implements IValue {
 	 *
 	 * @return the name
 	 */
-	@getter ("name")
+	@getter (IKeyword.NAME)
 	public String getName() { return name; }
 
 	/**
@@ -165,7 +164,6 @@ public class Predicate implements IValue {
 	 */
 	public List<MentalState> getOnHoldUntil() { return onHoldUntil; }
 
-
 	/**
 	 * Sets the super intention.
 	 *
@@ -188,9 +186,7 @@ public class Predicate implements IValue {
 	 * @param values
 	 *            the values
 	 */
-	public void setValues(final IMap<String, Object> values) {
-		this.values = values;
-	}
+	public void setValues(final IMap<String, Object> values) { this.values = values; }
 
 	/**
 	 * Sets the checks if is true.
@@ -226,10 +222,8 @@ public class Predicate implements IValue {
 	 * @param ag
 	 *            the new agent cause
 	 */
-	@setter(SimpleBdiArchitecture.AGENT_CAUSE)
-	public void setAgentCause(final IAgent ag) {
-		this.agentCause = ag;
-	}
+	@setter (SimpleBdiArchitecture.AGENT_CAUSE)
+	public void setAgentCause(final IAgent ag) { this.agentCause = ag; }
 
 	/**
 	 * Instantiates a new predicate.
@@ -356,7 +350,8 @@ public class Predicate implements IValue {
 
 	@Override
 	public String toString() {
-		return "predicate(" + name + (values == null ? "" : "," + values) + (agentCause == null ? "" : "," + agentCause) + "," + is_true + ")";
+		return "predicate(" + name + (values == null ? "" : "," + values) + (agentCause == null ? "" : "," + agentCause)
+				+ "," + is_true + ")";
 	}
 
 	@Override
@@ -371,7 +366,7 @@ public class Predicate implements IValue {
 
 	@Override
 	public Predicate copy(final IScope scope) throws GamaRuntimeException {
-		return new Predicate(name, values == null ? null : ((GamaMap<String, Object>) values).copy(scope));
+		return new Predicate(name, values == null ? null : values.copy(scope));
 	}
 
 	/**
@@ -382,15 +377,11 @@ public class Predicate implements IValue {
 	 *             the gama runtime exception
 	 */
 	public Predicate copy() throws GamaRuntimeException {
-		if (values != null && agentCause != null) { 
-			return new Predicate(name,((GamaMap<String, Object>) values).copy(GAMA.getRuntimeScope()), is_true, agentCause);
-		}
-		if (values != null) {
-			return new Predicate(name, ((GamaMap<String, Object>) values).copy(GAMA.getRuntimeScope()));
-		}
+		if (values != null && agentCause != null)
+			return new Predicate(name, values.copy(GAMA.getRuntimeScope()), is_true, agentCause);
+		if (values != null) return new Predicate(name, values.copy(GAMA.getRuntimeScope()));
 		return new Predicate(name);
 	}
-
 
 	@Override
 	public int hashCode() {
@@ -403,7 +394,14 @@ public class Predicate implements IValue {
 		if (obj == null || getClass() != obj.getClass()) return false;
 		final Predicate other = (Predicate) obj;
 		if (!Objects.equals(name, other.name) || is_true != other.is_true) return false;
-		if (values == null && agentCause == null || other.values == null && other.agentCause == null) return true; //TODO: this is a weird condition for equality
+		if (values == null && agentCause == null || other.values == null && other.agentCause == null) return true; // TODO:
+																													// this
+																													// is
+																													// a
+																													// weird
+																													// condition
+																													// for
+																													// equality
 		if (values != null && other.values != null && !values.isEmpty() && !other.values.isEmpty()) {
 			final Set<String> keys = values.keySet();
 			keys.retainAll(other.values.keySet());
@@ -428,7 +426,8 @@ public class Predicate implements IValue {
 	 */
 	public boolean equalsIntentionPlan(final Object obj) {
 		// Only test case where the parameter is not null
-		return equals(obj);//TODO doing this for now because they are exactly the same, but should investigate if there's a need for a different equality operator
+		return equals(obj);// TODO doing this for now because they are exactly the same, but should investigate if
+							// there's a need for a different equality operator
 	}
 
 	/**
@@ -443,24 +442,21 @@ public class Predicate implements IValue {
 		// other
 		// Doesn't check the lifetime value
 		// Used in emotions
-		if (obj == this) return false; // is_true must be different
-		if (!(obj instanceof Predicate)) return false;
-		
-		Predicate other = (Predicate)obj;
-		
+		 // is_true must be different
+		if ((obj == this) || !(obj instanceof Predicate other)) return false;
+
 		if (!Objects.equals(name, other.name) || is_true == other.is_true) return false;
-		if (agentCause == null || other.agentCause == null) return true; //TODO: this is a weird condition for equality
+		if (agentCause == null || other.agentCause == null) return true; // TODO: this is a weird condition for equality
 		if (values == null || other.values == null) return true;
-		
+
 		final Set<String> keys = values.keySet();
 		keys.retainAll(other.values.keySet());
 		for (final String k : keys) {
-			if (values.get(k) == null && other.values.get(k) != null || !values.get(k).equals(other.values.get(k))) {
-				return false;					
-			}
+			if (values.get(k) == null && other.values.get(k) != null || !values.get(k).equals(other.values.get(k)))
+				return false;
 		}
-		
-		//TODO: why don't we compare agentCause ?
+
+		// TODO: why don't we compare agentCause ?
 		return true;
 	}
 
@@ -481,8 +477,7 @@ public class Predicate implements IValue {
 			final Set<String> keys = values.keySet();
 			keys.retainAll(other.values.keySet());
 			for (final String k : keys) {
-				if (	values.get(k) == null && other.values.get(k) != null
-					|| !values.get(k).equals(other.values.get(k)))
+				if (values.get(k) == null && other.values.get(k) != null || !values.get(k).equals(other.values.get(k)))
 					return false;
 			}
 		}
@@ -493,7 +488,7 @@ public class Predicate implements IValue {
 	/**
 	 * Method getType()
 	 *
-	 * @see gama.core.common.interfaces.ITyped#getGamlType()
+	 * @see gama.api.gaml.types.ITyped#getGamlType()
 	 */
 	@Override
 	public IType<?> getGamlType() { return Types.get(PredicateType.id); }

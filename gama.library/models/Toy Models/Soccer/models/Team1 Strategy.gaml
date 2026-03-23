@@ -56,7 +56,7 @@ species player_intelligentTeam parent:base_player {
 		}
 	}
 	
-	action update_influence_area {
+	action update_influence_area() {
 		status <- wing + " " + role;
 		float y_ratio;
 		if (role = "defense") { // defense position from 0% to 70% from the own goal, multiplied by the percentage of advancement of the ball
@@ -81,7 +81,7 @@ species player_intelligentTeam parent:base_player {
 		influence_area <- circle(15,{getXPos(x_ratio),getYPos(y_ratio)});
 	}
 	
-	action defensive_behavior {	
+	action defensive_behavior() {	
 		do update_influence_area;
 		// advanced defensive behavior
 		// run to the ball if the player is the closest player from the ball.
@@ -104,7 +104,7 @@ species player_intelligentTeam parent:base_player {
 		}
 	}
 	
-	action offensive_behavior {	
+	action offensive_behavior() {	
 		do update_influence_area;
 		// advanced offensive behavior
 		if (possess_ball) {

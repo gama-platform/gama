@@ -69,7 +69,7 @@ experiment main type: gui {
 	output {
 		layout #split;
 		display Image type:2d antialias:false{
-	       image mntImageRaster.path;
+	       picture mntImageRaster.path;
 	       species izard aspect: image; 
 	    }   
 		display Grid type:2d antialias:false{

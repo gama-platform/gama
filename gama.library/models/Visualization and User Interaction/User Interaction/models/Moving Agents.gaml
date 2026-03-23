@@ -19,8 +19,7 @@ global
 		create being number: 100;
 	}
 
-	action kill 
-	{
+	action kill() {
 		ask moved_agents
 		{
 			do die;
@@ -29,14 +28,12 @@ global
 		moved_agents <- [];
 	}
 
-	action duplicate 
-	{
+	action duplicate() {
 		geometry available_space <- (zone at_location #user_location) - (union(moved_agents) + 10);
 		create being number: length(moved_agents) with: (location: any_location_in(available_space));
 	}
 
-	action click 
-	{
+	action click() {
 		if (empty(moved_agents))
 		{
 			moved_agents <- being inside (zone at_location #user_location);
@@ -58,8 +55,7 @@ global
 
 	}
 
-	action move 
-	{
+	action move() {
 		can_drop <- true;
 		list<being> other_agents <- (being inside (zone at_location #user_location)) - moved_agents;
 		geometry occupied <- geometry(other_agents);

@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * LoopStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2025-03).
+ * LoopStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,35 +11,37 @@ package gama.gaml.statements;
 
 import java.util.EnumSet;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.FlowStatus;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SymbolDescription;
-import gama.gaml.descriptions.SymbolSerializer;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.operators.Cast;
-import gama.gaml.statements.IStatement.Breakable;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.serializer;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.compilation.validation.Assert;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.statements.IStatement.Breakable;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.FlowStatus;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.misc.IContainer;
 import gama.gaml.statements.LoopStatement.LoopSerializer;
 import gama.gaml.statements.LoopStatement.LoopValidator;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 // A group of commands that can be executed repeatedly.
 
@@ -229,7 +230,7 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
 		public void validate(final IDescription description) {
@@ -375,13 +376,12 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	/**
 	 * The Class LoopSerializer.
 	 */
-	public static class LoopSerializer extends SymbolSerializer<SymbolDescription> {
+	public static class LoopSerializer implements ISymbolSerializer {
 
 		@Override
-		protected String serializeFacetValue(final SymbolDescription s, final String key,
-				final boolean includingBuiltIn) {
+		public String serializeFacetValue(final IDescription s, final String key, final boolean includingBuiltIn) {
 			if (NAME.equals(key) && (s.hasFacet(TIMES) || s.hasFacet(WHILE))) return null;
-			return super.serializeFacetValue(s, key, includingBuiltIn);
+			return ISymbolSerializer.super.serializeFacetValue(s, key, includingBuiltIn);
 		}
 
 	}
@@ -601,6 +601,12 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 
 	/**
 	 * The Class IntBounded.
+	 *
+	 * <p><b>Performance:</b> the {@link #intFrom(IScope)}, {@link #intTo(IScope)} and
+	 * {@link #intStep(IScope)} helpers return primitive {@code int} values, avoiding the
+	 * unboxing overhead that would result from calling the inherited
+	 * {@link Bounded#computeFrom}/{@code computeTo}/{@code computeStep} methods which return
+	 * boxed {@link Integer} objects.</p>
 	 */
 	class IntBounded extends Bounded<Integer> {
 
@@ -624,13 +630,44 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			return 1;
 		}
 
+		/**
+		 * Returns the loop start value as a primitive {@code int}, avoiding an unbox of
+		 * the inherited {@link Bounded#computeFrom(IScope)} result.
+		 *
+		 * @param scope the scope
+		 * @return the from value as a primitive int
+		 */
+		private int intFrom(final IScope scope) {
+			return constantFrom != null ? constantFrom : Cast.asInt(scope, fromExpression.value(scope));
+		}
+
+		/**
+		 * Returns the loop end value as a primitive {@code int}.
+		 *
+		 * @param scope the scope
+		 * @return the to value as a primitive int
+		 */
+		private int intTo(final IScope scope) {
+			return constantTo != null ? constantTo : Cast.asInt(scope, toExpression.value(scope));
+		}
+
+		/**
+		 * Returns the loop step value as a primitive {@code int}.
+		 *
+		 * @param scope the scope
+		 * @return the step value as a primitive int
+		 */
+		private int intStep(final IScope scope) {
+			return constantStep != null ? constantStep : Cast.asInt(scope, stepExpression.value(scope));
+		}
+
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
-			final int from = computeFrom(scope);
-			final int to = computeTo(scope);
-			boolean reverse = from > to;
-			final int step = computeStep(scope) * stepSign(reverse);
+			final int from = intFrom(scope);
+			final int to = intTo(scope);
+			final boolean reverse = from > to;
+			final int step = intStep(scope) * stepSign(reverse);
 			for (int i = from; reverse ? i >= to : i <= to; i += step) {
 				if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
 			}
@@ -641,6 +678,12 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 
 	/**
 	 * The Class FloatBounded.
+	 *
+	 * <p><b>Performance:</b> the {@link #doubleFrom(IScope)}, {@link #doubleTo(IScope)} and
+	 * {@link #doubleStep(IScope)} helpers return primitive {@code double} values, avoiding the
+	 * unboxing overhead that would result from calling the inherited
+	 * {@link Bounded#computeFrom}/{@code computeTo}/{@code computeStep} methods which return
+	 * boxed {@link Double} objects.</p>
 	 */
 	class FloatBounded extends Bounded<Double> {
 
@@ -664,13 +707,44 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			return Cast.asFloat(scope, exp.value(scope));
 		}
 
+		/**
+		 * Returns the loop start value as a primitive {@code double}, avoiding an unbox of
+		 * the inherited {@link Bounded#computeFrom(IScope)} result.
+		 *
+		 * @param scope the scope
+		 * @return the from value as a primitive double
+		 */
+		private double doubleFrom(final IScope scope) {
+			return constantFrom != null ? constantFrom : Cast.asFloat(scope, fromExpression.value(scope));
+		}
+
+		/**
+		 * Returns the loop end value as a primitive {@code double}.
+		 *
+		 * @param scope the scope
+		 * @return the to value as a primitive double
+		 */
+		private double doubleTo(final IScope scope) {
+			return constantTo != null ? constantTo : Cast.asFloat(scope, toExpression.value(scope));
+		}
+
+		/**
+		 * Returns the loop step value as a primitive {@code double}.
+		 *
+		 * @param scope the scope
+		 * @return the step value as a primitive double
+		 */
+		private double doubleStep(final IScope scope) {
+			return constantStep != null ? constantStep : Cast.asFloat(scope, stepExpression.value(scope));
+		}
+
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
-			final double from = computeFrom(scope);
-			final double to = computeTo(scope);
-			boolean reverse = from > to;
-			final double step = computeStep(scope) * stepSign(reverse);
+			final double from = doubleFrom(scope);
+			final double to = doubleTo(scope);
+			final boolean reverse = from > to;
+			final double step = doubleStep(scope) * stepSign(reverse);
 			for (double i = from; reverse ? i >= to : i <= to; i += step) {
 				if (BREAK_STATUSES.contains(loopBody(scope, i, result))) { break; }
 			}
@@ -691,19 +765,19 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		 * Instantiates a new over.
 		 *
 		 * @param over
-		 *            the over
+		 *            the over expression (already retrieved by the caller; stored directly to
+		 *            avoid a redundant {@code getFacet} call)
 		 */
 		Over(final IExpression over) {
-			overExpression = getFacet(IKeyword.OVER);
+			overExpression = over;
 		}
-
-		/** The over. */
 
 		@Override
 		public Object runIn(final IScope scope) throws GamaRuntimeException {
 			final Object[] result = new Object[1];
 			final Object obj = overExpression.value(scope);
-			final Iterable list = !(obj instanceof IContainer c) ? Cast.asList(scope, obj) : c.iterable(scope);
+			final Iterable list =
+					!(obj instanceof IContainer c) ? GamaListFactory.castToList(scope, obj) : c.iterable(scope);
 			for (final Object each : list) { if (BREAK_STATUSES.contains(loopBody(scope, each, result))) { break; } }
 			return result[0];
 		}

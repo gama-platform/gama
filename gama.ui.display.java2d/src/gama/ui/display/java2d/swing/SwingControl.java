@@ -3,7 +3,7 @@
  * SwingControl.java, in gama.ui.display.java2d, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -27,7 +27,7 @@ import org.eclipse.ui.IWorkbenchPartReference;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.SetMultimap;
 
-import gama.core.runtime.PlatformHelper;
+import gama.api.runtime.SystemInfo;
 import gama.dev.DEBUG;
 import gama.ui.display.java2d.AWTDisplayView;
 import gama.ui.display.java2d.Java2DDisplaySurface;
@@ -57,9 +57,9 @@ public abstract class SwingControl extends Composite {
 	 */
 	public static Composite create(final Composite parent, final AWTDisplayView view,
 			final Java2DDisplaySurface surface, final int style) {
-		if (PlatformHelper.isLinux()) { return new SwingControlLinux(parent, view, surface, style); }
-		if (PlatformHelper.isWindows()) { return new SwingControlWin(parent, view, surface, style); }
-		if (PlatformHelper.isMac()) { return new SwingControlMac(parent, view, surface, style); }
+		if (SystemInfo.isLinux()) return new SwingControlLinux(parent, view, surface, style);
+		if (SystemInfo.isWindows()) return new SwingControlWin(parent, view, surface, style);
+		if (SystemInfo.isMac()) return new SwingControlMac(parent, view, surface, style);
 		return null;
 	}
 
@@ -81,6 +81,10 @@ public abstract class SwingControl extends Composite {
 	/** The visible. */
 	volatile boolean visible = false;
 
+	/**
+	 * Removes the all references.
+	 */
+	@SuppressWarnings ("restriction")
 	protected void removeAllReferences() {
 		surface = null;
 		frame = null;

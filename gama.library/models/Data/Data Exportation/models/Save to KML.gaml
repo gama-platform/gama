@@ -21,7 +21,7 @@ global {
 	init {
 		create building from: shapefile ;
 		bounds <- union(building);
-		create bug number: 5 with: [location:: any_location_in(bounds)];
+		create bug number: 5 with: (location: any_location_in(bounds));
 	}
 	reflex add_objects_to_kml {
 		

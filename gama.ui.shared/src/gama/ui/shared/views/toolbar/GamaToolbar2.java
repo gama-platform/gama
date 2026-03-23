@@ -3,7 +3,7 @@
  * GamaToolbar2.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,16 +21,19 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.ToolItem;
 
 import com.google.common.base.Strings;
 
-import gama.core.runtime.PlatformHelper;
+import gama.api.runtime.SystemInfo;
 import gama.dev.DEBUG;
 import gama.gaml.operators.Maths;
 import gama.ui.application.workbench.ThemeHelper;
@@ -112,15 +115,56 @@ public class GamaToolbar2 extends Composite {
 	public boolean isVisible() { return isVisible; }
 
 	/**
+	 * A two-panel layout: the right panel gets its preferred (fixed) width and is pinned to the right edge; the left
+	 * panel fills the remaining width. Because the left ToolBar has SWT.WRAP, SWT will reflow its items onto additional
+	 * rows when the available width is less than the total item width, and the composite's height grows accordingly.
+	 */
+	private static final class ToolbarLayout extends Layout {
+
+		/** Horizontal margin on each side of the composite. */
+		static final int MARGIN = 5;
+
+		@Override
+		protected Point computeSize(final Composite composite, final int wHint, final int hHint,
+				final boolean changed) {
+			final Control[] children = composite.getChildren();
+			if (children.length < 2) return new Point(wHint == SWT.DEFAULT ? 0 : wHint, MARGIN);
+			final Control left = children[0], right = children[1];
+			final Point rightPref = right.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+			final int totalW = wHint == SWT.DEFAULT ? SWT.DEFAULT : Math.max(0, wHint - 2 * MARGIN);
+			final int leftW = totalW == SWT.DEFAULT ? SWT.DEFAULT : Math.max(0, totalW - rightPref.x);
+			final Point leftPref = left.computeSize(leftW, SWT.DEFAULT);
+			final int h = Math.max(leftPref.y, rightPref.y);
+			final int w = (leftW == SWT.DEFAULT ? leftPref.x : leftW) + rightPref.x + 2 * MARGIN;
+			return new Point(w, hHint == SWT.DEFAULT ? h : hHint);
+		}
+
+		@Override
+		protected void layout(final Composite composite, final boolean changed) {
+			final Rectangle area = composite.getClientArea();
+			final Control[] children = composite.getChildren();
+			if (children.length < 2) return;
+			final Control left = children[0], right = children[1];
+			final Point rightPref = right.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+			if (!left.isVisible()) {
+				// No left toolbar: right fills everything
+				right.setBounds(area.x + MARGIN, area.y, Math.max(0, area.width - 2 * MARGIN), rightPref.y);
+				return;
+			}
+			final int rightW = rightPref.x;
+			final int leftW = Math.max(0, area.width - 2 * MARGIN - rightW);
+			final Point leftPref = left.computeSize(leftW, SWT.DEFAULT);
+			final int h = Math.max(leftPref.y, rightPref.y);
+			left.setBounds(area.x + MARGIN, area.y, leftW, h);
+			right.setBounds(area.x + MARGIN + leftW, area.y, rightW, h);
+		}
+	}
+
+	/**
 	 * Creates the layout.
 	 */
 	public void createLayout() {
-		final var layout = new GridLayout(2, false);
-		layout.horizontalSpacing = 0;
-		layout.verticalSpacing = 0;
-		layout.marginWidth = 5;
-		layout.marginHeight = 0;
-		setLayout(layout);
+		setLayout(new ToolbarLayout());
 	}
 
 	/**
@@ -128,24 +172,16 @@ public class GamaToolbar2 extends Composite {
 	 */
 	public void createToolbars() {
 		left = new GamaToolbarSimple(this, SWT.FLAT | SWT.HORIZONTAL | SWT.WRAP | SWT.NO_FOCUS | SWT.INHERIT_FORCE);
-		var data = new GridData(SWT.LEFT, SWT.CENTER, true, true);
-		left.setLayoutData(data);
-		right = new GamaToolbarSimple(this, SWT.FLAT | SWT.HORIZONTAL | SWT.NO_FOCUS);
-		data = new GridData(SWT.RIGHT, SWT.FILL, true, false);
-		right.setLayoutData(data);
+		right = new GamaToolbarSimple(this, SWT.FLAT | SWT.HORIZONTAL | SWT.WRAP | SWT.NO_FOCUS);
 		setBackgroundColor(null);
 	}
 
 	/**
-	 * No right toolbar.
+	 * No left toolbar: hides the left toolbar so that the right one spans the full width.
 	 */
 	public void noLeftToolbar() {
-		GridData data = (GridData) left.getLayoutData();
-		data.minimumWidth = 0;
-		data.grabExcessHorizontalSpace = false;
-		data.widthHint = 0;
-		data = (GridData) right.getLayoutData();
-		data.grabExcessHorizontalSpace = true;
+		left.setVisible(false);
+		requestLayout();
 	}
 
 	@Override
@@ -239,7 +275,7 @@ public class GamaToolbar2 extends Composite {
 	public ToolItem status(final String image, final String s, final Selector l, final GamaUIColor color) {
 		wipe(SWT.LEFT, true);
 		Image im = image == null ? null : GamaIcon.named(image).image();
-		if (PlatformHelper.isWindows()) { left.space(1, 24); }
+		if (SystemInfo.isWindows()) { left.space(1, 24); }
 		status = button(color, s, im, l, 24, SWT.LEFT);
 		requestLayout();
 		return status;
@@ -265,7 +301,7 @@ public class GamaToolbar2 extends Composite {
 	 *            the text
 	 */
 	public void updateStatusText(final String text) {
-		if (status == null) { return; }
+		if (status == null) return;
 		FlatButton button = (FlatButton) status.getControl();
 		button.setTextWithoutRecomputingSize(text);
 	}
@@ -283,7 +319,7 @@ public class GamaToolbar2 extends Composite {
 	 */
 	public ToolItem tooltip(final String s, final GamaUIColor rgb, final int side /* SWT.LEFT or SWT.RIGHT */) {
 		Color color = rgb == null ? getBackground() : rgb.color();
-		if (s == null) { return null; }
+		if (s == null) return null;
 		hasTooltip = true;
 		final var tb = getToolbar(side);
 		wipe(side, false);
@@ -591,20 +627,10 @@ public class GamaToolbar2 extends Composite {
 	}
 
 	/**
-	 * Normalize toolbars.
+	 * Normalize toolbars. With the custom {@link ToolbarLayout}, widths are computed dynamically on each layout pass,
+	 * so this simply triggers a re-layout.
 	 */
 	public void normalizeToolbars() {
-		right.requestLayout();
-		float size = 0;
-		for (final ToolItem t : right.getItems()) { size += t.getWidth(); }
-		((GridData) right.getLayoutData()).minimumWidth = Math.round(size);
-		size = 0;
-		left.requestLayout();
-		for (final ToolItem t : left.getItems()) { size += t.getWidth(); }
-		// Seems necessary for Windows !
-		int even = Math.round(size);
-		if (!Maths.even(even)) { even++; }
-		((GridData) left.getLayoutData()).minimumWidth = even + 3;
 		requestLayout();
 	}
 
@@ -621,6 +647,19 @@ public class GamaToolbar2 extends Composite {
 	 */
 	public boolean hasTooltip() {
 		return hasTooltip;
+	}
+
+	/**
+	 * Returns the pixel width currently available to the left toolbar. This is the total composite width minus the
+	 * right toolbar's preferred width and the layout margins. Returns -1 if the composite has not yet been sized.
+	 *
+	 * @return available width for the left toolbar in pixels, or -1 if not yet known
+	 */
+	public int getAvailableLeftWidth() {
+		final int totalW = getSize().x;
+		if (totalW <= 0) return -1;
+		final int rightW = right.computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+		return Math.max(0, totalW - rightW - 2 * ToolbarLayout.MARGIN);
 	}
 
 	/**
@@ -660,8 +699,8 @@ public class GamaToolbar2 extends Composite {
 	 */
 	private void checkSelectionIcon(final ToolItem button) {
 		String image = (String) button.getData();
-		if (image == null) { return; }
-		if (PlatformHelper.isMac() && GamaColors.isDark(getBackground()) && !ThemeHelper.isDark()) {
+		if (image == null) return;
+		if (SystemInfo.isMac() && GamaColors.isDark(getBackground()) && !ThemeHelper.isDark()) {
 			if (button.getSelection()) {
 				button.setImage(GamaIcon.named(image).checked());
 			} else {

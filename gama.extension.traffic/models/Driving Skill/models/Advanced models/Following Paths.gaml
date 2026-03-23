@@ -23,7 +23,7 @@ global {
 	graph road_network;
 	
 	init {
-		create road from: shp_roads with: [num_lanes::int(read("lanes"))] {
+		create road from: shp_roads with: (num_lanes:int(read("lanes"))) {
 			// Create another road in the opposite direction
 			create road {
 				num_lanes <- myself.num_lanes;
@@ -35,7 +35,7 @@ global {
 		}
 		
 		create intersection from: shp_nodes
-				with: [is_traffic_signal::(read("type") = "traffic_signals")] {
+				with: (is_traffic_signal:(read("type") = "traffic_signals")) {
 			time_to_change <- 30#s;
 		}
 		

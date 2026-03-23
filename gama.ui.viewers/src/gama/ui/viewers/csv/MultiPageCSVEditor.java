@@ -3,7 +3,7 @@
  * MultiPageCSVEditor.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,7 +15,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IStorage;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.CellEditor;
@@ -46,7 +45,8 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
 
-import gama.core.util.file.csv.AbstractCSVManipulator.Letters;
+import gama.api.GAMA;
+import gama.api.utils.StringUtils;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -99,7 +99,7 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	 * Creates a multi-page editor example.
 	 */
 	public MultiPageCSVEditor() {
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+		GAMA.getWorkspaceManager().getWorkspace().addResourceChangeListener(this);
 		tableFilter = new CSVTableFilter();
 		tableSorter = new CSVTableSorter();
 		// model = createCSVFile();
@@ -107,7 +107,7 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 
 	@Override
 	public Control getSizableFontControl() {
-		if (tableViewer == null) { return null; }
+		if (tableViewer == null) return null;
 		return tableViewer.getTable();
 	}
 
@@ -139,11 +139,11 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	 * @return the file for
 	 */
 	private static IFile getFileFor(final IEditorInput input) {
-		if (input instanceof IFileEditorInput) { return ((IFileEditorInput) input).getFile(); }
+		if (input instanceof IFileEditorInput) return ((IFileEditorInput) input).getFile();
 		if (input instanceof IStorageEditorInput) {
 			try {
 				final IStorage storage = ((IStorageEditorInput) input).getStorage();
-				if (storage instanceof IFile) { return (IFile) storage; }
+				if (storage instanceof IFile) return (IFile) storage;
 			} catch (final CoreException ignore) {
 				// intentionally blank
 			}
@@ -277,7 +277,7 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 		final TableColumn[] tableColumns = tableViewer.getTable().getColumns();
 		for (int i = 0; i < tableColumns.length; i++) {
 			final TableColumn column = tableColumns[i];
-			if (columnName.equalsIgnoreCase(column.getText())) { return i; }
+			if (columnName.equalsIgnoreCase(column.getText())) return i;
 		}
 		return index;
 	}
@@ -327,7 +327,7 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 	 */
 	@Override
 	public void dispose() {
-		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+		GAMA.getWorkspaceManager().getWorkspace().removeResourceChangeListener(this);
 		super.dispose();
 	}
 
@@ -527,13 +527,13 @@ public class MultiPageCSVEditor extends MultiPageEditorPart
 				protected void fillMenu() {
 					Menu sub = GamaMenu.sub(mainMenu, "Choose separator",
 							"Determine which character should be used as delimiter of fields",
-							(IGamaIcons.SET_DELIMITER));
-					GamaMenu.action(sub, ", (comma)", e1 -> refreshWithDelimiter(Letters.COMMA));
-					GamaMenu.action(sub, "; (semicolon)", e1 -> refreshWithDelimiter(Letters.SEMICOLUMN));
-					GamaMenu.action(sub, "  (space)", e1 -> refreshWithDelimiter(Letters.SPACE));
-					GamaMenu.action(sub, "  (tab)", e1 -> refreshWithDelimiter(Letters.TAB));
-					GamaMenu.action(sub, ": (colon)", e1 -> refreshWithDelimiter(Letters.COLUMN));
-					GamaMenu.action(sub, "| (pipe)", e1 -> refreshWithDelimiter(Letters.PIPE));
+							IGamaIcons.SET_DELIMITER);
+					GamaMenu.action(sub, ", (comma)", e1 -> refreshWithDelimiter(StringUtils.Letters.COMMA));
+					GamaMenu.action(sub, "; (semicolon)", e1 -> refreshWithDelimiter(StringUtils.Letters.SEMICOLUMN));
+					GamaMenu.action(sub, "  (space)", e1 -> refreshWithDelimiter(StringUtils.Letters.SPACE));
+					GamaMenu.action(sub, "  (tab)", e1 -> refreshWithDelimiter(StringUtils.Letters.TAB));
+					GamaMenu.action(sub, ": (colon)", e1 -> refreshWithDelimiter(StringUtils.Letters.COLUMN));
+					GamaMenu.action(sub, "| (pipe)", e1 -> refreshWithDelimiter(StringUtils.Letters.PIPE));
 
 					GamaCommand.build(IGamaIcons.SET_HEADER, "First line is header", "First line is header", e -> {
 						final ToolItem t1 = (ToolItem) e.widget;

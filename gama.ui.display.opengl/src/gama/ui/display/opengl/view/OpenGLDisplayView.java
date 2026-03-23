@@ -3,7 +3,7 @@
  * OpenGLDisplayView.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,9 +13,9 @@ package gama.ui.display.opengl.view;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import gama.core.common.interfaces.IDisposable;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.PlatformHelper;
+import gama.api.GAMA;
+import gama.api.runtime.SystemInfo;
+import gama.api.utils.interfaces.IDisposable;
 import gama.dev.DEBUG;
 import gama.ui.experiment.views.displays.LayeredDisplayView;
 
@@ -101,7 +101,7 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	public void showCanvas() {
 		getGLCanvas().setVisible(true);
 		// Maybe only necessary on macOS ? Prevents JOGL views to move over Java2D views created before
-		if (PlatformHelper.isMac()) { getGLCanvas().reparentWindow(); }
+		if (SystemInfo.isMac()) { getGLCanvas().reparentWindow(); }
 	}
 
 	/**

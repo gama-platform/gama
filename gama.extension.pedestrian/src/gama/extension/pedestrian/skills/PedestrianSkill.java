@@ -1,44 +1,48 @@
 /*******************************************************************************************************
  *
  * PedestrianSkill.java, in gama.extension.pedestrian, is part of the source code of the GAMA modeling and simulation
- * platform (v.1.9.3).
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.extension.pedestrian.skills;
 
-import gama.annotations.precompiler.GamlAnnotations.action;
-import gama.annotations.precompiler.GamlAnnotations.arg;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.graph.GraphTopology;
-import gama.core.metamodel.topology.graph.ISpatialGraph;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaList;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.core.util.IMap;
-import gama.core.util.path.IPath;
-import gama.gaml.descriptions.ConstantExpressionDescription;
-import gama.gaml.operators.Cast;
+import gama.annotations.action;
+import gama.annotations.arg;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.annotations.skill;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.Arguments;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IPath;
+import gama.api.types.graph.ISpatialGraph;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IContainer;
+import gama.core.topology.graph.GraphTopology;
 import gama.gaml.operators.Maths;
-import gama.gaml.operators.Points;
 import gama.gaml.operators.Random;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialOperators;
@@ -46,12 +50,6 @@ import gama.gaml.operators.spatial.SpatialProperties;
 import gama.gaml.operators.spatial.SpatialPunctal;
 import gama.gaml.operators.spatial.SpatialQueries;
 import gama.gaml.skills.MovingSkill;
-import gama.gaml.species.ISpecies;
-import gama.gaml.statements.Arguments;
-import gama.gaml.statements.IStatement;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class PedestrianSkill.
@@ -344,8 +342,8 @@ public class PedestrianSkill extends MovingSkill {
 	 */
 	@SuppressWarnings ("unchecked")
 	@getter (FORCES)
-	public IMap<IShape, GamaPoint> getForces(final IAgent agent) {
-		return (IMap<IShape, GamaPoint>) agent.getAttribute(FORCES);
+	public IMap<IShape, IPoint> getForces(final IAgent agent) {
+		return (IMap<IShape, IPoint>) agent.getAttribute(FORCES);
 	}
 
 	/**
@@ -847,7 +845,7 @@ public class PedestrianSkill extends MovingSkill {
 	 *            the val
 	 */
 	@setter (VELOCITY)
-	public void setVelocity(final IAgent agent, final GamaPoint val) {
+	public void setVelocity(final IAgent agent, final IPoint val) {
 		agent.setAttribute(VELOCITY, val);
 	}
 
@@ -859,8 +857,8 @@ public class PedestrianSkill extends MovingSkill {
 	 * @return the velocity
 	 */
 	@getter (VELOCITY)
-	public GamaPoint getVelocity(final IAgent agent) {
-		return (GamaPoint) agent.getAttribute(VELOCITY);
+	public IPoint getVelocity(final IAgent agent) {
+		return (IPoint) agent.getAttribute(VELOCITY);
 	}
 
 	/**
@@ -1065,7 +1063,7 @@ public class PedestrianSkill extends MovingSkill {
 		IShape bounds = null;
 		if (scope.hasArg(IKeyword.BOUNDS)) {
 			final Object obj = scope.getArg(IKeyword.BOUNDS, IType.NONE);
-			bounds = GamaGeometryType.staticCast(scope, obj, null, false);
+			bounds = GamaShapeFactory.castToShape(scope, obj, false);
 		}
 		IList<ISpecies> speciesList = getObstacleSpecies(agent);
 		IContainer<Integer, IAgent> obstacles = null;
@@ -1075,7 +1073,7 @@ public class PedestrianSkill extends MovingSkill {
 			obstacles = GamaListFactory.create(Types.AGENT);
 			for (ISpecies species : speciesList) {
 
-				((IList<IAgent>) obstacles).addAll(Cast.asList(scope, species));
+				((IList<IAgent>) obstacles).addAll(GamaListFactory.castToList(scope, species));
 			}
 		}
 
@@ -1087,11 +1085,11 @@ public class PedestrianSkill extends MovingSkill {
 			pedestrians = GamaListFactory.create(Types.AGENT);
 			for (ISpecies species : speciesList) {
 
-				((IList<IAgent>) pedestrians).addAll(Cast.asList(scope, species));
+				((IList<IAgent>) pedestrians).addAll(GamaListFactory.castToList(scope, species));
 			}
 		}
 
-		GamaPoint currentTarget = goal.getLocation();
+		IPoint currentTarget = goal.getLocation();
 		double maxDist = computeDistance(scope, agent);
 		double realSpeed = walkWithForceModel(scope, agent, currentTarget, getAvoidOther(agent), bounds, pedestrians,
 				obstacles, maxDist);
@@ -1116,10 +1114,10 @@ public class PedestrianSkill extends MovingSkill {
 	public double walkWithForceModel(final IScope scope, final IAgent agent, final IShape currentTarget,
 			final boolean avoidOther, final IShape bounds, final IContainer<Integer, ?> pedestrianList,
 			final IContainer<Integer, ?> obstaclesList, final double maxDist) {
-		GamaPoint location = getLocation(agent).copy(scope);
-		GamaPoint target = currentTarget.isPoint() ? currentTarget.getLocation()
+		IPoint location = getLocation(agent).copy(scope);
+		IPoint target = currentTarget.isPoint() ? currentTarget.getLocation()
 				: SpatialPunctal._closest_point_to(location, currentTarget);
-		target.setZ(target.z);
+		target.setZ(target.getZ());
 		double dist = location.distance(target);
 
 		if (dist == 0.0) return 0.0;
@@ -1135,12 +1133,14 @@ public class PedestrianSkill extends MovingSkill {
 				pts.add(agent.getLocation());
 				pts.add(target);
 				line = SpatialCreation.line(scope, pts);
-				if (!bounds.covers(line)) { target = SpatialPunctal._closest_point_to(location, getCurrentEdge(agent)); }
+				if (!bounds.covers(line)) {
+					target = SpatialPunctal._closest_point_to(location, getCurrentEdge(agent));
+				}
 
 			}
 		}
 
-		GamaPoint velocity = null;
+		IPoint velocity = null;
 		if (avoidOther) {
 			double distPercep = Math.max(maxDist, getPedestrianConsiderationDistance(agent));
 			double distPercepObst = Math.max(maxDist, getObstacleConsiderationDistance(agent));
@@ -1158,7 +1158,7 @@ public class PedestrianSkill extends MovingSkill {
 			velocity = target.copy(scope).minus(location);
 		}
 
-		GamaPoint tar = velocity.copy(scope).add(location);
+		IPoint tar = velocity.copy(scope).add(location);
 		double distToTarget = location.euclidianDistanceTo(tar);
 		if (distToTarget > 0.0) {
 			double coeff = Math.min(maxDist / distToTarget, 1.0);
@@ -1181,7 +1181,7 @@ public class PedestrianSkill extends MovingSkill {
 			setVelocity(agent, location.copy(scope).minus(getLocation(agent)));
 			setLocation(agent, location);
 		} else {
-			setVelocity(agent, new GamaPoint(0, 0, 0));
+			setVelocity(agent, GamaPointFactory.create(0, 0, 0));
 		}
 
 		return realSpeed;
@@ -1199,13 +1199,13 @@ public class PedestrianSkill extends MovingSkill {
 	 * @return
 	 */
 	@SuppressWarnings ("unchecked")
-	public GamaPoint avoidSFMSimple(final IScope scope, final IAgent agent, final GamaPoint location,
-			final GamaPoint currentTarget, final double distPercepPedestrian, final double distPercepObstacle,
+	public IPoint avoidSFMSimple(final IScope scope, final IAgent agent, final IPoint location,
+			final IPoint currentTarget, final double distPercepPedestrian, final double distPercepObstacle,
 			final IContainer pedestriansList, final IContainer obstaclesList) {
-		IMap<IShape, GamaPoint> forcesMap = GamaMapFactory.create();
+		IMap<IShape, IPoint> forcesMap = GamaMapFactory.create();
 
-		GamaPoint current_velocity = getVelocity(agent).copy(scope);
-		GamaPoint fsoc = new GamaPoint(0, 0, 0);
+		IPoint current_velocity = getVelocity(agent).copy(scope);
+		IPoint fsoc = GamaPointFactory.create(0, 0, 0);
 		double dist = location.euclidianDistanceTo(currentTarget);
 		IList<IAgent> obstacles = GamaListFactory.create(Types.AGENT);
 		IList<IAgent> pedestrians = GamaListFactory.create(Types.AGENT);
@@ -1221,31 +1221,30 @@ public class PedestrianSkill extends MovingSkill {
 		double n = getN_SFM(agent);
 		double n_prime = getN_PRIME_SFM(agent);
 		for (IAgent ag : pedestrians) {
-			GamaPoint force = new GamaPoint(0, 0, 0);
+			IPoint force = GamaPointFactory.create(0, 0, 0);
 			double distance = agent.euclidianDistanceTo(ag);
-			GamaPoint itoj = Points.subtract(ag.getLocation(), agent.getLocation());
-			itoj = itoj.divideBy(Maths.sqrt(scope, itoj.x * itoj.x + itoj.y * itoj.y + itoj.z * itoj.z));
-
-			GamaPoint D = current_velocity.copy(scope).subtract(getVelocity(ag)).multiplyBy(lambda).add(itoj);
-			double D_norm = Maths.sqrt(scope, D.x * D.x + D.y * D.y + D.z * D.z);
+			IPoint itoj = ag.getLocation().minus(agent.getLocation()).normalize();
+			IPoint D = current_velocity.minus(getVelocity(ag)).multiplyBy(lambda).add(itoj);
+			double D_norm = D.norm();
 			double B = gama_ * D_norm;
-			GamaPoint t_ = D.divideBy(D_norm);
-			GamaPoint n_;
-			if (t_.x == 0) {
-				n_ = new GamaPoint(t_.y > 0 ? -1 : 1, 0, 0);
-			} else if (t_.y == 0) {
-				n_ = new GamaPoint(0, t_.x > 0 ? 1 : -1, 0);
+			IPoint t_ = D.divideBy(D_norm);
+			IPoint n_;
+			if (t_.getX() == 0) {
+				n_ = GamaPointFactory.create(t_.getY() > 0 ? -1 : 1, 0, 0);
+			} else if (t_.getY() == 0) {
+				n_ = GamaPointFactory.create(0, t_.getX() > 0 ? 1 : -1, 0);
 			} else {
-				double nx = -t_.y / t_.x;
+				double nx = -t_.getY() / t_.getX();
 				double norm = Math.sqrt(nx * nx + 1);
-				n_ = t_.x > 0 ? new GamaPoint(-nx / norm, -1 / norm, 0) : new GamaPoint(nx / norm, 1 / norm, 0);
+				n_ = t_.getX() > 0 ? GamaPointFactory.create(-nx / norm, -1 / norm, 0)
+						: GamaPointFactory.create(nx / norm, 1 / norm, 0);
 			}
-			double t_xDotitoj = t_.x * itoj.x + t_.y * itoj.y + t_.z * itoj.z;
+			double t_xDotitoj = t_.dotProductWith(itoj);
 			t_xDotitoj = Math.max(Math.min(t_xDotitoj, 1.0), -1.0);
 			double teta = Math.abs(Maths.acos(t_xDotitoj) * Math.PI / 180);
 			if (teta <= Math.PI) {
-				GamaPoint f_1 = t_.multiplyBy(Math.exp(-Math.pow(n_prime * B * teta, 2)));
-				GamaPoint f_2 = n_.multiplyBy(Math.exp(-Math.pow(n * B * teta, 2)));
+				IPoint f_1 = t_.multiplyBy(Math.exp(-Math.pow(n_prime * B * teta, 2)));
+				IPoint f_2 = n_.multiplyBy(Math.exp(-Math.pow(n * B * teta, 2)));
 				force = f_1.add(f_2).multiplyBy(-A * Math.exp(-distance / B));
 				fsoc = fsoc.add(force);
 			}
@@ -1253,13 +1252,13 @@ public class PedestrianSkill extends MovingSkill {
 			forcesMap.put(ag, force);
 		}
 
-		GamaPoint desiredVelo = currentTarget.copy(scope).minus(location)
+		IPoint desiredVelo = currentTarget.copy(scope).minus(location)
 				.divideBy(dist / Math.min(getSpeed(agent), dist / scope.getSimulation().getClock().getStepInSeconds()));
-		GamaPoint fdest = desiredVelo.minus(current_velocity).dividedBy(getRELAXION_SFM(agent));
+		IPoint fdest = desiredVelo.minus(current_velocity).dividedBy(getRELAXION_SFM(agent));
 
 		forcesMap.put(agent, fdest);
 		agent.setAttribute(FORCES, forcesMap);
-		GamaPoint forces = fdest.add(fsoc);
+		IPoint forces = fdest.add(fsoc);
 		return current_velocity.add(forces).normalize();
 	}
 
@@ -1285,17 +1284,17 @@ public class PedestrianSkill extends MovingSkill {
 	 * @return the gama point
 	 */
 	@SuppressWarnings ("unchecked")
-	public GamaPoint avoidSFM(final IScope scope, final IAgent agent, final GamaPoint location,
-			final GamaPoint currentTarget, final double distPercepPedestrian, final double distPercepObstacle,
-			final IContainer pedestriansList, final IContainer obstaclesList) {
-		GamaPoint current_velocity = getVelocity(agent).copy(scope);
+	public IPoint avoidSFM(final IScope scope, final IAgent agent, final IPoint location, final IPoint currentTarget,
+			final double distPercepPedestrian, final double distPercepObstacle, final IContainer pedestriansList,
+			final IContainer obstaclesList) {
+		IPoint current_velocity = getVelocity(agent).copy(scope);
 		double BWall = getBObstSFM(agent);
 		double Bpedestrian = getB_SFM(agent);
 		Double distMin = getMinDist(agent);
 		double shoulderL = getShoulderLength(agent) / 2.0 + distMin;
-		IMap<IShape, GamaPoint> forcesMap = GamaMapFactory.create();
+		IMap<IShape, IPoint> forcesMap = GamaMapFactory.create();
 		double dist = location.euclidianDistanceTo(currentTarget);
-		if (dist == 0 || getSpeed(agent) <= 0.0) return new GamaPoint(0, 0, 0);
+		if (dist == 0 || getSpeed(agent) <= 0.0) return GamaPointFactory.create(0, 0, 0);
 		IList<IAgent> obstacles = GamaListFactory.create(Types.AGENT);
 		IList<IAgent> pedestrians = GamaListFactory.create(Types.AGENT);
 
@@ -1311,38 +1310,39 @@ public class PedestrianSkill extends MovingSkill {
 
 		double k = getKSFM(agent);
 		double kappa = getKappaSFM(agent);
-		GamaPoint ei = current_velocity.copy(scope).normalize();
+		IPoint ei = current_velocity.copy(scope).normalize();
 
-		GamaPoint desiredVelo = currentTarget.copy(scope).minus(location)
+		IPoint desiredVelo = currentTarget.copy(scope).minus(location)
 				.divideBy(dist / Math.min(getSpeed(agent), dist / scope.getSimulation().getClock().getStepInSeconds()));
-		GamaPoint fdest = desiredVelo.minus(current_velocity).dividedBy(getRELAXION_SFM(agent));
+		IPoint fdest = desiredVelo.minus(current_velocity).dividedBy(getRELAXION_SFM(agent));
 
-		if (ei.equals(new GamaPoint())) { ei = fdest; }
-		GamaPoint forcesPedestrian = new GamaPoint();
+		if (ei.equals(GamaPointFactory.create())) { ei = fdest; }
+		IPoint forcesPedestrian = GamaPointFactory.create();
 		for (IAgent ag : pedestrians) {
 			double distance = agent.getLocation().euclidianDistanceTo(ag.getLocation());
-			GamaPoint force = new GamaPoint();
+			IPoint force = GamaPointFactory.create();
 			if (distance > 0) {
 				double fact = APedes * Math.exp((shoulderL + getShoulderLength(ag) / 2.0 - distance) / Bpedestrian);
 
-				GamaPoint nij = Points.subtract(agent.getLocation(), ag.getLocation());
+				IPoint nij = agent.getLocation().minus(ag.getLocation());
 				nij = nij.dividedBy(distance);
-				double phi = SpatialPunctal.angleInDegreesBetween(scope, new GamaPoint(), ei, nij.copy(scope).multiplyBy(-1));
-				GamaPoint fnorm = nij.multiplyBy(fact * (lambda + (1 - lambda) * (1 + Math.cos(phi)) / 2.0));
+				double phi = SpatialPunctal.angleInDegreesBetween(scope, GamaPointFactory.create(), ei,
+						nij.copy(scope).multiplyBy(-1));
+				IPoint fnorm = nij.multiplyBy(fact * (lambda + (1 - lambda) * (1 + Math.cos(phi)) / 2.0));
 
-				GamaPoint tij = new GamaPoint(-1 * nij.y, nij.x);
-				GamaPoint ej = getVelocity(ag).copy(scope).normalize();
-				double phiij = GamaPoint.dotProduct(ei, ej);
-				GamaPoint ftang = phiij <= 0 ? tij.multiplyBy(gama_ * fnorm.norm()) : new GamaPoint(0, 0, 0);
-				GamaPoint fsoc = fnorm.add(ftang);
+				IPoint tij = GamaPointFactory.create(-1 * nij.getY(), nij.getX());
+				IPoint ej = getVelocity(ag).copy(scope).normalize();
+				double phiij = ei.dotProductWith(ej);
+				IPoint ftang = phiij <= 0 ? tij.multiplyBy(gama_ * fnorm.norm()) : GamaPointFactory.create(0, 0, 0);
+				IPoint fsoc = fnorm.add(ftang);
 				force = fsoc.copy(scope);
 
 				double omega = shoulderL + getShoulderLength(ag) / 2.0 - distance;
 
 				if (omega > 0) {
-					GamaPoint fphys = new GamaPoint();
+					IPoint fphys = GamaPointFactory.create();
 					fphys = fphys.add(nij.copy(scope).multiplyBy(omega * k));
-					double deltaSpeed = GamaPoint.dotProduct(getVelocity(ag).copy(scope).minus(current_velocity), tij);
+					double deltaSpeed = getVelocity(ag).minus(current_velocity).dotProductWith(tij);
 					fphys = fphys.add(tij.copy(scope).multiplyBy(omega * kappa * deltaSpeed));
 					force = force.add(fphys);
 				}
@@ -1352,14 +1352,15 @@ public class PedestrianSkill extends MovingSkill {
 
 		}
 
-		GamaPoint forcesWall = new GamaPoint();
+		IPoint forcesWall = GamaPointFactory.create();
 		for (IAgent ag : obstacles) {
 			double distance = agent.euclidianDistanceTo(ag);
-			GamaPoint closest_point = null;
-			GamaPoint fwall = new GamaPoint();
+			IPoint closest_point = null;
+			IPoint fwall = GamaPointFactory.create();
 
 			if (distance == 0) {
-				closest_point = SpatialPunctal._closest_point_to(agent.getLocation(), ag.getGeometry().getExteriorRing(scope));
+				closest_point =
+						SpatialPunctal._closest_point_to(agent.getLocation(), ag.getGeometry().getExteriorRing(scope));
 			} else {
 				closest_point = SpatialPunctal._closest_point_to(agent.getLocation(), ag);
 			}
@@ -1368,13 +1369,13 @@ public class PedestrianSkill extends MovingSkill {
 				double fact = AWall * Math.exp((shoulderL - distance) / BWall);
 				double omega = shoulderL - distance;
 				if (omega > 0) { fact += k * omega; }
-				GamaPoint nij = Points.subtract(agent.getLocation(), closest_point.getLocation());
+				IPoint nij = agent.getLocation().minus(closest_point.getLocation());
 				nij = nij.normalize();
 				fwall = nij.multiplyBy(fact);
 
 				if (omega > 0) {
-					GamaPoint tij = new GamaPoint(-1 * nij.y, nij.x);
-					double product = GamaPoint.dotProduct(current_velocity, tij);
+					IPoint tij = GamaPointFactory.create(-1 * nij.getY(), nij.getX());
+					double product = current_velocity.dotProductWith(tij);
 
 					fwall = fwall.minus(tij.multiplyBy(omega * kappa * product));
 				}
@@ -1387,7 +1388,7 @@ public class PedestrianSkill extends MovingSkill {
 
 		forcesMap.put(agent, fdest);
 		agent.setAttribute(FORCES, forcesMap);
-		GamaPoint forces = fdest.add(forcesPedestrian).add(forcesWall);
+		IPoint forces = fdest.add(forcesPedestrian).add(forcesWall);
 		return current_velocity.add(forces).normalize();
 	}
 
@@ -1418,15 +1419,13 @@ public class PedestrianSkill extends MovingSkill {
 					returns = "the computed path, return nil if no path can be taken",
 					examples = { @example ("do compute_virtual_path graph: pedestrian_network target: any_point;") }))
 	public IPath primComputeVirtualPath(final IScope scope) throws GamaRuntimeException {
-		IPath thePath = null;
-
 		final ISpatialGraph graph = (ISpatialGraph) scope.getArg(PEDESTRIAN_GRAPH, IType.GRAPH);
 		final IAgent agent = getCurrentAgent(scope);
 		final boolean useGeometryTarget = getUseGeometryTarget(agent);
 		IShape target = (IShape) scope.getArg("target", IType.GEOMETRY);
 		IShape source = agent.getLocation();
 
-		thePath = ((GraphTopology) graph.getTopology(scope)).pathBetween(scope, source, target);
+		IPath thePath = ((GraphTopology) graph.getTopology(scope)).pathBetween(scope, source, target);
 		// If there is no path between source and target ...
 		if (thePath == null) return thePath;
 		IMap<IShape, IShape> roadTarget = GamaMapFactory.create();
@@ -1447,16 +1446,16 @@ public class PedestrianSkill extends MovingSkill {
 				}
 			}
 
-			IList<GamaPoint> points = cSeg.getPoints();
+			IList<IPoint> points = cSeg.getPoints();
 			for (int j = 1; j < points.size(); j++) {
-				GamaPoint pt = points.get(j);
-				IShape cTarget = null;
-//				if (PedestrianRoadSkill.getRoadStatus(scope, cRoad) == PedestrianRoadSkill.SIMPLE_STATUS) {
-//					cTarget = pt;
-//				} else {
-					cTarget = pt;
-					//if (cTarget == null) { cTarget = pt; } //TODO:why ?
-//				}
+				IPoint pt = points.get(j);
+
+				// if (PedestrianRoadSkill.getRoadStatus(scope, cRoad) == PedestrianRoadSkill.SIMPLE_STATUS) {
+				// cTarget = pt;
+				// } else {
+				IShape cTarget = pt;
+				// if (cTarget == null) { cTarget = pt; } //TODO:why ?
+				// }
 				if (useGeometryTarget) {
 					cTarget = null;
 					if (geomNext != null) {
@@ -1556,7 +1555,7 @@ public class PedestrianSkill extends MovingSkill {
 		final IList<IShape> targets = getTargets(agent);
 		if (targets == null || targets.isEmpty()) return false;
 
-		GamaPoint location = getLocation(agent).copy(scope);
+		IPoint location = getLocation(agent).copy(scope);
 		double maxDist = computeDistance(scope, agent);
 
 		boolean movement = true;
@@ -1590,11 +1589,11 @@ public class PedestrianSkill extends MovingSkill {
 			} else {
 				obstacles = GamaListFactory.create(Types.AGENT);
 				for (ISpecies species : speciesList) {
-					((IList<IAgent>) obstacles).addAll(Cast.asList(scope, species));
+					((IList<IAgent>) obstacles).addAll(GamaListFactory.castToList(scope, species));
 				}
 			}
 
-			GamaPoint prevLoc = location.copy(scope);
+			IPoint prevLoc = location.copy(scope);
 			walkWithForceModel(scope, agent, currentTarget, avoidOther, bounds, pedestrians, obstacles, maxDist);
 			location = agent.getLocation();
 
@@ -1616,7 +1615,7 @@ public class PedestrianSkill extends MovingSkill {
 					final ISpecies context = agent.getSpecies();
 					final IStatement.WithArgs actionTNR = context.getAction("release_path");
 					final Arguments argsTNR = new Arguments();
-					argsTNR.put("current_road", ConstantExpressionDescription.create(road));
+					argsTNR.put("current_road", GAML.getExpressionDescriptionFactory().createConstantNoCache(road));
 					actionTNR.setRuntimeArgs(scope, argsTNR);
 
 					actionTNR.executeOn(scope);
@@ -1646,7 +1645,7 @@ public class PedestrianSkill extends MovingSkill {
 	 *            the targets
 	 * @return true, if successful
 	 */
-	boolean arrivedAtTarget(final IScope scope, final GamaPoint location, final IShape currentTarget, final double size,
+	boolean arrivedAtTarget(final IScope scope, final IPoint location, final IShape currentTarget, final double size,
 			final int index, final int maxIndex, final IList<IShape> targets) {
 		double dist = location.euclidianDistanceTo(currentTarget);
 		if (dist <= size) return true;

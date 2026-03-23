@@ -39,7 +39,7 @@ global {
 		do loop_graph;
 	}
 	
-	action loop_over {
+	action loop_over() {
 		write "==================================";
 		write "= Loop over containers and point =";
 		write "==================================";
@@ -137,7 +137,7 @@ global {
 	}
 	
 	
-	action loop_using_indices {
+	action loop_using_indices() {
 		write "=======================";
 		write "= Loop using an index =";
 		write "=======================";
@@ -171,7 +171,7 @@ global {
 				
 	// When we loop over a map, the default behavior is to loop over the values (and we thus lose the key in the loop).
 	// To keep it we can loop over the map either through the keys list, the values list or even the pairs key::value list.
-	action loop_map {
+	action loop_map (){
 		write "=======================";
 		write "= Loop over maps      =";
 		write "=======================";
@@ -203,7 +203,7 @@ global {
 
 	// When we loop over a graph, the default behavior is to loop over the edges.
 	// But we can also want to loop over the nodes.
-	action loop_graph {
+	action loop_graph (){
 		write "=======================";
 		write "= Loop over graphs    =";
 		write "=======================";

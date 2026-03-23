@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Strings.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Strings.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,22 +16,24 @@ import java.util.regex.MatchResult;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.ByteArrayZipper;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.utils.StringUtils;
+import gama.api.utils.files.CompressionUtils;
 
 /**
  * Written by drogoul Modified on 10 d�c. 2010
@@ -39,18 +41,22 @@ import gama.gaml.types.Types;
  * @todo Description
  *
  */
+
+/**
+ * The Class Strings.
+ */
 @SuppressWarnings ({ "rawtypes" })
 public class Strings {
 
-	// static {
-	// DEBUG.OFF();
-	// }
-
-	/** The Constant LN. */
-	public static final String LN = java.lang.System.lineSeparator();
-
-	/** The Constant TAB. */
-	public static final String TAB = "\t";
+	/**
+	 * Op plus.
+	 *
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the string
+	 */
 
 	/**
 	 * Op plus.
@@ -94,6 +100,20 @@ public class Strings {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
+
+	/**
+	 * Op plus.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param a
+	 *            the a
+	 * @param b
+	 *            the b
+	 * @return the string
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@operator (
 			value = IKeyword.PLUS,
 			can_be_const = true,
@@ -109,6 +129,29 @@ public class Strings {
 		return a + Cast.asString(scope, b);
 	}
 
+	/**
+	 * Op concatenate.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param strings
+	 *            the strings
+	 * @return the string
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+
+	/**
+	 * Op concatenate.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param strings
+	 *            the strings
+	 * @return the string
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@operator (
 			value = "concatenate",
 			can_be_const = true,
@@ -126,6 +169,33 @@ public class Strings {
 		return sb.toString();
 	}
 
+	/**
+	 * Op concatenate sep.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param strings
+	 *            the strings
+	 * @param separator
+	 *            the separator
+	 * @return the string
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+
+	/**
+	 * Op concatenate sep.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param strings
+	 *            the strings
+	 * @param separator
+	 *            the separator
+	 * @return the string
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
 	@operator (
 			value = "concatenate",
 			can_be_const = true,
@@ -143,6 +213,16 @@ public class Strings {
 		for (String s : strings) { sj.add(s); }
 		return sj.toString();
 	}
+
+	/**
+	 * Op in.
+	 *
+	 * @param pattern
+	 *            the pattern
+	 * @param target
+	 *            the target
+	 * @return the boolean
+	 */
 
 	/**
 	 * Op in.
@@ -179,6 +259,16 @@ public class Strings {
 	 *            the pattern
 	 * @return the boolean
 	 */
+
+	/**
+	 * Op contains.
+	 *
+	 * @param target
+	 *            the target
+	 * @param pattern
+	 *            the pattern
+	 * @return the boolean
+	 */
 	@operator (
 			value = "contains",
 			can_be_const = true,
@@ -203,6 +293,16 @@ public class Strings {
 	 *            the l
 	 * @return the boolean
 	 */
+
+	/**
+	 * Op contains any.
+	 *
+	 * @param target
+	 *            the target
+	 * @param l
+	 *            the l
+	 * @return the boolean
+	 */
 	@operator (
 			value = "contains_any",
 			can_be_const = true,
@@ -216,6 +316,16 @@ public class Strings {
 		for (final Object o : l) { if (o instanceof String && opContains(target, (String) o)) return true; }
 		return false;
 	}
+
+	/**
+	 * Op contains all.
+	 *
+	 * @param target
+	 *            the target
+	 * @param l
+	 *            the l
+	 * @return the boolean
+	 */
 
 	/**
 	 * Op contains all.
@@ -251,6 +361,16 @@ public class Strings {
 	 *            the pattern
 	 * @return the integer
 	 */
+
+	/**
+	 * Op index of.
+	 *
+	 * @param target
+	 *            the target
+	 * @param pattern
+	 *            the pattern
+	 * @return the integer
+	 */
 	@operator (
 			value = "index_of",
 			can_be_const = true,
@@ -275,6 +395,16 @@ public class Strings {
 	 *            the pattern
 	 * @return the integer
 	 */
+
+	/**
+	 * Op last index of.
+	 *
+	 * @param target
+	 *            the target
+	 * @param pattern
+	 *            the pattern
+	 * @return the integer
+	 */
 	@operator (
 			value = "last_index_of",
 			can_be_const = true,
@@ -289,6 +419,18 @@ public class Strings {
 	public static Integer opLastIndexOf(final String target, final String pattern) {
 		return target.lastIndexOf(pattern);
 	}
+
+	/**
+	 * Op copy.
+	 *
+	 * @param target
+	 *            the target
+	 * @param beginIndex
+	 *            the begin index
+	 * @param endIndex
+	 *            the end index
+	 * @return the string
+	 */
 
 	/**
 	 * Op copy.
@@ -328,6 +470,18 @@ public class Strings {
 	 *            the pattern
 	 * @return the i list
 	 */
+
+	/**
+	 * Op tokenize.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param target
+	 *            the target
+	 * @param pattern
+	 *            the pattern
+	 * @return the i list
+	 */
 	@operator (
 			value = { "split_with", "tokenize" },
 			content_type = IType.STRING,
@@ -344,6 +498,20 @@ public class Strings {
 	public static IList opTokenize(final IScope scope, final String target, final String pattern) {
 		return opTokenize(scope, target, pattern, false);
 	}
+
+	/**
+	 * Op tokenize.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param target
+	 *            the target
+	 * @param pattern
+	 *            the pattern
+	 * @param completeSep
+	 *            the complete sep
+	 * @return the i list
+	 */
 
 	/**
 	 * Op tokenize.
@@ -392,6 +560,18 @@ public class Strings {
 	 *            the replacement
 	 * @return the string
 	 */
+
+	/**
+	 * Op replace.
+	 *
+	 * @param target
+	 *            the target
+	 * @param pattern
+	 *            the pattern
+	 * @param replacement
+	 *            the replacement
+	 * @return the string
+	 */
 	@operator (
 			value = { "replace" },
 			can_be_const = true,
@@ -406,6 +586,18 @@ public class Strings {
 	public static String opReplace(final String target, final String pattern, final String replacement) {
 		return target.replace(pattern, replacement);
 	}
+
+	/**
+	 * Op replace regex.
+	 *
+	 * @param target
+	 *            the target
+	 * @param pattern
+	 *            the pattern
+	 * @param replacement
+	 *            the replacement
+	 * @return the string
+	 */
 
 	/**
 	 * Op replace regex.
@@ -433,6 +625,16 @@ public class Strings {
 		// DEBUG.OUT("String pattern = " + pattern);
 		return target.replaceAll(pattern, replacement);
 	}
+
+	/**
+	 * Op regex matches.
+	 *
+	 * @param target
+	 *            the target
+	 * @param pattern
+	 *            the pattern
+	 * @return the i list
+	 */
 
 	/**
 	 * Op regex matches.
@@ -473,6 +675,14 @@ public class Strings {
 	 *            the s
 	 * @return the boolean
 	 */
+
+	/**
+	 * Checks if is gama number.
+	 *
+	 * @param s
+	 *            the s
+	 * @return the boolean
+	 */
 	@operator (
 			value = "is_number",
 			can_be_const = true,
@@ -498,84 +708,16 @@ public class Strings {
 							value = "is_number(\"#12FA\")",
 							equals = "true") })
 	public static Boolean isGamaNumber(final String s) {
-		// copright notice:
-		// original code taken from
-		// org.apache.commons.lang3.NumberUtils.isNumber(String)
-
-		if (s == null) return false;
-		final int length = s.length();
-		if (length == 0) return false;
-		int sz = length;
-		boolean hasExp = false;
-		boolean hasDecPoint = false;
-		boolean allowSigns = false;
-		boolean foundDigit = false;
-
-		// deal with any possible sign up front
-		final int start = s.charAt(0) == '-' ? 1 : 0;
-		if (sz > start + 1 && s.charAt(start) == '#') {
-			int i = start + 1;
-			if (i == sz) return false; // str == "#"
-			// Checking hex (it can't be anything else)
-			for (; i < length; i++) {
-				final char c = s.charAt(i);
-				if ((c < '0' || c > '9') && (c < 'a' || c > 'f') && (c < 'A' || c > 'F')) return false;
-			}
-
-			return true;
-		}
-
-		sz--; // Don't want to loop to the last char, check it afterwords for
-				// type
-		// qualifiers
-		int i = start;
-
-		// Loop to the next to last char or to the last char if we need another
-		// digit to
-		// make a valid number (e.g. chars[0..5] = "1234E")
-		while (i < sz || i < sz + 1 && allowSigns && !foundDigit) {
-			final char c = s.charAt(i);
-			if (c >= '0' && c <= '9') {
-				foundDigit = true;
-				allowSigns = false;
-			} else {
-				switch (c) {
-					case '.':
-						if (hasDecPoint || hasExp) // Two decimal points or dec in exponent
-							return false;
-						hasDecPoint = true;
-						break;
-					case 'e':
-					case 'E':
-						// We've already taken care of hex.
-						if (hasExp || !foundDigit) return false;
-						hasExp = true;
-						allowSigns = true;
-						break;
-					case '-':
-						if (!allowSigns) return false;
-						allowSigns = false;
-						foundDigit = false; // We need a digit after the E
-						break;
-					default:
-						return false;
-				}
-			}
-
-			i++;
-		}
-
-		if (i < length) {
-			final char c = s.charAt(i);
-			if (c >= '0' && c <= '9') return true; // No type qualifier, OK
-			if (c == 'e' || c == 'E') return false; // can't have an E at the last byte
-		}
-
-		// allowSigns is true iff the val ends in 'E'
-		// Found digit it to make sure weird stuff like '.' and '1E-' doesn't
-		// pass
-		return !allowSigns && foundDigit;
+		return StringUtils.isGamaNumber(s);
 	}
+
+	/**
+	 * Reverse.
+	 *
+	 * @param s
+	 *            the s
+	 * @return the string
+	 */
 
 	/**
 	 * Reverse.
@@ -608,6 +750,14 @@ public class Strings {
 	 *            the s
 	 * @return the boolean
 	 */
+
+	/**
+	 * Checks if is empty.
+	 *
+	 * @param s
+	 *            the s
+	 * @return the boolean
+	 */
 	@operator (
 			value = "empty",
 			can_be_const = true,
@@ -622,6 +772,14 @@ public class Strings {
 	static public Boolean isEmpty(final String s) {
 		return s != null && s.isEmpty();
 	}
+
+	/**
+	 * First.
+	 *
+	 * @param s
+	 *            the s
+	 * @return the string
+	 */
 
 	/**
 	 * First.
@@ -653,6 +811,14 @@ public class Strings {
 	 *            the s
 	 * @return the string
 	 */
+
+	/**
+	 * Last.
+	 *
+	 * @param s
+	 *            the s
+	 * @return the string
+	 */
 	@operator (
 			value = "last",
 			can_be_const = true,
@@ -668,6 +834,14 @@ public class Strings {
 		if (s == null || s.isEmpty()) return "";
 		return String.valueOf(s.charAt(s.length() - 1));
 	}
+
+	/**
+	 * Length.
+	 *
+	 * @param s
+	 *            the s
+	 * @return the integer
+	 */
 
 	/**
 	 * Length.
@@ -701,6 +875,16 @@ public class Strings {
 	 *            the rv
 	 * @return the string
 	 */
+
+	/**
+	 * Gets the.
+	 *
+	 * @param lv
+	 *            the lv
+	 * @param rv
+	 *            the rv
+	 * @return the string
+	 */
 	@operator (
 			value = { IKeyword.AT, "@" },
 			can_be_const = true,
@@ -713,6 +897,14 @@ public class Strings {
 	public static String get(final String lv, final int rv) {
 		return rv < lv.length() && rv >= 0 ? lv.substring(rv, rv + 1) : "";
 	}
+
+	/**
+	 * As char.
+	 *
+	 * @param s
+	 *            the s
+	 * @return the string
+	 */
 
 	/**
 	 * As char.
@@ -746,6 +938,16 @@ public class Strings {
 	 *            the nb
 	 * @return the string
 	 */
+
+	/**
+	 * Indent.
+	 *
+	 * @param s
+	 *            the s
+	 * @param nb
+	 *            the nb
+	 * @return the string
+	 */
 	@operator (
 			value = "indented_by",
 			can_be_const = true,
@@ -759,10 +961,18 @@ public class Strings {
 	static public String indent(final String s, final int nb) {
 		if (nb <= 0) return s;
 		final StringBuilder sb = new StringBuilder(nb);
-		for (int i = 0; i < nb; i++) { sb.append(TAB); }
+		for (int i = 0; i < nb; i++) { sb.append(StringUtils.TAB); }
 		final String t = sb.toString();
 		return s.replaceAll("(?m)^", t);
 	}
+
+	/**
+	 * To lower case.
+	 *
+	 * @param s
+	 *            the s
+	 * @return the string
+	 */
 
 	/**
 	 * To lower case.
@@ -794,6 +1004,14 @@ public class Strings {
 	 *            the s
 	 * @return the string
 	 */
+
+	/**
+	 * To upper case.
+	 *
+	 * @param s
+	 *            the s
+	 * @return the string
+	 */
 	@operator (
 			value = "upper_case",
 			can_be_const = true,
@@ -813,6 +1031,16 @@ public class Strings {
 	/**
 	 * Capitalize.
 	 *
+	 * @param str
+	 *            the str
+	 * @return the string
+	 */
+
+	/**
+	 * Capitalize.
+	 *
+	 * @param scope
+	 *            the scope
 	 * @param str
 	 *            the str
 	 * @return the string
@@ -843,6 +1071,16 @@ public class Strings {
 	 * @return the string
 	 * @date 28 oct. 2023
 	 */
+
+	/**
+	 * Zip.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param str
+	 *            the str
+	 * @return the string
+	 */
 	@operator (
 			value = { "compress", "zip" },
 			can_be_const = true,
@@ -855,7 +1093,7 @@ public class Strings {
 	public static String zip(final IScope scope, final String str) {
 		if (str == null) throw GamaRuntimeException.error("String cannot be null", scope);
 		if (str.isEmpty()) return str;
-		return new String(ByteArrayZipper.zip(str.getBytes()), StandardCharsets.ISO_8859_1);
+		return new String(CompressionUtils.zip(str.getBytes()), StandardCharsets.ISO_8859_1);
 	}
 
 	/**
@@ -869,6 +1107,16 @@ public class Strings {
 	 * @return the string
 	 * @date 28 oct. 2023
 	 */
+
+	/**
+	 * Unzip.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param str
+	 *            the str
+	 * @return the string
+	 */
 	@operator (
 			value = { "uncompress", "decompress", "unzip" },
 			can_be_const = true,
@@ -881,7 +1129,7 @@ public class Strings {
 	public static String unzip(final IScope scope, final String str) {
 		if (str == null) throw GamaRuntimeException.error("String cannot be null", scope);
 		if (str.isEmpty()) return str;
-		return new String(ByteArrayZipper.unzip(str.getBytes(StandardCharsets.ISO_8859_1)),
+		return new String(CompressionUtils.unzip(str.getBytes(StandardCharsets.ISO_8859_1)),
 				StandardCharsets.ISO_8859_1);
 	}
 

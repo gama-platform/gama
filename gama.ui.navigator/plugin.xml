@@ -29,32 +29,36 @@
                   <or>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.gaml.type">
+                           value="gama.gaml.file.type">
                      </objectState>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.shapefile.type">
+                           value="gama.shapefile.type">
                      </objectState>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.csv.type">
+                           value="gama.csv.file.type">
                      </objectState>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.images.type">
+                           value="gama.images.file.type">
                      </objectState>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.shapefile.support.type">
+                           value="gama.shapefile.support.type">
                      </objectState>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.osm.type">
+                           value="gama.osm.file.type">
                      </objectState>
                      <objectState
                            name="contentTypeId"
-                           value="gama.ui.gsim.type">
-                     </objectState>                     
+                           value="gama.gsim.file.type">
+                     </objectState> 
+                     <objectState
+                           name="contentTypeId"
+                           value="gama.svg.file.type">
+                     </objectState>                       
                   </or>
                </and>
                <objectClass
@@ -93,12 +97,12 @@
             allPopups="true"
             locationURI="popup:navigator.menu?after=group.new">
          <menu
-               icon="platform:/plugin/gama.ui.shared/icons/light/navigator/navigator.new2.png"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/navigator.new2.svg"
                id="menu.new"
                label="New...">
             <command
                   commandId="org.eclipse.ui.newWizard"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/navigator/new.project2.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.project2.svg"
                   label="Project..."
                   style="push">
                <parameter
@@ -123,7 +127,7 @@
             </command>
             <command
                   commandId="org.eclipse.ui.newWizard"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/navigator/new.model2.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
                   label="Model…"
                   style="push">
                <parameter
@@ -133,7 +137,7 @@
             </command>
             <command
                   commandId="org.eclipse.ui.newWizard"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/navigator/new.model2.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
                   label="Experiment…"
                   style="push">
                <parameter
@@ -143,7 +147,7 @@
             </command>
             <command
                   commandId="org.eclipse.ui.newWizard"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/navigator/new.model2.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
                   label="Test…"
                   style="push">
                <parameter
@@ -157,7 +161,7 @@
             </separator>
             <command
                   commandId="org.eclipse.ui.newWizard"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/navigator/navigator.new2.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/navigator.new2.svg"
                   label="Other..."
                   style="push">
             </command>
@@ -184,13 +188,13 @@
             </visibleWhen>
          </menu>
          <menu
-               icon="platform:/plugin/gama.ui.shared/icons/light/navigator/menu.import.png"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.import.svg"
                id="menu.gama.import"
                label="Import..."
                mnemonic=" ">
             <command
                   commandId="org.eclipse.ui.file.import"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/navigator/import.project.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
                   label="Project…"
                   style="push">
                <parameter
@@ -215,7 +219,7 @@
             </command>
             <command
                   commandId="org.eclipse.ui.file.import"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/navigator/import.disk.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.disk.svg"
                   label="From disk..."
                   style="push">
                <parameter
@@ -225,7 +229,7 @@
             </command>
             <command
                   commandId="org.eclipse.ui.file.import"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/navigator/import.archive.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.archive.svg"
                   label="From archive..."
                   style="push">
                <parameter
@@ -239,7 +243,7 @@
             </separator>
             <command
                   commandId="org.eclipse.ui.file.import"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/navigator/menu.import.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.import.svg"
                   label="Other..."
                   style="push">
             </command>
@@ -270,12 +274,12 @@
                visible="true">
          </separator>
          <menu
-               icon="platform:/plugin/gama.ui.shared/icons/light/navigator/menu.export.png"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/menu.export.svg"
                id="menu.gama.export"
                label="Export...">
             <command
                   commandId="org.eclipse.ui.file.export"
-                  icon="platform:/plugin/gama.ui.shared/icons/light/navigator/import.project.png"
+                  icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
                   label="Project…"
                   style="push">
                <parameter
@@ -309,7 +313,7 @@
          </separator>
          <command
                commandId="org.eclipse.ui.ide.showInSystemExplorer"
-               icon="platform:/plugin/gama.ui.shared/icons/light/navigator/file.reveal.png"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/file.reveal.svg"
                label="Reveal in OS"
                style="push">
             <visibleWhen
@@ -328,7 +332,7 @@
          </command>
          <command
                commandId="gama.navigator.reveal"
-               icon="platform:/plugin/gama.ui.shared/icons/light/navigator/file.reveal.png"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/file.reveal.svg"
                label="Reveal in Workspace"
                style="push">
             <visibleWhen
@@ -347,7 +351,7 @@
          </command>
          <command
                commandId="org.eclipse.ui.file.properties"
-               icon="platform:/plugin/gama.ui.shared/icons/light/generic/action.properties.png"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/generic/action.properties.svg"
                label="Properties"
                style="push">
             <visibleWhen
@@ -367,7 +371,7 @@
             </visibleWhen>
          </command>
          <menu
-               icon="platform:/plugin/gama.ui.shared/icons/light/editor/imported.in.png"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/editor/imported.in.svg"
                label="Imported by... ">
             <dynamic
                   class="gama.ui.navigator.view.actions.ImportersContributionItem"
@@ -381,7 +385,7 @@
             locationURI="menu:new?after=new">
          <command
                commandId="org.eclipse.ui.newWizard"
-               icon="platform:/plugin/gama.ui.shared/icons/light/navigator/new.project2.png"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.project2.svg"
                label="Project..."
                style="push">
             <parameter
@@ -406,7 +410,7 @@
          </command>
          <command
                commandId="org.eclipse.ui.newWizard"
-               icon="platform:/plugin/gama.ui.shared/icons/light/navigator/new.model2.png"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
                label="Model File…"
                style="push">
             <parameter
@@ -416,7 +420,7 @@
          </command>
          <command
                commandId="org.eclipse.ui.newWizard"
-               icon="platform:/plugin/gama.ui.shared/icons/light/navigator/new.model2.png"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
                label="Experiment…"
                style="push">
             <parameter
@@ -426,7 +430,7 @@
          </command>
          <command
                commandId="org.eclipse.ui.newWizard"
-               icon="platform:/plugin/gama.ui.shared/icons/light/navigator/new.model2.png"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
                label="Test…"
                style="push">
             <parameter
@@ -440,7 +444,7 @@
          </separator>
          <command
                commandId="org.eclipse.ui.newWizard"
-               icon="platform:/plugin/gama.ui.shared/icons/light/navigator/navigator.new2.png"
+               icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/navigator.new2.svg"
                label="Other..."
                style="push">
          </command>
@@ -730,7 +734,7 @@
             allowMultiple="false"
             category="gama.ui.category.gama"
             class="gama.ui.navigator.view.GamaNavigator"
-            icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.navigator.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.navigator.svg"
             id="gama.ui.application.view.GamaNavigator" 
             name="Models"
             restorable="true">
@@ -746,7 +750,7 @@
             category="gama.ui.wizards.GAMA"
             class="gama.ui.navigator.wizards.NewFileWizard"
             hasPages="true"
-            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/new.model2.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
             id="gama.ui.wizards.NewFileWizard"
             name="Model file"
             project="false">
@@ -755,7 +759,7 @@
              category="gama.ui.wizards.GAMA"
              class="gama.ui.navigator.wizards.NewExperimentWizard"
              hasPages="true"
-             icon="platform:/plugin/gama.ui.shared/icons/light/navigator/new.model2.png"
+             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
              id="gama.ui.wizards.NewExperimentWizard"
              name="Experiment file"
              project="false">
@@ -764,7 +768,7 @@
             category="gama.ui.wizards.GAMA"
             class="gama.ui.navigator.wizards.NewProjectWizard"
             hasPages="true"
-            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/new.project2.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.project2.svg"
             id="gama.ui.wizards.newProjectWizard"
             name="Gama Project"
             project="true">
@@ -773,73 +777,14 @@
             category="gama.ui.wizards.GAMA"
             class="gama.ui.navigator.wizards.NewTestExperimentWizard"
             hasPages="true"
-            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/new.model2.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/new.model2.svg"
             id="gama.ui.wizards.NewTestExperimentWizard"
             name="Test experiment file"
             project="false">
       </wizard>
    </extension>
    <extension
-         point="org.eclipse.core.contenttype.contentTypes">
-      <content-type
-            file-extensions="shp,SHP"
-            id="gama.ui.shapefile.type"
-            name="Shapefile"
-            priority="high">
-      </content-type>
-      <content-type
-            default-charset="UTF-8"
-            file-extensions="qml,QML,cpg,CPG,prj,shx,dbf,xml,sbn,sbx,qix,qpj,fix,PRJ,SHX,DBF,XML,SBN,SBX,QIX,QPJ,FIX"
-            id="gama.ui.shapefile.support.type"
-            name="Shapefile support"
-            priority="high">
-         <property
-               name="gama.support.target">
-         </property>
-      </content-type>
-      <content-type
-            file-extensions="PNG,png,GIF,gif,JPEG,jpeg,JPG,jpg,BMP,bmp,ICO,ico,TIFF,tiff,TIF,tif,ASC,asc,PGM,pgm"
-            id="gama.ui.images.type"
-            name="Image"
-            priority="high">
-      </content-type>
-      <content-type
-            base-type="org.eclipse.core.runtime.text"
-            default-charset="UTF-8"
-            file-extensions="CSV,csv,TSV,tsv"
-            id="gama.ui.csv.type"
-            name="CSV"
-            priority="high">
-      </content-type>
-      <content-type
-            base-type="org.eclipse.core.runtime.text"
-            default-charset="UTF-8"
-            file-extensions="gaml,experiment"
-            id="gama.ui.gaml.type"
-            name="GAML"
-            priority="high">
-      </content-type>
-      <content-type
-            base-type="org.eclipse.core.runtime.text"
-            file-extensions="html, HTML, htm, HTM, svg, SVG"
-            id="gama.ui.html.type"
-            name="HTML (in GAMA)"
-            priority="normal">
-      </content-type>
-      <content-type
-            file-extensions="osm,OSM,pbf,PBF,bz2,BZ2,gz,GZ"
-            id="gama.ui.osm.type"
-            name="OSM"
-            priority="high">
-      </content-type>
-   </extension>
-   <extension
          point="org.eclipse.ui.services">
-      <serviceFactory
-            factoryClass="gama.ui.navigator.view.MetaDataServiceFactory">
-         <service
-               serviceClass="gama.core.util.file.IFileMetaDataProvider"></service>
-      </serviceFactory>
       <serviceFactory
             factoryClass="gama.ui.navigator.commands.RefreshServiceFactory">
          <service
@@ -862,21 +807,21 @@ type="java.lang.Object">
        <wizard
              category="gama.ui.wizards.GAMA"
              class="gama.ui.navigator.wizards.ImportProjectWizard"
-             icon="platform:/plugin/gama.ui.shared/icons/light/navigator/import.project.png"
+             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.project.svg"
              id="gama.ui.import.ExternalProject"
              name="GAMA Project">
        </wizard>
        <wizard
              category="gama.ui.wizards.GAMA"
              class="gama.ui.navigator.wizards.FileImportWizard"
-             icon="platform:/plugin/gama.ui.shared/icons/light/navigator/import.disk.png"
+             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.disk.svg"
              id="gama.ui.import.ExternalFile"
              name="External files from disk">
        </wizard>
        <wizard
              category="gama.ui.wizards.GAMA"
              class="gama.ui.navigator.wizards.ZipImportWizard"
-             icon="platform:/plugin/gama.ui.shared/icons/light/navigator/import.archive.png"
+             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.archive.svg"
              id="gama.ui.import.ZipFile"
              name="External files from archive">
        </wizard>
@@ -929,14 +874,14 @@ type="java.lang.Object">
        <wizard
              category="gama.ui.wizards.GAMA"
              class="gama.ui.navigator.wizards.ExportProjectWizard"
-             icon="platform:/plugin/gama.ui.shared/icons/light/navigator/import.archive.png"
+             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.archive.svg"
              id="gama.ui.export.ExternalProject"
              name="GAMA Project">
        </wizard>
        <wizard
              category="gama.ui.wizards.GAMA"
              class="gama.ui.navigator.wizards.ZipExportWizard"
-             icon="platform:/plugin/gama.ui.shared/icons/light/navigator/import.archive.png"
+             icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/import.archive.svg"
              id="gama.ui.export.ZipFile"
              name="External files to archive">
        </wizard>

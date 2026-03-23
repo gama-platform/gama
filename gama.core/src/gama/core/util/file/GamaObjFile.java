@@ -1,9 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaObjFile.java, in gama.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * GamaObjFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,22 +15,23 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.core.common.geometry.Envelope3D;
-import gama.core.common.util.FileUtils;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaPair;
-import gama.core.util.IList;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.pair.IPair;
+import gama.api.utils.files.FileUtils;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.dev.DEBUG;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Class GamaObjFile.
@@ -109,7 +109,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 					isExecutable = false) })
 
 	public GamaObjFile(final IScope scope, final String pathName) throws GamaRuntimeException {
-		this(scope, pathName, (GamaPair<Double, GamaPoint>) null);
+		this(scope, pathName, (IPair<Double, IPoint>) null);
 	}
 
 	/**
@@ -131,7 +131,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 					value = "file f <- obj_file(\"file.obj\", 90.0::{-1,0,0});",
 					isExecutable = false) })
 
-	public GamaObjFile(final IScope scope, final String pathName, final GamaPair<Double, GamaPoint> initRotation)
+	public GamaObjFile(final IScope scope, final String pathName, final IPair<Double, IPoint> initRotation)
 			throws GamaRuntimeException {
 		this(scope, pathName, pathName.replace(".obj", ".mtl"), initRotation);
 	}
@@ -175,7 +175,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 					isExecutable = false) })
 
 	public GamaObjFile(final IScope scope, final String pathName, final String mtlPath,
-			final GamaPair<Double, GamaPoint> initRotation) {
+			final IPair<Double, IPoint> initRotation) {
 		super(scope, pathName, initRotation);
 		if (mtlPath != null) {
 			this.mtlPath = FileUtils.constructAbsoluteFilePath(scope, mtlPath, false);
@@ -350,7 +350,7 @@ public class GamaObjFile extends Gama3DGeometryFile {
 	/**
 	 * Method fillBuffer(). Fills the buffer with the polygons built from the .obj vertices + faces
 	 *
-	 * @see gama.core.util.file.GamaFile#fillBuffer(gama.core.runtime.IScope)
+	 * @see gama.api.types.file.GamaFile#fillBuffer(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {
@@ -358,17 +358,17 @@ public class GamaObjFile extends Gama3DGeometryFile {
 		setBuffer(GamaListFactory.<IShape> create(Types.GEOMETRY));
 		final IList<IShape> vertices = GamaListFactory.create(Types.POINT);
 		for (final double[] coords : setOfVertex) {
-			final GamaPoint pt = new GamaPoint(coords[0], -coords[1], coords[2]);
+			final IPoint pt = GamaPointFactory.create(coords[0], -coords[1], coords[2]);
 			vertices.add(pt);
 		}
 		for (final int[] vertexRefs : faces) {
 			final IList<IShape> face = GamaListFactory.<IShape> create(Types.POINT);
 			for (final int vertex : vertexRefs) {
 				face.add(vertices.get(vertex - 1));
-				getBuffer().add(GamaGeometryType.buildPolygon(face));
+				getBuffer().add(GamaShapeFactory.buildPolygon(face));
 			}
 		}
-		envelope = Envelope3D.of(leftpoint, rightpoint, bottompoint, toppoint, nearpoint, farpoint);
+		envelope = GamaEnvelopeFactory.of(leftpoint, rightpoint, bottompoint, toppoint, nearpoint, farpoint);
 
 	}
 

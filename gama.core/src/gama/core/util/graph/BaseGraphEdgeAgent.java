@@ -10,11 +10,11 @@
  ********************************************************************************************************/
 package gama.core.util.graph;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.species;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.annotations.doc;
+import gama.annotations.species;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
 
 /**
  * The Class BaseGraphEdgeAgent.

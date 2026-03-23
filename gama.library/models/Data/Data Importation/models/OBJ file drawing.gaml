@@ -12,11 +12,11 @@ global {
 	geometry shape <- square(40);
 
 	init { 
-		create object number: 30;
+		create objects number: 30;
 	}  
 } 
 
-species object skills: [moving]{
+species objects skills: [moving]{
 	rgb color <- rgb(rnd(255),rnd(255),rnd(255));
 	int size <- rnd(10) + 1;
 	int rot <- 1000 + rnd(1000);
@@ -31,7 +31,7 @@ species object skills: [moving]{
 experiment Display  type: gui {
 	output synchronized: true{
 		display ComplexObject type: 3d background:#orange{
-			species object aspect:obj;				
+			species objects aspect:obj;				
 		}
 	}
 }

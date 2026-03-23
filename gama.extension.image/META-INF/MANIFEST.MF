@@ -3,14 +3,17 @@ Bundle-ManifestVersion: 2
 Bundle-Name: GAML Image Extension
 Bundle-SymbolicName: gama.extension.image;singleton:=true
 Bundle-Version: 0.0.0.qualifier
-Export-Package: gama.extension.image
-Bundle-Activator: gama.extension.image.Activator
+Export-Package: gama.extension.image,
+ gama.extension.image.display
+Bundle-Activator: gama.extension.image.ImageActivator
 Bundle-Vendor: UMMISCO
-Require-Bundle: org.eclipse.core.runtime,
- gama.core,
- gama.dependencies
-Bundle-ClassPath: .,
- lib/jsvg-1.7.0.jar
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Require-Bundle: gama.core,
+ gama.dependencies,
+ com.github.weisj.jsvg,
+ org.eclipse.core.resources;bundle-version="3.23.100",
+ org.eclipse.core.runtime;bundle-version="3.34.100"
+Bundle-ClassPath: .
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.extension.image
 Bundle-ActivationPolicy: lazy
+Import-Package: org.osgi.framework

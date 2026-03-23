@@ -45,7 +45,7 @@ global {
 		store <- world.special_point as_map (each::each.color);
 	}
 
-	action createAgent{
+	action createAgent(){
 	    create special_point{
 	    	location <- #user_location;
 	    	color <- self k_nearest_neighbors (store, k);

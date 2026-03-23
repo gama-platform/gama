@@ -169,7 +169,7 @@ experiment Vectorize type: gui {
 			species building;
 		}
 		display image {
-			image im;
+			picture im;
 		}
 	}
 }

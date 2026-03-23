@@ -25,12 +25,12 @@ species player_stupidTeam parent:base_player {
 	// status : the current status of the player (can be useful to build the model)
 	// influence_area : the area of interest of the player. By default, this area is a circle 15m diameter centered in the player location.	
 	
-	action defensive_behavior {	
+	action defensive_behavior() {	
 		// very basic defensive behavior : run to the ball
 		do run_to_ball;
 	}
 	
-	action offensive_behavior {	
+	action offensive_behavior() {	
 		// very basic offensive behavior : run to the ennemy goal, or shoot the ball when close enough from the ennemy goal.
 		if ((possess_ball) and (distance_to_goal < 30)) {
 			do shoot;

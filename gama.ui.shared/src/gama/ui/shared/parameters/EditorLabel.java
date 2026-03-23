@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
-import static gama.core.common.util.StringUtils.toGaml;
+import static gama.api.utils.StringUtils.toGaml;
 import static gama.ui.shared.utils.PreferencesHelper.CORE_EDITORS_HIGHLIGHT;
 
 import java.util.EnumSet;
@@ -23,9 +23,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 
-import gama.core.common.util.StringUtils;
-import gama.core.kernel.experiment.IParameter;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.utils.StringUtils;
 import gama.dev.DEBUG;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;

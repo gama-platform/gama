@@ -10,15 +10,15 @@
  ********************************************************************************************************/
 package gama.gaml.operators.spatial;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
 
 /**
  * The Class Properties.

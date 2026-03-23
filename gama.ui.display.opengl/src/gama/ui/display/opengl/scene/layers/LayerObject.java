@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * LayerObject.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,25 +17,22 @@ import org.locationtech.jts.geom.Geometry;
 import com.jogamp.opengl.GL;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Rotation3D;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ILayer;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.matrix.IField;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ILayerData;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.Rotation3D;
+import gama.api.utils.geometry.Scaling3D;
 import gama.core.outputs.layers.FramedLayerData;
-import gama.core.outputs.layers.ILayerData;
-import gama.core.runtime.IScope;
 import gama.core.util.file.GamaGeometryFile;
-import gama.core.util.matrix.IField;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.units.PixelUnitExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.statements.draw.DrawingAttributes;
-import gama.gaml.statements.draw.MeshDrawingAttributes;
-import gama.gaml.statements.draw.TextDrawingAttributes;
-import gama.gaml.types.GamaGeometryType;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.scene.AbstractObject;
@@ -55,10 +52,10 @@ import gama.ui.display.opengl.scene.text.StringObject;
 public class LayerObject {
 
 	/** The Constant NULL_OFFSET. */
-	final static GamaPoint NULL_OFFSET = new GamaPoint();
+	final static IPoint NULL_OFFSET = GamaPointFactory.createImmutable(0, 0, 0);
 
 	/** The Constant NULL_SCALE. */
-	final static GamaPoint NULL_SCALE = new GamaPoint(1, 1, 1);
+	final static IPoint NULL_SCALE = GamaPointFactory.createImmutable(1, 1, 1);
 
 	/** The Constant NULL_ROTATION. */
 	final static AxisAngle NULL_ROTATION = new AxisAngle(0d);
@@ -68,9 +65,9 @@ public class LayerObject {
 	 */
 	class Trace extends ArrayList<AbstractObject<?, ?>> {
 		/** The offset. */
-		final GamaPoint offset = new GamaPoint(NULL_OFFSET);
+		final IPoint offset = GamaPointFactory.create(NULL_OFFSET);
 		/** The scale. */
-		final GamaPoint scale = new GamaPoint(NULL_SCALE);
+		final IPoint scale = GamaPointFactory.create(NULL_SCALE);
 
 		/** The rotation. */
 		AxisAngle rotation = NULL_ROTATION;
@@ -114,14 +111,14 @@ public class LayerObject {
 		 *
 		 * @return the offset
 		 */
-		public GamaPoint getOffset() { return offset; }
+		public IPoint getOffset() { return offset; }
 
 		/**
 		 * Gets the scale.
 		 *
 		 * @return the scale
 		 */
-		public GamaPoint getScale() { return scale; }
+		public IPoint getScale() { return scale; }
 
 		/**
 		 * Gets the rotation.
@@ -135,8 +132,13 @@ public class LayerObject {
 		 *
 		 * @return the abstract object[]
 		 */
+		/** Cached backing array — reallocated only when the list size changes. */
+		private AbstractObject[] cachedArray = new AbstractObject[0];
+
 		public AbstractObject[] asArray() {
-			return toArray(new AbstractObject[size()]);
+			final int n = size();
+			if (cachedArray.length != n) { cachedArray = toArray(new AbstractObject[n]); }
+			return cachedArray;
 		}
 	}
 
@@ -209,11 +211,15 @@ public class LayerObject {
 		final IExpression expr = layer.getDefinition().getFacet(IKeyword.POSITION);
 
 		if (expr != null) {
-			final boolean containsPixels = expr.findAny(e -> e instanceof PixelUnitExpression);
-			GamaPoint offset = list.offset;
-			offset.setLocation(Cast.asPoint(scope, expr.value(scope)));
-			if (Math.abs(offset.x) <= 1 && !containsPixels) { offset.x *= renderer.getEnvWidth(); }
-			if (Math.abs(offset.y) <= 1 && !containsPixels) { offset.y *= renderer.getEnvHeight(); }
+			final boolean containsPixels = expr.containsPixels();
+			IPoint offset = list.offset;
+			offset.setLocation(GamaPointFactory.castToPoint(scope, expr.value(scope)));
+			if (Math.abs(offset.getX()) <= 1 && !containsPixels) {
+				offset.setX(offset.getX() * renderer.getEnvWidth());
+			}
+			if (Math.abs(offset.getY()) <= 1 && !containsPixels) {
+				offset.setY(offset.getY() * renderer.getEnvHeight());
+			}
 
 			// REMOVE TO FIX #3342
 			// if (offset.x < 0) { offset.x = renderer.getEnvWidth() - offset.x; }
@@ -228,7 +234,7 @@ public class LayerObject {
 	 */
 	protected void computeZ(final Trace list) {
 		double currentZLayer = renderer.getMaxEnvDim() * layer.getData().getPosition().getZ();
-		list.offset.z = currentZLayer;
+		list.offset.setZ(currentZLayer);
 	}
 
 	/**
@@ -293,19 +299,19 @@ public class LayerObject {
 	 *            the gl
 	 */
 	protected void prepareDrawing(final OpenGL gl, final Trace list) {
-		final GamaPoint nonNullOffset = list.getOffset();
-		gl.translateBy(nonNullOffset.x, -nonNullOffset.y, hasDepth() ? nonNullOffset.z : 0);
-		final GamaPoint nonNullScale = list.getScale();
-		gl.scaleBy(nonNullScale.x, nonNullScale.y, nonNullScale.z);
+		final IPoint nonNullOffset = list.getOffset();
+		gl.translateBy(nonNullOffset.getX(), -nonNullOffset.getY(), hasDepth() ? nonNullOffset.getZ() : 0);
+		final IPoint nonNullScale = list.getScale();
+		gl.scaleBy(nonNullScale.getX(), nonNullScale.getY(), nonNullScale.getZ());
 		final AxisAngle nonNullRotation = list.getRotation();
 
 		// Rotation
-		double x = nonNullOffset.x + renderer.getEnvWidth() * nonNullScale.x / 2;
-		double y = nonNullOffset.y + renderer.getEnvHeight() * nonNullScale.y / 2;
+		double x = nonNullOffset.getX() + renderer.getEnvWidth() * nonNullScale.getX() / 2;
+		double y = nonNullOffset.getY() + renderer.getEnvHeight() * nonNullScale.getY() / 2;
 
 		gl.translateBy(x, -y, 0d);
-		GamaPoint p = nonNullRotation.getAxis();
-		gl.rotateBy(nonNullRotation.getAngle(), p.x, p.y, p.z);
+		IPoint p = nonNullRotation.getAxis();
+		gl.rotateBy(nonNullRotation.getAngle(), p.getX(), p.getY(), p.getZ());
 		gl.translateBy(-x, y, 0d);
 		addFrame(gl);
 	}
@@ -320,19 +326,19 @@ public class LayerObject {
 		if (layer == null) return;
 		ILayerData d = layer.getData();
 		if (d instanceof FramedLayerData data) {
-			GamaPoint size = new GamaPoint(renderer.getEnvWidth(), renderer.getEnvHeight());
+			IPoint size = GamaPointFactory.create(renderer.getEnvWidth(), renderer.getEnvHeight());
 			final IScope scope = renderer.getSurface().getScope();
 			final IExpression expr = layer.getDefinition().getFacet(IKeyword.SIZE);
-			if (expr != null) {
-				size = Cast.asPoint(scope, expr.value(scope));
-				if (size.x <= 1) { size.x *= renderer.getEnvWidth(); }
-				if (size.y <= 1) { size.y *= renderer.getEnvHeight(); }
-			}
+			if (expr != null) { size = GamaPointFactory.castToPoint(scope, expr.value(scope)); }
+			double sx = size.getX();
+			double sy = size.getY();
+			if (sx <= 1) { sx *= renderer.getEnvWidth(); }
+			if (sy <= 1) { sy *= renderer.getEnvHeight(); }
 			gl.pushMatrix();
 			boolean previous = gl.setObjectWireframe(false);
 			try {
-				gl.translateBy(size.x / 2, -size.y / 2, 0);
-				gl.scaleBy(size.x, size.y, 1);
+				gl.translateBy(sx / 2, -sy / 2, 0);
+				gl.scaleBy(sx, sy, 1);
 				if (data.getBackgroundColor(scope) != null) {
 					gl.setCurrentColor(data.getBackgroundColor(scope), 1 - data.getTransparency(scope));
 					gl.drawCachedGeometry(IShape.Type.SQUARE, null);
@@ -420,7 +426,7 @@ public class LayerObject {
 	 * @param offset
 	 *            the new offset
 	 */
-	public void setOffset(final GamaPoint offset) {
+	public void setOffset(final IPoint offset) {
 		if (offset != null) {
 			currentList.offset.setLocation(offset);
 		} else {
@@ -434,7 +440,7 @@ public class LayerObject {
 	 * @param scale
 	 *            the new scale
 	 */
-	public void setScale(final GamaPoint scale) {
+	public void setScale(final IPoint scale) {
 		currentList.scale.setLocation(scale);
 	}
 
@@ -446,7 +452,7 @@ public class LayerObject {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addString(final String string, final TextDrawingAttributes attributes) {
+	public void addString(final String string, final IDrawingAttributes attributes) {
 		currentList.add(new StringObject(string, attributes));
 	}
 
@@ -458,7 +464,7 @@ public class LayerObject {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addFile(final GamaGeometryFile file, final DrawingAttributes attributes) {
+	public void addFile(final GamaGeometryFile file, final IDrawingAttributes attributes) {
 		currentList.add(new ResourceObject(file, attributes));
 	}
 
@@ -470,18 +476,18 @@ public class LayerObject {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addImage(final Object o, final DrawingAttributes attributes) {
+	public void addImage(final Object o, final IDrawingAttributes attributes) {
 		// If no dimensions have been defined, then the image is considered as wide and tall as the environment
 		Scaling3D size = attributes.getSize();
 		if (size == null) {
 			size = Scaling3D.of(renderer.getEnvWidth(), renderer.getEnvHeight(), 0);
 			attributes.setSize(size);
 		}
-		final GamaPoint loc = attributes.getLocation();
-		final GamaPoint newLoc = loc == null ? size.toGamaPoint().dividedBy(2) : loc;
+		final IPoint loc = attributes.getLocation();
+		final IPoint newLoc = loc == null ? size.toGamaPoint().dividedBy(2) : loc;
 		// We build a rectangle that will serve as a "support" for the image (which will become its texture)
 		final Geometry geometry =
-				GamaGeometryType.buildRectangle(size.getX(), size.getY(), new GamaPoint()).getInnerGeometry();
+				GamaShapeFactory.buildRectangle(size.getX(), size.getY(), GamaPointFactory.create()).getInnerGeometry();
 		attributes.setLocation(newLoc);
 		attributes.setTexture(o);
 		attributes.setSynthetic(true);
@@ -496,7 +502,7 @@ public class LayerObject {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addField(final IField fieldValues, final MeshDrawingAttributes attributes) {
+	public void addField(final IField fieldValues, final IDrawingAttributes attributes) {
 		currentList.add(new MeshObject(fieldValues, attributes));
 	}
 
@@ -508,7 +514,7 @@ public class LayerObject {
 	 * @param attributes
 	 *            the attributes
 	 */
-	public void addGeometry(final Geometry geometry, final DrawingAttributes attributes) {
+	public void addGeometry(final Geometry geometry, final IDrawingAttributes attributes) {
 		isAnimated = /* isAnimated || ?? */attributes.isAnimated();
 		currentList.add(new GeometryObject(geometry, attributes));
 	}
@@ -580,7 +586,6 @@ public class LayerObject {
 	public boolean canSplit() {
 		return true;
 	}
-
 
 	/**
 	 * Checks if is visible.

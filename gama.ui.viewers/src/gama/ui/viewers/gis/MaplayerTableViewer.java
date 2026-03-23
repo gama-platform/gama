@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * MaplayerTableViewer.java, in gama.ui.shared.viewers, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * MaplayerTableViewer.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -29,10 +29,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
-import org.geotools.data.FeatureSource;
+import org.geotools.api.style.Style;
 import org.geotools.map.Layer;
 import org.geotools.map.StyleLayer;
-import org.geotools.styling.Style;
 
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
@@ -127,7 +126,8 @@ public class MaplayerTableViewer extends TableViewer implements ISelectionChange
 				if (element instanceof Layer p) {
 					String title = p.getTitle();
 					if (title == null || title.length() == 0) {
-						@SuppressWarnings ("rawtypes") final FeatureSource featureSource = p.getFeatureSource();
+						@SuppressWarnings ("rawtypes") final org.geotools.api.data.FeatureSource<?, ?> featureSource =
+								p.getFeatureSource();
 						if (featureSource != null) { title = featureSource.getName().getLocalPart(); }
 					}
 					return title;

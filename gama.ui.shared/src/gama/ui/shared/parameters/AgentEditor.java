@@ -17,10 +17,10 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.experiment.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.gaml.types.IType;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.interfaces.IAgentMenuFactory;
 import gama.ui.shared.menus.MenuAction;

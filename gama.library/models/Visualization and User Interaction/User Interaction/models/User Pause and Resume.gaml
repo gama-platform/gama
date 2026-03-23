@@ -11,7 +11,7 @@ global {
 	image_file play <- image_file("../images/play.png");
 	image_file stop <- image_file("../images/stop.png");
 
-	action toggle {
+	action toggle() {
 		if paused {
 			ask sign{
 				icon <- stop;

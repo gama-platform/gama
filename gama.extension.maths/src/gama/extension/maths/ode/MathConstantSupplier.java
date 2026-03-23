@@ -10,8 +10,8 @@
  ********************************************************************************************************/
 package gama.extension.maths.ode;
 
-import gama.gaml.constants.IConstantAcceptor;
-import gama.gaml.constants.IConstantsSupplier;
+import gama.api.additions.IConstantAcceptor;
+import gama.api.additions.delegates.IConstantsSupplier;
 
 /**
  * The Class MathConstantSupplier.

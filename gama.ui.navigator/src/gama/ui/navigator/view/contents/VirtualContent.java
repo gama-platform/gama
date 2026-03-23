@@ -3,7 +3,7 @@
  * VirtualContent.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,8 +21,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.model.IWorkbenchAdapter;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 
-import gama.core.runtime.GAMA;
-import gama.core.util.file.IFileMetaDataProvider;
+import gama.api.GAMA;
+import gama.api.utils.files.IFileMetadataProvider;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
 import gama.ui.shared.resources.GamaIcon;
@@ -162,7 +162,7 @@ public abstract class VirtualContent<P extends VirtualContent<?>> implements IWo
 	 *
 	 * @return the meta data provider
 	 */
-	public IFileMetaDataProvider getMetaDataProvider() { return GAMA.getGui().getMetaDataProvider(); }
+	public IFileMetadataProvider getMetaDataProvider() { return GAMA.getMetadataProvider(); }
 
 	/**
 	 * Should both perform something and answer whether or not it has performed it, so that the navigator knows whether

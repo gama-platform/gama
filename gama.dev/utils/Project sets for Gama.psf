@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<psf version="2.0">
+<provider id="org.eclipse.egit.core.GitProvider">
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.annotations"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.core"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.dependencies"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.dev"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.documentation"/>
+<project reference="1.0,https://github.com/gama-platform/gama.experimental.git,GAMA_2024-06,gama.experimental.feature.mcp"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.extension.bdi"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.extension.database"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.extension.fipa"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.extension.image"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.extension.maths"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.extension.network"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.extension.pedestrian"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.extension.physics"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.extension.serialize"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.extension.sound"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.extension.stats"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.extension.traffic"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.feature.core"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.feature.dependencies"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.feature.extension.copilot"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.feature.extension.image"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.feature.extension.sound"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.feature.extension.stats"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.feature.extensions"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.feature.library"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.feature.ui"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.feature.ui.dependencies"/>
+<project reference="1.0,https://github.com/gama-platform/gama.graphical.modeling.git,2024-06,gama.feature.ui.diagram"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.feature.ui.editor"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.feature.ui.experiment"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.headless"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.library"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.parent"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.processor"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.product"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.ui.application"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.ui.display.java2d"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.ui.display.opengl"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.ui.editor"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.ui.experiment"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.ui.navigator"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.ui.shared"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gama.ui.viewers"/>
+<project reference="1.0,https://github.com/gama-platform/gama.git,Upgrade-to-Eclipse-2025-12-and-JDK-25,gaml.compiler"/>
+<project reference="1.0,https://github.com/gama-platform/gama.resources.git,main,icons/ummisco.gama.icons.producer"/>
+</provider>
+<workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1708537417360_7" label="==================== BUILD" name="==================== BUILD">
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.parent" type="4"/>
+<item elementID="=gama.processor" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.product" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.p2site" type="4"/>
+<item elementID="=gama.documentation" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+</workingSets>
+<workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1708537288215_4" label="==================== CORE" name="==================== CORE">
+<item elementID="=gama.annotations" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.core" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gaml.compiler" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.headless" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.dev" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+</workingSets>
+<workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1708537903913_13" label="==================== DEPENDENCIES" name="==================== DEPENDENCIES">
+<item elementID="=gama.dependencies" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.dependencies" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.ui.dependencies" type="4"/>
+</workingSets>
+<workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1708537359891_6" label="==================== EXTENSIONS" name="==================== EXTENSIONS">
+<item elementID="=gama.extension.traffic" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.extension.stats" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.extension.database" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.extension.bdi" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.extension.pedestrian" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.experimental.mcp" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.experimental.feature.mcp" type="4"/>
+<item elementID="=gama.extension.sound" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.extension.network" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.extension.image" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.extension.maths" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.extension.physics" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.extension.serialize" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.extension.fipa" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+</workingSets>
+<workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1708537313642_5" label="==================== FEATURES" name="==================== FEATURES">
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.extensions" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.extension.image" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.ui.editor" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.extension.copilot" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.extension.stats" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.ui.experiment" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.ui" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.core" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.extension.sound" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.library" type="4"/>
+</workingSets>
+<workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1709122471654_12" label="==================== ICONS" name="==================== ICONS">
+<item elementID="=ummisco.gama.icons.producer" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+</workingSets>
+<workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1708610942409_19" label="==================== GRAPHICAL MODELLING" name="==================== GRAPHICAL MODELLING">
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.feature.ui.diagram" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/idees.gama.p2site" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.ui.diagram" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/idees.gama.parent" type="4"/>
+</workingSets>
+<workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1708537812683_11" label="==================== MODELS" name="==================== MODELS">
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gama.library" type="4"/>
+</workingSets>
+<workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1722774536417_13" label="==================== SIMPLE" name="==================== SIMPLE">
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gaml.feature.unity" type="4"/>
+<item factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/gaml.extension.unity" type="4"/>
+</workingSets>
+<workingSets editPageId="org.eclipse.jdt.ui.JavaWorkingSetPage" id="1708537458301_9" label="==================== UI" name="==================== UI">
+<item elementID="=gama.ui.display.opengl" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.ui.shared" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.ui.viewers" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.ui.experiment" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.ui.editor" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.ui.display.java2d" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.ui.application" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+<item elementID="=gama.ui.navigator" factoryID="org.eclipse.jdt.ui.PersistableJavaElementFactory"/>
+</workingSets>
+</psf>

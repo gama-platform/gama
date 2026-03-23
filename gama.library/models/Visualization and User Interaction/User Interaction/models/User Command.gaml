@@ -23,14 +23,14 @@ global {
 	//These commands are displayed in the world layer
 	//User command to create an agent according to the location where the user right click
 	user_command "Create an agent" {
-   		create cell number: nbAgent with: [location::#user_location]  {
+   		create cell number: nbAgent with: (location:#user_location)  {
    			color <-#green;
    		} 
 	}
 	//User command to create a given number of agents according
 	user_command "Create agents" {
 		 map input_values <- user_input_dialog([enter("Number" , nbAgent), choose("shape", string, "circle", ["circle", "square"])]);
-     	 create cell number: int(input_values at "Number") with: [color:: #pink, is_square:: string(input_values at "shape") = "square"];
+     	 create cell number: int(input_values at "Number") with: (color: #pink, is_square: string(input_values at "shape") = "square");
 	}
 	
 }
@@ -45,12 +45,12 @@ species cell {
 	user_command "change shape" action: change_shape;
 	
 	//Action to change the color of the agent triggered by change color user command
-	action change_color 
+	action change_color ()
     {
      color <- color = #green ? #pink : #green;
     } 
 	//Action to change the shape of the agent triggered by change shape user command
-    action change_shape
+    action change_shape()
     {
        is_square <- not (is_square);
     }

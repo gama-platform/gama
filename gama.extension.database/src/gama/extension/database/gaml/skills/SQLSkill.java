@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * SQLSkill.java, in gama.extension.database, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,23 +12,23 @@ package gama.extension.database.gaml.skills;
 
 import java.sql.Connection;
 
-import gama.annotations.precompiler.GamlAnnotations.action;
-import gama.annotations.precompiler.GamlAnnotations.arg;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.annotations.precompiler.IConcept;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
-import gama.core.util.matrix.GamaObjectMatrix;
-import gama.core.util.matrix.IMatrix;
+import gama.annotations.action;
+import gama.annotations.arg;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.skill;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.skill.Skill;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IMatrix;
 import gama.dev.DEBUG;
 import gama.extension.database.utils.sql.SqlConnection;
 import gama.extension.database.utils.sql.SqlUtils;
-import gama.gaml.skills.Skill;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class SQLSkill.
@@ -73,9 +73,12 @@ public class SQLSkill extends Skill {
 					doc = @doc ("Connection parameters")) },
 			doc = @doc (
 					value = "Action used to test the connection to a database",
-					examples = { @example ("if (!first(DB_Accessor).testConnection(PARAMS)) {\r\n"
-							+ "			write \"Connection impossible\";\r\n" + "			do pause;\r\n"
-							+ "		}\r\n" + "") }))
+					examples = { @example ("""
+							if (!first(DB_Accessor).testConnection(PARAMS)) {\r
+										write "Connection impossible";\r
+										do pause;\r
+									}\r
+							""") }))
 	public boolean testConnection(final IScope scope) {
 
 		try (final Connection conn = SqlUtils.createConnectionObject(scope).connectDB()) {} catch (final Exception e) {
@@ -321,12 +324,10 @@ public class SQLSkill extends Skill {
 			final int columnSize = columnNames.size();
 			final int lineSize = records.size();
 
-			final IMatrix matrix =
-					new GamaObjectMatrix(columnSize, lineSize + (getType ? 1 : 0) + (getName ? 1 : 0), Types.NO_TYPE);
+			final IMatrix matrix = GamaMatrixFactory.create(columnSize,
+					lineSize + (getType ? 1 : 0) + (getName ? 1 : 0), Types.NO_TYPE);
 			// Add ColumnNames to Matrix
-			if (getName) {
-				for (int j = 0; j < columnSize; j++) { matrix.set(scope, j, 0, columnNames.get(j)); }
-			}
+			if (getName) { for (int j = 0; j < columnSize; j++) { matrix.set(scope, j, 0, columnNames.get(j)); } }
 			// Add Columntype to Matrix
 			if (getType) {
 				for (int j = 0; j < columnSize; j++) {

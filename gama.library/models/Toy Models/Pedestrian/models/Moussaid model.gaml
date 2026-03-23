@@ -46,7 +46,7 @@ global {
 	
 	
 	
-	action create_corridor {
+	action create_corridor() {
 		create wall with: (shape: rectangle(5.0, 1.0) at_location {2.5, -0.5});
 		create wall with: (shape: rectangle(5.0, 1.0) at_location {2.5, 4.5});
 		
@@ -270,7 +270,7 @@ grid local_indicator cell_width: 0.5 cell_height: 0.5{
 	
 		
 	}
-	action compute_local_indicator {
+	action compute_local_indicator() {
 		float sum_f;
 		float sum_s;
 		float sum_c;

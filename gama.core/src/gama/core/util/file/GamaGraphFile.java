@@ -3,7 +3,7 @@
  * GamaGraphFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,13 +15,14 @@ import org.jgrapht.graph.DirectedMultigraph;
 import org.jgrapht.nio.GraphImporter;
 import org.jgrapht.util.SupplierUtil;
 
-import gama.core.common.geometry.Envelope3D;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.file.GamaFile;
+import gama.api.types.graph.IGraph;
+import gama.api.utils.geometry.IEnvelope;
 import gama.core.util.graph.GamaGraph;
-import gama.core.util.graph.IGraph;
-import gama.core.util.graph.loader.GraphImporters;
-import gama.gaml.species.ISpecies;
+import gama.core.util.graph.GraphImporters;
 
 /**
  * The Class GamaGraphFile.
@@ -83,7 +84,7 @@ public abstract class GamaGraphFile extends GamaFile<IGraph<?, ?>, Object> {
 	}
 
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		return null;
 	}
 

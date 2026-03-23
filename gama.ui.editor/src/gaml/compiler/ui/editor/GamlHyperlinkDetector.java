@@ -28,10 +28,10 @@ import org.eclipse.xtext.util.concurrent.CancelableUnitOfWork;
 
 import com.google.inject.Inject;
 
-import gama.core.common.util.FileUtils;
+import gama.api.utils.files.FileUtils;
 import gama.ui.shared.utils.FileOpener;
-import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.Import;
+import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.StringLiteral;
 
 /**
@@ -145,9 +145,7 @@ public class GamlHyperlinkDetector extends DefaultHyperlinkDetector {
 			String importUri = null;
 			if (resolved instanceof Import) {
 				importUri = ((Import) resolved).getImportURI();
-			} else if (resolved instanceof HeadlessExperiment) {
-				importUri = ((HeadlessExperiment) resolved).getImportURI();
-			}
+			} else if (resolved instanceof StandaloneExperiment se) { importUri = se.getImportURI(); }
 			if (importUri == null) return NO_HYPERLINKS;
 			final URI iu2 = URI.createURI(importUri, false).resolve(resource.getURI());
 			IRegion importUriRegion;

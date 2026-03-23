@@ -86,7 +86,7 @@ species intersection skills: [intersection_skill] {
 	rgb color <- #yellow;
 
 	//initialize the traffic light
-	action initialize {
+	action initialize() {
 		do compute_crossing;
 		stop << [];
 		if (flip(0.5)) {
@@ -96,7 +96,7 @@ species intersection skills: [intersection_skill] {
 		}
 	}
 
-	action compute_crossing {
+	action compute_crossing() {
 		if (length(roads_in) >= 2) {
 			road rd0 <- road(roads_in[0]);
 			list<point> pts <- rd0.shape.points;
@@ -119,14 +119,14 @@ species intersection skills: [intersection_skill] {
 	}
 
 	//shift the traffic light to green
-	action to_green {
+	action to_green() {
 		stop[0] <- ways2;
 		color <- #green;
 		is_green <- true;
 	}
 
 	//shift the traffic light to red
-	action to_red {
+	action to_red() {
 		stop[0] <- ways1;
 		color <- #red;
 		is_green <- false;

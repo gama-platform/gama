@@ -43,14 +43,14 @@ global {
 	}	
 	
    //Action to initialize the altitude value of the cell according to the dem file
-   action init_cells {
+   action init_cells() {
       ask cell {
          altitude <- grid_value;
          neighbour_cells <- (self neighbors_at 1) ;
       }
    }	
    
-   action init_water {
+   action init_water() {
       ask cell overlapping first(river) {
          //water_height <- 3.0;
          is_source <- grid_y = 0;
@@ -104,7 +104,7 @@ global {
 	bool already;
 
      //Action to flow the water 
-      action flow {
+      action flow() {
       	//if the height of the water is higher than 0 then, it can flow among the neighbour cells
          if (water_height > 0) {
          	//We get all the cells already done
@@ -131,7 +131,7 @@ global {
          already <- true;
       }  
       //Update the color of the cell
-      action update_color { 
+      action update_color() { 
          int val_water <- 0;
          val_water <- max([0, min([255, int(255 * (1 - (water_height / 12.0)))])]) ;  
          color <- rgb([val_water, val_water, 255]);

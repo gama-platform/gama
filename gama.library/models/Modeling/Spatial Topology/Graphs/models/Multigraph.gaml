@@ -55,7 +55,7 @@ species people skills: [moving]{
 	}
 	
 	//action that make recompute the size of the agents as the distance between it and its target people in the friendship graph (the farthest, the biggest)
-	action updateSize {
+	action updateSize() {
 		path friendship_path <- path_between(friendship_graph,self,target_people);
 		if (friendship_path != nil) {
 			size <-max([2,length( friendship_path.edges)]) as float;

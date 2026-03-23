@@ -3,7 +3,7 @@
  * LayeredDisplayView.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,19 +26,19 @@ import org.eclipse.swt.widgets.Monitor;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
 
-import gama.core.common.IStatusMessage;
-import gama.core.common.interfaces.GeneralSynchronizer;
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IDisposable;
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.ILayerManager;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.outputs.IOutput;
+import gama.api.GAMA;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.GeneralSynchronizer;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IOutput;
+import gama.api.ui.IStatusMessage;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.layers.ILayerManager;
+import gama.api.utils.interfaces.IDisposable;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
 import gama.dev.DEBUG;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.utils.ViewsHelper;
@@ -124,7 +124,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		decorator = new LayeredDisplayDecorator(this);
 		if (getOutput() != null) {
 			getOutput().getData().addListener(decorator);
-			setPartName(getOutput().getName());
+			setPartName(getOutput().getTitle());
 		}
 		shellListener = new ControlListener() {
 
@@ -277,7 +277,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		if (disposed) return;
 		final LayeredDisplayOutput output = getOutput();
 		if (output != null) {
-			output.getData().listeners.clear();
+			output.getData().getListeners().clear();
 			final IDisplaySurface s = output.getSurface();
 			if (isOpenGL() && s != null) {
 				s.dispose();
@@ -378,7 +378,8 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		if (GAMA.isSynchronized() && !WorkbenchHelper.isDisplayThread()) {
 			// Should we put a time out in case ?
 			// syncSemaphore.tryAcquire(5, TimeUnit.SECONDS);
-			syncSemaphore.acquire();
+			// If interrupted, return early: the interrupt flag is already restored by acquire().
+			if (!syncSemaphore.acquire()) return;
 		}
 		// displaySemaphore.release();
 		updateSnapshot();
@@ -442,7 +443,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 	}
 
 	@Override
-	public void takeSnapshot(final GamaPoint customDimensions) {
+	public void takeSnapshot(final IPoint customDimensions) {
 		GAMA.getSnapshotMaker().takeAndSaveSnapshot(getDisplaySurface(), customDimensions);
 
 	}

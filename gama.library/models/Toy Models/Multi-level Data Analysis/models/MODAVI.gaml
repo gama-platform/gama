@@ -92,8 +92,8 @@ global {
 		int i<-1;
 		//Creation of the macronode according to the number of value per class
 		create macroNode number: nbValuePerClass{	 
-			class <-i;
-			location <- {(cos (((class-1)/nbValuePerClass)*360)*50 +50),(sin (((class-1)/nbValuePerClass)*360)*50+50),0};
+			my_class <-i;
+			location <- {(cos (((my_class-1)/nbValuePerClass)*360)*50 +50),(sin (((my_class-1)/nbValuePerClass)*360)*50+50),0};
 			color <- hsb (i/nbValuePerClass,1.0,1.0);
 			do updatemyNodes;
 			i<-i+1;	
@@ -102,7 +102,7 @@ global {
 		create macroGraph;
 	 }
 	 //Action to initialize the interaction Matrix according to the number of type of classes
-	 action InitInteractionMatrix{
+	 action InitInteractionMatrix(){
 		 loop i from:0 to:nbTypeOfClass-1{
 				interactionMatrix[i] <- 0 as_matrix({nbValuePerClass,nbValuePerClass});
  		  }	
@@ -165,7 +165,7 @@ species edge_agent {
 //Species representing the macro node agents
 species macroNode{
 	rgb color;
-	int class;
+	int my_class;
 	//List of all the aggregated nodes
 	list<int> nbAggregatedNodes <- list_with(nbTypeOfClass,0);
 	//List of all the position
@@ -176,11 +176,11 @@ species macroNode{
 		do updatemyNodes;
 	}
 	//For each classes, find all the nodes with the same classes
-	action updatemyNodes{
+	action updatemyNodes(){
 		loop i from:0 to: nbTypeOfClass-1{			
 			nbAggregatedNodes[i]<-0;
 			ask node_agent as list{
-			  if	(classVector[i] = myself.class) {
+			  if	(classVector[i] = myself.my_class) {
 				myself.nbAggregatedNodes[i] <- myself.nbAggregatedNodes[i]+1;
 			  }	 
 		    }
@@ -200,9 +200,9 @@ species macroNode{
 	}
 	
 	//This action only works when having nbTypeOfClass=1
-	action removeMicroNode{
+	action removeMicroNode(){
 		ask node_agent as list{
-			  if	(classVector[0] = myself.class) {
+			  if	(classVector[0] = myself.my_class) {
 			      do die;
 			  }	 
          }
@@ -230,9 +230,9 @@ species macroEdge  {
 	}
 	
 	//Action to remove a micro edge
-	action removeMicroEdge{
+	action removeMicroEdge(){
 		ask edge_agent as list{
-			  if	((self.src.classVector[0] =  myself.src.class) and (self.dest.classVector[0] =  myself.dest.class)) {
+			  if	((self.src.classVector[0] =  myself.src.my_class) and (self.dest.classVector[0] =  myself.dest.my_class)) {
 			      do die;
 			  }	 
          }

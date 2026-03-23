@@ -28,9 +28,9 @@ global {
 	list<LotkaVolterra_agent> LV_agents;
 	
 	init{
-		create LotkaVolterra_agent number: 1 with:[integration_time_step::integration_time_step1]; 	// creation of an agent containing the ODE model with an integration time step of value integration_time_step1
-		create LotkaVolterra_agent number: 1 with:[integration_time_step::integration_time_step2]; 	// creation of an agent containing the ODE model with an integration time step of value integration_time_step2
-		create LotkaVolterra_agent number: 1 with:[integration_time_step::integration_time_step3]; 	// creation of an agent containing the ODE model with an integration time step of value integration_time_step3
+		create LotkaVolterra_agent number: 1 with:(integration_time_step:integration_time_step1); 	// creation of an agent containing the ODE model with an integration time step of value integration_time_step1
+		create LotkaVolterra_agent number: 1 with:(integration_time_step:integration_time_step2); 	// creation of an agent containing the ODE model with an integration time step of value integration_time_step2
+		create LotkaVolterra_agent number: 1 with:(integration_time_step:integration_time_step3); 	// creation of an agent containing the ODE model with an integration time step of value integration_time_step3
 		LV_agents <- list(LotkaVolterra_agent);
 	}
 }

@@ -12,9 +12,9 @@ package gama.gaml.statements.save;
 
 import java.util.Set;
 
-import gama.core.common.interfaces.ISaveDelegate;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.additions.delegates.ISaveDelegate;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
 
 /**
  * The Class AbstractSaver.

@@ -28,7 +28,7 @@ global {
 		do test_agent_closest_to; 	
 	}  
 	
-	action test_agent_closest_to {
+	action test_agent_closest_to() {
 		//It is possible to use the topology of the world (default), the graph or the grid
 		add [dummy(8)::#yellow] at:"closest_to" to:theDummies;
 		add #red at:dummy closest_to (dummy(8)) to:theDummies["closest_to"];
@@ -37,7 +37,7 @@ global {
 		add [cell(40)::#yellow] at:"closest_to" to:theCells;
 		add #red at:cell closest_to (cell(40)) to:theCells["closest_to"];
 	}
-	action test_agents_at_distance {
+	action test_agents_at_distance() {
 		
 		//It is possible to use the topology of the world (default), the graph or the grid
 		ask dummy(8)
@@ -58,7 +58,7 @@ global {
 		}
 	}
 	
-	action test_neighbors_at {
+	action test_neighbors_at() {
 		
 		//It is possible to use the topology of the world (default), the graph or the grid
 		//The operator neighbors_at gives the same results that neighbors_of( an_agent, a_distance )
@@ -75,7 +75,7 @@ global {
 		}
 	}
 	
-	action test_distance_to {
+	action test_distance_to() {
 		
 		//It is possible to use the topology of the world (default), the graph or the grid
 		//The operator distance_to gives the same results that the operator topology distance_between[an_agent_A,an_agent_B]
@@ -86,7 +86,7 @@ global {
 		add #red at:cell(27) to:theCells["distance_to"];
 	}
 	
-	action test_path_to {
+	action test_path_to() {
 		
 		//It is possible to use the topology of the world (default), the graph or the grid
 		//The operator distance_to gives the same results that the operator topology path_between[an_agent_A,an_agent_B]
@@ -96,7 +96,7 @@ global {
 		add [cell(40)::#yellow] at:"path_to" to:theCells;
 		add #red at:cell(28) to:theCells["path_to"];
 	}
-	action test_simple_clustering_by_distance 
+	action test_simple_clustering_by_distance ()
 	{
 		//Can be used for other topologies by adding using(topology(cell)) for example
 		
@@ -117,7 +117,7 @@ global {
 			}
 		}
 	}
-	action test_hierarchical_clustering {
+	action test_hierarchical_clustering() {
 		//Can be used for other topologies by adding using(topology(cell)) for example
 		list<list<dummy>> clusteredDummies <- list<list<dummy>>(dummy hierarchical_clustering 10);
 		
@@ -137,17 +137,17 @@ global {
 			}
 		}
 	}
-	action create_dummy_agents {
-		create dummy with: [location :: {5,5}];
-		create dummy with: [location :: {8,9}];
-		create dummy with: [location :: {14,6}];
-		create dummy with: [location :: {35,55}];
-		create dummy with: [location :: {25,75}];
-		create dummy with: [location :: {56,80}];
-		create dummy with: [location :: {10,70}];
-		create dummy with: [location :: {80,8}];
-		create dummy with: [location :: {34,78}];
-		create dummy with: [location :: {67,32}];
+	action create_dummy_agents() {
+		create dummy with: (location : {5,5});
+		create dummy with: (location : {8,9});
+		create dummy with: (location : {14,6});
+		create dummy with: (location : {35,55});
+		create dummy with: (location : {25,75});
+		create dummy with: (location : {56,80});
+		create dummy with: (location : {10,70});
+		create dummy with: (location : {80,8});
+		create dummy with: (location : {34,78});
+		create dummy with: (location : {67,32});
 		loop i from: 0 to: length(dummy) - 1 {
 			ask dummy[i] {id <- string(i);}
 		}

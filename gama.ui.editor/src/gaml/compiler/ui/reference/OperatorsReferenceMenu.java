@@ -3,7 +3,7 @@
  * OperatorsReferenceMenu.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,13 +23,13 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.util.IMap;
-import gama.gaml.compilation.GAML;
-import gama.gaml.descriptions.OperatorProto;
-import gama.gaml.types.Signature;
+import gama.api.compilation.artefacts.IArtefact;
+import gama.api.gaml.GAML;
+import gama.api.gaml.types.Signature;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
+import gaml.compiler.gaml.prototypes.OperatorArtefact;
 import gaml.compiler.ui.templates.GamlTemplateFactory;
 
 /**
@@ -61,22 +61,20 @@ public class OperatorsReferenceMenu extends GamlReferenceMenu {
 	 * Fill menu by name.
 	 */
 	protected void fillMenuByName() {
-		final Map<String, IMap<Signature, OperatorProto>> operators = GAML.OPERATORS;
-		final List<String> nn = new ArrayList(operators.keySet());
+		final List<String> nn = new ArrayList(GAML.getOperatorsNames());
 		Collections.sort(nn, IGNORE_CASE);
 		for (final String name : nn) {
-			final List<OperatorProto> protos = new ArrayList<>();
-			for (final Signature sig : operators.get(name).keySet()) {
-				final OperatorProto proto = operators.get(name).get(sig);
+			final List<IArtefact.Operator> protos = new ArrayList<>();
+			for (final Signature sig : GAML.getOperatorsNamed(name).keySet()) {
+				final IArtefact.Operator proto = GAML.getOperatorsNamed(name).get(sig);
 				if (proto.getDeprecated() == null) { protos.add(proto); }
 			}
 			if (protos.isEmpty()) { continue; }
 			final Menu name_menu = sub(name);
-			for (final OperatorProto proto : protos) {
+			for (final IArtefact.Operator proto : protos) {
 				final Template t = GamlTemplateFactory.from(proto);
-				final MenuItem item = action(name_menu,
-						"(" + proto.signature.asPattern(false) + ") -> " + proto.returnType.serializeToGaml(true),
-						new SelectionAdapter() {
+				final MenuItem item = action(name_menu, "(" + proto.getSignature().asPattern(false) + ") -> "
+						+ proto.getReturnType().serializeToGaml(true), new SelectionAdapter() {
 
 							@Override
 							public void widgetSelected(final SelectionEvent event) {
@@ -92,22 +90,21 @@ public class OperatorsReferenceMenu extends GamlReferenceMenu {
 	 * Fill menu by category.
 	 */
 	protected void fillMenuByCategory() {
-		final Map<String, IMap<Signature, OperatorProto>> operators = GAML.OPERATORS;
-		final Map<String, Map<String, Map<OperatorProto, Template>>> categories = new LinkedHashMap();
-		final List<String> nn = new ArrayList(operators.keySet());
+		final Map<String, Map<String, Map<IArtefact.Operator, Template>>> categories = new LinkedHashMap();
+		final List<String> nn = new ArrayList(GAML.getOperatorsNames());
 		Collections.sort(nn, IGNORE_CASE);
 		for (final String name : nn) {
-			final Map<Signature, OperatorProto> ops = operators.get(name);
+			final Map<Signature, IArtefact.Operator> ops = GAML.getOperatorsNamed(name);
 			for (final Signature sig : ops.keySet()) {
-				final OperatorProto proto = ops.get(sig);
+				final IArtefact.Operator proto = ops.get(sig);
 				if (proto.getDeprecated() != null) { continue; }
 				final String category = proto.getCategory().replace("-related", "");
-				Map<String, Map<OperatorProto, Template>> names = categories.get(category);
+				Map<String, Map<IArtefact.Operator, Template>> names = categories.get(category);
 				if (names == null) {
 					names = new LinkedHashMap();
 					categories.put(category, names);
 				}
-				Map<OperatorProto, Template> templates = names.get(name);
+				Map<IArtefact.Operator, Template> templates = names.get(name);
 				if (templates == null) {
 					templates = new LinkedHashMap();
 					names.put(name, templates);
@@ -122,10 +119,10 @@ public class OperatorsReferenceMenu extends GamlReferenceMenu {
 			final List<String> nn2 = new ArrayList(categories.get(category).keySet());
 			Collections.sort(nn2, IGNORE_CASE);
 			for (final String name : nn2) {
-				final List<OperatorProto> protos = new ArrayList(categories.get(category).get(name).keySet());
+				final List<OperatorArtefact> protos = new ArrayList(categories.get(category).get(name).keySet());
 				//
 				final Menu name_menu = sub(category_menu, name);
-				for (final OperatorProto proto : protos) {
+				for (final OperatorArtefact proto : protos) {
 					final Template t = categories.get(category).get(name).get(proto);
 					final MenuItem item = action(name_menu,
 							"(" + proto.signature.asPattern(false) + ") -> " + proto.returnType.serializeToGaml(true),

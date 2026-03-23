@@ -14,6 +14,6 @@ package gaml.compiler.gaml;
  * @model
  * @generated
  */
-public interface S_Action extends S_Definition
+public interface S_Action extends S_Callable
 {
 } // S_Action

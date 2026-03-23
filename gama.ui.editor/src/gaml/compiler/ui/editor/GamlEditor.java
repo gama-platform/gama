@@ -3,15 +3,15 @@
  * GamlEditor.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gaml.compiler.ui.editor;
 
-import static gama.core.common.preferences.GamaPreferences.Modeling.EDITOR_COLLAPSE_BUTTONS;
-import static gama.core.common.preferences.GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU;
+import static gama.api.utils.prefs.GamaPreferences.Modeling.EDITOR_COLLAPSE_BUTTONS;
+import static gama.api.utils.prefs.GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU;
 import static gama.ui.shared.resources.IGamaIcons.MARKER_ERROR;
 import static gama.ui.shared.resources.IGamaIcons.SMALL_DROPDOWN;
 import static gaml.compiler.ui.editor.GamlEditorState.NO_EXP_DEFINED;
@@ -126,20 +126,20 @@ import org.eclipse.xtext.validation.Issue;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-import gama.annotations.precompiler.GamlProperties;
-import gama.core.common.GamlFileExtension;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
+import gama.annotations.constants.IKeyword;
+import gama.api.compilation.IModelsManager;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.validation.IValidationContext;
+import gama.api.constants.GamlFileExtension;
+import gama.api.utils.GamlProperties;
+import gama.api.utils.StringUtils;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.dev.DEBUG;
 import gama.dev.FLAGS;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.descriptions.ValidationContext;
-import gama.gaml.operators.Strings;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.FlatButton;
-import gama.ui.shared.interfaces.IModelRunner;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -147,7 +147,7 @@ import gama.ui.shared.resources.GamaFonts;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
-import gama.ui.shared.utils.CleanupHelper;
+import gama.ui.shared.utils.UICleanupTasks;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
@@ -239,9 +239,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		BUTTON_IMAGES.put(IKeyword.BATCH, GamaIcon.named(IGamaIcons.BUTTON_BATCH).image());
 		BUTTON_IMAGES.put(IKeyword.RECORD, GamaIcon.named(IGamaIcons.BUTTON_BACK).image());
 		BUTTON_IMAGES.put("regular", GamaIcon.named(IGamaIcons.BUTTON_GUI).image());
-		MENU_IMAGES.put(IKeyword.BATCH, (ThemeHelper.isDark() ? IGamaIcons.BUTTON_BATCH : IGamaIcons.MENU_BATCH));
-		MENU_IMAGES.put(IKeyword.RECORD, (ThemeHelper.isDark() ? IGamaIcons.BUTTON_BACK : IGamaIcons.MENU_BACK));
-		MENU_IMAGES.put("regular", (ThemeHelper.isDark() ? IGamaIcons.BUTTON_GUI : IGamaIcons.MENU_GUI));
+		MENU_IMAGES.put(IKeyword.BATCH, ThemeHelper.isDark() ? IGamaIcons.BUTTON_BATCH : IGamaIcons.MENU_BATCH);
+		MENU_IMAGES.put(IKeyword.RECORD, ThemeHelper.isDark() ? IGamaIcons.BUTTON_BACK : IGamaIcons.MENU_BACK);
+		MENU_IMAGES.put("regular", ThemeHelper.isDark() ? IGamaIcons.BUTTON_GUI : IGamaIcons.MENU_GUI);
 
 		BUTTON_IMAGES.put("new", GamaIcon.named(IGamaIcons.ADD_EXPERIMENT).image());
 	}
@@ -271,8 +271,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/** The injector. */
 	@Inject Injector injector;
 
-	/** The runner. */
-	@Inject IModelRunner runner;
+	/** The modelsManager. */
+	@Inject IModelsManager modelsManager;
 
 	/** The template dialog factory. */
 	@Inject private GamlEditTemplateDialogFactory templateDialogFactory;
@@ -319,7 +319,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 			@Override
 			public int getLayer(final Annotation annotation) {
-				if (annotation.isMarkedDeleted()) { return IAnnotationAccessExtension.DEFAULT_LAYER; }
+				if (annotation.isMarkedDeleted()) return IAnnotationAccessExtension.DEFAULT_LAYER;
 				return super.getLayer(annotation);
 			}
 
@@ -336,7 +336,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 			@Override
 			public boolean isPaintable(final Annotation annotation) {
-				if (imageProvider.getManagedImage(annotation) != null) { return true; }
+				if (imageProvider.getManagedImage(annotation) != null) return true;
 				return super.isPaintable(annotation);
 			}
 
@@ -517,7 +517,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				final var issues = getDocument().readOnly(resource -> {
-					if (resource.isValidationDisabled()) { return Collections.emptyList(); }
+					if (resource.isValidationDisabled()) return Collections.emptyList();
 					return validator.validate(resource, getCheckMode(), null);
 				});
 				processor.processIssues((List<Issue>) issues, monitor);
@@ -532,7 +532,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	@Override
 	public boolean isOverviewRulerVisible() {
 		final var viewer = getInternalSourceViewer();
-		if (viewer == null) { return super.isOverviewRulerVisible(); }
+		if (viewer == null) return super.isOverviewRulerVisible();
 		return viewer.isOverviewVisible();
 	}
 
@@ -558,9 +558,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	@Override
 	protected void handleCursorPositionChanged() {
 		GamaSourceViewer v = getInternalSourceViewer();
-		if (getSelectionProvider() == null || v == null || v.getControl() == null || v.getControl().isDisposed()) {
+		if (getSelectionProvider() == null || v == null || v.getControl() == null || v.getControl().isDisposed())
 			return;
-		}
 		super.handleCursorPositionChanged();
 		this.markInNavigationHistory();
 	}
@@ -591,7 +590,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		DEBUG.OUT("Updating toolbar for " + this.getTitle());
 		if (forceState || !state.equals(newState)) {
 			WorkbenchHelper.runInUI("Editor refresh", 50, m -> {
-				if (toolbar == null || toolbar.isDisposed()) { return; }
+				if (toolbar == null || toolbar.isDisposed()) return;
 				toolbar.wipe(SWT.LEFT, 1);
 				boolean showExperiments =
 						!GamlFileExtension.isExperiment(getDocument().getAdapter(IFile.class).getName())
@@ -615,22 +614,17 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 					listener = new RevalidateModelSelectionListener(GamlEditor.this);
 					imageName = MARKER_ERROR;
 				} else {
-					listener = new OpenExperimentSelectionListener(GamlEditor.this, newState, runner);
+					listener = new OpenExperimentSelectionListener(GamlEditor.this, newState, modelsManager);
 				}
 				if (msg != null) {
 					toolbar.button(c, msg, GamaIcon.named(imageName).image(), listener, BUTTON_HEIGHT, SWT.LEFT);
 				} else if (newState.showExperiments) {
 					if (EDITOR_EXPERIMENT_MENU.getValue()) {
 						displayExperimentMenu(newState, listener);
-					} else if (newState.abbreviations.size() <= 1 || !EDITOR_COLLAPSE_BUTTONS.getValue()) {
-						displayExperimentButtons(newState, listener);
+					} else if (EDITOR_COLLAPSE_BUTTONS.getValue() && buttonsOverflow(newState)) {
+						displayExperimentMenu(newState, listener);
 					} else {
-						int width = computeWidth(newState);
-						if (width > toolbar.getSize().x - toolbar.getToolbar(SWT.RIGHT).getSize().x) {
-							displayExperimentMenu(newState, listener);
-						} else {
-							displayExperimentButtons(newState, listener);
-						}
+						displayExperimentButtons(newState, listener);
 					}
 				}
 				toolbar.requestLayout();
@@ -679,6 +673,21 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	/**
+	 * Returns true when the total pixel width of all experiment buttons exceeds the space currently available in the
+	 * left toolbar. If the toolbar has not been sized yet (available width unknown), returns false so that buttons are
+	 * shown optimistically and the next resize event will re-evaluate.
+	 *
+	 * @param newState
+	 *            the new state
+	 * @return true if the buttons would overflow the left toolbar
+	 */
+	private boolean buttonsOverflow(final GamlEditorState newState) {
+		final int available = toolbar.getAvailableLeftWidth();
+		if (available < 0) return false; // toolbar not yet laid out — show buttons
+		return computeWidth(newState) > available;
+	}
+
+	/**
 	 * Display experiment buttons.
 	 *
 	 * @param newState
@@ -689,7 +698,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	private void displayExperimentButtons(final GamlEditorState state, final Selector listener) {
 		var index = 0;
 		for (final String text : state.abbreviations) {
-			if (text == null) { return; }
+			if (text == null) return;
 			final var expType = state.types.get(index++);
 			final var type = IKeyword.BATCH.equals(expType) ? IKeyword.BATCH
 					: IKeyword.RECORD.equals(expType) ? IKeyword.RECORD : "regular";
@@ -734,7 +743,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			private void fillMenu() {
 				var index = 0;
 				for (final String text : state.abbreviations) {
-					if (text == null) { return; }
+					if (text == null) return;
 					final var expType = state.types.get(index++);
 					final String type = IKeyword.BATCH.equals(expType) ? IKeyword.BATCH
 							: IKeyword.RECORD.equals(expType) ? IKeyword.RECORD : "regular";
@@ -747,8 +756,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	@Override
-	public void validationEnded(final ModelDescription model, final Iterable<? extends IDescription> newExperiments,
-			final ValidationContext status) {
+	public void validationEnded(final IModelDescription model, final Iterable<? extends IDescription> newExperiments,
+			final IValidationContext status) {
 
 		getInternalSourceViewer().updateCodeMinings();
 
@@ -769,7 +778,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 							new ReplaceEdit(offset, length, newLine).apply(document);
 						}
 					} else {
-						new InsertEdit(0, Strings.LN + newLine + Strings.LN + Strings.LN).apply(getDocument());
+						new InsertEdit(0, StringUtils.LN + newLine + StringUtils.LN + StringUtils.LN)
+								.apply(getDocument());
 					}
 				} catch (BadLocationException e) {}
 			});
@@ -802,9 +812,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		@Override
 		public IAutoEditStrategy[] getAutoEditStrategies(final ISourceViewer sourceViewer, final String contentType) {
 			IAutoEditStrategy[] strategies = super.getAutoEditStrategies(sourceViewer, contentType);
-			if (!GamaPreferences.Modeling.CORE_SURROUND_SELECTED.getValue()) { return strategies; }
+			if (!GamaPreferences.Modeling.CORE_SURROUND_SELECTED.getValue()) return strategies;
 			for (IAutoEditStrategy strategy : strategies) {
-				if (strategy instanceof SurroundWithBracketsStrategy) { return strategies; }
+				if (strategy instanceof SurroundWithBracketsStrategy) return strategies;
 			}
 			return ArrayUtils.insert(0, strategies, new SurroundWithBracketsStrategy(sourceViewer));
 		}
@@ -836,7 +846,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		@Override
 		public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(final ITextViewer viewer,
 				final IProgressMonitor monitor) {
-			if (!GamaPreferences.Modeling.EDITOR_MINING.getValue()) { return EMPTY; }
+			if (!GamaPreferences.Modeling.EDITOR_MINING.getValue()) return EMPTY;
 			return super.provideCodeMinings(viewer, monitor);
 		}
 
@@ -869,7 +879,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * Before save.
 	 */
 	private void beforeSave() {
-		if (!GamaPreferences.Modeling.EDITOR_CLEAN_UP.getValue()) { return; }
+		if (!GamaPreferences.Modeling.EDITOR_CLEAN_UP.getValue()) return;
 		final SourceViewer sv = getInternalSourceViewer();
 		final var p = sv.getSelectedRange();
 		sv.setSelectedRange(0, sv.getDocument().getLength());
@@ -909,7 +919,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	public String getSelectedText() {
 		final var sel = (ITextSelection) getSelectionProvider().getSelection();
 		final var length = sel.getLength();
-		if (length == 0) { return ""; }
+		if (length == 0) return "";
 		final IDocument doc = getDocument();
 		try {
 			return doc.get(sel.getOffset(), length);
@@ -1145,7 +1155,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	/** The to remove. */
-	Set<String> toRemove = Set.of("revert", "save", "Preferences.ContextAction", "QuickAssist", "Open W&ith",
+	Set<String> toRemove = Set.of("revert", "save", "__PREFS__.ContextAction", "QuickAssist", "Open W&ith",
 			"Sho&w In	⌥⌘W", "group.open");
 
 	@Override
@@ -1159,8 +1169,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				menu.remove(item);
 				continue;
 			}
-			DEBUG.OUT("Item " + item);
-			CleanupHelper.RearrangeMenus.changeIcon(menu, item, item.getId());
+			// DEBUG.OUT("Item " + item);
+			UICleanupTasks.RearrangeMenus.changeIcon(menu, item, item.getId());
 		}
 		menu.add(new Separator());
 		menu.add(new InternalMenuManager(parent -> new TemplateReferenceMenu().installSubMenuIn(parent)));

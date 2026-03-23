@@ -35,7 +35,7 @@ global {
 		
 		do reinit_model;
 	}
-	action reinit_model {
+	action reinit_model() {
 		
 		ask texts {
 			do die;
@@ -53,7 +53,7 @@ global {
 		}
 	}
 	
-	action to_game_over {
+	action to_game_over() {
 		game_over <- true;
 		ask bird { 
 			do die;
@@ -196,7 +196,7 @@ experiment main {
 		
 		display main fullscreen:true type:2d {
 			
-			image_layer "../includes/background.png";
+			picture "../includes/background.png";
 			species bird aspect:png;
 			
 			species tuyau aspect:png;

@@ -1,11 +1,12 @@
 /*******************************************************************************************************
  *
- * XmlToTestGAML.java, in gama.documentation, is part of the source code of the GAMA modeling and simulation platform .
+ * XmlToTestGAML.java, in gama.documentation, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.documentation.transform;
 
@@ -23,11 +24,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import gama.annotations.precompiler.doc.utils.Constants;
-import gama.annotations.precompiler.doc.utils.XMLElements;
-import gama.annotations.precompiler.doc.utils.XMLUtils;
+import gama.annotations.constants.XMLElements;
 import gama.dev.DEBUG;
+import gama.documentation.util.Constants;
 import gama.documentation.util.PrepareEnv;
+import gama.documentation.util.XMLUtils;
 
 /**
  * The Class XmlToTestGAML.
@@ -52,7 +53,7 @@ public class XmlToTestGAML {
 	 *             the transformer exception
 	 */
 	public static void createEachTest(final File docFile)
-			throws ParserConfigurationException, SAXException, IOException, TransformerException {
+			throws ParserConfigurationException, SAXException, IOException {
 		final File pluginFolder = docFile.getParentFile().getParentFile();
 
 		Document document = XMLUtils.createDoc(docFile.getAbsolutePath());
@@ -88,8 +89,7 @@ public class XmlToTestGAML {
 	 * @throws TransformerException
 	 *             the transformer exception
 	 */
-	public static void createAllTests()
-			throws ParserConfigurationException, SAXException, IOException, TransformerException {
+	public static void createAllTests() throws ParserConfigurationException, SAXException, IOException {
 		Document document = XMLUtils.createDoc(Constants.DOCGAMA_GLOBAL_FILE);
 		document = cleanDocumentTest(document);
 
@@ -142,7 +142,7 @@ public class XmlToTestGAML {
 	 *             Signals that an I/O exception has occurred.
 	 */
 	private static void createMasterTest(final Document document, final String xsl, final String targetFolder,
-			final String targetFile) throws ParserConfigurationException, SAXException, IOException {
+			final String targetFile) {
 		XMLUtils.transformDocument(document, xsl, targetFolder + File.separator + targetFile);
 	}
 
@@ -165,7 +165,7 @@ public class XmlToTestGAML {
 	 *             the transformer exception
 	 */
 	private static void createOperatorsTests(final Document document, final String xsl, final String targetFolder)
-			throws ParserConfigurationException, SAXException, IOException, TransformerException {
+			throws ParserConfigurationException {
 
 		final DocumentBuilderFactory fabriqueD = DocumentBuilderFactory.newInstance();
 		final DocumentBuilder builder = fabriqueD.newDocumentBuilder();
@@ -234,7 +234,7 @@ public class XmlToTestGAML {
 		for (int i = 0; i < nLCategories.getLength(); i++) {
 			final org.w3c.dom.Element eltCategory = (org.w3c.dom.Element) nLCategories.item(i);
 			eltCategory.setAttribute(XMLElements.ATT_CAT_ID,
-					eltCategory.getAttribute(XMLElements.ATT_CAT_ID).replaceAll(" ", "__").replaceAll("-", "_"));
+					eltCategory.getAttribute(XMLElements.ATT_CAT_ID).replace(" ", "__").replace('-', '_'));
 		}
 
 		for (int j = 0; j < nLOperators.getLength(); j++) {
@@ -297,7 +297,7 @@ public class XmlToTestGAML {
 		 * @return the hash map
 		 */
 		private HashMap<String, String> initProperNameOperatorMap() {
-			final HashMap<String, String> hm = new HashMap<String, String>();
+			final HashMap<String, String> hm = new HashMap<>();
 			hm.put("*", "Multiply");
 			hm.put("-", "Minus");
 			hm.put("/", "Divide");
@@ -327,11 +327,8 @@ public class XmlToTestGAML {
 		 * @return the proper operator name
 		 */
 		public String getProperOperatorName(final String opName) {
-			if (properNameOperatorMap.containsKey(opName)) {
-				return properNameOperatorMap.get(opName);
-			} else {
-				return opName;
-			}
+			if (properNameOperatorMap.containsKey(opName)) return properNameOperatorMap.get(opName);
+			return opName;
 		}
 	}
 }

@@ -175,7 +175,7 @@ species people skills: [moving] control: simple_bdi{
 		}
 	}
 	
-	action to_escape_mode {
+	action to_escape_mode() {
 		escape_mode <- true;
 		color <- #darkred;
 		target <- nil;	

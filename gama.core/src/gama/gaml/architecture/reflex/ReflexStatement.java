@@ -1,34 +1,34 @@
 /*******************************************************************************************************
  *
- * ReflexStatement.java, in gama.core, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * ReflexStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.gaml.architecture.reflex;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.IDescriptionValidator.ValidNameValidator;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.statements.AbstractStatementSequence;
-import gama.gaml.types.IType;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.validation.ValidNameValidator;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
 
 /**
  * The Class ReflexStatement.
@@ -67,15 +67,16 @@ import gama.gaml.types.IType;
 						@example (
 								value = "}",
 								isExecutable = false) }),
-				 @usage (  value = " 'init' reflexes are executed only immediately after the agent has been created.",
-							examples = { @example (
-									value = "init { write \"I am created\"; }",
-									isExecutable = false) }),
-				 @usage (  value = " 'abort' reflexes are executed just before the agent is killed.",
-					examples = { @example (
-							value = "abort { write \"Last actions before being removed \"; }",
-							isExecutable = false) }) 
-		})
+				@usage (
+						value = " 'init' reflexes are executed only immediately after the agent has been created.",
+						examples = { @example (
+								value = "init { write \"I am created\"; }",
+								isExecutable = false) }),
+				@usage (
+						value = " 'abort' reflexes are executed just before the agent is killed.",
+						examples = { @example (
+								value = "abort { write \"Last actions before being removed \"; }",
+								isExecutable = false) }) })
 public class ReflexStatement extends AbstractStatementSequence {
 
 	/** The when. */
@@ -84,14 +85,13 @@ public class ReflexStatement extends AbstractStatementSequence {
 	/**
 	 * Instantiates a new reflex statement.
 	 *
-	 * @param desc the desc
+	 * @param desc
+	 *            the desc
 	 */
 	public ReflexStatement(final IDescription desc) {
 		super(desc);
 		when = getFacet(IKeyword.WHEN);
-		if (hasFacet(IKeyword.NAME)) {
-			setName(getLiteral(IKeyword.NAME));
-		}
+		if (hasFacet(IKeyword.NAME)) { setName(getLiteral(IKeyword.NAME)); }
 	}
 
 	@Override

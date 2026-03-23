@@ -1,27 +1,28 @@
 /*******************************************************************************************************
  *
- * CameraDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * CameraDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.GraphicsScope;
-import gama.core.runtime.IScope;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.Types;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.GraphicsScope;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * The Class CameraDefinition. Holds and updates the position, target and lens of a camera from the GAML definition in
  * the "camera" statement.
  */
-public class CameraDefinition extends AbstractDefinition implements ICameraDefinition {
+public class CameraDefinition extends AbstractCameraDefinition {
 
 	static {
 		// DEBUG.OFF();
@@ -37,10 +38,10 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	final Attribute<Object> initialLocationAttribute;
 
 	/** The target. */
-	Attribute<GamaPoint> targetAttribute;
+	Attribute<IPoint> targetAttribute;
 
 	/** The initial target attribute. */
-	final Attribute<GamaPoint> initialTargetAttribute;
+	final Attribute<IPoint> initialTargetAttribute;
 
 	/** The distance. */
 	Attribute<Double> distanceAttribute;
@@ -82,11 +83,11 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	public void update(final IScope scope) {
 
 		// First we determine the target.
-		GamaPoint target = targetAttribute.get();
+		IPoint target = targetAttribute.get();
 		if (target == null) { target = scope.getSimulation().getCentroid(); }
 		// Then we determine the location
 		Object temp = locationAttribute.get();
-		GamaPoint location;
+		IPoint location;
 		boolean noLocation = temp == null;
 		if (noLocation) { temp = GamaPreferences.Displays.OPENGL_DEFAULT_CAM.getValue(); }
 		// We negate the Y ordinate coming from GAML
@@ -102,7 +103,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 			double max = Math.max(w, h) * coeff;
 			location = computeLocation(pos, target, w, h, max);
 		} else {
-			location = Cast.asPoint(scope, temp);
+			location = GamaPointFactory.castToPoint(scope, temp);
 			// The location should be a point now and we negate it as well
 			location = location.yNegated();
 		}
@@ -111,7 +112,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 		// defined
 		Double d = distanceAttribute.get();
 		if (d != null) {
-			GamaPoint vector = location.minus(target).normalized().times(d);
+			IPoint vector = location.minus(target).normalized().times(d);
 			location = target.plus(vector);
 		}
 
@@ -131,7 +132,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	 */
 
 	@Override
-	public GamaPoint getLocation() { return current.getLocation(); }
+	public IPoint getLocation() { return current.getLocation(); }
 
 	/**
 	 * Sets the location.Comes from the OpenGL world, where the Y axis is reversed, so we store it as an attribute (to
@@ -142,7 +143,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	 * @return true, if changed
 	 */
 	@Override
-	public boolean setLocation(final GamaPoint loc) {
+	public boolean setLocation(final IPoint loc) {
 		if (isLocked() || isDynamic() || loc == null) return false;
 		locationAttribute = new ConstantAttribute<>(loc.yNegated());
 		return current.setLocation(loc);
@@ -157,7 +158,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	 * @return true, if successful
 	 */
 	@Override
-	public boolean setTarget(final GamaPoint loc) {
+	public boolean setTarget(final IPoint loc) {
 		if (isLocked() || isDynamic() || loc == null) return false;
 		targetAttribute = new ConstantAttribute<>(loc.yNegated());
 		return current.setTarget(loc);
@@ -173,7 +174,7 @@ public class CameraDefinition extends AbstractDefinition implements ICameraDefin
 	public void setLens(final Double lens) { this.lens = new ConstantAttribute<>(lens == null ? 45.0 : lens); }
 
 	@Override
-	public GamaPoint getTarget() { return current.getTarget(); }
+	public IPoint getTarget() { return current.getTarget(); }
 
 	@Override
 	public Double getLens() { return lens.get(); }

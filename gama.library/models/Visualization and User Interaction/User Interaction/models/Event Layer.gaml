@@ -22,12 +22,12 @@ global
 		{
 			colour <- #darkgreen;
 		}
-       create dummy number:1 returns: temp with: [dummyRadius :: radius];
+       create dummy number:1 returns: temp with: (dummyRadius : radius);
        pointClicked <- first(temp);
    }
 
 	//Action to change the color of the agents, according to the point to know which agents we're in intersection with the point
-	action change_color 
+	action change_color ()
 	{
 
 	//change the color of the agents
@@ -40,18 +40,18 @@ global
 
 	}
 
-	action draw_clicked_area_in_view_color
+	action draw_clicked_area_in_view_color()
 	{
 		pointClicked.location <- #user_location;
 		pointClicked.visibleViewColor <- true;
 	}
-	action draw_clicked_area_in_view_shape
+	action draw_clicked_area_in_view_shape()
 	{
 		pointClicked.location <- #user_location;
 		pointClicked.visibleViewShape <- true;
 	}
 
-	action hide_clicked_area
+	action hide_clicked_area()
 	{
 		pointClicked.visibleViewColor <- false;
 		pointClicked.visibleViewShape <- false;
@@ -59,7 +59,7 @@ global
 
 
 	//Action to change the shape of the agents, according to the point to know which agents we're in intersection with the point
-	action change_shape 
+	action change_shape ()
 	{
 		list<cell> selected_agents <- cell overlapping (circle(radius) at_location #user_location);
 		ask selected_agents

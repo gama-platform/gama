@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * BuiltinGlobalScopeProvider.java, in gaml.compiler.gaml, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * BuiltinGlobalScopeProvider.java, in gaml.compiler, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,8 +11,11 @@
 // (c) Vincent Simonet, 2011
 package gaml.compiler.gaml.scoping;
 
+import static com.google.common.collect.Iterables.addAll;
+
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -34,21 +37,28 @@ import org.eclipse.xtext.scoping.impl.SelectableBasedScope;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Lists;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.SetMultimap;
 import com.google.inject.Singleton;
 
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
+import gama.api.additions.GamaBundleLoader;
+import gama.api.additions.registries.GamaSkillRegistry;
+import gama.api.compilation.descriptions.IActionDescription;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescription.DescriptionVisitor;
+import gama.api.compilation.descriptions.ISkillDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
+import gama.api.compilation.factories.IExpressionFactory;
+import gama.api.gaml.GAML;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.GamaMetaModel;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.kernel.GamaBundleLoader;
-import gama.gaml.compilation.kernel.GamaSkillRegistry;
-import gama.gaml.expressions.IExpressionFactory;
-import gama.gaml.types.Types;
 import gaml.compiler.gaml.EGaml;
-import gaml.compiler.gaml.indexer.GamlResourceIndexer;
-import gaml.compiler.gaml.resource.GamlResource;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
+import gaml.compiler.gaml.indexer.GamlResourceIndexer;
+import gaml.compiler.gaml.resource.GamlResource;
 
 /**
  * Global GAML scope provider supporting built-in definitions.
@@ -78,8 +88,14 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		/** The resource. */
 		final Resource resource;
 
-		/** The elements. */
-		final IMap<QualifiedName, IEObjectDescription> elements = GamaMapFactory.createUnordered();
+		/** The elements - using HashMap for better performance. */
+		final Map<QualifiedName, IEObjectDescription> elements = new HashMap<>();
+
+		/** Cache for URI to description lookups to avoid repeated iterations. */
+		private final Map<URI, IEObjectDescription> uriCache = new HashMap<>();
+
+		/** Cached immutable view of elements values. */
+		private Collection<IEObjectDescription> cachedValues;
 
 		/**
 		 * Instantiates a new e class based scope.
@@ -88,8 +104,9 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		 *            the uri
 		 */
 		public EClassBasedScope(final String uri) {
-			Resource r = rs.getResource(URI.createURI(uri, false), false);
-			if (r == null) { r = rs.createResource(URI.createURI(uri, false)); }
+			final URI resourceUri = URI.createURI(uri, false);
+			Resource r = rs.getResource(resourceUri, false);
+			if (r == null) { r = rs.createResource(resourceUri); }
 			resource = r;
 		}
 
@@ -99,7 +116,11 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		}
 
 		@Override
-		public Iterable<IEObjectDescription> getAllElements() { return elements.values(); }
+		public Iterable<IEObjectDescription> getAllElements() {
+			// Return cached immutable collection to avoid creating new collection on each call
+			if (cachedValues == null) { cachedValues = Collections.unmodifiableCollection(elements.values()); }
+			return cachedValues;
+		}
 
 		@Override
 		public Iterable<IEObjectDescription> getElements(final QualifiedName name) {
@@ -110,23 +131,26 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 
 		@Override
 		public IEObjectDescription getSingleElement(final EObject object) {
+			// Use cached URI lookup for better performance
 			final URI uri = EcoreUtil2.getPlatformResourceOrNormalizedURI(object);
-			for (Map.Entry<QualifiedName, IEObjectDescription> entry : elements.entrySet()) {
-				IEObjectDescription input = entry.getValue();
-				if (input.getEObjectOrProxy() == object || uri.equals(input.getEObjectURI())) return input;
+			IEObjectDescription cached = uriCache.get(uri);
+			if (cached != null && (cached.getEObjectOrProxy() == object || uri.equals(cached.getEObjectURI())))
+				return cached;
+
+			// Fall back to iteration if not in cache
+			for (IEObjectDescription input : elements.values()) {
+				if (input.getEObjectOrProxy() == object || uri.equals(input.getEObjectURI())) {
+					uriCache.put(uri, input);
+					return input;
+				}
 			}
 			return null;
 		}
 
 		@Override
 		public List<IEObjectDescription> getElements(final EObject object) {
-			final URI uri = EcoreUtil2.getPlatformResourceOrNormalizedURI(object);
-			for (Map.Entry<QualifiedName, IEObjectDescription> entry : elements.entrySet()) {
-				IEObjectDescription input = entry.getValue();
-				if (input.getEObjectOrProxy() == object || uri.equals(input.getEObjectURI()))
-					return Collections.singletonList(input);
-			}
-			return Collections.EMPTY_LIST;
+			final IEObjectDescription result = getSingleElement(object);
+			return result != null ? Collections.singletonList(result) : Collections.emptyList();
 		}
 
 		/**
@@ -137,13 +161,18 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		 */
 		public void add(final QualifiedName name, final GamlDefinition stub) {
 			resource.getContents().add(stub);
-			elements.put(name, EObjectDescription.create(name, stub));
+			final IEObjectDescription desc = EObjectDescription.create(name, stub);
+			elements.put(name, desc);
+			// Pre-populate URI cache
+			uriCache.put(EcoreUtil2.getPlatformResourceOrNormalizedURI(stub), desc);
+			// Invalidate cached values since we're adding
+			cachedValues = null;
 		}
 
 	}
 
 	/** The global scopes. */
-	private final IMap<EClass, EClassBasedScope> scopes = GamaMapFactory.createUnordered();
+	private final Map<EClass, EClassBasedScope> scopes = new HashMap<>();
 
 	/** The all names. */
 	private final Set<QualifiedName> allQualifiedNames = new HashSet<>();
@@ -168,7 +197,7 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 		eAction = GamlPackage.eINSTANCE.getActionDefinition();
 		eUnit = GamlPackage.eINSTANCE.getUnitFakeDefinition();
 		eEquation = GamlPackage.eINSTANCE.getEquationDefinition();
-		DEBUG.TIMER("GAML", "Artifacts", "built in", () -> {
+		DEBUG.TIMER(BANNER_CATEGORY.GAML, "Language artifacts", "built in", () -> {
 			scopes.put(eType, new EClassBasedScope("types.xmi"));
 			scopes.put(eVar, new EClassBasedScope("vars.xmi"));
 			scopes.put(eSkill, new EClassBasedScope("skills.xmi"));
@@ -178,56 +207,109 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 			add(IExpressionFactory.TEMPORARY_ACTION_NAME, eAction);
 			Types.getTypeNames().forEach(t -> add(t, eType, eVar, eAction));
 
-			GAML.CONSTANTS.forEach(t -> {
+			GAML.getConstants().forEach(t -> {
 				try {
 					add(t, eType, eVar);
 				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding constant artefact " + t, ex);
+					GamaBundleLoader.ERROR("Error when building constant artefact " + t, ex);
 				}
 			});
-			GAML.UNITS.forEach((t, u) -> {
+			GAML.getUnits().forEach((t, u) -> {
 				try {
 					add(t, eUnit);
 				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding unit artefact " + t, ex);
+					GamaBundleLoader.ERROR("Error when building unit artefact " + t, ex);
 				}
 			});
-			GAML.getAllFields().forEach(t -> {
+			GAML.getFields().forEach(a -> {
+				try {
+					add(a.getName(), eVar);
+				} catch (Exception e) {
+					GamaBundleLoader.ERROR("Error when building field artefact " + a, e);
+				}
+			});
+			getAllVars().forEach(t -> {
 				try {
 					add(t.getName(), eVar);
 				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding field artefact " + t, ex);
-				}
-			});
-			GAML.getAllVars().forEach(t -> {
-				try {
-					add(t.getName(), eVar);
-				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding var artefact " + t.getName(), ex);
+					GamaBundleLoader.ERROR("Error when building var artefact " + t.getName(), ex);
 				}
 			});
 			GamaSkillRegistry.INSTANCE.getAllSkillNames().forEach(t -> {
 				try {
 					add(t, eSkill, eVar);
 				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding skill artefact " + t, ex);
+					GamaBundleLoader.ERROR("Error when building skill artefact " + t, ex);
 				}
 			});
-			GAML.getAllActions().forEach(t -> {
+			getAllActions().forEach(t -> {
 				try {
 					add(t.getName(), eAction, eVar);
 				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding action artefact " + t.getName(), ex);
+					GamaBundleLoader.ERROR("Error when building action artefact " + t.getName(), ex);
 				}
 			});
-			GAML.OPERATORS.forEach((a, b) -> {
+			GAML.getOperatorsNames().forEach(a -> {
 				try {
 					add(a, eAction);
 				} catch (Exception ex) {
-					GamaBundleLoader.ERROR("Error when bulding action artefact " + a, ex);
+					GamaBundleLoader.ERROR("Error when building action artefact " + a, ex);
 				}
 			});
 		});
+	}
+
+	/**
+	 * Gets the all actions.
+	 *
+	 * @return the all actions
+	 */
+	public static Collection<IDescription> getAllActions() {
+		SetMultimap<String, IDescription> result = MultimapBuilder.hashKeys().linkedHashSetValues().build();
+
+		final DescriptionVisitor<IDescription> visitor = desc -> {
+			result.put(desc.getName(), desc);
+			return true;
+		};
+
+		for (final ITypeDescription s : GamaMetaModel.getAllSpeciesDescriptions()) { s.visitOwnActions(visitor); }
+		GamaSkillRegistry.INSTANCE.visitSkills(desc -> {
+			((ISkillDescription) desc).visitOwnActions(visitor);
+			return true;
+		});
+		return result.values();
+	}
+
+	/**
+	 * Gets the all vars.
+	 *
+	 * @return the all vars
+	 */
+	private static Collection<IDescription> getAllVars() {
+		final HashSet<IDescription> result = new HashSet<>();
+
+		final DescriptionVisitor<IDescription> varVisitor = desc -> {
+			result.add(desc);
+			return true;
+		};
+
+		final DescriptionVisitor<IDescription> actionVisitor = desc -> {
+			addAll(result, ((IActionDescription) desc).getFormalArgs());
+			return true;
+		};
+
+		for (final ITypeDescription desc : GamaMetaModel.getAllSpeciesDescriptions()) {
+			desc.visitOwnAttributes(varVisitor);
+			desc.visitOwnActions(actionVisitor);
+
+		}
+		GamaSkillRegistry.INSTANCE.visitSkills(desc -> {
+			((ITypeDescription) desc).visitOwnAttributes(varVisitor);
+			((ITypeDescription) desc).visitOwnActions(actionVisitor);
+			return true;
+		});
+
+		return result;
 	}
 
 	/**
@@ -251,11 +333,10 @@ public class BuiltinGlobalScopeProvider extends ImportUriGlobalScopeProvider {
 	 * @return the last stub constructed
 	 */
 	void add(final String t, final EClass... classes) {
-		QualifiedName qName = QualifiedName.create(t);
+		final QualifiedName qName = QualifiedName.create(t);
 		allQualifiedNames.add(qName);
-		for (EClass eClass : classes) {
-			scopes.get(eClass).add(qName, EGaml.getInstance().createGamlDefinition(t, eClass));
-		}
+		final EGaml eGaml = EGaml.getInstance();
+		for (final EClass eClass : classes) { scopes.get(eClass).add(qName, eGaml.createGamlDefinition(t, eClass)); }
 	}
 
 	@Override

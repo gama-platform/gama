@@ -3,7 +3,7 @@
  * Java2DDisplaySurface.java, in gama.ui.display.java2d, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -33,34 +33,38 @@ import javax.swing.JPanel;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Monitor;
-import org.locationtech.jts.geom.Envelope;
 
-import gama.annotations.precompiler.GamlAnnotations.display;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.core.common.interfaces.GeneralSynchronizer;
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.ILayer;
-import gama.core.common.interfaces.ILayerManager;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.outputs.LayeredDisplayData;
-import gama.core.outputs.LayeredDisplayData.Changes;
-import gama.core.outputs.LayeredDisplayOutput;
-import gama.core.outputs.display.AWTDisplayGraphics;
+import gama.annotations.display;
+import gama.annotations.doc;
+import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.GeneralSynchronizer;
+import gama.api.runtime.SystemInfo;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.ui.IOutput;
+import gama.api.ui.displays.IDisplayData;
+import gama.api.ui.displays.IDisplayData.Changes;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.IEventLayerListener;
+import gama.api.ui.layers.ILayer;
+import gama.api.ui.layers.ILayerManager;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.display.LayerManager;
-import gama.core.outputs.layers.IEventLayerListener;
 import gama.core.outputs.layers.OverlayLayer;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.PlatformHelper;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 import gama.extension.image.GamaImage;
 import gama.extension.image.ImageHelper;
+import gama.extension.image.display.AWTDisplayGraphics;
 import gama.ui.experiment.views.displays.DisplaySurfaceMenu;
 import gama.ui.shared.utils.DPIHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -95,7 +99,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	}
 
 	/** The output. */
-	final LayeredDisplayOutput output;
+	final IOutput.Display output;
 
 	/** The view port. */
 	protected final Rectangle viewPort = new Rectangle();
@@ -146,15 +150,15 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	 * @param args
 	 *            the args
 	 */
-	public Java2DDisplaySurface(final Object... args) {
-		output = (LayeredDisplayOutput) args[0];
+	public Java2DDisplaySurface(final IOutput.Display output, final Object uiComponent) {
+		this.output = output;
 		output.setSurface(this);
 		setDisplayScope(output.getScope().copyForGraphics("in java2D display"));
 		output.getData().addListener(this);
 		setDoubleBuffered(true);
 		setIgnoreRepaint(true);
 		setLayout(new BorderLayout());
-		setBackground(output.getData().getBackgroundColor());
+		setBackground(IColor.toAWTColor(output.getData().getBackgroundColor()));
 		isLocked = output.getData().isCameraLocked();
 		setName(output.getName());
 		layerManager = new LayerManager(this, output);
@@ -370,7 +374,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public void updateDisplay(final boolean force, final GeneralSynchronizer synchronizer) {
-		if (disposed) { return; }
+		if (disposed) return;
 		rendered = false;
 		Runnable toRun = () -> {
 			repaint();
@@ -395,7 +399,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	@Override
 	public void focusOn(final IShape geometry) {
 		final Rectangle2D r = this.getManager().focusOn(geometry, this);
-		if (r == null) { return; }
+		if (r == null) return;
 		final double xScale = getWidth() / r.getWidth();
 		final double yScale = getHeight() / r.getHeight();
 		double zoomFactor = Math.min(xScale, yScale);
@@ -469,7 +473,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	 */
 	// Used when the image is resized.
 	public boolean isImageEdgeInPanel() {
-		if (previousPanelSize == null) { return false; }
+		if (previousPanelSize == null) return false;
 		final Point origin = getOrigin();
 		return origin.x > 0 && origin.x < previousPanelSize.width
 				|| origin.y > 0 && origin.y < previousPanelSize.height;
@@ -502,8 +506,8 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		// DEBUG.OUT("Try to resize image to " + x + " " + y + "(current size
 		// is: " + getDisplayWidth() + " "
 		// + getDisplayHeight());
-		if (!force && x == getDisplayWidth() && y == getDisplayHeight()) { return true; }
-		if (x < 10 || y < 10 || getWidth() <= 0 && getHeight() <= 0) { return false; }
+		if (!force && x == getDisplayWidth() && y == getDisplayHeight()) return true;
+		if (x < 10 || y < 10 || getWidth() <= 0 && getHeight() <= 0) return false;
 
 		final int[] point = computeBoundsFrom(x, y);
 		final int imageWidth = Math.max(1, point[0]);
@@ -521,7 +525,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	@Override
 	public void paintComponent(final Graphics g) {
 		final AWTDisplayGraphics gg = getIGraphics();
-		if (gg == null) { return; }
+		if (gg == null) return;
 		// DEBUG.OUT("-- Surface effectively painting on Java2D context");
 		super.paintComponent(g);
 		final Graphics2D g2d = (Graphics2D) g.create(getOrigin().x, getOrigin().y, (int) Math.round(getDisplayWidth()),
@@ -545,32 +549,32 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	public AWTDisplayGraphics getIGraphics() { return (AWTDisplayGraphics) iGraphics; }
 
 	@Override
-	public GamaPoint getModelCoordinates() {
+	public IPoint getModelCoordinates() {
 		final Point origin = getOrigin();
 		final Point mouse = getMousePosition();
-		if (mouse == null) { return null; }
+		if (mouse == null) return null;
 		final int xc = mouse.x - origin.x;
 		final int yc = mouse.y - origin.y;
 		final List<ILayer> layers = layerManager.getLayersIntersecting(xc, yc);
 		for (final ILayer layer : layers) {
-			if (layer.isProvidingWorldCoordinates()) { return layer.getModelCoordinatesFrom(xc, yc, this); }
+			if (layer.isProvidingWorldCoordinates()) return layer.getModelCoordinatesFrom(xc, yc, this);
 		}
 		// See Issue #2783: we dont return null but 0,0.
 		// return null;
-		return new GamaPoint();
+		return GamaPointFactory.create();
 	}
 
 	@Override
-	public GamaPoint getWindowCoordinates() {
+	public IPoint getWindowCoordinates() {
 		final Point mouse = getMousePosition();
-		return new GamaPoint(mouse.x, mouse.y);
+		return GamaPointFactory.create(mouse.x, mouse.y);
 	}
 
 	@Override
 	public void getModelCoordinatesInfo(final StringBuilder sb) {
 		final Point origin = getOrigin();
 		final Point mouse = getMousePosition();
-		if (mouse == null) { return; }
+		if (mouse == null) return;
 		final int xc = mouse.x - origin.x;
 		final int yc = mouse.y - origin.y;
 		final List<ILayer> layers = layerManager.getLayersIntersecting(xc, yc);
@@ -601,7 +605,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	protected void setDisplayWidth(final int displayWidth) { viewPort.width = displayWidth /*- 2*/; }
 
 	@Override
-	public LayeredDisplayData getData() { return output.getData(); }
+	public IDisplayData getData() { return output.getData(); }
 
 	@Override
 	public double getDisplayHeight() { return viewPort.height; }
@@ -615,7 +619,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	protected void setDisplayHeight(final int displayHeight) { viewPort.height = displayHeight /*- 2*/; }
 
 	@Override
-	public LayeredDisplayOutput getOutput() { return output; }
+	public IOutput.Display getOutput() { return output; }
 
 	/**
 	 * New zoom level.
@@ -657,7 +661,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	 * @return the int[]
 	 */
 	private int[] computeBoundsFrom(final int vwidth, final int vheight) {
-		if (!layerManager.stayProportional()) { return new int[] { vwidth, vheight }; }
+		if (!layerManager.stayProportional()) return new int[] { vwidth, vheight };
 		final int[] dim = new int[2];
 		final double widthHeightConstraint = getEnvHeight() / getEnvWidth();
 		if (widthHeightConstraint < 1) {
@@ -671,7 +675,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	}
 
 	@Override
-	public GamaPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final Point sizeInPixels,
+	public IPoint getModelCoordinatesFrom(final int xOnScreen, final int yOnScreen, final Point sizeInPixels,
 			final Point positionInPixels) {
 		final double xScale = sizeInPixels.x / getEnvWidth();
 		final double yScale = sizeInPixels.y / getEnvHeight();
@@ -679,13 +683,13 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		final int yInDisplay = yOnScreen - positionInPixels.y;
 		final double xInModel = xInDisplay / xScale;
 		final double yInModel = yInDisplay / yScale;
-		return new GamaPoint(xInModel, yInModel);
+		return GamaPointFactory.create(xInModel, yInModel);
 	}
 
 	@Override
-	public Envelope getVisibleRegionForLayer(final ILayer currentLayer) {
-		if (currentLayer instanceof OverlayLayer) { return getScope().getSimulation().getEnvelope(); }
-		final Envelope e = new Envelope();
+	public IEnvelope getVisibleRegionForLayer(final ILayer currentLayer) {
+		if (currentLayer instanceof OverlayLayer) return getScope().getSimulation().getEnvelope();
+		final IEnvelope e = GamaEnvelopeFactory.create();
 		final Point origin = getOrigin();
 		int xc = -origin.x;
 		int yc = -origin.y;
@@ -717,7 +721,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public void dispose() {
-		if (disposed) { return; }
+		if (disposed) return;
 		disposed = true;
 		getData().removeListener(this);
 		if (layerManager != null) { layerManager.dispose(); }
@@ -741,7 +745,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	@Override
 	public void setBounds(final int x, final int y, final int width, final int height) {
 		DEBUG.OUT("-- Java2D surface set bounds to " + x + " " + y + " | " + width + " " + height);
-		if (width == 0 && height == 0 || width == this.getWidth() && height == this.getHeight()) { return; }
+		if (width == 0 && height == 0 || width == this.getWidth() && height == this.getHeight()) return;
 		super.setBounds(x, y, width, height);
 	}
 
@@ -804,7 +808,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		final int xc = mousex - origin.x;
 		final int yc = mousey - origin.y;
 		final List<ILayer> layers = layerManager.getLayersIntersecting(xc, yc);
-		if (layers.isEmpty()) { return; }
+		if (layers.isEmpty()) return;
 		EventQueue.invokeLater(() -> menuManager.buildMenu(mousex, mousey, xc, yc, layers));
 		// Modified for Issue #3404 -- now calls the menu asynchronously
 		// try {
@@ -840,11 +844,12 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	public void changed(final Changes property, final Object value) {
 
 		switch (property) {
-			case BACKGROUND:
-				setBackground((Color) value);
-				break;
-			default:
-				;
+			case BACKGROUND -> {
+				Color cc = IColor.toAWTColor(GamaColorFactory.castToColor(getScope(), value));
+				setBackground(cc);
+			}
+			default -> {
+			}
 		}
 
 	}
@@ -854,10 +859,9 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 
 	@Override
 	public Font computeFont(final Font f) {
-		if (f == null) { return null; }
-		if (monitor != null && PlatformHelper.isWindows() && DPIHelper.isHiDPI(monitor)) {
+		if (f == null) return null;
+		if (monitor != null && SystemInfo.isWindows() && DPIHelper.isHiDPI(monitor))
 			return f.deriveFont(DPIHelper.autoScaleUp(monitor, f.getSize()));
-		}
 		return f;
 
 	}
@@ -881,8 +885,8 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	@Override
 	public boolean isVisible() {
 		boolean v = super.isVisible();
-		if (!v) { return false; }
-		if (visibilityBlock == null) { return v; }
+		if (!v) return false;
+		if (visibilityBlock == null) return v;
 		return visibilityBlock.get();
 	}
 

@@ -20,7 +20,7 @@ global {
 	} 
 	
 	
-	action continue_in_loop_demo {
+	action continue_in_loop_demo() {
 		write "Use continue to write every odd number from 1 to 100"; 
 		loop i from: 1 to: 100 {
 			if (even(i)){ continue;}
@@ -28,14 +28,14 @@ global {
 		}
 	}
 	
-	action break_in_infinite_loop_demo {
+	action break_in_infinite_loop_demo() {
 		loop while: true {
 			write "Infinite loop";
 			if (flip(0.01)) {break;}
 		}
 	}
 	
-	action break_in_loop_demo {
+	action break_in_loop_demo() {
 		list<int> numbers <- list_with(20, rnd(100));
 		write "Use break to write every number until one is even in " + numbers;
 
@@ -45,7 +45,7 @@ global {
 		}
 	} 
 	
-	action break_in_switch_demo {
+	action break_in_switch_demo() {
 		write "Break can be used in switch (but not continue) to stop the match making";
 		int i <- 100;
 		switch i { 
@@ -62,7 +62,7 @@ global {
 		}
 	}
 	
-	action break_in_create_demo {
+	action break_in_create_demo() {
 		write "Break can be used in create (and also release, capture, generate) to stop initializing agents. 
 				Warning: it does not stop CREATING them, but stops INITIALIZING them after the first break";
 		int j <- 0;
@@ -75,7 +75,7 @@ global {
 		write "Number of agents created " + length(dummy) + " and initialized " + length(dummy where each.initialized);
 	}
 	
-	action break_in_ask_demo {
+	action break_in_ask_demo() {
 		write "Break can be used in ask statements, but it only works (obviously) if no parallel execution is involved";
 		int j <- 0;
 		ask shuffle(dummy) {

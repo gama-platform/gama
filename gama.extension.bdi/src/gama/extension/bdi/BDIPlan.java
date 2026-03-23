@@ -12,24 +12,24 @@ package gama.extension.bdi;
 
 import java.util.Objects;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IValue;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.JsonValue;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.misc.IValue;
+import gama.api.utils.json.IJson;
+import gama.api.utils.json.IJsonValue;
 
 /**
  * The Class BDIPlan.
  */
 @vars ({ @variable (
-		name = "name",
+		name = IKeyword.NAME,
 		type = IType.STRING,
 		doc = @doc ("The name of this BDI plan")),
 		@variable (
@@ -51,8 +51,8 @@ import gama.gaml.types.Types;
 public class BDIPlan implements IValue {
 
 	@Override
-	public JsonValue serializeToJson(final Json json) {
-		return json.typedObject(getGamlType(), "name", getName());
+	public IJsonValue serializeToJson(final IJson json) {
+		return json.typedObject(getGamlType(), IKeyword.NAME, getName());
 	}
 
 	/** The planstatement. */
@@ -63,7 +63,7 @@ public class BDIPlan implements IValue {
 	 *
 	 * @return the name
 	 */
-	@getter ("name")
+	@getter (IKeyword.NAME)
 	public String getName() { return this.planstatement.getName(); }
 
 	/**
@@ -105,7 +105,7 @@ public class BDIPlan implements IValue {
 	 */
 	@getter (SimpleBdiArchitecture.INSTANTANEOUS)
 	public boolean getInstantaneous(final IScope scope) { 
-		return planstatement._instantaneous == null ? false : gama.gaml.operators.Cast.asBool(scope, planstatement._instantaneous.value(scope)); 
+		return planstatement._instantaneous == null ? false : gama.api.gaml.types.Cast.asBool(scope, planstatement._instantaneous.value(scope)); 
 	}
 
 	/**
@@ -191,7 +191,7 @@ public class BDIPlan implements IValue {
 	/**
 	 * Method getType()
 	 *
-	 * @see gama.core.common.interfaces.ITyped#getGamlType()
+	 * @see gama.api.gaml.types.ITyped#getGamlType()
 	 */
 	@Override
 	public IType<?> getGamlType() { return Types.get(IType.TYPE_ID); }

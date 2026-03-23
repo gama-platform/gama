@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * GamaDXFFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * GamaDXFFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,38 +15,39 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.locationtech.jts.geom.Envelope;
+import org.kabeja.dxf.DXFArc;
+import org.kabeja.dxf.DXFBlock;
+import org.kabeja.dxf.DXFCircle;
+import org.kabeja.dxf.DXFDocument;
+import org.kabeja.dxf.DXFEntity;
+import org.kabeja.dxf.DXFLayer;
+import org.kabeja.dxf.DXFLine;
+import org.kabeja.dxf.DXFPolyline;
+import org.kabeja.dxf.DXFSolid;
+import org.kabeja.dxf.DXFVertex;
+import org.kabeja.parser.DXFParser;
+import org.kabeja.parser.Parser;
+import org.kabeja.parser.ParserBuilder;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.Envelope3D;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
-import gama.dependencies.kabeja.dxf.DXFArc;
-import gama.dependencies.kabeja.dxf.DXFBlock;
-import gama.dependencies.kabeja.dxf.DXFCircle;
-import gama.dependencies.kabeja.dxf.DXFDocument;
-import gama.dependencies.kabeja.dxf.DXFEntity;
-import gama.dependencies.kabeja.dxf.DXFLayer;
-import gama.dependencies.kabeja.dxf.DXFLine;
-import gama.dependencies.kabeja.dxf.DXFPolyline;
-import gama.dependencies.kabeja.dxf.DXFSolid;
-import gama.dependencies.kabeja.dxf.DXFVertex;
-import gama.dependencies.kabeja.parser.DXFParser;
-import gama.dependencies.kabeja.parser.Parser;
-import gama.dependencies.kabeja.parser.ParserBuilder;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialTransformations;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Written by drogoul Modified on 13 nov. 2011
@@ -66,7 +67,7 @@ import gama.gaml.types.Types;
 public class GamaDXFFile extends GamaGeometryFile {
 
 	/** The size. */
-	GamaPoint size;
+	IPoint size;
 
 	/** The unit. */
 	Double unit;
@@ -124,13 +125,13 @@ public class GamaDXFFile extends GamaGeometryFile {
 
 	@Override
 	protected IShape buildGeometry(final IScope scope) {
-		return GamaGeometryType.geometriesToGeometry(scope, getBuffer());
+		return GamaShapeFactory.geometriesToGeometry(scope, getBuffer());
 	}
 
 	@Override
 	public IList<String> getAttributes(final IScope scope) {
 		// TODO are there attributes ?
-		return GamaListFactory.EMPTY_LIST;
+		return GamaListFactory.getEmptyList();
 	}
 
 	/**
@@ -144,7 +145,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 	 */
 	public IShape createPolyline(final IScope scope, final IList pts) {
 		if (pts.isEmpty()) return null;
-		final IShape shape = GamaGeometryType.buildPolyline(pts);
+		final IShape shape = GamaShapeFactory.buildPolyline(pts);
 		if (shape != null) {
 			if (size != null) return SpatialTransformations.scaled_to(scope, shape, size);
 			return shape;
@@ -163,7 +164,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 	 */
 	public IShape createPolygon(final IScope scope, final IList pts) {
 		if (pts.isEmpty()) return null;
-		final IShape shape = GamaGeometryType.buildPolygon(pts);
+		final IShape shape = GamaShapeFactory.buildPolygon(pts);
 		if (shape != null) {
 			if (size != null) return SpatialTransformations.scaled_to(scope, shape, size);
 			return shape;
@@ -182,8 +183,8 @@ public class GamaDXFFile extends GamaGeometryFile {
 	 *            the radius
 	 * @return the i shape
 	 */
-	public IShape createCircle(final IScope scope, final GamaPoint location, final double radius) {
-		IShape shape = GamaGeometryType.buildCircle(radius, location).getExteriorRing(scope);
+	public IShape createCircle(final IScope scope, final IPoint location, final double radius) {
+		IShape shape = GamaShapeFactory.buildCircle(radius, location).getExteriorRing(scope);
 		if (shape != null) {
 			if (size != null) return SpatialTransformations.scaled_to(scope, shape, size);
 			return shape;
@@ -203,16 +204,16 @@ public class GamaDXFFile extends GamaGeometryFile {
 	public IShape manageObj(final IScope scope, final DXFSolid obj) {
 		if (obj == null) return null;
 		final IList list = GamaListFactory.create(Types.POINT);
-		list.add(new GamaPoint(obj.getPoint1().getX() * (unit == null ? 1 : unit) - x_t,
+		list.add(GamaPointFactory.create(obj.getPoint1().getX() * (unit == null ? 1 : unit) - x_t,
 				obj.getPoint1().getY() * (unit == null ? 1 : unit) - y_t,
 				obj.getPoint1().getZ() * (unit == null ? 1 : unit)));
-		list.add(new GamaPoint(obj.getPoint2().getX() * (unit == null ? 1 : unit) - x_t,
+		list.add(GamaPointFactory.create(obj.getPoint2().getX() * (unit == null ? 1 : unit) - x_t,
 				obj.getPoint2().getY() * (unit == null ? 1 : unit) - y_t,
 				obj.getPoint2().getZ() * (unit == null ? 1 : unit)));
-		list.add(new GamaPoint(obj.getPoint3().getX() * (unit == null ? 1 : unit) - x_t,
+		list.add(GamaPointFactory.create(obj.getPoint3().getX() * (unit == null ? 1 : unit) - x_t,
 				obj.getPoint3().getY() * (unit == null ? 1 : unit) - y_t,
 				obj.getPoint3().getZ() * (unit == null ? 1 : unit)));
-		list.add(new GamaPoint(obj.getPoint4().getX() * (unit == null ? 1 : unit) - x_t,
+		list.add(GamaPointFactory.create(obj.getPoint4().getX() * (unit == null ? 1 : unit) - x_t,
 				obj.getPoint4().getY() * (unit == null ? 1 : unit) - y_t,
 				obj.getPoint4().getZ() * (unit == null ? 1 : unit)));
 
@@ -230,7 +231,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 	 */
 	public IShape manageObj(final IScope scope, final DXFCircle obj) {
 		if (obj == null) return null;
-		final GamaPoint pt = new GamaPoint(obj.getCenterPoint().getX() * (unit == null ? 1 : unit) - x_t,
+		final IPoint pt = GamaPointFactory.create(obj.getCenterPoint().getX() * (unit == null ? 1 : unit) - x_t,
 				obj.getCenterPoint().getY() * (unit == null ? 1 : unit) - y_t,
 				obj.getCenterPoint().getZ() * (unit == null ? 1 : unit));
 		return createCircle(scope, pt, obj.getRadius() * (unit == null ? 1 : unit));
@@ -248,10 +249,10 @@ public class GamaDXFFile extends GamaGeometryFile {
 	public IShape manageObj(final IScope scope, final DXFLine obj) {
 		if (obj == null) return null;
 		final IList list = GamaListFactory.create(Types.POINT);
-		list.add(new GamaPoint(obj.getStartPoint().getX() * (unit == null ? 1 : unit) - x_t,
+		list.add(GamaPointFactory.create(obj.getStartPoint().getX() * (unit == null ? 1 : unit) - x_t,
 				obj.getStartPoint().getY() * (unit == null ? 1 : unit) - y_t,
 				obj.getStartPoint().getZ() * (unit == null ? 1 : unit)));
-		list.add(new GamaPoint(obj.getEndPoint().getX() * (unit == null ? 1 : unit) - x_t,
+		list.add(GamaPointFactory.create(obj.getEndPoint().getX() * (unit == null ? 1 : unit) - x_t,
 				obj.getEndPoint().getY() * (unit == null ? 1 : unit) - y_t,
 				obj.getEndPoint().getZ() * (unit == null ? 1 : unit)));
 		return createPolyline(scope, list);
@@ -269,10 +270,10 @@ public class GamaDXFFile extends GamaGeometryFile {
 	public IShape manageObj(final IScope scope, final DXFArc obj) {
 		if (obj == null) return null;
 		final IList list = GamaListFactory.create(Types.POINT);
-		list.add(new GamaPoint(obj.getStartPoint().getX() * (unit == null ? 1 : unit) - x_t,
+		list.add(GamaPointFactory.create(obj.getStartPoint().getX() * (unit == null ? 1 : unit) - x_t,
 				obj.getStartPoint().getY() * (unit == null ? 1 : unit) - y_t,
 				obj.getStartPoint().getZ() * (unit == null ? 1 : unit)));
-		list.add(new GamaPoint(obj.getEndPoint().getX() * (unit == null ? 1 : unit) - x_t,
+		list.add(GamaPointFactory.create(obj.getEndPoint().getX() * (unit == null ? 1 : unit) - x_t,
 				obj.getEndPoint().getY() * (unit == null ? 1 : unit) - y_t,
 				obj.getEndPoint().getZ() * (unit == null ? 1 : unit)));
 		return createPolyline(scope, list);
@@ -285,8 +286,8 @@ public class GamaDXFFile extends GamaGeometryFile {
 	 *            the v
 	 * @return the gama point
 	 */
-	public GamaPoint toGamaPoint(final DXFVertex v) {
-		return new GamaPoint(v.getPoint().getX(), v.getPoint().getY(), v.getPoint().getZ());
+	public IPoint toGamaPoint(final DXFVertex v) {
+		return GamaPointFactory.create(v.getPoint().getX(), v.getPoint().getY(), v.getPoint().getZ());
 	}
 
 	/**
@@ -305,11 +306,11 @@ public class GamaDXFFile extends GamaGeometryFile {
 	 */
 	protected void addToLists(final IScope scope, final DXFPolyline pline, final DXFVertex start, final DXFVertex end,
 			final IList list) {
-		IList<GamaPoint> locs = GamaListFactory.create(Types.POINT);
-		locs.add(new GamaPoint(start.getPoint().getX(), start.getPoint().getY(), start.getPoint().getZ()));
+		IList<IPoint> locs = GamaListFactory.create(Types.POINT);
+		locs.add(GamaPointFactory.create(start.getPoint().getX(), start.getPoint().getY(), start.getPoint().getZ()));
 		// calculte the height
-		GamaPoint startPt = toGamaPoint(start);
-		GamaPoint endPt = toGamaPoint(end);
+		IPoint startPt = toGamaPoint(start);
+		IPoint endPt = toGamaPoint(end);
 		if (start.getBulge() == 0) {
 			list.add(startPt);
 			list.add(endPt);
@@ -334,8 +335,8 @@ public class GamaDXFFile extends GamaGeometryFile {
 	 *            the obj
 	 * @return the points
 	 */
-	public IList<GamaPoint> getPoints(final IScope scope, final DXFPolyline obj) {
-		IList list = GamaListFactory.create(Types.POINT);
+	public IList<IPoint> getPoints(final IScope scope, final DXFPolyline obj) {
+		IList<IPoint> list = GamaListFactory.create(Types.POINT);
 
 		Iterator i = obj.getVertexIterator();
 
@@ -345,7 +346,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 			DXFVertex v = null;
 
 			last = first = (DXFVertex) i.next();
-			list.add(new GamaPoint(last.getPoint().getX(), last.getPoint().getY(), last.getPoint().getZ()));
+			list.add(GamaPointFactory.create(last.getPoint().getX(), last.getPoint().getY(), last.getPoint().getZ()));
 
 			while (i.hasNext()) {
 				v = (DXFVertex) i.next();
@@ -361,8 +362,8 @@ public class GamaDXFFile extends GamaGeometryFile {
 		while (change) {
 			change = false;
 			for (int k = 0; k < list.size() - 1; k++) {
-				GamaPoint pt1 = (GamaPoint) list.get(k);
-				GamaPoint pt2 = (GamaPoint) list.get(k + 1);
+				IPoint pt1 = list.get(k);
+				IPoint pt2 = list.get(k + 1);
 				if (pt1.euclidianDistanceTo(pt2) < 0.000001) {
 					list.remove(k + 1);
 					change = true;
@@ -385,15 +386,15 @@ public class GamaDXFFile extends GamaGeometryFile {
 	 */
 	public IShape manageObj(final IScope scope, final DXFPolyline obj) {
 		if (obj == null) return null;
-		IList<GamaPoint> list_ = getPoints(scope, obj);
+		IList<IPoint> list_ = getPoints(scope, obj);
 
-		final GamaPoint pt = list_.get(list_.size() - 1);
+		final IPoint pt = list_.get(list_.size() - 1);
 		if (pt.getX() == 0 && pt.getY() == 0 && pt.getZ() == 0) { list_.remove(pt); }
 
-		IList<GamaPoint> list = GamaListFactory.create(Types.POINT);
+		IList<IPoint> list = GamaListFactory.create(Types.POINT);
 
-		for (GamaPoint p : list_) {
-			list.add(new GamaPoint(p.getX() * (unit == null ? 1 : unit) - x_t,
+		for (IPoint p : list_) {
+			list.add(GamaPointFactory.create(p.getX() * (unit == null ? 1 : unit) - x_t,
 					p.getY() * (unit == null ? 1 : unit) - y_t, p.getZ() * (unit == null ? 1 : unit)));
 		}
 
@@ -438,8 +439,9 @@ public class GamaDXFFile extends GamaGeometryFile {
 		final double xmax = (doc.getBounds().getMaximumX() - doc.getBounds().getMinimumX()) * (unit == null ? 1 : unit);
 		final double ymax = (doc.getBounds().getMaximumY() - doc.getBounds().getMinimumY()) * (unit == null ? 1 : unit);
 
-		final IShape env = GamaGeometryType.buildPolygon(GamaListFactory.wrap(Types.POINT, new GamaPoint(0, 0),
-				new GamaPoint(xmax, 0), new GamaPoint(xmax, ymax), new GamaPoint(0, ymax), new GamaPoint(0, 0)));
+		final IShape env = GamaShapeFactory.buildPolygon(GamaListFactory.wrap(Types.POINT,
+				GamaPointFactory.create(0, 0), GamaPointFactory.create(xmax, 0), GamaPointFactory.create(xmax, ymax),
+				GamaPointFactory.create(0, ymax), GamaPointFactory.create(0, 0)));
 		final Iterator it = doc.getDXFLayerIterator();
 		final List<IShape> entities = new ArrayList<>();
 		while (it.hasNext()) {
@@ -463,7 +465,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 						g.setAttribute("color_index", obj.getColor());
 
 						if (obj.getColorRGB() != null) {
-							g.setAttribute("color", GamaColor.get(obj.getColorRGB()[0], obj.getColorRGB()[1],
+							g.setAttribute("color", GamaColorFactory.createWithRGBA(obj.getColorRGB()[0], obj.getColorRGB()[1],
 									obj.getColorRGB()[2], 255));
 						}
 						if (obj.getLineType() != null) { g.setAttribute("line_type", obj.getLineType()); }
@@ -496,8 +498,8 @@ public class GamaDXFFile extends GamaGeometryFile {
 					g.setAttribute("color_index", obj.getColor());
 
 					if (obj.getColorRGB() != null) {
-						g.setAttribute("color",
-								GamaColor.get(obj.getColorRGB()[0], obj.getColorRGB()[1], obj.getColorRGB()[2], 255));
+						g.setAttribute("color", GamaColorFactory.createWithRGBA(obj.getColorRGB()[0], obj.getColorRGB()[1],
+								obj.getColorRGB()[2], 255));
 					}
 					if (obj.getLineType() != null) { g.setAttribute("line_type", obj.getLineType()); }
 
@@ -528,7 +530,7 @@ public class GamaDXFFile extends GamaGeometryFile {
 	}
 
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		final Parser parser = ParserBuilder.createDefaultParser();
 		try (InputStream in = new FileInputStream(getFile(scope))) {
 
@@ -537,9 +539,9 @@ public class GamaDXFFile extends GamaGeometryFile {
 
 			// get the documnet and the layer
 			final DXFDocument doc = parser.getDocument();
-			return Envelope3D.of(new Envelope(0,
+			return GamaEnvelopeFactory.of(0,
 					(doc.getBounds().getMaximumX() - doc.getBounds().getMinimumX()) * (unit == null ? 1 : unit), 0,
-					(doc.getBounds().getMaximumY() - doc.getBounds().getMinimumY()) * (unit == null ? 1 : unit)));
+					(doc.getBounds().getMaximumY() - doc.getBounds().getMinimumY()) * (unit == null ? 1 : unit));
 		} catch (final Exception e) {
 
 			e.printStackTrace();

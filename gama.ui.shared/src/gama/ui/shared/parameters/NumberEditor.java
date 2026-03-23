@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * NumberEditor.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * NumberEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,11 +14,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 
-import gama.core.kernel.experiment.IParameter;
-import gama.core.kernel.experiment.InputParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.core.experiment.parameters.InputParameter;
 import gama.ui.shared.interfaces.EditorListener;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
@@ -71,9 +71,9 @@ public abstract class NumberEditor<T extends Comparable> extends ExpressionBased
 	}
 
 	@Override
-	public Control createCustomParameterControl(final Composite composite) throws GamaRuntimeException {
+	public Control createCustomParameterControl(final Composite composite1) throws GamaRuntimeException {
 		normalizeValues();
-		return super.createCustomParameterControl(composite);
+		return super.createCustomParameterControl(composite1);
 	}
 
 	/**
@@ -121,6 +121,7 @@ public abstract class NumberEditor<T extends Comparable> extends ExpressionBased
 	@Override
 	protected int[] getToolItems() {
 		if (acceptNull) return new int[] { DEFINE, PLUS, MINUS, REVERT };
+		if (param.getAmongValue(getScope()) != null) return new int[] { REVERT };
 		return new int[] { PLUS, MINUS, REVERT };
 	}
 }

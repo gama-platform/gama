@@ -1,29 +1,38 @@
+/*******************************************************************************************************
+ *
+ * SpatialRelations.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.gaml.operators.spatial;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.ITopology;
-import gama.core.metamodel.topology.grid.GridTopology;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.core.util.IMap;
-import gama.core.util.path.GamaSpatialPath;
-import gama.core.util.path.IPath;
-import gama.core.util.path.PathFactory;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.GamaPathFactory;
+import gama.api.types.graph.IPath;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IContainer;
+import gama.api.types.topology.ITopology;
+import gama.core.topology.grid.GridTopology;
 
 /**
  * The Class Relations.
@@ -202,7 +211,7 @@ public class SpatialRelations {
 		if (nodes.isEmpty(scope)) return null;
 		final int n = nodes.length(scope);
 		final IShape source = nodes.firstValue(scope);
-		if (n == 1) return PathFactory.newInstance(scope, scope.getTopology(), source, source,
+		if (n == 1) return GamaPathFactory.createFrom(scope, scope.getTopology(), source, source,
 				GamaListFactory.<IShape> create(Types.GEOMETRY));
 		final IShape target = nodes.lastValue(scope);
 		if (n == 2) return topo.pathBetween(scope, source, target);
@@ -211,13 +220,13 @@ public class SpatialRelations {
 		for (final IShape gg : nodes.iterable(scope)) {
 			if (previous != null) {
 				// TODO Take the case of GamaPoint
-				final GamaSpatialPath path = topo.pathBetween(scope, previous, gg);
+				final IPath path = topo.pathBetween(scope, previous, gg);
 				if (path != null && path.getEdgeList() != null) { edges.addAll(path.getEdgeList()); }
 			}
 			previous = gg;
 		}
 
-		final GamaSpatialPath path = PathFactory.newInstance(scope, topo, source, target, edges);
+		final IPath path = GamaPathFactory.createFrom(scope, topo, source, target, edges);
 		path.setWeight(path.getVertexList().size());
 		return path;
 	}
@@ -248,22 +257,20 @@ public class SpatialRelations {
 					equals = "A path between ag1 and ag2 and ag3 passing through the given cell_grid agents",
 					isExecutable = false) })
 	@no_test // test already done in Spatial tests models
-	public static IPath path_between(final IScope scope, final IList<IAgent> cells,
-			final IContainer<?, IShape> nodes) throws GamaRuntimeException {
+	public static IPath path_between(final IScope scope, final IList<IAgent> cells, final IContainer<?, IShape> nodes)
+			throws GamaRuntimeException {
 		if (cells == null || cells.isEmpty() || nodes.isEmpty(scope)) return null;
 		final ITopology topo = cells.get(0).getTopology();
 
 		final int n = nodes.length(scope);
 		final IShape source = nodes.firstValue(scope);
 		if (n == 1) {
-			if (topo instanceof GridTopology gt)
-				return gt.pathBetween(scope, source, source, cells);
+			if (topo instanceof GridTopology gt) return gt.pathBetween(scope, source, source, cells);
 			return scope.getTopology().pathBetween(scope, source, source);
 		}
 		final IShape target = nodes.lastValue(scope);
 		if (n == 2) {
-			if (topo instanceof GridTopology gt)
-				return gt.pathBetween(scope, source, target, cells);
+			if (topo instanceof GridTopology gt) return gt.pathBetween(scope, source, target, cells);
 			return scope.getTopology().pathBetween(scope, source, target);
 		}
 		final IList<IShape> edges = GamaListFactory.create(Types.GEOMETRY);
@@ -273,7 +280,7 @@ public class SpatialRelations {
 			if (previous != null) {
 				// TODO Take the case of GamaPoint
 				if (topo instanceof GridTopology gt) {
-					final GamaSpatialPath path = gt.pathBetween(scope, previous, gg, cells);
+					final IPath path = gt.pathBetween(scope, previous, gg, cells);
 					edges.addAll(path.getEdgeList());
 					weight += path.getWeight();
 				} else {
@@ -282,8 +289,8 @@ public class SpatialRelations {
 			}
 			previous = gg;
 		}
-		final GamaSpatialPath path = PathFactory.newInstance(scope,
-				topo instanceof GridTopology ? topo : scope.getTopology(), source, target, edges);
+		final IPath path = GamaPathFactory.createFrom(scope, topo instanceof GridTopology ? topo : scope.getTopology(),
+				source, target, edges);
 		path.setWeight(topo instanceof GridTopology ? weight : path.getVertexList().size());
 		return path;
 	}
@@ -438,7 +445,7 @@ public class SpatialRelations {
 	// No documentation because it is same same as the previous one (but
 	// optimized for points?)
 	@test (" {20,20} distance_to {30,30} = 14.142135623730951")
-	public static Double distance_to(final IScope scope, final GamaPoint source, final GamaPoint target) {
+	public static Double distance_to(final IScope scope, final IPoint source, final IPoint target) {
 		return scope.getTopology().distanceBetween(scope, source, target);
 	}
 
@@ -468,8 +475,7 @@ public class SpatialRelations {
 					value = "ag1 path_to ag2",
 					equals = "the path between ag1 and ag2 considering the topology of the agent applying the operator",
 					isExecutable = false) },
-			see = { "towards", "direction_to", "distance_between", "direction_between", "path_between",
-					"distance_to" })
+			see = { "towards", "direction_to", "distance_between", "direction_between", "path_between", "distance_to" })
 	@no_test // test already done in Spatial tests models
 	public static IPath path_to(final IScope scope, final IShape g, final IShape g1) throws GamaRuntimeException {
 		if (g == null) return null;
@@ -499,8 +505,7 @@ public class SpatialRelations {
 	// No documentation because it is same same as the previous one (but
 	// optimized for points?)
 	@no_test // test already done in Spatial tests models
-	public static IPath path_to(final IScope scope, final GamaPoint g, final GamaPoint g1)
-			throws GamaRuntimeException {
+	public static IPath path_to(final IScope scope, final IPoint g, final IPoint g1) throws GamaRuntimeException {
 		if (g == null) return null;
 		return scope.getTopology().pathBetween(scope, g, g1);
 	}

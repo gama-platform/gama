@@ -15,7 +15,7 @@ global {
 	float step <- 10 #mn;
 	
 	init {
-		create building from: shape_file_buildings with: [type::string(read ("NATURE"))] {
+		create building from: shape_file_buildings with: (type:string(read ("NATURE"))) {
 			if type="Industrial" {
 				color <- #blue ;
 			}

@@ -72,14 +72,19 @@ species cells{
 	float red;
 	float green;
 	float blue;
-	list<cells> neigbhours update: cells at_distance (1.1);
+	list<cells> neighbours update: cells at_distance 1.1;
 	
 	//Update of the neighbours cubes at each cycle of the simulation according to their location
-	cells upper_cell_y update: neigbhours first_with (shape.location.y > each.shape.location.y);
-	cells upper_cell_x update: neigbhours first_with (shape.location.x > each.shape.location.x);
-	cells upper_cell_z update: neigbhours first_with (shape.location.z > each.shape.location.z);
+	cells upper_cell_y update: neighbours first_with (shape.location.y > each.shape.location.y);
+	cells upper_cell_x update: neighbours first_with (shape.location.x > each.shape.location.x);
+	cells upper_cell_z update: neighbours first_with (shape.location.z > each.shape.location.z);
 	
-	//We permute the cube agent with its neighbour if its intensity is greater according to the canal related to its axis (z for canal blue, y for green and x for red)
+	reflex debug {
+	//	write " " + self + " -> " + neighbours;
+	}
+
+	
+	//We swap the cube agent with its neighbour if its intensity is greater according to the canal related to its axis (z for canal blue, y for green and x for red)
 	reflex swap_z when: upper_cell_z != nil and blue < upper_cell_z.blue{ 
 		point tmp1Loc <-location;
 		location <- upper_cell_z.location;  
@@ -102,7 +107,7 @@ species cells{
     }
 
 	aspect default {
-		draw cube(1) color:color border:color at:location;
+		draw cube(0.8) color:color;
 	}	
 }
 
@@ -111,8 +116,8 @@ experiment Display type: gui autorun:true{
 	output {
 		display View1 type:3d axes:false background:#black {
 			camera 'default' location: {26.889,23.7693,37.0687} target: {2.2036,3.0558,0.0};
-			species cells transparency:0.1;
-			graphics "di"{
+			species cells transparency:0.3;
+			graphics "di" refresh: false{
 			 draw "black(0,0,0)" at:{0,0,0} color:#black perspective:false;
 			 draw "red(1,0,0)" at:{world.shape.width,0,0} color:#red perspective:false;
 			 draw "green(0,1,0)" at:{0,world.shape.height,0} color:#green perspective:false;

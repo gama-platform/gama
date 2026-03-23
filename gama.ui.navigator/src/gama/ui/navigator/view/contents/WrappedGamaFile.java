@@ -3,7 +3,7 @@
  * WrappedGamaFile.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,19 +19,19 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.emf.common.util.URI;
 
-import gama.core.common.GamlFileExtension;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IMap;
-import gama.core.util.file.GamlFileInfo;
-import gama.core.util.file.IGamaFileMetaData;
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.ast.ISyntacticElement;
-import gama.gaml.descriptions.IExpressionDescription;
+import gama.annotations.constants.IKeyword;
+import gama.api.compilation.ast.ISyntacticElement;
+import gama.api.constants.GamlFileExtension;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.utils.files.IGamaFileMetaData;
 import gama.ui.navigator.view.NavigatorContentProvider;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
+import gaml.compiler.gaml.resource.GamlFileInfo;
 import one.util.streamex.StreamEx;
 
 /**
@@ -67,9 +67,9 @@ public class WrappedGamaFile extends WrappedFile {
 			final IMarker[] markers = getResource().findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO);
 			for (final IMarker marker : markers) {
 				final String s = marker.getAttribute("URI_KEY", "UNKNOWN");
-				final int severity = marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
+				final int severity1 = marker.getAttribute(IMarker.SEVERITY, IMarker.SEVERITY_INFO);
 				if (uriProblems == null) { uriProblems = GamaMapFactory.createUnordered(); }
-				uriProblems.put(s, severity);
+				uriProblems.put(s, severity1);
 			}
 		} catch (final CoreException ce) {}
 
@@ -198,15 +198,15 @@ public class WrappedGamaFile extends WrappedFile {
 
 		if (uri == null || uriProblems == null) return -1;
 		final String fragment = uri.toString();
-		final int[] severity = { -1 };
+		final int[] severity1 = { -1 };
 		uriProblems.forEachPair((s, arg1) -> {
 			if (s.startsWith(fragment)) {
-				severity[0] = arg1;
+				severity1[0] = arg1;
 				return false;
 			}
 			return true;
 		});
-		return severity[0];
+		return severity1[0];
 
 	}
 

@@ -66,7 +66,7 @@ experiment "Open me" type: gui {
 		}
 		
 		display "Image Full" type: 3d {
-			image image(geometries);
+			picture image(geometries);
 		}
 		
 		display "Images Small" type: 3d {

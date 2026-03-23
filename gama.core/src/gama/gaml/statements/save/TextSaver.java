@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * TextSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * TextSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -10,7 +10,6 @@
 package gama.gaml.statements.save;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
@@ -18,13 +17,13 @@ import java.util.Set;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 
-import gama.core.common.interfaces.ISerialisationConstants;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
+import gama.api.constants.ISerialisationConstants;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.files.BufferingUtils;
+import gama.api.utils.files.SaveOptions;
 
 /**
  * The Class TextSaver.
@@ -61,10 +60,8 @@ public class TextSaver extends AbstractSaver {
 		Charset ch = id == ISerialisationConstants.GAMA_AGENT_IDENTIFIER
 				|| id == ISerialisationConstants.GAMA_OBJECT_IDENTIFIER
 						? ISerialisationConstants.STRING_BYTE_ARRAY_CHARSET : StandardCharsets.UTF_8;
-		options.setCharSet(ch);
-		
-		try  {
-			GAMA.getBufferingController().askWriteFile(file.getAbsolutePath(), scope, toSave, options);
+		try {
+			BufferingUtils.getInstance().askWriteFile(file.getAbsolutePath(), scope, toSave, options.withCharset(ch));
 		} catch (final GamaRuntimeException e) {
 			throw e;
 		} catch (final Exception e) {

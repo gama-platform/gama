@@ -90,7 +90,7 @@ experiment intelligentTeam_vs_stupidTeam type:gui {
 	output {
 		display "soccer_field" type:2d  {
 			// display the field.
-			image "../images/soccer_field2.png";
+			picture "../images/soccer_field2.png";
 			// display the species with their correct aspect
 			species player_intelligentTeam aspect:player;
 			species player_stupidTeam aspect:player;
@@ -137,7 +137,7 @@ experiment intelligentTeam_vs_intelligentTeam type:gui {
 	output {
 		display "soccer_field"  type:2d{
 			// display the field.
-			image "../images/soccer_field2.png";
+			picture "../images/soccer_field2.png";
 			// display the species with their correct aspect
 			species player_intelligentTeam aspect:player;
 			species ball_sp aspect:ball;

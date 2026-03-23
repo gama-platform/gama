@@ -2,7 +2,7 @@
  *
  * Files.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -25,28 +25,28 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.compress.utils.IOUtils;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.FileUtils;
-import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.core.util.file.GamaFolderFile;
-import gama.core.util.file.IGamaFile;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.file.GamaFolderFile;
+import gama.api.types.file.IGamaFile;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.files.BufferingUtils;
+import gama.api.utils.files.FileUtils;
 
 /**
  * Written by drogoul Modified on 20 dec. 2010
@@ -70,7 +70,7 @@ public class Files {
 	 */
 	// @no_test
 	public static IGamaFile from(final IScope scope, final String s, final IContainer container) {
-		// WARNING Casting to Modifiable is not safe
+		// WARNING Casting to ToSet is not safe
 		// TODO: Add a method toModifiableVersion() to IContainer
 		final IType key = container == null ? Types.NO_TYPE : container.getGamlType().getKeyType();
 		final IType content = container == null ? Types.NO_TYPE : container.getGamlType().getContentType();
@@ -129,13 +129,22 @@ public class Files {
 
 		return f.exists() && !f.isDirectory();
 	}
-	
-	@operator(
-				value = "to_absolute_path",
-				can_be_const = true,
-				category = IOperatorCategory.FILE,
-				concept = { IConcept.FILE })
-	@doc(
+
+	/**
+	 * To absolute file.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param relativePath
+	 *            the relative path
+	 * @return the string
+	 */
+	@operator (
+			value = "to_absolute_path",
+			can_be_const = true,
+			category = IOperatorCategory.FILE,
+			concept = { IConcept.FILE })
+	@doc (
 			value = "Transforms a relative path into an absolute path. If the path is already absolute doesn't transform it.")
 	@no_test
 	public static String toAbsoluteFile(final IScope scope, final String relativePath) {
@@ -725,14 +734,7 @@ public class Files {
 					@example ("															// eventually creates the directory ../incl") },
 			see = { "folder", "file", "folder_exists" })
 	public static GamaFolderFile newFolder(final IScope scope, final String folder) throws GamaRuntimeException {
-		String theName = FileUtils.constructAbsoluteFilePath(scope, folder, false);
-
-		final File file = new File(theName);
-		if (file.exists() && !file.isDirectory()) throw GamaRuntimeException
-				.error("The folder " + folder + " can not overwrite a file with the same name", scope);
-		if (!file.exists()) { file.mkdirs(); }
-		return new GamaFolderFile(scope, folder);
-
+		return FileUtils.createFolder(scope, folder);
 	}
 
 	/**
@@ -757,10 +759,10 @@ public class Files {
 			examples = {
 					@example ("full_all_files(simulation);  // simulation is the current simulation, this can be important to differentiate in case of multi-simulation experiments") },
 			see = { "save" })
-	public static boolean flushAllFiles(final IScope scope, final SimulationAgent simulation)
+	public static boolean flushAllFiles(final IScope scope, final ISimulationAgent simulation)
 			throws GamaRuntimeException {
-		boolean success = GAMA.getBufferingController().flushSaveFilesInCycle(simulation);
-		success &= GAMA.getBufferingController().flushSaveFilesOfAgent(simulation);
+		boolean success = BufferingUtils.getInstance().flushSaveFilesInCycle(simulation);
+		success &= BufferingUtils.getInstance().flushSaveFilesOfAgent(simulation);
 		return success;
 	}
 
