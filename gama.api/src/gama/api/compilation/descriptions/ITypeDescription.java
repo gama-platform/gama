@@ -152,4 +152,9 @@ public interface ITypeDescription extends IDescription {
 	 */
 	default void copyJavaAdditions() {}
 
+	/**
+	 *
+	 */
+	void inheritFromParent();
+
 }

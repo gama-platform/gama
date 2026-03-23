@@ -530,6 +530,11 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 */
 	protected void addAction(final IActionDescription newAction) {
 		final String actionName = newAction.getName();
+		if (newAction.isAbstract() && !isAbstract()) {
+			set(Flag.IsAbstract);
+			this.info("Action '" + actionName + "' is defined as virtual. In consequence, " + getName()
+					+ " will be considered as abstract.", IGamlIssue.MISSING_ACTION);
+		}
 		final IActionDescription existing = getOwnActions().get(actionName);
 		if (existing != null) {
 			assertActionsAreCompatible(newAction, existing, existing.getOriginName());
@@ -665,7 +670,8 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	/**
 	 * Inherit from parent.
 	 */
-	protected void inheritFromParent() {
+	@Override
+	public void inheritFromParent() {
 		// Takes care of invalid species (see Issue 711)
 		if (parent != null && parent != this) {
 			inheritActionsFrom(parent);
@@ -682,6 +688,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	protected void inheritActionsFrom(final ITypeDescription p) {
 		if (p == null || p == this) return;
 		for (final IActionDescription inheritedAction : p.getActions()) {
+			final boolean actionIsAbstract = inheritedAction.isAbstract();
 			final String actionName = inheritedAction.getName();
 			final IActionDescription userDeclared = getOwnActions().get(actionName);
 			if (userDeclared != null) {
@@ -705,11 +712,15 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 								+ inheritedAction.getOriginName(), IGamlIssue.REDEFINES, IKeyword.NAME);
 					}
 				}
-			} else if (inheritedAction.isAbstract()) {
-				this.error(
-						"Abstract action '" + actionName + "', inherited from "
-								+ inheritedAction.getEnclosingDescription().getName() + ", should be redefined.",
-						IGamlIssue.MISSING_ACTION, NAME);
+			} else if (actionIsAbstract) {
+				if (p.isBuiltIn()) {
+					this.error("Abstract action '" + actionName + "', inherited from " + p.getName()
+							+ ", should be redefined.", IGamlIssue.MISSING_ACTION, NAME);
+				} else {
+					set(Flag.IsAbstract);
+					this.info("Action '" + actionName + "' is inherited as virtual. In consequence, " + getName()
+							+ " will be considered as abstract.", IGamlIssue.MISSING_ACTION);
+				}
 				return;
 
 			}
@@ -912,21 +923,6 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 		if (sd == null || sd == this) return false;
 		if (sd.equals(p)) return true;
 		return sd.hasParent(p);
-	}
-
-	@Override
-	protected boolean validateChildren() {
-		// We try to issue information about the state of the species: at first,
-		// abstract.
-
-		for (final IActionDescription a : getActions()) {
-			if (a.isAbstract()) {
-				this.info("Action '" + a.getName() + "' is defined or inherited as virtual. In consequence, "
-						+ getName() + " will be considered as abstract.", IGamlIssue.MISSING_ACTION);
-			}
-		}
-
-		return super.validateChildren();
 	}
 
 	@Override

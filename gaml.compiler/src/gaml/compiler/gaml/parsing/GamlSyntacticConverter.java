@@ -68,6 +68,7 @@ import gama.annotations.constants.IKeyword;
 import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.ast.ISyntacticElement;
+import gama.api.compilation.ast.ISyntacticFactory;
 import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Facets;
@@ -211,7 +212,7 @@ public class GamlSyntacticConverter {
 		switch (root) {
 			case StandaloneBlock block -> {
 				final SyntacticModelElement elt = FACTORY.createSyntheticModel(root);
-				convertBlock(elt, block.getBlock());
+				convertBlock(ISyntacticFactory.SYNTHETIC_MODEL, elt, block.getBlock());
 				return elt;
 			}
 			case StandaloneExperiment he -> {
@@ -401,7 +402,8 @@ public class GamlSyntacticConverter {
 			processExperiment(elt);
 		} else if (stm instanceof S_Equations seq) { convStatements(elt, EGAML.getEquationsOf(seq)); }
 		// We convert the block of statements (if any)
-		if (!IKeyword.PARAMETER.equals(keyword)) { convertBlock(elt, stm.getBlock()); }
+
+		if (!IKeyword.PARAMETER.equals(keyword)) { convertBlock(keyword, elt, stm.getBlock()); }
 		return elt;
 	}
 
@@ -485,7 +487,7 @@ public class GamlSyntacticConverter {
 		if (b != null) {
 			final ISyntacticElement blockElt = FACTORY.create(ACTION,
 					new Facets(NAME, SYNTHETIC + syntheticActionCounter.getAndIncrement()), true);
-			convertBlock(blockElt, b);
+			convertBlock(ACTION, blockElt, b);
 			IExpressionDescription fexpr = createBlockExpression(blockElt);
 			addFacet(elt, IKeyword.ON_CHANGE, fexpr);
 		}
@@ -527,7 +529,10 @@ public class GamlSyntacticConverter {
 	 * @param block
 	 *            the block
 	 */
-	public void convertBlock(final ISyntacticElement elt, final Block block) {
+	public void convertBlock(final String keyword, final ISyntacticElement elt, final Block block) {
+		if (ACTION.equals(keyword) && block == null) {
+			elt.setFacet(IKeyword.VIRTUAL, GAML.getExpressionDescriptionFactory().getTrue());
+		}
 		if (block != null) { convStatements(elt, EGAML.getStatementsOf(block)); }
 	}
 
@@ -935,7 +940,7 @@ public class GamlSyntacticConverter {
 				final Block b = facet.getBlock();
 				final ISyntacticElement elt = FACTORY.create(ACTION,
 						new Facets(NAME, SYNTHETIC + syntheticActionCounter.getAndIncrement()), true);
-				convertBlock(elt, b);
+				convertBlock(ACTION, elt, b);
 				return createBlockExpression(elt);
 			}
 			if (expr != null) return label ? convertToLabel(expr, EGAML.getKeyOf(expr)) : convExpr(expr);

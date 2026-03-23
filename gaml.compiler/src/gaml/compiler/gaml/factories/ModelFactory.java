@@ -311,6 +311,7 @@ public class ModelFactory implements IModelFactory {
 			sd.inheritFromParent();
 			if (sd.isExperiment() && !sd.initializeMirrorsAndSubSpecies()) return null;
 		}
+		for (final IClassDescription cd : getClassesInHierarchicalOrder(model)) { cd.inheritFromParent(); }
 
 		// Issue #1708 (put before the finalization)
 		if (model.hasFacet(SCHEDULES) || model.hasFacet(FREQUENCY)) { createSchedulerSpecies(model); }
@@ -637,9 +638,7 @@ public class ModelFactory implements IModelFactory {
 				hierarchy.addVertex(sd);
 				try {
 					hierarchy.addEdge(sd, desc);
-				} catch (
-				/** The e. */
-				IllegalArgumentException e) {
+				} catch (IllegalArgumentException e) {
 					// denotes the presence of a cycle in the hierarchy
 					desc.error("The hierarchy of " + desc.getName() + " is inconsistent.", IGamlIssue.WRONG_PARENT);
 					return false;
@@ -648,6 +647,50 @@ public class ModelFactory implements IModelFactory {
 			return true;
 		};
 		model.visitAllSpecies(hierarchyBuilder);
+		return () -> hierarchy.iterator();
+	}
+
+	/**
+	 * Returns classes in hierarchical order, from parent to child, using topological sorting.
+	 *
+	 * <p>
+	 * This method constructs a directed acyclic graph (DAG) representing the class hierarchy and returns an iterator
+	 * that traverses classes in dependency order (parents before children). This ordering ensures that parent classes
+	 * are fully processed before their children.
+	 * </p>
+	 *
+	 * <p>
+	 * If a cycle is detected in the hierarchy, an error is reported and the affected species is excluded from the
+	 * ordering.
+	 * </p>
+	 *
+	 * @param model
+	 *            the model containing the species hierarchy
+	 * @return an iterable of species descriptions in topological (hierarchical) order
+	 */
+	private Iterable<IClassDescription> getClassesInHierarchicalOrder(final IModelDescription model) {
+		/** The hierarchy. */
+		final DirectedAcyclicGraph<IClassDescription, Object> hierarchy = new DirectedAcyclicGraph<>(Object.class);
+
+		/** The hierarchy builder. */
+		final DescriptionVisitor<IClassDescription> hierarchyBuilder = desc -> {
+			if (desc instanceof IModelDescription) return true;
+			final IClassDescription cd = desc.getParent();
+			if (cd == null || cd == desc) return false;
+			hierarchy.addVertex(desc);
+			if (!cd.isBuiltIn()) {
+				hierarchy.addVertex(cd);
+				try {
+					hierarchy.addEdge(cd, desc);
+				} catch (IllegalArgumentException e) {
+					// denotes the presence of a cycle in the hierarchy
+					desc.error("The hierarchy of " + desc.getName() + " is inconsistent.", IGamlIssue.WRONG_PARENT);
+					return false;
+				}
+			}
+			return true;
+		};
+		model.visitAllClasses(hierarchyBuilder);
 		return () -> hierarchy.iterator();
 	}
 

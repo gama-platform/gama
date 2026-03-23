@@ -43,6 +43,7 @@ public interface ISpeciesDescription extends IClassDescription {
 	/**
 	 * @return
 	 */
+	@Override
 	boolean isModel();
 
 	/**
@@ -101,6 +102,7 @@ public interface ISpeciesDescription extends IClassDescription {
 	/**
 	 * @return
 	 */
+	@Override
 	boolean isExperiment();
 
 	/**
@@ -139,11 +141,6 @@ public interface ISpeciesDescription extends IClassDescription {
 	 * @return
 	 */
 	ISpeciesDescription getMacroSpecies();
-
-	/**
-	 *
-	 */
-	void inheritFromParent();
 
 	/**
 	 * @param varName

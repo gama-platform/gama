@@ -1017,7 +1017,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			return null;
 		}
 		final List<Expression> args = EGaml.getInstance().getExprsOf(object.getRight());
-		if (allExpressionsAreParameters(args)) return tryConstructor(t.getSpecies(), args);
+		if (allExpressionsAreParameters(args)) return tryConstructor(object, t.getSpecies(), args);
 		return switch (args.size()) {
 			case 1 -> {
 				IExpression expr = compile(args.get(0));
@@ -1037,7 +1037,12 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 * @param args
 	 * @return
 	 */
-	private IExpression tryConstructor(final ITypeDescription species, final List<Expression> args) {
+	private IExpression tryConstructor(final Function object, final ITypeDescription species, final List<Expression> args) {
+		if (species.isAbstract()) {
+			context.getContext().error("Cannot instantiate abstract type: " + species.getName(), IGamlIssue.GENERAL,
+					object);
+			return null;
+		}
 		return new Constructor(species, parseArgumentsForConstructor(species, args));
 	}
 
