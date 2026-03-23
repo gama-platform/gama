@@ -35,10 +35,10 @@ public class PaletteBasedMeshColorProvider implements IMeshColorProvider {
 		components = new double[size * 4];
 		for (var i = 0; i < size; i++) {
 			var c = palette.get(i);
-			components[i * 3] = c.red() / 255d;
-			components[i * 3 + 1] = c.green() / 255d;
-			components[i * 3 + 2] = c.blue() / 255d;
-			components[i * 3 + 3] = c.alpha() / 255d;
+			components[i * 4] = c.red() / 255d;
+			components[i * 4 + 1] = c.green() / 255d;
+			components[i * 4 + 2] = c.blue() / 255d;
+			components[i * 4 + 3] = c.alpha() / 255d;
 		}
 	}
 
@@ -52,19 +52,19 @@ public class PaletteBasedMeshColorProvider implements IMeshColorProvider {
 			result[2] = components[2];
 			result[3] = components[3];
 		} else if (z >= max) { // Can happen if multiple threads write and read the field !
-			result[0] = components[3 * (size - 1)];
-			result[1] = components[3 * (size - 1) + 1];
-			result[2] = components[3 * (size - 1) + 2];
-			result[3] = components[3 * (size - 1) + 3];
+			result[0] = components[4 * (size - 1)];
+			result[1] = components[4 * (size - 1) + 1];
+			result[2] = components[4 * (size - 1) + 2];
+			result[3] = components[4 * (size - 1) + 3];
 		} else {
 			double intervalSize = (max - min) / (size - 1);
 			double intervald = (z - min) / intervalSize;
 			int intervali = (int) intervald;
 			double r = intervald - intervali, ir = 1d - r;
-			result[0] = components[intervali * 3] * ir + components[(intervali + 1) * 3] * r;
-			result[1] = components[intervali * 3 + 1] * ir + components[(intervali + 1) * 3 + 1] * r;
-			result[2] = components[intervali * 3 + 2] * ir + components[(intervali + 1) * 3 + 2] * r;
-			result[3] = 1d; // Math.max(components[intervali * 3 + 3], components[(intervali + 1) * 3 + 3]);
+			result[0] = components[intervali * 4] * ir + components[(intervali + 1) * 4] * r;
+			result[1] = components[intervali * 4 + 1] * ir + components[(intervali + 1) * 4 + 1] * r;
+			result[2] = components[intervali * 4 + 2] * ir + components[(intervali + 1) * 4 + 2] * r;
+			result[3] = components[intervali * 4 + 3] * ir + components[(intervali + 1) * 4 + 3] * r;
 		}
 		return result;
 	}

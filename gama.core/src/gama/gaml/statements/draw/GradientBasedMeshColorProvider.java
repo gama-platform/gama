@@ -57,7 +57,13 @@ public class GradientBasedMeshColorProvider implements IMeshColorProvider {
 	public double[] getColor(final int index, final double z, final double min, final double max, final double[] rgb) {
 		double[] result = rgb;
 		if (result == null) { result = newArray(); }
-		if (z <= min || max <= min) return components;
+		if (z <= min || max <= min) {
+			result[0] = components[0];
+			result[1] = components[1];
+			result[2] = components[2];
+			result[3] = components[3];
+			return result;
+		}
 		double position = (z - min) / (max - min);
 		// DEBUG.OUT("Position " + position + " corresponds to slot ", false);
 		for (int s = 0; s < size - 1; s++) {
