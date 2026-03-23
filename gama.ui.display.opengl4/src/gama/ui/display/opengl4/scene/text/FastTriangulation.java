@@ -1,7 +1,7 @@
 /**
  * 
  */
-package gama.ui.display.opengl4;
+package gama.ui.display.opengl4.scene.text;
 
 /**
  * Pure-Java 2-D ear-clipping triangulator for simple polygons with holes.

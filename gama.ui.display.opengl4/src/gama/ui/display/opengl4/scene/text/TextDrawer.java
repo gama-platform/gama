@@ -51,7 +51,6 @@ import gama.api.utils.geometry.AxisAngle;
 import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.ICoordinates;
 import gama.dev.DEBUG;
-import gama.ui.display.opengl4.FastTriangulation;
 import gama.ui.display.opengl4.OpenGL;
 import gama.ui.display.opengl4.scene.ObjectDrawer;
 import gama.ui.shared.utils.DPIHelper;

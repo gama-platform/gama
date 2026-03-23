@@ -28,6 +28,12 @@ import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.texture.Texture;
 
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.ICoordinates.VertexVisitor;
+import gama.ui.display.opengl.ITesselator;
+import jogamp.opengl.glu.tessellator.GLUtessellatorImpl;
+
 import gama.api.types.color.GamaColorFactory;
 import gama.api.types.color.IColor;
 import gama.api.types.geometry.GamaPointFactory;
@@ -65,9 +71,11 @@ import gama.ui.display.opengl4.scene.text.TextDrawer;
 import gama.ui.shared.utils.DPIHelper;
 
 /**
- * A class that represents an intermediate state between the rendering and the opengl state.
+ * A class that represents an intermediate state between the rendering and the opengl state. Implements
+ * {@link ITesselator} so that the GLU tessellator callbacks ({@code begin}, {@code vertex}, {@code end}) are wired
+ * directly to the VBO-based drawing path used by this core-profile renderer.
  */
-public class OpenGL extends AbstractRendererHelper {
+public class OpenGL extends AbstractRendererHelper implements ITesselator {
 
 	static {
 		DEBUG.OFF();
@@ -225,6 +233,19 @@ public class OpenGL extends AbstractRendererHelper {
 	/** The object is wireframe. */
 	protected volatile boolean objectIsWireframe;
 
+	/**
+	 * The GLU tessellator object used to triangulate concave polygons and polygons with holes. Wired to the
+	 * {@link ITesselator} callbacks implemented by this class so that tessellated vertices are written directly into the
+	 * VBO float buffers rather than via deprecated {@code glVertex} calls.
+	 */
+	final GLUtessellatorImpl tobj = (GLUtessellatorImpl) GLU.gluNewTess();
+
+	/**
+	 * Visitor lambda that feeds each coordinate from an {@link gama.api.utils.geometry.ICoordinates} ring into the GLU
+	 * tessellator via {@code gluTessVertex}.
+	 */
+	final VertexVisitor glTesselatorDrawer;
+
 	/** The ratios. */
 	// World
 	final IPoint ratios = GamaPointFactory.create();
@@ -261,6 +282,11 @@ public class OpenGL extends AbstractRendererHelper {
 		super(renderer);
 		glu = new GLU();
 		geometryCache = new GeometryCache(renderer);
+		glTesselatorDrawer = (final double[] ordinates) -> { tobj.gluTessVertex(ordinates, 0, ordinates); };
+		GLU.gluTessCallback(tobj, GLU.GLU_TESS_VERTEX, this);
+		GLU.gluTessCallback(tobj, GLU.GLU_TESS_BEGIN, this);
+		GLU.gluTessCallback(tobj, GLU.GLU_TESS_END, this);
+		GLU.gluTessProperty(tobj, GLU.GLU_TESS_TOLERANCE, 0.1);
 		TextDrawer td = new TextDrawer(this);
 		var gd = new GeometryDrawer(this);
 		var rd = new ResourceDrawer(this);
@@ -984,81 +1010,41 @@ public class OpenGL extends AbstractRendererHelper {
 	}
 
 	/**
-	 * Triangulates an arbitrary {@link Polygon} (with optional holes) using the {@link FastTriangulation} tessellator
-	 * and emits the resulting triangles via {@link #beginDrawing}/{@link #outputVertex}/{@link #endDrawing}.
+	 * Triangulates an arbitrary {@link Polygon} (with optional holes) using the GLU tessellator and emits the resulting
+	 * triangles via the {@link ITesselator} callbacks ({@link #beginDrawing}/{@link #drawVertex}/{@link #endDrawing}).
 	 *
 	 * <p>
-	 * Replaces the former GLU {@code gluTessBeginPolygon} / {@code gluTessEndPolygon} path. The outer ring and each
-	 * inner ring (hole) are collected as flat {@code double[]} coordinate arrays (x,y alternating) and passed to
-	 * {@link FastTriangulation#triangulate(double[], int[][], int)}. The resulting triangle-index list is used to look
-	 * up vertices from the outer ring and hole rings.
+	 * This mirrors the implementation in {@code gama.ui.display.opengl.OpenGL} and replaces the former
+	 * {@link FastTriangulation} pure-Java ear-clipping path, which did not handle complex concave polygons reliably.
+	 * The GLU tessellator is a robust, well-tested C-backed implementation that correctly handles concave contours,
+	 * self-intersections, and multiple holes.
+	 * </p>
+	 *
+	 * <p>
+	 * The tessellator fires {@code begin}/{@code vertex}/{@code end} callbacks (defined by {@link ITesselator}) which
+	 * are dispatched to {@link #beginDrawing(int)}, {@link #drawVertex(int, double, double, double)}, and
+	 * {@link #endDrawing()} respectively — writing directly into the VBO float buffers used by this renderer.
 	 * </p>
 	 *
 	 * @param p
-	 *            the JTS {@link Polygon} (provides the hole rings)
+	 *            the JTS {@link Polygon} (provides the hole rings via {@link Polygon#getInteriorRingN(int)})
 	 * @param yNegatedVertices
 	 *            the outer ring coordinates, already Y-negated and in clockwise order
 	 * @param clockwise
 	 *            whether {@code yNegatedVertices} is in clockwise order
 	 */
 	public void drawPolygon(final Polygon p, final ICoordinates yNegatedVertices, final boolean clockwise) {
-		// --- collect outer ring as flat (x,y) array ---
-		final int outerN = yNegatedVertices.size();
-		final double[] outer = new double[outerN * 2];
-		final double[] zValues = new double[outerN];
-		yNegatedVertices.visit((id, x, y, z) -> {
-			outer[id * 2] = x;
-			outer[id * 2 + 1] = y;
-			zValues[id] = z;
-		}, outerN, clockwise);
-
-		// --- collect hole rings ---
-		final int holeCount = p.getNumInteriorRing();
-		final double[][] holeCoords = new double[holeCount][];
-		final double[][] holeZ = new double[holeCount][];
-		for (int h = 0; h < holeCount; h++) {
-			final org.locationtech.jts.geom.Coordinate[] hc = p.getInteriorRingN(h).getCoordinates();
-			holeCoords[h] = new double[hc.length * 2];
-			holeZ[h] = new double[hc.length];
-			for (int i = 0; i < hc.length; i++) {
-				holeCoords[h][i * 2] = hc[i].getX();
-				holeCoords[h][i * 2 + 1] = -hc[i].getY(); // Y-negate to match outer ring
-				holeZ[h][i] = hc[i].getZ();
-			}
-		}
-
-		// --- triangulate ---
-		final int[] indices = FastTriangulation.triangulate(outer, holeCoords, outerN);
-		if (indices == null || indices.length == 0) return;
-
-		// Build a combined vertex lookup: indices 0..outerN-1 → outer ring, then hole rings
-		int totalVerts = outerN;
-		for (final double[] hc : holeCoords) { if (hc != null) { totalVerts += hc.length / 2; } }
-		final double[] allX = new double[totalVerts];
-		final double[] allY = new double[totalVerts];
-		final double[] allZ = new double[totalVerts];
-		for (int i = 0; i < outerN; i++) {
-			allX[i] = outer[i * 2];
-			allY[i] = outer[i * 2 + 1];
-			allZ[i] = zValues[i];
-		}
-		int off = outerN;
-		for (int h = 0; h < holeCount; h++) {
-			final int hn = holeCoords[h] == null ? 0 : holeCoords[h].length / 2;
-			for (int i = 0; i < hn; i++) {
-				allX[off + i] = holeCoords[h][i * 2];
-				allY[off + i] = holeCoords[h][i * 2 + 1];
-				allZ[off + i] = holeZ[h][i];
-			}
-			off += hn;
-		}
-
-		// Compute face normal once from the outer ring
 		setNormal(yNegatedVertices, clockwise);
-
-		beginDrawing(GL.GL_TRIANGLES);
-		for (final int idx : indices) { outputVertex(allX[idx], allY[idx], allZ[idx]); }
-		endDrawing();
+		GLU.gluTessBeginPolygon(tobj, null);
+		GLU.gluTessBeginContour(tobj);
+		yNegatedVertices.visitClockwise(glTesselatorDrawer);
+		GLU.gluTessEndContour(tobj);
+		GeometryUtils.applyToInnerGeometries(p, geom -> {
+			GLU.gluTessBeginContour(tobj);
+			GamaCoordinateSequenceFactory.pointsOf(geom).visitYNegatedCounterClockwise(glTesselatorDrawer);
+			GLU.gluTessEndContour(tobj);
+		});
+		GLU.gluTessEndPolygon(tobj);
 	}
 
 	/**
