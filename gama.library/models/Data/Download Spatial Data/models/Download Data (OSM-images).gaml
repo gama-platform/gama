@@ -41,7 +41,9 @@ global {
 	//type of feature considered
 	map<string, list> osm_data_to_generate <- ["building"::[], "shop"::[], "historic"::[], "amenity"::[], "sport"::[], "military"::[], "leisure"::[], "office"::[],  "highway"::[], "water"::[], "natural"::[], "landuse"::[]];
 	
-
+	// Threshold for filtering OSM attributes: keep only attributes present in at least ratio_attribute of entities
+	float ratio_attribute <- 0.01;
+	
 	// --------------- google image parameters ------------------------------
 	//path to an existing google map image - if not speciefied, GAMA can try to download the correct image - WARNING: can be blocked by google
 	string googlemap_path <-  "../includes/googlemap.png";
@@ -353,48 +355,25 @@ global {
     }
 	
 	
+	list<string> attribute_filtering(list<OSM_agent> ags) {
+		list<string> to_keep;
+	 	list<string> atts <-  remove_duplicates(ags accumulate each.shape.attributes.keys);
+	 	loop a over: atts {
+	 		float stat <- (ags count (each.shape.attributes[a] != nil)) / length(ags) ;
+	 		if(stat > ratio_attribute){
+	 			to_keep << a;
+	 		} 
+	 	}
+	 	return to_keep;
+	}
 	action save_data(list<OSM_agent> ags, string type, string geom_type) {
 		if (not empty(ags)) {
-	 		list<string> atts <-  remove_duplicates(ags accumulate each.shape.attributes.keys);
-	 		save (ags collect each.shape) format: "shp" to: exporting_path + type + "_" + geom_type+".shp" attributes: atts;
+	 		save (ags collect each.shape) format: "shp" to: exporting_path + type + "_" + geom_type+".shp" attributes: attribute_filtering(ags);
 	 	}
 	}
 	
-	action save_image (string rest_link) {
-		write sample(rest_link);
-		matrix mat <- (image_file(rest_link).contents);
-		write "Satellite image retrieved";
-		save mat to: exporting_path +"satellite.png"; 
-	}
-	
-	action save_meta_data (string rest_link) {
-		list<string> v <- string(json_file(rest_link).contents) split_with ",";
-		write "Satellite image retrieved";
-		int id <- 0;
-		loop i from: 0 to: length(v) - 1 {
-			if ("bbox" in v[i]) { 
-				id <- i;
-				break;
-			}
-		} 
-		float long_min <- float(v[id] replace ("'bbox'::[",""));
-		float long_max <- float(v[id+2] replace (" ",""));
-		float lat_min <- float(v[id + 1] replace (" ",""));
-		float lat_max <- float(v[id +3] replace ("]",""));
-		point pt1 <- CRS_transform({lat_min,long_max},"EPSG:4326", "EPSG:3857").location ;
-		point pt2 <- CRS_transform({lat_max,long_min},"EPSG:4326","EPSG:3857").location;
-		float width <- abs(pt1.x - pt2.x)/1500;
-		float height <- (pt2.y - pt1.y)/1500;
-			
-		string info <- ""  + width +"\n0.0\n0.0\n"+height+"\n"+min(pt1.x,pt2.x)+"\n"+(height < 0 ? max(pt1.y,pt2.y) : min(pt1.y,pt2.y));
-	
-		save info to: exporting_path +"satellite.pgw" format:"text";
-	}
-	
-	
 
-
-//action for vectorizing an existing google image
+   //action for vectorizing an existing google image
 	action load_google_image {
 		image_file im <- image_file(googlemap_path);
 		ask cell_google {		
