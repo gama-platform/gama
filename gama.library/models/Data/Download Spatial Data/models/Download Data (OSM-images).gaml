@@ -27,11 +27,6 @@ global {
 	//if true, GAMA is going to use google map image to create the building file
 	bool use_google_map_data <- true;
 	
-	//if true, GAMA is going to download the background satellite image (Bing image).
-	bool do_load_satellite_image <- true;
-	
-	//image to display as background if there is no satellite image
-	string default_background_image <- "../includes/white.png";
 	
 	/* ------------------------------------------------------------------ 
 	 * 
@@ -146,9 +141,7 @@ global {
 		 		do save_data(polys,type,"polygon");
 		 	}
 		}	 	
-	 	if (do_load_satellite_image) {
-	 		do load_satellite_image;
-	 	}
+	 	
 	 	//load google map image (if necessary)
 	 	if (use_google_map_data) {
 	 		//if the image already exists, just load this image and vectorize it
@@ -368,6 +361,7 @@ global {
 	}
 	
 	action save_image (string rest_link) {
+		write sample(rest_link);
 		matrix mat <- (image_file(rest_link).contents);
 		write "Satellite image retrieved";
 		save mat to: exporting_path +"satellite.png"; 
@@ -397,26 +391,7 @@ global {
 		save info to: exporting_path +"satellite.pgw" format:"text";
 	}
 	
-	action load_satellite_image
-	{ 
-		point top_left <- CRS_transform({0,0}, "EPSG:4326").location;
-		point bottom_right <- CRS_transform({shape.width, shape.height}, "EPSG:4326").location;
-		int size_x <- 1500;
-		int size_y <- 1500;
-		
-		string rest_link<- "https://dev.virtualearth.net/REST/v1/Imagery/Map/Aerial/?mapArea="+bottom_right.y+"," + top_left.x + ","+ top_left.y + "," + bottom_right.x + "&mapSize="+int(size_x)+","+int(size_y)+ "&key=AvZ5t7w-HChgI2LOFoy_UF4cf77ypi2ctGYxCgWOLGFwMGIGrsiDpCDCjliUliln" ;
-		do save_image(rest_link);
-		float ct <- gama.machine_time + 2000;
-		loop while: gama.machine_time < ct {
-			
-		}
-		string rest_link2<- "https://dev.virtualearth.net/REST/v1/Imagery/Map/Aerial/?mapArea="+bottom_right.y+"," + top_left.x + ","+ top_left.y + "," + bottom_right.x + "&mmd=1&mapSize="+int(size_x)+","+int(size_y)+ "&key=AvZ5t7w-HChgI2LOFoy_UF4cf77ypi2ctGYxCgWOLGFwMGIGrsiDpCDCjliUliln" ;
-		do save_meta_data(rest_link2);
-		
-		write "Satellite image saved with the right meta-data";
-		 
-		 
-	}
+	
 
 
 //action for vectorizing an existing google image
@@ -484,7 +459,6 @@ experiment downloadGISdata type: gui autorun: true{
 	}
 	output {
 		display map type: 3d axes: false{
-			image file_exists(exporting_path + "satellite.png")? (exporting_path + "satellite.png") : default_background_image  transparency: 0.2 refresh: true;
 			species OSM_agent;
 			graphics "google map building" {
 				loop bd over: building_google {
