@@ -85,7 +85,9 @@ public abstract class DescriptionStateManager extends DescriptionErrorManager {
 		 * of the description. Type inference is useful when the type of the description is not known at the time of
 		 * parsing, but it should not be used when the type is known. See #385
 		 */
-		NoTypeInference
+		NoTypeInference,
+		/** The is void. */
+		isVoid
 	}
 
 	/**
@@ -159,6 +161,7 @@ public abstract class DescriptionStateManager extends DescriptionErrorManager {
 	 *
 	 * @return true if this is a built-in symbol, false otherwise
 	 */
+	@Override
 	public boolean isBuiltIn() { return state.contains(Flag.IsBuiltIn); }
 
 	/**
@@ -173,6 +176,7 @@ public abstract class DescriptionStateManager extends DescriptionErrorManager {
 	 *
 	 * @return true, if is class
 	 */
+	@Override
 	public boolean isClass() { return false; }
 
 	/**
@@ -180,6 +184,7 @@ public abstract class DescriptionStateManager extends DescriptionErrorManager {
 	 *
 	 * @return true, if is species
 	 */
+	@Override
 	public boolean isSpecies() { return false; }
 
 	/**
@@ -187,6 +192,7 @@ public abstract class DescriptionStateManager extends DescriptionErrorManager {
 	 *
 	 * @return true, if is experiment
 	 */
+	@Override
 	public boolean isExperiment() { return false; }
 
 	/**
@@ -194,6 +200,7 @@ public abstract class DescriptionStateManager extends DescriptionErrorManager {
 	 *
 	 * @return true, if is model
 	 */
+	@Override
 	public boolean isModel() { return false; }
 
 	/**
@@ -215,6 +222,7 @@ public abstract class DescriptionStateManager extends DescriptionErrorManager {
 	 *
 	 * @return true if this description is abstract, false otherwise
 	 */
+	@Override
 	public boolean isAbstract() { return state.contains(Flag.IsAbstract); }
 
 	/**
@@ -356,11 +364,19 @@ public abstract class DescriptionStateManager extends DescriptionErrorManager {
 	public boolean isCreate() { return state.contains(Flag.IsCreate); }
 
 	/**
+	 * Checks if the return type of this description is void, i.e. the absence of return value.
+	 *
+	 * @return true, if is void
+	 */
+	public boolean isVoid() { return state.contains(Flag.isVoid); }
+
+	/**
 	 * Checks if this description represents an action invocation (e.g., a "do" statement). Default implementation
 	 * returns false; subclasses may override.
 	 *
 	 * @return true if this is an invocation, false otherwise
 	 */
+	@Override
 	public boolean isInvocation() { return false; }
 
 	/**

@@ -33,12 +33,12 @@ import gama.api.runtime.scope.IScope;
 
 /**
  * Implementation of GAML action statements.
- * 
+ *
  * <p>
  * Actions are reusable, parameterized procedures that can be defined in species, models, or experiments. They function
  * similarly to methods in object-oriented programming, accepting parameters and optionally returning values.
  * </p>
- * 
+ *
  * <h2>Features</h2>
  * <ul>
  * <li><b>Parameters:</b> Actions can accept typed parameters with optional default values</li>
@@ -47,7 +47,7 @@ import gama.api.runtime.scope.IScope;
  * <li><b>Inheritance:</b> Actions can be overridden in child species</li>
  * <li><b>Virtual Actions:</b> Abstract actions that must be implemented by child species</li>
  * </ul>
- * 
+ *
  * <h2>Declaration Syntax</h2>
  *
  * <pre>
@@ -56,37 +56,37 @@ import gama.api.runtime.scope.IScope;
  * action simple_action {
  *     write "Executing simple action";
  * }
- * 
+ *
  * // Action with parameters
  * action move_to(point target, float speed) {
  *     location <- location + (target - location) * speed;
  * }
- * 
+ *
  * // Action with return value
  * float distance_to(agent other) {
  *     return self distance_to other;
  * }
- * 
+ *
  * // Virtual action (must be implemented by subclasses)
  * int virtual calculate_fitness;
  * }
  * </pre>
- * 
+ *
  * <h2>Invocation</h2>
  *
  * <pre>
  * {@code
  * // Call without parameters
  * do simple_action;
- * 
+ *
  * // Call with parameters
  * do move_to(target: my_target, speed: 0.5);
- * 
+ *
  * // Call with return value
  * float dist <- distance_to(other_agent);
  * }
  * </pre>
- * 
+ *
  * <h2>Argument Handling</h2>
  * <p>
  * The action maintains two sets of arguments:
@@ -98,7 +98,7 @@ import gama.api.runtime.scope.IScope;
  * <p>
  * Runtime arguments are complemented with formal arguments to fill in any missing values from defaults.
  * </p>
- * 
+ *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
  * @since GAMA 1.0
  * @see AbstractStatementSequenceWithArgs
@@ -142,7 +142,13 @@ import gama.api.runtime.scope.IScope;
 						name = IKeyword.VIRTUAL,
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("whether the action is virtual (defined without a set of instructions) (false by default)")), },
+						doc = @doc ("true if the action is virtual (defined without a set of instructions) (false by default)")),
+				@facet (
+						name = IKeyword.VOID,
+						type = IType.BOOL,
+						optional = true,
+						internal = true,
+						doc = @doc ("true if the action is void (does not return a value) (false by default)")), },
 		omissible = IKeyword.NAME)
 @doc (
 		value = "Allows to define in a species, model or experiment a new action that can be called elsewhere.",
@@ -219,7 +225,7 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 
 	/**
 	 * Custom serializer for action statements.
-	 * 
+	 *
 	 * <p>
 	 * This serializer generates proper GAML syntax for actions, including the return type as the keyword (instead of
 	 * 'action') when a return type is specified.
@@ -258,7 +264,7 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 
 	/**
 	 * Constructs a new action statement.
-	 * 
+	 *
 	 * <p>
 	 * Initializes the action with its description and extracts the action name from the NAME facet.
 	 * </p>
@@ -274,7 +280,7 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 
 	/**
 	 * Exits the action's scope and clears the return status.
-	 * 
+	 *
 	 * <p>
 	 * Actions always clear the action-halted status to ensure return statements don't affect outer scopes.
 	 * </p>
@@ -291,7 +297,7 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 
 	/**
 	 * Sets the runtime argument values, complementing them with formal arguments.
-	 * 
+	 *
 	 * <p>
 	 * This method fills in any missing runtime arguments with values from the formal argument definitions (including
 	 * default values).
@@ -310,7 +316,7 @@ public class ActionStatement extends AbstractStatementSequenceWithArgs implement
 
 	/**
 	 * Sets the formal parameter declarations for this action.
-	 * 
+	 *
 	 * <p>
 	 * Formal arguments define the parameters this action accepts, including their names, types, and default values.
 	 * </p>

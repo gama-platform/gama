@@ -13,7 +13,7 @@ global
 
 experiment Simple type: gui
 {
-	list<Fly> get_flies{
+	list<Fly> get_flies(){
 		return list(Fly);
 	}
 	

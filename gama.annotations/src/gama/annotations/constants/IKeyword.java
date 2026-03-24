@@ -1162,6 +1162,9 @@ public interface IKeyword {
 	/** The visible. */
 	String VISIBLE = "visible";
 
+	/** The void. */
+	String VOID = "void";
+
 	/** The warning. */
 	String WARN = "warn";
 

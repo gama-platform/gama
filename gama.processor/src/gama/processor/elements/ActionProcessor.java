@@ -118,6 +118,7 @@ public class ActionProcessor extends ElementProcessor<action> {
 		final String clazzObject = toClassObject(clazz);
 		final String retObject = toClassObject(ret);
 		final boolean isVoid = "void".equals(ret);
+		final boolean isVirtual = action.virtual();
 
 		sb.append(in).append("_action(");
 		sb.append("new " + rawNameOf("gama.api.additions.GamaHelper") + "(").append(toJavaString(actionName))
@@ -125,10 +126,13 @@ public class ActionProcessor extends ElementProcessor<action> {
 				.append("((").append(clazz).append(") t).").append(method).append("(s)")
 				.append(isVoid ? ";return null;})," : "),");
 		sb.append("desc(PRIM,");
-		buildArgs(e, action.args(), sb).append(",NAME,").append(toJavaString(actionName)).append(",TYPE,Ti(")
-				.append(retObject).append("),VIRTUAL,").append(toJavaString(String.valueOf(action.virtual())))
-				.append(')').append(',').append(clazzObject).append(".getMethod(").append(toJavaString(method))
-				.append(',').append(toClassObject(ISCOPE)).append("));");
+		buildArgs(e, action.args(), sb);
+		sb.append(",NAME,").append(toJavaString(actionName));
+		sb.append(",TYPE,Ti(").append(retObject).append(")");
+		if (isVirtual) { sb.append(",VIRTUAL,TRUE"); }
+		if (isVoid) { sb.append(",VOID,TRUE"); }
+		sb.append(')').append(',').append(clazzObject).append(".getMethod(").append(toJavaString(method)).append(',')
+				.append(toClassObject(ISCOPE)).append("));");
 	}
 
 	/**
@@ -223,8 +227,8 @@ public class ActionProcessor extends ElementProcessor<action> {
 	 */
 	@Override
 	protected boolean validateElement(final Element e) {
-		boolean result = assertNotVoid(false, (ExecutableElement) e);
-		result &= assertArgumentsSize(true, (ExecutableElement) e, 1);
+		// boolean result = assertNotVoid(false, (ExecutableElement) e);
+		boolean result = assertArgumentsSize(true, (ExecutableElement) e, 1);
 		result &= assertContainsScope(true, (ExecutableElement) e);
 		result &= assertClassIsAgentOrSkill(true, (TypeElement) e.getEnclosingElement());
 		return result;

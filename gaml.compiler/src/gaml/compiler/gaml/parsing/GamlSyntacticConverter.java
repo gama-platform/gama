@@ -312,9 +312,6 @@ public class GamlSyntacticConverter {
 		final boolean isWronglyClassifiedInStatements = !(stm instanceof S_Definition) && GAML.isADeclaration(keyword);
 		final boolean isWronglyClassifiedInDefinitions = stm instanceof S_Definition && !GAML.isADeclaration(keyword);
 
-		// if (isWronglyClassifiedInDefinitions) { DEBUG.LOG("Wrongly classified in definitions: " + stm); }
-		// if (isWronglyClassifiedInStatements) { DEBUG.LOG("Wrongly classified in statements: " + stm); }
-
 		ISyntacticElement elt = null;
 		final String finalKeyword = keyword;
 		switch (stm) {
@@ -420,6 +417,8 @@ public class GamlSyntacticConverter {
 			addFacet(elt, TYPE, convExpr(t));
 			// If the type should not be inferred, we add a facet to specify it (see #385)
 			elt.setFacet(NO_TYPE_INFERENCE, getExpressionDescriptionFactory().getTrue());
+		} else {
+			addFacet(elt, IKeyword.VOID, getExpressionDescriptionFactory().getTrue());
 		}
 	}
 

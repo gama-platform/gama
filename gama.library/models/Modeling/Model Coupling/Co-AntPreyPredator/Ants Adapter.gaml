@@ -11,12 +11,12 @@ import "../../../Toy Models/Ants (Foraging and Sorting)/models/Ant Foraging.gaml
 //this is the experiment that supposed to uses
 experiment Base type: gui 
 {
-	list<ant> get_ants
+	list<ant> get_ants()
 	{
 		return list(ant);
 	}
 
-	list<ant_grid> get_ant_grid
+	list<ant_grid> get_ant_grid()
 	{
 		return list(ant_grid);
 	}

@@ -132,8 +132,8 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 					vd.info("Parameter '" + vName + "' is redefined in experiment "
 							+ var.getEnclosingDescription().getName(), DUPLICATE_DEFINITION, NAME);
 				} else if (existingResource != null) {
-					var.info("This definition of '" + vName + "' supersedes the one in imported file "
-							+ existingResource.getURI().lastSegment(), REDEFINES, NAME);
+					var.info("Redefinition of '" + vName + "' imported from " + existingResource.getURI().lastSegment(),
+							REDEFINES, NAME);
 				}
 			}
 			return true;
@@ -340,8 +340,8 @@ public class ExperimentDescription extends SpeciesDescription implements IExperi
 			if (redefined == null) {
 				defined.addChild(in.copy(defined));
 			} else {
-				redefined.info("This definition of " + redefined.getName() + " supersedes the one in "
-						+ in.getTypeContext().getName(), IGamlIssue.REDEFINES, NAME);
+				redefined.info("Redefinition of " + redefined.getName() + " from " + in.getTypeContext().getName(),
+						IGamlIssue.REDEFINES, NAME);
 			}
 			return true;
 		});

@@ -360,7 +360,7 @@ public interface ISimulationAgent extends ITopLevelAgent {
 	/**
 	 * @param scope
 	 */
-	Object _init_(IScope scope);
+	void _init_(IScope scope);
 
 	/**
 	 * @param double1

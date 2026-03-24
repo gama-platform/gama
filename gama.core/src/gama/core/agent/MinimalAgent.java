@@ -323,8 +323,8 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 	 */
 	@action (
 			name = ISpecies.initActionName)
-	public Object _init_(final IScope scope) {
-		return getSpecies().getArchitecture().init(scope) ? initSubPopulations(scope) : false;
+	public void _init_(final IScope scope) {
+		if (getSpecies().getArchitecture().init(scope)) { initSubPopulations(scope); }
 	}
 
 	/**

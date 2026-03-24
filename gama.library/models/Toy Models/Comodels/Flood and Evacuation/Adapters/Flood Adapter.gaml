@@ -17,17 +17,17 @@ experiment "Adapter" type: gui
 		} 
 	}
 
-	list<cell> get_cell
+	list<cell> get_cell()
 	{
 		return list(cell) where (each.grid_value > 8.0);
 	}
 
-	list<buildings> get_buildings
+	list<buildings> get_buildings()
 	{
 		return list(buildings);
 	}
 
-	list<dyke> get_dyke
+	list<dyke> get_dyke()
 	{
 		return list(dyke);
 	}

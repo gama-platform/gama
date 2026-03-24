@@ -759,24 +759,6 @@ public abstract class ElementProcessor<T extends Annotation> implements IProcess
 	}
 
 	/**
-	 * Assert not void.
-	 *
-	 * @param context
-	 *            the context
-	 * @param throwsError
-	 *            the throws error
-	 * @param e
-	 *            the e
-	 * @return true, if successful
-	 */
-	protected boolean assertNotVoid(final boolean throwsError, final ExecutableElement e) {
-		if (!TypeKind.VOID.equals(e.getReturnType().getKind())) return true;
-		context.emit(throwsError ? Kind.ERROR : Kind.WARNING,
-				"The method should return a result to be annotated with " + getAnnotationClass().getSimpleName(), e);
-		return !throwsError;
-	}
-
-	/**
 	 * Assert class is agent or skill.
 	 *
 	 * @param context

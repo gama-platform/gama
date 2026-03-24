@@ -334,40 +334,65 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	}
 
 	/**
-	 * Mark attribute redefinition.
+	 * Determines whether two variable descriptions represent a duplicate (same-file) definition, as opposed to a
+	 * legitimate redefinition across files. Subclasses may override this method to apply a different duplicate
+	 * detection strategy.
+	 *
+	 * <p>
+	 * The default implementation considers two variables duplicates when they share the same origin name and the model
+	 * is not a co-model import (i.e. the alias is empty).
+	 * </p>
 	 *
 	 * @param existingVar
-	 *            the existing var
+	 *            the variable already registered
 	 * @param newVar
-	 *            the new var
+	 *            the newly encountered variable with the same name
+	 * @return {@code true} if the two variables are duplicate definitions that should be flagged as errors;
+	 *         {@code false} if the new variable legitimately redefines the existing one from a different context
+	 */
+	protected boolean isDuplicateDefinition(final IVariableDescription existingVar, final IVariableDescription newVar) {
+		if (!newVar.getOriginName().equals(existingVar.getOriginName())) return false;
+		// TODO must be reviewed carefully for the inheritance in comodel:
+		// a variable in a micro-model can be defined multiple times
+		return "".equals(newVar.getModelDescription().getAlias());
+	}
+
+	/**
+	 * Mark attribute redefinition.
+	 *
+	 * <p>
+	 * Emits the appropriate diagnostic (error or info) when a variable named {@code newVar} is encountered and a
+	 * variable with the same name ({@code existingVar}) has already been registered. The distinction between a genuine
+	 * duplicate and a cross-file redefinition is delegated to
+	 * {@link #isDuplicateDefinition(IVariableDescription, IVariableDescription)}, which subclasses may override.
+	 * </p>
+	 *
+	 * @param existingVar
+	 *            the variable already registered in this description
+	 * @param newVar
+	 *            the newly encountered variable with the same name
 	 */
 	public void markAttributeRedefinition(final IVariableDescription existingVar, final IVariableDescription newVar) {
 		if (newVar.isBuiltIn() && existingVar.isBuiltIn()) return;
-		if (newVar.getOriginName().equals(existingVar.getOriginName())) {
-			// TODO must be review carefully the inheritance in comodel
-			/// temporay fix for co-model, variable in micro-model can be
-			// defined multi time
-			if (!"".equals(newVar.getModelDescription().getAlias())) return;
-
+		if (isDuplicateDefinition(existingVar, newVar)) {
 			existingVar.error("Attribute " + newVar.getName() + " is defined twice", IGamlIssue.DUPLICATE_DEFINITION,
 					NAME);
 			newVar.error("Attribute " + newVar.getName() + " is defined twice", IGamlIssue.DUPLICATE_DEFINITION, NAME);
 			return;
 		}
 		if (existingVar.isBuiltIn()) {
-			newVar.info(
-					"This definition of " + newVar.getName() + " supersedes the one in " + existingVar.getOriginName(),
+			newVar.info("Redefinition of " + newVar.getName() + " from " + existingVar.getOriginName(),
 					IGamlIssue.REDEFINES, NAME);
 		} else {
-			// Possibily different resources
+			// Possibly different resources
 			final Resource newResource =
 					newVar.getUnderlyingElement() == null ? null : newVar.getUnderlyingElement().eResource();
 			final Resource existingResource = existingVar.getUnderlyingElement().eResource();
 			if (Objects.equals(newResource, existingResource)) {
-				newVar.info("This definition of " + newVar.getName() + " supersedes the one in "
-						+ existingVar.getOriginName(), IGamlIssue.REDEFINES, NAME);
+				newVar.info("Redefinition of " + newVar.getName() + " from " + existingVar.getOriginName(),
+						IGamlIssue.REDEFINES, NAME);
 			} else {
-				newVar.info("This definition of " + newVar.getName() + " supersedes the one in imported file "
+				newVar.info("Redefinition of " + newVar.getName() + " imported from "
 						+ existingResource.getURI().lastSegment(), IGamlIssue.REDEFINES, NAME);
 			}
 		}
@@ -375,6 +400,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 
 	/**
 	 * Inherit attributes from.
+	 *
 	 *
 	 * @param parent2
 	 *            the p
@@ -530,11 +556,11 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 	 */
 	protected void addAction(final IActionDescription newAction) {
 		final String actionName = newAction.getName();
-		if (newAction.isAbstract() && !isAbstract()) {
-			set(Flag.IsAbstract);
-			this.info("Action '" + actionName + "' is defined as virtual. In consequence, " + getName()
-					+ " will be considered as abstract.", IGamlIssue.MISSING_ACTION);
-		}
+		// if (newAction.isAbstract() && !isAbstract()) {
+		// set(Flag.IsAbstract);
+		// this.info("Action '" + actionName + "' is defined as virtual. In consequence, " + getName()
+		// + " will be considered as abstract.", IGamlIssue.MISSING_ACTION);
+		// }
 		final IActionDescription existing = getOwnActions().get(actionName);
 		if (existing != null) {
 			assertActionsAreCompatible(newAction, existing, existing.getOriginName());
@@ -677,6 +703,19 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 			inheritActionsFrom(parent);
 			inheritAttributesFrom(parent);
 		}
+		// As this was the last chance to add an action, we verify that the abstract inherited actions are correctly
+		// redefined if the species is not abstract.
+
+		if (!isAbstract()) {
+			for (final IActionDescription a : getActions()) {
+				if (a.isAbstract()) {
+					set(Flag.IsAbstract);
+					info("Action '" + a.getName() + "' is defined or inherited as virtual. In consequence, " + getName()
+							+ " will be considered as abstract.", IGamlIssue.MISSING_ACTION);
+				}
+			}
+		}
+
 	}
 
 	/**
@@ -746,7 +785,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 		final String actionName = parentAction.getName();
 		final IType myType = myAction.getGamlType();
 		final IType parentType = parentAction.getGamlType();
-		if (!parentType.isAssignableFrom(myType)) {
+		if (!parentType.isAssignableFrom(myType) || myAction.isVoid() != parentAction.isVoid()) {
 			myAction.error("Return type (" + myType + ") differs from that (" + parentType
 					+ ") of the implementation of  " + actionName + " in " + parentName);
 			return;

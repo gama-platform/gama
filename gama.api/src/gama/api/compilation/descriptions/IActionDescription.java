@@ -261,4 +261,9 @@ public interface IActionDescription extends IStatementDescription {
 	 */
 	default IGamaHelper getHelper() { return null; }
 
+	/**
+	 * @return true if the action has no return value (void), false otherwise
+	 */
+	boolean isVoid();
+
 }

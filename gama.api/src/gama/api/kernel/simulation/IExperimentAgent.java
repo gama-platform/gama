@@ -485,8 +485,6 @@ public interface IExperimentAgent extends ITopLevelAgent {
 	/**
 	 * @param scope
 	 */
-	default Object _init_(final IScope scope) {
-		return null;
-	}
+	default void _init_(final IScope scope) {}
 
 }

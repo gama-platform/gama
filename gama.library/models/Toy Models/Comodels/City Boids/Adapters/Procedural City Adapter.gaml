@@ -21,7 +21,7 @@ experiment "Adapter" type:gui  {
 
 	}
 	
-	list<Building> get_building{
+	list<Building> get_building (){
 		return list(Building);
 	}	
 	

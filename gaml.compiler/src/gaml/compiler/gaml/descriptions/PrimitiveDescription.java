@@ -77,7 +77,6 @@ public class PrimitiveDescription extends ActionDescription {
 	public PrimitiveDescription(final IDescription superDesc, final EObject source,
 			final Iterable<IDescription> children, final Facets facets, final String plugin) {
 		super(IKeyword.PRIMITIVE, superDesc, children, source, facets);
-		// DEBUG.OUT("Primitive " + name + " created");
 		this.plugin = plugin;
 	}
 

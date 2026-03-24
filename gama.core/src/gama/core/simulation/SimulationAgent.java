@@ -396,10 +396,9 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 	}
 
 	@Override
-	public Object _init_(final IScope scope) {
+	public void _init_(final IScope scope) {
 		super._init_(this.getScope());
 		initOutputs();
-		return this;
 	}
 
 	/**

@@ -11,11 +11,11 @@ import "../../../../Toy Models/Boids/models/Boids 3D Motion.gaml"
 
 experiment "Adapter of Boids" type:gui  {
 	
-	list<boids_goal> get_boids_goal{
+	list<boids_goal> get_boids_goal(){
 		return list(boids_goal);
 	}
 	
-	list<boids> get_boids{
+	list<boids> get_boids(){
 		return list(boids);
 	}
 	

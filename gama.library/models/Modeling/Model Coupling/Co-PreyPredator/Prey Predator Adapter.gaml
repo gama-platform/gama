@@ -16,12 +16,12 @@ global
 experiment Simple type: gui
 {
 	geometry shape <- square(100);
-	list<prey> get_prey
+	list<prey> get_prey()
 	{
 		return list(prey);
 	}
 
-	list<predator> get_predator
+	list<predator> get_predator()
 	{
 		return list(predator);
 	}

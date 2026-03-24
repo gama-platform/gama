@@ -307,13 +307,12 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	 * @see msi.gama.metamodel.agent.GamlAgent#_init_(msi.gama.runtime.IScope)
 	 */
 	@Override
-	public Object _init_(final IScope scope) {
-		if (scope.interrupted()) return null;
+	public void _init_(final IScope scope) {
+		if (scope.interrupted()) return;
 		if (automaticallyCreateFirstSimulation()) { createSimulation(ParametersSet.EMPTY, scheduled); }
 		// We execute any behavior defined in GAML.
 		super._init_(scope);
 		tryToRecordSimulations();
-		return this;
 	}
 
 	/**

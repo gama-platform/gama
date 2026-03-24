@@ -13,14 +13,6 @@ package gama.extension.physics.gaml;
 import java.util.HashMap;
 import java.util.Map;
 
-import gama.api.gaml.types.IType;
-import gama.api.kernel.agent.IAgent;
-import gama.api.kernel.simulation.ISimulationAgent;
-import gama.api.kernel.skill.Skill;
-import gama.api.runtime.scope.IScope;
-import gama.api.types.geometry.GamaPointFactory;
-import gama.api.types.geometry.IPoint;
-import gama.api.types.geometry.IShape;
 import gama.annotations.action;
 import gama.annotations.arg;
 import gama.annotations.doc;
@@ -32,6 +24,14 @@ import gama.annotations.variable;
 import gama.annotations.vars;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.skill.Skill;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IPhysicalConstants;
 
@@ -279,12 +279,11 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 					then reinserting it with its new shape), this action should not be called too often."""),
 			name = UPDATE_BODY,
 			args = {})
-	public Object primUpdateGeometry(final IScope scope) {
+	public void primUpdateGeometry(final IScope scope) {
 		ISimulationAgent sim = scope.getSimulation();
 		if (sim instanceof PhysicalSimulationAgent) {
 			((PhysicalSimulationAgent) sim).updateAgent(scope, scope.getAgent());
 		}
-		return null;
 	}
 
 	/**
@@ -303,10 +302,7 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 					name = OTHER,
 					optional = false,
 					type = IType.AGENT) })
-	public Object primContactAdded(final IScope scope) {
-		// Does nothing by default
-		return null;
-	}
+	public void primContactAdded(final IScope scope) {}
 
 	/**
 	 * Prim contact destroyed.
@@ -324,10 +320,7 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 					name = OTHER,
 					optional = false,
 					type = IType.AGENT) })
-	public Object primContactDestroyed(final IScope scope) {
-		// Does nothing by default
-		return null;
-	}
+	public void primContactDestroyed(final IScope scope) {}
 
 	/***
 	 * A class used to provide a temporary body to agents before their "bullet" one is built. It allows to store the

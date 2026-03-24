@@ -298,8 +298,8 @@ public class ModelFactory implements IModelFactory {
 
 		// Make species and experiments recursively create their attributes,
 		// actions....
-		complementSpecies(model, globalNodes);
 
+		complementSpecies(model, globalNodes);
 		complementSpeciesAndExperiments(model, speciesNodes, classNodes, experimentNodes);
 
 		// Complement recursively the different species (incl. the world). The

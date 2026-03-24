@@ -141,13 +141,12 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 	 * @return the object
 	 */
 	@Override
-	public Object _init_(final IScope scope) {
+	public void _init_(final IScope scope) {
 		getSpecies().getExplorationAlgorithm().initializeFor(scope, this);
 		// Fix for issue #2088
 		// We call super _init_ here, but the result of automaticallyCreateFirstSimulation() will prevent from creating
 		// a first simulation (which we dont want as it should be the task of the exploration algorithm)
 		super._init_(scope);
-		return this;
 	}
 
 	/**

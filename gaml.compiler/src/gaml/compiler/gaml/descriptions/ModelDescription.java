@@ -10,8 +10,6 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
-import static gama.annotations.constants.IKeyword.NAME;
-
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
@@ -427,35 +425,48 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	// end-hqnghi
 
 	/**
-	 * Mark attribute redefinition.
+	 * Overrides the duplicate-detection strategy for model descriptions.
+	 *
+	 * <p>
+	 * At the model level, two variables with the same name are considered duplicates when their underlying elements
+	 * share the same {@link EObject#eContainer() eContainer} (i.e. they are defined in the same structural block of the
+	 * same resource), rather than relying on origin-name equality as the superclass does.
+	 * </p>
 	 *
 	 * @param existingVar
-	 *            the existing var
+	 *            the variable already registered
 	 * @param newVar
-	 *            the new var
+	 *            the newly encountered variable with the same name
+	 * @return {@code true} if the two variables live in the same container and should be flagged as duplicate
+	 *         definitions; {@code false} otherwise
+	 */
+	@Override
+	protected boolean isDuplicateDefinition(final IVariableDescription existingVar, final IVariableDescription newVar) {
+		EObject newElement = newVar.getUnderlyingElement();
+		EObject existingElement = existingVar.getUnderlyingElement();
+		final EObject newContainer = newElement == null ? null : newElement.eContainer();
+		final EObject existingContainer = existingElement == null ? null : existingElement.eContainer();
+		return Objects.equals(newContainer, existingContainer);
+	}
+
+	/**
+	 * Mark attribute redefinition.
+	 *
+	 * <p>
+	 * At the model level, a built-in {@code newVar} never triggers a redefinition warning even when the
+	 * {@code existingVar} is not built-in. For all other cases the superclass implementation (which delegates the
+	 * duplicate check to {@link #isDuplicateDefinition}) is used.
+	 * </p>
+	 *
+	 * @param existingVar
+	 *            the variable already registered
+	 * @param newVar
+	 *            the newly encountered variable with the same name
 	 */
 	@Override
 	public void markAttributeRedefinition(final IVariableDescription existingVar, final IVariableDescription newVar) {
 		if (newVar.isBuiltIn()) return;
-		if (existingVar.isBuiltIn()) {
-			newVar.info(
-					"This definition of " + newVar.getName() + " supersedes the one in " + existingVar.getOriginName(),
-					IGamlIssue.REDEFINES, NAME);
-			return;
-		}
-
-		final EObject newResource = newVar.getUnderlyingElement().eContainer();
-		final EObject existingResource = existingVar.getUnderlyingElement().eContainer();
-		if (Objects.equals(newResource, existingResource)) {
-			existingVar.error("Attribute " + newVar.getName() + " is defined twice", IGamlIssue.DUPLICATE_DEFINITION,
-					NAME);
-			newVar.error("Attribute " + newVar.getName() + " is defined twice", IGamlIssue.DUPLICATE_DEFINITION, NAME);
-			return;
-		}
-		if (existingResource != null) {
-			newVar.info("This definition of " + newVar.getName() + " supersedes the one in imported file "
-					+ existingResource.eResource().getURI().lastSegment(), IGamlIssue.REDEFINES, NAME);
-		}
+		super.markAttributeRedefinition(existingVar, newVar);
 	}
 
 	@Override

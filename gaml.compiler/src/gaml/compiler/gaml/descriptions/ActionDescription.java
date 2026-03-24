@@ -71,11 +71,12 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 			final EObject source, final Facets facets) {
 		super(keyword, superDesc, cp, true, source, facets, null);
 		setIf(Flag.IsAbstract, IKeyword.TRUE.equals(getLitteral(IKeyword.VIRTUAL)));
+		setIf(Flag.isVoid, IKeyword.TRUE.equals(getLitteral(IKeyword.VOID)));
 		if (getName() != null && getName().startsWith(IKeyword.SYNTHETIC)) {
 			set(Flag.IsSynthetic);
 			unSet(Flag.IsBuiltIn);
 		}
-		removeFacets(IKeyword.VIRTUAL);
+		removeFacets(IKeyword.VIRTUAL, IKeyword.VOID);
 	}
 
 	@Override

@@ -13,7 +13,7 @@ global
 
 experiment Generic type: gui
 {
-	list<Mosquito> get_mosquitos{
+	list<Mosquito> get_mosquitos (){
 		return list(Mosquito);
 	}
 	

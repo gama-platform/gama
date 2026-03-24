@@ -1,7 +1,6 @@
 /*******************************************************************************************************
  *
- * ThreadSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ThreadSkill.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -144,8 +143,8 @@ public class ThreadSkill extends Skill {
 					value = "A virtual action, which contains what to execute in the thread. It needs to be redefined in the species that implement the `thread` skill"),
 			name = ACTION_NAME,
 			virtual = true)
-	public Object primExternalFactorOnRemainingTime(final IScope scope) throws GamaRuntimeException {
-		return null;
+	public void threadAction(final IScope scope) throws GamaRuntimeException {
+		// return null;
 	}
 
 	/**
