@@ -25,7 +25,7 @@ global {
 		write "Introduction in an ask statement.";
 		ask dummy_species {
 			// we are in the context of a dummy_species agent, we can thus use its actions.
-			do introduce_myself;
+			do introduce_myself();
 		} 
 		
 		// Ask can be used with the whole species, but also a list of agents (or even a single agent).
@@ -35,7 +35,7 @@ global {
 			ask one_of(dummy_species - self) {
 				// To display the name of the agent that kills it, the current agent (self) should use myself to refer to its killer.
 				write "I, " + self.name + ", have been killed by " + myself.name ;
-				do die;
+				do die();
 			}
 		}
 	}

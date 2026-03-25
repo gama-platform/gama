@@ -48,8 +48,8 @@ species Buffer skills:[network]
 		} else {
 			location <- point(195,50);
 		}
-		do connect with_name:name;
-		do join_group with_name:"buffer";
+		do connect (with_name:name);
+		do join_group (with_name:"buffer");
 		write "my name "+ name +" " + next_agent;
 	}
 	
@@ -60,8 +60,8 @@ species Buffer skills:[network]
 			write "send agent";
 			map<string,unknown> msg <- map(["name"::ping.name,"mcolor"::ping.myColor, "location"::(ping.location - {self.location.x,0})]);
 			string smsg <- serialize(msg);
-			do send to:next_agent contents:msg;
-			ask ping { do die;}
+			do send (to:next_agent,contents:msg);
+			ask ping { do die();}
 		}
 	}
 	reflex enable_teleport{

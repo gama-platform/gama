@@ -22,15 +22,15 @@ global {
 		create dummy;
 		ask dummy {
 			if (testConnection(PARAMS)) {
-				do executeUpdate params: PARAMS updateComm: "DROP DATABASE IF EXISTS " + database_name + " ;";
-				do executeUpdate params: PARAMS updateComm: "CREATE DATABASE "+ database_name +" with TEMPLATE = template1;";
+				do executeUpdate (params: PARAMS, updateComm: "DROP DATABASE IF EXISTS " + database_name + " ;");
+				do executeUpdate (params: PARAMS, updateComm: "CREATE DATABASE "+ database_name +" with TEMPLATE = template1;");
 				write "spatial_BD database has been created. ";
 
 				// remove "database" from: PARAMS;
 				put database_name key: "database" in: PARAMS;
-				do executeUpdate params: PARAMS updateComm: "CREATE TABLE bounds" + "( " + " geom GEOMETRY " + ")";
+				do executeUpdate (params: PARAMS, updateComm: "CREATE TABLE bounds" + "( " + " geom GEOMETRY " + ")");
 				write "bounds table has been created.";
-				do executeUpdate params: PARAMS updateComm: "CREATE TABLE buildings " + "( " + " name character varying(255), " + " type character varying(255), " + " geom GEOMETRY " + ")";
+				do executeUpdate (params: PARAMS, updateComm: "CREATE TABLE buildings " + "( " + " name character varying(255), " + " type character varying(255), " + " geom GEOMETRY " + ")");
 				write "buildings table has been created. ";
 			} else {
 				write "Connection to POSTGRESQL cannot be established ";

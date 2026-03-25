@@ -30,15 +30,15 @@ global {
 			location <- { rnd(width_and_height_of_environment), rnd(width_and_height_of_environment), rnd(width_and_height_of_environment) };
 		}
 		
-		do degreeMax_computation;
+		do degreeMax_computation();
 		
 		ask node_agent {
-			do compute_degree;
+			do compute_degree();
 		}
 	}
 	
 	reflex updateDegreeMax {
-		do degreeMax_computation;
+		do degreeMax_computation();
 	}
 
 	action degreeMax_computation() {
@@ -60,9 +60,9 @@ species node_agent skills: [moving3D] {
 	float speed <- 5.0;
 	reflex move {
 		//make the agent move randomly
-		do wander;
+		do wander();
 		//compute the degree of the agent
-		do compute_degree;
+		do compute_degree();
 	}
 	
 	

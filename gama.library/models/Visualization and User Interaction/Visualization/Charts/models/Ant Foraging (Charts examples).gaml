@@ -86,24 +86,24 @@ species ant skills: [moving] control: fsm {
 	
 	//Initial state of the ant : wander until it finds food or find a road to follow
 	state wandering initial: true {
-		do wander amplitude:120.0 ;
+		do wander (amplitude:120.0) ;
 		transition to: carryingFood when: place.food > 0 {
-			do pick ;
+			do pick() ;
 		}
 		transition to: followingRoad when: place.road > 0.05 ;
 	}
 	//State to carry food to the nest once the food is found
 	state carryingFood {
-		do goto target: center ;
+		do goto (target: center) ;
 		transition to: wandering when: place.isNestLocation { 
-			do drop ;
+			do drop () ;
 		}
 	}
 	//State to follow a road 
 	state followingRoad {
 		location <- (choose_best_place()) as point ;
 		transition to: carryingFood when: place.food > 0 {
-			do pick ;
+			do pick() ;
 		}
 		transition to: wandering when: (place.road < 0.05) ;
 	}

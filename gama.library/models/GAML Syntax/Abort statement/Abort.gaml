@@ -21,7 +21,7 @@ global {
 	abort {
 		write "Simulation executes 'abort' and kills the agents of species a";
 		ask a {
-			do die;
+			do die();
 		}
 
 	}
@@ -38,7 +38,7 @@ species a {
 		write "Neither does agent of species a";
 		if (user_confirm("Close simulation", "Should we close the simulation ?")) {
 			ask world {
-				do die;
+				do die();
 			}
 
 		}

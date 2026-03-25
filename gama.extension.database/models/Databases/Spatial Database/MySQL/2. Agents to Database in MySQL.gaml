@@ -32,8 +32,8 @@ global {
 		
 		create DB_Accessor number: 1  
 		{ 			
-			do executeUpdate params: PARAMS updateComm: "DELETE FROM buildings";	
-			do executeUpdate params: PARAMS updateComm: "DELETE FROM bounds";
+			do executeUpdate (params: PARAMS, updateComm: "DELETE FROM buildings");	
+			do executeUpdate (params: PARAMS, updateComm: "DELETE FROM bounds");
 		}
 		write "Click on <<Step>> button to save data of agents to DB";		 
 	}
@@ -49,9 +49,9 @@ species bounds {
 	reflex savetosql{  // save data into MySQL
 		write "begin save of: "+ name;
 		ask DB_Accessor {
-			do insert params: PARAMS into: "bounds"
-					  columns: ["geom"]
-					  values: [myself.shape];
+			do insert (params: PARAMS, into: "bounds",
+					  columns: ["geom"],
+					  values: [myself.shape]);
 		}
 	    write "finished save of: "+ name;
 	}		
@@ -67,9 +67,9 @@ species buildings {
 	reflex savetosql{  // save data into MySQL
 		write "begin save of: "+ name;
 		ask DB_Accessor {
-			do insert params: PARAMS into: "buildings"
-					  columns: ["name", "type","geom"]
-					  values: [myself.name,myself.type,myself.shape];
+			do insert (params: PARAMS, into: "buildings",
+					  columns: ["name", "type","geom"],
+					  values: [myself.name,myself.type,myself.shape]);
 		}
 	    write "finished save of: "+ name;
 	}	

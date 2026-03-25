@@ -60,7 +60,7 @@ global{
 				toSwitch.skillType <- 0;
 				if (toSwitch.myFirm.skillType>toSwitch.skillType) {
 					ask toSwitch {
-						do forceFirmUpdate;
+						do forceFirmUpdate();
 					}
 				}
 			}
@@ -93,15 +93,15 @@ global{
 				location <- toKill.location;
 				nbWorkers<-0;
 				advertiseRatio<-advertiseRatioGlobal;
-				do advertise;
+				do advertise();
 			}
 			ask worker {
 				if (myBuilding=toKill) {
-					do forceBuildingUpdate;				
+					do forceBuildingUpdate();				
 				}
 			}
 			ask toKill {
-				do die;
+				do die();
 			}
 			reflexPause<-false;
 		} else {
@@ -128,10 +128,10 @@ global{
 				}
 				
 				ask (worker where (each.myFirm=toKill)) {
-					do forceFirmUpdate;
+					do forceFirmUpdate();
 				}
 				ask toKill {
-					do die;
+					do die();
 				}
 				reflexPause<-false;
 			}
@@ -204,7 +204,7 @@ global{
 		}
 		
 		ask one_of(city) {
-			do updateCityParams;
+			do updateCityParams();
 		}
 			
 	}
@@ -225,7 +225,7 @@ species city {
 	}
 	
 	reflex update when: (reflexPause=false) {
-		do updateCityParams;
+		do updateCityParams();
 	}
 }
 
@@ -370,7 +370,7 @@ species worker {
 	}
 	
 	action checkMyStuff() {
-		do checkSkillFirm;
+		do checkSkillFirm();
 		if (myFirm=nil){
 			myFirm <- one_of(firm where (each.skillType=skillType));
 		}
@@ -432,13 +432,13 @@ species worker {
 	}
 	
 	reflex updateUtility when: (reflexPause=false) {
-		do checkMyStuff;
+		do checkMyStuff();
 		float utility<-myUtility(myBuilding,myFirm,useCar);
 		currentUtility<-utility;
 	}
 	
 	reflex updateCommutingMode when: (reflexPause=false) {
-		do checkMyStuff;
+		do checkMyStuff();
 		float utilityCar<-myUtility(myBuilding,myFirm,true);
 		float utilityNoCar<-myUtility(myBuilding,myFirm,false);
 		if (utilityCar>utilityNoCar){
@@ -449,7 +449,7 @@ species worker {
 	}
 	
 	reflex updateBuilding when: (reflexPause=false) {
-		do checkMyStuff;
+		do checkMyStuff();
 		float utility <- myUtility(myBuilding,myFirm,useCar);
 		building possibleBuilding <- one_of(building);
 		float possibleUtility <- myUtility(possibleBuilding,myFirm,useCar);
@@ -461,7 +461,7 @@ species worker {
 	}
 	
 	reflex updateWork when: (reflexPause=false) {	
-		do checkMyStuff;	
+		do checkMyStuff();	
 		float utility <- myUtility(myBuilding,myFirm,useCar);
 		firm possibleFirm <- one_of(firm where (each.skillType<=self.skillType and each!=myFirm));
 		if (possibleFirm!=nil) {
@@ -480,7 +480,7 @@ species worker {
 	}
 	
 	reflex updateWorkRandom when: (reflexPause=false) {
-		do checkMyStuff;
+		do checkMyStuff();
 		if (rnd(1.0)<randomMoveRate) {
 			firm possibleFirm;
 			possibleFirm <- one_of(firm where (each.skillType<=self.skillType and each!=myFirm));
@@ -499,7 +499,7 @@ species worker {
 		loop while: (updateFlag=true) {
 			updateFlag<-false;
 			
-			do checkMyStuff;
+			do checkMyStuff();
 			utility <- myUtility(myBuilding,myFirm,useCar);
 			newUnitSizem <- (1.0-sizeDelta)*myBuilding.unitSize;
 			newUnitSizep <- (1.0+sizeDelta)*myBuilding.unitSize;
@@ -559,7 +559,7 @@ experiment ABValuationDemo type: gui autorun:true{
 			species worker aspect:threeD;
 			species firm aspect: threeD transparency: 0.25;
 			species building aspect:threeD transparency: 0.35;
-			event #mouse_down {ask simulation {do create_firm;}}  
+			event #mouse_down {ask simulation {do create_firm();}}  
 			event "p" {if(commutingCost<1){commutingCost<-commutingCost+0.1;}}
 			event "m" {if(commutingCost>0){commutingCost<-commutingCost-0.1;}}
 			event "u" {if(shareLowIncome<0.9){shareLowIncome<-shareLowIncome+0.1;}}

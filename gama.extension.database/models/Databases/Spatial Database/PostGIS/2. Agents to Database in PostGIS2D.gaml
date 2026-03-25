@@ -30,7 +30,7 @@ global {
 		
 		create DB_Accessor
 		{ 			
-			do executeUpdate params: PARAMS updateComm: "DELETE FROM buildings";	
+			do executeUpdate (params: PARAMS, updateComm: "DELETE FROM buildings");	
 		} 
 	}
 }   
@@ -47,7 +47,7 @@ species buildings {
 	reflex savetosql{  // save data into Postgres
 		write "begin"+ name;
 	    ask (DB_Accessor) {
-			do executeUpdate params: PARAMS updateComm: "INSERT INTO buildings(type,geom) VALUES('" + myself.type + "',ST_Multi(ST_GeomFromText('" + myself.shape +"',4326)))";
+			do executeUpdate (params: PARAMS, updateComm: "INSERT INTO buildings(type,geom) VALUES('" + myself.type + "',ST_Multi(ST_GeomFromText('" + myself.shape +"',4326)))");
 		}	
 	}	
 	
