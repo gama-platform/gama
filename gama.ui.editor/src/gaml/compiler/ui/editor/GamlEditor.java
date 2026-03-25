@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -42,16 +41,13 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
-import org.eclipse.jface.text.SurroundWithBracketsStrategy;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.codemining.ICodeMining;
 import org.eclipse.jface.text.codemining.ICodeMiningProvider;
@@ -85,6 +81,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -103,11 +100,12 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningPreferenceConstants;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningProvider;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.xtext.ui.XtextUIMessages;
 import org.eclipse.xtext.ui.editor.XtextEditor;
-import org.eclipse.xtext.ui.editor.XtextSourceViewerConfiguration;
 import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 import org.eclipse.xtext.ui.editor.model.XtextDocument;
 import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionProvider;
@@ -191,6 +189,15 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/** The preference store. */
 	private static IPreferenceStore miningPreferencesStore;
 
+	/** The to remove. */
+	private final static Set<String> TO_REMOVE_FROM_MENUS = Set.of("revert", "save", "__PREFS__.ContextAction",
+			"QuickAssist", "Open W&ith", "Sho&w In	⌥⌘W", "group.open");
+
+	/** The Constant ANNOTATION_INFO_TYPES. */
+	// Standard ID for Info annotations
+	private final static Set<String> ANNOTATION_INFO_TYPES =
+			Set.of("org.eclipse.ui.workbench.texteditor.info", "org.eclipse.xtext.ui.editor.info");
+
 	/**
 	 * Gets the preferences.
 	 *
@@ -242,7 +249,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		MENU_IMAGES.put(IKeyword.BATCH, ThemeHelper.isDark() ? IGamaIcons.BUTTON_BATCH : IGamaIcons.MENU_BATCH);
 		MENU_IMAGES.put(IKeyword.RECORD, ThemeHelper.isDark() ? IGamaIcons.BUTTON_BACK : IGamaIcons.MENU_BACK);
 		MENU_IMAGES.put("regular", ThemeHelper.isDark() ? IGamaIcons.BUTTON_GUI : IGamaIcons.MENU_GUI);
-
 		BUTTON_IMAGES.put("new", GamaIcon.named(IGamaIcons.ADD_EXPERIMENT).image());
 	}
 
@@ -315,6 +321,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	@Override
 	protected IAnnotationAccess createAnnotationAccess() {
+
 		return new DefaultMarkerAnnotationAccess() {
 
 			@Override
@@ -438,6 +445,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			folder.setMRUVisible(true);
 			folder.setUnselectedCloseVisible(true);
 			folder.setHighlightEnabled(true);
+			folder.setSimple(true);
 		}
 
 	}
@@ -491,6 +499,13 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				}
 			}
 		});
+		AnnotationPreference ap =
+				getAnnotationPreferenceLookup().getAnnotationPreference("org.eclipse.ui.workbench.texteditor.info");
+		ap.setTextStyleValue(AnnotationPreference.STYLE_NONE);
+		ap.setTextPreferenceValue(false);
+		ap = getAnnotationPreferenceLookup().getAnnotationPreference("org.eclipse.xtext.ui.editor.info");
+		ap.setTextStyleValue(AnnotationPreference.STYLE_NONE);
+		ap.setTextPreferenceValue(false);
 	}
 
 	@Override
@@ -619,9 +634,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				if (msg != null) {
 					toolbar.button(c, msg, GamaIcon.named(imageName).image(), listener, BUTTON_HEIGHT, SWT.LEFT);
 				} else if (newState.showExperiments) {
-					if (EDITOR_EXPERIMENT_MENU.getValue()) {
-						displayExperimentMenu(newState, listener);
-					} else if (EDITOR_COLLAPSE_BUTTONS.getValue() && buttonsOverflow(newState)) {
+					if (EDITOR_EXPERIMENT_MENU.getValue()
+							|| EDITOR_COLLAPSE_BUTTONS.getValue() && buttonsOverflow(newState)) {
 						displayExperimentMenu(newState, listener);
 					} else {
 						displayExperimentButtons(newState, listener);
@@ -795,30 +809,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			updateToolbar(newState, false);
 			state = newState;
 		}
-	}
-
-	/**
-	 * The Class GamaSourceViewerConfiguration.
-	 */
-	public static class GamaSourceViewerConfiguration extends XtextSourceViewerConfiguration {
-
-		@Override
-		public ITextHover getTextHover(final ISourceViewer sourceViewer, final String contentType) {
-			return super.getTextHover(sourceViewer, contentType);
-		}
-
-		// See issue #391 : automatically surrounds the selected words with a
-		// pair of "brackets"
-		@Override
-		public IAutoEditStrategy[] getAutoEditStrategies(final ISourceViewer sourceViewer, final String contentType) {
-			IAutoEditStrategy[] strategies = super.getAutoEditStrategies(sourceViewer, contentType);
-			if (!GamaPreferences.Modeling.CORE_SURROUND_SELECTED.getValue()) return strategies;
-			for (IAutoEditStrategy strategy : strategies) {
-				if (strategy instanceof SurroundWithBracketsStrategy) return strategies;
-			}
-			return ArrayUtils.insert(0, strategies, new SurroundWithBracketsStrategy(sourceViewer));
-		}
-
 	}
 
 	/**
@@ -1154,18 +1144,14 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		}
 	}
 
-	/** The to remove. */
-	Set<String> toRemove = Set.of("revert", "save", "__PREFS__.ContextAction", "QuickAssist", "Open W&ith",
-			"Sho&w In	⌥⌘W", "group.open");
-
 	@Override
 	protected void editorContextMenuAboutToShow(final IMenuManager menu) {
 		super.editorContextMenuAboutToShow(menu);
 		for (IContributionItem item : menu.getItems()) {
 			if (item == null) { continue; }
 			if (item instanceof MenuManager mm) { DEBUG.OUT(" --> \"" + mm.getMenuText() + "\""); }
-			if (item instanceof MenuManager mmmm && toRemove.contains(mmmm.getMenuText())
-					|| item.getId() != null && toRemove.contains(item.getId())) {
+			if (item instanceof MenuManager mmmm && TO_REMOVE_FROM_MENUS.contains(mmmm.getMenuText())
+					|| item.getId() != null && TO_REMOVE_FROM_MENUS.contains(item.getId())) {
 				menu.remove(item);
 				continue;
 			}
@@ -1209,6 +1195,47 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 */
 	public void updateToolbar() {
 		updateToolbar(state, true);
+	}
+
+	/**
+	 * Configures the annotation decoration support for the source viewer in order to simplify the "info" markers:
+	 * remove the line below the text by default and their presence in the "overview" vertical ruler on the right
+	 */
+	@Override
+	protected void configureSourceViewerDecorationSupport(final SourceViewerDecorationSupport support) {
+		super.configureSourceViewerDecorationSupport(support);
+
+		for (String infoType : ANNOTATION_INFO_TYPES) {
+			// Create a preference object to define all properties at once
+			AnnotationPreference infoPref = new AnnotationPreference();
+			infoPref.setAnnotationType(infoType);
+
+			// 1. Color Preference (Value type: String RGB "r,g,b")
+			infoPref.setColorPreferenceKey("gama.info.color");
+			infoPref.setColorPreferenceValue(new RGB(0, 120, 215)); // Default value
+			// 2. Text Decoration (Value type: boolean)
+			// Controls if the annotation is painted in the text editor
+			infoPref.setTextPreferenceKey("gaml.info.text");
+			infoPref.setTextPreferenceValue(false); // We do not paint it by default
+
+			// 3. Visual Style (Value type: String)
+			// Valid values: "SQUIGGLES", "BOX", "DASHED_BOX", "UNDERLINE", "HIGHLIGHTER"
+			infoPref.setTextStylePreferenceKey("gaml.info.style");
+			infoPref.setTextStyleValue(AnnotationPreference.STYLE_UNDERLINE);
+
+			// 4. Overview Ruler (Value type: boolean)
+			// Right side bar visibility
+			infoPref.setOverviewRulerPreferenceKey("gaml.info.overview");
+			infoPref.setOverviewRulerPreferenceValue(false);
+
+			// 5. Vertical Ruler (Value type: boolean)
+			// Left side bar visibility (icons)
+			infoPref.setVerticalRulerPreferenceKey("gaml.info.vertical");
+			infoPref.setVerticalRulerPreferenceValue(true);
+
+			// Register this preference object into the support
+			support.setAnnotationPreference(infoPref);
+		}
 	}
 
 }

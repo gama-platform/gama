@@ -70,17 +70,11 @@ public class GamlAnnotationImageProvider extends XtextMarkerAnnotationImageProvi
 	@Override
 	public Image getManagedImage(final Annotation annotation) {
 
-		// final AnnotationPreference pref;
 		GamaIcon result = null;
 		if (annotation.isMarkedDeleted()) {
 			result = deleted.get(annotation.getType());
 		} else if (annotation instanceof MarkerAnnotation) {
 			result = getImage(annotation.getType());
-			// if (ma.isQuickFixableStateSet() && ma.isQuickFixable()) {
-			// result = fixables.get(annotation.getType());
-			// } else {
-			// result = nonFixables.get(annotation.getType());
-			// }
 		} else if (annotation instanceof ProjectionAnnotation)
 			return null;
 		// ProjectionAnnotation projection = (ProjectionAnnotation)
@@ -90,17 +84,8 @@ public class GamlAnnotationImageProvider extends XtextMarkerAnnotationImageProvi
 		// } else {
 		// return GamaIcons.create ("marker.expanded2").image();
 		// }
-		else if (annotation instanceof XtextAnnotation) {
-			result = getImage(annotation.getType());
-			// if (ma.isQuickFixable()) {
-			// result = fixables.get(annotation.getType());
-			// } else {
-			// result = nonFixables.get(annotation.getType());
-			// }
-		}
+		else if (annotation instanceof XtextAnnotation) { result = getImage(annotation.getType()); }
 		if (result != null) return result.image();
-		// DEBUG.LOG("Image not found for type: " +
-		// annotation.getType());
 		return super.getManagedImage(annotation);
 	}
 
