@@ -47,6 +47,7 @@ import org.locationtech.jts.io.WKTWriter;
 import org.locationtech.jts.operation.buffer.BufferParameters;
 import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.locationtech.jts.simplify.DouglasPeuckerSimplifier;
+import org.locationtech.jts.simplify.TopologyPreservingSimplifier;
 import org.locationtech.jts.triangulate.ConformingDelaunayTriangulationBuilder;
 import org.locationtech.jts.triangulate.ConstraintEnforcementException;
 import org.locationtech.jts.triangulate.DelaunayTriangulationBuilder;
@@ -762,23 +763,42 @@ public class GeometryUtils {
 			boolean toClip = !(geom instanceof LineString) && !(geom instanceof MultiLineString)
 					&& !(geom instanceof MultiPoint) && !(geom instanceof Point);
 			final ConformingDelaunayTriangulationBuilder dtb = new ConformingDelaunayTriangulationBuilder();
-			dtb.setTolerance(toleranceTriangulation);
 			GeometryCollection tri = null;
 			try {
-				dtb.setSites(geom);
-				dtb.setConstraints(geom);
-
-				tri = (GeometryCollection) dtb.getTriangles(GEOMETRY_FACTORY);
+				tri  = attemptTriangulation(geom, dtb,toleranceTriangulation);
 			} catch (final LocateFailureException | ConstraintEnforcementException e) {
-				dtb.setTolerance(toleranceTriangulation + 0.1);
-				dtb.setSites(geom);
-				dtb.setConstraints(geom);
-				tri = (GeometryCollection) dtb.getTriangles(GEOMETRY_FACTORY);
+				Geometry cleanedGeom = geom.buffer(0);
+				try {
+					tri  = attemptTriangulation(cleanedGeom, dtb,toleranceTriangulation);
+				} catch (final LocateFailureException | ConstraintEnforcementException e2) {
+					try {
+						tri  = attemptTriangulation(cleanedGeom, dtb,toleranceTriangulation + 0.5);
+					} catch (final LocateFailureException | ConstraintEnforcementException e3)  {
+						PrecisionModel pm = new PrecisionModel(1000.0);
+			            GeometryPrecisionReducer reducer = new GeometryPrecisionReducer(pm);
+			            Geometry reducedGeom = reducer.reduce(cleanedGeom);
+			            try {
+			                tri = attemptTriangulation(reducedGeom,dtb,toleranceTriangulation);
+			            } catch (final LocateFailureException | ConstraintEnforcementException e4)  {
+			            	Geometry simplifiedGeom = TopologyPreservingSimplifier.simplify(reducedGeom, 0.1);
+			            	 tri = attemptTriangulation(reducedGeom,dtb,toleranceTriangulation);
+			            }
+					}
+					
+				}
 			}
 			if (tri != null) { geoms.addAll(filterGeoms(tri, geom, toClip, toleranceClip, approxClipping)); }
 
 		}
 		return geoms;
+	}
+	
+	private static GeometryCollection attemptTriangulation(Geometry geom, ConformingDelaunayTriangulationBuilder builder, double toleranceTriangulation) {
+	    builder.setSites(geom);
+	    builder.setConstraints(geom);
+	    builder.setTolerance(toleranceTriangulation);
+	    builder.getTriangles(geom.getFactory());
+	    return (GeometryCollection) builder.getTriangles(GEOMETRY_FACTORY);
 	}
 
 	/**
