@@ -270,7 +270,7 @@ public interface ISpecies
 	 * @return the action names
 	 */
 	@getter (ACTIONS)
-	@doc ("retuns the list of actions defined in this species (incl. the ones inherited from its parent)")
+	@doc ("returns the list of actions defined in this species (incl. the ones inherited from its parent)")
 	default IList<String> getActionNames(final IScope scope) {
 		return GamaListFactory.create(scope, Types.STRING,
 				StreamEx.of(getActions()).map((each) -> each.getName()).toList());
@@ -304,7 +304,7 @@ public interface ISpecies
 	 * @return the aspect names
 	 */
 	@getter (ASPECTS)
-	@doc ("retuns the list of aspects defined in this species")
+	@doc ("returns the list of aspects defined in this species")
 	IList<String> getAspectNames();
 
 	/**
@@ -357,7 +357,7 @@ public interface ISpecies
 	 * @return the list of all the attributes defined in this species
 	 */
 	@getter (IKeyword.ATTRIBUTES)
-	@doc ("retuns the list of attributes defined in this species (incl. the ones inherited from its parent)")
+	@doc ("returns the list of attributes defined in this species (incl. the ones inherited from its parent)")
 	default IList<String> getAttributeNames(final IScope scope) {
 		return GamaListFactory.create(scope, Types.STRING, getVarNames());
 	}

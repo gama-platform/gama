@@ -176,7 +176,6 @@ public class S_SpeciesImpl extends StatementImpl implements S_Species
     {
       switch (derivedFeatureID)
       {
-        case GamlPackage.SSPECIES__NAME: return GamlPackage.GAML_DEFINITION__NAME;
         default: return -1;
       }
     }
@@ -184,6 +183,7 @@ public class S_SpeciesImpl extends StatementImpl implements S_Species
     {
       switch (derivedFeatureID)
       {
+        case GamlPackage.SSPECIES__NAME: return GamlPackage.VAR_DEFINITION__NAME;
         default: return -1;
       }
     }
@@ -223,7 +223,6 @@ public class S_SpeciesImpl extends StatementImpl implements S_Species
     {
       switch (baseFeatureID)
       {
-        case GamlPackage.GAML_DEFINITION__NAME: return GamlPackage.SSPECIES__NAME;
         default: return -1;
       }
     }
@@ -231,6 +230,7 @@ public class S_SpeciesImpl extends StatementImpl implements S_Species
     {
       switch (baseFeatureID)
       {
+        case GamlPackage.VAR_DEFINITION__NAME: return GamlPackage.SSPECIES__NAME;
         default: return -1;
       }
     }

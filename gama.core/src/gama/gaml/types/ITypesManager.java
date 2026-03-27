@@ -14,6 +14,8 @@ import java.util.Set;
 
 import gama.core.common.interfaces.IDisposable;
 import gama.core.metamodel.agent.IAgent;
+import gama.core.util.GamaData;
+import gama.gaml.descriptions.DataTypeDescription;
 import gama.gaml.descriptions.ModelDescription;
 import gama.gaml.descriptions.SpeciesDescription;
 
@@ -73,6 +75,8 @@ public interface ITypesManager extends IDisposable {
 	 * @return the i type<? extends I agent>
 	 */
 	IType<? extends IAgent> addSpeciesType(SpeciesDescription species);
+	
+	IType<GamaData> addDataType(DataTypeDescription data);
 
 	/**
 	 * Inits the.

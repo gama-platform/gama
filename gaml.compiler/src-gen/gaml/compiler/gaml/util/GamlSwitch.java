@@ -172,6 +172,17 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
+      case GamlPackage.SDATA:
+      {
+        S_Data s_Data = (S_Data)theEObject;
+        T result = caseS_Data(s_Data);
+        if (result == null) result = caseStatement(s_Data);
+        if (result == null) result = caseTypeDefinition(s_Data);
+        if (result == null) result = caseActionDefinition(s_Data);
+        if (result == null) result = caseGamlDefinition(s_Data);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
       case GamlPackage.SEXPERIMENT:
       {
         S_Experiment s_Experiment = (S_Experiment)theEObject;
@@ -179,6 +190,17 @@ public class GamlSwitch<T> extends Switch<T>
         if (result == null) result = caseStatement(s_Experiment);
         if (result == null) result = caseVarDefinition(s_Experiment);
         if (result == null) result = caseGamlDefinition(s_Experiment);
+        if (result == null) result = defaultCase(theEObject);
+        return result;
+      }
+      case GamlPackage.SSKILL:
+      {
+        S_Skill s_Skill = (S_Skill)theEObject;
+        T result = caseS_Skill(s_Skill);
+        if (result == null) result = caseStatement(s_Skill);
+        if (result == null) result = caseTypeDefinition(s_Skill);
+        if (result == null) result = caseActionDefinition(s_Skill);
+        if (result == null) result = caseGamlDefinition(s_Skill);
         if (result == null) result = defaultCase(theEObject);
         return result;
       }
@@ -878,6 +900,22 @@ public class GamlSwitch<T> extends Switch<T>
   }
 
   /**
+   * Returns the result of interpreting the object as an instance of '<em>SData</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>SData</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseS_Data(S_Data object)
+  {
+    return null;
+  }
+
+  /**
    * Returns the result of interpreting the object as an instance of '<em>SExperiment</em>'.
    * <!-- begin-user-doc -->
    * This implementation returns null;
@@ -889,6 +927,22 @@ public class GamlSwitch<T> extends Switch<T>
    * @generated
    */
   public T caseS_Experiment(S_Experiment object)
+  {
+    return null;
+  }
+
+  /**
+   * Returns the result of interpreting the object as an instance of '<em>SSkill</em>'.
+   * <!-- begin-user-doc -->
+   * This implementation returns null;
+   * returning a non-null result will terminate the switch.
+   * <!-- end-user-doc -->
+   * @param object the target of the switch.
+   * @return the result of interpreting the object as an instance of '<em>SSkill</em>'.
+   * @see #doSwitch(org.eclipse.emf.ecore.EObject) doSwitch(EObject)
+   * @generated
+   */
+  public T caseS_Skill(S_Skill object)
   {
     return null;
   }

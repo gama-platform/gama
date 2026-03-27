@@ -12,7 +12,6 @@ package gama.gaml.architecture.reflex;
 
 import gama.core.runtime.IScope;
 import gama.gaml.architecture.IArchitecture;
-import gama.gaml.expressions.IExpression;
 import gama.gaml.skills.Skill;
 import gama.gaml.species.ISpecies;
 
@@ -43,10 +42,10 @@ public abstract class AbstractArchitecture extends Skill implements IArchitectur
 		return "";
 	}
 
-	@Override
-	public IExpression getFacet(final String... key) {
-		return null;
-	}
+//	@Override
+//	public IExpression getFacet(final String... key) {
+//		return null;
+//	}
 
 	@Override
 	public boolean hasFacet(final String key) {

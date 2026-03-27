@@ -114,7 +114,7 @@ public class DXFDocument {
 	public DXFLayer getDXFLayer(final String key) {
 		if (this.layers.containsKey(key)) return layers.get(key);
 
-		// retun the default layer
+		// return the default layer
 		if (this.layers.containsKey(DXFConstants.DEFAULT_LAYER)) return layers.get(DXFConstants.DEFAULT_LAYER);
 		DXFLayer layer = new DXFLayer();
 		layer.setName(DXFConstants.DEFAULT_LAYER);
