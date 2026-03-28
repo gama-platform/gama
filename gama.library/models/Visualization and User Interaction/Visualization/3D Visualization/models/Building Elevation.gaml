@@ -124,7 +124,7 @@ experiment "Road Traffic" type: gui {
 				create people number: nb_people - nb;
 			} else {
 				ask (nb - nb_people) among people {
-					do die;
+					do die();
 				}
 
 			}
@@ -138,7 +138,7 @@ experiment "Road Traffic" type: gui {
 			camera 'default' location: {1318.6512,3.5713,945.6612} target: {431.7016,495.2155,0.0};
 			light #ambient intensity: 180;
 			light #default intensity: 180 direction: {0.5, 0.5, -1};
-			event #mouse_down {ask simulation {do resume;}}
+			event #mouse_down {ask simulation {do resume();}}
 			species building aspect: base refresh: false;
 			species road aspect: base refresh: false;
 			species people refresh: true;
@@ -165,7 +165,7 @@ experiment "Multiple Layers" type: gui {
 				create people number: nb_people - nb;
 			} else {
 				ask (nb - nb_people) among people {
-					do die;
+					do die();
 				}
 
 			}

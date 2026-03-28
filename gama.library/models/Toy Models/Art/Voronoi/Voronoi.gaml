@@ -55,7 +55,7 @@ species center skills: [moving] parallel: true {
 	rgb color <- colors[int(self) mod length(colors)]; //rnd_color(255);
 	//Make the center of the cluster wander in the environment       
 	reflex wander {
-		do wander amplitude: 90.0;
+		do wander (amplitude: 90.0);
 	}
 
 	aspect default {
@@ -70,7 +70,7 @@ experiment voronoi type: gui autorun: true {
 			create center number: num_points - length(center);
 		} else {
 			ask (length(center) - num_points) among center {
-				do die;
+				do die();
 			}
 
 		}

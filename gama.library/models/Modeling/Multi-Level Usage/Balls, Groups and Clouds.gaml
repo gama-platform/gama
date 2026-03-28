@@ -337,7 +337,7 @@ species group {
 	//Reflex to disaggregate the group if it is too important ie the number of balls is greater than 80% of the total ball number
 	reflex self_disaggregate {
 		if ((length(members)) > (0.8 * (ball_number))) {
-			do disaggregate;
+			do disaggregate();
 		}
 
 	}
@@ -406,7 +406,7 @@ species cloud {
 		if (target_group != nil) {
 			float direction_target <- self towards (target_group);
 			ask group_delegation {
-				do move2 with: (with_heading:float(direction_target), with_speed:float(cloud_speed));
+				do move2  (with_heading:float(direction_target), with_speed:float(cloud_speed));
 			}
 
 		}
@@ -451,10 +451,10 @@ species cloud {
 		}
 
 		release list(group_delegation) as: group in: world {
-			do disaggregate;
+			do disaggregate();
 		}
 
-		do die;
+		do die();
 	}
 
 	aspect default {

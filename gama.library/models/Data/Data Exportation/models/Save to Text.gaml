@@ -21,7 +21,7 @@ global {
 	}
 	//Reflex that will pause the simulation when the number of cycles reach 100.
 	reflex end_simulation when: cycle = 100 {
-		do pause; 
+		do pause(); 
 	}
 }
 
@@ -42,7 +42,7 @@ species bug skills:[moving]{
 	
 	//Make the agent move randomly 
 	reflex move {
-		do wander;
+		do wander();
 	}
 	
 	aspect default {

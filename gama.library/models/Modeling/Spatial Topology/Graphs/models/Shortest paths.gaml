@@ -69,11 +69,11 @@ global {
 		} else if load_shortest_paths {
 			the_graph <- the_graph load_shortest_paths matrix(file(shortest_paths_file));
 		}
-		do compute_shortest_path;
+		do compute_shortest_path();
 	}
 	
 	reflex update {
-		do compute_shortest_path;
+		do compute_shortest_path();
 	}
 	
 	action compute_shortest_path() {

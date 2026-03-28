@@ -37,14 +37,14 @@ global
  
 	init
 	{
-		do load_map;
+		do load_map();
 	}
 
 }
 
 experiment Display
 {
-	user_command "Change destination" category: "Bing service" {ask simulation {do load_map;}}
+	user_command "Change destination" category: "Bing service" {ask simulation {do load_map();}}
 
 	 
 	output

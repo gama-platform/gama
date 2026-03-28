@@ -26,7 +26,7 @@ global {
 		// To get more reliable results, the inner statements can be executed several times (specified by the repeat: facet).
 		benchmark "Benchmark of closest_to operator" repeat: 100 {
 			ask people {
-				do get_closest_people;
+				do get_closest_people();
 			}
 		}
 	}

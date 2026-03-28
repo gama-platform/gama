@@ -47,7 +47,7 @@ global {
 		
 		}
 		ask centroids {
-			do die;
+			do die();
 		}
 		//create dummy centroids
 		create centroids number:k;//create dummy centroids
@@ -102,7 +102,7 @@ species dummy skills:[moving] {
 	}
 	reflex move
 	{
-		do wander;		
+		do wander();		
 	}
 }
 

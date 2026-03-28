@@ -37,7 +37,7 @@ global
 		//ask simulation of micro-model step one
 		ask Traffic.Adapter collect each.simulation
 		{
-			do _step_;
+			do _step_();
 		}
 
 		// tell the urban to evolve and interract with the traffic every 30 step = 1 month
@@ -45,7 +45,7 @@ global
 //			// tell the urban to grow up 
 			ask Urbanization."Adapter" collect each.simulation
 			{
-				do _step_;
+				do _step_();
 			}
 			loop r over: Traffic.Adapter[0].simulation.road
 			{
@@ -58,7 +58,7 @@ global
 					if (r.nb_people > threshold_number_people)
 					{
 						//we build a random road with hoping to solve the traffic jam
-						do build_a_new_road;
+						do build_a_new_road();
 					}
 	
 				}

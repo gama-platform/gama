@@ -66,7 +66,7 @@ global {
 		network <- as_edge_graph(pedestrian_path);
 		
 		ask pedestrian_path {
-			do build_intersection_areas pedestrian_graph: network;
+			do build_intersection_areas (pedestrian_graph: network);
 		}
 	
 		create people number:nb_people{
@@ -107,7 +107,7 @@ global {
 	}
 	
 	reflex stop when: empty(people) {
-		do pause;
+		do pause();
 	}
 	
 }
@@ -143,9 +143,9 @@ species people skills: [pedestrian]{
 
 	reflex move  {
 		if (final_waypoint = nil) {
-			do compute_virtual_path pedestrian_graph:network target: any_location_in(open_area) ;
+			do compute_virtual_path (pedestrian_graph:network, target: any_location_in(open_area)) ;
 		}
-		do walk ;
+		do walk() ;
 	}	
 	
 	aspect default {

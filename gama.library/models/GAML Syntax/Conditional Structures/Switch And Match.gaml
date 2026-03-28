@@ -33,7 +33,7 @@ global {
 	 * (2) match_between for a test on a range of numerical value
 	 */
 	reflex play {
-		ask rps_bot {do bot_play;}
+		ask rps_bot {do bot_play();}
 		switch first(rps_bot).bp+"vs"+my_play {
 			match_one ["ROCKvsPAPER", "PAPERvsSCISSORS", "SCISSORSvsROCK"] {
 				win_sign <- 1;

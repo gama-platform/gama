@@ -23,6 +23,7 @@ global {
 	int ants_number <- 200 min: 1;
 	//Frequency of update of the grid
 	int grid_frequency <- 1 min: 1 max: 100;
+	ddd
 	//Number of food places among the grid
 	int number_of_food_places <- 5 min: 1; 
 	float grid_transparency <- 1.0; 
@@ -127,7 +128,7 @@ species ant skills: [moving] control: fsm {
 	}
 	//Initial state to make the ant wander 
 	state wandering initial: true {
-		do wander(amplitude: 90.0);
+		do wander amplitude: 90.0;
 		float pr <- (ant_grid(location)).road;
 		transition to: carryingFood when: has_food;
 		transition to: followingRoad when: (pr > 0.05) and (pr < 4);

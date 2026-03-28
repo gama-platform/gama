@@ -111,13 +111,13 @@ global {
 		
 		if (previous_red_size_play_area != red_size_play_area) {
 			ask area where (each.team = "red") {
-				do update_size;
+				do update_size();
 			}
 			previous_red_size_play_area <- red_size_play_area;
 		}
 		if (previous_blue_size_play_area != blue_size_play_area) {
 			ask area where (each.team = "blue") {
-				do update_size;
+				do update_size();
 			}
 			previous_blue_size_play_area <- blue_size_play_area;
 		}
@@ -188,32 +188,32 @@ species player skills:[moving] {
 	
 	reflex defensive_behavior when:team_possession != team {
 		// the ball is not possessed by the team.
-		do apply_inertia;
+		do apply_inertia();
 		if (self = closest_red_player_from_the_ball or self = closest_blue_player_from_the_ball) {
-			do run_to_ball;
+			do run_to_ball();
 		}
 		else {
-			do defensive_move;
+			do defensive_move();
 		}
 	}
 	
 	reflex offensive_behavior when:team_possession = team {
-		do apply_inertia;
+		do apply_inertia();
 		if (possess_ball) {
-			do run_with_ball;
+			do run_with_ball();
 			if (distance_to_ennemy_goal < 30 and flip(1/(distance_to_ennemy_goal*distance_to_ennemy_goal/10+1))) {
 				// shoot !
-				do kick_ball_to_goal;
+				do kick_ball_to_goal();
 			}
 			else {
 				// pass !
 				if (distance_to_closest_ennemy < 5) {
 					if (flip(collective_mark)) {
-						do pass_the_ball;
+						do pass_the_ball();
 					}
 				}
 				else if flip(collective_mark/50) {
-					do pass_the_ball;
+					do pass_the_ball();
 				}
 			}
 		}
@@ -221,10 +221,10 @@ species player skills:[moving] {
 			(self = closest_red_player_from_the_ball or self = closest_blue_player_from_the_ball
 			or self = called_player)
 		) {
-			do run_to_ball;
+			do run_to_ball();
 		}
 		else {
-			do offensive_move;
+			do offensive_move();
 		}
 	}
 	
@@ -264,24 +264,24 @@ species player skills:[moving] {
 		// if close enough, catch the ball
 		if (location distance_to ball_agent.location < 1.5#m) {
 			if (self = called_player) {
-				do take_ball;
+				do take_ball();
 			}
 			else if (ball_agent.belong_to_team = "") {
 				if flip(1/(ball_agent.speed*recuperation_mark+1)) {
-					do take_ball;
+					do take_ball();
 				}
 			}
 			else {
 				if (team_possession = team) {
 					// result of a long pass for instance
 					if (flip(recuperation_mark*1.5)) {
-						do take_ball;
+						do take_ball();
 					}
 				}
 				else {
 					// interception of the ball
 					if (flip(recuperation_mark*0.8)) {
-						do take_ball;
+						do take_ball();
 					}
 				}
 			}
@@ -375,7 +375,7 @@ species player skills:[moving] {
 	action take_ball() {
 		if (ball_agent.belong_to_team != "" and ball_agent.belong_to_team != team) {
 			ask ball_agent.belong_to_player {
-				do loose_ball;
+				do loose_ball();
 			}
 		}
 		team_possession <- team;
@@ -450,13 +450,13 @@ species ball skills:[moving]{
 		if ((location.x+cos(heading)*speed) > 120) {
 			blue_score <- blue_score + 1;
 			ask world {
-				do reinit_phase;
+				do reinit_phase();
 			}
 		}
 		if ((location.x+cos(heading)*speed) < 0) {
 			red_score <- red_score + 1;
 			ask world {
-				do reinit_phase;
+				do reinit_phase();
 			}
 		}
 		do wander (amplitude:1.0);

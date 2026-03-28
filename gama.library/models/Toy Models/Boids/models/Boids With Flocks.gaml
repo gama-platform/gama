@@ -70,7 +70,7 @@ species flock skills: [moving] {
 		geometry buffered_shape <- shape + perception_range;
 		if !(empty(obstacle overlapping buffered_shape)) {
 			release list<agent>(members) as: boids in: world;
-			do die;
+			do die();
 		}
 
 	}
@@ -98,7 +98,7 @@ species flock skills: [moving] {
 					ask f {
 						release list<agent>(members) as: boids in: world returns: released_coms;
 						released_boids <- released_coms;
-						do die;
+						do die();
 					}
 
 					if (!empty(released_boids)) {
@@ -166,7 +166,7 @@ species flock skills: [moving] {
 		}
 
 		reflex movement {
-			do do_move;
+			do do_move();
 		}
 
 		aspect default {
