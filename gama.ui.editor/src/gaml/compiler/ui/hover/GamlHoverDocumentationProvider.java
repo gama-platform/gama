@@ -253,12 +253,12 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		// CASE do run_thread interval: 2#s;
 		if (facet.eContainer() instanceof S_Do sdo && sdo.getExpr() instanceof VariableRef vr) {
 			String key = EGaml.getInstance().getKeyOf(facet);
-			if (!ArtefactRegistry.getDoFacets().contains(key)) {
-				String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(sdo.getExpr());
-				IGamlDescription action = documenter.getGamlDocumentation(vr);
-				String doc = action == null ? "" : action.getDocumentation().get(key).toString();
-				return new Result(title, doc);
-			}
+			// if (!ArtefactRegistry.getDoFacets().contains(key)) {
+			String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(sdo.getExpr());
+			IGamlDescription action = documenter.getGamlDocumentation(vr);
+			String doc = action == null ? "" : action.getDocumentation().get(key).toString();
+			return new Result(title, doc);
+			// }
 		}
 		String facetName = facet.getKey();
 		if (facetName.endsWith(":")) { facetName = facetName.substring(0, facetName.length() - 1); }
@@ -311,12 +311,12 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				&& el.eContainer() instanceof Facet facet && facet.eContainer() instanceof S_Do sdo
 				&& sdo.getExpr() instanceof VariableRef v) {
 			String key = EGaml.getInstance().getKeyOf(pair);
-			if (!ArtefactRegistry.getDoFacets().contains(key)) {
-				String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(sdo.getExpr());
-				IGamlDescription action = documenter.getGamlDocumentation(v);
-				String doc = action == null ? "" : action.getDocumentation().get(key).toString();
-				return new Result(title, doc);
-			}
+			// if (!ArtefactRegistry.getDoFacets().contains(key)) {
+			String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(sdo.getExpr());
+			IGamlDescription action = documenter.getGamlDocumentation(v);
+			String doc = action == null ? "" : action.getDocumentation().get(key).toString();
+			return new Result(title, doc);
+			// }
 		}
 		// CASE do run_thread (interval: 2#s); unknown aa <- self.run_thread (interval: 2#s); aa <- run_thread
 		// (interval: 2#s);
