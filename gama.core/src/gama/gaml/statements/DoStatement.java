@@ -1,6 +1,6 @@
 /*******************************************************************************************************
  *
- * DoStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
+ * DoStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
  * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
@@ -8,8 +8,6 @@
  *
  ********************************************************************************************************/
 package gama.gaml.statements;
-
-import java.util.concurrent.atomic.AtomicReference;
 
 import gama.annotations.doc;
 import gama.annotations.example;
@@ -21,8 +19,8 @@ import gama.annotations.usage;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
-import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.annotations.serializer;
+import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.serialization.StatementSerializer;
 import gama.api.exceptions.GamaRuntimeException;
@@ -32,31 +30,35 @@ import gama.api.gaml.statements.AbstractStatementSequence;
 import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;
-import gama.api.kernel.object.IClass;
-import gama.api.kernel.species.IModelSpecies;
-import gama.api.runtime.scope.IExecutionResult;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 import gama.gaml.statements.DoStatement.DoSerializer;
 
 /**
- * Implements the {@code do} / {@code invoke} / {@code .} statement which lets an agent execute an action or
+ * Implements the {@code do} / {@code invoke} / {@code .} statement which allows an agent to execute an action or
  * primitive at runtime.
  *
- * <p><b>Thread-safety:</b> this class is safe for concurrent use by multiple threads (e.g. parallel
- * simulations). The two pieces of shared mutable state are protected as follows:
- * <ul>
- *   <li>{@link #args} – held in an {@link java.util.concurrent.atomic.AtomicReference} so that
- *       {@link #setFormalArgs(Arguments)} and {@link #getRuntimeArgs(IScope)} never observe a
- *       partially-written reference.</li>
- *   <li>{@link #targetSpecies} – also held in an {@link java.util.concurrent.atomic.AtomicReference}
- *       and lazily initialised via {@link java.util.concurrent.atomic.AtomicReference#compareAndSet}
- *       inside {@link #getContext(IScope)}, ensuring that the resolution is performed exactly once even
- *       when multiple threads race to initialise the field.</li>
- * </ul>
+ * <h2>Execution model</h2>
+ * <p>
+ * All three syntactic forms of action calls are normalised at parse time (see
+ * {@link gaml.compiler.gaml.parsing.GamlSyntacticConverter#processDo}) and compiled at validation time (see
+ * {@link gaml.compiler.gaml.descriptions.DoDescription#validate()}) into a single
+ * {@link gaml.compiler.gaml.expression.ActionCallOperator} expression that is stored in the
+ * {@link IInternalFacets#INTERNAL_FUNCTION} facet. At runtime, {@link #privateExecuteIn(IScope)} simply evaluates that
+ * expression via {@code function.value(scope)}, so all lookup, dispatch, and argument-passing logic lives in
+ * {@link gaml.compiler.gaml.expression.ActionCallOperator}.
  * </p>
  *
- * <p>Originally written by drogoul, modified on 7 févr. 2010.</p>
+ * <h2>Thread safety</h2>
+ * <p>
+ * All fields of this class are either {@code final} or encapsulated inside an
+ * {@link gaml.compiler.gaml.expression.ActionCallOperator} that is itself thread-safe. No additional synchronisation is
+ * needed here.
+ * </p>
+ *
+ * <p>
+ * Originally written by drogoul, modified on 7 févr. 2010.
+ * </p>
  */
 @symbol (
 		name = { IKeyword.DO, IKeyword.INVOKE, IKeyword._DOT },
@@ -70,36 +72,18 @@ import gama.gaml.statements.DoStatement.DoSerializer;
 		symbols = IKeyword.CHART)
 @facets (
 		value = { @facet (
-				name = IKeyword.WITH,
-				type = IType.MAP,
-				of = IType.NONE,
-				index = IType.STRING,
+				name = IInternalFacets.INTERNAL_FUNCTION,
+				type = IType.NONE,
 				optional = true,
-				internal = true,
-				doc = @doc (
-						value = "a map expression containing the parameters of the action",
-						deprecated = "Use the functional (with comma separated values inside parentheses, optionally prefixed by the argument name) form to pass the arguments")),
+				internal = true),
 				@facet (
-						name = IKeyword.RETURNS,
-						type = IType.NEW_TEMP_ID,
-						optional = true,
-						doc = @doc (
-								value = "Specifies the name of the temporary variable that will contain the result.",
-								deprecated = "Use the functional form to assign the result to a variable")),
-				@facet (
-						name = IKeyword.ACTION,
-						type = IType.ID,
-						optional = false,
-						doc = @doc ("the name of the action or primitive called")),
-				@facet (
-						name = IKeyword.SYNTHETIC_DO_TARGET,
+						name = IInternalFacets.INTERNAL_TARGET,
 						type = IType.NONE,
 						optional = true,
-						internal = true,
-						doc = @doc ("the target agent for the action. Internal use only.")),
+						internal = true),
 				@facet (
-						name = IKeyword.INTERNAL_FUNCTION,
-						type = IType.NONE,
+						name = IInternalFacets.INTERNAL_NAME,
+						type = IType.LABEL,
 						optional = true,
 						internal = true), },
 		omissible = IKeyword.ACTION)
@@ -181,10 +165,33 @@ import gama.gaml.statements.DoStatement.DoSerializer;
 public class DoStatement extends AbstractStatementSequence implements IStatement.WithArgs {
 
 	/**
-	 * The Class DoSerializer.
+	 * Serialiser for {@code do} / {@code invoke} statements.
+	 *
+	 * <p>
+	 * Serialises argument names and values from child arg descriptions. Only the facets listed in
+	 * {@link ArtefactRegistry#DO_FACETS} are serialised; internal housekeeping facets (e.g.
+	 * {@link IInternalFacets#INTERNAL_FUNCTION}) are excluded.
+	 * </p>
 	 */
 	public static class DoSerializer extends StatementSerializer {
 
+		/**
+		 * Serialises a single argument facet.
+		 *
+		 * <p>
+		 * Positional arguments (whose name is a number) are serialised as bare values; named arguments are serialised
+		 * as {@code name:value} pairs.
+		 * </p>
+		 *
+		 * @param desc
+		 *            the enclosing statement description
+		 * @param arg
+		 *            the argument description
+		 * @param sb
+		 *            the buffer to append to
+		 * @param includingBuiltIn
+		 *            whether to include built-in symbols
+		 */
 		@Override
 		protected void serializeArg(final IDescription desc, final IDescription arg, final StringBuilder sb,
 				final boolean includingBuiltIn) {
@@ -195,125 +202,149 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 			} else {
 				sb.append(name).append(":").append(value.serializeToGaml(includingBuiltIn));
 			}
-
 		}
 
+		/**
+		 * Serialises the arguments of the action call from the compiled
+		 * {@link gaml.compiler.gaml.expression.ActionCallOperator} stored in the
+		 * {@link IInternalFacets#INTERNAL_FUNCTION} facet.
+		 *
+		 * <p>
+		 * Falls back to the super-class implementation (which uses {@code passedArgs} or formal arg children) only when
+		 * no compiled expression is available (e.g. during partial compilation).
+		 * </p>
+		 *
+		 * @param s
+		 *            the statement description
+		 * @param sb
+		 *            the buffer to append to
+		 * @param includingBuiltIn
+		 *            whether to include built-in symbols
+		 */
+		@Override
+		protected void serializeArgs(final IDescription s, final StringBuilder sb, final boolean includingBuiltIn) {
+			final IExpressionDescription functionFacet = s.getFacet(IInternalFacets.INTERNAL_FUNCTION);
+			if (functionFacet != null) {
+				final IExpression compiled = functionFacet.getExpression();
+				if (compiled instanceof gaml.compiler.gaml.expression.ActionCallOperator aco) {
+					final StringBuilder argsBuf = new StringBuilder();
+					aco.argsToGaml(argsBuf, includingBuiltIn);
+					if (argsBuf.length() > 0) { sb.append("(").append(argsBuf).append(")"); }
+					return;
+				}
+			}
+			// Fallback: no compiled expression available
+			super.serializeArgs(s, sb, includingBuiltIn);
+		}
+
+		/**
+		 * Serialises a single facet value, returning {@code null} for internal/housekeeping facets that should not
+		 * appear in the serialised output.
+		 *
+		 * @param s
+		 *            the enclosing statement description
+		 * @param key
+		 *            the facet name
+		 * @param includingBuiltIn
+		 *            whether to include built-in symbols
+		 * @return the serialised facet value, or {@code null} to skip this facet
+		 */
 		@Override
 		public String serializeFacetValue(final IDescription s, final String key, final boolean includingBuiltIn) {
-			if (!ArtefactRegistry.DO_FACETS.contains(key)) return null;
-			return super.serializeFacetValue(s, key, includingBuiltIn);
+			return null;
 		}
-
 	}
 
 	/**
-	 * The args. Uses {@link AtomicReference} so that {@link #setFormalArgs(Arguments)} and
-	 * {@link #getRuntimeArgs(IScope)} are safe when called from multiple threads simultaneously.
+	 * The compiled action-call expression. After validation this is always an
+	 * {@link gaml.compiler.gaml.expression.ActionCallOperator} that encapsulates the target agent expression, the
+	 * action description, and the compiled arguments. {@link #privateExecuteIn(IScope)} simply evaluates this
+	 * expression.
+	 *
+	 * <p>
+	 * Immutable after construction (set in the constructor from the description's {@code INTERNAL_FUNCTION} facet).
+	 * </p>
 	 */
-	final AtomicReference<Arguments> args = new AtomicReference<>();
-
-	/** The target species name. Immutable after construction. */
-	final String targetSpeciesName;
+	final IExpression function;
 
 	/**
-	 * The resolved target species. Lazily initialised via double-checked locking inside
-	 * {@link #getContext(IScope)} so that exactly one initialisation happens even under concurrent
-	 * access.
-	 */
-	final AtomicReference<IClass> targetSpecies = new AtomicReference<>();
-
-	/** The function. */
-	final IExpression function, returns;
-
-	/**
-	 * Instantiates a new do statement.
+	 * Constructs a {@code DoStatement} from its compile-time description.
+	 *
+	 * <p>
+	 * The compiled {@link gaml.compiler.gaml.expression.ActionCallOperator} produced during validation is retrieved
+	 * from the {@link IInternalFacets#INTERNAL_FUNCTION} facet and stored as {@link #function}.
+	 * </p>
 	 *
 	 * @param desc
-	 *            the desc
+	 *            the compile-time description; must not be {@code null}
 	 */
 	public DoStatement(final IDescription desc) {
 		super(desc);
-		targetSpeciesName = getLiteral(IKeyword.SYNTHETIC_DO_TARGET_SPECIES);
-		function = getFacet(IKeyword.INTERNAL_FUNCTION);
-		returns = getFacet(IKeyword.RETURNS);
-		setName(getLiteral(IKeyword.ACTION));
+		function = getFacet(IInternalFacets.INTERNAL_FUNCTION);
+		setName(function != null ? function.getName() : getLiteral(IInternalFacets.INTERNAL_NAME));
 	}
 
-	@Override
-	public void enterScope(final IScope scope) {
-		super.enterScope(scope);
-	}
-
-	@Override
-	public void setFormalArgs(final Arguments args) { this.args.set(args); }
+	// -------------------------------------------------------------------------
+	// IStatement.WithArgs – args are now owned by ActionCallOperator
+	// -------------------------------------------------------------------------
 
 	/**
-	 * Gets the runtime args.
+	 * No-op implementation. Arguments are now encapsulated inside the
+	 * {@link gaml.compiler.gaml.expression.ActionCallOperator} stored in {@link #function} and do not need to be set
+	 * separately.
+	 *
+	 * @param args
+	 *            ignored
+	 */
+	@Override
+	public void setFormalArgs(final Arguments args) {
+		// Arguments are now embedded in the ActionCallOperator; nothing to do here.
+	}
+
+	/**
+	 * No-op implementation. Runtime argument resolution is handled by
+	 * {@link gaml.compiler.gaml.expression.ActionCallOperator#getRuntimeArgs(IScope)}.
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the runtime args
+	 *            ignored
+	 * @param args
+	 *            ignored
 	 */
-	public Arguments getRuntimeArgs(final IScope scope) {
-		final Arguments currentArgs = args.get();
-		if (currentArgs == null) return null;
-		// Dynamic arguments necessary (see #2943, #2922, plus issue with multiple parallel simulations)
-		return currentArgs.resolveAgainst(scope);
-	}
-
-	/**
-	 * Returns the species on which to find the action. If a species exists, we find the corresponding action.
-	 * Otherwise, we return the species of the agent.
-	 * <p>
-	 * Thread-safe: uses {@link AtomicReference#compareAndSet} so that exactly one thread performs the
-	 * initialisation even when multiple threads call this method simultaneously on the same instance.
-	 * </p>
-	 */
-	private IClass getContext(final IScope scope) {
-		IClass current = targetSpecies.get();
-		if (current != null) return current;
-		IClass resolved;
-		if (targetSpeciesName != null) {
-			IModelSpecies model = scope.getModel();
-			resolved = model.getClass(targetSpeciesName);
-			if (resolved == null) { resolved = model.getSpecies(targetSpeciesName); }
-		} else {
-			resolved = scope.getAgent().getSpecies();
-		}
-		// Only store if not already set by another thread; either way, return the winner's value.
-		targetSpecies.compareAndSet(null, resolved);
-		return targetSpecies.get();
-	}
-
-	@Override
-	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
-		final IClass species = getContext(scope);
-		if (species == null)
-			throw GamaRuntimeException.error("Impossible to find a species or a class to execute " + getName(), scope);
-		final IStatement.WithArgs executer = species.getAction(name);
-		Object result = null;
-		if (executer != null) {
-			final IExecutionResult er = scope.execute(executer, getRuntimeArgs(scope));
-			result = er.getValue();
-		} else if (function != null) {
-			result = function.value(scope);
-		} else
-			throw GamaRuntimeException.error("Impossible to find action " + getName() + " in " + species.getName(),
-					scope);
-		if (returns != null) {
-			String var = returns.literalValue();
-			scope.addVarWithValue(var, result);
-		}
-		return result;
-	}
-
 	@Override
 	public void setRuntimeArgs(final IScope scope, final Arguments args) {}
 
+	// -------------------------------------------------------------------------
+	// Execution
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Executes the action call by evaluating the compiled {@link gaml.compiler.gaml.expression.ActionCallOperator}.
+	 *
+	 * <p>
+	 * The operator resolves the target agent, locates the action in the appropriate species or class, and passes the
+	 * compiled arguments — all in a single {@code value(scope)} call. No additional species lookup or argument
+	 * resolution is required here.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the current execution scope
+	 * @return the value returned by the action, or {@code null} when the action returns nothing or {@link #function} is
+	 *         {@code null}
+	 * @throws GamaRuntimeException
+	 *             if the action throws a runtime error
+	 */
+	@Override
+	public Object privateExecuteIn(final IScope scope) throws GamaRuntimeException {
+		if (function == null) return null;
+		return function.value(scope);
+	}
+
+	/**
+	 * Disposes of this statement by delegating to the superclass. The {@link #function} expression is managed
+	 * externally (as part of the species description) and is not disposed here.
+	 */
 	@Override
 	public void dispose() {
-		final Arguments currentArgs = args.getAndSet(null);
-		if (currentArgs != null) { currentArgs.dispose(); }
 		super.dispose();
 	}
 

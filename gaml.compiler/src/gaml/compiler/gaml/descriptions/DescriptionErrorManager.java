@@ -5,8 +5,8 @@ package gaml.compiler.gaml.descriptions;
 
 import org.eclipse.emf.ecore.EObject;
 
-import gama.annotations.constants.IKeyword;
 import gama.api.compilation.GamlCompilationError;
+import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.validation.IValidationContext;
 import gama.api.constants.IGamlIssue;
@@ -56,7 +56,7 @@ public abstract class DescriptionErrorManager implements IDescription {
 		// throws a runtime exception if there is no way to signal the error in the source
 		// (i.e. we are probably in a runtime scenario)
 		if (e == null || e.eResource() == null
-				|| e.eResource().getURI().path().contains(IKeyword.SYNTHETIC_RESOURCES_PREFIX)) {
+				|| e.eResource().getURI().path().contains(IInternalFacets.SYNTHETIC_RESOURCES_PREFIX)) {
 			if (type == GamlCompilationError.Type.Error)
 				throw GamaRuntimeException.error(s, gama.api.GAMA.getRuntimeScope());
 			return;

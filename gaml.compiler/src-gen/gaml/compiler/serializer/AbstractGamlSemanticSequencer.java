@@ -251,16 +251,16 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_S_Display(context, (S_Display) semanticObject); 
 				return; 
 			case GamlPackage.SDO:
-				if (rule == grammarAccess.getStatementRule()) {
-					sequence_FacetsAndBlock_S_ActionCall_S_Do(context, (S_Do) semanticObject); 
+				if (rule == grammarAccess.getS_ActionCallRule()) {
+					sequence_S_ActionCall(context, (S_Do) semanticObject); 
+					return; 
+				}
+				else if (rule == grammarAccess.getStatementRule()) {
+					sequence_S_ActionCall_S_Do(context, (S_Do) semanticObject); 
 					return; 
 				}
 				else if (rule == grammarAccess.getS_DoRule()) {
-					sequence_FacetsAndBlock_S_Do(context, (S_Do) semanticObject); 
-					return; 
-				}
-				else if (rule == grammarAccess.getS_ActionCallRule()) {
-					sequence_S_ActionCall(context, (S_Do) semanticObject); 
+					sequence_S_Do(context, (S_Do) semanticObject); 
 					return; 
 				}
 				else break;
@@ -914,34 +914,6 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Statement returns S_Do
-	 *
-	 * Constraint:
-	 *     ((target=Primary key='.' expr=Function) | ((key='do' | key='invoke') expr=AbstractRef facets+=Facet* block=Block?))
-	 * </pre>
-	 */
-	protected void sequence_FacetsAndBlock_S_ActionCall_S_Do(ISerializationContext context, S_Do semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
-	 *     S_Do returns S_Do
-	 *
-	 * Constraint:
-	 *     ((key='do' | key='invoke') expr=AbstractRef facets+=Facet* block=Block?)
-	 * </pre>
-	 */
-	protected void sequence_FacetsAndBlock_S_Do(ISerializationContext context, S_Do semanticObject) {
-		genericSequencer.createSequence(context, semanticObject);
-	}
-	
-	
-	/**
-	 * <pre>
-	 * Contexts:
 	 *     S_Section returns S_Experiment
 	 *     S_Experiment returns S_Experiment
 	 *     GamlDefinition returns S_Experiment
@@ -1346,6 +1318,20 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
+	 *     Statement returns S_Do
+	 *
+	 * Constraint:
+	 *     (((key='do' | key='invoke') expr=AbstractRef facets+=Facet*) | (target=Primary key='.' expr=Function))
+	 * </pre>
+	 */
+	protected void sequence_S_ActionCall_S_Do(ISerializationContext context, S_Do semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
 	 *     Statement returns S_Assignment
 	 *     S_Assignment returns S_Assignment
 	 *
@@ -1409,6 +1395,20 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * </pre>
 	 */
 	protected void sequence_S_Display(ISerializationContext context, S_Display semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     S_Do returns S_Do
+	 *
+	 * Constraint:
+	 *     ((key='do' | key='invoke') expr=AbstractRef facets+=Facet*)
+	 * </pre>
+	 */
+	protected void sequence_S_Do(ISerializationContext context, S_Do semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	

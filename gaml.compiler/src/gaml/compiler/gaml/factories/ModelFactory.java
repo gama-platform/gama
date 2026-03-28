@@ -16,7 +16,7 @@ import static gama.annotations.constants.IKeyword.GLOBAL;
 import static gama.annotations.constants.IKeyword.NAME;
 import static gama.annotations.constants.IKeyword.PARENT;
 import static gama.annotations.constants.IKeyword.SCHEDULES;
-import static gaml.compiler.gaml.IInternalFacets.ORIGIN;
+import static gama.api.compilation.IInternalFacets.ORIGIN;
 
 import java.util.Collection;
 import java.util.Collections;

@@ -14,6 +14,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
@@ -325,7 +326,7 @@ public abstract class Symbol implements ISymbol {
 			getDescription().visitFacets((name, ed) -> {
 				if (IKeyword.NAME.equals(name)) {
 					final String n = getFacet(IKeyword.NAME).literalValue();
-					if (n.startsWith(IKeyword.INTERNAL)) return true;
+					if (n.startsWith(IInternalFacets.INTERNAL)) return true;
 				}
 				IExpression expr = null;
 				if (ed != null) { expr = ed.getExpression(); }

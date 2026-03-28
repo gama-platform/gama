@@ -32,8 +32,8 @@ import org.eclipse.xtext.resource.XtextResourceSet;
 
 import com.google.common.collect.Iterables;
 
-import gama.annotations.constants.IKeyword;
 import gama.api.GAMA;
+import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IModelDescription;
@@ -413,8 +413,8 @@ public class GamlResourceServices {
 			}
 		}
 		if (rs == null) { rs = getPoolSet(); }
-		final URI uri =
-				URI.createURI(IKeyword.SYNTHETIC_RESOURCES_PREFIX + resourceCount.getAndIncrement() + ".gaml", false);
+		final URI uri = URI.createURI(
+				IInternalFacets.SYNTHETIC_RESOURCES_PREFIX + resourceCount.getAndIncrement() + ".gaml", false);
 		final GamlResource result = (GamlResource) rs.createResource(uri);
 		final IMap<URI, String> imports = GamaMapFactory.create();
 		imports.put(uri, null);

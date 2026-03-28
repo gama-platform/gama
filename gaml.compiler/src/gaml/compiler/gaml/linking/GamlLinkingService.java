@@ -94,7 +94,7 @@ public class GamlLinkingService extends DefaultLinkingService {
 	 * @return the e object
 	 */
 	public EObject create(final String name, final EClass clazz) {
-		final GamlDefinition stub = (GamlDefinition) EGaml.getInstance().getFactory().create(clazz);
+		final GamlDefinition stub = (GamlDefinition) EGaml.getFactory().create(clazz);
 		stub.setName(name);
 		return stub;
 	}
@@ -138,22 +138,22 @@ public class GamlLinkingService extends DefaultLinkingService {
 		final List<EObject> result = super.getLinkedObjects(context, ref, node);
 		// If the default implementation resolved the link, return it
 		if (result != null && !result.isEmpty()) return result;
-		
+
 		final String name = getCrossRefNodeAsString(node);
 		final EClass eclass = ref.getEReferenceType();
-		
+
 		// Check if this is a known symbol type that should be added to stubs
 		if (GamlPackage.eINSTANCE.getTypeDefinition().isSuperTypeOf(eclass)
 				|| GamlPackage.eINSTANCE.getActionDefinition().isSuperTypeOf(eclass)
 				|| GamlPackage.eINSTANCE.getVarDefinition().isSuperTypeOf(eclass))
 			return addSymbol(name, eclass);
-		
+
 		// Check for local variables in the execution context
 		final GamlResource resource = (GamlResource) context.eResource();
 		final IExecutionContext additionalContext = resource.getCache().getOrCreate(resource).get("linking");
 		if (additionalContext != null && additionalContext.hasLocalVar(name))
 			return Collections.singletonList(create(name, eclass));
-		
+
 		return Collections.emptyList();
 	}
 }

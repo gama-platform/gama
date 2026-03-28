@@ -188,4 +188,10 @@ public interface IExpressionDescriptionFactory {
 	 */
 	IExpressionDescription createBlock(ISyntacticElement expr);
 
+	/**
+	 * @param equals
+	 * @return
+	 */
+	IExpressionDescription createSelfOrSuper(boolean isSelf);
+
 }

@@ -582,12 +582,12 @@ public class GamlExpressionFactory implements IExpressionFactory {
 	 *            the compilation context for resolving references
 	 * @return a new Arguments object containing parsed parameters, or null if args is null
 	 */
-	@Override
-	public Arguments createArgumentMap(final IActionDescription action, final IExpressionDescription args,
-			final IDescription context) {
-		if (args == null) return null;
-		return GamlExpressionCompiler.getInstance().compileArguments(action, args.getTarget(), context, false);
-	}
+	// @Override
+	// public Arguments createArgumentMap(final IActionDescription action, final IExpressionDescription args,
+	// final IDescription context) {
+	// if (args == null) return null;
+	// return GamlExpressionCompiler.getInstance().compileArguments(action, args.getTarget(), context, false);
+	// }
 
 	/**
 	 * Creates a variable expression with the specified parameters. This method creates different types of variable

@@ -20,7 +20,6 @@ import com.google.common.cache.CacheBuilder;
 import gama.api.GAMA;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
-import gama.api.compilation.factories.IExpressionFactory;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionCompiler;
 import gama.api.gaml.expressions.IExpressionDescription;
@@ -46,8 +45,9 @@ import gaml.compiler.gaml.resource.GamlSyntheticResourcesServices;
  *
  * <h2>Stateless Architecture:</h2>
  * <p>
- * This class is designed to be stateless. All mutable compilation state is maintained in {@link ExpressionCompilationContext}
- * instances that are created per compilation session and passed through method calls. This design enables:
+ * This class is designed to be stateless. All mutable compilation state is maintained in
+ * {@link ExpressionCompilationContext} instances that are created per compilation session and passed through method
+ * calls. This design enables:
  * </p>
  * <ul>
  * <li>Thread-safe operation without ThreadLocal or synchronization</li>
@@ -75,9 +75,9 @@ import gaml.compiler.gaml.resource.GamlSyntheticResourcesServices;
  *
  * <h2>Usage Pattern:</h2>
  * <p>
- * Typically invoked through an IExpressionFactory (the default being GAML.getExpressionFactory()). A ExpressionCompilationContext
- * is created per compilation request and maintains compilation state including current species, types manager, and
- * validation context.
+ * Typically invoked through an IExpressionFactory (the default being GAML.getExpressionFactory()). A
+ * ExpressionCompilationContext is created per compilation request and maintains compilation state including current
+ * species, types manager, and validation context.
  * </p>
  *
  * @author Alexis Drogoul (alexis.drogoul@ird.fr)
@@ -194,4 +194,24 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 		}
 	}
 
+	/**
+	 * Compile field access.
+	 *
+	 * @param ownerExpr
+	 *            the owner expr
+	 * @param fieldExpr
+	 *            the field expr
+	 * @param parsingContext
+	 *            the parsing context
+	 * @return the i expression
+	 */
+	@Override
+	public IExpression compileActionCall(final EObject owner, final EObject field, final IDescription parsingContext) {
+		if (owner instanceof Expression ownerExpr && field instanceof Expression fieldExpr) {
+			try (final ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext)) {
+				return new ExpressionCompilationSwitch(ctx).compileFieldAccess(ownerExpr, fieldExpr, null);
+			}
+		}
+		return null;
+	}
 }

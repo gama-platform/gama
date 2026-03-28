@@ -506,12 +506,6 @@ public interface IKeyword {
 	/** The intensity. */
 	String INTENSITY = "intensity";
 
-	/** The internal. */
-	String INTERNAL = "_internal_";
-
-	/** The internal function. */
-	String INTERNAL_FUNCTION = "internal_function";
-
 	/** The invoke. */
 	String INVOKE = "invoke";
 
@@ -1011,18 +1005,6 @@ public interface IKeyword {
 
 	/** The switch. */
 	String SWITCH = "switch";
-
-	/** The synthetic. */
-	String SYNTHETIC = "__synthetic__";
-
-	/** The synthetic resources prefix. */
-	String SYNTHETIC_RESOURCES_PREFIX = "__synthetic__";
-
-	/** The synthetic do target. */
-	String SYNTHETIC_DO_TARGET = "__target__";
-
-	/** The synthetic do target species. */
-	String SYNTHETIC_DO_TARGET_SPECIES = "__target_species__";
 
 	/** The table. */
 	String TABLE = "table";

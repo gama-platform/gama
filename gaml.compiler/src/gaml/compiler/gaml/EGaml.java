@@ -20,6 +20,7 @@ import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.ast.ISyntacticFactory;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.dev.COUNTER;
@@ -135,7 +136,7 @@ public class EGaml {
 		return switch (o) {
 			case S_Reflex r -> {
 				String s = r.getName();
-				yield s == null ? IKeyword.INTERNAL + getKeyOf(r) + COUNTER.COUNT() : s;
+				yield s == null ? IInternalFacets.INTERNAL + getKeyOf(r) + COUNTER.COUNT() : s;
 			}
 			case Statement s when IKeyword.METHOD.equals(s.getKey()) -> getNameOf(s.getExpr());
 			case GamlDefinition g -> g.getName();
@@ -516,7 +517,7 @@ public class EGaml {
 	 *
 	 * @return the factory
 	 */
-	public GamlFactory getFactory() { return (GamlFactory) GamlPackage.eINSTANCE.getEFactoryInstance(); }
+	public static GamlFactory getFactory() { return (GamlFactory) GamlPackage.eINSTANCE.getEFactoryInstance(); }
 
 	/**
 	 * Save an eObject into a string

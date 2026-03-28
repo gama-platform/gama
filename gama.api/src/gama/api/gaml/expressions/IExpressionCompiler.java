@@ -140,4 +140,17 @@ public interface IExpressionCompiler<T> {
 	Arguments compileArguments(IActionDescription action, EObject eObject, IDescription context,
 			boolean compileArgValues);
 
+	/**
+	 * Compile field access.
+	 *
+	 * @param ownerExpr
+	 *            the owner expr
+	 * @param fieldExpr
+	 *            the field expr
+	 * @param parsingContext
+	 *            the parsing context
+	 * @return the i expression
+	 */
+	IExpression compileActionCall(final EObject ownerExpr, final EObject fieldExpr, final IDescription parsingContext);
+
 }

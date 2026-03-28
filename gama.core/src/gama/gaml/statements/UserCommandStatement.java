@@ -27,6 +27,7 @@ import gama.annotations.constants.IKeyword;
 import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.annotations.validator;
+import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
@@ -52,18 +53,18 @@ import gama.gaml.statements.UserCommandStatement.UserCommandValidator;
 /**
  * Written by drogoul Modified on 7 févr. 2010
  *
- * <p><b>Thread-safety:</b> this class is safe for concurrent use by multiple threads (e.g. parallel
- * simulations). The shared mutable state is protected as follows:
+ * <p>
+ * <b>Thread-safety:</b> this class is safe for concurrent use by multiple threads (e.g. parallel simulations). The
+ * shared mutable state is protected as follows:
  * <ul>
- *   <li>{@link #args} – the formal {@link Arguments} set once by {@link #setFormalArgs(Arguments)} is
- *       held in an {@link AtomicReference} so that concurrent reads inside
- *       {@link #privateExecuteIn(IScope)} always observe a consistent reference.</li>
- *   <li>{@link #runtimeArgs} – set by {@link #setRuntimeArgs(IScope, Arguments)} and consumed (read
- *       then cleared) inside {@link #privateExecuteIn(IScope)}; held in an {@link AtomicReference}
- *       and consumed atomically via {@link AtomicReference#getAndSet} to eliminate the read-then-clear
- *       race.</li>
- *   <li>{@link #category} – lazily initialised; declared {@code volatile} so the initialised value
- *       is immediately visible to all threads.</li>
+ * <li>{@link #args} – the formal {@link Arguments} set once by {@link #setFormalArgs(Arguments)} is held in an
+ * {@link AtomicReference} so that concurrent reads inside {@link #privateExecuteIn(IScope)} always observe a consistent
+ * reference.</li>
+ * <li>{@link #runtimeArgs} – set by {@link #setRuntimeArgs(IScope, Arguments)} and consumed (read then cleared) inside
+ * {@link #privateExecuteIn(IScope)}; held in an {@link AtomicReference} and consumed atomically via
+ * {@link AtomicReference#getAndSet} to eliminate the read-then-clear race.</li>
+ * <li>{@link #category} – lazily initialised; declared {@code volatile} so the initialised value is immediately visible
+ * to all threads.</li>
  * </ul>
  * </p>
  */
@@ -139,7 +140,7 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 		public void validate(final IDescription description) {
 			super.validate(description);
 			final String action = description.getLitteral(ACTION);
-			if (action != null && action.contains(SYNTHETIC)) {
+			if (action != null && action.contains(IInternalFacets.SYNTHETIC)) {
 				description.warning(
 						"This use of 'action' is deprecated. Move the sequence to execute at the end of the 'user_command' statement instead.",
 						IGamlIssue.DEPRECATED, ACTION, (String[]) null);
@@ -171,14 +172,14 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 	}
 
 	/**
-	 * The formal args. Uses {@link AtomicReference} so that {@link #setFormalArgs(Arguments)} and
-	 * the reads inside {@link #privateExecuteIn(IScope)} are safe when called from multiple threads.
+	 * The formal args. Uses {@link AtomicReference} so that {@link #setFormalArgs(Arguments)} and the reads inside
+	 * {@link #privateExecuteIn(IScope)} are safe when called from multiple threads.
 	 */
 	final AtomicReference<Arguments> args = new AtomicReference<>();
 
 	/**
-	 * The runtime args. Uses {@link AtomicReference} so that {@link #setRuntimeArgs(IScope, Arguments)}
-	 * and the read-then-clear in {@link #privateExecuteIn(IScope)} are safe across threads.
+	 * The runtime args. Uses {@link AtomicReference} so that {@link #setRuntimeArgs(IScope, Arguments)} and the
+	 * read-then-clear in {@link #privateExecuteIn(IScope)} are safe across threads.
 	 */
 	final AtomicReference<Arguments> runtimeArgs = new AtomicReference<>();
 
@@ -186,8 +187,8 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 	final String actionName;
 
 	/**
-	 * The category. Declared {@code volatile} because it can be lazily initialised by
-	 * {@link #getCategory()} after construction.
+	 * The category. Declared {@code volatile} because it can be lazily initialised by {@link #getCategory()} after
+	 * construction.
 	 */
 	volatile String category;
 
@@ -225,7 +226,9 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 	 *            the new formal args
 	 */
 	@Override
-	public void setFormalArgs(final Arguments args) { this.args.set(args); }
+	public void setFormalArgs(final Arguments args) {
+		this.args.set(args);
+	}
 
 	@Override
 	public void setChildren(final Iterable<? extends ISymbol> children) {
@@ -260,9 +263,7 @@ public class UserCommandStatement extends AbstractStatementSequence implements I
 			final Arguments currentRuntimeArgs = runtimeArgs.getAndSet(null);
 			final Arguments tempArgs = new Arguments(args.get());
 			if (currentRuntimeArgs != null) { tempArgs.complementWith(currentRuntimeArgs); }
-			if (!isWorkaroundForIssue1595) {
-				return scope.execute(executer, tempArgs).getValue();
-			}
+			if (!isWorkaroundForIssue1595) return scope.execute(executer, tempArgs).getValue();
 			final IPopulation<ISimulationAgent> simulations = scope.getExperiment().getSimulationPopulation();
 			for (final ISimulationAgent sim : simulations.iterable(scope)) { scope.execute(executer, sim, tempArgs); }
 		}

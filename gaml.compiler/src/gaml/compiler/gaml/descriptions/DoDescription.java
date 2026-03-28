@@ -10,58 +10,89 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
-import static gama.annotations.constants.IKeyword.ACTION;
-import static gama.annotations.constants.IKeyword.INTERNAL_FUNCTION;
-import static gama.annotations.constants.IKeyword.WITH;
+import static gama.api.compilation.IInternalFacets.INTERNAL_FUNCTION;
+import static gama.api.compilation.IInternalFacets.INTERNAL_TARGET;
 
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.constants.IKeyword;
-import gama.api.additions.registries.ArtefactRegistry;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.constants.IGamlIssue;
-import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.symbols.Facets;
 import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
-import gaml.compiler.gaml.IInternalFacets;
+import gaml.compiler.gaml.EGaml;
+import gaml.compiler.gaml.expression.ActionCallOperator;
+import gaml.compiler.gaml.expression.GamlExpressionCompiler;
 
 /**
- * The Class StatementWithChildrenDescription.
+ * Description of a {@code do} / {@code invoke} / {@code .} statement.
+ *
+ * <p>
+ * All three syntactic forms of action calls are normalised by
+ * {@link gaml.compiler.gaml.parsing.GamlSyntacticConverter#processDo} into a uniform set of facets:
+ * </p>
+ * <ul>
+ * <li>{@link IInternalFacets#INTERNAL_TARGET} – the receiver expression (always present; synthetic {@code self} /
+ * {@code super} for the implicit-self forms).</li>
+ * <li>{@link IInternalFacets#INTERNAL_FUNCTION} – the {@code Function} EMF node carrying action name + argument
+ * list.</li>
+ * <li>{@link IInternalFacets#INTERNAL_NAME} – a label with the bare action name.</li>
+ * </ul>
+ *
+ * <p>
+ * During {@link #validate()}, both facets are compiled via
+ * {@link GamlExpressionCompiler#compileActionCall(EObject, EObject, IDescription)} which always produces a single
+ * {@link ActionCallOperator}. That operator is then stored back on the {@code INTERNAL_FUNCTION} facet. The
+ * resulting {@link ActionCallOperator} contains both the resolved action and its arguments, so
+ * {@link gama.gaml.statements.DoStatement} can simply delegate to {@code function.value(scope)}.
+ * </p>
+ *
+ * <h2>Thread safety</h2>
+ * <p>
+ * This class is not thread-safe by itself; it is created and used on a single compilation thread. The produced
+ * {@link ActionCallOperator} is thread-safe (see that class's documentation).
+ * </p>
+ *
+ * @author drogoul
+ * @see gaml.compiler.gaml.parsing.GamlSyntacticConverter#processDo
+ * @see ActionCallOperator
+ * @see gama.gaml.statements.DoStatement
  */
 public class DoDescription extends StatementDescription {
 
-	/** The action. */
+	/**
+	 * The compile-time action description, lazily resolved in {@link #getAction()}. Used only for the post-validation
+	 * deprecation check.
+	 */
 	IActionDescription action;
 
-	/** The declaration context. */
+	/**
+	 * The type-description in which the action lookup was performed. Set as a side-effect of
+	 * {@link #getDescriptionDeclaringAction(String, boolean)} and used in error messages.
+	 */
 	ITypeDescription lookupContext;
 
-	/** The actual target species. */
-	ITypeDescription actualTargetSpecies;
-
 	/**
-	 * Instantiates a new statement representing the do
+	 * Creates a new {@code DoDescription}.
 	 *
 	 * @param keyword
-	 *            the keyword
+	 *            the statement keyword ({@code do}, {@code invoke}, or {@code .})
 	 * @param superDesc
-	 *            the super desc
-	 * @param cp
-	 *            the cp
+	 *            the enclosing description
 	 * @param hasArgs
-	 *            the has args
+	 *            whether the statement carries child arg descriptions
 	 * @param source
-	 *            the source
+	 *            the source EMF element
 	 * @param facets
-	 *            the facets
+	 *            the pre-computed facets
 	 * @param alreadyComputedArgs
-	 *            the already computed args
+	 *            pre-built arguments (used when copying descriptions)
 	 */
 	public DoDescription(final String keyword, final IDescription superDesc, final boolean hasArgs,
 			final EObject source, final Facets facets, final Arguments alreadyComputedArgs) {
@@ -69,19 +100,24 @@ public class DoDescription extends StatementDescription {
 		setIf(Flag.IsSuperInvocation, IKeyword.INVOKE.equals(keyword));
 	}
 
-	@Override
-	protected IExpression createVarWithTypes(final String facetName) {
-		compileTypeProviderFacets();
-		return getEnclosingDescription() instanceof StatementWithChildrenDescription sc
-				? sc.addTemp(this, null, getLitteral(facetName), getGamlType()) : null;
-	}
-
+	/**
+	 * Returns the GAML type produced by this action call. Delegates to the resolved {@link IActionDescription}.
+	 *
+	 * @return the return type of the action, or {@link Types#NO_TYPE} when the action cannot be resolved
+	 */
 	@Override
 	public IType<?> getGamlType() {
-		IActionDescription a = getAction();
+		final IActionDescription a = getAction();
 		return a == null ? Types.NO_TYPE : a.getGamlType();
 	}
 
+	/**
+	 * Produces a deep copy of this description rooted under a new parent.
+	 *
+	 * @param into
+	 *            the new parent description
+	 * @return a fresh {@code DoDescription} with the same keyword, source, and facets
+	 */
 	@Override
 	public DoDescription copy(final IDescription into) {
 		final DoDescription desc = new DoDescription(getKeyword(), into, false, element, getFacetsCopy(),
@@ -90,128 +126,132 @@ public class DoDescription extends StatementDescription {
 		return desc;
 	}
 
-	@Override
-	protected Arguments createArgs() {
-		if (!hasFacets() || !hasFacetsNotIn(ArtefactRegistry.getDoFacets())) {
-			if (hasFacet(WITH)) {
-				try {
-					return GAML.getExpressionFactory().createArgumentMap(getAction(), getFacet(WITH), this);
-				} finally {
-					// We remove it before validation... a bit dirty
-					removeFacets(WITH);
-				}
-			}
-			return null;
-		}
-		final Arguments args = new Arguments();
-		visitFacets((facet, b) -> {
-			if (IInternalFacets.GAML_ERROR.equals(facet)) {
-				error(getLitteral(facet));
-				return false;
-			}
-			if (!ArtefactRegistry.getDoFacets().contains(facet)) { args.put(facet, b); }
-			return true;
-		});
-		return args;
-	}
-
 	/**
-	 * Validate passed args.
+	 * Returns the {@link IActionDescription} for the action being called. The lookup is performed lazily and cached.
 	 *
-	 * @return the arguments
-	 */
-	@Override
-	protected Arguments validatePassedArgs() {
-		super.validatePassedArgs();
-		final IActionDescription executer = getAction();
-		if (executer != null) { executer.verifyArgs(this, passedArgs); }
-		return passedArgs;
-	}
-
-	/**
-	 * Gets the action.
+	 * <p>
+	 * As a side-effect, {@link #lookupContext} is populated so that error messages can refer to it.
+	 * </p>
 	 *
-	 * @return the action
+	 * @return the action description, or {@code null} when the action cannot be found
 	 */
 	private IActionDescription getAction() {
-		if (action == null) {
-			final String actionName = getLitteral(ACTION);
-			if (actionName == null) return null;
-			actualTargetSpecies = getDescriptionDeclaringAction(actionName, isSuperInvocation());
-			if (actualTargetSpecies != null) { action = actualTargetSpecies.getAction(actionName); }
+		if (action != null) return action;
+		final IExpressionDescription functionFacet = getFacet(INTERNAL_FUNCTION);
+		if (functionFacet == null) return null;
+		// Derive the action name from the compiled expression if available, otherwise from the EMF target
+		final IExpression compiled = functionFacet.getExpression();
+		final String actionName;
+		if (compiled instanceof ActionCallOperator aco) {
+			actionName = aco.getName();
+		} else {
+			actionName = EGaml.getInstance().getKeyOf(functionFacet.getTarget());
 		}
+		if (actionName == null) return null;
+		lookupContext = getDescriptionDeclaringAction(actionName, isSuperInvocation());
+		if (lookupContext != null) { action = lookupContext.getAction(actionName); }
 		return action;
 	}
 
 	/**
-	 * Gets the description that declares an action with the given name. Searches up the enclosing description
-	 * hierarchy.
+	 * Resolves the {@link ITypeDescription} that declares an action with the given name.
+	 *
+	 * <p>
+	 * When an explicit {@link IInternalFacets#INTERNAL_TARGET} facet is present (i.e. the {@code target.action(...)}
+	 * form), the target expression is compiled to determine the receiver's type, and the lookup is performed on that
+	 * type. Otherwise the lookup starts from {@link IDescription#getTypeContext()}.
+	 * </p>
 	 *
 	 * @param aName
-	 *            the action name to find
+	 *            the bare action name to look up
 	 * @param superInvocation
-	 *            whether to check super types
-	 * @return the description that declares the action, or null if not found
+	 *            {@code true} when this is a {@code super.action()} / {@code invoke} call
+	 * @return the type description declaring the action, or {@code null} when not found
 	 */
 	@Override
 	public ITypeDescription getDescriptionDeclaringAction(final String aName, final boolean superInvocation) {
-		IExpressionDescription target = getFacet(IKeyword.SYNTHETIC_DO_TARGET);
+		final IExpressionDescription target = getFacet(INTERNAL_TARGET);
 		if (target == null) {
 			lookupContext = getTypeContext();
 			return super.getDescriptionDeclaringAction(aName, superInvocation);
 		}
-		// Handle the case where target is not null (e.g., target-specific action)
-		IExpression agent = target.compile(this);
+		final IExpression agent = target.compile(this);
 		if (agent == null) return null;
 		lookupContext = agent.getGamlType().getDenotedSpecies();
 		if (lookupContext != null) return lookupContext.getDescriptionDeclaringAction(aName, superInvocation);
 		return null;
 	}
 
+	// -------------------------------------------------------------------------
+	// Helpers for error messages
+	// -------------------------------------------------------------------------
+
 	/**
-	 * Gets the declaration context name.
+	 * Returns the name of the type context used for the action lookup, for use in error messages.
 	 *
-	 * @return the declaration context name
+	 * @return the lookup-context species name, or the enclosing type-context name when no lookup was performed yet
 	 */
 	private String getLookupContextName() {
 		return lookupContext == null ? getTypeContext().getName() : lookupContext.getName();
 	}
 
-	/**
-	 * Gets the actual species name.
-	 *
-	 * @return the actual species name
-	 */
-	private String getActualSpeciesName() {
-		return actualTargetSpecies == null ? getTypeContext().getName() : actualTargetSpecies.getName();
-	}
+	// -------------------------------------------------------------------------
+	// Core validation
+	// -------------------------------------------------------------------------
 
+	/**
+	 * Validates this description and compiles the action call into an {@link ActionCallOperator}.
+	 *
+	 * <p>
+	 * <b>Unified compilation path.</b> Because {@code processDo} always sets both {@code INTERNAL_TARGET} and
+	 * {@code INTERNAL_FUNCTION}, we can always route through
+	 * {@link GamlExpressionCompiler#compileActionCall(EObject, EObject, IDescription)} which uses the same
+	 * {@link gaml.compiler.gaml.expression.ExpressionCompilationSwitch#compileFieldAccess} logic as the
+	 * {@code target.action()} expression form. The result is a single {@link ActionCallOperator} that encapsulates the
+	 * target, the action description, and the compiled arguments.
+	 * </p>
+	 *
+	 * <p>
+	 * After successful compilation, the {@link ActionCallOperator} is stored back on the {@code INTERNAL_FUNCTION}
+	 * facet so that {@link gama.gaml.statements.DoStatement#privateExecuteIn} can evaluate it via
+	 * {@code function.value(scope)}.
+	 * </p>
+	 *
+	 * @return this description if validation succeeded, {@code null} on fatal error
+	 */
 	@Override
 	public IDescription validate() {
-		IActionDescription a = getAction();
-		IExpressionDescription function = getFacet(INTERNAL_FUNCTION);
-		if (function != null) {
-			// Handle the internal function validation
-			function.compile(this);
-		}
-		IDescription result = super.validate();
-		if (result == null) return null;
-
-		if (a == null) {
-			String actionName = getLitteral(ACTION);
-			error("Action " + actionName + " does not exist in " + getLookupContextName(), IGamlIssue.UNKNOWN_ACTION,
-					ACTION, actionName, getLookupContextName());
+		final IExpressionDescription functionFacet = getFacet(INTERNAL_FUNCTION);
+		if (functionFacet == null) {
+			error("Action does not exist in " + getLookupContextName(), IGamlIssue.UNKNOWN_ACTION);
 			return null;
 		}
-		if (a instanceof PrimitiveDescription pd) {
-			final String dep = pd.getDeprecated();
-			if (dep != null) { warning("Action " + action + " is deprecated: " + dep, IGamlIssue.DEPRECATED, ACTION); }
+		final IExpressionDescription targetFacet = getFacet(INTERNAL_TARGET);
+		if (targetFacet == null) {
+			// Should not happen after processDo, but guard defensively.
+			functionFacet.compile(this);
+		} else {
+			// Unified path: compile target.action(args) via compileFieldAccess, which produces
+			// an ActionCallOperator regardless of whether the target is an explicit expression or
+			// a synthetic self/super literal.
+			final IExpression compiled = GamlExpressionCompiler.getInstance()
+					.compileActionCall(targetFacet.getTarget(), functionFacet.getTarget(), this);
+			functionFacet.setExpression(compiled);
 		}
-		setFacetExprDescription(IKeyword.SYNTHETIC_DO_TARGET_SPECIES,
-				GAML.getExpressionDescriptionFactory().createLabel(getActualSpeciesName()));
+
+		final IDescription result = super.validate();
+		if (result == null) return null;
+
+		// Deprecation check for primitives
+		if (getAction() instanceof PrimitiveDescription pd) {
+			final String dep = pd.getDeprecated();
+			if (dep != null) { warning("Action " + action + " is deprecated: " + dep, IGamlIssue.DEPRECATED); }
+		}
+
 		return result;
 	}
 
+	/** {@inheritDoc} */
 	@Override
 	public boolean isInvocation() { return true; }
 

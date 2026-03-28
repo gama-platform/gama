@@ -33,7 +33,6 @@ import static gama.annotations.constants.IKeyword.IMAGE_LAYER;
 import static gama.annotations.constants.IKeyword.IN;
 import static gama.annotations.constants.IKeyword.INDEX;
 import static gama.annotations.constants.IKeyword.INIT;
-import static gama.annotations.constants.IKeyword.INTERNAL_FUNCTION;
 import static gama.annotations.constants.IKeyword.ITEM;
 import static gama.annotations.constants.IKeyword.LET;
 import static gama.annotations.constants.IKeyword.MODEL;
@@ -43,17 +42,15 @@ import static gama.annotations.constants.IKeyword.REMOVE;
 import static gama.annotations.constants.IKeyword.SET;
 import static gama.annotations.constants.IKeyword.SPECIES;
 import static gama.annotations.constants.IKeyword.SPECIES_LAYER;
-import static gama.annotations.constants.IKeyword.SYNTHETIC;
 import static gama.annotations.constants.IKeyword.TITLE;
 import static gama.annotations.constants.IKeyword.TO;
 import static gama.annotations.constants.IKeyword.TYPE;
 import static gama.annotations.constants.IKeyword.VALUE;
-import static gama.annotations.constants.IKeyword.WITH;
 import static gama.annotations.constants.IKeyword.ZERO;
 import static gama.annotations.support.ISymbolKind.isDefiningAttributes;
 import static gama.api.additions.registries.ArtefactRegistry.getStatementArtefact;
+import static gama.api.compilation.IInternalFacets.NO_TYPE_INFERENCE;
 import static gama.api.gaml.GAML.getExpressionDescriptionFactory;
-import static gaml.compiler.gaml.IInternalFacets.NO_TYPE_INFERENCE;
 
 import java.util.List;
 import java.util.Map;
@@ -66,6 +63,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.api.compilation.ast.ISyntacticFactory;
@@ -84,7 +82,6 @@ import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.Function;
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.IInternalFacets;
 import gaml.compiler.gaml.Pragma;
 import gaml.compiler.gaml.S_Assignment;
 import gaml.compiler.gaml.S_Callable;
@@ -104,6 +101,7 @@ import gaml.compiler.gaml.ast.SyntacticExperimentModelElement;
 import gaml.compiler.gaml.ast.SyntacticFactory;
 import gaml.compiler.gaml.ast.SyntacticModelElement;
 import gaml.compiler.gaml.descriptions.OperatorExpressionDescription;
+import gaml.compiler.gaml.factories.ExpressionDescriptionFactory;
 import gaml.compiler.gaml.impl.ModelImpl;
 import gaml.compiler.gaml.resource.GamlResourceServices;
 
@@ -322,9 +320,9 @@ public class GamlSyntacticConverter {
 				// facet resolution can find the referenced species by name. It is a very bad fix...
 				final String speciesName = ss.getName();
 				if (speciesName != null) {
-					final VarDefinition varDef = EGAML.getFactory().createVarDefinition();
+					final VarDefinition varDef = EGaml.getFactory().createVarDefinition();
 					varDef.setName(speciesName);
-					final VariableRef varRef = EGAML.getFactory().createVariableRef();
+					final VariableRef varRef = EGaml.getFactory().createVariableRef();
 					varRef.setRef(varDef);
 					ss.setExpr(varRef);
 					ss.setName(null);
@@ -485,7 +483,7 @@ public class GamlSyntacticConverter {
 		Block b = stm.getBlock();
 		if (b != null) {
 			final ISyntacticElement blockElt = FACTORY.create(ACTION,
-					new Facets(NAME, SYNTHETIC + syntheticActionCounter.getAndIncrement()), true);
+					new Facets(NAME, IInternalFacets.SYNTHETIC + syntheticActionCounter.getAndIncrement()), true);
 			convertBlock(ACTION, blockElt, b);
 			IExpressionDescription fexpr = createBlockExpression(blockElt);
 			addFacet(elt, IKeyword.ON_CHANGE, fexpr);
@@ -493,31 +491,81 @@ public class GamlSyntacticConverter {
 	}
 
 	/**
-	 * Process do.
+	 * Normalises all three syntactic forms of an action call into a uniform set of facets on the syntactic element:
+	 *
+	 * <ul>
+	 * <li><b>{@code INTERNAL_TARGET}</b> – the agent expression on which the action is called, always present. For the
+	 * implicit-self forms it is synthesised as a {@code self} (or {@code super} for {@code invoke}) literal.</li>
+	 * <li><b>{@code INTERNAL_FUNCTION}</b> – the {@link Function} EMF node that carries the action name and its
+	 * argument list, always present. For the deprecated facet-based form the facets are first converted into named
+	 * {@link Parameter} nodes so the resulting node is structurally identical to the functional form.</li>
+	 * <li><b>{@code INTERNAL_NAME}</b> – a label holding the bare action name, always present; convenient for
+	 * serialisation and error reporting without having to re-derive the name from the function node.</li>
+	 * </ul>
+	 *
+	 * <p>
+	 * The three source forms and how they map:
+	 * </p>
+	 * <ol>
+	 * <li><b>Dot-notation / explicit target</b> ({@code target.action(arg1: val1, arg2: val2);}):
+	 * {@code INTERNAL_TARGET} = target expression, {@code INTERNAL_FUNCTION} = the function expression to the right of
+	 * the dot.</li>
+	 * <li><b>Functional form</b> ({@code do action(arg1: val1, arg2: val2);}):
+	 * {@code INTERNAL_TARGET} = synthesised self/super, {@code INTERNAL_FUNCTION} = the function expression.</li>
+	 * <li><b>Deprecated facet form</b> ({@code do action arg1: val1 arg2: val2;}):
+	 * {@code INTERNAL_TARGET} = synthesised self/super, {@code INTERNAL_FUNCTION} = a synthesised {@link Function}
+	 * node built from the statement's facets (see
+	 * {@link ExpressionDescriptionFactory#createFunction(Expression, EList)}). A deprecation warning facet is also
+	 * set.</li>
+	 * </ol>
+	 *
+	 * <p>
+	 * After this method returns, {@link gaml.compiler.gaml.descriptions.DoDescription} can follow a single
+	 * compilation path regardless of which syntactic form was used.
+	 * </p>
 	 *
 	 * @param stm
-	 *            the stm
+	 *            the parsed {@link S_Do} statement
 	 * @param elt
-	 *            the elt
+	 *            the syntactic element being built; its facets will be populated by this method
 	 */
 	private void processDo(final S_Do stm, final ISyntacticElement elt) {
-		// Translation of "stm ID (ID1: V1, ID2:V2)" to "stm ID with:(ID1:
-		// V1, ID2:V2)"
-		final Expression e = stm.getExpr();
-		addFacet(elt, ACTION, convertToLabel(e, EGAML.getKeyOf(e)));
-		if (stm.getTarget() != null) { addFacet(elt, IKeyword.SYNTHETIC_DO_TARGET, convExpr(stm.getTarget())); }
-		// Systematically adds the internal function (see #2915) in order to have the right documentation
-		// TODO AD: verify that 'ACTION' is still necessary in that case
-		addFacet(elt, INTERNAL_FUNCTION, convExpr(e));
-		if (e instanceof Function f) {
-			final ExpressionList list = f.getRight();
-			if (list != null) { addFacet(elt, WITH, convExpr(list)); }
+		// All three forms produce INTERNAL_TARGET + INTERNAL_FUNCTION + INTERNAL_NAME.
+		// 1st case: an explicit target is present  → target.action(args) form
+		if (stm.getTarget() != null) {
+			addFacet(elt, IInternalFacets.INTERNAL_TARGET, convExpr(stm.getTarget()));
+			addFacet(elt, IInternalFacets.INTERNAL_FUNCTION, convExpr(stm.getExpr()));
+			addFacet(elt, IInternalFacets.INTERNAL_NAME,
+					GAML.getExpressionDescriptionFactory().createLabel(EGAML.getKeyOf(stm.getExpr())));
+		} else {
+			final Expression e = stm.getExpr();
+			// Implicit self/super target is the same for both remaining forms
+			addFacet(elt, IInternalFacets.INTERNAL_TARGET, ExpressionDescriptionFactory.getInstance()
+					.createSelfOrSuper(IKeyword.DO.equals(elt.getKeyword())));
+			if (e instanceof Function f) {
+				// 2nd case: functional form  → do action(args)
+				addFacet(elt, IInternalFacets.INTERNAL_NAME,
+						GAML.getExpressionDescriptionFactory().createLabel(EGAML.getKeyOf(f)));
+				addFacet(elt, IInternalFacets.INTERNAL_FUNCTION, convExpr(f));
+			} else {
+				// 3rd case: deprecated facet-based form  → do action arg1: val1 arg2: val2;
+				final String functionName = EGAML.getKeyOf(e);
+				addFacet(elt, IInternalFacets.INTERNAL_NAME,
+						GAML.getExpressionDescriptionFactory().createLabel(functionName));
+				final EList<Facet> ff = stm.getFacets();
+				// Convert facets to a proper Function node so that compilation can follow the same path
+				addFacet(elt, IInternalFacets.INTERNAL_FUNCTION,
+						ExpressionDescriptionFactory.getInstance().createFunction(e, ff));
+				if (ff.isEmpty()) {
+					// do action; with missing parentheses
+					addFacet(elt, IInternalFacets.GAML_WARNING, GAML.getExpressionDescriptionFactory()
+							.createConstant("Missing parentheses after action name"));
+				} else {
+					addFacet(elt, IInternalFacets.GAML_WARNING, GAML.getExpressionDescriptionFactory().createConstant(
+							"Deprecated use of facets to pass arguments. Use the functional form instead."));
+				}
+			}
 		}
-		// Not yet implemented but maybe we should in the near future.
-		// if (EGaml.getInstance().hasFacets(stm)) {
-		// addFacet(elt, IInternalFacets.GAML_ERROR, GAML.getExpressionDescriptionFactory()
-		// .createConstant("Deprecated facets used. Use the functional form instead."));
-		// }
 	}
 
 	/**
@@ -938,7 +986,7 @@ public class GamlSyntacticConverter {
 			if (expr == null && facet.getBlock() != null) {
 				final Block b = facet.getBlock();
 				final ISyntacticElement elt = FACTORY.create(ACTION,
-						new Facets(NAME, SYNTHETIC + syntheticActionCounter.getAndIncrement()), true);
+						new Facets(NAME, IInternalFacets.SYNTHETIC + syntheticActionCounter.getAndIncrement()), true);
 				convertBlock(ACTION, elt, b);
 				return createBlockExpression(elt);
 			}

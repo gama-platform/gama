@@ -648,6 +648,54 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//  S_Other
 		public RuleCall getS_OtherParserRuleCall_15() { return cS_OtherParserRuleCall_15; }
 	}
+	public class S_DoElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_Do");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final Assignment cKeyAssignment_0 = (Assignment)cGroup.eContents().get(0);
+		private final Alternatives cKeyAlternatives_0_0 = (Alternatives)cKeyAssignment_0.eContents().get(0);
+		private final Keyword cKeyDoKeyword_0_0_0 = (Keyword)cKeyAlternatives_0_0.eContents().get(0);
+		private final Keyword cKeyInvokeKeyword_0_0_1 = (Keyword)cKeyAlternatives_0_0.eContents().get(1);
+		private final Assignment cExprAssignment_1 = (Assignment)cGroup.eContents().get(1);
+		private final RuleCall cExprAbstractRefParserRuleCall_1_0 = (RuleCall)cExprAssignment_1.eContents().get(0);
+		private final Assignment cFacetsAssignment_2 = (Assignment)cGroup.eContents().get(2);
+		private final RuleCall cFacetsFacetParserRuleCall_2_0 = (RuleCall)cFacetsAssignment_2.eContents().get(0);
+		private final Keyword cSemicolonKeyword_3 = (Keyword)cGroup.eContents().get(3);
+		
+		//// Example: do my_action; or invoke my_action(5); The facets are kept for legacy purposes...
+		//S_Do:
+		//    key=('do' | 'invoke') expr=AbstractRef (facets+=Facet)*';';
+		@Override public ParserRule getRule() { return rule; }
+		
+		//key=('do' | 'invoke') expr=AbstractRef (facets+=Facet)*';'
+		public Group getGroup() { return cGroup; }
+		
+		//key=('do' | 'invoke')
+		public Assignment getKeyAssignment_0() { return cKeyAssignment_0; }
+		
+		//('do' | 'invoke')
+		public Alternatives getKeyAlternatives_0_0() { return cKeyAlternatives_0_0; }
+		
+		//'do'
+		public Keyword getKeyDoKeyword_0_0_0() { return cKeyDoKeyword_0_0_0; }
+		
+		//'invoke'
+		public Keyword getKeyInvokeKeyword_0_0_1() { return cKeyInvokeKeyword_0_0_1; }
+		
+		//expr=AbstractRef
+		public Assignment getExprAssignment_1() { return cExprAssignment_1; }
+		
+		//AbstractRef
+		public RuleCall getExprAbstractRefParserRuleCall_1_0() { return cExprAbstractRefParserRuleCall_1_0; }
+		
+		//(facets+=Facet)*
+		public Assignment getFacetsAssignment_2() { return cFacetsAssignment_2; }
+		
+		//Facet
+		public RuleCall getFacetsFacetParserRuleCall_2_0() { return cFacetsFacetParserRuleCall_2_0; }
+		
+		//';'
+		public Keyword getSemicolonKeyword_3() { return cSemicolonKeyword_3; }
+	}
 	public class S_ActionCallElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_ActionCall");
 		private final Group cGroup = (Group)rule.eContents().get(1);
@@ -687,46 +735,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		
 		//';'
 		public Keyword getSemicolonKeyword_3() { return cSemicolonKeyword_3; }
-	}
-	public class S_DoElements extends AbstractParserRuleElementFinder {
-		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_Do");
-		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final Assignment cKeyAssignment_0 = (Assignment)cGroup.eContents().get(0);
-		private final Alternatives cKeyAlternatives_0_0 = (Alternatives)cKeyAssignment_0.eContents().get(0);
-		private final Keyword cKeyDoKeyword_0_0_0 = (Keyword)cKeyAlternatives_0_0.eContents().get(0);
-		private final Keyword cKeyInvokeKeyword_0_0_1 = (Keyword)cKeyAlternatives_0_0.eContents().get(1);
-		private final Assignment cExprAssignment_1 = (Assignment)cGroup.eContents().get(1);
-		private final RuleCall cExprAbstractRefParserRuleCall_1_0 = (RuleCall)cExprAssignment_1.eContents().get(0);
-		private final RuleCall cFacetsAndBlockParserRuleCall_2 = (RuleCall)cGroup.eContents().get(2);
-		
-		//// Example: do my_action; or invoke my_action(5);
-		//S_Do:
-		//    key=('do' | 'invoke') expr=AbstractRef FacetsAndBlock;
-		@Override public ParserRule getRule() { return rule; }
-		
-		//key=('do' | 'invoke') expr=AbstractRef FacetsAndBlock
-		public Group getGroup() { return cGroup; }
-		
-		//key=('do' | 'invoke')
-		public Assignment getKeyAssignment_0() { return cKeyAssignment_0; }
-		
-		//('do' | 'invoke')
-		public Alternatives getKeyAlternatives_0_0() { return cKeyAlternatives_0_0; }
-		
-		//'do'
-		public Keyword getKeyDoKeyword_0_0_0() { return cKeyDoKeyword_0_0_0; }
-		
-		//'invoke'
-		public Keyword getKeyInvokeKeyword_0_0_1() { return cKeyInvokeKeyword_0_0_1; }
-		
-		//expr=AbstractRef
-		public Assignment getExprAssignment_1() { return cExprAssignment_1; }
-		
-		//AbstractRef
-		public RuleCall getExprAbstractRefParserRuleCall_1_0() { return cExprAbstractRefParserRuleCall_1_0; }
-		
-		//FacetsAndBlock
-		public RuleCall getFacetsAndBlockParserRuleCall_2() { return cFacetsAndBlockParserRuleCall_2; }
 	}
 	public class S_LoopElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.S_Loop");
@@ -3970,8 +3978,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	private final S_SpeciesElements pS_Species;
 	private final S_ExperimentElements pS_Experiment;
 	private final StatementElements pStatement;
-	private final S_ActionCallElements pS_ActionCall;
 	private final S_DoElements pS_Do;
+	private final S_ActionCallElements pS_ActionCall;
 	private final S_LoopElements pS_Loop;
 	private final S_IfElements pS_If;
 	private final S_TryElements pS_Try;
@@ -4081,8 +4089,8 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		this.pS_Species = new S_SpeciesElements();
 		this.pS_Experiment = new S_ExperimentElements();
 		this.pStatement = new StatementElements();
-		this.pS_ActionCall = new S_ActionCallElements();
 		this.pS_Do = new S_DoElements();
+		this.pS_ActionCall = new S_ActionCallElements();
 		this.pS_Loop = new S_LoopElements();
 		this.pS_If = new S_IfElements();
 		this.pS_Try = new S_TryElements();
@@ -4407,6 +4415,17 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		return getStatementAccess().getRule();
 	}
 	
+	//// Example: do my_action; or invoke my_action(5); The facets are kept for legacy purposes...
+	//S_Do:
+	//    key=('do' | 'invoke') expr=AbstractRef (facets+=Facet)*';';
+	public S_DoElements getS_DoAccess() {
+		return pS_Do;
+	}
+	
+	public ParserRule getS_DoRule() {
+		return getS_DoAccess().getRule();
+	}
+	
 	//S_ActionCall returns S_Do:
 	//    target=Primary key='.' expr=Function ';'
 	//;
@@ -4416,17 +4435,6 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	
 	public ParserRule getS_ActionCallRule() {
 		return getS_ActionCallAccess().getRule();
-	}
-	
-	//// Example: do my_action; or invoke my_action(5);
-	//S_Do:
-	//    key=('do' | 'invoke') expr=AbstractRef FacetsAndBlock;
-	public S_DoElements getS_DoAccess() {
-		return pS_Do;
-	}
-	
-	public ParserRule getS_DoRule() {
-		return getS_DoAccess().getRule();
 	}
 	
 	//// Example: loop i from: 1 to: 5 { ... }

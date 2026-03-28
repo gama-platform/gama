@@ -23,6 +23,7 @@ import gama.annotations.support.IConcept;
 import gama.annotations.support.ISymbolKind;
 import gama.api.annotations.serializer;
 import gama.api.annotations.validator;
+import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
 import gama.api.compilation.serialization.ISymbolSerializer;
@@ -240,7 +241,7 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 			final IExpressionDescription to = description.getFacet(TO);
 			final IExpressionDescription cond = description.getFacet(WHILE);
 			IExpressionDescription name = description.getFacet(NAME);
-			if (name != null && name.isConst() && name.toString().startsWith(INTERNAL)) { name = null; }
+			if (name != null && name.isConst() && name.toString().startsWith(IInternalFacets.INTERNAL)) { name = null; }
 			// See Issue #3085
 			if (name != null) { Assert.nameIsValid(description); }
 			if (times != null) {
@@ -602,11 +603,12 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	/**
 	 * The Class IntBounded.
 	 *
-	 * <p><b>Performance:</b> the {@link #intFrom(IScope)}, {@link #intTo(IScope)} and
-	 * {@link #intStep(IScope)} helpers return primitive {@code int} values, avoiding the
-	 * unboxing overhead that would result from calling the inherited
-	 * {@link Bounded#computeFrom}/{@code computeTo}/{@code computeStep} methods which return
-	 * boxed {@link Integer} objects.</p>
+	 * <p>
+	 * <b>Performance:</b> the {@link #intFrom(IScope)}, {@link #intTo(IScope)} and {@link #intStep(IScope)} helpers
+	 * return primitive {@code int} values, avoiding the unboxing overhead that would result from calling the inherited
+	 * {@link Bounded#computeFrom}/{@code computeTo}/{@code computeStep} methods which return boxed {@link Integer}
+	 * objects.
+	 * </p>
 	 */
 	class IntBounded extends Bounded<Integer> {
 
@@ -631,10 +633,11 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		}
 
 		/**
-		 * Returns the loop start value as a primitive {@code int}, avoiding an unbox of
-		 * the inherited {@link Bounded#computeFrom(IScope)} result.
+		 * Returns the loop start value as a primitive {@code int}, avoiding an unbox of the inherited
+		 * {@link Bounded#computeFrom(IScope)} result.
 		 *
-		 * @param scope the scope
+		 * @param scope
+		 *            the scope
 		 * @return the from value as a primitive int
 		 */
 		private int intFrom(final IScope scope) {
@@ -644,7 +647,8 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		/**
 		 * Returns the loop end value as a primitive {@code int}.
 		 *
-		 * @param scope the scope
+		 * @param scope
+		 *            the scope
 		 * @return the to value as a primitive int
 		 */
 		private int intTo(final IScope scope) {
@@ -654,7 +658,8 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		/**
 		 * Returns the loop step value as a primitive {@code int}.
 		 *
-		 * @param scope the scope
+		 * @param scope
+		 *            the scope
 		 * @return the step value as a primitive int
 		 */
 		private int intStep(final IScope scope) {
@@ -679,11 +684,12 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 	/**
 	 * The Class FloatBounded.
 	 *
-	 * <p><b>Performance:</b> the {@link #doubleFrom(IScope)}, {@link #doubleTo(IScope)} and
-	 * {@link #doubleStep(IScope)} helpers return primitive {@code double} values, avoiding the
-	 * unboxing overhead that would result from calling the inherited
-	 * {@link Bounded#computeFrom}/{@code computeTo}/{@code computeStep} methods which return
-	 * boxed {@link Double} objects.</p>
+	 * <p>
+	 * <b>Performance:</b> the {@link #doubleFrom(IScope)}, {@link #doubleTo(IScope)} and {@link #doubleStep(IScope)}
+	 * helpers return primitive {@code double} values, avoiding the unboxing overhead that would result from calling the
+	 * inherited {@link Bounded#computeFrom}/{@code computeTo}/{@code computeStep} methods which return boxed
+	 * {@link Double} objects.
+	 * </p>
 	 */
 	class FloatBounded extends Bounded<Double> {
 
@@ -708,10 +714,11 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		}
 
 		/**
-		 * Returns the loop start value as a primitive {@code double}, avoiding an unbox of
-		 * the inherited {@link Bounded#computeFrom(IScope)} result.
+		 * Returns the loop start value as a primitive {@code double}, avoiding an unbox of the inherited
+		 * {@link Bounded#computeFrom(IScope)} result.
 		 *
-		 * @param scope the scope
+		 * @param scope
+		 *            the scope
 		 * @return the from value as a primitive double
 		 */
 		private double doubleFrom(final IScope scope) {
@@ -721,7 +728,8 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		/**
 		 * Returns the loop end value as a primitive {@code double}.
 		 *
-		 * @param scope the scope
+		 * @param scope
+		 *            the scope
 		 * @return the to value as a primitive double
 		 */
 		private double doubleTo(final IScope scope) {
@@ -731,7 +739,8 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		/**
 		 * Returns the loop step value as a primitive {@code double}.
 		 *
-		 * @param scope the scope
+		 * @param scope
+		 *            the scope
 		 * @return the step value as a primitive double
 		 */
 		private double doubleStep(final IScope scope) {
@@ -765,8 +774,8 @@ public class LoopStatement extends AbstractStatementSequence implements Breakabl
 		 * Instantiates a new over.
 		 *
 		 * @param over
-		 *            the over expression (already retrieved by the caller; stored directly to
-		 *            avoid a redundant {@code getFacet} call)
+		 *            the over expression (already retrieved by the caller; stored directly to avoid a redundant
+		 *            {@code getFacet} call)
 		 */
 		Over(final IExpression over) {
 			overExpression = over;

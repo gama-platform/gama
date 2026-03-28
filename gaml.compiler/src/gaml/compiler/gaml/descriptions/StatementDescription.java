@@ -29,12 +29,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IStatementDescription;
 import gama.api.compilation.descriptions.ITypeDescription;
 import gama.api.compilation.descriptions.IVariableDescription;
 import gama.api.compilation.serialization.ISymbolSerializer;
-import gama.api.gaml.GAML;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.expressions.IOperator;
@@ -46,6 +46,7 @@ import gama.api.gaml.types.IType;
 import gama.api.gaml.types.Types;
 import gama.dev.COUNTER;
 import gama.dev.DEBUG;
+import gaml.compiler.gaml.expression.GamlExpressionCompiler;
 
 /**
  * Written by drogoul Modified on 10 févr. 2010
@@ -107,7 +108,8 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 	protected Arguments createArgs() {
 		if (hasFacet(WITH)) {
 			try {
-				return GAML.getExpressionFactory().createArgumentMap(null, getFacet(WITH), this);
+				return GamlExpressionCompiler.getInstance().compileArguments(null, getFacet(WITH).getTarget(), this,
+						false);
 			} finally {
 				removeFacets(WITH);
 			}
@@ -166,7 +168,7 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 				if (IKeyword.REFLEX.equals(getKeyword())) {
 					warning("Reflexes should be named", MISSING_NAME, getUnderlyingElement());
 				}
-				s = IKeyword.INTERNAL + getKeyword() + String.valueOf(COUNTER.GET_UNIQUE());
+				s = IInternalFacets.INTERNAL + getKeyword() + String.valueOf(COUNTER.GET_UNIQUE());
 			}
 			setName(s);
 		}
@@ -187,7 +189,7 @@ public class StatementDescription extends SymbolDescription implements IStatemen
 			kw = StringUtils.capitalize(kw);
 		}
 		String nm = getName();
-		if (nm.contains(IKeyword.INTERNAL)) {
+		if (nm.contains(IInternalFacets.INTERNAL)) {
 			nm = getLitteral(IKeyword.ACTION);
 			if (nm == null) { nm = "statement"; }
 		}

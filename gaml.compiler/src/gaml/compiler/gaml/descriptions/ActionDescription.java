@@ -24,6 +24,7 @@ import org.eclipse.emf.ecore.EObject;
 import com.google.common.collect.Iterables;
 
 import gama.annotations.constants.IKeyword;
+import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.documentation.GamlConstantDocumentation;
@@ -72,7 +73,7 @@ public class ActionDescription extends StatementWithChildrenDescription implemen
 		super(keyword, superDesc, cp, true, source, facets, null);
 		setIf(Flag.IsAbstract, IKeyword.TRUE.equals(getLitteral(IKeyword.VIRTUAL)));
 		setIf(Flag.isVoid, IKeyword.TRUE.equals(getLitteral(IKeyword.VOID)));
-		if (getName() != null && getName().startsWith(IKeyword.SYNTHETIC)) {
+		if (getName() != null && getName().startsWith(IInternalFacets.SYNTHETIC)) {
 			set(Flag.IsSynthetic);
 			unSet(Flag.IsBuiltIn);
 		}

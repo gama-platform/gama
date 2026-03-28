@@ -13,6 +13,8 @@ package gaml.compiler.gaml.expression;
 import static gama.api.exceptions.GamaRuntimeException.error;
 import static gama.api.exceptions.GamaRuntimeException.warning;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import gama.api.GAMA;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
@@ -37,71 +39,95 @@ import gama.api.utils.StringUtils;
 import gama.api.utils.collections.ICollector;
 
 /**
- * ActionCallOperator. An operator that wraps a primitive or an action.
+ * ActionCallOperator – an operator expression that wraps a call to a GAML action or primitive.
+ *
+ * <p>
+ * Instances are created during compilation and reused across simulation steps and threads, so all mutable state must be
+ * thread-safe. The lazily-resolved {@link #cachedSpecies} field is held in an {@link AtomicReference} and initialised
+ * with a compare-and-set so that exactly one thread performs the lookup even when multiple threads race to initialise
+ * it simultaneously.
+ * </p>
  *
  * @author drogoul 4 sept. 07
  */
-
 public class ActionCallOperator implements IOperator {
 
-	/** The parameters. */
+	/**
+	 * Sentinel placed in {@link #cachedSpeciesRef} once {@link #getContext(IScope)} has been called at least once and
+	 * found that no class is available. Without a sentinel we could not distinguish "not yet resolved" ({@code null})
+	 * from "resolved to nothing" (also {@code null}).
+	 */
+	private static final Object NOT_FOUND = new Object();
+
+	/** The arguments passed to the action call. May be {@code null} when the action takes no arguments. */
 	final Arguments parameters;
 
-	/** The target. */
+	/**
+	 * The target expression evaluating to the agent on which the action is called. {@code null} means the current
+	 * agent ({@code self}).
+	 */
 	final IExpression target;
 
-	/** The action. */
+	/** The compile-time description of the action being called. Never {@code null}. */
 	final IActionDescription action;
 
-	/** The target species. */
+	/**
+	 * The name of the species (or built-in class) that declares the action, resolved at compile time. Used to look up
+	 * the runtime {@link IClass} on first execution. May be {@code null} when the declaring class cannot be determined
+	 * statically.
+	 */
 	final String targetSpeciesName;
 
-	/** The target species. */
-	IClass targetSpecies;
-
-	/** The computed. */
-	boolean computed;
+	/**
+	 * Lazily-initialised, thread-safe cache for the runtime {@link IClass} resolved from {@link #targetSpeciesName}.
+	 * Holds {@link #NOT_FOUND} (an opaque sentinel {@link Object}) after a failed lookup so that subsequent calls do
+	 * not repeat the lookup. The type parameter is {@code Object} so we can store both {@link IClass} instances and the
+	 * sentinel without casting.
+	 */
+	private final AtomicReference<Object> cachedSpeciesRef = new AtomicReference<>();
 
 	/**
-	 * Instantiates a new action call operator.
+	 * Creates an {@link ActionCallOperator} for an action called from within a given compilation context (used for
+	 * {@code self.action()} and {@code super.action()} calls as well as standalone {@code do} statements).
 	 *
 	 * @param callerContext
-	 *            the caller context
+	 *            the compile-time description that contains the call; used to determine the species type when
+	 *            {@code target} is {@code null}
 	 * @param action
-	 *            the action
+	 *            the compile-time description of the action being called; must not be {@code null}
 	 * @param target
-	 *            the target
+	 *            expression evaluating to the receiver agent at runtime; {@code null} means "current agent"
 	 * @param args
-	 *            the args
+	 *            compiled arguments; may be {@code null} when the action accepts no arguments
 	 * @param superInvocation
-	 *            the super invocation
+	 *            {@code true} when this is an {@code invoke} / {@code super.action()} call so the parent species is
+	 *            used as the lookup class
 	 */
 	public ActionCallOperator(final IDescription callerContext, final IActionDescription action,
 			final IExpression target, final Arguments args, final boolean superInvocation) {
 		this.target = target;
 		ITypeDescription type = target == null ? callerContext.getTypeContext() : target.getGamlType().getSpecies();
-		// DEBUG.LOG("action in " + action.getEnclosingDescription() + " - type = " + type);
 		this.targetSpeciesName = superInvocation ? type.getParent().getName() : type.getName();
 		this.action = action;
 		parameters = args;
 	}
 
 	/**
-	 * Instantiates a new primitive operator.
+	 * Copy / resolve constructor used by {@link #resolveAgainst(IScope)}.
 	 *
 	 * @param action
-	 *            the action.
+	 *            the action description; must not be {@code null}
 	 * @param target
-	 *            the target.
+	 *            the (possibly already-resolved) target expression; may be {@code null}
 	 * @param args
-	 *            the args
+	 *            the (possibly already-resolved) arguments; may be {@code null}
 	 * @param targetSpeciesName
-	 *            the target species.
+	 *            the pre-computed species name; may be {@code null}
 	 */
 	public ActionCallOperator(final IActionDescription action, final IExpression target, final Arguments args,
-			final String targetSpecies) {
+			final String targetSpeciesName) {
 		this.target = target;
-		this.targetSpeciesName = targetSpecies;
+		this.targetSpeciesName = targetSpeciesName;
 		this.action = action;
 		parameters = args;
 	}
@@ -148,33 +174,50 @@ public class ActionCallOperator implements IOperator {
 	}
 
 	/**
-	 * @return
+	 * Resolves the runtime {@link IClass} in which the action lives.
+	 *
+	 * <p>
+	 * The result is computed lazily on the first call and cached in {@link #cachedSpeciesRef} using a compare-and-set
+	 * so that exactly one resolution is performed even under concurrent access from multiple threads.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the current execution scope; used to reach the model's species registry
+	 * @return the resolved {@link IClass}, or {@code null} when no matching species/class can be found
 	 */
 	private IClass getContext(final IScope scope) {
-		if (computed) return targetSpecies;
-		computed = true;
+		Object current = cachedSpeciesRef.get();
+		if (current != null) return current == NOT_FOUND ? null : (IClass) current;
+		// First call – resolve and cache
+		IClass resolved;
 		if (targetSpeciesName != null) {
 			IModelSpecies model = scope.getModel();
-			targetSpecies = model.getClass(targetSpeciesName);
-			if (targetSpecies == null) { targetSpecies = model.getSpecies(targetSpeciesName); }
+			resolved = model.getClass(targetSpeciesName);
+			if (resolved == null) { resolved = model.getSpecies(targetSpeciesName); }
 		} else {
-			targetSpecies = scope.getCurrentObjectOrAgent().getSpecies();
+			resolved = scope.getCurrentObjectOrAgent().getSpecies();
 		}
-		return targetSpecies;
-
+		// compareAndSet guarantees only the winner's value is stored; all losers read the winner's value.
+		cachedSpeciesRef.compareAndSet(null, resolved != null ? resolved : NOT_FOUND);
+		Object winner = cachedSpeciesRef.get();
+		return winner == NOT_FOUND ? null : (IClass) winner;
 	}
 
 	/**
-	 * Gets the runtime args.
+	 * Returns a scope-resolved copy of the arguments for this call.
+	 *
+	 * <p>
+	 * A fresh copy is produced on every call because argument expressions may contain dynamic references (e.g. local
+	 * variables) that must be re-evaluated against the current scope. See issues #2943 and #2922, as well as the
+	 * multiple-parallel-simulations case.
+	 * </p>
 	 *
 	 * @param scope
-	 *            the scope
-	 * @return the runtime args
+	 *            the current execution scope
+	 * @return resolved {@link Arguments}, or {@code null} when this action accepts no arguments
 	 */
 	public Arguments getRuntimeArgs(final IScope scope) {
 		if (parameters == null) return null;
-		// Dynamic arguments necessary (see #2943, #2922, plus issue with multiple parallel simulations)
-		// Copy-paste of DoStatement. Verify that this copy is necessary here.
 		return parameters.resolveAgainst(scope);
 	}
 
@@ -184,10 +227,14 @@ public class ActionCallOperator implements IOperator {
 	@Override
 	public String getTitle() {
 		final StringBuilder sb = new StringBuilder(50);
-		sb.append("action ").append(getName()).append(" defined in species ")
-				.append(target.getGamlType().getSpeciesName()).append(" returns ").append(getGamlType().getName());
+		sb.append("action ").append(getName()).append(" defined in species ");
+		if (target != null) {
+			sb.append(target.getGamlType().getSpeciesName());
+		} else {
+			sb.append(targetSpeciesName != null ? targetSpeciesName : "self");
+		}
+		sb.append(" returns ").append(getGamlType().getName());
 		return sb.toString();
-
 	}
 
 	@Override
@@ -210,15 +257,21 @@ public class ActionCallOperator implements IOperator {
 	}
 
 	/**
-	 * Args to gaml.
+	 * Serialises all arguments as a comma-separated string of {@code name:value} pairs (or bare values for positional
+	 * arguments) and appends the result to {@code sb}.
+	 *
+	 * <p>
+	 * The method is {@code public} so that {@link gama.gaml.statements.DoStatement.DoSerializer} can delegate to it
+	 * when serialising a {@code do} statement without the enclosing target prefix.
+	 * </p>
 	 *
 	 * @param sb
-	 *            the sb
+	 *            the buffer to append to
 	 * @param includingBuiltIn
-	 *            the including built in
-	 * @return the string
+	 *            whether to include built-in symbol names in the serialised output
+	 * @return the same {@code sb} for chaining (empty string when there are no parameters)
 	 */
-	protected String argsToGaml(final StringBuilder sb, final boolean includingBuiltIn) {
+	public String argsToGaml(final StringBuilder sb, final boolean includingBuiltIn) {
 		if (parameters == null || parameters.isEmpty()) return "";
 		parameters.forEachFacet((name, expr) -> {
 			if (StringUtils.isGamaNumber(name)) {

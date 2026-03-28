@@ -26,6 +26,7 @@ import gama.annotations.support.ISymbolKind;
 import gama.api.additions.delegates.IEventLayerDelegate;
 import gama.api.additions.registries.GamaAdditionRegistry;
 import gama.api.annotations.validator;
+import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.compilation.descriptions.IDescriptionValidator;
@@ -166,7 +167,7 @@ public class EventLayerStatement extends AbstractLayerStatement implements ILaye
 
 			final String actionName = description.getLitteral(ACTION);
 			if (actionName != null) {
-				if (actionName.contains(IKeyword.SYNTHETIC)) {
+				if (actionName.contains(IInternalFacets.SYNTHETIC)) {
 					description.warning(
 							"This use of 'action' is deprecated. Move the sequence to execute at the end of the 'event' statement instead.",
 							IGamlIssue.DEPRECATED, ACTION);

@@ -520,7 +520,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 *            the field name
 	 * @return the i expression
 	 */
-	private IExpression compileFieldAccess(final Expression ownerExpr, final Expression fieldExpr,
+	public IExpression compileFieldAccess(final Expression ownerExpr, final Expression fieldExpr,
 			final String fieldName) {
 		final IExpression owner = compile(ownerExpr);
 		if (owner == null) return null;
@@ -539,7 +539,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			return FACTORY.createConst(var, GamaType.from(md.getExperiment(var)));
 
 		final ITypeDescription species = type.getSpecies();
-		if (species == null) return compileSimpleTypeField(ownerExpr, fieldExpr, var, type, owner);
+		if (species == null) return compileReadOnlyTypeField(ownerExpr, fieldExpr, var, type, owner);
 
 		return compileAgentFieldOrAction(fieldExpr, owner, var, species);
 	}
@@ -559,7 +559,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 *            the compiled owner
 	 * @return the i expression
 	 */
-	private IExpression compileSimpleTypeField(final Expression ownerExpr, final Expression fieldExpr,
+	private IExpression compileReadOnlyTypeField(final Expression ownerExpr, final Expression fieldExpr,
 			final String fieldName, final IType ownerType, final IExpression compiledOwner) {
 		final IArtefact proto = ownerType.getGetter(fieldName);
 		if (proto == null) {
@@ -591,18 +591,36 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	private IExpression compileAgentFieldOrAction(final Expression fieldExpr, final IExpression owner,
 			final String varName, final ITypeDescription species) {
 		if (fieldExpr instanceof VariableRef) return compileAgentVariable(fieldExpr, owner, varName, species);
-
-		if (fieldExpr instanceof Function) {
-			final IActionDescription action = species.getAction(varName);
-			if (action != null) {
-				final ExpressionList list = ((Function) fieldExpr).getRight();
-				final IExpression call = action(varName, owner, list, action);
-				context.getDocumentationContext().document(fieldExpr, call);
-				return call;
-			}
-		}
+		if (fieldExpr instanceof Function)
+			return compileAgentOrObjectAction((Function) fieldExpr, owner, varName, species);
 
 		return null;
+	}
+
+	/**
+	 * Compile agent or object action.
+	 *
+	 * @param function
+	 *            the function
+	 * @param target
+	 *            the target
+	 * @param name
+	 *            the name
+	 * @param species
+	 *            the species
+	 * @return the i expression
+	 */
+	public IExpression compileAgentOrObjectAction(final Function function, final IExpression target, final String name,
+			final ITypeDescription species) {
+		final IActionDescription action = species.getAction(name);
+		if (action != null) {
+			final ExpressionList list = function.getRight();
+			final IExpression call = action(name, target, list, action);
+			context.getDocumentationContext().document(function, call);
+			return call;
+		}
+		return null;
+
 	}
 
 	/**
@@ -669,9 +687,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 */
 	public Arguments parseArguments(final IActionDescription action, final EObject o, final IDescription command,
 			final boolean compileArgValues) {
-		if (o == null) return null;
-
-		final List<Expression> parameters = extractParameters(o, command);
+		final List<Expression> parameters = o instanceof Array array ? EGAML.getExprsOf(array.getExprs())
+				: o instanceof ExpressionList ? EGAML.getExprsOf(o) : null;
 		if (parameters == null) return null;
 
 		final boolean completeArgs = o instanceof ExpressionList;
@@ -731,22 +748,6 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		}
 
 		return argMap;
-	}
-
-	/**
-	 * Extract parameters.
-	 *
-	 * @param o
-	 *            the o
-	 * @param command
-	 *            the command
-	 * @return the list
-	 */
-	private List<Expression> extractParameters(final EObject o, final IDescription command) {
-		if (o instanceof Array array) return EGAML.getExprsOf(array.getExprs());
-		if (o instanceof ExpressionList) return EGAML.getExprsOf(o);
-		command.error("Arguments must be written [a1::v1, a2::v2], (a1:v1, a2:v2) or (v1, v2)");
-		return null;
 	}
 
 	/**
@@ -1037,7 +1038,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 * @param args
 	 * @return
 	 */
-	private IExpression tryConstructor(final Function object, final ITypeDescription species, final List<Expression> args) {
+	private IExpression tryConstructor(final Function object, final ITypeDescription species,
+			final List<Expression> args) {
 		if (species.isAbstract()) {
 			context.getContext().error("Cannot instantiate abstract type: " + species.getName(), IGamlIssue.GENERAL,
 					object);

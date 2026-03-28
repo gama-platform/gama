@@ -1133,6 +1133,94 @@ ruleStatement returns [EObject current=null]
 	)
 ;
 
+// Entry rule entryRuleS_Do
+entryRuleS_Do returns [EObject current=null]:
+	{ newCompositeNode(grammarAccess.getS_DoRule()); }
+	iv_ruleS_Do=ruleS_Do
+	{ $current=$iv_ruleS_Do.current; }
+	EOF;
+
+// Rule S_Do
+ruleS_Do returns [EObject current=null]
+@init {
+	enterRule();
+}
+@after {
+	leaveRule();
+}:
+	(
+		(
+			(
+				(
+					lv_key_0_1='do'
+					{
+						newLeafNode(lv_key_0_1, grammarAccess.getS_DoAccess().getKeyDoKeyword_0_0_0());
+					}
+					{
+						if ($current==null) {
+							$current = createModelElement(grammarAccess.getS_DoRule());
+						}
+						setWithLastConsumed($current, "key", lv_key_0_1, null);
+					}
+					    |
+					lv_key_0_2='invoke'
+					{
+						newLeafNode(lv_key_0_2, grammarAccess.getS_DoAccess().getKeyInvokeKeyword_0_0_1());
+					}
+					{
+						if ($current==null) {
+							$current = createModelElement(grammarAccess.getS_DoRule());
+						}
+						setWithLastConsumed($current, "key", lv_key_0_2, null);
+					}
+				)
+			)
+		)
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getS_DoAccess().getExprAbstractRefParserRuleCall_1_0());
+				}
+				lv_expr_1_0=ruleAbstractRef
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getS_DoRule());
+					}
+					set(
+						$current,
+						"expr",
+						lv_expr_1_0,
+						"gaml.compiler.Gaml.AbstractRef");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)
+		(
+			(
+				{
+					newCompositeNode(grammarAccess.getS_DoAccess().getFacetsFacetParserRuleCall_2_0());
+				}
+				lv_facets_2_0=ruleFacet
+				{
+					if ($current==null) {
+						$current = createModelElementForParent(grammarAccess.getS_DoRule());
+					}
+					add(
+						$current,
+						"facets",
+						lv_facets_2_0,
+						"gaml.compiler.Gaml.Facet");
+					afterParserOrEnumRuleCall();
+				}
+			)
+		)*
+		otherlv_3=';'
+		{
+			newLeafNode(otherlv_3, grammarAccess.getS_DoAccess().getSemicolonKeyword_3());
+		}
+	)
+;
+
 // Entry rule entryRuleS_ActionCall
 entryRuleS_ActionCall returns [EObject current=null]:
 	{ newCompositeNode(grammarAccess.getS_ActionCallRule()); }
@@ -1204,82 +1292,6 @@ ruleS_ActionCall returns [EObject current=null]
 		otherlv_3=';'
 		{
 			newLeafNode(otherlv_3, grammarAccess.getS_ActionCallAccess().getSemicolonKeyword_3());
-		}
-	)
-;
-
-// Entry rule entryRuleS_Do
-entryRuleS_Do returns [EObject current=null]:
-	{ newCompositeNode(grammarAccess.getS_DoRule()); }
-	iv_ruleS_Do=ruleS_Do
-	{ $current=$iv_ruleS_Do.current; }
-	EOF;
-
-// Rule S_Do
-ruleS_Do returns [EObject current=null]
-@init {
-	enterRule();
-}
-@after {
-	leaveRule();
-}:
-	(
-		(
-			(
-				(
-					lv_key_0_1='do'
-					{
-						newLeafNode(lv_key_0_1, grammarAccess.getS_DoAccess().getKeyDoKeyword_0_0_0());
-					}
-					{
-						if ($current==null) {
-							$current = createModelElement(grammarAccess.getS_DoRule());
-						}
-						setWithLastConsumed($current, "key", lv_key_0_1, null);
-					}
-					    |
-					lv_key_0_2='invoke'
-					{
-						newLeafNode(lv_key_0_2, grammarAccess.getS_DoAccess().getKeyInvokeKeyword_0_0_1());
-					}
-					{
-						if ($current==null) {
-							$current = createModelElement(grammarAccess.getS_DoRule());
-						}
-						setWithLastConsumed($current, "key", lv_key_0_2, null);
-					}
-				)
-			)
-		)
-		(
-			(
-				{
-					newCompositeNode(grammarAccess.getS_DoAccess().getExprAbstractRefParserRuleCall_1_0());
-				}
-				lv_expr_1_0=ruleAbstractRef
-				{
-					if ($current==null) {
-						$current = createModelElementForParent(grammarAccess.getS_DoRule());
-					}
-					set(
-						$current,
-						"expr",
-						lv_expr_1_0,
-						"gaml.compiler.Gaml.AbstractRef");
-					afterParserOrEnumRuleCall();
-				}
-			)
-		)
-		{
-			if ($current==null) {
-				$current = createModelElement(grammarAccess.getS_DoRule());
-			}
-			newCompositeNode(grammarAccess.getS_DoAccess().getFacetsAndBlockParserRuleCall_2());
-		}
-		this_FacetsAndBlock_2=ruleFacetsAndBlock[$current]
-		{
-			$current = $this_FacetsAndBlock_2.current;
-			afterParserOrEnumRuleCall();
 		}
 	)
 ;

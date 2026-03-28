@@ -20,7 +20,7 @@ package gaml.compiler.gaml;
  * @model
  * @generated
  */
-public interface S_Do extends Statement, FacetsAndBlock
+public interface S_Do extends Statement
 {
   /**
    * Returns the value of the '<em><b>Target</b></em>' containment reference.

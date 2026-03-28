@@ -10,13 +10,12 @@
  ********************************************************************************************************/
 package gaml.compiler.gaml.descriptions;
 
-import static gaml.compiler.gaml.IInternalFacets.NO_TYPE_INFERENCE;
-import static gaml.compiler.gaml.IInternalFacets.ORIGIN;
+import static gama.api.compilation.IInternalFacets.NO_TYPE_INFERENCE;
+import static gama.api.compilation.IInternalFacets.ORIGIN;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.StreamSupport;
@@ -26,6 +25,7 @@ import org.eclipse.emf.ecore.EObject;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
 import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IActionDescription;
 import gama.api.compilation.descriptions.IDescription;
@@ -50,7 +50,6 @@ import gama.api.gaml.types.Types;
 import gama.api.utils.GamlProperties;
 import gama.dev.DEBUG;
 import gaml.compiler.gaml.EGaml;
-import gaml.compiler.gaml.IInternalFacets;
 import gaml.compiler.gaml.prototypes.SymbolArtefact;
 
 /**
@@ -1238,6 +1237,17 @@ public abstract class SymbolDescription extends DescriptionStateManager {
 	 * @return true if all facets are valid, false otherwise
 	 */
 	private final boolean validateFacets() {
+		if (!visitFacets((facet, b) -> {
+			if (IInternalFacets.GAML_ERROR.equals(facet)) {
+				error(getLitteral(facet));
+				return false;
+			}
+			if (IInternalFacets.GAML_WARNING.equals(facet)) { warning(getLitteral(facet)); }
+			// if (!ArtefactRegistry.getDoFacets().contains(facet)) { args.put(facet, b); }
+			return true;
+		})) return false;
+		removeFacets(IInternalFacets.GAML_ERROR, IInternalFacets.GAML_WARNING);
+
 		// Special case for "do", which can accept (at parsing time) any facet
 		final boolean isDo = isInvocation();
 		final boolean isBuiltIn = isBuiltIn();

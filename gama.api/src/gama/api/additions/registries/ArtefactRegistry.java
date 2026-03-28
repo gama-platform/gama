@@ -24,6 +24,7 @@ import com.google.common.collect.Iterables;
 
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.artefacts.IArtefact;
 import gama.api.compilation.descriptions.IDescription;
 import gama.api.gaml.types.IType;
@@ -101,12 +102,6 @@ import one.util.streamex.StreamEx;
 public class ArtefactRegistry {
 
 	/**
-	 * Lazily initialised set of facet names allowed on the {@code do} statement. Populated on first call to
-	 * {@link #getDoFacets()}.
-	 */
-	public static Set<String> DO_FACETS;
-
-	/**
 	 * Set of statement keywords that may legally contain a {@code break} instruction (e.g. {@code loop}, {@code ask}).
 	 */
 	public static final Set<String> BREAKABLE_STATEMENTS = new HashSet<>();
@@ -128,8 +123,8 @@ public class ArtefactRegistry {
 	 * Set of facet names that must be excluded from GAML model serialization (e.g. {@code internal_function},
 	 * {@code with}).
 	 */
-	public static final Set<String> NON_SERIALIZABLE_FACETS =
-			new HashSet<>(Arrays.asList(IKeyword.SYNTHETIC_DO_TARGET, IKeyword.INTERNAL_FUNCTION, IKeyword.WITH));
+	public static final Set<String> NON_SERIALIZABLE_FACETS = new HashSet<>(
+			Arrays.asList(IInternalFacets.INTERNAL_TARGET, IInternalFacets.INTERNAL_FUNCTION, IKeyword.WITH));
 
 	/**
 	 * Primary map from GAML statement keyword strings to their corresponding {@link IArtefact.Symbol} prototype
@@ -149,16 +144,17 @@ public class ArtefactRegistry {
 	 */
 	private static volatile Iterable<? extends IArtefact.Facet> cachedFacetsArtefacts = null;
 
-	/**
-	 * Returns the set of facet names that are allowed on the {@code do} statement. The set is computed lazily on first
-	 * access and cached in {@link #DO_FACETS}.
-	 *
-	 * @return the (possibly cached) set of facet names for the {@code do} statement; never {@code null}
-	 */
-	public static Set<String> getDoFacets() {
-		if (DO_FACETS == null) { DO_FACETS = getAllowedFacetsFor(IKeyword.DO); }
-		return DO_FACETS;
-	}
+	// /**
+	// * Returns the set of facet names that are allowed on the {@code do} statement. The set is computed lazily on
+	// first
+	// * access and cached in {@link #DO_FACETS}.
+	// *
+	// * @return the (possibly cached) set of facet names for the {@code do} statement; never {@code null}
+	// */
+	// public static Set<String> getDoFacets() {
+	// if (DO_FACETS == null) { DO_FACETS = getAllowedFacetsFor(IKeyword.DO); }
+	// return DO_FACETS;
+	// }
 
 	/** Operators that can be used without parentheses in GAML expressions. */
 	public static final Set<String> ARTEFACTS_WITHOUT_PARENTHESES = ImmutableSet.of("-", "!");

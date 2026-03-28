@@ -113,14 +113,16 @@ Statement:
 	=> S_Definition |  // If no '(', it falls back safely to a standard variable.
 	// 5. Universal fallback for any custom action or built-in statement (e.g., ask agents;).
 	S_Other;
+
+
+// Example: do my_action; or invoke my_action(5); The facets are kept for legacy purposes...
+S_Do:
+	key=('do' | 'invoke') expr=AbstractRef (facets+=Facet)*';';
+	
 	
 S_ActionCall returns S_Do: 
 	target=Primary key='.' expr=Function ';'
 ;
-
-// Example: do my_action; or invoke my_action(5);
-S_Do:
-	key=('do' | 'invoke') expr=AbstractRef FacetsAndBlock;
 
 // Example: loop i from: 1 to: 5 { ... }
 S_Loop:

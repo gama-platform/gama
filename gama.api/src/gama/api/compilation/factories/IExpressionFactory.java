@@ -165,21 +165,21 @@ public interface IExpressionFactory {
 	 */
 	IExpression createExpr(final String s, final IDescription context, final IExecutionContext additionalContext);
 
-	/**
-	 * Creates an argument map for action calls by parsing expression descriptions. This method processes the expression
-	 * description containing action parameters and returns a structured Arguments object suitable for action execution.
-	 *
-	 * @param action
-	 *            the action description that defines expected parameters
-	 * @param args
-	 *            the expression description containing the argument values
-	 * @param context
-	 *            the compilation context for resolving references
-	 * @return a new Arguments object containing parsed parameters, or null if args is null
-	 */
-	Arguments createArgumentMap(IActionDescription action, IExpressionDescription args, IDescription context);
-
-	// IExpressionCompiler getParser();
+	// /**
+	// * Creates an argument map for action calls by parsing expression descriptions. This method processes the
+	// expression
+	// * description containing action parameters and returns a structured Arguments object suitable for action
+	// execution.
+	// *
+	// * @param action
+	// * the action description that defines expected parameters
+	// * @param args
+	// * the expression description containing the argument values
+	// * @param context
+	// * the compilation context for resolving references
+	// * @return a new Arguments object containing parsed parameters, or null if args is null
+	// */
+	// Arguments createArgumentMap(IActionDescription action, IExpressionDescription args, IDescription context);
 
 	/**
 	 * Creates a variable expression with the specified parameters. This method creates different types of variable

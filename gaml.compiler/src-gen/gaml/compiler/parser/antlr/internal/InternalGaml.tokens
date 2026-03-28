@@ -15,7 +15,7 @@
 ','=24
 '-'=104
 '->'=94
-'.'=26
+'.'=28
 '/'=106
 ':'=89
 '::'=95
@@ -54,7 +54,7 @@
 'default'=39
 'diffuse'=73
 'display'=51
-'do'=27
+'do'=26
 'draw'=59
 'else'=31
 'equation'=46
@@ -67,7 +67,7 @@
 'if'=30
 'import'=18
 'init'=80
-'invoke'=28
+'invoke'=27
 'layout'=70
 'loop'=29
 'match'=35
