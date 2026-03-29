@@ -35,9 +35,9 @@ import gama.api.kernel.GamaMetaModel;
 import gama.api.utils.interfaces.INamed;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
-import gaml.compiler.gaml.descriptions.StatementDescription;
-import gaml.compiler.gaml.descriptions.VariableDescription;
-import gaml.compiler.gaml.prototypes.OperatorArtefact;
+import gaml.compiler.descriptions.StatementDescription;
+import gaml.compiler.descriptions.VariableDescription;
+import gaml.compiler.prototypes.OperatorArtefact;
 import gaml.compiler.ui.templates.GamlTemplateFactory;
 
 /**

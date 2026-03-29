@@ -18,21 +18,21 @@ import org.osgi.framework.BundleContext;
 import gama.api.gaml.GAML;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
-import gaml.compiler.gaml.descriptions.DescriptionFactory;
-import gaml.compiler.gaml.expression.GamlExpressionFactory;
-import gaml.compiler.gaml.factories.ClassFactory;
-import gaml.compiler.gaml.factories.ExperimentFactory;
-import gaml.compiler.gaml.factories.ExpressionDescriptionFactory;
-import gaml.compiler.gaml.factories.ModelFactory;
-import gaml.compiler.gaml.factories.PlatformFactory;
-import gaml.compiler.gaml.factories.SkillFactory;
-import gaml.compiler.gaml.factories.SpeciesFactory;
-import gaml.compiler.gaml.factories.StatementFactory;
-import gaml.compiler.gaml.factories.VariableFactory;
-import gaml.compiler.gaml.prototypes.ArtefactFactory;
-import gaml.compiler.gaml.resource.GamlResourceServices;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
-import gaml.compiler.gaml.validation.GamlTextValidator;
+import gaml.compiler.descriptions.DescriptionFactory;
+import gaml.compiler.expressions.GamlExpressionFactory;
+import gaml.compiler.factories.ClassFactory;
+import gaml.compiler.factories.ExperimentFactory;
+import gaml.compiler.factories.ExpressionDescriptionFactory;
+import gaml.compiler.factories.ModelFactory;
+import gaml.compiler.factories.PlatformFactory;
+import gaml.compiler.factories.SkillFactory;
+import gaml.compiler.factories.SpeciesFactory;
+import gaml.compiler.factories.StatementFactory;
+import gaml.compiler.factories.VariableFactory;
+import gaml.compiler.prototypes.ArtefactFactory;
+import gaml.compiler.resource.GamlResourceServices;
+import gaml.compiler.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlTextValidator;
 
 /**
  * The GAML Compiler bundle activator that initializes and registers all the core components required for GAML language

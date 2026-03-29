@@ -66,7 +66,7 @@ import gama.headless.xml.ConsoleReader;
 import gama.headless.xml.Reader;
 import gama.headless.xml.XMLWriter;
 import gaml.compiler.GamlStandaloneSetup;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The Class Application.

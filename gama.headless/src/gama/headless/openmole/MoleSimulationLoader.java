@@ -19,7 +19,7 @@ import gama.api.exceptions.GamaCompilationFailedException;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.utils.GamlProperties;
 import gama.headless.core.GamaHeadlessException;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The Class MoleSimulationLoader.

@@ -49,8 +49,8 @@ import gama.dev.DEBUG;
 import gama.ui.editor.internal.EditorActivator;
 import gama.ui.navigator.view.contents.WrappedGamaFile;
 import gama.ui.shared.utils.WorkbenchHelper;
-import gaml.compiler.gaml.resource.GamlFileInfo;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
+import gaml.compiler.resource.GamlFileInfo;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The class ModelsManager.

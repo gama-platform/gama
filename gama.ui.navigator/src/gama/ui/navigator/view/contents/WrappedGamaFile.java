@@ -31,7 +31,7 @@ import gama.ui.navigator.view.NavigatorContentProvider;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
 import gama.ui.shared.utils.PreferencesHelper;
-import gaml.compiler.gaml.resource.GamlFileInfo;
+import gaml.compiler.resource.GamlFileInfo;
 import one.util.streamex.StreamEx;
 
 /**

@@ -29,7 +29,7 @@ import gama.api.gaml.types.Signature;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaIcons;
-import gaml.compiler.gaml.prototypes.OperatorArtefact;
+import gaml.compiler.prototypes.OperatorArtefact;
 import gaml.compiler.ui.templates.GamlTemplateFactory;
 
 /**

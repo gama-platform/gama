@@ -27,18 +27,18 @@ import org.eclipse.xtext.validation.IResourceValidator;
 import com.google.inject.Binder;
 
 import gama.dev.DEBUG;
-import gaml.compiler.gaml.linking.GamlLinkingErrorMessageProvider;
-import gaml.compiler.gaml.linking.GamlLinkingService;
-import gaml.compiler.gaml.naming.GamlNameConverter;
-import gaml.compiler.gaml.naming.GamlQualifiedNameProvider;
-import gaml.compiler.gaml.parsing.GamlSyntaxErrorMessageProvider;
-import gaml.compiler.gaml.preprocessor.PreprocessingGamlParser;
-import gaml.compiler.gaml.resource.GamlEncodingProvider;
-import gaml.compiler.gaml.resource.GamlResource;
-import gaml.compiler.gaml.resource.GamlResourceDescriptionManager;
-import gaml.compiler.gaml.resource.GamlResourceDescriptionStrategy;
-import gaml.compiler.gaml.validation.ErrorToDiagnoticTranslator;
-import gaml.compiler.gaml.validation.GamlResourceValidator;
+import gaml.compiler.linking.GamlLinkingErrorMessageProvider;
+import gaml.compiler.linking.GamlLinkingService;
+import gaml.compiler.naming.GamlNameConverter;
+import gaml.compiler.naming.GamlQualifiedNameProvider;
+import gaml.compiler.parsing.GamlSyntaxErrorMessageProvider;
+import gaml.compiler.preprocessor.PreprocessingGamlParser;
+import gaml.compiler.resource.GamlEncodingProvider;
+import gaml.compiler.resource.GamlResource;
+import gaml.compiler.resource.GamlResourceDescriptionManager;
+import gaml.compiler.resource.GamlResourceDescriptionStrategy;
+import gaml.compiler.validation.ErrorToDiagnoticTranslator;
+import gaml.compiler.validation.GamlResourceValidator;
 
 /**
  * Use this class to register components to be used at runtime / without the Equinox extension registry.
@@ -66,7 +66,7 @@ public class GamlRuntimeModule extends gaml.compiler.AbstractGamlRuntimeModule {
 	@Override
 	@SingletonBinding ()
 	public Class<? extends org.eclipse.xtext.scoping.IGlobalScopeProvider> bindIGlobalScopeProvider() {
-		return gaml.compiler.gaml.scoping.BuiltinGlobalScopeProvider.class;
+		return gaml.compiler.scoping.BuiltinGlobalScopeProvider.class;
 	}
 
 	/**
@@ -153,6 +153,6 @@ public class GamlRuntimeModule extends gaml.compiler.AbstractGamlRuntimeModule {
 	// contributed by org.eclipse.xtext.generator.formatting.FormatterFragment
 	@Override
 	public Class<? extends org.eclipse.xtext.formatting.IFormatter> bindIFormatter() {
-		return gaml.compiler.gaml.formatting.GamlFormatter.class;
+		return gaml.compiler.formatting.GamlFormatter.class;
 	}
 }

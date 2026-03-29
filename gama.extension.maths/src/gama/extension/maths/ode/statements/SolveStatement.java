@@ -58,7 +58,7 @@ import gama.extension.maths.ode.utils.solver.MidpointSolver;
 import gama.extension.maths.ode.utils.solver.Rk4Solver;
 import gama.extension.maths.ode.utils.solver.Solver;
 import gama.extension.maths.ode.utils.solver.ThreeEighthesSolver;
-import gaml.compiler.gaml.expression.ConstantExpression;
+import gaml.compiler.expressions.ConstantExpression;
 
 /**
  * The Class SolveStatement.

@@ -46,7 +46,7 @@ import gama.headless.core.RichExperiment;
 import gama.headless.core.RichOutput;
 import gama.headless.xml.Writer;
 import gama.headless.xml.XmlTAG;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The Class ExperimentJob.

@@ -16,7 +16,7 @@ import java.net.URL;
 import com.google.inject.Injector;
 
 import gama.api.constants.GamlFileExtension;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The Class AbstractModelLibraryRunner.

@@ -14,7 +14,7 @@
   <extension
         point="gama.metadata">
      <implementation
-           class="gaml.compiler.gaml.resource.GamlFileInfo"
+           class="gaml.compiler.resource.GamlFileInfo"
            content_type="gama.gaml.file.type">
      </implementation>
   </extension>

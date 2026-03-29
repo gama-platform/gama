@@ -31,7 +31,7 @@ import gama.api.gaml.GAML;
 import gama.api.gaml.types.Types;
 import gama.api.utils.StringUtils;
 import gama.api.utils.interfaces.INamed;
-import gaml.compiler.gaml.descriptions.StatementDescription;
+import gaml.compiler.descriptions.StatementDescription;
 
 /**
  * The class GamlTemplateFactory.

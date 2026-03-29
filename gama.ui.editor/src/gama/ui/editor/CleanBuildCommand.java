@@ -20,7 +20,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
 import gama.api.GAMA;
-import gaml.compiler.gaml.indexer.GamlResourceIndexer;
+import gaml.compiler.indexer.GamlResourceIndexer;
 
 /**
  * The Class CleanBuildCommand.

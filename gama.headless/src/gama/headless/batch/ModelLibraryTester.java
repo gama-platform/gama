@@ -34,7 +34,7 @@ import gama.core.experiment.TestAgent;
 import gama.core.experiment.parameters.ParametersSet;
 import gama.dev.DEBUG;
 import gama.headless.runtime.HeadlessApplication;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The Class ModelLibraryTester.

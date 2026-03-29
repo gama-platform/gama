@@ -28,7 +28,7 @@ import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 import org.eclipse.xtext.util.ITextRegion;
 import org.eclipse.xtext.util.TextRegion;
 
-import gaml.compiler.gaml.EGaml;
+import gaml.compiler.EGaml;
 
 /**
  * The class GamaFoldingRegionProvider.

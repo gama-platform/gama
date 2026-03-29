@@ -16,8 +16,8 @@ import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.util.concurrent.CancelableUnitOfWork;
 
 import gama.ui.shared.views.toolbar.Selector;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
 import gaml.compiler.ui.editor.GamlEditor;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The class CreateExperimentSelectionListener.

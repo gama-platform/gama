@@ -51,9 +51,9 @@ import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
 import gama.ui.shared.views.toolbar.GamaToolbarSimple;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
-import gaml.compiler.gaml.indexer.GamlResourceIndexer;
-import gaml.compiler.gaml.resource.GamlResourceServices;
-import gaml.compiler.gaml.validation.GamlResourceValidator;
+import gaml.compiler.indexer.GamlResourceIndexer;
+import gaml.compiler.resource.GamlResourceServices;
+import gaml.compiler.validation.GamlResourceValidator;
 
 /**
  * The Class SyntaxErrorsView.

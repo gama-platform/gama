@@ -53,7 +53,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.types.map.GamaMapFactory;
 import gama.extension.maths.ode.statements.SingleEquationStatement.SIngleEquationSerializer;
 import gama.extension.maths.ode.statements.SingleEquationStatement.SingleEquationValidator;
-import gaml.compiler.gaml.expression.AbstractNAryOperator;
+import gaml.compiler.expressions.AbstractNAryOperator;
 
 /**
  *

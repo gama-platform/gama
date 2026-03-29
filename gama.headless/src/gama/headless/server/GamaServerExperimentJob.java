@@ -37,7 +37,7 @@ import gama.headless.core.RichExperiment;
 import gama.headless.core.RichOutput;
 import gama.headless.job.ExperimentJob;
 import gama.headless.job.ListenedVariable;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The Class ExperimentJob.

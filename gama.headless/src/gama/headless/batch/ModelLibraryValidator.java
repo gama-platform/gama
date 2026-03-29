@@ -26,7 +26,7 @@ import gama.api.additions.GamaBundleLoader;
 import gama.api.compilation.GamlCompilationError;
 import gama.dev.DEBUG;
 import gama.headless.runtime.HeadlessApplication;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The Class ModelLibraryValidator.

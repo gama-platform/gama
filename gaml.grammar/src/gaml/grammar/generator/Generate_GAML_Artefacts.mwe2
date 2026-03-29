@@ -116,7 +116,7 @@ Workflow {
 				generateXtendStub = false
 			}
 			emfGenerator = {
-				rootExtendsClass = "gaml.compiler.gaml.serializer.GamlEObjectImpl"
+				rootExtendsClass = "gaml.compiler.serializer.GamlEObjectImpl"
 			}
 			
 		}

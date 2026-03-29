@@ -53,8 +53,8 @@ import gama.api.types.map.IMap;
 import gama.api.types.pair.GamaPairFactory;
 import gama.api.types.pair.IPair;
 import gama.api.utils.collections.Collector;
-import gaml.compiler.gaml.expression.TypeAttributeExpression;
-import gaml.compiler.gaml.expression.UnaryOperator;
+import gaml.compiler.expressions.TypeAttributeExpression;
+import gaml.compiler.expressions.UnaryOperator;
 
 /**
  * The class SystemOfEquationsStatement. This class represents a system of equations (SingleEquationStatement) that

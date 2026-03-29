@@ -42,7 +42,7 @@ import gama.api.runtime.scope.IScope;
 import gama.api.ui.IOutput;
 import gama.core.outputs.layers.AgentLayerStatement.AgentLayerValidator;
 import gama.gaml.statements.AspectStatement;
-import gaml.compiler.gaml.descriptions.SpeciesDescription;
+import gaml.compiler.descriptions.SpeciesDescription;
 
 /**
  * Written by drogoul Modified on 9 nov. 2009

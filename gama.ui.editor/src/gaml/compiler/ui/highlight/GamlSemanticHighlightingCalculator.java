@@ -45,8 +45,8 @@ import com.google.inject.Inject;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.utils.StringUtils;
+import gaml.compiler.EGaml;
 import gaml.compiler.gaml.ArgumentDefinition;
-import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;

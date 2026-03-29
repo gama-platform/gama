@@ -152,8 +152,7 @@ import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
 import gama.ui.shared.views.toolbar.Selector;
-import gaml.compiler.gaml.resource.GamlResourceServices;
-import gaml.compiler.gaml.validation.IGamlBuilderListener;
+import gaml.compiler.resource.GamlResourceServices;
 import gaml.compiler.ui.decorators.GamlAnnotationImageProvider;
 import gaml.compiler.ui.editor.toolbar.CreateExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.EditorSearchControls;
@@ -167,6 +166,7 @@ import gaml.compiler.ui.reference.OperatorsReferenceMenu;
 import gaml.compiler.ui.reference.TemplateReferenceMenu;
 import gaml.compiler.ui.templates.GamlEditTemplateDialogFactory;
 import gaml.compiler.ui.templates.GamlTemplateStore;
+import gaml.compiler.validation.IGamlBuilderListener;
 
 /**
  * The Class GamlEditor.

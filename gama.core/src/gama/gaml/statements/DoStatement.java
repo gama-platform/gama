@@ -39,18 +39,18 @@ import gama.gaml.statements.DoStatement.DoSerializer;
  * <h2>Execution model</h2>
  * <p>
  * All three syntactic forms of action calls are normalised at parse time (see
- * {@link gaml.compiler.gaml.parsing.GamlSyntacticConverter#processDo}) and compiled at validation time (see
- * {@link gaml.compiler.gaml.descriptions.DoDescription#validate()}) into a single
- * {@link gaml.compiler.gaml.expression.ActionCallOperator} expression that is stored in the
+ * {@link gaml.compiler.parsing.GamlSyntacticConverter#processDo}) and compiled at validation time (see
+ * {@link gaml.compiler.descriptions.DoDescription#validate()}) into a single
+ * {@link gaml.compiler.expressions.ActionCallOperator} expression that is stored in the
  * {@link IInternalFacets#INTERNAL_FUNCTION} facet. At runtime, {@link #privateExecuteIn(IScope)} simply evaluates that
  * expression via {@code function.value(scope)}, so all lookup, dispatch, and argument-passing logic lives in
- * {@link gaml.compiler.gaml.expression.ActionCallOperator}.
+ * {@link gaml.compiler.expressions.ActionCallOperator}.
  * </p>
  *
  * <h2>Thread safety</h2>
  * <p>
  * All fields of this class are either {@code final} or encapsulated inside an
- * {@link gaml.compiler.gaml.expression.ActionCallOperator} that is itself thread-safe. No additional synchronisation is
+ * {@link gaml.compiler.expressions.ActionCallOperator} that is itself thread-safe. No additional synchronisation is
  * needed here.
  * </p>
  *
@@ -204,7 +204,7 @@ public class DoStatement extends AbstractStatementSequence {
 
 		/**
 		 * Serialises the arguments of the action call from the compiled
-		 * {@link gaml.compiler.gaml.expression.ActionCallOperator} stored in the
+		 * {@link gaml.compiler.expressions.ActionCallOperator} stored in the
 		 * {@link IInternalFacets#INTERNAL_FUNCTION} facet.
 		 *
 		 * <p>
@@ -224,7 +224,7 @@ public class DoStatement extends AbstractStatementSequence {
 			final IExpressionDescription functionFacet = s.getFacet(IInternalFacets.INTERNAL_FUNCTION);
 			if (functionFacet != null) {
 				final IExpression compiled = functionFacet.getExpression();
-				if (compiled instanceof gaml.compiler.gaml.expression.ActionCallOperator aco) {
+				if (compiled instanceof gaml.compiler.expressions.ActionCallOperator aco) {
 					final StringBuilder argsBuf = new StringBuilder();
 					aco.argsToGaml(argsBuf, includingBuiltIn);
 					if (argsBuf.length() > 0) { sb.append("(").append(argsBuf).append(")"); }
@@ -255,7 +255,7 @@ public class DoStatement extends AbstractStatementSequence {
 
 	/**
 	 * The compiled action-call expression. After validation this is always an
-	 * {@link gaml.compiler.gaml.expression.ActionCallOperator} that encapsulates the target agent expression, the
+	 * {@link gaml.compiler.expressions.ActionCallOperator} that encapsulates the target agent expression, the
 	 * action description, and the compiled arguments. {@link #privateExecuteIn(IScope)} simply evaluates this
 	 * expression.
 	 *
@@ -269,7 +269,7 @@ public class DoStatement extends AbstractStatementSequence {
 	 * Constructs a {@code DoStatement} from its compile-time description.
 	 *
 	 * <p>
-	 * The compiled {@link gaml.compiler.gaml.expression.ActionCallOperator} produced during validation is retrieved
+	 * The compiled {@link gaml.compiler.expressions.ActionCallOperator} produced during validation is retrieved
 	 * from the {@link IInternalFacets#INTERNAL_FUNCTION} facet and stored as {@link #function}.
 	 * </p>
 	 *
@@ -287,7 +287,7 @@ public class DoStatement extends AbstractStatementSequence {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Executes the action call by evaluating the compiled {@link gaml.compiler.gaml.expression.ActionCallOperator}.
+	 * Executes the action call by evaluating the compiled {@link gaml.compiler.expressions.ActionCallOperator}.
 	 *
 	 * <p>
 	 * The operator resolves the target agent, locates the action in the appropriate species or class, and passes the

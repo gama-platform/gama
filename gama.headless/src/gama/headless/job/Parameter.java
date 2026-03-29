@@ -17,7 +17,7 @@ import gama.api.gaml.types.GamaFileType;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.species.IModelSpecies;
 import gama.headless.common.DataType;
-import gaml.compiler.gaml.expression.BinaryOperator;
+import gaml.compiler.expressions.BinaryOperator;
 
 /**
  * The Class Parameter.

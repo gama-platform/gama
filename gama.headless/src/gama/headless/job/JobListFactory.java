@@ -25,7 +25,7 @@ import gama.api.gaml.types.Types;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.headless.core.GamaHeadlessException;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The Class JobPlan.

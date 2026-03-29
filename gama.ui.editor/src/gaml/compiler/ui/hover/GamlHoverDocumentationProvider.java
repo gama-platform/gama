@@ -35,9 +35,9 @@ import gama.api.ui.displays.IDisplayCreator;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.files.IGamaFileMetaData;
+import gaml.compiler.EGaml;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.Array;
-import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.Function;
@@ -55,8 +55,8 @@ import gaml.compiler.gaml.UnitFakeDefinition;
 import gaml.compiler.gaml.UnitName;
 import gaml.compiler.gaml.VarDefinition;
 import gaml.compiler.gaml.VariableRef;
-import gaml.compiler.gaml.resource.GamlResourceServices;
 import gaml.compiler.gaml.util.GamlSwitch;
+import gaml.compiler.resource.GamlResourceServices;
 import gaml.compiler.ui.editor.GamlHyperlinkDetector;
 
 /**

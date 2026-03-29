@@ -32,7 +32,7 @@ import gama.dev.DEBUG;
 import gama.dev.STRINGS;
 import gama.headless.core.Experiment;
 import gama.headless.runtime.HeadlessApplication;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The Class ModelLibraryRunner.

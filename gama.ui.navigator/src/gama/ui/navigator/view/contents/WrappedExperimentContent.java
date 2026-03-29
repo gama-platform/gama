@@ -17,7 +17,7 @@ import gama.api.compilation.ast.IGamlLabelProvider;
 import gama.api.compilation.ast.ISyntacticElement;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.utils.WorkbenchHelper;
-import gaml.compiler.gaml.resource.GamlFileInfo;
+import gaml.compiler.resource.GamlFileInfo;
 
 /**
  * The Class WrappedExperimentContent.
