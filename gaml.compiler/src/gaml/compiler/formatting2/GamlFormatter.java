@@ -811,7 +811,8 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * Rules applied:
 	 * </p>
 	 * <ul>
-	 * <li>No space after the unary operator (minus {@code -}, not {@code !}, {@code not}, or {@code #}).</li>
+	 * <li>No space after the symbolic unary operators {@code -}, {@code !} and {@code #}.</li>
+	 * <li>One space after the word operator {@code not} (e.g. {@code not condition}).</li>
 	 * <li>The inner (right) expression is formatted recursively.</li>
 	 * </ul>
 	 *
@@ -821,9 +822,21 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final Unary node, final IFormattableDocument doc) {
-		final ISemanticRegion op =
-				regionFor(node).feature(GamlPackage.Literals.UNARY__OP);
-		if (op != null) { doc.append(op, it -> it.noSpace()); }
+		// '-' and '!' : no space after
+		final ISemanticRegion minus =
+				regionFor(node).keyword(ga.getUnaryAccess().getOpHyphenMinusKeyword_1_1_1_0_0_0());
+		if (minus != null) { doc.append(minus, it -> it.noSpace()); }
+		final ISemanticRegion excl =
+				regionFor(node).keyword(ga.getUnaryAccess().getOpExclamationMarkKeyword_1_1_1_0_0_1());
+		if (excl != null) { doc.append(excl, it -> it.noSpace()); }
+		// '#' (unit reference) : no space after
+		final ISemanticRegion hash =
+				regionFor(node).keyword(ga.getUnaryAccess().getOpNumberSignKeyword_1_1_0_0_0());
+		if (hash != null) { doc.append(hash, it -> it.noSpace()); }
+		// 'not' : one space after (word operator)
+		final ISemanticRegion not =
+				regionFor(node).keyword(ga.getUnaryAccess().getOpNotKeyword_1_1_1_0_0_2());
+		if (not != null) { doc.append(not, it -> it.oneSpace()); }
 		if (node.getRight() != null) { doc.format(node.getRight()); }
 	}
 
