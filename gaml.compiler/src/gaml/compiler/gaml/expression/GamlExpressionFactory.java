@@ -1023,7 +1023,7 @@ public class GamlExpressionFactory implements IExpressionFactory {
 		if (action.verifyArgs(callerContext, arguments))
 			// Create primitive operator for the action call
 			// Special flag for super calls to maintain proper inheritance behavior
-			return new ActionCallOperator(callerContext, action, call, arguments, call instanceof SuperExpression);
+			return new ActionCallOperator(action, call, arguments, call instanceof SuperExpression);
 		// Argument verification failed - return null to signal error
 		return null;
 	}

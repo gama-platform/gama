@@ -163,7 +163,7 @@ public class GamlAgent extends MinimalAgent implements IMacroAgent {
 
 		for (final IAgent micro : microAgents.iterable(scope)) {
 			final ISerialisedAgent savedMicro = SerialisedAgent.of(micro, true);
-			originalSpeciesPopulation = micro.getPopulationFor(micro.getSpecies().getParentSpecies());
+			originalSpeciesPopulation = micro.getPopulationFor(micro.getSpecies().getParent());
 			micro.dispose();
 			releasedAgents.add(savedMicro.restoreInto(scope, originalSpeciesPopulation));
 		}

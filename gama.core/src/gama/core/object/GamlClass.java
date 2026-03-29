@@ -37,7 +37,6 @@ import gama.api.gaml.types.IContainerType;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.object.IClass;
 import gama.api.kernel.object.IObject;
-import gama.api.kernel.species.GamlModelSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
@@ -271,7 +270,7 @@ public class GamlClass extends Symbol implements IClass {
 	 */
 	@Override
 	public boolean extendsClassOrSpecies(final IClass s) {
-		final IClass parent = getParentSpecies();
+		final IClass parent = getParent();
 		if (parent == null) return false;
 		if (parent == s) return true;
 		return parent.extendsClassOrSpecies(s);
@@ -281,10 +280,10 @@ public class GamlClass extends Symbol implements IClass {
 	public IClassDescription getDescription() { return (IClassDescription) description; }
 
 	@Override
-	public IClass getParentSpecies() {
+	public IClass getParent() {
 		if (parentClass == null) {
 			final String name = getDescription().getParentName();
-			GamlModelSpecies currentMacroSpec = (GamlModelSpecies) this.getMacroSpecies(); // model species
+			IModelSpecies currentMacroSpec = this.getMacroSpecies(); // model species
 			parentClass = currentMacroSpec.getClass(name);
 		}
 		return parentClass;
@@ -309,16 +308,16 @@ public class GamlClass extends Symbol implements IClass {
 	 *
 	 * @return the parent species
 	 */
-	public ISpecies getMacroSpecies() { return macroSpecies; }
+	public IModelSpecies getMacroSpecies() { return macroSpecies; }
 
 	@Override
 	public List<? extends IClass> getSelfWithParents() {
 		final List<IClass> retVal = new ArrayList<>();
 		retVal.add(this);
-		IClass currentParent = this.getParentSpecies();
+		IClass currentParent = this.getParent();
 		while (currentParent != null) {
 			retVal.add(currentParent);
-			currentParent = currentParent.getParentSpecies();
+			currentParent = currentParent.getParent();
 		}
 
 		return retVal;

@@ -120,7 +120,7 @@ public interface IClass extends ISymbol, ITyped, IJsonable {
 	 */
 	@getter (IKeyword.PARENT)
 	@doc ("Returns the direct parent of the species. Experiments, models and species with no explicit parents will return nil")
-	IClass getParentSpecies();
+	IClass getParent();
 
 	/**
 	 * Returns this species along with all its parent species.
@@ -258,6 +258,25 @@ public interface IClass extends ISymbol, ITyped, IJsonable {
 		IVariable var = getVar(s);
 		if (var != null) return var.value(scope, gamlObject);
 		return null;
+	}
+
+	/**
+	 * Checks if is built in.
+	 *
+	 * @return true, if is built in
+	 */
+	default boolean isBuiltIn() { return getDescription() != null && getDescription().isBuiltIn(); }
+
+	/**
+	 * Sets the enclosing.
+	 *
+	 * @param enclosing
+	 *            the new enclosing
+	 */
+	@Override
+	default void setEnclosing(final ISymbol enclosing) {
+		if (isBuiltIn()) return;
+		if (enclosing instanceof ISpecies s) { setMacroSpecies(s); }
 	}
 
 	/**

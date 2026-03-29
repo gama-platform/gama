@@ -22,7 +22,6 @@ import gama.annotations.support.ITypeProvider;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.statements.IStatement;
-import gama.api.gaml.symbols.ISymbol;
 import gama.api.gaml.symbols.IVariable;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.IAgent;
@@ -500,7 +499,7 @@ public interface ISpecies
 	@Override
 	@getter (IKeyword.PARENT)
 	@doc ("Returns the direct parent of the species. Experiments, models and species with no explicit parents will return nil")
-	ISpecies getParentSpecies();
+	ISpecies getParent();
 
 	/**
 	 * Verifies that if this species is the peer species of other species.
@@ -758,25 +757,6 @@ public interface ISpecies
 	 * @return
 	 */
 	ISkill getSkillInstanceFor(Class skillClass);
-
-	/**
-	 * Sets the enclosing.
-	 *
-	 * @param enclosing
-	 *            the new enclosing
-	 */
-	@Override
-	default void setEnclosing(final ISymbol enclosing) {
-		if (isBuiltIn()) return;
-		if (enclosing instanceof ISpecies s) { setMacroSpecies(s); }
-	}
-
-	/**
-	 * Checks if is built in.
-	 *
-	 * @return true, if is built in
-	 */
-	default boolean isBuiltIn() { return getDescription() != null && getDescription().isBuiltIn(); }
 
 	/**
 	 * Creates the instance.

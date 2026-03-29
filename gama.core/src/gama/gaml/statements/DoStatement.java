@@ -27,8 +27,6 @@ import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.expressions.IExpression;
 import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.statements.AbstractStatementSequence;
-import gama.api.gaml.statements.IStatement;
-import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
@@ -66,7 +64,7 @@ import gama.gaml.statements.DoStatement.DoSerializer;
 		with_sequence = true,
 		with_scope = false,
 		concept = { IConcept.ACTION },
-		with_args = true)
+		with_args = false)
 @inside (
 		kinds = { ISymbolKind.BEHAVIOR, ISymbolKind.SEQUENCE_STATEMENT, ISymbolKind.LAYER },
 		symbols = IKeyword.CHART)
@@ -162,7 +160,7 @@ import gama.gaml.statements.DoStatement.DoSerializer;
 										value = "}",
 										isExecutable = false) }) })
 @serializer (DoSerializer.class)
-public class DoStatement extends AbstractStatementSequence implements IStatement.WithArgs {
+public class DoStatement extends AbstractStatementSequence {
 
 	/**
 	 * Serialiser for {@code do} / {@code invoke} statements.
@@ -283,35 +281,6 @@ public class DoStatement extends AbstractStatementSequence implements IStatement
 		function = getFacet(IInternalFacets.INTERNAL_FUNCTION);
 		setName(function != null ? function.getName() : getLiteral(IInternalFacets.INTERNAL_NAME));
 	}
-
-	// -------------------------------------------------------------------------
-	// IStatement.WithArgs – args are now owned by ActionCallOperator
-	// -------------------------------------------------------------------------
-
-	/**
-	 * No-op implementation. Arguments are now encapsulated inside the
-	 * {@link gaml.compiler.gaml.expression.ActionCallOperator} stored in {@link #function} and do not need to be set
-	 * separately.
-	 *
-	 * @param args
-	 *            ignored
-	 */
-	@Override
-	public void setFormalArgs(final Arguments args) {
-		// Arguments are now embedded in the ActionCallOperator; nothing to do here.
-	}
-
-	/**
-	 * No-op implementation. Runtime argument resolution is handled by
-	 * {@link gaml.compiler.gaml.expression.ActionCallOperator#getRuntimeArgs(IScope)}.
-	 *
-	 * @param scope
-	 *            ignored
-	 * @param args
-	 *            ignored
-	 */
-	@Override
-	public void setRuntimeArgs(final IScope scope, final Arguments args) {}
 
 	// -------------------------------------------------------------------------
 	// Execution

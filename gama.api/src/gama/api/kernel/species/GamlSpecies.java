@@ -725,7 +725,7 @@ public class GamlSpecies extends Symbol implements ISpecies {
 	public IList<ISpecies> getMicroSpecies() {
 		final IList<ISpecies> retVal = GamaListFactory.create(Types.SPECIES);
 		retVal.addAll(microSpecies.values());
-		final ISpecies parentSpecies = this.getParentSpecies();
+		final ISpecies parentSpecies = this.getParent();
 		if (parentSpecies != null) { retVal.addAll(parentSpecies.getMicroSpecies()); }
 		return retVal;
 	}
@@ -747,7 +747,7 @@ public class GamlSpecies extends Symbol implements ISpecies {
 		final IList<ISpecies> subspecies = GamaListFactory.create(Types.SPECIES);
 		final IModelSpecies model = scope.getModel();
 		for (final ISpecies s : model.getAllSpecies().values()) {
-			if (s.getParentSpecies() == this) { subspecies.add(s); }
+			if (s.getParent() == this) { subspecies.add(s); }
 		}
 		return subspecies;
 	}
@@ -771,21 +771,21 @@ public class GamlSpecies extends Symbol implements ISpecies {
 	public ISpecies getMicroSpecies(final String microSpeciesName) {
 		final ISpecies retVal = microSpecies.get(microSpeciesName);
 		if (retVal != null) return retVal;
-		final ISpecies parentSpecies = this.getParentSpecies();
+		final ISpecies parentSpecies = this.getParent();
 		if (parentSpecies != null) return parentSpecies.getMicroSpecies(microSpeciesName);
 		return null;
 	}
 
 	@Override
 	public boolean containMicroSpecies(final ISpecies species) {
-		final ISpecies parentSpecies = this.getParentSpecies();
+		final ISpecies parentSpecies = this.getParent();
 		return microSpecies.containsValue(species)
 				|| (parentSpecies != null ? parentSpecies.containMicroSpecies(species) : false);
 	}
 
 	@Override
 	public boolean hasMicroSpecies() {
-		final ISpecies parentSpecies = this.getParentSpecies();
+		final ISpecies parentSpecies = this.getParent();
 		return !microSpecies.isEmpty() || (parentSpecies != null ? parentSpecies.hasMicroSpecies() : false);
 	}
 
@@ -801,10 +801,10 @@ public class GamlSpecies extends Symbol implements ISpecies {
 	public List<ISpecies> getSelfWithParents() {
 		final List<ISpecies> retVal = new ArrayList<>();
 		retVal.add(this);
-		ISpecies currentParent = this.getParentSpecies();
+		ISpecies currentParent = this.getParent();
 		while (currentParent != null) {
 			retVal.add(currentParent);
-			currentParent = currentParent.getParentSpecies();
+			currentParent = currentParent.getParent();
 		}
 
 		return retVal;
@@ -822,7 +822,7 @@ public class GamlSpecies extends Symbol implements ISpecies {
 	 * @return the parent species, or null if this species has no parent
 	 */
 	@Override
-	public ISpecies getParentSpecies() {
+	public ISpecies getParent() {
 		if (parentSpecies == null) {
 			final ITypeDescription parentSpecDesc = getDescription().getParent();
 			// Takes care of invalid species (see Issue 711)
@@ -838,7 +838,7 @@ public class GamlSpecies extends Symbol implements ISpecies {
 
 	@Override
 	public <T extends IClass> boolean extendsClassOrSpecies(final T s) {
-		final ISpecies parent = getParentSpecies();
+		final ISpecies parent = getParent();
 		if (parent == null) return false;
 		if (parent == s) return true;
 		return parent.extendsClassOrSpecies(s);

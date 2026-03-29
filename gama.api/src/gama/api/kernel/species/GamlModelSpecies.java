@@ -100,6 +100,18 @@ import gama.api.ui.IOutputManager;
  * @see IModelSpecies
  * @see IExperimentSpecies
  */
+
+/**
+ * The Class GamlModelSpecies.
+ */
+
+/**
+ * The Class GamlModelSpecies.
+ */
+
+/**
+ * The Class GamlModelSpecies.
+ */
 @symbol (
 		name = { IKeyword.MODEL },
 		kind = ISymbolKind.MODEL,
@@ -387,18 +399,26 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 	public void setChildren(final Iterable<? extends ISymbol> children) {
 		final List forExperiment = new ArrayList<>();
 		final List<IExperimentSpecies> theExperiments = new ArrayList<>();
-
 		for (final Iterator<? extends ISymbol> it = children.iterator(); it.hasNext();) {
 			final ISymbol s = it.next();
-			if (s instanceof IExperimentSpecies) {
-				theExperiments.add((IExperimentSpecies) s);
-				it.remove();
-			} else if (s instanceof IOutputManager) {
-				forExperiment.add(s);
-				it.remove();
-			} else if (s instanceof IClass c && c.isClass()) {
-				classes.put(c.getName(), c);
-				it.remove();
+			switch (s) {
+				case IExperimentSpecies is -> {
+					theExperiments.add(is);
+					it.remove();
+				}
+				case IOutputManager om -> {
+					forExperiment.add(om);
+					it.remove();
+				}
+				case IClass c -> {
+					if (c.isClass()) {
+						c.setEnclosing(this);
+						classes.put(c.getName(), c);
+						it.remove();
+					}
+				}
+				default -> {
+				}
 			}
 		}
 		// Add the variables, etc. to the model
