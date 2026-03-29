@@ -21,6 +21,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.emf.common.util.URI;
 
+import gama.dev.DEBUG;
+
 /**
  * Represents a background Eclipse {@link Job} responsible for asynchronously generating documentation for a single
  * GAML resource.
@@ -45,6 +47,10 @@ import org.eclipse.emf.common.util.URI;
  * </ul>
  */
 public class GamlResourceDocumentationTask {
+
+	static {
+		DEBUG.OFF();
+	}
 
 	/**
 	 * The pending-task queue for the current generation. Replaced atomically (via the {@code volatile} modifier)
@@ -105,7 +111,15 @@ public class GamlResourceDocumentationTask {
 				final ConcurrentLinkedQueue<Runnable> current = queue;
 				Runnable task = current.poll();
 				while (task != null) {
-					task.run();
+					try {
+						task.run();
+					} catch (final Throwable t) {
+						// Isolate task failures: log and continue draining. This ensures that a
+						// RuntimeException (or Error) thrown by one documentation task never terminates
+						// the loop, never leaves the job in a failed state, and never blocks future
+						// job.schedule() calls.
+						DEBUG.ERR("Documentation task failed for " + name + " — skipping", t);
+					}
 					task = current.poll();
 				}
 				return Status.OK_STATUS;
@@ -117,16 +131,29 @@ public class GamlResourceDocumentationTask {
 	 * Starts a new documentation generation.
 	 *
 	 * <p>
-	 * Atomically increments the generation counter and replaces the pending-task queue with a fresh empty instance.
-	 * Any {@link Runnable} already in the old queue will <em>not</em> be executed by the background job because the
-	 * job snapshots the {@code queue} reference at the start of each run (see {@link Job#run}).
+	 * Atomically increments the generation counter, resets the tracked-objects set so that fragment URIs from the
+	 * previous generation do not survive into the next {@link gaml.compiler.gaml.documentation.GamlResourceDocumenter#invalidate}
+	 * call, and then replaces the pending-task queue with a fresh empty instance.
+	 * </p>
+	 *
+	 * <p>
+	 * The ordering — increment generation <em>before</em> replacing the queue — is intentional: it ensures that any
+	 * thread which concurrently reads {@link #currentGeneration} via
+	 * {@code GamlResourceDocumenter#getCurrentDocGenerationFor} and then enqueues work will always see the fresh
+	 * queue, not the old one.
 	 * </p>
 	 *
 	 * @return the new generation number, which can be captured by the caller to stamp asynchronous tasks.
 	 */
 	public int incrementGeneration() {
+		// 1. Increment generation FIRST so readers always see the new generation with the new queue.
+		final int gen = currentGeneration.incrementAndGet();
+		// 2. Reset the objects set so stale fragment URIs from the prior generation are not iterated
+		//    by a concurrent invalidate() call after this generation's job has been superseded.
+		objects = ConcurrentHashMap.newKeySet();
+		// 3. Replace the queue last.
 		queue = new ConcurrentLinkedQueue<>();
-		return currentGeneration.incrementAndGet();
+		return gen;
 	}
 
 	/**

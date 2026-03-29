@@ -80,8 +80,13 @@ public class DocumentationContext implements IDocumentationContext {
 	 * Map of EObjects to their corresponding GAML descriptions for documentation purposes. Uses a ConcurrentHashMap to
 	 * support thread-safe concurrent access during parallel validation. Entries are accumulated during validation and
 	 * processed when {@link #doDocument(IModelDescription)} is called.
+	 *
+	 * <p>
+	 * Initialised eagerly in the constructor (rather than lazily on first use) to eliminate the race condition where
+	 * two threads could both observe a {@code null} field and each create a new map, silently discarding one of them.
+	 * </p>
 	 */
-	private Map<EObject, IGamlDescription> expressionsToDocument;
+	private final Map<EObject, IGamlDescription> expressionsToDocument = new ConcurrentHashMap<>();
 
 	/**
 	 * Creates the.
@@ -144,7 +149,6 @@ public class DocumentationContext implements IDocumentationContext {
 	 */
 	@Override
 	public void doDocument(final IModelDescription description) {
-		if (expressionsToDocument == null) { expressionsToDocument = new ConcurrentHashMap<>(); }
 		// docDelegate.doDocument() takes an immutable snapshot of expressionsToDocument before scheduling
 		// the async job, so it is safe to clear the map immediately after this call.
 		docDelegate.doDocument(resourceURI, description, expressionsToDocument);
@@ -172,10 +176,7 @@ public class DocumentationContext implements IDocumentationContext {
 	public void document(final EObject e, final IGamlDescription d) {
 		// Called by SymbolDescription to document individual expressions -- they are kept in a Map<EObject,
 		// IGamlDescription> and done when the whole model is documented
-		if (e != null && d != null) {
-			if (expressionsToDocument == null) { expressionsToDocument = new ConcurrentHashMap<>(); }
-			expressionsToDocument.put(e, d);
-		}
+		if (e != null && d != null) { expressionsToDocument.put(e, d); }
 	}
 
 }

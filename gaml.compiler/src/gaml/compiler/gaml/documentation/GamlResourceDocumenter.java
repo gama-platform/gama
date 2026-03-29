@@ -210,7 +210,16 @@ public class GamlResourceDocumenter implements IDocManager {
 		// doDocument() returns but before the async job runs.
 		final Map<EObject, IGamlDescription> snapshot = Map.copyOf(additionalExpressions);
 		task.add(() -> {
-			internalDoDocument(res, generation, desc);
+			// Wrap the entire traversal so that an exception thrown by visitOwnChildren() or any
+			// model-description callback does not escape to the job loop (issue C). Escaping would
+			// terminate the loop, mark the job as failed, and prevent future job.schedule() calls
+			// from executing. The try/catch in the job loop (GamlResourceDocumentationTask) also
+			// provides a safety net, but it is better to keep the failure as local as possible.
+			try {
+				internalDoDocument(res, generation, desc);
+			} catch (final Throwable t) {
+				DEBUG.ERR("Exception while documenting model tree for " + res.lastSegment(), t);
+			}
 			snapshot.forEach((e, d) -> internalSetGamlDocumentation(res, generation, e, d));
 		});
 	}
@@ -268,6 +277,15 @@ public class GamlResourceDocumenter implements IDocManager {
 	 * {@link #documentedObjects} entirely to avoid memory leaks.
 	 * </p>
 	 *
+	 * <p>
+	 * <strong>Race-condition note:</strong> A background documentation job may still hold a reference to the task
+	 * and write new fragment URIs into {@code task.objects} even after this method has removed the task from
+	 * {@link #documentationTasks}. To handle this, we snapshot {@code task.objects} <em>before</em> removing the
+	 * task. Entries added after the snapshot will pass the {@link #isTaskValid} check in
+	 * {@link #internalSetGamlDocumentation} and be silently rejected because the resource is no longer in
+	 * {@code resourceListeners} at that point — so they never enter {@link #documentedObjects}.
+	 * </p>
+	 *
 	 * @param uri
 	 *            the resource URI to invalidate; {@code null} is a no-op
 	 */
@@ -276,13 +294,17 @@ public class GamlResourceDocumenter implements IDocManager {
 		if (uri == null) return;
 		GamlResourceDocumentationTask task = documentationTasks.remove(uri);
 		if (task != null) {
-			task.objects.forEach(object -> {
-				DocumentedObject documented = documentedObjects.get(object);
-				if (documented != null) {
-					Set<URI> resources = documented.resources;
-					resources.remove(uri);
-					if (resources.isEmpty()) { documentedObjects.remove(object); }
-				}
+			// Snapshot the objects set at this moment. The background job may still add to task.objects
+			// after the remove above, but isTaskValid() will reject those writes (the resource listener
+			// is already gone), so they will never enter documentedObjects and need no cleanup.
+			final Set<URI> objectsSnapshot = Set.copyOf(task.objects);
+			objectsSnapshot.forEach(object -> {
+				// computeIfPresent is atomic: it only executes the lambda if the key is present,
+				// and returns null to trigger removal once the resources set is empty.
+				documentedObjects.computeIfPresent(object, (k, documented) -> {
+					documented.resources.remove(uri);
+					return documented.resources.isEmpty() ? null : documented;
+				});
 			});
 		}
 	}
