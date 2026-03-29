@@ -48,8 +48,8 @@ import gaml.compiler.gaml.expression.GamlExpressionCompiler;
  * <p>
  * During {@link #validate()}, both facets are compiled via
  * {@link GamlExpressionCompiler#compileActionCall(EObject, EObject, IDescription)} which always produces a single
- * {@link ActionCallOperator}. That operator is then stored back on the {@code INTERNAL_FUNCTION} facet. The
- * resulting {@link ActionCallOperator} contains both the resolved action and its arguments, so
+ * {@link ActionCallOperator}. That operator is then stored back on the {@code INTERNAL_FUNCTION} facet. The resulting
+ * {@link ActionCallOperator} contains both the resolved action and its arguments, so
  * {@link gama.gaml.statements.DoStatement} can simply delegate to {@code function.value(scope)}.
  * </p>
  *
@@ -223,20 +223,25 @@ public class DoDescription extends StatementDescription {
 	public IDescription validate() {
 		final IExpressionDescription functionFacet = getFacet(INTERNAL_FUNCTION);
 		if (functionFacet == null) {
-			error("Action does not exist in " + getLookupContextName(), IGamlIssue.UNKNOWN_ACTION);
+			error("Action " + getAction() + " does not exist in " + getLookupContextName(), IGamlIssue.UNKNOWN_ACTION);
 			return null;
 		}
 		final IExpressionDescription targetFacet = getFacet(INTERNAL_TARGET);
-		if (targetFacet == null) {
+		if (functionFacet instanceof gaml.compiler.gaml.expression.FacetListExpressionDescription) {
+			// Deprecated facet-based form: FacetListExpressionDescription.compile() handles everything
+			// (target resolution + argument compilation) without touching the EMF parse tree.
+			functionFacet.compile(this);
+		} else if (targetFacet == null) {
 			// Should not happen after processDo, but guard defensively.
 			functionFacet.compile(this);
 		} else {
-			// Unified path: compile target.action(args) via compileFieldAccess, which produces
-			// an ActionCallOperator regardless of whether the target is an explicit expression or
-			// a synthetic self/super literal.
-			final IExpression compiled = GamlExpressionCompiler.getInstance()
-					.compileActionCall(targetFacet.getTarget(), functionFacet.getTarget(), this);
+			// Unified path for functional and dot-notation forms.
+			final IExpression compiled = GamlExpressionCompiler.getInstance().compileActionCall(targetFacet.getTarget(),
+					functionFacet.getTarget(), this);
 			functionFacet.setExpression(compiled);
+			// Pre-compile INTERNAL_TARGET so validateFacets() (called by super.validate() below)
+			// finds both internal facets already compiled and never re-compiles their synthetic EObjects.
+			if (targetFacet.getExpression() == null) { targetFacet.compile(this); }
 		}
 
 		final IDescription result = super.validate();
@@ -245,7 +250,9 @@ public class DoDescription extends StatementDescription {
 		// Deprecation check for primitives
 		if (getAction() instanceof PrimitiveDescription pd) {
 			final String dep = pd.getDeprecated();
-			if (dep != null) { warning("Action " + action + " is deprecated: " + dep, IGamlIssue.DEPRECATED); }
+			if (dep != null) {
+				warning("Action " + getAction().getName() + " is deprecated: " + dep, IGamlIssue.DEPRECATED);
+			}
 		}
 
 		return result;

@@ -510,18 +510,17 @@ public class GamlSyntacticConverter {
 	 * <li><b>Dot-notation / explicit target</b> ({@code target.action(arg1: val1, arg2: val2);}):
 	 * {@code INTERNAL_TARGET} = target expression, {@code INTERNAL_FUNCTION} = the function expression to the right of
 	 * the dot.</li>
-	 * <li><b>Functional form</b> ({@code do action(arg1: val1, arg2: val2);}):
-	 * {@code INTERNAL_TARGET} = synthesised self/super, {@code INTERNAL_FUNCTION} = the function expression.</li>
-	 * <li><b>Deprecated facet form</b> ({@code do action arg1: val1 arg2: val2;}):
-	 * {@code INTERNAL_TARGET} = synthesised self/super, {@code INTERNAL_FUNCTION} = a synthesised {@link Function}
-	 * node built from the statement's facets (see
-	 * {@link ExpressionDescriptionFactory#createFunction(Expression, EList)}). A deprecation warning facet is also
-	 * set.</li>
+	 * <li><b>Functional form</b> ({@code do action(arg1: val1, arg2: val2);}): {@code INTERNAL_TARGET} = synthesised
+	 * self/super, {@code INTERNAL_FUNCTION} = the function expression.</li>
+	 * <li><b>Deprecated facet form</b> ({@code do action arg1: val1 arg2: val2;}): {@code INTERNAL_TARGET} =
+	 * synthesised self/super, {@code INTERNAL_FUNCTION} = a synthesised {@link Function} node built from the
+	 * statement's facets (see {@link ExpressionDescriptionFactory#createFunction(Expression, EList)}). A deprecation
+	 * warning facet is also set.</li>
 	 * </ol>
 	 *
 	 * <p>
-	 * After this method returns, {@link gaml.compiler.gaml.descriptions.DoDescription} can follow a single
-	 * compilation path regardless of which syntactic form was used.
+	 * After this method returns, {@link gaml.compiler.gaml.descriptions.DoDescription} can follow a single compilation
+	 * path regardless of which syntactic form was used.
 	 * </p>
 	 *
 	 * @param stm
@@ -531,7 +530,7 @@ public class GamlSyntacticConverter {
 	 */
 	private void processDo(final S_Do stm, final ISyntacticElement elt) {
 		// All three forms produce INTERNAL_TARGET + INTERNAL_FUNCTION + INTERNAL_NAME.
-		// 1st case: an explicit target is present  → target.action(args) form
+		// 1st case: an explicit target is present → target.action(args) form
 		if (stm.getTarget() != null) {
 			addFacet(elt, IInternalFacets.INTERNAL_TARGET, convExpr(stm.getTarget()));
 			addFacet(elt, IInternalFacets.INTERNAL_FUNCTION, convExpr(stm.getExpr()));
@@ -539,25 +538,30 @@ public class GamlSyntacticConverter {
 					GAML.getExpressionDescriptionFactory().createLabel(EGAML.getKeyOf(stm.getExpr())));
 		} else {
 			final Expression e = stm.getExpr();
+			if (e == null) // We do not attempt anything
+				// addFacet(elt, IInternalFacets.GAML_ERROR,
+				// GAML.getExpressionDescriptionFactory().createConstant("Action cannot be determined"));
+				return;
 			// Implicit self/super target is the same for both remaining forms
-			addFacet(elt, IInternalFacets.INTERNAL_TARGET, ExpressionDescriptionFactory.getInstance()
-					.createSelfOrSuper(IKeyword.DO.equals(elt.getKeyword())));
+			addFacet(elt, IInternalFacets.INTERNAL_TARGET,
+					ExpressionDescriptionFactory.getInstance().createSelfOrSuper(IKeyword.DO.equals(elt.getKeyword())));
 			if (e instanceof Function f) {
-				// 2nd case: functional form  → do action(args)
+				// 2nd case: functional form → do action(args)
 				addFacet(elt, IInternalFacets.INTERNAL_NAME,
 						GAML.getExpressionDescriptionFactory().createLabel(EGAML.getKeyOf(f)));
 				addFacet(elt, IInternalFacets.INTERNAL_FUNCTION, convExpr(f));
 			} else {
-				// 3rd case: deprecated facet-based form  → do action arg1: val1 arg2: val2;
+				// 3rd case: deprecated facet-based form → do action arg1: val1 arg2: val2;
 				final String functionName = EGAML.getKeyOf(e);
 				addFacet(elt, IInternalFacets.INTERNAL_NAME,
 						GAML.getExpressionDescriptionFactory().createLabel(functionName));
 				final EList<Facet> ff = stm.getFacets();
-				// Convert facets to a proper Function node so that compilation can follow the same path
+				// Store the action-name expression and raw facets in a pure Java wrapper.
+				// No synthetic EMF nodes (Function/Parameter/VariableRef) are created, so no
+				// containment setter is called and the live parse tree is never mutated.
 				addFacet(elt, IInternalFacets.INTERNAL_FUNCTION,
-						ExpressionDescriptionFactory.getInstance().createFunction(e, ff));
+						new gaml.compiler.gaml.expression.FacetListExpressionDescription(e, ff));
 				if (ff.isEmpty()) {
-					// do action; with missing parentheses
 					addFacet(elt, IInternalFacets.GAML_WARNING, GAML.getExpressionDescriptionFactory()
 							.createConstant("Missing parentheses after action name"));
 				} else {

@@ -12,6 +12,7 @@ package gaml.compiler.gaml.expression;
 
 import java.util.concurrent.TimeUnit;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.cache.Cache;
@@ -26,6 +27,7 @@ import gama.api.gaml.expressions.IExpressionDescription;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.runtime.scope.IExecutionContext;
 import gaml.compiler.gaml.Expression;
+import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.descriptions.StringBasedExpressionDescription;
 import gaml.compiler.gaml.resource.GamlSyntheticResourcesServices;
 
@@ -213,5 +215,45 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Compiles an action call for the deprecated facet-based {@code do} form without creating any synthetic EMF nodes.
+	 *
+	 * <p>
+	 * Unlike {@link #compileActionCall} which requires a {@code Function} EMF node (whose construction involves
+	 * reparenting the facet value expressions into synthetic {@link gaml.compiler.gaml.Parameter} nodes, mutating the
+	 * EMF AST), this method accepts the raw {@link Facet} list directly and never touches containment references.
+	 * Each facet's value expression is compiled by reference only.
+	 * </p>
+	 *
+	 * <p>
+	 * The target is always the implicit {@code self} or {@code super} receiver resolved from
+	 * {@code parsingContext}'s type context — this method is only intended for the deprecated implicit-self form.
+	 * </p>
+	 *
+	 * @param nameExpr
+	 *            the action-name {@link Expression} node from the live parse tree (used as error / hover anchor)
+	 * @param facets
+	 *            the raw facet list from the {@code S_Do} statement; must not be {@code null}
+	 * @param parsingContext
+	 *            the description providing the compilation context
+	 * @return the compiled {@link ActionCallOperator}, or {@code null} on failure
+	 */
+	public IExpression compileActionCallFromFacets(final Expression nameExpr, final EList<Facet> facets,
+			final IDescription parsingContext) {
+		if (nameExpr == null) return null;
+		try (final ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext)) {
+			final ExpressionCompilationSwitch sw = new ExpressionCompilationSwitch(ctx);
+			final boolean isSuper = parsingContext instanceof gaml.compiler.gaml.descriptions.DoDescription dd
+					&& dd.isSuperInvocation();
+			// Compile the implicit self/super target using the action-name node as the EMF anchor.
+			final IExpression target = sw.caseVar(isSuper ? "super" : "self", nameExpr);
+			if (target == null) return null;
+			final gama.api.compilation.descriptions.ITypeDescription species =
+					parsingContext.getTypeContext();
+			if (species == null) return null;
+			return sw.compileActionCallFromFacets(nameExpr, target, facets, species);
+		}
 	}
 }

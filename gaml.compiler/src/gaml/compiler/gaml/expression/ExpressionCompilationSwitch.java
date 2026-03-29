@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 
 import com.google.common.collect.Iterables;
@@ -616,11 +617,69 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		if (action != null) {
 			final ExpressionList list = function.getRight();
 			final IExpression call = action(name, target, list, action);
-			context.getDocumentationContext().document(function, call);
+			// Use function.getLeft() (the action-name node, always in the real resource) rather than function
+			// itself, which may be a synthetic detached node when called from the deprecated do-facet form.
+			context.getDocumentationContext().document(function.getLeft(), call);
 			return call;
 		}
 		return null;
+	}
 
+	/**
+	 * Compiles an action call for the deprecated facet-based {@code do} form ({@code do action arg1: v1 arg2: v2;})
+	 * without touching the EMF parse tree.
+	 *
+	 * <p>
+	 * Unlike {@link #compileAgentOrObjectAction} which reads arguments from a {@link Function}'s
+	 * {@link ExpressionList} (requiring the value expressions to be re-parented into synthetic EMF nodes),
+	 * this method builds the {@link Arguments} map directly from the original {@link Facet} objects. Each facet's
+	 * value expression ({@code f.getExpr()}) is read by reference — no containment change is made — so no EMF
+	 * change-notification is fired and no ghost re-validation can be triggered.
+	 * </p>
+	 *
+	 * @param nameExpr
+	 *            the action-name expression node (the real {@code Expression} from the {@code S_Do} statement,
+	 *            used as the documentation anchor)
+	 * @param target
+	 *            the pre-compiled receiver expression ({@code self}, {@code super}, or an explicit agent)
+	 * @param facets
+	 *            the raw facet list from the parsed {@code S_Do} statement; may be empty but must not be {@code null}
+	 * @param species
+	 *            the type description in which to look up the action
+	 * @return the compiled {@link ActionCallOperator}, or {@code null} if the action cannot be found
+	 */
+	public IExpression compileActionCallFromFacets(final Expression nameExpr, final IExpression target,
+			final EList<gaml.compiler.gaml.Facet> facets, final ITypeDescription species) {
+		final String name = EGAML.getKeyOf(nameExpr);
+		final IActionDescription action = species.getAction(name);
+		if (action == null) return null;
+		// Build Arguments directly from Facet nodes — read-only, no EMF reparenting.
+		final Arguments arguments = new Arguments();
+		final List<String> expectedArgs = action.getArgNames();
+		final IExpressionDescriptionFactory builder = GAML.getExpressionDescriptionFactory();
+		int positionalIndex = 0;
+		for (final gaml.compiler.gaml.Facet f : facets) {
+			final Expression valueExpr = f.getExpr();
+			if (valueExpr == null) continue;
+			String argName = f.getKey();
+			if (argName != null && argName.endsWith(":")) { argName = argName.substring(0, argName.length() - 1); }
+			if (argName == null || argName.isEmpty()) {
+				// Positional argument
+				if (expectedArgs != null && positionalIndex < expectedArgs.size()) {
+					argName = expectedArgs.get(positionalIndex);
+				} else {
+					argName = String.valueOf(positionalIndex);
+				}
+				positionalIndex++;
+			}
+			// createFromEObject reads valueExpr by reference only — no containment change.
+			final IExpressionDescription ed = builder.createFromEObject(valueExpr);
+			if (ed != null) { ed.setExpression(compile(valueExpr)); }
+			arguments.put(argName, ed);
+		}
+		final IExpression call = FACTORY.createAction(name, context.getContext(), action, target, arguments);
+		context.getDocumentationContext().document(nameExpr, call);
+		return call;
 	}
 
 	/**
@@ -1080,7 +1139,10 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		}
 		if (action == null) return null;
 		final ExpressionList params = object.getRight();
-		return action(op, caseVar(isSuper ? SUPER : SELF, object), params, action);
+		// Use object.getLeft() (the real action-name Expression, always in the live resource) rather than
+		// object itself as the anchor for the self/super documentation — object may be a synthetic detached
+		// Function node when compiled via the deprecated do-facet form.
+		return action(op, caseVar(isSuper ? SUPER : SELF, object.getLeft()), params, action);
 	}
 
 	@Override
@@ -1247,7 +1309,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	/**
 	 * Handles compilation of variable references by name.
 	 */
-	private IExpression caseVar(final String varName, final EObject object) {
+	IExpression caseVar(final String varName, final EObject object) {
 
 		if ("my_elector".equals(varName)) {
 

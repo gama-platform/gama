@@ -15,7 +15,6 @@ import static one.util.streamex.IntStreamEx.range;
 
 import java.util.concurrent.ExecutionException;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
@@ -33,17 +32,11 @@ import gaml.compiler.gaml.BooleanLiteral;
 import gaml.compiler.gaml.DoubleLiteral;
 import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.Expression;
-import gaml.compiler.gaml.ExpressionList;
-import gaml.compiler.gaml.Facet;
-import gaml.compiler.gaml.Function;
 import gaml.compiler.gaml.IntLiteral;
-import gaml.compiler.gaml.Parameter;
 import gaml.compiler.gaml.ReservedLiteral;
 import gaml.compiler.gaml.StringLiteral;
 import gaml.compiler.gaml.Unary;
 import gaml.compiler.gaml.UnitName;
-import gaml.compiler.gaml.VarDefinition;
-import gaml.compiler.gaml.VariableRef;
 import gaml.compiler.gaml.descriptions.BasicExpressionDescription;
 import gaml.compiler.gaml.descriptions.BlockExpressionDescription;
 import gaml.compiler.gaml.descriptions.ConstantExpressionDescription;
@@ -419,43 +412,6 @@ public class ExpressionDescriptionFactory extends GamlSwitch<IExpressionDescript
 		ReservedLiteral literal = EGaml.getFactory().createReservedLiteral();
 		literal.setOp(isSelf ? IKeyword.SELF : IKeyword.SUPER);
 		return this.doSwitch(literal);
-	}
-
-	/**
-	 * Synthesises a {@link Function} EMF node from a plain action-name expression and a list of GAML facets.
-	 *
-	 * <p>
-	 * This is used for the deprecated facet-based {@code do} syntax
-	 * ({@code do action_name arg1: val1 arg2: val2;}). Each facet is converted into a named {@link Parameter} so that
-	 * the resulting {@link Function} is structurally identical to the functional form
-	 * ({@code do action_name(arg1: val1, arg2: val2);}), allowing the same compilation path to handle both forms.
-	 * </p>
-	 *
-	 * @param name
-	 *            the expression node carrying the action name (will become the {@code left} of the {@link Function})
-	 * @param arguments
-	 *            the raw facets from the parsed statement; may be empty but must not be {@code null}
-	 * @return an {@link IExpressionDescription} wrapping the synthesised {@link Function} node
-	 */
-	public IExpressionDescription createFunction(final Expression name, final EList<Facet> arguments) {
-		final Function result = EGaml.getFactory().createFunction();
-		result.setLeft(name);
-		final ExpressionList args = EGaml.getFactory().createExpressionList();
-		for (final Facet f : arguments) {
-			final Parameter p = EGaml.getFactory().createParameter();
-			final VarDefinition varDef = EGaml.getFactory().createVarDefinition();
-			String argName = f.getKey();
-			if (argName.endsWith(":")) { argName = argName.substring(0, argName.length() - 1); }
-			varDef.setName(argName);
-			final VariableRef varRef = EGaml.getFactory().createVariableRef();
-			varRef.setRef(varDef);
-			p.setLeft(varRef);
-			p.setRight(f.getExpr());
-			args.getExprs().add(p);
-		}
-		// Connect the argument list to the function so that result.getRight() is non-null
-		result.setRight(args);
-		return this.doSwitch(result);
 	}
 
 }
