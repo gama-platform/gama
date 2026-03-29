@@ -39,7 +39,6 @@ import gaml.compiler.gaml.BooleanLiteral;
 import gaml.compiler.gaml.DoubleLiteral;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.IntLiteral;
-import gaml.compiler.gaml.ReservedLiteral;
 import gaml.compiler.gaml.StringLiteral;
 import gaml.compiler.gaml.Unary;
 import gaml.compiler.gaml.UnitName;
@@ -409,9 +408,7 @@ public class ExpressionDescriptionFactory extends GamlSwitch<IExpressionDescript
 
 	@Override
 	public IExpressionDescription createSelfOrSuper(final boolean isSelf) {
-		ReservedLiteral literal = EGaml.getFactory().createReservedLiteral();
-		literal.setOp(isSelf ? IKeyword.SELF : IKeyword.SUPER);
-		return this.doSwitch(literal);
+		return new gaml.compiler.expressions.SelfOrSuperExpressionDescription(isSelf);
 	}
 
 }

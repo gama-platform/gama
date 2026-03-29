@@ -236,8 +236,17 @@ public class DoDescription extends StatementDescription {
 			functionFacet.compile(this);
 		} else {
 			// Unified path for functional and dot-notation forms.
-			final IExpression compiled = GamlExpressionCompiler.getInstance().compileActionCall(targetFacet.getTarget(),
-					functionFacet.getTarget(), this);
+			final IExpression compiled;
+			if (targetFacet.getTarget() == null) {
+				// The target has no EObject backing (e.g. SelfOrSuperExpressionDescription):
+				// compile it to an IExpression first, then use the pre-compiled-owner overload.
+				final IExpression targetExpr = targetFacet.compile(this);
+				compiled = GamlExpressionCompiler.getInstance().compileActionCall(targetExpr,
+						functionFacet.getTarget(), this);
+			} else {
+				compiled = GamlExpressionCompiler.getInstance().compileActionCall(targetFacet.getTarget(),
+						functionFacet.getTarget(), this);
+			}
 			functionFacet.setExpression(compiled);
 			// Pre-compile INTERNAL_TARGET so validateFacets() (called by super.validate() below)
 			// finds both internal facets already compiled and never re-compiles their synthetic EObjects.

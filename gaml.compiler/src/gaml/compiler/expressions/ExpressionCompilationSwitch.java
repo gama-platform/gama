@@ -511,6 +511,40 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	}
 
 	/**
+	 * Compile field access with a pre-compiled owner expression.
+	 *
+	 * <p>
+	 * This overload is used when the owner {@link IExpression} has already been compiled (e.g. because the target was
+	 * described by a pure-Java {@link gaml.compiler.expressions.SelfOrSuperExpressionDescription} that carries no
+	 * backing {@link org.eclipse.emf.ecore.EObject}) and therefore cannot be obtained by compiling an EMF node.
+	 * </p>
+	 *
+	 * @param owner
+	 *            the already-compiled receiver expression; must not be {@code null}
+	 * @param fieldExpr
+	 *            the {@link Expression} EMF node for the field / action call (carries the name and arguments)
+	 * @param fieldName
+	 *            optional override for the field name; when {@code null} the name is derived from {@code fieldExpr}
+	 * @return the compiled field-access or action-call expression, or {@code null} on failure
+	 */
+	public IExpression compileFieldAccess(final IExpression owner, final Expression fieldExpr,
+			final String fieldName) {
+		if (owner == null) return null;
+
+		final String var = fieldName != null ? fieldName : EGAML.getKeyOf(fieldExpr);
+		final IType type = owner.getGamlType();
+
+		if (type instanceof ParametricType pt && pt.getGamlType().id() == IType.SPECIES
+				&& pt.getContentType().getSpecies() instanceof IModelDescription md && md.hasExperiment(var))
+			return FACTORY.createConst(var, GamaType.from(md.getExperiment(var)));
+
+		final ITypeDescription species = type.getSpecies();
+		if (species == null) return compileReadOnlyTypeField(null, fieldExpr, var, type, owner);
+
+		return compileAgentFieldOrAction(fieldExpr, owner, var, species);
+	}
+
+	/**
 	 * Compile field access.
 	 *
 	 * @param ownerExpr

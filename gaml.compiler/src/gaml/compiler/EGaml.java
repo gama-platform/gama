@@ -24,11 +24,9 @@ import gama.api.compilation.IInternalFacets;
 import gama.api.compilation.ast.ISyntacticFactory;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.dev.COUNTER;
-import gaml.compiler.gaml.Access;
 import gaml.compiler.gaml.ActionDefinition;
 import gaml.compiler.gaml.ActionRef;
 import gaml.compiler.gaml.ArgumentDefinition;
-import gaml.compiler.gaml.Array;
 import gaml.compiler.gaml.BinaryOperator;
 import gaml.compiler.gaml.EquationDefinition;
 import gaml.compiler.gaml.EquationRef;
@@ -38,10 +36,8 @@ import gaml.compiler.gaml.Function;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlFactory;
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.If;
 import gaml.compiler.gaml.Model;
 import gaml.compiler.gaml.Parameter;
-import gaml.compiler.gaml.Point;
 import gaml.compiler.gaml.S_Assignment;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Display;
@@ -51,7 +47,6 @@ import gaml.compiler.gaml.SkillFakeDefinition;
 import gaml.compiler.gaml.SkillRef;
 import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.Statement;
-import gaml.compiler.gaml.StringLiteral;
 import gaml.compiler.gaml.TerminalExpression;
 import gaml.compiler.gaml.TypeDefinition;
 import gaml.compiler.gaml.TypeRef;
@@ -69,6 +64,7 @@ import gaml.compiler.gaml.impl.S_EquationsImpl;
 import gaml.compiler.gaml.impl.S_IfImpl;
 import gaml.compiler.gaml.impl.StandaloneExperimentImpl;
 import gaml.compiler.gaml.impl.StatementImpl;
+import gaml.compiler.serializer.GamlEObjectImpl;
 
 /**
  * The class EGaml. A stateless utility class providing helper methods to work with various GAML statements and
@@ -540,7 +536,6 @@ public class EGaml {
 				break;
 			}
 		}
-
 		if (result == null || result.isBlank()) {
 			final ICompositeNode cc = NodeModelUtils.getNode(o);
 			if (cc != null) { result = NodeModelUtils.getTokenText(cc); }
@@ -564,143 +559,13 @@ public class EGaml {
 	 */
 
 	public String toString(final EObject expr) {
-		if (expr == null) return null;
-		if (expr instanceof Statement) return getNameOf(expr);
-		if (expr instanceof Facet) return ((Facet) expr).getName();
+		return switch (expr) {
+			case null -> null;
+			case Statement s -> getNameOf(s);
+			case GamlEObjectImpl geo -> geo.asString();
+			default -> expr.toString();
+		};
 
-		if (!(expr instanceof Expression)) return expr.toString();
-		final StringBuilder serializer = new StringBuilder(100);
-		serialize(serializer, (Expression) expr);
-		return serializer.toString();
-	}
-
-	/**
-	 * Serialize an expression
-	 *
-	 * @param serializer
-	 *            a string builder to which the expression should be appended
-	 * @param expr
-	 *            the expr
-	 */
-	private void serialize(final StringBuilder serializer, final Expression expr) {
-		switch (expr) {
-			case null -> {
-			}
-			case If i -> {
-				serializer.append(LEFT_PAREN);
-				serialize(serializer, i.getLeft());
-				serializer.append(RIGHT_PAREN).append(i.getOp()).append(LEFT_PAREN);
-				serialize(serializer, i.getRight());
-				serializer.append(RIGHT_PAREN).append(COLON);
-				serialize(serializer, i.getIfFalse());
-			}
-			case StringLiteral sl -> serializer.append(sl.getOp());
-			case TerminalExpression te -> serializer.append(te.getOp());
-			case Point p -> {
-				serializer.append(LEFT_BRACE).append(LEFT_PAREN);
-				serialize(serializer, p.getLeft());
-				serializer.append(RIGHT_PAREN).append(p.getOp()).append(LEFT_PAREN);
-				serialize(serializer, p.getRight());
-				serializer.append(RIGHT_PAREN);
-				if (p.getZ() != null) {
-					serializer.append(',').append(LEFT_PAREN);
-					serialize(serializer, p.getZ());
-					serializer.append(RIGHT_PAREN);
-				}
-				serializer.append(RIGHT_BRACE);
-			}
-
-			case Unary u -> {
-				serializer.append(u.getOp()).append(LEFT_PAREN);
-				serialize(serializer, u.getRight());
-				serializer.append(RIGHT_PAREN);
-			}
-			case Function f -> function(serializer, f);
-			case Access access -> {
-				serialize(serializer, access.getLeft());
-				serializer.append(DOT);
-				serialize(serializer, access.getRight());
-			}
-			case Array a -> array(serializer, a.getExprs().getExprs(), false);
-			case VariableRef v -> {
-				serializer.append(getKeyOf(v));
-			}
-			case TypeRef t -> {
-				serializer.append(getKeyOf(t));
-			}
-			case SkillRef s -> {
-				serializer.append(getKeyOf(s));
-			}
-			case ActionRef a -> {
-				serializer.append(getKeyOf(a));
-			}
-			case UnitName u -> {
-				serializer.append(getKeyOf(u));
-			}
-			default -> {
-			}
-
-		}
-	}
-
-	/**
-	 * Serializes a function
-	 *
-	 * @param serializer
-	 *            a string builder to which the function should be appended
-	 * @param expr
-	 *            the expr
-	 */
-	private void function(final StringBuilder serializer, final Function expr) {
-		final List<? extends EObject> args = getExprsOf(expr.getRight());
-		final String opName = getKeyOf(expr.getLeft());
-		final int size = args.size();
-		switch (size) {
-			case 1 -> {
-				serializer.append(opName).append(LEFT_PAREN);
-				serialize(serializer, (Expression) args.get(0));
-				serializer.append(RIGHT_PAREN);
-			}
-			case 2 -> {
-				serializer.append(LEFT_PAREN);
-				serialize(serializer, (Expression) args.get(0));
-				serializer.append(RIGHT_PAREN).append(opName).append(LEFT_PAREN);
-				serialize(serializer, (Expression) args.get(1));
-				serializer.append(RIGHT_PAREN);
-			}
-			default -> {
-				serializer.append(opName);
-				serializer.append(LEFT_PAREN);
-				array(serializer, args, true);
-				serializer.append(RIGHT_PAREN);
-			}
-		}
-
-	}
-
-	/**
-	 * Serializes a list of arguments
-	 *
-	 * @param serializer
-	 *            a string builder to which the args should be appended
-	 * @param args
-	 *            the args
-	 * @param arguments
-	 *            the arguments
-	 */
-	private void array(final StringBuilder serializer, final List<? extends EObject> args, final boolean arguments) {
-		// if arguments is true, parses the list to transform it into a map of
-		// args
-		// (starting at 1); Experimental right now
-		// serializer.append("[");
-		final int size = args.size();
-		for (int i = 0; i < size; i++) {
-			final Expression e = (Expression) args.get(i);
-			if (arguments) { serializer.append("arg").append(i).append("::"); }
-			serialize(serializer, e);
-			if (i < size - 1) { serializer.append(COMMA); }
-		}
-		// serializer.append("]");
 	}
 
 	/**

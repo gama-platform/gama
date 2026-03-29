@@ -260,7 +260,7 @@ public class GamlSyntacticConverter {
 			ExpressionList plugins = p.getPlugins();
 			if (plugins != null) {
 				List<String> list = GamaListFactory.create();
-				for (Expression exp : plugins.getExprs()) { list.add(EGAML.toString(exp)); }
+				for (Expression exp : plugins.getExprs()) { list.add(exp.toString()); }
 				result.put(p.getName(), list);
 			} else {
 				result.put(p.getName(), null);
@@ -519,8 +519,8 @@ public class GamlSyntacticConverter {
 	 * </ol>
 	 *
 	 * <p>
-	 * After this method returns, {@link gaml.compiler.descriptions.DoDescription} can follow a single compilation
-	 * path regardless of which syntactic form was used.
+	 * After this method returns, {@link gaml.compiler.descriptions.DoDescription} can follow a single compilation path
+	 * regardless of which syntactic form was used.
 	 * </p>
 	 *
 	 * @param stm

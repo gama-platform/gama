@@ -218,6 +218,29 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 	}
 
 	/**
+	 * Compiles an action call where the receiver has already been compiled to an {@link IExpression} — i.e. when
+	 * there is no backing {@link EObject} for the target (e.g. a synthesised {@code self} or {@code super}
+	 * represented by a {@link gaml.compiler.expressions.SelfOrSuperExpressionDescription}).
+	 *
+	 * @param owner
+	 *            the pre-compiled receiver expression; must not be {@code null}
+	 * @param field
+	 *            the {@link EObject} representing the field / action call (must be an {@link Expression})
+	 * @param parsingContext
+	 *            the description providing the compilation context
+	 * @return the compiled {@link ActionCallOperator}, or {@code null} on failure
+	 */
+	public IExpression compileActionCall(final IExpression owner, final EObject field,
+			final IDescription parsingContext) {
+		if (field instanceof Expression fieldExpr) {
+			try (final ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext)) {
+				return new ExpressionCompilationSwitch(ctx).compileFieldAccess(owner, fieldExpr, null);
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Compiles an action call for the deprecated facet-based {@code do} form without creating any synthetic EMF nodes.
 	 *
 	 * <p>
