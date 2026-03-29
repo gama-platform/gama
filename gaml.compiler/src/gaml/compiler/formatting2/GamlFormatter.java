@@ -213,7 +213,8 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * Rules applied:
 	 * </p>
 	 * <ul>
-	 * <li>Two blank lines before the {@code species} keyword.</li>
+	 * <li>Two blank lines before/after the declaration are inserted by the enclosing
+	 *     {@link #formatBlock} when adjacent to another major declaration.</li>
 	 * <li>Recursively formats each facet and the inner block.</li>
 	 * </ul>
 	 *
@@ -223,8 +224,6 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Species node, final IFormattableDocument doc) {
-		doc.prepend(regionFor(node).assignment(ga.getS_SpeciesAccess().getKeyAssignment_0()),
-				it -> it.setNewLines(2));
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
@@ -238,7 +237,8 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * Rules applied:
 	 * </p>
 	 * <ul>
-	 * <li>Two blank lines before the {@code experiment} keyword.</li>
+	 * <li>Two blank lines before/after the declaration are inserted by the enclosing
+	 *     {@link #formatBlock} when adjacent to another major declaration.</li>
 	 * <li>Recursively formats each facet and the inner block.</li>
 	 * </ul>
 	 *
@@ -248,8 +248,6 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Experiment node, final IFormattableDocument doc) {
-		doc.prepend(regionFor(node).assignment(ga.getS_ExperimentAccess().getKeyAssignment_0()),
-				it -> it.setNewLines(2));
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
@@ -449,7 +447,8 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * Rules applied:
 	 * </p>
 	 * <ul>
-	 * <li>Two blank lines before the method declaration.</li>
+	 * <li>Two blank lines before/after the declaration are inserted by the enclosing
+	 *     {@link #formatBlock} when adjacent to another major declaration.</li>
 	 * <li>No space before the opening parenthesis {@code (}.</li>
 	 * <li>No space before the closing parenthesis {@code )}.</li>
 	 * <li>Each argument definition and each facet are formatted recursively.</li>
@@ -462,8 +461,6 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Method node, final IFormattableDocument doc) {
-		doc.prepend(regionFor(node).assignment(ga.getS_MethodAccess().getTkeyAssignment_1()),
-				it -> it.setNewLines(2));
 		doc.prepend(regionFor(node).keyword(ga.getS_MethodAccess().getLeftParenthesisKeyword_3()),
 				it -> it.noSpace());
 		doc.prepend(regionFor(node).keyword(ga.getS_MethodAccess().getRightParenthesisKeyword_5()),
@@ -513,7 +510,8 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * Rules applied:
 	 * </p>
 	 * <ul>
-	 * <li>Two blank lines before the {@code equation} keyword.</li>
+	 * <li>Two blank lines before/after the declaration are inserted by the enclosing
+	 *     {@link #formatBlock} when adjacent to another major declaration.</li>
 	 * <li>The inner {@code {…}} braces are indented with the same rules as a regular block.</li>
 	 * <li>Each facet is formatted recursively.</li>
 	 * </ul>
@@ -524,8 +522,6 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Equations node, final IFormattableDocument doc) {
-		doc.prepend(regionFor(node).keyword(ga.getS_EquationsAccess().getKeyEquationKeyword_0_0()),
-				it -> it.setNewLines(2));
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
@@ -539,7 +535,6 @@ public class GamlFormatter extends AbstractJavaFormatter {
 			doc.append(open, it -> it.newLine());
 			doc.interior(open, close, it -> it.indent());
 			doc.prepend(close, it -> it.setNewLines(0, 0, 1));
-			doc.append(close, it -> it.setNewLines(2));
 		}
 	}
 
@@ -596,7 +591,8 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * Rules applied:
 	 * </p>
 	 * <ul>
-	 * <li>Two blank lines before the reflex keyword.</li>
+	 * <li>Two blank lines before/after the declaration are inserted by the enclosing
+	 *     {@link #formatBlock} when adjacent to another major declaration.</li>
 	 * <li>Each facet is formatted recursively.</li>
 	 * <li>The inner block is formatted with indentation.</li>
 	 * </ul>
@@ -607,8 +603,6 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 *            the formattable document
 	 */
 	protected void format(final S_Reflex node, final IFormattableDocument doc) {
-		doc.prepend(regionFor(node).assignment(ga.getS_ReflexAccess().getKeyAssignment_0()),
-				it -> it.setNewLines(2));
 		for (final Facet f : node.getFacets()) {
 			doc.format(f);
 		}
@@ -640,34 +634,81 @@ public class GamlFormatter extends AbstractJavaFormatter {
 	 * </p>
 	 * <ul>
 	 * <li>A newline after the opening {@code {}.</li>
-	 * <li>Indentation increased after the opening {@code {}.</li>
+	 * <li>Indentation of the interior between the braces.</li>
 	 * <li>Zero-to-one newlines before the closing {@code }}.</li>
-	 * <li>Indentation decreased before the closing {@code }}.</li>
-	 * <li>Two newlines after the closing {@code }}.</li>
-	 * <li>Each statement inside the block is recursively formatted.</li>
+	 * <li>Each statement inside the block is recursively formatted, with a newline before it.</li>
 	 * </ul>
+	 *
+	 * <p>
+	 * No rule is set <em>after</em> the closing {@code }} to avoid a
+	 * {@code ConflictingRegionsException}: when blocks are nested, the hidden region immediately
+	 * following an inner {@code }} is the same region that immediately precedes the outer {@code }},
+	 * and both an {@code append} on the inner close-brace and a {@code prepend} on the outer
+	 * close-brace would target it simultaneously.
+	 * </p>
 	 *
 	 * @param block
 	 *            the block to format; must not be {@code null}
 	 * @param doc
 	 *            the formattable document
 	 */
+	/**
+	 * Returns {@code true} if {@code s} is a "major" declaration that should be separated from
+	 * its neighbours by two blank lines (one blank line = two newlines).
+	 *
+	 * @param s the statement to test
+	 * @return {@code true} for {@link S_Reflex}, {@link S_Species}, {@link S_Experiment},
+	 *         {@link S_Method} and {@link S_Equations}
+	 */
+	private static boolean isMajorDeclaration(final Statement s) {
+		return s instanceof S_Reflex || s instanceof S_Species || s instanceof S_Experiment
+				|| s instanceof S_Method || s instanceof S_Equations;
+	}
+
+	/**
+	 * Shared helper that applies block-level spacing rules to any {@link Block} node.
+	 *
+	 * <p>Rules applied:</p>
+	 * <ul>
+	 * <li>A newline after the opening {@code {}.</li>
+	 * <li>Indentation of the interior between the braces via {@code doc.interior()}.</li>
+	 * <li>Zero-to-one newlines before the closing {@code }}.</li>
+	 * <li>Two blank lines (i.e. {@code setNewLines(2)}) are inserted <em>between</em> statements
+	 *     whenever the next or the previous statement is a major declaration, by appending to the
+	 *     hidden region <em>after</em> the preceding statement. The {@code append} direction avoids
+	 *     any conflict with the {@code interior} rule, which writes to regions from the
+	 *     {@code prepend} side.</li>
+	 * </ul>
+	 *
+	 * @param block the block to format; must not be {@code null}
+	 * @param doc   the formattable document
+	 */
 	private void formatBlock(final Block block, final IFormattableDocument doc) {
-		// Opening brace: newline after
 		final ISemanticRegion openBrace =
 				regionFor(block).keyword(ga.getBlockAccess().getLeftCurlyBracketKeyword_1());
-		// Closing brace
 		final ISemanticRegion closeBrace =
 				regionFor(block).keyword(ga.getBlockAccess().getRightCurlyBracketKeyword_2_1());
 		if (openBrace != null && closeBrace != null) {
 			doc.append(openBrace, it -> it.newLine());
-			// Indent the interior between braces
 			doc.interior(openBrace, closeBrace, it -> it.indent());
 			doc.prepend(closeBrace, it -> it.setNewLines(0, 0, 1));
-			doc.append(closeBrace, it -> it.setNewLines(2));
 		}
-		// Recursively format all statements
-		for (final Statement s : block.getStatements()) {
+
+		final java.util.List<Statement> stmts = block.getStatements();
+		for (int i = 0; i < stmts.size(); i++) {
+			final Statement s = stmts.get(i);
+			// Insert extra blank line *after* the previous statement when the current or the
+			// previous one is a major declaration. We use append (not prepend) so we never touch
+			// the same region that interior() has already written a prepend rule onto.
+			if (i > 0) {
+				final Statement prev = stmts.get(i - 1);
+				if (isMajorDeclaration(s) || isMajorDeclaration(prev)) {
+					final ISemanticRegion prevClose = regionFor(prev).keyword("}");
+					if (prevClose != null) {
+						doc.append(prevClose, it -> it.setNewLines(2));
+					}
+				}
+			}
 			doc.format(s);
 		}
 	}

@@ -150,9 +150,4 @@ public class GamlRuntimeModule extends gaml.compiler.AbstractGamlRuntimeModule {
 				.to(org.eclipse.xtext.resource.impl.ResourceSetBasedResourceDescriptions.class);
 	}
 
-	// contributed by org.eclipse.xtext.generator.formatting.FormatterFragment
-	@Override
-	public Class<? extends org.eclipse.xtext.formatting.IFormatter> bindIFormatter() {
-		return gaml.compiler.formatting.GamlFormatter.class;
-	}
 }
