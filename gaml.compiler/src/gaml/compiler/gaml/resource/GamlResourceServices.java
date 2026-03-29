@@ -238,10 +238,12 @@ public class GamlResourceServices {
 
 	/**
 	 * @param key
-	 * @return
+	 * @return the documentation context for the given URI, or {@link DocumentationContext#NULL} if none has been
+	 *         registered. Never returns {@code null}.
 	 */
 	static IDocumentationContext getDocumentationContext(final URI key) {
-		return resourceDocCollectors.get(key);
+		IDocumentationContext ctx = resourceDocCollectors.get(key);
+		return ctx != null ? ctx : DocumentationContext.NULL;
 	}
 
 	/**
@@ -273,13 +275,16 @@ public class GamlResourceServices {
 	}
 
 	/**
-	 * Removes and discards the validation context for the specified resource.
+	 * Removes and discards both the validation context and the documentation context for the specified resource.
+	 * Removing both prevents stale contexts from accumulating in memory when resources are repeatedly revalidated.
 	 *
 	 * @param r
-	 *            the GAML resource whose validation context should be discarded
+	 *            the GAML resource whose contexts should be discarded
 	 */
 	public static void discardValidationContext(final GamlResource r) {
-		resourceErrorCollectors.remove(r.getURI());
+		final URI uri = r.getURI();
+		resourceErrorCollectors.remove(uri);
+		resourceDocCollectors.remove(uri);
 	}
 
 	/**

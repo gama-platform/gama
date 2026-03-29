@@ -123,31 +123,50 @@ public class DocumentationContext implements IDocumentationContext {
 	}
 
 	/**
-	 * Do document.
+	 * Triggers documentation generation for the complete model.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * <p>
+	 * Passes the accumulated {@link #expressionsToDocument} map to the delegate's
+	 * {@link IDocManager#doDocument} method, which takes an immutable snapshot internally before scheduling
+	 * the async documentation job. The local map is cleared afterwards so that stale entries do not accumulate
+	 * across successive compilation passes.
+	 * </p>
+	 *
+	 * <p>
+	 * <strong>Note:</strong> do not call {@link IDocManager#setGamlDocumentation} on each entry here — the
+	 * delegate's {@code doDocument} already processes the entire expressions map as part of the same async pass.
+	 * Calling {@code setGamlDocumentation} again would result in each expression being documented twice, with the
+	 * second call using a stale (already-cleared) snapshot.
+	 * </p>
+	 *
 	 * @param description
-	 *            the description
-	 * @date 31 déc. 2023
+	 *            the root model description to document
 	 */
 	@Override
 	public void doDocument(final IModelDescription description) {
 		if (expressionsToDocument == null) { expressionsToDocument = new ConcurrentHashMap<>(); }
+		// docDelegate.doDocument() takes an immutable snapshot of expressionsToDocument before scheduling
+		// the async job, so it is safe to clear the map immediately after this call.
 		docDelegate.doDocument(resourceURI, description, expressionsToDocument);
-		expressionsToDocument.forEach((e, d) -> { docDelegate.setGamlDocumentation(resourceURI, e, d); });
+		// Do NOT iterate expressionsToDocument here and call setGamlDocumentation individually —
+		// doing so would double-process each expression and could operate on a now-empty map if the
+		// delegate cleared it first.
 		expressionsToDocument.clear();
-
 	}
 
 	/**
-	 * Sets the gaml documentation.
+	 * Records an EObject / description pair to be documented when {@link #doDocument(IModelDescription)} is called.
 	 *
-	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
+	 * <p>
+	 * Called by {@code SymbolDescription} to register individual expressions during validation. Entries are
+	 * accumulated in {@link #expressionsToDocument} and processed together with the model tree in
+	 * {@link #doDocument(IModelDescription)}.
+	 * </p>
+	 *
 	 * @param e
-	 *            the e
+	 *            the EObject representing the expression; ignored if {@code null}
 	 * @param d
-	 *            the d
-	 * @date 31 déc. 2023
+	 *            the description providing documentation content; ignored if {@code null}
 	 */
 	@Override
 	public void document(final EObject e, final IGamlDescription d) {
