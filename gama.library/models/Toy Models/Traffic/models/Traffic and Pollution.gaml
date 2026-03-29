@@ -85,8 +85,8 @@ species people skills: [moving] {
 		} }
 
 	aspect default {
-		draw rectangle(4,10) rotated_by (heading+90) color:( #dodgerblue) depth: 3;
-		draw rectangle(4, 6) rotated_by (heading+90) color:( #dodgerblue) depth: 4;
+		draw rectangle(4,10) rotated_by (heading) color:( #dodgerblue) depth: 3;
+		draw rectangle(4, 6) rotated_by (heading) color:( #dodgerblue) depth: 4;
 	} }
 	//Species to represent the buildings
 species building {

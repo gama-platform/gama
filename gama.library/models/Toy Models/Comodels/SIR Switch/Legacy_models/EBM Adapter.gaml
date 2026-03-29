@@ -3,17 +3,17 @@ model SIR_EBM_coupling
 import "SIR_EBM.gaml"
 experiment "Adapter" type: gui
 {
-	int get_num_S
+	int get_num_S()
 	{
 		return int(first(agent_with_SIR_dynamic).S);
 	}
 
-	int get_num_I
+	int get_num_I()
 	{
 		return int(first(agent_with_SIR_dynamic).I);
 	}
 
-	int get_num_R
+	int get_num_R()
 	{
 		return int(first(agent_with_SIR_dynamic).R);
 	}

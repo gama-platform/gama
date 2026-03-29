@@ -27,7 +27,7 @@ global parent: physical_world {
 	
 	
 
-	init {
+	init { 
 		//The floor is a large flat box in the middle of the world.
 		create pillarAndFloor {
 			shape <- box({dim * 2, dim * 2, 1}) at_location {dim / 2, dim / 2, -5};
@@ -66,7 +66,7 @@ global parent: physical_world {
 	reflex compute_gravity {
 		point p <- #camera_location - #camera_target;
 		p <- {p.x = 0 ? 1 : p.x, p.y = 0 ? -1 : -p.y, p.z = 0 ? 1 : p.z};
-		point g <- {0, -1 / (p.y) * signum(p.z), -2 / abs(p.z)};
+		point g <- {0, -1 / (p.y) * signum(p.z), -3 / abs(p.z)};
 		gravity <- g / norm(g) * 9.81;
 	}
 }
@@ -98,9 +98,9 @@ species water skills: [dynamic_body] {
 	
 	//When water drops fall from the ground, they are eliminated (from the simulation and the physical world)
 	reflex when: location.z < -20 {
-		do die;
+		do die();
 	}
-} 
+}  
 
 experiment "3D View" type: gui {
 	output { 

@@ -33,7 +33,7 @@ global parent: physical_world {
 			loop origin_of_flow over: origins_of_flow {
 				int x <- int(min(terrain.columns - 1, max(0, origin_of_flow.x + 10)));
 				int y <- int(min(terrain.rows - 1, max(0, origin_of_flow.y + 10)));
-				point p <- origin_of_flow + {rnd(10) - 5, rnd(10 - 5), terrain[x, y] + 10};
+				point p <- origin_of_flow + {rnd(10) - 5, rnd(10 - 5), terrain[x, y] + 20};
 				create water number: number_of_water_units with: (location:p);
 			}
 	}

@@ -62,7 +62,7 @@ species Buffer skills: [network] {
 				do die;
 			}
 
-		}
+		} 
 
 	}
 
