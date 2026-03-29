@@ -573,13 +573,20 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		if (!isRangeIndicatorEnabled()) { projectionViewer.doOperation(ProjectionViewer.TOGGLE); }
 	}
 
+	/** Timestamp of the last navigation-history mark, used to throttle {@link #markInNavigationHistory()} calls. */
+	private long lastNavigationHistoryMark = 0L;
+
 	@Override
 	protected void handleCursorPositionChanged() {
 		GamaSourceViewer v = getInternalSourceViewer();
 		if (getSelectionProvider() == null || v == null || v.getControl() == null || v.getControl().isDisposed())
 			return;
 		super.handleCursorPositionChanged();
-		this.markInNavigationHistory();
+		final long now = System.currentTimeMillis();
+		if (now - lastNavigationHistoryMark > 500) {
+			lastNavigationHistoryMark = now;
+			this.markInNavigationHistory();
+		}
 	}
 
 	/**
@@ -613,11 +620,11 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				boolean showExperiments =
 						!GamlFileExtension.isExperiment(getDocument().getAdapter(IFile.class).getName())
 								&& newState.showExperiments;
-				if (addExperiments == null || showExperiments != previousShowExperiments && addExperiments != null) {
+				if (addExperiments == null || showExperiments != previousShowExperiments) {
 					updateAddExperimentButton(showExperiments);
 				}
-				final GamaUIColor c = state.getColor();
-				String msg = state.getStatus();
+				final GamaUIColor c = newState.getColor();
+				String msg = newState.getStatus();
 
 				Selector listener = null;
 				String imageName = null;
@@ -744,17 +751,19 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 		b.setSelectionListener(new Selector() {
 
-			Menu menu;
+			Menu popupMenu;
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				if (menu == null) {
-					menu = new Menu(toolbar.getShell(), SWT.POP_UP);
+				if (popupMenu == null || popupMenu.isDisposed()) {
+					popupMenu = new Menu(toolbar.getShell(), SWT.POP_UP);
+					// Dispose the popup menu automatically when the button is disposed (toolbar wipe)
+					b.addDisposeListener(de -> { if (popupMenu != null && !popupMenu.isDisposed()) { popupMenu.dispose(); } });
 					fillMenu();
 				}
 				final Point point = toolbar.toDisplay(new Point(e.x, e.y + toolbar.getSize().y));
-				menu.setLocation(point.x, point.y);
-				menu.setVisible(true);
+				popupMenu.setLocation(point.x, point.y);
+				popupMenu.setVisible(true);
 			}
 
 			private void fillMenu() {
@@ -765,7 +774,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 					final String type = IKeyword.BATCH.equals(expType) ? IKeyword.BATCH
 							: IKeyword.RECORD.equals(expType) ? IKeyword.RECORD : "regular";
 					final String image = MENU_IMAGES.get(type);
-					GamaMenu.action(menu, text, listener, image).setData("exp", text);
+					GamaMenu.action(popupMenu, text, listener, image).setData("exp", text);
 				}
 			}
 		});
@@ -783,7 +792,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			GamlProperties meta = new GamlProperties();
 			model.collectMetaInformation(meta);
 			String newLine = requires + " " + meta.get(GamlProperties.PLUGINS);
-			getInternalSourceViewer();
 			IXtextDocument document = getDocument();
 			WorkbenchHelper.asyncRun(() -> {
 				int offset;
@@ -998,16 +1006,12 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	protected void handlePreferenceStoreChanged(final PropertyChangeEvent event) {
 		super.handlePreferenceStoreChanged(event);
 		if (PREFERENCE_COLOR_BACKGROUND.equals(event.getProperty())) {
-			// this.fSourceViewerDecorationSupport.updateOverviewDecorations();
-
-			this.getVerticalRuler().getControl()
-					.setBackground(GamaColors.get(GamaPreferences.Modeling.EDITOR_BACKGROUND_COLOR.getValue()).color());
-
+			final var bg = GamaColors.get(GamaPreferences.Modeling.EDITOR_BACKGROUND_COLOR.getValue()).color();
+			this.getVerticalRuler().getControl().setBackground(bg);
 			final Iterator e = ((CompositeRuler) getVerticalRuler()).getDecoratorIterator();
 			while (e.hasNext()) {
 				final var column = (IVerticalRulerColumn) e.next();
-				column.getControl().setBackground(
-						GamaColors.get(GamaPreferences.Modeling.EDITOR_BACKGROUND_COLOR.getValue()).color());
+				column.getControl().setBackground(bg);
 				column.redraw();
 			}
 		}
