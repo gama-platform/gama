@@ -6,6 +6,7 @@ package gaml.compiler.gaml.impl;
 import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.Statement;
+
 import gaml.compiler.serializer.GamlEObjectImpl;
 
 import java.util.Collection;

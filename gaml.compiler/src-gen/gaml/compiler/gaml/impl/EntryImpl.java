@@ -5,6 +5,7 @@ package gaml.compiler.gaml.impl;
 
 import gaml.compiler.gaml.Entry;
 import gaml.compiler.gaml.GamlPackage;
+
 import gaml.compiler.serializer.GamlEObjectImpl;
 
 import org.eclipse.emf.ecore.EClass;

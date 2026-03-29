@@ -6,6 +6,7 @@ package gaml.compiler.gaml.impl;
 import gaml.compiler.gaml.ActionArguments;
 import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.GamlPackage;
+
 import gaml.compiler.serializer.GamlEObjectImpl;
 
 import java.util.Collection;

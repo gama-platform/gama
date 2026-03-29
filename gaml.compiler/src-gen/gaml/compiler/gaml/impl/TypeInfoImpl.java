@@ -6,6 +6,7 @@ package gaml.compiler.gaml.impl;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.TypeInfo;
+
 import gaml.compiler.serializer.GamlEObjectImpl;
 
 import org.eclipse.emf.common.notify.Notification;

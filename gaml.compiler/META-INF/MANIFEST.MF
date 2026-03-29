@@ -35,7 +35,8 @@ Export-Package: gaml.compiler,
  gaml.compiler.scoping,
  gaml.compiler.serializer,
  gaml.compiler.services,
- gaml.compiler.validation
+ gaml.compiler.validation,
+ gaml.compiler.formatting2
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gaml.compiler
 Bundle-ActivationPolicy: lazy

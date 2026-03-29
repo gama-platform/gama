@@ -101,6 +101,7 @@ Workflow {
 				generateXtendStub = false
 			}
 			formatter = {
+				generateStub = true
 				generateXtendStub = false
 			}
 			junitSupport = {

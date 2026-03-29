@@ -10,8 +10,6 @@
 model tutorial_gis_city_traffic
 
 global {
-	
-	
 //Load of the different shapefiles used by the model
 	file shape_file_buildings <- shape_file('../includes/building.shp', 0);
 	file shape_file_roads <- shape_file('../includes/road.shp', 0);
@@ -49,7 +47,6 @@ global {
 		the_graph <- as_edge_graph(road);
 		create people number: nb_people;
 	}
-
 }
 
 species building {
@@ -60,7 +57,6 @@ species building {
 	aspect base {
 		draw shape color: color depth: height;
 	}
-
 }
 
 species road {
@@ -69,7 +65,6 @@ species road {
 	aspect base {
 		draw shape color: color;
 	}
-
 }
 
 species people skills: [moving] parallel: true {
@@ -97,15 +92,17 @@ species people skills: [moving] parallel: true {
 		do goto(target: the_target, on: the_graph);
 		switch the_target {
 			match location {
-				the_target <- nil;
+			the_target <- nil;
 				location <- {location.x, location.y, objectif = 'go home' ? living_place.height : working_place.height};
-			}
+		}
 
-		} }
+		}
+	}
 
-	aspect default { 
+	aspect default {
 		draw sphere(3) color: color;
-	} }
+	}
+}
 
 experiment "Road Traffic" type: gui {
 	parameter 'Shapefile for the buildings:' var: shape_file_buildings category: 'GIS';
@@ -122,15 +119,14 @@ experiment "Road Traffic" type: gui {
 		ask simulation {
 			if (nb_people > nb) {
 				create people number: nb_people - nb;
-			} else {
+			}
+
+			else {
 				ask (nb - nb_people) among people {
 					do die();
 				}
-
 			}
-
 		}
-
 	}
 
 	output {
@@ -138,14 +134,15 @@ experiment "Road Traffic" type: gui {
 			camera 'default' location: {1318.6512,3.5713,945.6612} target: {431.7016,495.2155,0.0};
 			light #ambient intensity: 180;
 			light #default intensity: 180 direction: {0.5, 0.5, -1};
-			event #mouse_down {ask simulation {do resume();}}
-			species building aspect: base refresh: false;
+			event #mouse_down {
+			ask simulation {
+				do resume();}}
+
+		species building aspect: base refresh: false;
 			species road aspect: base refresh: false;
 			species people refresh: true;
 		}
-
 	}
-
 }
 
 experiment "Multiple Layers" type: gui {
@@ -163,15 +160,14 @@ experiment "Multiple Layers" type: gui {
 		ask simulation {
 			if (nb_people > nb) {
 				create people number: nb_people - nb;
-			} else {
+			}
+
+			else {
 				ask (nb - nb_people) among people {
 					do die();
 				}
-
 			}
-
 		}
-
 	}
 
 	output {
@@ -181,7 +177,6 @@ experiment "Multiple Layers" type: gui {
 			species building aspect: base position: {0, 0, 0.25};
 			species people position: {0, 0, 0.5};
 		}
-
 	}
-
 }
+

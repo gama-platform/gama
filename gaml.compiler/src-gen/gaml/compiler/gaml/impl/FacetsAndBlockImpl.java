@@ -7,6 +7,7 @@ import gaml.compiler.gaml.Block;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.FacetsAndBlock;
 import gaml.compiler.gaml.GamlPackage;
+
 import gaml.compiler.serializer.GamlEObjectImpl;
 
 import java.util.Collection;
