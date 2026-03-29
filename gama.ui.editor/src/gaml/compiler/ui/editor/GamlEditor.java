@@ -237,6 +237,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/** The Constant BUTTON_HEIGHT. */
 	static final int BUTTON_HEIGHT = 20;
 
+	/** The Constant SCHEDULE_DELAY. */
+	public static final int SCHEDULE_DELAY = 0;
+
 	/** The button padding. How much space between each experiment button */
 	static {
 		final var store = EditorsUI.getPreferenceStore();
@@ -540,7 +543,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			}
 
 		};
-		validate.schedule();
+		validate.schedule(GamlEditor.SCHEDULE_DELAY);
 
 	}
 

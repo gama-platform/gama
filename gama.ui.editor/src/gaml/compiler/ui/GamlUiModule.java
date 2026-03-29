@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * GamlUiModule.java, in gama.ui.editor, is part of the source code of the
- * GAMA modeling and simulation platform (v.2025-03).
+ * GamlUiModule.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
  * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gaml.compiler.ui;
 
@@ -35,6 +35,7 @@ import org.eclipse.xtext.service.DispatchingProvider;
 import org.eclipse.xtext.service.SingletonBinding;
 import org.eclipse.xtext.ui.IImageHelper;
 import org.eclipse.xtext.ui.IImageHelper.IImageDescriptorHelper;
+import org.eclipse.xtext.ui.editor.DirtyStateEditorSupport;
 import org.eclipse.xtext.ui.editor.IXtextEditorCallback;
 import org.eclipse.xtext.ui.editor.XtextEditor;
 import org.eclipse.xtext.ui.editor.XtextSourceViewer;
@@ -74,6 +75,7 @@ import gaml.compiler.ui.decorators.GamlMarkerUpdater;
 import gaml.compiler.ui.editor.GamaAutoEditStrategyProvider;
 import gaml.compiler.ui.editor.GamaSourceViewerConfiguration;
 import gaml.compiler.ui.editor.GamaSourceViewerFactory;
+import gaml.compiler.ui.editor.GamlDirtyStateSupport;
 import gaml.compiler.ui.editor.GamlEditor;
 import gaml.compiler.ui.editor.GamlEditorTickUpdater;
 import gaml.compiler.ui.editor.GamlHyperlinkDetector;
@@ -133,6 +135,7 @@ public class GamlUiModule extends gaml.compiler.ui.AbstractGamlUiModule {
 		binder.bind(IGamlLabelProvider.class).to(GamlLabelProvider.class);
 		binder.bind(XtextElementLinks.class).to(GamlElementLinks.class);
 		binder.bind(SyncUtil.class).to(GamlSyncUtil.class);
+		binder.bind(DirtyStateEditorSupport.class).to(GamlDirtyStateSupport.class);
 		// binder.bind(IHighlightingConfiguration.class).to(GamlHighlightingConfiguration.class).asEagerSingleton();
 		DEBUG.OUT("Initialization of GAML XText UI module finished");
 	}
