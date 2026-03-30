@@ -314,6 +314,7 @@ public class GamlSyntacticConverter {
 		final String finalKeyword = keyword;
 		switch (stm) {
 			case S_Species ss when "species_layer".equals(finalKeyword) -> {
+				// Concerns species layers within species layers.
 				elt = FACTORY.create(keyword, stm, true);
 				// Create a VarDefinition with the species name, wrap it in a VariableRef,
 				// and assign it as the expression of the statement so that the species_layer

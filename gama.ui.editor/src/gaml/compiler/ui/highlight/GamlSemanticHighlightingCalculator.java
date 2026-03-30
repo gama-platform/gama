@@ -44,7 +44,6 @@ import org.eclipse.xtext.util.CancelIndicator;
 import com.google.inject.Inject;
 
 import gama.annotations.constants.IKeyword;
-import gama.api.utils.StringUtils;
 import gaml.compiler.EGaml;
 import gaml.compiler.gaml.ArgumentDefinition;
 import gaml.compiler.gaml.Facet;
@@ -280,7 +279,7 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 		boolean b = true;
 		for (final ILeafNode node : n.getLeafNodes()) {
 			if (!node.isHidden()) {
-				final var sNode = StringUtils.toJavaString(NodeModelUtils.getTokenText(node));
+				final var sNode = NodeModelUtils.getTokenText(node);
 				if (equalsFacetOrString(text, sNode)) {
 					n = node;
 					b = setStyle(s, n);
@@ -310,10 +309,10 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 		final var last = s.charAt(length - 1);
 		switch (last) {
 			case ':':
-				return text.equals(s.substring(0, length - 1));
+				return s.regionMatches(0, text, 0, length - 1) && text.length() == length - 1;
 			case '\"':
 			case '\'':
-				return s.charAt(0) == last && text.equals(s.substring(1, length - 1));
+				return s.charAt(0) == last && s.regionMatches(1, text, 0, length - 2) && text.length() == length - 2;
 		}
 		return false;
 	}

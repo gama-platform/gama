@@ -377,7 +377,7 @@ public class GamlSerializerToString extends GamlSwitch<String> {
 	@Override
 	public String caseS_Display(final S_Display object) {
 		int m = mark();
-		sb().append(object.getKey()).append(" ").append(object.getName()).append(facets(object.getFacets()))
+		sb().append(object.getKey()).append(" ").append(object.getName()).append(" ").append(facets(object.getFacets()))
 				.append(" ");
 		appendBlock(object.getBlock(), false);
 		return since(m);

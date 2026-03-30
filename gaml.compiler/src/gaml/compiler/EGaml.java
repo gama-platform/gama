@@ -55,7 +55,6 @@ import gaml.compiler.gaml.UnitFakeDefinition;
 import gaml.compiler.gaml.UnitName;
 import gaml.compiler.gaml.VarDefinition;
 import gaml.compiler.gaml.VariableRef;
-import gaml.compiler.gaml.impl.ActionArgumentsImpl;
 import gaml.compiler.gaml.impl.BlockImpl;
 import gaml.compiler.gaml.impl.ExpressionListImpl;
 import gaml.compiler.gaml.impl.ModelImpl;
@@ -200,21 +199,6 @@ public class EGaml {
 	}
 
 	/**
-	 * Gets the argument definitions from an action's arguments. Safely extracts the list of argument definitions if
-	 * properly set.
-	 *
-	 * @param args
-	 *            the action arguments object
-	 * @return the list of argument definitions, or an empty list if not available
-	 */
-	public List<ArgumentDefinition> getArgsOf(final EObject args) {
-		if (args instanceof ActionArgumentsImpl
-				&& ((ActionArgumentsImpl) args).eIsSet(GamlPackage.ACTION_ARGUMENTS__ARGS))
-			return ((ActionArgumentsImpl) args).getArgs();
-		return EMPTY_ARG_LIST;
-	}
-
-	/**
 	 * Gets the facets of a statement. Extracts the list of facets from statements or headless experiments.
 	 *
 	 * @param s
@@ -227,16 +211,6 @@ public class EGaml {
 		} else if (s instanceof StandaloneExperimentImpl sei && sei.eIsSet(GamlPackage.STANDALONE_EXPERIMENT__FACETS))
 			return sei.getFacets();
 		return EMPTY_FACET_LIST;
-	}
-
-	/**
-	 * @param stm
-	 * @return
-	 */
-	public boolean hasFacets(final EObject s) {
-		if (s instanceof StatementImpl si) return si.eIsSet(GamlPackage.STATEMENT__FACETS);
-		if (s instanceof StandaloneExperimentImpl sei) return sei.eIsSet(GamlPackage.STANDALONE_EXPERIMENT__FACETS);
-		return false;
 	}
 
 	/**
@@ -563,7 +537,7 @@ public class EGaml {
 			case null -> null;
 			case Statement s -> getNameOf(s);
 			case GamlEObjectImpl geo -> geo.asString();
-			default -> expr.toString();
+			default -> null;
 		};
 
 	}
