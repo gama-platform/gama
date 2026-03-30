@@ -86,10 +86,12 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
  * att2::read("TYPE")]; or, without header: create toto from: "toto.csv"with:[att1::read(0), att2::read(1)]; //with the
  * read(int), the index of the column.
  *
- * <p><b>Thread-safety:</b> the {@link #init} field, which carries the formal {@link Arguments} set by
+ * <p>
+ * <b>Thread-safety:</b> the {@link #init} field, which carries the formal {@link Arguments} set by
  * {@link #setFormalArgs(Arguments)}, is held in an {@link java.util.concurrent.atomic.AtomicReference} so that
  * concurrent reads from {@link #fillWithUserInit} and {@link #privateExecuteIn} always observe a consistent reference,
- * even when multiple parallel simulations share the same statement instance.</p>
+ * even when multiple parallel simulations share the same statement instance.
+ * </p>
  */
 @symbol (
 		name = CREATE,
@@ -106,7 +108,7 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
 				name = SPECIES,
 				type = { IType.SPECIES, IType.AGENT },
 				optional = true,
-				doc = @doc ("an expression that evaluates to a species, the species of the agents to be created. In the case of simulations, the name 'simulation', which represents the current instance of simulation, can also be used as a proxy to their species")),
+				doc = @doc ("the species of the agents to be created. In the case of simulations, the name 'simulation', which represents the current instance of simulation, can also be used as a proxy to their species")),
 				@facet (
 						name = RETURNS,
 						type = IType.NEW_TEMP_ID,
@@ -116,12 +118,12 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
 						name = FROM,
 						type = IType.NONE,
 						optional = true,
-						doc = @doc ("an expression that evaluates to a localized entity, a list of localized entities, a string (the path of a file), a file (shapefile, a .csv, a .asc or a OSM file) or a container returned by a request to a database")),
+						doc = @doc ("a geometry, a container of geometries, a string (the path of a file), a file (shapefile, a .csv, a .asc or a OSM file) or a container returned by a request to a database")),
 				@facet (
 						name = NUMBER,
 						type = IType.INT,
 						optional = true,
-						doc = @doc ("an expression that evaluates to an int, the number of created agents")),
+						doc = @doc ("the number of agents to create")),
 				@facet (
 						name = AS,
 						type = { IType.SPECIES },
@@ -343,8 +345,10 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 		}
 	}
 
-	/** The init. Uses {@link AtomicReference} so that {@link #setFormalArgs(Arguments)} and
-	 * {@link #fillWithUserInit(IScope, java.util.Map)} are safe when called from multiple threads simultaneously. */
+	/**
+	 * The init. Uses {@link AtomicReference} so that {@link #setFormalArgs(Arguments)} and
+	 * {@link #fillWithUserInit(IScope, java.util.Map)} are safe when called from multiple threads simultaneously.
+	 */
 	private final AtomicReference<Arguments> init = new AtomicReference<>();
 
 	/** The header. */
@@ -549,7 +553,9 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 	}
 
 	@Override
-	public void setFormalArgs(final Arguments args) { init.set(args); }
+	public void setFormalArgs(final Arguments args) {
+		init.set(args);
+	}
 
 	@Override
 	public void setRuntimeArgs(final IScope scope, final Arguments args) {}

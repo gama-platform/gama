@@ -66,7 +66,6 @@ import gama.api.gaml.types.ParametricType;
 import gama.api.gaml.types.Signature;
 import gama.api.gaml.types.Types;
 import gama.api.utils.collections.Collector;
-import gama.dev.DEBUG;
 import gaml.compiler.EGaml;
 import gaml.compiler.descriptions.DoDescription;
 import gaml.compiler.descriptions.ExperimentDescription;
@@ -527,8 +526,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 *            optional override for the field name; when {@code null} the name is derived from {@code fieldExpr}
 	 * @return the compiled field-access or action-call expression, or {@code null} on failure
 	 */
-	public IExpression compileFieldAccess(final IExpression owner, final Expression fieldExpr,
-			final String fieldName) {
+	public IExpression compileFieldAccess(final IExpression owner, final Expression fieldExpr, final String fieldName) {
 		if (owner == null) return null;
 
 		final String var = fieldName != null ? fieldName : EGAML.getKeyOf(fieldExpr);
@@ -664,16 +662,16 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 * without touching the EMF parse tree.
 	 *
 	 * <p>
-	 * Unlike {@link #compileAgentOrObjectAction} which reads arguments from a {@link Function}'s
-	 * {@link ExpressionList} (requiring the value expressions to be re-parented into synthetic EMF nodes),
-	 * this method builds the {@link Arguments} map directly from the original {@link Facet} objects. Each facet's
-	 * value expression ({@code f.getExpr()}) is read by reference — no containment change is made — so no EMF
-	 * change-notification is fired and no ghost re-validation can be triggered.
+	 * Unlike {@link #compileAgentOrObjectAction} which reads arguments from a {@link Function}'s {@link ExpressionList}
+	 * (requiring the value expressions to be re-parented into synthetic EMF nodes), this method builds the
+	 * {@link Arguments} map directly from the original {@link Facet} objects. Each facet's value expression
+	 * ({@code f.getExpr()}) is read by reference — no containment change is made — so no EMF change-notification is
+	 * fired and no ghost re-validation can be triggered.
 	 * </p>
 	 *
 	 * @param nameExpr
-	 *            the action-name expression node (the real {@code Expression} from the {@code S_Do} statement,
-	 *            used as the documentation anchor)
+	 *            the action-name expression node (the real {@code Expression} from the {@code S_Do} statement, used as
+	 *            the documentation anchor)
 	 * @param target
 	 *            the pre-compiled receiver expression ({@code self}, {@code super}, or an explicit agent)
 	 * @param facets
@@ -694,7 +692,7 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		int positionalIndex = 0;
 		for (final gaml.compiler.gaml.Facet f : facets) {
 			final Expression valueExpr = f.getExpr();
-			if (valueExpr == null) continue;
+			if (valueExpr == null) { continue; }
 			String argName = f.getKey();
 			if (argName != null && argName.endsWith(":")) { argName = argName.substring(0, argName.length() - 1); }
 			if (argName == null || argName.isEmpty()) {
@@ -1111,7 +1109,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 			return null;
 		}
 		final List<Expression> args = EGaml.getInstance().getExprsOf(object.getRight());
-		if (allExpressionsAreParameters(args)) return tryConstructor(object, t.getSpecies(), args);
+		ITypeDescription species = t.getSpecies();
+		if (species != null && allExpressionsAreParameters(args)) return tryConstructor(object, t.getSpecies(), args);
 		return switch (args.size()) {
 			case 1 -> {
 				IExpression expr = compile(args.get(0));
@@ -1246,6 +1245,8 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 				if (host != null) { ad = host.getAction(s); }
 			}
 			if (ad == null) {
+				IExpression var = caseVar(s, object);
+				if (var != null) return var;
 				if (isExp) {
 					context.getContext().error("The action " + s + " must be defined in the experiment",
 							IGamlIssue.UNKNOWN_ACTION, object);
@@ -1344,12 +1345,6 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	 * Handles compilation of variable references by name.
 	 */
 	IExpression caseVar(final String varName, final EObject object) {
-
-		if ("my_elector".equals(varName)) {
-
-			DEBUG.OUT("");
-
-		}
 
 		if (varName == null) {
 			context.getContext().error("Unknown variable", IGamlIssue.UNKNOWN_VAR, object);

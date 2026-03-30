@@ -18,6 +18,7 @@ global {
 	//Definition of the shape of the world as the bounds of the shapefiles to show everything contained
 	// by the area delimited by the bounds
 	geometry shape <- envelope(shape_file_bounds);
+	
 	int nb_people <- 1000;
 	int day_time update: cycle mod 144;
 	int min_work_start <- 36 const: true;
@@ -33,12 +34,10 @@ global {
 	graph the_graph;
 
 	init {
-		create building from: shape_file_buildings with: (type: string(read('NATURE'))) {
+		create building(type: string(read('NATURE')), height: 10+rnd(90)) from: shape_file_buildings {
 			if type = "Industrial" {
 				color <- #blue;
 			}
-
-			height <- 10 + rnd(90);
 		}
 
 		residential_buildings <- building where (each.type = 'Residential');

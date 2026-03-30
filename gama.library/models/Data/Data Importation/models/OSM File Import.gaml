@@ -21,27 +21,27 @@ global
 	init
 	{
 	//possibility to load all of the attibutes of the OSM data: for an exhaustive list, see: http://wiki.openstreetmap.org/wiki/Map_Features
-		create osm_agent from: osmfile with: (highway_str:string(read("highway")), building_str:string(read("building")));
+		create osm_agent(highway_str:string(read("highway")), building_str:string(read("building"))) from: osmfile;
 
 		//from the created generic agents, creation of the selected agents
 		ask osm_agent
 		{
 			if (length(shape.points) = 1 and highway_str != nil)
 			{
-				create node_agent with: (shape:shape, type: highway_str);
+				create node_agent(shape:shape, type: highway_str);
 			} else
 			{
 				if (highway_str != nil)
 				{
-					create road with: (shape:shape, type: highway_str);
+					create road(shape:shape, type: highway_str);
 				} else if (building_str != nil)
 				{
-					create building with: (shape:shape);
+					create building(shape:shape);
 				}
 
 			}
 			//do the generic agent die
-			do die;
+			do die();
 		}
 
 	}

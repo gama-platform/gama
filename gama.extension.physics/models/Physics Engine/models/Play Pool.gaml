@@ -66,7 +66,7 @@ global parent: physical_world {
 
 		];
 		
-		create wall with: (inside:true) from: [
+		create wall  (inside:true) from: [
 			box(width+3*section/2, section/2, section) at_location {width / 2, height + section/2, 0}, // down
 			box(width+3*section/2, section/2, section) at_location {width / 2,  -section/2, 0}, // up
 			box(section/2, height +  section, section) at_location {-section/2, height / 2, 0}, // left
@@ -74,7 +74,7 @@ global parent: physical_world {
 		];
 
 		
-		do create_white_ball;
+		do create_white_ball();
 
 		int deltaI <- 0;
 		int initX <- 75;
@@ -143,11 +143,11 @@ species ball skills: [dynamic_body] {
 	reflex manage_location when: location.z < -20 {
 		if (self = white) {
 			ask world {
-				do create_white_ball;
+				do create_white_ball();
 			}
 			target <- nil;
 		}
-		do die;
+		do die();
 	}
 
 	aspect default {
@@ -199,7 +199,7 @@ experiment "Play !" type: gui autorun: true   {
 				point direction <- (target - white.location) /divisor;
 				// When the user hits the mouse, we apply an impulse to the while ball, in the direction of the target. 'velocity' could also be used here
 				ask white {
-					do apply impulse: {strength * direction.x * 4, strength * direction.y * 4, 0};
+					do apply(impulse: {strength * direction.x * 4, strength * direction.y * 4, 0});
 				}
 			}
 			event #mouse_move {

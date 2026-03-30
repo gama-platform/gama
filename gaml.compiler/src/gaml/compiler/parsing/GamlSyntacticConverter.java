@@ -365,6 +365,10 @@ public class GamlSyntacticConverter {
 			}
 			case null, default -> {
 				switch (keyword) {
+					case IKeyword.CREATE -> {
+						elt = FACTORY.create(keyword, stm, true);
+						processCreate(stm, elt);
+					}
 					case IKeyword.PARAMETER -> {
 						elt = FACTORY.create(keyword, stm, false);
 						processParameter(stm, elt);
@@ -488,6 +492,31 @@ public class GamlSyntacticConverter {
 			convertBlock(ACTION, blockElt, b);
 			IExpressionDescription fexpr = createBlockExpression(blockElt);
 			addFacet(elt, IKeyword.ON_CHANGE, fexpr);
+		}
+	}
+
+	/**
+	 * Process create.
+	 *
+	 * @param stm
+	 *            the stm
+	 * @param elt
+	 *            the elt
+	 */
+	private void processCreate(final Statement stm, final ISyntacticElement elt) {
+		Expression exp = stm.getExpr();
+		boolean hasWith = EGAML.hasFacet(stm, IKeyword.WITH);
+		if (hasWith && !(exp instanceof Function)) {
+			addFacet(elt, IInternalFacets.GAML_WARNING, GAML.getExpressionDescriptionFactory().createConstant(
+					"The use of with: is deprecated. Prefer the functional form 'create species_name(args) number:...;'"));
+		} else if (!hasWith && exp instanceof Function function) {
+			ExpressionList parameters = function.getRight();
+			Expression species = function.getLeft();
+			// DEBUG.LOG("Species = " + species + " -- Parameters = " + parameters);
+			if (!EGAML.getKeyOf(species).startsWith(IKeyword.SPECIES)) {
+				addFacet(elt, IKeyword.WITH, convExpr(parameters));
+				addFacet(elt, IKeyword.SPECIES, convExpr(species));
+			}
 		}
 	}
 
