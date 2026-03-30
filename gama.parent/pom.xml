@@ -182,6 +182,7 @@
 		<module>../gama.feature.extension.sound</module>
 		<module>../gama.feature.extension.stats</module>
 		<module>../gama.feature.extension.image</module>
+		<module>../gama.feature.copilot</module>
 
 		<!-- Can be automatically published by uncommenting
 		However, it's prefered to keep it separated and executed
