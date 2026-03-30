@@ -116,6 +116,13 @@ public class SwtGui implements IGui {
 	/** The dialog factory. */
 	IDialogFactory dialogFactory;
 
+	/**
+	 * Holds the work submitted by {@link #arrangeExperimentViews} so it can be executed inside the same
+	 * {@code setRedraw(false/true)} block as the display-view openings in {@link #openAndApplyLayout}. Set by
+	 * {@code arrangeExperimentViews} and drained (read-then-null) by {@code openAndApplyLayout}.
+	 */
+	private volatile Runnable pendingArrange;
+
 	static {
 		PreferencesHelper.initialize();
 		AbstractDisplayGraphics.getCachedGC();
@@ -391,8 +398,10 @@ public class SwtGui implements IGui {
 	 */
 	@Override
 	public void updateParameters(final boolean retrieveValues) {
-
-		WorkbenchHelper.run(() -> {
+		// Use asyncRun to avoid blocking the command thread with a syncExec during experiment launch.
+		// The parameters view update is purely cosmetic at launch time and does not need to complete
+		// before the simulation starts.
+		WorkbenchHelper.asyncRun(() -> {
 			boolean showIt = GAMA.getExperiment().hasParametersOrUserCommands()
 					&& !PerspectiveHelper.isModelingPerspective() && PerspectiveHelper.showParameters();
 			if (showIt) {
@@ -474,19 +483,19 @@ public class SwtGui implements IGui {
 			final Supplier<IColor> color, final boolean showEditors) {
 
 		WorkbenchHelper.setWorkbenchWindowTitle(exp.getName() + " - " + exp.getModel().getFilePath());
-		WorkbenchHelper.runInUI("Laying out experiment views", 0, m -> {
+		// Capture all view-arrangement work as a Runnable rather than scheduling it as a UIJob.
+		// openAndApplyLayout() will drain and execute this inside its single setRedraw(false/true)
+		// syncExec, so console, navigator, toolbar and display views all appear in one paint.
+		pendingArrange = () -> {
 			WorkbenchHelper.getWindow().updateActionBars();
-
 			// To solve issue #3697
 			ICommandService hs = WorkbenchHelper.getService(ICommandService.class);
 			hs.refreshElements("gama.ui.application.commands.SynchronizeExperiment", null);
-
 			WorkbenchHelper.getPage().setEditorAreaVisible(showEditors);
 			getConsole().toggleConsoleViews(exp.getAgent(), showConsoles == null || showConsoles);
 			if (showNavigator != null && !showNavigator) { hideView(IGui.NAVIGATOR_VIEW_ID); }
 			if (showControls != null) { WorkbenchHelper.getWindow().setCoolBarVisible(showControls); }
 			if (keepTray != null) { PerspectiveHelper.showBottomTray(WorkbenchHelper.getWindow(), keepTray); }
-
 			final SimulationPerspectiveDescriptor sd = PerspectiveHelper.getActiveSimulationPerspective();
 			if (sd != null) {
 				sd.showParameters(showParameters == null || showParameters);
@@ -500,7 +509,7 @@ public class SwtGui implements IGui {
 					return c == null ? null : GamaColors.toSwtColor(c);
 				});
 			}
-		});
+		};
 	}
 
 	/**
@@ -584,7 +593,9 @@ public class SwtGui implements IGui {
 
 	@Override
 	public void updateViewTitle(final IOutput out, final ISimulationAgent agent) {
-		WorkbenchHelper.run(() -> {
+		// Use asyncRun instead of run() to avoid blocking the command thread with a syncExec
+		// while the UI thread is busy processing UIJobs (display openers, layout).
+		WorkbenchHelper.asyncRun(() -> {
 			final IViewPart part = ViewsHelper.findView(out.getViewId(), out.isUnique() ? null : out.getName(), true);
 			if (part instanceof IGamaView) { ((IGamaView) part).changePartNameWithSimulation(agent); }
 		});
@@ -654,6 +665,49 @@ public class SwtGui implements IGui {
 	public void applyLayout(final IScope scope, final Object layout) {
 		final IDisplayLayoutManager manager = WorkbenchHelper.getService(IDisplayLayoutManager.class);
 		if (manager != null) { manager.applyLayout(layout); }
+	}
+
+	/**
+	 * Opens all display outputs and applies the layout in a single synchronous UI call under
+	 * {@code shell.setRedraw(false)}, eliminating every intermediate paint that would otherwise occur between
+	 * individual view-opener UIJobs.
+	 *
+	 * <p>
+	 * The command thread calls this method via a {@code syncExec}: the UI thread is frozen for the entire
+	 * duration of {@code openAll.run()} + layout application, so the user sees only the final state.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the current scope
+	 * @param openAll
+	 *            runnable that calls {@link gama.core.outputs.AbstractOutput#open()} for every display output
+	 * @param layout
+	 *            the layout object forwarded to {@link IDisplayLayoutManager#applyLayout(Object)}
+	 */
+	@Override
+	public void openAndApplyLayout(final IScope scope, final Runnable openAll, final Object layout) {
+		final IDisplayLayoutManager manager = WorkbenchHelper.getService(IDisplayLayoutManager.class);
+		if (manager == null) {
+			// Headless / no layout manager: fall back to simple sequential open + layout
+			openAll.run();
+			applyLayout(scope, layout);
+			return;
+		}
+		// Drain the pending arrange work (set by arrangeExperimentViews) so it runs inside the
+		// same setRedraw(false/true) block as the display openings and layout.
+		final Runnable arrange = pendingArrange;
+		pendingArrange = null;
+		WorkbenchHelper.run(() -> {
+			final var shell = WorkbenchHelper.getShell();
+			if (shell != null) { shell.setRedraw(false); }
+			try {
+				if (arrange != null) { arrange.run(); }
+				openAll.run();
+				manager.applyLayoutNow(layout);
+			} finally {
+				if (shell != null) { shell.setRedraw(true); }
+			}
+		});
 	}
 
 	@Override

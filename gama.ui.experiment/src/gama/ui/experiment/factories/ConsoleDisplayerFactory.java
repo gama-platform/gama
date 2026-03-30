@@ -97,10 +97,12 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 				hideView(IGui.CONSOLE_VIEW_ID);
 				hideView(IGui.INTERACTIVE_CONSOLE_VIEW_ID);
 			} else {
-
+				// Use VIEW_VISIBLE (not VIEW_ACTIVATE) for both console views so they are shown without being
+				// activated. VIEW_ACTIVATE causes an immediate render + focus switch that produces a visible
+				// flash before the display views have been placed by ArrangeDisplayViews.
 				GAMA.getGui().showView(null, IGui.INTERACTIVE_CONSOLE_VIEW_ID, null, IWorkbenchPage.VIEW_VISIBLE);
 				final IGamaView.Console console = (Console) GAMA.getGui().showView(null, IGui.CONSOLE_VIEW_ID, null,
-						IWorkbenchPage.VIEW_ACTIVATE);
+						IWorkbenchPage.VIEW_VISIBLE);
 				consoleBuffers.forEach((c, sb) -> {
 					if (sb.length() > 0 && console != null) {
 						console.append(sb.toString(), agent, c);

@@ -494,6 +494,29 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	}
 
 	/**
+	 * Returns {@code 2} ({@code IWorkbenchPage.VIEW_CREATE}) so that display views are created silently, without being
+	 * immediately activated or rendered.
+	 *
+	 * <p>
+	 * When an experiment has several displays they are all opened in sequence before
+	 * {@link gama.ui.experiment.commands.ArrangeDisplayViews} rearranges them into the requested sash layout.
+	 * Using {@code VIEW_ACTIVATE} (the default {@code 1}) causes E4 to show, activate and fully render each view
+	 * as soon as it is created, producing N intermediate layout passes (and the "split view appearing and immediately
+	 * disappearing" artefact the user perceives as a 1–2 s lag).
+	 * </p>
+	 * <p>
+	 * With {@code VIEW_CREATE} the part is constructed but kept invisible. The layout pass in
+	 * {@link gama.ui.experiment.commands.ArrangeDisplayViews#showDisplays} then calls
+	 * {@code EPartService.showPart(part, PartState.VISIBLE)} for all displays at once, after the sash hierarchy is
+	 * already in place, so only one final render happens.
+	 * </p>
+	 *
+	 * @return {@code 2} ({@code IWorkbenchPage.VIEW_CREATE})
+	 */
+	@Override
+	protected int viewOpenMode() { return 2; }
+
+	/**
 	 * Gets the surface.
 	 *
 	 * @return the surface

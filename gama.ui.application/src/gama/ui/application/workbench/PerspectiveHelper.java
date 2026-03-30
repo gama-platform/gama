@@ -340,38 +340,38 @@ public class PerspectiveHelper {
 		final WorkbenchWindow window = (WorkbenchWindow) page.getWorkbenchWindow();
 
 		final Runnable r = () -> {
-			// if (PlatformHelper.isMac() && !isSimulationPerspective(perspectiveId)) {
-			// List<IGamaView.Display> displays = StreamEx.of(page.getViewReferences()).map(a -> a.getView(false))
-			// .select(IGamaView.Display.class).toList();
-			// if (displays.size() > 0) { page.activate((IWorkbenchPart) displays.get(0)); }
-			// }
+			final var shell = window.getShell();
+			if (shell != null) { shell.setRedraw(false); }
 			try {
+				try {
+					page.setPerspective(descriptor);
+				} catch (final NullPointerException e) {
+					DEBUG.ERR(
+							"NPE in WorkbenchPage.setPerspective(). See Issue #1602. Working around the bug in e4...");
+					page.setPerspective(descriptor);
+				}
+				activateAutoSave(withAutoSave);
+				if (isSimulationPerspective(currentPerspectiveId) && isSimulationPerspective(perspectiveId)) {
+					DEBUG.OUT("Destroying perspective " + oldDescriptor.getId());
+					page.closePerspective(oldDescriptor, false, false);
+					getPerspectiveRegistry().deletePerspective(oldDescriptor);
+				}
 
-				page.setPerspective(descriptor);
-			} catch (final NullPointerException e) {
-				DEBUG.ERR("NPE in WorkbenchPage.setPerspective(). See Issue #1602. Working around the bug in e4...");
-				page.setPerspective(descriptor);
+				currentPerspectiveId = perspectiveId;
+				if (isSimulationPerspective(perspectiveId) && !descriptor.equals(currentSimulationPerspective)) {
+					// Early activation or deactivation of editors based on the global preference
+					page.setEditorAreaVisible(!GamaPreferences.Modeling.EDITOR_PERSPECTIVE_HIDE.getValue());
+					deleteCurrentSimulationPerspective();
+					currentSimulationPerspective = (SimulationPerspectiveDescriptor) descriptor;
+				}
+				applyActiveEditor(page);
+				final Boolean showControls = keepControls();
+				if (showControls != null) { window.setCoolBarVisible(showControls); }
+				final Boolean keepTray = keepTray();
+				if (keepTray != null) { showBottomTray(window, keepTray); }
+			} finally {
+				if (shell != null) { shell.setRedraw(true); }
 			}
-			activateAutoSave(withAutoSave);
-			if (isSimulationPerspective(currentPerspectiveId) && isSimulationPerspective(perspectiveId)) {
-				DEBUG.OUT("Destroying perspective " + oldDescriptor.getId());
-				page.closePerspective(oldDescriptor, false, false);
-				getPerspectiveRegistry().deletePerspective(oldDescriptor);
-			}
-
-			currentPerspectiveId = perspectiveId;
-			if (isSimulationPerspective(perspectiveId) && !descriptor.equals(currentSimulationPerspective)) {
-				// Early activation or deactivation of editors based on the global preference
-				page.setEditorAreaVisible(!GamaPreferences.Modeling.EDITOR_PERSPECTIVE_HIDE.getValue());
-				deleteCurrentSimulationPerspective();
-				currentSimulationPerspective = (SimulationPerspectiveDescriptor) descriptor;
-			}
-			applyActiveEditor(page);
-			final Boolean showControls = keepControls();
-			if (showControls != null) { window.setCoolBarVisible(showControls); }
-			final Boolean keepTray = keepTray();
-			if (keepTray != null) { showBottomTray(window, keepTray); }
-			// DEBUG.OUT("Perspective " + perspectiveId + " opened ");
 		};
 		if (immediately) {
 			Display.getDefault().syncExec(r);
@@ -591,6 +591,33 @@ public class PerspectiveHelper {
 		final IPerspectiveDescriptor d = getActivePerspective();
 		if (d instanceof SimulationPerspectiveDescriptor) return (SimulationPerspectiveDescriptor) d;
 		return null;
+	}
+
+	/**
+	 * Pre-warms the {@link SimulationPerspectiveDescriptor} infrastructure.
+	 *
+	 * <p>
+	 * On first use, {@link #findOrBuildPerspectiveWithId(String)} constructs a
+	 * {@link SimulationPerspectiveDescriptor} for the requested id and injects it into Eclipse's
+	 * {@link PerspectiveRegistry} via reflection. This method triggers that path once at startup, using a throw-away
+	 * dummy id, so that the real first experiment launch does not pay the class-loading and reflection cost.
+	 * </p>
+	 *
+	 * <p>
+	 * The dummy descriptor is left in the registry and will be cleaned up by {@link #cleanPerspectives()} on the next
+	 * startup, exactly like stale real simulation descriptors.
+	 * </p>
+	 */
+	public static void prewarmPerspective() {
+		try {
+			// Touch ThemeHelper — triggers the CSS-engine theme detection (slow on first call)
+			ThemeHelper.isDark();
+			final String dummyId = getNewPerspectiveName("__prewarm__", "__prewarm__");
+			findOrBuildPerspectiveWithId(dummyId);
+			DEBUG.OUT("PerspectiveHelper: simulation-perspective infrastructure pre-warmed");
+		} catch (final Exception e) {
+			DEBUG.ERR("PerspectiveHelper: prewarmPerspective failed - " + e.getMessage());
+		}
 	}
 
 }

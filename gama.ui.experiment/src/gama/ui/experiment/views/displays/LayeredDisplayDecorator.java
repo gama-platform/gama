@@ -365,15 +365,14 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		addPerspectiveListener();
 		keyAndMouseListener = view.getMultiListener();
 		menuManager = new DisplaySurfaceMenu(view.getDisplaySurface(), view.getParentComposite(), presentationMenu());
-		final boolean tbVisible = view.getOutput().getData().isToolbarVisible();
-		WorkbenchHelper.runInUI("Show/hide toolbar of " + view.getPartName(), 0, m -> {
-			if (tbVisible) {
-				toolbar.show();
-			} else {
-				toolbar.hide();
-			}
-		});
-
+		// Run synchronously — createDecorations() is always called on the UI thread from ownCreatePartControl.
+		// Scheduling a UIJob here used to fire an extra per-display layout pass after the main layout job,
+		// causing visible toolbar-area reflows.
+		if (view.getOutput().getData().isToolbarVisible()) {
+			toolbar.show();
+		} else {
+			toolbar.hide();
+		}
 	}
 
 	/**

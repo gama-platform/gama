@@ -61,10 +61,25 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 
 	/** The opener. */
 	final Runnable opener = () -> {
-		view = getScope().getGui().showView(getScope(), getViewId(), isUnique() ? null : getName(), 1); // IWorkbenchPage.VIEW_ACTIVATE
+		view = getScope().getGui().showView(getScope(), getViewId(), isUnique() ? null : getName(),
+				viewOpenMode()); // IWorkbenchPage.VIEW_ACTIVATE = 1, VIEW_CREATE = 2
 		if (view == null) return;
 		view.addOutput(AbstractOutput.this);
 	};
+
+	/**
+	 * Returns the workbench view-open mode constant to use when opening this output's view.
+	 *
+	 * <p>
+	 * The default is {@code 1} ({@code IWorkbenchPage.VIEW_ACTIVATE}), which immediately activates and renders the view
+	 * as soon as it is opened. Subclasses that prefer to defer activation (e.g. to avoid intermediate layout passes
+	 * while multiple displays are being opened in sequence) should return {@code 2}
+	 * ({@code IWorkbenchPage.VIEW_CREATE}), which creates the part silently without activating it.
+	 * </p>
+	 *
+	 * @return the integer open-mode constant passed to {@link gama.api.ui.IGui#showView}
+	 */
+	protected int viewOpenMode() { return 1; }
 
 	/**
 	 * Instantiates a new abstract output.
@@ -145,7 +160,13 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	@Override
 	public void open() {
 		setOpen(true);
-		if (shouldOpenView()) { GAMA.getGui().run("Opening " + getName(), opener, true); }
+		if (shouldOpenView()) {
+			// Run synchronously if already on the UI/display thread (e.g. inside the openAndApplyLayout syncExec),
+			// so the caller can immediately call applyLayoutNow() on the same thread.
+			// Run as a UIJob (asynchronous=true) in the classic command-thread path.
+			final boolean async = !GAMA.getGui().isInDisplayThread();
+			GAMA.getGui().run("Opening " + getName(), opener, async);
+		}
 	}
 
 	// @Override

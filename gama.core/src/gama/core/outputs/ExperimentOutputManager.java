@@ -101,8 +101,9 @@ public class ExperimentOutputManager extends AbstractOutputManager {
 		final String definitionFacet = layout == null ? LAYOUT : IKeyword.VALUE;
 		final Object layoutObject =
 				layoutDefinition.getFacetValue(scope, definitionFacet, LAYOUTS.indexOf(CORE_DISPLAY_LAYOUT.getValue()));
-		super.init(scope);
-		scope.getGui().applyLayout(scope, layoutObject);
+		// Delegate to openAndApplyLayout so the GUI can freeze the shell, open all display views
+		// and run the layout algorithm in one atomic UI call — eliminating intermediate repaints.
+		scope.getGui().openAndApplyLayout(scope, () -> super.init(scope), layoutObject);
 		if (GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()) { GAMA.getGui().updateParameterView(scope); }
 		return true;
 	}

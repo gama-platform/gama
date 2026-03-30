@@ -669,6 +669,28 @@ public interface IGui {
 	Map<String, ISocketCommand> getServerCommands();
 
 	/**
+	 * Opens all outputs produced by {@code openAll} and immediately applies the given layout, all within a single
+	 * synchronous UI operation. Implementations should freeze the shell (e.g. via {@code shell.setRedraw(false)})
+	 * before running {@code openAll}, then apply the layout, then unfreeze — so the user never sees an intermediate
+	 * state.
+	 *
+	 * <p>
+	 * The default implementation falls back to calling {@code openAll.run()} and then {@link #applyLayout}.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the current scope
+	 * @param openAll
+	 *            a runnable that opens all display outputs (calls {@link AbstractOutput#open()} for each)
+	 * @param layout
+	 *            the layout object passed to {@link #applyLayout}
+	 */
+	default void openAndApplyLayout(final IScope scope, final Runnable openAll, final Object layout) {
+		openAll.run();
+		applyLayout(scope, layout);
+	}
+
+	/**
 	 * @param uri
 	 */
 	default void openFile(final URI uri) {}

@@ -2,6 +2,9 @@
 <?eclipse version="3.4"?>
 <plugin>
 
+   <extension point="org.eclipse.ui.startup">
+      <startup class="gama.ui.experiment.startup.ExperimentStartup"/>
+   </extension>
 
    <extension
          point="org.eclipse.ui.perspectives">
