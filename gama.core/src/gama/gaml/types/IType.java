@@ -16,6 +16,7 @@ import gama.core.runtime.IScope;
 import gama.core.util.IMap;
 import gama.core.util.file.json.Json;
 import gama.core.util.file.json.JsonValue;
+import gama.gaml.descriptions.DataTypeDescription;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.OperatorProto;
 import gama.gaml.descriptions.SpeciesDescription;
@@ -143,6 +144,9 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	/** The field. */
 	int FIELD = 31;
 
+	/** For data_type support */
+	int COMPOSED = 32;
+	
 	/** The available types. */
 	int AVAILABLE_TYPES = 50;
 
@@ -240,6 +244,13 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 * @return true, if is skill type
 	 */
 	boolean isSkillType();
+	
+	/**
+	 * Checks if is data type.
+	 *
+	 * @return true, if is data type
+	 */
+	boolean isDataType();
 
 	/**
 	 * Checks if is parametric type.
@@ -271,6 +282,21 @@ public interface IType<Support> extends IGamlDescription, ITyped, IJsonable {
 	 */
 	SpeciesDescription getSpecies();
 
+	
+	/**
+	 * Gets the data name.
+	 *
+	 * @return the name
+	 */
+	String getDataName();
+	
+	/**
+	 * Gets the data description.
+	 *
+	 * @return the data 
+	 */
+	DataTypeDescription getData();
+	
 	/**
 	 * Checks if is assignable from.
 	 *

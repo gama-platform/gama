@@ -13,6 +13,7 @@ package gama.gaml.factories;
 import static gama.annotations.precompiler.ISymbolKind.ACTION;
 import static gama.annotations.precompiler.ISymbolKind.BATCH_METHOD;
 import static gama.annotations.precompiler.ISymbolKind.BEHAVIOR;
+import static gama.annotations.precompiler.ISymbolKind.DATA;
 import static gama.annotations.precompiler.ISymbolKind.EXPERIMENT;
 import static gama.annotations.precompiler.ISymbolKind.LAYER;
 import static gama.annotations.precompiler.ISymbolKind.MODEL;
@@ -21,6 +22,7 @@ import static gama.annotations.precompiler.ISymbolKind.PARAMETER;
 import static gama.annotations.precompiler.ISymbolKind.PLATFORM;
 import static gama.annotations.precompiler.ISymbolKind.SEQUENCE_STATEMENT;
 import static gama.annotations.precompiler.ISymbolKind.SINGLE_STATEMENT;
+import static gama.annotations.precompiler.ISymbolKind.SKILL;
 import static gama.annotations.precompiler.ISymbolKind.SPECIES;
 import static gama.annotations.precompiler.ISymbolKind.Variable.CONTAINER;
 import static gama.annotations.precompiler.ISymbolKind.Variable.NUMBER;
@@ -45,8 +47,9 @@ import gama.dev.DEBUG;
 import gama.gaml.compilation.GAML;
 import gama.gaml.compilation.IAgentConstructor;
 import gama.gaml.compilation.ast.ISyntacticElement;
-import gama.gaml.compilation.ast.SyntacticFactory;
 import gama.gaml.compilation.ast.ISyntacticElement.SyntacticVisitor;
+import gama.gaml.compilation.ast.SyntacticFactory;
+import gama.gaml.descriptions.DataTypeDescription;
 import gama.gaml.descriptions.FacetProto;
 import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.ModelDescription;
@@ -97,12 +100,14 @@ public class DescriptionFactory {
 	 */
 	public static void initialize() {
 		add(new ExperimentFactory(), EXPERIMENT);
+		add(new DataTypeFactory(), DATA);
 		add(new ModelFactory(), MODEL);
 		add(new PlatformFactory(), PLATFORM);
 		add(new SpeciesFactory(), SPECIES);
 		add(new StatementFactory(), SEQUENCE_STATEMENT, SINGLE_STATEMENT, BEHAVIOR, ACTION, LAYER, BATCH_METHOD,
 				OUTPUT);
 		add(new VariableFactory(), CONTAINER, NUMBER, REGULAR, PARAMETER);
+		add(new SkillFactory(), SKILL);
 	}
 
 	/**
@@ -145,16 +150,27 @@ public class DescriptionFactory {
 	 */
 	public final static SymbolProto getVarProto(final String keyword, final IDescription superDesc) {
 		final SymbolProto p = VAR_KEYWORDS_PROTOS.get(keyword);
-		if (p == null) {
-			// If not a var declaration, we try to find if it is not a species
-			// name (in which case, it is an "agent"
-			// declaration prototype)
-			if (superDesc == null) return null;
-			final ModelDescription md = superDesc.getModelDescription();
-			if (md == null) return null;
-			final IType t = md.getTypesManager().get(keyword);
-			if (t.isAgentType()) return getVarProto(AGENT, null);
+		if (p != null) {
+			return p;
 		}
+		
+		// Not a var declaration, we try to find if it is a user defined type (data_type or species).
+		// We need the model description to find those.
+		if (superDesc == null || superDesc.getModelDescription() == null) {
+			return null;
+		}
+
+		// If it's a species, it is an "agent" declaration prototype.
+		final ModelDescription md = superDesc.getModelDescription();
+		final IType t = md.getTypesManager().get(keyword);
+		if (t.isAgentType()) return getVarProto(AGENT, null);
+		else if (t.isDataType()) {
+			// If it is a data type, we return the data prototype
+			final SymbolProto dataProto = KINDS_PROTOS.get(ISymbolKind.DATA);
+			if (dataProto != null) return dataProto;
+		}
+		
+		
 		return p;
 	}
 
@@ -433,6 +449,10 @@ public class DescriptionFactory {
 				helper, skills, null, plugin);
 	}
 
+	public static DataTypeDescription createBuiltInDataDescription(final String name, final Class clazz,
+			final DataTypeDescription superDesc, final DataTypeDescription parent, final String plugin) {
+		return ((DataTypeFactory) getFactory(DATA)).createBuiltInDataDescription(name, clazz, superDesc, parent);
+	}
 	/**
 	 * Creates a new Description object.
 	 *
@@ -543,6 +563,8 @@ public class DescriptionFactory {
 			source.visitGrids(visitor);
 			source.visitSpecies(visitor);
 			source.visitExperiments(visitor);
+			source.visitData(visitor);
+			source.visitSkills(visitor);
 			children = childrenList.items();
 		}
 		final Facets facets = source.copyFacets(md);

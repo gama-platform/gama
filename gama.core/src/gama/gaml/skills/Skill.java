@@ -9,16 +9,22 @@
  ********************************************************************************************************/
 package gama.gaml.skills;
 
+import org.apache.commons.lang3.NotImplementedException;
+
 import gama.core.common.interfaces.ISkill;
 import gama.core.metamodel.agent.IAgent;
 import gama.core.metamodel.topology.ITopology;
 import gama.core.runtime.IScope;
+import gama.gaml.compilation.ISymbol;
+import gama.gaml.compilation.Symbol;
+import gama.gaml.descriptions.IDescription;
 import gama.gaml.descriptions.SkillDescription;
+
 
 /**
  * The Class Skill.
  */
-public class Skill implements ISkill {
+public class Skill extends Symbol implements ISkill {
 
 	/** The description. */
 	protected SkillDescription description;
@@ -26,7 +32,11 @@ public class Skill implements ISkill {
 	/**
 	 * Instantiates a new skill.
 	 */
-	protected Skill() {}
+	protected Skill() { super(null); } // TODO: check
+	
+	public Skill(IDescription desc) {
+		super(desc);
+	}
 
 	@Override
 	public void setName(final String newName) {}
@@ -71,13 +81,18 @@ public class Skill implements ISkill {
 	protected ITopology getTopology(final IAgent agent) {
 		return agent.getTopology();
 	}
-
+	
 	@Override
 	public String getTitle() { return description.getTitle(); }
 
 	@Override
 	public String getDefiningPlugin() { return description.getDefiningPlugin(); }
-
+	
+	@Override
+	public void setChildren(Iterable<? extends ISymbol> children) {
+		throw new NotImplementedException("setChildren not implemented yet for Skill");
+	}
+	
 	@Override
 	public String getName() { return description.getName(); }
 

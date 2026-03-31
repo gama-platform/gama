@@ -9,6 +9,12 @@ package gaml.compiler.gaml;
  * A representation of the model object '<em><b>Action Fake Definition</b></em>'.
  * <!-- end-user-doc -->
  *
+ * <p>
+ * The following features are supported:
+ * </p>
+ * <ul>
+ *   <li>{@link gaml.compiler.gaml.ActionFakeDefinition#getName <em>Name</em>}</li>
+ * </ul>
  *
  * @see gaml.compiler.gaml.GamlPackage#getActionFakeDefinition()
  * @model
@@ -16,4 +22,26 @@ package gaml.compiler.gaml;
  */
 public interface ActionFakeDefinition extends ActionDefinition
 {
+  /**
+   * Returns the value of the '<em><b>Name</b></em>' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @return the value of the '<em>Name</em>' attribute.
+   * @see #setName(String)
+   * @see gaml.compiler.gaml.GamlPackage#getActionFakeDefinition_Name()
+   * @model
+   * @generated
+   */
+  String getName();
+
+  /**
+   * Sets the value of the '{@link gaml.compiler.gaml.ActionFakeDefinition#getName <em>Name</em>}' attribute.
+   * <!-- begin-user-doc -->
+   * <!-- end-user-doc -->
+   * @param value the new value of the '<em>Name</em>' attribute.
+   * @see #getName()
+   * @generated
+   */
+  void setName(String value);
+
 } // ActionFakeDefinition
