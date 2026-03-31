@@ -371,88 +371,10 @@ public class PerspectiveHelper {
 				if (keepTray != null) { showBottomTray(window, keepTray); }
 			} finally {
 				if (shell != null) { shell.setRedraw(true); }
-				// After setRedraw(true) the OS repaints the shell, briefly showing the empty
-				// simulation perspective (no display views yet). Cover it with a child Shell
-				// (SWT.ON_TOP) sized over the parent's client area. A child Shell is above all
-				// workbench composites and is not subject to the E4 layout manager, making it
-				// reliable on macOS, Windows and Linux. It is removed by removeLayoutOverlay().
-				if (shell != null && isSimulationPerspective(perspectiveId)) {
-					// Extract model and experiment names from the perspective id
-					// Format: PERSPECTIVE_SIMULATION_FRAGMENT + ":" + model + ":" + experiment
-					final String[] parts = perspectiveId.split(":", 3);
-					final String modelName = parts.length > 1 ? parts[1] : "";
-					final String expName = parts.length > 2 ? parts[2] : "";
-
-					final var overlay = new org.eclipse.swt.widgets.Shell(shell,
-							org.eclipse.swt.SWT.NO_TRIM | org.eclipse.swt.SWT.ON_TOP);
-					final var bg = shell.getBackground();
-					final var fg = shell.getForeground();
-					overlay.setBackground(bg);
-
-					// Canvas fills the overlay and draws the waiting message.
-					final var canvas = new org.eclipse.swt.widgets.Canvas(overlay,
-							org.eclipse.swt.SWT.NO_BACKGROUND | org.eclipse.swt.SWT.DOUBLE_BUFFERED);
-					canvas.addPaintListener(e -> {
-						final var bounds = canvas.getBounds();
-						// Fill background
-						e.gc.setBackground(bg);
-						e.gc.fillRectangle(0, 0, bounds.width, bounds.height);
-						// Large bold title: "Launching experiment…"
-						final var srcData = shell.getFont().getFontData()[0];
-						final var titleFont = new org.eclipse.swt.graphics.FontData(
-								srcData.getName(), 20, org.eclipse.swt.SWT.BOLD);
-						final var bigFont = new org.eclipse.swt.graphics.Font(e.display, titleFont);
-						e.gc.setFont(bigFont);
-						e.gc.setForeground(fg);
-						final String title = "Launching experiment\u2026";
-						final var te = e.gc.textExtent(title);
-						e.gc.drawText(title, (bounds.width - te.x) / 2, (bounds.height - te.y) / 2 - te.y,
-								true);
-						bigFont.dispose();
-						// Subtitle: "model / experiment"
-						if (!modelName.isEmpty() || !expName.isEmpty()) {
-							final var subFont = shell.getFont();
-							e.gc.setFont(subFont);
-							final String sub = modelName + (expName.isEmpty() ? "" : "  \u2192  " + expName);
-							final var se = e.gc.textExtent(sub);
-							// Draw subtitle slightly dimmed
-							final var dimColor = new org.eclipse.swt.graphics.Color(e.display,
-									blend(bg.getRed(), fg.getRed(), 60),
-									blend(bg.getGreen(), fg.getGreen(), 60),
-									blend(bg.getBlue(), fg.getBlue(), 60));
-							e.gc.setForeground(dimColor);
-							e.gc.drawText(sub, (bounds.width - se.x) / 2,
-									(bounds.height - te.y) / 2 + (int) (te.y * 0.2), true);
-							dimColor.dispose();
-						}
-					});
-
-					// Position overlay over the shell's client area in display coordinates.
-					final var ca = shell.getClientArea();
-					final var origin = shell.toDisplay(ca.x, ca.y);
-					overlay.setBounds(origin.x, origin.y, ca.width, ca.height);
-					canvas.setBounds(0, 0, ca.width, ca.height);
-					overlay.open();
-
-					// Keep the overlay covering the shell if the user resizes during init.
-					final org.eclipse.swt.events.ControlListener[] listenerRef =
-							new org.eclipse.swt.events.ControlListener[1];
-					listenerRef[0] = new org.eclipse.swt.events.ControlAdapter() {
-						@Override
-						public void controlResized(final org.eclipse.swt.events.ControlEvent e) {
-							if (overlay.isDisposed()) {
-								shell.removeControlListener(listenerRef[0]);
-							} else {
-								final var ca2 = shell.getClientArea();
-								final var o2 = shell.toDisplay(ca2.x, ca2.y);
-								overlay.setBounds(o2.x, o2.y, ca2.width, ca2.height);
-								canvas.setBounds(0, 0, ca2.width, ca2.height);
-							}
-						}
-					};
-					shell.addControlListener(listenerRef[0]);
-					overlay.addDisposeListener(e -> shell.removeControlListener(listenerRef[0]));
-					layoutOverlay = overlay;
+				// Delegate overlay creation to the GUI service so that the concrete
+				// implementation (SwtGui) can use the correct theme-aware icon and FlatButton.
+				if (isSimulationPerspective(perspectiveId)) {
+					gama.api.GAMA.getGui().showLaunchingOverlay(null, perspectiveId);
 				}
 			}
 		};
@@ -465,34 +387,12 @@ public class PerspectiveHelper {
 	}
 
 	/**
-	 * Child {@link org.eclipse.swt.widgets.Shell} (SWT.ON_TOP) used to cover the workbench while the simulation
-	 * perspective is empty. Set by {@link #openPerspective} and cleared by {@link #removeLayoutOverlay()}.
-	 */
-	private static volatile org.eclipse.swt.widgets.Shell layoutOverlay;
-
-	/**
-	 * Closes and disposes the overlay Shell placed by {@link #openPerspective}.
-	 * Must be called on the UI thread after the full layout has been applied.
+	 * Delegates to {@link gama.api.ui.IGui#hideLaunchingOverlay()} — removes the overlay shell that was shown by
+	 * {@link gama.api.ui.IGui#showLaunchingOverlay} during the perspective switch. Must be called on the UI thread
+	 * after the full display layout has been applied.
 	 */
 	public static void removeLayoutOverlay() {
-		final var overlay = layoutOverlay;
-		layoutOverlay = null;
-		if (overlay != null && !overlay.isDisposed()) { overlay.close(); }
-	}
-
-	/**
-	 * Blends two colour channel values. {@code pct=0} returns {@code a}, {@code pct=100} returns {@code b}.
-	 *
-	 * @param a
-	 *            base channel value (0–255)
-	 * @param b
-	 *            target channel value (0–255)
-	 * @param pct
-	 *            blend percentage (0–100)
-	 * @return the blended channel value
-	 */
-	private static int blend(final int a, final int b, final int pct) {
-		return a + (b - a) * pct / 100;
+		gama.api.GAMA.getGui().hideLaunchingOverlay();
 	}
 
 	/**

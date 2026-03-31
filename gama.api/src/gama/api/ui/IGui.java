@@ -412,6 +412,25 @@ public interface IGui {
 	default void cleanAfterExperiment() {}
 
 	/**
+	 * Shows a full-screen overlay covering the workbench shell between the simulation-perspective switch and the
+	 * moment when display views are fully laid out. The overlay displays a "Launching experiment…" message and a cancel
+	 * button so the user can abort the launch. The concrete UI implementation (SwtGui) builds an SWT child Shell
+	 * (SWT.ON_TOP) and uses the correct theme-aware icon for the cancel button.
+	 *
+	 * @param model
+	 *            the model being launched (used to extract the model name for the subtitle)
+	 * @param experimentName
+	 *            the experiment name shown in the subtitle
+	 */
+	default void showLaunchingOverlay(final IModelSpecies model, final String experimentName) {}
+
+	/**
+	 * Removes the overlay shown by {@link #showLaunchingOverlay}. Must be called on the UI thread after the display
+	 * views have been fully laid out. Is a no-op if no overlay is currently visible.
+	 */
+	default void hideLaunchingOverlay() {}
+
+	/**
 	 * Update speed display.
 	 *
 	 * @param scope

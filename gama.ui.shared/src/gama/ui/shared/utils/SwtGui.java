@@ -19,9 +19,17 @@ import java.util.function.Supplier;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.window.Window;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
@@ -75,6 +83,7 @@ import gama.core.outputs.display.AbstractDisplayGraphics;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.application.workbench.SimulationPerspectiveDescriptor;
+import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.interfaces.IDisplayLayoutManager;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.interfaces.ISpeedDisplayer;
@@ -83,6 +92,8 @@ import gama.ui.shared.parameters.GamaWizard;
 import gama.ui.shared.parameters.GamaWizardDialog;
 import gama.ui.shared.parameters.GamaWizardPage;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaIcon;
+import gama.ui.shared.resources.IGamaIcons;
 import gama.workspace.console.CompositeConsoleListener;
 import gama.workspace.status.ProgressIndicator;
 
@@ -118,7 +129,7 @@ public class SwtGui implements IGui {
 
 	/**
 	 * Holds the work submitted by {@link #arrangeExperimentViews} so it can be executed inside the same
-	 * {@code setRedraw(false/true)} block as the display-view openings in {@link #openAndApplyLayout}. Set by
+	 * {@code WorkbenchHelper.run()} syncExec as the display-view openings in {@link #openAndApplyLayout}. Set by
 	 * {@code arrangeExperimentViews} and drained (read-then-null) by {@code openAndApplyLayout}.
 	 */
 	private volatile Runnable pendingArrange;
@@ -283,7 +294,8 @@ public class SwtGui implements IGui {
 	}
 
 	@Override
-	public final boolean openSimulationPerspective(final IModelSpecies model, final String experimentName) {
+	public boolean openSimulationPerspective(final IModelSpecies model, final String experimentName) {
+		if (model == null) return false;
 		return PerspectiveHelper.openSimulationPerspective(model, experimentName);
 	}
 
@@ -512,13 +524,170 @@ public class SwtGui implements IGui {
 		};
 	}
 
+	/** The overlay Shell shown between perspective switch and display layout. */
+	private volatile Shell launchingOverlay;
+
+	@Override
+	public void showLaunchingOverlay(final IModelSpecies model, final String perspectiveId) {
+		final Shell parent = WorkbenchHelper.getWindow() != null ? WorkbenchHelper.getWindow().getShell() : null;
+		if (parent == null || parent.isDisposed()) return;
+		// Extract model and experiment names from the perspective id:
+		// format is PERSPECTIVE_SIMULATION_FRAGMENT + ":" + modelName + ":" + experimentName
+		final String[] parts = perspectiveId == null ? new String[0] : perspectiveId.split(":", 3);
+		final String modelName = parts.length > 1 ? parts[1] : model != null ? model.getName() : "";
+		final String expName = parts.length > 2 ? parts[2] : "";
+
+		final Shell overlay = new Shell(parent, SWT.NO_TRIM | SWT.ON_TOP);
+		final Color bg = parent.getBackground();
+		final Color fg = parent.getForeground();
+		overlay.setBackground(bg);
+		overlay.setLayout(null);
+
+		// ── Cancel button: ToolBar + ToolItem(SWT.FLAT|SWT.PUSH) ─────────────────
+		// Exactly the same widget type as every GAMA toolbar button — no border, no
+		// button chrome, just the icon with a hover highlight on mouse-over.
+		final org.eclipse.swt.widgets.ToolBar cancelBar =
+				new org.eclipse.swt.widgets.ToolBar(overlay, SWT.FLAT | SWT.NO_FOCUS);
+		cancelBar.setBackground(bg);
+		final org.eclipse.swt.widgets.ToolItem cancelItem =
+				new org.eclipse.swt.widgets.ToolItem(cancelBar, SWT.FLAT | SWT.PUSH);
+		final GamaIcon stopIcon = GamaIcon.named(IGamaIcons.EXPERIMENT_STOP);
+		cancelItem.setImage(stopIcon.image());
+		cancelItem.setDisabledImage(stopIcon.disabled());
+		cancelItem.setToolTipText("Cancel launch and return to the modelling perspective");
+		cancelItem.addSelectionListener(org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter(e -> {
+			hideLaunchingOverlay();
+			new Thread(() -> GAMA.closeAllExperiments(true, false), "Cancel launch").start();
+		}));
+		cancelBar.pack();
+
+		// ── Canvas for title + subtitle ────────────────────────────────────────────
+		final Canvas canvas = new Canvas(overlay, SWT.NO_BACKGROUND | SWT.DOUBLE_BUFFERED);
+		canvas.addPaintListener(e -> {
+			final var b = canvas.getBounds();
+			e.gc.setBackground(bg);
+			e.gc.fillRectangle(0, 0, b.width, b.height);
+
+			// Title: 20pt bold
+			final var td =
+					new org.eclipse.swt.graphics.FontData(parent.getFont().getFontData()[0].getName(), 20, SWT.BOLD);
+			final var bigFont = new org.eclipse.swt.graphics.Font(e.display, td);
+			e.gc.setFont(bigFont);
+			e.gc.setForeground(fg);
+			final String title = "Launching experiment\u2026";
+			final var te = e.gc.textExtent(title);
+
+			// Use the block-top computed by positionOverlayChildren; fall back to centre.
+			final Object stored = canvas.getData("blockTop");
+			final int titleY = stored instanceof Integer bt ? bt : (b.height - te.y) / 2;
+
+			e.gc.drawText(title, (b.width - te.x) / 2, titleY, true);
+			bigFont.dispose();
+
+			// Subtitle: normal font, dimmed
+			if (!modelName.isEmpty() || !expName.isEmpty()) {
+				e.gc.setFont(parent.getFont());
+				final String sub = modelName + (expName.isEmpty() ? "" : "  \u2192  " + expName);
+				final var se = e.gc.textExtent(sub);
+				final boolean dark = ThemeHelper.isDark();
+				final int dr = dark ? blend(bg.getRed(), 255, 45) : blend(bg.getRed(), 0, 45);
+				final int dg = dark ? blend(bg.getGreen(), 255, 45) : blend(bg.getGreen(), 0, 45);
+				final int db = dark ? blend(bg.getBlue(), 255, 45) : blend(bg.getBlue(), 0, 45);
+				final var dim = new Color(e.display, dr, dg, db);
+				e.gc.setForeground(dim);
+				e.gc.drawText(sub, (b.width - se.x) / 2, titleY + te.y + 4, true);
+				dim.dispose();
+			}
+		});
+
+		// Position and open
+		final Rectangle ca = parent.getClientArea();
+		final org.eclipse.swt.graphics.Point origin = parent.toDisplay(ca.x, ca.y);
+		overlay.setBounds(origin.x, origin.y, ca.width, ca.height);
+		positionOverlayChildren(overlay, cancelBar, canvas);
+		overlay.open();
+
+		// Resize tracking
+		final ControlListener[] ref = new ControlListener[1];
+		ref[0] = new ControlAdapter() {
+			@Override
+			public void controlResized(final ControlEvent e) {
+				if (overlay.isDisposed()) {
+					parent.removeControlListener(ref[0]);
+				} else {
+					final Rectangle ca2 = parent.getClientArea();
+					final org.eclipse.swt.graphics.Point o2 = parent.toDisplay(ca2.x, ca2.y);
+					overlay.setBounds(o2.x, o2.y, ca2.width, ca2.height);
+					positionOverlayChildren(overlay, cancelBar, canvas);
+				}
+			}
+		};
+		parent.addControlListener(ref[0]);
+		overlay.addDisposeListener(e -> parent.removeControlListener(ref[0]));
+		launchingOverlay = overlay;
+	}
+
+	@Override
+	public void hideLaunchingOverlay() {
+		final Shell overlay = launchingOverlay;
+		launchingOverlay = null;
+		if (overlay != null && !overlay.isDisposed()) { overlay.close(); }
+	}
+
+	/**
+	 * Lays out the overlay children so that the title + subtitle + cancel button form a single centred vertical block:
+	 *
+	 * <pre>
+	 *   Launching experiment…        (20pt bold, drawn by canvas)
+	 *   ModelName  →  ExperimentName (normal, dimmed, drawn by canvas)
+	 *   [■ stop icon]                (ToolItem, centred, 12px gap below subtitle)
+	 * </pre>
+	 *
+	 * The canvas fills the entire overlay so it can paint the background everywhere; the ToolBar is a transparent
+	 * overlay on top of it, positioned below the text.
+	 */
+	private static void positionOverlayChildren(final Shell overlay, final org.eclipse.swt.widgets.ToolBar cancelBar,
+			final Canvas canvas) {
+		final var sz = overlay.getSize();
+		// Canvas always fills the whole shell (paints background + text).
+		canvas.setBounds(0, 0, sz.x, sz.y);
+		final var bs = cancelBar.getSize(); // already packed
+
+		// Estimate the total block height so we can centre it vertically.
+		// Title at 20pt bold ≈ 28px, subtitle at system font ≈ 16px, gap = 4px between them,
+		// gap = 12px between subtitle and button.  Use a rounded constant; actual pixel-perfect
+		// alignment is handled by the canvas PaintListener which has the real GC metrics.
+		final int titleH = 28;
+		final int subH = 16;
+		final int textToBtn = 12; // gap between bottom of subtitle and top of button
+		final int blockH = titleH + 4 + subH + textToBtn + bs.y;
+
+		final int blockTop = (sz.y - blockH) / 2;
+		// The title baseline in the canvas is at blockTop; subtitle is titleH+4 below that.
+		// The button starts titleH + 4 + subH + textToBtn below blockTop.
+		final int btnY = blockTop + titleH + 4 + subH + textToBtn;
+
+		cancelBar.setBounds((sz.x - bs.x) / 2, btnY, bs.x, bs.y);
+		cancelBar.moveAbove(canvas);
+
+		// Tell the canvas what vertical offset to use for the title so both widgets align.
+		// We piggy-back the value via the widget data map to avoid an extra field.
+		canvas.setData("blockTop", blockTop);
+		canvas.redraw();
+	}
+
+	/** Blends channel {@code a} toward {@code b} by {@code pct} percent. */
+	private static int blend(final int a, final int b, final int pct) {
+		return a + (b - a) * pct / 100;
+	}
+
 	/**
 	 * Method cleanAfterExperiment()
-	 *
-	 * @see gama.api.ui.IGui#cleanAfterExperiment(gama.api.kernel.species.IExperimentSpecies)
 	 */
 	@Override
 	public void cleanAfterExperiment() {
+		pendingArrange = null;
+		WorkbenchHelper.asyncRun(this::hideLaunchingOverlay);
 		hideParameters();
 		final IGamaView m = (IGamaView) ViewsHelper.findView(MONITOR_VIEW_ID, null, false);
 		if (m != null) {
@@ -673,8 +842,8 @@ public class SwtGui implements IGui {
 	 * individual view-opener UIJobs.
 	 *
 	 * <p>
-	 * The command thread calls this method via a {@code syncExec}: the UI thread is frozen for the entire
-	 * duration of {@code openAll.run()} + layout application, so the user sees only the final state.
+	 * The command thread calls this method via a {@code syncExec}: the UI thread is frozen for the entire duration of
+	 * {@code openAll.run()} + layout application, so the user sees only the final state.
 	 * </p>
 	 *
 	 * @param scope
@@ -688,25 +857,21 @@ public class SwtGui implements IGui {
 	public void openAndApplyLayout(final IScope scope, final Runnable openAll, final Object layout) {
 		final IDisplayLayoutManager manager = WorkbenchHelper.getService(IDisplayLayoutManager.class);
 		if (manager == null) {
-			// Headless / no layout manager: fall back to simple sequential open + layout
+			// No layout manager (headless): fall back to simple sequential open + layout.
+			pendingArrange = null;
 			openAll.run();
 			applyLayout(scope, layout);
 			return;
 		}
-		// Drain the pending arrange work (set by arrangeExperimentViews) so it runs inside the
-		// same setRedraw(false/true) block as the display openings and layout.
+		// Run arrange + open + layout in one syncExec so no OS paint events occur between them.
+		// applyLayoutNow() → ArrangeDisplayViews.execute() wraps the E4 mutations in setRedraw(false/true).
 		final Runnable arrange = pendingArrange;
 		pendingArrange = null;
 		WorkbenchHelper.run(() -> {
-			final var shell = WorkbenchHelper.getShell();
-			if (shell != null) { shell.setRedraw(false); }
-			try {
-				if (arrange != null) { arrange.run(); }
-				openAll.run();
-				manager.applyLayoutNow(layout);
-			} finally {
-				if (shell != null) { shell.setRedraw(true); }
-			}
+			if (arrange != null) { arrange.run(); }
+			openAll.run();
+			manager.applyLayoutNow(layout);
+			hideLaunchingOverlay();
 		});
 	}
 
