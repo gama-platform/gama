@@ -70,21 +70,27 @@ import gama.gaml.statements.CreateStatement.CreateSerializer;
 import gama.gaml.statements.CreateStatement.CreateValidator;
 
 /**
- * This command is used to create agents.
+ * Implements the {@code create} statement, which instantiates one or more agents of a given species inside the current
+ * simulation context.
  *
- * Considering the invoking agent as the execution context, species of the created agents can be 1. The same species of
- * the invoking agent or any peer species of the invoking agent's species. The newly created agent(s) will take the
- * invoking agent's macro-agent as its/their macro-agent.
+ * <p>
+ * The species of the agents to create can be:
+ * <ol>
+ * <li>The same species as the invoking agent, or any peer species. The newly created agents will take the invoking
+ * agent's macro-agent as their macro-agent.</li>
+ * <li>A direct micro-species of the invoking agent's species. The newly created agents will take the invoking agent
+ * itself as their macro-agent.</li>
+ * <li>The direct macro-species of the invoking agent's species, or any peer of that macro-species. The newly created
+ * agents will take the macro-agent of the invoking agent's macro-agent as their macro-agent.</li>
+ * </ol>
+ * </p>
  *
- * 2. The direct micro-species of the invoking agent's species. The newly create agent(s) will take the invoking agent
- * as its/their macro-agent.
- *
- * 3. The direct macro-species of the invoking agent's species or any peer species of this direct macro-species. The
- * newly created agent(s) will take the macro-agent of invoking agent's macro-agent as its/their macro-agent.
- *
- * Creation of agents from CSV files: create toto from: "toto.csv" header: true with:[att1::read("NAME"),
- * att2::read("TYPE")]; or, without header: create toto from: "toto.csv"with:[att1::read(0), att2::read(1)]; //with the
- * read(int), the index of the column.
+ * <p>
+ * <b>Preferred syntax:</b> when the species is known at compile time, agents should be created using the functional
+ * form {@code species_name(attribute: value, ...)}, which is more concise and avoids the deprecated {@code with:}
+ * facet. Attribute initialisation inside a {@code create} block also uses the {@code (arg: value, ...)} notation
+ * instead of the old {@code [arg::value, ...]} map literal.
+ * </p>
  *
  * <p>
  * <b>Thread-safety:</b> the {@link #init} field, which carries the formal {@link Arguments} set by
@@ -139,40 +145,47 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
 						doc = @doc ("an expression that evaluates to a map, for each pair the key is a species attribute and the value the assigned value")) },
 		omissible = IKeyword.SPECIES)
 @doc (
-		value = "Allows an agent to create `number` agents of species `species`, to create agents of species `species` from a shapefile or to create agents of species `species` from one or several localized entities (discretization of the localized entity geometries).",
+		value = "Allows an agent to create one or more agents of a given `species`. Agents can be created with explicit initial attribute values, from a file (shapefile, .csv, .asc, OSM), from a set of geometries, or from a database query result. "
+				+ "When the species is known at compile time, the preferred form is the functional notation `species_name(attribute: value, ...)` rather than the `create` statement with a `with:` facet.",
 		usages = { @usage (
-				value = "Its simple syntax to create `an_int` agents of species `a_species` is:",
-				examples = { @example (
-						value = "create a_species number: an_int;",
-						isExecutable = false),
-						@example (
-								value = "create species_of(self) number: 5 returns: list5Agents;",
-								isTestOnly = false),
-				// @example (
-				// var = "list5Agents",
-				// returnType = "list",
-				// value = "5",
-				// isExecutable = false)
-				}), @usage ("If `number` equals 0 or species is not a species, the statement is ignored."), @usage (
-						value = "In GAML modelers can create agents of species `a_species` (with two attributes `type` and `nature` with types corresponding to the types of the shapefile attributes) from a shapefile `the_shapefile` while reading attributes 'TYPE_OCC' and 'NATURE' of the shapefile. One agent will be created by object contained in the shapefile:",
+				value = "Simple creation of `n` agents of a known species — the preferred functional form:",
+				examples = @example (
+						value = """
+								create a_species number: n;           // creates n agents with default initialization
+								a_species(location: {10, 20});        // functional form: creates 1 agent with a given location
+								a_species(5, (location: {rnd(100), rnd(100)})); // creates 5 agents, each at a random location""",
+						isExecutable = false)),
+				@usage ("If `number` equals 0 or `species` cannot be resolved, the statement is silently ignored."),
+				@usage (
+						value = "Capturing created agents in a temporary variable with `returns:` — even a single agent is wrapped in a list:",
 						examples = @example (
-								value = "create a_species from: the_shapefile with: [type:: read('TYPE_OCC'), nature::read('NATURE')];",
+								value = """
+										create a_species number: rnd(4) returns: children;
+										ask children { /* ... */ }""",
 								isExecutable = false)),
 				@usage (
-						value = "In order to create agents from a .csv file, facet `header` can be used to specified whether we can use columns header:",
-						examples = { @example (
-								value = "create toto from: \"toto.csv\" header: true with:[att1::read(\"NAME\"), att2::read(\"TYPE\")];",
-								isExecutable = false),
-								@example (
-										value = "or",
-										isExecutable = false),
-								@example (
-										value = "create toto from: \"toto.csv\" with:[att1::read(0), att2::read(1)]; //with read(int), the index of the column",
-										isExecutable = false) }),
+						value = "Creating agents from a shapefile: one agent is created per object in the file. "
+								+ "Attribute values are read with `read('COLUMN_NAME')` and assigned using the `(key: value, ...)` notation:",
+						examples = @example (
+								value = """
+										create a_species from: the_shapefile
+										    with: (type: read('TYPE_OCC'), nature: read('NATURE'));""",
+								isExecutable = false)),
 				@usage (
-						value = "Similarly to the creation from shapefile, modelers can create agents from a set of geometries. In this case, one agent per geometry will be created (with the geometry as shape)",
+						value = "Creating agents from a .csv file. Use `header: true` to address columns by name, or omit it to address them by index:",
+						examples = @example (
+								value = """
+										create toto from: "toto.csv" header: true
+										    with: (att1: read("NAME"), att2: read("TYPE"));
+										create toto from: "toto.csv"
+										    with: (att1: read(0), att2: read(1)); // read(int) uses column index""",
+								isExecutable = false)),
+				@usage (
+						value = "Creating agents from a list of geometries: one agent per geometry is created and its `shape` is set to that geometry:",
 						examples = { @example (
-								value = "create species_of(self) from: [square(4), circle(4)]; 	// 2 agents have been created, with shapes respectively square(4) and circle(4)"),
+								value = """
+										create species_of(self) from: [square(4), circle(4)]; // 2 agents created""",
+								isExecutable = false),
 								@example (
 										value = "create species_of(self) from: [square(4), circle(4)] returns: new_agt;",
 										isTestOnly = true),
@@ -187,52 +200,15 @@ import gama.gaml.statements.CreateStatement.CreateValidator;
 										returnType = "geometry",
 										isTestOnly = true) }),
 				@usage (
-						value = "Created agents are initialized following the rules of their species. If one wants to refer to them after the statement is executed, the returns keyword has to be defined: the agents created will then be referred to by the temporary variable it declares. For instance, the following statement creates 0 to 4 agents of the same species as the sender, and puts them in the temporary variable children for later use.",
-						examples = { @example (
-								value = "create species (self) number: rnd (4) returns: children;",
-								test = false),
-								@example (
-										value = "ask children {",
-										test = true),
-								@example (
-										value = "        // ...",
-										test = false),
-								@example (
-										value = "}",
-										test = false) }),
-				@usage (
-						value = "If one wants to specify a special initialization sequence for the agents created, create provides the same possibilities as ask. This extended syntax is:",
-						examples = { @example (
-								value = "create a_species number: an_int {",
-								isExecutable = false),
-								@example (
-										value = "     [statements]",
-										isExecutable = false),
-								@example (
-										value = "}",
-										isExecutable = false) }),
-				@usage (
-						value = "The same rules as in ask apply. The only difference is that, for the agents created, the assignments of variables will bypass the initialization defined in species. For instance:",
-						examples = { @example (
-								value = "create species(self) number: rnd (4) returns: children {",
-								isExecutable = false),
-								@example (
-										value = "     set location <- myself.location + {rnd (2), rnd (2)}; // tells the children to be initially located close to me",
-										isExecutable = false),
-								@example (
-										value = "     set parent <- myself; // tells the children that their parent is me (provided the variable parent is declared in this species) ",
-										isExecutable = false),
-								@example (
-										value = "}",
-										isExecutable = false) }),
-				@usage (
-						value = "Deprecated uses: ",
-						examples = { @example (
-								value = "// Simple syntax",
-								isExecutable = false),
-								@example (
-										value = "create species: a_species number: an_int;",
-										isExecutable = false), }) })
+						value = "An optional initialization block (same semantics as `ask`) lets statements execute in each new agent's context. "
+								+ "Assignments inside the block bypass the species' own `init` block:",
+						examples = @example (
+								value = """
+										create species(self) number: rnd(4) returns: children {
+										    location <- myself.location + {rnd(2), rnd(2)}; // position near parent
+										    parent <- myself;                               // back-reference to creator
+										}""",
+								isExecutable = false)), })
 @validator (CreateValidator.class)
 @serializer (CreateSerializer.class)
 @SuppressWarnings ({ "unchecked", "rawtypes" })
