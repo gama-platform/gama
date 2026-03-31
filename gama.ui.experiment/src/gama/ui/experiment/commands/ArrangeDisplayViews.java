@@ -150,7 +150,8 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	 *            the already-collected-and-indexed list of display placeholders, or {@code null} to trigger collection
 	 */
 	public static void execute(final GamaTree<String> tree, final List<MPlaceholder> preCollectedHolders) {
-		final var shell = WorkbenchHelper.getShell();
+		final var window = WorkbenchHelper.getWindow();
+		final var shell = window != null ? window.getShell() : null;
 		if (shell != null) { shell.setRedraw(false); }
 		try {
 			final List<MPlaceholder> holders =
@@ -173,6 +174,12 @@ public class ArrangeDisplayViews extends AbstractHandler {
 				display.asyncExec(() -> sentinel[0] = true);
 				while (!sentinel[0]) { display.readAndDispatch(); }
 			}
+			// Force an immediate layout pass so that SWT computes all sash weights and sizes
+			// the display canvases to their final positions BEFORE setRedraw(true) triggers the
+			// repaint. Without this, JOGL canvases (which bypass SWT's paint suppression and
+			// render directly to the GL context) may display at the wrong size until the next
+			// layout event, producing the "fullscreen → resize" flash the user perceives.
+			if (shell != null) { shell.layout(true, true); }
 			decorateDisplays();
 		} catch (Exception e) {
 			DEBUG.ERR(e);
@@ -191,15 +198,87 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	 */
 	private static void layoutDisplays(final GamaTree<String> tree, final List<MPlaceholder> holders) {
 		GamaNode<String> child = tree.getRoot().getChildren().get(0);
-		// DEBUG.LOG("Tree root = " + child.getData() + " weight " +
-		// child.getWeight());
 		if (child.getWeight() == null) { child.setWeight(5000); }
 		final MPartStack displayStack = getDisplaysPlaceholder();
 		if (displayStack == null) return;
 		final MElementContainer<?> root = displayStack.getParent();
-		// displayStack.getChildren().addAll(holders);
-		process(root, child, holders);
+
+		// Build the sash subtree WITHOUT attaching it to the live model yet.
+		// process() with a null initial root creates containers in memory only;
+		// create() returns the new top-level container without calling root.getChildren().add().
+		// We capture that top-level container by temporarily wrapping the build.
+		final MElementContainer<?> subtree = buildDetachedSubtree(child, holders);
+		if (subtree != null) {
+			// Single add() — the E4 renderer materialises the complete sash structure
+			// in one synchronous call instead of N incremental ones, eliminating the
+			// "sash containers appearing one by one" effect that caused the split-screen flash.
+			@SuppressWarnings ("unchecked") final MElementContainer raw = root;
+			raw.getChildren().add(subtree);
+		}
 		showDisplays(root, holders);
+	}
+
+	/**
+	 * Builds the complete E4 sash-container subtree for {@code treeRoot} entirely in memory, without attaching any
+	 * node to the live E4 model. Returns the top-level {@link MElementContainer} that should be attached to the
+	 * perspective's display area as a single {@code root.getChildren().add()} call.
+	 *
+	 * <p>
+	 * The previous {@link #process(MElementContainer, GamaNode, Map)} approach called
+	 * {@code root.getChildren().add(container)} at every recursion level, which fired an {@code EContentAdapter}
+	 * notification and caused the E4 renderer to immediately create and show an SWT widget for each intermediate sash
+	 * container. The user perceived this as the sash grid being built incrementally before the display views appeared.
+	 * By building the full tree off-screen and attaching it in one step, the renderer materialises the complete
+	 * structure in a single synchronous pass.
+	 * </p>
+	 *
+	 * @param treeRoot
+	 *            the root node of the layout tree
+	 * @param holders
+	 *            the display placeholders, already indexed
+	 * @return the top-level container of the detached subtree, or {@code null} if nothing was built
+	 */
+	@SuppressWarnings ("unchecked")
+	private static MElementContainer<?> buildDetachedSubtree(final GamaNode<String> treeRoot,
+			final List<MPlaceholder> holders) {
+		final Map<String, MPlaceholder> holdersByIndex = new HashMap<>(holders.size() * 2);
+		for (final MPlaceholder h : holders) {
+			final Object key = h.getTransientData().get(DISPLAY_INDEX_KEY);
+			if (key != null) { holdersByIndex.put(key.toString(), h); }
+		}
+		// Use a single-element array to capture the top-level container created by the first
+		// create() call inside buildNode(). Subsequent create() calls attach to already-detached
+		// parents, so they don't touch the live model either.
+		final MElementContainer<?>[] top = new MElementContainer<?>[1];
+		buildNode(null, treeRoot, holdersByIndex, top);
+		return top[0];
+	}
+
+	/**
+	 * Recursive helper for {@link #buildDetachedSubtree}. Mirrors the old {@link #process} logic but passes
+	 * {@code parent} as an already-detached container (or {@code null} for the root call) so that
+	 * {@link #create(MElementContainer, String, Boolean)} never touches the live E4 model.
+	 */
+	@SuppressWarnings ("unchecked")
+	private static void buildNode(final MElementContainer<?> parent, final GamaNode<String> treeRoot,
+			final Map<String, MPlaceholder> holdersByIndex, final MElementContainer<?>[] topCapture) {
+		final String data = treeRoot.getData();
+		final String weight = String.valueOf(treeRoot.getWeight());
+		final Boolean dir = !HORIZONTAL.equals(data) && !VERTICAL.equals(data) ? null : HORIZONTAL.equals(data);
+
+		final MPlaceholder holder = holdersByIndex.get(data);
+		// create() with a null parent builds the container in memory without adding to any live list.
+		final MElementContainer container = create(parent, weight, dir);
+		// Capture the very first (top-level) container so the caller can attach it in one add().
+		if (topCapture[0] == null && container != parent) { topCapture[0] = container; }
+		if (holder != null) {
+			if (container.equals(parent)) { holder.setContainerData(weight); }
+			container.getChildren().add(holder);
+		} else {
+			for (final GamaNode<String> node : treeRoot.getChildren()) {
+				buildNode(container, node, holdersByIndex, topCapture);
+			}
+		}
 	}
 
 	/**
