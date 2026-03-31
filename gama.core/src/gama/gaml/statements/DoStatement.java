@@ -33,17 +33,25 @@ import gama.api.utils.StringUtils;
 import gama.gaml.statements.DoStatement.DoSerializer;
 
 /**
- * Implements the {@code do} / {@code invoke} / {@code .} statement which allows an agent to execute an action or
+ * Implements the {@code do} / {@code invoke} / {@code .} statement, which allows an agent to execute an action or
  * primitive at runtime.
+ *
+ * <h2>Preferred syntax</h2>
+ * <p>
+ * The recommended way to call an action is the <em>dot-notation</em>:
+ * {@code target.action_name(arg1: val1, arg2: val2)} (or simply {@code target.action_name()} when no arguments are
+ * needed). When an agent calls one of its own actions it can use the {@code do} statement with the functional form:
+ * {@code do action_name(arg1: val1, arg2: val2);}. Both forms produce exactly the same compiled representation.
+ * </p>
  *
  * <h2>Execution model</h2>
  * <p>
- * All three syntactic forms of action calls are normalised at parse time (see
+ * All syntactic forms are normalised at parse time (see
  * {@link gaml.compiler.parsing.GamlSyntacticConverter#processDo}) and compiled at validation time (see
  * {@link gaml.compiler.descriptions.DoDescription#validate()}) into a single
- * {@link gaml.compiler.expressions.ActionCallOperator} expression that is stored in the
+ * {@link gaml.compiler.expressions.ActionCallOperator} expression stored in the
  * {@link IInternalFacets#INTERNAL_FUNCTION} facet. At runtime, {@link #privateExecuteIn(IScope)} simply evaluates that
- * expression via {@code function.value(scope)}, so all lookup, dispatch, and argument-passing logic lives in
+ * expression via {@code function.value(scope)}, so all lookup, dispatch and argument-passing logic lives in
  * {@link gaml.compiler.expressions.ActionCallOperator}.
  * </p>
  *
@@ -86,79 +94,41 @@ import gama.gaml.statements.DoStatement.DoSerializer;
 						internal = true), },
 		omissible = IKeyword.ACTION)
 @doc (
-		value = "Allows the agent to execute an action or a primitive.  For a list of primitives available in every species, see this [BuiltIn161 page]; for the list of primitives defined by the different skills, see this [Skills161 page]. Finally, see this [Species161 page] to know how to declare custom actions.",
+		value = "Executes an action or primitive belonging to the calling agent or to another agent. "
+				+ "The functional form `do action_name(arg: value, ...)` is mandatory for the `do` statement; "
+				+ "the dot-notation `target.action_name(arg: value, ...)` is the preferred form when calling actions on other agents or when the result must be captured, and will progressively become the norm. "
+				+ "For built-in primitives see the BuiltIn and Skills pages; for custom actions see the Species page.",
 		usages = { @usage (
-				value = "The simple syntax (when the action does not expect any argument and the result is not to be kept) is:",
-				examples = { @example (
-						value = "do name_of_action_or_primitive;",
-						isExecutable = false) }),
+				value = "Calling an action with no arguments — `do` form (self) and dot-notation (any target):",
+				examples = @example (
+						value = """
+								do my_action();                         // calls my_action on self, result discarded
+								some_agent.my_action();                 // calls my_action on another agent
+								int result <- some_agent.my_action();   // captures the returned value""",
+						isExecutable = false)),
 				@usage (
-						value = "In case the action expects one or more arguments to be passed, they are defined by using facets (enclosed tags or a map are now deprecated):",
-						examples = { @example (
-								value = "do name_of_action_or_primitive arg1: expression1 arg2: expression2;",
-								isExecutable = false) }),
+						value = "Passing arguments — arguments are always passed in the functional form `(arg: value, ...)`:",
+						examples = @example (
+								value = """
+										do my_action(arg1: expression1, arg2: expression2);
+										int result <- some_agent.my_action(arg1: expression1, arg2: expression2);""",
+								isExecutable = false)),
 				@usage (
-						value = "In case the result of the action needs to be made available to the agent, the action can be called with the agent calling the action (`self` when the agent itself calls the action) instead of `do`; the result should be assigned to a temporary variable:",
-						examples = { @example (
-								value = "type_returned_by_action result <- self name_of_action_or_primitive [];",
-								isExecutable = false) }),
+						value = "Tolerated (but not preferred) facet-based form — arguments can still be provided as inline facets on the `do` statement:",
+						examples = @example (
+								value = "do my_action arg1: expression1 arg2: expression2;",
+								isExecutable = false)),
 				@usage (
-						value = "In case of an action expecting arguments and returning a value, the following syntax is used:",
-						examples = { @example (
-								value = "type_returned_by_action result <- self name_of_action_or_primitive [arg1::expression1, arg2::expression2];",
-								isExecutable = false) }),
-				@usage (
-						value = "Deprecated uses: following uses of the `do` statement (still accepted) are now deprecated:",
-						examples = { @example (
-								value = "// Simple syntax: "),
-								@example (
-										value = "do action: name_of_action_or_primitive;",
-										isExecutable = false),
-								@example (""), @example (
-										value = "// In case the result of the action needs to be made available to the agent, the `returns` keyword can be defined; the result will then be referred to by the temporary variable declared in this attribute:"),
-								@example (
-										value = "do name_of_action_or_primitive returns: result;",
-										isExecutable = false),
-								@example (
-										value = "do name_of_action_or_primitive arg1: expression1 arg2: expression2 returns: result;",
-										isExecutable = false),
-								@example (
-										value = "type_returned_by_action result <- name_of_action_or_primitive(self, [arg1::expression1, arg2::expression2]);",
-										isExecutable = false),
-								@example (""), @example (
-										value = "// In case the result of the action needs to be made available to the agent"),
-								@example (
-										value = "let result <- name_of_action_or_primitive(self, []);",
-										isExecutable = false),
-								@example (""), @example (
-										value = "// In case the action expects one or more arguments to be passed, they can also be defined by using enclosed `arg` statements, or the `with` facet with a map of parameters:"),
-								@example (
-										value = "do name_of_action_or_primitive with: [arg1::expression1, arg2::expression2];",
-										isExecutable = false),
-								@example (
-										value = "",
-										isExecutable = false),
-								@example (
-										value = "or",
-										isExecutable = false),
-								@example (
-										value = "",
-										isExecutable = false),
-								@example (
-										value = "do name_of_action_or_primitive {",
-										isExecutable = false),
-								@example (
-										value = "     arg arg1 value: expression1;",
-										isExecutable = false),
-								@example (
-										value = "     arg arg2 value: expression2;",
-										isExecutable = false),
-								@example (
-										value = "     ...",
-										isExecutable = false),
-								@example (
-										value = "}",
-										isExecutable = false) }) })
+						value = "Deprecated forms — no longer accepted, listed here for migration purposes only:",
+						examples = @example (
+								value = """
+										do action: my_action;                                    // explicit 'action:' facet
+										do my_action returns: result;                            // 'returns:' no longer exists
+										do my_action with: [arg1::expression1];                  // 'with:' no longer works
+										do my_action { arg arg1 value: expression1; }            // 'arg' sub-statements removed
+										let result <- my_action(self, [arg1::expression1]);      // 'let' no longer exists
+										type result <- my_action(self, []);                      // old operator call form""",
+								isExecutable = false)) })
 @serializer (DoSerializer.class)
 public class DoStatement extends AbstractStatementSequence {
 
