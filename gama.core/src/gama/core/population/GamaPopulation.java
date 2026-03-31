@@ -19,6 +19,7 @@ import static java.util.Collections.EMPTY_LIST;
 import static java.util.Collections.EMPTY_MAP;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -378,9 +379,70 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> {
 
 	@Override
 	public List<T> internalListOfAgents(final boolean makeCopy, final boolean onlyLiving) {
-		if (onlyLiving) return Lists.newArrayList(Iterables.filter(agentsContainer, a -> a != null && !a.dead()));
+		if (onlyLiving) {
+			synchronized (agentsContainer) {
+				return Lists.newArrayList(Iterables.filter(agentsContainer, a -> a != null && !a.dead()));
+			}
+		}
 		if (!makeCopy) return agentsContainer;
-		return new ArrayList<>(agentsContainer);
+		synchronized (agentsContainer) {
+			return new ArrayList<>(agentsContainer);
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// Synchronized mutations – all writes acquire the same monitor as reads
+	// so that the display thread never iterates a concurrently modified list.
+	// -----------------------------------------------------------------------
+
+	@Override
+	public boolean add(final T e) {
+		synchronized (agentsContainer) { return agentsContainer.add(e); }
+	}
+
+	@Override
+	public void add(final int index, final T e) {
+		synchronized (agentsContainer) { agentsContainer.add(index, e); }
+	}
+
+	@Override
+	public boolean addAll(final Collection<? extends T> c) {
+		synchronized (agentsContainer) { return agentsContainer.addAll(c); }
+	}
+
+	@Override
+	public boolean addAll(final int index, final Collection<? extends T> c) {
+		synchronized (agentsContainer) { return agentsContainer.addAll(index, c); }
+	}
+
+	@Override
+	public boolean remove(final Object o) {
+		synchronized (agentsContainer) { return agentsContainer.remove(o); }
+	}
+
+	@Override
+	public T remove(final int index) {
+		synchronized (agentsContainer) { return agentsContainer.remove(index); }
+	}
+
+	@Override
+	public boolean removeAll(final Collection<?> c) {
+		synchronized (agentsContainer) { return agentsContainer.removeAll(c); }
+	}
+
+	@Override
+	public boolean retainAll(final Collection<?> c) {
+		synchronized (agentsContainer) { return agentsContainer.retainAll(c); }
+	}
+
+	@Override
+	public T set(final int index, final T element) {
+		synchronized (agentsContainer) { return agentsContainer.set(index, element); }
+	}
+
+	@Override
+	public void clear() {
+		synchronized (agentsContainer) { agentsContainer.clear(); }
 	}
 
 }
