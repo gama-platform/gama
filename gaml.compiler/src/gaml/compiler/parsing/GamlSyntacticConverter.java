@@ -95,12 +95,10 @@ import gaml.compiler.gaml.S_Do;
 import gaml.compiler.gaml.S_Equations;
 import gaml.compiler.gaml.S_Experiment;
 import gaml.compiler.gaml.S_If;
-import gaml.compiler.gaml.S_Species;
 import gaml.compiler.gaml.S_Try;
 import gaml.compiler.gaml.StandaloneBlock;
 import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.Statement;
-import gaml.compiler.gaml.VarDefinition;
 import gaml.compiler.gaml.VariableRef;
 import gaml.compiler.gaml.impl.ModelImpl;
 import gaml.compiler.resource.GamlResourceServices;
@@ -311,24 +309,24 @@ public class GamlSyntacticConverter {
 		final boolean isWronglyClassifiedInDefinitions = stm instanceof S_Definition && !GAML.isADeclaration(keyword);
 
 		ISyntacticElement elt = null;
-		final String finalKeyword = keyword;
+		// final String finalKeyword = keyword;
 		switch (stm) {
-			case S_Species ss when "species_layer".equals(finalKeyword) -> {
-				// Concerns species layers within species layers.
-				elt = FACTORY.create(keyword, stm, true);
-				// Create a VarDefinition with the species name, wrap it in a VariableRef,
-				// and assign it as the expression of the statement so that the species_layer
-				// facet resolution can find the referenced species by name. It is a very bad fix...
-				final String speciesName = ss.getName();
-				if (speciesName != null) {
-					final VarDefinition varDef = EGaml.getFactory().createVarDefinition();
-					varDef.setName(speciesName);
-					final VariableRef varRef = EGaml.getFactory().createVariableRef();
-					varRef.setRef(varDef);
-					ss.setExpr(varRef);
-					ss.setName(null);
-				}
-			}
+			// case S_Species ss when "species_layer".equals(finalKeyword) -> {
+			// Concerns species layers within species layers.
+			// elt = FACTORY.create(keyword, stm, true);
+			// Create a VarDefinition with the species name, wrap it in a VariableRef,
+			// and assign it as the expression of the statement so that the species_layer
+			// facet resolution can find the referenced species by name. It is a very bad fix...
+			// final String speciesName = ss.getName();
+			// if (speciesName != null) {
+			// final VarDefinition varDef = EGaml.getFactory().createVarDefinition();
+			// varDef.setName(speciesName);
+			// final VariableRef varRef = EGaml.getFactory().createVariableRef();
+			// varRef.setRef(varDef);
+			// ss.setExpr(varRef);
+			// ss.setName(null);
+			// }
+			// }
 			case S_Callable call when upperContainsAttributes -> {
 				// If we define an action with this statement
 				final Expression t = call.getTkey();
@@ -452,10 +450,8 @@ public class GamlSyntacticConverter {
 
 	private String computeKeyword(final ISyntacticElement upper, final Statement stm) {
 		String key = EGAML.getKeyOf(stm);
-		if (DISPLAY_UPPER.contains(upper.getKeyword())) {
-			String conversion = KEYWORD_CONVERSIONS.get(key);
-			return conversion != null ? conversion : key;
-		}
+		String converted = KEYWORD_CONVERSIONS.get(key);
+		if (converted != null && DISPLAY_UPPER.contains(upper.getKeyword())) return converted;
 		return key;
 	}
 
