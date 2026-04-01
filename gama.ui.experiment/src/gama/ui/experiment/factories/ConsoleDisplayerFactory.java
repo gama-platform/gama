@@ -28,6 +28,7 @@ import gama.api.ui.IConsoleListener;
 import gama.api.ui.IGamaView;
 import gama.api.ui.IGui;
 import gama.api.ui.IGamaView.Console;
+import gama.api.ui.IStatusMessage;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.ViewsHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -50,6 +51,15 @@ public class ConsoleDisplayerFactory extends AbstractServiceFactory {
 
 		@Override
 		public void informConsole(final String msg, final ITopLevelAgent root, final IColor color) {
+			// Forward the first non-empty line to the status bar so it is visible
+			// even before the console view has opened (e.g. during experiment launch).
+			if (msg != null && !msg.isBlank()) {
+				final String firstLine = msg.lines().filter(l -> !l.isBlank()).findFirst().orElse(null);
+				if (firstLine != null) {
+					final var status = GAMA.getGui().getStatus();
+					if (status != null) { status.informStatus(firstLine, IStatusMessage.SIMULATION_ICON); }
+				}
+			}
 			IGamaView.Console[] console = new IGamaView.Console[1];
 			try {
 				console[0] = (Console) ViewsHelper.findView(IGui.CONSOLE_VIEW_ID, null, true);

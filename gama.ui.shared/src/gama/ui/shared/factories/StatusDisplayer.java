@@ -279,6 +279,14 @@ public class StatusDisplayer implements IStatusDisplayer, IExperimentStateListen
 	public void setExperimentTarget(final IStatusControl l) { experimentControl = l; }
 
 	/**
+	 * Returns the current status control target.
+	 *
+	 * @return the status control currently receiving status messages
+	 */
+	@Override
+	public IStatusControl getStatusTarget() { return statusControl; }
+
+	/**
 	 * Sets the statusRefresher target.
 	 *
 	 * @param l
