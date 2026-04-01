@@ -122,6 +122,7 @@
 		<!--
 			Core modules
 		-->
+		<module>../gama.dev</module>
 		<module>../gama.dependencies</module>
 		<module>../gama.api</module>
 		<module>../gama.core</module>
