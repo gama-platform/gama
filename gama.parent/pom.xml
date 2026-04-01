@@ -290,7 +290,7 @@
 					<source>${jdk.version}</source>
 					<target>${jdk.version}</target>
 					<annotationProcessors>
-						<annotationProcessor>msi.gama.precompiler.GamaProcessor</annotationProcessor>
+						<annotationProcessor>gama.processor.GamaProcessor</annotationProcessor>
 					</annotationProcessors>
 					<executionEnvironment>JavaSE-${jdk.version}</executionEnvironment>
 				</configuration>
