@@ -49,7 +49,7 @@ jobs:
     outputs:
       commit: ${{ steps.commit.outputs.commit }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Prepare travis-script
         id: commit
@@ -64,7 +64,7 @@ jobs:
           commit=$(git rev-parse --short=7 HEAD)
           echo "commit=$commit" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: travis-scripts
           if-no-files-found: error

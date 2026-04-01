@@ -58,10 +58,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Prep runner
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: "${{ inputs.CHECKOUT_BRANCH == '' }}"
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         if: "${{ inputs.CHECKOUT_BRANCH != '' }}"
         with:
           ref: ${{ inputs.CHECKOUT_BRANCH }}
@@ -130,7 +130,7 @@ jobs:
           python3 -m pip install lxml
           python3 $GITHUB_WORKSPACE/travis/merge_xml_spotbugs.py -r $GITHUB_WORKSPACE -o $GITHUB_WORKSPACE/spotbugsXml.xml
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: "${{ inputs.RUN_SPOTBUGS }}"
         with:
           name: ${{ inputs.SPOTBUGS_OUTPUT_ARTIFACT_NAME }}
@@ -162,7 +162,7 @@ jobs:
           bash $GITHUB_WORKSPACE/travis/deploy-p2.sh -e
 
       - name: Export linux release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: "${{ inputs.get_testing_compiled_archives }}"
         with:
           name: gama-compiled-archive
@@ -173,7 +173,7 @@ jobs:
             ${{ github.workspace }}/gama.product/target/products/gama.application-linux.gtk.x86_64.tar.gz
 
       - name: Export every releases
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: "${{ inputs.get_all_archives_for_release }}"
         with:
           name: gama-compiled-archive

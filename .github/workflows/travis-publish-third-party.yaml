@@ -28,7 +28,7 @@ jobs:
       commit_hash: ${{ steps.tag_data.outputs.commit_hash }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-tags: true
           ref: ${{ inputs.tag }}

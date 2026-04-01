@@ -22,7 +22,7 @@ jobs:
   macOS-pre-signing:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           name: gama-mac-unsigned
 
@@ -32,7 +32,7 @@ jobs:
           echo "\nPrint `needToSign.txt` :"
           cat needToSign.txt
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: gama-mac-what2sign
           path: |
@@ -54,7 +54,7 @@ jobs:
       matrix:
         zipName: [gama.application-macosx.cocoa.x86_64, gama.application-macosx.cocoa.x86_64_withJDK, gama.application-macosx.cocoa.aarch64, gama.application-macosx.cocoa.aarch64_withJDK]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Prepare vm
         shell: bash
@@ -64,12 +64,12 @@ jobs:
           # Else
           mkdir -p ${{ github.workspace }}/artifacts/work
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           name: gama-mac-what2sign
           path: ./artifacts/work
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           name: gama-mac-unsigned
           path: ./artifacts/
@@ -136,7 +136,7 @@ jobs:
           echo "=== Staple DMG ==="
           xcrun -v stapler staple ./${{ matrix.zipName }}.dmg
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         env: 
           working_directory: ${{ github.workspace }}/artifacts/work
         with:
