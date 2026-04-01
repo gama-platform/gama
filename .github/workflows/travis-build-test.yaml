@@ -21,10 +21,10 @@ jobs:
         run: tar xvf $GITHUB_WORKSPACE/gama.application-linux.gtk.x86_64.tar.gz
 
       - name: Set up Adopt OpenJDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: "21"
+          java-version: "25"
           java-package: jdk
 
       - name: Test release
