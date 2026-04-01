@@ -271,12 +271,25 @@ public class WorkspaceManager implements IWorkspaceManager {
 	}
 
 	/**
-	 * Test workspace sanity.
+	 * Recursively deletes a directory and all its contents.
 	 *
-	 * @param workspace
-	 *            the workspace
-	 * @return true, if successful
-	 * @throws IOException
+	 * @param dir
+	 *            the directory to delete
+	 */
+	private static void deleteDirectory(final File dir) {
+		if (dir == null || !dir.exists()) return;
+		File[] children = dir.listFiles();
+		if (children != null) { for (File child : children) { deleteDirectory(child); } }
+		dir.delete();
+	}
+
+	/**
+	 * Test workspace sanity. Checks for stale lock files (indicating a previous crash), snap files (indicating
+	 * workspace corruption), and triggers a rebuild if issues are found.
+	 *
+	 * @param workspacePath
+	 *            the path to the workspace root directory
+	 * @return true if the workspace is sane, false if a rebuild was triggered
 	 */
 	private boolean testWorkspaceSanity(final Path workspacePath) {
 
@@ -292,9 +305,37 @@ public class WorkspaceManager implements IWorkspaceManager {
 			if (!rebuild) {
 				files = workspace.listFiles((FileFilter) file -> ".metadata".equals(file.getName()));
 				if (files == null || files.length == 0) return true;
-				final File[] logs = files[0].listFiles((FileFilter) file -> file.getName().contains(".log"));
+				final File metadataDir = files[0];
+				final File[] logs = metadataDir.listFiles((FileFilter) file -> file.getName().contains(".log"));
 				if (logs != null) { for (final File log : logs) { log.delete(); } }
-				files = files[0].listFiles((FileFilter) file -> ".plugins".equals(file.getName()));
+
+				// Detect a stale .lock file — a sign that the previous session was force-killed or crashed.
+				// This is the root cause of the "Workspace is closed" exception at the next launch.
+				// When detected, we proactively delete the org.eclipse.core.resources folder to prevent
+				// Eclipse from failing to open the workspace on the next start.
+				final File lockFile = new File(metadataDir, ".lock");
+				if (lockFile.exists()) {
+					boolean doClean = true;
+					if (askBeforeRebuildingWorkspace()) {
+						doClean = GAMA.getGui().getDialogFactory().question("Stale workspace lock detected",
+								"GAMA detected that the previous session was not closed cleanly (a stale lock file "
+										+ "was found in the workspace). This can cause a 'Workspace is closed' error "
+										+ "at startup. Would you like GAMA to clean the workspace metadata now to "
+										+ "prevent this error ?");
+					}
+					if (doClean) {
+						lockFile.delete();
+						final File pluginsDir = new File(metadataDir, ".plugins");
+						if (pluginsDir.exists()) {
+							final File resourcesDir = new File(pluginsDir, "org.eclipse.core.resources");
+							deleteDirectory(resourcesDir);
+						}
+						clearWorkspace(true);
+						return false;
+					}
+				}
+
+				files = metadataDir.listFiles((FileFilter) file -> ".plugins".equals(file.getName()));
 				if (files == null) return false;
 				if (files.length == 0) return true;
 				files = files[0].listFiles((FileFilter) file -> "org.eclipse.core.resources".equals(file.getName()));
