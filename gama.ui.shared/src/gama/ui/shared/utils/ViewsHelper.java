@@ -256,6 +256,8 @@ public class ViewsHelper {
 	 * @return true, if successful
 	 */
 	public static boolean toggleFullScreenMode(final IGamaView.Display part) {
+		// Suppress synthetic ESC events that macOS injects when a new ON_TOP shell becomes visible.
+		if (part.isFullScreen() && part.fullScreenEnteredRecently()) return false;
 		WorkbenchHelper.run(() -> part.toggleFullScreen());
 		return true;
 	}

@@ -218,10 +218,10 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 		if (first) {
 			first = false;
-			if (getData().fullScreen() > -1) {
-				WorkbenchHelper.runInUI("Expand " + surface.getOutput().getTitle(), 100,
-						m -> this.getSurface().getOutput().getView().toggleFullScreen());
-			}
+			// Fullscreen entry is handled by ArrangeDisplayViews.decorateDisplays() during layout,
+			// before the first render. The old UIJob here (100 ms delay) would fire after
+			// decorateDisplays() had already entered fullscreen and call toggleFullScreen() a
+			// second time — immediately exiting fullscreen again.
 		}
 	}
 

@@ -90,6 +90,21 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	/** The full screen shell. */
 	protected Shell fullScreenShell;
 
+	/**
+	 * Guard against re-entrant or race-condition calls to {@link #toggleFullScreen()}. Set to {@code true} at the
+	 * start of a transition and cleared at the end, so that any second call arriving while the transition is in
+	 * progress (e.g. a UIJob queued by an E4 part-activation event) is silently ignored.
+	 */
+	private volatile boolean inFullScreenTransition;
+
+	/**
+	 * Timestamp (ms) recorded the last time fullscreen was <em>entered</em>. Used by
+	 * {@link #fullScreenEnteredRecently()} to debounce synthetic ESC {@code SWT.KeyDown} events that macOS injects
+	 * when a new {@code ON_TOP} shell becomes visible — these arrive after {@code inFullScreenTransition} is already
+	 * {@code false} and would otherwise immediately exit fullscreen.
+	 */
+	private volatile long lastFullScreenEnterTime = 0;
+
 	/** The overlay. */
 	public DisplayOverlay overlay;
 
@@ -246,6 +261,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 * Toggle full screen.
 	 */
 	public void toggleFullScreen() {
+		if (inFullScreenTransition) return;
+		inFullScreenTransition = true;
+		try {
 		if (isFullScreen()) {
 			DEBUG.OUT("Is already full screen: exiting");
 			fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
@@ -264,9 +282,14 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			destroyFullScreenShell();
 		} else {
 			DEBUG.OUT("Is not full screen: entering");
-			ViewsHelper.activate(view);
 			fullScreenShell = createFullScreenShell();
 			if (fullScreenShell == null) return;
+			// Activate AFTER setting fullScreenShell so that ok() sees isFullScreen()=true
+			// and the overlayListener.partActivated UIJob is not queued. Previously, activate()
+			// was called before createFullScreenShell(), meaning isFullScreen() was still false
+			// when partActivated fired — causing an extra showCanvas UIJob that could race with
+			// (and undo) the fullscreen transition when called during decorateDisplays().
+			ViewsHelper.activate(view);
 			fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_EXIT).image());
 			fs.setToolTipText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
 			toggleFullScreen = exitFullScreen;
@@ -274,6 +297,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			view.getCentralPanel().setParent(fullScreenShell);
 			fullScreenShell.layout(true, true);
 			fullScreenShell.setVisible(true);
+			lastFullScreenEnterTime = System.currentTimeMillis();
 			createOverlay();
 			// Toolbar
 			if (!toolbar.isDisposed()) {
@@ -295,6 +319,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			});
 		}
 		view.focusCanvas();
+		} finally {
+			inFullScreenTransition = false;
+		}
 	}
 
 	/**
@@ -428,6 +455,19 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 * @return true, if is full screen
 	 */
 	public boolean isFullScreen() { return fullScreenShell != null; }
+
+	/**
+	 * Returns {@code true} if fullscreen was entered within the last 500 ms. Used by
+	 * {@link gama.ui.shared.utils.ViewsHelper#toggleFullScreenMode(IGamaView.Display)} to suppress the synthetic
+	 * {@code SWT.KeyDown / ESC} event that macOS injects when a new {@code ON_TOP} shell becomes visible — this
+	 * synthetic event arrives after {@link #inFullScreenTransition} has already been cleared and would otherwise
+	 * immediately exit fullscreen.
+	 *
+	 * @return {@code true} if less than 500 ms have elapsed since fullscreen was last entered
+	 */
+	public boolean fullScreenEnteredRecently() {
+		return System.currentTimeMillis() - lastFullScreenEnterTime < 500;
+	}
 
 	/**
 	 * Creates the full screen shell.

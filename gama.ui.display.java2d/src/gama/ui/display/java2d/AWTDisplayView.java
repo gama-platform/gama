@@ -77,10 +77,8 @@ public class AWTDisplayView extends LayeredDisplayView {
 	@Override
 	public void ownCreatePartControl(final Composite c) {
 		super.ownCreatePartControl(c);
-		if (getOutput().getData().fullScreen() > -1) {
-			new Thread(() -> { WorkbenchHelper.runInUI("Expand " + this.getTitle(), 1000, m -> toggleFullScreen()); })
-					.start();
-		}
+		// Fullscreen is now handled by ArrangeDisplayViews.decorateDisplays() which runs while
+		// the launching overlay covers the window, so the display appears fullscreen immediately.
 	}
 
 	@Override

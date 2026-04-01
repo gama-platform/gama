@@ -307,6 +307,18 @@ public interface IGamaView {
 		boolean isFullScreen();
 
 		/**
+		 * Returns {@code true} if full-screen mode was entered within the last 500 ms.
+		 * 
+		 * <p>Used by {@link gama.ui.shared.utils.ViewsHelper#toggleFullScreenMode} to suppress
+		 * the synthetic {@code SWT.KeyDown / ESC} event that macOS injects when a new
+		 * {@code ON_TOP} shell becomes visible — that synthetic event arrives after the
+		 * in-transition guard is cleared and would otherwise immediately exit fullscreen.</p>
+		 *
+		 * @return {@code true} if less than 500 ms have elapsed since fullscreen was last entered
+		 */
+		default boolean fullScreenEnteredRecently() { return false; }
+
+		/**
 		 * Toggles the visibility of the overlay.
 		 * 
 		 * <p>The overlay typically displays information such as scale, coordinates,

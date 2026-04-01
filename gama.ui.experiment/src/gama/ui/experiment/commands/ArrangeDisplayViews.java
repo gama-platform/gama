@@ -36,6 +36,7 @@ import gama.api.ui.IGamaView;
 import gama.api.utils.collections.GamaNode;
 import gama.api.utils.collections.GamaTree;
 import gama.api.utils.prefs.GamaPreferences;
+import gama.core.outputs.LayeredDisplayOutput;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.application.workbench.SimulationPerspectiveDescriptor;
@@ -339,6 +340,17 @@ public class ArrangeDisplayViews extends AbstractHandler {
 		if (SystemInfo.isWindows() || SystemInfo.isMac()) {
 			displays.forEach(d -> { if (d.is2D()) { d.focusCanvas(); } });
 		}
+
+		// If a display is declared fullscreen, enter fullscreen NOW — while the launching overlay still
+		// covers the workbench window. The fullscreen shell is built and made visible here, so when the
+		// overlay is subsequently removed the user sees the final fullscreen state immediately rather
+		// than seeing the normal-size view first and then watching it expand.
+		displays.forEach(d -> {
+			if (!d.isFullScreen() && d.getOutput() instanceof LayeredDisplayOutput ldo
+					&& ldo.getData().fullScreen() > -1) {
+				d.toggleFullScreen();
+			}
+		});
 
 	}
 
