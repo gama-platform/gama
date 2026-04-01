@@ -13,7 +13,7 @@ Require-Bundle: gama.dependencies,
  org.eclipse.xtext,
  gama.api;visibility:=reexport,
  com.google.guava;bundle-version="[33.5.0,34.0.0)",
- gaml.compiler;bundle-version="0.0.0"
+ gaml.compiler
 Bundle-ActivationPolicy: lazy
 Export-Package: gama.core,
  gama.core.agent;

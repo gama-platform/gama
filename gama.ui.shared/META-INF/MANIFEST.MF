@@ -24,7 +24,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.e4.ui.workbench,
  org.eclipse.equinox.common;bundle-version="[3.20.0,4.0.0)",
  org.eclipse.equinox.registry;bundle-version="[3.12.0,4.0.0)",
- gama.workspace;bundle-version="[0.0.0,1.0.0)"
+ gama.workspace
 Export-Package: gama.ui.shared,
  gama.ui.shared.access,
  gama.ui.shared.bindings,

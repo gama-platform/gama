@@ -8,7 +8,7 @@ Require-Bundle: gama.dependencies,
  org.eclipse.ui,
  gama.ui.shared,
  gama.ui.experiment,
- gama.ui.display.opengl;bundle-version="0.0.0"
+ gama.ui.display.opengl
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: gama.ui.display.opengl4.OpenGLActivator
 Bundle-ClassPath: .,

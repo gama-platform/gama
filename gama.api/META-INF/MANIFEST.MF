@@ -63,15 +63,15 @@ Export-Package: gama.api,
  gama.api.utils.random,
  gama.api.utils.server,
  gama.api.utils.tests
-Require-Bundle: gama.annotations;bundle-version="0.0.0";visibility:=reexport,
- gama.processor;bundle-version="0.0.0",
+Require-Bundle: gama.annotations;visibility:=reexport,
+ gama.processor,
  org.eclipse.emf.common;bundle-version="[2.44.0,3.0.0)",
  org.eclipse.emf.ecore;bundle-version="[2.41.0,3.0.0)",
  org.eclipse.osgi;bundle-version="[3.24.0,4.0.0)",
  org.eclipse.core.filesystem;bundle-version="[1.11.0,2.0.0)",
  org.eclipse.core.resources;bundle-version="[3.23.0,4.0.0)",
  org.osgi.service.prefs;bundle-version="1.1.2",
- gama.dependencies;bundle-version="0.0.0",
+ gama.dependencies,
  org.eclipse.core.runtime;bundle-version="[3.34.0,4.0.0)"
 Automatic-Module-Name: gama.api
 Bundle-ActivationPolicy: lazy

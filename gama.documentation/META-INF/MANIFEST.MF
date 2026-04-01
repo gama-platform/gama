@@ -30,5 +30,5 @@ Bundle-ActivationPolicy: lazy
 Bundle-Activator: gama.documentation.MainGenerateWiki
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Require-Bundle: gama.annotations,
- gama.dev;bundle-version="0.0.0"
+ gama.dev
 

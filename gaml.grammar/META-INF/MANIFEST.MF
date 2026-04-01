@@ -16,7 +16,7 @@ Require-Bundle: org.eclipse.emf.mwe2.language;bundle-version="2.24.0",
  org.eclipse.xtext.builder;bundle-version="2.41.0",
  org.eclipse.xtext.ecore;bundle-version="2.41.0",
  org.eclipse.xtext.xtext.generator.dependencies;bundle-version="2.41.0",
- gama.dev;bundle-version="0.0.0"
+ gama.dev
 Bundle-Vendor: UMMISCO
 Automatic-Module-Name: gaml.grammar
 Bundle-RequiredExecutionEnvironment: JavaSE-25
