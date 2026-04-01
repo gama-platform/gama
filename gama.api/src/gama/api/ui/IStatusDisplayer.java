@@ -118,6 +118,13 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	default void setStatusTarget(final IStatusControl target) {}
 
 	/**
+	 * Returns the current status control target, or {@code null} if unavailable.
+	 *
+	 * @return the current status target
+	 */
+	default IStatusControl getStatusTarget() { return null; }
+
+	/**
 	 * Sets the experiment target.
 	 *
 	 * @param target

@@ -71,7 +71,9 @@ import gama.api.ui.IGamaView.User;
 import gama.api.ui.IGui;
 import gama.api.ui.IOutput;
 import gama.api.ui.IProgressIndicator;
+import gama.api.ui.IStatusControl;
 import gama.api.ui.IStatusDisplayer;
+import gama.api.ui.IStatusMessage;
 import gama.api.ui.displays.IDisplayCreator;
 import gama.api.ui.displays.IDisplaySurface;
 import gama.api.utils.prefs.GamaPreferences;
@@ -527,6 +529,21 @@ public class SwtGui implements IGui {
 	/** The overlay Shell shown between perspective switch and display layout. */
 	private volatile Shell launchingOverlay;
 
+	/** The maximum number of lines shown in the overlay console log area. */
+	private static final int OVERLAY_CONSOLE_MAX_LINES = 3;
+
+	/**
+	 * The console listener that feeds messages into the launching overlay log area. Registered in
+	 * {@link #showLaunchingOverlay} and removed in {@link #hideLaunchingOverlay}.
+	 */
+	private volatile IConsoleListener launchingOverlayConsole;
+
+	/**
+	 * The real {@link IStatusControl} that was active before the launching overlay was shown. Saved in
+	 * {@link #showLaunchingOverlay} and restored in {@link #hideLaunchingOverlay}.
+	 */
+	private volatile IStatusControl savedStatusControl;
+
 	@Override
 	public void showLaunchingOverlay(final IModelSpecies model, final String perspectiveId) {
 		final Shell parent = WorkbenchHelper.getWindow() != null ? WorkbenchHelper.getWindow().getShell() : null;
@@ -543,9 +560,7 @@ public class SwtGui implements IGui {
 		overlay.setBackground(bg);
 		overlay.setLayout(null);
 
-		// ── Cancel button: ToolBar + ToolItem(SWT.FLAT|SWT.PUSH) ─────────────────
-		// Exactly the same widget type as every GAMA toolbar button — no border, no
-		// button chrome, just the icon with a hover highlight on mouse-over.
+		// ── Cancel button ─────────────────────────────────────────────────────────
 		final org.eclipse.swt.widgets.ToolBar cancelBar =
 				new org.eclipse.swt.widgets.ToolBar(overlay, SWT.FLAT | SWT.NO_FOCUS);
 		cancelBar.setBackground(bg);
@@ -561,14 +576,25 @@ public class SwtGui implements IGui {
 		}));
 		cancelBar.pack();
 
-		// ── Canvas for title + subtitle ────────────────────────────────────────────
+		// ── Rolling console-lines buffer (shared by canvas painter + listeners) ───
+		// Holds the last OVERLAY_CONSOLE_MAX_LINES non-blank text lines received
+		// either from status messages or from GAML write/print statements.
+		final java.util.ArrayDeque<String> consoleLines = new java.util.ArrayDeque<>(OVERLAY_CONSOLE_MAX_LINES + 1);
+
+		// Line height for the console area: point-size × 1.4, minimum 20 px.
+		final int lineHeight = Math.max(20, (int) (parent.getFont().getFontData()[0].getHeight() * 1.4));
+		final int consoleBottomMargin = 24;
+		final int consoleAreaHeight = lineHeight * OVERLAY_CONSOLE_MAX_LINES + 8 + consoleBottomMargin;
+
+		// ── Single canvas: title + subtitle + console lines ───────────────────────
+		// Drawing everything in one widget avoids any z-order / occlusion issues.
 		final Canvas canvas = new Canvas(overlay, SWT.NO_BACKGROUND | SWT.DOUBLE_BUFFERED);
 		canvas.addPaintListener(e -> {
 			final var b = canvas.getBounds();
 			e.gc.setBackground(bg);
 			e.gc.fillRectangle(0, 0, b.width, b.height);
 
-			// Title: 20pt bold
+			// ── Title (20pt bold) ──
 			final var td =
 					new org.eclipse.swt.graphics.FontData(parent.getFont().getFontData()[0].getName(), 20, SWT.BOLD);
 			final var bigFont = new org.eclipse.swt.graphics.Font(e.display, td);
@@ -576,15 +602,12 @@ public class SwtGui implements IGui {
 			e.gc.setForeground(fg);
 			final String title = "Launching experiment\u2026";
 			final var te = e.gc.textExtent(title);
-
-			// Use the block-top computed by positionOverlayChildren; fall back to centre.
 			final Object stored = canvas.getData("blockTop");
 			final int titleY = stored instanceof Integer bt ? bt : (b.height - te.y) / 2;
-
 			e.gc.drawText(title, (b.width - te.x) / 2, titleY, true);
 			bigFont.dispose();
 
-			// Subtitle: normal font, dimmed
+			// ── Subtitle (dimmed) ──
 			if (!modelName.isEmpty() || !expName.isEmpty()) {
 				e.gc.setFont(parent.getFont());
 				final String sub = modelName + (expName.isEmpty() ? "" : "  \u2192  " + expName);
@@ -597,6 +620,26 @@ public class SwtGui implements IGui {
 				e.gc.setForeground(dim);
 				e.gc.drawText(sub, (b.width - se.x) / 2, titleY + te.y + 4, true);
 				dim.dispose();
+			}
+
+			// ── Console log lines at the bottom (only when non-empty) ──
+			synchronized (consoleLines) {
+				if (!consoleLines.isEmpty()) {
+					final boolean dark = ThemeHelper.isDark();
+					final int dr = dark ? blend(bg.getRed(), 255, 55) : blend(bg.getRed(), 0, 55);
+					final int dg = dark ? blend(bg.getGreen(), 255, 55) : blend(bg.getGreen(), 0, 55);
+					final int db = dark ? blend(bg.getBlue(), 255, 55) : blend(bg.getBlue(), 0, 55);
+					final var dimColor = new Color(e.display, dr, dg, db);
+					e.gc.setFont(parent.getFont());
+					e.gc.setForeground(dimColor);
+					int y = b.height - consoleAreaHeight + 4;
+					for (final String line : consoleLines) {
+						final var ext = e.gc.textExtent(line);
+						e.gc.drawText(line, (b.width - ext.x) / 2, y, true);
+						y += lineHeight;
+					}
+					dimColor.dispose();
+				}
 			}
 		});
 
@@ -625,10 +668,71 @@ public class SwtGui implements IGui {
 		parent.addControlListener(ref[0]);
 		overlay.addDisposeListener(e -> parent.removeControlListener(ref[0]));
 		launchingOverlay = overlay;
+
+		// ── Helper: append a line to the buffer and schedule a canvas redraw ──────
+		// Called from both the console listener and the status control (below).
+		// updateWith() runs on the UI thread (UIJob), so canvas.redraw() is direct.
+		// The console listener may be called from any thread, so it uses asyncRun.
+		final Runnable redrawCanvas = () -> { if (!canvas.isDisposed()) { canvas.redraw(); } };
+
+		// ── Console listener: GAML write / print statements ───────────────────────
+		final IConsoleListener overlayConsoleListener = (msg, root, color) -> {
+			if (msg == null || msg.isBlank()) return;
+			final String firstLine = msg.lines().map(String::strip).filter(l -> !l.isBlank()).findFirst().orElse(null);
+			if (firstLine == null) return;
+			synchronized (consoleLines) {
+				consoleLines.addLast(firstLine);
+				if (consoleLines.size() > OVERLAY_CONSOLE_MAX_LINES) { consoleLines.pollFirst(); }
+			}
+			WorkbenchHelper.asyncRun(redrawCanvas);
+		};
+		launchingOverlayConsole = overlayConsoleListener;
+		getConsole().addConsoleListener(overlayConsoleListener);
+
+		// ── Status interceptor: informStatus / beginTask / setTaskCompletion ──────
+		// Installs a forwarding IStatusControl so every status update is shown in
+		// the overlay AND in the real status bar simultaneously. Restored on close.
+		final IStatusDisplayer statusDisplayer = getStatus();
+		if (statusDisplayer != null) {
+			final IStatusControl realControl = statusDisplayer.getStatusTarget();
+			savedStatusControl = realControl;
+			statusDisplayer.setStatusTarget(new IStatusControl() {
+				@Override
+				public boolean isDisposed() { return overlay.isDisposed(); }
+
+				@Override
+				public void updateWith(final IStatusMessage m) {
+					// Forward to the real status bar.
+					if (realControl != null && !realControl.isDisposed()) { realControl.updateWith(m); }
+					// Feed the overlay (skip EXPERIMENT-state messages — no useful text).
+					if (m == null || m.type() == IStatusMessage.StatusType.EXPERIMENT) return;
+					final String text = m.message();
+					if (text == null || text.isBlank()) return;
+					final String line = text.strip();
+					synchronized (consoleLines) {
+						if (!consoleLines.isEmpty() && consoleLines.peekLast().equals(line)) return;
+						consoleLines.addLast(line);
+						if (consoleLines.size() > OVERLAY_CONSOLE_MAX_LINES) { consoleLines.pollFirst(); }
+					}
+					// updateWith runs on the UI thread (UIJob) — call redraw directly.
+					redrawCanvas.run();
+				}
+			});
+		}
 	}
 
 	@Override
 	public void hideLaunchingOverlay() {
+		// Restore the real status control before closing the overlay shell.
+		final IStatusControl saved = savedStatusControl;
+		savedStatusControl = null;
+		if (saved != null) {
+			final IStatusDisplayer statusDisplayer = getStatus();
+			if (statusDisplayer != null) { statusDisplayer.setStatusTarget(saved); }
+		}
+		final IConsoleListener overlayConsole = launchingOverlayConsole;
+		launchingOverlayConsole = null;
+		if (overlayConsole != null) { getConsole().removeConsoleListener(overlayConsole); }
 		final Shell overlay = launchingOverlay;
 		launchingOverlay = null;
 		if (overlay != null && !overlay.isDisposed()) { overlay.close(); }
@@ -655,7 +759,7 @@ public class SwtGui implements IGui {
 
 		// Estimate the total block height so we can centre it vertically.
 		// Title at 20pt bold ≈ 28px, subtitle at system font ≈ 16px, gap = 4px between them,
-		// gap = 12px between subtitle and button.  Use a rounded constant; actual pixel-perfect
+		// gap = 12px between subtitle and button. Use a rounded constant; actual pixel-perfect
 		// alignment is handled by the canvas PaintListener which has the real GC metrics.
 		final int titleH = 28;
 		final int subH = 16;
