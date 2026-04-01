@@ -64,6 +64,7 @@ Export-Package: gama.api,
  gama.api.utils.server,
  gama.api.utils.tests
 Require-Bundle: gama.annotations;bundle-version="0.0.0";visibility:=reexport,
+ gama.processor;bundle-version="0.0.0",
  org.eclipse.emf.common;bundle-version="[2.44.0,3.0.0)",
  org.eclipse.emf.ecore;bundle-version="[2.41.0,3.0.0)",
  org.eclipse.osgi;bundle-version="[3.24.0,4.0.0)",
