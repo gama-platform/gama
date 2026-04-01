@@ -1222,6 +1222,13 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		return null;
 	}
 
+	/**
+	 * Gets the geometry cache.
+	 *
+	 * @return the geometry cache
+	 */
+	public GeometryCache getGeometryCache() { return geometryCache; }
+
 	// TEXT
 
 	/**

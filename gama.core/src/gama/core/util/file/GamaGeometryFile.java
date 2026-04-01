@@ -113,4 +113,14 @@ public abstract class GamaGeometryFile extends GamaFile<IList<IShape>, IShape> i
 		return true;
 	}
 
+	/**
+	 * Return the key to use for the cache in OpenGL (see #644). Default is the path.
+	 *
+	 * @param scope
+	 * @return
+	 */
+	public String getKey(final IScope scope) {
+		return getPath(scope);
+	}
+
 }
