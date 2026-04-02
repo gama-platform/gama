@@ -263,12 +263,14 @@ public abstract class GamaFile<Container extends IContainer.Addressable & IConta
 		}
 		if (url != null) {
 			if (forReading) {
-				tempPath = FileUtils.constructAbsoluteFilePath(scope, fetchFromURL(scope), forReading);
-				if (tempPath == null) {
-					// We do not attempt to create the file. It will probably be taken in charge later directly from the
-					// URL or there has been an error trying to download it.
-					tempPath = "";
-				}
+				// fetchFromURL already returns an absolute filesystem path to the cache file.
+				// Do NOT pass it through constructAbsoluteFilePath: that method tries to create
+				// Eclipse workspace linked resources (folder.create / file.createLink) for any
+				// absolute path that exists on disk. Those workspace writes happen from the
+				// experiment thread, corrupt the workspace .metadata on crash, and cause
+				// "Workspace is closed" on the next GAMA launch.
+				final String fetched = fetchFromURL(scope);
+				tempPath = (fetched != null) ? fetched : "";
 			} else {
 				tempPath = FileUtils.constructAbsoluteTempFilePath(scope, url);
 			}

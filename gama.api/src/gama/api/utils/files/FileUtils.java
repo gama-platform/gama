@@ -98,22 +98,34 @@ public class FileUtils {
 	}
 
 	/**
-	 * Gets the cache.
+	 * Gets the GAMA download cache directory, initialising it on first call.
 	 *
-	 * @return the cache
+	 * <p>
+	 * The cache lives at {@code <workspace>/.cache}. The workspace root location is obtained directly from
+	 * {@link org.eclipse.core.resources.ResourcesPlugin#getWorkspace()} so that this method is safe to call at any
+	 * time — including during Eclipse workspace startup before GAMA itself is initialized (e.g. from
+	 * {@code CacheLocationProvider}).
+	 * </p>
+	 *
+	 * <p>
+	 * The {@code CACHE_LOC} workspace path variable is <em>not</em> set here. It is provided dynamically by
+	 * {@code CacheLocationProvider} via the Eclipse {@code variableResolvers} extension point, which avoids any
+	 * workspace metadata writes from this method.
+	 * </p>
+	 *
+	 * @return the cache {@link File} directory (created if it does not exist)
 	 */
 	public static File getCache() {
 		if (CACHE == null) {
-			CACHE = new File(GAMA.getWorkspaceManager().getRoot().getLocation().toFile().getAbsolutePath() + SEPARATOR
-					+ CACHE_FOLDER_PATH.toString());
+			// Use ResourcesPlugin directly so this is safe even before GAMA.getWorkspaceManager() is set.
+			final org.eclipse.core.runtime.IPath wsLoc =
+					org.eclipse.core.resources.ResourcesPlugin.getWorkspace().getRoot().getLocation();
+			CACHE = wsLoc.append(CACHE_FOLDER_PATH).toFile();
 			if (!CACHE.exists()) { CACHE.mkdirs(); }
-			try {
-				GAMA.getWorkspaceManager().getRoot().getPathVariableManager().setValue("CACHE_LOC",
-						GAMA.getWorkspaceManager().getRoot().getLocation().append(CACHE_FOLDER_PATH));
-			} catch (final CoreException e) {
-
-				e.printStackTrace();
-			}
+			// NOTE: CACHE_LOC path variable registration removed.
+			// It is provided dynamically by CacheLocationProvider (PathVariableResolver extension point),
+			// which means no workspace metadata write is needed here — eliminating a source of
+			// "Workspace is closed" corruption on crash/force-quit.
 		}
 		return CACHE;
 	}
@@ -507,8 +519,7 @@ public class FileUtils {
 	private static IFile createLinkedFile(final String path, final IFile file) {
 		if (file == null) return null;
 		java.net.URI resolvedURI = null;
-		final java.net.URI javaURI = URIUtil.toURI(path);// new java.io.File(path).toURI();
-
+		final java.net.URI javaURI = URIUtil.toURI(path);
 		try {
 			resolvedURI = GAMA.getWorkspaceManager().getRoot().getPathVariableManager().convertToRelative(javaURI, true,
 					null);
@@ -518,7 +529,7 @@ public class FileUtils {
 		try {
 			file.createLink(resolvedURI, IResource.NONE, null);
 		} catch (final Exception e) {
-			e.printStackTrace();
+			DEBUG.ERR("Could not create workspace link for " + path, e);
 			return null;
 		}
 		return file;
@@ -535,8 +546,7 @@ public class FileUtils {
 	 */
 	private static IFolder createLinkedFolder(final String path, final IFolder file) {
 		java.net.URI resolvedURI = null;
-		final java.net.URI javaURI = URIUtil.toURI(path);// new java.io.File(path).toURI();
-
+		final java.net.URI javaURI = URIUtil.toURI(path);
 		try {
 			resolvedURI = GAMA.getWorkspaceManager().getRoot().getPathVariableManager().convertToRelative(javaURI, true,
 					null);
@@ -546,7 +556,7 @@ public class FileUtils {
 		try {
 			file.createLink(resolvedURI, IResource.NONE, null);
 		} catch (final CoreException e) {
-			e.printStackTrace();
+			DEBUG.ERR("Could not create workspace folder link for " + path, e);
 			return null;
 		}
 		return file;
@@ -611,10 +621,9 @@ public class FileUtils {
 					}
 				}
 				return true;
-
 			}, IResource.DEPTH_INFINITE, IResource.FILE);
 		} catch (final CoreException e1) {
-			e1.printStackTrace();
+			DEBUG.ERR("Error scanning workspace for linked file " + name, e1);
 		}
 		return result[0];
 	}
@@ -640,10 +649,9 @@ public class FileUtils {
 					}
 				}
 				return true;
-
 			}, IResource.DEPTH_INFINITE, IResource.FOLDER);
 		} catch (final CoreException e1) {
-			e1.printStackTrace();
+			DEBUG.ERR("Error scanning workspace for linked folder " + name, e1);
 		}
 		return result[0];
 	}
@@ -665,7 +673,7 @@ public class FileUtils {
 			try {
 				folder.create(true, true, null);
 			} catch (final CoreException e) {
-				e.printStackTrace();
+				DEBUG.ERR("Could not create external folder in workspace", e);
 				return null;
 			}
 		}
@@ -813,35 +821,46 @@ public class FileUtils {
 	}
 
 	/**
-	 * Fetch to temp file.
+	 * Fetch to temp file. Downloads a remote resource identified by the given URL into a local temp file inside the
+	 * GAMA cache directory, and returns the absolute filesystem path of that file. Uses the absolute cache path
+	 * directly (bypassing Eclipse's PathVariableManager) so that it is safe to call from any thread, including the
+	 * experiment initialization thread. Ensures the cache directory exists, cleans up any pre-existing or partially
+	 * written file on failure, and reports progress through the status bar.
 	 *
 	 * @param scope
 	 *            the scope
 	 * @param url
-	 *            the url
-	 * @return the string
+	 *            the url of the remote resource to download
+	 * @return the absolute filesystem path of the downloaded temp file
+	 * @throws GamaRuntimeException
+	 *             if the download or file writing fails
 	 */
 	@SuppressWarnings ("deprecation")
 	public static String fetchToTempFile(final IScope scope, final URL url) {
-		String pathName = constructRelativeTempFilePath(scope, url);
+		// Use the absolute filesystem path directly — avoids all Eclipse workspace interactions
+		// (PathVariableManager.resolvePath) from the experiment thread, which was causing
+		// "Workspace is closed" state corruption on error or interruption.
+		final String pathName = constructAbsoluteTempFilePath(scope, url);
 		final String urlPath = url.toExternalForm();
 		final String status = "Downloading file " + urlPath.substring(urlPath.lastIndexOf(SEPARATOR));
 		scope.getGui().getStatus().beginTask(status, IStatusMessage.DOWNLOAD_ICON);
 		final Webb web = WEB.get();
+		final java.nio.file.Path p = new File(pathName).toPath();
 		try {
 			try (InputStream in = web.get(urlPath).ensureSuccess()
 					.connectTimeout(GamaPreferences.External.CORE_HTTP_CONNECT_TIMEOUT.getValue())
 					.readTimeout(GamaPreferences.External.CORE_HTTP_READ_TIMEOUT.getValue())
-					.retry(GamaPreferences.External.CORE_HTTP_RETRY_NUMBER.getValue(), false).asStream().getBody();) {
-				// final java.net.URI uri = URIUtil.toURI(pathName);
-				pathName = GAMA.getWorkspaceManager().getRoot().getPathVariableManager().resolvePath(new Path(pathName))
-						.toOSString();
-				// pathName = ROOT.getPathVariableManager().resolveURI(uri).getPath();
-				final java.nio.file.Path p = new File(pathName).toPath();
+					.retry(GamaPreferences.External.CORE_HTTP_RETRY_NUMBER.getValue(), false).asStream().getBody()) {
+				// Ensure the cache directory exists
+				final java.nio.file.Path parent = p.getParent();
+				if (parent != null && !Files.exists(parent)) { Files.createDirectories(parent); }
+				// Remove any stale or previously partially-downloaded file
 				if (Files.exists(p)) { Files.delete(p); }
 				Files.copy(in, p);
 			}
 		} catch (final IOException | WebbException e) {
+			// Clean up any partially-written temp file so the next attempt re-downloads cleanly
+			try { Files.deleteIfExists(p); } catch (final IOException ignored) {}
 			throw GamaRuntimeException.create(e, scope);
 		} finally {
 			scope.getGui().getStatus().endTask(status, IStatusMessage.DOWNLOAD_ICON);

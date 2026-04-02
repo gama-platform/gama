@@ -739,16 +739,22 @@ public class GamaOsmFile extends GamaGisFile {
 	 */
 	private void readFile(final IScope scope, final Sink sink, final File osmFile) {
 		final String ext = getExtension(scope);
-		RunnableSource reader = null;
 		switch (ext) {
 			case "pbf" -> {
-				reader = new OsmosisReader(osmFile);
-				reader.setSink(sink);
-				reader.run();
+				try {
+					final RunnableSource reader = new OsmosisReader(osmFile);
+					reader.setSink(sink);
+					reader.run();
+				} catch (final Exception e) {
+					throw GamaRuntimeException.error(
+							"Unable to parse PBF file " + getName(scope) + ": " + e.getMessage(), scope);
+				} catch (final Error e) {
+					throw GamaRuntimeException.error("Unable to parse PBF file " + getName(scope)
+							+ " (possibly a dependency version conflict: " + e.getMessage() + ")", scope);
+				}
 			}
 			default -> readXML(scope, sink);
 		}
-
 	}
 
 	/**

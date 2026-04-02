@@ -13,7 +13,6 @@ package gama.workspace.manager;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -316,13 +315,12 @@ public class WorkspaceManager implements IWorkspaceManager {
 				final File lockFile = new File(metadataDir, ".lock");
 				if (lockFile.exists()) {
 					boolean doClean = true;
-					if (askBeforeRebuildingWorkspace()) {
-						doClean = GAMA.getGui().getDialogFactory().question("Stale workspace lock detected",
-								"GAMA detected that the previous session was not closed cleanly (a stale lock file "
-										+ "was found in the workspace). This can cause a 'Workspace is closed' error "
-										+ "at startup. Would you like GAMA to clean the workspace metadata now to "
-										+ "prevent this error ?");
-					}
+					if (askBeforeRebuildingWorkspace()) { doClean =
+							GAMA.getGui().getDialogFactory().question("Stale workspace lock detected", """
+									GAMA detected that the previous session was not closed cleanly (a stale lock file \
+									was found in the workspace). This can cause a 'Workspace is closed' error \
+									at startup. Would you like GAMA to clean the workspace metadata now to \
+									prevent this error ?"""); }
 					if (doClean) {
 						lockFile.delete();
 						final File pluginsDir = new File(metadataDir, ".plugins");
@@ -492,7 +490,27 @@ public class WorkspaceManager implements IWorkspaceManager {
 	 * @return the workspace root
 	 */
 	@Override
-	public IWorkspaceRoot getRoot() { return getWorkspace().getRoot(); }
+	public IWorkspaceRoot getRoot() {
+		IWorkspace workspace = getWorkspace();
+		if (workspace == null) {
+			DEBUG.ERR("The workspace location could not be set: ");
+			GAMA.getGui().getDialogFactory().inform(
+					"GAMA detected that the previous session was not closed cleanly. We will clean the workspace metadata now and restart the platfor now to prevent this error.");
+			File ws = new File(getWorkspaceLocation());
+			File[] files = ws.listFiles((FileFilter) file -> ".metadata".equals(file.getName()));
+			if (files == null || files.length == 0) return null;
+			final File metadataDir = files[0];
+			final File pluginsDir = new File(metadataDir, ".plugins");
+			if (pluginsDir.exists()) {
+				final File resourcesDir = new File(pluginsDir, "org.eclipse.core.resources");
+				final File rootFile = new File(resourcesDir, ".root");
+				if (rootFile.exists()) { deleteDirectory(rootFile); }
+			}
+			clearWorkspace(true);
+			return null;
+		}
+		return workspace.getRoot();
+	}
 
 	/** The get workspace URI. */
 	@Override
