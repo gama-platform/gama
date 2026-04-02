@@ -53,7 +53,7 @@ function parseApp(){
 					jar xf "$f" "$j"
 					if haveSomethingToSign "$j"; then
 						echo "==> Need to sign $j <=="
-						addJarInFile $f $j
+						addJarInFile "$f" "$j"
 					fi
 				done < nestedJar.txt
 			fi

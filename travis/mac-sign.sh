@@ -22,7 +22,7 @@ function signInJar(){
 
     fi
 
-    grep "^\[$1" $needToSignFile | cut -d " " -f 2 > nestedJar.txt
+    grep "^\[$1" $needToSignFile | sed 's/^\[[^]]*\] //' > nestedJar.txt
     if [[ -s "nestedJar.txt" ]]; then
         while read nJ
         do
