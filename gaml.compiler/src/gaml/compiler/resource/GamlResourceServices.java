@@ -211,8 +211,8 @@ public class GamlResourceServices {
 	 *            the listener to register
 	 */
 	public static void addResourceListener(final URI uri, final IGamlBuilderListener listener) {
-		final URI newURI = uri;
-		resourceListeners.put(newURI, listener);
+		if (uri == null || listener == null) return;
+		resourceListeners.put(uri, listener);
 	}
 
 	/**

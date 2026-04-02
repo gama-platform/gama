@@ -34,19 +34,24 @@ public interface IStatusDisplayer extends ITopLevelAgentChangeListener {
 	default void topLevelAgentChanged(final ITopLevelAgent agent) {}
 
 	/**
-	 * Wait status.
+	 * Displays a status message, runs the given runnable synchronously, then always resets the status — even if the
+	 * runnable throws. This prevents the status bar from remaining stuck on messages like "Initializing simulations"
+	 * when an error occurs during experiment initialization.
 	 *
-	 * @param scope
-	 *            the scope
 	 * @param string
-	 *            the string
+	 *            the status message to display while the runnable executes
+	 * @param icon
+	 *            the icon to show alongside the message
 	 * @param run
-	 *            the run
+	 *            the work to perform under this status message
 	 */
 	default void waitStatus(final String string, final String icon, final Runnable run) {
 		informStatus(string, icon);
-		run.run();
-		// resetStatus();
+		try {
+			run.run();
+		} finally {
+			endTask(string, icon);
+		}
 	}
 
 	/**

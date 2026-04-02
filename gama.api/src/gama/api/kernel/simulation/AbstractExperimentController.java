@@ -219,8 +219,10 @@ public abstract class AbstractExperimentController implements IExperimentControl
 				// Restore the interrupted status so the thread can exit cleanly
 				Thread.currentThread().interrupt();
 				return;
-			} catch (final Exception e) {
-				// Log unexpected exceptions; do not silently swallow them
+			} catch (final Throwable e) {
+				// Catch Throwable (not just Exception) so that JVM Errors such as
+				// NoClassDefFoundError or LinkageError never silently kill this thread
+				// and leave the controller in a zombie/stalled state
 				DEBUG.ERR("Unexpected error in command thread", e);
 			}
 		}

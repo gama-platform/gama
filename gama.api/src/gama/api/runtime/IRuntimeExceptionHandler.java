@@ -138,4 +138,16 @@ public interface IRuntimeExceptionHandler {
 	 */
 	boolean isRunning();
 
+	/**
+	 * Forces an immediate synchronous display of any pending (not yet shown) exceptions, bypassing the normal
+	 * asynchronous Job-based delivery. This is needed on init-failure paths where the handler has already received the
+	 * exception (via {@code offer}) but its background Job has not yet woken up to move the exception from
+	 * {@code incomingExceptions} to {@code cleanExceptions} and update the UI.
+	 *
+	 * <p>
+	 * The default implementation is a no-op. {@code RuntimeExceptionHandler} overrides it.
+	 * </p>
+	 */
+	default void displayLatestErrors() {}
+
 }

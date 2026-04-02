@@ -425,6 +425,21 @@ public interface IGui {
 	default void showLaunchingOverlay(final IModelSpecies model, final String experimentName) {}
 
 	/**
+	 * Forces an immediate synchronous display of any pending (not yet shown) runtime exceptions in the error handler,
+	 * bypassing the normal asynchronous Job-based delivery. This is needed on init-failure paths where the exception
+	 * was already offered to the handler but its background Job has not yet woken up to move it from the incoming queue
+	 * to {@code cleanExceptions} and update the UI. The default implementation is a no-op.
+	 */
+	default void displayLatestErrors() {}
+
+	/**
+	 * Opens (or brings to front) the Error view without flushing the exception handler queue. Used by
+	 * {@code RuntimeExceptionHandler.updateUI} to auto-open the view whenever there are errors to show, without
+	 * creating an infinite-recursion cycle with {@link #displayLatestErrors()}. The default implementation is a no-op.
+	 */
+	default void openErrorView() {}
+
+	/**
 	 * Removes the overlay shown by {@link #showLaunchingOverlay}. Must be called on the UI thread after the display
 	 * views have been fully laid out. Is a no-op if no overlay is currently visible.
 	 */

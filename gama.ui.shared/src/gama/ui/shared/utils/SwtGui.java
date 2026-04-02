@@ -177,11 +177,14 @@ public class SwtGui implements IGui {
 	@Override
 	public void displayErrors(final IScope scope, final List<GamaRuntimeException> exceptions, final boolean reset) {
 		if (exceptions == null) {
-			// DEBUG.OUT("Hiding errors view");
 			hideView(ERROR_VIEW_ID);
 		} else {
-			// DEBUG.OUT("Showing errors view with new exceptions");
-			final IGamaView.Error v = (Error) showView(scope, ERROR_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+			// Only refresh the view if it is already open — do NOT force it open here.
+			// The view is opened explicitly by displayLatestErrors() when there is a real
+			// error to show. This way the view is not shown during normal simulation runs
+			// (when it is closed) but stays open once the user or an error path has opened it.
+			final IGamaView.Error v =
+					(IGamaView.Error) ViewsHelper.findView(ERROR_VIEW_ID, null, false);
 			if (v != null) { v.displayErrors(reset); }
 		}
 	}
@@ -722,8 +725,31 @@ public class SwtGui implements IGui {
 	}
 
 	@Override
+	public void openErrorView() {
+		// Use asyncRun — this is called from RuntimeExceptionHandler which runs as an
+		// Eclipse background Job, not on the UI thread.
+		WorkbenchHelper.asyncRun(() -> showView(null, ERROR_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE));
+	}
+
+	@Override
+	public void displayLatestErrors() {
+		final IRuntimeExceptionHandler handler = getRuntimeExceptionHandler();
+		if (handler == null) return;
+		// First open (or bring to front) the ErrorView so the user sees it immediately.
+		// displayErrors() deliberately does NOT open it on its own; this is the only
+		// code path that should auto-open the view.
+		WorkbenchHelper.run(() -> {
+			final IGamaView.Error v = (IGamaView.Error) showView(null, ERROR_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+			if (v != null) { v.displayErrors(true); }
+		});
+		handler.displayLatestErrors();
+	}
+
+	@Override
 	public void hideLaunchingOverlay() {
-		// Restore the real status control before closing the overlay shell.
+		// Non-SWT parts: restore the real status control and remove the console listener.
+		// These are thread-safe and must happen before the overlay shell is disposed so that
+		// subsequent status/error calls go to the real status bar, not the overlay interceptor.
 		final IStatusControl saved = savedStatusControl;
 		savedStatusControl = null;
 		if (saved != null) {
@@ -733,9 +759,14 @@ public class SwtGui implements IGui {
 		final IConsoleListener overlayConsole = launchingOverlayConsole;
 		launchingOverlayConsole = null;
 		if (overlayConsole != null) { getConsole().removeConsoleListener(overlayConsole); }
+		// SWT part: Shell.close() must run on the UI thread. Use asyncRun so this method is
+		// safe to call from the experiment command thread (as well as from the UI thread via
+		// cleanAfterExperiment → WorkbenchHelper.asyncRun(this::hideLaunchingOverlay)).
 		final Shell overlay = launchingOverlay;
 		launchingOverlay = null;
-		if (overlay != null && !overlay.isDisposed()) { overlay.close(); }
+		if (overlay != null) {
+			WorkbenchHelper.asyncRun(() -> { if (!overlay.isDisposed()) { overlay.close(); } });
+		}
 	}
 
 	/**
@@ -801,8 +832,10 @@ public class SwtGui implements IGui {
 		if (!GamaPreferences.Interface.CORE_CONSOLE_KEEP.getValue()) { getConsole().eraseConsole(true); }
 		final IGamaView icv = (IGamaView) ViewsHelper.findView(INTERACTIVE_CONSOLE_VIEW_ID, null, false);
 		if (icv != null) { icv.reset(); }
-		final IRuntimeExceptionHandler handler = getRuntimeExceptionHandler();
-		handler.stop();
+		// Do NOT call handler.stop() here. The handler auto-stops after remainingTime
+		// (5 s idle) via its own run() loop. Stopping it here races with
+		// displayLatestErrors() on the init-failure path and wipes cleanExceptions
+		// before the Errors view has been populated.
 	}
 
 	@Override

@@ -255,4 +255,24 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 		return false;
 	}
 
+	/**
+	 * The ErrorView must never be auto-closed by {@code closeSimulationViews()} — its content is relevant precisely
+	 * when there is no running simulation (e.g. after an init failure). Returning {@code false} also prevents
+	 * {@link gama.ui.shared.views.GamaViewPart#init} from closing it when no experiment is running.
+	 */
+	@Override
+	protected boolean shouldBeClosedWhenNoExperiments() {
+		return false;
+	}
+
+	/**
+	 * No-op: the ErrorView is intentionally never closed by the simulation lifecycle machinery. It can only be closed
+	 * manually by the user (its items are closable). Overrides {@link GamaViewPart#close} which would otherwise hide
+	 * this view every time {@code closeSimulationViews()} is called.
+	 */
+	@Override
+	public void close(final gama.api.runtime.scope.IScope scope) {
+		// deliberate no-op — see Javadoc above
+	}
+
 }
