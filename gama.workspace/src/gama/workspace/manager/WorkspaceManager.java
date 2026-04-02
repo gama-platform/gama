@@ -39,20 +39,58 @@ import gama.dev.DEBUG;
 import gama.workspace.WorkspaceActivator;
 
 /**
- * The Class WorkspaceHelper.
+ * Singleton implementation of {@link IWorkspaceManager} that manages the GAMA workspace lifecycle.
+ *
+ * <p>
+ * This class is responsible for:
+ * </p>
+ * <ul>
+ * <li>Locating and validating the workspace directory on startup.</li>
+ * <li>Persisting workspace-related preferences (remembered location, recent workspaces, rebuild flags).</li>
+ * <li>Checking workspace sanity (stale lock files, corrupted snap files) and triggering a clean rebuild when
+ * necessary.</li>
+ * <li>Providing access to the underlying {@link IWorkspace} and its root via the OSGi service registry.</li>
+ * <li>Exposing workspace location as a file-system path, an Eclipse {@link IPath}, and an EMF {@link URI}.</li>
+ * </ul>
+ *
+ * <p>
+ * The single instance is obtained via {@link #getInstance()}.
+ * </p>
+ *
+ * @see IWorkspaceManager
+ * @see IWorkspace
+ * @see IWorkspaceRoot
  */
 public class WorkspaceManager implements IWorkspaceManager {
 
-	/** The workspace. */
+	// -----------------------------------------------------------------------
+	// Fields
+	// -----------------------------------------------------------------------
+
+	/**
+	 * The cached {@link IWorkspace} service, lazily resolved via the OSGi {@link ServiceTracker} on first access.
+	 */
 	private IWorkspace workspace;
 
-	/** The instance. */
+	// -----------------------------------------------------------------------
+	// Singleton
+	// -----------------------------------------------------------------------
+
+	/**
+	 * The unique instance of this class. Access it through {@link #getInstance()}.
+	 */
 	private static WorkspaceManager INSTANCE;
 
 	/**
-	 * Gets the single instance of WorkspaceManager.
+	 * Cached stamp string that identifies the current version of the built-in models library. Lazily initialised by
+	 * {@link #getModelIdentifier()}.
+	 */
+	public static String MODEL_IDENTIFIER = null;
+
+	/**
+	 * Returns the singleton instance of {@link WorkspaceManager}, creating it on the first call.
 	 *
-	 * @return single instance of WorkspaceManager
+	 * @return the unique {@link IWorkspaceManager} instance; never {@code null}
 	 */
 	public static IWorkspaceManager getInstance() {
 		if (INSTANCE == null) { INSTANCE = new WorkspaceManager(); }
@@ -60,26 +98,30 @@ public class WorkspaceManager implements IWorkspaceManager {
 	}
 
 	/**
-	 * Instantiates a new workspace manager.
+	 * Private constructor – use {@link #getInstance()} to obtain the singleton.
 	 */
 	private WorkspaceManager() {}
 
-	/** The model identifier. */
-	public static String MODEL_IDENTIFIER = null;
+	// -----------------------------------------------------------------------
+	// Preference accessors
+	// -----------------------------------------------------------------------
 
 	/**
-	 * Returns whether the user selected "remember workspace" in the preferences
+	 * Returns whether the user opted to remember the last workspace location so that the workspace-selection dialog is
+	 * skipped on the next launch.
+	 *
+	 * @return {@code true} if the "remember workspace" preference is set; {@code false} otherwise
 	 */
 	@Override
 	public boolean isRememberWorkspace() {
-		return Boolean.parseBoolean(GAMA.getPreferenceStore().getInStore(KEY_WORKSPACE_REMEMBER, "false"));
+		return getBooleanPref(KEY_WORKSPACE_REMEMBER, false);
 	}
 
 	/**
-	 * Checks if is remember workspace.
+	 * Persists the user's choice about whether to remember the workspace location across sessions.
 	 *
 	 * @param remember
-	 *            the remember
+	 *            {@code true} to remember the current workspace location; {@code false} to always show the dialog
 	 */
 	@Override
 	public void isRememberWorkspace(final boolean remember) {
@@ -87,18 +129,18 @@ public class WorkspaceManager implements IWorkspaceManager {
 	}
 
 	/**
-	 * Gets the last used workspaces.
+	 * Returns the semicolon-separated list of recently used workspace paths stored in the preference store.
 	 *
-	 * @return the last used workspaces
+	 * @return a (possibly empty) string containing the list of recently used workspace paths
 	 */
 	@Override
 	public String getLastUsedWorkspaces() { return GAMA.getPreferenceStore().getInStore(KEY_WORKSPACE_LIST, ""); }
 
 	/**
-	 * Sets the last used workspaces.
+	 * Persists the semicolon-separated list of recently used workspace paths to the preference store.
 	 *
 	 * @param used
-	 *            the new last used workspaces
+	 *            the new list of recently used workspace paths; must not be {@code null}
 	 */
 	@Override
 	public void setLastUsedWorkspaces(final String used) {
@@ -106,9 +148,10 @@ public class WorkspaceManager implements IWorkspaceManager {
 	}
 
 	/**
-	 * Returns the last set workspace directory from the preferences
+	 * Returns the absolute path of the workspace directory that was selected during the last session. Falls back to
+	 * {@code <user.home>/Gama_Workspace} when no value has been stored yet.
 	 *
-	 * @return null if none
+	 * @return the last explicitly set workspace path; never {@code null}
 	 */
 	@Override
 	public String getLastSetWorkspaceDirectory() {
@@ -117,10 +160,11 @@ public class WorkspaceManager implements IWorkspaceManager {
 	}
 
 	/**
-	 * Sets the last set workspace directory.
+	 * Persists the given workspace directory path to the preference store so that it can be restored on the next
+	 * launch.
 	 *
 	 * @param last
-	 *            the new last set workspace directory
+	 *            the absolute path of the workspace directory to remember; must not be {@code null}
 	 */
 	@Override
 	public void setLastSetWorkspaceDirectory(final String last) {
@@ -128,31 +172,198 @@ public class WorkspaceManager implements IWorkspaceManager {
 	}
 
 	/**
-	 * Ask before rebuilding workspace.
+	 * Flags the workspace for clearing on the next start-up. Delegates to the preference store using the
+	 * {@link #CLEAR_WORKSPACE} key.
 	 *
-	 * @return true, if successful
+	 * @param clear
+	 *            {@code true} to schedule a workspace clear; {@code false} to cancel a previously scheduled clear
+	 */
+	@Override
+	public void clearWorkspace(final boolean clear) {
+		GAMA.getPreferenceStore().putInStore(CLEAR_WORKSPACE, clear);
+	}
+
+	// -----------------------------------------------------------------------
+	// Private helpers
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Reads a boolean preference from the store, converting the stored string value with
+	 * {@link Boolean#parseBoolean(String)}.
+	 *
+	 * @param key
+	 *            the preference key; must not be {@code null}
+	 * @param defaultValue
+	 *            the value to return when the key is absent from the store
+	 * @return the boolean value of the preference
+	 */
+	private boolean getBooleanPref(final String key, final boolean defaultValue) {
+		return Boolean.parseBoolean(GAMA.getPreferenceStore().getInStore(key, String.valueOf(defaultValue)));
+	}
+
+	/**
+	 * Returns whether the user should be asked for confirmation before GAMA rebuilds a corrupted workspace.
+	 *
+	 * @return {@code true} if a confirmation dialog should be shown; {@code false} to rebuild silently
 	 */
 	private boolean askBeforeRebuildingWorkspace() {
-		// true by default
-		// return GamaPreferences.Interface.CORE_ASK_REBUILD.getValue();
-		return Boolean.parseBoolean(GAMA.getPreferenceStore().getInStore(KEY_ASK_REBUILD, "true"));
+		return getBooleanPref(KEY_ASK_REBUILD, true);
 	}
 
 	/**
-	 * Ask before using outdated workspace.
+	 * Returns whether the user should be asked for confirmation before GAMA opens a workspace that was created by a
+	 * different version of the platform (i.e. whose model-library stamp does not match the current one).
 	 *
-	 * @return true, if successful
+	 * @return {@code true} if a confirmation dialog should be shown; {@code false} to proceed silently
 	 */
 	private boolean askBeforeUsingOutdatedWorkspace() {
-		// true by default
-		// return GamaPreferences.Interface.CORE_ASK_OUTDATED.getValue();
-		return Boolean.parseBoolean(GAMA.getPreferenceStore().getInStore(KEY_ASK_OUTDATED, "true"));
+		return getBooleanPref(KEY_ASK_OUTDATED, true);
 	}
 
 	/**
-	 * Gets the current gama stamp string.
+	 * Creates the two marker files that identify a directory as a valid GAMA workspace:
+	 * <ol>
+	 * <li>The generic {@link IWorkspaceManager#WORKSPACE_IDENTIFIER} sentinel file.</li>
+	 * <li>A stamp file whose name encodes the current version of the built-in models library.</li>
+	 * </ol>
+	 * The parent directories are created if they do not yet exist.
 	 *
-	 * @return the current gama stamp string
+	 * @param workspaceDirectoryPath
+	 *            the workspace root directory; must not be {@code null}
+	 * @param workspaceIdentifierFilePath
+	 *            full path to the {@link IWorkspaceManager#WORKSPACE_IDENTIFIER} sentinel file; must not be
+	 *            {@code null}
+	 * @throws RuntimeException
+	 *             if any file-system operation fails
+	 * @throws IOException
+	 *             if any file-system operation fails
+	 */
+	private void createWorkspaceMarkerFiles(final Path workspaceDirectoryPath, final Path workspaceIdentifierFilePath)
+			throws IOException {
+		Files.createDirectories(workspaceDirectoryPath);
+		Files.createFile(workspaceIdentifierFilePath);
+		Files.createFile(Paths.get(workspaceDirectoryPath.toString(), getModelIdentifier()));
+	}
+
+	/**
+	 * Recursively deletes a directory and all its contents. Does nothing if {@code dir} is {@code null} or does not
+	 * exist.
+	 *
+	 * @param dir
+	 *            the root of the directory tree to delete; may be {@code null}
+	 */
+	private static void deleteDirectory(final File dir) {
+		if (dir == null || !dir.exists()) return;
+		File[] children = dir.listFiles();
+		if (children != null) { for (File child : children) { deleteDirectory(child); } }
+		dir.delete();
+	}
+
+	/**
+	 * Checks the sanity of the workspace at {@code workspacePath} and triggers a clean rebuild when problems are
+	 * detected.
+	 *
+	 * <p>
+	 * The following situations are handled:
+	 * </p>
+	 * <ul>
+	 * <li>A {@code .rebuild} sentinel file — triggers an unconditional rebuild (see issue #3445).</li>
+	 * <li>A stale {@code .metadata/.lock} file — indicates that the previous session was force-killed or crashed, which
+	 * is the root cause of the {@code "Workspace is closed"} exception at the next start-up. The
+	 * {@code org.eclipse.core.resources} metadata folder is deleted proactively.</li>
+	 * <li>{@code .snap} files inside {@code org.eclipse.core.resources} — indicate workspace corruption caused by a
+	 * previous crash.</li>
+	 * </ul>
+	 * <p>
+	 * When {@link #askBeforeRebuildingWorkspace()} returns {@code true}, the user is presented with a confirmation
+	 * dialog before any destructive action is taken.
+	 * </p>
+	 *
+	 * @param workspacePath
+	 *            the path to the workspace root directory; must not be {@code null}
+	 * @return {@code true} if the workspace appears sane and no rebuild was triggered; {@code false} if a rebuild was
+	 *         scheduled
+	 */
+	private boolean testWorkspaceSanity(final Path workspacePath) {
+		return DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Workspace sanity", "checked in", () -> {
+			File workspaceDir = workspacePath.toFile();
+
+			// Issue #3445 – a manually placed .rebuild file forces an unconditional rebuild.
+			File[] files = workspaceDir.listFiles((FileFilter) file -> ".rebuild".equals(file.getName()));
+			boolean rebuild = false;
+			if (files != null && files.length == 1) {
+				if (files[0].exists()) { files[0].delete(); }
+				rebuild = true;
+			}
+
+			if (!rebuild) {
+				files = workspaceDir.listFiles((FileFilter) file -> ".metadata".equals(file.getName()));
+				if (files == null || files.length == 0) return true;
+				final File metadataDir = files[0];
+
+				// Remove stale log files left by previous sessions.
+				final File[] logs = metadataDir.listFiles((FileFilter) file -> file.getName().contains(".log"));
+				if (logs != null) { for (final File log : logs) { log.delete(); } }
+
+				// Detect a stale .lock file — a sign that the previous session was force-killed or crashed.
+				// This is the root cause of the "Workspace is closed" exception at the next launch.
+				// When detected, we proactively delete the org.eclipse.core.resources folder to prevent
+				// Eclipse from failing to open the workspace on the next start.
+				final File lockFile = new File(metadataDir, ".lock");
+				if (lockFile.exists()) {
+					boolean doClean = true;
+					if (askBeforeRebuildingWorkspace()) {
+						doClean = GAMA.getGui().getDialogFactory().question("Stale workspace lock detected", """
+								GAMA detected that the previous session was not closed cleanly (a stale lock file \
+								was found in the workspace). This can cause a 'Workspace is closed' error \
+								at startup. Would you like GAMA to clean the workspace metadata now to \
+								prevent this error ?""");
+					}
+					if (doClean) {
+						lockFile.delete();
+						final File pluginsDir = new File(metadataDir, ".plugins");
+						if (pluginsDir.exists()) {
+							deleteDirectory(new File(pluginsDir, "org.eclipse.core.resources"));
+						}
+						clearWorkspace(true);
+						return false;
+					}
+				}
+
+				// Check for .snap files that indicate workspace corruption.
+				files = metadataDir.listFiles((FileFilter) file -> ".plugins".equals(file.getName()));
+				if (files == null || files.length == 0) return files != null;
+				files = files[0].listFiles((FileFilter) file -> "org.eclipse.core.resources".equals(file.getName()));
+				if (files == null || files.length == 0) return files != null;
+				files = files[0].listFiles((FileFilter) file -> file.getName().contains("snap"));
+				if (files == null || files.length == 0) return files != null;
+
+				if (askBeforeRebuildingWorkspace()) {
+					rebuild = GAMA.getGui().getDialogFactory().question("Corrupted workspace",
+							"The workspace appears to be corrupted (due to a previous crash) or "
+									+ "it is currently used by another instance of the platform. Would you like GAMA to clean it ?");
+				}
+			}
+
+			if (rebuild) {
+				if (files != null) { for (final File file : files) { if (file.exists()) { file.delete(); } } }
+				clearWorkspace(true);
+				return false;
+			}
+			return true;
+		});
+	}
+
+	// -----------------------------------------------------------------------
+	// Workspace identity / stamp
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Computes a stamp string that encodes the last-modified timestamp of the built-in GAMA models library. The stamp
+	 * has the form {@code .built_in_models_<timestamp>} and is used to detect whether the workspace was created with a
+	 * different version of the models library.
+	 *
+	 * @return the stamp string, or {@code null} if the models library location cannot be resolved
 	 */
 	@Override
 	public String getCurrentGamaStampString() {
@@ -160,12 +371,11 @@ public class WorkspaceManager implements IWorkspaceManager {
 		try {
 			final URL tmpURL = new URL(GAMA_LIBRARY_MODELS);
 			final URL resolvedFileURL = FileLocator.toFileURL(tmpURL);
-			// We need to use the 3-arg constructor of URI in order to properly escape file system chars
+			// Use the 3-argument URI constructor to properly escape file-system characters.
 			final java.net.URI resolvedURI =
 					new java.net.URI(resolvedFileURL.getProtocol(), resolvedFileURL.getPath(), null).normalize();
 			final File modelsRep = new File(resolvedURI);
-			final long time = modelsRep.lastModified();
-			gamaStamp = ".built_in_models_" + time;
+			gamaStamp = ".built_in_models_" + modelsRep.lastModified();
 			LocalDateTime localDateTime = Files.getLastModifiedTime(modelsRep.toPath()).toInstant()
 					.atZone(ZoneId.systemDefault()).toLocalDateTime();
 			String date = localDateTime.format(DateTimeFormatter.ofPattern("MMM dd,yyyy HH:mm:ss"));
@@ -177,35 +387,64 @@ public class WorkspaceManager implements IWorkspaceManager {
 	}
 
 	/**
-	 * Ensures a workspace directory is OK in regards of reading/writing, etc. This method will get called externally as
-	 * well.
+	 * Returns the model identifier for the current GAMA models library, computing and caching it on first call via
+	 * {@link #getCurrentGamaStampString()}.
 	 *
-	 * @param parentShell
-	 *            Shell parent shell
+	 * @return the model identifier string; may be {@code null} if the library location cannot be resolved
+	 */
+	@Override
+	public String getModelIdentifier() {
+		if (MODEL_IDENTIFIER == null) { MODEL_IDENTIFIER = getCurrentGamaStampString(); }
+		return MODEL_IDENTIFIER;
+	}
+
+	// -----------------------------------------------------------------------
+	// Workspace directory validation
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Validates a candidate workspace directory and ensures it is usable by GAMA.
+	 *
+	 * <p>
+	 * The method performs the following checks in order:
+	 * </p>
+	 * <ol>
+	 * <li>If the directory does not yet exist and {@code askCreate} is {@code true}, the user is asked whether to
+	 * create it.</li>
+	 * <li>The directory must be readable and must actually be a directory.</li>
+	 * <li>The workspace sanity check ({@link #testWorkspaceSanity}) is executed.</li>
+	 * <li>The GAMA workspace identifier file must be present (or the user must accept to create it when
+	 * {@code fromDialog} is {@code true}).</li>
+	 * <li>The model-library stamp file must match the current version (or the user must accept an update).</li>
+	 * <li>When {@code cloning} is {@code true}, the user must confirm that the target workspace contents will be
+	 * replaced.</li>
+	 * </ol>
+	 *
 	 * @param workspaceLocation
-	 *            Directory the user wants to use
+	 *            absolute path of the directory to validate; must not be {@code null}
 	 * @param askCreate
-	 *            Whether to ask if to create the workspace or not in this location if it does not exist already
+	 *            if {@code true} and the directory does not exist, ask the user whether to create it
 	 * @param fromDialog
-	 *            Whether this method was called from our dialog or from somewhere else just to check a location
-	 * @return null if everything is ok, or an error message if not
+	 *            {@code true} when the call originates from the workspace-selection UI dialog; affects which dialogs
+	 *            are shown
+	 * @param cloning
+	 *            {@code true} when the workspace is about to be cloned into the given location
+	 * @return {@code null} if the directory is valid and ready to use; a human-readable error message otherwise
 	 */
 	@Override
 	public String checkWorkspaceDirectory(final String workspaceLocation, final boolean askCreate,
 			final boolean fromDialog, final boolean cloning) {
 		final Path workspaceDirectoryPath = Paths.get(workspaceLocation);
 		final Path workspaceIdentifierFilePath = Paths.get(workspaceLocation, WORKSPACE_IDENTIFIER);
+
 		if (!Files.exists(workspaceDirectoryPath) && askCreate) {
 			final boolean create = GAMA.getGui().getDialogFactory().question("New Directory",
 					workspaceLocation + " does not exist. Would you like to create a new workspace here"
 							+ (cloning ? ", copy the projects of your current workspace into it," : "")
-							+ " and proceeed ?");
+							+ " and proceed ?");
 			if (create) {
 				try {
-					Files.createDirectories(workspaceDirectoryPath);
-					Files.createFile(workspaceIdentifierFilePath);
-					Path dotPath = Paths.get(workspaceLocation, getModelIdentifier());
-					Files.createFile(dotPath);
+					createWorkspaceMarkerFiles(workspaceDirectoryPath, workspaceIdentifierFilePath);
 					return null;
 				} catch (final RuntimeException | IOException er) {
 					er.printStackTrace();
@@ -217,7 +456,6 @@ public class WorkspaceManager implements IWorkspaceManager {
 		}
 
 		if (!Files.isReadable(workspaceDirectoryPath)) return "The selected directory is not readable";
-
 		if (!Files.isDirectory(workspaceDirectoryPath)) return "The selected path is not a directory";
 
 		testWorkspaceSanity(workspaceDirectoryPath);
@@ -234,21 +472,21 @@ public class WorkspaceManager implements IWorkspaceManager {
 				} catch (final Exception err) {
 					return "Error creating directories, please check folder permissions";
 				}
-
 				if (Files.notExists(workspaceIdentifierFilePath)) return "The selected directory does not exist";
 				return null;
 			}
 		} else if (Files.notExists(workspaceIdentifierFilePath))
 			return "The selected directory is not a workspace directory";
+
 		final File dotFile = new File(workspaceLocation + File.separator + getModelIdentifier());
 		if (!dotFile.exists()) {
 			if (fromDialog) {
-				boolean create = true;
+				boolean proceed = true;
 				if (askBeforeUsingOutdatedWorkspace()) {
-					create = GAMA.getGui().getDialogFactory().question("Different version of the models library",
+					proceed = GAMA.getGui().getDialogFactory().question("Different version of the models library",
 							"The workspace contains a different version of the models library. Do you want GAMA to proceed and update it ?");
 				}
-				if (create) {
+				if (proceed) {
 					try {
 						dotFile.createNewFile();
 						clearWorkspace(true);
@@ -258,9 +496,9 @@ public class WorkspaceManager implements IWorkspaceManager {
 					return null;
 				}
 			}
-
 			return "models";
 		}
+
 		if (cloning) {
 			final boolean b = GAMA.getGui().getDialogFactory().question("Existing workspace",
 					"The path entered is a path to an existing workspace. Its contents will be erased and replaced by the current workspace contents. Proceed anyway ?");
@@ -270,164 +508,50 @@ public class WorkspaceManager implements IWorkspaceManager {
 	}
 
 	/**
-	 * Recursively deletes a directory and all its contents.
+	 * Validates and sets the Eclipse instance location for the workspace on application startup.
 	 *
-	 * @param dir
-	 *            the directory to delete
-	 */
-	private static void deleteDirectory(final File dir) {
-		if (dir == null || !dir.exists()) return;
-		File[] children = dir.listFiles();
-		if (children != null) { for (File child : children) { deleteDirectory(child); } }
-		dir.delete();
-	}
-
-	/**
-	 * Test workspace sanity. Checks for stale lock files (indicating a previous crash), snap files (indicating
-	 * workspace corruption), and triggers a rebuild if issues are found.
+	 * <p>
+	 * The resolution order is:
+	 * </p>
+	 * <ol>
+	 * <li>If the location is already set (e.g. via {@code -data} on the command line) it is validated and used
+	 * directly.</li>
+	 * <li>Otherwise the "remember workspace" preference is consulted. If set and the remembered location is still
+	 * valid, it is used without prompting the user.</li>
+	 * <li>If no valid remembered location exists the workspace-selection dialog is opened.</li>
+	 * </ol>
 	 *
-	 * @param workspacePath
-	 *            the path to the workspace root directory
-	 * @return true if the workspace is sane, false if a rebuild was triggered
-	 */
-	private boolean testWorkspaceSanity(final Path workspacePath) {
-
-		return DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Workspace sanity", "checked in", () -> {
-			File workspace = workspacePath.toFile();
-			// In light of issue #3445, allows a .rebuild file to trigger the rebuild
-			File[] files = workspace.listFiles((FileFilter) file -> ".rebuild".equals(file.getName()));
-			boolean rebuild = false;
-			if (files != null && files.length == 1) {
-				if (files[0].exists()) { files[0].delete(); }
-				rebuild = true;
-			}
-			if (!rebuild) {
-				files = workspace.listFiles((FileFilter) file -> ".metadata".equals(file.getName()));
-				if (files == null || files.length == 0) return true;
-				final File metadataDir = files[0];
-				final File[] logs = metadataDir.listFiles((FileFilter) file -> file.getName().contains(".log"));
-				if (logs != null) { for (final File log : logs) { log.delete(); } }
-
-				// Detect a stale .lock file — a sign that the previous session was force-killed or crashed.
-				// This is the root cause of the "Workspace is closed" exception at the next launch.
-				// When detected, we proactively delete the org.eclipse.core.resources folder to prevent
-				// Eclipse from failing to open the workspace on the next start.
-				final File lockFile = new File(metadataDir, ".lock");
-				if (lockFile.exists()) {
-					boolean doClean = true;
-					if (askBeforeRebuildingWorkspace()) { doClean =
-							GAMA.getGui().getDialogFactory().question("Stale workspace lock detected", """
-									GAMA detected that the previous session was not closed cleanly (a stale lock file \
-									was found in the workspace). This can cause a 'Workspace is closed' error \
-									at startup. Would you like GAMA to clean the workspace metadata now to \
-									prevent this error ?"""); }
-					if (doClean) {
-						lockFile.delete();
-						final File pluginsDir = new File(metadataDir, ".plugins");
-						if (pluginsDir.exists()) {
-							final File resourcesDir = new File(pluginsDir, "org.eclipse.core.resources");
-							deleteDirectory(resourcesDir);
-						}
-						clearWorkspace(true);
-						return false;
-					}
-				}
-
-				files = metadataDir.listFiles((FileFilter) file -> ".plugins".equals(file.getName()));
-				if (files == null) return false;
-				if (files.length == 0) return true;
-				files = files[0].listFiles((FileFilter) file -> "org.eclipse.core.resources".equals(file.getName()));
-				if (files == null) return false;
-				if (files.length == 0) return true;
-				files = files[0].listFiles((FileFilter) file -> file.getName().contains("snap"));
-				if (files == null) return false;
-				// DEBUG.OUT("[GAMA] Workspace appears to be " + (files.length == 0 ? "clean" : "corrupted"));>
-				if (files.length == 0) return true;
-
-				if (askBeforeRebuildingWorkspace()) {
-					rebuild = GAMA.getGui().getDialogFactory().question("Corrupted workspace",
-							"The workspace appears to be corrupted (due to a previous crash) or "
-									+ "it is currently used by another instance of the platform. Would you like GAMA to clean it ?");
-				}
-			}
-			if (rebuild) {
-				if (files != null) { for (final File file : files) { if (file.exists()) { file.delete(); } } }
-				clearWorkspace(true);
-				return false;
-			}
-			return true;
-		});
-	}
-
-	/**
-	 * Gets the model identifier.
-	 *
-	 * @return the model identifier
-	 */
-	@Override
-	public String getModelIdentifier() {
-		if (MODEL_IDENTIFIER == null) { MODEL_IDENTIFIER = getCurrentGamaStampString(); }
-		return MODEL_IDENTIFIER;
-	}
-
-	/**
-	 * Force workspace rebuild.
-	 */
-	@Override
-	public void forceWorkspaceRebuild() {
-		File f = new File(Platform.getInstanceLocation().getURL().getPath() + File.separator + ".rebuild");
-		try {
-			f.createNewFile();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
-	}
-
-	/**
-	 * Check workspace.
-	 *
-	 * @return the object
+	 * @return {@code null} on success, or {@link IApplication#EXIT_OK} if the application must abort
 	 * @throws IOException
-	 *             Signals that an I/O exception has occurred.
-	 * @throws MalformedURLException
-	 *             the malformed URL exception
+	 *             if the instance location URL cannot be set
 	 */
 	@Override
 	public Object checkWorkspace() throws IOException {
 		final Location instanceLoc = Platform.getInstanceLocation();
 		if (instanceLoc == null) {
-			// -data @none was specified but GAMA requires a workspace
+			// -data @none was specified but GAMA requires a workspace.
 			GAMA.getGui().getDialogFactory().error("A workspace is required to run GAMA");
 			return IApplication.EXIT_OK;
 		}
+
 		boolean remember = false;
 		String lastUsedWs = null;
+
 		if (instanceLoc.isSet()) {
 			lastUsedWs = instanceLoc.getURL().getFile();
 			final String ret = checkWorkspaceDirectory(lastUsedWs, false, false, false);
 			if (ret != null) {
-				// if ( ret.equals("Restart") ) { return EXIT_RESTART; }
-				/* If we don't or can't remember and the location is set, we can't do anything as we need a workspace */
 				GAMA.getGui().getDialogFactory().error("The workspace provided cannot be used. Please change it");
 				GAMA.getGui().exit();
 				return IApplication.EXIT_OK;
 			}
 		} else {
-
-			/* Get what the user last said about remembering the workspace location */
 			remember = isRememberWorkspace();
-			/* Get the last used workspace location */
 			lastUsedWs = getLastSetWorkspaceDirectory();
-			/* If we have a "remember" but no last used workspace, it's not much to remember */
-			if (remember && (lastUsedWs == null || lastUsedWs.length() == 0)) { remember = false; }
+			// A "remember" flag without a stored path is meaningless.
+			if (remember && (lastUsedWs == null || lastUsedWs.isEmpty())) { remember = false; }
 			if (remember) {
-				/*
-				 * If there's any problem with the workspace, force a dialog
-				 */
 				final String ret = checkWorkspaceDirectory(lastUsedWs, false, false, false);
-				// AD Added this check explicitly as the checkWorkspaceDirectory() was not supposed to return null at
-				// this stage
 				if (ret != null) {
 					remember = "models".equals(ret) && askBeforeUsingOutdatedWorkspace()
 							&& GAMA.getGui().getDialogFactory().question("Different version of the models library",
@@ -437,18 +561,14 @@ public class WorkspaceManager implements IWorkspaceManager {
 			}
 		}
 
-		/* If we don't remember the workspace, show the dialog */
 		if (!remember) {
 			String wr = GAMA.getGui().getDialogFactory().openWorkspaceSelectionDialog(true);
 			if (wr == null) {
 				GAMA.getGui().getDialogFactory().error("GAMA can not start without a workspace and will now exit.");
 				return IApplication.EXIT_OK;
 			}
-			/* Tell Eclipse what the selected location was and continue */
 			instanceLoc.set(new URL("file", null, wr), false);
-			// if ( applyPrefs() ) { applyEclipsePreferences(getSelectedWorkspaceRootLocation()); }
 		} else if (!instanceLoc.isSet()) {
-			/* Set the last used location and continue */
 			instanceLoc.set(new URL("file", null, lastUsedWs), false);
 		}
 
@@ -456,70 +576,89 @@ public class WorkspaceManager implements IWorkspaceManager {
 	}
 
 	/**
-	 * Clear workspace.
-	 *
-	 * @param clear
-	 *            the clear
+	 * Creates a {@code .rebuild} sentinel file inside the current workspace directory. On the next launch GAMA will
+	 * detect this file, delete it, and perform a clean rebuild of the workspace metadata.
 	 */
 	@Override
-	public void clearWorkspace(final boolean clear) {
-		GAMA.getPreferenceStore().putInStore(CLEAR_WORKSPACE, clear);
+	public void forceWorkspaceRebuild() {
+		File f = new File(Platform.getInstanceLocation().getURL().getPath() + File.separator + ".rebuild");
+		try {
+			f.createNewFile();
+		} catch (final IOException e) {
+			e.printStackTrace();
+		}
 	}
 
+	// -----------------------------------------------------------------------
+	// Workspace resource accessors
+	// -----------------------------------------------------------------------
+
 	/**
-	 * Gets the workspace.
+	 * Returns the {@link IWorkspace} service obtained from the OSGi service registry. The service tracker is opened
+	 * lazily on first call and the result is cached for subsequent calls.
 	 *
-	 * @return the workspace
+	 * @return the {@link IWorkspace} instance, or {@code null} if the service is not yet available
 	 */
 	@Override
 	public IWorkspace getWorkspace() {
-
 		if (workspace == null) {
 			ServiceTracker<IWorkspace, IWorkspace> workspaceTracker =
 					new ServiceTracker<>(WorkspaceActivator.getContext(), IWorkspace.class, null);
 			workspaceTracker.open();
 			workspace = workspaceTracker.getService();
-			// workspace = ResourcesPlugin.getWorkspace();
 		}
 		return workspace;
 	}
 
 	/**
-	 * Gets the workspace root.
+	 * Returns the {@link IWorkspaceRoot} of the current workspace.
 	 *
-	 * @return the workspace root
+	 * <p>
+	 * If the underlying {@link IWorkspace} service is unavailable (e.g. because the previous session crashed before
+	 * the metadata could be flushed), this method attempts a recovery by deleting the corrupted
+	 * {@code .metadata/.plugins/org.eclipse.core.resources/.root} tree and scheduling a workspace clear. It then
+	 * returns {@code null} so that the caller can abort gracefully.
+	 * </p>
+	 *
+	 * @return the {@link IWorkspaceRoot}, or {@code null} if the workspace service is not available
 	 */
 	@Override
 	public IWorkspaceRoot getRoot() {
-		IWorkspace workspace = getWorkspace();
-		if (workspace == null) {
-			DEBUG.ERR("The workspace location could not be set: ");
+		IWorkspace ws = getWorkspace();
+		if (ws == null) {
+			DEBUG.ERR("The workspace service could not be obtained.");
 			GAMA.getGui().getDialogFactory().inform(
-					"GAMA detected that the previous session was not closed cleanly. We will clean the workspace metadata now and restart the platfor now to prevent this error.");
-			File ws = new File(getWorkspaceLocation());
-			File[] files = ws.listFiles((FileFilter) file -> ".metadata".equals(file.getName()));
+					"GAMA detected that the previous session was not closed cleanly. "
+							+ "The workspace metadata will be cleaned now and the platform will restart to prevent further errors.");
+			File wsDir = new File(getWorkspaceLocation());
+			File[] files = wsDir.listFiles((FileFilter) file -> ".metadata".equals(file.getName()));
 			if (files == null || files.length == 0) return null;
 			final File metadataDir = files[0];
 			final File pluginsDir = new File(metadataDir, ".plugins");
 			if (pluginsDir.exists()) {
-				final File resourcesDir = new File(pluginsDir, "org.eclipse.core.resources");
-				final File rootFile = new File(resourcesDir, ".root");
+				final File rootFile = new File(new File(pluginsDir, "org.eclipse.core.resources"), ".root");
 				if (rootFile.exists()) { deleteDirectory(rootFile); }
 			}
 			clearWorkspace(true);
 			return null;
 		}
-		return workspace.getRoot();
+		return ws.getRoot();
 	}
 
-	/** The get workspace URI. */
+	/**
+	 * Returns an EMF {@link URI} pointing to the root of the current workspace, derived from the workspace root's
+	 * location URI.
+	 *
+	 * @return an EMF {@link URI} representing the workspace root location; never {@code null}
+	 */
 	@Override
 	public URI getWorkspaceURI() { return URI.createURI(getRoot().getLocationURI().toString(), false); }
 
 	/**
-	 * Gets the workspace path.
+	 * Returns the absolute file-system path of the workspace as an Eclipse {@link IPath}, derived from the OSGi
+	 * instance location.
 	 *
-	 * @return the workspace path
+	 * @return the workspace path; never {@code null}
 	 */
 	@Override
 	public IPath getWorkspacePath() {
@@ -527,9 +666,10 @@ public class WorkspaceManager implements IWorkspaceManager {
 	}
 
 	/**
-	 * Gets the workspace location.
+	 * Returns the absolute file-system path of the workspace as a platform-specific OS string (e.g.
+	 * {@code /home/user/Gama_Workspace} on Unix).
 	 *
-	 * @return the workspace location
+	 * @return the workspace location string; never {@code null}
 	 */
 	@Override
 	public String getWorkspaceLocation() { return getWorkspacePath().toOSString(); }
