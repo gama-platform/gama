@@ -132,7 +132,14 @@ jobs:
           # Notarize dmg - Based on : https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution/customizing_the_notarization_workflow#3087734
           echo "=== Notarize ==="
           xcrun -v notarytool store-credentials "AC_PASSWORD" --apple-id "$NOTARY_APPLE_ID" --team-id "$NOTARY_TEAM_ID" --password "$NOTARY_PASSWORD"
-          xcrun -v notarytool submit ./${{ matrix.zipName }}.dmg --keychain-profile "AC_PASSWORD" --wait
+          xcrun -v notarytool submit ./${{ matrix.zipName }}.dmg --keychain-profile "AC_PASSWORD" --wait 2>&1 | tee notarize_output.txt
+          NOTARIZE_ID=$(grep -m1 '  id:' notarize_output.txt | awk '{print $2}')
+          NOTARIZE_STATUS=$(grep 'status:' notarize_output.txt | tail -1 | awk '{print $2}')
+          if [ "$NOTARIZE_STATUS" != "Accepted" ]; then
+            echo "=== Notarization Log ==="
+            xcrun notarytool log "$NOTARIZE_ID" --keychain-profile "AC_PASSWORD"
+            exit 1
+          fi
           echo "=== Staple DMG ==="
           xcrun -v stapler staple ./${{ matrix.zipName }}.dmg
 
