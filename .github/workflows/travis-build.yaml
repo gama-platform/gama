@@ -144,7 +144,7 @@ jobs:
 
       - name: Install SSH key
         # Publish P2 only if *real* release (not GH only)
-        if: "${{ inputs.DONT_PUBLISH_P2 }}"
+        if: "${{ ! inputs.DONT_PUBLISH_P2 }}"
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.GAMA_SERVER_SSH_PRIVATE_KEY }}
@@ -153,7 +153,7 @@ jobs:
 
       - name: Deploy p2 GAMA's module
         # Publish P2 only if *real* release (not GH only)
-        if: "${{ inputs.DONT_PUBLISH_P2 }}"
+        if: "${{ ! inputs.DONT_PUBLISH_P2 }}"
         env:
           GAMA_SERVER_USERNAME: ${{ secrets.GAMA_SERVER_USERNAME }}
           GAMA_SERVER_PASSWORD: ${{ secrets.GAMA_SERVER_PASSWORD }}
