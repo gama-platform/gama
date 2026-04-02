@@ -15,14 +15,14 @@ function signInJar(){
         while read f
         do
             jar xf "$1" "$f"
-            codesign --timestamp --force -s "$MACOS_DEV_ID" -v "$f"
+            codesign --timestamp --options=runtime --force -s "$MACOS_DEV_ID" -v "$f"
 
             jar uf "$1" "$f"
         done < filelist.txt
 
     fi
 
-    grep "^\[$1" $needToSignFile | cut -d " " -f 2 > nestedJar.txt
+    grep "^\[$1" $needToSignFile | sed 's/^\[[^]]*\] //' > nestedJar.txt
     if [[ -s "nestedJar.txt" ]]; then
         while read nJ
         do
@@ -61,7 +61,7 @@ do
 done < jar.txt
 
 # Sign single lib files
-find ./ \( -name "*dylib" -o -name "*.so" -o -name "*.jnilib" \) -exec codesign --timestamp --force -s "$MACOS_DEV_ID" -v {} \;
+find ./ \( -name "*dylib" -o -name "*.so" -o -name "*.jnilib" \) -exec codesign --timestamp --options=runtime --force -s "$MACOS_DEV_ID" -v {} \;
 
 # Clean-up apple mess
 find ./Gama.app -name "jar*.tmp" -delete
