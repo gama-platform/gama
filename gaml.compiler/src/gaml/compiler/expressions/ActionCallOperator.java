@@ -127,17 +127,49 @@ public class ActionCallOperator implements IOperator {
 	}
 
 	/**
+	 * Resolves the {@link IClass} to use for looking up the action to execute.
+	 *
+	 * <p>
+	 * For normal calls the runtime species/class of the target object is used, which gives correct polymorphic
+	 * dispatch. For {@code super} invocations the lookup class must be pinned to the <em>compile-time</em> parent
+	 * class encoded in the {@code SuperExpression}'s type, not derived from the actual runtime type. Using the runtime
+	 * type would always resolve to one level above the most-derived class, causing an infinite loop when the call chain
+	 * spans more than two levels of inheritance (e.g. square → rectangle → shape).
+	 * </p>
+	 *
 	 * @param scope
+	 *            the current execution scope
 	 * @param object
-	 * @return
+	 *            the target object
+	 * @return the {@link IClass} whose {@code getAction} will be queried, or {@code null} on error
 	 */
 	private IClass getClass(final IScope scope, final IObject object) {
+		if (isSuperInvocation) {
+			// The SuperExpression was typed at compile time with the parent species/class.
+			// We look up that exact class by name so that nested super.foo() calls correctly
+			// traverse the full inheritance chain instead of always going one level above the
+			// actual runtime type (which would cause an infinite loop with 3+ levels).
+			String superClassName = target.getGamlType().getSpeciesName();
+			// For GAML classes (non-agent objects), getSpeciesName() may return null;
+			// fall back to the type name, which is the class name.
+			if (superClassName == null) { superClassName = target.getGamlType().getName(); }
+			if (superClassName == null) {
+				GAMA.reportError(scope, error("Cannot determine the super-class for " + getName(), scope), false);
+				return null;
+			}
+			IClass superClass = scope.getModel().getClass(superClassName);
+			if (superClass == null) {
+				GAMA.reportError(scope,
+						error("Super-class '" + superClassName + "' not found for " + getName(), scope), false);
+				return null;
+			}
+			return superClass;
+		}
 		IClass context = object.getSpecies();
 		if (context == null) {
 			GAMA.reportError(scope, error("No species/class available to execute " + getName(), scope), false);
 			return null;
 		}
-		if (isSuperInvocation) { context = context.getParent(); }
 		return context;
 	}
 
