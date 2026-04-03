@@ -141,6 +141,12 @@ Export-Package: com.bedatadriven.jackson.datatype.jts,
  it.geosolutions.jaiext.vectorbin,
  it.geosolutions.jaiext.warp,
  it.geosolutions.jaiext.zonal,
+ jakarta.xml.bind,
+ jakarta.xml.bind.annotation,
+ jakarta.xml.bind.annotation.adapters,
+ jakarta.xml.bind.attachment,
+ jakarta.xml.bind.helpers,
+ jakarta.xml.bind.util,
  javax.measure,
  javax.measure.format,
  javax.measure.quantity,
@@ -687,6 +693,7 @@ Bundle-ClassPath: .,
  libs/geotools 33.4/jai_codec-1.1.3.jar,
  libs/jai_core 1.1.3/jai_core-1.1.3.jar,
  libs/geotools 33.4/jai_imageio-1.1.jar,
- libs/geotools 33.4/commons-jxpath-1.3.jar
+ libs/geotools 33.4/commons-jxpath-1.3.jar,
+ libs/jak 3.0.11/jakarta.xml.bind-api-4.0.5.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.dependencies
