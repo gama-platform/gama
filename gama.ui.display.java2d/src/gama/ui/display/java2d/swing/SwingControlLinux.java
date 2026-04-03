@@ -109,4 +109,23 @@ public class SwingControlLinux extends SwingControl {
 	}
     }
 
+
+
+    @Override
+    protected void privateSetDimensions(final int width, final int height) {
+	WorkbenchHelper.asyncRun(() -> {
+	    if (isDisposed()) {
+		return;
+	    }
+	    org.eclipse.swt.graphics.Rectangle r = this.getBounds();
+	    int w = r.width;
+	    int h = r.height;
+	    EventQueue.invokeLater(() -> {
+		boolean sizeChanged = surface.getWidth() != w || surface.getHeight() != h;
+		if (sizeChanged) {
+		    surface.setBounds(0, 0, w, h);
+		}
+	    });
+	});
+    }
 }
