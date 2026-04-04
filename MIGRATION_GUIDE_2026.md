@@ -1,57 +1,90 @@
 # GAMA Version 2026: Innovations and Comprehensive Migration Guide
 
-This document is divided into two major sections. The **first part** details the profound innovations, technological leaps, and grammatical evolutions introduced in GAMA Version 2026 (branch `Upgrade-to-Eclipse-2025-12-and-JDK-25`). The **second part** serves as an exhaustive, technical migration reference guide for developers and modelers transitioning from previous versions.
+This document is divided into three major sections. **Part 0** offers a complete, summarized ChangeLog. **Part 1** details the profound innovations, technological leaps, and grammatical evolutions introduced in GAMA Version 2026 (branch `Upgrade-to-Eclipse-2025-12-and-JDK-25`). **Part 2** serves as an exhaustive, technical migration reference guide for developers and modelers transitioning from previous versions.
+
+---
+
+# Part 0: Executive Summary & ChangeLog
+
+This high-level ChangeLog summarizes the entire scope of the GAMA Version 2026 update.
+
+### Core Technology & Architecture
+*   **JDK 25 & Eclipse 2025-12:** Platform entirely upgraded to the latest Java Development Kit (JDK 25) and Eclipse 2025-12 RCP.
+*   **Module Split (`gama.api`):** Creation of the `gama.api` module. Complete decoupling of public interfaces (`IAgent`, `IPoint`, `IList`) from implementation details (`gama.core`).
+*   **Factory Generalization:** Direct constructors (e.g., `new GamaList()`) are abolished in favor of Factory patterns (`GamaListFactory.create()`).
+*   **Decentralized Casting:** The monolithic `Cast` utility class is reduced; casting is delegated to individual type implementations (`Types.LIST.cast()`).
+*   **Population Refactoring:** Centralization of population logic into `AbstractPopulation`. API updates (`createAgentAt` renamed to `createAgentAtIndex`).
+*   **Agent Encapsulation:** `IAgent` extends `IDelegatingShape`. Modifying attributes via standard container methods is restricted in favor of proper variable evaluation.
+
+### Language Innovations (GAML)
+*   **Object-Oriented Constructs:** Introduction of the **`class`** and **`object`** concepts into the GAML language, bringing robust object-oriented paradigms to model building.
+*   **Faster Compilation:** The Xtext parser and AST (Abstract Syntax Tree) have been completely redesigned with formal syntactic elements, resulting in vastly faster compilation times.
+*   **Cleaner Syntax:**
+    *   Removal of Arrow Braces: `action my_action -> { do something; }` is now `action my_action -> do something;`.
+    *   Argument Lists (`with:`): `[a::1]` replaced by `(a:1)`.
+    *   Keyword Deprecation: `diffuse var: heat` is now `diffuse heat`; `transition to: x` is now `transition x`.
+*   **Annotation Flattening:** Java Annotations used for GAML (`@operator`, `@action`, `@species`) are flattened into top-level interfaces in the `gama.annotations` package.
+
+### Engine, UI, and Graphics
+*   **OpenGL 4.1 Native Display Plugin:** Introduction of `gama.ui.display.opengl4`, the first display plugin completely based on the modern OpenGL 4.1 Core Profile architecture. It abandons legacy fixed-function pipelines in favor of Shaders, VAOs/VBOs, and the JOML library.
+*   **New Launching Overlay:** A redesigned and highly responsive launching overlay appears when preparing and starting experiments.
+*   **Enhanced Concurrency:** Massive improvements to concurrency support, both internally for the simulation engine and externally for parallel execution of GAML operations.
 
 ---
 
 # Part 1: Innovations in GAMA and GAML (Version 2026)
 
-GAMA 2026 represents one of the most significant architectural overhauls in the history of the platform. More than just an incremental update, it is a foundational leap designed to secure GAMA’s future, enhance the modeler’s experience, and provide a robust, modern API for plugin developers. The modifications span across over 10,000 files, touching every aspect of the engine, the language, and the user interface.
+GAMA 2026 represents one of the most significant architectural overhauls in the history of the platform. More than just an incremental update, it is a foundational leap designed to secure GAMA’s future, enhance the modeler’s experience, and provide a robust, modern API for plugin developers.
 
-## 1. Technological Leap: Embracing JDK 25 and Eclipse 2025-12
+## 1. Technological Leap: JDK 25 and Concurrency
 
 At its core, GAMA 2026 abandons legacy Java constraints by upgrading directly to **Java Development Kit (JDK) 25** and the **Eclipse 2025-12** Rich Client Platform.
 
 ### What this brings to the platform:
-*   **Performance and Memory Management:** JDK 25 introduces cutting-edge garbage collection optimizations, improved thread management, and underlying enhancements that directly translate to faster simulation execution times and a reduced memory footprint for massive agent-based models.
-*   **Modern Java Features:** For plugin developers, this means the ability to use modern Java paradigms. The codebase has been extensively refactored to utilize features like **Pattern Matching for `instanceof`** (e.g., `if (obj instanceof MyClass myVar) { ... }`), Records, and Switch Expressions. This drastically reduces boilerplate code, minimizes casting errors, and improves code readability across the entire platform.
-*   **Future-Proofing the IDE:** By aligning with the upcoming Eclipse 2025-12 release, GAMA ensures continued support for the latest OS updates, high-DPI displays, and modern UI rendering engines.
+*   **Pattern Matching & Modern Java:** Code readability is massively improved. The engine relies heavily on Pattern Matching for `instanceof` (e.g., `if (obj instanceof MyClass myVar) { ... }`), Records, and Switch Expressions, stripping away thousands of lines of boilerplate casting.
+*   **Much Better Concurrency Support:** The shift to modern Java has enabled the engine to implement vastly superior concurrency models. Internal threading mechanisms for the platform and the scheduler have been optimized. Furthermore, GAML parallel operations (e.g., parallel lists, parallel asks) now execute with significantly lower overhead and better thread pooling, leveraging JDK 25's advanced thread management.
 
-## 2. The Language Evolution: A Cleaner, Modern GAML
+## 2. Introducing Object-Oriented GAML: `class` and `object`
 
-The GAML language (GAMA Modeling Language) has been refined to be more intuitive, concise, and aligned with modern programming aesthetics. The goal was to remove unnecessary verbosity and "boilerplate" syntax that hindered readability without adding semantic value.
+For the first time, GAMA introduces native support for **`class`** and **`object`** structures directly within the GAML language.
 
-### Key Grammatical Innovations:
-*   **Streamlined Parameter Passing (`with:`):** The legacy syntax for passing arguments to actions or creating agents involved clunky brackets and double colons (e.g., `with: [a::1, b::2]`). GAMA 2026 introduces a much cleaner, JSON-like syntax using parentheses and single colons: **`with: (a:1, b:2)`**. This makes model code significantly easier to read and write.
-*   **Flattening of Arrow Functions (`->`):** Previously, defining inline actions or evaluations required surrounding the body in curly braces: `action my_action -> { do something; };`. The parser now intelligently handles the arrow operator without requiring the outermost braces: **`action my_action -> do something;`**. This functional programming style allows for highly expressive, one-line declarations.
+While GAMA has always been Agent-based (where species define agents with complex lifecycles, shapes, and locations in topologies), the introduction of `class` provides a lightweight, purely data-and-logic structure. Classes allow modelers to define complex, nested data structures and utility objects without incurring the overhead of a full simulation agent (no geometry, no automatic scheduling). This closes a major gap for developers writing complex, software-engineering-heavy models in GAML.
+
+## 3. The Language Evolution: A Cleaner, Faster GAML
+
+The GAML syntax has been refined to be more intuitive, concise, and aligned with modern programming aesthetics. Furthermore, the underlying Xtext compiler has been rewritten with a strict AST.
+
+*   **Faster Compilation:** The rigid formalization of the AST (`SyntacticAttributeElement`, `SyntacticClassElement`) and optimized parsing rules mean that large models compile and initialize significantly faster than in previous versions.
+*   **Streamlined Parameter Passing (`with:`):** The legacy syntax `with: [a::1, b::2]` is replaced by a cleaner, JSON-like syntax: **`with: (a:1, b:2)`**.
+*   **Flattening of Arrow Functions (`->`):** The parser now handles the arrow operator without requiring the outermost braces: **`action my_action -> do something;`**.
 *   **Removal of Redundant Keywords:**
-    *   The `diffuse` statement no longer requires the `var:` keyword. `diffuse var: heat` is now simply **`diffuse heat`**.
-    *   The `transition` statement inside state machines no longer uses `to:`. `transition to: next_state` is now just **`transition next_state`**.
-*   **Separating Identifiers from Titles:** In previous versions, displays and experiments could be named using a string (e.g., `display "My Chart"`), which internally acted as an awkward identifier. GAMA 2026 enforces a clear separation between the programmatic identifier and the human-readable UI title: **`display My_Chart title: "My Chart"`**. This eliminates internal parsing ambiguities and bugs related to special characters in names.
-*   **Contextual Clarity (`image` vs. `picture`):** To avoid keyword collisions and confusion, the display layer used for rendering images has been renamed from `image` to **`picture`**.
+    *   `diffuse var: heat` is now simply **`diffuse heat`**.
+    *   `transition to: next_state` is now just **`transition next_state`**.
+*   **Separating Identifiers from Titles:** Displays and experiments enforce a clear separation between the programmatic identifier and the human-readable UI title: **`display My_Chart title: "My Chart"`**.
+*   **Contextual Clarity:** The display layer used for rendering images has been renamed from `image` to **`picture`**.
 
-## 3. The Architectural Revolution: The `gama.api` Module
+## 4. Graphics Revolution: The OpenGL 4.1 Display Plugin
 
-For years, GAMA extension developers struggled with a monolithic `gama.core` module where public interfaces were entangled with internal implementations.
+GAMA 2026 ships with a brand new, highly optimized display plugin: **`gama.ui.display.opengl4`**.
 
-GAMA 2026 introduces **`gama.api`**, a completely new, isolated module that serves as the definitive public contract for the platform.
+This is the first display plugin built from the ground up on the **OpenGL 4.1 Core Profile**. It completely abandons the legacy OpenGL 2 fixed-function pipeline (removing `glBegin`/`glEnd`, `glMatrixMode`, etc.).
+*   **Modern Rendering:** All rendering is now based exclusively on Shaders (loaded from `.vert` and `.frag` files), Vertex Array Objects (VAOs), and Vertex Buffer Objects (VBOs).
+*   **JOML Math Library:** The legacy matrix stack has been replaced by the high-performance Java OpenGL Math Library (JOML).
+*   **Performance:** This architecture ensures extremely high execution speed, massive polygon throughput, and significantly lower GPU memory usage compared to previous renderers.
 
-### Why this is a game-changer:
-*   **True Encapsulation:** Implementation details are now hidden. Plugin developers rely solely on interfaces (`IPoint`, `IAgent`, `IList`, `IGraph`) located in `gama.api`. This guarantees that internal optimizations in `gama.core` will not break third-party plugins in the future.
-*   **Interface-Driven Design:** Methods across the platform now strictly return interfaces rather than concrete classes. For instance, `agent.getLocation()` returns an `IPoint` rather than a `GamaPoint`. This allows the engine to swap out underlying implementations (e.g., swapping a standard point for a highly optimized, memory-mapped spatial coordinate) without the modeler or plugin developer ever noticing.
+## 5. UI Improvements: The Launching Overlay
 
-## 4. Reinventing the Core: `IAgent`, `IPopulation`, and Factories
+The user experience during model execution has been smoothed out with the introduction of a **new launching overlay**. When an experiment is launched, a highly responsive UI overlay takes over to display compilation, agent initialization, and setup progress. This prevents UI lock-ups and provides clear feedback to the modeler before the simulation officially begins stepping.
 
-Under the hood, the fundamental building blocks of a simulation have been redesigned for safety, speed, and consistency.
+## 6. The Architectural Revolution: `gama.api` and Factories
 
-*   **The `IAgent` Interface Redefined:** The agent interface has been stripped of direct shape inheritance and mutable container properties. It now extends `IDelegatingShape`, delegating geometry handling to specialized, swappable components. Furthermore, direct attribute mutation via the container interface is deprecated; attributes must be accessed via robust GAML variables, preventing untracked state changes.
-*   **Population Centralization:** The logic that manages collections of agents has been centralized into an `AbstractPopulation` base class. This DRY (Don't Repeat Yourself) approach eliminates inconsistencies between grid populations, standard agent populations, and graph-based populations, making the engine much easier to maintain.
-*   **The Factory Pattern Generalization:** To support the `gama.api` encapsulation, the direct instantiation of core types using `new` (e.g., `new GamaList()`) is strictly prohibited. Everything is now created via Factories (`GamaListFactory.create()`, `GamaShapeFactory.buildCircle()`). This is a crucial innovation: it gives the GAMA kernel absolute control over memory allocation, allowing it to pool objects, reuse memory, and optimize data structures transparently based on the simulation's needs.
+GAMA 2026 introduces **`gama.api`**, an isolated module that serves as the definitive public contract for the platform.
 
-## 5. Cleaning the Utilities and Annotations
+*   **True Encapsulation:** Implementation details are hidden in `gama.core`. Plugin developers rely solely on interfaces (`IPoint`, `IAgent`, `IList`).
+*   **The Factory Pattern Generalization:** Direct instantiation of core types (e.g., `new GamaList()`) is strictly prohibited. Everything is created via Factories (`GamaListFactory.create()`). This allows the GAMA kernel absolute control over memory allocation, object pooling, and optimization.
+*   **Reinventing `IAgent`:** The agent interface delegates geometry handling to specialized components (`IDelegatingShape`) and deprecates direct attribute mutation via containers in favor of robust GAML variable access.
+*   **Decentralizing `Cast`:** The monolithic `Cast` utility class has been broken down. Type casting is now handled intelligently by the target `IType` implementations.
 
-*   **Flattening Annotations:** The GAML annotation framework (used by developers to define `@operator`, `@species`, `@action`) was previously nested inside a massive `GamlAnnotations` class. In 2026, these are now elegant, top-level interfaces directly in the `gama.annotations` package, greatly cleaning up Java imports and class definitions.
-*   **The Fall of the Monolithic `Cast` Class:** Type casting in Java plugins used to be routed through a single, gigantic `Cast` utility class. This created a massive bottleneck and architectural dependency nightmare. In 2026, casting logic has been decentralized. Each `IType` implementation now knows how to cast objects to itself (e.g., `Types.POINT.cast(...)`), adhering to solid object-oriented design principles and improving extensibility.
 
 ***
 
