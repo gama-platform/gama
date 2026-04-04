@@ -1,3 +1,13 @@
+/**
+* Name: Preferences
+* Author: Gama Development Team
+* Description: Provides a comprehensive reference for all GAMA preferences accessible through the 'gama' built-in
+*   agent. GAMA exposes its internal configuration as readable (and sometimes writable) attributes of the 'gama'
+*   pseudo-agent. These preferences control aspects such as console output limits, chart quality, error handling,
+*   display rendering, experiment behavior, and many more. This model prints the current value of every available
+*   preference to the console, serving as a live documentation of the platform configuration.
+* Tags: system, preferences, configuration, gama, platform, settings
+*/
 // GAMA 0.0.0-SNAPSHOT Preferences saved on 2025-05-04T22:52:53.671264
 model preferences
 

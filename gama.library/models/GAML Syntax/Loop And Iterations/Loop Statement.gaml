@@ -1,8 +1,12 @@
 /***
-* Name: Loops
+* Name: Loop Statement
 * Author: Benoit Gaudou
-* Description: This model illustrates the possible uses of the loop statement on a list (but everything can be applied to any kind of container).
-* Tags: loop, list, over, times, while
+* Description: Illustrates the possible uses of the 'loop' statement in GAML. The loop statement has several forms:
+*   'loop times: N' repeats a block N times; 'loop var from: a to: b' iterates an integer counter over a range;
+*   'loop var from: a to: b step: s' iterates with a custom step; 'loop var over: container' iterates over a
+*   collection; and 'loop while: condition' iterates until a condition becomes false.
+*   This model demonstrates each form applied to a list of strings.
+* Tags: loop, list, over, times, while, from, to, step, iteration
 ***/
 
 model LoopsPossibleUses

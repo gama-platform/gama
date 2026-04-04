@@ -1,10 +1,12 @@
 /**
-* Name: Raster File in a Grid of cells
-* Author: Maroussia Vavasseur and Benoit Gaudou
-* Description: Model which shows how to import a Raster file in GAMA and use it to initialize the color attributes of a grid of cells. 
-* This model represents a grid with a cell, each cell has a color, and this color is used for animals (izards) to be placed on a cell 
-* that verifies some conditions. The izards do not move once they have been placed. 
-* Tags:  load_file, gis, raster
+* Name: Raster Image Import
+* Author: Maroussia Vavasseur, Benoit Gaudou
+* Description: Shows how to import a raster image (e.g., a habitat or land-use map) in GAMA and use it to
+*   initialize the color attributes of a grid. Each grid cell is assigned the color of the corresponding pixel
+*   in the raster image. A set of animal agents (izards) is then placed on cells that satisfy specific color
+*   conditions, simulating habitat preference. The example uses a pyrenean habitat map and demonstrates how
+*   raster image data can drive both the visual appearance and the spatial distribution of agents in a simulation.
+* Tags: load_file, gis, raster, image, grid, color, habitat, initialization, spatial
 */
 
 model HowToImportRaster

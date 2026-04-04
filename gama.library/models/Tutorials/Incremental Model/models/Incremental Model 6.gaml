@@ -1,8 +1,12 @@
 /**
-* Name: Multi-level
-* Author: GAMA team
-* Description: 6th part of the tutorial : Incremental Model
-* Tags: tutorial, chart, graph, 3d, light, multi-Level
+* Name: Incremental Model Tutorial - Step 06 - Multi-Level
+* Author: Gama Development Team
+* Description: Sixth step of the Incremental Model tutorial. Adds a multi-level layer to the simulation:
+*   buildings are treated as micro-containers for the people agents inside them. When people enter a building
+*   they are 'captured' by it; when they leave they are 'released'. This allows the building to aggregate
+*   statistics (e.g., number of infected occupants) and act as a spatial unit for the epidemic. The step
+*   demonstrates GAMA's multi-level species mechanism.
+* Tags: tutorial, chart, graph, 3d, light, multi_level, species, SI, epidemic
 */
 model model6
 

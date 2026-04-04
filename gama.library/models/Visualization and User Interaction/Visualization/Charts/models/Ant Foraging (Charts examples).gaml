@@ -1,8 +1,13 @@
 /**
-* Name: Ant Foraging (Charts examples)
+* Name: Ant Foraging (Charts Examples)
 * Author: Philippe Caillou
-* Description: How ants search food and use pheromons to return to their nest once they find it.
-* Tags: gui, skill, chart, grid, diffusion
+* Description: The ant foraging model adapted to showcase the full range of GAMA chart types. The underlying
+*   simulation (ants finding food and depositing pheromones) is the same as in the Toy Models section, but
+*   this version adds multiple chart experiments demonstrating series, bar, pie, radar, heatmap, and
+*   distribution chart types applied to ant colony data (e.g., pheromone levels over time, number of ants
+*   in each state, food return rates). Use this model as a practical reference for choosing and configuring
+*   chart output in your own models.
+* Tags: gui, skill, chart, grid, diffusion, pheromone, ants, series, bar, pie, radar, heatmap
 */
 model ants
 

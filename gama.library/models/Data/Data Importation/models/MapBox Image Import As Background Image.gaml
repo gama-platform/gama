@@ -1,8 +1,12 @@
 /***
-* Name: mainroadcells
-* Author: minhduc0711
-* Description: 
-* Tags: Tag1, Tag2, TagN
+* Name: MapBox Image Import As Background Image
+* Author: Duc Minh Tran
+* Description: Shows how to load a static map image from the Mapbox Static Images API and use it as a
+*   background layer in a GAMA display. Mapbox provides high-quality satellite, street, and terrain tile images
+*   through a REST API. A valid Mapbox API key is required. The model provides a user command to change the
+*   map center coordinates and reload the image dynamically. This pattern can be used to provide a realistic
+*   geographic context for simulations that cover a specific real-world area.
+* Tags: image, background, mapbox, map, web, api, display, load_file
 ***/
 model main
 

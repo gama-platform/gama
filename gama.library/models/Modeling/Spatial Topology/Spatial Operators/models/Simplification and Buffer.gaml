@@ -1,7 +1,12 @@
 /***
-* Name: Tolerance
-* Author: A. Drogoul
-* Description: Allows a live manipulation of the tolerance used in simplifications and buffer value, and demonstrates their impact visually
+* Name: Simplification and Buffer
+* Author: Alexis Drogoul
+* Description: An interactive demonstration of two key geometry processing operations: simplification and
+*   buffering. Simplification (Douglas-Peucker algorithm) reduces the number of vertices in a geometry while
+*   preserving its overall shape; the 'tolerance' parameter controls how aggressively vertices are removed.
+*   Buffering expands or contracts a geometry by a given distance. The model lets users manipulate both
+*   parameters live via sliders and immediately see their effect on a reference geometry.
+* Tags: geometry, simplification, buffer, spatial_computation, tolerance, interactive, display
 ***/
 
 model Tolerance

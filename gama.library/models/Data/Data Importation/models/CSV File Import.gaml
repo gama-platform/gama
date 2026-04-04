@@ -1,8 +1,13 @@
 /**
-* Name: Convertion of CSV data to Matrix
-* Author:  Patrick Taillandier
-* Description: Model which shows how to initialize a matrix by using the content of a CSV File. The model load a CSV File, and write its content in the console. 
-* Tags: csv, load_file
+* Name: CSV File Import
+* Author: Patrick Taillandier
+* Description: Shows how to load a CSV file in GAMA and convert its contents into a matrix for direct data
+*   manipulation. The 'csv_file' operator reads the file using the specified delimiter and parses all values.
+*   The resulting file object can be cast to a matrix, making every cell of the CSV directly accessible by
+*   row and column index. This approach is useful when the CSV data needs to be processed programmatically
+*   rather than directly mapped to agent attributes. The model uses the Iris dataset and writes the loaded
+*   matrix contents to the console.
+* Tags: csv, load_file, matrix, data, import, parsing
 */
 
 

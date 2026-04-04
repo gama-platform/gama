@@ -1,8 +1,12 @@
 /***
-* Name: EscapeTrainingEnvironment
-* Author: pataillandie and kevinchapuis
-* Description: Vectorize an image and save result into shapefile
-* Tags: Vectorization, image, synthetic environment
+* Name: Image Vectorization
+* Author: Patrick Taillandier, Kevin Chapuis
+* Description: Demonstrates how to vectorize a raster image — that is, convert the pixel regions of a raster image
+*   into vector polygons — and then save the result as a shapefile. A resolution factor controls the precision
+*   of the vectorization: higher values produce more detailed polygons at the cost of processing time. This is
+*   useful for generating synthetic geographic environments from hand-drawn or schematic images, such as floor plans,
+*   maps, or simplified urban layouts, without requiring GIS software.
+* Tags: vectorization, image, synthetic, environment, shapefile, raster, export
 ***/
 
 model EscapeTrainingEnvironment

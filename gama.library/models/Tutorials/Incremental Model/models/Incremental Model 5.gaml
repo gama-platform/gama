@@ -1,8 +1,12 @@
 /**
-* Name: 3D visualization
-* Author: GAMA team
-* Description: 5th part of the tutorial : Incremental Model
-* Tags: tutorial, chart, graph, 3d, light
+* Name: Incremental Model Tutorial - Step 05 - 3D Visualization
+* Author: Gama Development Team
+* Description: Fifth step of the Incremental Model tutorial. Adds a 3D display to the epidemic simulation.
+*   Buildings are extruded proportionally to their height attribute, creating a realistic urban skyline.
+*   People are displayed as 3D spheres (or OBJ models). Lighting (ambient and diffuse) is configured in the
+*   3D display to improve depth perception. The infection dynamics remain unchanged; this step focuses
+*   entirely on upgrading the visualization from 2D to 3D.
+* Tags: tutorial, chart, graph, 3d, light, display, visualization, SI, epidemic
 */
 
 model model5 

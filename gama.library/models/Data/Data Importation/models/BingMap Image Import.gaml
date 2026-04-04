@@ -1,8 +1,12 @@
 /**
-* Name: BingMapImageImport
+* Name: Bing Map Image Import
 * Author: Alexis Drogoul
-* Description: Demonstrates how to load a image from BingMap https://docs.microsoft.com/en-us/bingmaps/rest-services/imagery/get-a-static-map and how to refresh it
-* Tags: data_loading, displays, user_input, on_change
+* Description: Demonstrates how to load a static map image from the Bing Maps REST API and use it as a background
+*   layer in a GAMA display. The Bing Maps Static Map API (https://docs.microsoft.com/en-us/bingmaps/rest-services/imagery/get-a-static-map)
+*   returns satellite or road-map images for a specified geographic area. This model also shows how to dynamically
+*   reload the image when the user changes the destination, illustrating the 'on_change' pattern for reactive
+*   parameter updates. A valid Bing Maps API key is required to use this model.
+* Tags: data_loading, image, background, bing, map, web, api, on_change, display
 */
 @no_warning
 model BingMapImageImport

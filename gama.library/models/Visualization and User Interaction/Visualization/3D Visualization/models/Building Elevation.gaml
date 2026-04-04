@@ -1,11 +1,13 @@
 /**
-* Name: 3D Display model and Height of Building using shapefiles
+* Name: Building Elevation
 * Author: Arnaud Grignard
-* Description: Model presenting a 3D display of people and buildings moving on a road network imported thanks to shapefiles. 
-* 
-* Two experiments are proposed : one showing people represented by a yellow sphere moving from a living 3D building to a working 3D building and coming back 
-* using a road network (road_traffic). The second experiment distinguish the species by using different layers for species (road_traffic_multi_layer).
-* Tags: 3d, shapefile, gis
+* Description: A 3D city visualization model showing buildings extruded to their real heights and people
+*   moving along a road network. People travel between home and work buildings using road graph navigation.
+*   Two experiments are provided: 'road_traffic' displays people as yellow spheres navigating between 3D
+*   buildings; 'road_traffic_multi_layer' uses separate display layers for each species for better visual
+*   control. This is the base model imported by several other visualization examples (e.g., Building Heatmap,
+*   Camera Shared Zoom).
+* Tags: 3d, shapefile, gis, building, elevation, road_network, people, visualization, display
 */
 model tutorial_gis_city_traffic
 

@@ -1,8 +1,12 @@
 /**
-* Name: testStrahler
+* Name: Strahler Number
 * Author: Patrick Taillandier
-* Description: exemple of Strahler number computation
-* Tags: graph, strahler
+* Description: Demonstrates the computation of Strahler stream order numbers on a river network graph. The
+*   Strahler number is a measure of branching complexity: leaf nodes (headwaters) have order 1; when two
+*   streams of the same order meet the result has order+1; otherwise the higher order is kept. It is widely
+*   used in hydrology and geomorphology to characterize drainage networks. The model loads a river graph and
+*   displays each segment colored by its Strahler number.
+* Tags: graph, strahler, hydrology, stream_order, river_network, geomorphology, branching
 */
 
 model exempleStrahler

@@ -1,8 +1,11 @@
 /***
-* Name: Loops
+* Name: Loop Over Containers
 * Author: Benoit Gaudou
-* Description: This model illustrates the behavior of loop over many kinds of container.
-* Tags: loop, container, list, map, matrix, point, population
+* Description: Illustrates how the 'loop over' statement can iterate over all the main container types available in GAML.
+*   Containers in GAML include: list (ordered sequence of elements), map (key-value pairs), matrix (2D grid of values),
+*   pair (a single key-value association), graph (nodes and edges), and species populations (collections of agents).
+*   For each container type, the model demonstrates the syntax and shows the values produced during iteration.
+* Tags: loop, container, list, map, matrix, point, population, pair, graph, iteration
 ***/
 
 model LoopsOverContainers

@@ -1,9 +1,12 @@
 /***
 * Name: Attribute Access
 * Author: Benoit Gaudou
-* Description: Model on accessing agents' attributes and which attributes are present when loading shape files.
-* Built-in attibutes are also presented.
-* Tags: GAML, attribute, access
+* Description: Demonstrates how to access and use agents' attributes in GAML. Covers: reading attributes from
+*   other agents using the dot notation (agent.attribute), accessing built-in attributes that are automatically
+*   populated when loading shapefiles (such as name, location, shape, and other GIS-derived fields), and working
+*   with the built-in attributes that every GAML agent possesses (location, shape, color, name, etc.). The model
+*   loads a shapefile and shows how the loaded attributes are directly available on each agent.
+* Tags: GAML, attribute, access, shapefile, built-in, dot_notation, species
 ***/
 
 

@@ -1,8 +1,12 @@
 /**
-* Name: Save to GeoJson
+* Name: Save to GeoJSON
 * Author: Patrick Taillandier
-* Description: This is a model that shows how to save agents inside a GeoJSon to reuse it later or to keep it.
-* Tags: save_file, geojson
+* Description: Shows how to save agent geometries and attributes to a GeoJSON file for reuse or sharing with
+*   external GIS tools. GeoJSON is a widely used open standard format for geographic feature collections; it stores
+*   geometries and properties in a human-readable JSON structure that can be opened by QGIS, web mapping libraries,
+*   and many other tools. The model creates a set of building agents and saves them with their spatial and attribute
+*   data to a GeoJSON file.
+* Tags: save_file, geojson, gis, export, geometry, spatial
 */
 
 model SavetoGeoJson

@@ -1,8 +1,12 @@
 /**
 * Name: Abort
-* Shows the usage of 'abort' and 'init'
-* Author: drogoul
-* Tags: abort, init
+* Author: Alexis Drogoul
+* Description: Demonstrates the usage of the 'abort' and 'init' special actions in GAML. The 'init' action is called
+*   once when a simulation is created, allowing to set up the initial state. The 'abort' action is called when the
+*   simulation is about to be killed or destroyed, and can be used for cleanup operations such as killing dependent
+*   agents or writing final outputs. This model shows both in action and prints messages to the console to trace
+*   the order of execution.
+* Tags: abort, init, simulation, lifecycle
 */
 model Abort
 

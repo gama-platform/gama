@@ -1,8 +1,12 @@
 /**
 * Name: Clipboard
-* Shows how the clipboard can be used to retrieve and save text or other objects 
-* Author: A. Drogoul
-* Tags: system, clipboard, casting
+* Author: Alexis Drogoul
+* Description: Shows how to use the system clipboard from GAML models. The 'copy_to_clipboard' action places a
+*   string value onto the operating system clipboard, while 'paste_from_clipboard' retrieves the current contents
+*   of the clipboard as a string. This can be used to transfer data between GAMA and other applications, or to
+*   let users copy simulation results for use elsewhere. The example transforms the world geometry into a string,
+*   modifies it, copies it to the clipboard, and reads it back.
+* Tags: system, clipboard, copy, paste, string, casting, OS
 */
 
 

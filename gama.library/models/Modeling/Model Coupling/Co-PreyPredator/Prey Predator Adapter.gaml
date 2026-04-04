@@ -1,8 +1,10 @@
 /**
-* Name: prey_predator_coupling
-* Author: HUYNH Quang Nghi
-* Description: This is the coupling of Prey Predator  model. It is supposed to be used in the Comodeling Example as an interface. 
-* Tags: comodel
+* Name: Prey Predator Adapter
+* Author: Huynh Quang Nghi
+* Description: Comodeling adapter (coupling class) for the Prey Predator base model. This file is NOT
+*   intended to be launched directly — it serves as the interface between comodel examples and the
+*   Prey Predator sub-model, exposing its agent populations and behaviors to the parent comodel.
+* Tags: comodel, adapter, predator_prey, coupling
 */
 model prey_predator_coupling
 

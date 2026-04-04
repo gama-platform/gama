@@ -1,8 +1,12 @@
 /**
-* Name: OBJ File Drawing and Moving
-* Author:  Patrick Taillandier, Tri Nguyen-Huu, Arnaud Grignard 
-* Description: Model which shows how to draw a moving objet as a OBJ File and how to apply a 3D rotation to the object
-* Tags:  load_file, 3d, skill, obj, moving, goto
+* Name: Moving 3D Object
+* Author: Patrick Taillandier, Tri Nguyen-Huu, Arnaud Grignard
+* Description: Shows how to load and animate a 3D OBJ model with dynamic rotation. An agent moves along a
+*   path using the 'goto' action and the OBJ file is drawn at the agent's location. The 'rotate' facet of
+*   the draw statement applies a 3D rotation expressed as an axis-angle pair, allowing the model to yaw,
+*   pitch, and roll the object realistically as it moves. Useful as a reference for animating vehicles,
+*   aircraft, or any 3D object that needs orientation-aware rendering.
+* Tags: load_file, 3d, obj, moving, goto, rotation, animation, visualization, display
 */
 
 model Moving3Dobject

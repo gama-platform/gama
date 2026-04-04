@@ -1,8 +1,12 @@
 /**
-* Name: comodel_with_the_coupling
-* Author: HUYNH Quang Nghi
-* Description: This is a simple comodel to demonstrate the importation and instatiation of micro-model using coupling  
-* Tags: comodel
+* Name: Simple GUI Comodel (Flies and Mosquitos)
+* Author: Huynh Quang Nghi
+* Description: A comodel combining a Flies model and a Mosquitos model in a shared environment, using
+*   coupling adapters to define the interface between models. Flies and mosquitos are independent species
+*   that coexist in the same simulation space. This example demonstrates the standard comodeling pattern
+*   with coupling classes that expose adapter actions, and shows how to display agents from both sub-models
+*   in a single unified experiment display.
+* Tags: comodel, coupling, flies, mosquitos, adapter, multi_model
 */
 model complex_comodeling_example
 

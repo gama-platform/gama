@@ -1,8 +1,12 @@
 /**
-* Name: AnimatedGIFLoading
-* Author: A. Drogoul
-* Description:  Shows how to load animated GIF files and use them as textures or display them directly. 
-* Tags: Image, Display, File
+* Name: GIF File Loading
+* Author: Alexis Drogoul
+* Description: Shows how to load animated GIF files in GAMA and use them as textures for agents or display them
+*   directly in a simulation view. Animated GIFs contain multiple frames, and GAMA can cycle through those frames
+*   automatically when the file is used as an agent's image aspect. This is useful for adding animated icons or
+*   visual effects to a simulation display. The model creates a population of fish agents that each use an animated
+*   GIF as their visual representation.
+* Tags: image, display, gif, animation, texture, load_file, file
 */
 
 model AnimatedGIFLoading

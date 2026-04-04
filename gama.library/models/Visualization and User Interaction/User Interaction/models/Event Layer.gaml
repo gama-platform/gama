@@ -1,10 +1,13 @@
 /**
-* Name: Event Feature
-* Author: Arnaud Grignard & Patrick Taillandier & Jean-Daniel Zucker
-* Description: Model which shows how to use the event layer to trigger an action according to an event occuring in the display. The experiment 
-* has two displays : one for the changing color event, one for the changing shape event.
-* Tags: gui
- */
+* Name: Event Layer
+* Author: Arnaud Grignard, Patrick Taillandier, Jean-Daniel Zucker
+* Description: Demonstrates how to use the 'event' display layer to trigger actions in response to user
+*   interactions in a GAMA display. Two display experiments are provided: one that changes an agent's color
+*   when the user clicks on it, and one that changes the agent's shape. The event layer listens for mouse
+*   clicks and keyboard presses and calls the associated action on the targeted agent. This is the primary
+*   mechanism for building interactive simulations where users can manipulate agents directly in the display.
+* Tags: gui, event, mouse_click, interaction, display, user_input
+*/
 model event_layer_model
 
 

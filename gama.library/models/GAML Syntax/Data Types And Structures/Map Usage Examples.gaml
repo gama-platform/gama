@@ -1,8 +1,11 @@
 /**
 * Name: Map Usage Examples
-* Author: GitHub Copilot
-* Description: A collection of examples demonstrating how to use maps in GAML for various tasks.
-* Tags: map, data_structure, loop
+* Author: Gama Development Team
+* Description: A collection of practical examples demonstrating how to use maps in GAML for various real-world tasks.
+*   Covers basic map creation and access, modifying entries, iterating over keys and values, computing statistics
+*   from map values, and using maps as data stores for agents. The model is organized as a set of actions executed
+*   at initialization, each demonstrating a different aspect of map usage.
+* Tags: map, data_structure, loop, iteration, key, value, agent
 */
 
 model MapUsageExamples

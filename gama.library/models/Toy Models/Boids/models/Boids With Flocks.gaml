@@ -1,8 +1,12 @@
 /**
 * Name: Boids With Flocks
-* Author: 
-* Description: This model shows the movement of boids following a goal and creating a flock . 
-* Tags: gui, skill, 3d, multi_level, clustering
+* Author: Gama Development Team
+* Description: Extends the basic Boids model by adding multi-level flock detection and visualization. Individual
+*   boid agents follow the standard Reynolds rules (separation, alignment, cohesion). Additionally, the model
+*   detects emergent flocks by clustering spatially nearby boids and assigns each flock a representative color.
+*   This adds a macro-level analysis layer on top of the individual agent behavior, illustrating how multi-level
+*   structures can be observed and tracked in GAMA.
+* Tags: gui, skill, 3d, boids, flocking, multi_level, clustering, emergence, collective_behavior
 */
 model boids_flock
 //Import the boids model

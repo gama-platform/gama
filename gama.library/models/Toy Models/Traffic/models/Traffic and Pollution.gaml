@@ -1,9 +1,12 @@
 /**
-* Name: Traffic
-* Author: Patrick Taillandier & Alexis Drogoul
-* Description: A simple traffic model with a pollution model: the speed on a road depends on the number of people 
-* on the road (the highest, the slowest), and the people diffuse pollution on the envrionment when moving.
-* Tags: gis, shapefile, graph, skill, transport, field
+* Name: Traffic and Pollution
+* Author: Patrick Taillandier, Alexis Drogoul
+* Description: A traffic simulation that couples vehicle movement with an air pollution diffusion model.
+*   Cars move along a road network loaded from shapefiles; their speed depends on road congestion (more cars
+*   → lower speed). As vehicles move they emit pollution that diffuses into the environment via a field.
+*   The model demonstrates coupling of a road-graph-based movement model with a spatial field for environmental
+*   impact tracking, and is useful as a starting point for urban mobility and environmental quality studies.
+* Tags: gis, shapefile, graph, skill, transport, field, pollution, diffusion, road_network, traffic
 */
 model traffic
 
@@ -121,7 +124,7 @@ experiment traffic type: gui autorun: true{
 	font title <- font("Arial", 18, #bold);
 	
 	output synchronized: true{
-		display carte type: 3d axes: false background: rgb(50,50,50) fullscreen: false toolbar: false{
+		display carte type: 3d axes: false background: rgb(50,50,50) fullscreen: true toolbar: false{
 			
 			 overlay position: { 50#px,50#px} size: { 1 #px, 1 #px } background: # black border: #black rounded: false 
             	{

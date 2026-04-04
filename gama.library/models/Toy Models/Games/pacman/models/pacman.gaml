@@ -1,8 +1,12 @@
 /**
-* Name: pacman
-* Based on the internal empty template. 
-* Author: Loris
-* Tags: 
+* Name: Pac-Man
+* Author: Loris Henry
+* Description: A GAMA implementation of the classic Pac-Man arcade game. The player controls Pac-Man to eat
+*   dots scattered across a maze while being chased by ghosts. Pac-Man can eat power pellets to temporarily
+*   reverse the roles and eat ghosts. The maze is defined as a grid, with wall cells and navigable corridors.
+*   Ghost agents use pathfinding to track or scatter based on their current state. This model demonstrates
+*   complex user interaction, AI-driven agent behavior, grid-based navigation, and game state management in GAMA.
+* Tags: game, user_interaction, grid, pathfinding, ghost, pacman, arcade, gui
 */
 
 

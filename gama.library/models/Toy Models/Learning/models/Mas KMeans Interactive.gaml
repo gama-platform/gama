@@ -1,13 +1,13 @@
 /***
-* Name: MASKmeansInteractive
+* Name: K-Means Interactive
 * Author: Jean-Daniel Zucker
-* Description: Model which shows how to use the event layer to place points and initial centroids
-* to see the impact of choosing. 
-* CHOOSE the experiment SelectPoints2Cluster
-* Click on the dot on the right palette to then click on the left display
-* so as to position points. Then click on the cross on the right palette (to position centroids). Then
-* drop a few centroids. Their number is the number of clusters searched for.
-* Then start to iterate on the simulation one at a time ak-means and see the kmeans algorithm.
+* Description: An interactive extension of the K-Means Clustering model that lets users place data points and
+*   initial centroid positions manually using the event layer and mouse clicks. To use: select the dot palette
+*   item on the right panel and click on the left display to place data points. Then switch to the cross palette
+*   item and click to place initial centroids — their count determines the number of clusters. Finally, run
+*   the simulation step by step to observe the K-means algorithm converging to cluster assignments. The impact
+*   of initial centroid placement on the final result can be explored interactively.
+* Tags: machine_learning, clustering, k_means, interactive, user_interaction, event, algorithm
 ***/
 
 model MASKmeansInteractive

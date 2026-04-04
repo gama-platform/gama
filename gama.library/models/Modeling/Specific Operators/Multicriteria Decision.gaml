@@ -1,10 +1,13 @@
 /**
-* Name: Multicriteria
+* Name: Multicriteria Decision
 * Author: Patrick Taillandier
-* Description: This model shows how to use different methods of multicriteria analysis to look for the best house. Five methods are used : 
-* the Weighted_Means method , the Electre method , the Promethee method, the Fuzzy Choquet Integral  anc the Evidence Theory method. Each method uses 
-* different criteria with different weights according to the methods used. 
-* Tags: multi_criteria
+* Description: Demonstrates five multicriteria analysis methods available in GAMA for ranking alternatives
+*   (in this case, houses) based on multiple weighted criteria. The five methods are: Weighted Means
+*   (simple weighted average), Electre (outranking method with concordance/discordance thresholds), Promethee
+*   (preference function-based outranking), Fuzzy Choquet Integral (handles criteria interactions), and
+*   Evidence Theory (Dempster-Shafer based). Each method uses different criteria weights and produces a
+*   ranking that can differ significantly, illustrating the sensitivity to method choice.
+* Tags: multi_criteria, decision, weighted_means, electre, promethee, choquet, evidence_theory, ranking
 */
 
 model multicriteria

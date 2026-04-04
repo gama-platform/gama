@@ -1,8 +1,13 @@
 /**
 * Name: To GAMA CRS
 * Author: Patrick Taillandier
-* Description: A model which shows how to to_GAMA_CRS operator which allows to translate a geometry (or a point) to GAMA CRS
-* Tags:  gis, shapefile, spatial_computation, spatial_transformation, projection
+* Description: Shows how to use the 'to_GAMA_CRS' operator to convert geometries from an external coordinate
+*   reference system (CRS) into GAMA's internal CRS. External data (such as GPS coordinates in WGS84, or
+*   projected coordinates in a national grid) must be reprojected into the simulation's CRS before they can
+*   be used spatially. The model loads a building shapefile that defines the simulation CRS, then reads point
+*   data from a CSV file expressed in a different CRS and reprojects them so they align correctly with the
+*   loaded buildings.
+* Tags: gis, shapefile, spatial_computation, spatial_transformation, projection, crs, epsg, reprojection
 */
 model To_GAMA_CRS
 

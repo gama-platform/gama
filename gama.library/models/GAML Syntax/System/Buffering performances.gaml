@@ -1,8 +1,13 @@
 /**
-* Name: Buffering
-* Based on the internal empty template. 
-* Author: baptiste
-* Tags: 
+* Name: Buffering Performances
+* Author: Baptiste Lesquoy
+* Description: Benchmarks the performance difference between unbuffered and buffered file writing in GAML.
+*   When a model writes output data frequently (e.g., every agent every step), unbuffered writing causes a disk
+*   I/O operation for each call, which is very slow at scale. Buffered writing ('buffering: per_cycle') collects
+*   all writes within a cycle and flushes them to disk in a single operation at the end of the cycle, dramatically
+*   reducing I/O overhead. This model uses timing measurements to quantify the speedup achieved by buffering,
+*   helping modelers make informed decisions about output strategy.
+* Tags: buffering, performance, file_writing, benchmark, save, I/O, optimization
 */
 
 

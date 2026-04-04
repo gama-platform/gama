@@ -1,8 +1,12 @@
 /**
-* Name: Luneray's flu 5
+* Name: Luneray's Flu - Step 5
 * Author: Patrick Taillandier
-* Description: Define a 3D display
-* Tags: 3D, obj, 3d, tutorial
+* Description: Fifth step of the Luneray's Flu tutorial. Adds a 3D display to the epidemic simulation.
+*   Buildings are extruded to represent their height (using the '3D' display type with 'height' property).
+*   People agents are displayed as 3D OBJ models to give a realistic visual appearance. Lighting is configured
+*   in the 3D display for better depth perception. This step demonstrates how to transition from 2D to 3D
+*   visualization in GAMA with minimal model changes.
+* Tags: 3D, obj, 3d, tutorial, display, building, epidemic, flu
 */
 
 model model5

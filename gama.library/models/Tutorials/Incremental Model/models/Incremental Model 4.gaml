@@ -1,8 +1,11 @@
 /**
-* Name: Movement on Graph
-* Author: GAMA team
-* Description: 4th part of the tutorial : Incremental Model
-* Tags: tutorial, chart, graph, gis
+* Name: Incremental Model Tutorial - Step 04 - Movement on Graph
+* Author: Gama Development Team
+* Description: Fourth step of the Incremental Model tutorial. Refines agent movement by constraining people
+*   to travel only along the road network graph. Agents use 'goto' with the road graph as the topology,
+*   following streets between buildings. This step shows how to build a graph from a road shapefile and
+*   assign it as the movement topology, producing realistic commuting patterns in the city.
+* Tags: tutorial, chart, graph, gis, road_network, goto, movement, SI, epidemic
 */
  
 model model4 

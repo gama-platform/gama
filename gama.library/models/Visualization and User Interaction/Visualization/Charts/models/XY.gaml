@@ -1,8 +1,12 @@
 /**
-* Name: XY Examples
+* Name: XY Chart Examples
 * Author: Patrick Taillandier
-* Description: A demonstration of how to display a simple xy chart
-* Tags: gui, chart
+* Description: Demonstrates XY scatter and parametric charts in GAMA, where both axes represent data values
+*   rather than one being simulation time. XY charts are useful for plotting the relationship between two
+*   continuous variables (e.g., phase-plane plots for predator-prey dynamics, spatial distributions, or
+*   correlation analysis). The model shows how to build XY charts with multiple data series and custom
+*   axis configuration.
+* Tags: gui, chart, xy, scatter, parametric, visualization, output, display, phase_plane
 */
 
 

@@ -1,8 +1,13 @@
 /**
 * Name: Exploration
-* Based on the internal empty template. 
-* Author: kevinchapuis
-* Tags: batch
+* Author: Kevin Chapuis
+* Description: A model exploration example built on top of the Predator Prey tutorial (Model 13). Defines
+*   multiple batch experiment types for systematic parameter space exploration: exhaustive exploration
+*   (all combinations), Latin Hypercube Sampling (LHS), and method-specific exploration strategies. The
+*   model imports the base predator-prey model and adds exploration experiment definitions on top, keeping
+*   the base model untouched. This is the standard reference for parameter sensitivity analysis and model
+*   exploration in GAMA.
+* Tags: batch, exploration, sensitivity_analysis, LHS, parameter_space, predator_prey
 */
 
 

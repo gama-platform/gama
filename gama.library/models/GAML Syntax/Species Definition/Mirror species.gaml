@@ -1,9 +1,12 @@
 /***
-* Name: Mirrorsimple
-* Author: documentation GAMA
-* Description: This model simply illustrates mirror species used to provides 
-*   a different display of the agents
-* Tags: mirror, display
+* Name: Mirror Species
+* Author: Gama Development Team
+* Description: A simple introduction to mirror species in GAML. A mirror species is a species whose agents
+*   each automatically follow (mirror) an agent of another species. Mirror agents can provide an alternative
+*   visual representation of the mirrored agents — for instance showing them in a different display, with a
+*   different shape, color, or position. This model demonstrates the basic declaration of a mirror species
+*   using the 'mirrors' facet and shows how mirror agents track their target's position.
+* Tags: mirror, display, visualization, species, representation
 ***/
 
 model Mirrorsimple

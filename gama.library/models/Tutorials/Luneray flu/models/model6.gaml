@@ -1,8 +1,12 @@
 /**
-* Name: Luneray's flu 6
+* Name: Luneray's Flu - Step 6
 * Author: Patrick Taillandier
-* Description: Exploration of the model
-* Tags: batch, genetic, save, tutorial
+* Description: Sixth and final step of the Luneray's Flu tutorial. Introduces model exploration and batch
+*   experiments. A genetic algorithm (GA) optimization experiment searches for the parameter combination
+*   that maximizes the total number of infected individuals. A second batch experiment exhaustively explores
+*   the parameter space. Results are saved to CSV files. This step shows how to use GAMA's built-in
+*   exploration methods to study the sensitivity of epidemic outcomes to model parameters.
+* Tags: batch, genetic, save, tutorial, exploration, optimization, epidemic, flu, parameter_space
 */
 
 model model6

@@ -1,13 +1,13 @@
 /**
-* Name: Balls, Groups and Clouds Multilevel Architecture
-* Author: 
-* Description: This model shows how to use multi-level architecture to group agents, and regroup groups. The operators capture 
-* 	is used to capture an agent by a group and change its species as a species contained by the group and defined in the group species section. 
-* 	The operator release is used to release contained agents and change them into an other species. The experiment shows ball moving 
-* 	randomly, and following other balls. When they are close to each other, they generate a group of balls with its own behavior. A group of group 
-* 	agents generate a cloud in the same way. When the number of balls contained inside the group is too high, the group disappears and releases 
-* 	all its balls repulsively. 
-* Tags: multi_level, agent_movement
+* Name: Balls, Groups and Clouds - Multi-Level Architecture
+* Author: Gama Development Team
+* Description: A showcase of GAMA's multi-level agent architecture with three nested levels: balls, groups,
+*   and clouds. Balls move randomly and attract nearby balls. When enough balls are close, they are 'captured'
+*   into a group agent (changing their species via the 'capture' operator). Groups move as a unit; when enough
+*   groups are nearby they are captured into a cloud. When a group gets too large, it 'releases' its balls
+*   repulsively. This model demonstrates the 'capture' and 'release' operators and how macro-level behavior
+*   emerges from micro-level interactions.
+* Tags: multi_level, agent_movement, capture, release, group, emergence, hierarchy
 */
 model balls_groups_clouds
 

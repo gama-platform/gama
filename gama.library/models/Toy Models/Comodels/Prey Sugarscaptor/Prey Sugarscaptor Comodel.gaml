@@ -1,9 +1,13 @@
 /**
-* Name: Comodel of Predator Prey and the SugarScape
-* Author: HUYNH Quang Nghi
-* Description: Co-model example : The Predator Prey and SugarScape are mixed into a common environment.
-* Tags: comodel
- */
+* Name: Prey Sugarscaptor Comodel
+* Author: Huynh Quang Nghi
+* Description: A comodel that mixes the Predator-Prey (Lotka-Volterra) model and the Sugarscape model into a
+*   shared environment. Prey agents from the predator-prey model and sugar-seeking agents from Sugarscape coexist
+*   in the same space. Predators from the first model can consume prey, while sugarscape agents compete for
+*   sugar resources. The interplay between the two population dynamics creates novel emergent behaviors not
+*   present in either model alone, illustrating the power of compositional simulation design.
+* Tags: comodel, predator_prey, sugarscape, coupling, ecology, emergence, population_dynamics
+*/
  model prey_sugarscaptor
 
 import "Adapters/Predator Prey Adapter.gaml" as Preydator 

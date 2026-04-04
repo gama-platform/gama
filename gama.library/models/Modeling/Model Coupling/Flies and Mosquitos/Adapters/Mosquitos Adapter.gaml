@@ -1,8 +1,10 @@
 /**
-* Name: mosquitos_coupling
-* Author: HUYNH Quang Nghi
-* Description: It is NOT supposed to launch. This is the coupling of Mosquitos model. It is used in the "Complex Comodeling Example" as an interface. 
-* Tags: comodel
+* Name: Mosquitos Adapter
+* Author: Huynh Quang Nghi
+* Description: Comodeling adapter (coupling class) for the Mosquitos model. This file is NOT intended to
+*   be launched directly — it serves as the interface between the Flies and Mosquitos comodeling examples
+*   and the Mosquitos sub-model, exposing mosquito agents to the parent comodel environment.
+* Tags: comodel, adapter, mosquitos, coupling
 */
 model mosquitos_coupling
 import "../Models/Mosquitos.gaml"

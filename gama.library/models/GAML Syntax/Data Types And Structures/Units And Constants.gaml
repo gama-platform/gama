@@ -1,8 +1,12 @@
 /***
-* Name: Units and constants
+* Name: Units and Constants
 * Author: Benoit Gaudou
-* Description: The model illustrates all the possible constants (including units) existing in  GAML.
-* Tags: unit, constant
+* Description: Illustrates all the built-in constants and unit values available in GAML. Constants include
+*   mathematical values (pi, e), color constants, and special sentinel values for errors or undefined states.
+*   Units allow modelers to express quantities in human-readable form — distance (meter, km), time (second, minute,
+*   hour, day, month, year), area, volume, speed — without hard-coding conversion factors. Using units makes models
+*   clearer and more maintainable. This model runs through all categories and prints their values to the console.
+* Tags: unit, constant, math, time, distance, area, speed, color
 ***/
 
 model UnitsAndConstants

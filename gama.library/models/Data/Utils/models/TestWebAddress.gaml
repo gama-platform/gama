@@ -1,8 +1,12 @@
 /**
-* Name: TestWebAddress
-* Example of the is_reachable operator to test the reachability of an web address
-* Author: Patrick Taillandier 
-* Tags: Web address
+* Name: Test Web Address
+* Author: Patrick Taillandier
+* Description: Demonstrates the 'is_reachable' operator, which checks whether a given web address (hostname or URL)
+*   is accessible from the simulation machine within a specified timeout. This is useful as a guard before attempting
+*   to download data from the internet — if the address is not reachable, the model can fall back to local data or
+*   display a clear error message rather than hanging indefinitely. The operator takes an address string and a
+*   timeout in milliseconds, and returns true if a connection can be established.
+* Tags: web, network, reachable, url, http, connectivity, timeout
 */
 
 model WebUtils

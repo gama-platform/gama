@@ -1,8 +1,12 @@
 /**
-* Name: GraphImportation
-* Author: P. Taillandier
-* Description:  Shows how to load diverse graph files. 
-* Tags: Graph, File
+* Name: Graph Importation
+* Author: Patrick Taillandier
+* Description: Demonstrates how to load graph files from various standard formats into GAMA. Supported formats
+*   include GraphML, GML, DOT (Graphviz), DIMACS, GEXF (Gephi Exchange), TSPLIB, and Graph6. A parameter
+*   lets the user interactively switch between formats to compare the loaded results. After loading, the graph
+*   nodes are positioned according to the coordinates stored in the file (when available), and the graph topology
+*   is displayed. This model is a useful reference for integrating externally constructed networks into GAMA simulations.
+* Tags: graph, file, graphml, gml, dot, gexf, import, load_file, network, topology
 */
 
 model GraphImportation

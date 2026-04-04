@@ -1,8 +1,13 @@
 /**
-* Name: DXF to Agents Model
-* Author:  Patrick Taillandier
-* Description: Model which shows how to create agents by importing data of a DXF file
-* Tags:  dxf, load_file
+* Name: DXF File Import
+* Author: Patrick Taillandier
+* Description: Shows how to create agents from a DXF (Drawing Exchange Format) file. DXF is a CAD data format
+*   developed by Autodesk for AutoCAD and is widely used in architecture, engineering, and construction.
+*   GAMA can read DXF files and convert the geometric entities they contain (lines, polylines, polygons, etc.)
+*   into agent geometries. A scale factor (here #m for meters) can be provided to correctly interpret the
+*   DXF coordinate units. The model loads a house plan from a DXF file and creates one agent per geometric
+*   entity, which are then displayed in a 2D view.
+* Tags: dxf, load_file, cad, geometry, architecture, import, gis
 */
 model DXFAgents
 

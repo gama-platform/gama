@@ -1,8 +1,12 @@
 /**
-* Name: fieldofvision
+* Name: Continuous Field of Vision
 * Author: Patrick Taillandier
-* Description: This model illustrate how to use the masked_by operator to compute the field of vision of an agent (with obtsacles)
-* Tags: perception, spatial_computation, masked_by
+* Description: Demonstrates how to compute the field of vision of an agent in the presence of obstacles using
+*   the 'masked_by' operator. The operator takes a geometry (the maximum vision cone) and a list of obstacle
+*   agents, and returns the visible sub-geometry after masking out areas hidden behind obstacles. The resulting
+*   visible area is displayed in real time as the agent moves. This is the standard approach for implementing
+*   line-of-sight perception in GAMA.
+* Tags: perception, spatial_computation, masked_by, field_of_vision, obstacle, line_of_sight, agent_movement
 */
 
 model fieldofvision

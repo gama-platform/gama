@@ -1,8 +1,12 @@
 /**
-* Name: OBJ File to Geometry
-* Author:  Arnaud Grignard
-* Description: Model which shows how to use a OBJ File to draw a complex geometry. The geometry is simply used, in this case, to draw the agents.
-* Tags:  load_file, 3d, skill, obj
+* Name: OBJ File Drawing
+* Author: Arnaud Grignard
+* Description: Shows how to use an OBJ file to draw a complex 3D geometry as the visual representation of agents.
+*   OBJ is a common 3D model format supported by most 3D modeling tools. In this model, the OBJ file provides only
+*   the visual shape — the agent's functional geometry is still a simple shape for computation purposes, while the
+*   draw statement renders the 3D model. This pattern keeps spatial computations fast while enabling richly detailed
+*   3D visualization. Multiple agent instances can share the same OBJ file.
+* Tags: load_file, 3d, obj, geometry, visualization, draw, agent
 */
 
 

@@ -1,8 +1,12 @@
 /**
 * Name: Inheritance
 * Author: Alexis Drogoul
-* Description:  A simple abstract model to show the usage of inheritance
-* Tags: GAML
+* Description: A simple model demonstrating the use of species inheritance in GAML. A child species can inherit
+*   all the attributes and actions defined in its parent species using the 'parent' facet. Inherited actions can
+*   be overridden, and the parent implementation can be invoked using the 'invoke' statement. This example
+*   defines a parent species with basic initialization logic and a child species that extends it, showing how
+*   the inheritance hierarchy structures agent behavior.
+* Tags: GAML, inheritance, parent, species, override, action
 */
 
 model Inheritance

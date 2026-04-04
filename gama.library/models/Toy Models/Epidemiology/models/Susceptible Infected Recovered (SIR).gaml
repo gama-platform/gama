@@ -1,9 +1,13 @@
 /**
-* Name: SIR without ODE
-* Author: 
-* Description: A simple SIR model without Ordinary Differential Equations showing agents 
-* 	moving randomly among a grid and becoming infected then resistant to a disease
-* Tags: grid
+* Name: Susceptible Infected Recovered (SIR)
+* Author: Gama Development Team
+* Description: A simple agent-based SIR (Susceptible-Infected-Recovered) epidemic model without ordinary
+*   differential equations. Agents move randomly on a grid. Susceptible agents become infected on contact
+*   with infected neighbors (with a given probability); infected agents recover after a fixed duration and
+*   become immune (resistant). Charts track the population dynamics of each compartment over time, showing
+*   the characteristic epidemic curve. This model provides an intuitive spatial understanding of how epidemic
+*   waves spread and fade through a population.
+* Tags: grid, epidemiology, SIR, infection, recovery, spatial, agent_based, emergence, epidemic_curve
 */
 
 model si

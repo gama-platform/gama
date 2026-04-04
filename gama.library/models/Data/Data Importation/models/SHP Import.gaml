@@ -1,8 +1,12 @@
 /**
-* Name: Shapefile to Agents
-* Author:  Patrick Taillandier
-* Description: Model which shows how to import a Shapefile in GAMA and use it to create Agents.
-* Tags:  load_file, shapefile, gis
+* Name: Shapefile Import
+* Author: Patrick Taillandier
+* Description: The simplest and most common way to load geographic data in GAMA: importing an ESRI Shapefile
+*   and creating agents from its features. The 'shape_file' operator loads the file and infers the environment
+*   geometry from its extent. The 'create' statement with the 'from' facet then creates one agent per feature in
+*   the shapefile, automatically assigning the geometry and all shapefile attribute columns to matching agent
+*   attributes. The environment boundary is set to the bounding box of the shapefile's features.
+* Tags: load_file, shapefile, shp, gis, import, geometry, spatial, agent
 */
 model simpleShapefileLoading
 

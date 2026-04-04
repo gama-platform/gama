@@ -1,8 +1,10 @@
 /**
-* Name: Moving cells
+* Name: 3D Tutorial - Model 02 - Moving Cells
 * Author: Arnaud Grignard
-* Description: Second part of the tutorial : Tuto3D
-* Tags: grid, agent_movement
+* Description: Second step of the 3D tutorial. Adds movement to the 3D agents: cells move randomly within a
+*   cubic environment. Introduces the concept of a cubic bounding box for the world geometry and demonstrates
+*   random 3D movement using the 'moving' skill. Agents bounce off the walls to stay within bounds.
+* Tags: grid, agent_movement, 3d, tutorial, skill, moving, cube
 */
 model Tuto3D   
 

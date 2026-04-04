@@ -1,8 +1,12 @@
 /**
-* Name: Spatial Operators
+* Name: Spatial Operators (Examples)
 * Author: Patrick Taillandier
-* Description: A model which shows how to use spatial operators like rotated_by, scaled_by and convex_hull
-* Tags: topology, shapefile, spatial_computation, spatial_transformation
+* Description: A visual demonstration of key spatial transformation operators in GAMA: 'rotated_by' (rotates
+*   a geometry by a given angle), 'scaled_by' (scales a geometry by a factor), and 'convex_hull' (computes
+*   the smallest convex polygon enclosing a geometry). Each operator is applied to geometries loaded from
+*   shapefiles and the result is displayed alongside the original. This model is the reference for geometry
+*   transformation operations.
+* Tags: topology, shapefile, spatial_computation, spatial_transformation, rotation, scaling, convex_hull
 */
 model example_spatial_operators
 

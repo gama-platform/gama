@@ -1,10 +1,13 @@
 /***
-* Name: ABValuation
-* Author: Cristian Jara-Figueroa - Arnaud Grignard 
-* Description: This model illustrates how housing markets react to businesses and their location. 
-* In contrast to the standard Alonso-Muth-Mills Model (AMM), this Agent Based version enables 
-* users to understand the complexity of multiple employers within a given region.
-* Tags: EconomHousing Market,
+* Name: Agent-Based Housing Market Valuation
+* Author: Cristian Jara-Figueroa, Arnaud Grignard
+* Description: An agent-based adaptation of the Alonso-Muth-Mills (AMM) urban economics model, illustrating
+*   how housing market valuations emerge from the interplay between employers, workers, and housing. Unlike the
+*   standard AMM model which assumes a single employer at the city center, this ABM allows multiple employers
+*   at different locations. Housing values emerge from agents' willingness to pay for proximity to their
+*   workplace, balanced by commuting costs. Users can switch between car and non-car transport modes to observe
+*   how transport infrastructure shapes spatial valuation patterns across the city.
+* Tags: economics, housing_market, urban, ABM, valuation, transport, emergence
 ***/
 
 model ABValuation

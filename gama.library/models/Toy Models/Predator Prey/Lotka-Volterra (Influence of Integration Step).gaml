@@ -1,8 +1,13 @@
 /**
-* Name: ODE_LotkaVolterra
-* Author: Huynh Quang Nghi & Nathalie Corson
-*  Description: Lotka Volterra Predator Prey Model - ODE solved with Runge-Kutta 4 method with different integration time step
-* Tags: equation, math
+* Name: Lotka-Volterra (Influence of Integration Step)
+* Author: Huynh Quang Nghi, Nathalie Corson
+* Description: An extension of the simple Lotka-Volterra model that explores how the choice of ODE integration
+*   time step influences the accuracy and stability of the numerical solution. Multiple experiments run the same
+*   predator-prey system with different RK4 integration steps and compare the resulting population trajectories.
+*   A smaller integration step produces more accurate results but is computationally more expensive, while a
+*   larger step is faster but may introduce significant numerical error or even instability. This model is a
+*   good reference for understanding the trade-off between accuracy and performance in ODE-based GAMA models.
+* Tags: equation, math, ODE, Lotka-Volterra, predator_prey, integration_step, RK4, numerical_accuracy
 */
 
 model ODE_LotkaVolterra_InfluenceTimeStep

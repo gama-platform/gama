@@ -1,9 +1,12 @@
 /**
-* Name:  Movement on a Grid of Cells
-* Author:  Patrick Taillandier
-* Description: Model to represent how the agents move from one point to a target agent on a grid of cells with obstacles, following the shortest path and coloring 
-* 	in magenta the cells intersecting the path of an agent
-* Tags: grid, agent_movement, skill, obstacle, shortest_path
+* Name: Goto Grid
+* Author: Patrick Taillandier
+* Description: Shows how agents navigate a grid with obstacles using four different shortest-path algorithms:
+*   BF (Breadth-First), A*, Dijkstra, and JPS (Jump Point Search). An agent moves from a start cell to a
+*   target cell; cells on the computed path are colored magenta. The choice of algorithm is configurable
+*   as a parameter, letting users compare computation speed and path quality. The model is a core reference
+*   for grid-based pathfinding in GAMA.
+* Tags: grid, agent_movement, skill, obstacle, shortest_path, astar, dijkstra, bfs, jps, pathfinding
 */
 
 model Grid

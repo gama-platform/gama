@@ -1,8 +1,12 @@
 /**
-* Name: break_and_continue
-* This model shows how (and where) to use break and continue inside loops and other GAML statements. 
-* Author: A. Drogoul
-* Tags: loop, break, continue, ask
+* Name: Break and Continue
+* Author: Alexis Drogoul
+* Description: Shows how and where to use 'break' and 'continue' inside loops and other GAML statements.
+*   'break' exits the enclosing loop immediately, skipping all remaining iterations. 'continue' skips the rest
+*   of the current iteration and moves to the next one. Both work inside 'loop', 'ask', 'create', and 'switch'.
+*   The model demonstrates each case with a dedicated action, printing results to the console so the effect
+*   of each control-flow statement can be observed clearly.
+* Tags: loop, break, continue, ask, control, iteration, switch
 */
 
 

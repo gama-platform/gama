@@ -1,11 +1,12 @@
 /**
-* Name: grid_move
-* Author: 
-* Description: A 3D model which show how to represent an evacuation system with 
-* 	obstacles, cohesion factor and velocity. The people are placed randomly and have 
-* 	to escape by going to a target point, within a discretized space by a grid. The agents 
-* 	don't use the skill moving to move.
-* Tags: 3d, shapefile, gis, agent_movement, grid
+* Name: Move on Grid Evacuation
+* Author: Gama Development Team
+* Description: A 3D evacuation model where people navigate around building obstacles on a discretized grid
+*   without using the 'moving' skill. Instead of the 'goto' action, agents implement their own grid-based
+*   movement by selecting the neighboring cell that brings them closest to the exit while avoiding obstacle cells.
+*   This approach gives full control over movement logic and demonstrates how grid topology can be used for
+*   pathfinding independently from GAMA's built-in movement primitives.
+* Tags: 3d, shapefile, gis, agent_movement, grid, evacuation, pathfinding, obstacle_avoidance
 */
 model grid_move
 

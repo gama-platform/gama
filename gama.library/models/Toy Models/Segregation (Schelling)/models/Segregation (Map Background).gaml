@@ -1,9 +1,12 @@
 /**
-* Name: segregationGoogleMap
-* Author: 
-* Description: A model showing the segregation of the people just by putting a similarity wanted parameter using agents 
-* 	to represent the individuals and a grid to discretize space. Use the colors of the image to know if it is a possible space or not
-* Tags: grid
+* Name: Segregation (Map Background)
+* Author: Gama Development Team
+* Description: A variant of Thomas Schelling's residential segregation model that uses a raster map image to
+*   define navigable space. Grid cells whose color matches the navigable areas of the image are used as
+*   possible residential locations. Agents of two groups are placed on these cells, and unhappy agents move
+*   to free cells on the map. The map image provides a realistic geographic context for the segregation
+*   dynamics, blending the cellular automata approach with image-based environment initialization.
+* Tags: grid, image, segregation, Schelling, emergence, social, raster, map_background
 */
 model segregation
 

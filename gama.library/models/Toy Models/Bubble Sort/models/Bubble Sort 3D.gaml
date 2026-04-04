@@ -1,10 +1,12 @@
 /**
-* Name: Creating color and sort cubes by color
-* Author:  Arnaud Grignard
-* Description: A model to show how to create color by using the rgb operator, the color depending on the position of cube in the xyz space. 
-* 	The cubes are randomly mixed to finally be sorted according to the color of each vertix of the whole big cube, using the bubble sort 
-*        algorithm (https://en.wikipedia.org/wiki/Bubble_sort). 
-* Tags: color, 3d
+* Name: Bubble Sort 3D
+* Author: Arnaud Grignard
+* Description: A visually engaging demonstration of the bubble sort algorithm in 3D. Small cubes are created
+*   and colored based on their position in the x, y, z space using the rgb() operator. The cubes are initially
+*   placed in a randomized order, and the bubble sort algorithm then progressively rearranges them until the
+*   colors of each face of the large composite cube are sorted. The model serves both as an algorithm
+*   visualization and as a showcase for 3D grid-based displays and the rgb color operator.
+* Tags: color, 3d, algorithm, sorting, bubble_sort, visualization, cube
 */
 
 model bubblesort3D

@@ -1,8 +1,12 @@
 /**
-* Name: Syntax
+* Name: Elements of Syntax
 * Author: Alexis Drogoul
-* Description: An overview of the new syntactic constructs that have been introduced in GAMA 1.6
-* Tags: attribute, ternary, equation, action, container, list
+* Description: An overview of new syntactic constructs introduced in GAMA 1.6 and later. Covers advanced attribute
+*   syntax, the ternary conditional operator, equation declarations, typed and untyped actions, container literals,
+*   and list comprehensions. Also demonstrates that the global section can now support skills (such as 'moving')
+*   and control architectures (such as 'fsm'). This model is a broad reference for modelers who want to explore
+*   the full range of GAML syntactic features in one place.
+* Tags: attribute, ternary, equation, action, container, list, syntax, skill, fsm, global
 */
 
 @no_warning

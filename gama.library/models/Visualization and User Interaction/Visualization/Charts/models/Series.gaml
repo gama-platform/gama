@@ -1,8 +1,12 @@
 /**
-* Name: Series Examples
+* Name: Series Chart Examples
 * Author: Philippe Caillou
-* Description: A demonstration of charts composed of series
-* Tags: gui, chart
+* Description: The primary reference model for time-series line charts in GAMA. Covers: simple single-series
+*   charts, multi-series with different line styles and colors, filled area charts, step charts, scatter plots,
+*   custom axis labels and ranges, logarithmic scales, and chart memory management (keeping full history vs.
+*   a rolling window). Series charts are the most common output type in GAMA for tracking quantitative variables
+*   over simulation time.
+* Tags: gui, chart, series, line, time_series, scatter, visualization, output, display
 */
 model series
 

@@ -1,8 +1,11 @@
 /**
-* Name: Breeding of prey and predator agents
-* Author:
-* Description: 6th part of the tutorial : Predator Prey
-* Tags: reproduce, myself, self
+* Name: Predator Prey Tutorial - Step 06 - Breeding
+* Author: Gama Development Team
+* Description: Sixth step of the Predator-Prey tutorial. Adds reproduction to both prey and predator agents.
+*   When an agent's energy exceeds a threshold and it reaches a minimum age, it creates offspring that inherit
+*   half the parent's energy. This step introduces the 'create' statement used inside a species reflex,
+*   and demonstrates the use of 'myself' to pass attributes from parent to offspring in a create block.
+* Tags: tutorial, prey, predator, breeding, reproduction, create, myself, self
 */
 model prey_predator
 

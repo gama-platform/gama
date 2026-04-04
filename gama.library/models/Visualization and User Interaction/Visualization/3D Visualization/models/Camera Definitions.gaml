@@ -1,8 +1,12 @@
 /**
-* Name: Camera Position
-* Author: Arnaud Grignard & Alexis Drogoul
-* Description: A model presenting how to manipulate cameras in a 3D display
-* Tags: 3d
+* Name: Camera Definitions
+* Author: Arnaud Grignard, Alexis Drogoul
+* Description: Shows how to define and programmatically control cameras in a 3D GAMA display. Cameras are
+*   defined by their position, target (look-at point), and up-vector. This model demonstrates: setting a
+*   fixed camera position, animating the camera along a path, switching between multiple named cameras, and
+*   using orthographic vs. perspective projections. Camera control is essential for creating cinematic
+*   presentations, fixed-view analyses, and interactive 3D displays.
+* Tags: 3d, camera, perspective, orthographic, animation, visualization, display
 */
 model camera_locationition
 

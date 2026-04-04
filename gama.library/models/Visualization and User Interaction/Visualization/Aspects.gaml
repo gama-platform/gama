@@ -1,15 +1,13 @@
 /***
 * Name: Aspects
 * Author: Benoit Gaudou
-* Description: This model details the various possibility of agent's drawing in an aspect.
-* In particular, it attempts to answer questions such as:
-* 1. how to display agents using geometries ? text ? images ?
-* 2. how to display them in 3D ? with texture ? taken into account the light ?
-* 3. how to display the link between 2 agents ?
-* 4. how to deal with transparency in agents ?
-* 5. how to focus on some agents ?
-* 
-* Tags: aspect, 3D, draw, transparency, focus
+* Description: A comprehensive reference model for agent display aspects in GAMA. Answers common visualization
+*   questions: (1) How to display agents using geometries, text, and images? (2) How to display them in 3D with
+*   textures and lighting? (3) How to draw links between two agents? (4) How to use transparency? (5) How to
+*   focus the camera on specific agents? The model provides named aspects covering each scenario with working
+*   code examples, making it the go-to reference for customizing agent appearance.
+* Tags: aspect, 3d, draw, transparency, focus, texture, link, image, text, visualization
+***/
 ***/
 model Aspects
 

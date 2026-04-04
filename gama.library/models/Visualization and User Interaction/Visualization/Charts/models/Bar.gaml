@@ -1,8 +1,11 @@
 /**
-* Name: Bar Examples
+* Name: Bar Chart Examples
 * Author: Philippe Caillou
-* Description: A demonstration of charts composed of bars
-* Tags: gui, chart
+* Description: A reference model demonstrating all the options available for bar charts in GAMA. Multiple
+*   experiments cover: simple bar charts with static and dynamic data, grouped bars comparing multiple series,
+*   stacked bar charts, horizontal bar orientation, custom colors and labels, and styling options (font,
+*   background, axes). Bar charts are useful for comparing categorical quantities across groups or time periods.
+* Tags: gui, chart, bar, visualization, output, display, series, grouped, stacked
 */
 
 model bars 

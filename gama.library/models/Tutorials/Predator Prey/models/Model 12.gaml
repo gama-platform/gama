@@ -1,8 +1,12 @@
 /**
-* Name: Image loading (raster data)
-* Author:
-* Description: 12th part of the tutorial: Predator Prey
-* Tags: file, raster
+* Name: Predator Prey Tutorial - Step 12 - Image Loading (Raster Data)
+* Author: Gama Development Team
+* Description: Twelfth and final step of the Predator-Prey tutorial. Replaces the plain green grid with a
+*   raster image that represents a real landscape. The color of each grid cell is taken from the corresponding
+*   pixel in the image, and food values are derived from the image color intensity. This step shows how to
+*   initialize grid-based environments from external raster images, giving the model a realistic spatial
+*   context while keeping the agent behavior unchanged from previous steps.
+* Tags: tutorial, prey, predator, file, raster, image, grid, landscape, initialization
 */
 model prey_predator
 

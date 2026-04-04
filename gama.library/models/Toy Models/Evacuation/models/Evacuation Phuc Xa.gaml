@@ -1,6 +1,12 @@
 /**
-* Name: Mainxp
+* Name: Evacuation Phuc Xa
 * Author: Patrick Taillandier
+* Description: A realistic evacuation model based on the Phuc Xa neighborhood in Hanoi, Vietnam. Agents (people)
+*   must evacuate from the neighborhood using real GIS data including buildings, roads, intersections, and
+*   designated evacuation points. People navigate the road network to reach the nearest evacuation point.
+*   The model uses a custom scheduling strategy that orders people by their proximity to obstacles, demonstrating
+*   realistic crowd behavior during a flood evacuation scenario in a dense urban environment.
+* Tags: evacuation, gis, shapefile, road_network, urban, Vietnam, flood, emergency, agent_movement
 */
 
 model Mainxp

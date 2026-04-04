@@ -1,8 +1,11 @@
 /**
-* Name: Charts
-* Author: GAMA team
-* Description: Second part of the tutorial : Incremental Model
-* Tags: chart, tutorial
+* Name: Incremental Model Tutorial - Step 02 - Charts
+* Author: Gama Development Team
+* Description: Second step of the Incremental Model tutorial. Adds a time-series chart that tracks infected
+*   and susceptible population counts over simulation time. A monitor displays the current count of infected
+*   agents. This step introduces the 'chart' and 'monitor' output tools in GAMA experiments, which are
+*   essential for visualizing and interpreting epidemic dynamics in real time.
+* Tags: chart, tutorial, SI, epidemic, monitor, output, visualization
 */
 model SI_city
 

@@ -1,8 +1,11 @@
 /**
-* Name: Adding of a stopping condition
-* Author:
-* Description: 9th part of the tutorial: Predator Prey
-* Tags: pause
+* Name: Predator Prey Tutorial - Step 09 - Stopping Condition
+* Author: Gama Development Team
+* Description: Ninth step of the Predator-Prey tutorial. Adds a stopping condition (pause_when) that halts
+*   the simulation automatically when either the prey or predator population is completely extinct. This
+*   demonstrates how to programmatically control experiment execution from within the model — useful for
+*   parameter exploration and batch runs where you want each simulation to stop at a defined end state.
+* Tags: tutorial, prey, predator, pause, stop_condition, batch, experiment
 */
 model prey_predator
 

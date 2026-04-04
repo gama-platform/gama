@@ -1,9 +1,12 @@
 /**
 * Name: Boids
-* Author: 
-* Description: This model shows the movement of boids following a goal, and creating a flock. 
-* The experiment the boids in 3D and allows users to move the goal.
-* Tags: gui, skill
+* Author: Gama Development Team
+* Description: An implementation of Craig Reynolds' Boids flocking algorithm. Each boid agent follows three
+*   simple local rules: separation (avoid crowding neighbors), alignment (steer towards the average heading of
+*   neighbors), and cohesion (steer towards the average position of neighbors). Despite these simple rules,
+*   complex flocking behavior emerges at the group level. A goal agent can be moved interactively to steer
+*   the whole flock. The experiment runs in 3D and allows users to adjust boid parameters in real time.
+* Tags: gui, skill, boids, flocking, emergence, collective_behavior, 3d, Reynolds
 */
 
 model boids 

@@ -1,13 +1,13 @@
 /**
-* Name: ASCII File to DEM Representation
+* Name: Grid DEM
 * Author: Arnaud Grignard
-* Description: Model to show how to import a ASCII File to make a DEM Representation and apply a Texture on it. In this 
-* 	model, three experiments are presented : DEM to show the grid elevation using the ASCII File as data for the height of the 
-* 	cells, and showing different 3D displays. GridDEMComplete shows more displays with the three of the previous experiment, the grid 
-* 	of the cells in a 2D Display, with the Elevation but without triangulation, and the grid with text values to show the content of the 
-* 	ASCII used by the cells. GraphicDEMComplete shows the use of the z_factor to amplify or reduces the difference between the z values 
-* 	of a Dem geometry.
-* Tags:  load_file, gis, 3d, dem
+* Description: Shows how to import an ESRI ASCII raster file to create a Digital Elevation Model (DEM) in GAMA
+*   and apply various 3D visualization techniques. Three experiments are presented: 'DEM' shows the grid elevation
+*   using ASCII file data for cell heights with different 3D display modes; 'GridDEMComplete' adds a 2D grid display,
+*   elevation without triangulation, and a text-value overlay; 'GraphicDEMComplete' demonstrates the use of
+*   'z_factor' to amplify or reduce the vertical exaggeration of the terrain surface. A texture (satellite image)
+*   can also be applied over the DEM geometry for realistic visualization.
+* Tags: load_file, gis, 3d, dem, elevation, grid, raster, asc, terrain, texture, z_factor
 */
 model gridloading
 

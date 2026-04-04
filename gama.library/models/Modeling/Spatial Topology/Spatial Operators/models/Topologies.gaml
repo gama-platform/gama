@@ -1,9 +1,12 @@
 /**
-* Name: Spatial Operators
+* Name: Topologies
 * Author: Patrick Taillandier
-* Description: A model which shows how to use spatial operator, allowing the user to change the parameter operator in the 
-* 	experiment to test the different operators and see the results
-* Tags: topology, grid
+* Description: A comprehensive demonstration of topology-dependent spatial operators in GAMA. A user-selectable
+*   operator (parameter) is applied to a source geometry and the result is displayed. Supported operators
+*   include: distance_to, closest_to, overlapping, at_distance, and others — each evaluated within different
+*   topologies (continuous, grid, graph). The model lets the user observe how the same operator behaves
+*   differently depending on whether the topology is Euclidean space, a discrete grid, or a graph network.
+* Tags: topology, grid, spatial_computation, spatial_operators, continuous, network, operator
 */
 
 model gridfilter

@@ -1,8 +1,11 @@
 /***
-* Name: MouseExitandEnter
-* Author: A. Drogoul
-* Description:  Shows the use of the two mouse events : mouse_exit and mouse_enter. The display shows two eyes. When the mouse enters it, the eyes open and follow its movement. When the mouse exits the screen, they close.
-* Tags: user, mouse, interaction
+* Name: Mouse Exit and Enter
+* Author: Alexis Drogoul
+* Description: Demonstrates the 'mouse_enter' and 'mouse_exit' display events. The model shows a pair of eyes
+*   that respond to mouse movement: when the mouse cursor enters the display, the eyes open and follow the
+*   cursor position. When the mouse exits the display, the eyes close again. This playful example illustrates
+*   how event layers can be used to create reactive, context-aware displays that respond to the user's presence.
+* Tags: gui, mouse, mouse_enter, mouse_exit, interaction, display, animation
 ***/
 
 model MouseExitandEnter 

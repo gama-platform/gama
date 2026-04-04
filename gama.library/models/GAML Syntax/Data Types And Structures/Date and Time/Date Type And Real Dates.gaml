@@ -1,8 +1,13 @@
 /**
-* Name: Use of the Date variables
-* Author:  Patrick Taillandier
-* Description: A model to show how to use date variables and more particularly the starting_date and current_date global variables.
-* Tags: date, time
+* Name: Date Type and Real Dates
+* Author: Patrick Taillandier
+* Description: Shows how to use 'date' variables in GAML, and more particularly the special global variables
+*   'starting_date' and 'current_date'. When a starting date is provided, the simulation switches from a simple
+*   step counter to a full calendar-aware time management system. This allows the modeler to express time steps
+*   in real-world temporal units (year, month, day, hour, minute, second) and to query the current calendar date
+*   at any point during the simulation. The model also illustrates common pitfalls such as month/year units
+*   that are incompatible with wall-clock dates.
+* Tags: date, time, calendar, starting_date, current_date, temporal
 */
 @no_warning
 model date_model 

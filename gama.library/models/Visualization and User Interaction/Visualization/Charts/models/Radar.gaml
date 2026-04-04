@@ -1,8 +1,12 @@
 /**
-* Name: Radar Examples
+* Name: Radar Chart Examples
 * Author: Philippe Caillou
-* Description: A demonstration of charts composed of radars
-* Tags: gui, chart
+* Description: Demonstrates radar (spider) charts in GAMA. Radar charts display multivariate data as a polygon
+*   on a circular axis layout with one spoke per variable. They are ideal for comparing multiple entities across
+*   several attributes simultaneously (e.g., comparing agent strategies across performance dimensions). The
+*   model shows single and multi-series radar charts with custom axis ranges, labels, and fill colors. Multiple
+*   experiments illustrate the available configuration options.
+* Tags: gui, chart, radar, spider, multivariate, visualization, output, display
 */
 model radars
 

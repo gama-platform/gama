@@ -1,9 +1,11 @@
 /**
 * Name: Boids 3D Motion
-* Author: 
-* Description: This model shows the movement of boids following a goal, and creating a flock .  
-*	The goal agent and the boids will move within the 3D space.
-* Tags: gui, skill, 3d
+* Author: Gama Development Team
+* Description: Extends the basic Boids model to full 3D motion in a toroidal environment. Both the goal agent
+*   and the boid agents move freely through the three-dimensional space. Boids wrap around the torus boundaries
+*   so the flock can seamlessly cross edges of the world. The model demonstrates volumetric agent movement
+*   and 3D display capabilities in GAMA, making it a good showcase for spatial simulations that require depth.
+* Tags: gui, skill, 3d, boids, flocking, torus, emergence, collective_behavior, movement
 */
 model boids_3D 
 global torus: torus_environment{ 

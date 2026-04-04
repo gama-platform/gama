@@ -1,8 +1,12 @@
 /**
-* Name: Simple definition of time property in a model
+* Name: Simple Time Definition
 * Author: Patrick Taillandier
-* Description: Show how the time is managed is GAMA.
-* Tags: date, time
+* Description: Shows how time is managed in GAMA and how to redefine the duration of one simulation step.
+*   By default, each step represents one second of simulated time. Modelers can override this by setting the
+*   global 'step' variable to any duration expressed in GAML temporal units (#ms, #s, #mn, #hour, #day, etc.).
+*   This model prints the numeric values of all available temporal unit constants to help modelers understand
+*   the internal representation and choose the right unit for their simulation time scale.
+* Tags: date, time, step, unit, temporal, second, minute, hour, day
 */
 @no_warning
 model SimpleTimedefinition

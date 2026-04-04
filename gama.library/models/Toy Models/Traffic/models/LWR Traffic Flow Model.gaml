@@ -1,14 +1,13 @@
 /**
-* Name: Trafic Group (R2D2) MAPS7 - LWR Model
-* Author: A. Banos, N. Corson, C. Pivano, L. Rajaonarivo, P. Taillandier
-* Description: The LWR model was proposed by Lighthill and Whitham (1955) and by Richards (1956). 
-* It describes the trafic at a global level considering the speed, concentration and flows without taking into account the individual behavior af vehicles. 
-* Speed, concentration and flow are the three components of the LWR model. 
-* This models reproduces flow of traffic and congestion in specific conditions (homogeneous traffic), 
-* going from one equilibrium state to another (see the fundamental diagramm of traffic, which gives flow according to concentration).
-* 
-* In this model, a road is divided into sections and we arbitrarily give to the middle section a lower speed and critical concentration.
-* Tags: transport
+* Name: LWR Traffic Flow Model
+* Author: A. Banos, N. Corson, C. Pivano, L. Rajaonarivo, Patrick Taillandier
+* Description: An implementation of the Lighthill-Whitham-Richards (LWR) macroscopic traffic flow model,
+*   originally proposed by Lighthill & Whitham (1955) and Richards (1956). Unlike microscopic agent-based
+*   models, the LWR model describes traffic at the aggregate level using three interrelated variables: speed,
+*   concentration (density), and flow (vehicles/hour). The model divides a road into sections and uses the
+*   fundamental diagram of traffic to compute flows from concentrations. A middle section is given reduced
+*   speed and critical concentration to simulate a bottleneck, producing congestion that propagates upstream.
+* Tags: transport, traffic, LWR, macroscopic, flow, congestion, equation, road
 */
 
 

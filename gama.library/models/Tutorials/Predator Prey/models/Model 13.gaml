@@ -1,8 +1,12 @@
 /**
-* Name: Exploration (batch)
-* Author:
-* Description: 13th part of the tutorial: Predator Prey
-* Tags: batch
+* Name: Predator Prey Tutorial - Step 13 - Batch Exploration
+* Author: Gama Development Team
+* Description: Thirteenth step of the Predator-Prey tutorial. Adds a batch experiment that exhaustively
+*   explores the parameter space of the predator-prey model. A set of parameters (initial prey count,
+*   initial predator count, prey energy gain, predator energy gain) are varied over defined ranges and all
+*   combinations are run. Results are saved to a CSV file for analysis. This step introduces the 'batch'
+*   experiment type and the 'parameter' statement for specifying the exploration ranges.
+* Tags: batch, exploration, predator, prey, parameter_space, save, csv, optimization
 */
 model prey_predator
 

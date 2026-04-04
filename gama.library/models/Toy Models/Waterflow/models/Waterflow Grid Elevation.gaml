@@ -1,18 +1,13 @@
 /***
-* Name: Waterflowgridelevation
-* Author: ben
-* Description: 
-* Tags: water, dem, grid
-***/
-
-/***
-* Name: Water flow in a river represented by a set of cells, depending on the elevation
+* Name: Waterflow Grid Elevation
 * Author: Benoit Gaudou
-* Description: In this model, the space is discretised using a grid. Thus the river is a set of cells, each of them with an elevation.
-* 	The data comes from a DEM (Digital Elevation Model) file.
-* 	The upstream cells (i.e. the source cells) and the downstrem cells (i.e. the drain cells) are chosen by the modeler.
-* 	At each step, the cells transmits a part of their water to their neighbor cells that are lower (their height is computed taken into account their elevation and height of water. 
-* Tags: grid, gui, hydrology, water flow, DEM
+* Description: A water flow model where the terrain is represented as a grid of cells, each with an elevation
+*   value loaded from a DEM (Digital Elevation Model) raster file. At each step, each cell transmits a
+*   fraction of its water to the neighboring cells that have a lower total height (elevation + water level).
+*   Source cells (upstream, chosen by the modeler) receive new water every step, while drain cells (downstream)
+*   release it. A shapefile defines the river channel extent. This approach uses a grid species, which is
+*   slightly less efficient than the field-based variant but easier to customize per-cell.
+* Tags: grid, gui, hydrology, water_flow, dem, elevation, raster, shapefile
 ***/
 
 model Waterflowgridelevation

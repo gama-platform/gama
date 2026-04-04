@@ -1,9 +1,12 @@
 /**
-* Name:  Movement of an agent on different paths
-* Author: 
-* Description: Model showing the movement of an agent following three different paths : one defined by its vertices, an other defined thanks to all the roads species, and finally 
-*       a path defined by a graph with weights (graph created thanks to an other species)
-* Tags: graph, agent_movement, skill
+* Name: Follow Path
+* Author: Gama Development Team
+* Description: Demonstrates three different ways to define and follow a path in GAMA. The first path is
+*   defined explicitly by a list of vertex points. The second path is built from a species of road agents.
+*   The third path is computed on a weighted graph (where edge weights represent travel cost). An agent
+*   follows each path using the 'follow' action from the 'moving' skill. This model is the primary reference
+*   for the distinction between predefined paths and graph-computed paths in agent movement.
+* Tags: graph, agent_movement, skill, path, follow, weighted_graph
 */
 model path_and_follow
 

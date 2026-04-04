@@ -1,3 +1,12 @@
+/**
+* Name: Weather
+* Author: Benoit Gaudou
+* Description: A simple weather model designed to be used as a sub-model in comodeling scenarios. Weather
+*   cells cover a grid and each cell can generate rainfall at each simulation step based on random probability.
+*   The amount of rain produced is stored per cell and can be read by a parent comodel or by a coupled
+*   Plant Growth model. When run standalone the model simply prints step information to the console.
+* Tags: weather, rain, grid, ecology, comodel, sub_model
+*/
 
 model weather
 

@@ -1,9 +1,13 @@
 /**
-* Name: sugarscape
-* Author: 
-* Description: A model with animal moving on a grid to find sugar. The animal agents 
-* 	have a life duration and die if it is reached or if they don't have anymore sugar.
-* Tags: grid
+* Name: Sugarscape
+* Author: Gama Development Team
+* Description: An implementation of the classic Sugarscape model originally proposed by Epstein & Axtell (1996)
+*   in "Growing Artificial Societies". Agents move on a grid searching for cells with the highest sugar level
+*   within their vision radius. Each step, agents consume sugar equal to their metabolism rate. Sugar regrows
+*   at a fixed rate each step. Agents die when their sugar reserve reaches zero or when they exhaust their
+*   maximum lifespan. The model demonstrates how simple resource-seeking rules lead to complex spatial
+*   resource distribution patterns and population dynamics.
+* Tags: grid, sugarscape, resource, agent, metabolism, emergence, Epstein, artificial_societies
 */
 model sugarscape
 

@@ -1,8 +1,11 @@
 /**
-* Name: Definition of charts
-* Author:
-* Description: 10th part of the tutorial: Predator Prey
-* Tags: chart
+* Name: Predator Prey Tutorial - Step 10 - Charts
+* Author: Gama Development Team
+* Description: Tenth step of the Predator-Prey tutorial. Adds population dynamics charts to the experiment.
+*   A time-series chart plots the prey and predator population counts over simulation time, revealing the
+*   classic oscillating predator-prey dynamics (Lotka-Volterra cycles) in the agent-based model. This step
+*   introduces the 'chart' display layer with 'series' data sources for plotting multiple quantities together.
+* Tags: tutorial, prey, predator, chart, visualization, population_dynamics, output
 */
 model prey_predator
 

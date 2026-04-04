@@ -1,8 +1,13 @@
 /**
-* Name: SIR with FSM
-* Shows how to code a simple agent-based SIR model using the FSM control architecture
+* Name: SIR with FSM Architecture
 * Author: Alexis Drogoul
-* Tags: SIR, FSM, control
+* Description: Shows how to implement a simple agent-based SIR (Susceptible-Infected-Recovered) epidemic model
+*   using the FSM (Finite State Machine) control architecture instead of reflexes. Each person agent has three
+*   states: susceptible, infected, and recovered. Transitions fire when an agent is within contact distance of
+*   an infected neighbor, or when the recovery time has elapsed. The FSM architecture makes the individual
+*   disease progression logic explicit and easy to understand, contrasting with the reflex-based approaches
+*   shown in other SIR models in the library.
+* Tags: SIR, FSM, control, epidemiology, infection, agent_based, state_machine
 */
 
 model SIRWithFSM

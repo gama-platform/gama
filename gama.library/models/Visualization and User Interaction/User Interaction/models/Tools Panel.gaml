@@ -1,10 +1,12 @@
 /***
-* Name: ToolsPanel
+* Name: Tools Panel
 * Author: Patrick Taillandier
-* Description: Model which shows how to use the event layer to define a tools panel. In this model, the modelers can select one of 
-* the 4 tools (icon - building1, building2, building3 and eraser) to carry out action on the map display. More precisely, when one tool 
-* is selected (red rectangle), the tool change the color of the selected cells and display the corresponding icon (in map display).
-* Tags: gui, user event, tool panel
+* Description: Shows how to use the event layer to implement a tools palette inside a GAMA display. Four tools
+*   are available as clickable icons (three building types and an eraser). When a tool is selected it is
+*   highlighted with a red border. Clicking on the map applies the selected tool: building tools recolor cells
+*   and display the corresponding building icon; the eraser reverts cells to their default state. This pattern
+*   is the standard approach for building interactive map editors within GAMA experiments.
+* Tags: gui, user_event, tool_panel, event, interaction, display, icon, map_editing
 ***/
 
 model ToolsPanel

@@ -1,8 +1,12 @@
 /**
-* Name: 3D shapefile loading
-* Author:  
-* Description: Model which shows how to create a shape using a 3D Shapefile after this one has been loaded. 
-* Tags: 3d, shapefile, load_file
+* Name: 3D Shapefile Loading
+* Author: Gama Development Team
+* Description: Shows how to load a 3D Shapefile in GAMA and create agents whose geometry includes the third
+*   dimension (z-coordinates). The key difference from a regular shapefile load is passing 'true' as the second
+*   argument of the 'shape_file' operator, which instructs GAMA to read and preserve the z-values from the file.
+*   The resulting agents have 3D geometries that can be displayed and manipulated in 3D environments. The example
+*   uses a shapefile of urban furniture objects with elevation data.
+* Tags: 3d, shapefile, load_file, geometry, elevation, gis
 */
 model shapefile_loading
 

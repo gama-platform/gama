@@ -1,8 +1,12 @@
 /**
-* Name: Differential Equation
-* Author: GAMA Team
-* Description: 7th part of the tutorial : Incremental Model
-* Tags: tutorial, chart, graph, 3d, light, multi-Level, equation
+* Name: Incremental Model Tutorial - Step 07 - Differential Equations
+* Author: Gama Development Team
+* Description: Seventh and final step of the Incremental Model tutorial. Adds an ODE-based (Ordinary
+*   Differential Equation) compartmental model alongside the agent-based simulation. The ODE model solves
+*   the SIR equations numerically and its results are plotted on the same chart as the ABM outputs, enabling
+*   a direct comparison between equation-based and agent-based epidemic dynamics. This is the most complete
+*   version of the incremental model, integrating GIS, 3D visualization, multi-level modeling, and ODE coupling.
+* Tags: tutorial, chart, graph, 3d, light, multi_level, equation, ODE, SIR, epidemic, comparison
 */
 model model7
 

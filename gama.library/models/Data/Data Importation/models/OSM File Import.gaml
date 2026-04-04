@@ -1,9 +1,13 @@
 /**
-* Name: OSM file to Agents
-* Author:  Patrick Taillandier
-* Description: Model which shows how to import a OSM File in GAMA and use it to create Agents. In this model, a filter is done to take only into account the roads 
-* and the buildings contained in the file. 
-* Tags:  load_file, osm, gis
+* Name: OSM File Import
+* Author: Patrick Taillandier
+* Description: Shows how to import an OpenStreetMap (OSM) data file in GAMA and create agents from specific
+*   feature types. OSM data files contain a wide variety of geographic features tagged with key-value attributes.
+*   GAMA allows filtering which features to import using a map of tag keys and accepted values: only features
+*   whose tags match the filter are imported. This model extracts roads (by highway tag) and buildings (by
+*   building tag) from an OSM file, creating one road agent and one building agent per matching feature. The
+*   OSM tag documentation at http://wiki.openstreetmap.org/wiki/Map_Features describes the available tags.
+* Tags: load_file, osm, gis, openstreetmap, road, building, filter, import, spatial
 */
 model simpleOSMLoading
 

@@ -1,8 +1,13 @@
 /**
-* Name: vote
-* Author: MAPS TEAM (Frederic Amblard, Thomas Louail, Romain Reulier, Paul Salze et Patrick Taillandier) 
-* Description: Modeling of an election
-* Tags: gui
+* Name: Vote
+* Author: Frederic Amblard, Thomas Louail, Romain Reulier, Paul Salze, Patrick Taillandier
+* Description: A model simulating an electoral process among a population of voter agents. Each voter has a
+*   political opinion represented as a continuous value, and is influenced by the opinions of their social
+*   neighbors. Candidates position themselves in the opinion space, and voters cast their ballot for the
+*   candidate closest to their own opinion. Multiple voting rounds can be simulated to observe how opinion
+*   dynamics and candidate positioning interact to produce electoral outcomes. The model illustrates opinion
+*   formation, spatial voting models, and collective decision-making.
+* Tags: gui, vote, election, opinion, social_influence, democracy, political_science
 */
  
 model vote

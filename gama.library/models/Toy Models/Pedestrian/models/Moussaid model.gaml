@@ -1,10 +1,13 @@
 /**
-* Name: MoussaidModel
-* Description: Pedestrian model proposed by: "Moussaïd, M., Helbing, D., & Theraulaz, G. (2011). 
-* How simple rules determine pedestrian behavior and crowd disasters. Proceedings of the National Academy of Sciences, 108(17), 6884-6888."
-* Based on the internal skeleton template. 
+* Name: Moussaid Pedestrian Model
 * Author: Patrick Taillandier
-* Tags: Pedestrian
+* Description: An implementation of the pedestrian behavior model proposed by Moussaïd et al. (2011):
+*   "How simple rules determine pedestrian behavior and crowd disasters" (PNAS, 108(17), 6884-6888).
+*   In this model, each pedestrian computes a desired direction toward their goal and adjusts their velocity
+*   based on the positions and velocities of nearby pedestrians to avoid collisions. The resulting behaviors
+*   include lane formation in bidirectional flows and bottleneck congestion. The model uses a small corridor
+*   environment and allows tracking of a focal pedestrian agent.
+* Tags: pedestrian, crowd, behavior, collision_avoidance, social_force, corridor, movement
 */
 
 model MoussaidModel

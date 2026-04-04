@@ -1,10 +1,13 @@
 /**
-* Name: comparison_ABM_EBM_SIR
-* Author: Benoit Gaudou 
-* Description: Comparison between an agent-based and an equation-based model of the SIR model. 
-* 	The ABM use a grid to place the agents, and each cell will be the location of an agent, while the EBM 
-* 	is only using a ODE System and no geographical representation.
-* Tags: equation, math, grid
+* Name: SIR (ABM vs EBM)
+* Author: Benoit Gaudou
+* Description: A direct comparison between an Agent-Based Model (ABM) and an Equation-Based Model (EBM) of the
+*   classic SIR (Susceptible-Infected-Recovered) epidemic model. The ABM places agents on a grid where infections
+*   spread through spatial proximity, while the EBM uses a system of ordinary differential equations (ODEs) solved
+*   numerically. Both models run simultaneously and their outputs are plotted together, allowing users to observe
+*   when and why the two approaches produce similar or different dynamics depending on population size and
+*   parameters.
+* Tags: equation, math, grid, SIR, epidemiology, ABM, EBM, comparison, ODE
 */
 model comparison_ABM_EBM_SIR
 

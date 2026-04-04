@@ -1,8 +1,12 @@
 /**
 * Name: Errors
 * Author: Alexis Drogoul
-* Description: A model that demonstrates basic features of error throwing / error handling in GAML
-* Tags: gaml, syntax, error
+* Description: Demonstrates the basic features of error throwing and error handling in GAML. Covers: raising warnings
+*   with the 'warn' statement, throwing errors with the 'error' statement, and catching errors using the 'catch'
+*   facet of 'try' blocks. Shows how GAMA preferences control whether warnings are treated as errors. Multiple
+*   experiments illustrate different scenarios: a recoverable warning, a fatal error that halts the simulation,
+*   and a handled error that allows execution to continue gracefully.
+* Tags: GAML, syntax, error, warning, exception, try, catch, handling
 */
 model Errors
 

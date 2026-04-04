@@ -1,9 +1,12 @@
 /**
-* Name:  Shortest Path Computation on a Graph
-* Author:  Patrick Taillandier
-* Description: Model to show how to use the optimizer methods to compute the shortest path for the agents placed on a network with all of them 
-*	having the same goal location. It also shows how to save these paths computed into a text file.
-* Tags: graph, agent_movement, skill, shortest_path, algorithm
+* Name: Goto Network
+* Author: Patrick Taillandier
+* Description: Demonstrates shortest-path computation and navigation on a GIS road network. Multiple agents
+*   all share the same goal location and navigate toward it via the road graph. Different path-optimizer
+*   algorithms (Dijkstra, Bellman-Ford, A*) can be selected as a parameter to compare their results and
+*   performance. The computed paths are saved to a text file. This model is the standard reference for
+*   network-based 'goto' movement and path file export in GAMA.
+* Tags: graph, agent_movement, skill, shortest_path, algorithm, gis, road_network, save, pathfinding
 */
 
 model Network

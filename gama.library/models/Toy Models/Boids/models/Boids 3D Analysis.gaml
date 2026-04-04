@@ -1,12 +1,12 @@
 /**
 * Name: Boids 3D Analysis
-* Author: 
-* Description:  This model shows the movement of boids following a goal and creating a flock. 
-* Four experiments are proposed : Simple is the 3D display of the boids like a real world, 
-* Trajectory Analysis is about the analysis of the trajectories of the boids, Space Time Cube adds two 
-* 	displays to see the movement of the boids using the time as the z-axis, and the last one represents the 
-* 	differents cameras available in GAMA.
-* Tags: gui, skill, 3d, camera, multi_level
+* Author: Gama Development Team
+* Description: A multi-experiment analysis companion to the Boids model. Four experiments are provided:
+*   'Simple' shows the standard 3D flock display; 'Trajectory Analysis' tracks and displays agent movement
+*   trajectories over time; 'Space Time Cube' represents the movement in a space-time cube where the z-axis
+*   encodes simulation time, allowing the history of movement to be visualized geometrically; and the last
+*   experiment showcases the different camera projection modes available in GAMA for 3D displays.
+* Tags: gui, skill, 3d, camera, multi_level, boids, flocking, trajectory, space_time_cube, analysis
 */
 model boids
 

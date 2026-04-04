@@ -1,8 +1,12 @@
 /***
-* Name: statetransition
-* Author: kevinchapuis
-* Description: simple finite state machine example to show how make a transition to one state to another
-* Tags: fsm, state, transition
+* Name: State Transitions
+* Author: Kevin Chapuis
+* Description: A simple Finite State Machine (FSM) example showing how to make transitions between states in GAML.
+*   Agents defined with the 'fsm' control architecture can have multiple states, each with its own 'enter', 'exit',
+*   and transition logic. Transitions are defined with a condition ('when') and a target state ('to'). This model
+*   creates a population of dummy agents that cycle through different states based on simple conditions,
+*   illustrating how to structure reactive, state-driven behaviors.
+* Tags: fsm, state, transition, architecture, control, finite_state_machine
 ***/
 
 model statetransition

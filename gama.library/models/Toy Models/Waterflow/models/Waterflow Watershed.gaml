@@ -1,11 +1,13 @@
 /***
-* Name: Water flow with watershed
+* Name: Waterflow Watershed
 * Author: Benoit Gaudou
-* Description: A model inspired by the SWAT model to make flow the water in a water basin using sub watershed.
-* 	The water flows from the upstream watersheds to the downstream watershed. The water basin gets water only from the rain.
-* 	To better vizualise the water flow, rain is uniform on the basin and occurs only every 20 steps.
-* 	During the other steps, there is no water input in the basin.
-* Tags: shapefile, gis, gui, hydrology, water flow
+* Description: A watershed hydrology model inspired by the SWAT (Soil and Water Assessment Tool) framework.
+*   The watershed is subdivided into sub-watershed polygons loaded from a shapefile. Water accumulates in
+*   each sub-watershed from rainfall and flows downstream to adjacent sub-watersheds according to their
+*   topographic order. To better visualize the flow dynamics, rainfall is uniform and occurs only every
+*   20 steps; the remaining steps show pure drainage. This model demonstrates how shapefile-based polygonal
+*   spatial units can represent hydrological catchments and their upstream-downstream connectivity.
+* Tags: shapefile, gis, gui, hydrology, water_flow, watershed, SWAT, catchment, rainfall
 ***/
 
 

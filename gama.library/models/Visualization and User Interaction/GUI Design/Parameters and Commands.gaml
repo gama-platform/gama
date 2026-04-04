@@ -1,8 +1,12 @@
 /***
-* Name: GUI Interactive Elements
-* Author: Benoit Gaudou/Alexis Drogoul
-* Description: This model illustrates the various possible interactive elements that can be used in the parameters pane.
-* Tags: experiment, GUI, parameter
+* Name: Parameters and Commands
+* Author: Benoit Gaudou, Alexis Drogoul
+* Description: Illustrates the full range of interactive elements available in the GAMA parameter pane and
+*   experiment interface. Covers: boolean checkboxes, integer/float sliders with min/max bounds, string text
+*   fields, color pickers, list dropdowns (among), file choosers, font selectors, and user_command buttons.
+*   Each element type is demonstrated with a corresponding global variable and parameter declaration. This
+*   model is the primary reference for designing rich interactive experiment UIs in GAMA.
+* Tags: experiment, gui, parameter, user_command, slider, dropdown, color, font, checkbox
 ***/
 
 model GUIInteractiveElements

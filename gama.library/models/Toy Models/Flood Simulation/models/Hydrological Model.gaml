@@ -1,11 +1,13 @@
 /**
 * Name: Hydrological Model
 * Author: Patrick Taillandier
-* Description: A model showing how to represent a flooding system with dykes and buildings. It uses 
-* 	a grid to discretize space, and has a 3D display. The water can flow from one cell to another considering 
-* 	the height of the cells, and the water pressure. It is also possible to delete dyke by clicking on one of them 
-* 	in the display.
-* Tags: shapefile, gis, grid, 3d, gui, hydrology
+* Description: A flood simulation model showing how water spreads across a terrain with dykes and buildings.
+*   Space is discretized as a grid where each cell has an elevation and a water level. Water flows from
+*   higher cells to lower neighbors based on hydrostatic pressure differences. Buildings are obstacles that
+*   block water flow; dykes act as barriers that can be interactively destroyed by clicking on them in the
+*   3D display. The model loads real GIS data (elevation grid, building and dyke shapefiles) and visualizes
+*   the flood propagation in 3D, making it the primary GAMA reference for agent-based hydrological simulation.
+* Tags: shapefile, gis, grid, 3d, gui, hydrology, flood, dyke, water_flow, elevation, pressure
 */
 
 model hydro

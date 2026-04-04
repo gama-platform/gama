@@ -1,8 +1,12 @@
 /**
-* Name: plantGrow
+* Name: Plant Growth
 * Author: Benoit Gaudou
-* Description: A simple model of plant growth
-* Tags: ecology, 
+* Description: A simple logistic plant growth model designed to be used as a sub-model in comodeling scenarios.
+*   Plants grow on a grid following a logistic growth equation bounded by a carrying capacity. Their growth
+*   rate depends on available water and nutrients in their cell. When used standalone the model shows plants
+*   competing for resources. When coupled with the Weather model, rainfall data from the Weather sub-model
+*   supplies water to the plants, creating ecological feedback dynamics.
+* Tags: ecology, plant, growth, logistic, grid, comodel, sub_model, carrying_capacity
 */
 
 model plantGrow

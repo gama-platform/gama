@@ -1,8 +1,12 @@
 /**
-* Name: Graph from DGS File and Layout Changed
+* Name: Graph Loading Layout
 * Author: Patrick Taillandier
-* Description: Model which shows how to load a graph from a graphml File, and change its layout. 
-* Tags: graph, load_file, dgs
+* Description: Shows how to load a graph from an external GraphML file and apply layout algorithms to
+*   reposition its nodes. The model loads a Barabasi-scale-free graph from a '.graphml' file and then
+*   applies several graph layout algorithms (force-directed, circular, radial, grid) as selectable parameters.
+*   Layouts are computed once and the result is displayed. This is the reference for working with external
+*   graph file formats and for making imported graphs visually readable.
+* Tags: graph, load_file, graphml, layout, force_directed, visualization, network
 */
 
 model graphloadinglayout

@@ -1,8 +1,12 @@
 /**
-* Name: Pie Examples
+* Name: Pie Chart Examples
 * Author: Philippe Caillou
-* Description: A demonstration of charts composed of pies
-* Tags: gui, chart
+* Description: A reference model for pie and donut charts in GAMA. Pie charts display proportional data as
+*   slices of a circle, making them ideal for showing the composition of a whole (e.g., population by category,
+*   resource distribution). The model covers simple pie charts with static and dynamic data, exploded slices
+*   for emphasis, donut variants, and custom color/label options. Multiple experiments illustrate the available
+*   configuration options in GAMA's chart API.
+* Tags: gui, chart, pie, donut, proportion, visualization, output, display
 */
 model pies
 

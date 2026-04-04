@@ -1,9 +1,13 @@
 /***
-* Name: Experiment species
+* Name: Experiment and Simulation Species
 * Author: Benoit Gaudou
-* Description: The model shows the different dynamics of the experiment and its simulation(s).
-* 
-* Tags: experiment, simulation, gui, batch
+* Description: A detailed reference model illustrating the lifecycle and behavior of the experiment species
+*   and its simulation(s) in GAMA. Covers: when experiment-level reflexes and init blocks execute; how an
+*   experiment can access, inspect, and control its running simulations; how to run multiple simulations
+*   from a single experiment; and how batch vs. GUI experiment behaviors differ. The model traces the
+*   execution order (init, reflex scheduling) step by step, making it the go-to reference for understanding
+*   the GAMA execution model and building advanced multi-simulation experiments.
+* Tags: experiment, simulation, gui, batch, lifecycle, reflex, init, scheduling, multi_simulation
 ***/
 
 // Create a model showing the different dynamics of the experiment and its simulation(s), 

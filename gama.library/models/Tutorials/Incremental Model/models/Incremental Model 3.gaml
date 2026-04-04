@@ -1,8 +1,11 @@
 /**
-* Name: Integration of GIS Data
-* Author:
-* Description: third part of the tutorial : Incremental Model
-* Tags: gis, chart, tutorial
+* Name: Incremental Model Tutorial - Step 03 - Integration of GIS Data
+* Author: Gama Development Team
+* Description: Third step of the Incremental Model tutorial. Integrates real GIS data into the epidemic
+*   simulation: buildings and roads are loaded from shapefiles. People are placed inside buildings rather
+*   than randomly, and they move along the road network using graph-based navigation. The model is now
+*   georeferenced, giving the infection spread a realistic spatial context tied to actual city infrastructure.
+* Tags: gis, chart, tutorial, shapefile, building, road, graph, SI, epidemic
 */
 model model3
 

@@ -1,8 +1,12 @@
 /**
-* Name: Long Series Examples
+* Name: Long Series Chart Examples
 * Author: Philippe Caillou
-* Description: A demonstration of charts composed of very long series
-* Tags: gui, chart
+* Description: Demonstrates GAMA's ability to render series charts with a very large number of data points
+*   (1000+ steps) without performance degradation. The chart plots sine, cosine, and ramp functions over long
+*   time series. Use this model to test chart rendering performance and to understand how GAMA handles
+*   memory and display for charts that accumulate data over extended simulation runs. Also shows how to
+*   control whether history is kept or a sliding window is used.
+* Tags: gui, chart, series, performance, long, time_series, visualization, output
 */
 model long_series
 

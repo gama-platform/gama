@@ -1,8 +1,12 @@
 /***
-* Name: exportkml
+* Name: Save to KML/KMZ
 * Author: Patrick Taillandier
-* Description: 
-* Tags: KML, KMZ, export, save
+* Description: Demonstrates how to export georeferenced data from GAMA to KML or KMZ format for visualization in
+*   Google Earth, Google Maps, or any KML-compatible tool. KML (Keyhole Markup Language) is an XML-based format
+*   for geographic data; KMZ is its compressed variant. The model shows how to use GAMA's built-in KML export
+*   support: building geometries are extracted from a shapefile, time-stamped using 'starting_date', and written
+*   to a KML file with the help of a dedicated 'kml' variable. The result can be opened directly in Google Earth.
+* Tags: KML, KMZ, export, save, google_earth, gis, temporal
 ***/
 
 model exportkml

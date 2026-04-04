@@ -1,8 +1,12 @@
 /**
-* Name: Visualisation of the primitive shapes
+* Name: Built-In Shapes
 * Author: Arnaud Grignard
-* Description: Model presenting a 3D display with all the primitive shapes existing in GAMA in 2D and 3D, with or without textures. 
-* Tags: 3d, shape, texture
+* Description: A visual catalog of all primitive geometric shapes available in GAMA, shown in both 2D and 3D
+*   with and without textures. Shapes include: circle, square, rectangle, triangle, ellipse, cylinder, sphere,
+*   cone, box, pyramid, and torus. For each shape the model shows the draw statement syntax and optional
+*   facets (size, color, texture). Experiments compare textured vs. untextured versions. Use this model as a
+*   quick reference when choosing geometric primitives for agent aspects.
+* Tags: 3d, shape, texture, geometry, visualization, display, primitives, reference
 */
 
 model shape   

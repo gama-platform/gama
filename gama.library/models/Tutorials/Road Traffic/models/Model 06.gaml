@@ -1,8 +1,11 @@
 /**
-* Name: Definition of a chart display
-* Author:
-* Description: 6th part of the tutorial: Road Traffic
-* Tags: chart
+* Name: Road Traffic Tutorial - Step 06 - Chart Display
+* Author: Gama Development Team
+* Description: Sixth step of the Road Traffic tutorial. Adds a chart display to the experiment showing
+*   the number of people on the road and the number who have reached their destination over simulation time.
+*   This output helps analyze traffic flow patterns and commute completion rates. The step also introduces
+*   using a 'monitor' to display the current simulation time alongside the road network visualization.
+* Tags: tutorial, chart, transport, road_network, output, visualization, monitor
 */
 
 model tutorial_gis_city_traffic

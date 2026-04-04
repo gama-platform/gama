@@ -1,8 +1,11 @@
 /**
-* Name: Writing files
-* Author:
-* Description: 11th part of the tutorial: Predator Prey
-* Tags: file
+* Name: Predator Prey Tutorial - Step 11 - Writing Files
+* Author: Gama Development Team
+* Description: Eleventh step of the Predator-Prey tutorial. Adds file output to the simulation: agent data
+*   and population counts are saved to CSV files at each step (or at configurable intervals). This step
+*   introduces the 'save' statement for exporting simulation results, demonstrating how to record prey and
+*   predator populations for subsequent analysis outside of GAMA (e.g., in a spreadsheet or Python script).
+* Tags: tutorial, prey, predator, file, save, csv, output, data_export
 */
 model prey_predator
 

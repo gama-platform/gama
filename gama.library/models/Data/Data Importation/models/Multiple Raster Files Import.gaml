@@ -1,8 +1,12 @@
 /**
-* Name: importationraster
+* Name: Multiple Raster Files Import
 * Author: Patrick Taillandier
-* Description: Shows how to use several grid files to initialize a grid 
-* Tags: load_file, gis, 3d, dem, tif, asc
+* Description: Shows how to use multiple raster files simultaneously to initialize different attributes of a
+*   single GAMA grid. In this example, a DEM (Digital Elevation Model) raster in ASC format provides elevation
+*   values, and a land-cover raster in GeoTIFF format provides land-use categories. Each grid cell reads from
+*   both files and its attributes are set accordingly. This technique is common in environmental and ecological
+*   simulations where the spatial environment is described by several overlapping thematic layers.
+* Tags: load_file, gis, 3d, dem, tif, asc, raster, grid, multiple, land_cover, elevation
 */
 
 model importationraster

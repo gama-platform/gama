@@ -1,8 +1,13 @@
 /**
-* Name: Discretization of Topology
+* Name: Geometry Discretization
 * Author: Patrick Taillandier
-* Description: A model which shows how to use the different convert topologies operators : to_square, to_rectangle, points_on, triangulate, voronoi.
-* Tags: topology, spatial_computation, spatial_transformation
+* Description: A visual reference for geometry discretization and conversion operators in GAMA. A circle
+*   geometry is transformed using: 'to_squares' (packs the geometry with squares), 'to_rectangles' (packs
+*   with rectangles of given dimensions), 'points_on' (samples points along the boundary), 'triangulate'
+*   (Delaunay triangulation), and 'voronoi' (Voronoi diagram from boundary points). Each operator produces
+*   a set of smaller geometries covering or approximating the original, useful for spatial discretization,
+*   mesh generation, and density estimation.
+* Tags: topology, spatial_computation, spatial_transformation, discretization, voronoi, triangulation, square
 */
 
 model discretization

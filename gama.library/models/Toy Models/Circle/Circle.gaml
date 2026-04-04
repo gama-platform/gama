@@ -1,9 +1,12 @@
 /**
 * Name: Circle
-* Author: 
-* Description: This model shows the movement of cells trying to do a circle shape with themselves 
-* 	considering the other cells. The second experiment shows a bigger circle using more cell agents.
-* Tags: skill
+* Author: Gama Development Team
+* Description: A self-organization model where cell agents arrange themselves into a circle through local
+*   interactions. Each cell tries to maintain an ideal distance from a central point (the radius) and repels
+*   cells that come too close. Without any global coordination, the agents converge to a circular formation
+*   through purely local rules. The model has two experiments: a default experiment with 50 agents forming a
+*   small circle, and a second experiment with more agents forming a larger ring, demonstrating scalability.
+* Tags: skill, self_organization, emergence, circle, formation, collective
 */
 model circle_model
 

@@ -1,8 +1,13 @@
 /**
-* Name: Spatialqueries
+* Name: Spatial Queries
 * Author: Patrick Taillandier
-* Description: A model which shows how to use spatial queries - in magenta the source geometry, in red the agents concerned by the spatial query
-* Tags: topology, spatial_computation, spatial_queries
+* Description: A visual reference for GAMA's spatial query operators. For a selected source geometry
+*   (magenta), the model highlights in red all agents that satisfy a given spatial relationship. The
+*   supported queries include: 'overlapping' (at least one common point), 'inside' (contained within),
+*   'covering' (contains the source), 'touching' (shares boundary but not interior), 'crossing' (interiors
+*   intersect), 'at_distance' (within a given distance), and 'closest_to' (nearest agent). Each query type
+*   can be selected as a parameter.
+* Tags: topology, spatial_computation, spatial_queries, overlapping, inside, distance, closest_to
 */
 
 model Spatialqueries

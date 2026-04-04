@@ -1,10 +1,12 @@
 /**
-* Name: MovingAgents
-* Author: drogoul
-* Description: Shows how to move agents using two event layers : 
-* 
-* Click to grab an group of agents, click again to drop them. Press the keys "r" to kill the agents in the selection, and "c" to duplicate them.
-* Tags: gui
+* Name: Moving Agents
+* Author: Alexis Drogoul
+* Description: Shows how to select, move, duplicate, and delete groups of agents interactively using event
+*   layers. Click once to grab a group of nearby agents (shown highlighted); click again to drop them at the
+*   new location. While carrying agents, press 'r' to kill all selected agents, or 'c' to create copies of
+*   them at the drop point. This model demonstrates multi-key event handling, spatial agent selection, and
+*   the combination of mouse and keyboard events for rich display interactivity.
+* Tags: gui, event, mouse, keyboard, interaction, display, select, move, duplicate
 */
 model MovingAgents
 

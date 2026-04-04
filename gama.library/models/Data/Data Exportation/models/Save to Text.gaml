@@ -1,8 +1,11 @@
 /**
 * Name: Save to Text
 * Author: Patrick Taillandier
-* Description: This is a model that shows how to save agents inside a text file to reuse it later or to keep it.
-* Tags: save_file, txt
+* Description: Shows how to save agent data to a plain text file in GAMA. Text files are the simplest output
+*   format — each 'save' call appends a line to the file. While less structured than CSV or JSON, text output
+*   is useful for logs, human-readable reports, or custom formats. The model demonstrates creating a population
+*   of bug agents and progressively writing their attributes to a text file during the simulation run.
+* Tags: save_file, txt, text, export, log, agent
 */
 
 

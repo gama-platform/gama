@@ -1,8 +1,12 @@
 /**
-* Name: Graph Generation
+* Name: Classic Graph Generation
 * Author: Patrick Taillandier
-* Description: Model which shows how to create three kind of graphs : a scale-free graph, a small-world graph, a complete graph and a complete graph with a radius.
-* Tags: graph
+* Description: Demonstrates the generation of four classic synthetic graph topologies in GAMA: scale-free
+*   (Barabasi-Albert preferential attachment), small-world (Watts-Strogatz), complete (every node connected
+*   to every other), and random (Erdos-Renyi). The graph type is selectable as a parameter. Each topology
+*   produces characteristic structural properties (degree distribution, clustering, path lengths) that are
+*   relevant for modeling social networks, epidemic spreading, or infrastructure resilience.
+* Tags: graph, scale_free, small_world, complete, random, generation, network, topology
 */
 
 model classicgraphgeneration

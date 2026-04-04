@@ -1,8 +1,12 @@
 /**
-* Name: tetris
-* Based on the internal empty template. 
-* Author: Loris
-* Tags: 
+* Name: Tetris
+* Author: Loris Henry
+* Description: A GAMA implementation of the classic Tetris puzzle game. Tetromino pieces (L, J, S, Z, T, O, I)
+*   fall from the top of the grid and the player must rotate and position them to complete horizontal lines.
+*   Complete lines are cleared and the score increases. The game ends when pieces stack to the top. User keyboard
+*   input controls left/right/down movement and rotation. This model demonstrates complex user interaction,
+*   piece-based data structures, line detection algorithms, and game state management in GAMA.
+* Tags: game, tetris, grid, user_interaction, keyboard, puzzle, arcade, gui
 */
 
 

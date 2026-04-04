@@ -1,9 +1,13 @@
 /**
-* Name: CSV to Agents Model
-* Author:  Patrick Taillandier
-* Description: Model which shows how to create agents by importing data of a CSV file. The model read the CSV File and create an agent Iris for each line of the CSV, 
-* 	linking its attributes to columns of the CSV File. 
-* Tags: csv, load_file
+* Name: CSV to Agents
+* Author: Patrick Taillandier
+* Description: Shows how to create agents by importing data from a CSV file. Each row of the CSV file becomes
+*   one agent, and the column values initialize the agent's corresponding attributes. The 'from' and 'with'
+*   facets of the 'create' statement handle the mapping: 'from' specifies the CSV file, and 'with' maps column
+*   names (when 'header: true') or column indices to agent attribute names. This is the standard approach for
+*   populating a GAMA simulation from tabular external data such as census data, field survey records, or
+*   exported results from other tools. The example uses the well-known Iris flower dataset.
+* Tags: csv, load_file, agent, create, tabular, data, import, initialization
 */
 
 model CSVfileloading

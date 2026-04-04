@@ -1,8 +1,11 @@
 /**
-* Name: Complex behaviors for the preys and predators
-* Author:
-* Description: 8th part of the tutorial: Predator Prey
-* Tags: inheritance, iterator, container
+* Name: Predator Prey Tutorial - Step 08 - Complex Behaviors
+* Author: Gama Development Team
+* Description: Eighth step of the Predator-Prey tutorial. Adds more sophisticated behaviors: prey choose the
+*   best neighboring food cell from a list sorted by food level, using iterator operators ('sort_by', 'first').
+*   Predators search for the nearest prey using 'agents_overlapping' or 'closest_to'. This step demonstrates
+*   the use of GAML container operators and spatial queries to implement intelligent foraging and hunting.
+* Tags: tutorial, prey, predator, inheritance, iterator, container, sort, spatial_query
 */
 model prey_predator
 

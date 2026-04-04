@@ -1,9 +1,13 @@
 /***
 * Name: Matrices
 * Author: Benoit Gaudou
-* Description: Examples of the syntax and various operators used to manipulate the 'matrix' data type. 
-* Read the comments and run the model to get a better idea on how to use matrices in GAML. 
-* Tags: matrix, loop
+* Description: Examples of the syntax and various operators used to manipulate the 'matrix' data type in GAML.
+*   A matrix is a two-dimensional container indexed by (column, row) positions. This model demonstrates declaring
+*   typed and untyped matrices, initializing with values, accessing and modifying cells, transposing, performing
+*   arithmetic operations, converting between matrices and lists, loading matrices from CSV files, and iterating
+*   over matrix cells.
+*   Read the comments and run the model to get a better understanding of how to use matrices effectively in GAML.
+* Tags: matrix, loop, container, 2D, index, transpose, arithmetic, csv
 ***/
 
 model Matrices

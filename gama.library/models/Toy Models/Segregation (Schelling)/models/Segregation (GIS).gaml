@@ -1,9 +1,12 @@
 /**
-* Name: segregationGIS
-* Author: 
-* Description: A model showing the segregation of the people just by putting a similarity wanted parameter using agents 
-* 	to represent the individuals and GIS file for the places
-* Tags: gis, shapefile
+* Name: Segregation (GIS)
+* Author: Gama Development Team
+* Description: A GIS-based variant of Thomas Schelling's residential segregation model. Unlike the grid and
+*   agent-only variants, this version uses a real shapefile to define the spatial units (buildings or land
+*   parcels) where residents live. Agents of two groups are assigned to these spatial units, and unhappy
+*   agents (whose same-group neighbor percentage is below the threshold) move to a free unit selected from
+*   the GIS data. This gives the segregation dynamics a realistic geographic footprint.
+* Tags: gis, shapefile, segregation, Schelling, emergence, social, agent_based, residential
 */
 model segregation
 

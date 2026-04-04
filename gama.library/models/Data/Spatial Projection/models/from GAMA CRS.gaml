@@ -1,8 +1,13 @@
 /**
 * Name: From GAMA CRS
 * Author: Patrick Taillandier
-* Description: A model which shows how to CRS_transform operator which allows to translate a geometry (or a point) in GAMA CRS to a given CRS
-* Tags:  gis, shapefile, spatial_computation, spatial_transformation, projection
+* Description: Shows how to use the 'CRS_transform' operator to convert geometries from GAMA's internal coordinate
+*   reference system (CRS) into a user-specified target CRS. When GAMA loads a shapefile, it adopts the file's
+*   native CRS for all internal coordinates. The 'CRS_transform' operator takes a geometry (or point) in that
+*   internal CRS and projects it into any target CRS specified by an EPSG code or WKT string. This is necessary
+*   when you need to output coordinates in a specific geographic or projected system different from the one used
+*   during the simulation — for example when saving results for use in a GIS tool or comparing with external data.
+* Tags: gis, shapefile, spatial_computation, spatial_transformation, projection, crs, epsg
 */
 model From_GAMA_CRS
 

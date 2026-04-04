@@ -1,10 +1,12 @@
 /**
-* Name: SpatialGraph
+* Name: Graph From Bug (Distance Graph)
 * Author: Arnaud Grignard
-* Description: From the reference model "bug.gaml" a spatial graph is created. 
-*  We create a species node that mirrors the species bug and then a spatial graph is creating 
-*  using as_distance_graph operator.
-* Tags: graph, mirror, 3d
+* Description: Builds a spatial proximity graph from the positions of bug agents in the base "Common Bug Species"
+*   model using the 'as_distance_graph' operator. A mirror species (node) is used to represent the bugs as graph
+*   nodes. The resulting graph connects any two nodes that are within a specified distance threshold of each other.
+*   The graph is displayed in a separate 3D view alongside the original 2D simulation, providing an alternative
+*   relational perspective on the spatial structure of the agent population.
+* Tags: graph, mirror, 3d, distance_graph, multi_level, spatial, network
 */
 
 model SpatialGraph

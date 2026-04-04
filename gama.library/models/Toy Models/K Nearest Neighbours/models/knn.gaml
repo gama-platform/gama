@@ -1,10 +1,13 @@
 /**
-* Name: K Nearest Neighbors
-* Description: This model represents how the K Nearest Neighbors Algorithm work. Whenever the user click on any location, a point will
-* be generated and its color will be based on the colors of its k-nearest points. The user can also let the point generated dynamically and 
-* the colors of these points will also based on the colors of their k-nearest points
+* Name: K Nearest Neighbours
 * Author: Minh Nguyen Dich Nhat
-* Tags: 
+* Description: An interactive demonstration of the K-Nearest Neighbors (KNN) classification algorithm. Pre-existing
+*   points of different color groups are placed in circular clusters. When the user clicks on any location, a new
+*   point is generated there and its color is determined by a majority vote among its k nearest neighbors. The user
+*   can also let points be generated dynamically at random positions. Parameters control the number of groups,
+*   their radii, the initial number of points per group, and k (the number of neighbors). This model illustrates
+*   how the KNN algorithm creates non-linear decision boundaries in a spatial context.
+* Tags: machine_learning, KNN, classification, spatial, user_interaction, algorithm, clustering
 */
 
 /**

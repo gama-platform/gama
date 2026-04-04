@@ -1,8 +1,12 @@
 /**
-* Name: DisplayConstants
-* This model shows the use of some "constants" defined in GAML that allow to gather information about the user manipulation / actions in displays 
-* Author: drogoul
-* Tags: Display, 
+* Name: Display Constants
+* Author: Alexis Drogoul
+* Description: Shows the use of built-in GAML constants that provide information about user actions in displays.
+*   These constants include: #mouse_location (current mouse position), #zoom (current zoom level),
+*   #display_width/#display_height (display pixel dimensions), and #view_zoom. They are useful for building
+*   responsive displays that react differently based on the current view state, or for implementing
+*   precise coordinate-based user interactions.
+* Tags: display, constants, mouse, zoom, interaction, gui
 */
 
 

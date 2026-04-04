@@ -1,9 +1,13 @@
 /**
-* Name: UserInputdialog_example
+* Name: User Input Dialog
 * Author: Patrick Taillandier
-* Description: Model which shows how to use user_input_dialog 
-* Tags: gui
- */
+* Description: Shows how to display an input dialog box to collect values from the user at runtime using
+*   'user_input_dialog'. Two types of input elements are supported: 'enter' (free text/number entry) and
+*   'choose' (dropdown selection from a list of options). The dialog returns a map of the entered values
+*   keyed by their labels. This is useful for requesting parameters from the user mid-simulation, such as
+*   confirming scenario parameters before a critical event.
+* Tags: gui, dialog, user_input_dialog, interaction, input, parameter, popup
+*/
 
 model Confirmdialog_example
 

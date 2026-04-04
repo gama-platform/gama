@@ -1,9 +1,13 @@
 /**
-* Name: segregationAgents
-* Author: 
-* Description: A model showing the segregation of the people just by putting a similarity wanted parameter using agents 
-* 	to represent the individuals
-* Tags: grid
+* Name: Segregation (Agents)
+* Author: Gama Development Team
+* Description: An agent-based implementation of Thomas Schelling's classic residential segregation model.
+*   Agents of two groups are placed randomly on a grid. At each step, any agent whose percentage of same-group
+*   neighbors falls below the 'similarity_wanted' threshold becomes unhappy and moves to a random free cell.
+*   Despite starting from a random mixed distribution, even a low preference for neighbors of the same group
+*   (e.g., 30%) leads to highly segregated patterns. This version uses individual agent objects to represent
+*   residents — compare with the cellular automata and GIS variants.
+* Tags: grid, segregation, Schelling, emergence, social, agent_based, residential
 */
 
 model segregation

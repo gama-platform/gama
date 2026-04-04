@@ -1,8 +1,12 @@
 /***
-* Name: TextDisplay
-* Author: A. Drogoul
-* Description: A simple model to show the usage of the 'anchor' facet to draw strings in display. Also demonstrates some of the attributes with which text can be drawn (depth, border, precision, wireframe...)
-* Tags: Display, Draw, String
+* Name: Text Display
+* Author: Alexis Drogoul
+* Description: A reference model for drawing text strings in GAMA displays. Demonstrates the 'anchor' facet
+*   which controls which point of the text bounding box is placed at the draw location (e.g., #center, #top_left,
+*   #bottom_right). Also shows optional text attributes: 'depth' for extruded 3D text, 'border' for a text
+*   outline, 'precision' for anti-aliasing quality, and 'wireframe' for hollow letter outlines. Multiple named
+*   experiments illustrate each attribute combination.
+* Tags: display, draw, string, text, anchor, depth, border, wireframe, font, visualization
 ***/
 model TextDisplay
 

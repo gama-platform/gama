@@ -1,8 +1,12 @@
 /**
-* Name: Luneray's flu 3
+* Name: Luneray's Flu - Step 3
 * Author: Patrick Taillandier
-* Description: Importation of GIS data
-* Tags: gis, tutorial
+* Description: Third step of the Luneray's Flu tutorial. Imports real GIS data (buildings, roads, and bounds
+*   shapefiles) for the town of Luneray. Buildings and roads are loaded from shapefiles and displayed as
+*   agents with appropriate colors and shapes. The model environment is now georeferenced, giving the
+*   epidemic simulation a realistic geographic context. Agents still move randomly but are now aware of the
+*   spatial layout.
+* Tags: gis, tutorial, shapefile, building, road, load_file, epidemic, flu
 */
 
 model model3

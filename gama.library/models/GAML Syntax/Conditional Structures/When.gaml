@@ -1,8 +1,12 @@
 /***
-* Name: reflex_when
-* Author: kevinchapuis
-* Description: Gives few example on how to use when facets of reflex statement
-* Tags: reflex, when, condition
+* Name: When
+* Author: Kevin Chapuis
+* Description: Gives a few examples on how to use the 'when' facet of the 'reflex' statement in GAML. By default, a
+*   reflex is executed at every simulation step. The 'when' facet adds a condition that must be true for the reflex to
+*   execute, making it a conditional reflex. This is a cleaner and more efficient alternative to wrapping the entire
+*   reflex body in an 'if' statement. This model shows various condition types: simple boolean, composed boolean,
+*   and spatial conditions based on agent positions.
+* Tags: reflex, when, condition, boolean, spatial
 ***/
 
 model reflex_when

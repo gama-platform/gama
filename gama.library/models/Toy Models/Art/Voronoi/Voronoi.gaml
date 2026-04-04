@@ -1,9 +1,12 @@
 /**
 * Name: Voronoi
-* Author: 
-* Description: A model showing how to clusterize space using the closest center as the kernel of our cluster. The space 
-* 	 is discretized using a grid, each cell computing its distance from a center to know in which cluster it is. 
-* Tags: skill, agent_movement, grid
+* Author: Gama Development Team
+* Description: Demonstrates Voronoi space partitioning in GAMA. The space is discretized using a grid, and
+*   each center point defines a cluster. Every grid cell computes its distance to all centers and is assigned
+*   to the nearest one, producing a Voronoi diagram. Centers can be moved interactively, causing the partition
+*   to update in real time. The model visually illustrates proximity-based spatial clustering and can serve as
+*   a building block for models that partition territory among competing agents.
+* Tags: voronoi, spatial, grid, clustering, partition, proximity, geometry
 */
 model voronoi
 

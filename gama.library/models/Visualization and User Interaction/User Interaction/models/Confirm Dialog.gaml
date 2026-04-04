@@ -1,9 +1,12 @@
 /**
-* Name: Confirmdialog_example
+* Name: Confirm Dialog
 * Author: Patrick Taillandier
-* Description: Model which shows how to use confirm dialog box 
-* Tags: gui
- */
+* Description: Shows how to display a confirmation dialog box to the user using the 'user_confirm' action.
+*   The dialog presents a title, a message, and OK/Cancel buttons. The action returns 'true' if the user
+*   clicks OK and 'false' if they cancel. This is useful for asking the user to confirm a potentially
+*   destructive or irreversible action before it is executed in the simulation.
+* Tags: gui, dialog, user_confirm, interaction, popup
+*/
 
 model Confirmdialog_example
 

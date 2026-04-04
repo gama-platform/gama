@@ -1,8 +1,13 @@
 /**
-* Name: ODE_LotkaVolterra
-* Author: Huynh Quang Nghi & Nathalie Corson
-*  Description: Lotka Volterra Predator Prey Model - ODE solved with Runge-Kutta 4 method with different integration time step with only one agent
-* Tags: equation, math
+* Name: Lotka-Volterra (Simple)
+* Author: Huynh Quang Nghi, Nathalie Corson
+* Description: The classic Lotka-Volterra predator-prey model solved as a system of ordinary differential
+*   equations (ODEs) using the Runge-Kutta 4 (RK4) integration method. The model describes the coupled
+*   population dynamics of a prey species and a predator species: preys grow at a constant birth rate but
+*   are killed by predators; predators grow when they eat prey but die at a constant death rate. The
+*   resulting dynamics exhibit characteristic oscillating cycles. This single-agent ODE implementation
+*   provides a baseline for comparison with more complex hybrid or multi-agent approaches.
+* Tags: equation, math, ODE, Lotka-Volterra, predator_prey, population_dynamics, RK4
 */
 
 model ODE_LotkaVolterra

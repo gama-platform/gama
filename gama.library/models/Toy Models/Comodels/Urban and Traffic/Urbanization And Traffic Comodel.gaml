@@ -1,11 +1,14 @@
 /**
-* Name: urbanization_and_traffic_comodeling
-* Author: HUYNH Quang Nghi
-* Description: Co-model example : coupling urban growth model with the traffic model. 
-* The speed of people on the road will be effected by the urbanization, more people in the region, the lower speed they move.
-* And the greater urbanization the faster developping of roads.
-* Tags: comodel
- */
+* Name: Urbanization and Traffic Comodel
+* Author: Huynh Quang Nghi
+* Description: A comodel coupling an urban growth model with a traffic model to study their mutual feedback.
+*   As urban areas expand (more buildings and residents), traffic congestion increases because more people
+*   travel the same roads. Conversely, higher traffic demand triggers faster road network expansion to
+*   accommodate growth. The speed of people on roads decreases as urbanization intensifies, creating a
+*   realistic urban growth-transport feedback loop. This model demonstrates multi-domain coupling and the
+*   emergence of transport congestion from spatial development patterns.
+* Tags: comodel, urban, traffic, transport, urbanization, coupling, road_network, congestion, feedback
+*/
 model urbanization_and_traffic_comodeling
 
 import "Adapters/Traffic Adapter.gaml" as Traffic

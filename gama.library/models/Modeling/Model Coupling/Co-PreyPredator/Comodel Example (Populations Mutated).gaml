@@ -1,11 +1,14 @@
 
 /**
-* Name: comodeling_example_populations_mutating
-* Author: Arthur Brugiere & HUYNH Quang Nghi
-* Description: This simple comodel serves to demonstrate the importation and instantiation of micro-model.
-* Here triangle predators can eat any prey, square can eat square and round prey, and round predators can only eat round prey
-* Tags: comodel
-*/ 
+* Name: Comodel Example - Populations Mutated
+* Author: Arthur Brugiere, Huynh Quang Nghi
+* Description: A comodel demonstrating population mutation through species casting. The base predator-prey
+*   model is imported and its populations are altered: triangle predators can eat any prey; square predators
+*   can eat square and round prey; round predators can only eat round prey. This selective predation creates
+*   differentiated population dynamics depending on prey shape. Illustrates how comodeling can introduce
+*   new interaction rules on top of an existing model without modifying the original.
+* Tags: comodel, predator_prey, mutation, species, population, coupling
+*/
 
 model comodeling_example_populations_mutating
 

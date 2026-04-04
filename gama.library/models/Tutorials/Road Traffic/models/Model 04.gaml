@@ -1,8 +1,12 @@
 /**
-* Name: Definition of weight for the road network
-* Author:
-* Description: 4th part of the tutorial: Road Traffic
-* Tags: graph
+* Name: Road Traffic Tutorial - Step 04 - Road Weights
+* Author: Gama Development Team
+* Description: Fourth step of the Road Traffic tutorial. Makes the road network weighted: each road's weight
+*   depends on its length and the number of people currently using it (congestion effect). Heavier-used roads
+*   get higher weights, causing agents to prefer less congested alternatives when computing their shortest path.
+*   The road graph is rebuilt with updated weights at each step. This step introduces dynamic graph weights
+*   and the interaction between agent movement and network topology.
+* Tags: tutorial, graph, road_network, weight, congestion, transport, shortest_path
 */
 
 model tutorial_gis_city_traffic

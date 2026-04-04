@@ -1,8 +1,12 @@
 /***
-* Name: graph
-* Author: kevinchapuis
-* Description: All the operators related to graphs
-* Tags: graph, network, path
+* Name: Graph
+* Author: Kevin Chapuis
+* Description: A comprehensive overview of graph operators and graph-related features in GAML. Covers creating graphs
+*   from various generators (random, scale-free, small-world, complete, distance-based, intersection-based, grid-based),
+*   applying different layout algorithms (Circle, Forced, Grid), and manipulating graph structure at runtime. The model
+*   lets users interactively explore different combinations of graph topology and layout to understand how graph data
+*   structures work in a GAMA simulation.
+* Tags: graph, network, path, topology, layout, generator
 ***/
 model graph
 

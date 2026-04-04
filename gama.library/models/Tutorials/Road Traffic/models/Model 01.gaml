@@ -1,8 +1,11 @@
 /**
-* Name: Loading of GIS data (buildings and roads)
-* Author:
-* Description: first part of the tutorial: Road Traffic
-* Tags: gis
+* Name: Road Traffic Tutorial - Step 01 - Loading GIS Data
+* Author: Gama Development Team
+* Description: First step of the Road Traffic tutorial. Loads buildings, roads, and bounds from shapefiles
+*   and creates corresponding agents. The environment geometry is set to the bounds shapefile envelope. Buildings
+*   and roads are displayed with different colors. This step introduces GIS data loading with the 'shape_file'
+*   operator, the 'create from' statement for populating agents from shapefiles, and the basic 2D display setup.
+* Tags: gis, shapefile, tutorial, building, road, load_file, transport
 */
 
 model tutorial_gis_city_traffic

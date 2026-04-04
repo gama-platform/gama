@@ -1,8 +1,11 @@
 /***
-* Name: switchmatch
-* Author: kevinchapuis
-* Description: Show several way to use the switch ... match ... statement
-* Tags: switch, match, match_one
+* Name: Switch And Match
+* Author: Kevin Chapuis
+* Description: Shows several ways to use the 'switch ... match' statement in GAML. The switch statement is used to
+*   select one among several alternatives based on the value of an expression. The 'match' clause tests for exact
+*   equality, 'match_one' tests for membership in a list, and 'match_between' tests for range membership.
+*   This model implements a simple rock-paper-scissors game to demonstrate the switch construct in a concrete scenario.
+* Tags: switch, match, match_one, condition, control, game
 * 
 ***/
 

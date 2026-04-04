@@ -1,9 +1,12 @@
 /***
-* Name: Ask (as a loop over a population) and self and myself
+* Name: Ask Agents
 * Author: Benoit Gaudou
-* Description: This model illustrates the use of the ask statement to iterate over a population of agents.
-* It compares it with the loop statement and introduces self and myself meta-variables.
-* Tags: ask, loop, self, myself
+* Description: Illustrates the use of the 'ask' statement in GAML to iterate over and interact with a population of agents.
+*   The 'ask' statement is a concise alternative to a 'loop over' when the intention is to execute actions within the
+*   context of each target agent. The model also introduces the 'self' and 'myself' meta-variables: 'self' refers to
+*   the agent currently executing, while 'myself' refers to the agent that initiated an 'ask' block — allowing the
+*   called agent to refer back to the calling agent. A comparison between 'loop' and 'ask' is provided.
+* Tags: ask, loop, self, myself, population, agent, context
 ***/
 
 model Asktoloopoveragents

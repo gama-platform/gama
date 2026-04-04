@@ -1,8 +1,12 @@
 /***
-* Name: MondrianGenerator
-* Author: ben
-* Description: Model generating displays inspired by the "Composition II en rouge, bleu et jaune" of Piet Mondrian (1930)
-* Tags: art, Mondrian, generator
+* Name: Mondrian Generator
+* Author: Gama Development Team
+* Description: Generates visual compositions inspired by Piet Mondrian's "Composition II in Red, Blue and Yellow"
+*   (1930). The model procedurally creates a grid of rectangles divided by black lines, filled with primary
+*   colors (red, blue, yellow) and white, mimicking the characteristic style of Mondrian's neo-plastic period.
+*   Parameters control the maximum number of squares, lines, and columns, allowing users to generate an
+*   infinite variety of Mondrian-like compositions with different proportions and color distributions.
+* Tags: art, mondrian, generator, procedural, visualization, geometry, color
 ***/
 
 model MondrianGeneratorComposition

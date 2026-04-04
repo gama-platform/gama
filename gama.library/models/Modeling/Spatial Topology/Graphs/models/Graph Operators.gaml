@@ -1,8 +1,12 @@
 /**
 * Name: Graph Operators
 * Author: Patrick Taillandier
-* Description: Model to show how to use the different existing operators for the graph species
-* Tags: Graph
+* Description: A reference model for GAMA's graph manipulation operators. Covers: computing connected
+*   components, finding cliques (maximal complete subgraphs), computing betweenness centrality, closeness
+*   centrality, and clustering coefficient for graph nodes. These metrics characterize the structural role
+*   of each node in the network. Useful for analyzing social networks, road networks, or any relational
+*   structure represented as a GAML graph.
+* Tags: graph, operator, centrality, betweenness, clique, component, network, analysis
 */
 
 model graphoperators

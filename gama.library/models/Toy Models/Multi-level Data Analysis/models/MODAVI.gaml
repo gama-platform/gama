@@ -1,13 +1,13 @@
 /**
-* Name: Modavi
+* Name: MODAVI
 * Author: Arnaud Grignard
-* Description: From a reference model with node of a given class, a spatial graph is created 
-*  (or a barabasi graph if spatialGraph is set to false) in the advanced view to 
-*  represent the interaction in the reference model.
-*  An abstract view/controller is created to summarize the interaction in the advanced view
-*  in a macro graph and control the reference model by defining an action (user_command) 
-*  for each macroNode and macroEdge.
-* Tags: 3d, graph, gui
+* Description: MODAVI (Multi-level Organization Data Analysis and Visualization Interface) is a framework for
+*   analyzing and controlling agent-based models through abstracted multi-level views. From a reference model
+*   with node agents of a given class, a spatial interaction graph (or a Barabasi-Albert scale-free graph) is
+*   built in an 'advanced view' to represent agent interactions. A separate 'abstract view' summarizes these
+*   interactions as a macro-graph where each macro-node and macro-edge can trigger user commands that control
+*   the underlying reference model. This pattern enables hierarchical monitoring and intervention.
+* Tags: 3d, graph, gui, multi_level, visualization, analysis, macro, abstraction
 */
 
 model modavi

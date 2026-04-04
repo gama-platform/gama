@@ -1,10 +1,13 @@
 /**
-* Name: SIR_switch
-* Author: tri and hqnghi 
-* Description: A model which show how to implement ODE system, IBM model, and to switch 
-* 	from one to another using a threshold. Another interesting point seen in this model is the 
-* 	the minimization of the execution time by reducing the number of agents to compute infections.
-* Tags: equation, math, grid
+* Name: SIR (Switch)
+* Author: Tri Nguyen-Huu, Huynh Quang Nghi
+* Description: Demonstrates dynamic switching between an ODE-based SIR model and an individual-based (IBM) SIR
+*   model within the same simulation. When the infected population is large, the ODE system is used for
+*   efficiency. When the number of infected agents drops below a threshold, the model switches to individual
+*   agents for accuracy near the extinction boundary. This hybrid approach optimizes both computational
+*   performance and epidemiological accuracy. The model also minimizes execution time by reducing the agents
+*   that need to compute new infections each step.
+* Tags: equation, math, grid, SIR, epidemiology, hybrid, ODE, IBM, switch, optimization
 */
 model SIR_switch
 

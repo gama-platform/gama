@@ -1,10 +1,11 @@
 /**
-* Name: Flies
-* Author: HUYNH Quang Nghi
-* Description: This is a dummy model that show the randomly movement of the flies.
-* Tags: comodel
+* Name: Mosquitos
+* Author: Huynh Quang Nghi
+* Description: A simple standalone model showing mosquitos moving randomly. Designed to be used as a legacy
+*   sub-model in the Flies and Mosquitos comodeling examples. Can be run independently to verify mosquito
+*   behavior before coupling.
+* Tags: comodel, mosquitos, random_movement, legacy, base_model
 */
-model Mosquitos
 
 
 global

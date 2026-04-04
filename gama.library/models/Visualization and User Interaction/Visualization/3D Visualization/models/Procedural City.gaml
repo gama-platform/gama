@@ -1,9 +1,12 @@
 /**
 * Name: Procedural City
 * Author: Arnaud Grignard
-* Description: Model with a 3D Display representing buildings with a random size. The model proposes two experiments : the first one represents 
-*      the buildings with 3D shapes with textures, the second one without textures but the color of the buildings depends on the rotation of a ball-shaped light
-* Tags: 3d, texture, light
+* Description: Generates a random 3D city procedurally: buildings with random heights and footprints are placed
+*   on a regular grid. Two experiments are provided: the first renders buildings with 3D box shapes and texture
+*   images applied to each face; the second uses untextured colored buildings where the color depends on the
+*   angle from a rotating point light, creating dynamic shadow effects. This model is used as the city
+*   environment in the City Boids comodel.
+* Tags: 3d, texture, light, procedural, city, generation, visualization, building, display
 */
 
 model procedural_city

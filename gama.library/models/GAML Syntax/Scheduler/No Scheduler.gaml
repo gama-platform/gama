@@ -1,9 +1,12 @@
 /**
-* Name: schedullingagents
-* Author: damienphilippon
-* Description: With an empty list given inside the schedules facet of the species, it will not be executed 
-				so, nothing will be written inside the console
-* Tags: scheduling, execution 
+* Name: No Scheduler
+* Author: Damien Philippon
+* Description: Demonstrates how to completely exclude a species from the simulation schedule in GAMA. By providing
+*   an empty list '[]' as the value of the 'schedules' facet, the species is never executed during the simulation.
+*   As a result, none of the agents' reflexes are ever fired, and nothing is written to the console despite the
+*   agents existing in memory. This is useful when a species should be passive (e.g., only used as data containers
+*   or queried by other agents), without consuming any scheduling resources.
+* Tags: scheduling, execution, schedules, passive, no_schedule
 */
 
 model schedullingagents

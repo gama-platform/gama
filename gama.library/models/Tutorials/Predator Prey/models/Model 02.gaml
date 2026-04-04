@@ -1,8 +1,11 @@
 /**
-* Name: Dynamic of the vegetation (grid)
-* Author:
-* Description: Second part of the tutorial : Predator Prey
-* Tags: grid
+* Name: Predator Prey Tutorial - Step 02 - Vegetation Dynamics (Grid)
+* Author: Gama Development Team
+* Description: Second step of the Predator-Prey tutorial. Adds a grid to represent vegetation that prey agents
+*   eat as they move. Each grid cell tracks its current food level, which regrows at a constant rate each step.
+*   Prey eat food from the cell they occupy and gain energy; they die if their energy reaches zero. This step
+*   introduces grid-based environments and energy dynamics in a predator-prey ecosystem model.
+* Tags: tutorial, prey, predator, grid, energy, vegetation, ecosystem
 */
 model prey_predator
 

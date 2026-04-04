@@ -1,8 +1,11 @@
 /**
-* Name: Predator agents (parent species)
-* Author:
-* Description: 5th part of the tutorial : Predator Prey
-* Tags: inheritance
+* Name: Predator Prey Tutorial - Step 05 - Predator Agents (Inheritance)
+* Author: Gama Development Team
+* Description: Fifth step of the Predator-Prey tutorial. Introduces predator agents as a child species of
+*   a common parent 'generic_agent' species that both prey and predators inherit from. The parent defines
+*   shared attributes (energy, max speed) and actions (die, basic_move). This step demonstrates species
+*   inheritance and the 'parent' facet, allowing code reuse and polymorphism in GAML species hierarchies.
+* Tags: tutorial, prey, predator, inheritance, parent, species, reuse
 */
 model prey_predator
 

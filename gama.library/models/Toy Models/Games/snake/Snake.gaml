@@ -1,7 +1,12 @@
 /**
 * Name: Snake
 * Author: Patrick Taillandier
-* Tags: game, snake
+* Description: A GAMA implementation of the classic Snake game. The player controls a snake that grows longer
+*   each time it eats food items placed randomly on the grid. The snake must avoid hitting the walls or its own
+*   body. The game ends when the snake collides with itself or the boundary. User keyboard input controls the
+*   direction of movement. This model demonstrates real-time keyboard event handling, grid-based movement,
+*   and game state management (running / game over) in GAMA.
+* Tags: game, snake, grid, user_interaction, keyboard, movement, arcade, gui
 */
 
 model snake

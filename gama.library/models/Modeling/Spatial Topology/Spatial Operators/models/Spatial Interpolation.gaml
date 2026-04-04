@@ -1,8 +1,12 @@
 /**
 * Name: Spatial Interpolation
 * Author: Patrick Taillandier
-* Description: A model which shows how to use spatial interpolation
-* Tags: topology, grid, spatial_computation
+* Description: Demonstrates spatial interpolation techniques in GAMA for estimating continuous values
+*   across space from a sparse set of sample points. Given a set of point-value pairs, the model computes
+*   interpolated values at all grid cells using IDW (Inverse Distance Weighting) or Kriging-like approaches.
+*   The result is displayed as a color-coded field. This is useful for estimating environmental variables
+*   (e.g., temperature, elevation, pollution) from measurement station data.
+* Tags: topology, grid, spatial_computation, interpolation, IDW, field, estimation, continuous
 */
 
 model spatialinterpolation

@@ -1,14 +1,13 @@
 /***
-* Name: Advanced mirror
-* Author: Kevin Chapuis and Benoit Gaudou
-* Description: This model goes further in the use of mirror species, 
-*   in particular by illustrating creation and death of mirrored agents during the simulation.
-*   In particular, the mirrored agents move, and interact with their neighbor agents 
-*   following a opinion dynamics model. The model is very close to Deffuant et al. JASSS. 
-*   In addition the mirror agents are displayed in a so-called social space of opinion:
-*   they are displayed vertically, depending on their opinion value.
-*   
-* Tags: mirror, display, opinion dynamics
+* Name: Advanced Mirror Species
+* Author: Kevin Chapuis, Benoit Gaudou
+* Description: An advanced use of mirror species in GAML, illustrating the creation and death of mirrored agents
+*   during the course of a simulation. Mirrored agents automatically track the existence of their target agents:
+*   when a target agent is created, a corresponding mirror agent is created; when a target dies, the mirror also
+*   disappears. The model implements a simplified opinion dynamics system inspired by Deffuant et al. (JASSS), where
+*   agents influence each other's opinions. The mirror agents display the opinion of each agent in a dedicated
+*   vertical social space, offering a different visualization perspective alongside the spatial display.
+* Tags: mirror, display, opinion_dynamics, creation, death, visualization, species
 ***/
 
 model Mirror

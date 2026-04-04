@@ -1,8 +1,12 @@
 /**
-* Name: Automatic repair of roads
-* Author:
-* Description: 7th part of the tutorial: Road Traffic
-* Tags: transport
+* Name: Road Traffic Tutorial - Step 07 - Automatic Road Repair
+* Author: Gama Development Team
+* Description: Seventh and final step of the Road Traffic tutorial. Adds automatic road repair logic:
+*   destroyed roads are repaired after a configurable number of steps, restoring them to the network.
+*   A user command also allows manual repair of all destroyed roads from the display. This step introduces
+*   'user_command' for interactive simulation control and completes the full road traffic tutorial by
+*   combining all previous steps: GIS loading, agent movement, weighted dynamic graphs, and visualization.
+* Tags: tutorial, transport, graph, road_network, repair, user_command, dynamic, gis
 */
 
 model tutorial_gis_city_traffic

@@ -1,8 +1,12 @@
 /**
-* Name: Multi Simulation
+* Name: Multi-Simulation
 * Author: Patrick Taillandier
-* Description: Model to show how to use multi-simulation, i.e. to run several times the same GUI experiment with potentially different parameter sets 
-* Tags: multi_simulation
+* Description: Demonstrates how to run multiple simulation instances simultaneously within a single GUI
+*   experiment in GAMA. Each simulation can have its own parameter values (e.g., different initial numbers
+*   of agents), and they all run independently in parallel. The experiment accesses all running simulations
+*   via the 'simulations' built-in variable and can display combined outputs. This is useful for visual
+*   comparison of scenarios side by side without needing a full batch mode.
+* Tags: multi_simulation, experiment, parallel, scenario_comparison, simulation, gui
 */
 
 model multi_simulation

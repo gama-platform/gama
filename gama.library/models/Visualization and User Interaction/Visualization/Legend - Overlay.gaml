@@ -1,8 +1,12 @@
 /**
-* Name: Overlay
-* Author: Alexis Drogoul and Patrick Taillandier
-* Description: Model to show how to use overlay layers in a display
-* Tags: overlay, display, graphic
+* Name: Legend and Overlay
+* Author: Alexis Drogoul, Patrick Taillandier
+* Description: Demonstrates how to use the 'overlay' display layer in GAMA to draw a static legend or HUD
+*   (heads-up display) on top of the simulation view. The overlay layer is drawn in screen coordinates rather
+*   than world coordinates, so it stays in a fixed position regardless of zoom or pan. This model shows a
+*   color-coded legend for land use categories (water, vegetation, building) drawn as boxes with text labels
+*   in the top-left corner of the display.
+* Tags: overlay, display, legend, HUD, visualization, graphic, color
 */
 
 model Overlay

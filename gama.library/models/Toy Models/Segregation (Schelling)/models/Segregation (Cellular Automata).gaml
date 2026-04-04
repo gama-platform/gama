@@ -1,9 +1,12 @@
 /**
-* Name: segregationGrid
-* Author: 
-*  Description: A model showing the segregation of the people just by putting a similarity wanted parameter using cells 
-* 	to represent the individuals
-* Tags: grid
+* Name: Segregation (Cellular Automata)
+* Author: Gama Development Team
+* Description: A cellular automata variant of Thomas Schelling's residential segregation model. Instead of
+*   individual agent objects, grid cells represent residents of two groups. Cells whose proportion of same-group
+*   neighbors is below the 'similarity_wanted' threshold become unhappy and swap with a random free cell.
+*   The model runs on a toroidal grid (edges wrap around). Despite each individual preferring only a modest
+*   majority of same-type neighbors, highly segregated spatial patterns emerge at the macro level.
+* Tags: grid, cellular_automaton, segregation, Schelling, emergence, social, torus
 */
 model segregation
 

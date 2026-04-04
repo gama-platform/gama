@@ -1,8 +1,12 @@
 /**
 * Name: Save to CSV
 * Author: Patrick Taillandier
-* Description: This is a model that shows how to save agents inside a CSV File to reuse it later or to keep it.
-* Tags: save_file, csv
+* Description: Shows how to save agent attributes to a CSV (Comma-Separated Values) file for reuse or archiving.
+*   CSV is the most portable format for tabular data and can be opened in spreadsheet software, Python, R, or
+*   reloaded in a subsequent GAMA simulation. The 'save' statement supports a 'header' facet that writes column
+*   names from the agent attributes, making the output self-documenting. This model creates a population of bug
+*   agents and saves their attributes at step 100.
+* Tags: save_file, csv, export, agent, tabular, data
 */
 model SavetoCSV
 

@@ -1,15 +1,13 @@
 /**
 * Name: Soccer Game
-* Author: Julien
-* Description: This model shows how can we make an easy simulation of collective games, such as soccer. 
-* 
-* Each player have an offensive and a defensive position, and a behavior associated. Each player of the defensive team 
-* can either search to catch the ball or mark an other player (offensive player) according to his defensive position.
-* 
-* Each player of the offensive team can either run to its offensive place (when he does not have the ball), run with the balloon / 
-* pass the ball / try to score a goal (when he has the ball). By changing the different parameters, you can see the concequences 
-* in real time. 
-* Tags: sport
+* Author: Julien Mazars
+* Description: A simulation of a soccer (football) game showing how to model collective sports strategies as
+*   agent behaviors. Each player has a designated offensive and defensive position. Defensive players either
+*   try to intercept the ball or mark an offensive opponent based on their assigned defensive position. Offensive
+*   players run to their designated offensive positions when they don't have the ball, or run with the ball,
+*   pass, or attempt to score when they do. Adjusting the strategy parameters changes the team dynamics in real
+*   time, illustrating emergent collective behavior from individual tactical rules.
+* Tags: sport, soccer, game, strategy, collective_behavior, agent, team
 */
 
 model soccer

@@ -1,8 +1,10 @@
 /**
-* Name: boids_adapter
-* Author: HUYNH Quang Nghi
-* Description: It is NOT supposed to launch. This is the coupling of Boids model. It is used in the "City Boids" as an interface. 
-* Tags: comodel
+* Name: Boids Adapter
+* Author: Huynh Quang Nghi
+* Description: Comodeling adapter (coupling class) for the Boids 3D Motion model. This file is NOT intended
+*   to be launched directly — it serves as the interface between the City Boids comodel and the Boids
+*   sub-model, exposing the Boids agents and their behavior to the parent comodel environment.
+* Tags: comodel, adapter, boids, coupling
 */
 model boids_adapter
 

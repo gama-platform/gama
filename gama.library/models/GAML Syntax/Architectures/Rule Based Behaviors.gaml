@@ -1,8 +1,12 @@
 /***
-* Name: RuleBasedBehaviors
-* Author: A. Drogoul
-* Description: This model demonstrates the use of the basic rule-based control architecture available in GAMA. For more complex definition, please take a look at the simple_bdi control.
-* Tags: rule, behavior, architecture
+* Name: Rule Based Behaviors
+* Author: Alexis Drogoul
+* Description: Demonstrates the use of the basic rule-based control architecture available in GAML. In this architecture,
+*   agents define rules instead of reflexes — each rule has a condition and a priority. At each simulation step, only
+*   the rule(s) whose condition is true are fired, in decreasing order of priority. This allows modelers to write
+*   reactive agents with priority-ordered behaviors without complex conditional logic. For more complex BDI reasoning,
+*   see the simple_bdi control architecture.
+* Tags: rule, behavior, architecture, control, priority, reactive
 ***/
 
 model RuleBasedBehaviors

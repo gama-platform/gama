@@ -1,8 +1,11 @@
 /**
-* Name: Agent display (aspect)
-* Author:
-* Description: 7th part of the tutorial: Predator Prey
-* Tags: display
+* Name: Predator Prey Tutorial - Step 07 - Agent Display (Aspects)
+* Author: Gama Development Team
+* Description: Seventh step of the Predator-Prey tutorial. Introduces the 'aspect' statement for customizing
+*   agent display. Prey are shown with circles whose size scales with their current energy; predators are shown
+*   with larger shapes. Multiple named aspects can be defined per species and selected at display time. This
+*   step demonstrates how visual encoding of agent state helps interpret model dynamics at a glance.
+* Tags: tutorial, prey, predator, display, aspect, visualization, energy
 */
 model prey_predator
 

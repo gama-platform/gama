@@ -1,8 +1,11 @@
 /***
-* Name: IfthenelseNewModel
-* Author: ben
-* Description: gives several examples of if then else statements. Also show how to use tertiary operator: 'condition ? then : else'
-* Tags: if, else, ?
+* Name: If Then Else
+* Author: Gama Development Team
+* Description: Gives several examples of if-then-else conditional statements in GAML. Covers basic if/else,
+*   boolean combinations using 'and' / 'or', nested conditionals, and the ternary (inline) operator written as
+*   'condition ? then_value : else_value'. Understanding these constructs is fundamental to writing reactive
+*   agent behaviors, since most decisions in a simulation are expressed as conditional logic.
+* Tags: if, else, condition, ternary, boolean, control
 ***/
 
 model IfthenelseNewModel

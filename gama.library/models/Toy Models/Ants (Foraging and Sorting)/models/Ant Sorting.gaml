@@ -9,12 +9,6 @@
 *   when organizing larvae, pupae, and other nest items by type.
 * Tags: ants, sorting, grid, stigmergy, clustering, agent_movement, emergence
 */
-* 	*number_of_objects_in_history* cells with the same color.
-* 	
-* 	After a while, colors begin to be aggregated.
-*  
-* Tags: gui, skill, grid
-*/
 model ant_sort
 
 global {

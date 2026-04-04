@@ -1,8 +1,12 @@
 /**
-* Name: PalettesandGradients
-* Based on the internal empty template. 
-* Author: drogoul
-* Tags: 
+* Name: Palettes and Gradients
+* Author: Alexis Drogoul
+* Description: Shows how to create and use color palettes and smooth color gradients in GAMA displays.
+*   Color gradients are defined by a list of key colors and interpolated between them. Palettes can be
+*   built from ColorBrewer sequences or custom lists. The model demonstrates: linear and multi-stop gradients,
+*   applying gradients to agent aspects based on numeric values (e.g., elevation, density), and combining
+*   gradients with transparency. This is the primary reference for advanced color encoding in GAMA.
+* Tags: color, palette, gradient, visualization, display, brewer, interpolation
 */
 
 

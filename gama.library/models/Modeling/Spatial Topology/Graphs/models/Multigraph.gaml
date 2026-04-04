@@ -1,9 +1,12 @@
 /**
 * Name: Multigraph
 * Author: Patrick Taillandier
-* Description: This model shows how to build a graph on which people agents will move with GIS Shapefile, but also to generate 
-* an other graph representing the friendship between the people agents, people agents trying to be closer spatially to each other
-* Tags: graph, load_file, skill
+* Description: Shows how to manage two overlapping graphs simultaneously in GAMA: a spatial road network
+*   (loaded from a GIS shapefile) and a social friendship graph (generated dynamically between people agents).
+*   People move along the road network using the spatial graph, while the friendship graph represents social
+*   relationships independently. Agents with social bonds try to move closer to their friends spatially,
+*   creating an interplay between the two graph structures.
+* Tags: graph, load_file, skill, multigraph, road_network, social_network, spatial, friendship
 */
 
 model multigraph

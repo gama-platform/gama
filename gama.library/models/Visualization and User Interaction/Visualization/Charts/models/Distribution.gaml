@@ -1,8 +1,12 @@
 /**
-* Name: Distribution Examples
+* Name: Distribution Chart Examples
 * Author: Philippe Caillou
-* Description: A demonstration of charts using the distribution of values in a list
-* Tags: gui, chart
+* Description: Demonstrates how to plot statistical distributions in GAMA using histogram charts. The model
+*   generates random samples from Gaussian and Gamma distributions and displays their empirical distribution
+*   as bar histograms. This is useful for verifying that random number generators and sampling procedures
+*   produce the expected statistical behavior, and for analyzing the distribution of agent attribute values
+*   during a simulation run.
+* Tags: gui, chart, distribution, histogram, statistics, gaussian, gamma, visualization, output
 */
 model distribution
 

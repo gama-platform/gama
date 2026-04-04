@@ -1,8 +1,12 @@
 /**
-* Name: DEMGenerator
-* Based on Damien Philippon's initial work, a model that generates maps with several features (which can be interpreted at will: sea, shore, mountain...). 
-* Author: Alexis Drogoul
-* Tags: 
+* Name: DEM Generator
+* Author: Alexis Drogoul (based on initial work by Damien Philippon)
+* Description: A procedural terrain generator using GAMA's 'generate_terrain' operator. The operator creates
+*   a field of elevation values using a noise-based algorithm. Two key parameters control the result: 'details'
+*   (the spatial frequency of features — higher values produce rougher, more detailed terrain) and 'smoothness'
+*   (the degree of smoothing applied — higher values produce gentler slopes). The generated terrain is displayed
+*   as a 3D DEM with color-coded elevation bands representing sea, shore, lowland, highland, and mountain zones.
+* Tags: terrain, DEM, procedural, generation, 3d, elevation, field, noise, visualization
 */
 model RandomMaps
 
