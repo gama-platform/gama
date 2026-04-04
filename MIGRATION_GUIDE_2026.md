@@ -20,7 +20,7 @@ This high-level ChangeLog summarizes the entire scope of the GAMA Version 2026 u
 *   **Object-Oriented Constructs:** Introduction of the **`class`** and **`object`** concepts into the GAML language, bringing robust object-oriented paradigms to model building.
 *   **Faster Compilation:** The Xtext parser and AST (Abstract Syntax Tree) have been completely redesigned with formal syntactic elements, resulting in vastly faster compilation times.
 *   **Cleaner Syntax:**
-    *   Removal of Arrow Braces: `action my_action -> { do something; }` is now `action my_action -> do something;`.
+    *   Removal of Arrow Braces for functions: `int my_action -> { return self.something(); }` is now `int my_action -> self.something();`.
     *   Argument Lists (`with:`): `[a::1]` replaced by `(a:1)`.
     *   Keyword Deprecation: `diffuse var: heat` is now `diffuse heat`; `transition to: x` is now `transition x`.
 *   **Annotation Flattening:** Java Annotations used for GAML (`@operator`, `@action`, `@species`) are flattened into top-level interfaces in the `gama.annotations` package.
