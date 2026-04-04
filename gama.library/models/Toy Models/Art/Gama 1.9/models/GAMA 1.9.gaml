@@ -1,8 +1,11 @@
 /**
-* Name: Gama 1.9
-* Author:  Arnaud Grignard - Tri Nguyen-Huu
-* Description: A toy model animating the GAMA logo
-* Tags:  
+* Name: GAMA 1.9
+* Author: Arnaud Grignard, Tri Nguyen-Huu
+* Description: A celebratory art model created for the GAMA 1.9 release, animating the GAMA logo as an agent-based
+*   visualization. The logo is loaded from a vectorized shapefile and each polygon is assigned to an agent.
+*   The model provides different display modes (light-to-dark, dark-to-light, light, and dark) and can optionally
+*   show inner rings of the logo polygons. The overall effect produces a dynamic, animated version of the GAMA logo.
+* Tags: art, animation, visualization, shapefile, logo, geometry
 */
 
 model GAMA  

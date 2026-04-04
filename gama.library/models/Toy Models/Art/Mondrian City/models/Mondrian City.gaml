@@ -1,8 +1,12 @@
 /***
 * Name: Mondrian City
-* Author: Arnaud Grignard, Tri Nguyen-Huu and Patrick Taillandier 
-* Description: An abstract mobilty Model represented in a Mondrian World. 
-* Tags: art, interaction, mobility
+* Author: Arnaud Grignard, Tri Nguyen-Huu, Patrick Taillandier
+* Description: An abstract mobility model represented in a Mondrian-inspired geometric world. The city is
+*   generated as a grid of rectangular blocks with primary color fills and bold outlines, evoking the style of
+*   Piet Mondrian's neo-plastic paintings. Agents move between locations using weighted mobility modes.
+*   By adjusting the weight parameters, users can observe how different mobility behaviors reshape the visual
+*   distribution of agents across the abstract urban landscape.
+* Tags: art, interaction, mobility, abstract, visualization, urban, mondrian
 ***/
 
 model Mondrian_City

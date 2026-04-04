@@ -1,9 +1,12 @@
 /**
-* Name: Ant Foraging (Complex)
-* Author: 
-* Description: Toy Model ant using the question of how ants search food and use pheromons to return to their 
-* nest once they did find food.	
-* Tags: gui, fsm, grid, diffusion
+* Name: Ant Foraging
+* Author: Gama Development Team
+* Description: A classic ant foraging model illustrating how ants use pheromone trails to find food and return
+*   to their nest. Ant agents move using a finite state machine (FSM): they wander randomly until finding food,
+*   then return to the nest while laying a pheromone trail. Other ants follow stronger trails, reinforcing
+*   efficient paths. The pheromone evaporates at each step, causing trails to fade if not reinforced.
+*   The model includes an optional icon display for individual ants and shows collective path emergence.
+* Tags: gui, fsm, grid, diffusion, pheromone, ants, foraging, stigmergy, collective
 */
 @no_warning
 model ants

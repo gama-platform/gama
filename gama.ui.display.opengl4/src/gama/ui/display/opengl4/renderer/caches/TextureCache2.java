@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * TextureCache2.java, in gama.ui.display.opengl4, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * TextureCache2.java, in gama.ui.display.opengl4, is part of the source code of the GAMA modeling and simulation
+ * platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -11,7 +11,6 @@
 package gama.ui.display.opengl4.renderer.caches;
 
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -34,14 +33,14 @@ import gama.ui.display.opengl4.OpenGL;
 /**
  * The Class TextureCache2.
  */
-public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeListener<Boolean> */ {
+public class TextureCache2 implements ITextureCache {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The volatile textures. */
-	private Map<String, Texture> volatileTextures;
+	private final Map<String, Texture> volatileTextures = new ConcurrentHashMap<>();
 
 	/** The static textures. */
 	private final Cache<String, Texture> staticTextures =
@@ -64,23 +63,6 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	 */
 	public TextureCache2(final OpenGL gl) {
 		this.gl = gl;
-		volatileTextures = new HashMap<>();
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see gama.ui.display.opengl4.renderer.caches.ITextureCache#initialize()
-	 */
-	@Override
-	public void initialize() {
-		// if (isNonPowerOf2TexturesAvailable == null) {
-		// isNonPowerOf2TexturesAvailable =
-		// !GamaPreferences.Displays.DISPLAY_POWER_OF_TWO.getValue() && gl.getGL().isNPOTTextureAvailable();
-		// GamaPreferences.Displays.DISPLAY_POWER_OF_TWO.onChange(this);
-		// TextureIO.setTexRectEnabled(Gama __PREFS__.Displays.DISPLAY_POWER_OF_TWO.getValue());
-		// DEBUG.OUT("Non power-of-two textures available: " + isNonPowerOf2TexturesAvailable);
-		// }
 	}
 
 	/*
@@ -90,8 +72,8 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	 */
 	@Override
 	public void deleteVolatileTextures() {
-		volatileTextures.forEach((s, t) -> t.destroy(gl.getGL()));
-		volatileTextures = new HashMap<>();
+		for (Map.Entry<String, Texture> entry : volatileTextures.entrySet()) { entry.getValue().destroy(gl.getGL()); }
+		volatileTextures.clear();
 	}
 
 	/*
@@ -106,7 +88,6 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 		staticTextures.asMap().forEach((s, t) -> { t.destroy(gl.getGL()); });
 		staticTextures.invalidateAll();
 		staticTextures.cleanUp();
-		// GamaPreferences.Displays.DISPLAY_POWER_OF_TWO.removeChangeListener(this);
 	}
 
 	/**
@@ -124,7 +105,7 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	public void processs(final IImageProvider file) {
 
 		if (!texturesToProcess.containsKey(file.getId())) {
-			// DEBUG.OUT("Adding image to process " + file.getId());
+			DEBUG.OUT("Adding image to process " + file.getId());
 			texturesToProcess.put(file.getId(), file);
 		}
 	}
@@ -146,12 +127,16 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 	 */
 	@Override
 	public Texture getTexture(final BufferedImage img) {
+		// BufferedImage objects are reused across simulation steps (same object identity /
+		// hashCode) while their pixel data is updated in-place each step via System.arraycopy.
+		// Caching by identity hash would return a stale GPU texture after the first step.
+		// Always destroy any previously-cached texture for this image and rebuild from the
+		// current pixel data so the GPU sees the up-to-date content every frame.
 		String id = String.valueOf(img.hashCode());
-		Texture texture = volatileTextures.get(id);
-		if (texture == null) {
-			texture = this.buildTexture(gl.getGL(), img);
-			volatileTextures.put(id, texture);
-		}
+		Texture old = volatileTextures.remove(id);
+		if (old != null) { old.destroy(gl.getGL()); }
+		Texture texture = this.buildTexture(gl.getGL(), img);
+		if (texture != null) { volatileTextures.put(id, texture); }
 		return texture;
 	}
 
@@ -175,7 +160,7 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 			texture = volatileTextures.get(path);
 			if (texture == null) {
 				final BufferedImage image = file.getImage(null, useCache);
-				// DEBUG.LOG("Building a new volatile texture... " + file.getId());
+				DEBUG.LOG("Building a new volatile texture... " + file.getId());
 				texture = this.buildTexture(gl.getGL(), image);
 				volatileTextures.put(path, texture);
 			}
@@ -228,13 +213,5 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 		return null;
 
 	}
-
-	// @Override
-	// public void afterValueChange(final Boolean newValue) {
-	//
-	// isNonPowerOf2TexturesAvailable = !newValue && gl.getGL().isNPOTTextureAvailable();
-	// TextureIO.setTexRectEnabled(newValue);
-	//
-	// }
 
 }

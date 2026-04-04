@@ -1,8 +1,12 @@
 /***
-* Name: GAMA 1.8 is out ! 
-* Author: A. Drogoul
-* Description: A toy model demonstrating "morphing" technologies in GAMA
-* Tags: image, geometries
+* Name: GAMA 1.8
+* Author: Alexis Drogoul
+* Description: A celebratory art model created for the GAMA 1.8 release, demonstrating morphing and shape
+*   transformation technologies. Agents animate the GAMA logo letters by morphing between different geometric
+*   shapes — first the logo appears as a set of buildings and roads, then the agents rearrange themselves into
+*   the GAMA version number shape. The model uses the FSM control architecture for global state management
+*   and showcases advanced visualization capabilities including smooth geometry transitions.
+* Tags: image, geometries, art, morphing, fsm, animation, visualization
 ***/
 model GAMA
 

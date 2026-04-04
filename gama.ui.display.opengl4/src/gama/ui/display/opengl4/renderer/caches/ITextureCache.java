@@ -1,7 +1,7 @@
 /*******************************************************************************************************
  *
- * ITextureCache.java, in gama.ui.display.opengl4, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ITextureCache.java, in gama.ui.display.opengl4, is part of the source code of the GAMA modeling and simulation
+ * platform .
  *
  * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
  *
@@ -20,11 +20,6 @@ import gama.api.utils.interfaces.IImageProvider;
  * The Interface ITextureCache.
  */
 public interface ITextureCache {
-
-	/**
-	 * Initialize.
-	 */
-	void initialize();
 
 	/**
 	 * Delete volatile textures.

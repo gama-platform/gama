@@ -1,18 +1,14 @@
 /**
 * Name: Ant Sorting
 * Author: Alexis Drogoul
-* Description: This model is loosely based on the behavior of ants sorting different elements in their nest . 
-*	
-* 	A group of mobile agents - the ants - is placed on a grid. 
-* 	
-* 	The grid itself contains cells of different colors. 
-* 	
-* 	Each step, the agents move randomly. 
-* 	
-* 	If they enter a colored cell, they pick this color if its density in the neighbourhood 
-* 	is less than *number_of_objects_around*. 
-* 	
-* 	If they have picked a color, they drop it on a black cell if they have encountered at least 
+* Description: A model loosely inspired by the sorting behavior observed in ant colonies. Mobile ant agents
+*   move randomly on a grid where cells carry colored objects. When an ant enters a colored cell it picks up
+*   the color if its density in the neighborhood is below a threshold. When an ant carries a color it deposits
+*   it on an empty cell if it encounters enough neighboring cells of the same color. Over time this produces
+*   clusters of same-colored objects — mimicking the observed spatial sorting performed by real ant colonies
+*   when organizing larvae, pupae, and other nest items by type.
+* Tags: ants, sorting, grid, stigmergy, clustering, agent_movement, emergence
+*/
 * 	*number_of_objects_in_history* cells with the same color.
 * 	
 * 	After a while, colors begin to be aggregated.

@@ -1,7 +1,14 @@
 /**
- *  Author: Tri Nguyen-Huu
- *  Description: growing tree using L-systems.
- */
+* Name: Tree and Seasons
+* Author: Tri Nguyen-Huu
+* Description: An art model generating growing trees using L-systems (Lindenmayer systems). L-systems are a
+*   formal grammar originally developed to model plant growth, using rewriting rules to iteratively expand a
+*   string that is then interpreted as drawing instructions. This model simulates the growth of a tree from a
+*   trunk to a full canopy, with branching controlled by configurable angles and energy parameters. The
+*   appearance of the tree changes with seasons, altering leaf color and density to represent spring, summer,
+*   autumn, and winter states.
+* Tags: art, L-system, tree, plant, growth, procedural, visualization, seasons
+*/
 model tree
 
 global {
