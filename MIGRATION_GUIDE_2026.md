@@ -23,7 +23,7 @@ A high-level summary of every area that changed. Use this to quickly assess what
 
 | Change | Impact |
 |---|---|
-| Upgraded to **JDK 25** and **Eclipse 2025-12** | Rebuild required; modern Java syntax now available |
+| Upgraded to **JDK 25** and **Eclipse 2026-03** | Rebuild required; modern Java syntax now available |
 | New **`gama.api`** module | Public interfaces decoupled from `gama.core` implementation |
 | **Factory pattern** enforced for all core types | `new GamaList()`, `new GamaPoint()` etc. are gone |
 | **`Cast` utility class** reduced | Casting delegated to individual `IType` implementations |
