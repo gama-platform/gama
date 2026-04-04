@@ -1,8 +1,11 @@
 /**
-* Name: SPARQLquerytoagents
-* Loads a query from a file that asks for french philosophers and their influences. Then instanciates philosopher agents and draw everything as a graph
-* Author: baptiste lesquoy
-* Tags: 
+* Name: SPARQL Query to Agents
+* Author: Baptiste Lesquoy
+* Description: Loads a SPARQL query from an external file asking DBpedia for French philosophers and their
+*   influences. The results are used to instantiate 'philosopher' agents and a 'influence' link species.
+*   The influence network is then displayed as a force-directed graph. Demonstrates how semantic web data
+*   (SPARQL + linked data) can directly populate a GAMA agent-based model and be visualized as a network.
+* Tags: database, SPARQL, linked_data, DBpedia, agents, graph, load_file, semantic_web
 */
 
 

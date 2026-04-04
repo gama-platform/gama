@@ -1,7 +1,12 @@
 /**
-* Name: Water flowing in the red river bed
-* Author: drogoul
-* Tags: 
+* Name: Flow on Terrain
+* Author: Alexis Drogoul
+* Description: Simulates water-like particles flowing over an uneven terrain loaded from a DEM (Digital
+*   Elevation Model). The terrain is a static physics body; small ball agents are created continuously at
+*   the top and flow downhill under gravity, bouncing off slopes and accumulating in low-lying areas.
+*   Demonstrates how to use a real-world DEM as a physics surface and how to simulate granular or fluid
+*   flow using the physics engine.
+* Tags: physics_engine, 3d, terrain, DEM, flow, gravity, fluid, elevation, physical_world
 */
 
 

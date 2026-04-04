@@ -1,9 +1,11 @@
 /**
-* Name: Restitution
-* A model to demonstrate the role of the restitution in the collision of objects and some other techniques (display of contacts between objects, creation of comparisons
-* between native and Java Bullet libraries...).
-* Author: Alexis Drogoul - 2021
-* Tags: 3D, physics
+* Name: Testing Restitution
+* Author: Alexis Drogoul
+* Description: A technical demonstration of the 'restitution' physics parameter and other advanced engine
+*   features. Shows: how restitution (bounciness) values from 0 to 1 affect collision behavior; how to
+*   display contact points between colliding objects in the 3D view; how to compare the native Bullet
+*   library and the Java Bullet binding. Multiple experiments let users isolate each feature.
+* Tags: physics_engine, 3d, restitution, collision, contact, bullet, comparison, physical_world
 */
 
 

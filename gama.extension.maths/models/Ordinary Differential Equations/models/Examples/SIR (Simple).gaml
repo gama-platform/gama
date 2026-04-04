@@ -1,8 +1,12 @@
 /**
-* Name: SIR (Simple)
-* Author: hqnghi
-* Description: A simple example of ODE use into agents with the example of the SIR equation system.
-* Tags: equation, math
+* Name: SIR (Simple ODE)
+* Author: Huynh Quang Nghi
+* Description: The simplest ODE model in GAMA: a standard SIR (Susceptible-Infected-Recovered) epidemic
+*   model solved using a single agent that holds the three compartment variables. The 'equation' block
+*   defines the SIR differential equations; the 'solve' statement integrates them each step using the
+*   default Runge-Kutta 4 solver. This is the entry point for all ODE-based epidemiological modelling
+*   in GAMA before moving to split-agent or multi-strain variants.
+* Tags: equation, math, ODE, SIR, epidemiology, differential_equation, runge_kutta, compartment
 */
 
 model simple_ODE_SIR

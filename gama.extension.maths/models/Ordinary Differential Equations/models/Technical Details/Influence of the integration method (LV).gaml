@@ -1,16 +1,11 @@
 /***
-* Name: Influence of the integration step
-* Author: Tri, Nghi, Benoit
-* Description: The aim is to show the influence of the integration method on the result precision.
-* 				Note: an integration step of 0.1 is considered as not accurate enough. It is used here 
-* 				to highlight the impact of the integration method.
-* 
-* 				About the expected dynamics: Lotka-Volterra model solutions are known to be periodic. With
-* 				a step of 0.1, the numerical solution provided by the Runge-Kutta 4 method for Lotka-Volterra 
-* 				model looks periodic (see the phase portrait), while for the Euler the solution is unbounded (which
-* 				is wrong). See as time increases how errors accumulate, leading to negative and unbounded values.
-* 
-* Tags: equation, math
+* Name: Influence of the Integration Method (Lotka-Volterra)
+* Author: Tri Nguyen-Huu, Huynh Quang Nghi, Benoit Gaudou
+* Description: Compares two ODE integration methods on the Lotka-Volterra model: Runge-Kutta 4 (RK4) and
+*   Euler forward. With a deliberately coarse step of h=0.1, Euler accumulates errors that cause unbounded
+*   (physically wrong) population trajectories, while RK4 preserves the expected periodic orbits. Side-by-side
+*   time series and phase portrait displays make the divergence visible over time.
+* Tags: equation, math, ODE, lotka_volterra, runge_kutta, euler, integration_method, numerical_accuracy
 ***/
 
 model LVInfluenceoftheIntegrationMethod

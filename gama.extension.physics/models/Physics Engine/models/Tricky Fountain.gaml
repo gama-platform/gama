@@ -1,10 +1,12 @@
 /**
-* Name: Tricky fountain
-* Author: Arnaud Grignard - Alexis Drogoul 2021
-* Description: This is a model that shows how the physics engine works using a tank, with a floor and 4 walls, and balls of water
-* falling into it. The model is exploiting the viewpoint of the user (thanks to the camera_location and camera_target) to give the illusion
-* of a fake gravity (in a completely unrealistic way, just for the demo !). 
-* Tags: physics_engine, skill, 3d, spatial_computation
+* Name: Tricky Fountain
+* Author: Arnaud Grignard, Alexis Drogoul
+* Description: A physics demonstration with a whimsical twist: water balls fall into a tank bounded by a
+*   floor and four walls, using the Bullet physics engine. The camera viewpoint is manipulated via
+*   'camera_location' and 'camera_target' to give the illusion of a fake gravity direction — the world
+*   appears rotated even though physics simulates standard downward gravity. Illustrates camera control
+*   tricks and demonstrates that physics and display perspective can be decoupled.
+* Tags: physics_engine, skill, 3d, camera, gravity, water, tank, visualization, physical_world
 */
 model Tank
 

@@ -1,8 +1,10 @@
 /**
-* Name: broad cast to all agents
+* Name: Broadcast to All Agents (MQTT)
 * Author: Nicolas Marilleau
-* Description: It is a simple model showing few agents that broadcast a message to others.
-* Tags: Network, MQTT
+* Description: Shows how agents can broadcast messages to all connected subscribers via MQTT. Multiple
+*   agents subscribe to a shared topic; one agent publishes a message that all others receive simultaneously.
+*   Demonstrates the publish-subscribe (pub/sub) pattern that is central to MQTT-based communication in GAMA.
+* Tags: network, MQTT, broadcast, publish_subscribe, messaging, communication
 */
 
 /**

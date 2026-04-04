@@ -1,8 +1,12 @@
 /**
-* Name:  Demonstration of back and forth experiments on the Follow Weighted Network model
-* Author:  Patrick Taillandier (modified by Benoit Gaudou & Alexis Drogoul)
-* Description: Model illustrating the experiments typed `record` and the possibility to step them forward and backward. 
-* Tags: record, graph, save
+* Name: Backward Experiment Formats
+* Author: Patrick Taillandier, Benoit Gaudou, Alexis Drogoul
+* Description: Demonstrates the 'record' experiment type which enables stepping a simulation both forward
+*   and backward in time. Built on top of the weighted road-network Base Model, it shows how to declare
+*   a recording experiment, how the simulation state is checkpointed each cycle, and how the 'back' and
+*   'forward' buttons let the user navigate the recorded history. Useful for interactive debugging and for
+*   verifying model reversibility.
+* Tags: serialization, record, backward, experiment, replay, road_network, graph, checkpoint
 */
 
 model BackwardExperiments

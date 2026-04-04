@@ -1,8 +1,12 @@
 /**
 * Name: Drive Random
-* Description: Vehicles driving randomly in a road graph
 * Author: Duc Pham
-* Tags: gis, shapefile, graph, agent_movement, skill, transport
+* Description: Demonstrates vehicles navigating randomly on a GIS road network using the driving skill.
+*   Instead of following a planned route, each vehicle picks a random next road at every intersection,
+*   creating diffuse traffic flow. Lane discipline, speed limits, and car-following behaviour are still
+*   enforced by the skill. Useful for modelling background traffic or exploring the road network without
+*   a destination. Imports the shared Traffic base model.
+* Tags: driving_skill, GIS, shapefile, graph, agent_movement, skill, transport, random, road_network
 */
 
 model DriveRandom

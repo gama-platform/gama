@@ -1,8 +1,12 @@
 /***
-* Name: pedestrian_simple_environment
+* Name: Simple Environment - Walk To
 * Author: Patrick Taillandier
-* Description: 
-* Tags: pedestrian, agent_movement, skill, transport
+* Description: Demonstrates the pedestrian skill in a simple open environment without complex obstacles.
+*   Pedestrians use the 'walk_to' action to navigate toward a target point while avoiding other pedestrians
+*   using a social force model. Parameters for pedestrian speed, comfort zone radius, and desired speed
+*   can be adjusted. This is the entry point for the pedestrian skill before moving to the more complex
+*   obstacle-based navigation in 'Complex environment - walk.gaml'.
+* Tags: pedestrian, agent_movement, skill, social_force, transport, avoidance, simple
 ***/
 
 model pedestrian_simple_environment

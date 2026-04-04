@@ -1,9 +1,12 @@
 /**
-* Name: Clock
-* Author: JD ZUCKER
-* Description: This model supports defining a clock whose minutes corresponds to the tick of the simulation 
-* By default 1000 milliseconds=1s correspond to 1 cycle. 
-* Tags: 6/5/2019
+* Name: Clock with Sound
+* Author: Jean-Daniel Zucker
+* Description: A simulation clock whose minutes correspond to simulation cycles. At each cycle the clock
+*   hands (minute, hour, and second) are redrawn on a clock face image. When the minute hand reaches 12
+*   (i.e., at the top of each hour) an alarm sound (Alarm.mp3) is triggered using the 'play_sound' action.
+*   Demonstrates GAMA's sound playback capability combined with a time-based display and custom image
+*   rendering. The cycle duration (stepDuration) can be adjusted from 100 ms to 10 minutes via a slider.
+* Tags: sound, audio, clock, visualization, image, time, play_sound, display
 */
 model Clock
 

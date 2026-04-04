@@ -1,9 +1,12 @@
 /**
-* Name:  CreateBuildingTablePostGIS
+* Name: Create Spatial Table in PostGIS
 * Author: Truong Minh Thai
-* Description: This model shows how to create a database and a table in PostGIS using GAMA
- * Tags: database
- */
+* Description: Step 1 of the PostGIS spatial database workflow. Creates a PostgreSQL/PostGIS database and
+*   a spatial table with a geometry column for storing building polygons. Includes both 2D and 3D table
+*   variants. Run this model first before using 'Agents to Database in PostGIS' models. Requires a running
+*   PostgreSQL server with the PostGIS extension enabled.
+* Tags: database, SQL, PostGIS, PostgreSQL, spatial, geometry, create, GIS, 3d
+*/
 model CreateBuildingTablePostGIS
 
 global {

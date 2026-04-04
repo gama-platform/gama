@@ -1,8 +1,12 @@
 /***
-* Name: BDItutorial3
+* Name: BDI Tutorial - Step 3 - Social Relationships and Information Sharing
 * Author: Mathieu Bourgais
-* Description: Addition of social relationship and information exchange.
-* Tags: social link, information sharing, socialize
+* Description: Third step of the BDI Gold Miner tutorial. Adds social links between miners: agents can
+*   form relationships (via 'socialize'), send messages sharing beliefs about gold locations, and receive
+*   information that updates their own belief base. Miners with high trust in a social link are more likely
+*   to act on received information. Demonstrates the social module of the simple_bdi architecture including
+*   social link creation, belief propagation, and trust-weighted decision making.
+* Tags: simple_bdi, social_link, information_sharing, socialize, tutorial, gold_miner, trust, BDI
 ***/
 
 model BDItutorial3

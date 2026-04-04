@@ -1,8 +1,11 @@
 /***
-* Name: BDItutorial2
+* Name: BDI Tutorial - Step 2 - Gold Miner BDI Behaviors
 * Author: Mathieu Bourgais
-* Description: Description of gold miner behaviors using BDI architecture
-* Tags: BDI, plan, intention
+* Description: Second step of the BDI Gold Miner tutorial. Adds BDI logic to the miner: desires (find gold,
+*   extract gold, sell gold), plans (wander, go to mine, mine gold, go to market, sell), and perception rules
+*   that convert sensory observations into beliefs. Miners now fully exploit the simple_bdi architecture to
+*   autonomously find, extract, and sell gold nuggets. This is the core BDI step of the tutorial.
+* Tags: simple_bdi, BDI, plan, intention, belief, desire, tutorial, gold_miner, architecture
 ***/
 
 model BDItutorial2

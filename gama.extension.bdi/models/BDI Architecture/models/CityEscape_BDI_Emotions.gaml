@@ -1,10 +1,13 @@
-/**-
-* Name: City Evacuation
-* Author: Mathieu Bourgais & Patrick Taillandier
-* Description:  Example model concerning the  use of the simpleBDI plug-in  with emotions. 
-* A technological accident is simulated in one of the buildings of the city center.
-
-* Tags: simple_bdi, emotion, evacuation
+/**
+* Name: City Escape BDI with Emotions
+* Author: Mathieu Bourgais, Patrick Taillandier
+* Description: A BDI evacuation model enriched with the emotion module of the simple_bdi architecture.
+*   A technological accident occurs in a city-center building. Residents perceive the danger, form beliefs
+*   about its location, and must decide whether to evacuate along available escape routes. Emotions (fear,
+*   satisfaction) influence agent decision-making: a highly frightened agent evacuates faster; satisfaction
+*   decreases the urgency to move. Uses real GIS data for roads and escape paths in Rouen. This is the
+*   reference model for the emotion extension of the simple_bdi architecture.
+* Tags: simple_bdi, emotion, evacuation, gis, perception, belief, desire, plan, architecture
 */
  
 model City_Evacuation

@@ -1,8 +1,12 @@
 /**
-* Name: Restitution
-* A model to demonstrate the role of the restitution in the collision of objects in the box2D library, which simulates physical interactions in 2 dimensions
-* Author: Alexis Drogoul - 2023
-* Tags: 2D, physics
+* Name: Box2D Library
+* Author: Alexis Drogoul
+* Description: Demonstrates the Box2D 2D physics engine integration in GAMA. Shows how objects collide,
+*   bounce, and stack under the influence of gravity in a 2D environment. The 'restitution' parameter
+*   controls bounciness: 0 = perfectly inelastic (no bounce), 1 = perfectly elastic (full bounce). Agents
+*   use the 'physics' skill; the model inherits from 'physical_world'. Compare with the 3D Bullet-based
+*   physics models for dimensionality trade-offs.
+* Tags: physics_engine, 2d, box2d, restitution, collision, gravity, skill, physical_world
 */
 model Box2D
 

@@ -1,10 +1,12 @@
 /**
 * Name: Following Paths
-* Description: Vehicles moving between two intersection using the same path.
-			   Note that all vehicles slow down when reaching the end of the path, because at that point they don't know which road to choose next,
-			   and thus cannot determine their leading vehicle.
 * Author: Duc Pham
-* Tags: driving skill, graph, agent_movement, skill, transport
+* Description: Demonstrates multiple vehicles sharing a pre-computed path between two intersections.
+*   Because vehicles cannot look ahead beyond their current road segment to determine the next road, they
+*   slow down as they approach the end of the known path — a realistic artefact of limited look-ahead.
+*   Illustrates how to assign explicit paths to vehicles and how the driving skill handles path-end
+*   deceleration. Imports the shared Traffic base model.
+* Tags: driving_skill, graph, agent_movement, skill, transport, path, road_network, GIS, deceleration
 */
 
 model FollowingPaths

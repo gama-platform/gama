@@ -1,11 +1,12 @@
 /**
 * Name: Eroding Vulcano
-* Author: Alexis Drogoul - 2021
-* Description: This is a model that shows how the physics engine works, especially with the definition of uneven terrains, the dynamic
-* change of shapes of agents and the callback actions when contacts occur between agents. 
-* A vulcano, situated at the highest point of a DEM, erupts and the lava, falling down on the ground, erodes every patch of terrain it touches. The 
-* slope of the terrain evolves as more and more lava is produced (the epicenter of the eruption even changing when higher patches appear).
-* Tags: physics_engine, 3D, grid
+* Author: Alexis Drogoul
+* Description: A 3D physics simulation of a volcanic eruption and terrain erosion. A volcano at the
+*   highest point of a DEM erupts and drops lava balls; each ball erodes the terrain patch it hits
+*   (lowering its elevation), using the physics engine's contact callback actions. As terrain degrades,
+*   the eruption epicenter can shift to newly higher areas. Demonstrates: uneven terrain as static physics
+*   bodies, dynamic shape changes, contact callbacks, and DEM-based elevation grids.
+* Tags: physics_engine, 3d, grid, terrain, DEM, erosion, volcano, contact, callback, elevation
 */
 
 

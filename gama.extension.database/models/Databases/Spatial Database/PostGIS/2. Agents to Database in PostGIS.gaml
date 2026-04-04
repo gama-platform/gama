@@ -1,14 +1,11 @@
 /**
-* Name:  Agents to Database in PostGIS
+* Name: Agents to Database in PostGIS
 * Author: Truong Minh Thai
-* Description: 
-* init: Select data from table vnm_adm2 (Created via QGis software)  and create  agents
-* 
-* savetosql: Save data of agent into MySQL.
-* 
-* transform= true because you need to transform geometry data from Absolute(GAMA) to Gis
-* 
-* Tags: database
+* Description: Step 2 of the PostGIS spatial database workflow. Loads building shapes from a shapefile,
+*   creates building agents, then saves their geometries and attributes into the PostGIS spatial table.
+*   Uses coordinate transformation ('transform: true') to convert from GAMA's absolute CRS to the GIS CRS.
+*   Requires the spatial database created by model 1.
+* Tags: database, SQL, PostGIS, PostgreSQL, spatial, geometry, shapefile, GIS, save, agents
 */
 
 model agent2DB_MySQL 

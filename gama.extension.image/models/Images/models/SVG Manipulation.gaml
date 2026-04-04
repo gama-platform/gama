@@ -1,8 +1,12 @@
 /**
-* Name: SVGManipulation
-* Shows how to manipulate the geometries produced by SVG files, and also how to translate them to images 
-* Author: drogoul
-* Tags: 
+* Name: SVG Manipulation
+* Author: Alexis Drogoul
+* Description: Shows how to work with SVG (Scalable Vector Graphics) files in GAMA. SVG files can be loaded
+*   and their contents are returned as a list of geometries, one per SVG path element. These geometries can
+*   be manipulated like any GAMA geometry (scaled, rotated, translated) and drawn in displays. The model
+*   also shows how to convert an SVG geometry to a raster image using the 'image' operator. Useful for
+*   importing complex vector artwork, maps, or diagrams as agent shapes.
+* Tags: image, svg, geometry, vector, load_file, visualization, shape, aspect
 */
 
 model SVGManipulation

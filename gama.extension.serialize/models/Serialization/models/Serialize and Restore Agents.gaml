@@ -1,8 +1,11 @@
 /**
-* Name: SerializeAndRestoreAgents
-* Shows how to save / read agents using the statements and operators defined in GAMA 
-* Author: A. Drogoul
-* Tags: serialize, create, restore
+* Name: Serialize and Restore Agents
+* Author: Alexis Drogoul
+* Description: Demonstrates saving a population of agents to a binary file and recreating them in a later
+*   (or the same) simulation from that file. Uses the 'serialize' statement (or 'save' with binary format)
+*   to write agent state, and 'create' with the serialized file as source to restore agents with all their
+*   attribute values intact. This is the primary reference for agent population checkpointing in GAMA.
+* Tags: serialization, agents, save, restore, create, binary, checkpoint, population
 */
 
 

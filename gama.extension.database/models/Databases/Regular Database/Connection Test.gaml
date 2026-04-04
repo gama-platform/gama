@@ -1,9 +1,12 @@
 /**
-* Name: SQLConnection
-* Author: thaitruongminh
-* Description: How to create a connection to a database in GAMA
-* Tags: database
- */
+* Name: SQL Connection Test
+* Author: Truong Minh Thai
+* Description: Demonstrates how to create and test database connections in GAMA using the SQLSKILL. Shows
+*   connection parameter maps for both MySQL and SQLite. Tests the connection using 'testConnection' and
+*   'isConnected' actions, and illustrates how to switch between different database backends by changing
+*   the connection parameter map. This is the entry-point model for all database-related work in GAMA.
+* Tags: database, SQL, MySQL, SQLite, connection, SQLSKILL
+*/
 model test_connection
 
 global {

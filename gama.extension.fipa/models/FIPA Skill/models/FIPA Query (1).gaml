@@ -1,22 +1,10 @@
 /**
-* Name: FIPA Query
-* Author:
-* Description: This model demonstrates a usecase of the FIPA Query interaction protocol. 
-* (Please see http://www.fipa.org/specs/fipa00027/SC00027H.html for the detail description of this protocol).
-* 
-* 
-* The Initiator agent begins the 'fipa-query' conversation/interaction protocol by sending a 'query' 
-* message to the Participant agent with 'your name?' as content.
-* 
-* On receiving the 'query' message, the Participant agent replies with two consecutive messages :
-* 
-*  (1) an 'agree' message indicating that the Participant agent accepts to execute the query of the Initiator agent,
-* 
-*  (2) an 'inform' message informing the Initiation agent of Participant agent's name.
-* 
-* 
-* After the Initiator agent read the 'inform' message from the Participant agent, the conversation ends.
-* Tags: fipa
+* Name: FIPA Query (1) - Query Accepted and Answered
+* Author: Gama Development Team
+* Description: Demonstrates the FIPA Query protocol — accepted variant. The Initiator sends a 'query'
+*   ('your name?'). The Participant replies with 'agree' then 'inform' with its name, ending the conversation.
+*   See http://www.fipa.org/specs/fipa00027/SC00027H.html. Pair with FIPA Query (2) for the refused variant.
+* Tags: fipa, query, agree, inform, protocol, multi_agent, interaction
 */
 model fipa_query_1
 

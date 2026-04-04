@@ -1,8 +1,10 @@
 /**
-* Name: MQTT__Send
-* Author: Nicolas Marilleau and Arnaud Grignard
-* Description: Two clients are communicated through the MQTT protocol.
-* Tags: Network, MQTT
+* Name: MQTT Send Example
+* Author: Nicolas Marilleau, Arnaud Grignard
+* Description: Shows how to send messages between two agents (sender and receiver) using the MQTT protocol.
+*   The sender agent publishes a message to a topic; the receiver agent subscribes and logs incoming messages.
+*   Demonstrates the 'send' and 'fetch' network actions in their simplest MQTT form.
+* Tags: network, MQTT, send, receive, messaging, protocol, communication
 */
 
 model MQTT_HelloWorld_Send

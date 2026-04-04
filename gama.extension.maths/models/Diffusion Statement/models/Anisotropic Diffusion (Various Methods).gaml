@@ -1,9 +1,11 @@
 /**
-* Name: Anisotropic diffusion with several computation method
+* Name: Anisotropic Diffusion (Various Methods)
 * Author: Benoit Gaudou
-* Description: This model is used to show two different computation methods to use diffusion : with the dot product method and with the convolution method. 
-*     The cell at the center of the grid emit a pheromon at each step, which is spread through the grid thanks to the diffusion mechanism, using a particular matrix of diffusion. 
-* Tags: diffusion, matrix, math, elevation
+* Description: Compares two numerical computation methods for anisotropic diffusion: dot-product and
+*   convolution. Both use the same asymmetric diffusion matrix but compute the spread differently.
+*   Displays both results side by side so the user can verify that both methods give equivalent output.
+*   Useful for understanding the implementation choices behind the 'diffuse' statement.
+* Tags: diffusion, matrix, math, grid, anisotropic, convolution, dot_product, pheromone, elevation
 */
 
 model diffusion_computation_method

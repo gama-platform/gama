@@ -1,8 +1,10 @@
 /**
-* Name: MQTT_Receiver
-* Author: Nicolas Marilleau and Arnaud Grignard
-* Description: The simple receiver model based on MQTT protocol.
-* Tags: Network, MQTT
+* Name: MQTT Receive Example
+* Author: Nicolas Marilleau, Arnaud Grignard
+* Description: A minimal MQTT receiver model. The global agent subscribes to a topic and listens for
+*   incoming messages using the 'fetch' action. Pair with 'MQTT Send Example' or any external MQTT
+*   publisher. This is one half of the simplest possible MQTT communication pattern in GAMA.
+* Tags: network, MQTT, receive, fetch, subscribe, messaging, protocol, communication
 */
 
 model MQTT_HelloWorld_Receive

@@ -1,9 +1,12 @@
 /**
-* Name:  CreateBuildingTableMySQL
+* Name: Create Spatial Table in MySQL
 * Author: Truong Minh Thai
-* Description: This model shows how to create a database and a table in MySQL using GAMA
- * Tags: database
- */
+* Description: Step 1 of the MySQL spatial database workflow. Creates a MySQL database and a spatial table
+*   (building) with a geometry column. The table is structured to store polygon geometries corresponding to
+*   GIS building features. Run this model first before using the 'Agents to Database' and 'Agents from
+*   Database' MySQL models.
+* Tags: database, SQL, MySQL, spatial, geometry, create, GIS
+*/
 model CreateBuildingTableMySQL
 
 

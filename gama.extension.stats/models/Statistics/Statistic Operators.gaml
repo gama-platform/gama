@@ -1,8 +1,12 @@
 /**
-* Name: Operators
+* Name: Statistic Operators
 * Author: Patrick Taillandier
-* Description: A model which illustrates the use of univariate statistical operators of GAMA 
-* Tags: statistic
+* Description: A reference model illustrating the univariate statistical operators available in GAMA.
+*   Applied to a sample dataset, it demonstrates: mean, median, variance, standard_deviation, sum, min,
+*   max, geometric_mean, harmonic_mean, kurtosis, skewness, percentile, and interquartile_range. Results
+*   are printed to the console. This model is the go-to reference for anyone needing to compute basic
+*   descriptive statistics on lists of values within a GAMA simulation.
+* Tags: statistics, operators, mean, median, variance, standard_deviation, kurtosis, skewness, descriptive
 */
 
 model statistic_operators

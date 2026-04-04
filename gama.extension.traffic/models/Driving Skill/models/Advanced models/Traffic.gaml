@@ -1,8 +1,12 @@
 /**
-* Name: Traffic
-* Description: define species for traffic simulation
-* Author: Patrick Taillandier & Duc Pham
-* Tags: driving skill, graph, agent_movement, skill, transport
+* Name: Traffic (Advanced Base)
+* Author: Patrick Taillandier, Duc Pham
+* Description: The shared base model imported by all advanced driving-skill demonstrations (Drive Random,
+*   Following Paths, Simple Intersection). Defines the road species, intersection species, and vehicle
+*   species with the driving skill. Also sets up the road graph from GIS shapefiles and the lane-level
+*   road geometry. Not intended to be run directly — import this model to build on the common traffic
+*   infrastructure.
+* Tags: driving_skill, graph, agent_movement, skill, transport, road_network, GIS, base_model, import
 */
 
 model traffic

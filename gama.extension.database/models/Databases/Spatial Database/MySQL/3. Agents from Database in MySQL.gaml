@@ -1,9 +1,12 @@
 /**
-* Name:  Agents from Database in MySQL
+* Name: Agents from Database in MySQL
 * Author: Benoit Gaudou
-* Description:  This model does SQl query commands and create agents using the results
-* Tags: database
-  */
+* Description: Step 3 of the MySQL spatial database workflow. Executes a spatial SQL SELECT query against
+*   the MySQL spatial table and creates GAMA agents from the results. Each row becomes an agent with
+*   geometry and attribute columns mapped to agent variables. Demonstrates how to load georeferenced agent
+*   populations from a relational spatial database, complementing shapefile-based loading.
+* Tags: database, SQL, MySQL, spatial, geometry, agents, create, GIS, select
+*/
 
 model DB2agentMySQL
 

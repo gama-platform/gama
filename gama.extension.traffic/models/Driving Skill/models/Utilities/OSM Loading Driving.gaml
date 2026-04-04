@@ -1,9 +1,12 @@
 /**
 * Name: OSM Loading Driving
 * Author: Patrick Taillandier
-* Description: Model to show how to import OSM Files, using them to create agents for a road network, and saving the different agents in shapefiles. 
-* The first goal of this model is to prepare data for the driving skill models.
-* Tags:  load_file, gis, shapefile, save_file, osm
+* Description: A utility model that converts an OpenStreetMap (OSM) file into the shapefiles required by
+*   the driving-skill models. Imports an OSM file, filters road features by type (motorway, primary,
+*   secondary, residential, etc.), creates road and intersection agents, and saves them as shapefiles.
+*   Run this model once to prepare data for any city before using the driving-skill simulation models.
+*   This is the standard data-preparation pipeline for GIS-based traffic simulation in GAMA.
+* Tags: driving_skill, load_file, GIS, shapefile, save_file, OSM, road_network, preprocessing, transport
 */
 
 

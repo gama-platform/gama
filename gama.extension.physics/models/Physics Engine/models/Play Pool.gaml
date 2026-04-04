@@ -1,10 +1,12 @@
 /**
-* Name: Pool using Physic Engine
-* Author: Arnaud Grignard (2012) --revised by Alexis Drogoul (2021)
-* Description: This is a model that allows the user to play a (simplistic) game of pool in order to show how the physics engine works. It also
-* demonstrates the effect of different physical properties (friction, restitution, etc.) 
-*
-* Tags: physics_engine, skill, 3d, spatial_computation, obstacle
+* Name: Play Pool
+* Author: Arnaud Grignard, Alexis Drogoul
+* Description: An interactive billiards (pool) simulation using the physics engine. The user aims and
+*   shoots the cue ball by clicking; balls collide, roll, and eventually stop due to friction. Demonstrates
+*   various physical properties: friction, restitution, angular velocity, and rolling resistance. The table
+*   cushions are static bodies with high restitution. Shows how to implement a playable physics-based mini
+*   game entirely within GAMA.
+* Tags: physics_engine, skill, 3d, collision, friction, restitution, billiards, interactive, physical_world
 */
 model pool3D
 

@@ -1,8 +1,11 @@
 /**
-* Name: Socket_TCP_HelloWorld_Server
+* Name: WebSocket Server and Client Example
 * Author: Arnaud Grignard
-* Description: Two clients are communicating throught the Socket WebSocket protocol.
-* Tags: Network, TCP, Socket
+* Description: Demonstrates bidirectional WebSocket communication within a single GAMA model. One agent
+*   acts as WebSocket server (listens for connections), another as client (connects and sends messages).
+*   WebSocket is preferred over TCP for browser-based or JavaScript client integration. Shows the GAMA
+*   network skill WebSocket mode including handshake, message exchange, and disconnection.
+* Tags: network, WebSocket, server, client, protocol, communication, browser, JavaScript
 */
 model WebSocket_HelloWorld
 

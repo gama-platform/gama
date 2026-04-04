@@ -1,8 +1,11 @@
 /***
-* Name: pedestrian_complex_environment
+* Name: Complex Environment - Walk
 * Author: Patrick Taillandier
-* Description: show how to use the pedestrian skill for complex envorinment - require to generate pedestrian paths before - see model "Generate Pedestrian path.gaml" 
-* Tags: pedestrian, gis, shapefile, graph, agent_movement, skill, transport
+* Description: Demonstrates the pedestrian skill for navigation in a complex built environment with walls
+*   and obstacles. Pedestrians use pre-generated pedestrian paths (computed by 'Generate pedestrian paths')
+*   to find their way around walls. The 'walk' action navigates agents along the free-space graph while
+*   avoiding obstacles. Requires running 'Generate pedestrian paths.gaml' first to produce the path files.
+* Tags: pedestrian, gis, shapefile, graph, agent_movement, skill, transport, obstacle, navigation
 ***/
 
 model pedestrian_complex_environment

@@ -1,22 +1,12 @@
 /**
-* Name:  Simple SQL Command in SQLIte
+* Name: Simple SQL Commands in SQLite
 * Author: Truong Minh Thai
-* Description:  This model does SQl query commands:
-* 
- * - Create table 
- * 
- * - Insert data
- * 
- * - Select data
- * 
- * - Delete data
- * 
- * - Drop table 
- * 
- * 
- *  Note: the file emptyFile.db is only ... an empty file.
-* Tags: database
-  */
+* Description: Demonstrates the core SQL operations available via the SQLSKILL in GAMA using an SQLite
+*   database: CREATE TABLE, INSERT data, SELECT data, DELETE data, and DROP TABLE. The model uses an
+*   empty SQLite file as the database. Each operation is executed using the 'executeUpdate' or 'select'
+*   actions of the SQLSKILL. This is the minimal reference for SQLite integration in GAMA.
+* Tags: database, SQL, SQLite, SQLSKILL, create, insert, select, delete, drop
+*/
 model SQLite_selectNUpdate
 
 global {

@@ -1,9 +1,12 @@
 /**
-* Name:  Clustering of agents by their distance 
-* Author:  Patrick Taillandier et JD Zucker ;-) 
-* Description: A model to show how to use clustering operators with simple_clustering_by_distance to take into account the distances 
-*        between agents or between cells to create the clusters,  and showing the relations between the people from the same cluster. 
-* Tags: clustering, statistic, grid
+* Name: Spatial Clustering by Distance
+* Author: Patrick Taillandier, Jean-Daniel Zucker
+* Description: Demonstrates distance-based spatial clustering using the 'simple_clustering_by_distance'
+*   operator. Two agents are grouped into the same cluster if the distance between them is below a
+*   configurable threshold. The resulting clusters are displayed as convex hulls connecting cluster members,
+*   making the groupings visually clear. Also works on grid cells. Useful for identifying spatial hot-spots,
+*   contact networks, or proximity-based social groups.
+* Tags: clustering, statistics, spatial, distance, simple_clustering, grid, convex_hull, analysis
 */
 
 model clustering

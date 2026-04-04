@@ -1,8 +1,11 @@
 /***
-* Name: generate_pedestrian_path
+* Name: Generate Pedestrian Paths
 * Author: Patrick Taillandier
-* Description: Show how to create pedestrian path and associated free space
-* Tags: * Tags: pedestrian, gis, shapefile, graph, agent_movement, skill, transport
+* Description: A preprocessing model that generates the pedestrian path network and free-space polygons
+*   required by 'Complex environment - walk.gaml'. Loads wall shapefiles, computes the navigable free
+*   space using Voronoi decomposition of the obstacle boundaries, then saves the resulting path graph and
+*   free-space polygons to shapefiles. Run this model once before running the complex environment model.
+* Tags: pedestrian, gis, shapefile, graph, agent_movement, skill, transport, preprocessing, voronoi
 ***/
 
 model generate_pedestrian_path

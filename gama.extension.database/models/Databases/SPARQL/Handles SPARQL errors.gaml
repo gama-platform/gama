@@ -1,8 +1,11 @@
 /**
-* Name: HandlesSPARQLerrors
-* This model showcases how to handle errors when doing SPARQL queries
-* Author: baptiste lesquoy
-* Tags: 
+* Name: Handles SPARQL Errors
+* Author: Baptiste Lesquoy
+* Description: Shows how to handle errors that can occur during SPARQL queries in GAMA, such as network
+*   timeouts, malformed queries, or endpoint unavailability. Demonstrates using try/catch blocks around
+*   the 'sparql' action and inspecting the error type to display a useful message. This is the reference
+*   for writing robust SPARQL-enabled models that degrade gracefully when the endpoint is unreachable.
+* Tags: database, SPARQL, error_handling, linked_data, semantic_web, exception
 */
 
 

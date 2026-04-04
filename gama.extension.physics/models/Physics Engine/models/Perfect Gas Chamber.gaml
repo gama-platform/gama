@@ -1,10 +1,12 @@
 /**
-* Name: Perfect Gas
-* Author: Arnaud Grignard - Alexis Drogoul 2021
-* Description: This is a model that shows how the physics engine works with and without gravity. Particles, provided with an initial impulse,
-* collide each other and the walls. Without gravity and friction, and with a perfect restitution, this movement can go on forever.
-* The user can apply gravity or not, as well as remove one (or several) of the walls to alter this behavior.
-* Tags: physics_engine, skill, 3d, spatial_computation
+* Name: Perfect Gas Chamber
+* Author: Arnaud Grignard, Alexis Drogoul
+* Description: Models an ideal gas in a chamber using the physics engine. Particles with initial impulses
+*   collide with each other and the walls; with no gravity, no friction, and perfect restitution (e=1),
+*   motion is perpetual (energy is conserved). The user can toggle gravity on/off and remove individual
+*   walls interactively to observe pressure release. Demonstrates physics engine capabilities for kinetic
+*   gas theory and interactive boundary manipulation.
+* Tags: physics_engine, skill, 3d, collision, gravity, restitution, gas, kinetic_theory, interactive, physical_world
 */
 model Gas
 

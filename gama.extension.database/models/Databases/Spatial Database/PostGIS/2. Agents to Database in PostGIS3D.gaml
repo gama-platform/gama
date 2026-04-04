@@ -1,14 +1,11 @@
 /**
-* Name:  Agents to Database in PostGIS
-* Author: Truong Minh Thai, Quang Truong, Thu  Tran
-* Description: 
-* savetosql: Save data of agent into MySQL.
-* Geometry  column in PostGIS is in Multipolygon3D
-* * transform= true because you need to transform geometry data from Absolute(GAMA) to Gis
-* 
-*  NOTE: Geodatabase and tables are created before. Then use the this model to insert data from shapefile
-* Geometry  column in PostGIS is in Multipolygon3D 
-* Tags: database
+* Name: Agents to Database in PostGIS (3D)
+* Author: Truong Minh Thai, Quang Truong, Thu Tran
+* Description: Variant of the PostGIS 'Agents to Database' workflow for 3D Multipolygon geometry columns.
+*   Saves agent geometries (with Z coordinates) and attributes into a PostGIS table where the geometry
+*   column type is Multipolygon3D. Requires the spatial database and tables created by model 1. Use this
+*   variant when your spatial data has elevation or height attributes that must be stored as 3D geometry.
+* Tags: database, SQL, PostGIS, PostgreSQL, spatial, geometry, 3d, GIS, save, agents
 */
 
 model agent2DB_POSTGIS 

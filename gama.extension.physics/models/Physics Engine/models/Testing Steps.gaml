@@ -1,9 +1,12 @@
 /**
-* Name: Restitution
-* A model to demonstrate the role of the restitution in the collision of objects and some other techniques (display of contacts between objects, creation of comparisons
-* between native and Java Bullet libraries...).
-* Author: Alexis Drogoul - 2021
-* Tags: 3D, physics
+* Name: Testing Steps
+* Author: Alexis Drogoul
+* Description: Investigates how the physics engine sub-step count affects simulation accuracy and
+*   performance. A higher number of sub-steps per simulation cycle gives more accurate collision detection
+*   (especially for fast-moving objects) at the cost of more computation. Objects are dropped and bounce;
+*   the step count is adjustable as a parameter. Also compares native vs. Java Bullet bindings for the
+*   same scenario.
+* Tags: physics_engine, 3d, steps, substep, accuracy, performance, bullet, physical_world
 */
 
 

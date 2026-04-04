@@ -1,8 +1,11 @@
 /**
-* Name: broadcast to a group of agents
+* Name: Broadcast to a Group of Agents (MQTT)
 * Author: Nicolas Marilleau
-* Description: It is a simple model showing an agent (a teacher called Victoria) that broadcast a message to students.
-* Tags: Network, MQTT
+* Description: Demonstrates selective group broadcast via MQTT using topic-based filtering. A teacher agent
+*   (Victoria) publishes a message to a specific group topic; only student agents subscribed to that topic
+*   receive it. Other agents on different topics are unaffected. Shows how MQTT topic hierarchies can
+*   implement group communication patterns in GAMA multi-agent simulations.
+* Tags: network, MQTT, broadcast, group, topic, publish_subscribe, messaging, communication
 */
 
 /**

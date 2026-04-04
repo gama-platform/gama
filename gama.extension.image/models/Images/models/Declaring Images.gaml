@@ -1,8 +1,11 @@
 /**
-* Name: DeclaringImages
-* Shows how to declare images 
-* Author: A. Drogoul
-* Tags: image
+* Name: Declaring Images
+* Author: Alexis Drogoul
+* Description: A reference model for declaring and initializing image variables in GAMA. Shows all the ways
+*   an image can be created: blank image with given dimensions, image loaded from a file path (JPEG, PNG, BMP,
+*   GIF), image created from a matrix of colors. Also shows how to use images in agent aspects and how to
+*   assign images to global variables for reuse across the model.
+* Tags: image, declare, load_file, matrix, color, aspect, visualization
 */
 model DeclaringImages
 

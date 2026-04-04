@@ -1,9 +1,11 @@
 /**
-* Name: Anisotropic diffusion (Simple)
+* Name: Anisotropic Diffusion (Simple, Field)
 * Author: Benoit Gaudou
-* Description: This model is used to show how to construct an anisotropic diffusion through a grid. The cell at the center of the grid emit a pheromon at each step, which is spread 
-*     through the grid thanks to the diffusion mechanism, using a particular matrix of diffusion.
-* Tags: diffusion, matrix, math, elevation
+* Description: Demonstrates directional (anisotropic) diffusion on a GAMA field (instead of a grid species).
+*   A custom asymmetric diffusion kernel causes pheromone to spread preferentially in one direction.
+*   Functionally equivalent to 'Anisotropic Diffusion (Simple, Grid)' but uses the more efficient field
+*   type, which is better suited to large spatial domains.
+* Tags: diffusion, matrix, math, field, anisotropic, pheromone, elevation, performance
 */
 model anisotropic_diffusion
 

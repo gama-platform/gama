@@ -1,14 +1,13 @@
 /**
 * Name: Raster Map Comparison
 * Author: Patrick Taillandier
-* Description: This model shows how to use different comparators to know the accuracy of a prediction model. Four comparators are used :
-* 
-* - kappa, comparing the map observed and the map simulation ; kappa simulation comparing the initial map, the map observed and the map simulation;
-* 
-* - fuzzy kappa, comparing the map observed and the map simulation but being more permissive by using fuzzy logic;
-* 
-* - fuzzy kappa simulation, comparing the map observed, the map simulation and the map initial but being more permissive by using fuzzy logic
-* Tags: grid, comparison, raster, statistic
+* Description: Shows how to measure the accuracy of a raster prediction model against observed data using
+*   four spatial map comparison metrics: Kappa (overall agreement between simulated and observed maps);
+*   Kappa Simulation (accounts for the initial map as baseline); Fuzzy Kappa (more permissive, uses fuzzy
+*   logic to allow partial credit for nearby matching cells); and Fuzzy Kappa Simulation (combines fuzzy
+*   logic with baseline correction). These metrics are standard tools for validating land-use change and
+*   cellular automaton models.
+* Tags: statistics, raster, map_comparison, kappa, fuzzy_kappa, validation, spatial_analysis, grid
 */
 
 model mapcomparison

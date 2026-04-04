@@ -1,9 +1,12 @@
 /**
-* Name: Anisotropic diffusion (Simple)
+* Name: Anisotropic Diffusion (Simple, Grid)
 * Author: Benoit Gaudou
-* Description: This model is used to show how to construct an anisotropic diffusion through a grid. The cell at the center of the grid emit a pheromon at each step, which is spread 
-*     through the grid thanks to the diffusion mechanism, using a particular matrix of diffusion.
-* Tags: diffusion, matrix, math, elevation
+* Description: Demonstrates directional (anisotropic) diffusion on a grid. Instead of the default uniform
+*   matrix, a custom asymmetric diffusion kernel is supplied, causing pheromone to spread preferentially
+*   in one direction. A central cell emits pheromone each step; the anisotropic matrix shapes the resulting
+*   gradient into an elongated or directional plume. Compare with 'Uniform Diffusion (Grid)' to see the
+*   effect of the custom kernel.
+* Tags: diffusion, matrix, math, grid, anisotropic, pheromone, elevation, 3d
 */
 
 model anisotropic_diffusion

@@ -1,8 +1,11 @@
 /**
-* Name: SimpleSPARQLquery
-* This model queries dbpedia to ask for a list of french philosophers then displays it in a "pretty" array
-* Author: baptiste lesquoy
-* Tags: 
+* Name: SPARQL More Complex Query and Clean Display
+* Author: Baptiste Lesquoy
+* Description: Queries DBpedia for a list of French philosophers using SPARQL and presents the results
+*   in a formatted tabular display within a GAMA experiment window. Demonstrates how to process multi-column
+*   SPARQL result sets, iterate over rows and columns, and render the data as a styled table. A practical
+*   reference for integrating semantic web data into user-facing GAMA experiment outputs.
+* Tags: database, SPARQL, linked_data, DBpedia, display, visualization, semantic_web, table
 */
 
 

@@ -1,14 +1,12 @@
 /**
- *  continuous curves
- *  Author: Tri and Nghi
- *  Description: 
- * 
- * This model illustrates different displays for a Lotka-Volterra model. ABMs usually only require a discrete 
- * visualization of the results (one value per cycle). EBMs compute a continuous solution, and thus require
- * a continuous display. The syntax is shown below.
- * 
- * Phase portraits are very common in mathematics, and can be displayed with the 'type: xy' facet.
- */
+* Name: Displays - Continuous and Phase Portrait (Lotka-Volterra)
+* Author: Tri Nguyen-Huu, Huynh Quang Nghi
+* Description: Illustrates two advanced chart display types for ODE results. Standard ABM charts show one
+*   value per cycle (discrete). EBM/ODE solvers compute a continuous sub-step solution; this model shows
+*   how to use 'type: series' with continuous curves and 'type: xy' for phase-portrait plots (predator
+*   vs prey). The phase portrait reveals the periodic orbits characteristic of Lotka-Volterra dynamics.
+* Tags: equation, math, ODE, lotka_volterra, display, phase_portrait, continuous, chart, visualization
+*/
  
  
 model Displays

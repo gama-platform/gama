@@ -1,9 +1,12 @@
 /**
-* Name:  Clustering of agents by K Means and DBScan
-* Author:  Patrick Taillandier et J.-D. Zucker
-* Description: A model to show how to use clustering operators and two methods of clustering (K Means and DBScan) 
-*              with the goal of grouping agents into clusters
-* Tags: clustering, statistic, spatial
+* Name: Clustering of Agents by K-Means and DBSCAN
+* Author: Patrick Taillandier, Jean-Daniel Zucker
+* Description: Demonstrates two unsupervised clustering algorithms on a population of agents: K-Means
+*   (partition into k groups by minimizing intra-cluster distance) and DBSCAN (density-based clustering
+*   that can identify arbitrarily shaped clusters and noise points). Each algorithm is selectable as a
+*   parameter. Cluster membership is visualized by coloring agents. Useful for detecting emergent spatial
+*   groupings in simulation outputs or for validating model behavior against expected patterns.
+* Tags: clustering, statistics, k_means, DBSCAN, spatial, agent, analysis, visualization
 */
 
 model clustering

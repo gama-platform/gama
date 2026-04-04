@@ -1,8 +1,11 @@
 /***
-* Name: SIRInfluenceofSimulationStep
-* Author: Tri, Nghi and Benoit 
-* Description: This model illustrates the impact of the simulation step on the integration speed.
-* Tags: equation, math, step
+* Name: Influence of the Simulation Step (SIR)
+* Author: Tri Nguyen-Huu, Huynh Quang Nghi, Benoit Gaudou
+* Description: Demonstrates how GAMA's simulation step size (the 'step' global variable) affects ODE
+*   integration speed and resolution for a SIR epidemic model. A larger simulation step means fewer
+*   'solve' calls per simulated day, reducing accuracy. A smaller step increases accuracy but runs more
+*   solver iterations. Shows the trade-off between simulation speed and epidemiological fidelity.
+* Tags: equation, math, ODE, SIR, epidemiology, simulation_step, step, numerical_accuracy
 ***/
 
 

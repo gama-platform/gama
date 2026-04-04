@@ -1,40 +1,13 @@
 /**
-* Name:  Simple Species MySql
+* Name: Simple AgentDB Tests in MySQL
 * Author: Truong Minh Thai
-* Description:  This model illustrates the use of the AgentDB species (instead of the SQLSKILL), and in particular following actions:
-* 
- *    - testConection
- * 
- *    - isConnected
- * 
- *    - close 
- * 
- *    - executeUpdate
- * 
- *    - insert
- * 
- *    - select
- * 
- *    - getParameter 
- * 
- * 
- *  This model does SQl query commands:
- * 
- * - Create table 
- * 
- * - Insert data
- * 
- * - Select data
- * 
- * - Delete data
- * 
- * - Drop table 
- * 
- * 
- *  NOTE: YOU SHOULD HAVE ALREADY CREATED YOUR DATABASE (testDB here)
- *        IN ORDER THAT THE MODEL CAN RUN PROPERLY.
-* Tags: database
- */
+* Description: Shows the AgentDB approach for MySQL database interaction where a dedicated DB agent
+*   manages the connection lifecycle. Covered actions: testConnection, isConnected, close, executeUpdate,
+*   insert, select, getParameter. SQL operations: CREATE TABLE, INSERT, SELECT, DELETE, DROP TABLE.
+*   Requires a pre-existing MySQL database (testDB). Compare with 'Simple Agents tests in MySQL' which
+*   uses a different connection management approach.
+* Tags: database, SQL, MySQL, AgentDB, species, create, insert, select, delete, drop
+*/
 model simpleSQL_DBSpecies_MySQL
 
 global {

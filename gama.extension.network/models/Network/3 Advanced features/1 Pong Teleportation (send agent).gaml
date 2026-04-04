@@ -1,10 +1,12 @@
 /**
-* Name: Pong Teleportation
+* Name: Pong Teleportation via MQTT (Send Agent)
 * Author: Nicolas Marilleau
-* Description: This model show how to send complex data (as an agent) by using list or map. In this multi-simulation, the space is distributed 
-* on 3 (nb_simul) simulation running in parallel. Each simulation manage local space and agent moving in this local space. When an agent go inside a 
-* buffer zone, it is teleported to the next simulation (remove from the first and created inside the next one).
-* Tags: Network, MQTT, multi-simulation
+* Description: Advanced MQTT model demonstrating agent teleportation across 3 parallel simulation instances.
+*   The simulation space is partitioned; each instance manages its own region. When an agent crosses a
+*   boundary, it is serialized to a map, transmitted via MQTT, and recreated in the receiving simulation.
+*   Demonstrates how to send complex structured data (agent state as map/list) over MQTT and reconstruct
+*   agents from received messages.
+* Tags: network, MQTT, multi_simulation, teleportation, distributed, agent, serialization, protocol
 */
 
 /**

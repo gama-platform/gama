@@ -1,31 +1,12 @@
 /**
-* Name: FIPA Contract Net (2)
-* Author:
-* Description: This model demonstrates a use-case of the FIPA Contract Net interaction protocol. 
-* 
-* 
-* One initiator sends a 'cfp' message to 5 participants.
-* 
-* The first participant (participant0) replies with a refuse message.
-* 
-* Four participants (participant1, participant2, participant3, participant4) reply with four propose messages.
-* 
-* 
-* When the initiator receives the propose messages, it proceeds as follows:
-* 
-* The initiator replies to participant1 with a reject_proposal message.
-* 
-* The initiator replies to participant2, participant3, participant4 with three accept_proposal messages respectively.
-* 
-* 
-* When participant2, participant3 and participant4 receive the accept_proposal messages from the initiator, they proceed as follows:
-* 
-* Participant2 replies with a failure message.
-* 
-* Participant3 replies with an inform_done message.
-* 
-* Participant4 replies with an inform_result message.
-* Tags: fipa
+* Name: FIPA Contract Net (2) - Full Negotiation Cycle
+* Author: Gama Development Team
+* Description: A complete demonstration of the FIPA Contract Net protocol with 5 participants. One Initiator
+*   sends a 'cfp' to all. Participant0 refuses. Participants 1-4 propose. The Initiator rejects participant1,
+*   accepts participants 2-4. Participant2 replies with 'failure'; participant3 with 'inform_done'; participant4
+*   with 'inform_result'. Covers all branches of the CFP state machine: refuse, propose, reject_proposal,
+*   accept_proposal, failure, inform_done, inform_result.
+* Tags: fipa, cfp, contract_net, protocol, negotiation, propose, accept, reject, multi_agent
 */
 
 model cfp_cfp_2

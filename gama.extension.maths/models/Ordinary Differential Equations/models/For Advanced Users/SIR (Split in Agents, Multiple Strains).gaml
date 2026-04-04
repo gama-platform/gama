@@ -1,9 +1,12 @@
 /**
 * Name: SIR (Split in Agents, Multiple Strains)
-* Author: tri and nghi
-* Description: This model is an extension of the model SIR_split_in_agents.gaml. 
-* It creates several agents of one compartment type (here typically several I_agt).
-* Tags: equation, math
+* Author: Tri Nguyen-Huu, Huynh Quang Nghi
+* Description: Extension of the split-in-agents SIR model to multiple viral strains. Each strain is
+*   represented by a separate I_agt (Infected) agent with its own ODE system and parameters (transmission
+*   rate, recovery rate). All strains compete for the same susceptible population. Demonstrates how to
+*   create several agents of the same compartment type to represent heterogeneous sub-populations or
+*   pathogen variants in a multi-strain epidemic model.
+* Tags: equation, math, ODE, SIR, epidemiology, multi_strain, compartment, split_in_agents, differential_equation
 */
 model SIR_split_in_agents_multiple_strains
 

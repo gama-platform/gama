@@ -1,22 +1,10 @@
 /**
-* Name: FIPA Request (3)
-* Author:
-* Description: This model demonstrates a usecase of the FIPA Request interaction protocol. 
-* (Please see http://www.fipa.org/specs/fipa00026/index.html for the detail description of this protocol).
-* 
-* 
-* The Initiator agent begins the 'fipa-request' conversation/interaction protocol by sending a 'request'  
-* message to the Participant agent with 'go sleeping' as content.
-* 
-* On receiving the 'request' message, the Participant replies with two consecutive messages :
-* 
-* (1) an 'agree' message indicating that the Participant agent accepts to execute the request of the Initiator agent,
-* 
-* (2) an 'inform' message indicating that the Participant agent has already executed the request of the Initiator agent 
-* (in this case, the 'inform' message informs the Initiator that the Participant agent has already gone to bed!).
-* 
-* After the Initiator agent reads the 'inform' message, the conversation ends.
-* Tags: fipa
+* Name: FIPA Request (3) - Agree then Inform Done
+* Author: Gama Development Team
+* Description: Demonstrates the FIPA Request protocol — agree-then-inform variant. The Initiator sends a
+*   'request' ('go sleeping'). The Participant replies 'agree' then 'inform' (has gone to bed), ending the
+*   conversation. See http://www.fipa.org/specs/fipa00026/index.html. Part 3 of 4 Request variants.
+* Tags: fipa, request, agree, inform, protocol, multi_agent, interaction
 */
 model fipa_request_3
 

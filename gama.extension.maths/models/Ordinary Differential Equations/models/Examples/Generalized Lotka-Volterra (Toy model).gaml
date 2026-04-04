@@ -1,18 +1,13 @@
 /**
- *  Author: Tri Nguyen-Huu
- *  Description: A generalized Lotka-Volterra model. 
- * The left column and upper row allow to add or remove animal species. 
- * Each animal species has a population that evolves by default independantly from others, according to a logistic law (with a carrying capacity).
- * The buttons in the matrix can be pressed in order to add interactions, "+" denoting a positive action from the upper species towards the left species, 
- * and a "-" denotes a negative interaction. A positive interaction of species "A" towards "B" means that a high density of species high increases the
- * density of species B (for example A is predated by B). A negative interaction of species "A" towards "B" means that a high density of species high 
- * decreases the density of species B (for example B is predated by A).
- * 
- * Common Lotka-Volterra interactions between two spices A and B ares:
- * mutalism: A -> B: +, B -> A: +
- * A predating B: A -> B: -, B -> A: +
- * competition: A -> B: -, B -> A: -
- */
+* Name: Generalized Lotka-Volterra (Toy Model)
+* Author: Tri Nguyen-Huu
+* Description: An interactive generalized Lotka-Volterra model for exploring multi-species ecological
+*   interactions. Species can be added/removed via buttons; each evolves according to a logistic law
+*   (with carrying capacity). Interaction buttons in the matrix toggle '+' (positive, e.g., predation
+*   benefit) or '-' (negative, e.g., predation loss) between pairs of species. Common configurations:
+*   mutualism (+/+), predation (-/+), competition (-/-). Solved with GAMA's ODE 'solve' statement.
+* Tags: equation, math, ODE, lotka_volterra, ecology, predator_prey, mutualism, competition, interactive
+*/
 
 model GeneralizedLotkaVolterra
 

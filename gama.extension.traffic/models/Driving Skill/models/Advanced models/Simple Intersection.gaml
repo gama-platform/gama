@@ -1,8 +1,11 @@
 /**
-* Name: Mix Drive City
-* Description: Vehicles driving in a road graph
-* Author: Duc Pham and Patrick Taillandier
-* Tags: gis, shapefile, graph, agent_movement, skill, transport
+* Name: Simple Intersection
+* Author: Duc Pham, Patrick Taillandier
+* Description: Demonstrates intersection management in the driving skill. A synthetic environment with
+*   a single intersection is used to test traffic-light cycles and right-of-way rules. Vehicles approach
+*   the intersection from multiple directions; a traffic-light species controls flow. Shows how to create
+*   intersection agents that manage vehicle priority, implement signal phases, and handle turning movements.
+* Tags: driving_skill, GIS, shapefile, graph, agent_movement, skill, transport, intersection, traffic_light
 */
 
 model simple_intersection

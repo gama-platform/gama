@@ -1,8 +1,11 @@
 /**
-* Name: Socket_TCP_HelloWorld_Server
-* Author: HUYNH Quang Nghi
-* Description: Simplest WebSocket server to test with external tools. You can run the python script "client_ws.py" to interact with it
-* Tags: Network, TCP, Socket
+* Name: WebSocket Server Example
+* Author: Huynh Quang Nghi
+* Description: A minimal WebSocket server for testing with external tools. GAMA opens a WebSocket listening
+*   socket and waits for client connections. A Python script ('client_ws.py') is provided to test it.
+*   Each received message is echoed back. Use this to verify WebSocket server setup before integrating
+*   with a browser-based client or a full GAMA client model.
+* Tags: network, WebSocket, server, protocol, communication, external, Python
 */
 model Socket_TCP_HelloWorld_Server
 

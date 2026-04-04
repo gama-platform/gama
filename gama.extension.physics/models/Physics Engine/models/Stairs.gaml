@@ -1,8 +1,11 @@
 /**
 * Name: Stairs
-* This model demonstrates the use of the physics engine to build a simple model where particles are 
-* Author: Alexis Drogoul - 2021
-* Tags: physics
+* Author: Alexis Drogoul
+* Description: Demonstrates the physics engine with a staircase environment. Various sport balls (tennis,
+*   football, basketball) are dropped at the top of a staircase and bounce down step by step. Each ball
+*   type has different physical properties (size, restitution, friction) affecting how it bounces. Shows
+*   how to create stepped static geometry and how physical properties influence real-world ball behavior.
+* Tags: physics_engine, 3d, stairs, collision, restitution, friction, ball, gravity, physical_world
 */
 model Stairs
 

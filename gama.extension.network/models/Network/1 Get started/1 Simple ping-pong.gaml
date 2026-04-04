@@ -1,8 +1,11 @@
 /**
-* Name: MQTT_PING_PONG
-* Author: Nicolas Marilleau and Arnaud Grignard
-* Description: The simple PING PONG model based on MQTT protocol.
-* Tags: Network, MQTT
+* Name: Simple Ping-Pong (MQTT)
+* Author: Nicolas Marilleau, Arnaud Grignard
+* Description: The simplest network model in GAMA: two agents exchange 'ping' and 'pong' messages via
+*   MQTT. One agent sends 'ping'; the other receives it and replies 'pong'; the first receives 'pong' and
+*   sends 'ping' again. Uses a public free MQTT broker (broker.mqtt.cool:1883) — requires internet access.
+*   This is the entry point for all MQTT-based network communication in GAMA.
+* Tags: network, MQTT, messaging, ping_pong, protocol, communication
 */
 
 /**

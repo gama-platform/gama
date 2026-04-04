@@ -1,10 +1,12 @@
 /**
-* Name: FIPA Contract Net
-* Author:
-* Description: This model demonstrates a use-case of the FIPA Contract Net interaction protocol. 
-* One initiator sends a 'cfp' message to other participants. 
-* All participants reply with a 'refuse' messages which end the interaction protocol.
-* Tags: fipa
+* Name: FIPA Contract Net (1) - All Refuse
+* Author: Gama Development Team
+* Description: Demonstrates the FIPA Contract Net (CFP) interaction protocol — variant where all participants
+*   refuse. One Initiator sends a 'cfp' (call for proposals) message to multiple Participant agents. All
+*   Participants reply with 'refuse', ending the protocol. The Initiator receives all refusals and the
+*   conversation terminates. This is the simplest CFP scenario and serves as the base case before the full
+*   negotiation cycle shown in FIPA CFP (2).
+* Tags: fipa, cfp, contract_net, protocol, negotiation, refuse, multi_agent
 */
 
 model cfp_cfp_1

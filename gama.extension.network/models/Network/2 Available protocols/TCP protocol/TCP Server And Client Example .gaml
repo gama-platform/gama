@@ -1,8 +1,11 @@
 /**
-* Name: Socket_TCP_HelloWorld_Server
+* Name: TCP Server and Client Example
 * Author: Arnaud Grignard
-* Description: Two clients are communicated throught the Socket TCP protocol.
-* Tags: Network, TCP, Socket
+* Description: Demonstrates bidirectional TCP socket communication within a single GAMA model containing
+*   both a server and client experiment. Two agents communicate through a TCP socket: one acts as server
+*   (listens and replies), the other as client (connects and sends). Shows the 'network' skill TCP mode
+*   including connection setup, message exchange, and disconnection.
+* Tags: network, TCP, socket, server, client, protocol, communication
 */
 model Socket_TCP_HelloWorld_Server
 
