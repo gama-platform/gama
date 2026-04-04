@@ -17,6 +17,7 @@ This document lists the major technical modifications and commits grouped by the
 *   **Cast Evolution:** The massive `Cast` utility class was decentralized. Type conversion logic is now implemented by the respective `IType` classes. `GamaColorFactory.createFrom` renamed to `castToColor` to unify color coercion across layers and displays.
 
 ### GAML Language, Compiler, & AST
+*   **Grammar Plugin Extraction:** The Xtext grammar definition (`Gaml.xtext`) has been extracted from the compiler into its own dedicated plugin (`gaml.grammar`), alongside optimization of parsing rules and code generators.
 *   **Object-Oriented GAML:** Native support introduced for `class` and `object` constructs, bridging the gap between agent-based modeling and classical software engineering for data modeling.
 *   **Stateless Compilation:** Re-engineered the expression compiler to be entirely stateless via `ExpressionCompilationContext` and `ExpressionCompilationSwitch`. Thread-local states were removed, significantly improving thread-safety and parallel compilation stability.
 *   **Validation Contexts:** Refactored `ValidationContext` and `IDocumentationContext` to separately track validations and documentation, reducing lock contention. `GamlResourceServices` rewritten to use thread-safe maps and atomic operations.

@@ -52,7 +52,9 @@ While GAMA has always been Agent-based (where species define agents with complex
 
 ## 3. The Language Evolution: A Cleaner, Faster GAML
 
-The GAML syntax has been refined to be more intuitive, concise, and aligned with modern programming aesthetics. Furthermore, the underlying Xtext compiler has been rewritten with a strict AST.
+The Xtext grammar definition (`Gaml.xtext`) has been entirely extracted from the compiler into its own dedicated plugin (`gaml.grammar`). This separation of concerns allowed for massive optimization of the parsing rules and code generators.
+
+Furthermore, the GAML syntax has been refined to be more intuitive, concise, and aligned with modern programming aesthetics. Furthermore, the underlying Xtext compiler has been rewritten with a strict AST.
 
 *   **Faster Compilation:** The rigid formalization of the AST (`SyntacticAttributeElement`, `SyntacticClassElement`) and optimized parsing rules mean that large models compile and initialize significantly faster than in previous versions.
 *   **Streamlined Parameter Passing (`with:`):** The legacy syntax `with: [a::1, b::2]` is replaced by a cleaner, JSON-like syntax: **`with: (a:1, b:2)`**.
