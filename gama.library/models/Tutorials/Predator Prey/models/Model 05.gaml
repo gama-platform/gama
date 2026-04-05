@@ -50,7 +50,7 @@ species generic_species {
 	}
 
 	reflex die when: energy <= 0 {
-		do die;
+		do die();
 	}
 
 	float energy_from_eat() {
@@ -88,7 +88,7 @@ species predator parent: generic_species {
 		list<prey> reachable_preys <- prey inside (my_cell);	
 		if(! empty(reachable_preys)) {
 			ask one_of (reachable_preys) {
-				do die;
+				do die();
 			}
 			return energy_transfer;
 		}

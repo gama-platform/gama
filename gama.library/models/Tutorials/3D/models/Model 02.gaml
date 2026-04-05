@@ -22,7 +22,7 @@ global {
 
 species cell skills: [moving3D] {
 	reflex move {
-		do move;
+		do move();
 	}
 
 	aspect default {

@@ -27,7 +27,7 @@ global {
 	graph the_graph;
 	
 	init {
-		create building from: shape_file_buildings with: (type:string(read ("NATURE"))) {
+		create building(type:string(read ("NATURE"))) from: shape_file_buildings  {
 			if type="Industrial" {
 				color <- #blue ;
 			}
@@ -86,7 +86,7 @@ species people skills:[moving] {
 	} 
 	 
 	reflex move when: the_target != nil {
-		do goto target: the_target on: the_graph ; 
+		do goto(target: the_target, on: the_graph) ; 
 		if the_target = location {
 			the_target <- nil ;
 		}

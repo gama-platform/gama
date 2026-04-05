@@ -50,7 +50,7 @@ species generic_species {
 	}
 	
 	
-	float energy_from_eat {
+	float energy_from_eat() {
 		return 0.0;
 	}
 
@@ -64,7 +64,7 @@ species generic_species {
 	}
 
 	reflex die when: energy <= 0 {
-		do die;
+		do die();
 	}
 
 	reflex reproduce when: (energy >= energy_reproduce) and (flip(proba_reproduce)) {
@@ -116,7 +116,7 @@ species predator parent: generic_species {
 		list<prey> reachable_preys <- prey inside (my_cell);
 		if(! empty(reachable_preys)) {
 			ask one_of (reachable_preys) {
-				do die;
+				do die();
 			}
 			return energy_transfer;
 		}

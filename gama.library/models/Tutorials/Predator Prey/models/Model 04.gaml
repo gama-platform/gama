@@ -47,7 +47,7 @@ species prey {
 	}
 
 	reflex die when: energy <= 0 {
-		do die;
+		do die();
 	}
 
 	aspect base {

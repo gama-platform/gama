@@ -36,7 +36,7 @@ species people skills: [moving] {
 	bool is_infected <- false;
 
 	reflex move {
-		do wander;
+		do wander();
 	}
 
 	reflex infect when: is_infected {

@@ -32,7 +32,7 @@ global {
 	}
 
 	reflex end_simulation when: infected_rate = 1.0 {
-		do pause;
+		do pause();
 	}
 }
 
@@ -40,7 +40,7 @@ species people skills: [moving] {
 	bool is_infected <- false;
 
 	reflex move {
-		do wander;
+		do wander();
 	}
 
 	reflex infect when: is_infected {
