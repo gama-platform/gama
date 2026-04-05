@@ -43,8 +43,8 @@ global {
 			}
 		}
 		
-		create intersection from: shp_nodes
-				with: (is_traffic_signal:(read("type") = "traffic_signals")) {
+		create intersection(is_traffic_signal:(read("type") = "traffic_signals")) from: shp_nodes
+				 {
 			time_to_change <- traffic_light_interval;
 		}
 		
@@ -55,7 +55,7 @@ global {
 		non_deadend_nodes <- intersection where !empty(each.roads_out);
 		// Initialize the traffic lights
 		ask intersection {
-			do initialize;
+			do initialize();
 		}
 		
 		create motorbike_random number: num_motorbikes;
@@ -72,12 +72,12 @@ species vehicle_random parent: base_vehicle {
 
 	// Move the vehicle to a random node when it reaches a deadend
 	reflex relocate when: next_road = nil and distance_to_current_target = 0.0 {
-		do unregister;
+		do unregister();
 		location <- one_of(non_deadend_nodes).location;
 	}
 	
 	reflex commute {
-		do drive_random graph: road_graph;
+		do drive_random (graph: road_graph);
 	}
 }
 
@@ -121,7 +121,7 @@ experiment ring type: gui {
 	parameter 'Traffic light interval' var:traffic_light_interval;
 	
 	action _init_(){ 
-		create simulation with:(
+		create simulation (
 			map_name:"ring",
 			num_cars:50,
 			num_motorbikes:100
@@ -141,7 +141,7 @@ experiment ring type: gui {
 
 experiment city type: gui {
 	action _init_(){
-		create simulation with:(
+		create simulation (
 			map_name:"rouen",
 			num_cars:100,
 			num_motorbikes:200

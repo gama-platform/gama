@@ -25,7 +25,7 @@ global {
 	graph road_network;
 	
 	init {
-		create road from: shp_roads with: (num_lanes:int(read("lanes"))) {
+		create road(num_lanes:int(read("lanes"))) from: shp_roads  {
 			// Create another road in the opposite direction
 			create road {
 				num_lanes <- myself.num_lanes;
@@ -36,8 +36,8 @@ global {
 			}
 		}
 		
-		create intersection from: shp_nodes
-				with: (is_traffic_signal:(read("type") = "traffic_signals")) {
+		create intersection(is_traffic_signal:(read("type") = "traffic_signals")) from: shp_nodes
+		 {
 			time_to_change <- 30#s;
 		}
 		
@@ -47,7 +47,7 @@ global {
 		
 		// Initialize the traffic lights
 		ask intersection {
-			do initialize;
+			do initialize();
 		}
 		create vehicle_following_path number: 100;
 	}
@@ -63,11 +63,11 @@ species vehicle_following_path parent: base_vehicle {
 	reflex select_next_path when: current_path = nil {
 		// A path that forms a cycle
 		list<intersection> dst_nodes <- [intersection[98], intersection[100], intersection[137], intersection[98]];
-		do compute_path graph: road_network nodes: dst_nodes;
+		do compute_path (graph: road_network, nodes: dst_nodes);
 	}
 	
 	reflex commute when: current_path != nil {
-		do drive;
+		do drive();
 	}
 }
 

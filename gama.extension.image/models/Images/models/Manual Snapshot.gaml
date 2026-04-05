@@ -25,7 +25,7 @@ species bug skills:[moving]{
 	rgb color <- rnd_color(255);
 	
 	reflex {
-		do wander amplitude: 20.0 speed: 0.1;
+		do wander (amplitude: 20.0 , speed: 0.1);
 	}
 	
 	aspect default {

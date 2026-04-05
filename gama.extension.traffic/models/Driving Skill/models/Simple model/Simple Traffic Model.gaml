@@ -34,7 +34,7 @@ global {
 		
 		road_network <- as_driving_graph(road, intersection);
 		
-		create vehicle number: 1000 with: (location: one_of(intersection).location);
+		create vehicle (location: one_of(intersection).location) number: 1000 ;
 	}
 
 }
@@ -59,11 +59,11 @@ species vehicle skills: [driving] {
 
 	reflex select_next_path when: current_path = nil {
 		// A path that forms a cycle
-		do compute_path graph: road_network target: one_of(intersection);
+		do compute_path (graph: road_network, target: one_of(intersection));
 	}
 	
 	reflex commute when: current_path != nil {
-		do drive;
+		do drive();
 	}
 	aspect base {
 		draw triangle(5.0) color: color rotate: heading + 90 border: #black;

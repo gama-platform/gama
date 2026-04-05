@@ -84,7 +84,7 @@ experiment ImageManipulation type: gui {
 		if im = nil {
 			im <- image("../includes/Kandinsky.jpeg");
 		}
-		create simulation with: (im1:im);
+		create simulation (im1:im);
 		
 	}
  
