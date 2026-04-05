@@ -15,7 +15,7 @@ global {
 	geometry shape <- square(20);
 	DraggedAgent selected_agent <- nil;
 	init {
-		create DraggedAgent with: (location: {10, 10});
+		create DraggedAgent(location: {10, 10});
 	}
 	
 	/** Insert the global definitions, variables and actions here */
@@ -58,9 +58,9 @@ experiment "Mouse Drag" type: gui {
 	output {
 		display "Mouse Drag [in OpenGL]" type:opengl {
 			camera #from_above locked:true;
-			event #mouse_down {ask simulation {do mouse_down;}}
-			event #mouse_up {ask simulation {do mouse_up;}}
-			event #mouse_drag {ask simulation {do mouse_drag;}}
+			event #mouse_down {ask simulation {do mouse_down();}}
+			event #mouse_up {ask simulation {do mouse_up();}}
+			event #mouse_drag {ask simulation {do mouse_drag();}}
 			
 			graphics "world" {
 				draw world color: #white border:#black;
@@ -70,9 +70,9 @@ experiment "Mouse Drag" type: gui {
 		}
 
 		display "In Java2D, one needs to lock the surface first " type:java2D {
-			event #mouse_down {ask simulation {do mouse_down;}}
-			event #mouse_up {ask simulation {do mouse_up;}}
-			event #mouse_drag {ask simulation {do mouse_drag;}}
+			event #mouse_down {ask simulation {do mouse_down();}}
+			event #mouse_up {ask simulation {do mouse_up();}}
+			event #mouse_drag {ask simulation {do mouse_drag();}}
 			
 			graphics "world" {
 				draw world color: #white border:#black;

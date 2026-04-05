@@ -22,20 +22,23 @@ import gama.dev.DEBUG;
  *
  * <p>By default the processor is pre-loaded with all built-in transformers
  * (one for each Python migration script):</p>
- * <ol>
- *   <li>{@link FixDiffuseVar} – replaces {@code diffuse var:} with
- *       {@code diffuse}</li>
- *   <li>{@link FixTransitionTo} – replaces {@code transition to:} with
- *       {@code transition}</li>
- *   <li>{@link FixDisplayExperimentNames} – rewrites quoted display/experiment
- *       names to identifier + {@code title:} syntax</li>
- *   <li>{@link FixImageToPicture} – replaces the {@code image} layer keyword
- *       with {@code picture} inside {@code display} blocks</li>
- *   <li>{@link FixWithPairs} – transforms {@code with: [key::val]} to
- *       {@code with: (key:val)}</li>
- *   <li>{@link FixArrowBraces} – removes outer braces from
- *       {@code -> { ... }} expressions</li>
- * </ol>
+	 * <ol>
+	 *   <li>{@link FixDiffuseVar} – replaces {@code diffuse var:} with
+	 *       {@code diffuse}</li>
+	 *   <li>{@link FixTransitionTo} – replaces {@code transition to:} with
+	 *       {@code transition}</li>
+	 *   <li>{@link FixDisplayExperimentNames} – rewrites quoted display/experiment
+	 *       names to identifier + {@code title:} syntax</li>
+	 *   <li>{@link FixImageToPicture} – replaces the {@code image} layer keyword
+	 *       with {@code picture} inside {@code display} blocks</li>
+	 *   <li>{@link FixWithPairs} – transforms {@code with: [key::val]} to
+	 *       {@code with: (key:val)}</li>
+	 *   <li>{@link FixArrowBraces} – removes outer braces from
+	 *       {@code -> { ... }} expressions</li>
+	 *   <li>{@link FixActionParentheses} – adds missing empty parentheses to
+	 *       parameter-less {@code action} and typed-action declarations
+	 *       (e.g. {@code action foo \{} → {@code action foo() \{})</li>
+	 * </ol>
  *
  * <p>Additional transformers can be registered at any time via
  * {@link #addTransformer(IFileTransformer)}. The transformers are always
@@ -144,6 +147,7 @@ public class GamlFileProcessor {
 		transformers.add(new FixImageToPicture());
 		transformers.add(new FixWithPairs());
 		transformers.add(new FixArrowBraces());
+		transformers.add(new FixActionParentheses());
 	}
 
 	/**
