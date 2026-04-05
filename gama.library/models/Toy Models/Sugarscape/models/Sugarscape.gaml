@@ -115,7 +115,7 @@ species animal {
 		if replace {
 			create animal ;
 		}
-		do die;
+		do die();
 	}
 	aspect default {
 		draw circle(0.5) color: #red;

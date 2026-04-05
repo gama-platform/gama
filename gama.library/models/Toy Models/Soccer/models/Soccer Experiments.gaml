@@ -60,10 +60,10 @@ species info_player2 mirrors:player_stupidTeam {
 experiment intelligentTeam_vs_stupidTeam type:gui {
 	init {
 		// instantialization of the game (contains global information about the game)
-		create soccer_game with:(back_color_team::back_color_team,front_color_team::front_color_team) returns:soccerGame;
+		create soccer_game (back_color_team::back_color_team,front_color_team::front_color_team) returns:soccerGame;
 		// instantialization of the teams
-		create intelligentTeam with:(game:first(soccerGame),position:"back");
-		create stupidTeam with:(game:first(soccerGame),position:"front");
+		create intelligentTeam (game:first(soccerGame),position:"back");
+		create stupidTeam (game:first(soccerGame),position:"front");
 		add first(intelligentTeam) to:first(soccerGame).teams;
 		add first(stupidTeam) to:first(soccerGame).teams;
 		// create players of the team1
@@ -71,7 +71,7 @@ experiment intelligentTeam_vs_stupidTeam type:gui {
 		loop pos over:first(intelligentTeam).player_init_position {
 			// compute the "real position" of each player according to the percentage given in "player_init_position"
 			point real_pos <- (first(intelligentTeam).position = "back") ? {90-pos.x/100*90,pos.y/100*60} : {pos.x/100*90,120-pos.y/100*60};
-			create player_intelligentTeam with:(team:first(intelligentTeam),game:first(intelligentTeam).game,location:real_pos,init_pos_in_percent:pos) returns:pl;
+			create player_intelligentTeam (team:first(intelligentTeam),game:first(intelligentTeam).game,location:real_pos,init_pos_in_percent:pos) returns:pl;
 			add first(pl) to:player_list1;
 		}
 		first(intelligentTeam).players <- player_list1;
@@ -80,7 +80,7 @@ experiment intelligentTeam_vs_stupidTeam type:gui {
 		loop pos over:first(stupidTeam).player_init_position {
 			// compute the "real position" of each player according to the percentage given in "player_init_position"
 			point real_pos <- (first(stupidTeam).position = "back") ? {90-pos.x/100*90,pos.y/100*60} : {pos.x/100*90,120-pos.y/100*60};
-			create player_stupidTeam with:(team:first(stupidTeam),game:first(stupidTeam).game,location:real_pos,init_pos_in_percent:pos) returns:pl;
+			create player_stupidTeam (team:first(stupidTeam),game:first(stupidTeam).game,location:real_pos,init_pos_in_percent:pos) returns:pl;
 			add first(pl) to:player_list2;
 		}
 		first(stupidTeam).players <- player_list2;
@@ -106,10 +106,10 @@ experiment intelligentTeam_vs_stupidTeam type:gui {
 experiment intelligentTeam_vs_intelligentTeam type:gui {
 	init {
 		// instantialization of the game (contains global information about the game)
-		create soccer_game with:(back_color_team::back_color_team,front_color_team::front_color_team) returns:soccerGame;
+		create soccer_game (back_color_team::back_color_team,front_color_team::front_color_team) returns:soccerGame;
 		// instantialization of the teams
-		create intelligentTeam with:(game:first(soccerGame),position:"back") returns:backTeam;
-		create intelligentTeam with:(game:first(soccerGame),position:"front") returns:frontTeam;
+		create intelligentTeam (game:first(soccerGame),position:"back") returns:backTeam;
+		create intelligentTeam (game:first(soccerGame),position:"front") returns:frontTeam;
 		
 		add first(backTeam) to:first(soccerGame).teams;
 		add first(frontTeam) to:first(soccerGame).teams;
@@ -118,7 +118,7 @@ experiment intelligentTeam_vs_intelligentTeam type:gui {
 		loop pos over:first(backTeam).player_init_position {
 			// compute the "real position" of each player according to the percentage given in "player_init_position"
 			point real_pos <- (first(backTeam).position = "back") ? {90-pos.x/100*90,pos.y/100*60} : {pos.x/100*90,120-pos.y/100*60};
-			create player_intelligentTeam with:(team:first(backTeam),game:first(backTeam).game,location:real_pos,init_pos_in_percent:pos) returns:pl;
+			create player_intelligentTeam (team:first(backTeam),game:first(backTeam).game,location:real_pos,init_pos_in_percent:pos) returns:pl;
 			add first(pl) to:player_list1;
 		}
 		first(backTeam).players <- player_list1;
@@ -127,7 +127,7 @@ experiment intelligentTeam_vs_intelligentTeam type:gui {
 		loop pos over:first(frontTeam).player_init_position {
 			// compute the "real position" of each player according to the percentage given in "player_init_position"
 			point real_pos <- (first(frontTeam).position = "back") ? {90-pos.x/100*90,pos.y/100*60} : {pos.x/100*90,120-pos.y/100*60};
-			create player_intelligentTeam with:(team:first(frontTeam),game:first(frontTeam).game,location:real_pos,init_pos_in_percent:pos) returns:pl;
+			create player_intelligentTeam (team:first(frontTeam),game:first(frontTeam).game,location:real_pos,init_pos_in_percent:pos) returns:pl;
 			add first(pl) to:player_list2;
 		}
 		first(frontTeam).players <- player_list2;

@@ -20,17 +20,17 @@ global {
 	float rain <- rnd(10.0) update: every(20#cycle) ? rnd(10.0) : 0.0;
 	
 	init {
-		create watershed from: watershed_shape_file with: (id_watershed:int(read("ID_ZH")), id_watershed_outlet:int(read("ID_ND_EXUT")),order:int(read("order")));
+		create watershed(id_watershed:int(read("ID_ZH")), id_watershed_outlet:int(read("ID_ND_EXUT")),order:int(read("order")))  from: watershed_shape_file ;
 		
 		ask watershed {
-			do init_watershed;
+			do init_watershed();
 			write "" + int(self) + " " + length(shape.points) + " points";
 		}
 	}
 	
 	reflex water_floaw {
 		ask reverse(watershed sort_by(each.order)) {
-			do model_hydro;
+			do model_hydro();
 		}
 	}
 }
