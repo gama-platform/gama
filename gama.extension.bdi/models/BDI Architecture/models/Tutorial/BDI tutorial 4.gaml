@@ -71,7 +71,7 @@ global {
 	}
 	
 	reflex end_simulation when: sum(gold_mine collect each.quantity) = 0 and empty(miner where each.has_belief(has_gold)){
-		do pause;
+		do pause();
 		ask miner {
 			write name + " : " +gold_sold;
 		}
@@ -127,7 +127,7 @@ species miner skills: [moving] control:simple_bdi {
 	rule belief: has_gold new_desire: sell_gold strength: 3.0;
 	
 	plan lets_wander intention:find_gold finished_when: has_desire(has_gold){
-		do wander;
+		do wander();
 	}
 	
 	plan get_gold intention:has_gold  {
@@ -135,7 +135,7 @@ species miner skills: [moving] control:simple_bdi {
 			do add_subintention(get_current_intention(),choose_gold_mine, true);
 			do current_intention_on_hold();
 		} else {
-			do goto target: target ;
+			do goto (target: target) ;
 			if (target = location)  {
 				gold_mine current_mine<- gold_mine first_with (target = each.location);
 				if current_mine.quantity > 0 {
@@ -162,7 +162,7 @@ species miner skills: [moving] control:simple_bdi {
 	}
 	
 	plan return_to_base intention: sell_gold {
-		do goto target: the_market ;
+		do goto (target: the_market);
 		if (the_market.location = location)  {
 			do remove_belief(has_gold);
 			do remove_intention(sell_gold, true);

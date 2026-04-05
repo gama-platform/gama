@@ -43,7 +43,7 @@ global {
 		list<geometry> generated_lines <- generate_pedestrian_network([],[open_area],add_points_open_area,random_densification,min_dist_open_area,density_open_area,clean_network,tol_cliping,tol_triangulation,min_dist_obstacles_filtering,simplification_dist);
 		
 		create pedestrian_path from: generated_lines {
-			do initialize bounds:[open_area] distance: max(min_distance_free_space, min(max_distance_free_space,(wall closest_to self) distance_to self)) masked_by: [wall] distance_extremity: 1.0;
+			do initialize (bounds:[open_area], distance: max(min_distance_free_space, min(max_distance_free_space,(wall closest_to self) distance_to self)), masked_by: [wall] ,distance_extremity: 1.0);
 			if (free_space = nil or free_space.area = 0) {
 				free_space <- shape +min_distance_free_space;
 			}
