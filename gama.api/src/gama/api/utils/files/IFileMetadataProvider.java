@@ -21,6 +21,9 @@ import org.eclipse.core.resources.IResource;
  */
 public interface IFileMetadataProvider {
 
+	/** The text ct id. */
+	String TEXT_CT_ID = "org.eclipse.core.runtime.text";
+
 	/** The Constant CSV_CT_ID. */
 	String CSV_CT_ID = "gama.csv.file.type";
 

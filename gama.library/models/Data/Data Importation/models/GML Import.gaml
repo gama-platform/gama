@@ -35,7 +35,7 @@ species road {
 	
 }
 
-experiment GIS_agentification type: gui {
+experiment Run type: gui {
 	output {
 		display city_display  {
 			species road;
