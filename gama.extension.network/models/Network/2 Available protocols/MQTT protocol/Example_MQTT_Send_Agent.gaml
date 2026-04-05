@@ -21,7 +21,7 @@ global skills:[network]{
 		 * It is a free and unsecure server.
 		 * Using YOUR server is thus adviced. You can download free solution such as ActiveMQ (http://activemq.apache.org) 
 		 */
-		do connect  with_name:"sender";
+		do connect(with_name:"sender");
 		
 		// default ActiveMQ MQTT login is "admin", the password is "admin" and the port is 1883
 		// do connect to:"localhost" with_name:"sender" login:"admin" password:"admin" port: 1883;
@@ -33,14 +33,14 @@ global skills:[network]{
 	}
 	reflex sendAgent{
 		write "send agent on the network";
-		do send to:"receiver" contents:(9 among NetworkingAgent);	
+		do send(to:"receiver",contents:(9 among NetworkingAgent));	
 	}
 }
 
 species NetworkingAgent skills:[moving]{
    rgb color;
    reflex update{
-     do wander;
+     do wander();
    }	
    aspect base{
    	draw shape color:color;

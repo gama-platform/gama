@@ -18,7 +18,7 @@ global skills: [network] {
 		write "After having launched this model, run the program UDPMouseLocationSender / UDPMouseLocationSender.pde with Processing 3. ";
 		write "Processing 3 can be found here: https://processing.org/";
 		write "Run the GAMA simulation, move on Processing and move the mouse on the gray small screen and observe the camera in GAMA" color: #red;
-		do connect to: url protocol: "udp_server" port: port size_packet: 1024;
+		do connect(to: url, protocol: "udp_server", port: port, size_packet: 1024);
 		create observedAgents number: 10;
 	}
 

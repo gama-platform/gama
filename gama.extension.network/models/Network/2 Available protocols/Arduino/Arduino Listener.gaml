@@ -14,7 +14,7 @@ global {
 
 	init {
 		create NetworkingAgent number: 1 {
-		   do connect protocol: "arduino" ;
+		   do connect(protocol: "arduino") ;
 		}		
 	} 
 }

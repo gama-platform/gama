@@ -163,14 +163,14 @@ global {
 				// action for species buttons 
 				// if the buttion is in the row, switch to the button in the corresponding column
 				if (selectedButton.grid_x > 0) {
-					ask selectedButton.oppositeButton {do speciesButtonAction;}
+					ask selectedButton.oppositeButton {do speciesButtonAction();}
 				}else{
-					ask selectedButton {do speciesButtonAction;}
+					ask selectedButton {do speciesButtonAction();}
 				}
 			}else{
 				// action for buttons in the main matrix
 				if (selectedButton.active) and (selectedButton.grid_x != selectedButton.grid_y){
-					ask selectedButton {do interactionButtonAction;}
+					ask selectedButton {do interactionButtonAction();}
 				}	
 			}				
 		}
@@ -280,7 +280,7 @@ species solver_and_scheduler{
 	
 	reflex removeAnimals{
 		ask animal where (each.toBeRemoved){
-			do die;
+			do die();
 		}
 	}
 	
@@ -340,7 +340,7 @@ grid button width:maxSpecies+1 height:maxSpecies+1
 			}
 
 			speciesList[self.grid_y - 1] <- nil;
-			ask world {do updateInteractionsTypes;}
+			ask world {do updateInteractionsTypes();}
 			
 		} else {
 		// add a new animal species
@@ -385,7 +385,7 @@ grid button width:maxSpecies+1 height:maxSpecies+1
 		}else{
 			remove edge(speciesList[grid_x - 1], speciesList[grid_y - 1]) from: the_graph;
 		}
-		ask world {do updateInteractionsTypes;}
+		ask world {do updateInteractionsTypes();}
 	}
 	
 	
@@ -475,7 +475,7 @@ experiment Simulation type: gui autorun: true  {
 			species button aspect: modern;
 			
 			// event listener for mouse clicks
-			event #mouse_down {ask simulation {do buttonPressed;}} 
+			event #mouse_down {ask simulation {do buttonPressed();}} 
 			
 			// window title
 			overlay position: {0, 0} size: { 0 #px, 0 #px } background: #white transparency: 0.0{

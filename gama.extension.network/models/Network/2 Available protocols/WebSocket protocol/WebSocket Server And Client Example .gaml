@@ -15,19 +15,19 @@ global{
 
 	init {
 		if (type = "server") {
-			do create_server;
+			do create_server();
 		}
 
 		if (type = "client") {
-			do create_client;
+			do create_client();
 		}
 
 	}
 
 	action create_server() {
 		create Server number: 2 {
-			do connect protocol: "websocket_server" port: 3001 with_name:name force_network_use:true;
-			do join_group with_name: "server_group";
+			do connect(protocol: "websocket_server", port: 3001, with_name:name, force_network_use:true);
+			do join_group(with_name: "server_group");
 			id <- id + 1;
 			color <- rnd_color(255);
 		}
@@ -41,8 +41,8 @@ global{
 	action create_client() {
 		create Client number: 2 {
 		// replace the "localhost" address by the IP address of the other computer 
-			do connect to: "localhost" protocol: "websocket_client" port: 3001 with_name: name  force_network_use:true;
-			do join_group with_name: "client_group";
+			do connect(to: "localhost", protocol: "websocket_client", port: 3001, with_name: name,  force_network_use:true);
+			do join_group(with_name: "client_group");
 			id <- id + 1;
 			color <- rgb(rnd(255)); 
 		}
@@ -70,8 +70,8 @@ species Server skills: [network]  parallel:true{
 	}
 
 	reflex send when: isLeader {
-		do send to: "client_group" contents: ("I am Server Leader " + name + ", I give order to client_group at " + cycle);
-		do send to: "server_group" contents: ("I am Server Leader " + name + ", I give order to server_group");
+		do send(to: "client_group", contents: ("I am Server Leader " + name + ", I give order to client_group at " + cycle));
+		do send(to: "server_group", contents: ("I am Server Leader " + name + ", I give order to server_group"));
 	}
 
 }
@@ -88,7 +88,7 @@ species Client skills: [network]  parallel:true{
 	}
 
 	reflex send {
-		do send to: "server_group" contents: name + " at " + cycle + " sent to server_group a message";
+		do send(to: "server_group", contents: name + " at " + cycle + " sent to server_group a message");
 	}
 
 }
@@ -97,7 +97,7 @@ experiment "WebSocket Server and Client" type: gui {
 	float minimum_cycle_duration <- 0.25;
 
 	init {
-		create simulation with: (type: "client");
+		create simulation(type: "client");
 	}
 
 	output {

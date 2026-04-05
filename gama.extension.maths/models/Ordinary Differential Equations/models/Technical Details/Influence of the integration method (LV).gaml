@@ -12,8 +12,8 @@ model LVInfluenceoftheIntegrationMethod
 
 global {
 	init {
-		create LVRK4 with: (x:2.0, y:2.0);
-		create LVEuler with: (x:2.0, y:2.0);
+		create LVRK4(x:2.0, y:2.0);
+		create LVEuler(x:2.0, y:2.0);
 	}
 
 }
@@ -61,7 +61,7 @@ species LVEuler {
 	
 	
 	reflex end_simulation when: cycle > 126{
-		ask world{do pause;}
+		ask world{do pause();}
 	}
 
 }

@@ -15,11 +15,11 @@ global{
 
 	init {
 		if (type = "server") {
-			do create_server;
+			do create_server();
 		}
 
 		if (type = "client") {
-			do create_client;
+			do create_client();
 		}
 
 	}
@@ -97,7 +97,7 @@ experiment "TCP Server Test" type: gui {
 	float minimum_cycle_duration <- 0.25;
 
 	init {
-		create simulation with: (type: "client");
+		create simulation(type: "client");
 	}
 
 	output {
