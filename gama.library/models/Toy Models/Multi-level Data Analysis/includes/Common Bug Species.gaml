@@ -17,7 +17,7 @@ species bug skills: [moving] {
      int attribute;
 
 	 reflex move{
-	 	do move;
+	 	do move();
 	 }
 	 
 	reflex update{

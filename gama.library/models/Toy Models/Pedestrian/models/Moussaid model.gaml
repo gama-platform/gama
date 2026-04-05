@@ -32,7 +32,7 @@ global {
 	int new_arrving_per_s <- 2;
 	
 	init {
-		do create_corridor;
+		do create_corridor();
 			
 		ask local_indicator overlapping (union(east + west) + 1.0) {
 			is_entry <- true;
@@ -50,11 +50,11 @@ global {
 	
 	
 	action create_corridor() {
-		create wall with: (shape: rectangle(5.0, 1.0) at_location {2.5, -0.5});
-		create wall with: (shape: rectangle(5.0, 1.0) at_location {2.5, 4.5});
+		create wall (shape: rectangle(5.0, 1.0) at_location {2.5, -0.5});
+		create wall (shape: rectangle(5.0, 1.0) at_location {2.5, 4.5});
 		
-		create wall with: (shape: rectangle(5.0, 3.0) at_location {7.5, -0.5});
-		create wall with: (shape: rectangle(5.0, 3.0) at_location {7.5, 4.5});
+		create wall (shape: rectangle(5.0, 3.0) at_location {7.5, -0.5});
+		create wall (shape: rectangle(5.0, 3.0) at_location {7.5, 4.5});
 		
 		east <- rectangle(shape.width / 100.0, shape.height)at_location {shape.width/200.0, location.y} - union(wall collect (each.shape + 0.5));
 		west <- rectangle(shape.width /100.0, shape.height) at_location {shape.width * 199.0 /200.0, location.y} - union(wall collect (each.shape + 0.5)) ;
@@ -79,7 +79,7 @@ global {
 		}
 	}
 	reflex end_sim when: (cycle > 300) and empty(pedestrian) {
-		do pause;
+		do pause();
 	}
 }
 
@@ -144,7 +144,7 @@ species pedestrian {
 		}
 		do manage_move(dist_o);
 		if (self distance_to o) < 1.0 {
-			do die;
+			do die();
 		}
 		
 	}
@@ -211,7 +211,7 @@ species pedestrian {
 		
 	}
 	
-	point compute_sf_pedestrian {
+	point compute_sf_pedestrian() {
 		point sf <- {0.0,0.0};
 		loop p over: pedestrian overlapping self {
 			sf <- sf + force_repulsion(p);
@@ -220,7 +220,7 @@ species pedestrian {
 		return sf/m;
 	}
 	
-	point compute_sf_wall {
+	point compute_sf_wall() {
 		point sf <- {0.0,0.0};
 		loop w over: wall overlapping self {
 			sf <- sf + force_repulsion_wall(w);
@@ -263,7 +263,7 @@ grid local_indicator cell_width: 0.5 cell_height: 0.5{
 	rgb col_compression<- #black;
 	
 	reflex indicator_computation {
-		do compute_local_indicator;
+		do compute_local_indicator();
 		if not is_wall and not is_entry{
 			float local_speed <- mean(local_speeds);
 			float local_compression <- mean(local_compressions);

@@ -99,16 +99,16 @@ global {
 	reflex dynamique {
 		//For each elector, ask to move
 		ask elector {
-			do moving;
+			do moving();
 		}
 		//For each candidate, ask to move
 		ask active_candidates{
-			do moving;
+			do moving();
 			my_electors <- list<elector>([]);
 		}
 		//For each elector, do its definition
 		ask elector {
-			do definition_candidate;
+			do definition_candidate();
 		}
 		int nb_electors_max <- 0;
 		candidate candidat_elected <- nil; 
@@ -135,7 +135,7 @@ global {
 		candidate elected <- active_candidates with_max_of (each.percentage_vote);
 		//Display a window telling who is the winner and halt the model
 		do tell (msg: "The winner is " + elected.name); 
-		do pause;
+		do pause();
 	}
 	
 	//Reflex to compute the creation of group when one candidate chooses this strategy
@@ -143,7 +143,7 @@ global {
 		 if (cpt_Group = cpt_Group_max) {
 		 	//Kill all the group of electors
 		 	ask Group_electors as list {
-		 		do die;
+		 		do die();
 		 	}
 		 	//Compute the list of elector according to their distance
 			list<list<elector>> Groups;
@@ -279,17 +279,17 @@ species candidate skills:[moving]{
 	action moving() {
 		switch strategy_candidates {
 			match "No strategy" {}
-			match "Search electors" {do strategy_1;}
-			match "Distinction" {do strategy_2;}
-			match "Group" {do strategy_3;}
-			match "Go closer to the best" {do strategy_4;}
+			match "Search electors" {do strategy_1();}
+			match "Distinction" {do strategy_2();}
+			match "Group" {do strategy_3();}
+			match "Go closer to the best" {do strategy_4();}
 			match "Random" { 
 				switch (rnd(4)) {
 					match 0 {}
-					match 1 {do strategy_1;}	
-					match 2 {do strategy_2;}	
-					match 3 {do strategy_3;}	
-					match 4 {do strategy_4;}		
+					match 1 {do strategy_1();}	
+					match 2 {do strategy_2();}	
+					match 3 {do strategy_3();}	
+					match 4 {do strategy_4();}		
 				}
 			}
 		}

@@ -22,11 +22,11 @@ species soccer_game {
 	
 	init {
 		// create the entities ball and the 2 goals
-		create ball_sp with:(location:world.location) returns:var_ball;
+		create ball_sp (location:world.location) returns:var_ball;
 		ball <- first(var_ball);
-		create goal_sp with:(location:{world.location.x,120},position:"front") returns:var_goal1;
+		create goal_sp (location:{world.location.x,120},position:"front") returns:var_goal1;
 		front_goal <- first(var_goal1);
-		create goal_sp with:(location:{world.location.x,0},position:"back") returns:var_goal2;
+		create goal_sp (location:{world.location.x,0},position:"back") returns:var_goal2;
 		back_goal <- first(var_goal2);
 	}
 	
@@ -105,7 +105,7 @@ species base_player skills:[moving] {
 	// action to run to a particular position
 	action run_to(point target) {
 		if (!displacement_effectued) {
-				do goto target:target speed:current_speed;
+				do goto (target:target, speed:current_speed);
 			if (possess_ball) {
 				ball.location <- location;
 			}

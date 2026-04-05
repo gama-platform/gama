@@ -64,9 +64,10 @@ global
 	
 	}
 	
-	reflex pauseAtConvergence when: converged { do pause;
-		
+	reflex pauseAtConvergence when: converged { 
+		do pause();
 	}
+	
 	reflex assign_points_to_centroid when: even(cycle)
 	{
 	    // The "assignment" step is also referred to as expectation step,
