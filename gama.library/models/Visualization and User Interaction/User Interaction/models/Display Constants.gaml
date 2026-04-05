@@ -23,7 +23,7 @@ experiment "Run" {
 				draw "In world: " + #user_location at: #user_location;
 				draw "In display: " + #user_location_in_display at: #user_location + {0,5};
 			}
-			event #mouse_move {do update_outputs;}
+			event #mouse_move {do update_outputs();}
 			
 		}
 		display "Display3d" background: #black type: 3d {
@@ -34,7 +34,7 @@ experiment "Run" {
 				draw "In world: " + #user_location at: #user_location;
 				draw "In display" + #user_location_in_display at: #user_location + {0,5};
 			}
-			event #mouse_move {do update_outputs;}
+			event #mouse_move {do update_outputs();}
 			
 		}
 

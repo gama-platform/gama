@@ -14,8 +14,8 @@ model MouseExitandEnter
 global {
 	bool closed <- false;
 	init {
-		create eyes with: (location:{25,30});
-		create eyes with: (location:{65,30});
+		create eyes(location:{25,30});
+		create eyes(location:{65,30});
 	}
 }
 
@@ -59,7 +59,7 @@ experiment Run {
 
 			event #mouse_move {
 				ask eyes {
-					do follow;
+					do follow();
 				}
 
 			}

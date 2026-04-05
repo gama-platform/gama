@@ -20,7 +20,7 @@ global {
 			ask sign{
 				icon <- stop;
 			}
-			do resume;
+			do resume();
 		} else {
 			
 			ask sign{
@@ -50,7 +50,7 @@ species sign skills: [moving] {
 	reflex check_if_must_stop{
 		if must_stop {
 			must_stop <- false;
-			ask world { do pause; }
+			ask world { do pause(); }
 		}
 	}
 
@@ -67,7 +67,7 @@ experiment 'Try Me !' {
 			event #mouse_down {
 				if ((#user_location distance_to sign[0]) < 50) {
 					ask world {
-						do toggle;
+						do toggle();
 					}
 
 				}
