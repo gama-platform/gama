@@ -1,17 +1,17 @@
 /**
-* Name: 3D Display model and Height of Building using shapefiles
+* Name: Building Elevation
 * Author: Arnaud Grignard
-* Description: Model presenting a 3D display of people and buildings moving on a road network imported thanks to shapefiles. 
-* 
-* Two experiments are proposed : one showing people represented by a yellow sphere moving from a living 3D building to a working 3D building and coming back 
-* using a road network (road_traffic). The second experiment distinguish the species by using different layers for species (road_traffic_multi_layer).
-* Tags: 3d, shapefile, gis
+* Description: A 3D city visualization model showing buildings extruded to their real heights and people
+*   moving along a road network. People travel between home and work buildings using road graph navigation.
+*   Two experiments are provided: 'road_traffic' displays people as yellow spheres navigating between 3D
+*   buildings; 'road_traffic_multi_layer' uses separate display layers for each species for better visual
+*   control. This is the base model imported by several other visualization examples (e.g., Building Heatmap,
+*   Camera Shared Zoom).
+* Tags: 3d, shapefile, gis, building, elevation, road_network, people, visualization, display
 */
 model tutorial_gis_city_traffic
 
 global {
-	
-	
 //Load of the different shapefiles used by the model
 	file shape_file_buildings <- shape_file('../includes/building.shp', 0);
 	file shape_file_roads <- shape_file('../includes/road.shp', 0);
@@ -20,6 +20,7 @@ global {
 	//Definition of the shape of the world as the bounds of the shapefiles to show everything contained
 	// by the area delimited by the bounds
 	geometry shape <- envelope(shape_file_bounds);
+	
 	int nb_people <- 1000;
 	int day_time update: cycle mod 144;
 	int min_work_start <- 36 const: true;
@@ -35,12 +36,10 @@ global {
 	graph the_graph;
 
 	init {
-		create building from: shape_file_buildings with: [type:: string(read('NATURE'))] {
+		create building(type: string(read('NATURE')), height: 10+rnd(90)) from: shape_file_buildings {
 			if type = "Industrial" {
 				color <- #blue;
 			}
-
-			height <- 10 + rnd(90);
 		}
 
 		residential_buildings <- building where (each.type = 'Residential');
@@ -49,7 +48,6 @@ global {
 		the_graph <- as_edge_graph(road);
 		create people number: nb_people;
 	}
-
 }
 
 species building {
@@ -60,7 +58,6 @@ species building {
 	aspect base {
 		draw shape color: color depth: height;
 	}
-
 }
 
 species road {
@@ -69,10 +66,9 @@ species road {
 	aspect base {
 		draw shape color: color;
 	}
-
 }
 
-species people skills: [moving] {
+species people skills: [moving] parallel: true {
 	float speed <- min_speed + rnd(max_speed - min_speed);
 	rgb color <- rnd_color(255);
 	building living_place <- one_of(residential_buildings);
@@ -97,17 +93,19 @@ species people skills: [moving] {
 		do goto(target: the_target, on: the_graph);
 		switch the_target {
 			match location {
-				the_target <- nil;
+			the_target <- nil;
 				location <- {location.x, location.y, objectif = 'go home' ? living_place.height : working_place.height};
-			}
+		}
 
-		} }
+		}
+	}
 
 	aspect default {
 		draw sphere(3) color: color;
-	} }
+	}
+}
 
-experiment "Road Traffic" type: gui record: true{
+experiment "Road Traffic" type: gui {
 	parameter 'Shapefile for the buildings:' var: shape_file_buildings category: 'GIS';
 	parameter 'Shapefile for the roads:' var: shape_file_roads category: 'GIS';
 	parameter 'Shapefile for the bounds:' var: shape_file_bounds category: 'GIS';
@@ -122,15 +120,14 @@ experiment "Road Traffic" type: gui record: true{
 		ask simulation {
 			if (nb_people > nb) {
 				create people number: nb_people - nb;
-			} else {
-				ask (nb - nb_people) among people {
-					do die;
-				}
-
 			}
 
+			else {
+				ask (nb - nb_people) among people {
+					do die();
+				}
+			}
 		}
-
 	}
 
 	output {
@@ -138,14 +135,15 @@ experiment "Road Traffic" type: gui record: true{
 			camera 'default' location: {1318.6512,3.5713,945.6612} target: {431.7016,495.2155,0.0};
 			light #ambient intensity: 180;
 			light #default intensity: 180 direction: {0.5, 0.5, -1};
-			event #mouse_down {ask simulation {do resume;}}
-			species building aspect: base refresh: false;
+			event #mouse_down {
+			ask simulation {
+				do resume();}}
+
+		species building aspect: base refresh: false;
 			species road aspect: base refresh: false;
 			species people refresh: true;
 		}
-
 	}
-
 }
 
 experiment "Multiple Layers" type: gui {
@@ -163,15 +161,14 @@ experiment "Multiple Layers" type: gui {
 		ask simulation {
 			if (nb_people > nb) {
 				create people number: nb_people - nb;
-			} else {
-				ask (nb - nb_people) among people {
-					do die;
-				}
-
 			}
 
+			else {
+				ask (nb - nb_people) among people {
+					do die();
+				}
+			}
 		}
-
 	}
 
 	output {
@@ -181,7 +178,6 @@ experiment "Multiple Layers" type: gui {
 			species building aspect: base position: {0, 0, 0.25};
 			species people position: {0, 0, 0.5};
 		}
-
 	}
-
 }
+

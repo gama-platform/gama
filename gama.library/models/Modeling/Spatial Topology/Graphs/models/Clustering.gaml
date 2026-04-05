@@ -1,8 +1,12 @@
 /**
-* Name: Clustering
+* Name: Graph Clustering
 * Author: Patrick Taillandier
-* Description: This model shows how to use clustering algorithms to create communities in a graph. 3 algorithms are avalaible: girvan_newman_clustering, k_spanning_tree_clustering and label_propagation_clustering 
-* Tags: Graph, Clustering
+* Description: Shows how to detect communities in a graph using three clustering algorithms available in GAMA:
+*   'girvan_newman_clustering' (edge betweenness-based divisive method), 'k_spanning_tree_clustering'
+*   (removes k-1 highest-weight edges to produce k clusters), and 'label_propagation_clustering' (fast
+*   iterative label assignment). Each algorithm produces a partition of the nodes into groups (communities),
+*   visualized with different colors. Useful for finding natural groupings in social or spatial networks.
+* Tags: graph, clustering, community_detection, girvan_newman, label_propagation, network, topology
 */
 
 model Clustering

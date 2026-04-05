@@ -1,11 +1,13 @@
 /**
-* Name: Corridor Multi-Level Architecture
-* Author: Vo Duc An; Ngoc Anh; JD Zucker; A. Drogoul
-* Description: This model shows how to use multi-level architecture. A corridor can capture pedestrians going from left to right side if 
-*	they are inside the corridor. This will result in changing their species from pedestrian to captured_pedestrian which will not be 
-*	displayed. Once they pass enought time to consider they reach the exit of the corridor, they will be released by the corridor agent 
-*	as pedestrians, letting them been displayed and going to their target. 
-* Tags: multi_level, agent_movement
+* Name: Corridor - Multi-Level Architecture
+* Author: Vo Duc An, Ngoc Anh, Jean-Daniel Zucker, Alexis Drogoul
+* Description: Demonstrates the multi-level 'capture' and 'release' operators for managing pedestrian
+*   transit through a corridor. When pedestrians enter the corridor zone they are captured — their species
+*   changes from 'pedestrian' to 'captured_pedestrian' and they become invisible. After a fixed dwell time,
+*   the corridor agent releases them back as 'pedestrian' at the exit. This pattern models areas where
+*   individual movement details are unnecessary (e.g., buildings, transport vehicles) and only entry/exit
+*   timing matters.
+* Tags: multi_level, agent_movement, capture, release, pedestrian, corridor
 */
 model corridor
 
@@ -40,7 +42,7 @@ global {
 	}
 
 	reflex generate_pedestrians when: every(4 #cycle) {
-		create pedestrian number: 30 with: [color::pedestrian_color] {
+		create pedestrian(color:pedestrian_color) number: 30   {
 			do init_location({0, rnd(environment_height)});
 		}
 	}
@@ -67,19 +69,19 @@ species pedestrian skills: [moving] topology: (topology(shape - (corridor_wall_0
 		point previous_location <- location;
 
 		if (location.y < corridor_wall_height) and (location.x <= (environment_width / 2)) {
-			do move heading: self towards {(environment_width / 2) - (corridor_width / 2), corridor_wall_height};
+			do move (heading: self towards {(environment_width / 2) - (corridor_width / 2), corridor_wall_height});
 		} else if (location.y > environment_height - corridor_wall_height) and (location.x <= (environment_width / 2)) {
-			do move heading: self towards {(environment_width / 2) - (corridor_width / 2), environment_height - corridor_wall_height};
+			do move (heading: self towards {(environment_width / 2) - (corridor_width / 2), environment_height - corridor_wall_height});
 		} else {
-			do move heading: self towards target_location;
+			do move (heading: self towards target_location);
 		}
 		if (location.x = previous_location.x) { // No move detected
-			do move heading: self towards {environment_width, world.shape.location.y};
+			do move (heading: self towards {environment_width, world.shape.location.y});
 		}
 	}
 
 	reflex arrived when: location.x >= target_location.x {
-		do die;
+		do die();
 	}
 
 }
@@ -140,7 +142,7 @@ experiment "Corridor" type: gui autorun: true {
 				draw square(30) wireframe: false color: #white;
 			}
 
-			species pedestrian {
+			species pedestrian { 
 				draw square(20) wireframe: false color: color;
 			}
 

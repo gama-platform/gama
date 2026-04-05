@@ -1,8 +1,11 @@
 /**
-* Name: SerializeAndRestoreAgents
-* Shows how to save / read agents using the statements and operators defined in GAMA 
-* Author: A. Drogoul
-* Tags: serialize, create, restore
+* Name: Serialize and Restore Agents
+* Author: Alexis Drogoul
+* Description: Demonstrates saving a population of agents to a binary file and recreating them in a later
+*   (or the same) simulation from that file. Uses the 'serialize' statement (or 'save' with binary format)
+*   to write agent state, and 'create' with the serialized file as source to restore agents with all their
+*   attribute values intact. This is the primary reference for agent population checkpointing in GAMA.
+* Tags: serialization, agents, save, restore, create, binary, checkpoint, population
 */
 
 
@@ -24,7 +27,7 @@ global {
 	/**
 	 * This action saves all the people on disk, each in its own file, using the uncompressed json format
 	 */
-	action save_people_on_disk {
+	action save_people_on_disk() {
 		ask people {
 			save self to: '../people/save'+int(self)+'.agent' format: 'json';
 		}
@@ -33,7 +36,7 @@ global {
 	/**
 	 * This action saves all the people in memory, each in its own string, using the binary format
 	 */
-	action save_people_in_memory {
+	action save_people_in_memory() {
 		serialized_people <- [];
 		ask people {
 			serialized_people << serialize(self);
@@ -44,7 +47,7 @@ global {
 	/**
 	 * This action asks people to "restore" themselves using a random file, effectively replacing their attributes by the one of the agent saved
 	 */
-	action exchange_people_from_disk {
+	action exchange_people_from_disk() {
 		if folder_exists("../people/") and !empty(folder("../people")) {
 			ask people {
 				restore self from: string(folder("../people"))+'/save'+rnd(number_of_people - 1)+'.agent';
@@ -55,7 +58,7 @@ global {
 	/**
 	 * This action asks people to "restore" themselves using a random string, effectively replacing their attributes by the one of the agent saved
 	 */
-	action exchange_people_from_memory {
+	action exchange_people_from_memory() {
 		ask people {
 			restore self from: any(serialized_people);
 		}
@@ -65,13 +68,13 @@ global {
 	/**
 	 * This action creates new people using the previously saved strings
 	 */
-	action create_clones_from_memory {
+	action create_clones_from_memory() {
 		loop saved over: serialized_people {
 			create people from: saved;
 		}
 	}
 	
-	action create_clones_from_disk {
+	action create_clones_from_disk() {
 		loop saved over: folder("../people") {
 			create people from: file(string(folder("../people"))+"/"+saved);
 		}
@@ -83,7 +86,7 @@ global {
 species people {
 	list<people> family;
 	
-	action create_family {
+	action create_family() {
 		family <- rnd(5) among people;
 	}
 	
@@ -106,6 +109,6 @@ experiment "Save, Restore, Create and Clone" {
 
 	
 	output {
-		browse people;
+		browse "People" value: people;
 	}
 }

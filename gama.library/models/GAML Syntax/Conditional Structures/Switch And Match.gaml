@@ -1,8 +1,11 @@
 /***
-* Name: switchmatch
-* Author: kevinchapuis
-* Description: Show several way to use the switch ... match ... statement
-* Tags: switch, match, match_one
+* Name: Switch And Match
+* Author: Kevin Chapuis
+* Description: Shows several ways to use the 'switch ... match' statement in GAML. The switch statement is used to
+*   select one among several alternatives based on the value of an expression. The 'match' clause tests for exact
+*   equality, 'match_one' tests for membership in a list, and 'match_between' tests for range membership.
+*   This model implements a simple rock-paper-scissors game to demonstrate the switch construct in a concrete scenario.
+* Tags: switch, match, match_one, condition, control, game
 * 
 ***/
 
@@ -24,7 +27,7 @@ global {
 	int win_sign;
 	
 	init {
-		create rps_bot with:[strategy::[1,1,1]];
+		create rps_bot with:(strategy:[1,1,1]);
 	}
 	
 	/*
@@ -33,7 +36,7 @@ global {
 	 * (2) match_between for a test on a range of numerical value
 	 */
 	reflex play {
-		ask rps_bot {do bot_play;}
+		ask rps_bot {do bot_play();}
 		switch first(rps_bot).bp+"vs"+my_play {
 			match_one ["ROCKvsPAPER", "PAPERvsSCISSORS", "SCISSORSvsROCK"] {
 				win_sign <- 1;
@@ -90,7 +93,7 @@ species rps_bot {
 	
 	string bp;
 	
-	action bot_play {
+	action bot_play() {
 		bp <- ["ROCK","PAPER","SCISSORS"][rnd_choice(strategy)];
 	}
 	
@@ -100,11 +103,11 @@ experiment "Rock Paper Scissors" type:gui {
 	parameter "My play" var:my_play among:["ROCK","PAPER","SCISSORS"] init:any(["ROCK","PAPER","SCISSORS"]);
 	output {
 		display my_display type:3d{
-			image my_image size:point(0.2) position:{10,40} refresh:true;
+			picture my_image size:point(0.2) position:{10,40} refresh:true;
 			graphics res {
 				draw (win_sign = 0 ? "=" : (win_sign < 0 ? "<" : ">")) at:{47,52} font:font("Digit",50,#bold) color:#black;
 			}
-			image bot_image size:point(0.2) position:{70,40} refresh:true;
+			picture bot_image size:point(0.2) position:{70,40} refresh:true;
 		}
 	}
 }

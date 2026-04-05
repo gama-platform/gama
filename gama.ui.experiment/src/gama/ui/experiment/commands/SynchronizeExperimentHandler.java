@@ -18,7 +18,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 import gama.dev.DEBUG;
 
 /**

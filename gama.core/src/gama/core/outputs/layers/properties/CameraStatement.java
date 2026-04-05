@@ -1,31 +1,31 @@
 /*******************************************************************************************************
  *
  * CameraStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.outputs.LayeredDisplayOutput;
+import gama.annotations.doc;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IOutput;
 import gama.core.outputs.layers.AbstractLayerStatement;
 import gama.core.outputs.layers.AbstractLayerStatement.OpenGLSpecificLayerValidator;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.types.IType;
 
 /**
  * The Class CameraDefinition.
@@ -43,9 +43,10 @@ import gama.gaml.types.IType;
 				name = IKeyword.NAME,
 				type = IType.STRING,
 				optional = false,
-				doc = @doc ("The name of the camera. Will be used to populate a menu with the other camera presets. "
-						+ "Can provide a value to the 'camera:' facet of the display, which specifies which camera to use."
-						+ "Using the special constant #default will make it the default of the surrounding display")),
+				doc = @doc ("""
+						The name of the camera. Will be used to populate a menu with the other camera presets. \
+						Can provide a value to the 'camera:' facet of the display, which specifies which camera to use.\
+						Using the special constant #default will make it the default of the surrounding display""")),
 
 				@facet (
 						name = IKeyword.DYNAMIC,
@@ -57,16 +58,18 @@ import gama.gaml.types.IType;
 						name = "distance",
 						type = { IType.FLOAT },
 						optional = true,
-						doc = @doc ("If the 'location:' facet is not defined, defines the distance (in world units) that separates the camera from its target. "
-								+ "If 'location:' is defined, especially if it is using a symbolic position, allows to specify the distance to keep from the target. "
-								+ "If neither 'location:' or 'distance:' is defined, the default distance is the maximum between the width and the height of the world")),
+						doc = @doc ("""
+								If the 'location:' facet is not defined, defines the distance (in world units) that separates the camera from its target. \
+								If 'location:' is defined, especially if it is using a symbolic position, allows to specify the distance to keep from the target. \
+								If neither 'location:' or 'distance:' is defined, the default distance is the maximum between the width and the height of the world""")),
 				@facet (
 						name = IKeyword.LOCATION,
 						type = { IType.POINT, IType.STRING },
 						optional = true,
-						doc = @doc ("Allows to define the location of the camera in the world, i.e. from where it looks at its target. If 'distance:' is specified, the final location is translated on the target-camera axis to respect the distance. "
-								+ "Can be a (possibly dynamically computed) point or a symbolic position (#from_above, #from_left, #from_right, #from_up_right, #from_up_left, #from_front, #from_up_front) that will be dynamically recomputed if the target moves"
-								+ "If 'location:' is not defined, it will be that of the default camera (#from_top, #from_left...) defined in the preferences.")),
+						doc = @doc ("""
+								Allows to define the location of the camera in the world, i.e. from where it looks at its target. If 'distance:' is specified, the final location is translated on the target-camera axis to respect the distance. \
+								Can be a (possibly dynamically computed) point or a symbolic position (#from_above, #from_left, #from_right, #from_up_right, #from_up_left, #from_front, #from_up_front) that will be dynamically recomputed if the target moves\
+								If 'location:' is not defined, it will be that of the default camera (#from_top, #from_left...) defined in the preferences.""")),
 				@facet (
 						name = IKeyword.TARGET,
 						type = { IType.POINT, IType.AGENT, IType.GEOMETRY },
@@ -113,7 +116,7 @@ public class CameraStatement extends AbstractLayerStatement {
 	}
 
 	@Override
-	public LayerType getType(final LayeredDisplayOutput output) {
+	public LayerType getType(final IOutput output) {
 		return LayerType.CAMERA;
 	}
 

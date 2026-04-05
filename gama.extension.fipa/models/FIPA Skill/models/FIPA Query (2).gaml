@@ -1,17 +1,10 @@
 /**
-* Name: FIPA Query (2)
-* Author:
-* Description: This model demonstrates a usecase of the FIPA Query interaction protocol. 
-* (Please see http://www.fipa.org/specs/fipa00027/SC00027H.html for the detail description of this protocol).
-* 
-* 
-* The Intiator agent begins the 'fipa-query' conversation/interaction protocol by sending a 'query' 
-* message to the Participant agent with 'your name?' as content.
-* 
-* On receiving the 'query' message, the Participant agent replies with a 'refuse' message indicating that its name is a secret!
-* 
-* After the Initiator agent reads the 'refuse' message, the conversation ends.
-* Tags: fipa
+* Name: FIPA Query (2) - Query Refused
+* Author: Gama Development Team
+* Description: Demonstrates the FIPA Query protocol — refused variant. The Initiator sends a 'query'
+*   ('your name?'). The Participant replies with 'refuse' (its name is a secret), ending the conversation.
+*   See http://www.fipa.org/specs/fipa00027/SC00027H.html. Pair with FIPA Query (1) for the accepted variant.
+* Tags: fipa, query, refuse, protocol, multi_agent, interaction
 */
 model fipa_query_2
 

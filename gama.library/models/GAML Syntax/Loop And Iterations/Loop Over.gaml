@@ -1,8 +1,11 @@
 /***
-* Name: Loops
+* Name: Loop Over Containers
 * Author: Benoit Gaudou
-* Description: This model illustrates the behavior of loop over many kinds of container.
-* Tags: loop, container, list, map, matrix, point, population
+* Description: Illustrates how the 'loop over' statement can iterate over all the main container types available in GAML.
+*   Containers in GAML include: list (ordered sequence of elements), map (key-value pairs), matrix (2D grid of values),
+*   pair (a single key-value association), graph (nodes and edges), and species populations (collections of agents).
+*   For each container type, the model demonstrates the syntax and shows the values produced during iteration.
+* Tags: loop, container, list, map, matrix, point, population, pair, graph, iteration
 ***/
 
 model LoopsOverContainers
@@ -39,7 +42,7 @@ global {
 		do loop_graph;
 	}
 	
-	action loop_over {
+	action loop_over() {
 		write "==================================";
 		write "= Loop over containers and point =";
 		write "==================================";
@@ -137,7 +140,7 @@ global {
 	}
 	
 	
-	action loop_using_indices {
+	action loop_using_indices() {
 		write "=======================";
 		write "= Loop using an index =";
 		write "=======================";
@@ -171,7 +174,7 @@ global {
 				
 	// When we loop over a map, the default behavior is to loop over the values (and we thus lose the key in the loop).
 	// To keep it we can loop over the map either through the keys list, the values list or even the pairs key::value list.
-	action loop_map {
+	action loop_map (){
 		write "=======================";
 		write "= Loop over maps      =";
 		write "=======================";
@@ -203,7 +206,7 @@ global {
 
 	// When we loop over a graph, the default behavior is to loop over the edges.
 	// But we can also want to loop over the nodes.
-	action loop_graph {
+	action loop_graph (){
 		write "=======================";
 		write "= Loop over graphs    =";
 		write "=======================";

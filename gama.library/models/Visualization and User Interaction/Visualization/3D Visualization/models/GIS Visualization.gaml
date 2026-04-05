@@ -1,8 +1,12 @@
 /**
-* Name: Visualization of GIS data
-* Author:  Patrick Taillandier
-* Description:  this model shows how to visualize GIS data without having to create agents  
-* Tags: 3d, shapefile, texture
+* Name: GIS Visualization
+* Author: Patrick Taillandier
+* Description: Shows how to visualize GIS vector data (shapefiles) directly in a GAMA display without having
+*   to create agent species for each layer. The 'draw' statement can render a shape_file or geometry directly
+*   from the global init block or a display layer, which is useful for background layers that don't need agent
+*   behavior. Textures can be applied to the building polygons for photorealistic appearance. This approach
+*   reduces model complexity for purely decorative spatial layers.
+* Tags: 3d, shapefile, texture, gis, visualization, display, vector, background
 */
 
 model GIS_visualization
@@ -32,7 +36,7 @@ experiment GIS_visualization type: gui {
 		
 		//display of the building as an image
 		display gis_displays_image type: 3d {
-			image "Buildings as images" gis: shape_file_buildings.path color: rgb("gray") refresh: false;
+			picture "Buildings as images" gis: shape_file_buildings.path color: rgb("gray") refresh: false;
 		}
 	}
 }

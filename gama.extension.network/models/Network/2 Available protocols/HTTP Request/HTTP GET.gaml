@@ -1,8 +1,11 @@
 /**
-* Name: HTTPGET
-* Based on the internal empty template. 
-* Author: benoitgaudou
-* Tags: 
+* Name: HTTP GET
+* Author: Benoit Gaudou
+* Description: Demonstrates how to make HTTP GET requests from a GAMA model. Connects to a remote HTTPS
+*   server (port 443) and sends a GET request, then parses the response. Shows the 'network' skill HTTP
+*   protocol mode: setting the server, port, and SSL parameters, sending the request, and reading the
+*   response body as a string. Useful for fetching data from web APIs or REST services during simulation.
+* Tags: network, HTTP, GET, REST, web_service, protocol, communication, API
 */
 
 

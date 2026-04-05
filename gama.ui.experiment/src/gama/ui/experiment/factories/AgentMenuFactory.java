@@ -16,7 +16,7 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.services.AbstractServiceFactory;
 import org.eclipse.ui.services.IServiceLocator;
 
-import gama.core.metamodel.agent.IAgent;
+import gama.api.kernel.agent.IAgent;
 import gama.ui.experiment.menus.AgentsMenu;
 import gama.ui.shared.menus.MenuAction;
 

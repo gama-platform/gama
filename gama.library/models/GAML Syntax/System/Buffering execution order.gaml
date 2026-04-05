@@ -1,8 +1,12 @@
 /**
-* Name: Bufferingexecutionorder
-* Based on the internal empty template. 
-* Author: baptiste
-* Tags: 
+* Name: Buffering Execution Order
+* Author: Baptiste Lesquoy
+* Description: Demonstrates the order of execution you can obtain by using different buffering strategies when
+*   writing output (to the console or to files). GAML supports a 'buffering' facet on 'write' and 'save'
+*   statements that controls when the data is actually flushed to the output. The 'per_cycle' strategy groups
+*   all writes from the same cycle into a single flush at the end of the cycle, which changes the apparent order
+*   of console messages compared to immediate (unbuffered) output. This model lets you compare the two strategies.
+* Tags: buffering, execution_order, write, save, output, performance, cycle
 */
 
 

@@ -12,19 +12,19 @@ package gama.gaml.architecture.user;
 
 import java.util.ArrayList;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.architecture.finite_state_machine.FsmArchitecture;
-import gama.gaml.architecture.finite_state_machine.FsmStateStatement;
-import gama.gaml.species.ISpecies;
-import gama.gaml.types.IType;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
+import gama.gaml.architecture.fsm.FsmArchitecture;
+import gama.gaml.architecture.fsm.FsmStateStatement;
 
 /**
  * The Class UserControlArchitecture.

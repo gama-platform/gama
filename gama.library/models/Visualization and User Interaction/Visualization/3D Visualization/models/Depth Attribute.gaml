@@ -1,8 +1,11 @@
 /**
-* Name: Depth attribute
+* Name: Depth Attribute
 * Author: Patrick Taillandier
-* Description: Model presenting the impact of the depth facet on visualization
-* Tags: 3d, depth
+* Description: Demonstrates the 'depth' facet of the draw statement, which extrudes a 2D shape into a 3D
+*   solid by the specified height. The model shows how depth interacts with different primitive shapes
+*   (squares, circles, triangles) and how it relates to the agent's z-coordinate. This is the fundamental
+*   mechanism for creating 3D buildings, columns, and other extruded objects in GAMA without loading OBJ files.
+* Tags: 3d, depth, extrusion, draw, visualization, display, shape
 */
 
 

@@ -3,30 +3,31 @@
  * GamaGeometryFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.util.file;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Envelope3D;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.file.GamaFile;
+import gama.api.types.file.IGamaFile;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.IList;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  * Class GamaGeometryFile. An abstract class that supports loading and saving geometries in specific subclasses. The
- * buffer is a GamaList of points (GamaPoint) from which the GamaGeometry can be constructed (using
- * geometry(file("..."));)
+ * buffer is a GamaList of points from which the GamaGeometry can be constructed (using geometry(file("..."));)
  *
  * @author drogoul
  * @since 30 déc. 2013
  *
  */
-public abstract class GamaGeometryFile extends GamaFile<IList<IShape>, IShape> implements IGamaFile.Drawable {
+public abstract class GamaGeometryFile extends GamaFile<IList<IShape>, IShape> implements IGamaFile.WithGeometry {
 
 	/** The geometry. */
 	protected IShape geometry;
@@ -62,10 +63,10 @@ public abstract class GamaGeometryFile extends GamaFile<IList<IShape>, IShape> i
 	/**
 	 * Method computeEnvelope()
 	 *
-	 * @see gama.core.util.file.IGamaFile#computeEnvelope(gama.core.runtime.IScope)
+	 * @see gama.api.types.file.IGamaFile#computeEnvelope(gama.api.runtime.scope.IScope)
 	 */
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		return getGeometry(scope).getEnvelope();
 	}
 

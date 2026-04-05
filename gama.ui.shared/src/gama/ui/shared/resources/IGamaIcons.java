@@ -24,22 +24,19 @@ public interface IGamaIcons {
 	// Constants for producing icons
 
 	/** The light path. */
-	String LIGHT_PATH = "light/";
+	String LIGHT_PATH = "light";
 
 	/** The dark path. */
-	String DARK_PATH = "dark/";
+	String DARK_PATH = "dark";
 
-	/** The Constant COLORS. */
+	/** The Constant NAME_REGISTRY. */
 	String COLOR_PATH = "colors/";
 
-	/** The Constant THEME_PATH. */
-	String THEME_PATH = ThemeHelper.isDark() ? DARK_PATH : LIGHT_PATH;
-
-	/** The icons segment. */
-	String ICONS_SEGMENT = "/icons/";
+	/** The icons fragment. */
+	String ICONS_FRAGMENT = "icons_svg/";
 
 	/** The Constant DEFAULT_PATH. */
-	String ICONS_PATH = "/icons/" + THEME_PATH;
+	String ICONS_PATH = "/" + ICONS_FRAGMENT + (ThemeHelper.isDark() ? DARK_PATH : LIGHT_PATH) + "/";
 
 	/** The Constant GAML_PATH. */
 	String GAML_PATH = "gaml/";
@@ -49,9 +46,6 @@ public interface IGamaIcons {
 
 	/** The Constant PLUGIN_ID. */
 	String PLUGIN_ID = "gama.ui.shared";
-
-	/** The Constant DISABLED_SUFFIX. */
-	String DISABLED_SUFFIX = "_disabled";
 
 	// Constants corresponding to common icons
 
@@ -546,5 +540,35 @@ public interface IGamaIcons {
 
 	/** The browse populations. */
 	String BROWSE_POPULATIONS = MENU_POPULATION;
+
+	/** The menu print. */
+	String MENU_PRINT = "generic/menu.print";
+
+	/** The menu save. */
+	String MENU_SAVE = "generic/menu.save";
+
+	/** The menu save all. */
+	String MENU_SAVE_ALL = "generic/menu.saveall";
+
+	/** The menu revert. */
+	String MENU_REVERT = "generic/menu.revert";
+
+	/** The menu new. */
+	String MENU_NEW = "navigator/navigator.new2";
+
+	/** The menu import. */
+	String MENU_IMPORT = "navigator/menu.import";
+
+	/** The menu export. */
+	String MENU_EXPORT = "navigator/menu.export";
+
+	/** The menu search. */
+	String MENU_SEARCH = "generic/menu.search";
+
+	/** The menu open. */
+	String MENU_OPEN = "navigator/navigator.open2";
+
+	/** The menu delimiter. */
+	String MENU_DELIMITER = "editor/menu.delimiter";
 
 }

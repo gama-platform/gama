@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * StaticBodySkill.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * StaticBodySkill.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,26 +13,27 @@ package gama.extension.physics.gaml;
 import java.util.HashMap;
 import java.util.Map;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.GamlAnnotations.action;
-import gama.annotations.precompiler.GamlAnnotations.arg;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.listener;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
+import gama.annotations.action;
+import gama.annotations.arg;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.listener;
+import gama.annotations.setter;
+import gama.annotations.skill;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.skill.Skill;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IPhysicalConstants;
-import gama.gaml.skills.Skill;
-import gama.gaml.types.IType;
 
 /**
  * The Class StaticBodySkill.
@@ -133,7 +134,7 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 	 *
 	 */
 	@listener (IKeyword.LOCATION)
-	public void changeInLocation(final IAgent a, final GamaPoint loc) {
+	public void changeInLocation(final IAgent a, final IPoint loc) {
 		IBody body = getBody(a);
 		if (body == null) return;
 		body.setLocation(loc);
@@ -153,7 +154,7 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 	public void changeInHeading(final IAgent a, final Double heading) {
 		IBody body = getBody(a);
 		if (body == null) return;
-		GamaPoint p = new GamaPoint();
+		IPoint p = GamaPointFactory.create();
 		body.getLinearVelocity(p);
 		double rad = Math.toRadians(heading);
 		double speed = p.norm();
@@ -176,17 +177,17 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 		IBody body = getBody(a);
 		if (body == null) return;
 		if (speed <= 0) {
-			body.setLinearVelocity(new GamaPoint());
+			body.setLinearVelocity(GamaPointFactory.create());
 			return;
 		}
-		GamaPoint p = new GamaPoint();
+		IPoint p = GamaPointFactory.create();
 		body.getLinearVelocity(p);
-		double currentSpeed = Math.atan2(p.x, p.y);
+		double currentSpeed = Math.atan2(p.getX(), p.getY());
 		if (currentSpeed <= 0) {
-			body.setLinearVelocity(new GamaPoint(0.7 * speed, 0.7 * speed)); // ???
+			body.setLinearVelocity(GamaPointFactory.create(0.7 * speed, 0.7 * speed)); // ???
 		} else {
 			double ratio = speed / currentSpeed;
-			p.setLocation(ratio * p.x, ratio * p.y, 0);
+			p.setLocation(ratio * p.getX(), ratio * p.getY(), 0);
 			body.setLinearVelocity(p);
 		}
 	}
@@ -271,18 +272,18 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 	 * @return the object
 	 */
 	@action (
-			doc = @doc ("This action must be called when the geometry of the agent changes in the simulation world and this change must be propagated to the physical world. "
-					+ "The change of location (in either worlds) or the rotation due to physical forces do not count as changes, as they are already taken into account. "
-					+ "However, a rotation in the simulation world need to be handled by calling this action. As it involves long operations (removing the agent from the physical world, "
-					+ "then reinserting it with its new shape), this action should not be called too often."),
+			doc = @doc ("""
+					This action must be called when the geometry of the agent changes in the simulation world and this change must be propagated to the physical world. \
+					The change of location (in either worlds) or the rotation due to physical forces do not count as changes, as they are already taken into account. \
+					However, a rotation in the simulation world need to be handled by calling this action. As it involves long operations (removing the agent from the physical world, \
+					then reinserting it with its new shape), this action should not be called too often."""),
 			name = UPDATE_BODY,
 			args = {})
-	public Object primUpdateGeometry(final IScope scope) {
-		SimulationAgent sim = scope.getSimulation();
+	public void primUpdateGeometry(final IScope scope) {
+		ISimulationAgent sim = scope.getSimulation();
 		if (sim instanceof PhysicalSimulationAgent) {
 			((PhysicalSimulationAgent) sim).updateAgent(scope, scope.getAgent());
 		}
-		return null;
 	}
 
 	/**
@@ -301,10 +302,7 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 					name = OTHER,
 					optional = false,
 					type = IType.AGENT) })
-	public Object primContactAdded(final IScope scope) {
-		// Does nothing by default
-		return null;
-	}
+	public void primContactAdded(final IScope scope) {}
 
 	/**
 	 * Prim contact destroyed.
@@ -322,10 +320,7 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 					name = OTHER,
 					optional = false,
 					type = IType.AGENT) })
-	public Object primContactDestroyed(final IScope scope) {
-		// Does nothing by default
-		return null;
-	}
+	public void primContactDestroyed(final IScope scope) {}
 
 	/***
 	 * A class used to provide a temporary body to agents before their "bullet" one is built. It allows to store the
@@ -334,7 +329,7 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 	 * @author drogoul
 	 *
 	 */
-	public class FakeBody implements IBody<Object, Object, Object, GamaPoint> {
+	public class FakeBody implements IBody<Object, Object, Object, IPoint> {
 
 		/** The values. */
 		public final Map<String, Object> values = new HashMap<>();
@@ -364,9 +359,9 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 		}
 
 		@Override
-		public GamaPoint getAngularVelocity(final GamaPoint v) {
-			GamaPoint result = v == null ? new GamaPoint() : v;
-			GamaPoint existing = (GamaPoint) values.get(ANGULAR_VELOCITY);
+		public IPoint getAngularVelocity(final IPoint v) {
+			IPoint result = v == null ? GamaPointFactory.create() : v;
+			IPoint existing = (IPoint) values.get(ANGULAR_VELOCITY);
 			if (existing == null) {
 				result.setLocation(0, 0, 0);
 			} else {
@@ -376,9 +371,9 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 		}
 
 		@Override
-		public GamaPoint getLinearVelocity(final GamaPoint v) {
-			GamaPoint result = v == null ? new GamaPoint() : v;
-			GamaPoint existing = (GamaPoint) values.get(VELOCITY);
+		public IPoint getLinearVelocity(final IPoint v) {
+			IPoint result = v == null ? GamaPointFactory.create() : v;
+			IPoint existing = (IPoint) values.get(VELOCITY);
 			if (existing == null) {
 				result.setLocation(0, 0, 0);
 			} else {
@@ -415,17 +410,17 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 		}
 
 		@Override
-		public void setAngularVelocity(final GamaPoint p) {
+		public void setAngularVelocity(final IPoint p) {
 			values.put(ANGULAR_VELOCITY, p);
 		}
 
 		@Override
-		public void setLinearVelocity(final GamaPoint p) {
+		public void setLinearVelocity(final IPoint p) {
 			values.put(VELOCITY, p);
 		}
 
 		@Override
-		public void setLocation(final GamaPoint loc) {
+		public void setLocation(final IPoint loc) {
 
 		}
 
@@ -433,13 +428,13 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 		public void clearForces() {}
 
 		@Override
-		public void applyImpulse(final GamaPoint impulse) {}
+		public void applyImpulse(final IPoint impulse) {}
 
 		@Override
-		public void applyTorque(final GamaPoint torque) {}
+		public void applyTorque(final IPoint torque) {}
 
 		@Override
-		public void applyForce(final GamaPoint force) {}
+		public void applyForce(final IPoint force) {}
 
 		@Override
 		public void setMass(final Double mass) {
@@ -473,12 +468,19 @@ public class StaticBodySkill extends Skill implements IPhysicalConstants {
 		public IAgent getAgent() { return null; }
 
 		@Override
-		public GamaPoint toVector(final GamaPoint v) {
+		public IPoint toVector(final IPoint v) {
 			return v;
 		}
 
+		/**
+		 * To gama point.
+		 *
+		 * @param v
+		 *            the v
+		 * @return the i point
+		 */
 		@Override
-		public GamaPoint toGamaPoint(final GamaPoint v) {
+		public IPoint toGamaPoint(final IPoint v) {
 			return v;
 		}
 

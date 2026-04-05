@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * Colors.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Colors.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -10,10 +10,7 @@
 package gama.gaml.operators;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -25,33 +22,35 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.RandomUtils;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaList;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMap;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IList;
-import gama.core.util.IMap;
-import gama.gaml.compilation.IOperatorValidator;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.types.GamaColorType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.validation.IOperatorValidator;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.utils.random.IRandom;
+import gama.core.util.color.GamaGradient;
+import gama.core.util.color.GamaPalette;
+import gama.core.util.color.GamaScale;
 
 /**
  * The Class Colors.
@@ -83,8 +82,8 @@ public class Colors {
 							value = "rgb([255, 128, 32]) + rgb('red')",
 							equals = "rgb([255,128,32])") }))
 	@test ("rgb([255, 128, 32]) + rgb('red') = rgb([255,128,32])")
-	public static GamaColor add(final GamaColor c1, final GamaColor c2) {
-		return GamaColor.get(c1.getRed() + c2.getRed(), c1.getGreen() + c2.getGreen(), c1.getBlue() + c2.getBlue(),
+	public static IColor add(final IColor c1, final IColor c2) {
+		return GamaColorFactory.createWithRGBA(c1.red() + c2.red(), c1.green() + c2.green(), c1.blue() + c2.blue(),
 				c1.alpha());
 	}
 
@@ -110,8 +109,8 @@ public class Colors {
 							value = "rgb([255, 128, 32]) + 3",
 							equals = "rgb([255,131,35])") }))
 	@test ("rgb([255, 128, 32]) + 3 = rgb([255,131,35]) ")
-	public static GamaColor add(final GamaColor c, final Integer i) {
-		return GamaColor.get(c.getRed() + i, c.getGreen() + i, c.getBlue() + i, c.alpha());
+	public static IColor add(final IColor c, final Integer i) {
+		return GamaColorFactory.createWithRGBA(c.red() + i, c.green() + i, c.blue() + i, c.alpha());
 	}
 
 	/**
@@ -136,8 +135,8 @@ public class Colors {
 							value = "rgb([255, 128, 32]) - 3",
 							equals = "rgb([252,125,29])") }))
 	@test ("rgb([255, 128, 32]) - 3 = rgb([252,125,29]) ")
-	public static GamaColor subtract(final GamaColor c, final Integer i) {
-		return GamaColor.get(c.getRed() - i, c.getGreen() - i, c.getBlue() - i, c.alpha());
+	public static IColor subtract(final IColor c, final Integer i) {
+		return GamaColorFactory.createWithRGBA(c.red() - i, c.green() - i, c.blue() - i, c.alpha());
 	}
 
 	/**
@@ -162,8 +161,8 @@ public class Colors {
 							value = "rgb([255, 128, 32]) - rgb('red')",
 							equals = "rgb([0,128,32])") }))
 	@test ("rgb([255, 128, 32]) - rgb('red') = rgb([0,128,32])")
-	public static GamaColor subtract(final GamaColor c1, final GamaColor c) {
-		return GamaColor.get(c1.getRed() - c.getRed(), c1.getGreen() - c.getGreen(), c1.getBlue() - c.getBlue(),
+	public static IColor subtract(final IColor c1, final IColor c) {
+		return GamaColorFactory.createWithRGBA(c1.red() - c.red(), c1.green() - c.green(), c1.blue() - c.blue(),
 				c1.alpha());
 	}
 
@@ -189,8 +188,8 @@ public class Colors {
 							value = "rgb([255, 128, 32]) * 2",
 							equals = "rgb([255,255,64])") }))
 	@test ("rgb([255, 128, 32]) * 2 = rgb([255,255,64])")
-	public static GamaColor multiply(final GamaColor c, final Integer i) {
-		return GamaColor.get(c.getRed() * i, c.getGreen() * i, c.getBlue() * i, c.alpha());
+	public static IColor multiply(final IColor c, final Integer i) {
+		return GamaColorFactory.createWithRGBA(c.red() * i, c.green() * i, c.blue() * i, c.alpha());
 	}
 
 	/**
@@ -215,8 +214,9 @@ public class Colors {
 							value = "rgb([255, 128, 32]) * 2.0",
 							equals = "rgb([255,255,64])") }))
 	@test ("rgb([255, 128, 32]) * 2.0 = rgb([255,255,64])")
-	public static GamaColor multiply(final GamaColor c, final Double i) {
-		return GamaColor.get((int) (c.getRed() * i), (int) (c.getGreen() * i), (int) (c.getBlue() * i), c.alpha());
+	public static IColor multiply(final IColor c, final Double i) {
+		return GamaColorFactory.createWithRGBA((int) (c.red() * i), (int) (c.green() * i), (int) (c.blue() * i),
+				c.alpha());
 	}
 
 	/**
@@ -241,8 +241,8 @@ public class Colors {
 							value = "rgb([255, 128, 32]) / 2",
 							equals = "rgb([127,64,16])") }))
 	@test ("rgb([255, 128, 32]) / 2 = rgb([127,64,16])")
-	public static GamaColor divide(final GamaColor c, final Integer i) {
-		return GamaColor.get(c.getRed() / i, c.getGreen() / i, c.getBlue() / i, c.alpha());
+	public static IColor divide(final IColor c, final Integer i) {
+		return GamaColorFactory.createWithRGBA(c.red() / i, c.green() / i, c.blue() / i, c.alpha());
 	}
 
 	/**
@@ -269,9 +269,9 @@ public class Colors {
 							value = "rgb([255, 128, 32]) / 2.5",
 							equals = "rgb([102,51,13])") }))
 	@test ("rgb([255, 128, 32]) / 2.5 = rgb([102,51,13])")
-	public static GamaColor divide(final GamaColor c, final Double i) {
-		return GamaColor.get(Maths.round(c.getRed() / i), Maths.round(c.getGreen() / i), Maths.round(c.getBlue() / i),
-				c.alpha());
+	public static IColor divide(final IColor c, final Double i) {
+		return GamaColorFactory.createWithRGBA(Maths.round(c.red() / i), Maths.round(c.green() / i),
+				Maths.round(c.blue() / i), c.alpha());
 	}
 
 	/**
@@ -299,8 +299,8 @@ public class Colors {
 					equals = "rgb(\"red\")"),
 			see = "rgb")
 	@test ("hsb (0.0,1.0,1.0) = rgb('red') ")
-	public static GamaColor hsb(final Double h, final Double s, final Double b) {
-		return GamaColor.get(Color.getHSBColor(h.floatValue(), s.floatValue(), b.floatValue()));
+	public static IColor hsb(final Double h, final Double s, final Double b) {
+		return GamaColorFactory.createFromAWTColor(Color.getHSBColor(h.floatValue(), s.floatValue(), b.floatValue()));
 	}
 
 	/**
@@ -327,8 +327,8 @@ public class Colors {
 					value = "hsb (0.5,1.0,1.0,0.0)",
 					equals = "rgb(\"cyan\",0)"))
 	@test ("hsb (0.5,1.0,1.0,0.0) = rgb('cyan',0) ")
-	public static GamaColor hsb(final Double h, final Double s, final Double b, final Double a) {
-		return GamaColor.get(Color.getHSBColor(h.floatValue(), s.floatValue(), b.floatValue()), a);
+	public static IColor hsb(final Double h, final Double s, final Double b, final Double a) {
+		return GamaColorFactory.createWithAlpha(Color.getHSBColor(h.floatValue(), s.floatValue(), b.floatValue()), a);
 	}
 
 	/**
@@ -351,9 +351,9 @@ public class Colors {
 					value = "to_hsb (#cyan)",
 					equals = "[0.5,1.0,1.0]"))
 	@test ("[0.5,1.0,1.0] = to_hsb(rgb('cyan',0)) ")
-	public static IList<Double> toHSB(final GamaColor c) {
+	public static IList<Double> toHSB(final IColor c) {
 		IList<Double> hsb = GamaListFactory.create();
-		float[] v = Color.RGBtoHSB(c.getRed(), c.getBlue(), c.getGreen(), null);
+		float[] v = Color.RGBtoHSB(c.red(), c.green(), c.blue(), null);
 		hsb.add(Float.valueOf(v[0]).doubleValue());
 		hsb.add(Float.valueOf(v[1]).doubleValue());
 		hsb.add(Float.valueOf(v[2]).doubleValue());
@@ -381,8 +381,8 @@ public class Colors {
 	@doc (
 			value = "Converts hsb (h=hue, s=saturation, b=brightness) value to Gama color")
 	@test ("int(hsb(200,40, 90)) = -526409")
-	public static GamaColor hsb(final Double h, final Double s, final Double b, final Integer a) {
-		return GamaColor.get(Color.getHSBColor(h.floatValue(), s.floatValue(), b.floatValue()), a);
+	public static IColor hsb(final Double h, final Double s, final Double b, final Integer a) {
+		return GamaColorFactory.createWithAlpha(Color.getHSBColor(h.floatValue(), s.floatValue(), b.floatValue()), a);
 	}
 
 	/**
@@ -410,8 +410,8 @@ public class Colors {
 					equals = "#red"),
 			see = "hsb")
 	@test ("rgb (255,0,0) = #red")
-	public static GamaColor rgb(final int r, final int g, final int b) {
-		return GamaColor.get(r, g, b, 255);
+	public static IColor rgb(final int r, final int g, final int b) {
+		return GamaColorFactory.createWithRGBA(r, g, b, 255);
 	}
 
 	/**
@@ -441,8 +441,8 @@ public class Colors {
 					test = false) },
 			see = "hsb")
 	@test ("rgb (255,0,0,125).alpha = 125")
-	public static GamaColor rgb(final int r, final int g, final int b, final int alpha) {
-		return GamaColor.get(r, g, b, alpha);
+	public static IColor rgb(final int r, final int g, final int b, final int alpha) {
+		return GamaColorFactory.createWithRGBA(r, g, b, alpha);
 	}
 
 	/**
@@ -472,8 +472,8 @@ public class Colors {
 					test = false),
 			see = "hsb")
 	@test (" int(rgb (255,0,0,0.5)) = 2147418112")
-	public static GamaColor rgb(final int r, final int g, final int b, final double alpha) {
-		return GamaColor.getWithDoubleAlpha(r, g, b, alpha);
+	public static IColor rgb(final int r, final int g, final int b, final double alpha) {
+		return GamaColorFactory.createWithDoubleAlpha(r, g, b, alpha);
 	}
 
 	/**
@@ -500,8 +500,8 @@ public class Colors {
 					equals = "rgb(255,0,0)"),
 			see = "hsb")
 	@test ("rgb ('red') = rgb(255,0,0) ")
-	public static GamaColor rgb(final IScope scope, final String s, final int a) {
-		return GamaColorType.staticCast(scope, s, a, false);
+	public static IColor rgb(final IScope scope, final String s, final int a) {
+		return GamaColorFactory.createWithAlpha(s, a);
 	}
 
 	/**
@@ -516,7 +516,7 @@ public class Colors {
 	 * @return the gama color
 	 */
 	@operator (
-			value = {"rgb", "with_alpha"},
+			value = { "rgb", "with_alpha" },
 			can_be_const = true,
 			category = { IOperatorCategory.COLOR },
 			concept = {})
@@ -529,8 +529,8 @@ public class Colors {
 					test = false),
 			see = "hsb")
 	@test ("int(rgb(rgb(255,0,0),125)) = 2113863680")
-	public static GamaColor rgb(final IScope scope, final GamaColor s, final int a) {
-		return GamaColorType.staticCast(scope, s, a, false);
+	public static IColor rgb(final IScope scope, final IColor s, final int a) {
+		return GamaColorFactory.createWithAlpha(s, a);
 	}
 
 	/**
@@ -545,7 +545,7 @@ public class Colors {
 	 * @return the gama color
 	 */
 	@operator (
-			value = {"rgb", "with_alpha"},
+			value = { "rgb", "with_alpha" },
 			can_be_const = true,
 			category = { IOperatorCategory.COLOR },
 			concept = {})
@@ -558,8 +558,8 @@ public class Colors {
 					test = false),
 			see = "hsb")
 	@test ("int(rgb(rgb(255,0,0),0.5)) = 2147418112")
-	public static GamaColor rgb(final IScope scope, final GamaColor s, final double a) {
-		return GamaColor.get(s, a);
+	public static IColor rgb(final IScope scope, final IColor s, final double a) {
+		return GamaColorFactory.createWithAlpha(s, a);
 	}
 
 	/**
@@ -584,9 +584,9 @@ public class Colors {
 			see = { "rgb", "hsb" })
 	@test ("int(grayscale (rgb(255,0,0))) = -11776948")
 	@test ("grayscale (rgb(255,0,0)) = rgb(76,76,76)")
-	public static GamaColor grayscale(final GamaColor c) {
-		final int grayValue = (int) (0.299 * c.getRed() + 0.587 * c.getGreen() + 0.114 * c.getBlue());
-		return GamaColor.get(grayValue, grayValue, grayValue, c.getAlpha());
+	public static IColor grayscale(final IColor c) {
+		final int grayValue = (int) (0.299 * c.red() + 0.587 * c.green() + 0.114 * c.blue());
+		return GamaColorFactory.createWithRGBA(grayValue, grayValue, grayValue, c.alpha());
 	}
 
 	/**
@@ -611,10 +611,11 @@ public class Colors {
 					test = false),
 			see = { "rgb", "hsb" })
 	@test ("seed <- 1.0; int(rnd_color(255)) = -3749758")
-	public static GamaColor random_color(final IScope scope, final Integer max) {
-		final RandomUtils r = scope.getRandom();
+	public static IColor random_color(final IScope scope, final Integer max) {
+		final IRandom r = scope.getRandom();
 		final int realMax = Math.max(0, Math.min(max, 255));
-		return GamaColor.get(r.between(0, realMax), r.between(0, realMax), r.between(0, realMax), 255);
+		return GamaColorFactory.createWithRGBA(r.between(0, realMax), r.between(0, realMax), r.between(0, realMax),
+				255);
 	}
 
 	/**
@@ -641,12 +642,12 @@ public class Colors {
 					test = false),
 			see = { "rgb", "hsb" })
 	@test ("seed <- 1.0; int(rnd_color(100, 200)) = -5065833")
-	public static GamaColor random_color(final IScope scope, final Integer min, final Integer max) {
-		final RandomUtils r = scope.getRandom();
+	public static IColor random_color(final IScope scope, final Integer min, final Integer max) {
+		final IRandom r = scope.getRandom();
 		final int realMax = Math.max(0, Math.min(max, 255));
 		final int realMin = Math.max(0, Math.min(min, realMax));
-		return GamaColor.get(r.between(realMin, realMax), r.between(realMin, realMax), r.between(realMin, realMax),
-				255);
+		return GamaColorFactory.createWithRGBA(r.between(realMin, realMax), r.between(realMin, realMax),
+				r.between(realMin, realMax), 255);
 	}
 
 	/**
@@ -661,7 +662,7 @@ public class Colors {
 	 * @return the gama color
 	 */
 	@operator (
-			value =  "blend",
+			value = "blend",
 			can_be_const = true,
 			category = { IOperatorCategory.COLOR },
 			concept = { IConcept.COLOR })
@@ -674,10 +675,11 @@ public class Colors {
 					isExecutable = false) },
 			see = { "rgb", "hsb" })
 	@test ("blend(#red, #blue, 0.3) = rgb(76,0,178)")
-	public static GamaColor blend(final GamaColor c1, final GamaColor c2, final double r) {
+	public static IColor blend(final IColor c1, final IColor c2, final double r) {
 		final double ir = 1.0 - r;
-		return GamaColor.get((int) (c1.getRed() * r + c2.getRed() * ir), (int) (c1.getGreen() * r + c2.getGreen() * ir),
-				(int) (c1.getBlue() * r + c2.getBlue() * ir), (int) (c1.getAlpha() * r + c2.getAlpha() * ir));
+		return GamaColorFactory.createWithRGBA((int) (c1.red() * r + c2.red() * ir),
+				(int) (c1.green() * r + c2.green() * ir), (int) (c1.blue() * r + c2.blue() * ir),
+				(int) (c1.alpha() * r + c2.alpha() * ir));
 	}
 
 	/**
@@ -704,7 +706,7 @@ public class Colors {
 							isExecutable = false) }),
 			see = { "rgb", "hsb" })
 	@test ("blend(#red, #blue) = rgb(127,0,127)")
-	public static GamaColor blend(final GamaColor color1, final GamaColor color2) {
+	public static IColor blend(final IColor color1, final IColor color2) {
 		return blend(color1, color2, 0.5);
 	}
 
@@ -719,10 +721,8 @@ public class Colors {
 				final Object palette = arguments[0].getConstValue();
 				if (palette instanceof final String p) {
 					if (!BREWER.hasPalette(p)) {
-						context.error(
-								"Palette " + p + " does not exist. Available palette names are: "
-										+ Arrays.toString(BREWER.getPaletteNames()),
-								UNKNOWN_ARGUMENT, getArg(emfContext, 1));
+						context.error("Palette " + p + " does not exist. Available palette names are: "
+								+ Arrays.toString(BREWER.getPaletteNames()), UNKNOWN_ARGUMENT, emfContext);
 						return false;
 					}
 					if (arguments.length > 1) {
@@ -733,8 +733,7 @@ public class Colors {
 								final BrewerPalette pal = BREWER.getPalette(p);
 								if (pal.getCount() < (Integer) number) {
 									context.warning("Palette " + p + " has only " + pal.getCount() + " colors.",
-											IGamlIssue.WRONG_VALUE, getArg(emfContext, 1),
-											String.valueOf(pal.getCount()));
+											IGamlIssue.WRONG_VALUE, emfContext, String.valueOf(pal.getCount()));
 								}
 							}
 						}
@@ -754,9 +753,11 @@ public class Colors {
 
 				@Override
 				public GamaPalette load(final String name) throws Exception {
-					IList<GamaColor> colors = GamaListFactory.create(Types.COLOR);
-					 BrewerPalette  p= BREWER.getPalette(name);
-					for (final Color col : p.getColors()) { if (col != null) { colors.add(GamaColor.get(col)); } }
+					IList<IColor> colors = GamaListFactory.create(Types.COLOR);
+					BrewerPalette p = BREWER.getPalette(name);
+					for (final Color col : p.getColors()) {
+						if (col != null) { colors.add(GamaColorFactory.createFromAWTColor(col)); }
+					}
 					return new GamaPalette(colors);
 				}
 			});
@@ -827,7 +828,7 @@ public class Colors {
 		final GamaPalette cols = brewerPaletteColors(scope, type);
 		if (cols.size() < nbClasses)
 			throw GamaRuntimeException.error(type + " has less than " + nbClasses + " colors", scope);
-		final IList<GamaColor> colors = GamaListFactory.create(Types.COLOR);
+		final IList<IColor> colors = GamaListFactory.create(Types.COLOR);
 		for (int i = 0; i < nbClasses; i++) { colors.add(cols.get(i)); }
 		return new GamaPalette(colors);
 	}
@@ -891,85 +892,6 @@ public class Colors {
 	}
 
 	/**
-	 * The Class GamaGradient.
-	 */
-	@SuppressWarnings ("unchecked")
-	public static class GamaGradient extends GamaMap<GamaColor, Double> {
-
-		/**
-		 * Instantiates a new gama gradient.
-		 */
-		protected GamaGradient() {
-			super(5, Types.COLOR, Types.FLOAT);
-		}
-
-		/**
-		 * Sets the.
-		 *
-		 * @param scope
-		 *            the scope
-		 * @param values
-		 *            the values
-		 */
-		public void set(final IScope scope, final IMap<Object, Object> values) {
-			for (Map.Entry<Object, Object> entry : values.entrySet()) {
-				this.put(Cast.asColor(scope, entry.getKey()), Cast.asFloat(scope, entry.getValue()));
-			}
-		}
-
-	}
-
-	/**
-	 * The Class GamaScale.
-	 */
-	@SuppressWarnings ("unchecked")
-	public static class GamaScale extends GamaMap<Double, GamaColor> {
-
-		/**
-		 * Instantiates a new gama scale.
-		 *
-		 * @param scope
-		 *            the scope
-		 * @param values
-		 *            the values
-		 */
-		public GamaScale(final IScope scope, final IMap<Double, GamaColor> values) {
-			super(values.size(), Types.FLOAT, Types.COLOR);
-			sort(values);
-		}
-
-		/**
-		 * Sort.
-		 *
-		 * @param values
-		 *            the values
-		 */
-		void sort(final Map<Double, GamaColor> values) {
-			List<Map.Entry<Double, GamaColor>> entries = new ArrayList(values.entrySet());
-			Collections.sort(entries, (o1, o2) -> o1.getKey().compareTo(o2.getKey()));
-			for (Map.Entry<Double, GamaColor> entry : entries) { put(entry.getKey(), entry.getValue()); }
-		}
-
-	}
-
-	/**
-	 * The Class GamaPalette.
-	 */
-	public static class GamaPalette extends GamaList<GamaColor> {
-
-		/**
-		 * Instantiates a new gama palette.
-		 *
-		 * @param colors
-		 *            the colors
-		 */
-		GamaPalette(final IList<GamaColor> colors) {
-			super(100, Types.COLOR);
-			addAll(colors);
-		}
-	}
-
-	/**
 	 * Gradient.
 	 *
 	 * @param start
@@ -989,7 +911,7 @@ public class Colors {
 	@doc (
 			value = "returns the definition of a linear gradient between two colors, represented internally as a color map [start::0.0,stop::1.0]")
 	@no_test
-	public static GamaGradient gradient(final GamaColor start, final GamaColor stop) {
+	public static GamaGradient gradient(final IColor start, final IColor stop) {
 		GamaGradient cm = new GamaGradient();
 		cm.put(start, 0d);
 		cm.put(stop, 1d);
@@ -1018,7 +940,7 @@ public class Colors {
 	@doc (
 			value = "returns the definition of a linear gradient between two colors, with a ratio (between 0 and 1, otherwise clamped) represented internally as a color map [start::0.0,(start*r+stop*(1-r))::r, stop::1.0]")
 	@no_test
-	public static GamaGradient gradient(final GamaColor start, final GamaColor stop, final Double r) {
+	public static GamaGradient gradient(final IColor start, final IColor stop, final Double r) {
 		double val = r < 0 ? 0 : r > 1 ? 1 : r;
 		GamaGradient cm = new GamaGradient();
 		cm.put(start, 0d);
@@ -1045,12 +967,12 @@ public class Colors {
 	@doc (
 			value = "returns the definition of a linear gradient between n colors, represented internally as a color map [c1::0,c2::1/n-1, ... cn::n-1/n-1]")
 	@no_test
-	public static GamaGradient gradient(IScope scope, final IList<GamaColor> colors) {
+	public static GamaGradient gradient(final IScope scope, final IList<IColor> colors) {
 		GamaGradient cm = new GamaGradient();
 		if (colors.size() < 2) throw GamaRuntimeException.error("A gradient must at least propose 2 colors", scope);
 		int nb = colors.size();
 		int i = 1;
-		for (GamaColor c : colors) { cm.put(c, i++ - 1d / nb - 1);  }
+		for (IColor c : colors) { cm.put(c, i++ - 1d / nb - 1); }
 		return cm;
 	}
 
@@ -1074,7 +996,7 @@ public class Colors {
 			value = "returns the definition of a linear gradient between n colors provided with their positions on a scale between 0 and 1. "
 					+ "A similar color map is returned, in the same color order, with all the positions normalized (so that they are shifted and scaled to fit between 0 and 1). Throws an error if the number of colors is less than 2 or if the positions are not strictly ordered")
 	@no_test
-	public static GamaGradient gradient(final IScope scope, final IMap<GamaColor, Number> colors) {
+	public static GamaGradient gradient(final IScope scope, final IMap<IColor, Number> colors) {
 		if (colors.size() < 2) throw GamaRuntimeException.error("A gradient must at least propose 2 colors", scope);
 
 		GamaGradient cm = new GamaGradient();
@@ -1115,12 +1037,13 @@ public class Colors {
 			concept = {})
 	@doc (
 			see = "gradient",
-			value = "Similar to gradient(map<rgb, float>) but reorders the colors based on their weight and does not normalize them, so as to effectively represent a color scale (i.e. a correspondance between a range of value and a color that implicitly begins with the lowest value). "
-					+ "For instance scale([#red::10, #green::0, #blue::30]) would produce the reverse map and associate #green to the interval 0-10, #red to 10-30, and #blue above 30. The main difference in usages is that, for instance in the definition of a "
-					+ "mesh to display, a gradient will produce interpolated colors to accomodate for the intermediary values, while a scale will stick to the colors defined.")
+			value = """
+					Similar to gradient(map<rgb, float>) but reorders the colors based on their weight and does not normalize them, so as to effectively represent a color scale (i.e. a correspondance between a range of value and a color that implicitly begins with the lowest value). \
+					For instance scale([#red::10, #green::0, #blue::30]) would produce the reverse map and associate #green to the interval 0-10, #red to 10-30, and #blue above 30. The main difference in usages is that, for instance in the definition of a \
+					mesh to display, a gradient will produce interpolated colors to accomodate for the intermediary values, while a scale will stick to the colors defined.""")
 	@no_test
-	public static GamaScale scale(final IScope scope, final IMap<GamaColor, Object> colors) {
-		IMap<Double, GamaColor> map = GamaMapFactory.createOrdered();
+	public static GamaScale scale(final IScope scope, final IMap<IColor, Object> colors) {
+		IMap<Double, IColor> map = GamaMapFactory.createOrdered();
 		colors.forEach((c, f) -> map.put(Cast.asFloat(scope, f), c));
 		return new GamaScale(scope, map);
 	}
@@ -1152,45 +1075,47 @@ public class Colors {
 			value = "Expects a gradient, i.e. a map<rgb,float>, where values represent the different stops of the colors. "
 					+ "First normalizes the passed gradient, and then applies the resulting weights to the interval represented by min and max, so as to return a scale (i.e. absolute values instead of the stops)")
 	@no_test
-	public static GamaScale scale(final IScope scope, final IMap<GamaColor, Object> colors, final double min,
+	public static GamaScale scale(final IScope scope, final IMap<IColor, Object> colors, final double min,
 			final double max) {
 		double sum = 0d;
-		for (Map.Entry<GamaColor, Object> entry : colors.entrySet()) {
+		for (Map.Entry<IColor, Object> entry : colors.entrySet()) {
 			// To make sure ?
 			double d = Cast.asFloat(scope, entry.getValue());
 			entry.setValue(d);
 			sum += d;
 		}
 		double div = sum;
-		IMap<Double, GamaColor> map = GamaMapFactory.createOrdered();
+		IMap<Double, IColor> map = GamaMapFactory.createOrdered();
 		colors.forEach((c, f) -> map.put(min + (max - min) * Cast.asFloat(scope, f) / div, c));
 		return new GamaScale(scope, map);
 	}
 
-//	/**
-//	 * Palette.
-//	 *
-//	 * @param scope
-//	 *            the scope
-//	 * @param colors
-//	 *            the colors
-//	 * @param nb
-//	 *            the nb
-//	 * @return the gama palette
-//	 */
-//	@operator (
-//			value = "palette",
-//			can_be_const = true,
-//			type = IType.LIST,
-//			content_type = IType.COLOR,
-//			category = { IOperatorCategory.COLOR },
-//			concept = {})
-//	@doc (
-//			value = "returns a list of n colors chosen in the gradient (map<rgb,float>) provided. Colors are chosen by interpolating the stops of the gradient (the colors and their position between 0 and 1), in the order described in the gradient")
-//	@no_test
-//	public static GamaPalette palette(final IScope scope, final IMap<GamaColor, Number> colors, final int nb) {
-//		
-//	}
+	// /**
+	// * Palette.
+	// *
+	// * @param scope
+	// * the scope
+	// * @param colors
+	// * the colors
+	// * @param nb
+	// * the nb
+	// * @return the gama palette
+	// */
+	// @operator (
+	// value = "palette",
+	// can_be_const = true,
+	// type = IType.LIST,
+	// content_type = IType.COLOR,
+	// category = { IOperatorCategory.COLOR },
+	// concept = {})
+	// @doc (
+	// value = "returns a list of n colors chosen in the gradient (map<rgb,float>) provided. Colors are chosen by
+	// interpolating the stops of the gradient (the colors and their position between 0 and 1), in the order described
+	// in the gradient")
+	// @no_test
+	// public static GamaPalette palette(final IScope scope, final IMap<GamaColor, Number> colors, final int nb) {
+	//
+	// }
 
 	/**
 	 * Palette.
@@ -1203,7 +1128,7 @@ public class Colors {
 	 */
 	@operator (
 			value = "palette",
-			can_be_const = true, 
+			can_be_const = true,
 			type = IType.LIST,
 			expected_content_type = IType.COLOR,
 			content_type = IType.COLOR,
@@ -1212,7 +1137,7 @@ public class Colors {
 	@doc (
 			value = "transforms a list of n colors into a palette (necessary for some layers)")
 	@no_test
-	public static GamaPalette palette(final IScope scope, final IList<GamaColor> colors) {
+	public static GamaPalette palette(final IScope scope, final IList<IColor> colors) {
 		return new GamaPalette(colors);
 	}
 

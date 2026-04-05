@@ -1,3 +1,13 @@
+/*******************************************************************************************************
+ *
+ * SpatialOperators.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.gaml.operators.spatial;
 
 import java.util.ArrayList;
@@ -22,28 +32,27 @@ import org.locationtech.jts.precision.EnhancedPrecisionOp;
 import org.locationtech.jts.precision.GeometryPrecisionReducer;
 import org.locationtech.jts.util.AssertionFailedException;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.GamaShape;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.geometry.GeometryUtils;
 
 /**
  * The Class Operators.
@@ -75,34 +84,11 @@ public class SpatialOperators {
 		if (g2 == null || g1 == null) return null;
 		if (g2.isPoint() && g1.covers(g2.getLocation())) return g2.copy(scope);
 		if (g1.isPoint() && g2.covers(g1.getLocation())) return g1.copy(scope);
-		Geometry geom = null;
-		final Geometry geom1 = g1.getInnerGeometry();
-		final Geometry geom2 = g2.getInnerGeometry();
-		try {
-
-			geom = geom1.intersection(geom2);
-		} catch (final Exception ex) {
-			try {
-				final PrecisionModel pm = new PrecisionModel(PrecisionModel.FLOATING_SINGLE);
-				geom = GeometryPrecisionReducer.reducePointwise(geom1, pm)
-						.intersection(GeometryPrecisionReducer.reducePointwise(geom2, pm));
-			} catch (final Exception e) {
-				// AD 12/04/13 : Addition of a third method in case of
-				// exception
-				try {
-					geom = geom1.buffer(0.01, BufferParameters.DEFAULT_QUADRANT_SEGMENTS, BufferParameters.CAP_FLAT)
-
-							.intersection(geom2.buffer(0.01, BufferParameters.DEFAULT_QUADRANT_SEGMENTS,
-									BufferParameters.CAP_FLAT));
-				} catch (final Exception e2) {
-					return null;
-				}
-			}
-		}
+		Geometry geom = GeometryUtils.robustIntersection(g1.getInnerGeometry(), g2.getInnerGeometry());
 		if (geom == null || geom.isEmpty()) return null;
 		// WARNING The attributes of the left-hand shape are kept, but not
 		// those of the right-hand shape
-		final GamaShape result = GamaShapeFactory.createFrom(geom).withAttributesOf(g1);
+		final IShape result = GamaShapeFactory.createFrom(geom).withAttributesOf(g1);
 		result.losePredefinedProperty();
 		return result;
 	}
@@ -119,7 +105,7 @@ public class SpatialOperators {
 	 * @return the i shape
 	 */
 	@operator (
-			value = { "+", "union" },
+			value = { IKeyword.PLUS, "union" },
 			category = { IOperatorCategory.SPATIAL },
 			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION })
 	@doc (
@@ -138,35 +124,9 @@ public class SpatialOperators {
 		if (g2 == null) return g1.copy(scope);
 		final Geometry geom1 = g1.getInnerGeometry();
 		final Geometry geom2 = g2.getInnerGeometry();
-		Geometry geom;
-		try {
-			geom = geom1.union(geom2);
-		} catch (final Exception e) {
-			try {
-				final PrecisionModel pm = new PrecisionModel(PrecisionModel.FLOATING_SINGLE);
-				geom = GeometryPrecisionReducer.reducePointwise(geom1, pm)
-						.intersection(GeometryPrecisionReducer.reducePointwise(geom2, pm));
-			} catch (final Exception e1) {
-				try {
-					geom = SpatialTransformations.translated_by(scope, g2.copy(scope), new GamaPoint(0.01, 0))
-							.getInnerGeometry().union(geom1);
-
-				} catch (final Exception e2) {
-					// AD 12/04/13 : Addition of a third method in case of
-					// exception
-					try {
-						geom = geom1.buffer(0.01, 0, BufferParameters.CAP_SQUARE)
-								.union(geom2.buffer(0.01, 0, BufferParameters.CAP_SQUARE));
-					} catch (final Exception e3) {
-						geom = SpatialTransformations.rotated_by(scope, g2.copy(scope), 0.1).getInnerGeometry()
-								.union(geom1);
-					}
-				}
-			}
-
-		}
+		Geometry geom = GeometryUtils.robustUnion(geom1, geom2);
 		if (geom == null || geom.isEmpty()) return null;
-		final GamaShape result = GamaShapeFactory.createFrom(geom).withAttributesOf(g1);
+		final IShape result = GamaShapeFactory.createFrom(geom).withAttributesOf(g1);
 		result.losePredefinedProperty();
 		return result;
 	}
@@ -195,7 +155,7 @@ public class SpatialOperators {
 	@no_test // test already done in Spatial tests Models
 	public static IShape union(final IScope scope, final IContainer<?, IShape> elements) {
 		try {
-			return Cast.asGeometry(scope, elements, false);
+			return GamaShapeFactory.castToShape(scope, elements, false);
 		} catch (final GamaRuntimeException e) {
 			return null;
 		}
@@ -228,7 +188,7 @@ public class SpatialOperators {
 		if (g1 == null || g2 == null || g1.getInnerGeometry() == null || g2.getInnerGeometry() == null) return g1;
 		final Geometry res = difference(g1.getInnerGeometry(), g2.getInnerGeometry());
 		if (res != null && !res.isEmpty()) {
-			final GamaShape result = GamaShapeFactory.createFrom(res).withAttributesOf(g1);
+			final IShape result = GamaShapeFactory.createFrom(res).withAttributesOf(g1);
 			result.losePredefinedProperty();
 			return result;
 		}
@@ -258,7 +218,7 @@ public class SpatialOperators {
 							equals = "rectangle(10,10) - (circle(2) + square(2))")))
 	public static IShape minus(final IScope scope, final IShape g1, final IContainer<?, IShape> agents) {
 		if (g1 == null || agents == null || g1.getInnerGeometry() == null || agents.isEmpty(scope)) return g1;
-		Geometry geom1 = GeometryUtils.GEOMETRY_FACTORY.createGeometry(g1.getInnerGeometry());
+		Geometry geom1 = GeometryUtils.getGeometryFactory().createGeometry(g1.getInnerGeometry());
 		for (final IShape ag : agents.iterable(scope)) {
 			if (ag != null && ag.getInnerGeometry() != null) {
 				geom1 = difference(geom1, ag.getInnerGeometry());
@@ -266,7 +226,7 @@ public class SpatialOperators {
 			}
 		}
 		if (geom1 == null || geom1.isEmpty()) return null;
-		final GamaShape result = GamaShapeFactory.createFrom(geom1).withAttributesOf(g1);
+		final IShape result = GamaShapeFactory.createFrom(geom1).withAttributesOf(g1);
 		result.losePredefinedProperty();
 		return result;
 	}
@@ -311,8 +271,8 @@ public class SpatialOperators {
 							return EnhancedPrecisionOp.difference(g1, g2);
 						} catch (final RuntimeException e4) {
 							try {
-								return g1.difference(g2.buffer(Math.min(0.01, g2.getArea() / 1000), 10,
-										BufferParameters.CAP_FLAT));
+								return g1.difference(
+										g2.buffer(Math.min(0.01, g2.getArea() / 1000), 10, BufferParameters.CAP_FLAT));
 							} catch (final RuntimeException last) {
 								return null; // return g1; ??
 							}
@@ -344,73 +304,66 @@ public class SpatialOperators {
 					value = "polygon([{10,10},{10,20},{20,20}]) add_point {20,10}",
 					returnType = "geometry",
 					equals = "polygon([{10,10},{10,20},{20,20},{20,10}])") })
-	public static IShape add_point(final IScope scope, final IShape g, final GamaPoint p) {
+	public static IShape add_point(final IScope scope, final IShape g, final IPoint p) {
 		if (p == null || g == null) return g;
-		final Coordinate point = p;
+		final Coordinate point = p.toCoordinate();
 		final Geometry geometry = g.getInnerGeometry();
+		final org.locationtech.jts.geom.GeometryFactory gf = GeometryUtils.getGeometryFactory();
 		Geometry geom_Tmp = null;
 		if (geometry instanceof Point) {
-			final Coordinate[] coord = new Coordinate[2];
-			coord[0] = geometry.getCoordinate();
-			coord[1] = point;
-			geom_Tmp = GeometryUtils.GEOMETRY_FACTORY.createLineString(coord);
+			final Coordinate[] coord = { geometry.getCoordinate(), point };
+			geom_Tmp = gf.createLineString(coord);
 		} else if (geometry instanceof MultiPoint) {
-			final Coordinate[] coordinates = new Coordinate[geometry.getNumPoints() + 1];
-			coordinates[coordinates.length - 1] = p;
-			geom_Tmp = GeometryUtils.GEOMETRY_FACTORY.createMultiPointFromCoords(coordinates);
+			final Coordinate[] existingCoords = geometry.getCoordinates();
+			final Coordinate[] coordinates = new Coordinate[existingCoords.length + 1];
+			System.arraycopy(existingCoords, 0, coordinates, 0, existingCoords.length);
+			coordinates[existingCoords.length] = point;
+			geom_Tmp = gf.createMultiPointFromCoords(coordinates);
 		} else if (geometry instanceof LineString) {
 			geom_Tmp = createLineStringWithPoint(geometry, point);
 		} else if (geometry instanceof MultiLineString) {
-			Geometry closestGeom = null;
-			double distMin = Double.MAX_VALUE;
+			// find closest sub-geometry using a single shared Point object
+			final Point pt = gf.createPoint(point);
 			int id = -1;
-			final Point pt = GeometryUtils.GEOMETRY_FACTORY.createPoint(point);
-			for (int i = 0; i < geometry.getNumGeometries(); i++) {
-				final Geometry geom = geometry.getGeometryN(i);
-				final double dist = geom.distance(pt);
+			double distMin = Double.MAX_VALUE;
+			final int numGeoms = geometry.getNumGeometries();
+			for (int i = 0; i < numGeoms; i++) {
+				final double dist = geometry.getGeometryN(i).distance(pt);
 				if (dist < distMin) {
 					distMin = dist;
-					closestGeom = geom;
 					id = i;
 				}
 			}
-			final LineString[] lineStrings = new LineString[geometry.getNumGeometries()];
-			for (int i = 0; i < geometry.getNumGeometries(); i++) {
-				if (i != id) {
-					lineStrings[i] = (LineString) geometry.getGeometryN(i);
-				} else {
-					lineStrings[i] = (LineString) createLineStringWithPoint(closestGeom, point);
-				}
+			final LineString[] lineStrings = new LineString[numGeoms];
+			for (int i = 0; i < numGeoms; i++) {
+				final Geometry sub = geometry.getGeometryN(i);
+				lineStrings[i] = i != id ? (LineString) sub : (LineString) createLineStringWithPoint(sub, point);
 			}
-			geom_Tmp = GeometryUtils.GEOMETRY_FACTORY.createMultiLineString(lineStrings);
+			geom_Tmp = gf.createMultiLineString(lineStrings);
 		} else if (geometry instanceof Polygon) {
 			geom_Tmp = createPolygonWithPoint(geometry, point);
 		} else if (geometry instanceof MultiPolygon) {
-			Geometry closestGeom = null;
-			double distMin = Double.MAX_VALUE;
+			// find closest sub-geometry using a single shared Point object
+			final Point pt = gf.createPoint(point);
 			int id = -1;
-			final Point pt = GeometryUtils.GEOMETRY_FACTORY.createPoint(point);
-			for (int i = 0; i < geometry.getNumGeometries(); i++) {
-				final Geometry geom = geometry.getGeometryN(i);
-				final double dist = geom.distance(pt);
+			double distMin = Double.MAX_VALUE;
+			final int numGeoms = geometry.getNumGeometries();
+			for (int i = 0; i < numGeoms; i++) {
+				final double dist = geometry.getGeometryN(i).distance(pt);
 				if (dist < distMin) {
 					distMin = dist;
-					closestGeom = geom;
 					id = i;
 				}
 			}
-			final Polygon[] polygons = new Polygon[geometry.getNumGeometries()];
-			for (int i = 0; i < geometry.getNumGeometries(); i++) {
-				if (i != id) {
-					polygons[i] = (Polygon) geometry.getGeometryN(i);
-				} else {
-					polygons[i] = (Polygon) createPolygonWithPoint(closestGeom, point);
-				}
+			final Polygon[] polygons = new Polygon[numGeoms];
+			for (int i = 0; i < numGeoms; i++) {
+				final Geometry sub = geometry.getGeometryN(i);
+				polygons[i] = i != id ? (Polygon) sub : (Polygon) createPolygonWithPoint(sub, point);
 			}
-			geom_Tmp = GeometryUtils.GEOMETRY_FACTORY.createMultiPolygon(polygons);
+			geom_Tmp = gf.createMultiPolygon(polygons);
 		}
 		if (geom_Tmp != null) {
-			final GamaShape result = GamaShapeFactory.createFrom(geom_Tmp).withAttributesOf(g);
+			final IShape result = GamaShapeFactory.createFrom(geom_Tmp).withAttributesOf(g);
 			result.losePredefinedProperty();
 			return result;
 		}
@@ -431,16 +384,19 @@ public class SpatialOperators {
 		Geometry simpleMinGeom = null;
 		double complexMinLength = Double.MAX_VALUE;
 		Geometry complexMinGeom = null;
-		final int nbPts = ((Polygon) geometry).getExteriorRing().getCoordinates().length;
+		final org.locationtech.jts.geom.GeometryFactory gf = GeometryUtils.getGeometryFactory();
+		final Polygon poly = (Polygon) geometry;
+		final Coordinate[] geomCoords = geometry.getCoordinates();
+		final int nbPts = poly.getExteriorRing().getCoordinates().length;
+		final int numRings = poly.getNumInteriorRing();
+		final LinearRing[] lrs = new LinearRing[numRings];
+		for (int i = 0; i < numRings; i++) { lrs[i] = poly.getInteriorRingN(i); }
 		for (int index = 0; index <= nbPts; index++) {
 			final Coordinate[] coord = new Coordinate[nbPts + 1];
-			for (int i = 0; i < index; i++) { coord[i] = geometry.getCoordinates()[i]; }
+			for (int i = 0; i < index; i++) { coord[i] = geomCoords[i]; }
 			coord[index] = point;
-			for (int i = index + 1; i < coord.length; i++) { coord[i] = geometry.getCoordinates()[i - 1]; }
-			final LinearRing[] lrs = new LinearRing[((Polygon) geometry).getNumInteriorRing()];
-			for (int i = 0; i < lrs.length; i++) { lrs[i] = ((Polygon) geometry).getInteriorRingN(i); }
-			final Geometry g = GeometryUtils.GEOMETRY_FACTORY
-					.createPolygon(GeometryUtils.GEOMETRY_FACTORY.createLinearRing(coord), lrs);
+			for (int i = index + 1; i < coord.length; i++) { coord[i] = geomCoords[i - 1]; }
+			final Geometry g = gf.createPolygon(gf.createLinearRing(coord), lrs);
 			if (g.isValid()) {
 				if (simpleMinLength > g.getArea()) {
 					simpleMinLength = g.getArea();
@@ -469,12 +425,14 @@ public class SpatialOperators {
 		Geometry simpleMinGeom = null;
 		double complexMinLength = Double.MAX_VALUE;
 		Geometry complexMinGeom = null;
-		for (int index = 0; index <= geometry.getCoordinates().length; index++) {
-			final Coordinate[] coord = new Coordinate[geometry.getCoordinates().length + 1];
-			for (int i = 0; i < index; i++) { coord[i] = geometry.getCoordinates()[i]; }
+		final org.locationtech.jts.geom.GeometryFactory gf = GeometryUtils.getGeometryFactory();
+		final Coordinate[] geomCoords = geometry.getCoordinates();
+		for (int index = 0; index <= geomCoords.length; index++) {
+			final Coordinate[] coord = new Coordinate[geomCoords.length + 1];
+			for (int i = 0; i < index; i++) { coord[i] = geomCoords[i]; }
 			coord[index] = point;
-			for (int i = index + 1; i < coord.length; i++) { coord[i] = geometry.getCoordinates()[i - 1]; }
-			final Geometry g = GeometryUtils.GEOMETRY_FACTORY.createLineString(coord);
+			for (int i = index + 1; i < coord.length; i++) { coord[i] = geomCoords[i - 1]; }
+			final Geometry g = gf.createLineString(coord);
 			if (g.isValid()) {
 				if (simpleMinLength > g.getLength()) {
 					simpleMinLength = g.getLength();
@@ -490,13 +448,13 @@ public class SpatialOperators {
 	}
 
 	/*
-	 * private static int indexClosestSegment(final Geometry geom, final Coordinate coord) { int index = -1; final
-	 * Point pt = GeometryUtils.GEOMETRY_FACTORY.createPoint(coord); double distMin = Double.MAX_VALUE; for (int i =
-	 * 0; i < geom.getCoordinates().length - 1; i++) { final Coordinate cc = geom.getCoordinates()[i]; if
-	 * (cc.equals(coord)) { return -1; } final Coordinate[] coordinates = new Coordinate[2]; coordinates[0] = cc;
-	 * coordinates[1] = geom.getCoordinates()[i + 1]; final Geometry geom_Tmp =
-	 * GeometryUtils.GEOMETRY_FACTORY.createLineString(coordinates); final double dist = geom_Tmp.distance(pt); if
-	 * (dist < distMin) { distMin = dist; index = i; } } if (geom.getCoordinates()[geom.getCoordinates().length -
+	 * private static int indexClosestSegment(final Geometry geom, final Coordinate coord) { int index = -1; final Point
+	 * pt = GeometryUtils.GEOMETRY_FACTORY.createPoint(coord); double distMin = Double.MAX_VALUE; for (int i = 0; i <
+	 * geom.getCoordinates().length - 1; i++) { final Coordinate cc = geom.getCoordinates()[i]; if (cc.equals(coord)) {
+	 * return -1; } final Coordinate[] coordinates = new Coordinate[2]; coordinates[0] = cc; coordinates[1] =
+	 * geom.getCoordinates()[i + 1]; final Geometry geom_Tmp =
+	 * GeometryUtils.GEOMETRY_FACTORY.createLineString(coordinates); final double dist = geom_Tmp.distance(pt); if (dist
+	 * < distMin) { distMin = dist; index = i; } } if (geom.getCoordinates()[geom.getCoordinates().length -
 	 * 1].equals(coord)) { return -1; } return index; }
 	 */
 
@@ -527,29 +485,36 @@ public class SpatialOperators {
 			final Integer prec) {
 		final int precision = prec == null ? 120 : prec;
 		final IAgent a = scope.getAgent();
-		final List<IShape> obst =
-				obstacles == null ? new ArrayList<>() : obstacles.listValue(scope, Types.GEOMETRY, false);
-		final GamaPoint location = a != null ? a.getLocation() : new GamaPoint(0, 0);
-		final Geometry visiblePercept = GeometryUtils.GEOMETRY_FACTORY.createGeometry(source.getInnerGeometry());
+		final IPoint location = a != null ? a.getLocation() : GamaPointFactory.create(0, 0);
+		final Geometry visiblePercept = GeometryUtils.getGeometryFactory().createGeometry(source.getInnerGeometry());
 		final boolean isPoint = source.isPoint();
 		if (obstacles != null && !obstacles.isEmpty(scope)) {
-			final Geometry pt = GeometryUtils.GEOMETRY_FACTORY.createPoint(location);
+			// Defer list conversion to inside the non-null/non-empty branch
+			final List<IShape> obst = obstacles.listValue(scope, Types.GEOMETRY, false);
+			final Geometry pt = GeometryUtils.getGeometryFactory().createPoint(location.toCoordinate());
 			final Geometry locG = pt.buffer(0.01).getEnvelope();
 			double percepDist = 0;
-			for (final GamaPoint p : source.getPoints()) {
+			for (final IPoint p : source.getPoints()) {
 				final double dist = location.euclidianDistanceTo(p);
 				if (dist > percepDist) { percepDist = dist; }
 			}
 			final Geometry gbuff = pt.buffer(percepDist, precision / 4);
+			// Pre-wrap all obstacles in PreparedGeometry to accelerate repeat intersection tests
+			final List<PreparedGeometry> preparedObst = new ArrayList<>(obst.size());
+			for (final IShape s : obst) {
+				if (s != null && s.getInnerGeometry() != null) {
+					preparedObst.add(PreparedGeometryFactory.prepare(s.getInnerGeometry()));
+				}
+			}
 			final List<IShape> geoms = new ArrayList<>();
+			final Coordinate[] gbuffCoords = gbuff.getCoordinates();
 			for (int k = 1; k < gbuff.getNumPoints(); k++) {
-				final IList coordinates = GamaListFactory.create(Types.POINT, 4);
+				final IList<IPoint> coordinates = GamaListFactory.create(Types.POINT, 4);
 				coordinates.add(location);
-				coordinates.add(new GamaPoint(gbuff.getCoordinates()[k - 1]));
-				coordinates.add(new GamaPoint(gbuff.getCoordinates()[k]));
+				coordinates.add(GamaPointFactory.create(gbuffCoords[k - 1]));
+				coordinates.add(GamaPointFactory.create(gbuffCoords[k]));
 				coordinates.add(location);
-				final IShape gg =
-						SpatialOperators.inter(scope, source, SpatialCreation.polygon(scope, coordinates));
+				final IShape gg = SpatialOperators.inter(scope, source, SpatialCreation.polygon(scope, coordinates));
 
 				if (gg != null && (isPoint || !gg.isPoint())) {
 					final IShape s = GamaShapeFactory
@@ -561,7 +526,7 @@ public class SpatialOperators {
 			final PreparedGeometry ref = PreparedGeometryFactory.prepare(locG);
 
 			for (final IShape geom : geoms) {
-				if (!intersection(geom, obst)) {
+				if (!intersectionPrepared(geom, preparedObst)) {
 					geomsVisible.addValue(scope, geom);
 				} else {
 					final IShape perceptReal = difference(scope, geom, obst, ref);
@@ -590,13 +555,12 @@ public class SpatialOperators {
 			final boolean isLineF = isLine;
 
 			geomVisibleF.removeIf(g -> (isPolygonF || isLineF) && g.isPoint() && isPolygonF && g.isLine());
-			if (geomVisibleF.isEmpty(scope)) {
-				return null;
-			}
-			IShape result = Cast.asGeometry(scope, geomVisibleF, false);
+			if (geomVisibleF.isEmpty(scope)) return null;
+			IShape result = GamaShapeFactory.castToShape(scope, geomVisibleF, false);
 			if (result == null || result.getInnerGeometry() == null) {
-				geomVisibleF.stream().forEach(g -> SpatialTransformations.enlarged_by(scope, g, 0.1));
-				result = Cast.asGeometry(scope, geomVisibleF, false);
+				geomVisibleF = geomVisibleF.stream().map(g -> SpatialTransformations.enlarged_by(scope, g, 0.1))
+						.collect(GamaListFactory.toGamaList());
+				result = GamaShapeFactory.castToShape(scope, geomVisibleF, false);
 			}
 			if (result == null || result.getInnerGeometry() == null) return null;
 			if (result.getInnerGeometry() instanceof GeometryCollection) {
@@ -609,17 +573,13 @@ public class SpatialOperators {
 	}
 
 	/**
-	 * Intersection.
-	 *
-	 * @param geom
-	 *            the geom
-	 * @param geoms
-	 *            the geoms
-	 * @return true, if successful
+	 * Intersection check using pre-built PreparedGeometry for each obstacle, avoiding per-call preparation overhead.
 	 */
-	private static boolean intersection(final IShape geom, final List<IShape> geoms) {
+	private static boolean intersectionPrepared(final IShape geom, final List<PreparedGeometry> preparedGeoms) {
 		if (geom == null) return false;
-		for (final IShape g : geoms) { if (g != null && geom.intersects(g)) return true; }
+		final Geometry inner = geom.getInnerGeometry();
+		if (inner == null) return false;
+		for (final PreparedGeometry pg : preparedGeoms) { if (pg.intersects(inner)) return true; }
 		return false;
 	}
 
@@ -703,93 +663,63 @@ public class SpatialOperators {
 			examples = { @example (
 					value = "polyline([{1,2},{4,6}]) split_at {7,6}",
 					equals = "[polyline([{1.0,2.0},{7.0,6.0}]), polyline([{7.0,6.0},{4.0,6.0}])]") })
-	public static IList<IShape> split_at(final IShape geom, final GamaPoint pt) {
+	public static IList<IShape> split_at(final IShape geom, final IPoint pt) {
 		final IList<IShape> lines = GamaListFactory.create(Types.GEOMETRY);
 		List<Geometry> geoms = null;
-		if (geom.getInnerGeometry() instanceof LineString) {
-			final Coordinate[] coords = ((LineString) geom.getInnerGeometry()).getCoordinates();
-			final Point pt1 = GeometryUtils.GEOMETRY_FACTORY.createPoint(pt.getLocation());
-			final int nb = coords.length;
-			int indexTarget = -1;
-			double distanceT = Double.MAX_VALUE;
-			for (int i = 0; i < nb - 1; i++) {
-				final Coordinate s = coords[i];
-				final Coordinate t = coords[i + 1];
-				final Coordinate[] seg = { s, t };
-				final Geometry segment = GeometryUtils.GEOMETRY_FACTORY.createLineString(seg);
-				final double distT = segment.distance(pt1);
-				if (distT < distanceT) {
-					distanceT = distT;
-					indexTarget = i;
-				}
-			}
-			int nbSp = indexTarget + 2;
-			final Coordinate[] coords1 = new Coordinate[nbSp];
-			for (int i = 0; i <= indexTarget; i++) { coords1[i] = coords[i]; }
-			coords1[indexTarget + 1] = new GamaPoint(pt.getLocation());
-
-			nbSp = coords.length - indexTarget;
-			final Coordinate[] coords2 = new Coordinate[nbSp];
-			coords2[0] = new GamaPoint(pt.getLocation());
-			int k = 1;
-			for (int i = indexTarget + 1; i < coords.length; i++) {
-				coords2[k] = coords[i];
-				k++;
-			}
-			final List<Geometry> geoms1 = new ArrayList<>();
-			geoms1.add(GeometryUtils.GEOMETRY_FACTORY.createLineString(coords1));
-			geoms1.add(GeometryUtils.GEOMETRY_FACTORY.createLineString(coords2));
-			geoms = geoms1;
-		} else if (geom.getInnerGeometry() instanceof MultiLineString) {
-			final Point point = GeometryUtils.GEOMETRY_FACTORY.createPoint(pt);
-			final MultiLineString ml = (MultiLineString) geom.getInnerGeometry();
-			Geometry geom2 = ml.getGeometryN(0);
-			double distMin = geom2.distance(point);
+		// Compute split coordinate once, shared between both branches
+		final Coordinate splitCoord = pt.toCoordinate();
+		if (geom.getInnerGeometry() instanceof LineString ls) {
+			geoms = splitLineAt(ls.getCoordinates(), splitCoord);
+		} else if (geom.getInnerGeometry() instanceof MultiLineString ml) {
+			// Find the closest constituent LineString — create the Point only once
+			final Point splitPt = GeometryUtils.getGeometryFactory().createPoint(splitCoord);
+			Geometry closest = ml.getGeometryN(0);
+			double distMin = closest.distance(splitPt);
 			for (int i = 1; i < ml.getNumGeometries(); i++) {
-				final Geometry gg = ml.getGeometryN(i);
-				final double dist = gg.distance(point);
-				if (dist <= distMin) {
-					geom2 = gg;
-					distMin = dist;
+				final Geometry sub = ml.getGeometryN(i);
+				final double d = sub.distance(splitPt);
+				if (d < distMin) {
+					distMin = d;
+					closest = sub;
 				}
 			}
-			final Coordinate[] coords = ((LineString) geom2).getCoordinates();
-			final Point pt1 = GeometryUtils.GEOMETRY_FACTORY.createPoint(new GamaPoint(pt.getLocation()));
-			final int nb = coords.length;
-			int indexTarget = -1;
-			double distanceT = Double.MAX_VALUE;
-			for (int i = 0; i < nb - 1; i++) {
-				final Coordinate s = coords[i];
-				final Coordinate t = coords[i + 1];
-				final Coordinate[] seg = { s, t };
-				final Geometry segment = GeometryUtils.GEOMETRY_FACTORY.createLineString(seg);
-				final double distT = segment.distance(pt1);
-				if (distT < distanceT) {
-					distanceT = distT;
-					indexTarget = i;
-				}
-			}
-			int nbSp = indexTarget + 2;
-			final Coordinate[] coords1 = new Coordinate[nbSp];
-			for (int i = 0; i <= indexTarget; i++) { coords1[i] = coords[i]; }
-			coords1[indexTarget + 1] = new GamaPoint(pt.getLocation());
-
-			nbSp = coords.length - indexTarget;
-			final Coordinate[] coords2 = new Coordinate[nbSp];
-			coords2[0] = new GamaPoint(pt.getLocation());
-			int k = 1;
-			for (int i = indexTarget + 1; i < coords.length; i++) {
-				coords2[k] = coords[i];
-				k++;
-			}
-			final List<Geometry> geoms1 = new ArrayList<>();
-			geoms1.add(GeometryUtils.GEOMETRY_FACTORY.createLineString(coords1));
-			geoms1.add(GeometryUtils.GEOMETRY_FACTORY.createLineString(coords2));
-			geoms = geoms1;
+			geoms = splitLineAt(((LineString) closest).getCoordinates(), splitCoord);
 		}
 		if (geoms != null) { for (final Geometry g : geoms) { lines.add(GamaShapeFactory.createFrom(g)); } }
 		for (final IShape li : lines) { li.copyAttributesOf(geom); }
-
 		return lines;
 	}
+
+	/**
+	 * Builds the two sub-LineStrings that result from splitting <code>coords</code> at the given point. The closest
+	 * segment is found using {@link org.locationtech.jts.algorithm.Distance#pointToSegment} to avoid allocating any JTS
+	 * geometry object inside the hot loop.
+	 */
+	private static List<Geometry> splitLineAt(final Coordinate[] coords, final Coordinate split) {
+		final int nb = coords.length;
+		int indexTarget = -1;
+		double distanceT = Double.MAX_VALUE;
+		for (int i = 0; i < nb - 1; i++) {
+			final double distT =
+					org.locationtech.jts.algorithm.Distance.pointToSegment(split, coords[i], coords[i + 1]);
+			if (distT < distanceT) {
+				distanceT = distT;
+				indexTarget = i;
+			}
+		}
+		final org.locationtech.jts.geom.GeometryFactory gf = GeometryUtils.getGeometryFactory();
+		final Coordinate[] coords1 = new Coordinate[indexTarget + 2];
+		for (int i = 0; i <= indexTarget; i++) { coords1[i] = coords[i]; }
+		coords1[indexTarget + 1] = split;
+
+		final Coordinate[] coords2 = new Coordinate[nb - indexTarget];
+		coords2[0] = split;
+		for (int i = indexTarget + 1, k = 1; i < nb; i++, k++) { coords2[k] = coords[i]; }
+
+		final List<Geometry> result = new ArrayList<>(2);
+		result.add(gf.createLineString(coords1));
+		result.add(gf.createLineString(coords2));
+		return result;
+	}
+
 }

@@ -1,9 +1,12 @@
 /**
-* Name: AccessingFields
-* How to create simple fields and access/change the information they contain is covered in this model.
-* One agent increases the values in the field, another one decreases them. 
+* Name: Accessing Fields
 * Author: Alexis Drogoul
-* Tags: 
+* Description: Shows how to create GAMA fields (continuous raster-like data structures) and read/write their
+*   values. One agent increments field values at its location each step; another agent decrements them. Values
+*   are displayed as a colored gradient. This model covers: field creation with specified dimensions, reading
+*   cell values at a point with 'field_value_at', writing values, and displaying the field as a color map.
+*   Fields are more memory-efficient than grid species for large continuous spatial data.
+* Tags: field, spatial, raster, read, write, continuous, visualization, display
 */
 model AccessingFields
 
@@ -12,8 +15,8 @@ global torus: true{
 	field terrain <- field(300, 300);
 
 	init {
-		create increaser with: [location::location];
-		create decreaser with: [location::location];
+		create increaser with: (location:location);
+		create decreaser with: (location:location);
 	}
 
 	species increaser skills: [moving] {

@@ -32,9 +32,9 @@ import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.internal.registry.PerspectiveDescriptor;
 import org.eclipse.ui.internal.registry.PerspectiveRegistry;
 
-import gama.core.common.interfaces.IGui;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.model.IModel;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.ui.IGui;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 
 /**
@@ -250,7 +250,7 @@ public class PerspectiveHelper {
 	 *            the experiment name
 	 * @return true, if successful
 	 */
-	public static final boolean openSimulationPerspective(final IModel model, final String experimentName) {
+	public static final boolean openSimulationPerspective(final IModelSpecies model, final String experimentName) {
 		if (model == null) return false;
 		final String name = getNewPerspectiveName(model.getName(), experimentName);
 		return openPerspective(name, true, false, true);
@@ -340,38 +340,43 @@ public class PerspectiveHelper {
 		final WorkbenchWindow window = (WorkbenchWindow) page.getWorkbenchWindow();
 
 		final Runnable r = () -> {
-			// if (PlatformHelper.isMac() && !isSimulationPerspective(perspectiveId)) {
-			// List<IGamaView.Display> displays = StreamEx.of(page.getViewReferences()).map(a -> a.getView(false))
-			// .select(IGamaView.Display.class).toList();
-			// if (displays.size() > 0) { page.activate((IWorkbenchPart) displays.get(0)); }
-			// }
+			final var shell = window.getShell();
+			if (shell != null) { shell.setRedraw(false); }
 			try {
+				try {
+					page.setPerspective(descriptor);
+				} catch (final NullPointerException e) {
+					DEBUG.ERR(
+							"NPE in WorkbenchPage.setPerspective(). See Issue #1602. Working around the bug in e4...");
+					page.setPerspective(descriptor);
+				}
+				activateAutoSave(withAutoSave);
+				if (isSimulationPerspective(currentPerspectiveId) && isSimulationPerspective(perspectiveId)) {
+					DEBUG.OUT("Destroying perspective " + oldDescriptor.getId());
+					page.closePerspective(oldDescriptor, false, false);
+					getPerspectiveRegistry().deletePerspective(oldDescriptor);
+				}
 
-				page.setPerspective(descriptor);
-			} catch (final NullPointerException e) {
-				DEBUG.ERR("NPE in WorkbenchPage.setPerspective(). See Issue #1602. Working around the bug in e4...");
-				page.setPerspective(descriptor);
+				currentPerspectiveId = perspectiveId;
+				if (isSimulationPerspective(perspectiveId) && !descriptor.equals(currentSimulationPerspective)) {
+					// Early activation or deactivation of editors based on the global preference
+					page.setEditorAreaVisible(!GamaPreferences.Modeling.EDITOR_PERSPECTIVE_HIDE.getValue());
+					deleteCurrentSimulationPerspective();
+					currentSimulationPerspective = (SimulationPerspectiveDescriptor) descriptor;
+				}
+				applyActiveEditor(page);
+				final Boolean showControls = keepControls();
+				if (showControls != null) { window.setCoolBarVisible(showControls); }
+				final Boolean keepTray = keepTray();
+				if (keepTray != null) { showBottomTray(window, keepTray); }
+			} finally {
+				if (shell != null) { shell.setRedraw(true); }
+				// Delegate overlay creation to the GUI service so that the concrete
+				// implementation (SwtGui) can use the correct theme-aware icon and FlatButton.
+				if (isSimulationPerspective(perspectiveId)) {
+					gama.api.GAMA.getGui().showLaunchingOverlay(null, perspectiveId);
+				}
 			}
-			activateAutoSave(withAutoSave);
-			if (isSimulationPerspective(currentPerspectiveId) && isSimulationPerspective(perspectiveId)) {
-				DEBUG.OUT("Destroying perspective " + oldDescriptor.getId());
-				page.closePerspective(oldDescriptor, false, false);
-				getPerspectiveRegistry().deletePerspective(oldDescriptor);
-			}
-
-			currentPerspectiveId = perspectiveId;
-			if (isSimulationPerspective(perspectiveId) && !descriptor.equals(currentSimulationPerspective)) {
-				// Early activation or deactivation of editors based on the global preference
-				page.setEditorAreaVisible(!GamaPreferences.Modeling.EDITOR_PERSPECTIVE_HIDE.getValue());
-				deleteCurrentSimulationPerspective();
-				currentSimulationPerspective = (SimulationPerspectiveDescriptor) descriptor;
-			}
-			applyActiveEditor(page);
-			final Boolean showControls = keepControls();
-			if (showControls != null) { window.setCoolBarVisible(showControls); }
-			final Boolean keepTray = keepTray();
-			if (keepTray != null) { showBottomTray(window, keepTray); }
-			// DEBUG.OUT("Perspective " + perspectiveId + " opened ");
 		};
 		if (immediately) {
 			Display.getDefault().syncExec(r);
@@ -379,6 +384,15 @@ public class PerspectiveHelper {
 			Display.getDefault().asyncExec(r);
 		}
 		return true;
+	}
+
+	/**
+	 * Delegates to {@link gama.api.ui.IGui#hideLaunchingOverlay()} — removes the overlay shell that was shown by
+	 * {@link gama.api.ui.IGui#showLaunchingOverlay} during the perspective switch. Must be called on the UI thread
+	 * after the full display layout has been applied.
+	 */
+	public static void removeLayoutOverlay() {
+		gama.api.GAMA.getGui().hideLaunchingOverlay();
 	}
 
 	/**
@@ -591,6 +605,33 @@ public class PerspectiveHelper {
 		final IPerspectiveDescriptor d = getActivePerspective();
 		if (d instanceof SimulationPerspectiveDescriptor) return (SimulationPerspectiveDescriptor) d;
 		return null;
+	}
+
+	/**
+	 * Pre-warms the {@link SimulationPerspectiveDescriptor} infrastructure.
+	 *
+	 * <p>
+	 * On first use, {@link #findOrBuildPerspectiveWithId(String)} constructs a
+	 * {@link SimulationPerspectiveDescriptor} for the requested id and injects it into Eclipse's
+	 * {@link PerspectiveRegistry} via reflection. This method triggers that path once at startup, using a throw-away
+	 * dummy id, so that the real first experiment launch does not pay the class-loading and reflection cost.
+	 * </p>
+	 *
+	 * <p>
+	 * The dummy descriptor is left in the registry and will be cleaned up by {@link #cleanPerspectives()} on the next
+	 * startup, exactly like stale real simulation descriptors.
+	 * </p>
+	 */
+	public static void prewarmPerspective() {
+		try {
+			// Touch ThemeHelper — triggers the CSS-engine theme detection (slow on first call)
+			ThemeHelper.isDark();
+			final String dummyId = getNewPerspectiveName("__prewarm__", "__prewarm__");
+			findOrBuildPerspectiveWithId(dummyId);
+			DEBUG.OUT("PerspectiveHelper: simulation-perspective infrastructure pre-warmed");
+		} catch (final Exception e) {
+			DEBUG.ERR("PerspectiveHelper: prewarmPerspective failed - " + e.getMessage());
+		}
 	}
 
 }

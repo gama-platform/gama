@@ -3,7 +3,7 @@
  * GamaImageFile.java, in gama.extension.image, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -26,38 +26,40 @@ import java.util.StringTokenizer;
 
 import javax.imageio.ImageIO;
 
+import org.geotools.api.referencing.FactoryException;
 import org.geotools.data.PrjFileReader;
-import org.locationtech.jts.geom.Envelope;
-import org.opengis.referencing.FactoryException;
 
 import com.google.common.io.Files;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.Envelope3D;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.topology.projection.IProjection;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
-import gama.core.util.file.GamaFile;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.Facets;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.topology.IProjection;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.file.GamaFile;
+import gama.api.types.file.IGamaFile;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.interfaces.IFieldMatrixProvider;
+import gama.api.utils.interfaces.IImageProvider;
+import gama.core.topology.gis.GamaCRS;
 import gama.core.util.file.GamaGridFile;
-import gama.core.util.file.IFieldMatrixProvider;
-import gama.core.util.file.IGamaFile;
 import gama.core.util.matrix.GamaIntMatrix;
-import gama.core.util.matrix.IField;
-import gama.core.util.matrix.IMatrix;
 import gama.gaml.operators.spatial.SpatialProjections;
-import gama.gaml.statements.Facets;
-import gama.gaml.types.GamaMatrixType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class GamaImageFile.
@@ -205,7 +207,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 	@Override
 	public IList<String> getAttributes(final IScope scope) {
 		// No attributes
-		return GamaListFactory.EMPTY_LIST;
+		return GamaListFactory.getEmptyList();
 	}
 
 	@Override
@@ -243,7 +245,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 	}
 
 	@Override
-	protected IMatrix _matrixValue(final IScope scope, final IType contentsType, final GamaPoint preferredSize,
+	protected IMatrix _matrixValue(final IScope scope, final IType contentsType, final IPoint preferredSize,
 			final boolean copy) throws GamaRuntimeException {
 		getContents(scope);
 		if (preferredSize != null)
@@ -301,8 +303,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	private IMatrix matrixValueFromImage(final IScope scope, final GamaPoint preferredSize)
-			throws GamaRuntimeException {
+	private IMatrix matrixValueFromImage(final IScope scope, final IPoint preferredSize) throws GamaRuntimeException {
 		final BufferedImage image = loadImage(scope, true);
 		return matrixValueFromImage(scope, image, preferredSize);
 	}
@@ -319,7 +320,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 	 * @return the i matrix
 	 */
 	public static IMatrix matrixValueFromImage(final IScope scope, final BufferedImage image,
-			final GamaPoint preferredSize) {
+			final IPoint preferredSize) {
 		int xSize, ySize;
 		BufferedImage resultingImage = image;
 		if (preferredSize == null) {
@@ -334,7 +335,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 			g.dispose();
 			// image = resultingImage;
 		}
-		final IMatrix matrix = new GamaIntMatrix(xSize, ySize);
+		final IMatrix matrix = GamaMatrixFactory.createIntMatrix(xSize, ySize);
 		for (int i = 0; i < xSize; i++) {
 			for (int j = 0; j < ySize; j++) { matrix.set(scope, i, j, resultingImage.getRGB(i, j)); }
 		}
@@ -353,7 +354,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	private IMatrix matrixValueFromPgm(final IScope scope, final GamaPoint preferredSize) throws GamaRuntimeException {
+	private IMatrix matrixValueFromPgm(final IScope scope, final IPoint preferredSize) throws GamaRuntimeException {
 		// TODO PreferredSize is not respected here
 		try (BufferedReader in = new BufferedReader(new FileReader(getFile(scope)))) {
 			StringTokenizer tok;
@@ -361,7 +362,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 			if (str != null && !"P2".equals(str))
 				throw new UnsupportedEncodingException("File is not in PGM ascii format");
 			str = in.readLine();
-			if (str == null) return GamaMatrixType.with(scope, 0, preferredSize, Types.INT);
+			if (str == null) return GamaMatrixFactory.createWithValue(scope, 0, preferredSize, Types.INT);
 			tok = new StringTokenizer(str);
 			final int xSize = Integer.parseInt(tok.nextToken());
 			final int ySize = Integer.parseInt(tok.nextToken());
@@ -376,7 +377,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 			// in.close();
 			str = buf.toString();
 			tok = new StringTokenizer(str);
-			final IMatrix matrix = new GamaIntMatrix(xSize, ySize);
+			final IMatrix matrix = GamaMatrixFactory.createIntMatrix(xSize, ySize);
 			for (int j = 0; j < ySize; j++) {
 				for (int i = 0; i < xSize; i++) {
 					final Integer val = Integer.valueOf(tok.nextToken());
@@ -402,28 +403,27 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		String val = null;
 		String geodataFile = getPath(scope).replaceAll(extension, "");
 		switch (extension) {
-			case "jpg":
-				geodataFile = geodataFile + "jgw";
-				break;
-			case "png":
-				geodataFile = geodataFile + "pgw";
-				break;
-			case "tiff":
-			case "tif":
+			case "jpg" -> geodataFile = geodataFile + "jgw";
+			case "png" -> geodataFile = geodataFile + "pgw";
+			case "tiff", "tif" -> {
 				geodataFile = geodataFile + "tfw";
 				val = "";
-				break;
-			case null:
-			default:
+			}
+			case null -> {
 				return null;
+			}
+			default -> {
+				return null;
+			}
 		}
+
 		final File infodata = new File(geodataFile);
 		if (infodata.exists()) return geodataFile;
 		return val;
 	}
 
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		final String geodataFile = getGeoDataFile(scope);
 		double cellSizeX = 1;
 		double cellSizeY = 1;
@@ -431,7 +431,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		double yllcorner = 0;
 		boolean xNeg = false;
 		boolean yNeg = false;
-		final String extension = getExtension(scope);
+		// final String extension = getExtension(scope);
 		if (geodataFile != null && !"".equals(geodataFile)) {
 			try (final InputStream ips = java.nio.file.Files.newInputStream(new File(geodataFile).toPath());
 					final InputStreamReader ipsr = new InputStreamReader(ips);
@@ -468,26 +468,21 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		} else if ("tiff".equals(extension) || "tif".equals(extension)) {
 			final GamaGridFile file = new GamaGridFile(null, this.getPath(scope));
 
-			final Envelope e = file.computeEnvelope(scope);
+			final IEnvelope e = file.computeEnvelope(scope);
 			if (e != null) {
-				GamaPoint minCorner = new GamaPoint(e.getMinX(), e.getMinY());
-				GamaPoint maxCorner = new GamaPoint(e.getMaxX(), e.getMaxY());
+				IPoint minCorner = GamaPointFactory.create(e.getMinX(), e.getMinY());
+				IPoint maxCorner = GamaPointFactory.create(e.getMaxX(), e.getMaxY());
 				if (geodataFile != null) {
 					IProjection pr;
-					try {
-						pr = scope.getSimulation().getProjectionFactory().forSavingWith(scope,
-								file.gis.getTargetCRS(scope));
-						minCorner =
-								GamaShapeFactory.createFrom(pr.transform(minCorner.getInnerGeometry())).getLocation();
-						maxCorner =
-								GamaShapeFactory.createFrom(pr.transform(maxCorner.getInnerGeometry())).getLocation();
-					} catch (final FactoryException e1) {
-						e1.printStackTrace();
-					}
+					pr = scope.getSimulation().getProjectionFactory().forSavingWith(scope,
+							file.gis.getTargetCRS(scope));
+					minCorner = GamaShapeFactory.createFrom(pr.transform(minCorner.getInnerGeometry())).getLocation();
+					maxCorner = GamaShapeFactory.createFrom(pr.transform(maxCorner.getInnerGeometry())).getLocation();
 
 				}
 				isGeoreferenced = true;
-				return Envelope3D.of(minCorner.x, maxCorner.x, minCorner.y, maxCorner.y, 0, 0);
+				return GamaEnvelopeFactory.of(minCorner.getX(), maxCorner.getX(), minCorner.getY(), maxCorner.getY(), 0,
+						0);
 			}
 
 		}
@@ -498,10 +493,10 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 		final double x2 = xllcorner + cellSizeX * nbCols;
 		final double y1 = yllcorner;
 		final double y2 = yllcorner + cellSizeY * nbRows;
-		GamaPoint minCorner =
-				new GamaPoint(xNeg ? Math.max(x1, x2) : Math.min(x1, x2), yNeg ? Math.max(y1, y2) : Math.min(y1, y2));
-		GamaPoint maxCorner =
-				new GamaPoint(xNeg ? Math.min(x1, x2) : Math.max(x1, x2), yNeg ? Math.min(y1, y2) : Math.max(y1, y2));
+		IPoint minCorner = GamaPointFactory.create(xNeg ? Math.max(x1, x2) : Math.min(x1, x2),
+				yNeg ? Math.max(y1, y2) : Math.min(y1, y2));
+		IPoint maxCorner = GamaPointFactory.create(xNeg ? Math.min(x1, x2) : Math.max(x1, x2),
+				yNeg ? Math.min(y1, y2) : Math.max(y1, y2));
 		if (geodataFile != null) {
 			String fp = this.getPath(scope);
 			String path = fp.replace(Files.getFileExtension(fp), "prj");
@@ -516,13 +511,14 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 					try (PrjFileReader pfr = new PrjFileReader(rdc)) {
 						if (pfr.getCoordinateReferenceSystem() != null) {
 							IProjection gis = scope.getSimulation().getProjectionFactory().forSavingWith(scope,
-									pfr.getCoordinateReferenceSystem());
+									new GamaCRS(pfr.getCoordinateReferenceSystem()));
 							if (gis != null) {
 								minCorner = GamaShapeFactory.createFrom(gis.transform(minCorner.getInnerGeometry()))
 										.getLocation();
 								maxCorner = GamaShapeFactory.createFrom(gis.transform(maxCorner.getInnerGeometry()))
 										.getLocation();
-								return Envelope3D.of(minCorner.x, maxCorner.x, minCorner.y, maxCorner.y, 0, 0);
+								return GamaEnvelopeFactory.of(minCorner.getX(), maxCorner.getX(), minCorner.getY(),
+										maxCorner.getY(), 0, 0);
 							}
 						}
 					} catch (IOException | FactoryException e) {}
@@ -535,7 +531,7 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 			maxCorner = SpatialProjections.to_GAMA_CRS(scope, maxCorner, crs).getLocation();
 		}
 
-		return Envelope3D.of(minCorner.x, maxCorner.x, minCorner.y, maxCorner.y, 0, 0);
+		return GamaEnvelopeFactory.of(minCorner.getX(), maxCorner.getX(), minCorner.getY(), maxCorner.getY(), 0, 0);
 
 	}
 
@@ -608,4 +604,5 @@ public class GamaImageFile extends GamaFile<IMatrix<Integer>, Integer>
 	public boolean hasGeoDataAvailable(final IScope scope) {
 		return getGeoDataFile(scope) != null;
 	}
+
 }

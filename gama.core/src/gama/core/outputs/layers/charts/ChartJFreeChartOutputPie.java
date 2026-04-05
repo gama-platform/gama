@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ChartJFreeChartOutputPie.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ChartJFreeChartOutputPie.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -30,10 +30,12 @@ import org.jfree.data.general.DefaultPieDataset;
 import org.jfree.data.general.PieDataset;
 import org.jfree.data.xy.XYDataset;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.gaml.expressions.IExpression;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.ui.displays.IChartDataSource;
+import gama.api.ui.displays.IDisplaySurface;
 
 /**
  * The Class ChartJFreeChartOutputPie.
@@ -76,18 +78,14 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 	}
 
 	@Override
-	public void setDefaultPropertiesFromType(final IScope scope, final ChartDataSource source, final int type_val) {
-		
+	public void setDefaultPropertiesFromType(final IScope scope, final IChartDataSource source, final int type_val) {
 
 		switch (type_val) {
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N:
-			case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N:
-			case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
-			case ChartDataSource.DATA_TYPE_LIST_POINT:
-			case ChartDataSource.DATA_TYPE_MATRIX_DOUBLE:
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
-			case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3:
-			default: {
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12, IChartDataSource.DATA_TYPE_LIST_POINT, IChartDataSource.DATA_TYPE_MATRIX_DOUBLE, IChartDataSource.DATA_TYPE_LIST_DOUBLE_3, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3 -> {
+				source.setCumulative(scope, false); // never cumulative by default
+				source.setUseSize(scope, false);
+			}
+			default -> {
 				source.setCumulative(scope, false); // never cumulative by default
 				source.setUseSize(scope, false);
 			}
@@ -104,10 +102,12 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		pp.setShadowYOffset(0);
 		if (!"none".equals(this.series_label_position)) {
 			pp.setLabelGenerator(new StandardPieSectionLabelGenerator("{0} = {1} ({2})"));
-			if (axesColor != null) { pp.setLabelLinkPaint(axesColor); }
+			if (axesColor != null) { pp.setLabelLinkPaint(IColor.toAWTColor(axesColor)); }
 			pp.setLabelFont(getTickFont());
-			if (labelTextColor != null) { pp.setLabelPaint(labelTextColor); }
-			if (labelBackgroundColor != null) { pp.setLabelBackgroundPaint(this.labelBackgroundColor); }
+			if (labelTextColor != null) { pp.setLabelPaint(IColor.toAWTColor(labelTextColor)); }
+			if (labelBackgroundColor != null) {
+				pp.setLabelBackgroundPaint(IColor.toAWTColor(this.labelBackgroundColor));
+			}
 
 		}
 		if ("none".equals(this.series_label_position)) {
@@ -123,21 +123,18 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		final String style = this.getChartdataset().getDataSeries(scope, serieid).getStyle(scope);
 		AbstractRenderer newr;
 		switch (style) {
-			case IKeyword.STACK:
-			case IKeyword.THREE_D:
-			case IKeyword.WHISKER:
-			case IKeyword.AREA:
-			case IKeyword.BAR:
-			case IKeyword.STEP:
-			case IKeyword.RING:
-			case IKeyword.EXPLODED:
-			default: {
+			case IKeyword.STACK, IKeyword.THREE_D, IKeyword.WHISKER, IKeyword.AREA, IKeyword.BAR, IKeyword.STEP, IKeyword.RING, IKeyword.EXPLODED -> {
 				newr = new DefaultPolarItemRenderer(); // useless, piechart doesn't
-														// use renderers...
+				// use renderers...
 				break;
-
+			}
+			default -> {
+				newr = new DefaultPolarItemRenderer(); // useless, piechart doesn't
+				// use renderers...
+				break;
 			}
 		}
+
 		return newr;
 	}
 
@@ -153,7 +150,8 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 		final ChartDataSeries myserie = this.getChartdataset().getDataSeries(scope, serieid);
 		// final int myrow = IdPosition.get(serieid);
 		if (myserie.getMycolor() != null) {
-			((PiePlot<?>) this.getJFChart().getPlot()).setSectionPaint(serieid, myserie.getMycolor());
+			((PiePlot<?>) this.getJFChart().getPlot()).setSectionPaint(serieid,
+					IColor.toAWTColor(myserie.getMycolor()));
 		}
 
 	}
@@ -161,7 +159,7 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 	@SuppressWarnings ("unchecked")
 	@Override
 	protected void clearDataSet(final IScope scope) {
-		
+
 		super.clearDataSet(scope);
 		final PiePlot<?> plot = (PiePlot) this.chart.getPlot();
 		jfreedataset.clear();
@@ -193,7 +191,6 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 
 	@Override
 	protected void resetSerie(final IScope scope, final String serieid) {
-		
 
 		final ChartDataSeries dataserie = chartdataset.getDataSeries(scope, serieid);
 		@SuppressWarnings ("unchecked") final DefaultPieDataset<String> serie =
@@ -210,7 +207,6 @@ public class ChartJFreeChartOutputPie extends ChartJFreeChartOutput {
 
 	@Override
 	protected void initRenderer(final IScope scope) {
-		
 
 	}
 

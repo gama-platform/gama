@@ -9,15 +9,16 @@
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
-import gama.core.util.IMap;
-import gama.core.util.tree.GamaNode;
-import gama.gaml.types.IType;
+import gama.annotations.doc;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
+import gama.api.utils.collections.GamaNode;
 
 /**
  * The Class Displays.

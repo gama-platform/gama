@@ -1,8 +1,13 @@
 /**
-* Name: clean_road_network
+* Name: Clean Road Network
 * Author: Patrick Taillandier
-* Description: shows how GAMA can help to clean network data before using it to make agents move on it
-* Tags: gis, shapefile, graph, clean
+* Description: Shows how GAMA can help clean network data (e.g., road networks loaded from shapefiles) before
+*   using it to simulate agent movement. Common issues with raw network data include disconnected segments,
+*   near-duplicate nodes at road junctions, and very short dangling edges. GAMA provides built-in operators
+*   to detect and fix these issues: splitting overlapping edges at their intersection points, merging nodes
+*   that are within a given tolerance distance, and removing dangling edges shorter than a threshold. The
+*   cleaned network is then ready to be used as a graph topology for navigation.
+* Tags: gis, shapefile, graph, clean, network, road, topology, preprocessing
 */
 
 model clean_road_network
@@ -64,9 +69,9 @@ experiment clean_network type: gui {
 	parameter "Reduce to main connected components" var:reduce_to_main_connected_components;
 	
 	init {
-		create clean_road_network_model with:[clean_data::false]; 
-		create clean_road_network_model with:[split_lines::false,reduce_to_main_connected_components::false]; 
-		create clean_road_network_model with:[split_lines::true,reduce_to_main_connected_components::false]; 
+		create clean_road_network_model with:(clean_data:false); 
+		create clean_road_network_model with:(split_lines:false,reduce_to_main_connected_components:false); 
+		create clean_road_network_model with:(split_lines:true,reduce_to_main_connected_components:false); 
 	}
 	output {
 		layout #split;

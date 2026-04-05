@@ -25,8 +25,8 @@ import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureData;
 import com.jogamp.opengl.util.texture.awt.AWTTextureIO;
 
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.preferences.GamaPreferences;
+import gama.api.utils.interfaces.IImageProvider;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.extension.image.GamaImage;
 import gama.ui.display.opengl.OpenGL;
@@ -78,7 +78,7 @@ public class TextureCache2 implements ITextureCache/* , IPreferenceAfterChangeLi
 		// isNonPowerOf2TexturesAvailable =
 		// !GamaPreferences.Displays.DISPLAY_POWER_OF_TWO.getValue() && gl.getGL().isNPOTTextureAvailable();
 		// GamaPreferences.Displays.DISPLAY_POWER_OF_TWO.onChange(this);
-		// TextureIO.setTexRectEnabled(Gama Preferences.Displays.DISPLAY_POWER_OF_TWO.getValue());
+		// TextureIO.setTexRectEnabled(Gama __PREFS__.Displays.DISPLAY_POWER_OF_TWO.getValue());
 		// DEBUG.OUT("Non power-of-two textures available: " + isNonPowerOf2TexturesAvailable);
 		// }
 	}

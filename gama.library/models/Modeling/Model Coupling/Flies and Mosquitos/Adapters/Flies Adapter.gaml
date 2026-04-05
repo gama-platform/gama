@@ -1,8 +1,10 @@
 /**
-* Name: flies_coupling
-* Author: HUYNH Quang Nghi
-* Description: It is NOT supposed to launch. This is the coupling of Flies model. It is used in the "Complex Comodeling Example" as an interface. 
-* Tags: comodel
+* Name: Flies Adapter
+* Author: Huynh Quang Nghi
+* Description: Comodeling adapter (coupling class) for the Flies model. This file is NOT intended to be
+*   launched directly — it serves as the interface between the Flies and Mosquitos comodeling examples and
+*   the Flies sub-model, exposing fly agents to the parent comodel environment.
+* Tags: comodel, adapter, flies, coupling
 */
 model flies_coupling
 import "../Models/Flies.gaml"
@@ -13,7 +15,7 @@ global
 
 experiment Simple type: gui
 {
-	list<Fly> get_flies{
+	list<Fly> get_flies(){
 		return list(Fly);
 	}
 	

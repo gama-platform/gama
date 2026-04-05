@@ -1,12 +1,13 @@
 /**
-* Name: Multi-Level Architecture with Preys and Predators
-* Author: 
-* Description: This model shows how to use multi-level architecture. In this model, prey and predators agents move randomly 
-*	 in the environment. When a prey agent perceive a predator, it flees trying to go to the closest shelters while the predator 
-* 	 agent chases it. The shelters capture the prey agents fleeing, changing them into prey_in_shelter species, that predator 
-* 	can't chase during a certain time. They are released after that time in an invisible state so that they can wander in the  
-* 	environment without being chase by the predator, but also, for a certain time.
-* Tags: multi_level, agent_movement
+* Name: Predators, Preys and Shelters - Multi-Level Architecture
+* Author: Gama Development Team
+* Description: A multi-level predator-prey model with shelters that can capture and hide prey. Prey and
+*   predator agents move randomly. When a prey detects a predator it flees toward the nearest shelter.
+*   A shelter 'captures' fleeing prey (changing their species to 'prey_in_shelter'), making them invisible
+*   and unchaseble for a period. After the dwell time they are released in an 'invisible' state for another
+*   duration before resuming normal wandering. This demonstrates multi-level architecture as a mechanism
+*   for modeling temporary hiding/refuge behaviors.
+* Tags: multi_level, agent_movement, capture, release, predator, prey, shelter, refuge
 */
 
 model preys_predators_shelters
@@ -103,7 +104,7 @@ species predator skills: [moving] schedules: shuffle (list (predator)) {
 	prey target_prey update: self.choose_target_prey();
 	
 	//Change the target prey according to the prey who aren't fleeing if it doesn't have any yet
-	action choose_target_prey type: prey {
+	prey choose_target_prey () {
 		if ( (target_prey = nil) or (dead (target_prey) ) ) {
 			return one_of ( (list (prey)) where (each.state = 'move_around') );
 		}
@@ -167,7 +168,7 @@ species shelter skills: [moving]  frequency: 2 {
 
 experiment default_experiment type: gui {
 	output {
-		display default_display background: #black{
+		display default_display background: #black type: 3d{
 			species prey aspect: default;
 			species predator transparency: 0.5 aspect: default;
 			species shelter transparency: 0.5 aspect: default { 

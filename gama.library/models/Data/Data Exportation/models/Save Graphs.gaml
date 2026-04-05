@@ -1,8 +1,12 @@
 /**
-* Name: Save graphs
+* Name: Save Graphs
 * Author: Patrick Taillandier
-* Description: This is a model that shows how to save a graph with diverse formats.
-* Tags: save_file, graph
+* Description: Demonstrates how to export graphs from GAMA in various standard formats. After generating a random
+*   graph with nodes and edges, the model saves it in several formats including GML (Graph Modeling Language),
+*   GraphML, GEXF (Graph Exchange XML Format), and DOT (Graphviz). Each format has different strengths and is
+*   supported by different external tools for visualization and analysis. This model serves as a reference for
+*   modelers who need to export graph data from GAMA for post-processing in external tools.
+* Tags: save_file, graph, export, gml, graphml, gexf, dot
 */
 
 model Savetoshapefile

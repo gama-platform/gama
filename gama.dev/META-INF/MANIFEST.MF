@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Developer utilities
+Bundle-SymbolicName: gama.dev
+Bundle-Version: 0.0.0.qualifier
+Export-Package: gama.dev,
+ gama.dev.logging
+Bundle-Activator: gama.dev.Activator
+Bundle-Vendor: UMMISCO
+Require-Bundle: slf4j.api
+Bundle-RequiredExecutionEnvironment: JavaSE-25
+Automatic-Module-Name: gama.dev
+Bundle-ActivationPolicy: lazy
+Import-Package: org.osgi.framework

@@ -1,9 +1,12 @@
 /**
 * Name: Lists
 * Author: Alexis Drogoul
-* Description: Examples of the syntax and various operators used to manipulate the 'list' data type. 
-* Read the comments and run the model to get a better idea on how to use lists in GAML. 
-* Tags: list, loop
+* Description: Examples of the syntax and various operators used to manipulate the 'list' data type in GAML.
+*   Covers declaration of typed and untyped lists, initialization with values, adding and removing elements,
+*   accessing elements by index, slicing, searching, sorting, reversing, and iterating with loops and functional
+*   operators such as collect, where, max_of, min_of, sum, mean, and others.
+*   Read the comments and run the model to get a better understanding of how to use lists effectively in GAML.
+* Tags: list, loop, container, collect, where, sort, add, remove, index
 */
 
 model Lists

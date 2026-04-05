@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * CopyAction.java, in gama.ui.navigator.view, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * CopyAction.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.navigator.view.actions;
 
@@ -18,7 +18,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWTError;
 import org.eclipse.swt.dnd.Clipboard;
@@ -31,8 +30,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.SelectionListenerAction;
 import org.eclipse.ui.part.ResourceTransfer;
 
-import gama.ui.navigator.metadata.FileMetaDataProvider;
+import gama.api.GAMA;
 import gama.ui.navigator.view.contents.ResourceManager;
+import gama.workspace.metadata.FileMetaDataProvider;
 
 /**
  * Standard action for copying the currently selected resources to the clipboard.
@@ -118,9 +118,7 @@ import gama.ui.navigator.view.contents.ResourceManager;
 		for (int i = 0; i < length; i++) {
 			final IPath location = resources[i].getLocation();
 			// location may be null. See bug 29491.
-			if (location != null) {
-				fileNames[actualLength++] = location.toOSString();
-			}
+			if (location != null) { fileNames[actualLength++] = location.toOSString(); }
 			if (i > 0) {
 				buf.append("\n"); //$NON-NLS-1$
 			}
@@ -130,9 +128,7 @@ import gama.ui.navigator.view.contents.ResourceManager;
 		if (actualLength < length) {
 			final String[] tempFileNames = fileNames;
 			fileNames = new String[actualLength];
-			for (int i = 0; i < actualLength; i++) {
-				fileNames[i] = tempFileNames[i];
-			}
+			for (int i = 0; i < actualLength; i++) { fileNames[i] = tempFileNames[i]; }
 		}
 		setClipboard(resources, fileNames, buf.toString());
 
@@ -181,10 +177,8 @@ import gama.ui.navigator.view.contents.ResourceManager;
 						new Transfer[] { ResourceTransfer.getInstance(), TextTransfer.getInstance() });
 			}
 		} catch (final SWTError e) {
-			if (e.code != DND.ERROR_CANNOT_SET_CLIPBOARD) { throw e; }
-			if (MessageDialog.openQuestion(shell, "Problem with copy title", // TODO //$NON-NLS-1$
-																				// ResourceNavigatorMessages.CopyToClipboardProblemDialog_title,
-					"Problem with copy.")) { //$NON-NLS-1$
+			if (e.code != DND.ERROR_CANNOT_SET_CLIPBOARD) throw e;
+			if (GAMA.getGui().getDialogFactory().question("Problem with copy title", "Problem with copy.")) {
 				setClipboard(resources, fileNames, names);
 			}
 		}
@@ -196,28 +190,24 @@ import gama.ui.navigator.view.contents.ResourceManager;
 	 */
 	@Override
 	protected boolean updateSelection(final IStructuredSelection selection) {
-		if (!super.updateSelection(selection)) { return false; }
-
-		if (getSelectedNonResources().size() > 0) { return false; }
+		if (!super.updateSelection(selection) || getSelectedNonResources().size() > 0) return false;
 
 		final List<? extends IResource> selectedResources = getSelectedResources();
-		if (selectedResources.size() == 0) { return false; }
+		if (selectedResources.size() == 0) return false;
 
 		final boolean projSelected = selectionIsOfType(IResource.PROJECT);
 		final boolean fileFoldersSelected = selectionIsOfType(IResource.FILE | IResource.FOLDER);
-		if (!projSelected && !fileFoldersSelected) { return false; }
-
 		// selection must be homogeneous
-		if (projSelected && fileFoldersSelected) { return false; }
+		if ((!projSelected && !fileFoldersSelected) || (projSelected && fileFoldersSelected)) return false;
 
 		// must have a common parent
 		final IContainer firstParent = selectedResources.get(0).getParent();
-		if (firstParent == null) { return false; }
+		if (firstParent == null) return false;
 
 		for (final IResource currentResource : selectedResources) {
-			if (!currentResource.getParent().equals(firstParent)) { return false; }
+			if (!currentResource.getParent().equals(firstParent)) return false;
 			// resource location must exist
-			if (currentResource.getLocationURI() == null) { return false; }
+			if (currentResource.getLocationURI() == null) return false;
 		}
 		return true;
 	}

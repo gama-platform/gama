@@ -1,19 +1,19 @@
 /***
-* Name: Influence of the integration step
-* Author: Tri, Nghi, Benoit
-* Description:  The aim is to show the influence of the integration step on the result precision.
-* 				The solutions of the Lotka-Volterra are periodic. When the integration step is not
-* 				small enough, this periodicity is lost, as illustrated with h=1.
-* 
-* Tags: equation, math
+* Name: Influence of the Integration Step (Lotka-Volterra)
+* Author: Tri Nguyen-Huu, Huynh Quang Nghi, Benoit Gaudou
+* Description: Shows how the ODE integration step size (h) affects solution accuracy on a Lotka-Volterra
+*   model. Lotka-Volterra solutions are periodic; with a large step (h=1) periodicity is lost and the
+*   numerical solution diverges from the true trajectory. Smaller steps give more accurate but slower
+*   results. Helps users choose an appropriate step size for their ODE models.
+* Tags: equation, math, ODE, lotka_volterra, integration_step, numerical_accuracy, step_size
 ***/
 
 model LVInfluenceoftheIntegrationstep
 
 global {
 	init {
-		create userLV with: [h::0.01,x::2.0,y::2.0];	
-		create userLV with: [h::1.0,x::2.0,y::2.0];									
+		create userLV with: (h:0.01,x:2.0,y:2.0);	
+		create userLV with: (h:1.0,x:2.0,y:2.0);									
 	}
 }
 

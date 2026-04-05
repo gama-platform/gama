@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Get linux testing releases
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: ${{ inputs.artifact_download_id }}
 
@@ -21,10 +21,10 @@ jobs:
         run: tar xvf $GITHUB_WORKSPACE/gama.application-linux.gtk.x86_64.tar.gz
 
       - name: Set up Adopt OpenJDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: "21"
+          java-version: "25"
           java-package: jdk
 
       - name: Test release

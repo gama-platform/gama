@@ -3,7 +3,7 @@
  * GamaColors.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,7 +17,8 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Control;
 
-import gama.core.util.GamaColor;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.utils.WorkbenchHelper;
@@ -159,8 +160,8 @@ public class GamaColors {
 		 * @return the gama color
 		 * @date 20 août 2023
 		 */
-		public GamaColor gamaColor() {
-			return GamaColor.get(active.getRed(), active.getGreen(), active.getBlue(), active.getAlpha());
+		public IColor gamaColor() {
+			return GamaColorFactory.createWithRGBA(active.getRed(), active.getGreen(), active.getBlue(), active.getAlpha());
 		}
 	}
 
@@ -312,6 +313,18 @@ public class GamaColors {
 	/**
 	 * Gets the.
 	 *
+	 * @param color
+	 *            the color
+	 * @return the gama UI color
+	 */
+	public static GamaUIColor get(final IColor color) {
+		if (color == null) return null;
+		return get(color.getRGB());
+	}
+
+	/**
+	 * Gets the.
+	 *
 	 * @param r
 	 *            the r
 	 * @param g
@@ -413,14 +426,15 @@ public class GamaColors {
 	}
 
 	/**
-	 * To gama color.
+	 * To swt color.
 	 *
 	 * @param color
 	 *            the color
-	 * @return the gama color
+	 * @return the color
 	 */
-	public static GamaColor toGamaColor(final Color color) {
-		return GamaColor.get(color.getRed(), color.getGreen(), color.getBlue());
+	public static Color toSwtColor(final IColor color) {
+		if (color == null) return toSwtColor(java.awt.Color.BLACK);
+		return new Color(color.red(), color.green(), color.blue());
 	}
 
 	/**
@@ -430,9 +444,20 @@ public class GamaColors {
 	 *            the color
 	 * @return the gama color
 	 */
-	public static GamaColor toGamaColor(final RGB color) {
-		if (color == null) return GamaColor.get(0);
-		return GamaColor.get(color.red, color.green, color.blue);
+	public static IColor toGamaColor(final Color color) {
+		return GamaColorFactory.get(color.getRed(), color.getGreen(), color.getBlue());
+	}
+
+	/**
+	 * To gama color.
+	 *
+	 * @param color
+	 *            the color
+	 * @return the gama color
+	 */
+	public static IColor toGamaColor(final RGB color) {
+		if (color == null) return GamaColorFactory.get(0);
+		return GamaColorFactory.get(color.red, color.green, color.blue);
 	}
 
 	/**

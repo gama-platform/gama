@@ -3,7 +3,7 @@
  * NavigatorContentProvider.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,7 +14,6 @@ import static gama.ui.navigator.view.contents.NavigatorRoot.getInstance;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_BUILD;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_CHANGE;
 import static org.eclipse.core.resources.IResourceChangeEvent.PRE_DELETE;
-import static org.eclipse.core.resources.ResourcesPlugin.getWorkspace;
 
 import java.util.ArrayList;
 
@@ -24,6 +23,7 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.model.WorkbenchContentProvider;
 import org.eclipse.ui.navigator.CommonViewer;
 
+import gama.api.GAMA;
 import gama.ui.navigator.view.contents.ResourceManager;
 import gama.ui.navigator.view.contents.VirtualContent;
 
@@ -59,7 +59,8 @@ public class NavigatorContentProvider extends WorkbenchContentProvider implement
 		final CommonViewer viewer = (CommonViewer) v;
 		final ResourceManager mapper = new ResourceManager(this, viewer);
 		getInstance().resetVirtualFolders(mapper);
-		getWorkspace().addResourceChangeListener(mapper, POST_CHANGE | PRE_DELETE | POST_BUILD);
+		GAMA.getWorkspaceManager().getWorkspace().addResourceChangeListener(mapper,
+				POST_CHANGE | PRE_DELETE | POST_BUILD);
 		super.inputChanged(viewer, oldInput, newInput);
 	}
 

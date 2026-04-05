@@ -1,8 +1,12 @@
 /**
 * Name: Regression
 * Author: Patrick Taillandier
-* Description: A model which shows how to use the regression 
-* Tags: regression, 3d, statistic
+* Description: Demonstrates linear regression in GAMA using the 'regression' type and the 'build' operator.
+*   A dataset of agent locations is used to fit a regression function that predicts one spatial coordinate
+*   from others. The fitted regression is then applied to new observations using the 'predict' operator.
+*   The model visualizes both the actual agent positions and the regression prediction surface in 3D,
+*   illustrating how regression can approximate spatial distributions.
+* Tags: statistics, regression, linear_regression, predict, 3d, visualization, spatial_analysis
 */
 
 model example_regression
@@ -17,7 +21,7 @@ global {
 	init {
 		loop i from: 0 to: 18{
 			if (i != 10) {
-				create dummy with:[location::{i * 5 + 2 - rnd(4), i*5 + 2 - rnd(4), i*5 + 2 - rnd(4)}];	
+				create dummy with:(location:{i * 5 + 2 - rnd(4), i*5 + 2 - rnd(4), i*5 + 2 - rnd(4)});	
 			}
 		}
 	}

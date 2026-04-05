@@ -1,10 +1,13 @@
 /**
-* Name: Color defined by choosing a Color Brewer
-* Author:  Arnaud Grignard & Patrick Taillandier
-* Description: A model to show how to use color brewer. In this model, two experiments are presents : one just to show the different colors present 
-* 	in some selected brewer, and a second one to show in a grid the different colors of the brewer having at least a minimal number of colors passed 
-* 	in parameter.
-* Tags: color
+* Name: Color Brewer
+* Author: Arnaud Grignard, Patrick Taillandier
+* Description: Shows how to use ColorBrewer palettes in GAMA via the 'brewer_colors' operator. ColorBrewer
+*   provides a set of carefully designed color sequences for cartographic and data visualization use, grouped
+*   into sequential, diverging, and qualitative types. One experiment displays sample swatches for selected
+*   named brewers; a second shows all brewers that have at least a user-specified number of colors in a grid
+*   layout, with each cell colored from the corresponding palette. This is the standard reference for choosing
+*   perceptually sound color scales for GAMA displays.
+* Tags: color, colorbrewer, palette, visualization, display, cartography, brewer_colors
 */
 
 
@@ -34,7 +37,7 @@ global {
 	list<rgb> DivergingColors <- brewer_colors(divergingPalette);
 	list<rgb> QualitativeColors <- brewer_colors(qualitativePalette);
 	
-	action update_colors{
+	action update_colors(){
 		SequentialColors <-  brewer_colors(sequentialPalette);
 		DivergingColors <- brewer_colors(divergingPalette);
 		QualitativeColors <- brewer_colors(qualitativePalette);

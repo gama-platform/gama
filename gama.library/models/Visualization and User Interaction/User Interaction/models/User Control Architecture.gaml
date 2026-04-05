@@ -1,9 +1,13 @@
 /**
-* Name: User Command
+* Name: User Control Architecture
 * Author: Patrick Taillandier
-* Description: Model which shows how to use the advanced user control, to create and kill agents. 
-* Tags: gui, architecture
- */
+* Description: Demonstrates the 'user_controlled' control architecture, which gives users direct step-by-step
+*   control over individual agent actions during a simulation run. A species using 'control: user_controlled'
+*   pauses execution at each step and presents the user with a set of buttons corresponding to the agent's
+*   declared actions. The user chooses which action to execute. This architecture is useful for debugging
+*   agent behavior or for building turn-based interactive simulations where human decisions drive agent actions.
+* Tags: gui, architecture, user_controlled, interaction, control, agent, turn_based
+*/
 
 
 model user_control

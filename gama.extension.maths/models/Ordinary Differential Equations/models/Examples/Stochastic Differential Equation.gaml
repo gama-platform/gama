@@ -1,12 +1,12 @@
 /**
-* Name: stochastic_differential_equations
-* Author: Jean-Claude Régnault 
-* Description: A simple example of an SDE simulation solved with an Euler-Maruyama Method for a 
-* 				geometric brownian motion, which is based on a classical Euler forward method for ODEs.
-* 
-* 				This toy model simulates the evolution of some cryptocurrencies. Use at your own risk.
-*
-* Tags: math, equation
+* Name: Stochastic Differential Equation
+* Author: Jean-Claude Régnault
+* Description: A stochastic differential equation (SDE) simulation using the Euler-Maruyama method for
+*   geometric Brownian motion (GBM). GBM underlies the Black-Scholes financial model and is the simplest
+*   SDE with multiplicative noise. The model simulates the evolution of several cryptocurrency prices
+*   over time, with drift (trend) and volatility (noise) parameters. Demonstrates how to add a Wiener
+*   process (Gaussian noise term) to a standard ODE solver step.
+* Tags: equation, math, ODE, SDE, stochastic, brownian_motion, euler_maruyama, finance, cryptocurrency
 */
  
 model stochastic_differential_equations

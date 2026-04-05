@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * StrokeViewer.java, in gama.ui.shared.viewers, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * StrokeViewer.java, in gama.ui.viewers, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.viewers.gis.geotools.styling;
 
@@ -22,8 +22,8 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.geotools.api.style.Stroke;
 import org.geotools.styling.SLD;
-import org.geotools.styling.Stroke;
 import org.geotools.styling.StyleBuilder;
 
 /**
@@ -67,25 +67,25 @@ public class StrokeViewer {
 
 	/** The enabled. */
 	boolean enabled = false;
-	
+
 	/** The color. */
 	Color color = null;
-	
+
 	/** The width. */
 	double width = Double.NaN;
-	
+
 	/** The opacity. */
 	double opacity = Double.NaN;
 
 	/** The on. */
 	Button on;
-	
+
 	/** The chooser. */
 	StolenColorEditor chooser;
-	
+
 	/** The size. */
 	Combo size;
-	
+
 	/** The percent. */
 	Combo percent;
 
@@ -97,22 +97,23 @@ public class StrokeViewer {
 		@Override
 		public void widgetSelected(final SelectionEvent e) {
 			sync(e);
-		};
+		}
 
 		@Override
 		public void widgetDefaultSelected(final SelectionEvent e) {
 			sync(e);
-		};
+		}
 
 		@Override
 		public void modifyText(final ModifyEvent e) {
 			sync(SimpleConfigurator.selectionEvent(e));
-		};
+		}
 
 		/**
 		 * Sync.
 		 *
-		 * @param cause the cause
+		 * @param cause
+		 *            the cause
 		 */
 		private void sync(final SelectionEvent cause) {
 			try {
@@ -131,9 +132,7 @@ public class StrokeViewer {
 						StrokeViewer.this.opacity /= 100.0;
 					} else {
 						StrokeViewer.this.opacity = Double.parseDouble(ptext);
-						if (StrokeViewer.this.opacity > 1) {
-							StrokeViewer.this.opacity /= 100.0;
-						}
+						if (StrokeViewer.this.opacity > 1) { StrokeViewer.this.opacity /= 100.0; }
 					}
 				} catch (final NumberFormatException nan) {
 					// well lets just leave opacity alone
@@ -148,7 +147,7 @@ public class StrokeViewer {
 			}
 		}
 
-	};
+	}
 
 	/** The sync. */
 	Listener sync = new Listener();
@@ -171,13 +170,13 @@ public class StrokeViewer {
 		this.chooser = new StolenColorEditor(part, this.sync);
 
 		this.size = new Combo(part, SWT.DROP_DOWN);
-		this.size.setItems(new String[] { "1", "2", "3", "5", "10" }); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+		this.size.setItems("1", "2", "3", "5", "10"); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 		this.size.setTextLimit(2);
 		this.size.addKeyListener(klisten);
 		this.size.setToolTipText("Line width");
 
 		this.percent = new Combo(part, SWT.DROP_DOWN);
-		this.percent.setItems(new String[] { "0%", "25%", "50%", "75%", "100%" }); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$//$NON-NLS-4$//$NON-NLS-5$
+		this.percent.setItems("0%", "25%", "50%", "75%", "100%"); //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$//$NON-NLS-4$//$NON-NLS-5$
 		this.percent.setTextLimit(3);
 		this.percent.addKeyListener(klisten);
 		this.percent.setToolTipText("Line opacity");
@@ -199,9 +198,7 @@ public class StrokeViewer {
 	 * @param listener1
 	 */
 	public void removeListener(final SelectionListener listener1) {
-		if (this.listener == listener1) {
-			this.listener = null;
-		}
+		if (this.listener == listener1) { this.listener = null; }
 	}
 
 	/**
@@ -210,14 +207,15 @@ public class StrokeViewer {
 	 * @param event
 	 */
 	protected void fire(final SelectionEvent event) {
-		if (this.listener == null) { return; }
+		if (this.listener == null) return;
 		this.listener.widgetSelected(event);
 	}
 
 	/**
 	 * Listen.
 	 *
-	 * @param listen the listen
+	 * @param listen
+	 *            the listen
 	 */
 	void listen(final boolean listen) {
 		if (listen) {
@@ -289,9 +287,9 @@ public class StrokeViewer {
 	 * @return Stroke defined by this model
 	 */
 	public Stroke getStroke(final StyleBuilder build) {
-		if (!this.enabled) { return null; }
-		if (!Double.isNaN(this.opacity)) { return build.createStroke(this.color, this.width, this.opacity); }
-		if (!Double.isNaN(this.width)) { return build.createStroke(this.color, this.width); }
+		if (!this.enabled) return null;
+		if (!Double.isNaN(this.opacity)) return build.createStroke(this.color, this.width, this.opacity);
+		if (!Double.isNaN(this.width)) return build.createStroke(this.color, this.width);
 		return build.createStroke(this.color);
 	}
 }

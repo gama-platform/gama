@@ -1,9 +1,12 @@
 /**
 * Name: Maps
 * Author: Alexis Drogoul
-* Description: Examples of the syntax and various operators used to manipulate the 'map' data type. 
-* Read the comments and run the model to get a better idea on how to use maps in GAML. 
-* Tags: map, loop
+* Description: Examples of the syntax and various operators used to manipulate the 'map' data type in GAML.
+*   A map is a collection of key-value pairs where each key is unique. This model demonstrates declaring typed and
+*   untyped maps, initializing maps with key::value pairs, accessing and modifying values by key, adding and
+*   removing entries, iterating over keys or values with loops, and using functional operators.
+*   Read the comments and run the model to get a better understanding of how to use maps effectively in GAML.
+* Tags: map, pair, container, loop, key, value, data_structure
 */
 
 model Maps

@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
+import gama.api.ui.layers.IMeshSmoothProvider;
+
 /**
  * The Class GaussianBlurMeshSmoothProvider. A "smoothing" algorithm based on an efficient approximation of a Gaussian
  * Blur. See http://blog.ivank.net/fastest-gaussian-blur.html *

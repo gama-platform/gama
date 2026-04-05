@@ -1,9 +1,12 @@
 /**
 * Name: SIR (Split in Agents, Multiple Strains)
-* Author: tri and nghi
-* Description: This model is an extension of the model SIR_split_in_agents.gaml. 
-* It creates several agents of one compartment type (here typically several I_agt).
-* Tags: equation, math
+* Author: Tri Nguyen-Huu, Huynh Quang Nghi
+* Description: Extension of the split-in-agents SIR model to multiple viral strains. Each strain is
+*   represented by a separate I_agt (Infected) agent with its own ODE system and parameters (transmission
+*   rate, recovery rate). All strains compete for the same susceptible population. Demonstrates how to
+*   create several agents of the same compartment type to represent heterogeneous sub-populations or
+*   pathogen variants in a multi-strain epidemic model.
+* Tags: equation, math, ODE, SIR, epidemiology, multi_strain, compartment, split_in_agents, differential_equation
 */
 model SIR_split_in_agents_multiple_strains
 
@@ -113,7 +116,7 @@ experiment Simulation type: gui {
 	
 	output {
 		layout #split tabs: true;
-		display chart_3system_eq name: "Split system" toolbar: false  type: 2d {
+		display chart_3system_eq title: "Split system" toolbar: false  type: 2d {
 			chart 'Split system' type: series background: rgb(47,47,47) color: #white x_tick_line_visible: false{
 				data 'susceptible' value: first(S_agt).Ssize color: rgb(46,204,113) marker_shape: marker_circle;
 				data 'infected 1' value: first(I_agt).beta * first(I_agt).Isize color: rgb(231,76,60)+120 marker_shape: marker_diamond;
@@ -124,7 +127,7 @@ experiment Simulation type: gui {
 
 		}
 
-		display chart_1system_eq name: "Unified system" toolbar: false  type: 2d  {
+		display chart_1system_eq title: "Unified system" toolbar: false  type: 2d  {
 			chart 'Unified system' type: series background: rgb(47,47,47) color: #white x_tick_line_visible: false{
 				data 'susceptible (maths)' value: first(my_SIR_maths).Sm color: rgb(46,204,113) marker_shape: marker_circle;
 				data 'infected (maths)' value: first(my_SIR_maths).Im color: rgb(231,76,60) marker_shape: marker_circle;

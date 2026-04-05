@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * Box2DShapeConverter.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * Box2DShapeConverter.java, in gama.extension.physics, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,13 +17,13 @@ import org.jbox2d.collision.shapes.Shape;
 import org.jbox2d.common.Vec2;
 import org.locationtech.jts.geom.LineString;
 
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.shape.IShape.Type;
-import gama.core.runtime.IScope;
-import gama.core.util.matrix.IField;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.geometry.IShape.Type;
+import gama.api.types.matrix.IField;
+import gama.api.utils.geometry.GeometryUtils;
 import gama.dev.DEBUG;
 import gama.extension.physics.common.IShapeConverter;
 
@@ -74,7 +74,7 @@ public class Box2DShapeConverter implements IShapeConverter<Shape, Vec2>, IBox2D
 				// oriented on the Y or on the X (default) axis
 				LineString line = (LineString) shape.getInnerGeometry();
 				EdgeShape e = new EdgeShape();
-				e.set(toVector((GamaPoint) line.getCoordinateN(0)), toVector((GamaPoint) line.getCoordinateN(1)));
+				e.set(toVector((IPoint) line.getCoordinateN(0)), toVector((IPoint) line.getCoordinateN(1)));
 				return e;
 			case SPHERE:
 			case CIRCLE:
@@ -86,7 +86,7 @@ public class Box2DShapeConverter implements IShapeConverter<Shape, Vec2>, IBox2D
 				cc.setRadius(toBox2D(radius));
 				return cc;
 			default:
-				GamaPoint[] points = GeometryUtils.getPointsOf(shape);
+				IPoint[] points = GeometryUtils.getPointsOf(shape);
 				switch (points.length) {
 					case 0:
 						return null;
@@ -120,7 +120,7 @@ public class Box2DShapeConverter implements IShapeConverter<Shape, Vec2>, IBox2D
 	public float getScale() { return scale; }
 
 	@Override
-	public GamaPoint toGamaPoint(final Vec2 v) {
+	public IPoint toGamaPoint(final Vec2 v) {
 		// TODO Auto-generated method stub
 		return null;
 	}

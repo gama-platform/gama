@@ -1,13 +1,13 @@
 /**
-* Name: Balls, Groups and Clouds Multilevel Architecture
-* Author: 
-* Description: This model shows how to use multi-level architecture to group agents, and regroup groups. The operators capture 
-* 	is used to capture an agent by a group and change its species as a species contained by the group and defined in the group species section. 
-* 	The operator release is used to release contained agents and change them into an other species. The experiment shows ball moving 
-* 	randomly, and following other balls. When they are close to each other, they generate a group of balls with its own behavior. A group of group 
-* 	agents generate a cloud in the same way. When the number of balls contained inside the group is too high, the group disappears and releases 
-* 	all its balls repulsively. 
-* Tags: multi_level, agent_movement
+* Name: Balls, Groups and Clouds - Multi-Level Architecture
+* Author: Gama Development Team
+* Description: A showcase of GAMA's multi-level agent architecture with three nested levels: balls, groups,
+*   and clouds. Balls move randomly and attract nearby balls. When enough balls are close, they are 'captured'
+*   into a group agent (changing their species via the 'capture' operator). Groups move as a unit; when enough
+*   groups are nearby they are captured into a cloud. When a group gets too large, it 'releases' its balls
+*   repulsively. This model demonstrates the 'capture' and 'release' operators and how macro-level behavior
+*   emerges from micro-level interactions.
+* Tags: multi_level, agent_movement, capture, release, group, emergence, hierarchy
 */
 model balls_groups_clouds
 
@@ -34,7 +34,7 @@ global {
 	rgb chaos_ball_color <- #red;
 	float ball_size <- float(3);
 	float ball_speed <- float(1);
-	float chaos_ball_speed <- 8 * ball_speed;
+	float chaos_ball_speed <- 8 * ball_speed; 
 	int ball_number <- 400 min: 2 max: 1000;
 	geometry ball_shape <- circle(ball_size);
 	float ball_separation <- 6 * ball_size;
@@ -198,7 +198,7 @@ species group {
 	agent target update: get_nearer_target();
 
 	//Function to return the closest ball or small group of balls that the agent could capture
-	agent get_nearer_target {
+	agent get_nearer_target() {
 		int size <- length(members);
 		ball nearest_free_ball <- (ball where ((each.state = 'follow_nearest_ball'))) closest_to self;
 		group nearest_smaller_group <- ((group - self) where ((length(each.members)) < size)) closest_to self;
@@ -212,7 +212,7 @@ species group {
 	}
 
 	//Action to use when the group of balls explode
-	action separate_components {
+	action separate_components() {
 		loop com over: (list(ball_in_group)) {
 			list<ball_in_group> nearby_balls <- ((ball_in_group overlapping (com.shape + ball_separation)) - com) where (each in members);
 			float repulsive_dx <- 0.0;
@@ -254,12 +254,12 @@ species group {
 	}
 
 	//Action to do when the group is disaggregated
-	action disaggregate {
+	action disaggregate() {
 		release list<agent>(members) as: ball in: world {
 			state <- 'chaos';
 		}
 
-		do die;
+		do die();
 	}
 
 	//Reflex to merge the group close to the agent when the cycle is in the frequency of merging
@@ -272,12 +272,12 @@ species group {
 					release list(ball_in_group) as: ball in: world {
 						released_balls << self;
 					}
-					do die;
+					do die();
 				}
 				capture released_balls as: ball_in_group;
 			} else {
 				ask target as group {
-					do disaggregate;
+					do disaggregate();
 				}
 
 			}
@@ -337,7 +337,7 @@ species group {
 	//Reflex to disaggregate the group if it is too important ie the number of balls is greater than 80% of the total ball number
 	reflex self_disaggregate {
 		if ((length(members)) > (0.8 * (ball_number))) {
-			do disaggregate;
+			do disaggregate();
 		}
 
 	}
@@ -406,7 +406,7 @@ species cloud {
 		if (target_group != nil) {
 			float direction_target <- self towards (target_group);
 			ask group_delegation {
-				do move2 with: [with_heading::float(direction_target), with_speed::float(cloud_speed)];
+				do move2  (with_heading:float(direction_target), with_speed:float(cloud_speed));
 			}
 
 		}
@@ -451,10 +451,10 @@ species cloud {
 		}
 
 		release list(group_delegation) as: group in: world {
-			do disaggregate;
+			do disaggregate();
 		}
 
-		do die;
+		do die();
 	}
 
 	aspect default {
@@ -483,19 +483,19 @@ experiment group_experiment type: gui {
 			species group aspect: default transparency: 0.5 {
 				species ball_in_group;
 			}
-
+ 
 		}
-
+ 
 		display 'Ball display' {
 			species ball;
 		}
 
 		display 'Group display' {
 			species group;
-			species group_agents_viewer;
+			species group_agents_viewer; 
 		}
 
-	}
+	} 
 
 }
 
@@ -514,7 +514,7 @@ experiment cloud_experiment type: gui {
 				species group_delegation transparency: 0.9 {
 					species ball_in_cloud;
 					species ball_in_group;
-				}
+				} 
 
 			}
 

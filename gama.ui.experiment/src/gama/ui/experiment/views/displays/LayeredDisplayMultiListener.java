@@ -3,7 +3,7 @@
  * LayeredDisplayMultiListener.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and
  * simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,9 +16,9 @@ import java.util.Set;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.PlatformHelper;
+import gama.api.GAMA;
+import gama.api.runtime.SystemInfo;
+import gama.api.ui.displays.IDisplaySurface;
 import gama.dev.DEBUG;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.WorkaroundForIssue1353;
@@ -253,7 +253,7 @@ public class LayeredDisplayMultiListener {
 			inMenu = false;
 			return;
 		}
-		if (modifier || PlatformHelper.isWindows() && button == 3) // mouseDown(...)
+		if (modifier || SystemInfo.isWindows() && button == 3) // mouseDown(...)
 			// event
 			// *before* the menuDetected(..) one.
 			// No need to patch mouseUp(...) right now

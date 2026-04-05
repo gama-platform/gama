@@ -1,8 +1,12 @@
 /**
-* Name: CameraSharedZoom
-* A simple demonstration on how to implement shared zooms 
-* Author: A. Drogoul
-* Tags: 3D, zoom, camera
+* Name: Camera Shared Zoom
+* Author: Alexis Drogoul
+* Description: Demonstrates how multiple displays in the same experiment can share synchronized zoom levels.
+*   By binding a shared 'factor' variable to the zoom level of each display, zooming in one display
+*   automatically updates all others proportionally. This is useful for multi-view layouts where the user
+*   expects all panels to zoom together (e.g., a side-by-side comparison of two scenarios). The model
+*   imports Building Elevation and adds the shared zoom experiment on top.
+* Tags: 3d, zoom, camera, display, synchronization, multi_view, visualization
 */
 experiment "Shared Zoom Example" model: 'Building Elevation.gaml' type: gui {
 	float factor <- 1.0;

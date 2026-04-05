@@ -1,13 +1,13 @@
 /**
-* Name: Agent Based Clustering
-* Author: Jean-Danie Zucker with Patrick Taillandier's and Arnaud Grignard's Help
-* Description: This model displays the step to stpe algorithm of k-means
-* See for  https://en.wikipedia.org/wiki/K-means_clustering ...
-* Clustering
-* The k-medoid could be added
-* To be added stop the simulation when convergence is reached
-* To be added an overlay
-* To be added position the points at the begining usug user interaction model...
+* Name: Agent-Based K-Means Clustering
+* Author: Jean-Daniel Zucker, Patrick Taillandier, Arnaud Grignard
+* Description: A step-by-step visual demonstration of the K-means clustering algorithm implemented as a
+*   multi-agent system. Data points are represented as agents, and cluster centroids are also agents.
+*   At each simulation step the algorithm alternates between: (1) assigning each point agent to the nearest
+*   centroid; and (2) updating each centroid to the mean position of its assigned points. The model visualizes
+*   convergence toward stable cluster assignments. See https://en.wikipedia.org/wiki/K-means_clustering for
+*   the algorithm background.
+* Tags: machine_learning, clustering, k_means, algorithm, visualization, multi_agent
 */
 model MASKMEANS
 

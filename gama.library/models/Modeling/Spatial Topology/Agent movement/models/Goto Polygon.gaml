@@ -1,9 +1,12 @@
 /**
-* Name:  Movement on a Graph created by Polygons
-* Author:  Patrick Taillandier
-* Description: Model to show how to create a graph using a polygon shapefile by skeletonizing it, and creating roads using the skeleton. 
-* 	All of the agents will use this graph to go to the same targeted location.
-* Tags: graph, agent_movement, shapefile, skill, shortest_path
+* Name: Goto Polygon
+* Author: Patrick Taillandier
+* Description: Shows how to generate a navigable road graph by skeletonizing polygon geometries loaded from
+*   a shapefile. The 'skeletonize' operator extracts the medial axis of each polygon, producing a set of
+*   center-line segments that form the road network. Agents then use this auto-generated graph to navigate
+*   toward a common target. This technique is useful when the available GIS data contains navigable areas
+*   as filled polygons (e.g., city blocks, floor plans) rather than explicit road lines.
+* Tags: graph, agent_movement, shapefile, skill, shortest_path, skeleton, polygon, gis
 */
 
 model polygon
@@ -15,8 +18,8 @@ global {
 	geometry shape <- envelope(shape_file_in);
 	
 	init {    
-		create object from: shape_file_in ;
-		object the_object <- first(object);
+		create objects from: shape_file_in ;
+		objects the_object <- first(objects);
 		
 		//triangulation of the object to get the different triangles of the polygons
 		list<geometry> triangles <- list(triangulate(the_object, 0.01));
@@ -52,7 +55,7 @@ global {
 	}
 }
 
-species object  {
+species objects  {
 	aspect default {
 		draw shape color: #gray ;
 	}
@@ -94,7 +97,7 @@ experiment goto_polygon type: gui {
 	
 	output {
 		display objects_display {
-			species object aspect: default ;
+			species objects aspect: default ;
 			species triangle_obj aspect: default ;
 			species skeleton aspect: default ;
 			species people aspect: default ;

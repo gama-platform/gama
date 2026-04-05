@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * CaptureStatement.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * CaptureStatement.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,41 +13,48 @@ package gama.gaml.statements;
 import java.util.ArrayList;
 import java.util.List;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.agent.IMacroAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.runtime.FlowStatus;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.descriptions.StatementDescription;
-import gama.gaml.descriptions.TypeDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.species.ISpecies;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.compilation.descriptions.IStatementDescription;
+import gama.api.compilation.descriptions.ITypeDescription;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatementSequence;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IMacroAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.FlowStatus;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.misc.IContainer;
 import gama.gaml.statements.CaptureStatement.CaptureValidator;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class CaptureStatement.
+ *
+ * <p><b>Thread-safety:</b> the fields {@link #target}, {@link #microSpeciesName} and {@link #sequence}
+ * are all written during construction (constructor or {@link #setChildren(Iterable)}) and then read
+ * during execution by potentially many threads in parallel simulations. They are declared
+ * {@code volatile} so that every thread always observes the most-recently written value, including
+ * the {@code null} written by {@link #dispose()}.</p>
  */
 @symbol (
 		name = IKeyword.CAPTURE,
@@ -130,19 +137,24 @@ public class CaptureStatement extends AbstractStatementSequence {
 	/**
 	 * The Class CaptureValidator.
 	 */
-	public static class CaptureValidator implements IDescriptionValidator<StatementDescription> {
+	public static class CaptureValidator implements IDescriptionValidator<IStatementDescription> {
 
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
-		public void validate(final StatementDescription cd) {
+		public void validate(final IStatementDescription cd) {
 			final String microSpeciesName = cd.getLitteral(AS);
 			if (microSpeciesName != null) {
-				final SpeciesDescription macroSpecies = cd.getSpeciesContext();
-				final TypeDescription microSpecies = macroSpecies.getMicroSpecies(microSpeciesName);
+				final ITypeDescription macroSpecies = cd.getTypeContext();
+				if (!macroSpecies.isSpecies()) {
+					cd.error("A capture statement can only be defined in a species", IGamlIssue.WRONG_CONTEXT);
+					return;
+				}
+				final ITypeDescription microSpecies =
+						((ISpeciesDescription) macroSpecies).getMicroSpecies(microSpeciesName);
 				if (microSpecies == null) {
 					cd.error(macroSpecies.getName() + " species doesn't contain " + microSpeciesName
 							+ " as micro-species", IGamlIssue.UNKNOWN_SPECIES, AS, microSpeciesName);
@@ -152,17 +164,25 @@ public class CaptureStatement extends AbstractStatementSequence {
 		}
 	}
 
-	/** The target. */
-	private IExpression target;
+	/**
+	 * The target expression. {@code volatile} for safe publication across threads sharing this instance.
+	 */
+	private volatile IExpression target;
 
 	/** The return string. */
 	private final String returnString;
 
-	/** The micro species name. */
-	private String microSpeciesName = null;
+	/**
+	 * The micro-species name from the {@code as} facet. {@code volatile} for safe publication and
+	 * safe read of the {@code null} written by {@link #dispose()}.
+	 */
+	private volatile String microSpeciesName = null;
 
-	/** The sequence. */
-	private RemoteSequence sequence = null;
+	/**
+	 * The sequence of statements to execute on each captured agent. {@code volatile} so that the
+	 * single write from {@link #setChildren(Iterable)} is visible to all executing threads.
+	 */
+	private volatile RemoteSequence sequence = null;
 
 	/**
 	 * Instantiates a new capture statement.
@@ -175,7 +195,9 @@ public class CaptureStatement extends AbstractStatementSequence {
 		target = getFacet(IKeyword.TARGET);
 		microSpeciesName = getLiteral(IKeyword.AS);
 		returnString = getLiteral(IKeyword.RETURNS);
-		if (hasFacet(IKeyword.TARGET)) { setName(IKeyword.CAPTURE + " " + getFacet(IKeyword.TARGET).serializeToGaml(false)); }
+		if (hasFacet(IKeyword.TARGET)) {
+			setName(IKeyword.CAPTURE + " " + getFacet(IKeyword.TARGET).serializeToGaml(false));
+		}
 	}
 
 	@Override

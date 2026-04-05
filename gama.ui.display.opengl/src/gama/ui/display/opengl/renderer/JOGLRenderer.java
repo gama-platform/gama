@@ -3,14 +3,13 @@
  * JOGLRenderer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.display.opengl.renderer;
 
-import java.awt.Color;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.List;
@@ -20,27 +19,26 @@ import org.locationtech.jts.geom.Geometry;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 
-import gama.core.common.interfaces.GeneralSynchronizer;
-import gama.core.common.interfaces.IAsset;
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.interfaces.ILayer;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
+import gama.api.GAMA;
+import gama.api.runtime.GeneralSynchronizer;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.matrix.IField;
+import gama.api.ui.displays.IAsset;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.ui.layers.ILayer;
+import gama.api.utils.interfaces.IImageProvider;
 import gama.core.outputs.display.AbstractDisplayGraphics;
-import gama.core.outputs.layers.charts.ChartOutput;
-import gama.core.runtime.GAMA;
-import gama.core.util.GamaColor;
 import gama.core.util.file.GamaGeometryFile;
-import gama.core.util.matrix.IField;
 import gama.dev.DEBUG;
 import gama.gaml.statements.draw.AssetDrawingAttributes;
 import gama.gaml.statements.draw.DrawingAttributes;
-import gama.gaml.statements.draw.MeshDrawingAttributes;
 import gama.gaml.statements.draw.ShapeDrawingAttributes;
-import gama.gaml.statements.draw.TextDrawingAttributes;
-import gama.gaml.types.GamaGeometryType;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.helpers.AbstractRendererHelper.Pass;
 import gama.ui.display.opengl.renderer.helpers.CameraHelper;
@@ -139,7 +137,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	}
 
 	@Override
-	public void fillBackground(final Color bgColor) {
+	public void fillBackground(final IColor bgColor) {
 		openGL.setCurrentObjectAlpha(1);
 	}
 
@@ -172,7 +170,8 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	@Override
 	public boolean isNotReadyToUpdate() {
-		if (super.isNotReadyToUpdate() || !inited || !getCanvas().getVisibleStatus()) return true;
+		if (super.isNotReadyToUpdate() || !inited || getCanvas() != null && !getCanvas().getVisibleStatus())
+			return true;
 		if (GAMA.isSynchronized()) return false;
 		return sceneHelper.isNotReadyToUpdate();
 	}
@@ -192,7 +191,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	/**
 	 * Method endDrawingLayers()
 	 *
-	 * @see gama.core.common.interfaces.IGraphics#endDrawingLayers()
+	 * @see gama.api.ui.displays.IGraphics#endDrawingLayers()
 	 */
 	@Override
 	public void endDrawingLayers() {
@@ -219,10 +218,10 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 		if (first) {
 			first = false;
-			if (getData().fullScreen() > -1) {
-				WorkbenchHelper.runInUI("Expand " + surface.getOutput().getName(), 100,
-						m -> this.getSurface().getOutput().getView().toggleFullScreen());
-			}
+			// Fullscreen entry is handled by ArrangeDisplayViews.decorateDisplays() during layout,
+			// before the first render. The old UIJob here (100 ms delay) would fire after
+			// decorateDisplays() had already entered fullscreen and call toggleFullScreen() a
+			// second time — immediately exiting fullscreen again.
 		}
 	}
 
@@ -263,12 +262,12 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 
 	/**
 	 *
-	 * IGraphics DRAWING METHODS
+	 * IGraphics DRAWING SAMPLING
 	 *
 	 */
 
 	@Override
-	public Rectangle2D drawAsset(final IAsset file, final DrawingAttributes attributes) {
+	public Rectangle2D drawAsset(final IAsset file, final IDrawingAttributes attributes) {
 		if (file == null) return null;
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
@@ -284,8 +283,17 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		return rect;
 	}
 
+	/**
+	 * Draw field.
+	 *
+	 * @param fieldValues
+	 *            the field values
+	 * @param attributes
+	 *            the attributes
+	 * @return the rectangle 2 D
+	 */
 	@Override
-	public Rectangle2D drawField(final IField fieldValues, final MeshDrawingAttributes attributes) {
+	public Rectangle2D drawField(final IField fieldValues, final IDrawingAttributes attributes) {
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
 		final List<?> textures = attributes.getTextures();
@@ -304,7 +312,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 * openGl.
 	 */
 	@Override
-	public Rectangle2D drawShape(final Geometry shape, final DrawingAttributes attributes) {
+	public Rectangle2D drawShape(final Geometry shape, final IDrawingAttributes attributes) {
 		if (shape == null) return null;
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
@@ -313,8 +321,17 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		return rect;
 	}
 
+	/**
+	 * Draw image.
+	 *
+	 * @param img
+	 *            the img
+	 * @param attributes
+	 *            the attributes
+	 * @return the rectangle 2 D
+	 */
 	@Override
-	public Rectangle2D drawImage(final BufferedImage img, final DrawingAttributes attributes) {
+	public Rectangle2D drawImage(final BufferedImage img, final IDrawingAttributes attributes) {
 		if (img == null) return null;
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
@@ -322,22 +339,16 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 		scene.addImage(img, attributes);
 		tryToHighlight(attributes);
 		if (attributes.getBorder() != null) {
-			drawGridLine(new GamaPoint(img.getWidth(), img.getHeight()), attributes.getBorder());
+			drawGridLine(GamaPointFactory.create(img.getWidth(), img.getHeight()), attributes.getBorder());
 		}
 		return rect;
 	}
 
 	@Override
-	public Rectangle2D drawChart(final ChartOutput chart) {
+	public Rectangle2D drawChart(final BufferedImage chart) {
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
-		int x = getLayerWidth();
-		int y = getLayerHeight();
-		// y = x = Math.min(x, y);
-		y = x = (int) (Math.min(x, y) * GamaPreferences.Displays.CHART_QUALITY.getValue());
-		// TODO See if it not possible to generate directly a texture renderer instead
-		final BufferedImage im = chart.getImage(x, y, getSurface().getData().isAntialias());
-		scene.addImage(im, new AssetDrawingAttributes(null, true));
+		scene.addImage(chart, new AssetDrawingAttributes(null, true));
 		return rect;
 	}
 
@@ -347,7 +358,7 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 * @param attributes
 	 *            the attributes
 	 */
-	protected void tryToHighlight(final DrawingAttributes attributes) {
+	protected void tryToHighlight(final IDrawingAttributes attributes) {
 		if (highlight) { attributes.setHighlighted(data.getHighlightColor()); }
 	}
 
@@ -359,29 +370,40 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 * @param lineColor
 	 *            the line color
 	 */
-	public void drawGridLine(final GamaPoint dimensions, final Color lineColor) {
+	public void drawGridLine(final IPoint dimensions, final IColor lineColor) {
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return;
 		double stepX, stepY;
-		final double cellWidth = getEnvWidth() / dimensions.x;
-		final double cellHeight = getEnvHeight() / dimensions.y;
-		final GamaColor color = GamaColor.get(lineColor.getRGB());
+		final double cellWidth = getEnvWidth() / dimensions.getX();
+		final double cellHeight = getEnvHeight() / dimensions.getY();
+		final IColor color = GamaColorFactory.get(lineColor.getRGB());
 		final DrawingAttributes attributes = new ShapeDrawingAttributes(null, color, color, IShape.Type.GRIDLINE);
 		attributes.setEmpty(true);
-		for (double i = 0; i < dimensions.x; i++) {
-			for (double j = 0; j < dimensions.y; j++) {
+		for (double i = 0; i < dimensions.getX(); i++) {
+			for (double j = 0; j < dimensions.getY(); j++) {
 				stepX = i + 0.5;
 				stepY = j + 0.5;
-				final Geometry g = GamaGeometryType
-						.buildRectangle(cellWidth, cellHeight, new GamaPoint(stepX * cellWidth, stepY * cellHeight))
-						.getInnerGeometry();
+				final Geometry g =
+						GamaShapeFactory
+								.buildRectangle(cellWidth, cellHeight,
+										GamaPointFactory.create(stepX * cellWidth, stepY * cellHeight))
+								.getInnerGeometry();
 				scene.addGeometry(g, attributes);
 			}
 		}
 	}
 
+	/**
+	 * Draw string.
+	 *
+	 * @param string
+	 *            the string
+	 * @param attributes
+	 *            the attributes
+	 * @return the rectangle 2 D
+	 */
 	@Override
-	public Rectangle2D drawString(final String string, final TextDrawingAttributes attributes) {
+	public Rectangle2D drawString(final String string, final IDrawingAttributes attributes) {
 		if (string == null || string.isEmpty()) return null;
 		final ModelScene scene = sceneHelper.getSceneToUpdate();
 		if (scene == null) return null;
@@ -392,39 +414,39 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 			for (final String s : string.split("\n")) {
 				// DEBUG.OUT("Attributes Font Size: " + attributes.font.getSize());
 				// DEBUG.OUT("Get Y Ratio: " + getyRatioBetweenPixelsAndModelUnits());
-				drawString(s, attributes.copyTranslatedBy(new GamaPoint(0, shift * i++)));
+				drawString(s, attributes.copyTranslatedBy(GamaPointFactory.create(0, shift * i++)));
 			}
 			return null;
 		}
 		// openGL.cacheFont(attributes.getFont());
-		attributes.getLocation().setY(-attributes.getLocation().getY());
+		attributes.getLocation().negateY();
 		scene.addString(string, attributes);
 		return null;
 	}
 
 	/**
 	 *
-	 * DIMENSIONS, RATIOS AND LOCATIONS METHODS
+	 * DIMENSIONS, RATIOS AND LOCATIONS SAMPLING
 	 *
 	 */
 
 	@Override
-	public final GamaPoint getCameraPos() { return cameraHelper.getPosition(); }
+	public final IPoint getCameraPos() { return cameraHelper.getPosition(); }
 
 	@Override
-	public final GamaPoint getCameraTarget() { return cameraHelper.getTarget(); }
+	public final IPoint getCameraTarget() { return cameraHelper.getTarget(); }
 
 	@Override
-	public final GamaPoint getCameraOrientation() { return cameraHelper.getOrientation(); }
+	public final IPoint getCameraOrientation() { return cameraHelper.getOrientation(); }
 
 	@Override
 	public double getxRatioBetweenPixelsAndModelUnits() {
-		return DPIHelper.autoScaleDown(getCanvas().getMonitor(), openGL.getRatios().x);
+		return DPIHelper.autoScaleDown(getCanvas().getMonitor(), openGL.getRatios().getX());
 	}
 
 	@Override
 	public double getyRatioBetweenPixelsAndModelUnits() {
-		return DPIHelper.autoScaleDown(getCanvas().getMonitor(), openGL.getRatios().y);
+		return DPIHelper.autoScaleDown(getCanvas().getMonitor(), openGL.getRatios().getY());
 	}
 
 	@Override
@@ -471,8 +493,9 @@ public class JOGLRenderer extends AbstractDisplayGraphics implements IOpenGLRend
 	 * @see gama.ui.display.opengl.renderer.IOpenGLRenderer#getRealWorldPointFromWindowPoint (java.awt.Point)
 	 */
 	@Override
-	public GamaPoint getRealWorldPointFromWindowPoint(final GamaPoint mouse) {
-		return getCameraHelper().getWorldPositionFrom(new GamaPoint(mouse.x, mouse.y), new GamaPoint());
+	public IPoint getRealWorldPointFromWindowPoint(final IPoint mouse) {
+		return getCameraHelper().getWorldPositionFrom(GamaPointFactory.create(mouse.getX(), mouse.getY()),
+				GamaPointFactory.create());
 	}
 
 	@Override

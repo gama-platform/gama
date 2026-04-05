@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * OpenExperimentSelectionListener.java, in gama.ui.editor, is part of the source code of the GAMA modeling and
- * simulation platform (v.1.9.3).
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,10 +13,10 @@ package gaml.compiler.ui.editor.toolbar;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.swt.events.SelectionEvent;
 
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.ui.shared.interfaces.IModelRunner;
+import gama.api.GAMA;
+import gama.api.compilation.IModelsManager;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.Selector;
 import gaml.compiler.ui.editor.GamlEditor;
@@ -37,17 +37,17 @@ public class OpenExperimentSelectionListener implements Selector {
 	/** The state. */
 	GamlEditorState state;
 
-	/** The runner. */
-	final IModelRunner runner;
+	/** The modelsManager. */
+	final IModelsManager modelsManager;
 
 	/**
 	 *
 	 */
 	public OpenExperimentSelectionListener(final GamlEditor editor, final GamlEditorState state,
-			final IModelRunner runner) {
+			final IModelsManager runner) {
 		this.editor = editor;
 		this.state = state;
-		this.runner = runner;
+		this.modelsManager = runner;
 	}
 
 	/**
@@ -66,7 +66,7 @@ public class OpenExperimentSelectionListener implements Selector {
 		final int i = state.abbreviations.indexOf(name);
 		if (i == -1) return;
 		name = state.experiments.get(i);
-		runner.runModel(editor.getDocument(), name);
+		modelsManager.runModel(editor.getDocument(), name);
 
 	}
 
@@ -78,7 +78,7 @@ public class OpenExperimentSelectionListener implements Selector {
 	 */
 	void gotoEditor(final GamaRuntimeException exception) {
 		final EObject o = exception.getEditorContext();
-		if (o != null) { WorkbenchHelper.asyncRun(() -> GAMA.getGui().editModel(o)); }
+		if (o != null) { WorkbenchHelper.asyncRun(() -> GAMA.getGui().getModelsManager().editModel(o)); }
 
 	}
 

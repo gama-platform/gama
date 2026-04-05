@@ -3,7 +3,7 @@
  * AgentsMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,22 +24,22 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
-import gama.core.common.interfaces.IGui;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.kernel.simulation.SimulationPopulation;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.agent.IMacroAgent;
-import gama.core.metamodel.population.IPopulation;
+import gama.api.GAMA;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.Arguments;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IMacroAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.SystemInfo;
+import gama.api.runtime.scope.IExecutionResult;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IExperimentDisplayable;
+import gama.api.ui.IGui;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.ValuedDisplayOutputFactory;
-import gama.core.runtime.ExecutionResult;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.PlatformHelper;
-import gama.gaml.statements.Arguments;
-import gama.gaml.statements.IStatement;
-import gama.gaml.statements.UserCommandStatement;
+import gama.core.simulation.SimulationPopulation;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.menus.MenuAction;
 import gama.ui.shared.resources.GamaIcon;
@@ -69,7 +69,7 @@ public class AgentsMenu extends ContributionItem {
 		final MenuItem result = new MenuItem(parent, SWT.CASCADE);
 		result.setText(title);
 		Image image;
-		if (agent instanceof SimulationAgent sim) {
+		if (agent instanceof ISimulationAgent sim) {
 			image = GamaIcon.ofColor(sim.getColor()).image();
 		} else {
 			image = GamaIcon.named(IGamaIcons.MENU_AGENT).image();
@@ -193,8 +193,8 @@ public class AgentsMenu extends ContributionItem {
 	 *            the prefix
 	 * @return the menu item
 	 */
-	private static MenuItem actionAgentMenuItem(final Menu parent, final IAgent agent, final IStatement command,
-			final String prefix) {
+	private static MenuItem actionAgentMenuItem(final Menu parent, final IAgent agent,
+			final IExperimentDisplayable command, final String prefix) {
 		final MenuItem result = new MenuItem(parent, SWT.PUSH);
 		result.setText(prefix + " " + command.getName());
 		result.setImage(GamaIcon.named(IGamaIcons.MENU_RUN_ACTION).image());
@@ -303,7 +303,6 @@ public class AgentsMenu extends ContributionItem {
 			final MenuItem source = (MenuItem) e.widget;
 			final IAgent a = (IAgent) source.getData("agent");
 			final IStatement c = (IStatement) source.getData("command");
-			// final GamaPoint p = (GamaPoint) source.getData("location");
 
 			// We run into the scope provided by the simulation to which this
 			// agent belongs
@@ -312,7 +311,7 @@ public class AgentsMenu extends ContributionItem {
 				final IScope runningScope = a.getScope();
 				runningScope.getSimulation().executeAction(scope -> {
 					final Arguments args = new Arguments();
-					final ExecutionResult result = scope.execute(c, a, args);
+					final IExecutionResult result = scope.execute(c, a, args);
 					GAMA.getExperiment().refreshAllOutputs();
 					return result.getValue();
 				});
@@ -342,7 +341,7 @@ public class AgentsMenu extends ContributionItem {
 			final boolean withInspect, final MenuAction... actions) {
 		if (agent == null) return;
 		GamaMenu.separate(menu, "Actions");
-		final boolean simulation = agent instanceof SimulationAgent;
+		final boolean simulation = agent instanceof ISimulationAgent;
 		if (withInspect) {
 			actionAgentMenuItem(menu, agent, inspector, GamaIcon.named(IGamaIcons.MENU_INSPECT).image(),
 					"Inspect" + (topLevel ? simulation ? " simulation" : " experiment" : ""));
@@ -359,10 +358,10 @@ public class AgentsMenu extends ContributionItem {
 				if (ma != null) { actionAgentMenuItem(menu, agent, ma.listener, ma.image, ma.text); }
 			}
 		}
-		final Collection<UserCommandStatement> commands = agent.getSpecies().getUserCommands();
+		final Collection<? extends IExperimentDisplayable> commands = agent.getSpecies().getUserCommands();
 		if (!commands.isEmpty()) {
 			GamaMenu.separate(menu);
-			for (final UserCommandStatement c : commands) { actionAgentMenuItem(menu, agent, c, "Apply"); }
+			for (final IExperimentDisplayable c : commands) { actionAgentMenuItem(menu, agent, c, "Apply"); }
 		}
 
 		if (!topLevel) {
@@ -410,7 +409,7 @@ public class AgentsMenu extends ContributionItem {
 		} else {
 			int nb = size / subMenuSize + 1;
 			// See Issue #2967
-			if (PlatformHelper.isWindows() && nb > 90) {
+			if (SystemInfo.isWindows() && nb > 90) {
 				// Absolutely no idea about the reality of this hard-coded limit
 				nb = 90;
 				subMenuSize = size / nb;

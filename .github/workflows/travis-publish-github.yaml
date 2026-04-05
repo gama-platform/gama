@@ -26,15 +26,15 @@ jobs:
     name: Publish archives to Github Releases
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # Get zip archives
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           name: gama-zip-builds
 
       # Get Mac dmg signed archives
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           #name: gama-mac-signed
           path: ${{ github.workspace }}
@@ -42,7 +42,7 @@ jobs:
           merge-multiple: true
 
       # Get Linux deb archive
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           #name: gama-linux-deb
           path: ${{ github.workspace }}
@@ -50,7 +50,7 @@ jobs:
           merge-multiple: true
 
       # Get Windows exe
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           #name: gama-windows-exe
           path: ${{ github.workspace }}

@@ -1,15 +1,13 @@
 /***
-* Name: Benchmark 
+* Name: Benchmarking
 * Author: Benoit Gaudou
-* Description: This model illustrates the possibility of GAMA in terms of benchmarking and profiling of the code.
-*   In order to optimize a model that begins to become big and slow to run, 
-*   it is necessary to identify the pieces of code that are the longest to execute.
-*   This is the purpose of the benchmark statement and facet.
-* 
-*   GAML provides 2 ways of doing benchmarking:
-*    - the statement benchmark, that benchmarks a specific block of statements (and shows information in the console)
-*    - the facet benchmark of the statement experiment that benchmark the whole execution of the code (and write results in a csv file)
-* Tags: benchmark, experiment
+* Description: Illustrates GAMA's built-in benchmarking and profiling capabilities. When a model becomes large
+*   and slow, it is necessary to identify which parts of the code take the most time. GAML provides two mechanisms:
+*   (1) the 'benchmark' statement, which measures the execution time of a specific block and reports it in the console;
+*   (2) the 'benchmark' facet of the 'experiment' statement, which instruments the entire simulation execution and
+*   writes detailed timing results to a CSV file. Both approaches help modelers pinpoint performance bottlenecks
+*   and compare the speed of different implementation strategies.
+* Tags: benchmark, profiling, performance, experiment, timing, optimization
 ***/
 
 model Benchmarking
@@ -26,14 +24,14 @@ global {
 		// To get more reliable results, the inner statements can be executed several times (specified by the repeat: facet).
 		benchmark "Benchmark of closest_to operator" repeat: 100 {
 			ask people {
-				do get_closest_people;
+				do get_closest_people();
 			}
 		}
 	}
 }
 
 species people {
-	action get_closest_people {
+	action get_closest_people (){
 		people neigh <- people closest_to self;
 	} 
 }

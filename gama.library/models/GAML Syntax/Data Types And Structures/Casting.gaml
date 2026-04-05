@@ -1,8 +1,11 @@
 /**
 * Name: Casting Syntax
-* Author: A. Drogoul & P. Taillandier
-* Description: different ways of transforming objects and agents in GAML.
-* Tags: cast, type
+* Author: Alexis Drogoul, Patrick Taillandier
+* Description: Demonstrates the different ways of transforming (casting) objects and agents between types in GAML. GAML
+*   provides type-conversion operators such as int(), float(), string(), bool(), point(), list(), map(), rgb(), geometry(),
+*   and many others. This model exercises these operators with various source types to show what conversions are possible
+*   and what values are produced, helping modelers understand the implicit and explicit casting rules in GAML.
+* Tags: cast, type, conversion, int, float, string, bool, point, geometry
 */
 
 model Casting

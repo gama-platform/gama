@@ -1,9 +1,12 @@
 /**
-* Name: segregationGrid
-* Author: 
-*  Description: A model showing the segregation of the people just by putting a similarity wanted parameter using cells 
-* 	to represent the individuals
-* Tags: grid
+* Name: Segregation (Cellular Automata)
+* Author: Gama Development Team
+* Description: A cellular automata variant of Thomas Schelling's residential segregation model. Instead of
+*   individual agent objects, grid cells represent residents of two groups. Cells whose proportion of same-group
+*   neighbors is below the 'similarity_wanted' threshold become unhappy and swap with a random free cell.
+*   The model runs on a toroidal grid (edges wrap around). Despite each individual preferring only a modest
+*   majority of same-type neighbors, highly segregated spatial patterns emerge at the macro level.
+* Tags: grid, cellular_automaton, segregation, Schelling, emergence, social, torus
 */
 model segregation
 
@@ -22,12 +25,12 @@ global torus: true{
 	geometry shape <- square(dimensions);
 	
 	//Action to initialize the places
-	action initialize_places {
+	action initialize_places() {
 		all_places <- shuffle(space);
 		free_places <- shuffle(all_places);
 	}
 	//Action to initialize the people agents
-	action initialize_people {
+	action initialize_people() {
 		//Place all the people agent in the cellular automata
 		loop i from: 0 to: number_of_people - 1 {
 			space pp <- all_places at i;
@@ -53,7 +56,7 @@ grid space parent: base width: dimensions height: dimensions neighbors: 8  {
 	//List of the neighbours of the places
 	list<space> my_neighbours <- self neighbors_at neighbours_distance;
 	//Action to migrate the agent in another cell if it is not happy
-	action migrate {
+	action migrate() {
 		if !is_happy {
 			//Change the space of the agent to a free space
 			space pp <- any(my_neighbours where (each.color = #black));

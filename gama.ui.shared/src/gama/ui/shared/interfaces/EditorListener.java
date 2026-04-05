@@ -13,7 +13,7 @@ package gama.ui.shared.interfaces;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.exceptions.GamaRuntimeException;
 import gama.ui.shared.views.toolbar.Selector;
 
 /**

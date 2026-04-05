@@ -7,6 +7,8 @@ import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.GamlPackage;
 import gaml.compiler.gaml.Pragma;
 
+import gaml.compiler.serializer.GamlEObjectImpl;
+
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
 
@@ -14,7 +16,6 @@ import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
 
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
 
 /**
  * <!-- begin-user-doc -->
@@ -30,7 +31,7 @@ import org.eclipse.emf.ecore.impl.MinimalEObjectImpl;
  *
  * @generated
  */
-public class PragmaImpl extends MinimalEObjectImpl.Container implements Pragma
+public class PragmaImpl extends GamlEObjectImpl implements Pragma
 {
   /**
    * The default value of the '{@link #getName() <em>Name</em>}' attribute.

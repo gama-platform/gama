@@ -1,8 +1,12 @@
 /**
- * Name: Parameters
- * A very simple models that showcases the scope of parameters, between simulation parameter and experiment parameters
+ * Name: Declaration of Parameters
  * Author: Alexis Drogoul
- * Tags: variables, attributes, parameters
+ * Description: A model showcasing the scope and visibility rules of parameters in GAML. Parameters are global
+ *   variables that are exposed to the user interface for interactive modification before or during a simulation run.
+ *   This model illustrates: declaring parameters directly in an experiment, inheriting parameters from a virtual
+ *   (base) experiment, the difference between simulation-level attributes and experiment-level parameters, and
+ *   how multiple experiments can share a common set of parameters through virtual experiment inheritance.
+ * Tags: variables, attributes, parameters, experiment, scope, inheritance, virtual
  */
 
 model Parameters

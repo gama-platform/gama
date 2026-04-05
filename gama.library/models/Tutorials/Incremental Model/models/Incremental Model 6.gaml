@@ -1,8 +1,12 @@
 /**
-* Name: Multi-level
-* Author: GAMA team
-* Description: 6th part of the tutorial : Incremental Model
-* Tags: tutorial, chart, graph, 3d, light, multi-Level
+* Name: Incremental Model Tutorial - Step 06 - Multi-Level
+* Author: Gama Development Team
+* Description: Sixth step of the Incremental Model tutorial. Adds a multi-level layer to the simulation:
+*   buildings are treated as micro-containers for the people agents inside them. When people enter a building
+*   they are 'captured' by it; when they leave they are 'released'. This allows the building to aggregate
+*   statistics (e.g., number of infected occupants) and act as a spatial unit for the epidemic. The step
+*   demonstrates GAMA's multi-level species mechanism.
+* Tags: tutorial, chart, graph, 3d, light, multi_level, species, SI, epidemic
 */
 model model6
 
@@ -40,7 +44,7 @@ global {
 	}
 
 	reflex end_simulation when: infected_rate = 1.0 {
-		do pause;
+		do pause();
 	}
 }
 
@@ -50,7 +54,7 @@ species people skills: [moving] {
 	int staying_counter;
 
 	reflex move when: target != nil {
-		do goto target: target on: road_network;
+		do goto(target: target, on: road_network);
 		if (location = target) {
 			target <- any_location_in(one_of(building));
 			target <- nil;
@@ -121,7 +125,7 @@ experiment main_experiment type: gui {
 		display map_3D type: 3d {
 			light #ambient intensity: 20;
 			light #default intensity:(is_night ? 127 : 255);
-			image "../includes/soil.jpg";
+			picture "../includes/soil.jpg";
 			species road;
 			species people aspect: sphere3D;
 			species building transparency: 0.5;

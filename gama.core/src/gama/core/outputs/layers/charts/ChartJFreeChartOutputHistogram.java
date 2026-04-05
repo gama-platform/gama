@@ -3,13 +3,14 @@
  * ChartJFreeChartOutputHistogram.java, in gama.core, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers.charts;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
 
@@ -51,11 +52,13 @@ import org.jfree.data.category.DefaultCategoryDataset;
 import org.jfree.data.general.PieDataset;
 import org.jfree.data.xy.XYDataset;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.expressions.IExpression;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.ui.displays.IChartDataSource;
+import gama.api.ui.displays.IDisplaySurface;
 
 /**
  * The Class ChartJFreeChartOutputHistogram.
@@ -138,16 +141,16 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 	}
 
 	@Override
-	public void setDefaultPropertiesFromType(final IScope scope, final ChartDataSource source, final int type_val) {
+	public void setDefaultPropertiesFromType(final IScope scope, final IChartDataSource source, final int type_val) {
 
 		switch (type_val) {
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N:
-			case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N:
-			case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
-			case ChartDataSource.DATA_TYPE_LIST_POINT:
-			case ChartDataSource.DATA_TYPE_MATRIX_DOUBLE:
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
-			case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3: {
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N:
+			case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N:
+			case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12:
+			case IChartDataSource.DATA_TYPE_LIST_POINT:
+			case IChartDataSource.DATA_TYPE_MATRIX_DOUBLE:
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_3:
+			case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3: {
 				source.setCumulative(scope, false);
 				source.setUseSize(scope, false);
 				break;
@@ -246,7 +249,7 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 			// DEBUG.LOG("pb!!!");
 		} else {
 			final int myrow = idPosition.get(serieid);
-			if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, myserie.getMycolor()); }
+			if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, IColor.toAWTColor(myserie.getMycolor())); }
 
 			if ("onchart".equals(this.series_label_position)) {
 				// ((BarRenderer)newr).setBaseItemLabelGenerator(new
@@ -389,17 +392,18 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 		resetDomainAxis(scope);
 
 		final CategoryAxis domainAxis = ((CategoryPlot) this.chart.getPlot()).getDomainAxis();
-
-		pp.setDomainGridlinePaint(axesColor);
-		pp.setRangeGridlinePaint(axesColor);
+		Color ac = IColor.toAWTColor(axesColor);
+		pp.setDomainGridlinePaint(ac);
+		pp.setRangeGridlinePaint(ac);
 		pp.setRangeCrosshairVisible(true);
 
-		pp.getRangeAxis().setAxisLinePaint(axesColor);
+		pp.getRangeAxis().setAxisLinePaint(ac);
 		pp.getRangeAxis().setLabelFont(getLabelFont());
 		pp.getRangeAxis().setTickLabelFont(getTickFont());
 		if (textColor != null) {
-			pp.getRangeAxis().setLabelPaint(textColor);
-			pp.getRangeAxis().setTickLabelPaint(textColor);
+			Color tc = IColor.toAWTColor(textColor);
+			pp.getRangeAxis().setLabelPaint(tc);
+			pp.getRangeAxis().setTickLabelPaint(tc);
 		}
 		if (getYTickUnit(scope) > 0) {
 			((NumberAxis) pp.getRangeAxis()).setTickUnit(new NumberTickUnit(getYTickUnit(scope)));
@@ -447,15 +451,17 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 			final SubCategoryAxis newAxis = new SubCategoryAxis(pp.getDomainAxis().getLabel());
 			pp.setDomainAxis(newAxis);
 		}
+		Color ac = IColor.toAWTColor(axesColor);
 
-		pp.getDomainAxis().setAxisLinePaint(axesColor);
+		pp.getDomainAxis().setAxisLinePaint(ac);
 		pp.getDomainAxis().setTickLabelFont(getTickFont());
 		pp.getDomainAxis().setLabelFont(getLabelFont());
 		if (textColor != null) {
-			pp.getDomainAxis().setLabelPaint(textColor);
-			pp.getDomainAxis().setTickLabelPaint(textColor);
+			Color tc = IColor.toAWTColor(textColor);
+			pp.getDomainAxis().setLabelPaint(tc);
+			pp.getDomainAxis().setTickLabelPaint(tc);
 			if (XAXIS.equals(this.series_label_position)) {
-				((SubCategoryAxis) pp.getDomainAxis()).setSubLabelPaint(textColor);
+				((SubCategoryAxis) pp.getDomainAxis()).setSubLabelPaint(tc);
 			}
 		}
 
@@ -539,18 +545,19 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 			// legend is useless, but I find it nice anyway... Could put back...
 		}
 		this.resetDomainAxis(scope);
-
-		pp.setDomainGridlinePaint(axesColor);
-		pp.setRangeGridlinePaint(axesColor);
+		Color ac = IColor.toAWTColor(axesColor);
+		pp.setDomainGridlinePaint(ac);
+		pp.setRangeGridlinePaint(ac);
 		if (!this.getXTickLineVisible(scope)) { pp.setDomainGridlinesVisible(false); }
 		if (!this.getYTickLineVisible(scope)) { pp.setRangeGridlinesVisible(false); }
 		pp.setRangeCrosshairVisible(true);
-		pp.getRangeAxis().setAxisLinePaint(axesColor);
+		pp.getRangeAxis().setAxisLinePaint(ac);
 		pp.getRangeAxis().setLabelFont(getLabelFont());
 		pp.getRangeAxis().setTickLabelFont(getTickFont());
 		if (textColor != null) {
-			pp.getRangeAxis().setLabelPaint(textColor);
-			pp.getRangeAxis().setTickLabelPaint(textColor);
+			Color tc = IColor.toAWTColor(textColor);
+			pp.getRangeAxis().setLabelPaint(tc);
+			pp.getRangeAxis().setTickLabelPaint(tc);
 		}
 		if (ytickunit > 0) { ((NumberAxis) pp.getRangeAxis()).setTickUnit(new NumberTickUnit(ytickunit)); }
 
@@ -562,10 +569,11 @@ public class ChartJFreeChartOutputHistogram extends ChartJFreeChartOutput {
 
 		if (xlabel != null && !xlabel.isEmpty()) { pp.getDomainAxis().setLabel(xlabel); }
 		if (textColor != null) {
-			pp.getDomainAxis().setLabelPaint(textColor);
-			pp.getDomainAxis().setTickLabelPaint(textColor);
+			Color tc = IColor.toAWTColor(textColor);
+			pp.getDomainAxis().setLabelPaint(tc);
+			pp.getDomainAxis().setTickLabelPaint(tc);
 			if (XAXIS.equals(this.series_label_position)) {
-				((SubCategoryAxis) pp.getDomainAxis()).setSubLabelPaint(textColor);
+				((SubCategoryAxis) pp.getDomainAxis()).setSubLabelPaint(tc);
 			}
 		}
 	}

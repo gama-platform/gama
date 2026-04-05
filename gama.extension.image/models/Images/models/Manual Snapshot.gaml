@@ -1,8 +1,12 @@
 /**
-* Name: ManualSnapshot
-* Shows how to make (and use) snapshots of displays using images 
-* Author: A. Drogoul, 2023
-* Tags: image, clipboard, snapshot
+* Name: Manual Snapshot
+* Author: Alexis Drogoul
+* Description: Shows how to programmatically capture a snapshot of a GAMA display and use it as an image
+*   variable. The snapshot is taken using the 'snapshot' action on the display, returning an image that can
+*   be saved to a file, copied to the system clipboard, or used as a texture for another display element.
+*   Also demonstrates how to copy images to the clipboard for external use. Useful for automated screenshot
+*   generation and for displaying a 'live preview' of one display inside another.
+* Tags: image, snapshot, clipboard, display, save_file, visualization
 */
 model ManualSnapshot
 
@@ -41,7 +45,7 @@ experiment "Snapshot Depth" type: gui {
 	
 	output synchronized: true {
 		display "My Display" type:3d axes: false{
-			image background refresh: true;
+			picture background refresh: true;
 			species bug;
 		}
 	}

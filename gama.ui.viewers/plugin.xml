@@ -3,61 +3,228 @@
 <plugin>
    <extension
          point="org.eclipse.ui.editors">
+	<editor
+      		name="JSON Editor"
+            extensions="json,JSON,geojson,GEOJSON"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.js.svg"
+            contributorClass="org.eclipse.ui.texteditor.BasicTextEditorActionContributor"
+            class="gama.ui.viewers.json.eclipse.JsonEditor"
+            id="gama.ui.application.editor.json">
+    <contentTypeBinding
+          contentTypeId="gama.json.file.type">
+    </contentTypeBinding>
+      </editor>
       <editor
             class="gama.ui.viewers.image.ImageViewer"
             default="false"
-            extensions="JPG,jpg,JPEG,jpeg,PNG,png,BMP,bmp,TIFF,tiff,TIF,tif,ICO,ico,ASC,asc,PGM,pgm"
-            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/files/file.image.png"
+            extensions="JPG,jpg,JPEG,jpeg,PNG,png,BMP,bmp,TIFF,tiff,TIF,tif,ICO,ico,ASC,asc,PGM,pgm,svg,SVG"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.image.svg"
             id="gama.ui.application.editor.image"
             name="Image Viewer">
          <contentTypeBinding
-               contentTypeId="gama.ui.images.type">
+               contentTypeId="gama.images.file.type">
          </contentTypeBinding>
       </editor>
         <editor
             class="gama.ui.viewers.csv.MultiPageCSVEditor"
             default="true"
             extensions="CSV,csv"
-            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/files/file.csv.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.csv.svg"
             id="gama.ui.application.editor.csv"
             name="CSV Editor">
          <contentTypeBinding
-               contentTypeId="gama.ui.csv.type">
+               contentTypeId="gama.csv.file.type">
          </contentTypeBinding>
       </editor>
       <editor
             class="gama.ui.viewers.html.HtmlViewer"
             default="false"
-            extensions="html, htm, HTML, HTM, svg, SVG"
-            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/files/file.html.png"
+            extensions="html,htm,HTML,HTM"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.html.svg"
             id="gama.ui.application.browser"
             name="HTML Viewer">
          <contentTypeBinding
-               contentTypeId="gama.ui.html.type">
+               contentTypeId="gama.html.file.type">
          </contentTypeBinding>
       </editor>
       <editor
             class="gama.ui.viewers.gis.ShapeFileViewer"
             default="true"
-            extensions="shp"
-            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/files/file.shape.png"
+            extensions="shp,SHP"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.shape.svg"
             id="gama.ui.application.shape.viewer"
             name="ShapeFile Viewer">
          <contentTypeBinding
-               contentTypeId="gama.ui.shapefile.type">
+               contentTypeId="gama.shapefile.type">
          </contentTypeBinding>
       </editor>
       <editor
             class="gama.ui.viewers.gis.OSMFileViewer"
             default="true"
             extensions="gz,osm,pbf,bz2"
-            icon="platform:/plugin/gama.ui.shared/icons/light/navigator/files/file.osm.png"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.osm.svg"
             id="gama.ui.application.osm.viewer"
             name="OSM Viewer">
          <contentTypeBinding
-               contentTypeId="gama.ui.osm.type">
+               contentTypeId="gama.osm.file.type">
+         </contentTypeBinding>
+      </editor>
+      <editor
+            class="gama.ui.viewers.gis.GMLFileViewer"
+            default="true"
+            extensions="gml,GML"
+            icon="platform:/plugin/gama.ui.shared/icons_svg/light/navigator/files/file.shape.svg"
+            id="gama.ui.application.gml.viewer"
+            name="GML Viewer">
+         <contentTypeBinding
+               contentTypeId="gama.gml.file.type">
          </contentTypeBinding>
       </editor>
    </extension>
+   <extension point="org.eclipse.ui.contexts">
+	  <context
+	        name="JSON context"
+	        description="Editing json files"
+	        parentId="org.eclipse.ui.textEditorScope"
+	        id="gama.ui.application.editor.json.context">
+	  </context>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            description="JSON editor"
+            id="jsoneditor.commands.category"
+            name="JSON editor">
+      </category>
+   </extension>
+   
+   <extension point="org.eclipse.ui.commands">
+   	   <command
+            name="Quick outline"
+            description="Show quick outline dialog"
+            categoryId="jsoneditor.commands.category"
+            id="jsoneditor.editor.commands.quickoutline">
+      </command>
+      <command
+            name="Format JSON"
+            description="Format JSON content"
+            categoryId="jsoneditor.commands.category"
+            id="jsoneditor.editor.commands.source.formatJSON">
+      </command>
+      <command
+            name="Copy JSON as single line to clipboard"
+            description="Copy the current JSON de prettified as a single line to clipboard"
+            categoryId="jsoneditor.commands.category"
+            id="jsoneditor.editor.commands.source.copyJsonAsOneLineToClipboard">
+      </command>
+      <command
+            name="Validate JSON"
+            description="Validate JSON content"
+            categoryId="jsoneditor.commands.category"
+            id="jsoneditor.editor.commands.source.validateJSON">
+      </command>
+      <command
+            name="Goto matching bracket"
+            description="Goto matching bracket inside JSON document"
+            categoryId="jsoneditor.commands.category"
+            id="jsoneditor.editor.commands.gotomatchingbracket">
+      </command>
+     
+	</extension>
+	<extension point="org.eclipse.ui.handlers">
+	 <handler
+            commandId="jsoneditor.editor.commands.quickoutline"
+            class="gama.ui.viewers.json.eclipse.handlers.OpenQuickOutlineHandler">
+      </handler>
+      <handler
+            commandId="jsoneditor.editor.commands.source.formatJSON"
+            class="gama.ui.viewers.json.eclipse.handlers.FormatJSONHandler">
+      </handler>
+      <handler
+            commandId="jsoneditor.editor.commands.source.copyJsonAsOneLineToClipboard"
+            class="gama.ui.viewers.json.eclipse.handlers.CopyJsonAsOneLineToClipboardHandler">
+      </handler>
+       <handler
+            commandId="jsoneditor.editor.commands.source.validateJSON"
+            class="gama.ui.viewers.json.eclipse.handlers.ValidateJSONHandler">
+      </handler>
+       <handler
+            commandId="jsoneditor.editor.commands.gotomatchingbracket"
+            class="gama.ui.viewers.json.eclipse.handlers.GotoMatchingBracketHandler">
+      </handler>
+    </extension>
+       <extension point="org.eclipse.ui.bindings">
+   		<key
+            sequence="M1+O"
+            contextId="gama.ui.application.editor.json.context"
+            commandId="jsoneditor.editor.commands.quickoutline"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">	  
+		</key>
+		<key
+            sequence="M1+M2+F"
+            contextId="gama.ui.application.editor.json.context"
+            commandId="jsoneditor.editor.commands.source.formatJSON"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">	  
+		</key>
+		<key
+            sequence="M1+M2+P"
+            contextId="gama.ui.application.editor.json.context"
+            commandId="jsoneditor.editor.commands.gotomatchingbracket"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration">	  
+		</key>
+    </extension> 
+    <extension point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:gama.ui.application.editor.json.context?after=additions">
+            <command commandId="jsoneditor.editor.commands.quickoutline">
+            </command>
+            <command commandId="jsoneditor.editor.commands.source.formatJSON">
+            </command>
+            <command commandId="jsoneditor.editor.commands.source.copyJsonAsOneLineToClipboard">
+            </command>
+            <command commandId="jsoneditor.editor.commands.source.validateJSON">
+            </command>
+      </menuContribution>
+      </extension> 
+      <extension 
+        id="json.info.marker"
+        point="org.eclipse.core.resources.markers"
+        name="JSON info marker">
+        <super type="org.eclipse.core.resources.problemmarker"/>
+        <super type="org.eclipse.core.resources.textmarker"/>
+        <persistent value="false"/>
+    </extension>
+   
+   <extension 
+   		id="json.error.marker"
+    	point="org.eclipse.core.resources.markers"
+    	name="JSON error marker">
+        <super type="org.eclipse.core.resources.problemmarker"/>
+        <super type="org.eclipse.core.resources.textmarker"/>
+        <persistent value="true"/>
+    </extension>
+    
+   <extension
+      point = "org.eclipse.ui.preferencePages">
+      <page
+         id="gama.ui.viewers.json.eclipse.preferences.JsonEditorEditorPreferencePage"
+         class="gama.ui.viewers.json.eclipse.preferences.JsonEditorPreferencePage"
+         name="Json Editor"
+         >
+      </page>
+      <page
+         id="gama.ui.viewers.json.eclipse.preferences.JsonEditorEditorSyntaxColorPreferencePage"
+         class="gama.ui.viewers.json.eclipse.preferences.JsonEditorSyntaxColorPreferencePage"
+         name="Syntax coloring"
+         category="gama.ui.viewers.json.eclipse.preferences.JsonEditorEditorPreferencePage">
+      </page>
+    </extension>
+    <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="gama.ui.viewers.json.eclipse.preferences.JsonEditorPreferenceInitializer">
+      </initializer>
+   </extension>
 
+      
 </plugin>

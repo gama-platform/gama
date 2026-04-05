@@ -1,9 +1,14 @@
 /**
-* Name: Wizard_example
+* Name: Wizard
 * Author: Patrick Taillandier
-* Description: Model which shows how to use wizards 
-* Tags: gui
- */
+* Description: Demonstrates the 'wizard' action for displaying a multi-step input wizard dialog to the user.
+*   A wizard organizes multiple input pages sequentially, with Next/Back navigation and a Finish button.
+*   Each page can contain 'enter' (free-text/number) and 'choose' (dropdown) input elements. The wizard
+*   returns a map of all collected values when the user clicks Finish, or an empty map if cancelled. This
+*   is the recommended approach for collecting a structured set of configuration parameters from the user
+*   at model initialization or during key simulation events.
+* Tags: gui, wizard, dialog, interaction, input, multi_step, popup
+*/
 
 model Wizard_example
 

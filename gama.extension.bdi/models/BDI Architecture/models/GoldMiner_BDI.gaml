@@ -1,13 +1,13 @@
 /**
- *  GoldBdi
- *  Author: Philippe Caillou, Mathieu Bourgais, Patrick Taillandier
- *  Description: A simple model that uses the simple_bdi architecture. In this model, the Miner agent has a general desire to  find gold. 
- * As it is the only thing it wants at the beginning, it is its initial intention (what it is currently doing). To  find gold, it wanders around (its plan is to wander). 
- * When it perceives some gold nuggets, it stores this information (it has a new belief about the existence and location of this gold nugget), 
- * and it adopts a new desire (it wants to extract the gold). When it perceives a gold nugget, the intention to  find gold is put on hold and a new intention is selected (to extract gold).
- * To achieve this intention, the plan has two steps, i.e. two new (sub)intentions: to choose a gold nugget to extract (among its known gold nuggets) and to go and take it. And so on.
- *  Tags: simple_bdi, perception, rule, plan, predicate
- */
+* Name: Gold Miner BDI
+* Author: Philippe Caillou, Mathieu Bourgais, Patrick Taillandier
+* Description: A classic BDI demonstration model. A Miner agent has a general desire to find gold nuggets.
+*   It wanders until it perceives a nugget (updating its beliefs), then switches intention to extract it,
+*   using sub-intentions (choose nugget, go to it, pick it up). The model illustrates the full BDI cycle:
+*   perception creating beliefs, rules triggering new desires, and plans decomposing intentions into steps.
+*   It is the reference model for the 'simple_bdi' architecture in GAMA.
+* Tags: simple_bdi, perception, rule, plan, predicate, belief, desire, intention, architecture, gold_miner
+*/
 
 model GoldBdi
 

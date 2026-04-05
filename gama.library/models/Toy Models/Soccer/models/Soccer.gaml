@@ -1,15 +1,13 @@
 /**
 * Name: Soccer Game
-* Author: Julien
-* Description: This model shows how can we make an easy simulation of collective games, such as soccer. 
-* 
-* Each player have an offensive and a defensive position, and a behavior associated. Each player of the defensive team 
-* can either search to catch the ball or mark an other player (offensive player) according to his defensive position.
-* 
-* Each player of the offensive team can either run to its offensive place (when he does not have the ball), run with the balloon / 
-* pass the ball / try to score a goal (when he has the ball). By changing the different parameters, you can see the concequences 
-* in real time. 
-* Tags: sport
+* Author: Julien Mazars
+* Description: A simulation of a soccer (football) game showing how to model collective sports strategies as
+*   agent behaviors. Each player has a designated offensive and defensive position. Defensive players either
+*   try to intercept the ball or mark an offensive opponent based on their assigned defensive position. Offensive
+*   players run to their designated offensive positions when they don't have the ball, or run with the ball,
+*   pass, or attempt to score when they do. Adjusting the strategy parameters changes the team dynamics in real
+*   time, illustrating emergent collective behavior from individual tactical rules.
+* Tags: sport, soccer, game, strategy, collective_behavior, agent, team
 */
 
 model soccer
@@ -65,15 +63,15 @@ global {
 	
 	init {
 		loop pos over:redPlayerPosition {
-			create player with:[team::"red", location::pos];
+			create player with:(team:"red", location:pos);
 		}
 		loop pos over:bluePlayerPosition {
-			create player with:[team::"blue", location::pos];
+			create player with:(team:"blue", location:pos);
 		}
-		create ball with:[location::location] returns:ball_agt;
+		create ball with:(location:location) returns:ball_agt;
 		ball_agent<-ball_agt at 0;
-		create goal with:[location::{0,location.y}, team::"blue"];
-		create goal with:[location::{120,location.y}, team::"red"];
+		create goal with:(location:{0,location.y}, team:"blue");
+		create goal with:(location:{120,location.y}, team:"red");
 	}
 	
 	reflex update {
@@ -111,13 +109,13 @@ global {
 		
 		if (previous_red_size_play_area != red_size_play_area) {
 			ask area where (each.team = "red") {
-				do update_size;
+				do update_size();
 			}
 			previous_red_size_play_area <- red_size_play_area;
 		}
 		if (previous_blue_size_play_area != blue_size_play_area) {
 			ask area where (each.team = "blue") {
-				do update_size;
+				do update_size();
 			}
 			previous_blue_size_play_area <- blue_size_play_area;
 		}
@@ -129,7 +127,7 @@ global {
 		}
 	}
 	
-	action reinit_phase {
+	action reinit_phase() {
 		ask player {
 			location <- init_pos;
 			previous_pos <- init_pos;
@@ -169,10 +167,10 @@ species player skills:[moving] {
 	init {
 		init_pos <- location;
 		previous_pos <- location;
-		create area with:[location::init_pos, team::self.team, position::init_pos] returns:def_pos;
+		create area with:(location:init_pos, team:self.team, position:init_pos) returns:def_pos;
 		defensive_pos <- def_pos at 0;
 		point offensivePos <- {(team="red") ? init_pos.x-60 : init_pos.x+60,init_pos.y};
-		create area with:[location::offensivePos, team::self.team, position::offensivePos] returns:off_pos;
+		create area with:(location:offensivePos, team:self.team, position:offensivePos) returns:off_pos;
 		offensive_pos <- off_pos at 0;
 	}
 	
@@ -188,32 +186,32 @@ species player skills:[moving] {
 	
 	reflex defensive_behavior when:team_possession != team {
 		// the ball is not possessed by the team.
-		do apply_inertia;
+		do apply_inertia();
 		if (self = closest_red_player_from_the_ball or self = closest_blue_player_from_the_ball) {
-			do run_to_ball;
+			do run_to_ball();
 		}
 		else {
-			do defensive_move;
+			do defensive_move();
 		}
 	}
 	
 	reflex offensive_behavior when:team_possession = team {
-		do apply_inertia;
+		do apply_inertia();
 		if (possess_ball) {
-			do run_with_ball;
+			do run_with_ball();
 			if (distance_to_ennemy_goal < 30 and flip(1/(distance_to_ennemy_goal*distance_to_ennemy_goal/10+1))) {
 				// shoot !
-				do kick_ball_to_goal;
+				do kick_ball_to_goal();
 			}
 			else {
 				// pass !
 				if (distance_to_closest_ennemy < 5) {
 					if (flip(collective_mark)) {
-						do pass_the_ball;
+						do pass_the_ball();
 					}
 				}
 				else if flip(collective_mark/50) {
-					do pass_the_ball;
+					do pass_the_ball();
 				}
 			}
 		}
@@ -221,10 +219,10 @@ species player skills:[moving] {
 			(self = closest_red_player_from_the_ball or self = closest_blue_player_from_the_ball
 			or self = called_player)
 		) {
-			do run_to_ball;
+			do run_to_ball();
 		}
 		else {
-			do offensive_move;
+			do offensive_move();
 		}
 	}
 	
@@ -234,7 +232,7 @@ species player skills:[moving] {
 		}
 	}
 	
-	action apply_inertia {
+	action apply_inertia (){
 		point prev_pos <- location;
 		point inertia_vect <- {(location.x-previous_pos.x)*0.8,(location.y-previous_pos.y)*0.8};
 		float max_inertia <- running_speed_without_ball;
@@ -249,7 +247,7 @@ species player skills:[moving] {
 		previous_pos <- prev_pos;
 	}
 	
-	action run_to_ball {
+	action run_to_ball(){
 		point targetPos;
 		if (ball_agent.ball_direction intersects circle(1)) {
 			targetPos <- ball_agent.location;
@@ -257,38 +255,38 @@ species player skills:[moving] {
 		else {
 			targetPos <- (ball_agent.ball_direction closest_points_with self) at 0;
 		}
-		do goto with:[target::targetPos, speed::running_speed_without_ball];
+		do goto(target:targetPos, speed:running_speed_without_ball);
 		
 		status <- "run to the ball";
 		
 		// if close enough, catch the ball
 		if (location distance_to ball_agent.location < 1.5#m) {
 			if (self = called_player) {
-				do take_ball;
+				do take_ball();
 			}
 			else if (ball_agent.belong_to_team = "") {
 				if flip(1/(ball_agent.speed*recuperation_mark+1)) {
-					do take_ball;
+					do take_ball();
 				}
 			}
 			else {
 				if (team_possession = team) {
 					// result of a long pass for instance
 					if (flip(recuperation_mark*1.5)) {
-						do take_ball;
+						do take_ball();
 					}
 				}
 				else {
 					// interception of the ball
 					if (flip(recuperation_mark*0.8)) {
-						do take_ball;
+						do take_ball();
 					}
 				}
 			}
 		}
 	}
 	
-	action run_with_ball {
+	action run_with_ball() {
 		status <- "run with the ball";
 		point goal_pos;
 		ask goal {
@@ -296,11 +294,11 @@ species player skills:[moving] {
 				goal_pos <- location;
 			}
 		}
-		do goto with:[target::goal_pos, speed::running_speed_with_ball];
+		do goto(target:goal_pos, speed:running_speed_with_ball);
 		ball_agent.location <- location;
 	}
 	
-	action offensive_move {
+	action offensive_move() {
 		// try to reach an offensive postion
 		point target_location;
 		geometry possible_pos <- (team="red") ? world inter (rectangle({blue_offside_pos,0},{120,90}))
@@ -329,26 +327,26 @@ species player skills:[moving] {
 				target_location <- any_location_in(offensive_pos inter possible_pos);
 			}
 		}
-		do goto target:target_location speed:running_speed_without_ball;
+		do goto (target:target_location, speed:running_speed_without_ball);
 	}
 	
-	action defensive_move {
+	action defensive_move() {
 		// try to mark an ennemy player
 		status <- "mark ennemy player";
 		if (not (marked_player = nil)) {
-			do goto with:[target::marked_player.location+((team="red")?{2+rnd(5.0),rnd(2.0)-1} : {-2-rnd(5.0),rnd(2.0)-1}), speed::running_speed_without_ball];
+			do goto (target:marked_player.location+((team="red")?{2+rnd(5.0),rnd(2.0)-1} : {-2-rnd(5.0),rnd(2.0)-1}), speed:running_speed_without_ball);
 		}
 	}
 	
-	action kick_ball_to_goal {
-		do loose_ball;
+	action kick_ball_to_goal() {
+		do loose_ball();
 		ask ball_agent {
-			do shooted speed_atr:4.0 target_position:((goal where (each.team != myself.team)) at 0).location;
+			do shooted (speed_atr:4.0, target_position:((goal where (each.team != myself.team)) at 0).location);
 		}
 		inactivity_time <- 20;
 	}
 	
-	action pass_the_ball {
+	action pass_the_ball() {
 		float wisest_choice_mark <- -100.0;
 		player wisest_target;
 		ask player  where(each.team = team and each != self and (self distance_to each > 15)) {
@@ -361,9 +359,9 @@ species player skills:[moving] {
 		}
 		if (wisest_choice_mark > -100.0) {
 			// a target has been found
-			do loose_ball;
+			do loose_ball();
 			ask ball_agent {
-				do shooted target_position:wisest_target.location speed_atr:wisest_target.distance_to_ball/8;
+				do shooted (target_position:wisest_target.location, speed_atr:wisest_target.distance_to_ball/8);
 			}
 			called_player <- wisest_target;
 			inactivity_time <- 20;
@@ -372,10 +370,10 @@ species player skills:[moving] {
 		}
 	}
 	
-	action take_ball {
+	action take_ball() {
 		if (ball_agent.belong_to_team != "" and ball_agent.belong_to_team != team) {
 			ask ball_agent.belong_to_player {
-				do loose_ball;
+				do loose_ball();
 			}
 		}
 		team_possession <- team;
@@ -394,7 +392,7 @@ species player skills:[moving] {
 		called_player <- nil;
 	}
 	
-	action loose_ball {
+	action loose_ball() {
 		possess_ball <- false;
 		ball_agent.belong_to_team <- "";
 	}
@@ -421,7 +419,7 @@ species area {
 		shape <- ((team="red") ? square(red_size_play_area) : square(blue_size_play_area)) inter world;
 	}
 	
-	action update_size {
+	action update_size() {
 		location <- position;
 		shape <- ((team="red") ? square(red_size_play_area) : square(blue_size_play_area)) inter world;
 	}
@@ -450,20 +448,20 @@ species ball skills:[moving]{
 		if ((location.x+cos(heading)*speed) > 120) {
 			blue_score <- blue_score + 1;
 			ask world {
-				do reinit_phase;
+				do reinit_phase();
 			}
 		}
 		if ((location.x+cos(heading)*speed) < 0) {
 			red_score <- red_score + 1;
 			ask world {
-				do reinit_phase;
+				do reinit_phase();
 			}
 		}
-		do wander amplitude:1.0;
+		do wander (amplitude:1.0);
 	}
 	action shooted (point target_position, float speed_atr) {
 		speed <- speed_atr;
-		do goto target:target_position;
+		do goto (target:target_position);
 	}
 	aspect base {
 		draw circle(0.5) color:#white border:#black;
@@ -487,7 +485,7 @@ species goal {
 }
 
 
-experiment match type:gui {
+experiment "Match" type:gui {
 	parameter "blue running speed" var:blue_players_speed category:"Blue Team";
 	parameter "red running speed" var:red_players_speed category:"Red Team";
 	// speed of players when they run. Note that a player which have the ball will run at 50% of his max capacity, and he will run at 80% of his max capacity if he does not have the ball.
@@ -522,7 +520,7 @@ experiment match type:gui {
 	output {
 		display "soccer_field" type:2d{
 			// display the field.
-			image "../images/soccer_field.png";
+			picture "../images/soccer_field.png";
 			species player aspect:base;
 			species ball aspect:base;
 			species goal aspect:base;

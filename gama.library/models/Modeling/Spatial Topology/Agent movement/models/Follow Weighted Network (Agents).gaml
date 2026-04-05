@@ -1,10 +1,13 @@
 /**
-* Name:  Follow Weighted Network
-* Author:  Martine Taillandier
-* Description: Model representing how to make a weighted graph and the impacts of the weights on the time to follow the path for the agents. 
-* 	Two agents are represented to show this difference : one knowing the weights and following a fast path, an other following a path longer 
-* 	without knowing it's a longer path.
-* Tags: graph, agent_movement, skill
+* Name: Follow Weighted Network (Agents)
+* Author: Martine Taillandier
+* Description: Shows how agent-defined weights affect path selection on a road network. Two agents travel
+*   the same origin-to-destination route: one uses a cost-aware path that minimizes total travel time by
+*   choosing faster (but possibly longer) roads; the other uses a naive shortest-distance path. The weights
+*   are stored on road agents and updated dynamically. By comparing the two agents you can observe how
+*   ignoring edge costs leads to slower overall travel, illustrating the importance of weighted graph
+*   navigation in transport and logistics simulations.
+* Tags: graph, agent_movement, skill, weighted_graph, shortest_path, transport
 */
 
 model weightperagents

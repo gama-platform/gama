@@ -1,9 +1,12 @@
 /***
-* Name: Water flow in a river graph, using water flow in rivers
-* Author: Benoit Gaudou and Patrick Taillandier
-* Description: In this model, the flow of water is modeled through the exchange of water between elements of rivers.
-* 	The only water input comes (every 20 steps) from the source points. Then the water flows toward the outlet point.
-* Tags: shapefile, gis, graph, gui, hydrology, water flow
+* Name: Waterflow River Graph
+* Author: Benoit Gaudou, Patrick Taillandier
+* Description: Models water flow through a river network represented as a graph loaded from a shapefile.
+*   Water enters the network at designated source points every 20 steps and flows toward the outlet via
+*   the river graph topology. Each river reach exchanges water with its downstream neighbors based on the
+*   graph edge directions. Source and drain points of interest are also loaded from a shapefile. This graph-based
+*   approach captures the branching structure of real river networks better than grid-only approaches.
+* Tags: shapefile, gis, graph, gui, hydrology, water_flow, river, network, source, drain
 ***/
 
 model Waterflowrivergraph
@@ -54,7 +57,7 @@ species poi {
 	string type;
 	river closest_river ;
 	
-	action give_water {
+	action give_water() {
 		closest_river.water_volume <- 200.0;
 	}
 	
@@ -68,13 +71,13 @@ species river {
 	float water_volume;
 	float water_volume_from_other;
 	
-	action water_flow {
+	action water_flow() {
 		if (next_river != nil) {
 			next_river.water_volume_from_other <- next_river.water_volume_from_other + 0.9 * water_volume;
 		}
 	}
 	
-	action update_water_level {
+	action update_water_level() {
 		water_volume <- 0.1 * water_volume + water_volume_from_other;
 		water_volume_from_other <- 0.0;
 	}

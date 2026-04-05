@@ -10,12 +10,12 @@ import "../../../../Toy Models/Evacuation/models/Continuous Move.gaml"
 experiment "Adapter of Evacuation" type: gui
 {
 	point centroid <- { 200, 580 };
-	list<building> get_building
+	list<building> get_building()
 	{
 		return list(building);
 	}
 
-	action transform_environment
+	action transform_environment()
 	{
 		people_size <- people_size * 10;
 		loop t over: list(building)
@@ -35,7 +35,7 @@ experiment "Adapter of Evacuation" type: gui
 
 	}
 
-	list<people> get_people
+	list<people> get_people()
 	{
 		return list(people);
 	}

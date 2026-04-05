@@ -1,17 +1,12 @@
 /**
 * Name: Vector Map Comparison
 * Author: Patrick Taillandier
-* Description: This model shows how to use different comparators to know the accuracy of a prediction model. Four comparators are used :
-* 
-* - kappa, comparing the map observed and the map simulation ; kappa simulation comparing the initial map, the map observed and the map simulation;
-* 
-* - fuzzy kappa, comparing the map observed and the map simulation but being more permissive by using fuzzy logic;
-* 
-* - fuzzy kappa simulation, comparing the map observed, the map simulation and the map initial but being more permissive by using fuzzy logic
-* 
-* For each comparator, two comparisons are made : one without taking into account the weights of an area, just computing with each area having the same 
-* importance, and an other using weights related to the area of the region
-* Tags: shapefile, comparison, statistic
+* Description: Shows how to measure the accuracy of a vector (polygon) prediction model against observed
+*   spatial data using four comparators: Kappa, Kappa Simulation, Fuzzy Kappa, and Fuzzy Kappa Simulation.
+*   For each metric, two variants are computed: an unweighted version (all polygons equally important) and
+*   an area-weighted version (larger polygons contribute proportionally more). This is the vector-geometry
+*   counterpart to 'Raster Map Comparison', suited to land-use or administrative-boundary models.
+* Tags: statistics, shapefile, map_comparison, kappa, fuzzy_kappa, validation, spatial_analysis, vector, weight
 */
 
 model mapcomparison
@@ -28,7 +23,7 @@ global {
 	geometry shape <- envelope(data);
 	 
 	init {
-		create areaclc from: data with: [init_cover::string(read("CODE_00")),obs_cover::string(read("CODE_06"))] ;
+		create areaclc from: data with: (init_cover:string(read("CODE_00")),obs_cover:string(read("CODE_06"))) ;
 		ask areaclc {
 			if (not (init_cover in categories)) {categories << init_cover; }
 			if (not (obs_cover in categories)) {categories << obs_cover;}
@@ -85,7 +80,7 @@ species areaclc {
 	string sim_cover;
 	rgb color_fuzzy;
 	
-	aspect init {
+	aspect initial {
 		draw shape color: color_cat[init_cover];
 	}
 	aspect simulation {
@@ -110,7 +105,7 @@ experiment "Compare" type: gui {
 			species areaclc aspect: observed refresh: false;
 		}
 		display "Initial Map" type: 3d{
-			species areaclc aspect: init refresh: false;
+			species areaclc aspect: initial refresh: false;
 		}
 		display "Fuzzy Comparison Map" type: 3d background: #black{
 			species areaclc aspect: fuzzy_sim ;

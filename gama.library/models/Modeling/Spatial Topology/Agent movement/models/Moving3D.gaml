@@ -1,8 +1,12 @@
 /**
-* Name:  Movement in 3D
-* Author:  Arnaud Grignard - Tri Nguyen Huu
-* Description: This model illustrates the different action and effect offered by the movingSkill3D (move,wander,goto and follow)
-* Tags: 3d, agent_movement, graph, skill
+* Name: Movement in 3D
+* Author: Arnaud Grignard, Tri Nguyen-Huu
+* Description: Demonstrates all four movement actions provided by the 'moving3D' skill: 'move' (free random
+*   3D movement), 'wander' (random heading change in 3D), 'goto' (3D shortest-path navigation toward a
+*   target), and 'follow' (3D path following). Each action is shown in a separate experiment. This model is
+*   the primary reference for 3D agent navigation in GAMA, covering both unguided and graph-constrained
+*   movement in three-dimensional space.
+* Tags: 3d, agent_movement, graph, skill, moving3D, wander, goto, follow
 */
 
 

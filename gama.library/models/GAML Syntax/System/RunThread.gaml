@@ -1,13 +1,13 @@
-
 /***
-* Name: RunThread 
+* Name: Run Thread
 * Author: Patrick Taillandier
-* Description: This model illustrates the possibility of GAMA to run a model or any action in a specific thread. 
-* A skill called 'thread' allows to run in a thread the built-in 'thread_action' action. If overriden, this 'thread_action' is run in a thread.
-* Two other built-in actions are provided: start_thread that starts the thread, and end_thread, that ends the thread.
-* In this model, the skill is attached to the global species (with a fixed rate) and to a species of agents (with a fixed delay). It can be attached to any species, and multiple agents can run multiple threads.
-* When the agents are killed, their thread is automatically stopped if it is running. 
-* Tags: system, thread, skill
+* Description: Illustrates the ability of GAMA to run model actions concurrently in separate threads. The 'thread'
+*   skill enables any species (including 'global') to execute a 'thread_action' in a dedicated system thread.
+*   Three built-in actions are provided: 'start_thread' launches the thread, 'end_thread' terminates it, and the
+*   overridable 'thread_action' contains the code to run concurrently. Multiple agents can each run their own
+*   thread simultaneously. When an agent is killed, its thread is automatically stopped. This model attaches the
+*   skill to both the global species (with a fixed rate) and to individual agents (with a fixed delay).
+* Tags: system, thread, skill, concurrent, parallel, async, action
 ***/
 
 
@@ -27,8 +27,8 @@ global skills: [thread]{
   
 	
 	//the action run in the thread 
-	action thread_action {
-		write "current time: " + #now;
+	action thread_action() {
+		write "current time: " + #now; 
 	}	 
 }
 
@@ -40,15 +40,15 @@ species thread_agent skills: [thread] {
 	}
 	
 	//the action run in the thread
-	action thread_action {
-		write " > " + self + "current time: " + #now;
+	action thread_action() {
+		write " > " + self + "current time: " + #now; 
 	}	
 }
   
 experiment "Run global thread" autorun: true;
 
 experiment "Run several threads" autorun: true {
-	action _init_ {
-		create simulation with: [create_agents:: true];
+	action _init_() {
+		create simulation with: (create_agents: true);
 	}
-}
+} 

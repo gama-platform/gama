@@ -1,8 +1,12 @@
 /***
-* Name: BDItutorial4
+* Name: BDI Tutorial - Step 4 - Emotions and Personality
 * Author: Mathieu Bourgais
-* Description: Addition of emotions and personality to miner agents.
-* Tags: emotion, personality
+* Description: Fourth step of the BDI Gold Miner tutorial. Enriches miner agents with an emotional state
+*   and a personality profile. Emotions (joy, fear, hope, sadness, etc.) emerge from the gap between
+*   desires and beliefs and influence plan selection and execution speed. Personality parameters (openness,
+*   conscientiousness, etc.) modulate how emotions are generated and decay. This step demonstrates the
+*   full emotion and personality extension of the simple_bdi architecture.
+* Tags: simple_bdi, emotion, personality, tutorial, gold_miner, BDI, architecture
 ***/
 
 model BDItutorial4

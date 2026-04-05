@@ -1,8 +1,12 @@
 /**
-* Name: Exploration (batch)
-* Author:
-* Description: 13th part of the tutorial: Predator Prey
-* Tags: batch
+* Name: Predator Prey Tutorial - Step 13 - Batch Exploration
+* Author: Gama Development Team
+* Description: Thirteenth step of the Predator-Prey tutorial. Adds a batch experiment that exhaustively
+*   explores the parameter space of the predator-prey model. A set of parameters (initial prey count,
+*   initial predator count, prey energy gain, predator energy gain) are varied over defined ranges and all
+*   combinations are run. Results are saved to a CSV file for analysis. This step introduces the 'batch'
+*   experiment type and the 'parameter' statement for specifying the exploration ranges.
+* Tags: batch, exploration, predator, prey, parameter_space, save, csv, optimization
 */
 model prey_predator
 
@@ -22,8 +26,8 @@ global {
 	int predator_nb_max_offsprings <- 3;
 	float predator_energy_reproduce <- 0.5;
 	file map_init <- image_file("../includes/data/raster_map.png");
-	int nb_preys -> {length(prey)};
-	int nb_predators -> {length(predator)};
+	int nb_preys -> length(prey);
+	int nb_predators -> length(predator);
 	bool is_batch <- false;
 
 	init {
@@ -47,7 +51,7 @@ global {
 	}
 	
 	reflex stop_simulation when: ((nb_preys = 0) or (nb_predators = 0)) and !is_batch {
-		do pause;
+		do pause();
 	} 
 }
 
@@ -78,7 +82,7 @@ species generic_species {
 	}
 
 	reflex die when: energy <= 0 {
-		do die;
+		do die();
 	}
 
 	reflex reproduce when: (energy >= energy_reproduce) and (flip(proba_reproduce)) {
@@ -92,11 +96,11 @@ species generic_species {
 		energy <- energy / nb_offsprings;
 	}
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		return 0.0;
 	}
 
-	vegetation_cell choose_cell {
+	vegetation_cell choose_cell() {
 		return nil;
 	}
 
@@ -124,7 +128,7 @@ species prey parent: generic_species {
 	float energy_reproduce <- prey_energy_reproduce;
 	image_file my_icon <- image_file("../includes/data/sheep.png");
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		float energy_transfer <- 0.0;
 		if(my_cell.food > 0) {
 			energy_transfer <- min([max_transfer, my_cell.food]);
@@ -133,7 +137,7 @@ species prey parent: generic_species {
 		return energy_transfer;
 	}
 
-	vegetation_cell choose_cell {
+	vegetation_cell choose_cell() {
 		return (my_cell.neighbors2) with_max_of (each.food);
 	}
 }
@@ -148,18 +152,18 @@ species predator parent: generic_species {
 	float energy_reproduce <- predator_energy_reproduce;
 	image_file my_icon <- image_file("../includes/data/wolf.png");
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		list<prey> reachable_preys <- prey inside (my_cell);
 		if(! empty(reachable_preys)) {
 			ask one_of (reachable_preys) {
-				do die;
+				do die();
 			}
 			return energy_transfer;
 		}
 		return 0.0;
 	}
 
-	vegetation_cell choose_cell {
+	vegetation_cell choose_cell() {
 		vegetation_cell my_cell_tmp <- shuffle(my_cell.neighbors2) first_with (!(empty(prey inside (each))));
 		if my_cell_tmp != nil {
 			return my_cell_tmp;

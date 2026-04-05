@@ -1,10 +1,13 @@
 /***
-* Name: ABValuation
-* Author: Cristian Jara-Figueroa - Arnaud Grignard 
-* Description: This model illustrates how housing markets react to businesses and their location. 
-* In contrast to the standard Alonso-Muth-Mills Model (AMM), this Agent Based version enables 
-* users to understand the complexity of multiple employers within a given region.
-* Tags: EconomHousing Market,
+* Name: Agent-Based Housing Market Valuation
+* Author: Cristian Jara-Figueroa, Arnaud Grignard
+* Description: An agent-based adaptation of the Alonso-Muth-Mills (AMM) urban economics model, illustrating
+*   how housing market valuations emerge from the interplay between employers, workers, and housing. Unlike the
+*   standard AMM model which assumes a single employer at the city center, this ABM allows multiple employers
+*   at different locations. Housing values emerge from agents' willingness to pay for proximity to their
+*   workplace, balanced by commuting costs. Users can switch between car and non-car transport modes to observe
+*   how transport infrastructure shapes spatial valuation patterns across the city.
+* Tags: economics, housing_market, urban, ABM, valuation, transport, emergence
 ***/
 
 model ABValuation
@@ -60,7 +63,7 @@ global{
 				toSwitch.skillType <- 0;
 				if (toSwitch.myFirm.skillType>toSwitch.skillType) {
 					ask toSwitch {
-						do forceFirmUpdate;
+						do forceFirmUpdate();
 					}
 				}
 			}
@@ -75,7 +78,7 @@ global{
 		}		
 	}
 	
-	action create_firm {
+	action create_firm() {
 		if (firmDeleteMode=false) {
 			building toKill<- (building closest_to(#user_location));
 			reflexPause<-true;
@@ -93,15 +96,15 @@ global{
 				location <- toKill.location;
 				nbWorkers<-0;
 				advertiseRatio<-advertiseRatioGlobal;
-				do advertise;
+				do advertise();
 			}
 			ask worker {
 				if (myBuilding=toKill) {
-					do forceBuildingUpdate;				
+					do forceBuildingUpdate();				
 				}
 			}
 			ask toKill {
-				do die;
+				do die();
 			}
 			reflexPause<-false;
 		} else {
@@ -128,10 +131,10 @@ global{
 				}
 				
 				ask (worker where (each.myFirm=toKill)) {
-					do forceFirmUpdate;
+					do forceFirmUpdate();
 				}
 				ask toKill {
-					do die;
+					do die();
 				}
 				reflexPause<-false;
 			}
@@ -204,7 +207,7 @@ global{
 		}
 		
 		ask one_of(city) {
-			do updateCityParams;
+			do updateCityParams();
 		}
 			
 	}
@@ -217,7 +220,7 @@ species city {
 	float maxWage;
 	float maxSupportedDensity;
 	
-	action updateCityParams{
+	action updateCityParams(){
 		maxRent <- max(building collect each.rent);
 		maxDensity <- max(building collect each.density);
 		maxSupportedDensity <- max(building collect each.supportedDensity);
@@ -225,7 +228,7 @@ species city {
 	}
 	
 	reflex update when: (reflexPause=false) {
-		do updateCityParams;
+		do updateCityParams();
 	}
 }
 
@@ -237,7 +240,7 @@ species firm{
 	float advertiseRatio;
 	rgb color;
 	
-	action advertise {
+	action advertise() {
 		int nEmployees <- int(advertiseRatio*length(worker where (each.skillType>=skillType)));
 		int i<-0;
 		loop while: (i<nEmployees) {
@@ -369,8 +372,8 @@ species worker {
 		return outValue; 
 	}
 	
-	action checkMyStuff {
-		do checkSkillFirm;
+	action checkMyStuff() {
+		do checkSkillFirm();
 		if (myFirm=nil){
 			myFirm <- one_of(firm where (each.skillType=skillType));
 		}
@@ -379,20 +382,19 @@ species worker {
 		}
 	}
 	
-	action checkSkillFirm {
+	action checkSkillFirm (){
 		if (length(firm where (each.skillType<=skillType))=0) {
 			write "kill skilltype: "+skillType;
 			skillType<-1;
 		}
 	}
 	
-	action forceFirmUpdate {
-		firm newFirm;
-		newFirm <- one_of(firm where (each.skillType<=skillType and each!=myFirm));
+	action forceFirmUpdate() {
+		firm newFirm <- one_of(firm where (each.skillType<=skillType and each!=myFirm));
 		do attemptFirmUpdate(newFirm);
 	}
 	
-	action forceBuildingUpdate {
+	action forceBuildingUpdate (){
 		bool updateSuccess<-false;
 		building newBuilding;
 		
@@ -433,13 +435,13 @@ species worker {
 	}
 	
 	reflex updateUtility when: (reflexPause=false) {
-		do checkMyStuff;
+		do checkMyStuff();
 		float utility<-myUtility(myBuilding,myFirm,useCar);
 		currentUtility<-utility;
 	}
 	
 	reflex updateCommutingMode when: (reflexPause=false) {
-		do checkMyStuff;
+		do checkMyStuff();
 		float utilityCar<-myUtility(myBuilding,myFirm,true);
 		float utilityNoCar<-myUtility(myBuilding,myFirm,false);
 		if (utilityCar>utilityNoCar){
@@ -450,7 +452,7 @@ species worker {
 	}
 	
 	reflex updateBuilding when: (reflexPause=false) {
-		do checkMyStuff;
+		do checkMyStuff();
 		float utility <- myUtility(myBuilding,myFirm,useCar);
 		building possibleBuilding <- one_of(building);
 		float possibleUtility <- myUtility(possibleBuilding,myFirm,useCar);
@@ -462,7 +464,7 @@ species worker {
 	}
 	
 	reflex updateWork when: (reflexPause=false) {	
-		do checkMyStuff;	
+		do checkMyStuff();	
 		float utility <- myUtility(myBuilding,myFirm,useCar);
 		firm possibleFirm <- one_of(firm where (each.skillType<=self.skillType and each!=myFirm));
 		if (possibleFirm!=nil) {
@@ -481,7 +483,7 @@ species worker {
 	}
 	
 	reflex updateWorkRandom when: (reflexPause=false) {
-		do checkMyStuff;
+		do checkMyStuff();
 		if (rnd(1.0)<randomMoveRate) {
 			firm possibleFirm;
 			possibleFirm <- one_of(firm where (each.skillType<=self.skillType and each!=myFirm));
@@ -500,7 +502,7 @@ species worker {
 		loop while: (updateFlag=true) {
 			updateFlag<-false;
 			
-			do checkMyStuff;
+			do checkMyStuff();
 			utility <- myUtility(myBuilding,myFirm,useCar);
 			newUnitSizem <- (1.0-sizeDelta)*myBuilding.unitSize;
 			newUnitSizep <- (1.0+sizeDelta)*myBuilding.unitSize;
@@ -560,7 +562,7 @@ experiment ABValuationDemo type: gui autorun:true{
 			species worker aspect:threeD;
 			species firm aspect: threeD transparency: 0.25;
 			species building aspect:threeD transparency: 0.35;
-			event #mouse_down {ask simulation {do create_firm;}}  
+			event #mouse_down {ask simulation {do create_firm();}}  
 			event "p" {if(commutingCost<1){commutingCost<-commutingCost+0.1;}}
 			event "m" {if(commutingCost>0){commutingCost<-commutingCost-0.1;}}
 			event "u" {if(shareLowIncome<0.9){shareLowIncome<-shareLowIncome+0.1;}}

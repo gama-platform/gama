@@ -1,39 +1,41 @@
 /*******************************************************************************************************
  *
- * Random.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * Random.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.operators;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.RandomUtils;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.core.util.IMap;
-import gama.core.util.matrix.GamaField;
-import gama.core.util.matrix.IField;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.types.GamaFieldType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IField;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.random.IRandom;
+import gama.api.utils.random.RandomUtils;
 import one.util.streamex.IntStreamEx;
 
 /**
@@ -194,8 +196,8 @@ public class Random {
 	 *            the scope
 	 * @return the random utils
 	 */
-	public static RandomUtils RANDOM(final IScope scope) {
-		RandomUtils r = scope.getRandom();
+	public static IRandom RANDOM(final IScope scope) {
+		IRandom r = scope.getRandom();
 		if (r == null) { r = new RandomUtils(); }
 		return r;
 	}
@@ -224,8 +226,8 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss",
 					"weibull_rnd", "gamma_trunc_rnd", "weibull_trunc_rnd", "lognormal_trunc_rnd" })
 	@test ("seed <- 1.0; TGauss({0,0.3}) = 0.10073201959421514")
-	public static Double opTGauss(final IScope scope, final GamaPoint p) {
-		return opTGauss(scope, GamaListFactory.wrap(Types.FLOAT, p.x, p.y));
+	public static Double opTGauss(final IScope scope, final IPoint p) {
+		return opTGauss(scope, GamaListFactory.wrap(Types.FLOAT, p.getX(), p.getY()));
 	}
 
 	/**
@@ -263,7 +265,7 @@ public class Random {
 		 */
 		// double internalRange = bound / 2;
 		double tmpResult = 0;
-		// final GaussianGenerator gen = RANDOM(scope).createGaussian(mean,
+		// final GaussianGenerator gen = __RANDOM__(scope).createGaussian(mean,
 		// range / 2);
 		// 'do while' does the truncature
 
@@ -300,9 +302,9 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "lognormal_rnd", "poisson", "rnd", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test ("seed <- 1.0; gauss({0.5, 0.2}) = 0.6343093594589535")
-	public static Double opGauss(final IScope scope, final GamaPoint point) {
-		final double mean = point.x;
-		final double sd = point.y;
+	public static Double opGauss(final IScope scope, final IPoint point) {
+		final double mean = point.getX();
+		final double sd = point.getY();
 		return RANDOM(scope).createGaussian(mean, sd);
 	}
 
@@ -398,7 +400,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; poisson(3.5) = 6")
 	public static Integer opPoisson(final IScope scope, final Double mean) {
-		RandomUtils ru = RANDOM(scope);
+		IRandom ru = RANDOM(scope);
 		int x = 0;
 		double t = 0.0;
 		while (true) {
@@ -440,17 +442,25 @@ public class Random {
 	@test ("binomial(0,0.9) = 0")
 	public static Integer opBinomial(final IScope scope, final Integer n, final Double p) {
 		double value = p;
-		
+
 		// to avoid infinite loops
-		if (value == 1.0) return n; 
-		
+		if (value == 1.0) return n;
+
 		if (value < 0.0 || value > 1.0) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("In the binomial operator, the probability p must be in the range [0,1] but is " + value, scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error(
+							"In the binomial operator, the probability p must be in the range [0,1] but is " + value,
+							scope),
+					true);
 		}
 		if (n < 0) {
-			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("In the binomial operator, the number of trials n must be a positive integer but is " + n, scope), true);
+			GAMA.reportAndThrowIfNeeded(scope,
+					GamaRuntimeException.error(
+							"In the binomial operator, the number of trials n must be a positive integer but is " + n,
+							scope),
+					true);
 		}
-		
+
 		final StringBuilder bits = new StringBuilder(64);
 		double bitValue = 0.5d;
 		while (value > 0) {
@@ -463,7 +473,7 @@ public class Random {
 			bitValue /= 2;
 		}
 		final BitString pBits = new BitString(bits.toString());
-		RandomUtils ru = RANDOM(scope);
+		IRandom ru = RANDOM(scope);
 		int trials = n;
 		int totalSuccesses = 0;
 		int pIndex = pBits.getLength() - 1;
@@ -628,7 +638,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd(1,5) = 4")
 	public static Integer opRnd(final IScope scope, final Integer min, final Integer max) {
-		final RandomUtils r = RANDOM(scope);
+		final IRandom r = RANDOM(scope);
 		return r.between(min, max);
 	}
 
@@ -659,7 +669,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd (2, 12, 4) = 10")
 	public static Integer opRnd(final IScope scope, final Integer min, final Integer max, final Integer step) {
-		final RandomUtils r = RANDOM(scope);
+		final IRandom r = RANDOM(scope);
 		return r.between(min, max, step);
 	}
 
@@ -688,7 +698,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd (2.0, 4.0) = 3.548024306042759")
 	public static Double opRnd(final IScope scope, final Double min, final Double max) {
-		final RandomUtils r = RANDOM(scope);
+		final IRandom r = RANDOM(scope);
 		return r.between(min, max);
 	}
 
@@ -719,7 +729,7 @@ public class Random {
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd (2.0, 4.0, 0.5) = 3.5")
 	public static Double opRnd(final IScope scope, final Double min, final Double max, final Double step) {
-		final RandomUtils r = RANDOM(scope);
+		final IRandom r = RANDOM(scope);
 		return r.between(min, max, step);
 	}
 
@@ -747,11 +757,8 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.0, 4.0}, {2.0, 5.0, 10.0}) = {2.0,4.785039740667429,5.087825199078746}")
-	public static GamaPoint opRnd(final IScope scope, final GamaPoint min, final GamaPoint max) {
-		final double x = opRnd(scope, min.x, max.x);
-		final double y = opRnd(scope, min.y, max.y);
-		final double z = opRnd(scope, min.z, max.z);
-		return new GamaPoint(x, y, z);
+	public static IPoint opRnd(final IScope scope, final IPoint min, final IPoint max) {
+		return scope.getRandom().between(min, max);
 	}
 
 	/**
@@ -780,15 +787,12 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.0, 4.0}, {2.0, 5.0, 10.0},1) = {2.0,5.0,5.0}")
-	public static GamaPoint opRnd(final IScope scope, final GamaPoint min, final GamaPoint max, final Double step) {
-		final double x = opRnd(scope, min.x, max.x, step);
-		final double y = opRnd(scope, min.y, max.y, step);
-		final double z = opRnd(scope, min.z, max.z, step);
-		return new GamaPoint(x, y, z);
+	public static IPoint opRnd(final IScope scope, final IPoint min, final IPoint max, final Double step) {
+		return scope.getRandom().between(min, max, GamaPointFactory.create(step, step, step));
 	}
 
 	/** The null point. */
-	static GamaPoint NULL_POINT = new GamaPoint(0, 0, 0);
+	static IPoint NULL_POINT = GamaPointFactory.create(0, 0, 0);
 
 	/**
 	 * Op rnd.
@@ -813,7 +817,7 @@ public class Random {
 			see = { "binomial", "gamma_rnd", "gauss_rnd", "lognormal_rnd", "poisson", "skew_gauss", "truncated_gauss",
 					"weibull_rnd" })
 	@test ("seed <- 1.0; rnd ({2.5,3, 1.0}) = {1.935030382553449,2.3551192220022856,0.5087825199078746}")
-	public static GamaPoint opRnd(final IScope scope, final GamaPoint max) {
+	public static IPoint opRnd(final IScope scope, final IPoint max) {
 		return opRnd(scope, NULL_POINT, max);
 	}
 
@@ -892,33 +896,7 @@ public class Random {
 			see = { "rnd" })
 	@test ("seed <- 1.0; rnd_choice([0.2,0.5,0.3]) = 2")
 	public static Integer opRndChoice(final IScope scope, final IList distribution) {
-		final IList<Double> normalizedDistribution = GamaListFactory.create(Types.FLOAT);
-		double sumElt = 0.0;
-		Double minVal = 0.0;
-		for (final Object eltDistrib : distribution) {
-			final Double elt = Cast.asFloat(scope, eltDistrib);
-			if (elt < 0.0) { minVal = Math.max(minVal, Math.abs(elt)); }
-			// throw GamaRuntimeException.create(new RuntimeException("Distribution elements should be positive."),
-			// scope);
-			normalizedDistribution.add(elt);
-			sumElt = sumElt + elt;
-		}
-		int nb = normalizedDistribution.size();
-		if (minVal > 0) { sumElt += minVal * nb; }
-		if (sumElt == 0.0) throw GamaRuntimeException
-				.create(new RuntimeException("Distribution elements should not be all equal to 0"), scope);
-		for (int i = 0; i < nb; i++) {
-			normalizedDistribution.set(i, (normalizedDistribution.get(i) + minVal) / sumElt);
-		}
-
-		double randomValue = RANDOM(scope).between(0., 1.);
-
-		for (int i = 0; i < distribution.size(); i++) {
-			randomValue = randomValue - normalizedDistribution.get(i);
-			if (randomValue <= 0) return i;
-		}
-
-		return -1;
+		return RANDOM(scope).choiceIn(distribution);
 	}
 
 	/**
@@ -944,34 +922,8 @@ public class Random {
 					test = false) },
 			see = { "rnd" })
 	@test ("seed <- 1.0; rnd_choice([\"toto\"::0.2,\"tata\"::0.5,\"tonton\"::0.3]) = \"tonton\"")
-	public static <T> T opRndCoice(final IScope scope, final IMap<T, ?> distribution) {
-		final IList<T> key = distribution.getKeys();
-		final IList<Double> normalizedDistribution = GamaListFactory.create(Types.FLOAT);
-		double sumElt = 0.0;
-
-		for (final T k : key) {
-			Object eltDistrib = distribution.get(k);
-			final Double elt = Cast.asFloat(scope, eltDistrib);
-			if (elt < 0.0) throw GamaRuntimeException
-					.create(new RuntimeException("Distribution elements should be positive."), scope);
-			normalizedDistribution.add(elt);
-			sumElt = sumElt + elt;
-		}
-		if (sumElt == 0.0) throw GamaRuntimeException
-				.create(new RuntimeException("Distribution elements should not be all equal to 0"), scope);
-
-		for (int i = 0; i < normalizedDistribution.size(); i++) {
-			normalizedDistribution.set(i, normalizedDistribution.get(i) / sumElt);
-		}
-
-		double randomValue = RANDOM(scope).between(0., 1.);
-
-		for (int i = 0; i < distribution.size(); i++) {
-			randomValue = randomValue - normalizedDistribution.get(i);
-			if (randomValue <= 0) return key.get(i);
-		}
-
-		throw GamaRuntimeException.create(new RuntimeException("Malformed distribution"), scope);
+	public static <T> T opRndCoice(final IScope scope, final IMap<T, Double> distribution) {
+		return RANDOM(scope).choiceIn(distribution);
 	}
 
 	/**
@@ -999,7 +951,11 @@ public class Random {
 					value = "sample([2,10,1],2,false)",
 					equals = "[10,1]",
 					test = false) })
-	@test ("seed <- 1.0; " + "list l1 <- sample([2,10,1],2,false);\r\n" + "		list l2 <-  [1,10];" + "l1 = l2")
+	@test ("""
+			seed <- 1.0; \
+			list l1 <- sample([2,10,1],2,false);\r
+					list l2 <-  [1,10];\
+			l1 = l2""")
 	public static IList opSample(final IScope scope, final IList x, final int nb, final boolean replacement) {
 		if (nb < 0.0) throw GamaRuntimeException
 				.create(new RuntimeException("The number of elements of the sample should be positive."), scope);
@@ -1043,8 +999,11 @@ public class Random {
 					value = "sample([2,10,1],2,false,[0.1,0.7,0.2])",
 					equals = "[10,2]",
 					test = false) })
-	@test ("seed <- 1.0;\r\n" + "		list l1 <- sample([2,10,1],2,false,[0.1,0.7,0.2]);\r\n"
-			+ "		list l2 <-  [10,1];\r\n" + "		l1 = l2 ")
+	@test ("""
+			seed <- 1.0;\r
+					list l1 <- sample([2,10,1],2,false,[0.1,0.7,0.2]);\r
+					list l2 <-  [10,1];\r
+					l1 = l2\s""")
 	public static IList opSample(final IScope scope, final IList x, final int nb, final boolean replacement,
 			final IList weights) {
 		if (weights == null) return opSample(scope, x, nb, replacement);
@@ -1104,15 +1063,16 @@ public class Random {
 	 */
 	@operator (
 			value = "generate_terrain")
-	@doc ("This operator allows to generate a pseudo-terrain using a simplex noise generator. Its usage is kept simple: it takes first a seed (random or not), then the dimensions "
-			+ "(width and height) of the field to generate, then a level (between 0 and 1) of details (which actually determines the number of passes to make)"
-			+ ", then the value (between 0 and 1) of smoothess, with 0 being completely rought and 1 super smooth, and finally the value (between 0 and 1) of "
-			+ "scattering, with 0 building maps in 'one piece' and 1 completely scattered ones.")
+	@doc ("""
+			This operator allows to generate a pseudo-terrain using a simplex noise generator. Its usage is kept simple: it takes first a seed (random or not), then the dimensions \
+			(width and height) of the field to generate, then a level (between 0 and 1) of details (which actually determines the number of passes to make)\
+			, then the value (between 0 and 1) of smoothess, with 0 being completely rought and 1 super smooth, and finally the value (between 0 and 1) of \
+			scattering, with 0 building maps in 'one piece' and 1 completely scattered ones.""")
 	@no_test
 	public static IField generateTerrain(final IScope scope, final int seed, final int width, final int height,
 			final double details, final double smoothness, final double scattering) {
 
-		RandomUtils rand = new RandomUtils((double) seed, IKeyword.MERSENNE);
+		IRandom rand = new RandomUtils((double) seed, IKeyword.MERSENNE);
 		final short p[] = SUPPLY.clone();
 		rand.shuffleInPlace(p);
 
@@ -1131,7 +1091,7 @@ public class Random {
 		double scale = scattering <= 0 ? 0.0001 : scattering >= 1 ? 0.01 : scattering / 100d;
 		// details between 0 (1 octave) and 1 (10 octaves)
 		int octaves = details < 0.1 ? 1 : details >= 1 ? 10 : (int) (details * 10);
-		GamaField result = (GamaField) GamaFieldType.buildField(scope, width, height);
+		IField result = GamaMatrixFactory.createFieldWithSize(scope, width, height);
 		double[] totalNoise = result.getMatrix();
 		double layerWeight = 1d;
 		double weightSum = 0d;

@@ -10,7 +10,7 @@
              allowMultiple="true"
              category="gama.ui.category.gama"
              class="gama.ui.display.opengl.view.OpenGLDisplayView"
-             icon="platform:/plugin/gama.ui.shared/icons/light/views/tabs/view.display.png"
+             icon="platform:/plugin/gama.ui.shared/icons_svg/light/views/tabs/view.display.svg"
              id="gama.ui.application.view.OpenGLDisplayView"
              name="3D"
              restorable="false">

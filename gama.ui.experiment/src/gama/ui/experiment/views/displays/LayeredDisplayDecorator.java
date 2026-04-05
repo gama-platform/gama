@@ -3,7 +3,7 @@
  * LayeredDisplayDecorator.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -37,15 +37,15 @@ import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPartReference;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IDisposable;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.outputs.LayeredDisplayData.Changes;
-import gama.core.outputs.LayeredDisplayData.DisplayDataListener;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IExperimentStateListener;
-import gama.core.runtime.PlatformHelper;
+import gama.api.GAMA;
+import gama.api.kernel.simulation.IExperimentStateListener;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.runtime.SystemInfo;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IDisplayData.Changes;
+import gama.api.ui.displays.IDisplayData.DisplayDataListener;
+import gama.api.utils.interfaces.IDisposable;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.dev.STRINGS;
 import gama.ui.application.workbench.PerspectiveHelper;
@@ -89,6 +89,21 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 
 	/** The full screen shell. */
 	protected Shell fullScreenShell;
+
+	/**
+	 * Guard against re-entrant or race-condition calls to {@link #toggleFullScreen()}. Set to {@code true} at the
+	 * start of a transition and cleared at the end, so that any second call arriving while the transition is in
+	 * progress (e.g. a UIJob queued by an E4 part-activation event) is silently ignored.
+	 */
+	private volatile boolean inFullScreenTransition;
+
+	/**
+	 * Timestamp (ms) recorded the last time fullscreen was <em>entered</em>. Used by
+	 * {@link #fullScreenEnteredRecently()} to debounce synthetic ESC {@code SWT.KeyDown} events that macOS injects
+	 * when a new {@code ON_TOP} shell becomes visible — these arrive after {@code inFullScreenTransition} is already
+	 * {@code false} and would otherwise immediately exit fullscreen.
+	 */
+	private volatile long lastFullScreenEnterTime = 0;
 
 	/** The overlay. */
 	public DisplayOverlay overlay;
@@ -246,6 +261,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 * Toggle full screen.
 	 */
 	public void toggleFullScreen() {
+		if (inFullScreenTransition) return;
+		inFullScreenTransition = true;
+		try {
 		if (isFullScreen()) {
 			DEBUG.OUT("Is already full screen: exiting");
 			fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_ENTER).image());
@@ -264,9 +282,14 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			destroyFullScreenShell();
 		} else {
 			DEBUG.OUT("Is not full screen: entering");
-			ViewsHelper.activate(view);
 			fullScreenShell = createFullScreenShell();
 			if (fullScreenShell == null) return;
+			// Activate AFTER setting fullScreenShell so that ok() sees isFullScreen()=true
+			// and the overlayListener.partActivated UIJob is not queued. Previously, activate()
+			// was called before createFullScreenShell(), meaning isFullScreen() was still false
+			// when partActivated fired — causing an extra showCanvas UIJob that could race with
+			// (and undo) the fullscreen transition when called during decorateDisplays().
+			ViewsHelper.activate(view);
 			fs.setImage(GamaIcon.named(DISPLAY_FULLSCREEN_EXIT).image());
 			fs.setToolTipText(STRINGS.PAD("Exit fullscreen", 25) + "ESC");
 			toggleFullScreen = exitFullScreen;
@@ -274,6 +297,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			view.getCentralPanel().setParent(fullScreenShell);
 			fullScreenShell.layout(true, true);
 			fullScreenShell.setVisible(true);
+			lastFullScreenEnterTime = System.currentTimeMillis();
 			createOverlay();
 			// Toolbar
 			if (!toolbar.isDisposed()) {
@@ -295,6 +319,9 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 			});
 		}
 		view.focusCanvas();
+		} finally {
+			inFullScreenTransition = false;
+		}
 	}
 
 	/**
@@ -365,15 +392,14 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		addPerspectiveListener();
 		keyAndMouseListener = view.getMultiListener();
 		menuManager = new DisplaySurfaceMenu(view.getDisplaySurface(), view.getParentComposite(), presentationMenu());
-		final boolean tbVisible = view.getOutput().getData().isToolbarVisible();
-		WorkbenchHelper.runInUI("Show/hide toolbar of " + view.getPartName(), 0, m -> {
-			if (tbVisible) {
-				toolbar.show();
-			} else {
-				toolbar.hide();
-			}
-		});
-
+		// Run synchronously — createDecorations() is always called on the UI thread from ownCreatePartControl.
+		// Scheduling a UIJob here used to fire an extra per-display layout pass after the main layout job,
+		// causing visible toolbar-area reflows.
+		if (view.getOutput().getData().isToolbarVisible()) {
+			toolbar.show();
+		} else {
+			toolbar.hide();
+		}
 	}
 
 	/**
@@ -397,12 +423,12 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 					}
 					// Seems necessary in addition to the IPartListener
 					WorkbenchHelper.run(() -> {
-						if (PlatformHelper.isMac() && overlay != null) { overlay.hide(); }
+						if (SystemInfo.isMac() && overlay != null) { overlay.hide(); }
 						view.hideCanvas();
 					});
 				} else {
 					// Issue #2639
-					if (PlatformHelper.isMac() && !view.isOpenGL()) {
+					if (SystemInfo.isMac() && !view.isOpenGL()) {
 						final IDisplaySurface ds = view.getDisplaySurface();
 						if (ds != null) { ds.updateDisplay(true); }
 					}
@@ -413,7 +439,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 					// Necessary in addition to the IPartListener as there is no way to distinguish between the wrong
 					// "hidden" event and the good one when there are no tabs.
 					WorkbenchHelper.asyncRun(() -> {
-						if (PlatformHelper.isMac() && overlay != null) { overlay.display(); }
+						if (SystemInfo.isMac() && overlay != null) { overlay.display(); }
 						// view.showCanvas();
 					});
 				}
@@ -429,6 +455,19 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 * @return true, if is full screen
 	 */
 	public boolean isFullScreen() { return fullScreenShell != null; }
+
+	/**
+	 * Returns {@code true} if fullscreen was entered within the last 500 ms. Used by
+	 * {@link gama.ui.shared.utils.ViewsHelper#toggleFullScreenMode(IGamaView.Display)} to suppress the synthetic
+	 * {@code SWT.KeyDown / ESC} event that macOS injects when a new {@code ON_TOP} shell becomes visible — this
+	 * synthetic event arrives after {@link #inFullScreenTransition} has already been cleared and would otherwise
+	 * immediately exit fullscreen.
+	 *
+	 * @return {@code true} if less than 500 ms have elapsed since fullscreen was last entered
+	 */
+	public boolean fullScreenEnteredRecently() {
+		return System.currentTimeMillis() - lastFullScreenEnterTime < 500;
+	}
 
 	/**
 	 * Creates the full screen shell.
@@ -458,7 +497,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		if (fullScreenShell == null || fullScreenShell.isDisposed()) return;
 		DEBUG.OUT("Destroying full screen shell");
 		// Solves an issue in macOS where the development version of GAMA would not close the fullScreenShell.
-		if (PlatformHelper.isMac()) {
+		if (SystemInfo.isMac()) {
 			fullScreenShell.setSize(1, 1);
 			fullScreenShell.setVisible(false);
 		}
@@ -640,6 +679,14 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 
 	}
 
+	/**
+	 * Changed.
+	 *
+	 * @param changes
+	 *            the changes
+	 * @param value
+	 *            the value
+	 */
 	@Override
 	public void changed(final Changes changes, final Object value) {
 		switch (changes) {
@@ -663,7 +710,7 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 	 * @date 26 oct. 2023
 	 */
 	@Override
-	public void updateStateTo(final IExperimentPlan experiment, final State state) {
+	public void updateStateTo(final IExperimentSpecies experiment, final State state) {
 		if (!isFullScreen() || toolbar == null || !toolbar.isVisible()) return;
 
 		if (IExperimentStateListener.State.PAUSED.name().equals(state.name())) {

@@ -1,8 +1,11 @@
 /**
-* Name: Behavior of the prey agent
-* Author:
-* Description: Third part of the tutorial : Predator Prey
-* Tags:
+* Name: Predator Prey Tutorial - Step 03 - Prey Behavior
+* Author: Gama Development Team
+* Description: Third step of the Predator-Prey tutorial. Adds explicit behavior to prey agents: they move
+*   toward cells with the highest food density rather than randomly. Prey select the best neighboring cell
+*   based on food level and move there, making the grazing behavior more realistic. This step introduces
+*   perception-based decision making and the use of grid neighbors to guide agent movement.
+* Tags: tutorial, prey, predator, behavior, grid, food, perception, decision
 */
 model prey_predator
 
@@ -41,7 +44,7 @@ species prey {
 		energy <- energy + energy_transfer;
 	}
 	reflex die when: energy <= 0 {
-		do die;
+		do die();
 	}
 
 	aspect base {

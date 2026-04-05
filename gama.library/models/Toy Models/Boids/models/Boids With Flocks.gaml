@@ -1,8 +1,12 @@
 /**
 * Name: Boids With Flocks
-* Author: 
-* Description: This model shows the movement of boids following a goal and creating a flock . 
-* Tags: gui, skill, 3d, multi_level, clustering
+* Author: Gama Development Team
+* Description: Extends the basic Boids model by adding multi-level flock detection and visualization. Individual
+*   boid agents follow the standard Reynolds rules (separation, alignment, cohesion). Additionally, the model
+*   detects emergent flocks by clustering spatially nearby boids and assigns each flock a representative color.
+*   This adds a macro-level analysis layer on top of the individual agent behavior, illustrating how multi-level
+*   structures can be observed and tracked in GAMA.
+* Tags: gui, skill, 3d, boids, flocking, multi_level, clustering, emergence, collective_behavior
 */
 model boids_flock
 //Import the boids model
@@ -70,7 +74,7 @@ species flock skills: [moving] {
 		geometry buffered_shape <- shape + perception_range;
 		if !(empty(obstacle overlapping buffered_shape)) {
 			release list<agent>(members) as: boids in: world;
-			do die;
+			do die();
 		}
 
 	}
@@ -98,7 +102,7 @@ species flock skills: [moving] {
 					ask f {
 						release list<agent>(members) as: boids in: world returns: released_coms;
 						released_boids <- released_coms;
-						do die;
+						do die();
 					}
 
 					if (!empty(released_boids)) {
@@ -162,11 +166,11 @@ species flock skills: [moving] {
 		reflex wind when: apply_wind {
 		}
 
-		action do_move {
+		action do_move() {
 		}
 
 		reflex movement {
-			do do_move;
+			do do_move();
 		}
 
 		aspect default {

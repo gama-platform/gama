@@ -1,8 +1,11 @@
 /**
 * Name: Emoji
-* Shows how to use SVG versions of Emojis 
-* Author: drogoul
-* Tags: image, svg
+* Author: Alexis Drogoul
+* Description: Shows how to use SVG-based emoji images in GAMA displays. The model loads a set of emoji
+*   SVG files from the model library and draws them as agent aspects, scaled and positioned on a grid.
+*   Demonstrates that GAMA can render any SVG file as an image, and that emoji can be used as expressive
+*   agent icons for status, emotion, or categorical visualization.
+* Tags: image, svg, emoji, visualization, aspect, display, icon
 */
 
 
@@ -21,7 +24,7 @@ global {
 		int number <- int((shape_width / cell_dimension) ^2  / 2);
 		loop the_file over: number among(file_list) {
 			geometry ss <- geometry(the_file);
-			create emoji with: [ratio::ss.width / ss.height,shape::(geometry(the_file)),name::replace(replace(the_file.name,"emoji_",""),".svg",""), icon:: image(the_file)];
+			create emoji with: (ratio:ss.width / ss.height,shape:(geometry(the_file)),name:replace(replace(the_file.name,"emoji_",""),".svg",""), icon: image(the_file));
 		}
 	}
 	

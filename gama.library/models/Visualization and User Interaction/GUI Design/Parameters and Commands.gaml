@@ -1,8 +1,12 @@
 /***
-* Name: GUI Interactive Elements
-* Author: Benoit Gaudou/Alexis Drogoul
-* Description: This model illustrates the various possible interactive elements that can be used in the parameters pane.
-* Tags: experiment, GUI, parameter
+* Name: Parameters and Commands
+* Author: Benoit Gaudou, Alexis Drogoul
+* Description: Illustrates the full range of interactive elements available in the GAMA parameter pane and
+*   experiment interface. Covers: boolean checkboxes, integer/float sliders with min/max bounds, string text
+*   fields, color pickers, list dropdowns (among), file choosers, font selectors, and user_command buttons.
+*   Each element type is demonstrated with a corresponding global variable and parameter declaration. This
+*   model is the primary reference for designing rich interactive experiment UIs in GAMA.
+* Tags: experiment, gui, parameter, user_command, slider, dropdown, color, font, checkbox
 ***/
 
 model GUIInteractiveElements
@@ -38,7 +42,7 @@ global {
 	float float_on_change <- 1.0;
 	
 	// Action that will be called from the parameter pane
-	action writing_parameters {
+	action writing_parameters() {
 		write "Float on change: " + float_on_change;
 	}
 } 
@@ -117,9 +121,9 @@ experiment "Show Parameters" type: gui {
 	// parameter is modified.
 	parameter "Float (with on_change listener)" category:"Interactive" var: float_on_change {write ""+float_on_change;}
 	// A user_command adds a button to the interface in order to call an action or a set of statements when it is clicked.
-	user_command "Display parameter" category: "Interactive" color:#darkblue {ask world {do writing_parameters;}}
-	user_command "Light color for commands" category: "Interactive" color:#lightgray {ask world {do writing_parameters;}}
-	user_command "Default color for commands" category: "Interactive" {ask world {do writing_parameters;}}
+	user_command "Display parameter" category: "Interactive" color:#darkblue {ask world {do writing_parameters();}}
+	user_command "Light color for commands" category: "Interactive" color:#lightgray {ask world {do writing_parameters();}}
+	user_command "Default color for commands" category: "Interactive" {ask world {do writing_parameters();}}
 	text "Monitors can now be added to the parameters view (see Preferences>Interface)" category: "Monitors" color: #gray font: font("Helvetica",14, #bold);
 
 	

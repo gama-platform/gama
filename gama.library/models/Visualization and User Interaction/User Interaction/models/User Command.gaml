@@ -1,11 +1,14 @@
 /**
 * Name: User Command
 * Author: Patrick Taillandier
-* Description: Model which shows how to use the user commands in order to create agents in the display. The user has two possibilities : 
-* 	create one agent, or create a number of agents, with the possibility to change their shape and a pink color. The user also has the possibility 
-* 	to change the color and the shapes of the agents.
-* Tags: gui
- */
+* Description: Demonstrates the 'user_command' statement for adding interactive buttons to a GAMA simulation.
+*   User commands appear as buttons in the experiment interface or as right-click context menu items on agents.
+*   This model shows: creating agents via a user_command button (with an optional parameter dialog to specify
+*   count and shape), changing agent colors interactively, and deleting agents. User commands can be placed
+*   in the global scope (experiment-level button), inside a species (agent-level right-click action), or
+*   inside an experiment (toolbar button).
+* Tags: gui, user_command, interaction, button, create, agent, display
+*/
 
 model usercommand
 
@@ -23,14 +26,14 @@ global {
 	//These commands are displayed in the world layer
 	//User command to create an agent according to the location where the user right click
 	user_command "Create an agent" {
-   		create cell number: nbAgent with: [location::#user_location]  {
+   		create cell number: nbAgent with: (location:#user_location)  {
    			color <-#green;
    		} 
 	}
 	//User command to create a given number of agents according
 	user_command "Create agents" {
 		 map input_values <- user_input_dialog([enter("Number" , nbAgent), choose("shape", string, "circle", ["circle", "square"])]);
-     	 create cell number: int(input_values at "Number") with: [color:: #pink, is_square:: string(input_values at "shape") = "square"];
+     	 create cell number: int(input_values at "Number") with: (color: #pink, is_square: string(input_values at "shape") = "square");
 	}
 	
 }
@@ -45,12 +48,12 @@ species cell {
 	user_command "change shape" action: change_shape;
 	
 	//Action to change the color of the agent triggered by change color user command
-	action change_color 
+	action change_color ()
     {
      color <- color = #green ? #pink : #green;
     } 
 	//Action to change the shape of the agent triggered by change shape user command
-    action change_shape
+    action change_shape()
     {
        is_square <- not (is_square);
     }

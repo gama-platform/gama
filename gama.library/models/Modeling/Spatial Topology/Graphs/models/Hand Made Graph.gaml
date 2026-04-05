@@ -1,10 +1,12 @@
 /**
 * Name: Hand Made Graph
 * Author: Patrick Taillandier
-* Description: Model to show how to build a graph from scratch using three ways : by putting a list of edges as parameter of as_edge_graph, by adding 
-* a node or an edge manually using facet to or by changing the graph itself after adding a node or an edge. The experiment has two displays : one for 
-* the first graph created from the list of edges, an other for the graph creating by adding the nodes and edges manually using add operator.
-* Tags: graph, node, edge
+* Description: Demonstrates three ways to construct a graph manually in GAML without relying on a shapefile
+*   or agent positions. Method 1: pass a list of edges to 'as_edge_graph'. Method 2: use the 'add' operator
+*   with 'node:' or 'edge:' facets to insert nodes and edges one by one. Method 3: modify a graph in place
+*   by adding nodes and edges after construction. Two display experiments show each approach side by side.
+*   This is the primary reference for building custom graph topologies programmatically in GAMA.
+* Tags: graph, node, edge, manual, construction, add, as_edge_graph, topology
 */
 
 @no_warning

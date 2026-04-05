@@ -1,8 +1,12 @@
 /**
-* Name: Simple SI Model
-* Author: GAMA team
-* Description: First part of the tutorial : Incremental Model
-* Tags: tutorial, gis
+* Name: Incremental Model Tutorial - Step 01 - Simple SI Model
+* Author: Gama Development Team
+* Description: First step of the Incremental Model tutorial. Creates a simple SI (Susceptible-Infected) model
+*   set in a city, where people agents move randomly. Infected people can transmit the disease to susceptible
+*   neighbors within a given distance. This first step introduces species declaration, the 'moving' skill,
+*   basic reflex-based behavior, and a simple spatial infection rule. It forms the foundation for all
+*   subsequent steps of the tutorial.
+* Tags: tutorial, gis, SI, epidemic, moving, skill, species, infection
 */
 model SI_city
 
@@ -32,7 +36,7 @@ species people skills: [moving] {
 	bool is_infected <- false;
 
 	reflex move {
-		do wander;
+		do wander();
 	}
 
 	reflex infect when: is_infected {

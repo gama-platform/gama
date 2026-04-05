@@ -1,10 +1,13 @@
 /**
-* Name: Event Feature
-* Author: Arnaud Grignard & Patrick Taillandier & Jean-Daniel Zucker
-* Description: Model which shows how to use the event layer to trigger an action according to an event occuring in the display. The experiment 
-* has two displays : one for the changing color event, one for the changing shape event.
-* Tags: gui
- */
+* Name: Event Layer
+* Author: Arnaud Grignard, Patrick Taillandier, Jean-Daniel Zucker
+* Description: Demonstrates how to use the 'event' display layer to trigger actions in response to user
+*   interactions in a GAMA display. Two display experiments are provided: one that changes an agent's color
+*   when the user clicks on it, and one that changes the agent's shape. The event layer listens for mouse
+*   clicks and keyboard presses and calls the associated action on the targeted agent. This is the primary
+*   mechanism for building interactive simulations where users can manipulate agents directly in the display.
+* Tags: gui, event, mouse_click, interaction, display, user_input
+*/
 model event_layer_model
 
 
@@ -22,12 +25,12 @@ global
 		{
 			colour <- #darkgreen;
 		}
-       create dummy number:1 returns: temp with: [dummyRadius :: radius];
+       create dummy number:1 returns: temp with: (dummyRadius : radius);
        pointClicked <- first(temp);
    }
 
 	//Action to change the color of the agents, according to the point to know which agents we're in intersection with the point
-	action change_color 
+	action change_color ()
 	{
 
 	//change the color of the agents
@@ -40,18 +43,18 @@ global
 
 	}
 
-	action draw_clicked_area_in_view_color
+	action draw_clicked_area_in_view_color()
 	{
 		pointClicked.location <- #user_location;
 		pointClicked.visibleViewColor <- true;
 	}
-	action draw_clicked_area_in_view_shape
+	action draw_clicked_area_in_view_shape()
 	{
 		pointClicked.location <- #user_location;
 		pointClicked.visibleViewShape <- true;
 	}
 
-	action hide_clicked_area
+	action hide_clicked_area()
 	{
 		pointClicked.visibleViewColor <- false;
 		pointClicked.visibleViewShape <- false;
@@ -59,7 +62,7 @@ global
 
 
 	//Action to change the shape of the agents, according to the point to know which agents we're in intersection with the point
-	action change_shape 
+	action change_shape ()
 	{
 		list<cell> selected_agents <- cell overlapping (circle(radius) at_location #user_location);
 		ask selected_agents

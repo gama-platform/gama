@@ -1,11 +1,12 @@
 /**
-* Name: Copyfile
-* Example of file operators
-* The delete_file operator is used to delete a file or a folder 
-* The rename_file is used to rename a file or a folder
-* The copy_file operator is used to copy a file or a folder
-* Author: Patrick Taillandier and Tri Nguyen-Huu
-* Tags: file
+* Name: File Utils
+* Author: Patrick Taillandier, Tri Nguyen-Huu
+* Description: Demonstrates the file utility operators available in GAMA for managing files and directories
+*   on the local file system. The 'delete_file' operator removes a file or folder; 'rename_file' renames or
+*   moves a file or folder; 'copy_file' duplicates a file or folder to a new location. These operations are
+*   useful for organizing output files, cleaning up temporary results between runs, or preparing the file
+*   system before a batch experiment begins. The model shows each operator in action with console output.
+* Tags: file, utility, delete, rename, copy, folder, directory, IO
 */
 
 model FileUtils

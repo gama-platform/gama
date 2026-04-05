@@ -1,12 +1,12 @@
 /**
 * Name: Boids 3D Analysis
-* Author: 
-* Description:  This model shows the movement of boids following a goal and creating a flock. 
-* Four experiments are proposed : Simple is the 3D display of the boids like a real world, 
-* Trajectory Analysis is about the analysis of the trajectories of the boids, Space Time Cube adds two 
-* 	displays to see the movement of the boids using the time as the z-axis, and the last one represents the 
-* 	differents cameras available in GAMA.
-* Tags: gui, skill, 3d, camera, multi_level
+* Author: Gama Development Team
+* Description: A multi-experiment analysis companion to the Boids model. Four experiments are provided:
+*   'Simple' shows the standard 3D flock display; 'Trajectory Analysis' tracks and displays agent movement
+*   trajectories over time; 'Space Time Cube' represents the movement in a space-time cube where the z-axis
+*   encodes simulation time, allowing the history of movement to be visualized geometrically; and the last
+*   experiment showcases the different camera projection modes available in GAMA for 3D displays.
+* Tags: gui, skill, 3d, camera, multi_level, boids, flocking, trajectory, space_time_cube, analysis
 */
 model boids
 
@@ -116,7 +116,7 @@ global torus: torus_environment {
 			loop one_key over: (potentialBoidsNeighboursMap.keys) {
 				list<boids> micro_agents <- potentialBoidsNeighboursMap at one_key;
 				if ((length(micro_agents)) > 1) {
-					create flock number: 1 with: [color::rgb([rnd(255), rnd(255), rnd(255)])] {
+					create flock(color:rgb([rnd(255), rnd(255), rnd(255)])) number: 1  {
 						capture micro_agents as: boids_delegation;
 					}
 
@@ -160,7 +160,7 @@ species flock {
 		list<boids> others -> ((boids_delegation overlapping (shape + range))) - self;
 
 		//Action to compute the mass center of the flock
-		action compute_mass_center type: point {
+		point compute_mass_center() {
 			loop o over: others {
 				if dead(o) {
 					write 'in ' + name + ' agent with others contains death agents';
@@ -203,7 +203,7 @@ species flock {
 	//Reflexe to kill the flock if the boids agents contained is lower than 2
 	reflex dispose when: ((length(members)) < 2) {
 		release list<agent>(members);
-		do die;
+		do die();
 	}
 	//Reflex to merge the flocks too close from each other
 	reflex merge_nearby_flocks {
@@ -293,13 +293,13 @@ species boids skills: [moving] {
 		point acc <- {0, 0};
 		list<obstacle> nearby_obstacles <- (obstacle overlapping (circle(range)));
 		loop obs over: nearby_obstacles {
-			acc <- acc - ((location of obs) - my (location));
+			acc <- acc - ((location of obs) - (location));
 		}
 
 		velocity <- velocity + acc;
 	}
 	//action to represent the bounding of the movement of the boids
-	action bounding {
+	action bounding() {
 		if !(torus_environment) {
 			if (location.x) < xmin {
 				velocity <- velocity + {bounds, 0};
@@ -325,27 +325,27 @@ species boids skills: [moving] {
 		velocity <- velocity + wind_vector;
 	}
 	//action to move  
-	action do_move {
+	action do_move() {
 		if (((velocity.x) as int) = 0) and (((velocity.y) as int) = 0) {
 			velocity <- {(rnd(4)) - 2, (rnd(4)) - 2};
 		}
 
 		point old_location <- location;
-		do goto target: location + velocity;
+		do goto (target: location + velocity);
 		velocity <- location - old_location;
 	}
 
 	//Reflex to do the movement, calling both bounding and do_move actions
 	reflex movement {
-		do bounding;
-		do do_move;
+		do bounding();
+		do do_move();
 	}
 
 	aspect basic {
 		draw triangle(boids_size) color: rgb('black');
 	}
 
-	aspect image {
+	aspect icon {
 		draw (images at (rnd(2))) size: boids_size rotate: heading color: rgb('black');
 	}
 
@@ -394,7 +394,7 @@ experiment "Simple" type: gui parent:base{
 	float minimum_cycle_duration <- 0.05;
 	output {
 		display RealBoids type: 3d {
-			image file_path_to_ocean refresh: false;
+			picture file_path_to_ocean refresh: false;
 			species boids aspect: dynamicColor position: {0, 0, 0.1} trace: 30;
 			species boids_goal transparency: 0.2 position: {0, 0, 0.1};
 			species obstacle position: {0, 0, 0.1};
@@ -409,14 +409,14 @@ experiment "Trajectory Analysis" type: gui parent:base{
 	output {
 		layout #split;
 		display RealBoids type: 3d {
-			image file_path_to_ocean refresh: false;
+			picture file_path_to_ocean refresh: false;
 			species boids aspect: dynamicColor transparency: 0.5 position: {0, 0, 0.1};
 			species boids_goal transparency: 0.2 position: {0, 0, 0.1};
 			species obstacle position: {0, 0, 0.1};
 		}
 
 		display AggregatedBoidsTrajectory type: 3d {
-			image file_path_to_ocean refresh: false;
+			picture file_path_to_ocean refresh: false;
 			species aggregatedboids aspect: base trace: 100 fading: true;
 			species boids_goal aspect: default;
 		}
@@ -430,14 +430,14 @@ experiment "Space & Time Cube" type: gui parent:base{
 	output {
 		layout #split;
 		display RealBoids type: 3d {
-			image file_path_to_ocean refresh: false;
+			picture file_path_to_ocean refresh: false;
 			species boids aspect: dynamicColor transparency: 0.5 position: {0, 0, 0.1};
 			species boids_goal transparency: 0.2 position: {0, 0, 0.1};
 			species obstacle position: {0, 0, 0.1};
 		}
 
 		display SpaceTimeCubeAll type: 3d camera: #from_up_front {
-			image file_path_to_ocean refresh: false;
+			picture file_path_to_ocean refresh: false;
 			species boids trace: 100 {
 				draw triangle(20) size: 15 rotate: heading color: hsb(float(heading) / 360.0, 1.0, 1.0) border: hsb(float(heading) / 360.0, 1.0, 1.0) depth: 5 at:
 				{location.x, location.y, location.z + time};
@@ -450,7 +450,7 @@ experiment "Space & Time Cube" type: gui parent:base{
 		}
 
 		display SpaceTimeCubeAggregated type: 3d camera: #from_up_front {
-			image file_path_to_ocean refresh: false;
+			picture file_path_to_ocean refresh: false;
 			species aggregatedboids trace: 500 {
 				draw sphere(10) color: rgb('red') at: {location.x, location.y, location.z + time};
 			}
@@ -470,7 +470,7 @@ experiment "Multiple views" type: gui parent:base{
 	output synchronized: true {
 		layout #split;
 		display RealBoids type: 2d antialias: false {
-			image file_path_to_ocean refresh: false;
+			picture file_path_to_ocean refresh: false;
 			species boids aspect: dynamicColor transparency: 0.5 position: {0, 0, 0.1};
 			species boids_goal transparency: 0.2 position: {0, 0, 0.25};
 			species obstacle;
@@ -485,7 +485,7 @@ experiment "Multiple views" type: gui parent:base{
 					draw triangle(20) size: 15 rotate: 90 + heading color: int(self)=0 ? #red: #gray depth: 5 at: location/3;
 			 	}
 			}
-			image file_path_to_ocean;
+			picture file_path_to_ocean;
 			species obstacle;
 			species boids aspect: dynamicColor transparency: 0.2;
 			species boids_goal transparency: 0.2;
@@ -494,7 +494,7 @@ experiment "Multiple views" type: gui parent:base{
 		display FirstPerson type: 3d antialias: false {
 			camera "default" dynamic: true location: {int(first(boids).location.x), int(first(boids).location.y), 10} target:
 			{cos(first(boids).heading) * first(boids).speed + int(first(boids).location.x), sin(first(boids).heading) * first(boids).speed + int(first(boids).location.y), 5};
-			image file_path_to_ocean;
+			picture file_path_to_ocean;
 			species obstacle;
 			species boids aspect: dynamicColor transparency: 0.2;
 			species boids_goal transparency: 0.2;

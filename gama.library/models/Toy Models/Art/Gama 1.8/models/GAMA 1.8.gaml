@@ -1,8 +1,12 @@
 /***
-* Name: GAMA 1.8 is out ! 
-* Author: A. Drogoul
-* Description: A toy model demonstrating "morphing" technologies in GAMA
-* Tags: image, geometries
+* Name: GAMA 1.8
+* Author: Alexis Drogoul
+* Description: A celebratory art model created for the GAMA 1.8 release, demonstrating morphing and shape
+*   transformation technologies. Agents animate the GAMA logo letters by morphing between different geometric
+*   shapes — first the logo appears as a set of buildings and roads, then the agents rearrange themselves into
+*   the GAMA version number shape. The model uses the FSM control architecture for global state management
+*   and showcases advanced visualization capabilities including smooth geometry transitions.
+* Tags: image, geometries, art, morphing, fsm, animation, visualization
 ***/
 model GAMA
 
@@ -22,14 +26,14 @@ global control: fsm {
 
 	rgb closest_color (rgb c1) {
 		int db <- distance_between(c1, blue);
-		int do <- distance_between(c1, orange);
+		int dor <- distance_between(c1, orange);
 		int dy <- distance_between(c1, yellow);
-		int m <- min(db, do, dy);
+		int m <- min(db, dor, dy);
 		if (m > 100) {
 			return #black;
 		} else if (m = db) {
 			return blue;
-		} else if (m = do) {
+		} else if (m = dor) {
 			return orange;
 		} else if (m = dy) {
 			return yellow;
@@ -49,9 +53,9 @@ global control: fsm {
 		runners <- list(runner);
 	}
 
-	action one_step {
+	action one_step() {
 		ask runners {
-			do goto target: target speed: 2 * size / #s;
+			do goto (target: target, speed: 2 * size / #s);
 		}
 
 		runners <- runners select (each.location != each.target.location);
@@ -59,7 +63,7 @@ global control: fsm {
 
 	init {
 		ask (list(background) every 16) {
-			create runner with: (location: location);
+			create runner(location: location);
 		} }
 
 	state phase0 initial: true {
@@ -125,19 +129,19 @@ global control: fsm {
 		enter {
 			ask (runner) {
 				if (flip(0.2)) {
-					do die;
+					do die();
 				}
 
 			}
 
 			ask (runner select (each.color = yellow)) {
-				create people with: (location: location);
-				do die;
+				create people (location: location);
+				do die();
 			}
 
 			ask (runner select (each.color = orange)) {
-				create roads with: (location: location);
-				do die;
+				create roads(location: location);
+				do die();
 			}
 
 			ask runner {
@@ -148,7 +152,7 @@ global control: fsm {
 		}
 
 		ask runners {
-			do goto target: target speed: 2 * size / #s;
+			do goto (target: target, speed: 2 * size / #s);
 			if (location = target.location) {
 				my_shape <- target;
 			}
@@ -165,7 +169,7 @@ species roads skills: [moving] {
 	geometry my_shape <- cube(rnd(size, size * 2));
 
 	reflex go when: target != nil {
-		do goto target: target speed: 2 * size / #s;
+		do goto (target: target, speed: 2 * size / #s);
 		if (location = target.location) {
 			my_shape <- target + size / 8;
 		}
@@ -188,7 +192,7 @@ species people skills: [moving] {
 	rgb color;
 
 	reflex move when: target != nil {
-		do goto on: the_graph target: target speed: 2 * size / #s;
+		do goto (on: the_graph, target: target, speed: 2 * size / #s);
 		if (location = target.location) {
 			target <- one_of(road_file.contents);
 		}

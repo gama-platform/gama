@@ -1,8 +1,12 @@
 /***
-* Name: BDItutorial5
+* Name: BDI Tutorial - Step 5 - Norms, Obligations and Enforcement
 * Author: Mathieu Bourgais
-* Description: Addition of norms, obligation, and enforcement
-* Tags: norm, obligation, enforcement
+* Description: Fifth and final step of the BDI Gold Miner tutorial. Adds normative reasoning: miners are
+*   subject to social norms (e.g., must not steal from occupied mines) and obligations (e.g., must pay taxes
+*   at the market). An enforcer agent monitors compliance and sanctions violations. Miners can obey, violate,
+*   or strategically comply with norms depending on their emotional state and risk assessment. This is the
+*   reference model for the normative and institutional extensions of the simple_bdi architecture in GAMA.
+* Tags: simple_bdi, norm, obligation, enforcement, sanction, tutorial, gold_miner, BDI, institutional
 ***/
 
 model BDItutorial5
@@ -169,7 +173,7 @@ species miner skills: [moving] control:simple_bdi {
 	float threshold_norm <- 0.5;
 	
 	init {
-		do add_desire(find_gold);
+		self.add_desire(find_gold);
 	}
 	
 	perceive target: self {

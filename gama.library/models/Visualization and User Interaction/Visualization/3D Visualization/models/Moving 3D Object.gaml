@@ -1,8 +1,12 @@
 /**
-* Name: OBJ File Drawing and Moving
-* Author:  Patrick Taillandier, Tri Nguyen-Huu, Arnaud Grignard 
-* Description: Model which shows how to draw a moving objet as a OBJ File and how to apply a 3D rotation to the object
-* Tags:  load_file, 3d, skill, obj, moving, goto
+* Name: Moving 3D Object
+* Author: Patrick Taillandier, Tri Nguyen-Huu, Arnaud Grignard
+* Description: Shows how to load and animate a 3D OBJ model with dynamic rotation. An agent moves along a
+*   path using the 'goto' action and the OBJ file is drawn at the agent's location. The 'rotate' facet of
+*   the draw statement applies a 3D rotation expressed as an axis-angle pair, allowing the model to yaw,
+*   pitch, and roll the object realistically as it moves. Useful as a reference for animating vehicles,
+*   aircraft, or any 3D object that needs orientation-aware rendering.
+* Tags: load_file, 3d, obj, moving, goto, rotation, animation, visualization, display
 */
 
 model Moving3Dobject
@@ -17,7 +21,7 @@ global {
 species boat skills: [moving]{
 	point target <- any_location_in(world);
 	reflex move {
-		do goto target: target speed:0.5;
+		do goto(target: target, speed:0.5);
 		if (target = location) {
 			target <- any_location_in(world);
 		}	
@@ -27,7 +31,7 @@ species boat skills: [moving]{
 		//the location of a obj file is centroid of the bounding box, so we add with the "at" facet a translated along the z axis to place the boat on the water and not inside
 		//the size represents here the max size of the bounding box
 		//at last, we dynamically apply a rotation to the boat to make it head in direction of the heading of the agents. 
-		pair<float,point> r0 <-  -90::{1,0,0};	
+		pair<float,point> r0 <-  90::{1,0,0};	
 		pair<float,point> pitch <-  5 * cos(cycle*10) ::{1,0,0};
 		pair<float,point> roll <- 20*sin(cycle*3)::{0,1,0};
 		pair<float,point> yaw <- 1*sin(cycle*7)::{0,0,1};

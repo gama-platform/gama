@@ -1,9 +1,12 @@
 /**
 * Name: Contour Lines Import
 * Author: Patrick Taillandier
-* Description: Model which imports a shapefile of contour lines, build triangles from these contour lines, compute their elevation by using 
-* 	the elevation attribute of the contour lines which had been linked to the elevation column of the shapefile. 
-* Tags:  load_file, gis, shapefile
+* Description: Imports a shapefile of topographic contour lines and uses them to reconstruct a 3D terrain surface.
+*   The model builds triangles from consecutive contour line pairs and assigns each triangle an elevation value
+*   derived from the 'elevation' attribute stored in the shapefile column. The resulting 3D surface approximates
+*   the underlying terrain and can be visualized in a 3D GAMA display. This technique is useful when a DEM raster
+*   is not available but vector contour data is, as is common with many topographic datasets.
+* Tags: load_file, gis, shapefile, contour, elevation, 3d, terrain, triangulation
 */
 
 
@@ -21,7 +24,7 @@ global {
 	
 	init {
 		//create the contour line agents from the shapefile, and init the elevation for each agent
-		create contour_line from: shape_file_cl with: [elevation:: float(read("ELEVATION"))];
+		create contour_line from: shape_file_cl with: (elevation: float(read("ELEVATION")));
 		
 		//triangulate the contour lines
 		list<geometry> triangles  <- triangulate (list(contour_line), tolerance);

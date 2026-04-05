@@ -1,8 +1,13 @@
 /**
-* Name: NotifyingVariables
-* This model shows how certain variables, which are directly manipulated by skills (like `location` by the `moving` skill) can notify a model that they have been changed (allowing the modeler to take appropriate measures if any). 
+* Name: Notifying Variables
 * Author: Alexis Drogoul
-* Tags: variables, attributes
+* Description: Shows how certain variables, which are directly manipulated by skills (such as 'location' by the
+*   'moving' skill), can notify a model when they have been changed. This notification mechanism allows modelers
+*   to react immediately to an attribute change — for example logging the new value or triggering a side effect —
+*   without polling the variable every step. The 'on_change' facet of a variable declaration specifies a block
+*   of code to execute whenever the variable's value is updated. This model demonstrates the feature with the
+*   'location' attribute and custom notifying variables.
+* Tags: variables, attributes, notification, on_change, moving, skill, callback
 */
 model NotifyingVariables
 

@@ -1,8 +1,12 @@
 /**
-* Name: ZipUnzip
-* Example of use of the zip and unzip operators to compress/uncompress files 
+* Name: Zip Unzip
 * Author: Patrick Taillandier
-* Tags: file
+* Description: Demonstrates the 'zip' and 'unzip' operators for compressing and decompressing files and folders
+*   in GAMA. The 'zip' operator takes a list of file/folder paths and creates a ZIP archive; 'unzip' extracts the
+*   contents of a ZIP archive to a specified destination folder. These operators are useful for packaging simulation
+*   outputs into a single archive for sharing, or for working with externally provided compressed datasets.
+*   Both operators return a boolean indicating success.
+* Tags: file, zip, unzip, compress, archive, IO
 */
 
 model ZipUnzip

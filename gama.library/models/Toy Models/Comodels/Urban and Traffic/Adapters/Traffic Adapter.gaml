@@ -7,10 +7,10 @@
 model traffic_adapter
 
 import "../../../../Toy Models/Traffic/models/Traffic and Pollution.gaml"
-experiment "Adapter of Traffice" type: gui
+experiment Adapter type: gui
 {
 	point centroid <- { 15200, 1580 };
-	action transform{		
+	action transform() {		
 		loop t over:list(road){			
 			t.shape <- (t.shape * 20 );
 			t.location <- (t.location * 20) + centroid;
@@ -29,19 +29,19 @@ experiment "Adapter of Traffice" type: gui
 			t.location <- any_location_in(one_of(building));
 			t.target <- any_location_in(one_of(building));
 		}
-		
+		 
 	}
-	list<building> get_building
+	list<building> get_building()
 	{
 		return list(building);
 	}
 
-	list<people> get_people
+	list<people> get_people()
 	{
 		return list(people);
 	}
 
-	list<road> get_road
+	list<road> get_road()
 	{
 		return list(road);
 	}

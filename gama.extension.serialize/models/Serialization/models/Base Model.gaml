@@ -1,8 +1,11 @@
 /**
-* Name: BaseModel
-* Based on the internal empty template. 
-* Author: A. Drogoul
-* Tags: 
+* Name: Base Model (Serialization)
+* Author: Alexis Drogoul
+* Description: The base road-network model imported by the serialization demonstration models. Defines
+*   roads, people, and a weighted-graph topology loaded from GIS shapefiles. Not intended to be run
+*   directly — it exists as a shared foundation for 'Backward Experiment Formats', 'Create Simulation
+*   From File', and the 'Serialize Operators' models so they all exercise the same underlying simulation.
+* Tags: serialization, base_model, road_network, graph, agent_movement, import
 */
 
 

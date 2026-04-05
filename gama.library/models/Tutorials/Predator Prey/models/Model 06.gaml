@@ -1,8 +1,11 @@
 /**
-* Name: Breeding of prey and predator agents
-* Author:
-* Description: 6th part of the tutorial : Predator Prey
-* Tags: reproduce, myself, self
+* Name: Predator Prey Tutorial - Step 06 - Breeding
+* Author: Gama Development Team
+* Description: Sixth step of the Predator-Prey tutorial. Adds reproduction to both prey and predator agents.
+*   When an agent's energy exceeds a threshold and it reaches a minimum age, it creates offspring that inherit
+*   half the parent's energy. This step introduces the 'create' statement used inside a species reflex,
+*   and demonstrates the use of 'myself' to pass attributes from parent to offspring in a create block.
+* Tags: tutorial, prey, predator, breeding, reproduction, create, myself, self
 */
 model prey_predator
 
@@ -21,8 +24,8 @@ global {
 	float predator_proba_reproduce <- 0.01;
 	int predator_nb_max_offsprings <- 3;
 	float predator_energy_reproduce <- 0.5;
-	int nb_preys -> {length(prey)};
-	int nb_predators -> {length(predator)};
+	int nb_preys -> length(prey);
+	int nb_predators -> length(predator);
 
 	init {
 		create prey number: nb_preys_init;
@@ -45,6 +48,11 @@ species generic_species {
 	init {
 		location <- my_cell.location;
 	}
+	
+	
+	float energy_from_eat() {
+		return 0.0;
+	}
 
 	reflex basic_move {
 		my_cell <- one_of(my_cell.neighbors2);
@@ -56,7 +64,7 @@ species generic_species {
 	}
 
 	reflex die when: energy <= 0 {
-		do die;
+		do die();
 	}
 
 	reflex reproduce when: (energy >= energy_reproduce) and (flip(proba_reproduce)) {
@@ -70,9 +78,6 @@ species generic_species {
 		energy <- energy / nb_offsprings;
 	}
 
-	float energy_from_eat {
-		return 0.0;
-	}
 
 	aspect base {
 		draw circle(size) color: color;
@@ -88,7 +93,7 @@ species prey parent: generic_species {
 	int nb_max_offsprings <- prey_nb_max_offsprings;
 	float energy_reproduce <- prey_energy_reproduce;
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		float energy_transfer <- 0.0;
 		if(my_cell.food > 0) {
 			energy_transfer <- min([max_transfer, my_cell.food]);
@@ -107,11 +112,11 @@ species predator parent: generic_species {
 	int nb_max_offsprings <- predator_nb_max_offsprings;
 	float energy_reproduce <- predator_energy_reproduce;
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		list<prey> reachable_preys <- prey inside (my_cell);
 		if(! empty(reachable_preys)) {
 			ask one_of (reachable_preys) {
-				do die;
+				do die();
 			}
 			return energy_transfer;
 		}

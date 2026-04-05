@@ -3,17 +3,14 @@
  * ResourceManager.java, in gama.ui.navigator, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.ui.navigator.view.contents;
 
-import static gama.ui.navigator.metadata.FileMetaDataProvider.getContentTypeId;
-import static gama.ui.shared.utils.WorkbenchHelper.BUILTIN_NATURE;
-import static gama.ui.shared.utils.WorkbenchHelper.PLUGIN_NATURE;
-import static gama.ui.shared.utils.WorkbenchHelper.TEST_NATURE;
+import static gama.workspace.metadata.FileMetaDataProvider.getContentTypeId;
 import static org.eclipse.core.resources.IResourceChangeEvent.POST_CHANGE;
 import static org.eclipse.core.resources.IResourceChangeEvent.PRE_CLOSE;
 import static org.eclipse.core.resources.IResourceChangeEvent.PRE_DELETE;
@@ -23,6 +20,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 
 import org.eclipse.core.filesystem.EFS;
@@ -37,7 +35,6 @@ import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -49,18 +46,17 @@ import org.eclipse.ui.navigator.CommonViewer;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import gama.core.common.GamlFileExtension;
-import gama.core.runtime.GAMA;
-import gama.core.util.file.IFileMetaDataProvider;
+import gama.api.GAMA;
+import gama.api.constants.GamlFileExtension;
+import gama.api.utils.files.IFileMetadataProvider;
+import gama.api.utils.tests.CompoundSummary;
 import gama.dev.DEBUG;
-import gama.gaml.statements.test.CompoundSummary;
-import gama.ui.application.workspace.WorkspaceModelsManager;
-import gama.ui.navigator.metadata.FileMetaDataProvider;
 import gama.ui.shared.commands.TestsRunner;
 import gama.ui.shared.utils.WorkbenchHelper;
+import gama.workspace.manager.WorkspaceModelsManager;
+import gama.workspace.nature.GamaNatures;
 
 /**
  * The Class ResourceManager.
@@ -90,8 +86,13 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	/** The in initialization phase. */
 	private static volatile boolean IN_INITIALIZATION_PHASE = false;
 
-	/** The post event actions. */
-	private final List<Runnable> postEventActions = new ArrayList<>();
+	/**
+	 * Actions accumulated during a resource-change event, drained and executed on the UI thread by
+	 * {@link #runPostEventActions()}. {@link ConcurrentLinkedQueue} is used so that {@link #post(Runnable)}
+	 * (called from any thread) and the drain in {@link #runPostEventActions()} (called on the UI thread)
+	 * are both lock-free.
+	 */
+	private final ConcurrentLinkedQueue<Runnable> postEventActions = new ConcurrentLinkedQueue<>();
 
 	/** The to refresh. */
 	private final Set<VirtualContent<?>> toRefresh = Collections.synchronizedSet(new HashSet<>());
@@ -164,7 +165,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	 *            the navigator
 	 */
 	public ResourceManager(final IResourceChangeListener delegate, final CommonViewer navigator) {
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+		GAMA.getWorkspaceManager().getWorkspace().addResourceChangeListener(this);
 		this.viewer = navigator;
 		viewer.addSelectionChangedListener(this);
 		this.delegate = delegate;
@@ -204,7 +205,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 	 *            the run
 	 */
 	public void post(final Runnable run) {
-		postEventActions.add(run);
+		postEventActions.offer(run);
 	}
 
 	@Override
@@ -228,28 +229,25 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 		WorkbenchHelper.runInUI("Check for workspace changes", 5, m -> {
 			if (viewer.getControl().isDisposed()) return;
 			viewer.getControl().setRedraw(false);
-			final List<Runnable> runnables;
-			synchronized (postEventActions) {
-				runnables = ImmutableList.copyOf(postEventActions);
-				postEventActions.clear();
-			}
+			// ConcurrentLinkedQueue: drain all currently-queued runnables without a lock.
+			Runnable r;
+			while ((r = postEventActions.poll()) != null) { r.run(); }
 
-			for (final Runnable r : runnables) { r.run(); }
 			final Set<VirtualContent<?>> refreshables;
 			synchronized (toRefresh) {
 				refreshables = ImmutableSet.copyOf(toRefresh);
 				toRefresh.clear();
 			}
-			for (final VirtualContent<?> r : refreshables) {
-				if (!viewer.getControl().isDisposed()) { viewer.refresh(r); }
+			for (final VirtualContent<?> vc : refreshables) {
+				if (!viewer.getControl().isDisposed()) { viewer.refresh(vc); }
 			}
 			final Set<VirtualContent<?>> updatables;
 			synchronized (toUpdate) {
 				updatables = ImmutableSet.copyOf(toUpdate);
 				toUpdate.clear();
 			}
-			for (final VirtualContent<?> r : updatables) {
-				if (!viewer.getControl().isDisposed()) { viewer.update(r, null); }
+			for (final VirtualContent<?> vc : updatables) {
+				if (!viewer.getControl().isDisposed()) { viewer.update(vc, null); }
 			}
 			if (toReveal != null) {
 				final VirtualContent<?> vc = findWrappedInstanceOf(toReveal);
@@ -394,7 +392,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 			case IResource.FOLDER:
 				folderAdded((IFolder) res);
 		}
-		final IFileMetaDataProvider provider = GAMA.getGui().getMetaDataProvider();
+		final IFileMetadataProvider provider = GAMA.getMetadataProvider();
 		provider.storeMetaData(res, null, true);
 		provider.getMetaData(res, false, true);
 
@@ -444,8 +442,9 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 			final String nature = root.getNature();
 			final WrappedProject p = (WrappedProject) wrap(root, project);
 			post(() -> {
-				WorkspaceModelsManager.instance.setValuesProjectDescription(project, BUILTIN_NATURE.equals(nature),
-						PLUGIN_NATURE.equals(nature), TEST_NATURE.equals(nature), null);
+				WorkspaceModelsManager.instance.setValuesProjectDescription(project,
+						GamaNatures.BUILTIN_NATURE.equals(nature), GamaNatures.PLUGIN_NATURE.equals(nature),
+						GamaNatures.TEST_NATURE.equals(nature), null);
 				root.initializeChildren();
 				refreshResource(root);
 				reveal(p);
@@ -797,7 +796,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 		if (DEBUG.IS_ON()) { DEBUG.OUT("Creation of the wrapped instance of " + child.getName()); }
 		switch (child.getType()) {
 			case IResource.FILE:
-				if (FileMetaDataProvider.GAML_CT_ID.equals(getContentTypeId((IFile) child)))
+				if (IFileMetadataProvider.GAML_CT_ID.equals(getContentTypeId((IFile) child)))
 					return new WrappedGamaFile((WrappedContainer<?>) parent, (IFile) child);
 				if (child.isLinked()) return new WrappedLink((WrappedContainer<?>) parent, (IFile) child);
 				return new WrappedFile((WrappedContainer<?>) parent, (IFile) child);
@@ -820,7 +819,7 @@ public class ResourceManager implements IResourceChangeListener, IResourceDeltaV
 		if (!resource.isLinked()) return true;
 		if (DEBUG.IS_ON()) { DEBUG.OUT("Validating link location of " + resource); }
 		final boolean internal =
-				ResourcesPlugin.getWorkspace().validateLinkLocation(resource, resource.getLocation()).isOK();
+				GAMA.getWorkspaceManager().getWorkspace().validateLinkLocation(resource, resource.getLocation()).isOK();
 		if (!internal) return false;
 		final IFileStore file = EFS.getLocalFileSystem().getStore(resource.getLocation());
 		final IFileInfo info = file.fetchInfo();

@@ -1,37 +1,38 @@
 /*******************************************************************************************************
  *
- * MovingSkill3D.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * MovingSkill3D.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.gaml.skills;
 
-import gama.annotations.precompiler.GamlAnnotations.action;
-import gama.annotations.precompiler.GamlAnnotations.arg;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.ITopology;
-import gama.core.metamodel.topology.graph.GamaSpatialGraph;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IMap;
-import gama.core.util.path.IPath;
+import gama.annotations.action;
+import gama.annotations.arg;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.annotations.skill;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IPath;
+import gama.api.types.map.IMap;
+import gama.api.types.topology.ITopology;
+import gama.core.topology.graph.GamaSpatialGraph;
 import gama.gaml.operators.Maths;
-import gama.gaml.types.GamaGeometryType;
-import gama.gaml.types.IType;
 
 /**
  * MovingSkill3D : This class is intended to define the minimal set of behaviours required from an agent that is able to
@@ -75,8 +76,8 @@ public class MovingSkill3D extends MovingSkill {
 
 	@Override
 	@getter (IKeyword.DESTINATION)
-	public GamaPoint getDestination(final IAgent agent) {
-		final GamaPoint actualLocation = agent.getLocation();
+	public IPoint getDestination(final IAgent agent) {
+		final IPoint actualLocation = agent.getLocation();
 		final double dist = this.computeDistance(agent.getScope(), agent);
 		final ITopology topology = getTopology(agent);
 		return topology.getDestination3D(agent.getScope(), actualLocation, getHeading(agent), getPitch(agent), dist,
@@ -211,11 +212,11 @@ public class MovingSkill3D extends MovingSkill {
 					value = "moves the agent forward, the distance being computed with respect to its speed and heading. The value of the corresponding variables are used unless arguments are passed."))
 	public IPath primMoveForward(final IScope scope) throws GamaRuntimeException {
 		final IAgent agent = getCurrentAgent(scope);
-		final GamaPoint location = agent.getLocation();
+		final IPoint location = agent.getLocation();
 		final double dist = computeDistance(scope, agent);
 		final double heading = computeHeading(scope, agent);
 		final double pitch = computePitch(scope, agent);
-		final GamaPoint loc = scope.getTopology().getDestination3D(scope, location, heading, pitch, dist, true);
+		final IPoint loc = scope.getTopology().getDestination3D(scope, location, heading, pitch, dist, true);
 		if (loc == null) {
 			setHeading(agent, heading - 180);
 			setPitch(agent, -pitch);
@@ -236,11 +237,11 @@ public class MovingSkill3D extends MovingSkill {
 	public boolean primMoveRandomly(final IScope scope) throws GamaRuntimeException {
 
 		final IAgent agent = getCurrentAgent(scope);
-		final GamaPoint location = agent.getLocation();
+		final IPoint location = agent.getLocation();
 		final double heading = computeHeadingFromAmplitude(scope, agent);
 		final double pitch = computePitchFromAmplitude(scope, agent);
 		final double dist = computeDistance(scope, agent);
-		GamaPoint loc = scope.getTopology().getDestination3D(scope, location, heading, pitch, dist, true);
+		IPoint loc = scope.getTopology().getDestination3D(scope, location, heading, pitch, dist, true);
 		if (loc == null) {
 			setHeading(agent, heading - 180);
 			setPitch(agent, -pitch);
@@ -252,12 +253,22 @@ public class MovingSkill3D extends MovingSkill {
 				if (scope.hasArg("proba_edges")) {
 					probaDeplacement = (IMap<IShape, Double>) scope.getVarValue("proba_edges");
 				}
-				moveToNextLocAlongPathSimplified(scope, agent, graph, dist, probaDeplacement);
+				PathMovementHelper.MovementResult result = 
+						PathMovementHelper.moveAlongGraph(scope, agent, graph, dist, probaDeplacement);
+				if (result != null) {
+					agent.setAttribute(IKeyword.REAL_SPEED, result.travelledDistance / scope.getClock().getStepInSeconds());
+					agent.setAttribute(MovementAttributes.INDEX_ON_PATH, result.finalIndex);
+					setCurrentEdge(agent, graph);
+					agent.setAttribute(MovementAttributes.INDEX_ON_PATH_SEGMENT, result.finalIndexSegment);
+					agent.setAttribute(MovementAttributes.REVERSE, result.finalReverse);
+					setLocation(agent, result.finalLocation);
+					setHeading(agent, result.computedHeading);
+				}
 				return true;
 			}
 			final Object bounds = scope.getArg(IKeyword.BOUNDS, IType.NONE);
 			if (bounds != null) {
-				IShape geom = GamaGeometryType.staticCast(scope, bounds, null, false);
+				IShape geom = GamaShapeFactory.castToShape(scope, bounds, false);
 
 				if (geom.getGeometries().size() > 1) {
 					for (final IShape g : geom.getGeometries()) {
@@ -268,7 +279,7 @@ public class MovingSkill3D extends MovingSkill {
 					}
 				}
 				if (geom.getInnerGeometry() != null) {
-					final GamaPoint loc2 = computeLocationForward(scope, dist, loc, geom);
+					final IPoint loc2 = computeLocationForward(scope, dist, loc, geom);
 					if (!loc2.equals(loc)) {
 						newHeading = heading - 180;
 						loc = loc2;
@@ -305,25 +316,28 @@ public class MovingSkill3D extends MovingSkill {
 		final Object target = scope.getArg("target", IType.NONE);
 		if (target == null) return null;
 		final IAgent agent = getCurrentAgent(scope);
-		final GamaPoint oldLocation = agent.getLocation();
+		final IPoint oldLocation = agent.getLocation();
 		super.primGoto(scope);
-		final GamaPoint newLocation = agent.getLocation();
-		final GamaPoint diff = newLocation.minus(oldLocation);
-		final int signumX = Maths.signum(diff.x);
-		final int signumY = Maths.signum(diff.y);
+		final IPoint newLocation = agent.getLocation();
+		final IPoint diff = newLocation.minus(oldLocation);
+		final double dx = diff.getX();
+		final double dy = diff.getY();
+		final double dz = diff.getZ();
+		final int signumX = Maths.signum(dx);
+		final int signumY = Maths.signum(dy);
 		// Heading
 		if (signumX == 0) {
 			setHeading(agent, signumY == 0 ? 0 : signumY > 0 ? 90 : 270);
 		} else {
-			setHeading(agent, Math.atan(diff.y / diff.x) * Maths.toDeg + (signumX > 0 ? 0 : 180));
+			setHeading(agent, Math.atan(dy / dx) * Maths.toDeg + (signumX > 0 ? 0 : 180));
 		}
 
 		// Pitch
 		if (signumX == 0 && signumY == 0) {
-			final int signumZ = Maths.signum(diff.z);
+			final int signumZ = Maths.signum(dz);
 			setPitch(agent, signumZ == 0 ? 0 : signumZ > 0 ? 90 : 270);
 		} else {
-			setPitch(agent, Math.atan(diff.z / Math.sqrt(diff.x * diff.x + diff.y * diff.y)) * Maths.toDeg);
+			setPitch(agent, Math.atan(dz / Math.sqrt(dx * dx + dy * dy)) * Maths.toDeg);
 		}
 
 		return null;

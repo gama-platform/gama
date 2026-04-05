@@ -1,12 +1,12 @@
 /*******************************************************************************************************
  *
- * MatrixEditorDialog.java, in gama.ui.shared.shared, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * MatrixEditorDialog.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
@@ -30,13 +30,13 @@ import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IMatrix;
 import gama.core.util.matrix.GamaFloatMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
-import gama.core.util.matrix.GamaObjectMatrix;
-import gama.core.util.matrix.IMatrix;
 import gama.ui.shared.utils.WorkbenchHelper;
 
 /**
@@ -46,14 +46,14 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public class MatrixEditorDialog extends Dialog {
 
 	/** The data. */
-	IMatrix data;
+	IMatrix<?> data;
 
 	/** The container. */
 	Composite container = null;
-	
+
 	/** The table. */
 	Table table = null;
-	
+
 	/** The scope. */
 	final IScope scope;
 
@@ -63,9 +63,12 @@ public class MatrixEditorDialog extends Dialog {
 	/**
 	 * Instantiates a new matrix editor dialog.
 	 *
-	 * @param scope the scope
-	 * @param parentShell the parent shell
-	 * @param paramValue the param value
+	 * @param scope
+	 *            the scope
+	 * @param parentShell
+	 *            the parent shell
+	 * @param paramValue
+	 *            the param value
 	 */
 	protected MatrixEditorDialog(final IScope scope, final Shell parentShell, final IMatrix paramValue) {
 		super(parentShell);
@@ -98,9 +101,7 @@ public class MatrixEditorDialog extends Dialog {
 			item.setText(0, String.valueOf(index));
 			item.setBackground(0, gray);
 			index++;
-			for (int j = 0; j < data.getCols(scope); j++) {
-				item.setText(j + 1, "" + data.get(scope, j, i));
-			}
+			for (int j = 0; j < data.getCols(scope); j++) { item.setText(j + 1, "" + data.get(scope, j, i)); }
 		}
 
 		/** Get the table editable */
@@ -148,11 +149,9 @@ public class MatrixEditorDialog extends Dialog {
 						text.setFocus();
 						return;
 					}
-					if (!visible && rect.intersects(clientArea)) {
-						visible = true;
-					}
+					if (!visible && rect.intersects(clientArea)) { visible = true; }
 				}
-				if (!visible) { return; }
+				if (!visible) return;
 				index1++;
 			}
 		});
@@ -176,12 +175,11 @@ public class MatrixEditorDialog extends Dialog {
 					/** nothing selected */
 					nextIndex = lastIndex;
 					item = new TableItem(table, SWT.CENTER);
-					item.setText(0, String.valueOf(nextIndex));
 				} else {
 					nextIndex = currentIndex + 1;
 					item = new TableItem(table, SWT.CENTER, nextIndex);
-					item.setText(0, String.valueOf(nextIndex));
 				}
+				item.setText(0, String.valueOf(nextIndex));
 				// item.setText(1,"New Data");
 				item.setBackground(0, gray);
 				table.deselect(currentIndex);
@@ -252,18 +250,16 @@ public class MatrixEditorDialog extends Dialog {
 	/**
 	 * Creates the matrix.
 	 *
-	 * @param rows the rows
-	 * @param cols the cols
+	 * @param rows
+	 *            the rows
+	 * @param cols
+	 *            the cols
 	 * @return the i matrix
 	 */
-	private IMatrix createMatrix(final int rows, final int cols) {
-		if (data instanceof GamaIntMatrix) {
-			return new GamaIntMatrix(cols, rows);
-		} else if (data instanceof GamaFloatMatrix) {
-			return new GamaFloatMatrix(cols, rows);
-		} else {
-			return new GamaObjectMatrix(cols, rows, data.getGamlType().getContentType());
-		}
+	private IMatrix<?> createMatrix(final int rows, final int cols) {
+		if (data instanceof GamaIntMatrix) return GamaMatrixFactory.createIntMatrix(cols, rows);
+		if (data instanceof GamaFloatMatrix) return GamaMatrixFactory.createFloatMatrix(cols, rows);
+		return GamaMatrixFactory.create(cols, rows, data.getGamlType().getContentType());
 
 	}
 
@@ -272,7 +268,5 @@ public class MatrixEditorDialog extends Dialog {
 	 *
 	 * @return the matrix
 	 */
-	public IMatrix getMatrix() {
-		return data;
-	}
+	public IMatrix getMatrix() { return data; }
 }

@@ -1,8 +1,12 @@
 /**
-* Name: multithread
+* Name: Multi-Thread Simulation
 * Author: Patrick Taillandier
-* Description: Shows how to use the multi-thread capabilities of GAMA
-* Tags: multi-thread, parallel 
+* Description: Shows how to enable multi-threaded agent execution in GAMA. The 'parallel' facet on a species
+*   or reflex declaration instructs GAMA to execute that block across multiple CPU threads simultaneously.
+*   This can significantly speed up models with many independent agents performing expensive computations.
+*   The model creates a large number of simple agents and compares single-threaded vs. multi-threaded
+*   execution to illustrate the performance benefits and the caveats (non-deterministic execution order).
+* Tags: multi_thread, parallel, performance, concurrency, simulation
 */
 
 model multithread

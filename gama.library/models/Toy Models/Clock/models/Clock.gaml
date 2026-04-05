@@ -1,9 +1,12 @@
 /**
 * Name: Clock
-* Author: JD ZUCKER
-* Description: This model supports defining a clock whose minutes corresponds to the tick of the simulation 
-* By default 1000 milliseconds=1s correspond to 1 cycle. 
-* Tags: 6/5/2019
+* Author: Jean-Daniel Zucker
+* Description: A visual analog clock whose minute hand corresponds to the simulation time. The clock is
+*   displayed using layered PNG images for the clock face, the hour hand, and the minute hand, each rotated
+*   programmatically based on the current simulation time. The step duration (1 cycle = 1 simulated minute
+*   by default) is configurable from 100ms to 10 minutes per cycle. This model is both an art demonstration
+*   and a practical example of image-based displays with dynamic rotation in GAMA.
+* Tags: gui, image, display, clock, time, rotation, animation, visualization
 */
 model Clock
 

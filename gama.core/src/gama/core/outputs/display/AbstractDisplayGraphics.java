@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * AbstractDisplayGraphics.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * AbstractDisplayGraphics.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,16 +17,17 @@ import java.awt.GraphicsEnvironment;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 
-import org.locationtech.jts.geom.Envelope;
-
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.ILayer;
-import gama.core.common.util.RandomUtils;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.outputs.LayeredDisplayData;
+import gama.api.GAMA;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.displays.IDisplayData;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.layers.ILayer;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.random.IRandom;
+import gama.api.utils.random.RandomUtils;
 import gama.core.outputs.layers.OverlayLayer;
-import gama.core.runtime.GAMA;
 import gama.dev.DEBUG;
 
 /**
@@ -44,13 +45,13 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	 */
 	public static GraphicsConfiguration getCachedGC() {
 		if (cachedGC == null) {
-			DEBUG.OUT("Creating cached Graphics Configuration");
+			DEBUG.OUT("Creating cached Graphics ConfigurationPreferenceStore");
 			GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 			DEBUG.OUT("Local Graphics Environment selected");
 			GraphicsDevice gd = ge.getDefaultScreenDevice();
 			DEBUG.OUT("Default Graphics Device selected");
 			cachedGC = gd.getDefaultConfiguration();
-			DEBUG.OUT("Default Graphics Configuration selected");
+			DEBUG.OUT("Default Graphics ConfigurationPreferenceStore selected");
 		}
 		return cachedGC;
 	}
@@ -104,13 +105,13 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	protected final Rectangle2D rect = new Rectangle2D.Double(0, 0, 1, 1);
 
 	/** The Constant origin. */
-	protected static final GamaPoint origin = new GamaPoint(0, 0);
+	protected static final IPoint origin = GamaPointFactory.create();
 
 	/** The current layer alpha. */
 	protected double currentLayerAlpha = 1;
 
 	/** The data. */
-	public LayeredDisplayData data;
+	public IDisplayData data;
 
 	/** The surface. */
 	protected IDisplaySurface surface;
@@ -119,7 +120,7 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	public boolean highlight = false;
 
 	/** The random number generator specific to this graphics. See Issue #3250. */
-	private final RandomUtils random = new RandomUtils();
+	private final IRandom random = new RandomUtils();
 
 	/** The current layer. */
 	protected ILayer currentLayer;
@@ -220,12 +221,12 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 
 	@Override
 	public double getXOffsetInPixels() {
-		return currentLayer == null ? origin.x : currentLayer.getData().getPositionInPixels().getX();
+		return currentLayer == null ? origin.getX() : currentLayer.getData().getPositionInPixels().getX();
 	}
 
 	@Override
 	public double getYOffsetInPixels() {
-		return currentLayer == null ? origin.y : currentLayer.getData().getPositionInPixels().getY();
+		return currentLayer == null ? origin.getY() : currentLayer.getData().getPositionInPixels().getY();
 	}
 
 	@Override
@@ -234,7 +235,7 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	}
 
 	@Override
-	public void beginOverlay(final OverlayLayer layer) {}
+	public void beginOverlay(final ILayer layer) {}
 
 	@Override
 	public void endOverlay() {}
@@ -276,6 +277,7 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	 *
 	 * @return the layer width
 	 */
+	@Override
 	public int getLayerWidth() {
 		return currentLayer == null ? getDisplayWidth() : currentLayer.getData().getSizeInPixels().x;
 	}
@@ -285,14 +287,15 @@ public abstract class AbstractDisplayGraphics implements IGraphics {
 	 *
 	 * @return the layer height
 	 */
+	@Override
 	public int getLayerHeight() {
 		return currentLayer == null ? getDisplayHeight() : currentLayer.getData().getSizeInPixels().y;
 	}
 
 	@Override
-	public Envelope getVisibleRegion() { return surface.getVisibleRegionForLayer(currentLayer); }
+	public IEnvelope getVisibleRegion() { return surface.getVisibleRegionForLayer(currentLayer); }
 
 	@Override
-	public RandomUtils getRandom() { return random; }
+	public IRandom getRandom() { return random; }
 
 }

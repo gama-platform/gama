@@ -2,15 +2,20 @@
 <?eclipse version="3.0"?>
 
 <plugin>
-
   <extension point="org.eclipse.emf.ecore.generated_package">
     <package 
        uri = "http://www.compiler.gaml/Gaml" 
        class = "gaml.compiler.gaml.GamlPackage"
        genModel = "model/generated/Gaml.genmodel" /> 
-	
   </extension>
   <extension
         point="gaml.extension">
+  </extension>
+  <extension
+        point="gama.metadata">
+     <implementation
+           class="gaml.compiler.resource.GamlFileInfo"
+           content_type="gama.gaml.file.type">
+     </implementation>
   </extension>
 </plugin>

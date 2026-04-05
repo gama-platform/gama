@@ -1,8 +1,12 @@
 /**
-* Name: PNGIcons
-* Author: drogoul
-* Description: Shows how to load icons in PNG format and display them, playing with their size and rotation
-* Tags: Image, Display
+* Name: PNG Icons
+* Author: Alexis Drogoul
+* Description: Shows how to load a folder of PNG icon files and display them as agent shapes, with control over
+*   their size and rotation. GAMA can read entire directories using the 'directory' operator and filter files by
+*   name. Each PNG file is loaded as an 'image_file' and then used in the 'draw' statement as the agent's icon.
+*   The rotation and scale can be set per agent to produce varied visual representations. This model is useful
+*   as a reference for implementing icon-based agent displays.
+* Tags: image, display, png, icon, load_file, file, draw, rotation, size
 */
 model PNGIcons
 

@@ -9,7 +9,7 @@ jobs:
     runs-on: macos-latest
     steps:
       # Get Linux deb archive
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v6
         with:
           #name: gama-mac-signed
           path: ${{ github.workspace }}
@@ -25,10 +25,10 @@ jobs:
           hdiutil detach /Volumes/Gama
 
       - name: Set up Adopt OpenJDK
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
-          java-version: "21"
+          java-version: "25"
           java-package: jdk
 
       - name: Test Gama w/o JDK

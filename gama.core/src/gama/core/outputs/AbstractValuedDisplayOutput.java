@@ -10,11 +10,11 @@
  ********************************************************************************************************/
 package gama.core.outputs;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.compilation.GAML;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
+import gama.annotations.constants.IKeyword;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
 
 /**
  * The Class AbstractValuedDisplayOutput.

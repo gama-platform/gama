@@ -1,9 +1,11 @@
 /**
 * Name: Falling Objects
-* Author: Arnaud Grignard - Alexis Drogoul
-* Description: This is a very simple model that shows how the physics engine works. The model inherits from 'physical_world' and ball agents use the 
-* skill 'physics'. The ball agents fall on a floor, giggle a bit, exchange colors, and fall from the floor to the void. The user can click on any of them to give it some impulse
-* Tags: physics_engine, skill, spatial_computation, 3d
+* Author: Arnaud Grignard, Alexis Drogoul
+* Description: The simplest GAMA physics model: balls fall under gravity onto a floor, bounce, and exchange
+*   colors on contact using the contact callback. Users can click any ball to apply an upward impulse.
+*   Eventually balls slide off the floor into the void. Demonstrates the 'physics' skill, 'physical_world'
+*   inheritance, gravity, restitution, and interactive impulse application.
+* Tags: physics_engine, skill, 3d, collision, gravity, restitution, impulse, contact, physical_world
 */
 
 model Falling
@@ -45,7 +47,7 @@ species ball skills: [dynamic_body] {
 			color <- rnd_color(255);		
 			do update_body;
 		}
-	}
+	} 
 
 	reflex manage_location when: location.z < -20 {
 		do die;
@@ -64,7 +66,7 @@ experiment Display type: gui {
 		display Falling  type: 3d background:rgb(128,128,128) axes:false{
 			camera 'default' location: {177.8131,883.5764,615.7961} target: {250.0,250.0,0.0};
 			graphics World refresh: false{
-				 draw shape color: #white;
+				 draw shape color: #white; 
 			}
 			event #mouse_down {
 				ball target <- ball with_min_of(each distance_to #user_location);

@@ -1,8 +1,11 @@
 /***
-* Name: pedestrian_complex_environment
+* Name: Complex Environment - Walk
 * Author: Patrick Taillandier
-* Description: show how to use the pedestrian skill for complex envorinment - require to generate pedestrian paths before - see model "Generate Pedestrian path.gaml" 
-* Tags: pedestrian, gis, shapefile, graph, agent_movement, skill, transport
+* Description: Demonstrates the pedestrian skill for navigation in a complex built environment with walls
+*   and obstacles. Pedestrians use pre-generated pedestrian paths (computed by 'Generate pedestrian paths')
+*   to find their way around walls. The 'walk' action navigates agents along the free-space graph while
+*   avoiding obstacles. Requires running 'Generate pedestrian paths.gaml' first to produce the path files.
+* Tags: pedestrian, gis, shapefile, graph, agent_movement, skill, transport, obstacle, navigation
 ***/
 
 model pedestrian_complex_environment
@@ -65,7 +68,7 @@ global {
 		network <- as_edge_graph(pedestrian_path);
 		
 		ask pedestrian_path {
-			do build_intersection_areas pedestrian_graph: network;
+			do build_intersection_areas (pedestrian_graph: network);
 		}
 	
 		create people number:nb_people{
@@ -106,7 +109,7 @@ global {
 	}
 	
 	reflex stop when: empty(people) {
-		do pause;
+		do pause();
 	}
 	
 }
@@ -142,9 +145,9 @@ species people skills: [pedestrian]{
 
 	reflex move  {
 		if (final_waypoint = nil) {
-			do compute_virtual_path pedestrian_graph:network target: any_location_in(open_area) ;
+			do compute_virtual_path (pedestrian_graph:network, target: any_location_in(open_area)) ;
 		}
-		do walk ;
+		do walk() ;
 	}	
 	
 	aspect default {

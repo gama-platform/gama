@@ -1,10 +1,12 @@
 /**
-* Name: Tricky fountain
-* Author: Arnaud Grignard - Alexis Drogoul 2021
-* Description: This is a model that shows how the physics engine works using a tank, with a floor and 4 walls, and balls of water
-* falling into it. The model is exploiting the viewpoint of the user (thanks to the camera_location and camera_target) to give the illusion
-* of a fake gravity (in a completely unrealistic way, just for the demo !). 
-* Tags: physics_engine, skill, 3d, spatial_computation
+* Name: Tricky Fountain
+* Author: Arnaud Grignard, Alexis Drogoul
+* Description: A physics demonstration with a whimsical twist: water balls fall into a tank bounded by a
+*   floor and four walls, using the Bullet physics engine. The camera viewpoint is manipulated via
+*   'camera_location' and 'camera_target' to give the illusion of a fake gravity direction — the world
+*   appears rotated even though physics simulates standard downward gravity. Illustrates camera control
+*   tricks and demonstrates that physics and display perspective can be decoupled.
+* Tags: physics_engine, skill, 3d, camera, gravity, water, tank, visualization, physical_world
 */
 model Tank
 
@@ -27,7 +29,7 @@ global parent: physical_world {
 	
 	
 
-	init {
+	init { 
 		//The floor is a large flat box in the middle of the world.
 		create pillarAndFloor {
 			shape <- box({dim * 2, dim * 2, 1}) at_location {dim / 2, dim / 2, -5};
@@ -66,7 +68,7 @@ global parent: physical_world {
 	reflex compute_gravity {
 		point p <- #camera_location - #camera_target;
 		p <- {p.x = 0 ? 1 : p.x, p.y = 0 ? -1 : -p.y, p.z = 0 ? 1 : p.z};
-		point g <- {0, -1 / (p.y) * signum(p.z), -2 / abs(p.z)};
+		point g <- {0, -1 / (p.y) * signum(p.z), -3 / abs(p.z)};
 		gravity <- g / norm(g) * 9.81;
 	}
 }
@@ -98,9 +100,9 @@ species water skills: [dynamic_body] {
 	
 	//When water drops fall from the ground, they are eliminated (from the simulation and the physical world)
 	reflex when: location.z < -20 {
-		do die;
+		do die();
 	}
-} 
+}  
 
 experiment "3D View" type: gui {
 	output { 

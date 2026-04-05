@@ -1,23 +1,25 @@
 /*******************************************************************************************************
  *
  * LightDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * (v.2024-06).
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.layers.ILightDefinition;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Cast;
-import gama.gaml.types.Types;
 
 /**
  * The Class CameraDefinition. Holds and updates the position, target and lens of a camera from the GAML definition in
@@ -30,16 +32,16 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 	}
 
 	/** The location. */
-	final Attribute<GamaPoint> locationAttribute;
+	final Attribute<IPoint> locationAttribute;
 
 	/** The type attribute. */
 	final Attribute<String> typeAttribute;
 
 	/** The intensity attribute. */
-	final Attribute<GamaColor> intensityAttribute;
+	final Attribute<IColor> intensityAttribute;
 
 	/** The target. */
-	final Attribute<GamaPoint> directionAttribute;
+	final Attribute<IPoint> directionAttribute;
 
 	/** The angle attribute. */
 	Attribute<Double> angleAttribute;
@@ -84,10 +86,10 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 		intensityAttribute = create(IKeyword.INTENSITY, (scope, exp) -> {
 			if (exp.getGamlType() == Types.INT) {
 				int v = Cast.asInt(scope, exp.value(scope));
-				return GamaColor.get(v, v, v, 255);
+				return GamaColorFactory.createWithRGBA(v, v, v, 255);
 			}
-			return Cast.asColor(scope, exp.value(scope));
-		}, Types.COLOR, GamaColor.get(i, i, i, 255));
+			return GamaColorFactory.castToColor(scope, exp.value(scope));
+		}, Types.COLOR, GamaColorFactory.createWithRGBA(i, i, i, 255));
 
 	}
 
@@ -98,13 +100,13 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 	public Boolean isDrawing() { return drawAttribute.get(); }
 
 	@Override
-	public GamaPoint getDirection() { return directionAttribute.get(); }
+	public IPoint getDirection() { return directionAttribute.get(); }
 
 	@Override
 	public String getType() { return typeAttribute.get(); }
 
 	@Override
-	public GamaColor getIntensity() { return intensityAttribute.get(); }
+	public IColor getIntensity() { return intensityAttribute.get(); }
 
 	@Override
 	public double getAngle() { return angleAttribute.get(); }
@@ -124,7 +126,7 @@ public class LightDefinition extends AbstractDefinition implements ILightDefinit
 	public void setId(final int id) { this.id = id; }
 
 	@Override
-	public GamaPoint getLocation() { return locationAttribute.get(); }
+	public IPoint getLocation() { return locationAttribute.get(); }
 
 	@Override
 	protected boolean getDefaultDynamicValue() { return true; }

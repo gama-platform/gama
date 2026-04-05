@@ -1,8 +1,12 @@
 /**
-* Name: HexagonalGrid
+* Name: Hexagonal Grid
 * Author: Patrick Taillandier
-* Description: 
-* Tags: grid, hexagon
+* Description: Demonstrates how to create a grid with hexagonal cell topology in GAMA. The model supports
+*   both 'horizontal' (flat-top) and 'vertical' (pointy-top) hexagonal orientations, selectable as a
+*   parameter. Each cell displays its grid coordinates. Hexagonal grids avoid the directional bias of square
+*   grids (equal distance to all 6 neighbors) and are preferred for movement models, cellular automata, and
+*   spatial analysis in many domains.
+* Tags: grid, hexagon, topology, spatial, cellular_automaton, orientation
 */
 
 model HexagonalGrid

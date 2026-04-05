@@ -1,9 +1,12 @@
 /***
-* Name: Water flow in a river graph, using water units
+* Name: Waterflow River Water Unit
 * Author: Benoit Gaudou
-* Description: In this model, the flow of water is simulated through the move of water units from a source point toward the outlet point.
-* 	Every step a source point is chosen to create a water unit, that will then flow toward the outlet point.
-* Tags: shapefile, gis, graph, gui, hydrology, water flow
+* Description: Models water flow through a river network using discrete 'water unit' agents that travel along
+*   the river graph from source to outlet. At each step, a source point creates a new water unit agent which
+*   then follows the graph edges downstream until it reaches the outlet point and is removed. This agent-based
+*   approach makes individual water parcels visible and traceable. It complements the exchange-based graph
+*   model by providing an alternative, agent-centric perspective on the same river network data.
+* Tags: shapefile, gis, graph, gui, hydrology, water_flow, river, agent, water_unit
 ***/
 
 model Waterflowriverwaterunit

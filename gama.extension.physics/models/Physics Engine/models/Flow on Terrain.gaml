@@ -1,7 +1,12 @@
 /**
-* Name: Water flowing in the red river bed
-* Author: drogoul
-* Tags: 
+* Name: Flow on Terrain
+* Author: Alexis Drogoul
+* Description: Simulates water-like particles flowing over an uneven terrain loaded from a DEM (Digital
+*   Elevation Model). The terrain is a static physics body; small ball agents are created continuously at
+*   the top and flow downhill under gravity, bouncing off slopes and accumulating in low-lying areas.
+*   Demonstrates how to use a real-world DEM as a physics surface and how to simulate granular or fluid
+*   flow using the physics engine.
+* Tags: physics_engine, 3d, terrain, DEM, flow, gravity, fluid, elevation, physical_world
 */
 
 
@@ -33,8 +38,8 @@ global parent: physical_world {
 			loop origin_of_flow over: origins_of_flow {
 				int x <- int(min(terrain.columns - 1, max(0, origin_of_flow.x + 10)));
 				int y <- int(min(terrain.rows - 1, max(0, origin_of_flow.y + 10)));
-				point p <- origin_of_flow + {rnd(10) - 5, rnd(10 - 5), terrain[x, y] + 10};
-				create water number: number_of_water_units with: [location::p];
+				point p <- origin_of_flow + {rnd(10) - 5, rnd(10 - 5), terrain[x, y] + 20};
+				create water number: number_of_water_units with: (location:p);
 			}
 	}
 }
@@ -64,11 +69,11 @@ experiment "Four different scales" type: gui {
 	string camera_loc <- #from_up_front;
 	int distance <- 200;
 	
-	action _init_ {
-		create simulation with: [z_scale::0.3];
-		create simulation with: [z_scale::1.0];
-		create simulation with: [z_scale::2.0];
-		create simulation with: [z_scale::3.0];
+	action _init_() {
+		create simulation with: (z_scale:0.3);
+		create simulation with: (z_scale:1.0);
+		create simulation with: (z_scale:2.0);
+		create simulation with: (z_scale:3.0);
 	} 
 	parameter "Location of the camera" var: camera_loc among: [#from_up_front, #from_above, #from_up_left, #from_up_right];
 	parameter "Distance of the camera" var: distance min: 1 max: 1000 slider: true;
@@ -101,8 +106,8 @@ experiment "Largest scale" type: gui {
 	string camera_loc <- #from_up_front;
 	int distance <- 200;
 	
-	action _init_ {
-		create simulation with: [z_scale::3.0];
+	action _init_() {
+		create simulation with: (z_scale:3.0);
 	} 
 	
 	output {

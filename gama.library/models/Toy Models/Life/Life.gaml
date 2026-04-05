@@ -1,10 +1,13 @@
 /**
 * Name: Life
-* Author: 
-* Description: A model using a cellular automata to represent the Game of Life, the most famous 
-* 	example of cellular automata. Each cell will see if the number of living neighbours meets the 
-* 	condition to emerge or to live.
-* Tags: grid
+* Author: Gama Development Team
+* Description: A GAMA implementation of Conway's Game of Life, the most famous cellular automaton. Each cell
+*   is either alive or dead. At every step, a cell's next state is determined by exactly two rules: (1) a live
+*   cell with 2 or 3 live neighbors survives; otherwise it dies; (2) a dead cell with exactly 3 live neighbors
+*   becomes alive. Despite these simple rules, complex and persistent patterns emerge, including oscillators,
+*   spaceships, and stable structures. The model supports toroidal or bounded environments and multiple random
+*   initial configurations.
+* Tags: grid, cellular_automaton, life, game_of_life, emergence, Conway, complexity
 */
 model life
 
@@ -35,7 +38,7 @@ global torus: torus_environment {
 	
 	//Initialization of the model by writing the description of the model in the console
 	init {
-		do description;
+		do description();
 	}
 	
 	//Ask at each life_cell to evolve and update
@@ -46,7 +49,7 @@ global torus: torus_environment {
 		}
 	}
 	//Write the description of the model in the console
-	action description {
+	action description() {
 		write 'Description:'  ;
 		write 'The Game of Life is a cellular automaton devised by the British mathematician John Horton Conway in 1970.';
 		write 'It is the best-known example of a cellular automaton.';
@@ -80,7 +83,7 @@ use_neighbors_cache: false parallel: parallel{
 	rgb color <- alive ? livingcolor : deadcolor;
 	
 	//Action to evolve the cell considering its neighbours
-	action evolve {
+	action evolve() {
 		//Count the number of living neighbours of the cells
 		int living <- neighbours count each.alive;
 		if alive {

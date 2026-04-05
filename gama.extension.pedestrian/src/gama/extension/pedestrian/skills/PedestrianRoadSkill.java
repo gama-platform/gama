@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * PedestrianRoadSkill.java, in gaml.extensions.pedestrian, is part of the source code of the GAMA modeling and
- * simulation platform .
+ * PedestrianRoadSkill.java, in gama.extension.pedestrian, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,38 +15,38 @@ import java.util.stream.Stream;
 
 import org.locationtech.jts.operation.buffer.BufferParameters;
 
-import gama.annotations.precompiler.GamlAnnotations.action;
-import gama.annotations.precompiler.GamlAnnotations.arg;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.annotations.precompiler.GamlAnnotations.skill;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.annotations.precompiler.IConcept;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.core.util.IMap;
-import gama.core.util.graph.IGraph;
-import gama.extension.pedestrian.operator.Operators;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.GamaIntegerType;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.skill.Skill;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IGraph;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.misc.IContainer;
+import gama.annotations.action;
+import gama.annotations.arg;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.annotations.skill;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.annotations.support.IConcept;
 import gama.gaml.operators.spatial.SpatialCreation;
 import gama.gaml.operators.spatial.SpatialOperators;
 import gama.gaml.operators.spatial.SpatialPunctal;
 import gama.gaml.operators.spatial.SpatialQueries;
 import gama.gaml.operators.spatial.SpatialTransformations;
-import gama.gaml.skills.Skill;
-import gama.gaml.species.ISpecies;
-import gama.gaml.types.GamaIntegerType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class PedestrianRoadSkill.
@@ -154,8 +154,8 @@ public class PedestrianRoadSkill extends Skill {
 	 */
 	@SuppressWarnings ("unchecked")
 	@getter (EXIT_NODES_HUB)
-	public static IMap<GamaPoint, IList<GamaPoint>> getExitNodesHub(final IAgent agent) {
-		return (IMap<GamaPoint, IList<GamaPoint>>) agent.getAttribute(EXIT_NODES_HUB);
+	public static IMap<IPoint, IList<IPoint>> getExitNodesHub(final IAgent agent) {
+		return (IMap<IPoint, IList<IPoint>>) agent.getAttribute(EXIT_NODES_HUB);
 	}
 
 	/**
@@ -167,7 +167,7 @@ public class PedestrianRoadSkill extends Skill {
 	 *            the exit nodes hub
 	 */
 	@setter (EXIT_NODES_HUB)
-	public static void setExitNodesHub(final IAgent agent, final IMap<GamaPoint, IList<GamaPoint>> exitNodesHub) {
+	public static void setExitNodesHub(final IAgent agent, final IMap<IPoint, IList<IPoint>> exitNodesHub) {
 		agent.setAttribute(EXIT_NODES_HUB, exitNodesHub);
 	}
 
@@ -520,20 +520,20 @@ public class PedestrianRoadSkill extends Skill {
 				.error("Trying to manipulate agent with " + PEDESTRIAN_ROAD_SKILL + " while being " + agent, scope);
 
 		final Double dist = scope.getFloatArg("distance_between_targets");
-		@SuppressWarnings ("unchecked") IMap<GamaPoint, IList<GamaPoint>> exitHub = GamaMapFactory.create();
+		@SuppressWarnings ("unchecked") IMap<IPoint, IList<IPoint>> exitHub = GamaMapFactory.create();
 		IShape bounds = SpatialTransformations.reduced_by(scope, getFreeSpace(agent), dist);
 		if (getRoadStatus(scope, agent) == SIMPLE_STATUS) {
 			// AD Note: getPoints() can be a very costly operation. It'd be better to call it once.
-			for (GamaPoint p : agent.getPoints()) {
-				GamaPoint pt = p;
-				IList<GamaPoint> ptL = GamaListFactory.create();
+			for (IPoint p : agent.getPoints()) {
+				IPoint pt = p;
+				IList<IPoint> ptL = GamaListFactory.create();
 				ptL.add(pt);
 				exitHub.put(pt, ptL);
 			}
 		} else {
 			for (int i = 0; i < agent.getPoints().size(); i++) {
-				GamaPoint pt = agent.getPoints().get(i).copy(scope);
-				GamaPoint pp = i == 0 ? agent.getPoints().get(i + 1) : agent.getPoints().get(i - 1);
+				IPoint pt = agent.getPoints().get(i).copy(scope);
+				IPoint pp = i == 0 ? agent.getPoints().get(i + 1) : agent.getPoints().get(i - 1);
 				exitHub.put(agent.getPoints().get(i), connectedRoads(scope, agent, dist, pt, pp, bounds));
 			}
 		}
@@ -571,12 +571,10 @@ public class PedestrianRoadSkill extends Skill {
 	 * @return
 	 */
 	@SuppressWarnings ("unchecked")
-	public static IList<GamaPoint> getConnectedOutput(final IScope scope, final IShape currentRoad,
-			final GamaPoint target) {
+	public static IList<IPoint> getConnectedOutput(final IScope scope, final IShape currentRoad, final IPoint target) {
 		if (!currentRoad.hasAttribute(EXIT_NODES_HUB)) throw GamaRuntimeException
 				.error("Looking for exit hub related to " + currentRoad + " but there is none", scope);
-		IMap<GamaPoint, IList<GamaPoint>> exitHub =
-				(IMap<GamaPoint, IList<GamaPoint>>) currentRoad.getAttribute(EXIT_NODES_HUB);
+		IMap<IPoint, IList<IPoint>> exitHub = (IMap<IPoint, IList<IPoint>>) currentRoad.getAttribute(EXIT_NODES_HUB);
 		if (exitHub.containsKey(target)) return exitHub.get(target);
 		return GamaListFactory.create(Types.POINT, Stream.of(target));
 	}
@@ -632,23 +630,23 @@ public class PedestrianRoadSkill extends Skill {
 	 * Create exit hub for a set of connected out edges
 	 */
 	@SuppressWarnings ("unchecked")
-	private IList<GamaPoint> connectedRoads(final IScope scope, final IAgent currentRoad, final Double dist,
-			final GamaPoint lp, final GamaPoint pp, final IShape bounds) {
-		IList<GamaPoint> exitConnections = GamaListFactory.create();
+	private IList<IPoint> connectedRoads(final IScope scope, final IAgent currentRoad, final Double dist,
+			final IPoint lp, final IPoint pp, final IShape bounds) {
+		IList<IPoint> exitConnections = GamaListFactory.create();
 		exitConnections.add(lp.copy(scope));
 		double distR = getDistance(currentRoad);
 		if (distR <= 0 || bounds == null || bounds.getArea() <= 0.001) return exitConnections;
 
-		GamaPoint v = lp.minus(pp);
-		GamaPoint n = null;
-		if (v.x == 0) {
-			n = new GamaPoint(1, 0);
-		} else if (v.y == 0) {
-			n = new GamaPoint(0, 1);
+		IPoint v = lp.minus(pp);
+		IPoint n = null;
+		if (v.getX() == 0) {
+			n = GamaPointFactory.create(1, 0);
+		} else if (v.getY() == 0) {
+			n = GamaPointFactory.create(0, 1);
 		} else {
-			double nx = -v.y / v.x;
+			double nx = -v.getY() / v.getX();
 			double norm = Math.sqrt(nx * nx + 1);
-			n = new GamaPoint(nx / norm, 1 / norm);
+			n = GamaPointFactory.create(nx / norm, 1 / norm);
 		}
 		n = n.multiplyBy(distR);
 		IList<IShape> points = GamaListFactory.create();
@@ -658,7 +656,7 @@ public class PedestrianRoadSkill extends Skill {
 		IShape hole = SpatialCreation.line(scope, points);
 		if (hole == null || hole.getPerimeter() <= dist) return exitConnections;
 
-		IList<GamaPoint> pts = SpatialPunctal.points_on(hole, dist);
+		IList<IPoint> pts = SpatialPunctal.points_on(hole, dist);
 		pts.removeIf(p -> p == null || !bounds.intersects(p));
 		exitConnections.addAll(pts);
 

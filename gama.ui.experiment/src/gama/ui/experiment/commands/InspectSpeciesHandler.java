@@ -14,10 +14,10 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.species.ISpecies;
 import gama.core.outputs.ValuedDisplayOutputFactory;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.species.ISpecies;
 
 /**
  * The Class InspectSpeciesHandler.

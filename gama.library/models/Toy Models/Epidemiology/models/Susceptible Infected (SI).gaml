@@ -1,9 +1,13 @@
 /**
-* Name: SI without ODE
-* Author: 
-* Description: A simple SI model without Ordinary Differential Equations showing agents 
-* 	moving randomly among a grid and becoming infected
-* Tags: grid
+* Name: Susceptible Infected (SI)
+* Author: Gama Development Team
+* Description: A simple SI (Susceptible-Infected) epidemic model without ordinary differential equations.
+*   Agents are placed on a grid and move randomly each step. When a susceptible agent encounters an infected
+*   neighbor, it has a probability of becoming infected. There is no recovery — once infected, agents remain
+*   so permanently. The model includes a survival probability (birth/death) to maintain population dynamics.
+*   This is the simplest spatial epidemic model and serves as a starting point for understanding SIR and
+*   more complex variants.
+* Tags: grid, epidemiology, SI, infection, spatial, agent_based, emergence
 */
 
 model si

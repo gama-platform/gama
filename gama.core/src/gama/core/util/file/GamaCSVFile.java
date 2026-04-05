@@ -2,7 +2,7 @@
  *
  * GamaCSVFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,31 +15,32 @@ import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.IStatusMessage;
-import gama.core.common.geometry.Envelope3D;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
-import gama.core.util.file.csv.AbstractCSVManipulator.Letters;
-import gama.core.util.file.csv.CsvReader;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.support.IConcept;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.file.GamaFile;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.GamaMatrixFactory;
+import gama.api.types.matrix.IMatrix;
+import gama.api.ui.IStatusMessage;
+import gama.api.utils.csv.CsvReader;
+import gama.api.utils.files.IFileMetadataProvider;
+import gama.api.utils.files.IGamaFileMetaData;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.interfaces.IFieldMatrixProvider;
 import gama.core.util.matrix.GamaFloatMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.GamaObjectMatrix;
-import gama.core.util.matrix.IMatrix;
-import gama.gaml.interfaces.IGamlDescription.Doc;
-import gama.gaml.interfaces.IGamlDescription.RegularDoc;
-import gama.gaml.operators.Cast;
-import gama.gaml.operators.Strings;
-import gama.gaml.types.GamaMatrixType;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Class GamaCSVFile.
@@ -90,8 +91,12 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 						isFloat = false;
 						isNumberSequence = false;
 						break;
-					} else if (c == Letters.COMMA || c == Letters.SEMICOLUMN || c == Letters.PIPE || c == Letters.COLUMN
-							|| c == Letters.SLASH || Character.isWhitespace(c) || c == Letters.QUOTE) {
+					} else if (c == gama.api.utils.StringUtils.Letters.COMMA
+							|| c == gama.api.utils.StringUtils.Letters.SEMICOLUMN
+							|| c == gama.api.utils.StringUtils.Letters.PIPE
+							|| c == gama.api.utils.StringUtils.Letters.COLUMN
+							|| c == gama.api.utils.StringUtils.Letters.SLASH || Character.isWhitespace(c)
+							|| c == gama.api.utils.StringUtils.Letters.QUOTE) {
 						isInt = false;
 						isFloat = false;
 					}
@@ -105,7 +110,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 	/**
 	 * The Class CSVInfo.
 	 */
-	public static class CSVInfo extends GamaFileMetaData {
+	public static class CSVInfo {
 
 		/** The cols. */
 		public int cols;
@@ -136,7 +141,6 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 		 *            the CS vsep
 		 */
 		public CSVInfo(final String fileName, final long modificationStamp, final String CSVsep) {
-			super(modificationStamp);
 			try (CsvReader reader = new CsvReader(fileName)) {
 				process(reader, CSVsep);
 			} catch (FileNotFoundException e) {}
@@ -195,25 +199,27 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				delimiter = CSVsep.charAt(0);
 			} else {
 				String[] s = StringUtils.splitByWholeSeparatorPreserveAllTokens(line, ",");
-				if (s.length != 1
-						|| s[0].indexOf(' ') == -1 && s[0].indexOf(';') == -1 && s[0].indexOf(Letters.TAB) == -1) {
+				if (s.length != 1 || s[0].indexOf(' ') == -1 && s[0].indexOf(';') == -1
+						&& s[0].indexOf(gama.api.utils.StringUtils.Letters.TAB) == -1) {
 					// We are likely dealing with a unicolum file
-					delimiter = Letters.COMMA;
+					delimiter = gama.api.utils.StringUtils.Letters.COMMA;
 				} else {
 					// there should be another delimiter
 					s = StringUtils.splitByWholeSeparatorPreserveAllTokens(line, ";");
 					if (s.length == 1) {
 						// Try with tab
-						s = StringUtils.splitByWholeSeparatorPreserveAllTokens(line, "" + Letters.TAB);
+						s = StringUtils.splitByWholeSeparatorPreserveAllTokens(line,
+								"" + gama.api.utils.StringUtils.Letters.TAB);
 						if (s.length == 1) {
-							s = StringUtils.splitByWholeSeparatorPreserveAllTokens(line, "" + Letters.SPACE);
+							s = StringUtils.splitByWholeSeparatorPreserveAllTokens(line,
+									"" + gama.api.utils.StringUtils.Letters.SPACE);
 							if (s.length == 1) {
-								delimiter = Letters.PIPE;
+								delimiter = gama.api.utils.StringUtils.Letters.PIPE;
 							} else {
-								delimiter = Letters.SPACE;
+								delimiter = gama.api.utils.StringUtils.Letters.SPACE;
 							}
 						} else {
-							delimiter = Letters.TAB;
+							delimiter = gama.api.utils.StringUtils.Letters.TAB;
 						}
 					} else {
 						delimiter = ';';
@@ -259,57 +265,21 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 		 *            the property string
 		 */
 		public CSVInfo(final String propertyString) {
-			super(propertyString);
-			final String[] segments = split(propertyString);
+			final String[] segments =
+					StringUtils.splitByWholeSeparatorPreserveAllTokens(propertyString, IGamaFileMetaData.DELIMITER);
 			cols = Integer.parseInt(segments[1]);
 			rows = Integer.parseInt(segments[2]);
 			header = Boolean.parseBoolean(segments[3]);
 			delimiter = segments[4].charAt(0);
 			type = Types.get(segments[5]);
 			if (header) {
-				headers = StringUtils.splitByWholeSeparatorPreserveAllTokens(segments[6], SUB_DELIMITER);
+				headers = StringUtils.splitByWholeSeparatorPreserveAllTokens(segments[6],
+						IGamaFileMetaData.SUB_DELIMITER);
 			} else {
 
 				headers = new String[cols];
 				Arrays.fill(headers, "");
 			}
-		}
-
-		@Override
-		public Doc getDocumentation() {
-			RegularDoc sb = new RegularDoc();
-			sb.append("CSV File ").append(header ? "with header" : "no header").append(Strings.LN);
-			sb.append("Dimensions: ").append(cols + " columns x " + (header ? rows - 1 : rows) + " rows")
-					.append(Strings.LN);
-			sb.append("Delimiter: ").append(delimiter).append(Strings.LN).append("Contents type: ")
-					.append(type.toString()).append(Strings.LN);
-			if (header && headers != null) {
-				sb.append("Headers: ");
-				for (final String header2 : headers) { sb.append(header2).append(" | "); }
-			}
-			return sb;
-		}
-
-		@Override
-		public String getSuffix() {
-			return "" + cols + "x" + (header ? rows - 1 : rows) + " | " + (header ? "with header" : "no header") + " | "
-					+ "delimiter: '" + delimiter + "' | " + type;
-		}
-
-		@Override
-		public void appendSuffix(final StringBuilder sb) {
-			sb.append(cols).append("x").append(rows).append(SUFFIX_DEL);
-			sb.append(header ? "with header" : "no header").append(SUFFIX_DEL);
-			sb.append("delimiter: '").append(delimiter).append("'").append(SUFFIX_DEL).append(type);
-		}
-
-		/**
-		 * @return
-		 */
-		@Override
-		public String toPropertyString() {
-			return super.toPropertyString() + DELIMITER + cols + DELIMITER + rows + DELIMITER + header + DELIMITER
-					+ delimiter + DELIMITER + type + (header ? DELIMITER + String.join(SUB_DELIMITER, headers) : "");
 		}
 
 	}
@@ -324,7 +294,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 	IType contentsType;
 
 	/** The user size. */
-	GamaPoint userSize;
+	IPoint userSize;
 
 	/** The has header. */
 	Boolean hasHeader;
@@ -503,7 +473,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 					isExecutable = false) })
 	public GamaCSVFile(final IScope scope, final String pathName, final String separator, final IType type,
 			final Boolean withHeader) {
-		this(scope, pathName, separator, type, (GamaPoint) null);
+		this(scope, pathName, separator, type, (IPoint) null);
 		hasHeader = withHeader;
 	}
 
@@ -527,7 +497,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 					value = "csv_file f <- csv_file(\"file.csv\", \";\",int,true, {5, 100});",
 					isExecutable = false) })
 	public GamaCSVFile(final IScope scope, final String pathName, final String separator, final IType type,
-			final GamaPoint size) {
+			final IPoint size) {
 		super(scope, pathName);
 		setCsvSeparators(separator);
 		contentsType = type;
@@ -574,10 +544,10 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 		if (getBuffer() == null) {
 			final CSVInfo cvsInfo = getInfo(scope, null);
 			if (cvsInfo != null) return cvsInfo.header ? GamaListFactory.wrap(Types.STRING, cvsInfo.headers)
-					: GamaListFactory.EMPTY_LIST;
+					: GamaListFactory.getEmptyList();
 		}
 		fillBuffer(scope);
-		return headers == null ? GamaListFactory.EMPTY_LIST : headers;
+		return headers == null ? GamaListFactory.getEmptyList() : headers;
 	}
 
 	/**
@@ -591,12 +561,16 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 	 */
 	public CSVInfo getInfo(final IScope scope, final String CSVSep) {
 		if (info != null) return info;
-		final IFileMetaDataProvider p = scope.getGui().getMetaDataProvider();
+		final IFileMetadataProvider p = GAMA.getMetadataProvider();
 		if (p != null) {
 			final IGamaFileMetaData metaData = p.getMetaData(getFile(scope), false, true);
-			if (metaData instanceof CSVInfo) {
-				info = (CSVInfo) metaData;
-				if (CSVSep != null && info != null && !info.delimiter.equals(CSVSep.charAt(0))) { info = null; }
+			if (metaData != null) {
+				try {
+					info = new CSVInfo(metaData.toPropertyString());
+					if (CSVSep != null && info != null && !info.delimiter.equals(CSVSep.charAt(0))) { info = null; }
+				} catch (Exception e) {
+					info = null;
+				}
 			}
 		}
 		if (info == null) {
@@ -625,7 +599,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 			final CSVInfo stats = getInfo(scope, csvSeparator);
 			csvSeparator = csvSeparator == null ? "" + stats.delimiter : csvSeparator;
 			contentsType = contentsType == null ? stats.type : contentsType;
-			if (userSize == null) { userSize = new GamaPoint(stats.cols, stats.rows); }
+			if (userSize == null) { userSize = GamaPointFactory.create(stats.cols, stats.rows); }
 
 			// AD We take the decision for the modeler is he/she hasn't
 			// specified if the header must be read or not.
@@ -639,9 +613,9 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				headers = GamaListFactory.createWithoutCasting(Types.STRING, reader.getHeaders());
 				// we remove one row so as to not read the headers as well
 				// Cause for issue #3036
-				userSize.y = userSize.y - 1;
+				userSize.add(0, -1, 0);
 				// Make sure that we do not read more columns than the number of headers
-				userSize.x = headers.size();
+				userSize.setX(headers.size());
 			}
 			// long t = System.currentTimeMillis();
 			setBuffer(createMatrixFrom(scope, reader));
@@ -652,7 +626,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 			throw GamaRuntimeException.create(e, scope);
 		} finally {
 			// See Issue #3036 -- value must be modified when the file is reloaded
-			if (hasHeader != null && hasHeader) { userSize.y++; }
+			if (hasHeader != null && hasHeader) { userSize.add(0, 1, 0); }
 		}
 
 	}
@@ -676,11 +650,11 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 			String task = "Reading file " + getName(scope);
 			scope.getGui().getStatus().beginTask(task, IStatusMessage.DOWNLOAD_ICON);
 			if (t == IType.INT) {
-				matrix = new GamaIntMatrix(userSize);
+				matrix = GamaMatrixFactory.createIntMatrix((int) userSize.getX(), (int) userSize.getY());
 				final int[] m = ((GamaIntMatrix) matrix).getMatrix();
 				int i = 0;
 				while (reader.readRecord()) {
-					percentage = reader.getCurrentRecord() / userSize.y;
+					percentage = reader.getCurrentRecord() / userSize.getY();
 					scope.getGui().getStatus().setTaskCompletion(task, percentage);
 					int nbC = 0;
 					for (final String s : reader.getValues()) {
@@ -693,11 +667,11 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 					}
 				}
 			} else if (t == IType.FLOAT) {
-				matrix = new GamaFloatMatrix(userSize);
+				matrix = GamaMatrixFactory.createFloatMatrix((int) userSize.getX(), (int) userSize.getY());
 				final double[] m = ((GamaFloatMatrix) matrix).getMatrix();
 				int i = 0;
 				while (reader.readRecord()) {
-					percentage = reader.getCurrentRecord() / userSize.y;
+					percentage = reader.getCurrentRecord() / userSize.getY();
 					scope.getGui().getStatus().setTaskCompletion(task, percentage);
 					int nbC = 0;
 					for (final String s : reader.getValues()) {
@@ -710,11 +684,11 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 					}
 				}
 			} else {
-				matrix = new GamaObjectMatrix(userSize, Types.STRING);
+				matrix = GamaMatrixFactory.create((int) userSize.getX(), (int) userSize.getY(), Types.STRING);
 				final Object[] m = ((GamaObjectMatrix) matrix).getMatrix();
 				int i = 0;
 				while (reader.readRecord()) {
-					percentage = reader.getCurrentRecord() / userSize.y;
+					percentage = reader.getCurrentRecord() / userSize.getY();
 					scope.getGui().getStatus().setTaskCompletion(task, percentage);
 					int nbC = 0;
 
@@ -743,10 +717,10 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 	/**
 	 * Method computeEnvelope()
 	 *
-	 * @see gama.core.util.file.IGamaFile#computeEnvelope(gama.core.runtime.IScope)
+	 * @see gama.api.types.file.IGamaFile#computeEnvelope(gama.api.runtime.scope.IScope)
 	 */
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		// See how to read information from there
 		return null;
 	}
@@ -781,7 +755,8 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 	@Override
 	public double[] getBand(final IScope scope, final int index) {
 		if (index > 0) return null;
-		GamaFloatMatrix m = (GamaFloatMatrix) GamaMatrixType.from(scope, getContents(scope), Types.FLOAT, null, false);
+		GamaFloatMatrix m = (GamaFloatMatrix) GamaMatrixFactory.createFromMatrix(scope, getContents(scope), Types.FLOAT,
+				null, false);
 		return m.getMatrix();
 
 	}

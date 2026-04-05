@@ -1,0 +1,126 @@
+module gaml.compiler.gaml.GenerateGaml
+
+import org.eclipse.emf.mwe.utils.*
+import org.eclipse.xtext.xtext.generator.*
+import org.eclipse.xtext.xtext.ui.generator.*
+import java.util.*
+
+var rootPath = ".."
+
+var uiProjectName = "gama.ui.editor"
+var runtimeProjectName = "gaml.compiler"
+var grammarProjectName = "gaml.compiler"
+var srcGen = "sr-gen"
+
+
+
+Workflow {
+		
+	bean = gaml.grammar.generator.PathLogger {
+        path = rootPath
+    }
+	bean = StandaloneSetup {
+		scanClassPath = false
+	projectMapping = { 
+        projectName = "${grammarProjectName}" 
+        path = "${rootPath}/${grammarProjectName}" 
+    }
+    projectMapping = { 
+        projectName = "${runtimeProjectName}" 
+        path = "${rootPath}/${runtimeProjectName}" 
+    }
+    projectMapping = { 
+        projectName = "${uiProjectName}" 
+        path = "${rootPath}/${uiProjectName}" 
+    }
+	}
+
+
+	component = DirectoryCleaner {
+		directory = "${rootPath}/${runtimeProjectName}/${srcGen}"
+	}
+
+	component = DirectoryCleaner {
+		directory = "${rootPath}/${uiProjectName}/${srcGen}"
+	}
+
+	component = XtextGenerator {
+		
+		configuration = {
+			
+			project = model.project.StandardProjectConfig {
+				
+				baseName = "gaml.compiler.gaml"
+				rootPath = rootPath
+				web = {
+					enabled = false
+				}
+				runtime = {
+					enabled = true
+					root = "${rootPath}/${runtimeProjectName}"
+					name = runtimeProjectName
+				}
+				runtimeTest = {
+					enabled = false
+				}
+				eclipsePlugin = {
+					enabled = true
+					root = "${rootPath}/${uiProjectName}"
+					name = uiProjectName
+				}
+				genericIde = {
+					enabled = true
+					root = "${rootPath}/${uiProjectName}"
+					name = uiProjectName
+				}
+				eclipsePluginTest = {
+					enabled = false
+				}
+				createEclipseMetaData = true
+				
+			}
+			code = {
+				preferXtendStubs = false
+				encoding = 'UTF-8'
+			}
+			
+		}
+		language = StandardLanguage {
+		
+			grammarUri = "platform:/resource/gaml.grammar/src/gaml/grammar/Gaml.xtext"
+			name = "gaml.grammar.Gaml"
+			fileExtensions = "gaml,experiment"
+			validator = {
+				generateXtendStub = false
+			}
+			generator = {
+				generateXtendMain = false
+				generateXtendStub = false
+			}
+			contentAssist = {
+				generateXtendStub = false
+			}
+			formatter = {
+				generateStub = true
+				generateXtendStub = false
+			}
+			junitSupport = {
+				generateXtendStub = false
+			}
+			labelProvider = {
+				generateXtendStub = false
+			}
+			scopeProvider = {
+				generateXtendStub = false
+			}
+			serializer = {
+				generateXtendStub = false
+			}
+			emfGenerator = {
+				rootExtendsClass = "gaml.compiler.serializer.GamlEObjectImpl"
+			}
+			
+		}
+
+	}
+}

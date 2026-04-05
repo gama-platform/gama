@@ -1,9 +1,11 @@
 /**
-* Name: Socket_TCP_HelloWorld_Server
-* Author: HUYNH Quang Nghi
-* Description: Simplest TCP server to test with external tools. 
-* You can run the python script "client.py" to connect to it
-* Tags: Network, TCP, Socket
+* Name: TCP Server Example
+* Author: Huynh Quang Nghi
+* Description: A minimal TCP server model for testing with external tools. GAMA opens a TCP listening
+*   socket and waits for connections. An external Python client script ('client.py') is provided to test
+*   the connection. Each received message is echoed back. Use this model to verify GAMA TCP server setup
+*   before integrating with a full client model.
+* Tags: network, TCP, socket, server, protocol, communication, external
 */
 model Socket_TCP_HelloWorld_Server
 

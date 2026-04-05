@@ -12,7 +12,7 @@ package gama.ui.display.opengl.renderer.helpers;
 
 import com.jogamp.opengl.GL2;
 
-import gama.core.outputs.LayeredDisplayData;
+import gama.api.ui.displays.IDisplayData;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.renderer.IOpenGLRenderer;
 import gama.ui.display.opengl.view.GamaGLCanvas;
@@ -40,7 +40,7 @@ public abstract class AbstractRendererHelper {
 	protected final IOpenGLRenderer renderer;
 
 	/** The data. */
-	protected final LayeredDisplayData data;
+	protected final IDisplayData data;
 
 	/**
 	 * Instantiates a new abstract renderer helper.
@@ -65,7 +65,7 @@ public abstract class AbstractRendererHelper {
 	 *
 	 * @return the data
 	 */
-	protected LayeredDisplayData getData() { return data; }
+	protected IDisplayData getData() { return data; }
 
 	/**
 	 * Gets the gl.

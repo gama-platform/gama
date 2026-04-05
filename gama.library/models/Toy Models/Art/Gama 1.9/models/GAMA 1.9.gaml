@@ -1,8 +1,11 @@
 /**
-* Name: Gama 1.9
-* Author:  Arnaud Grignard - Tri Nguyen-Huu
-* Description: A toy model animating the GAMA logo
-* Tags:  
+* Name: GAMA 1.9
+* Author: Arnaud Grignard, Tri Nguyen-Huu
+* Description: A celebratory art model created for the GAMA 1.9 release, animating the GAMA logo as an agent-based
+*   visualization. The logo is loaded from a vectorized shapefile and each polygon is assigned to an agent.
+*   The model provides different display modes (light-to-dark, dark-to-light, light, and dark) and can optionally
+*   show inner rings of the logo polygons. The overall effect produces a dynamic, animated version of the GAMA logo.
+* Tags: art, animation, visualization, shapefile, logo, geometry
 */
 
 model GAMA  
@@ -49,7 +52,7 @@ global {
 
 		Gama_shape_file <- shape_file("../includes/GamaVectorized.shp");
 		
-		create object from:Gama_shape_file with:[type::string(get("type")), name::string(get("name")),level::int(get("level"))]{
+		create objects(type:string(get("type")), name:string(get("name")),level:int(get("level"))) from:Gama_shape_file{
 		    origin <- myself.origin;
 		    color<-#white;
 		    if (name = "gamablue"){
@@ -86,9 +89,9 @@ global {
 		    location<-location  - {0,0,depth/2};
 		}
 
-		ask object{
+		ask objects{
 			 if (name = "1.9"){
-		    	origin <- first(object where (each.name="circle")).location;
+		    	origin <- first(objects where (each.name="circle")).location;
 		    }
 			switch level {
 				match 5 {
@@ -111,32 +114,32 @@ global {
 			}
 			shift <- location - origin;
 			if level =0 {
-				do die;
+				do die();
 			}
 		}
 		
 		
-		loop i over: remove_duplicates(object collect each.level){
-			ask first(object where (each.level = i)){
-				linked_objects <- object where (each.level = i-1);
+		loop i over: remove_duplicates(objects collect each.level){
+			ask first(objects where (each.level = i)){
+				linked_objects <- objects where (each.level = i-1);
 			}
 		}
 	}  
 	
 	reflex end_animation when: cycle  = 650{
-		do pause;
+		do pause();
 	}
 } 
 
 // definition of the parts of the animated 3d model
-species object skills:[moving]{
+species objects skills:[moving]{
 	rgb color;
 	string type;
 	string name;
 	point axe <- {0,1,0};
 	float rotation_speed <- 1.0;
-	int level;
-	list<object> linked_objects <- [];
+	int level; 
+	list<objects> linked_objects <- [];
 	float depth <- 0.0;
 	point origin;
 	point shift;		
@@ -203,7 +206,7 @@ experiment "Run me !"   type: gui autorun:true{
 	parameter 'Inner rings' var: inner_rings   category: "Preferences";
 	output {
 		display "1.9"  background: world.changeColor(cycle) type: 3d axes:false autosave:false fullscreen:false toolbar:false{
-		  species object aspect:obj;			
+		  species objects aspect:obj;			
 		}
 	}
 }

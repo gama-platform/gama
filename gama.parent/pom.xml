@@ -26,7 +26,7 @@
 	<repositories>
 		<repository>
 			<id>eclipse-swt</id>
-			<url>https://download.eclipse.org/releases/2025-06/</url>
+			<url>https://download.eclipse.org/releases/2026-03/</url>
 			<layout>p2</layout>
 			<releases>
 				<enabled>true</enabled>
@@ -122,8 +122,11 @@
 		<!--
 			Core modules
 		-->
+		<module>../gama.dev</module>
 		<module>../gama.dependencies</module>
+		<module>../gama.api</module>
 		<module>../gama.core</module>
+		<module>../gama.workspace</module>
 		<module>../gaml.compiler</module>
 
 		<!--
@@ -152,6 +155,7 @@
 		<module>../gama.ui.experiment</module>
 		<module>../gama.ui.application</module>
 		<module>../gama.ui.display.opengl</module>
+		<module>../gama.ui.display.opengl4</module>
 		<module>../gama.ui.display.java2d</module>
 
 		<!--
@@ -179,6 +183,7 @@
 		<module>../gama.feature.extension.sound</module>
 		<module>../gama.feature.extension.stats</module>
 		<module>../gama.feature.extension.image</module>
+		<!-- <module>../gama.feature.copilot</module> -->
 
 		<!-- Can be automatically published by uncommenting
 		However, it's prefered to keep it separated and executed
@@ -192,8 +197,8 @@
 	<properties>
 		<project.version>0.0.0-SNAPSHOT</project.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<tycho.version>4.0.11</tycho.version>
-		<jdk.version>21</jdk.version>
+		<tycho.version>5.0.2</tycho.version>
+		<jdk.version>25</jdk.version>
 		<codehaus.wagon.version>2.0.2</codehaus.wagon.version>
 		<wagon.version>3.5.3</wagon.version>
 		<maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
@@ -285,7 +290,7 @@
 					<source>${jdk.version}</source>
 					<target>${jdk.version}</target>
 					<annotationProcessors>
-						<annotationProcessor>msi.gama.precompiler.GamaProcessor</annotationProcessor>
+						<annotationProcessor>gama.processor.GamaProcessor</annotationProcessor>
 					</annotationProcessors>
 					<executionEnvironment>JavaSE-${jdk.version}</executionEnvironment>
 				</configuration>

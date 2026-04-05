@@ -1,9 +1,12 @@
 /**
-* Name: Graph Generation using Agents
+* Name: Graph Building From Agents
 * Author: Patrick Taillandier
-* Description: Model which shows how to create a graph using agents of a species as vertices. Two kinds of generations are presented : one where the distance 
-* taken into account to link two vertices by an edge, an other where the intersections of two vertices joins these vertices by an edge. 
-* Tags: graph
+* Description: Demonstrates two ways to build a graph using agent positions as nodes. The first method uses
+*   'as_distance_graph': two agents are connected by an edge if they are within a specified distance of each
+*   other. The second method uses 'as_intersection_graph': two agents are connected if their geometry shapes
+*   overlap or intersect. Both approaches are useful for building proximity networks from spatial agent
+*   distributions, such as social contact networks or infrastructure connectivity graphs.
+* Tags: graph, agent, proximity, distance_graph, intersection_graph, spatial, network
 */
 
 model graphbuilding

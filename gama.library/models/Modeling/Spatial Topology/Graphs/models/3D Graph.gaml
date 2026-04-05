@@ -1,10 +1,12 @@
 /**
 * Name: 3D Graph
 * Author: Arnaud Grignard
-* Description: Model using a 3D Graph and updating it at each step according to the location and the degree of each sphere. 
-* An arc is created between two adjacent spheres. Two different experiments are proposed : one with a dynamic size for 
-* the spheres according to their degree, one simpler with no update of the size.
-* Tags: graph, 3d, skill
+* Description: A dynamic 3D graph visualization where node positions and edge connections are updated each
+*   simulation step based on agent locations. Sphere agents represent nodes; arcs drawn between adjacent
+*   spheres represent edges. Two experiments are offered: one where sphere size scales with the node degree
+*   (number of connections), showing hub-and-spoke structures; one simpler experiment with uniform sphere
+*   sizes. Demonstrates GAMA's ability to render graph structures in 3D with dynamic topology updates.
+* Tags: graph, 3d, skill, dynamic, visualization, degree, node, edge
 */
   
 
@@ -30,18 +32,18 @@ global {
 			location <- { rnd(width_and_height_of_environment), rnd(width_and_height_of_environment), rnd(width_and_height_of_environment) };
 		}
 		
-		do degreeMax_computation;
+		do degreeMax_computation();
 		
 		ask node_agent {
-			do compute_degree;
+			do compute_degree();
 		}
 	}
 	
 	reflex updateDegreeMax {
-		do degreeMax_computation;
+		do degreeMax_computation();
 	}
 
-	action degreeMax_computation {
+	action degreeMax_computation() {
 		my_graph <- node_agent as_distance_graph(distance);
 		degreeMax <- 1;
 		ask node_agent {
@@ -60,13 +62,13 @@ species node_agent skills: [moving3D] {
 	float speed <- 5.0;
 	reflex move {
 		//make the agent move randomly
-		do wander;
+		do wander();
 		//compute the degree of the agent
-		do compute_degree;
+		do compute_degree();
 	}
 	
 	
-	action compute_degree {
+	action compute_degree() {
 		degree <- my_graph = nil ? 0 : (my_graph) degree_of (self);
 		radius <- ((((degree + 1) ^ 1.4) / (degreeMax))) * 5;
 		color <- hsb(0.66,degree / (degreeMax + 1), 0.5);

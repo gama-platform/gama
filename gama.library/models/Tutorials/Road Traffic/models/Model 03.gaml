@@ -1,8 +1,11 @@
 /**
-* Name: Movement of the people agents
-* Author:
-* Description: third part of the tutorial: Road Traffic
-* Tags: agent_movement
+* Name: Road Traffic Tutorial - Step 03 - Movement of People
+* Author: Gama Development Team
+* Description: Third step of the Road Traffic tutorial. People agents now move between their home and work
+*   buildings using the road network as a graph. The 'goto' action with the road graph topology makes agents
+*   follow the shortest path along roads. People switch between 'go_to_work' and 'go_home' behaviors based
+*   on the current simulation time, demonstrating time-driven behavior changes and graph-based navigation.
+* Tags: tutorial, agent_movement, graph, road_network, goto, transport, commuting
 */
 
 model tutorial_gis_city_traffic
@@ -24,7 +27,7 @@ global {
 	graph the_graph;
 	
 	init {
-		create building from: shape_file_buildings with: [type::string(read ("NATURE"))] {
+		create building(type:string(read ("NATURE"))) from: shape_file_buildings  {
 			if type="Industrial" {
 				color <- #blue ;
 			}
@@ -83,7 +86,7 @@ species people skills:[moving] {
 	} 
 	 
 	reflex move when: the_target != nil {
-		do goto target: the_target on: the_graph ; 
+		do goto(target: the_target, on: the_graph) ; 
 		if the_target = location {
 			the_target <- nil ;
 		}

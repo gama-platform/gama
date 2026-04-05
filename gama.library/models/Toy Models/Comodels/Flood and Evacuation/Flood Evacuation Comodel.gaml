@@ -1,9 +1,14 @@
 /**
-* Name: Comodel of Flood and Evacuation model
-* Author: HUYNH Quang Nghi
-* Description: Co-model example : couple the evacuation model with the flood model. Water win or human win?
-* Tags: comodel
- */
+* Name: Flood and Evacuation Comodel
+* Author: Huynh Quang Nghi
+* Description: A comodel coupling a flood simulation with an evacuation model to study their interactions.
+*   The flood model (based on the Hydrological Model) raises water levels from an upstream source, while the
+*   evacuation model (based on City Escape) has people fleeing toward exits. The coupling checks which people
+*   are reached by water and removes them from the simulation, creating a race between the rising flood and
+*   the escaping population. This model illustrates how independently developed GAMA models can be coupled
+*   to study emergent cross-domain dynamics.
+* Tags: comodel, flood, evacuation, coupling, water, emergency, gis
+*/
 model flood_evacuation_comodeling
  
 import "Adapters/Flood Adapter.gaml" as Flooding 
@@ -27,7 +32,7 @@ global
 		create Flooding."Adapter";
 	
 		//create the Evacuation micro-model's experiment
-		create Evacuation."Adapter of Evacuation" number:length(offset);// with:[nb_people::1];
+		create Evacuation."Adapter of Evacuation" number:length(offset);// with:(nb_people:1);
 		ask Evacuation."Adapter of Evacuation"
 		{
 			centroid <- myself.offset[int(self)];

@@ -1,17 +1,13 @@
 /***
-* Name: CityEscape
-* Author: kevinchapuis
-* Description: An evacuation model of a theoretical city with different alert communication strategies. Hazard is a very simple flood
-* and we make the hypothesis that people die when they are in the flood (e.g. Tsunami). The flooding start x time after the beginning
-* of the simulation. People escape when they perceive the flood or when they are alerted. There are 3 communication strategies: 
-* - 'EVERYONE' = to alert everyone at the start of the simulation
-* - 'STAGED' = to alert nb_people/nb_stages random people every (time_of_hazard-buffer_time)/nb_stages minutes
-* - 'SPATIAL' = to alert nb_people/nb_stages closest people to exits every (time_of_hazard-buffer_time)/nb_stages minutes
-* Where (time_of_hazard-buffer_time)/nb_stages correspond to the time between stages computed using the three parameters:
-* - Time before hazard = time_of_hazard
-* - Time alert buffer before hazard = buffer_time
-* - Number of stages = nb_stages
-* Tags: evacuation, traffic, hazard, gis, water
+* Name: City Escape
+* Author: Kevin Chapuis
+* Description: An evacuation model of a theoretical city with different alert communication strategies. A hazard
+*   (simplified flood / tsunami) is triggered after a configurable delay. People die when reached by the flood.
+*   Three alert strategies are compared: 'EVERYONE' alerts all people at the start; 'STAGED' alerts groups of
+*   people at regular intervals before the hazard; 'SPATIAL' alerts people closest to exits first. Parameters
+*   control the number of alert stages, the hazard timing, and the buffer time before the hazard. The model
+*   uses GIS data for the city layout and road network.
+* Tags: evacuation, traffic, hazard, gis, water, alert, communication, emergency
 ***/
 model CityEscape
 
@@ -76,7 +72,7 @@ global {
 	
 	// Stop the simulation when everyone is either saved :) or dead :(
 	reflex stop_simu when:inhabitant all_match (each.saved or each.drowned) {
-		do pause;
+		do pause();
 	}
 	
 }
@@ -125,7 +121,7 @@ species crisis_manager {
 	 * The conditions to send an alert : return true at cycle = 0 and then every(alert_range)
 	 * depending on the strategy used
 	 */
-	bool alert_conditional {
+	bool alert_conditional() {
 		if(the_alert_strategy = "STAGED" or the_alert_strategy = "SPATIAL"){
 			return every(alert_range);
 		} else {
@@ -140,7 +136,7 @@ species crisis_manager {
 	/*
 	 * Who to send the alert to: return a list of inhabitant according to the strategy used
 	 */
-	list<inhabitant> alert_target {
+	list<inhabitant> alert_target (){
 		switch the_alert_strategy {
 			match "STAGED" {
 				return nb_per_stage among (inhabitant where (each.alerted = false));
@@ -232,7 +228,7 @@ species inhabitant skills:[moving] {
 	 * When alerted people will try to go to the choosen exit point
 	 */
 	reflex evacuate when:alerted and not(drowned or saved) {
-		do goto target:safety_point on: road_network move_weights:road_weights;
+		self.goto(target:safety_point, on: road_network, move_weights:road_weights);
 		if(current_edge != nil){
 			road the_current_road <- road(current_edge);  
 			the_current_road.users <- the_current_road.users + 1;
@@ -290,7 +286,7 @@ species road {
 	reflex flood_road {
 		if(hazard first_with (each covers self) != nil){
 			road_network >- self; 
-			do die;
+			self.die();
 		}
 	}
 	

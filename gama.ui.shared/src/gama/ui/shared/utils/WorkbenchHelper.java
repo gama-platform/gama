@@ -56,9 +56,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 
-import gama.core.common.interfaces.IGui;
+import gama.api.ui.IGui;
 import gama.dev.DEBUG;
-import gama.ui.application.workspace.WorkspaceModelsManager;
 
 /**
  * The Class WorkbenchHelper.
@@ -83,21 +82,6 @@ public class WorkbenchHelper {
 					return o;
 				}
 			});
-
-	/** The Constant GAMA_NATURE. */
-	public final static String GAMA_NATURE = WorkspaceModelsManager.GAMA_NATURE; // NO_UCD (unused code)
-
-	/** The Constant XTEXT_NATURE. */
-	public final static String XTEXT_NATURE = WorkspaceModelsManager.XTEXT_NATURE; // NO_UCD (unused code)
-
-	/** The Constant PLUGIN_NATURE. */
-	public final static String PLUGIN_NATURE = WorkspaceModelsManager.PLUGIN_NATURE;
-
-	/** The Constant TEST_NATURE. */
-	public final static String TEST_NATURE = WorkspaceModelsManager.TEST_NATURE;
-
-	/** The Constant BUILTIN_NATURE. */
-	public final static String BUILTIN_NATURE = WorkspaceModelsManager.BUILTIN_NATURE;
 
 	/** The clipboard. */
 	private static volatile Clipboard CLIPBOARD;

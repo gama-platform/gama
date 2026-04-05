@@ -1,8 +1,12 @@
 /**
-* Name: GEOJSON File Loading
-* Author:  Alexis Drogoul
-* Description: Initialize a set of geometries from a GEOJSON FIle. 
-* Tags:  load_file, grid, json, gis
+* Name: GeoJSON File Import
+* Author: Alexis Drogoul
+* Description: Shows how to import a GeoJSON file in GAMA and use it to create agents whose geometries and
+*   attributes come from the file. GeoJSON is a lightweight, human-readable format widely used for web mapping
+*   and geographic data exchange. GAMA supports it natively via the 'geojson_file' operator. The 'create'
+*   statement with 'from' and 'with' facets maps GeoJSON feature properties to agent attributes using the
+*   'read()' operator. The example loads a world countries dataset and creates one agent per country.
+* Tags: load_file, geojson, gis, json, geometry, import, spatial
 */
 
 model geojson_loading   
@@ -11,7 +15,7 @@ global {
 	file geo_file <- geojson_file("../includes/countries.geojson");
 	geometry shape <- envelope(geo_file);
 	init {
-		create countries from: geo_file with: [name::read("name")];
+		create countries from: geo_file with: (name:read("name"));
 	}
 } 
 

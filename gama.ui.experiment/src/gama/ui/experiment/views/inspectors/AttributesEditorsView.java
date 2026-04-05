@@ -17,10 +17,10 @@ import java.util.Map;
 
 import org.eclipse.swt.widgets.Composite;
 
-import gama.ui.experiment.parameters.EditorsList;
 import gama.ui.shared.interfaces.IParameterEditor;
 import gama.ui.shared.parameters.AbstractEditor;
 import gama.ui.shared.parameters.EditorsGroup;
+import gama.ui.shared.parameters.EditorsList;
 import gama.ui.shared.views.ExpandableItemsView;
 
 /**

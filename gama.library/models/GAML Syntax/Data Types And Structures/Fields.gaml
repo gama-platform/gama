@@ -1,8 +1,12 @@
 /**
 * Name: Fields
-* Based on the internal empty template. 
-* Author: kevinchapuis
-* Tags: 
+* Author: Kevin Chapuis
+* Description: Illustrates the declaration and manipulation of 'field' data structures in GAML. A field is a
+*   two-dimensional raster data structure — essentially a grid of float values — typically loaded from a GeoTIFF or
+*   ASC raster file. Fields can be used to represent continuous spatial data such as elevation, temperature, or
+*   density maps. This model shows how to load a field from a file, perform arithmetic operations on fields, and
+*   display them in the GAMA interface.
+* Tags: field, raster, grid, spatial, elevation, geotiff
 */
 
 

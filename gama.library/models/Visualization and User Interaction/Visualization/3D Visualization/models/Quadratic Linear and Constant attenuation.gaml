@@ -1,8 +1,12 @@
 /**
-* Name: QuadraticLinearandConstantatenuation
-* Based on the internal empty template. 
-* Author: baptiste
-* Tags: 
+* Name: Quadratic, Linear and Constant Attenuation
+* Author: Baptiste Lesquoy
+* Description: Demonstrates the three light attenuation models available for point lights in GAMA's 3D display.
+*   Attenuation controls how light intensity falls off with distance: constant attenuation (no fall-off),
+*   linear attenuation (intensity decreases proportionally to distance), and quadratic attenuation (intensity
+*   decreases with the square of the distance, matching real-world physics). The model places identical objects
+*   at various distances from a point light and shows the visual difference between the three modes.
+* Tags: 3d, light, attenuation, point_light, visualization, display, physics, shading
 */
 
 

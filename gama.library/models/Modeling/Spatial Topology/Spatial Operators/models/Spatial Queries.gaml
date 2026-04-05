@@ -1,8 +1,13 @@
 /**
-* Name: Spatialqueries
+* Name: Spatial Queries
 * Author: Patrick Taillandier
-* Description: A model which shows how to use spatial queries - in magenta the source geometry, in red the agents concerned by the spatial query
-* Tags: topology, spatial_computation, spatial_queries
+* Description: A visual reference for GAMA's spatial query operators. For a selected source geometry
+*   (magenta), the model highlights in red all agents that satisfy a given spatial relationship. The
+*   supported queries include: 'overlapping' (at least one common point), 'inside' (contained within),
+*   'covering' (contains the source), 'touching' (shares boundary but not interior), 'crossing' (interiors
+*   intersect), 'at_distance' (within a given distance), and 'closest_to' (nearest agent). Each query type
+*   can be selected as a parameter.
+* Tags: topology, spatial_computation, spatial_queries, overlapping, inside, distance, closest_to
 */
 
 model Spatialqueries
@@ -36,12 +41,12 @@ global {
 		do apply_query;
 	}
 	
-	action change_agent {
+	action change_agent() {
 		selected_agent <- (polygon_agent + polyline_agent + point_agent) closest_to #user_location; 	
 		do apply_query;
 	}
 	
-	action apply_query {
+	action apply_query() {
 		list<agent_base> agents_concerned;
 		switch type_query {
 			match "overlapping" {
@@ -99,7 +104,7 @@ species polyline_agent parent:agent_base {
 	rgb color <- #black;
 	aspect default {
 		if (self = selected_agent) {
-			draw shape + 0.5 color: #magenta; 
+			draw shape + 0.5 color: #magenta;  
 		}
 		draw shape color: is_concerned ? #red : color; 
 	}
@@ -116,7 +121,7 @@ species point_agent parent:agent_base {
 }
 
 experiment Spatialqueries type: gui {
-	parameter Query var: type_query on_change: {ask simulation{do apply_query;} do update_outputs();};
+	parameter "Query" var: type_query on_change: {ask simulation{do apply_query;} do update_outputs();};
 	output {
 		display map {
 			species polygon_agent;

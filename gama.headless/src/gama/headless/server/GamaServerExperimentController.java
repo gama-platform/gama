@@ -3,36 +3,31 @@
  * GamaServerExperimentController.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.headless.server;
 
-import java.io.IOException;
-
 import org.java_websocket.WebSocket;
 
-import gama.core.kernel.experiment.AbstractExperimentController;
-import gama.core.kernel.experiment.ExperimentAgent;
-import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IExperimentStateListener;
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.GamaExecutorService;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.runtime.server.CommandResponse;
-import gama.core.runtime.server.GamaServerExperimentConfiguration;
-import gama.core.runtime.server.GamaServerMessage;
-import gama.core.runtime.server.MessageType;
-import gama.core.util.IList;
-import gama.core.util.IMap;
-import gama.core.util.file.json.Json;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.simulation.AbstractExperimentController;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.IExperimentStateListener;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.runtime.GamaExecutorService;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
+import gama.api.types.map.IMap;
+import gama.api.utils.server.CommandResponse;
+import gama.api.utils.server.GamaServerExperimentConfiguration;
+import gama.api.utils.server.GamaServerMessage;
+import gama.api.utils.server.MessageType;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GamaCompilationFailedException;
-import gama.gaml.operators.Cast;
 
 /**
  * The Class ExperimentController.
@@ -78,12 +73,12 @@ public class GamaServerExperimentController extends AbstractExperimentController
 
 				while (experimentAlive) {
 					if (mexp.simulator.isInterrupted()) { break; }
-					final SimulationAgent sim = mexp.simulator.getSimulation();
+					final ISimulationAgent sim = mexp.simulator.getSimulation();
 					final IExperimentAgent exp = mexp.simulator.getExperimentPlan().getAgent();
 					final IScope scope = sim == null ? exp.getScope() : sim.getScope();
 					if (Cast.asBool(scope, exp.getStopCondition().value(scope))) {
 						if (!"".equals(stopCondition)) {
-							mexp.socket.send(Json.getNew()
+							mexp.socket.send(GAMA.getJsonEncoder()
 									.valueOf(new CommandResponse(MessageType.SimulationEnded, "",
 											(IMap<String, Object>) exp.getAttribute("%%playCommand%%"), false))
 									.toString());
@@ -187,7 +182,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 				GAMA.updateExperimentState(experiment, IExperimentStateListener.State.NOTREADY);
 				getScope().getGui().closeDialogs(getScope());
 				// Dec 2015 This method is normally now called from
-				// ExperimentPlan.dispose()
+				// ExperimentSpecies.dispose()
 			} finally {
 				acceptingCommands = false;
 				experimentAlive = false;
@@ -232,7 +227,7 @@ public class GamaServerExperimentController extends AbstractExperimentController
 	 *            the agent
 	 */
 	@Override
-	public void schedule(final ExperimentAgent agent) {
+	public void schedule(final IExperimentAgent agent) {
 		scope = agent.getScope();
 		serverConfiguration = serverConfiguration.withExpId(_job.getExperimentID());
 		scope.setServerConfiguration(serverConfiguration);
@@ -256,9 +251,10 @@ public class GamaServerExperimentController extends AbstractExperimentController
 		try {
 			_job.doStep();
 		} catch (RuntimeException e) {
-//			e.printStackTrace();
-			serverConfiguration.socket().send(Json.getNew().valueOf(new GamaServerMessage(MessageType.RuntimeError, e)).toString());
-		}finally {
+			// e.printStackTrace();
+			serverConfiguration.socket()
+					.send(GAMA.getJsonEncoder().valueOf(new GamaServerMessage(MessageType.RuntimeError, e)).toString());
+		} finally {
 			previouslock.release();
 		}
 	}

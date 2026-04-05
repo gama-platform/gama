@@ -1,28 +1,31 @@
 /*******************************************************************************************************
  *
- * ImageLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.1.9.3).
+ * ImageLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers;
 
-import gama.core.common.geometry.Envelope3D;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.runtime.exceptions.GamaRuntimeException.GamaRuntimeFileException;
-import gama.core.util.file.IGamaFile;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.exceptions.GamaRuntimeFileException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.GamaFileType;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.file.IGamaFile;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayerData;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.interfaces.IImageProvider;
 import gama.gaml.statements.draw.AssetDrawingAttributes;
-import gama.gaml.types.GamaFileType;
 
 /**
  * Written by drogoul Modified on 9 nov. 2009
@@ -34,7 +37,7 @@ public class ImageLayer extends AbstractLayer {
 
 	/** The env. */
 	// Cache a copy of both to avoid reloading them each time.
-	Envelope3D env;
+	IEnvelope env;
 
 	/** The cached file. */
 	IImageProvider cachedImageProvider;
@@ -48,8 +51,8 @@ public class ImageLayer extends AbstractLayer {
 	/** The is file. */
 	boolean isImageProvider;
 
-//	/** cached copy to avoid reloading **/
-//	BufferedImage cachedBufferedImage;
+	// /** cached copy to avoid reloading **/
+	// BufferedImage cachedBufferedImage;
 
 	/**
 	 * Instantiates a new image layer.
@@ -89,9 +92,11 @@ public class ImageLayer extends AbstractLayer {
 	 *
 	 * @return true, if is image provider
 	 */
-	private boolean isImageProvider(IScope scope) {
-		var providerClass = providerExpression.value(scope).getClass(); // Needs to be evaluated else what is GamaIntMatrix at runtime is considered GamaMatrix
-		return IImageProvider.class.isAssignableFrom(providerClass); 
+	private boolean isImageProvider(final IScope scope) {
+		var providerClass = providerExpression.value(scope).getClass(); // Needs to be evaluated else what is
+																		// GamaIntMatrix at runtime is considered
+																		// GamaMatrix
+		return IImageProvider.class.isAssignableFrom(providerClass);
 	}
 
 	@Override
@@ -114,7 +119,8 @@ public class ImageLayer extends AbstractLayer {
 	}
 
 	/**
-	 * Verify that the provider and the environment is well setup and use it to generate an image (reuse the previous one in case it should be cached)
+	 * Verify that the provider and the environment is well setup and use it to generate an image (reuse the previous
+	 * one in case it should be cached)
 	 *
 	 * @param scope
 	 *            the scope
@@ -122,10 +128,11 @@ public class ImageLayer extends AbstractLayer {
 	 *            the input
 	 * @return the gama image provider after the image generation
 	 */
-	private IImageProvider getImageFromProvider(final IScope scope, final Object input) throws GamaRuntimeFileException, GamaRuntimeException {
+	private IImageProvider getImageFromProvider(final IScope scope, final Object input)
+			throws GamaRuntimeFileException, GamaRuntimeException {
 		if (input == cachedImageProvider) return cachedImageProvider;
-		if (!(input instanceof IImageProvider result))
-			throw GamaRuntimeException.error("Not a provider of images: " + providerExpression.serializeToGaml(false), scope);
+		if (!(input instanceof IImageProvider result)) throw GamaRuntimeException
+				.error("Not a provider of images: " + providerExpression.serializeToGaml(false), scope);
 		try {
 			result.getImage(scope, !getData().getRefresh());
 		} catch (final GamaRuntimeFileException ex) {
@@ -147,7 +154,7 @@ public class ImageLayer extends AbstractLayer {
 	 *            the file
 	 * @return the envelope 3 D
 	 */
-	private Envelope3D computeEnvelope(final IScope scope, final IImageProvider file) {
+	private IEnvelope computeEnvelope(final IScope scope, final IImageProvider file) {
 		if (file instanceof IGamaFile gf && gf.hasGeoDataAvailable(scope)) return file.computeEnvelope(scope);
 		return scope.getSimulation().getEnvelope();
 	}
@@ -161,11 +168,9 @@ public class ImageLayer extends AbstractLayer {
 	 */
 	protected IImageProvider buildImage(final IScope scope) {
 		if (!isProviderPotentiallyVariable) return cachedImageProvider;
-		return 		isImageProvider 
-				? getImageFromProvider(scope, providerExpression.value(scope))
+		return isImageProvider ? getImageFromProvider(scope, providerExpression.value(scope))
 				: createFileFromString(scope, Cast.asString(scope, providerExpression.value(scope)));
 	}
-
 
 	@Override
 	public void privateDraw(final IGraphicsScope scope, final IGraphics dg) {
@@ -176,22 +181,22 @@ public class ImageLayer extends AbstractLayer {
 
 		final IImageProvider actualProvider = buildImage(scope);
 		if (env != null) {
-			final GamaPoint loc;
+			final IPoint loc;
 			if (dg.is2D()) {
-				loc = new GamaPoint(env.getMinX(), env.getMinY());
+				loc = GamaPointFactory.create(env.getMinX(), env.getMinY());
 			} else {
-				loc = new GamaPoint(env.getMinX() + env.getWidth() / 2, env.getMinY() + env.getHeight() / 2);
+				loc = GamaPointFactory.create(env.getMinX() + env.getWidth() / 2, env.getMinY() + env.getHeight() / 2);
 			}
 			attributes.setLocation(loc);
 			attributes.setSize(Scaling3D.of(env.getWidth(), env.getHeight(), 0));
 		}
 
 		if (actualProvider != null) {
-			// TODO: possibly drawn a second time ? shouldn't we use drawImage and return a BufferedImage from buildImage instead ?
-			dg.drawAsset(actualProvider, attributes);				
-		}
-		else {
-			//TODO: should probably raise some kind of error/warning
+			// TODO: possibly drawn a second time ? shouldn't we use drawImage and return a BufferedImage from
+			// buildImage instead ?
+			dg.drawAsset(actualProvider, attributes);
+		} else {
+			// TODO: should probably raise some kind of error/warning
 		}
 	}
 

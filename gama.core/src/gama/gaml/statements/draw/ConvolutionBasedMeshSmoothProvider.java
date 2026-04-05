@@ -10,6 +10,8 @@
  ********************************************************************************************************/
 package gama.gaml.statements.draw;
 
+import gama.api.ui.layers.IMeshSmoothProvider;
+
 /**
  * The Class ConvolutionBasedMeshSmoothProvider. A "smoothing" algorithm based on convolution. Slow, but can take into
  * account the noData value

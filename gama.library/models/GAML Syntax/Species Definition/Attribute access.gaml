@@ -1,9 +1,12 @@
 /***
 * Name: Attribute Access
 * Author: Benoit Gaudou
-* Description: Model on accessing agents' attributes and which attributes are present when loading shape files.
-* Built-in attibutes are also presented.
-* Tags: GAML, attribute, access
+* Description: Demonstrates how to access and use agents' attributes in GAML. Covers: reading attributes from
+*   other agents using the dot notation (agent.attribute), accessing built-in attributes that are automatically
+*   populated when loading shapefiles (such as name, location, shape, and other GIS-derived fields), and working
+*   with the built-in attributes that every GAML agent possesses (location, shape, color, name, etc.). The model
+*   loads a shapefile and shows how the loaded attributes are directly available on each agent.
+* Tags: GAML, attribute, access, shapefile, built-in, dot_notation, species
 ***/
 
 
@@ -37,7 +40,7 @@ global {
 	}
 	
 	// 
-	action access_attribute {
+	action access_attribute() {
 		write "============== ACCESS ATTRIBUTES ==============";		
 		
 		// The access to agents' attributes can be done in several ways
@@ -51,7 +54,7 @@ global {
 		
 	}
 	
-	action built_in_attributes {
+	action built_in_attributes() {
 		write "============== Built-in ATTRIBUTES ==============";		
 		
 		// Any species has some built-in attributes
@@ -65,14 +68,14 @@ global {
 		}
 	}
 	
-	action attributes_from_data {
+	action attributes_from_data() {
 		write "============== ATTRIBUTES read from a shapefile ==============";		
 		
 		// Agents created from a shapefile can initialize attribute values from the shapefile attributes, 
 		// either explicity, using the with: facet
 		// or implicitely, when the attribute has the same name as the shapefile attribute.
 		// The shape of the agent is initialized from the geometry of the shapefile.
-		create building_from_shapefile from: buildings_simple0_shape_file with: [building_nature::string(read("NATURE"))];
+		create building_from_shapefile from: buildings_simple0_shape_file with: (building_nature:string(read("NATURE")));
 			
 		ask building_from_shapefile {
 			write sample(self.building_nature);
@@ -82,7 +85,7 @@ global {
 		}	
 	}
 	
-	action built_in_attributes_with_species {
+	action built_in_attributes_with_species() {
 		write "============== Built-in ATTRIBUTES for a species with skills ==============";		
 		
 		// Any species has some built-in attributes

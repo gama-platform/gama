@@ -1,10 +1,12 @@
 /**
-* Name: Pong Teleportation
+* Name: Pong Teleportation via MQTT (Send Agent)
 * Author: Nicolas Marilleau
-* Description: This model show how to send complex data (as an agent) by using list or map. In this multi-simulation, the space is distributed 
-* on 3 (nb_simul) simulation running in parallel. Each simulation manage local space and agent moving in this local space. When an agent go inside a 
-* buffer zone, it is teleported to the next simulation (remove from the first and created inside the next one).
-* Tags: Network, MQTT, multi-simulation
+* Description: Advanced MQTT model demonstrating agent teleportation across 3 parallel simulation instances.
+*   The simulation space is partitioned; each instance manages its own region. When an agent crosses a
+*   boundary, it is serialized to a map, transmitted via MQTT, and recreated in the receiving simulation.
+*   Demonstrates how to send complex structured data (agent state as map/list) over MQTT and reconstruct
+*   agents from received messages.
+* Tags: network, MQTT, multi_simulation, teleportation, distributed, agent, serialization, protocol
 */
 
 /**
@@ -29,8 +31,8 @@ global {
 		create Pong number:10{
 			myColor <- rnd_color(255);		
 		}
-		create Buffer with:[zone::0];
-		create Buffer with:[zone::1];
+		create Buffer with:(zone:0);
+		create Buffer with:(zone:1);
 	}
 }
 
@@ -48,8 +50,8 @@ species Buffer skills:[network]
 		} else {
 			location <- point(195,50);
 		}
-		do connect with_name:name;
-		do join_group with_name:"buffer";
+		do connect (with_name:name);
+		do join_group (with_name:"buffer");
 		write "my name "+ name +" " + next_agent;
 	}
 	
@@ -60,8 +62,8 @@ species Buffer skills:[network]
 			write "send agent";
 			map<string,unknown> msg <- map(["name"::ping.name,"mcolor"::ping.myColor, "location"::(ping.location - {self.location.x,0})]);
 			string smsg <- serialize(msg);
-			do send to:next_agent contents:msg;
-			ask ping { do die;}
+			do send (to:next_agent,contents:msg);
+			ask ping { do die();}
 		}
 	}
 	reflex enable_teleport{
@@ -77,7 +79,7 @@ species Buffer skills:[network]
 		{
 			message msg <- fetch_message();
 			map<string, unknown> details <- map(msg.contents);
-			create Pong with:[name::details["name"],myColor::details["mcolor"],location::details["location"]]
+			create Pong with:(name:details["name"],myColor:details["mcolor"],location:details["location"])
 			{
 				location <- {myself.location.x,location.y};
 				last_zone <- myself.zone;
@@ -120,7 +122,7 @@ experiment start
 		seed <- 1.0;
 		loop i from:1 to: nb_simul -1
 		{
-			create simulation with: [simulation_id::i, seed::1+i, numberOfSimulation::nb_simul];
+			create simulation with: (simulation_id:i, seed:1+i, numberOfSimulation:nb_simul);
 						
 		}
 	}

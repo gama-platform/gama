@@ -1,9 +1,12 @@
 /**
-* Name: gam_ashapedthom_10K_comp
-* Author: Arnaud Grignard and Tri Nguyen-Huu 
-* Description: Press "r","a","d","i","o","h","e","a","d"
-* Forked from agrignard/r_adiohead_10kandOK forked from dataarts/radiohead - 2019
-* Tags: art
+* Name: Radiohead In Point Cloud
+* Author: Arnaud Grignard, Tri Nguyen-Huu
+* Description: A tribute art model that renders Radiohead album artwork as a dynamic 3D point cloud animation.
+*   Point cloud data (sourced from the open-source "10,000 reasons" / OK Computer visualization project,
+*   originally by dataarts/radiohead, forked by agrignard) is loaded from a CSV file and the points are
+*   animated into shapes spelling the letters R-A-D-I-O-H-E-A-D when the corresponding keyboard keys are pressed.
+*   The model showcases large-scale particle animation and 3D visualization in GAMA.
+* Tags: art, point_cloud, animation, 3d, visualization, music
 */
 model hail_to_pablo_the_king_of_the_amnesiac_kid_in_a_computer_shaped_thom
 
@@ -22,7 +25,7 @@ global{
   init {
     everything_in_its_right_place<-{min(column_at (idioteque , 0)),min(column_at (idioteque , 1)),min(column_at (idioteque , 2))};
 	loop i from: 1 to: idioteque.rows -1{
-	  create paranoid_android with:[the_numbers::idioteque[3,i]]{		
+	  create paranoid_android (the_numbers:idioteque[3,i]){		
 	    location<-{-everything_in_its_right_place.x+idioteque[0,i],-everything_in_its_right_place.y+idioteque[1,i],(idioteque[2,i])-everything_in_its_right_place.z};	
       }	  
 	}

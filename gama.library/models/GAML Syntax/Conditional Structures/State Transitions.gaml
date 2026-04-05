@@ -1,8 +1,12 @@
 /***
-* Name: statetransition
-* Author: kevinchapuis
-* Description: simple finite state machine example to show how make a transition to one state to another
-* Tags: fsm, state, transition
+* Name: State Transitions
+* Author: Kevin Chapuis
+* Description: A simple Finite State Machine (FSM) example showing how to make transitions between states in GAML.
+*   Agents defined with the 'fsm' control architecture can have multiple states, each with its own 'enter', 'exit',
+*   and transition logic. Transitions are defined with a condition ('when') and a target state ('to'). This model
+*   creates a population of dummy agents that cycle through different states based on simple conditions,
+*   illustrating how to structure reactive, state-driven behaviors.
+* Tags: fsm, state, transition, architecture, control, finite_state_machine
 ***/
 
 model statetransition
@@ -38,7 +42,7 @@ species dummy skills:[moving] control:fsm {
 	int scope <- 1;
 	int score;
 	
-	dummy match;
+	dummy matcher;
 	
 	rgb color <- #orange;
 	
@@ -52,14 +56,14 @@ species dummy skills:[moving] control:fsm {
 		 * Code to be executed each step when the agent is in this state
 		 */
 		do wander; 
-		match <- (dummy-self) first_with (each distance_to self < scope);
+		matcher <- (dummy-self) first_with (each distance_to self < scope);
 		
 		scope <- scope + 1;
 		
 		/*
 		 * Transition to 'settle_down' when a match have been found
 		 */
-		transition to:settle_down when:not(match=nil) {
+		transition to:settle_down when:not(matcher=nil) {
 			color <- #blue;
 		}
 		
@@ -70,7 +74,7 @@ species dummy skills:[moving] control:fsm {
 	 */
 	state settle_down {
 		
-		do goto target: match;
+		do goto target: matcher;
 		score <- score - 1;
 		
 		/*
@@ -83,7 +87,7 @@ species dummy skills:[moving] control:fsm {
 		/**
 		 * Transition to 'break_up' state when the match agent respond positively to self agent call
 		 */
-		transition to:break_up when:match.hello(self){
+		transition to:break_up when:matcher.hello(self){
 			color <- #green;
 		}
 		
@@ -109,7 +113,7 @@ species dummy skills:[moving] control:fsm {
 		/**
 		 * Transition to the state 'in_search' when my score is higher the my match score
 		 */
-		transition to:in_search when:score > match.score;
+		transition to:in_search when:score > matcher.score;
 		
 		/**
 		 * Set of instructions to be executed ONCE when leaving the state 

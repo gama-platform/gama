@@ -1,9 +1,12 @@
 /***
-* Name: Wander
+* Name: Wander on Graph
 * Author: Patrick Taillandier
-* Description: This model illustrates the use of the wander action of the moving Skill on a graph: the probability to choose a road is given by
-* a map (road::probability). 
-* Tags: agent_movement, graph, wander, skill
+* Description: Demonstrates the 'wander' action of the 'moving' skill when applied to a graph topology.
+*   Instead of moving in free space, agents wander along the road network edges. The probability of choosing
+*   each outgoing road at an intersection is specified by a map (road → probability), allowing biased random
+*   walks (e.g., preferring main roads). This is useful for modeling agents with no specific destination but
+*   a preference for certain routes, such as tourists exploring a city or animals following familiar paths.
+* Tags: agent_movement, graph, wander, skill, road_network, random_walk, probability
 ***/
 
 model WanderonGraph
@@ -16,19 +19,19 @@ global {
 	map<road,float> proba_use_road;
 	
 	init {
-		create road with: [shape::line([{10,10}, {40,10}])];
-		create road with: [shape::line([{40,10}, {40,40}])];
-		create road with: [shape::line([{40,10}, {80,10}])];
-		create road with: [shape::line([{80,10}, {80,40}])];
-		create road with: [shape::line([{40,40}, {80,40}])];
-		create road with: [shape::line([{80,40}, {80,80}])];
-		create road with: [shape::line([{80,80}, {10,80}])];
-		create road with: [shape::line([{80,80}, {50,50}])];
-		create road with: [shape::line([{50,50}, {10,80}])];
-		create road with: [shape::line([{10,80}, {10,10}])];
+		create road with: (shape:line([{10,10}, {40,10}]));
+		create road with: (shape:line([{40,10}, {40,40}]));
+		create road with: (shape:line([{40,10}, {80,10}]));
+		create road with: (shape:line([{80,10}, {80,40}]));
+		create road with: (shape:line([{40,40}, {80,40}]));
+		create road with: (shape:line([{80,40}, {80,80}]));
+		create road with: (shape:line([{80,80}, {10,80}]));
+		create road with: (shape:line([{80,80}, {50,50}]));
+		create road with: (shape:line([{50,50}, {10,80}]));
+		create road with: (shape:line([{10,80}, {10,10}]));
 		
 		
-		create people number: 50 with: [location::any_location_in(one_of(road))];
+		create people number: 50 with: (location:any_location_in(one_of(road)));
 		
 		//directed graph build from the road agents
 		network <- directed(as_edge_graph(road));

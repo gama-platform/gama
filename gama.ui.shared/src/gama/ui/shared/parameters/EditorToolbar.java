@@ -42,7 +42,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
-import gama.core.kernel.experiment.IParameter;
+import gama.api.gaml.symbols.IParameter;
 import gama.ui.shared.interfaces.IParameterEditor;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;

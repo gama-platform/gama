@@ -1,8 +1,11 @@
 /**
-* Name: Json
-* Shows how to transform GAML values into JSON objects
-* Author: A. Drogoul
-* Tags: Serialization, JSON
+* Name: Serialization to JSON
+* Author: Alexis Drogoul
+* Description: Shows how to convert GAML values (integers, floats, strings, lists, maps, agents, geometries)
+*   into JSON strings using the 'to_json' operator, and how to parse JSON strings back to GAML values using
+*   'from_json'. Covers all GAML primitive types and container types. Useful for exchanging data with
+*   external systems, REST APIs, or storing structured simulation outputs in a human-readable format.
+* Tags: serialization, JSON, to_json, from_json, data_exchange, export, format
 */
 
 

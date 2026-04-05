@@ -10,7 +10,7 @@
  ********************************************************************************************************/
 package gama.ui.shared.parameters;
 
-import static gama.core.common.util.StringUtils.toGaml;
+import static gama.api.utils.StringUtils.toGaml;
 
 import java.util.List;
 
@@ -20,9 +20,9 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 
-import gama.core.common.util.StringUtils;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.utils.StringUtils;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.IGamaColors;

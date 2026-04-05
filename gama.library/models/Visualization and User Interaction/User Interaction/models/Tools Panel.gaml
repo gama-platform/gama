@@ -1,10 +1,12 @@
 /***
-* Name: ToolsPanel
+* Name: Tools Panel
 * Author: Patrick Taillandier
-* Description: Model which shows how to use the event layer to define a tools panel. In this model, the modelers can select one of 
-* the 4 tools (icon - building1, building2, building3 and eraser) to carry out action on the map display. More precisely, when one tool 
-* is selected (red rectangle), the tool change the color of the selected cells and display the corresponding icon (in map display).
-* Tags: gui, user event, tool panel
+* Description: Shows how to use the event layer to implement a tools palette inside a GAMA display. Four tools
+*   are available as clickable icons (three building types and an eraser). When a tool is selected it is
+*   highlighted with a red border. Clicking on the map applies the selected tool: building tools recolor cells
+*   and display the corresponding building icon; the eraser reverts cells to their default state. This pattern
+*   is the standard approach for building interactive map editors within GAMA experiments.
+* Tags: gui, user_event, tool_panel, event, interaction, display, icon, map_editing
 ***/
 
 model ToolsPanel
@@ -24,7 +26,7 @@ global {
 	]; 
 	
 	
-	action activate_act {
+	action activate_act() {
 		button selected_but <- first(button overlapping (circle(1) at_location #user_location));
 		if(selected_but != nil) {
 			ask selected_but {
@@ -40,7 +42,7 @@ global {
 		}
 	}
 	
-	action cell_management {
+	action cell_management() {
 		cell selected_cell <- first(cell overlapping (circle(1.0) at_location #user_location));
 		if(selected_cell != nil) {
 			ask selected_cell {
@@ -89,7 +91,7 @@ experiment ToolsPanel type: gui {
 			
 		}
 		//display the action buttons
-		display action_button background:#black name:"Tools panel"  type:2d antialias:false{
+		display action_button background:#black title:"Tools panel"  type:2d antialias:false{
 			species button aspect:normal ;
 			event #mouse_down {ask simulation {do activate_act;}}  
 		}

@@ -1,8 +1,13 @@
 /**
-* Name: moran_Index
+* Name: Moran Index
 * Author: Patrick Taillandier
-* Description: Computes the moran index of geometries
-* Tags: spatial, distance
+* Description: Demonstrates computation of the Moran's I spatial autocorrelation index in GAMA. Moran's I
+*   measures whether similar values cluster together spatially (positive autocorrelation, I near +1), are
+*   dispersed (negative autocorrelation, I near -1), or randomly distributed (I near 0). Three spatial
+*   initialization patterns are provided: random, checkerboard, and block clusters. Three weight matrix
+*   types are supported: neighbors, overlapping, and distance-based. The computed index and its significance
+*   are displayed, making this model a reference for spatial statistics.
+* Tags: spatial, statistics, moran, autocorrelation, spatial_analysis, weight_matrix, clustering
 */
 
 model moranIndex

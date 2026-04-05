@@ -3,15 +3,12 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Navigator
 Bundle-SymbolicName: gama.ui.navigator;singleton:=true
 Bundle-Version: 0.0.0.qualifier
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Require-Bundle: gama.ui.shared,
- org.eclipse.swt,
  org.eclipse.core.resources,
  org.eclipse.core.runtime,
  org.eclipse.ui,
  org.eclipse.ui.navigator,
- org.eclipse.jface,
- org.eclipse.ui.workbench,
  org.eclipse.ui.ide,
  org.eclipse.ui.navigator.resources,
  gama.core,
@@ -22,15 +19,16 @@ Require-Bundle: gama.ui.shared,
  org.eclipse.compare,
  org.eclipse.ltk.core.refactoring,
  org.eclipse.ltk.ui.refactoring,
- com.google.guava
+ gama.workspace,
+ gaml.compiler
 Bundle-ActivationPolicy: lazy
 Export-Package: gama.ui.navigator.commands,
- gama.ui.navigator.metadata,
  gama.ui.navigator.view,
  gama.ui.navigator.view.actions,
  gama.ui.navigator.view.contents,
  gama.ui.navigator.view.properties,
  gama.ui.navigator.wizards
-Import-Package: gaml.compiler.gaml.indexer,
+Import-Package: com.github.jaiimageio.impl.plugins.tiff,
+ gama.workspace.manager,
  org.eclipse.core.filesystem
 Automatic-Module-Name: gama.ui.navigator

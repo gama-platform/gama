@@ -1,9 +1,12 @@
 /**
-* Name:  Directed Graph Model
-* Author:  Patrick Taillandier
-* Description: Model representing how to directed graph using GIS Data for the road networks : the GIS contains a column defining the direction of the roads 
-* 	and people moving from one random point to another on this graph
-* Tags: graph, agent_movement, skill 
+* Name: Goto Directed Graph
+* Author: Patrick Taillandier
+* Description: Demonstrates movement on a directed road network loaded from a GIS shapefile. The shapefile
+*   contains a column specifying the allowed travel direction for each road segment (one-way, two-way, or
+*   reversed). GAMA reads this attribute and builds a directed graph accordingly. People agents navigate
+*   from one random location to another, respecting the one-way constraints. This is an essential reference
+*   for modeling real urban road networks where traffic direction matters.
+* Tags: graph, agent_movement, skill, directed_graph, one_way, gis, road_network, transport
 */
 
 model simplemodel
@@ -14,7 +17,7 @@ global {
 	graph the_graph; 
 	
 	init {
-		create road from: road_file with:[direction::int(read("DIRECTION"))] {
+		create road from: road_file with:(direction:int(read("DIRECTION"))) {
 			switch direction {
 				match 0 {color <- #green;}
 				match 1 {color <- #red;

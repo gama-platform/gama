@@ -1,7 +1,14 @@
 /**
- *  Author: Tri Nguyen-Huu
- *  Description: growing tree using L-systems.
- */
+* Name: Tree and Seasons
+* Author: Tri Nguyen-Huu
+* Description: An art model generating growing trees using L-systems (Lindenmayer systems). L-systems are a
+*   formal grammar originally developed to model plant growth, using rewriting rules to iteratively expand a
+*   string that is then interpreted as drawing instructions. This model simulates the growth of a tree from a
+*   trunk to a full canopy, with branching controlled by configurable angles and energy parameters. The
+*   appearance of the tree changes with seasons, altering leaf color and density to represent spring, summer,
+*   autumn, and winter states.
+* Tags: art, L-system, tree, plant, growth, procedural, visualization, seasons
+*/
 model tree
 
 global {
@@ -59,10 +66,10 @@ species seasons {
 	map<string, float> energy_map <- ["winter"::0.0, "spring"::0.3, "summer"::0.08, "autumn"::0];
 
 	init {
-		do change_color;
+		do change_color();
 	}
 
-	action change_color {
+	action change_color() {
 		leaf_color <- blend(leaf_color_list[se], leaf_color_list[next_se], 1 - shift_current_day / season_duration);
 		sky_color <- blend(sky_color_list[se], sky_color_list[next_se], 1 - shift_current_day / season_duration);
 		ground_color <- blend(ground_color_list[se], ground_color_list[next_se], 1 - shift_current_day / season_duration);
@@ -72,12 +79,12 @@ species seasons {
 	}
 
 	reflex update {
-		do change_color;
+		do change_color();
 	}
 
 }
 
-species tree_part {
+species tree_part parallel: true {
 	tree_part parent <- nil;
 	point vector <- {0, 0, 0};
 	point base <- {0, 0, 0};
@@ -89,7 +96,7 @@ species tree_part {
 	float energy <- 0.0;
 }
 
-species plant_seed parent: tree_part {
+species plant_seed parent: tree_part parallel: true{
 	bool has_tree <- false;
 	point end -> self.location;
 	point vector <- {0, 0, 1};
@@ -128,7 +135,7 @@ species plant_seed parent: tree_part {
 
 }
 
-species burgeon parent: tree_part {
+species burgeon parent: tree_part parallel: true{
 
 	reflex growth {
 		energy <- energy + first(season).energy;
@@ -161,12 +168,12 @@ species burgeon parent: tree_part {
 			self.creation_cycle <- cycle;
 		}
 
-		do die;
+		do die();
 	}
 
 }
 
-species trunk parent: tree_part {
+species trunk parent: tree_part parallel: true{
 	float length <- 0.0;
 	float width <- 0.0;
 	bool can_split <- true;
@@ -224,7 +231,7 @@ species trunk parent: tree_part {
 
 }
 
-species branch parent: tree_part {
+species branch parent: tree_part parallel: true{
 	float length <- 0.0;
 	float width <- 0.0;
 	bool can_split <- true;
@@ -247,7 +254,7 @@ species branch parent: tree_part {
 
 }
 
-species leaf {
+species leaf parallel: true{
 	int creation_cycle <- -1;
 	float level <- 1.0;
 	branch parent;
@@ -361,12 +368,12 @@ species leaf {
 		}
 
 		self.parent.children <- self.parent.children - self;
-		do die;
+		do die();
 	}
 
 }
 
-species fruit {
+species fruit parallel: true{
 	branch parent;
 	point base;
 	point end;

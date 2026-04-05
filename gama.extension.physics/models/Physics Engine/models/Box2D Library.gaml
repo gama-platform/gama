@@ -1,8 +1,12 @@
 /**
-* Name: Restitution
-* A model to demonstrate the role of the restitution in the collision of objects in the box2D library, which simulates physical interactions in 2 dimensions
-* Author: Alexis Drogoul - 2023
-* Tags: 2D, physics
+* Name: Box2D Library
+* Author: Alexis Drogoul
+* Description: Demonstrates the Box2D 2D physics engine integration in GAMA. Shows how objects collide,
+*   bounce, and stack under the influence of gravity in a 2D environment. The 'restitution' parameter
+*   controls bounciness: 0 = perfectly inelastic (no bounce), 1 = perfectly elastic (full bounce). Agents
+*   use the 'physics' skill; the model inherits from 'physical_world'. Compare with the 3D Bullet-based
+*   physics models for dimensionality trade-offs.
+* Tags: physics_engine, 2d, box2d, restitution, collision, gravity, skill, physical_world
 */
 model Box2D
 
@@ -35,7 +39,7 @@ global parent: physical_world {
 		geometry box <- box(size+3, 3, 10);
 		create wall from: [box at_location ({size/2, 0}), box rotated_by 90 at_location ({0, size/2}), box at_location ({size/2, size}), box rotated_by 90 at_location ({size, size/2})];
 		list<point> starting_places <- [{5,5}, {5,size-5},{size-5,5}, {size-5,size-5}];
-		create ball from: starting_places collect (circle(4) at_location each) with: [mass::10, color::#cadetblue, speed::30] returns: balls;
+		create ball from: starting_places collect (circle(4) at_location each) with: (mass:10, color:#cadetblue, speed:30) returns: balls;
 		movers <-balls;
 		loop x from: 5 to: size-5 step: 10 {
 			loop y from: 5 to: size-5 step: 10 {
@@ -45,7 +49,7 @@ global parent: physical_world {
 					}
 				} 
 				float n <- rnd(1.0, 4.5);
-				create ball with: [shape::circle(n) at_location {x,y},mass::n, color::brewer_colors("Set3")[int(n)], speed::n*2] {
+				create ball with: (shape:circle(n) at_location {x,y},mass:n, color:brewer_colors("Set3")[int(n)], speed:n*2) {
 					initial_location <- location;
 				}
 			}

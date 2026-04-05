@@ -1,9 +1,13 @@
 /***
-* Name: Experiment species
+* Name: Experiment and Simulation Species
 * Author: Benoit Gaudou
-* Description: The model shows the different dynamics of the experiment and its simulation(s).
-* 
-* Tags: experiment, simulation, gui, batch
+* Description: A detailed reference model illustrating the lifecycle and behavior of the experiment species
+*   and its simulation(s) in GAMA. Covers: when experiment-level reflexes and init blocks execute; how an
+*   experiment can access, inspect, and control its running simulations; how to run multiple simulations
+*   from a single experiment; and how batch vs. GUI experiment behaviors differ. The model traces the
+*   execution order (init, reflex scheduling) step by step, making it the go-to reference for understanding
+*   the GAMA execution model and building advanced multi-simulation experiments.
+* Tags: experiment, simulation, gui, batch, lifecycle, reflex, init, scheduling, multi_simulation
 ***/
 
 // Create a model showing the different dynamics of the experiment and its simulation(s), 
@@ -70,9 +74,9 @@ experiment exp_4_simulations type: gui schedules: shuffle(simulations) parallel:
 		write "====== Init of " + self color: #green;
 		write sample(seed) + " - of " + self.name color: #green;								
 		
-		create simulation with:[name::"Simu 1",nb_people::rnd(10),seed::rnd(1.0)];
-		create simulation with:[name::"Simu 2",nb_people::rnd(10),seed::rnd(1.0)];
-		create simulation with:[name::"Simu 3",nb_people::rnd(10),seed::rnd(1.0)];
+		create simulation with:(name:"Simu 1",nb_people:rnd(10),seed:rnd(1.0));
+		create simulation with:(name:"Simu 2",nb_people:rnd(10),seed:rnd(1.0));
+		create simulation with:(name:"Simu 3",nb_people:rnd(10),seed:rnd(1.0));
 				
 		write "The experiment contains " + length(simulations) + " simulations." color: #green;
 		write "The last created simulation is: " + simulation color: #green;
@@ -98,9 +102,9 @@ experiment exp_4_simulations type: gui schedules: shuffle(simulations) parallel:
 // - _step_ : the behavior of exepriment and simulations is not called.
 experiment exp_no_simulation type: gui {
 
-	action _init_ {
+	action _init_() {
 		write "_init_ of " + self color: #green;
-		create simulation with:[name::"Simu 1",nb_people::rnd(10)];		
+		create simulation with:(name:"Simu 1",nb_people:rnd(10));		
 	}
 
 	init {
@@ -108,7 +112,7 @@ experiment exp_no_simulation type: gui {
 		write "init of " + self color: #green;	
 	}
 	
-	action _step_ {
+	action _step_() {
 		write sample(cycle) + "  _step_ of " + self  color: #red;
 		write "NOTHING more is executed in the step" color: #red;
 	}
@@ -123,11 +127,11 @@ experiment exp_no_simulation type: gui {
 //       experiment basic_exp type: gui { }
 // could be written, using _init_ and _step_ as follows
 experiment basic_exp_init_step {
-	action _init_ {
+	action _init_() {
 		create simulation;
 	}
 	
-	action _step_ {
+	action _step_() {
 		ask simulations {
 			do _step_;
 		}

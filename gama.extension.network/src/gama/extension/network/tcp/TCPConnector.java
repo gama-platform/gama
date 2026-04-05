@@ -15,9 +15,9 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
-import gama.core.messaging.GamaMessage;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.core.util.messaging.GamaMessage;
 import gama.extension.network.common.CommandMessage;
 import gama.extension.network.common.Connector;
 import gama.extension.network.common.GamaNetworkException;

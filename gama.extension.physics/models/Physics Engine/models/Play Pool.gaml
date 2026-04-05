@@ -1,10 +1,12 @@
 /**
-* Name: Pool using Physic Engine
-* Author: Arnaud Grignard (2012) --revised by Alexis Drogoul (2021)
-* Description: This is a model that allows the user to play a (simplistic) game of pool in order to show how the physics engine works. It also
-* demonstrates the effect of different physical properties (friction, restitution, etc.) 
-*
-* Tags: physics_engine, skill, 3d, spatial_computation, obstacle
+* Name: Play Pool
+* Author: Arnaud Grignard, Alexis Drogoul
+* Description: An interactive billiards (pool) simulation using the physics engine. The user aims and
+*   shoots the cue ball by clicking; balls collide, roll, and eventually stop due to friction. Demonstrates
+*   various physical properties: friction, restitution, angular velocity, and rolling resistance. The table
+*   cushions are static bodies with high restitution. Shows how to implement a playable physics-based mini
+*   game entirely within GAMA.
+* Tags: physics_engine, skill, 3d, collision, friction, restitution, billiards, interactive, physical_world
 */
 model pool3D
 
@@ -66,7 +68,7 @@ global parent: physical_world {
 
 		];
 		
-		create wall with: [inside::true] from: [
+		create wall  (inside:true) from: [
 			box(width+3*section/2, section/2, section) at_location {width / 2, height + section/2, 0}, // down
 			box(width+3*section/2, section/2, section) at_location {width / 2,  -section/2, 0}, // up
 			box(section/2, height +  section, section) at_location {-section/2, height / 2, 0}, // left
@@ -74,7 +76,7 @@ global parent: physical_world {
 		];
 
 		
-		do create_white_ball;
+		do create_white_ball();
 
 		int deltaI <- 0;
 		int initX <- 75;
@@ -96,7 +98,7 @@ global parent: physical_world {
 
 	}
 	
-	action create_white_ball {
+	action create_white_ball() {
 		create ball {
 			location <- {width / 2, 4 * height / 5, 0};
 			white <- self;
@@ -143,11 +145,11 @@ species ball skills: [dynamic_body] {
 	reflex manage_location when: location.z < -20 {
 		if (self = white) {
 			ask world {
-				do create_white_ball;
+				do create_white_ball();
 			}
 			target <- nil;
 		}
-		do die;
+		do die();
 	}
 
 	aspect default {
@@ -171,7 +173,7 @@ experiment "Play !" type: gui autorun: true   {
 	// Ensure that the simulation does not go too fast
 	float minimum_cycle_duration <- 1.0/120;
 	
-	action _init_ {
+	action _init_() {
 		// A trick to make sure the parameters are expanded and visible when the simulation is launched.
 		bool previous <- gama.pref_experiment_expand_params;
 		gama.pref_experiment_expand_params <- true;
@@ -199,7 +201,7 @@ experiment "Play !" type: gui autorun: true   {
 				point direction <- (target - white.location) /divisor;
 				// When the user hits the mouse, we apply an impulse to the while ball, in the direction of the target. 'velocity' could also be used here
 				ask white {
-					do apply impulse: {strength * direction.x * 4, strength * direction.y * 4, 0};
+					do apply(impulse: {strength * direction.x * 4, strength * direction.y * 4, 0});
 				}
 			}
 			event #mouse_move {

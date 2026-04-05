@@ -1,8 +1,12 @@
 /**
-* Name: Light definition
-* Author: Arnaud Grignard & Julien Mazars
-* Description: Model presenting how to manipulate lights (spot lights and point lights) in a 3D display 
-* Tags: 3d, light
+* Name: Lighting
+* Author: Arnaud Grignard, Julien Mazars
+* Description: Shows how to define and animate dynamic lights in a 3D GAMA display. Two types of light are
+*   demonstrated: point lights (omnidirectional, like a light bulb) and spot lights (directional cone of light,
+*   like a flashlight). Moving light agents carry their light sources and GAMA updates the shading on all
+*   surfaces in real time as lights move. Parameters control intensity, color, and attenuation. This model is
+*   the primary reference for adding dynamic illumination to 3D GAMA simulations.
+* Tags: 3d, light, point_light, spot_light, dynamic, visualization, display, shading
 */
 model lighting
 
@@ -29,7 +33,7 @@ species GAMAGeometry2D {
 species lightMoving skills: [moving] {
 
 	reflex update {
-		do wander amplitude: 180.0;
+		do wander(amplitude: 180.0);
 	}
 
 }

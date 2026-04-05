@@ -1,8 +1,11 @@
 /***
-* Name: SIRInfluenceofSimulationStep
-* Author: Tri, Nghi and Benoit 
-* Description: This model illustrates the impact of the simulation step on the integration speed.
-* Tags: equation, math, step
+* Name: Influence of the Simulation Step (SIR)
+* Author: Tri Nguyen-Huu, Huynh Quang Nghi, Benoit Gaudou
+* Description: Demonstrates how GAMA's simulation step size (the 'step' global variable) affects ODE
+*   integration speed and resolution for a SIR epidemic model. A larger simulation step means fewer
+*   'solve' calls per simulated day, reducing accuracy. A smaller step increases accuracy but runs more
+*   solver iterations. Shows the trade-off between simulation speed and epidemiological fidelity.
+* Tags: equation, math, ODE, SIR, epidemiology, simulation_step, step, numerical_accuracy
 ***/
 
 
@@ -13,7 +16,7 @@ global {
 	init {
 		write name + "" + step;
 		step_string <- string(step)+"s";
-		create userSIR with: [h::0.1,N::500,I::1.0];
+		create userSIR with: (h:0.1,N:500,I:1.0);
 	}
 	
 	reflex w {
@@ -47,9 +50,9 @@ species userSIR {
 experiment examples type: gui {
 	float minimum_cycle_duration <- 0.1#s;
 	
-	action _init_ {
-		create simulation with: [step::2#s,name::"s2s"]   ;
-		create simulation with: [step::10#s,name::"s10s"] ;		
+	action _init_() {
+		create simulation with: (step:2#s,name:"s2s")   ;
+		create simulation with: (step:10#s,name:"s10s") ;		
 	}
 	
 	output {

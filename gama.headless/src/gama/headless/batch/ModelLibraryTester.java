@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ModelLibraryTester.java, in gama.headless, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ModelLibraryTester.java, in gama.headless, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,24 +24,24 @@ import org.osgi.framework.Bundle;
 import com.google.common.collect.Multimap;
 import com.google.inject.Injector;
 
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.experiment.ParametersSet;
-import gama.core.kernel.experiment.TestAgent;
-import gama.core.kernel.model.IModel;
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
+import gama.api.additions.GamaBundleLoader;
+import gama.api.compilation.GamlCompilationError;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.utils.tests.TestState;
+import gama.core.experiment.TestAgent;
+import gama.core.experiment.parameters.ParametersSet;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GamlCompilationError;
-import gama.gaml.compilation.kernel.GamaBundleLoader;
-import gama.gaml.statements.test.TestState;
 import gama.headless.runtime.HeadlessApplication;
-import gaml.compiler.gaml.validation.GamlModelBuilder;
+import gaml.compiler.validation.GamlModelBuilder;
 
 /**
  * The Class ModelLibraryTester.
  */
 public class ModelLibraryTester extends AbstractModelLibraryRunner {
 
-	/** The instance. */
+	/** The INSTANCE. */
 	private static ModelLibraryTester instance;
 
 	/** The original. */
@@ -112,18 +112,14 @@ public class ModelLibraryTester extends AbstractModelLibraryRunner {
 		// DEBUG.OUT(p);
 		final List<GamlCompilationError> errors = new ArrayList<>();
 		try {
-			final IModel model = builder.compile(p, errors);
-			if (model == null || model.getDescription() == null) {
-				return;
-			}
+			final IModelSpecies model = builder.compile(p, errors);
+			if (model == null || model.getDescription() == null) return;
 			final List<String> testExpNames = model.getDescription().getExperimentNames().stream()
 					.filter(e -> model.getExperiment(e).isTest()).toList();
 
-			if (testExpNames.isEmpty()) {
-				return;
-			}
+			if (testExpNames.isEmpty()) return;
 			for (final String expName : testExpNames) {
-				final IExperimentPlan exp = GAMA.addHeadlessExperiment(model, expName, new ParametersSet(), null);
+				final IExperimentSpecies exp = GAMA.addHeadlessExperiment(model, expName, new ParametersSet(), null);
 				if (exp != null) {
 					System.setOut(nullStream);
 					final TestAgent agent = (TestAgent) exp.getAgent();
@@ -149,9 +145,9 @@ public class ModelLibraryTester extends AbstractModelLibraryRunner {
 	}
 
 	/**
-	 * Gets the single instance of ModelLibraryTester.
+	 * Gets the single INSTANCE of ModelLibraryTester.
 	 *
-	 * @return single instance of ModelLibraryTester
+	 * @return single INSTANCE of ModelLibraryTester
 	 */
 	public static ModelLibraryTester getInstance() {
 		if (instance == null) { instance = new ModelLibraryTester(); }

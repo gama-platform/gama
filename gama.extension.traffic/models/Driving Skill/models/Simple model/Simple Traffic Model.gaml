@@ -1,8 +1,12 @@
 /**
-* Name: Traffic
-* Description: define species for traffic simulation
-* Author: Patrick Taillandier & Duc Pham
-* Tags: driving skill, graph, agent_movement, skill, transport
+* Name: Simple Traffic Model
+* Author: Patrick Taillandier, Duc Pham
+* Description: The entry-point model for GAMA's driving skill. Vehicles (cars) are placed on a GIS road
+*   network loaded from shapefiles (nodes and roads for Rouen, France). Each vehicle uses the 'driving'
+*   skill to navigate from a random origin to a random destination, obeying lane discipline, speed limits,
+*   and basic car-following behaviour. This is the simplest possible driving-skill demonstration before
+*   moving to the more elaborate advanced models (intersections, random driving, path following).
+* Tags: driving_skill, graph, agent_movement, skill, transport, road_network, GIS, car_following
 */
 
 model simple_traffic_model

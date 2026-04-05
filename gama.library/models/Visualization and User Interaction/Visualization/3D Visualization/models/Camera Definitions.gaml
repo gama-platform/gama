@@ -1,23 +1,27 @@
 /**
-* Name: Camera Position
-* Author: Arnaud Grignard & Alexis Drogoul
-* Description: A model presenting how to manipulate cameras in a 3D display
-* Tags: 3d
+* Name: Camera Definitions
+* Author: Arnaud Grignard, Alexis Drogoul
+* Description: Shows how to define and programmatically control cameras in a 3D GAMA display. Cameras are
+*   defined by their position, target (look-at point), and up-vector. This model demonstrates: setting a
+*   fixed camera position, animating the camera along a path, switching between multiple named cameras, and
+*   using orthographic vs. perspective projections. Camera control is essential for creating cinematic
+*   presentations, fixed-view analyses, and interactive 3D displays.
+* Tags: 3d, camera, perspective, orthographic, animation, visualization, display
 */
 model camera_locationition
 
 global {
 
 	init {
-		create object;
+		create objects;
 	}
 
 }
 
-species object skills: [moving] {
+species objects skills: [moving] {
 
 	reflex move {
-		do wander amplitude: 20.0 speed: 1.0;
+		do wander(amplitude: 20.0, speed: 1.0);
 	}
 
 	aspect default {
@@ -29,15 +33,15 @@ species object skills: [moving] {
 experiment Display type: gui autorun: true {
 	float w -> simulation.shape.width; 
 	float h -> simulation.shape.height;
-	point p -> first(object).location;
+	point p -> first(objects).location;
 	float factor <- 1.0;
 	parameter "Shared zoom" var: factor min: 0.01 max: 10.0;
 	float minimum_cycle_duration <- 0.01;
 	output {
 		layout #split;
 		display shared type: 3d virtual: true {
-			image "../includes/wood.jpg";
-			species object;
+			picture "../includes/wood.jpg";
+			species objects;
 		}
 		display "Changing every 500" parent: shared camera: [#from_up_front, #from_up_left, #from_up_right, #from_above, #from_front, #from_left, #from_right] at ((cycle / 500) mod 7) {
 		}
@@ -51,9 +55,9 @@ experiment Display type: gui autorun: true {
 			camera #default target: p distance: 150 / factor location: #from_above dynamic: true;
 		}
 		display "First person" type: opengl{
-			image "../includes/wood.jpg";
-			camera #default dynamic: true location: {int(first(object).location.x), int(first(object).location.y), 5/factor} target:
-			{cos(first(object).heading) * first(object).speed + int(first(object).location.x), sin(first(object).heading) * first(object).speed + int(first(object).location.y), 5/factor};
+			picture "../includes/wood.jpg";
+			camera #default dynamic: true location: {int(first(objects).location.x), int(first(objects).location.y), 5/factor} target:
+			{cos(first(objects).heading) * first(objects).speed + int(first(objects).location.x), sin(first(objects).heading) * first(objects).speed + int(first(objects).location.y), 5/factor};
 		}
 		display "Camera & rotation" parent: shared {
 			rotation angle: 1.0 axis: {0,1,0} dynamic: true;
@@ -66,4 +70,4 @@ experiment Display type: gui autorun: true {
 
 	}
 
-}
+} 

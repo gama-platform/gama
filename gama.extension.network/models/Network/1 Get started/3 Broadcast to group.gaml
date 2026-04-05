@@ -1,8 +1,11 @@
 /**
-* Name: broadcast to a group of agents
+* Name: Broadcast to a Group of Agents (MQTT)
 * Author: Nicolas Marilleau
-* Description: It is a simple model showing an agent (a teacher called Victoria) that broadcast a message to students.
-* Tags: Network, MQTT
+* Description: Demonstrates selective group broadcast via MQTT using topic-based filtering. A teacher agent
+*   (Victoria) publishes a message to a specific group topic; only student agents subscribed to that topic
+*   receive it. Other agents on different topics are unaffected. Shows how MQTT topic hierarchies can
+*   implement group communication patterns in GAMA multi-agent simulations.
+* Tags: network, MQTT, broadcast, group, topic, publish_subscribe, messaging, communication
 */
 
 /**
@@ -21,7 +24,7 @@ global {
 		write "The default broket is for test only, limit the number of connections otherwise connection will be refused." color: #red;
 		write "To connect to your local/remote server, change the parameters of the connect statement" color: #blue;		
 		
-		create Teacher with: [name:: "Victoria"] {
+		create Teacher with: (name: "Victoria") {
 			do connect with_name: name;
 			//default ActiveMQ MQTT login is "admin", the password is "admin" and the port is 1883
 			//do connect to:"localhost" with_name:name login:"admin" password:"admin" port: 1883;

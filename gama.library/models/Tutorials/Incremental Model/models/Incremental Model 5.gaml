@@ -1,8 +1,12 @@
 /**
-* Name: 3D visualization
-* Author: GAMA team
-* Description: 5th part of the tutorial : Incremental Model
-* Tags: tutorial, chart, graph, 3d, light
+* Name: Incremental Model Tutorial - Step 05 - 3D Visualization
+* Author: Gama Development Team
+* Description: Fifth step of the Incremental Model tutorial. Adds a 3D display to the epidemic simulation.
+*   Buildings are extruded proportionally to their height attribute, creating a realistic urban skyline.
+*   People are displayed as 3D spheres (or OBJ models). Lighting (ambient and diffuse) is configured in the
+*   3D display to improve depth perception. The infection dynamics remain unchanged; this step focuses
+*   entirely on upgrading the visualization from 2D to 3D.
+* Tags: tutorial, chart, graph, 3d, light, display, visualization, SI, epidemic
 */
 
 model model5 
@@ -37,7 +41,7 @@ global {
 		}
 	}
 	reflex end_simulation when: infected_rate = 1.0 {
-		do pause;
+		do pause();
 	}
 }
 
@@ -53,7 +57,7 @@ species people skills:[moving]{
 	}
 		
 	reflex move when: target != nil{
-		do goto target:target on: road_network;
+		do goto(target:target, on: road_network);
 		if (location = target) {
 			target <- nil;
 			staying_counter <- 0;
@@ -99,7 +103,7 @@ experiment main_experiment type:gui{
 		display map_3D type: 3d {
 			light #ambient intensity: 20;
 			light #default intensity:(is_night ? 127 : 255);
-			image "../includes/soil.jpg";
+			picture "../includes/soil.jpg";
 			species road ;
 			species people aspect:sphere3D;			
 			species building  transparency: 0.5;

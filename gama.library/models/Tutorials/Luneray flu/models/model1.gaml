@@ -1,8 +1,11 @@
 /**
-* Name: Luneray's flu 1
+* Name: Luneray's Flu - Step 1
 * Author: Patrick Taillandier
-* Description: Describe here the model and its experiments
-* Tags: species, global, experiment, skill, moving, tutorial
+* Description: First step of the Luneray's Flu tutorial. Creates a basic agent-based epidemic model set in
+*   the town of Luneray, France. People agents move randomly in a 1500m × 1500m space. Infected agents can
+*   transmit the flu to susceptible neighbors within a given distance. This first model introduces the basic
+*   GAML concepts: species, global, experiment, the 'moving' skill, and a simple spatial infection mechanism.
+* Tags: species, global, experiment, skill, moving, tutorial, epidemic, flu
 */
 
 model model1
@@ -26,7 +29,7 @@ species people skills:[moving]{
 	bool is_infected <- false;
 	
 	reflex move{
-		do wander;
+		do wander();
 	}
 
 	reflex infect when: is_infected{

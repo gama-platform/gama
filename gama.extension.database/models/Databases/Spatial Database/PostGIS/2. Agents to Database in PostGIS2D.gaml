@@ -1,14 +1,11 @@
 /**
-* Name:  Agents to Database in PostGIS
+* Name: Agents to Database in PostGIS (2D)
 * Author: Truong Minh Thai
-* Description: 
-* savetosql: Save data of agent into MySQL.
-* 
-* transform= true because you need to transform geometry data from Absolute(GAMA) to Gis
-* 
-*  NOTE: Create database and tables using Create Spatial Table in PostGIS.gaml. Then use the this model to insert data from shapefile
-* Geometry  column in PostGIS is in Multipolygon 
-* Tags: database
+* Description: Variant of the PostGIS 'Agents to Database' workflow for 2D Multipolygon geometry columns.
+*   Saves agent geometries and attributes into a PostGIS table where the geometry column type is
+*   Multipolygon (2D). Requires the spatial database and tables created by model 1. Use this variant
+*   when your PostGIS table stores 2D geometries; use the 3D variant for 3D geometry columns.
+* Tags: database, SQL, PostGIS, PostgreSQL, spatial, geometry, 2d, GIS, save, agents
 */
 
 model agent2DB_POSTGIS 
@@ -25,12 +22,12 @@ global {
 		write "This model will work only if the corresponding database is installed" color: #red;
 		write "The model \"Create Spatial Table in PostGIS.gaml\" can be run previously to create the database and tables. The model should be modified to create the database spatial_db2d.";
 		
-		create buildings from: buildingsShp with: [type::string(read ('NATURE'))];
+		create buildings from: buildingsShp with: (type:string(read ('NATURE')));
 		write "Click on <<Step>> button to save data of agents to DB";
 		
 		create DB_Accessor
 		{ 			
-			do executeUpdate params: PARAMS updateComm: "DELETE FROM buildings";	
+			do executeUpdate (params: PARAMS, updateComm: "DELETE FROM buildings");	
 		} 
 	}
 }   
@@ -47,7 +44,7 @@ species buildings {
 	reflex savetosql{  // save data into Postgres
 		write "begin"+ name;
 	    ask (DB_Accessor) {
-			do executeUpdate params: PARAMS updateComm: "INSERT INTO buildings(type,geom) VALUES('" + myself.type + "',ST_Multi(ST_GeomFromText('" + myself.shape +"',4326)))";
+			do executeUpdate (params: PARAMS, updateComm: "INSERT INTO buildings(type,geom) VALUES('" + myself.type + "',ST_Multi(ST_GeomFromText('" + myself.shape +"',4326)))");
 		}	
 	}	
 	

@@ -2,7 +2,7 @@
  *
  * GamaXMLFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,20 +21,21 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.file;
-import gama.annotations.precompiler.IConcept;
-import gama.core.common.geometry.Envelope3D;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IList;
-import gama.core.util.IMap;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.file.GamaFile;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.utils.geometry.IEnvelope;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.file;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
 
 /**
  * Class GamaXMLFile. TODO: Everything ! What kind of buffer should be returned from here ? The current implementation
@@ -95,17 +96,17 @@ public class GamaXMLFile extends GamaFile<IMap<String, String>, String> {
 	/**
 	 * Method computeEnvelope()
 	 *
-	 * @see gama.core.util.file.IGamaFile#computeEnvelope(gama.core.runtime.IScope)
+	 * @see gama.api.types.file.IGamaFile#computeEnvelope(gama.api.runtime.scope.IScope)
 	 */
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		return null;
 	}
 
 	/**
 	 * Method fillBuffer()
 	 *
-	 * @see gama.core.util.file.GamaFile#fillBuffer(gama.core.runtime.IScope)
+	 * @see gama.api.types.file.GamaFile#fillBuffer(gama.api.runtime.scope.IScope)
 	 */
 	@Override
 	protected void fillBuffer(final IScope scope) throws GamaRuntimeException {

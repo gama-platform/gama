@@ -1,8 +1,11 @@
 /***
-* Name: CreateSimuGraph2
+* Name: Create Simulation From File
 * Author: Benoit Gaudou
-* Description: Loads a simulation from a file
-* Tags: serialization, load_file
+* Description: Shows how to restore a previously serialized simulation state from a file and resume
+*   execution from that point. The simulation is loaded using the 'create' statement with a serialized
+*   '.simulation' file as source. Built on the Base Model road network. Pair with 'Serialize Operators -
+*   Save simulation in file and serialize' which produces the file consumed here.
+* Tags: serialization, load_file, create, restore, simulation, checkpoint, road_network
 ***/
 
 model CreateSimuGraph2
@@ -33,7 +36,7 @@ experiment "2. Reload Simulation" type: gui parent: Base{
 	parameter "File to read" var: input <- file("../includes/saved_simulation.simulation");
 	
 	// We create the initial simulation from the file
-	action _init_ {
+	action _init_() {
 		create simulation from: input;	
 	}
 

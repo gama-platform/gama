@@ -1,8 +1,12 @@
 /**
-* Name: Luneray's flu 4
+* Name: Luneray's Flu - Step 4
 * Author: Patrick Taillandier
-* Description: Use of a graph to constraint the movements of people
-* Tags: graph, moving, tutorial
+* Description: Fourth step of the Luneray's Flu tutorial. Constrains people movement to the road network by
+*   building a graph from the road shapefile. Agents now use the 'goto' action with the road graph as their
+*   topology, producing realistic street-following movement. The infection mechanism uses the same spatial
+*   proximity rule but now people move along roads rather than randomly through open space, significantly
+*   changing the epidemic dynamics.
+* Tags: graph, moving, tutorial, road_network, epidemic, flu, goto, topology
 */
 
 model model4
@@ -33,7 +37,7 @@ global {
 	}
 
     reflex end_simulation when: infected_rate = 1.0 {
-		do pause;
+		do pause();
     }	
 }
 
@@ -49,7 +53,7 @@ species people skills:[moving]{
 	}
 		
 	reflex move when: target != nil{
-		do goto target: target on: road_network;
+		do goto(target: target, on: road_network);
 		if (location = target) {
 			target <- nil;
 		} 

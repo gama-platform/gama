@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * Gama3DGeometryFile.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,16 +15,16 @@ import java.util.List;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.Envelope3D;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaPair;
-import gama.gaml.operators.Cast;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.pair.IPair;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.IEnvelope;
 
 /**
  * The Class Gama3DGeometryFile.
@@ -35,7 +35,7 @@ public abstract class Gama3DGeometryFile extends GamaGeometryFile {
 	protected AxisAngle initRotation;
 
 	/** The envelope. */
-	protected Envelope3D envelope;
+	protected IEnvelope envelope;
 
 	/**
 	 * Instantiates a new gama 3 D geometry file.
@@ -63,12 +63,12 @@ public abstract class Gama3DGeometryFile extends GamaGeometryFile {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	public Gama3DGeometryFile(final IScope scope, final String pathName, final GamaPair<Double, GamaPoint> initRotation)
+	public Gama3DGeometryFile(final IScope scope, final String pathName, final IPair<Double, IPoint> initRotation)
 			throws GamaRuntimeException {
 		super(scope, pathName);
 		if (initRotation != null) {
-			final Double angle = Cast.asFloat(null, initRotation.key);
-			final GamaPoint axis = initRotation.value;
+			final Double angle = Cast.asFloat(null, initRotation.key());
+			final IPoint axis = initRotation.value();
 			this.initRotation = new AxisAngle(axis, angle);
 		} else {
 			this.initRotation = null;
@@ -79,7 +79,7 @@ public abstract class Gama3DGeometryFile extends GamaGeometryFile {
 	protected IShape buildGeometry(final IScope scope) {
 		final List<Geometry> faces = new ArrayList<>();
 		for (final IShape shape : getBuffer().iterable(scope)) { faces.add(shape.getInnerGeometry()); }
-		return GamaShapeFactory.createFrom(GeometryUtils.GEOMETRY_FACTORY.buildGeometry(faces));
+		return GamaShapeFactory.createFrom(GeometryUtils.getGeometryFactory().buildGeometry(faces));
 	}
 
 	@Override
@@ -94,10 +94,10 @@ public abstract class Gama3DGeometryFile extends GamaGeometryFile {
 	public void setInitRotation(final AxisAngle initRotation) { this.initRotation = initRotation; }
 
 	@Override
-	public Envelope3D computeEnvelope(final IScope scope) {
+	public IEnvelope computeEnvelope(final IScope scope) {
 		if (envelope == null) {
 			fillBuffer(scope);
-			if (initRotation != null && initRotation.angle != 0.0) { envelope = envelope.rotate(initRotation); }
+			if (initRotation != null && initRotation.getAngle() != 0.0) { envelope = envelope.rotate(initRotation); }
 		}
 		return envelope;
 	}

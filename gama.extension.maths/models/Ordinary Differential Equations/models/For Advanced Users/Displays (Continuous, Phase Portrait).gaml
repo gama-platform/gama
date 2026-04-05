@@ -1,14 +1,12 @@
 /**
- *  continuous curves
- *  Author: Tri and Nghi
- *  Description: 
- * 
- * This model illustrates different displays for a Lotka-Volterra model. ABMs usually only require a discrete 
- * visualization of the results (one value per cycle). EBMs compute a continuous solution, and thus require
- * a continuous display. The syntax is shown below.
- * 
- * Phase portraits are very common in mathematics, and can be displayed with the 'type: xy' facet.
- */
+* Name: Displays - Continuous and Phase Portrait (Lotka-Volterra)
+* Author: Tri Nguyen-Huu, Huynh Quang Nghi
+* Description: Illustrates two advanced chart display types for ODE results. Standard ABM charts show one
+*   value per cycle (discrete). EBM/ODE solvers compute a continuous sub-step solution; this model shows
+*   how to use 'type: series' with continuous curves and 'type: xy' for phase-portrait plots (predator
+*   vs prey). The phase portrait reveals the periodic orbits characteristic of Lotka-Volterra dynamics.
+* Tags: equation, math, ODE, lotka_volterra, display, phase_portrait, continuous, chart, visualization
+*/
  
  
 model Displays
@@ -16,7 +14,7 @@ model Displays
 
 global {	
 	init {
-		create LV_model with: [x::2.0, y::2.0];
+		create LV_model with: (x:2.0, y:2.0);
 	}
 }
 
@@ -57,13 +55,13 @@ experiment Displays type: gui {
 				data "y" value: first(LV_model).y[] color: rgb(41,128,185) marker: false;
 			}
 		}
-		display D3 name: "Phase Portrait " toolbar: false  type: 2d {
+		display D3 title: "Phase Portrait " toolbar: false  type: 2d {
 			chart 'Phase Portrait' type: xy background:  rgb(47,47,47) color: #white x_label: "x" y_label:"y"{
 				// Continuous display requires to pass a list of two values x and y
 				data "y(x(t))" value: [first(LV_model).x,first(LV_model).y] color: rgb(243,156,18);
 			}
 		}
-		display D4 name: "Phase Portrait - continuous display" toolbar: false type: 2d {
+		display D4 title: "Phase Portrait - continuous display" toolbar: false type: 2d {
 			chart 'Phase Portrait - continuous display' type: xy background:  rgb(47,47,47) color: #white x_label: "x" y_label:"y"{
 				// Continuous display requires to pass a list of two values x and y
 				data "y(x(t))" value: rows_list(matrix(first(LV_model).x[],first(LV_model).y[])) color: rgb(243,156,18) marker: false;

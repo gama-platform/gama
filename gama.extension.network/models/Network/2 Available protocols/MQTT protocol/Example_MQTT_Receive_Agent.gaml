@@ -1,8 +1,10 @@
 /**
-* Name: MQTT_Receiver
-* Author: Nicolas Marilleau and Arnaud Grignard
-* Description: The simple receiver model based on MQTT protocol.
-* Tags: Network, MQTT
+* Name: MQTT Receive Agent Example
+* Author: Nicolas Marilleau, Arnaud Grignard
+* Description: Like 'MQTT Receive Example' but the 'network' skill is applied to the global species.
+*   The global agent subscribes to a topic and listens using 'fetch'. Pair with 'MQTT Send Agent Example'
+*   or any external MQTT publisher. Demonstrates the 'global skills:[network]' receiver pattern.
+* Tags: network, MQTT, receive, fetch, skill, global, subscribe, messaging, protocol, communication
 */
 
 model MQTT_Receiver

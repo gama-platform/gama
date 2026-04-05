@@ -3,7 +3,7 @@
  * ChartJFreeChartOutputScatter.java, in gama.core, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -53,11 +53,13 @@ import org.jfree.data.xy.XYIntervalDataItem;
 import org.jfree.data.xy.XYIntervalSeries;
 import org.jfree.data.xy.XYIntervalSeriesCollection;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.runtime.IScope;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.ui.displays.IChartDataSource;
+import gama.api.ui.displays.IDisplaySurface;
 
 /**
  * The Class ChartJFreeChartOutputScatter.
@@ -194,21 +196,21 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	}
 
 	@Override
-	public void setDefaultPropertiesFromType(final IScope scope, final ChartDataSource source, final int type_val) {
+	public void setDefaultPropertiesFromType(final IScope scope, final IChartDataSource source, final int type_val) {
 
 		switch (type_val) {
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N, ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N, ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12, ChartDataSource.DATA_TYPE_LIST_POINT, ChartDataSource.DATA_TYPE_MATRIX_DOUBLE: {
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12, IChartDataSource.DATA_TYPE_LIST_POINT, IChartDataSource.DATA_TYPE_MATRIX_DOUBLE: {
 				source.setCumulative(scope, false);
 				source.setUseSize(scope, false);
 				break;
 			}
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_3: {
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_3: {
 				source.setCumulative(scope, true);
 				source.setUseSize(scope, true);
 				break;
 
 			}
-			case ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3: {
+			case IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3: {
 				source.setCumulative(scope, false);
 				source.setUseSize(scope, true);
 				break;
@@ -310,7 +312,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			xy.setUseFillPaint(false);
 			// ((XYShapeRenderer) newr).setDrawOutlines(true);
 		}
-		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, myserie.getMycolor()); }
+		if (myserie.getMycolor() != null) { newr.setSeriesPaint(0, IColor.toAWTColor(myserie.getMycolor())); }
 		// DEBUG.OUT("Changing series stroke to " + myserie.getLineThickness().value(scope));
 		newr.setSeriesStroke(0,
 				new BasicStroke(Cast.asFloat(scope, myserie.getLineThickness().value(scope)).floatValue()));
@@ -467,19 +469,22 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	 * @return the number axis
 	 */
 	public NumberAxis formatYAxis(final IScope scope, final NumberAxis axis) {
-		axis.setAxisLinePaint(axesColor);
+		Color ac = IColor.toAWTColor(axesColor);
+		axis.setAxisLinePaint(ac);
 		axis.setTickLabelFont(getTickFont());
 		axis.setLabelFont(getLabelFont());
 		if (textColor != null) {
-			axis.setLabelPaint(textColor);
-			axis.setTickLabelPaint(textColor);
+			Color tc = IColor.toAWTColor(textColor);
+			axis.setLabelPaint(tc);
+			axis.setTickLabelPaint(tc);
 		}
-		axis.setAxisLinePaint(axesColor);
+		axis.setAxisLinePaint(ac);
 		axis.setLabelFont(getLabelFont());
 		axis.setTickLabelFont(getTickFont());
 		if (textColor != null) {
-			axis.setLabelPaint(textColor);
-			axis.setTickLabelPaint(textColor);
+			Color tc = IColor.toAWTColor(textColor);
+			axis.setLabelPaint(tc);
+			axis.setTickLabelPaint(tc);
 		}
 		if (!this.getYTickValueVisible(scope)) {
 			axis.setTickMarksVisible(false);
@@ -549,8 +554,9 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 			}
 
 		}
+		Color tc = IColor.toAWTColor(tickColor);
 		if (this.getXTickLineVisible(scope)) {
-			((XYPlot) this.chart.getPlot()).setDomainGridlinePaint(this.tickColor);
+			((XYPlot) this.chart.getPlot()).setDomainGridlinePaint(tc);
 			if (getXTickUnit(scope) > 0) {
 				domainAxis.setTickUnit(new NumberTickUnit(getXTickUnit(scope)));
 				((XYPlot) this.chart.getPlot()).setDomainGridlinesVisible(true);
@@ -582,7 +588,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 
 		}
 		if (this.getYTickLineVisible(scope)) {
-			((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(this.tickColor);
+			((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(tc);
 			if (getYTickUnit(scope) > 0) {
 				rangeAxis.setTickUnit(new NumberTickUnit(getYTickUnit(scope)));
 				((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(true);
@@ -615,7 +621,7 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 
 			}
 			if (this.getYTickLineVisible(scope)) {
-				((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(this.tickColor);
+				((XYPlot) this.chart.getPlot()).setRangeGridlinePaint(tc);
 				if (getY2TickUnit(scope) > 0) {
 					range2Axis.setTickUnit(new NumberTickUnit(getY2TickUnit(scope)));
 					((XYPlot) this.chart.getPlot()).setRangeGridlinesVisible(true);
@@ -653,39 +659,18 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 				if (ChartDataStatement.MARKER_EMPTY.equals(markershape)) {
 					serierenderer.setSeriesShapesVisible(0, false);
 				} else {
-					Shape myshape = defaultmarkers[0];
-					switch (markershape) {
-						case ChartDataStatement.MARKER_CIRCLE:
-							myshape = defaultmarkers[1];
-							break;
-						case ChartDataStatement.MARKER_UP_TRIANGLE:
-							myshape = defaultmarkers[2];
-							break;
-						case ChartDataStatement.MARKER_DIAMOND:
-							myshape = defaultmarkers[3];
-							break;
-						case ChartDataStatement.MARKER_HOR_RECTANGLE:
-							myshape = defaultmarkers[4];
-							break;
-						case ChartDataStatement.MARKER_DOWN_TRIANGLE:
-							myshape = defaultmarkers[5];
-							break;
-						case ChartDataStatement.MARKER_HOR_ELLIPSE:
-							myshape = defaultmarkers[6];
-							break;
-						case ChartDataStatement.MARKER_RIGHT_TRIANGLE:
-							myshape = defaultmarkers[7];
-							break;
-						case ChartDataStatement.MARKER_VERT_RECTANGLE:
-							myshape = defaultmarkers[8];
-							break;
-						case ChartDataStatement.MARKER_LEFT_TRIANGLE:
-							myshape = defaultmarkers[9];
-							break;
-						case null:
-						default:
-							break;
-					}
+					Shape myshape = switch (markershape) {
+						case ChartDataStatement.MARKER_CIRCLE -> defaultmarkers[1];
+						case ChartDataStatement.MARKER_UP_TRIANGLE -> defaultmarkers[2];
+						case ChartDataStatement.MARKER_DIAMOND -> defaultmarkers[3];
+						case ChartDataStatement.MARKER_HOR_RECTANGLE -> defaultmarkers[4];
+						case ChartDataStatement.MARKER_DOWN_TRIANGLE -> defaultmarkers[5];
+						case ChartDataStatement.MARKER_HOR_ELLIPSE -> defaultmarkers[6];
+						case ChartDataStatement.MARKER_RIGHT_TRIANGLE -> defaultmarkers[7];
+						case ChartDataStatement.MARKER_VERT_RECTANGLE -> defaultmarkers[8];
+						case ChartDataStatement.MARKER_LEFT_TRIANGLE -> defaultmarkers[9];
+						default -> defaultmarkers[0];
+					};
 					serierenderer.setSeriesShape(0, myshape);
 
 				}
@@ -697,39 +682,18 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 				if (ChartDataStatement.MARKER_EMPTY.equals(markershape)) {
 					serierenderer.setSeriesShape(0, null);
 				} else {
-					Shape myshape = defaultmarkers[0];
-					switch (markershape) {
-						case ChartDataStatement.MARKER_CIRCLE:
-							myshape = defaultmarkers[1];
-							break;
-						case ChartDataStatement.MARKER_UP_TRIANGLE:
-							myshape = defaultmarkers[2];
-							break;
-						case ChartDataStatement.MARKER_DIAMOND:
-							myshape = defaultmarkers[3];
-							break;
-						case ChartDataStatement.MARKER_HOR_RECTANGLE:
-							myshape = defaultmarkers[4];
-							break;
-						case ChartDataStatement.MARKER_DOWN_TRIANGLE:
-							myshape = defaultmarkers[5];
-							break;
-						case ChartDataStatement.MARKER_HOR_ELLIPSE:
-							myshape = defaultmarkers[6];
-							break;
-						case ChartDataStatement.MARKER_RIGHT_TRIANGLE:
-							myshape = defaultmarkers[7];
-							break;
-						case ChartDataStatement.MARKER_VERT_RECTANGLE:
-							myshape = defaultmarkers[8];
-							break;
-						case ChartDataStatement.MARKER_LEFT_TRIANGLE:
-							myshape = defaultmarkers[9];
-							break;
-						case null:
-						default:
-							break;
-					}
+					Shape myshape = switch (markershape) {
+						case ChartDataStatement.MARKER_CIRCLE -> defaultmarkers[1];
+						case ChartDataStatement.MARKER_UP_TRIANGLE -> defaultmarkers[2];
+						case ChartDataStatement.MARKER_DIAMOND -> defaultmarkers[3];
+						case ChartDataStatement.MARKER_HOR_RECTANGLE -> defaultmarkers[4];
+						case ChartDataStatement.MARKER_DOWN_TRIANGLE -> defaultmarkers[5];
+						case ChartDataStatement.MARKER_HOR_ELLIPSE -> defaultmarkers[6];
+						case ChartDataStatement.MARKER_RIGHT_TRIANGLE -> defaultmarkers[7];
+						case ChartDataStatement.MARKER_VERT_RECTANGLE -> defaultmarkers[8];
+						case ChartDataStatement.MARKER_LEFT_TRIANGLE -> defaultmarkers[9];
+						default -> defaultmarkers[0];
+					};
 					serierenderer.setSeriesShape(0, myshape);
 
 				}
@@ -792,22 +756,23 @@ public class ChartJFreeChartOutputScatter extends ChartJFreeChartOutput {
 	@Override
 	public void initChart(final IScope scope, final String chartname) {
 		super.initChart(scope, chartname);
-
+		Color ac = IColor.toAWTColor(axesColor);
 		final XYPlot pp = (XYPlot) chart.getPlot();
-		pp.setDomainGridlinePaint(axesColor);
-		pp.setRangeGridlinePaint(axesColor);
-		pp.setDomainCrosshairPaint(axesColor);
-		pp.setRangeCrosshairPaint(axesColor);
+		pp.setDomainGridlinePaint(ac);
+		pp.setRangeGridlinePaint(ac);
+		pp.setDomainCrosshairPaint(ac);
+		pp.setRangeCrosshairPaint(ac);
 		pp.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
 		pp.setDomainCrosshairVisible(false);
 		pp.setRangeCrosshairVisible(false);
 
-		pp.getDomainAxis().setAxisLinePaint(axesColor);
+		pp.getDomainAxis().setAxisLinePaint(ac);
 		pp.getDomainAxis().setTickLabelFont(getTickFont());
 		pp.getDomainAxis().setLabelFont(getLabelFont());
 		if (textColor != null) {
-			pp.getDomainAxis().setLabelPaint(textColor);
-			pp.getDomainAxis().setTickLabelPaint(textColor);
+			Color tc = IColor.toAWTColor(textColor);
+			pp.getDomainAxis().setLabelPaint(tc);
+			pp.getDomainAxis().setTickLabelPaint(tc);
 		}
 
 		NumberAxis axis = (NumberAxis) pp.getRangeAxis();

@@ -1,8 +1,12 @@
 /***
-* Name: Units and constants
+* Name: Units and Constants
 * Author: Benoit Gaudou
-* Description: The model illustrates all the possible constants (including units) existing in  GAML.
-* Tags: unit, constant
+* Description: Illustrates all the built-in constants and unit values available in GAML. Constants include
+*   mathematical values (pi, e), color constants, and special sentinel values for errors or undefined states.
+*   Units allow modelers to express quantities in human-readable form — distance (meter, km), time (second, minute,
+*   hour, day, month, year), area, volume, speed — without hard-coding conversion factors. Using units makes models
+*   clearer and more maintainable. This model runs through all categories and prints their values to the console.
+* Tags: unit, constant, math, time, distance, area, speed, color
 ***/
 
 model UnitsAndConstants
@@ -28,7 +32,7 @@ global {
 	}
 
 	// #current_error contains the last error that have been thrown during the current execution.
-	action constant_current_err {
+	action constant_current_err() {
 		write "Constant related to system state (e.g. the last thrown error)";
 		write "=============================================================";
 		try {
@@ -40,7 +44,7 @@ global {
 	}
 	
 	// Constants include the main mathematical constants (such as pi, e ...)
-	action constant_math {
+	action constant_math() {
 		write "Mathematical constants (#e, #pi, #max_float ...)";
 		write "=================================================";		
 		// #e constant is characterized by the relation ln(#e) = 1
@@ -71,7 +75,7 @@ global {
 	
 	// GAML provides many units. The basic units are meter, kilogram, m2, m3 and second. 
 	// All the other units are converted to the corresponding basic one.
-	action length_surface_time_units {
+	action length_surface_time_units() {
 		write "Units-related constants (meter, m2, m3, kg and second)";
 		write "=================================================";		
 		write " *** The basic units are: ***";			
@@ -132,7 +136,7 @@ global {
 		
 	}
   	
-  	action 	time_units {
+  	action 	time_units() {
  		write "Time-related constants ";		
 		write "=================================================";		
  		write " *** Additional constants related to time: ***";			

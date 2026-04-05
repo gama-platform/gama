@@ -1,8 +1,12 @@
 /**
-* Name: comodel_mix_behaviors
-* Author: HUYNH Quang Nghi
-* Description: This is a simple comodel serve to demonstrate the mixing behaviors of preyPredator with the Ants. Ants are the prey, fleeing from Predators, when they are not chasing, they try to do job of the ants.
-* Tags: comodel
+* Name: Comodel Example - Mixed Behaviors (Ants and Prey-Predator)
+* Author: Huynh Quang Nghi
+* Description: A comodel that mixes behaviors from two different models: ants and predator-prey. Ants serve as
+*   prey in this coupled world — they flee from predators when one is nearby, but when no predator threatens
+*   them they resume their normal foraging behavior (searching for food and depositing pheromones). Predators
+*   from the prey-predator model hunt the ants. This demonstrates how comodeling can produce emergent behaviors
+*   by combining the behavioral repertoires of agents from independent models.
+* Tags: comodel, ants, predator_prey, mixed, behavior, coupling, emergence
 */
 model comodel_mix_behaviors
 
@@ -22,13 +26,13 @@ global
 	init
 	{
 		//create the Ants micro-model with the size of grid is 100 and the population have 500 ants.
-		create Ant.Base with: [gridsize::100,ants_number::500]{
+		create Ant.Base with: (gridsize:100,ants_number:500){
 			write self;
 		}
 		
 //		write Ant.Simple collect each.simulations as list;
 		//create the PreyPredator micro-model with the parameters and the number of the prey is equal with the size of ants population
-		create Organism.Simple with: [shape::square(100), preyinit::Ant.Base[0].simulation.ants_number, predatorinit::2]  
+		create Organism.Simple with: (shape:square(100), preyinit:Ant.Base[0].simulation.ants_number, predatorinit:2)  
 		{
 			// set the size of micro-model PreyPredator equal with the size of the grid of myAnt
 			shape <- square(100);

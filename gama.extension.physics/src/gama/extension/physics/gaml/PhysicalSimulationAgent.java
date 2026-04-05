@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * PhysicalSimulationAgent.java, in gaml.extensions.physics, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * PhysicalSimulationAgent.java, in gama.extension.physics, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -12,32 +12,33 @@ package gama.extension.physics.gaml;
 
 import java.util.Collection;
 
-import gama.annotations.precompiler.GamlAnnotations.action;
-import gama.annotations.precompiler.GamlAnnotations.arg;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.getter;
-import gama.annotations.precompiler.GamlAnnotations.setter;
-import gama.annotations.precompiler.GamlAnnotations.species;
-import gama.annotations.precompiler.GamlAnnotations.variable;
-import gama.annotations.precompiler.GamlAnnotations.vars;
-import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.Collector;
-import gama.core.util.IList;
-import gama.core.util.Collector.AsOrderedSet;
-import gama.core.util.matrix.IField;
-import gama.extension.physics.NativeLoader;
+import gama.annotations.action;
+import gama.annotations.arg;
+import gama.annotations.doc;
+import gama.annotations.getter;
+import gama.annotations.setter;
+import gama.annotations.species;
+import gama.annotations.variable;
+import gama.annotations.vars;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.IList;
+import gama.api.types.matrix.IField;
+import gama.api.utils.collections.Collector;
+import gama.api.utils.collections.Collector.AsOrderedSet;
+import gama.core.simulation.SimulationAgent;
+import gama.extension.physics.PhysicsActivator;
 import gama.extension.physics.box2d_version.Box2DPhysicalWorld;
 import gama.extension.physics.common.IPhysicalConstants;
 import gama.extension.physics.common.IPhysicalWorld;
 import gama.extension.physics.java_version.BulletPhysicalWorld;
 import gama.extension.physics.native_version.NativeBulletPhysicalWorld;
-import gama.gaml.species.ISpecies;
-import gama.gaml.types.IType;
 
 /**
  * A simulation agent that provides physical capabilities to simulations, in particular the possiblity to register and
@@ -111,7 +112,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	Boolean automatedRegistration = true;
 
 	/** The gravity. */
-	final GamaPoint gravity = new GamaPoint(0, 0, -9.81d);
+	final IPoint gravity = GamaPointFactory.create(0, 0, -9.81d);
 
 	/** The terrain. */
 	IField terrain;
@@ -120,7 +121,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	IPhysicalWorld gateway;
 
 	/** The use native library. */
-	Boolean useNativeLibrary = NativeLoader.NATIVE_BULLET_LIBRARY_LOADED;
+	Boolean useNativeLibrary = PhysicsActivator.NATIVE_BULLET_LIBRARY_LOADED;
 
 	/** The library to use. */
 	String libraryToUse = BULLET_LIBRARY_NAME;
@@ -285,7 +286,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	@getter (
 			value = USE_NATIVE)
 	public Boolean usesNativeLibrary(final IScope scope) {
-		if (useNativeLibrary == null) { useNativeLibrary = NativeLoader.loadNativeLibrary(); }
+		if (useNativeLibrary == null) { useNativeLibrary = PhysicsActivator.NATIVE_BULLET_LIBRARY_LOADED; }
 		return useNativeLibrary;
 	}
 
@@ -300,7 +301,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	@setter (USE_NATIVE)
 	public void useNativeLibrary(final IScope scope, final Boolean v) {
 		// If we have not successfully loaded the library, then the setting should remain false.
-		useNativeLibrary = v && NativeLoader.loadNativeLibrary();
+		useNativeLibrary = v;
 	}
 
 	/**
@@ -367,7 +368,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	@getter (
 			value = GRAVITY,
 			initializer = true)
-	public GamaPoint getGravity(final IScope scope) {
+	public IPoint getGravity(final IScope scope) {
 		return gravity;
 	}
 
@@ -380,7 +381,7 @@ public class PhysicalSimulationAgent extends SimulationAgent implements IPhysica
 	 *            the g
 	 */
 	@setter (GRAVITY)
-	public void setGravity(final IScope scope, final GamaPoint g) {
+	public void setGravity(final IScope scope, final IPoint g) {
 		this.gravity.setLocation(g);
 		// Dont provoke the instantiation of the gateway yet if it is null
 		if (gateway != null) { gateway.setGravity(g); }

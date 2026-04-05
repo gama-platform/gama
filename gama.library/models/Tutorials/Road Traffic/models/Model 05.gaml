@@ -1,8 +1,11 @@
 /**
-* Name: Dynamic update of the road network
-* Author:
-* Description: 5th part of the tutorial: Road Traffic
-* Tags: graph
+* Name: Road Traffic Tutorial - Step 05 - Dynamic Road Network
+* Author: Gama Development Team
+* Description: Fifth step of the Road Traffic tutorial. Introduces dynamic changes to the road network:
+*   roads can be destroyed (removed from the graph) and repaired (re-added) during the simulation. When a
+*   road is removed, agents that were using it must recompute their path. This step demonstrates how to
+*   handle infrastructure failures and dynamic topology changes in a road network simulation.
+* Tags: tutorial, graph, road_network, dynamic, failure, repair, transport, topology
 */
 
 model tutorial_gis_city_traffic
@@ -25,7 +28,7 @@ global {
 	graph the_graph;
 	
 	init { 
-		create building from: shape_file_buildings with: [type::string(read ("NATURE"))] {
+		create building(type:string(read ("NATURE"))) from: shape_file_buildings {
 			if type="Industrial" {
 				color <- #blue ;
 			}

@@ -1,8 +1,11 @@
 /**
-* Name: Adding of a stopping condition
-* Author:
-* Description: 9th part of the tutorial: Predator Prey
-* Tags: pause
+* Name: Predator Prey Tutorial - Step 09 - Stopping Condition
+* Author: Gama Development Team
+* Description: Ninth step of the Predator-Prey tutorial. Adds a stopping condition (pause_when) that halts
+*   the simulation automatically when either the prey or predator population is completely extinct. This
+*   demonstrates how to programmatically control experiment execution from within the model — useful for
+*   parameter exploration and batch runs where you want each simulation to stop at a defined end state.
+* Tags: tutorial, prey, predator, pause, stop_condition, batch, experiment
 */
 model prey_predator
 
@@ -21,8 +24,8 @@ global {
 	float predator_proba_reproduce <- 0.01;
 	int predator_nb_max_offsprings <- 3;
 	float predator_energy_reproduce <- 0.5;
-	int nb_preys -> {length(prey)};
-	int nb_predators -> {length(predator)};
+	int nb_preys -> length(prey);
+	int nb_predators -> length(predator);
 
 	init {
 		create prey number: nb_preys_init;
@@ -30,7 +33,7 @@ global {
 	}
 	
 	reflex stop_simulation when: (nb_preys = 0) or (nb_predators = 0) {
-		do pause;
+		do pause();
 	} 
 }
 
@@ -61,7 +64,7 @@ species generic_species {
 	}
 
 	reflex die when: energy <= 0 {
-		do die;
+		do die();
 	}
 
 	reflex reproduce when: (energy >= energy_reproduce) and (flip(proba_reproduce)) {
@@ -75,11 +78,11 @@ species generic_species {
 		energy <- energy / nb_offsprings;
 	}
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		return 0.0;
 	}
 
-	vegetation_cell choose_cell {
+	vegetation_cell choose_cell() {
 		return nil;
 	}
 
@@ -107,7 +110,7 @@ species prey parent: generic_species {
 	float energy_reproduce <- prey_energy_reproduce;
 	image_file my_icon <- image_file("../includes/data/sheep.png");
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		float energy_transfer <- 0.0;
 		if(my_cell.food > 0) {
 			energy_transfer <- min([max_transfer, my_cell.food]);
@@ -116,7 +119,7 @@ species prey parent: generic_species {
 		return energy_transfer;
 	}
 
-	vegetation_cell choose_cell {
+	vegetation_cell choose_cell() {
 		return (my_cell.neighbors2) with_max_of (each.food);
 	}
 }
@@ -131,18 +134,18 @@ species predator parent: generic_species {
 	float energy_reproduce <- predator_energy_reproduce;
 	image_file my_icon <- image_file("../includes/data/wolf.png");
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		list<prey> reachable_preys <- prey inside (my_cell);
 		if(! empty(reachable_preys)) {
 			ask one_of (reachable_preys) {
-				do die;
+				do die();
 			}
 			return energy_transfer;
 		}
 		return 0.0;
 	}
 
-	vegetation_cell choose_cell {
+	vegetation_cell choose_cell() {
 		vegetation_cell my_cell_tmp <- shuffle(my_cell.neighbors2) first_with (!(empty(prey inside (each))));
 		if my_cell_tmp != nil {
 			return my_cell_tmp;

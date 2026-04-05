@@ -3,7 +3,7 @@
  * GamlLabelProvider.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -24,20 +24,19 @@ import org.eclipse.xtext.ui.label.DefaultEObjectLabelProvider;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
-import gama.core.common.interfaces.IGamlLabelProvider;
-import gama.core.common.interfaces.IKeyword;
-import gama.gaml.compilation.ast.ISyntacticElement;
+import gama.annotations.constants.IKeyword;
+import gama.api.compilation.ast.IGamlLabelProvider;
+import gama.api.compilation.ast.ISyntacticElement;
+import gama.api.gaml.types.Types;
 import gama.gaml.operators.Strings;
-import gama.gaml.types.Types;
-import gaml.compiler.gaml.EGaml;
+import gaml.compiler.EGaml;
 import gaml.compiler.gaml.Expression;
 import gaml.compiler.gaml.Facet;
-import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.Import;
 import gaml.compiler.gaml.Model;
-import gaml.compiler.gaml.S_Declaration;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Experiment;
+import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.StringLiteral;
 import gaml.compiler.gaml.VarDefinition;
@@ -100,7 +99,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	 *            the e
 	 * @return the string
 	 */
-	String text(final HeadlessExperiment e) {
+	String text(final StandaloneExperiment e) {
 		return "Experiment " + e.getName();
 	}
 
@@ -178,8 +177,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 		if (type.contains("file")) { type = "file"; }
 		if (Types.get(type) == Types.NO_TYPE) { first = Strings.capitalize(null, type) + " "; }
 
-		return first + (name == null ? "" : name)
-				+ (type == null ? "" : " (" + type + ") " + (key == null ? "" : "(" + key + ") "));
+		return first + (name == null ? "" : name) + " (" + type + ") " + (key == null ? "" : "(" + key + ") ");
 
 	}
 
@@ -220,7 +218,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 			final Expression vr = f.getExpr();
 			if (vr instanceof VariableRef) {
 				final VarDefinition vd = ((VariableRef) vr).getRef();
-				if (vd instanceof S_Declaration) {
+				if (vd instanceof S_Definition) {
 					type = EGaml.getInstance().getKeyOf(vd);
 					var = EGaml.getInstance().getNameOf(vd);
 				}
@@ -277,7 +275,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	 *            the ele
 	 * @return the string
 	 */
-	String image(final HeadlessExperiment ele) {
+	String image(final StandaloneExperiment ele) {
 		final List<Facet> facets = EGaml.getInstance().getFacetsOf(ele);
 		Facet type = null;
 		for (final Facet f : facets) {
@@ -326,7 +324,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 			final Expression vr = f.getExpr();
 			if (vr instanceof VariableRef) {
 				final VarDefinition vd = ((VariableRef) vr).getRef();
-				if (vd instanceof S_Declaration) { var = EGaml.getInstance().getKeyOf(vd); }
+				if (vd instanceof S_Definition) { var = EGaml.getInstance().getKeyOf(vd); }
 			}
 		}
 		if (var == null) return "_parameter.png";
@@ -346,7 +344,7 @@ public class GamlLabelProvider extends DefaultEObjectLabelProvider implements IG
 	}
 
 	/**
-	 * @see gama.core.common.interfaces.IGamlLabelProvider#getText(gama.gaml.compilation.ast.ISyntacticElement)
+	 * @see gama.api.compilation.ast.IGamlLabelProvider#getText(gama.api.compilation.ast.ISyntacticElement)
 	 */
 	@Override
 	public String getText(final ISyntacticElement element) {

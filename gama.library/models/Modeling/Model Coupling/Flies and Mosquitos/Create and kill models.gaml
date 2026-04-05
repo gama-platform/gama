@@ -1,8 +1,12 @@
 /**
-* Name: Simple syntax demonstration of Comodeling 
-* Author: HUYNH Quang Nghi
-* Description: This is a simple comodel serve to demonstrate the importation and instatiation of micro-model without using the couplings  
-* Tags: comodel
+* Name: Create and Kill Sub-Models
+* Author: Huynh Quang Nghi
+* Description: A minimal comodel syntax demonstration showing how to instantiate and destroy micro-models
+*   at runtime without using coupling adapters. Sub-models are created with 'create' and can be killed
+*   with 'ask' or during a reflex. This direct approach (without adapters) is simpler but provides less
+*   encapsulation than the adapter pattern. Useful as the simplest possible comodeling example to understand
+*   the core 'import ... as' mechanism.
+* Tags: comodel, create, kill, sub_model, import, syntax, flies, mosquitos
 */
 model simple_comodeling_example
 

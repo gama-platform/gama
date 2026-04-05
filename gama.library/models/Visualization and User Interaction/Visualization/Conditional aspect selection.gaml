@@ -1,7 +1,12 @@
 /**
-* Name: Conditional_aspect_selection
+* Name: Conditional Aspect Selection
 * Author: Baptiste Lesquoy
-* Tags: 
+* Description: Demonstrates how to dynamically switch between named agent aspects based on a condition, such
+*   as a parameter or the simulation state. In this model, a 'dark_mode' boolean parameter controls whether
+*   agents are displayed using their 'light' or 'dark' aspect. Conditional aspect selection allows models to
+*   provide multiple visualization modes that the user can switch between interactively, without restarting
+*   the simulation — useful for accessibility, presentation, or highlighting different data layers.
+* Tags: aspect, display, visualization, conditional, parameter, dark_mode, gui
 */
 
 

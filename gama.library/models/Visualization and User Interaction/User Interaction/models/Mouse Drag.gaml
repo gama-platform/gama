@@ -1,13 +1,12 @@
 /**
-* Name: MouseDrag
-* 
-* Demonstrates the usage of the mouse_drag events to move an agent using user
-* interactions. Drag events are triggered when the mouse is moving with the
-* mouse button down. Notice that move events are not triggered when the mouse
-* button is down.
-* 
-* Author: breugnot
-* Tags: gui, event, mouse_move, mouse_drag, mouse_down, mouse_up
+* Name: Mouse Drag
+* Author: Breugnot
+* Description: Demonstrates the use of mouse drag events to move agents interactively in a GAMA display.
+*   Drag events fire continuously while the mouse button is held down and the cursor is moving; they differ
+*   from mouse_move events (which fire only when the button is up). The model shows how to detect which agent
+*   is under the cursor on mouse_down, then update its position continuously during the drag, and finalize
+*   the placement on mouse_up. This pattern is the standard way to implement drag-and-drop agent manipulation.
+* Tags: gui, event, mouse_move, mouse_drag, mouse_down, mouse_up, interaction, display
 */
 
 model mouse_event
@@ -20,7 +19,7 @@ global {
 	}
 	
 	/** Insert the global definitions, variables and actions here */
-	action mouse_down {
+	action mouse_down() {
 		ask DraggedAgent {
 			if( self covers #user_location) {
 				// Selects the agent
@@ -29,13 +28,13 @@ global {
 		}
 	}
 	
-	action mouse_up {
+	action mouse_up() {
 		if(selected_agent != nil) {
 			selected_agent <- nil;
 		}
 	}
 	
-	action mouse_drag {
+	action mouse_drag() {
 		// Makes the agent follow the mouse while the mouse button is down
 		if(selected_agent != nil) {
 			ask selected_agent {

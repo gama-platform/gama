@@ -3,7 +3,7 @@
  * SimulationPopupMenu.java, in gama.ui.experiment, is part of the source code of the GAMA modeling and simulation
  * platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -34,15 +34,15 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 
-import gama.core.kernel.experiment.IExperimentAgent;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.kernel.simulation.SimulationPopulation;
-import gama.core.runtime.GAMA;
-import gama.core.util.GamaColor;
+import gama.api.GAMA;
+import gama.api.compilation.documentation.GamlIdiomsProvider;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.types.color.IColor;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.GamlIdiomsProvider;
 import gama.ui.experiment.menus.SimulationsMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaIcon;
@@ -109,13 +109,13 @@ public class SimulationPopupMenu extends PopupDialog {
 	 * @date 25 août 2023
 	 */
 	List<ITopLevelAgent> getAgentsToDisplay() {
-		IExperimentPlan plan = GAMA.getExperiment();
+		IExperimentSpecies plan = GAMA.getExperiment();
 		if (plan == null) return Collections.EMPTY_LIST;
 		IExperimentAgent exp = GAMA.getExperiment().getAgent();
 		if (exp == null) return Collections.EMPTY_LIST;
 		List<ITopLevelAgent> agents = new ArrayList<>();
 		agents.add(exp);
-		SimulationPopulation simPop = exp.getSimulationPopulation();
+		IPopulation<ISimulationAgent> simPop = exp.getSimulationPopulation();
 		if (simPop == null) return agents;
 		agents.addAll(GAMA.getExperiment().getAgent().getSimulationPopulation());
 		return agents;
@@ -217,7 +217,7 @@ public class SimulationPopupMenu extends PopupDialog {
 				public void mouseEnter(final MouseEvent e) {
 					background = labelText.getBackground();
 					foreground = labelText.getForeground();
-					GamaColor c = ((ITopLevelAgent) labelComposite.getData()).getColor();
+					IColor c = ((ITopLevelAgent) labelComposite.getData()).getColor();
 					Color b = GamaColors.toSwtColor(c);
 					GamaColors.setBackAndForeground(b, GamaColors.getTextColorForBackground(b).color(), labelText);
 				}
@@ -274,7 +274,7 @@ public class SimulationPopupMenu extends PopupDialog {
 		}
 		// GamaColors.setBackground(provider.getColor(), toolbar, toolbarComposite);
 		boolean isExperiment = GAMA.getCurrentTopLevelAgent() instanceof IExperimentAgent;
-		boolean isSimulation = GAMA.getCurrentTopLevelAgent() instanceof SimulationAgent;
+		boolean isSimulation = GAMA.getCurrentTopLevelAgent() instanceof ISimulationAgent;
 		boolean isBackward = isSimulation && GAMA.getExperiment() != null && GAMA.getExperiment().isMemorize();
 		add.setEnabled(isExperiment || isSimulation);
 		kill.setEnabled(isSimulation);

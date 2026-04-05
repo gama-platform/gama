@@ -1,8 +1,11 @@
 /**
-* Name: Agent display (aspect)
-* Author:
-* Description: 7th part of the tutorial: Predator Prey
-* Tags: display
+* Name: Predator Prey Tutorial - Step 07 - Agent Display (Aspects)
+* Author: Gama Development Team
+* Description: Seventh step of the Predator-Prey tutorial. Introduces the 'aspect' statement for customizing
+*   agent display. Prey are shown with circles whose size scales with their current energy; predators are shown
+*   with larger shapes. Multiple named aspects can be defined per species and selected at display time. This
+*   step demonstrates how visual encoding of agent state helps interpret model dynamics at a glance.
+* Tags: tutorial, prey, predator, display, aspect, visualization, energy
 */
 model prey_predator
 
@@ -21,8 +24,8 @@ global {
 	float predator_proba_reproduce <- 0.01;
 	int predator_nb_max_offsprings <- 3;
 	float predator_energy_reproduce <- 0.5;
-	int nb_preys -> {length(prey)};
-	int nb_predators -> {length(predator)};
+	int nb_preys -> length(prey);
+	int nb_predators -> length(predator);
 
 	init {
 		create prey number: nb_preys_init;
@@ -57,7 +60,7 @@ species generic_species {
 	}
 
 	reflex die when: energy <= 0 {
-		do die;
+		do die();
 	}
 
 	reflex reproduce when: (energy >= energy_reproduce) and (flip(proba_reproduce)) {
@@ -71,7 +74,7 @@ species generic_species {
 		energy <- energy / nb_offsprings;
 	}
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		return 0.0;
 	}
 
@@ -99,7 +102,7 @@ species prey parent: generic_species {
 	float energy_reproduce <- prey_energy_reproduce;
 	image_file my_icon <- image_file("../includes/data/sheep.png");
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		float energy_transfer <- 0.0;
 		if(my_cell.food > 0) {
 			energy_transfer <- min([max_transfer, my_cell.food]);
@@ -119,11 +122,11 @@ species predator parent: generic_species {
 	float energy_reproduce <- predator_energy_reproduce;
 	image_file my_icon <- image_file("../includes/data/wolf.png");
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		list<prey> reachable_preys <- prey inside (my_cell);
 		if(! empty(reachable_preys)) {
 			ask one_of (reachable_preys) {
-				do die;
+				do die();
 			}
 			return energy_transfer;
 		}

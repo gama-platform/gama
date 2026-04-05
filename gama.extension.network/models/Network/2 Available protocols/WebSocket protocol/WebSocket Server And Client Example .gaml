@@ -1,8 +1,11 @@
 /**
-* Name: Socket_TCP_HelloWorld_Server
+* Name: WebSocket Server and Client Example
 * Author: Arnaud Grignard
-* Description: Two clients are communicating throught the Socket WebSocket protocol.
-* Tags: Network, TCP, Socket
+* Description: Demonstrates bidirectional WebSocket communication within a single GAMA model. One agent
+*   acts as WebSocket server (listens for connections), another as client (connects and sends messages).
+*   WebSocket is preferred over TCP for browser-based or JavaScript client integration. Shows the GAMA
+*   network skill WebSocket mode including handshake, message exchange, and disconnection.
+* Tags: network, WebSocket, server, client, protocol, communication, browser, JavaScript
 */
 model WebSocket_HelloWorld
 
@@ -21,7 +24,7 @@ global{
 
 	}
 
-	action create_server {
+	action create_server() {
 		create Server number: 2 {
 			do connect protocol: "websocket_server" port: 3001 with_name:name force_network_use:true;
 			do join_group with_name: "server_group";
@@ -35,7 +38,7 @@ global{
 
 	}
 
-	action create_client {
+	action create_client() {
 		create Client number: 2 {
 		// replace the "localhost" address by the IP address of the other computer 
 			do connect to: "localhost" protocol: "websocket_client" port: 3001 with_name: name  force_network_use:true;
@@ -94,7 +97,7 @@ experiment "WebSocket Server and Client" type: gui {
 	float minimum_cycle_duration <- 0.25;
 
 	init {
-		create simulation with: [type:: "client"];
+		create simulation with: (type: "client");
 	}
 
 	output {

@@ -1,3 +1,13 @@
+/*******************************************************************************************************
+ *
+ * SpatialPunctal.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.gaml.operators.spatial;
 
 import org.locationtech.jts.algorithm.Centroid;
@@ -7,24 +17,25 @@ import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.operation.distance.DistanceOp;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.Reason;
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.Reason;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.utils.geometry.GeometryUtils;
 import gama.gaml.operators.Maths;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class Punctal.
@@ -43,8 +54,7 @@ public class SpatialPunctal {
 	@operator (
 			value = "centroid",
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.POINT },
-			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION,
-					IConcept.POINT })
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION, IConcept.POINT })
 	@doc (
 			value = "Centroid (weighted sum of the centroids of a decomposition of the area into triangles) of the operand-geometry. Can be different to the location of the geometry",
 			examples = { @example (
@@ -53,10 +63,10 @@ public class SpatialPunctal {
 					test = false) },
 			see = { "any_location_in", "closest_points_with", "farthest_point_to", "points_at" })
 	@test (" centroid(world) = {50.0, 50.0, 0.0} ")
-	public static GamaPoint centroidArea(final IScope scope, final IShape g) {
+	public static IPoint centroidArea(final IScope scope, final IShape g) {
 		if (g == null || g.getInnerGeometry() == null) return null;
 		final Centroid cent = new Centroid(g.getInnerGeometry());
-		return new GamaPoint(cent.getCentroid());
+		return GamaPointFactory.create(cent.getCentroid());
 	}
 
 	/**
@@ -71,8 +81,7 @@ public class SpatialPunctal {
 	@operator (
 			value = { "any_location_in", "any_point_in" },
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.POINT },
-			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION,
-					IConcept.POINT })
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION, IConcept.POINT })
 	@doc (
 			value = "A point inside (or touching) the operand-geometry.",
 			examples = { @example (
@@ -81,8 +90,9 @@ public class SpatialPunctal {
 					test = false) },
 			see = { "closest_points_with", "farthest_point_to", "points_at" })
 	@no_test
-	public static GamaPoint any_location_in(final IScope scope, final IShape g) {
-		return GeometryUtils.pointInGeom(scope, g);
+	public static IPoint any_location_in(final IScope scope, final IShape g) {
+		if (g == null) return null;
+		return GeometryUtils.pointInGeom(scope, g.getInnerGeometry());
 	}
 
 	/**
@@ -99,8 +109,7 @@ public class SpatialPunctal {
 			type = IType.LIST,
 			content_type = IType.POINT,
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.POINT },
-			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION,
-					IConcept.POINT })
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION, IConcept.POINT })
 	@doc (
 			value = "A list of points of the operand-geometry distant from each other to the float right-operand .",
 			examples = { @example (
@@ -110,7 +119,7 @@ public class SpatialPunctal {
 			see = { "closest_points_with", "farthest_point_to", "points_at" })
 	@test ("line({0,0},{0,10}) points_on 5 = [{0.0,0.0,0.0},{0.0,5.0,0.0},{0.0,10.0,0.0}]")
 	public static IList points_on(final IShape geom, final Double distance) {
-		final IList<GamaPoint> locs = GamaListFactory.create(Types.POINT);
+		final IList<IPoint> locs = GamaListFactory.create(Types.POINT);
 		if (geom.getInnerGeometry() instanceof GeometryCollection) {
 			for (int i = 0; i < geom.getInnerGeometry().getNumGeometries(); i++) {
 				locs.addAll(GeometryUtils.locsOnGeometry(geom.getInnerGeometry().getGeometryN(i), distance));
@@ -135,8 +144,7 @@ public class SpatialPunctal {
 			type = IType.LIST,
 			content_type = IType.POINT,
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.POINT },
-			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION,
-					IConcept.POINT })
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION, IConcept.POINT })
 	@doc (
 			value = "A list of points along the operand-geometry given its location in terms of rate of distance from the starting points of the geometry.",
 			examples = { @example (
@@ -146,7 +154,7 @@ public class SpatialPunctal {
 			see = { "closest_points_with", "farthest_point_to", "points_at", "points_on" })
 	@test ("line({0,0},{0,10}) points_along [0.50, 0.75] = [{0.0,5.0,0.0},{0.0,7.5,0.0}]")
 	public static IList points_along(final IShape geom, final IList<Double> rates) {
-		final IList<GamaPoint> locs = GamaListFactory.create(Types.POINT);
+		final IList<IPoint> locs = GamaListFactory.create(Types.POINT);
 		if (geom.getInnerGeometry() instanceof GeometryCollection) {
 			for (int i = 0; i < geom.getInnerGeometry().getNumGeometries(); i++) {
 				locs.addAll(GeometryUtils.locsAlongGeometry(geom.getInnerGeometry().getGeometryN(i), rates));
@@ -172,8 +180,7 @@ public class SpatialPunctal {
 			value = { "points_at" },
 			content_type = IType.POINT,
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.POINT },
-			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION,
-					IConcept.POINT })
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION, IConcept.POINT })
 	@doc (
 			value = "A list of left-operand number of points located at a the right-operand distance to the agent location.",
 			examples = { @example (
@@ -182,18 +189,19 @@ public class SpatialPunctal {
 					test = false) },
 			see = { "any_location_in", "any_point_in", "closest_points_with", "farthest_point_to" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
-	public static IList<GamaPoint> points_at(final IScope scope, final Integer nbLoc, final Double distance) {
+	public static IList<IPoint> points_at(final IScope scope, final Integer nbLoc, final Double distance) {
 		if (distance == null || nbLoc == null) // scope.setStatus(ExecutionStatus.failure);
 			throw GamaRuntimeException.error("Impossible to compute points_at", scope);
-		final IList<GamaPoint> locations = GamaListFactory.create(Types.POINT);
-		final GamaPoint loc = scope.getAgent().getLocation();
+		final IList<IPoint> locations = GamaListFactory.create(Types.POINT);
+		final IPoint loc = scope.getAgent().getLocation();
 		final double angle1 = scope.getRandom().between(0, 2 * Math.PI);
+		// Precompute the angular step to avoid dividing by nbLoc on every iteration
+		final double angleStep = 2 * Math.PI / nbLoc;
 
 		for (int i = 0; i < nbLoc; i++) {
-			final GamaPoint p =
-					new GamaPoint(loc.getX() + distance * Math.cos(angle1 + (double) i / nbLoc * 2 * Math.PI),
-							loc.getY() + distance * Math.sin(angle1 + (double) i / nbLoc * 2 * Math.PI));
-			locations.add(p);
+			final double angle = angle1 + i * angleStep;
+			locations.add(GamaPointFactory.create(loc.getX() + distance * Math.cos(angle),
+					loc.getY() + distance * Math.sin(angle)));
 		}
 		return locations;
 
@@ -213,8 +221,7 @@ public class SpatialPunctal {
 			type = IType.LIST,
 			content_type = IType.POINT,
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.POINT },
-			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION,
-					IConcept.POINT })
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION, IConcept.POINT })
 	@doc (
 			value = "A list of two closest points between the two geometries.",
 			examples = { @example (
@@ -223,9 +230,9 @@ public class SpatialPunctal {
 					isExecutable = false) },
 			see = { "any_location_in", "any_point_in", "farthest_point_to", "points_at" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
-	public static IList<GamaPoint> closest_points_with(final IShape a, final IShape b) {
+	public static IList<IPoint> closest_points_with(final IShape a, final IShape b) {
 		final Coordinate[] coors = DistanceOp.nearestPoints(a.getInnerGeometry(), b.getInnerGeometry());
-		return GamaListFactory.wrap(Types.POINT, new GamaPoint(coors[0]), new GamaPoint(coors[1]));
+		return GamaListFactory.wrap(Types.POINT, GamaPointFactory.create(coors[0]), GamaPointFactory.create(coors[1]));
 	}
 
 	/**
@@ -240,8 +247,7 @@ public class SpatialPunctal {
 	@operator (
 			value = "farthest_point_to",
 			category = { IOperatorCategory.SPATIAL, IOperatorCategory.POINT },
-			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION,
-					IConcept.POINT })
+			concept = { IConcept.GEOMETRY, IConcept.SPATIAL_COMPUTATION, IConcept.SPATIAL_RELATION, IConcept.POINT })
 	@doc (
 			value = "the farthest point of the left-operand to the left-point.",
 			examples = { @example (
@@ -250,7 +256,7 @@ public class SpatialPunctal {
 					isExecutable = false) },
 			see = { "any_location_in", "any_point_in", "closest_points_with", "points_at" })
 	@no_test (Reason.IMPOSSIBLE_TO_TEST)
-	public static GamaPoint farthest_point_to(final IShape g, final GamaPoint p) {
+	public static IPoint farthest_point_to(final IShape g, final IPoint p) {
 		if (g == null) return p.getLocation();
 		if (p == null) return g.getLocation();
 
@@ -265,7 +271,7 @@ public class SpatialPunctal {
 				dist_max = dist;
 			}
 		}
-		return new GamaPoint(pt_max);
+		return GamaPointFactory.create(pt_max);
 	}
 
 	/**
@@ -277,11 +283,11 @@ public class SpatialPunctal {
 	 * @param poly
 	 *            a polygon
 	 */
-	public static GamaPoint _closest_point_to(final IShape pt, final IShape geom) {
+	public static IPoint _closest_point_to(final IShape pt, final IShape geom) {
 		if (pt == null) return null;
 		if (geom == null) return pt.getLocation();
 		final Coordinate[] cp = new DistanceOp(geom.getInnerGeometry(), pt.getInnerGeometry()).nearestPoints();
-		return new GamaPoint(cp[0]);
+		return GamaPointFactory.create(cp[0]);
 	}
 
 	/**
@@ -293,12 +299,12 @@ public class SpatialPunctal {
 	 *            the geom
 	 * @return the gama point
 	 */
-	public static GamaPoint _closest_point_to(final GamaPoint pt, final IShape geom) {
+	public static IPoint _closest_point_to(final IPoint pt, final IShape geom) {
 		if (pt == null) return null;
 		if (geom == null) return pt;
 		final PointPairDistance ppd = new PointPairDistance();
-		DistanceToPoint.computeDistance(geom.getInnerGeometry(), pt, ppd);
-		return new GamaPoint(ppd.getCoordinate(0));
+		DistanceToPoint.computeDistance(geom.getInnerGeometry(), pt.toCoordinate(), ppd);
+		return GamaPointFactory.create(ppd.getCoordinate(0));
 	}
 
 	/**
@@ -323,14 +329,14 @@ public class SpatialPunctal {
 			examples = { @example (
 					value = "angle_between({5,5},{10,5},{5,10})",
 					equals = "90") })
-	public static Double angleInDegreesBetween(final IScope scope, final GamaPoint p0, final GamaPoint p1,
-			final GamaPoint p2) {
-		final double Xa = p1.x - p0.x;
-		final double Ya = p1.y - p0.y;
-		final double Xb = p2.x - p0.x;
-		final double Yb = p2.y - p0.y;
-		final double Na = Maths.sqrt(scope, Xa * Xa + Ya * Ya);
-		final double Nb = Maths.sqrt(scope, Xb * Xb + Yb * Yb);
+	public static Double angleInDegreesBetween(final IScope scope, final IPoint p0, final IPoint p1, final IPoint p2) {
+		final double Xa = p1.getX() - p0.getX();
+		final double Ya = p1.getY() - p0.getY();
+		final double Xb = p2.getX() - p0.getX();
+		final double Yb = p2.getY() - p0.getY();
+		// Math.hypot is faster and more numerically stable than Maths.sqrt(scope, ...)
+		final double Na = Math.hypot(Xa, Ya);
+		final double Nb = Math.hypot(Xb, Yb);
 		final double C = Maths.round((Xa * Xb + Ya * Yb) / (Na * Nb), 10);
 		final double S = Xa * Yb - Ya * Xb;
 		final double result = S > 0 ? Maths.acos(C) : -1 * Maths.acos(C);

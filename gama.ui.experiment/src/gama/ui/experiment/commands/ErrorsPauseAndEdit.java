@@ -20,7 +20,7 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 
-import gama.core.common.preferences.GamaPreferences;
+import gama.api.utils.prefs.GamaPreferences;
 
 /**
  * The Class ErrorsPauseAndEdit.
@@ -29,7 +29,7 @@ public class ErrorsPauseAndEdit extends AbstractHandler implements IElementUpdat
 
 	@Override
 	public Object execute(final ExecutionEvent event) throws ExecutionException {
-		GamaPreferences.Runtime.CORE_REVEAL_AND_STOP.set(!GamaPreferences.Runtime.CORE_REVEAL_AND_STOP.getValue());
+		GamaPreferences.Runtime.CORE_STOP_AT_FIRST_ERROR.set(!GamaPreferences.Runtime.CORE_STOP_AT_FIRST_ERROR.getValue());
 		final ICommandService service =
 				HandlerUtil.getActiveWorkbenchWindowChecked(event).getService(ICommandService.class);
 		service.refreshElements(event.getCommand().getId(), null);
@@ -38,7 +38,7 @@ public class ErrorsPauseAndEdit extends AbstractHandler implements IElementUpdat
 
 	@Override
 	public void updateElement(final UIElement element, final Map parameters) {
-		element.setChecked(GamaPreferences.Runtime.CORE_REVEAL_AND_STOP.getValue());
+		element.setChecked(GamaPreferences.Runtime.CORE_STOP_AT_FIRST_ERROR.getValue());
 	}
 
 }

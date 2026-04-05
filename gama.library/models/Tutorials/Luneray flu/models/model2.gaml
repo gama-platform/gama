@@ -1,8 +1,11 @@
 /**
-* Name: Luneray's flu 2
+* Name: Luneray's Flu - Step 2
 * Author: Patrick Taillandier
-* Description: Additions of a chart, monitor and end condition
-* Tags: chart, monitor, pause, tutorial
+* Description: Second step of the Luneray's Flu tutorial. Adds monitoring and visualization to the epidemic
+*   model: a time-series chart tracks the infected population over time, a monitor displays the current
+*   infected count, and a stopping condition (pause_when) halts the simulation when no more infected agents
+*   remain. This step introduces the core analysis and output tools available in GAMA experiments.
+* Tags: chart, monitor, pause, tutorial, epidemic, flu, output
 */
 
 model model2
@@ -25,8 +28,8 @@ global {
 	}
 	
     reflex end_simulation when: infected_rate = 1.0 {
-		do pause;
-    }	
+		do pause();
+	}
 }
 
 species people skills:[moving]{		
@@ -34,7 +37,7 @@ species people skills:[moving]{
 	bool is_infected <- false;
 	
 	reflex move{
-		do wander;
+		do wander();
 	}
 
 	reflex infect when: is_infected{

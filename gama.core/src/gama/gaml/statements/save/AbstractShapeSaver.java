@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * AbstractShapeSaver.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -22,41 +22,38 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.geotools.api.feature.simple.SimpleFeature;
 import org.geotools.feature.SchemaException;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryCollection;
 import org.locationtech.jts.geom.LineString;
 import org.locationtech.jts.geom.Point;
 import org.locationtech.jts.geom.Polygon;
-import org.opengis.feature.simple.SimpleFeature;
-import org.opengis.referencing.FactoryException;
 
-import gama.core.common.geometry.GeometryUtils;
-import gama.core.common.interfaces.ITyped;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.util.StringUtils;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.metamodel.shape.IShape;
-import gama.core.metamodel.topology.projection.IProjection;
-import gama.core.metamodel.topology.projection.SimpleScalingProjection;
-import gama.core.runtime.IScope;
-import gama.core.runtime.concurrent.BufferingController.BufferingStrategies;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IList;
-import gama.gaml.descriptions.SpeciesDescription;
-import gama.gaml.expressions.ConstantExpression;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IExpressionFactory;
-import gama.gaml.expressions.data.MapExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.species.ISpecies;
-import gama.gaml.statements.Arguments;
+import gama.api.compilation.descriptions.ITypeDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.symbols.Arguments;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.ITyped;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.species.ISpecies;
+import gama.api.kernel.topology.IProjection;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.utils.StringUtils;
+import gama.api.utils.files.SaveOptions;
+import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.core.topology.gis.SimpleScalingProjection;
 import gama.gaml.statements.SaveStatement;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class AbstractShapeSaver.
@@ -94,8 +91,9 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 	 *             the gama runtime exception
 	 */
 	@Override
-	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions) throws GamaRuntimeException {
-		save(scope, item, file, saveOptions.code, saveOptions.attributesToSave);
+	public void save(final IScope scope, final IExpression item, final File file, final SaveOptions saveOptions)
+			throws GamaRuntimeException {
+		save(scope, item, file, saveOptions.code(), saveOptions.attributesToSave());
 	}
 
 	/**
@@ -158,7 +156,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 		final String geomType = GeometryUtils.getGeometryStringType(agents);
 		specs.append("geometry:" + geomType);
 		try {
-			final SpeciesDescription species = agents instanceof IPopulation pop ? pop.getSpecies().getDescription()
+			final ITypeDescription species = agents instanceof IPopulation pop ? pop.getSpecies().getDescription()
 					: agents.getGamlType().getContentType().getSpecies();
 
 			final Map<String, IExpression> attributes = computeInits(scope, species, attributesToSave);
@@ -278,7 +276,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 	 * @throws GamaRuntimeException
 	 *             the gama runtime exception
 	 */
-	protected final Map<String, IExpression> computeInits(final IScope scope, final SpeciesDescription species,
+	protected final Map<String, IExpression> computeInits(final IScope scope, final ITypeDescription species,
 			final Object attributes) throws GamaRuntimeException {
 		if (attributes == null) return Collections.EMPTY_MAP;
 		final Map<String, IExpression> result = GamaMapFactory.create();
@@ -295,7 +293,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 					return true;
 				});
 			}
-		} else if (attributes instanceof MapExpression me) {
+		} else if (attributes instanceof IExpression.Map me) {
 			final Map<IExpression, IExpression> map = me.getElements();
 			map.forEach((key, value) -> {
 				final String theName = Cast.asString(scope, key.value(scope));
@@ -303,13 +301,13 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 			});
 		} else if (attributes instanceof IExpression exp) {
 			@SuppressWarnings ("unchecked") final List<String> names =
-					GamaListFactory.create(scope, Types.STRING, Cast.asList(scope, exp.value(scope)));
+					GamaListFactory.create(scope, Types.STRING, GamaListFactory.castToList(scope, exp.value(scope)));
 			if (species != null) {
 				names.forEach(n -> result.put(n,
-						species.hasAttribute(n) ? species.getVarExpr(n, false) : IExpressionFactory.NIL_EXPR));
+						species.hasAttribute(n) ? species.getVarExpr(n, false) : GAML.getExpressionFactory().getNil()));
 			} else {
 				// see #2982
-				names.forEach(n -> result.put(n, new ConstantExpression(n)));
+				names.forEach(n -> result.put(n, GAML.getExpressionFactory().createConst(n)));
 			}
 		}
 		return result;
@@ -333,7 +331,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 				code = EPSG_LABEL + GamaPreferences.External.LIB_OUTPUT_CRS.getValue();
 				try {
 					gis = scope.getSimulation().getProjectionFactory().forSavingWith(scope, code);
-				} catch (final FactoryException e1) {
+				} catch (final Exception e1) {
 					throw GamaRuntimeException.error(THE_CODE + code + DOES_NOT_CORRESPOND_TO_A_KNOWN_EPSG_CODE, scope);
 				}
 			} else {
@@ -347,7 +345,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 					}
 					try {
 						gis = scope.getSimulation().getProjectionFactory().forSavingWith(scope, code);
-					} catch (final FactoryException e1) {
+					} catch (final Exception e1) {
 						throw GamaRuntimeException.error(THE_CODE + code + DOES_NOT_CORRESPOND_TO_A_KNOWN_EPSG_CODE,
 								scope);
 					}
@@ -367,7 +365,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 
 			try {
 				gis = scope.getSimulation().getProjectionFactory().forSavingWith(scope, code);
-			} catch (final FactoryException e1) {
+			} catch (final Exception e1) {
 				throw GamaRuntimeException.error(THE_CODE + code + DOES_NOT_CORRESPOND_TO_A_KNOWN_EPSG_CODE, scope);
 			}
 		}
@@ -391,32 +389,34 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 
 			for (int i = 0; i < nb; i++) {
 				final Geometry g = gc.getGeometryN(i);
-				if (g instanceof Polygon p) {
-					polys.add(p);
-				} else if (g instanceof LineString ls) {
-					lines.add(ls);
-				} else if (g instanceof Point p) { points.add(p); }
+				switch (g) {
+					case Polygon p -> polys.add(p);
+					case LineString ls -> lines.add(ls);
+					case Point p -> points.add(p);
+					case null, default -> {
+					}
+				}
 			}
 			if (!polys.isEmpty()) {
 				if (polys.size() == 1) return polys.get(0);
 				Polygon[] ps = new Polygon[polys.size()];
 				for (int i = 0; i < ps.length; i++) { ps[i] = polys.get(i); }
 
-				return GeometryUtils.GEOMETRY_FACTORY.createMultiPolygon(ps);
+				return GeometryUtils.getGeometryFactory().createMultiPolygon(ps);
 			}
 			if (!lines.isEmpty()) {
 
 				if (lines.size() == 1) return lines.get(0);
 				LineString[] ps = new LineString[lines.size()];
 				for (int i = 0; i < ps.length; i++) { ps[i] = lines.get(i); }
-				return GeometryUtils.GEOMETRY_FACTORY.createMultiLineString(ps);
+				return GeometryUtils.getGeometryFactory().createMultiLineString(ps);
 			}
 			if (!points.isEmpty()) {
 				if (points.size() == 1) return points.get(0);
 
 				Point[] ps = new Point[points.size()];
 				for (int i = 0; i < ps.length; i++) { ps[i] = points.get(i); }
-				return GeometryUtils.GEOMETRY_FACTORY.createMultiPoint(ps);
+				return GeometryUtils.getGeometryFactory().createMultiPoint(ps);
 			}
 		}
 		return gg;

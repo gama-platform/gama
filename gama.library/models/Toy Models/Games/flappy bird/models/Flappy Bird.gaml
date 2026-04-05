@@ -1,7 +1,12 @@
 /**
-* Name: Flappy Bird, try to avoid obstacles to gain points.
+* Name: Flappy Bird
 * Author: Loris Henry
-* Tags: Flappy Bird, game, user interaction
+* Description: A GAMA implementation of the classic Flappy Bird game. The player controls a bird that must
+*   fly through gaps between vertical pipe obstacles. Gravity pulls the bird downward continuously; pressing
+*   a key (or clicking) applies an upward impulse. Each pipe passed scores one point. The simulation uses
+*   realistic physics with a gravity constant (9.81 m/s²) and pipe movement speed. This model demonstrates
+*   real-time user interaction, physics-based movement, and game loop implementation within GAMA.
+* Tags: game, user_interaction, physics, gravity, flappy_bird, real_time, gui
 */
 
 
@@ -35,7 +40,7 @@ global {
 		
 		do reinit_model;
 	}
-	action reinit_model {
+	action reinit_model() {
 		
 		ask texts {
 			do die;
@@ -53,7 +58,7 @@ global {
 		}
 	}
 	
-	action to_game_over {
+	action to_game_over() {
 		game_over <- true;
 		ask bird { 
 			do die;
@@ -196,7 +201,7 @@ experiment main {
 		
 		display main fullscreen:true type:2d {
 			
-			image_layer "../includes/background.png";
+			picture "../includes/background.png";
 			species bird aspect:png;
 			
 			species tuyau aspect:png;

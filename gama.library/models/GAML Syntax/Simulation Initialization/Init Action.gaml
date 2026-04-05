@@ -1,8 +1,13 @@
 /**
-* Name: InitAction
+* Name: Init Action
 * Author: Alexis Drogoul
-* Description:  This simple example shows how to use the _init_ callback action to build a simulation with some parameters, without declaring them as parameters
-* Tags: GAML
+* Description: Shows how to use the special '_init_' callback action of an experiment to configure a simulation
+*   with specific parameters before it begins, without exposing those parameters to the user interface. The _init_
+*   action is called once when an experiment is initialized and can be used to set global variables, choose
+*   parameter values programmatically, or perform any setup that would otherwise require user intervention.
+*   This is useful for programmatic experiments, batch runs, or when the initial configuration is computed
+*   rather than user-defined.
+* Tags: init, experiment, parameter, simulation, initialization, callback
 */
 
 model InitAction
@@ -35,9 +40,9 @@ species my_agents {
 
 experiment InitAction type: gui {
 	
-	action _init_ {
+	action _init_ (){
 		map<string, unknown> params <- user_input_dialog([enter("Number of agents",100), enter("Color",#red), enter("2D",true)]);
-		create InitAction_model with: [agent_number::int(params["Number of agents"]), agent_color::rgb(params["Color"]), 2d::bool(params["2D"])];
+		create InitAction_model with: (agent_number:int(params["Number of agents"]), agent_color:rgb(params["Color"]), 2d:bool(params["2D"]));
 	}
 	
 	output {

@@ -1,9 +1,12 @@
 /**
-* Name: Comodel0 
-* Author: Benoit Gaudou & Damien Philippon
-* Description: Couple two models: weather and plant growth
-* - create interaction between models entities: water on rain will full the water reserve
-* Tags: comodel
+* Name: Plant Growth and Weather Comodel 2
+* Author: Benoit Gaudou, Damien Philippon
+* Description: Second comodel in the Plant Growth and Weather series, adding bidirectional coupling between
+*   the Weather and Plant Growth sub-models. Rain water from the Weather model now fills the water reserve
+*   of plants in the Plant Growth model, creating an ecological feedback loop: weather affects plant growth,
+*   and plant density can influence local weather cells. This model shows how to create interactions between
+*   agents of two different coupled sub-models by accessing them through the comodel interface.
+* Tags: comodel, weather, plant, ecology, coupling, interaction, water, growth
 */
 
 model coModel
@@ -18,10 +21,10 @@ global {
 	plantGrow plantGrow_simu;
 		
 	init {
-		create weather."Weather Co-Modeling" with: [grid_size::20,write_in_console_step::false];
+		create weather."Weather Co-Modeling" with: (grid_size:20,write_in_console_step:false);
 		weather_simu <- first(weather."Weather Co-Modeling").simulation; 
 		
-		create plantGrow."Plant Growth Co-Modeling" with: [grid_size::40];
+		create plantGrow."Plant Growth Co-Modeling" with: (grid_size:40);
 		plantGrow_simu <- first(plantGrow."Plant Growth Co-Modeling").simulation; 		
 	}
 

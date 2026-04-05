@@ -12,7 +12,7 @@ species Person skills:[network]
 	string myGroup;
 	init
 	{
-		do connect with_name:name;
+	 	self.connect(with_name:name);
 	}
 }
 
@@ -24,11 +24,11 @@ experiment "Tests for gam.extension.network" type: test skills:[network] {
 	{
 		if(!already_build)
 		{
-			create Person with:[name::"Travis", myGroup::"manager"];
+			create Person with:(name:"Travis", myGroup:"manager");
 			
 			loop nm over:girls
 			{
-				create Person with:[name::nm, myGroup::group_spice];
+				create Person with:(name:nm, myGroup:group_spice);
 			}
 			already_build <- true;	
 		}

@@ -22,11 +22,11 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 
-import gama.core.common.interfaces.IRuntimeExceptionHandler;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.runtime.IRuntimeExceptionHandler;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.dev.THREADS;
 
@@ -70,7 +70,9 @@ public class RuntimeExceptionHandler extends Job implements IRuntimeExceptionHan
 	public void clearErrors() {
 		incomingExceptions.clear();
 		cleanExceptions.clear();
-		updateUI(null, true);
+		// Refresh the view to show it empty, but do NOT hide it — the user may have
+		// opened it intentionally and should be able to keep it open even when empty.
+		GAMA.getGui().displayErrors(null, cleanExceptions, true);
 	}
 
 	@Override
@@ -100,10 +102,10 @@ public class RuntimeExceptionHandler extends Job implements IRuntimeExceptionHan
 				List<GamaRuntimeException> list = entry.getValue();
 
 				// DEBUG.LOG("Processing exceptions for " + root);
-				if (GamaPreferences.Runtime.CORE_REVEAL_AND_STOP.getValue()) {
+				if (GamaPreferences.Runtime.CORE_STOP_AT_FIRST_ERROR.getValue()) {
 					final GamaRuntimeException firstEx = list.get(0);
 					if (GamaPreferences.Runtime.CORE_ERRORS_EDITOR_LINK.getValue()) {
-						GAMA.getGui().editModel(firstEx.getEditorContext());
+						GAMA.getGui().getModelsManager().editModel(firstEx.getEditorContext());
 					}
 					firstEx.setReported();
 					if (GamaPreferences.Runtime.CORE_SHOW_ERRORS.getValue()) {
@@ -156,9 +158,19 @@ public class RuntimeExceptionHandler extends Job implements IRuntimeExceptionHan
 		if (newExceptions != null) {
 			newExceptions.removeIf(GamaRuntimeException::isInvalid);
 			cleanExceptions = new ArrayList<>(newExceptions);
+		} else {
+			// null means "clear the data" — do NOT pass null to displayErrors, which
+			// would hide the view. Pass the now-empty cleanExceptions instead so the
+			// view stays open (showing nothing) if it was already visible.
+			cleanExceptions = new ArrayList<>();
 		}
-
-		GAMA.getGui().displayErrors(null, newExceptions, reset);
+		if (!cleanExceptions.isEmpty()) {
+			// There are real errors: open the ErrorView if not already open, then refresh.
+			// We call showView+displayErrors directly (not displayLatestErrors()) to avoid
+			// infinite recursion, since displayLatestErrors() calls back into updateUI.
+			GAMA.getGui().openErrorView();
+		}
+		GAMA.getGui().displayErrors(null, cleanExceptions, reset);
 	}
 
 	@Override
@@ -181,5 +193,21 @@ public class RuntimeExceptionHandler extends Job implements IRuntimeExceptionHan
 
 	@Override
 	public List<GamaRuntimeException> getCleanExceptions() { return cleanExceptions; }
+
+	/**
+	 * Immediately drains {@code incomingExceptions} into {@code cleanExceptions} and updates the UI. This bypasses the
+	 * normal async Job delivery and is used on init-failure paths where the background Job may not have woken up yet.
+	 */
+	@Override
+	public void displayLatestErrors() {
+		final List<GamaRuntimeException> pending = new ArrayList<>(incomingExceptions);
+		incomingExceptions.removeAll(pending);
+		if (pending.isEmpty()) return;
+		final List<GamaRuntimeException> merged = new ArrayList<>(cleanExceptions);
+		for (final GamaRuntimeException ex : pending) {
+			if (merged.stream().noneMatch(old -> old.equivalentTo(ex))) { merged.add(ex); }
+		}
+		updateUI(merged, true);
+	}
 
 }

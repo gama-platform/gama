@@ -2,7 +2,7 @@
  *
  * ChartDataSet.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,16 +16,18 @@ import java.util.LinkedHashMap;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.FileUtils;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.IList;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.ui.displays.IChart;
+import gama.api.utils.StringUtils;
+import gama.api.utils.files.FileUtils;
 import gama.dev.DEBUG;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
 import gama.gaml.operators.Files;
-import gama.gaml.operators.Strings;
 
 /**
  * The Class ChartDataSet.
@@ -92,7 +94,7 @@ public class ChartDataSet {
 	final LinkedHashMap<String, Integer> serieToUpdateBefore = new LinkedHashMap<>();
 
 	/** The mainoutput. */
-	ChartOutput mainoutput;
+	IChart mainoutput;
 
 	/** The reset all before. */
 	int resetAllBefore = 0;
@@ -329,7 +331,7 @@ public class ChartDataSet {
 	 *
 	 * @return the output
 	 */
-	public ChartOutput getOutput() { return mainoutput; }
+	public IChart getOutput() { return mainoutput; }
 
 	/**
 	 * Sets the output.
@@ -531,7 +533,7 @@ public class ChartDataSet {
 			source.updatevalues(scope, chartCycle);
 			if (keepHistory) { source.savehistory(scope, history); }
 		}
-		if (keepHistory) { history.append(Strings.LN); }
+		if (keepHistory) { history.append(StringUtils.LN); }
 	}
 
 	/**
@@ -665,8 +667,8 @@ public class ChartDataSet {
 			}
 
 			if (xval instanceof IList) {
-				final IList<?> xv2 = Cast.asList(scope, xval);
-				final IList<?> xl2 = Cast.asList(scope, xlab);
+				final IList<?> xv2 = GamaListFactory.castToList(scope, xval);
+				final IList<?> xl2 = GamaListFactory.castToList(scope, xlab);
 
 				if (this.useXSource && xv2.size() > 0 && xv2.get(0) instanceof Number) {
 					XSeriesValues.clear();

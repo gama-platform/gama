@@ -1,21 +1,14 @@
 /**
-* Name:  create_agents_Insert_result_MySQL
+* Name: Create and Insert Agents from and into a Database (MySQL)
 * Author: Benoit Gaudou
-* Description: This model illustrates the use of the MySQL DBMS to: 
-* 
- *     - create agents from a database
- * 
- *     - store every cycle some results into a database
- * 
- * 
- *  Note: this model could be used with any DBMS just by changing the PARAMS variable.
- * 
- * 
- *  NOTE: YOU SHOULD HAVE ALREADY CREATED YOUR DATABASE (meteo_DB here) AND IMPORTED THE FILE (../includes/meteo_DB_dump.sql)
- *        IN ORDER THAT THE MODEL CAN RUN PROPERLY.
-* Tags: database
- */
-model create_agents_Insert_result_MySQL 
+* Description: Demonstrates a bidirectional workflow between GAMA agents and a MySQL database: agents are
+*   initialized by querying meteorological data from the database, and each cycle the simulation results are
+*   inserted back into a result table. Demonstrates how to use SELECT to populate agents and executeUpdate/insert
+*   to persist simulation outputs. The pattern works with any DBMS — just change the PARAMS connection map.
+*   Requires the meteo_DB database with the meteo_DB_dump.sql schema to be installed first.
+* Tags: database, SQL, MySQL, AgentDB, create, insert, select, output, agents
+*/
+model create_agents_Insert_result_MySQL
 
 global {
 	string res_DB <- '`result_DB`';
@@ -40,7 +33,7 @@ global {
 		write first(DB_accessor).select (PARAMS, SQLquery_idPoint);
 
 		create idPoint from: first(DB_accessor).select(PARAMS, SQLquery_idPoint)
-		with: [name:: "idPointgrille", RRmm::"RR", Tmin::"Tmin", Tmax::"Tmax", Rglot::"Rglot", ETPmm::"ETPmm"];
+		with: (name: "idPointgrille", RRmm:"RR", Tmin:"Tmin", Tmax:"Tmax", Rglot:"Rglot", ETPmm:"ETPmm");
 	}
 
 	reflex endSimu when: (cycle = 10) {

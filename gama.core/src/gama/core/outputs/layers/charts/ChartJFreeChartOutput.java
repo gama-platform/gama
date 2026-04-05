@@ -3,7 +3,7 @@
  * ChartJFreeChartOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -37,12 +37,12 @@ import org.jfree.chart.ui.RectangleEdge;
 import org.jfree.chart.ui.VerticalAlignment;
 import org.jfree.data.general.Dataset;
 
-import gama.core.common.interfaces.IKeyword;
+import gama.annotations.constants.IKeyword;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
 import gama.core.outputs.display.AbstractDisplayGraphics;
-import gama.core.runtime.IScope;
-import gama.core.util.GamaColor;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
 import gama.gaml.operators.Colors;
 
 /**
@@ -220,7 +220,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 		chart.getTitle().setVisible(true);
 		chart.getTitle().setFont(getTitleFont());
 		if (!this.getTitleVisible(scope)) { chart.getTitle().setVisible(false); }
-		if (textColor != null) { chart.getTitle().setPaint(textColor); }
+		if (textColor != null) { chart.getTitle().setPaint(IColor.toAWTColor(textColor)); }
 
 		if (backgroundColor == null) {
 			plot.setBackgroundPaint(null);
@@ -228,7 +228,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 			chart.setBorderPaint(null);
 			if (chart.getLegend() != null) { chart.getLegend().setBackgroundPaint(null); }
 		} else {
-			final Color bg = backgroundColor;
+			final Color bg = IColor.toAWTColor(backgroundColor);
 			chart.setBackgroundPaint(bg);
 			plot.setBackgroundPaint(bg);
 			chart.setBorderPaint(bg);
@@ -257,15 +257,15 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 				case "onchart":
 					if (plot instanceof XYPlot p) {
 						// Place the legend inside the chart area at the corner specified by the anchor
-						double x = series_label_anchor.x / 2 + 0.25; // Normalize to [0.25, 0.75]
-						double y = series_label_anchor.y / 2 + 0.25;
+						double x = series_label_anchor.getX() / 2 + 0.25; // Normalize to [0.25, 0.75]
+						double y = series_label_anchor.getY() / 2 + 0.25;
 						XYTitleAnnotation ta = new XYTitleAnnotation(x, y, legend, RectangleAnchor.CENTER);
 						ta.setMaxWidth(0.5); // Legend will take up to 50% of the chart width by default
 						ta.setMaxHeight(0.5);
 						legend.setHorizontalAlignment(HorizontalAlignment.CENTER);
 						legend.setVerticalAlignment(VerticalAlignment.CENTER);
 						// Legend with 50% transparency by default
-						legend.setBackgroundPaint(Colors.rgb(scope, GamaColor.get(backgroundColor), 0.5));
+						legend.setBackgroundPaint(IColor.toAWTColor(Colors.rgb(scope, backgroundColor, 0.5)));
 						p.addAnnotation(ta);
 						// Remove the default legend
 						chart.removeLegend();
@@ -273,7 +273,7 @@ public class ChartJFreeChartOutput extends ChartOutput implements ChartProgressL
 			}
 
 			// Set legend text color
-			if (textColor != null) { legend.setItemPaint(textColor); }
+			if (textColor != null) { legend.setItemPaint(IColor.toAWTColor(textColor)); }
 
 		}
 

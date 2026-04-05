@@ -1,9 +1,12 @@
 /**
-* Name: segregationGIS
-* Author: 
-* Description: A model showing the segregation of the people just by putting a similarity wanted parameter using agents 
-* 	to represent the individuals and GIS file for the places
-* Tags: gis, shapefile
+* Name: Segregation (GIS)
+* Author: Gama Development Team
+* Description: A GIS-based variant of Thomas Schelling's residential segregation model. Unlike the grid and
+*   agent-only variants, this version uses a real shapefile to define the spatial units (buildings or land
+*   parcels) where residents live. Agents of two groups are assigned to these spatial units, and unhappy
+*   agents (whose same-group neighbor percentage is below the threshold) move to a free unit selected from
+*   the GIS data. This gives the segregation dynamics a realistic geographic footprint.
+* Tags: gis, shapefile, segregation, Schelling, emergence, social, agent_based, residential
 */
 model segregation
 
@@ -24,9 +27,9 @@ global {
 	int square_meters_per_people <- 200;
 	
 	//Action to initialize people agents
-	action initialize_people { 
+	action initialize_people() { 
 		//Create all the places with a surface given within the shapefile
-		create space from: shape_file_name with: [surface :: float(read("AREA"))];
+		create space from: shape_file_name with: (surface : float(read("AREA")));
 		all_places  <- shuffle(space);
 		//Compute the number of people to create considering the density of people
 		number_of_people <- int( density_of_people * sum (all_places collect (each.capacity))); 
@@ -34,11 +37,11 @@ global {
 	    all_people <- people as list ; 
 	    //Move all the people to a new place
 		ask people  {  
-			do move_to_new_place;       
+			do move_to_new_place();       
 		}   
 	}      
 	//Action to initialize the places
-	action initialize_places {}   
+	action initialize_places() {}   
 	
 } 
 
@@ -57,7 +60,7 @@ species people parent: base {
 	list<people> my_neighbours -> people at_distance neighbours_distance; 
 	
 	//Action to move to a new place
-	action move_to_new_place {  
+	action move_to_new_place() {  
 		current_building <- (shuffle(all_places) first_with (((each).capacity) > 0));
 		ask current_building {
 			do accept one_people: myself;   
@@ -70,7 +73,7 @@ species people parent: base {
 				do remove_one one_people: myself;
 			}
 		} 
-		do move_to_new_place;
+		do move_to_new_place();
 	}
 
 	aspect simple {

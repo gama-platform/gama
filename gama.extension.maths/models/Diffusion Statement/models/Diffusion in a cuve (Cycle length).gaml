@@ -1,10 +1,11 @@
 /**
-* Name: Diffusion in a cuve (Cycle length)
+* Name: Diffusion in a Cuve (Cycle Length)
 * Author: Julien Mazars
-* Description: This model is used to show how to use diffusion on a grid, and how to accelerate the process by computing several times the diffusion at each step. 
-*     The cells at the center of the grid emit a pheromon at the cycle 0, which is spread through the grid thanks to the diffusion mechanism, using a particular matrix of diffusion. 
-*     The "avoid_mask" facet is used in order to have a constant sum of pheromon. 
-* Tags: diffusion, matrix, math, elevation
+* Description: Shows how to use the 'cycle_length' facet of the 'diffuse' statement to run multiple
+*   diffusion sub-steps per simulation cycle. Pheromone is emitted at cycle 0 in the center of a bounded
+*   cuve; the 'avoid_mask' facet keeps the total pheromone sum constant. Increasing cycle_length speeds up
+*   apparent diffusion without changing the time step of the simulation itself.
+* Tags: diffusion, matrix, math, grid, cycle_length, avoid_mask, pheromone, performance, elevation
 */
 
 model cycle_length

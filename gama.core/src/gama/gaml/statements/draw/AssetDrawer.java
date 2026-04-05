@@ -1,8 +1,8 @@
 /*******************************************************************************************************
  *
- * FileDrawer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform .
+ * AssetDrawer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,22 +11,22 @@ package gama.gaml.statements.draw;
 
 import java.awt.geom.Rectangle2D;
 
-import org.locationtech.jts.geom.Envelope;
-
-import gama.core.common.geometry.Envelope3D;
-import gama.core.common.geometry.Scaling3D;
-import gama.core.common.interfaces.IAsset;
-import gama.core.common.interfaces.IDrawDelegate;
-import gama.core.common.interfaces.IGraphics;
-import gama.core.common.interfaces.IImageProvider;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.additions.delegates.IDrawDelegate;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.displays.DrawingData;
+import gama.api.ui.displays.IAsset;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.utils.geometry.GamaEnvelopeFactory;
+import gama.api.utils.geometry.IEnvelope;
+import gama.api.utils.geometry.Scaling3D;
+import gama.api.utils.interfaces.IImageProvider;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGisFile;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * The Class FileExecuter.
@@ -52,24 +52,20 @@ public class AssetDrawer implements IDrawDelegate {
 			throws GamaRuntimeException {
 		IGraphics g = scope.getGraphics();
 		Object obj = items[0].value(scope);
-		
-		if (!(obj instanceof IAsset)){
-			return null;
-		}
-		IAsset asset = (IAsset) obj;
 
+		if (!(obj instanceof IAsset asset)) return null;
 		// TODO verify that we do not spend the processing time recreating the file...
-		final AssetDrawingAttributes attributes = computeAttributes(scope, data, asset instanceof IImageProvider,
-				asset instanceof GamaGisFile, g.is2D());
+		final AssetDrawingAttributes attributes =
+				computeAttributes(scope, data, asset instanceof IImageProvider, asset instanceof GamaGisFile, g.is2D());
 		// XXX EXPERIMENTAL See Issue #1521
 		if (GamaPreferences.Displays.DISPLAY_ONLY_VISIBLE.getValue()
 				&& /* !GAMA.isInHeadLessMode() */ !scope.getExperiment().isHeadless()) {
 			final Scaling3D size = attributes.getSize();
 			if (size != null) {
 				// if a size is provided
-				final Envelope3D expected = Envelope3D.of(attributes.getLocation());
-				expected.expandBy(size.getX() / 2, size.getY() / 2);
-				final Envelope visible = g.getVisibleRegion();
+				final IEnvelope expected = GamaEnvelopeFactory.of(attributes.getLocation());
+				expected.expandBy(size.getX() / 2, size.getY() / 2, 0);
+				final IEnvelope visible = g.getVisibleRegion();
 				if (visible != null && !visible.intersects(expected)) return null;
 			}
 			// XXX EXPERIMENTAL

@@ -1,9 +1,12 @@
 /**
-* Name:  Shortest Path Computation on a Graph
-* Author:  Patrick Taillandier
-* Description: Model to show how to use the optimizer methods to compute the shortest path for the agents placed on a network with all of them 
-*	having the same goal location. It also shows how to save these paths computed into a text file.
-* Tags: graph, agent_movement, skill, shortest_path, algorithm
+* Name: Shortest Paths on Graph
+* Author: Patrick Taillandier
+* Description: A focused demonstration of shortest-path computation on a GIS road network. All agents share
+*   the same destination and navigate to it using different optimizer algorithms selectable as a parameter
+*   (Dijkstra, Bellman-Ford, A*, Floyd-Warshall). The computed paths are colored on the network, and results
+*   can be saved to a text file. Complements the 'Goto Network' model by focusing on algorithm comparison
+*   and path serialization.
+* Tags: graph, agent_movement, skill, shortest_path, algorithm, gis, road_network, save, dijkstra, astar
 */
 
 model Network
@@ -69,14 +72,14 @@ global {
 		} else if load_shortest_paths {
 			the_graph <- the_graph load_shortest_paths matrix(file(shortest_paths_file));
 		}
-		do compute_shortest_path;
+		do compute_shortest_path();
 	}
 	
 	reflex update {
-		do compute_shortest_path;
+		do compute_shortest_path();
 	}
 	
-	action compute_shortest_path {
+	action compute_shortest_path() {
 		source <- one_of(the_graph.vertices);
 		target <- one_of(the_graph.vertices);
 		

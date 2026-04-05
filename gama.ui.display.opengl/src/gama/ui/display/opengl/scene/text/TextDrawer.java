@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * TextDrawer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -40,7 +40,6 @@ import static java.awt.geom.PathIterator.SEG_LINETO;
 import static java.awt.geom.PathIterator.SEG_MOVETO;
 import static java.awt.geom.PathIterator.WIND_EVEN_ODD;
 
-import java.awt.Color;
 import java.awt.Font;
 import java.awt.Shape;
 import java.awt.font.FontRenderContext;
@@ -53,14 +52,17 @@ import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUtessellator;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-import gama.core.common.geometry.AxisAngle;
-import gama.core.common.geometry.ICoordinates;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.gaml.statements.draw.TextDrawingAttributes;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.ui.layers.IDrawingAttributes;
+import gama.api.utils.geometry.AxisAngle;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.ICoordinates;
 import gama.ui.display.opengl.ITesselator;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.scene.ObjectDrawer;
-import gama.ui.shared.utils.DPIHelper;
 
 /**
  *
@@ -75,16 +77,25 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 
 	/** The temp. */
 	// Utilities
-	ICoordinates temp = ICoordinates.ofLength(4);
+	ICoordinates temp = GamaCoordinateSequenceFactory.ofLength(4);
 
 	/** The normal. */
-	GamaPoint normal = new GamaPoint();
+	IPoint normal = GamaPointFactory.create();
 
 	/** The tobj. */
 	final GLUtessellator tobj = GLU.gluNewTess();
 
 	/** The previous Y. */
 	double previousX = Double.MIN_VALUE, previousY = Double.MIN_VALUE;
+
+	/**
+	 * Position of the placeholder normal written for the first vertex of the current contour in sideNormalBuffer.
+	 * Used by endContour to overwrite the placeholder with the correct closing-edge normal.
+	 */
+	int contourStartNormalPos = -1;
+
+	/** X/Y of the first vertex of the current contour, used to compute the closing-edge normal in endContour. */
+	double contourStartX = Double.MIN_VALUE, contourStartY = Double.MIN_VALUE;
 
 	/** The current index. */
 	int currentIndex = -1;
@@ -117,7 +128,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 
 	/** The border. */
 	// Properties
-	Color border;
+	IColor border;
 
 	/** The depth. */
 	double width, height, depth;
@@ -140,13 +151,11 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 
 	@Override
 	protected void _draw(final StringObject s) {
-		TextDrawingAttributes attributes = s.getAttributes();
+		IDrawingAttributes attributes = s.getAttributes();
 		if (!attributes.isPerspective()) {
 			drawBitmap(s.getObject(), attributes);
 		} else {
-			Font font = attributes.getFont();
-			final int fontSize = DPIHelper.autoScaleUp(gl.getRenderer().getCanvas().getMonitor(), font.getSize());
-			if (fontSize != font.getSize()) { font = font.deriveFont((float) fontSize); }
+			Font font = attributes.getFont().getAwtFont();
 			Shape shape = font.createGlyphVector(context, s.getObject()).getOutline();
 			final Rectangle2D bounds = shape.getBounds2D();
 			this.depth = attributes.getDepth();
@@ -158,7 +167,15 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 			sideNormalBuffer.clear();
 			sideQuadsBuffer.clear();
 			currentIndex = -1;
+			// Reset the previous-vertex state so that the first contour of this string
+			// does not inherit stale coordinates from the previous drawn string.
+			previousX = Double.MIN_VALUE;
+			previousY = Double.MIN_VALUE;
+			contourStartX = Double.MIN_VALUE;
+			contourStartY = Double.MIN_VALUE;
+			contourStartNormalPos = -1;
 			process(shape.getPathIterator(AT, attributes.getPrecision()));
+			// process() already flips all buffers internally
 			drawText(attributes, bounds.getY());
 		}
 
@@ -172,9 +189,9 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 * @param attributes
 	 *            the attributes
 	 */
-	private void drawBitmap(final String object, final TextDrawingAttributes attributes) {
+	private void drawBitmap(final String object, final IDrawingAttributes attributes) {
 		int fontToUse = GLUT.BITMAP_HELVETICA_18;
-		final Font f = attributes.getFont();
+		final IFont f = attributes.getFont();
 		if (f != null) {
 			if (f.getSize() < 10) {
 				fontToUse = GLUT.BITMAP_HELVETICA_10;
@@ -182,18 +199,18 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 		}
 		gl.pushMatrix();
 		final AxisAngle rotation = attributes.getRotation();
-		final GamaPoint p = attributes.getLocation();
+		final IPoint p = attributes.getLocation();
 
 		if (rotation != null) {
-			gl.translateBy(p.x, p.y, p.z);
-			final GamaPoint axis = rotation.getAxis();
+			gl.translateBy(p.getX(), p.getY(), p.getZ());
+			final IPoint axis = rotation.getAxis();
 			// AD Change to a negative rotation to fix Issue #1514
-			gl.rotateBy(-rotation.getAngle(), axis.x, axis.y, axis.z);
+			gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
 			// Voids the location so as to make only one translation
 			p.setLocation(0, 0, 0);
 		}
 
-		gl.rasterText(object, fontToUse, p.x, p.y, p.z);
+		gl.rasterText(object, fontToUse, p.getX(), p.getY(), p.getZ());
 		gl.popMatrix();
 	}
 
@@ -257,19 +274,18 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 * @param y
 	 *            the y
 	 */
-	void drawText(final TextDrawingAttributes attributes, final double y) {
+	void drawText(final IDrawingAttributes attributes, final double y) {
 
-		final GamaPoint p = attributes.getLocation();
+		final IPoint p = attributes.getLocation();
 
-		Color previous = null;
+		IColor previous = null;
 		gl.pushMatrix();
 		try {
-			GamaPoint anchor = attributes.getAnchor();
+			IPoint anchor = attributes.getAnchor();
 			applyRotation(attributes, p);
-			final float scale = 1f / (float) DPIHelper.autoScaleUp(gl.getRenderer().getCanvas().getMonitor(),
-					gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits());
-			gl.translateBy(p.x - width * scale * anchor.x, p.y + y * scale * anchor.y,
-					p.z + gl.getCurrentZTranslation());
+			final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
+			gl.translateBy(p.getX() - width * scale * anchor.getX(), p.getY() + y * scale * anchor.getY(),
+					p.getZ() + gl.getCurrentZTranslation());
 			gl.scaleBy(scale, scale, scale);
 			if (!gl.isWireframe()) {
 				previous = drawFacesAndBorder(previous);
@@ -289,7 +305,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 *            the previous
 	 * @return the color
 	 */
-	private Color drawWireframe(Color previous) {
+	private IColor drawWireframe(IColor previous) {
 		// Wireframe case
 		if (border != null) {
 			previous = gl.getCurrentColor();
@@ -311,7 +327,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 *            the previous
 	 * @return the color
 	 */
-	private Color drawFacesAndBorder(Color previous) {
+	private IColor drawFacesAndBorder(IColor previous) {
 		// Solid case
 		drawFace(depth == 0);
 		if (depth > 0) {
@@ -338,23 +354,46 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 * @param p
 	 *            the p
 	 */
-	private void applyRotation(final TextDrawingAttributes attributes, final GamaPoint p) {
+	private void applyRotation(final IDrawingAttributes attributes, final IPoint p) {
 		final AxisAngle rotation = attributes.getRotation();
 		if (rotation != null) {
-			gl.translateBy(p.x, p.y, p.z);
-			final GamaPoint axis = rotation.getAxis();
+			gl.translateBy(p.getX(), p.getY(), p.getZ());
+			final IPoint axis = rotation.getAxis();
 			// AD Change to a negative rotation to fix Issue #1514
-			gl.rotateBy(-rotation.getAngle(), axis.x, axis.y, axis.z);
+			gl.rotateBy(-rotation.getAngle(), axis.getX(), axis.getY(), axis.getZ());
 			// Voids the location so as to make only one translation
 			p.setLocation(0, 0, 0);
 		}
 	}
 
 	/**
-	 * End contour.
+	 * End contour. Records the end position and retroactively fixes the placeholder normal written for the first vertex
+	 * by copying the closing-edge normal (which was just written for the SEG_CLOSE vertex) to the placeholder position.
+	 * This ensures the first quad face has the correct normal instead of the [0,0,1] placeholder.
 	 */
 	public void endContour() {
 		indices[++currentIndex] = sideQuadsBuffer.position();
+		// If we have depth and a valid placeholder to update, copy the closing-edge normal (the last
+		// normal written by addContourVertex0 for the SEG_CLOSE vertex) to the placeholder position.
+		if (depth > 0 && contourStartNormalPos >= 0) {
+			final int currentPos = sideNormalBuffer.position();
+			final int lastNormalPos = currentPos - 6; // each vertex writes 6 doubles of normals
+			// Only copy if there is at least one edge normal (i.e. the last normal is not the placeholder itself)
+			if (lastNormalPos > contourStartNormalPos) {
+				final int savedPos = currentPos;
+				// Read the closing-edge normal (written for the SEG_CLOSE vertex)
+				sideNormalBuffer.position(lastNormalPos);
+				final double nx = sideNormalBuffer.get();
+				final double ny = sideNormalBuffer.get();
+				final double nz = sideNormalBuffer.get();
+				// Overwrite the placeholder at the start of the contour
+				sideNormalBuffer.position(contourStartNormalPos);
+				sideNormalBuffer.put(new double[] { nx, ny, nz, nx, ny, nz });
+				// Restore position
+				sideNormalBuffer.position(savedPos);
+			}
+			contourStartNormalPos = -1;
+		}
 	}
 
 	/**
@@ -362,6 +401,13 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 */
 	public void beginNewContour() {
 		indices[++currentIndex] = sideQuadsBuffer.position();
+		// Each new contour must not inherit the last vertex of the previous contour;
+		// reset so that addContourVertex0 knows there is no "previous" vertex yet.
+		previousX = Double.MIN_VALUE;
+		previousY = Double.MIN_VALUE;
+		contourStartX = Double.MIN_VALUE;
+		contourStartY = Double.MIN_VALUE;
+		contourStartNormalPos = -1;
 	}
 
 	/**
@@ -374,12 +420,23 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	public void addContourVertex0(final double x, final double y) {
 		sideQuadsBuffer.put(x).put(y).put(0);
 		if (depth > 0) {
-			// If depth > 0, then we will build side faces, and we need to calculate their normal
+			// If depth > 0, then we will build side faces, and we need to calculate their normal.
+			// We always emit a normal entry so that sideNormalBuffer stays parallel to sideQuadsBuffer
+			// (both 2 entries per geometric point).
 			if (previousX > Double.MIN_VALUE) {
 				temp.setTo(previousX, previousY, 0, previousX, previousY, depth, x, y, 0, previousX, previousY, 0);
 				temp.getNormal(true, 1, normal);
 				// We add two normal vectors as the vertex buffer will be filled by 2 coordinates
-				sideNormalBuffer.put(new double[] { normal.x, normal.y, normal.z, normal.x, normal.y, normal.z });
+				sideNormalBuffer.put(new double[] { normal.getX(), normal.getY(), normal.getZ(), normal.getX(),
+						normal.getY(), normal.getZ() });
+			} else {
+				// First vertex of a new contour: write a placeholder normal [0,0,1].
+				// We record the buffer position so endContour() can retroactively overwrite it with the
+				// correct closing-edge normal (from last vertex back to this first vertex).
+				contourStartNormalPos = sideNormalBuffer.position();
+				contourStartX = x;
+				contourStartY = y;
+				sideNormalBuffer.put(new double[] { 0, 0, 1, 0, 0, 1 });
 			}
 			// And we store the upper face
 			sideQuadsBuffer.put(x).put(y).put(depth);
@@ -419,6 +476,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 * Draw border.
 	 */
 	public void drawBorder() {
+		if (sideQuadsBuffer.limit() == 0) return;
 		if (gl.isRenderingKeystone()) {
 			drawBorderFallback();
 			return;
@@ -478,6 +536,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 */
 
 	public void drawFaceFallback(final boolean up) {
+		if (faceVertexBuffer.limit() == 0) return;
 		gl.beginDrawing(GL_TRIANGLES);
 		gl.outputNormal(0, 0, up ? 1 : -1);
 		for (var i = 0; i < faceVertexBuffer.limit(); i += 3) {
@@ -496,6 +555,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 *            the open GL
 	 */
 	public void drawSideFallback(final OpenGL openGL) {
+		if (sideQuadsBuffer.limit() == 0) return;
 		var i = -1;
 		while (i < currentIndex) {
 			var begin = indices[++i];
@@ -516,6 +576,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> implements ITesselato
 	 * Draw border fallback.
 	 */
 	public void drawBorderFallback() {
+		if (sideQuadsBuffer.limit() == 0) return;
 		var stride = depth == 0 ? 3 : 6;
 		var i = -1;
 		while (i < currentIndex) {

@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * GamlSemanticHighlightingCalculator.java, in gama.ui.shared.modeling, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * GamlSemanticHighlightingCalculator.java, in gama.ui.editor, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -23,13 +23,14 @@ import static gaml.compiler.ui.highlight.DelegateHighlightingConfiguration.UNIT_
 import static gaml.compiler.ui.highlight.DelegateHighlightingConfiguration.VARDEF_ID;
 import static gaml.compiler.ui.highlight.DelegateHighlightingConfiguration.VARIABLE_ID;
 
-import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.xtext.ide.editor.syntaxcoloring.IHighlightedPositionAcceptor;
 import org.eclipse.xtext.ide.editor.syntaxcoloring.ISemanticHighlightingCalculator;
 import org.eclipse.xtext.nodemodel.ILeafNode;
@@ -42,20 +43,18 @@ import org.eclipse.xtext.util.CancelIndicator;
 
 import com.google.inject.Inject;
 
-import gama.core.common.util.StringUtils;
-import gama.dev.DEBUG;
-import gaml.compiler.gaml.EGaml;
+import gama.annotations.constants.IKeyword;
+import gaml.compiler.EGaml;
 import gaml.compiler.gaml.ArgumentDefinition;
-import gaml.compiler.gaml.ArgumentPair;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.GamlDefinition;
 import gaml.compiler.gaml.GamlPackage;
-import gaml.compiler.gaml.HeadlessExperiment;
 import gaml.compiler.gaml.Parameter;
 import gaml.compiler.gaml.Pragma;
 import gaml.compiler.gaml.S_Assignment;
 import gaml.compiler.gaml.S_Definition;
 import gaml.compiler.gaml.S_Display;
+import gaml.compiler.gaml.StandaloneExperiment;
 import gaml.compiler.gaml.Statement;
 import gaml.compiler.gaml.StringLiteral;
 
@@ -70,24 +69,28 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 	@Inject private ITaskFinder taskFinder;
 
 	/** The assignments. */
-	private static Set<String> ASSIGNMENTS =
-			new HashSet<>(Arrays.asList("<-", "<<", ">>", "->", "<+", ">-", "<<+", ">>-", "+<-"));
+	private static final Set<String> ASSIGNMENTS = Set.of("<-", "<<", ">>", "->", "<+", ">-", "<<+", ">>-", "+<-");
 
 	/** The acceptor. */
 	private IHighlightedPositionAcceptor acceptor;
 
 	/** The done. */
-	Set<INode> done = new HashSet<>();
+	Set<INode> done = new HashSet<>(128);
+
+	/** Cached EGaml instance for performance. */
+	private EGaml eGamlInstance;
 
 	@Override
 	public void provideHighlightingFor(final XtextResource resource, final IHighlightedPositionAcceptor arg1,
 			final CancelIndicator arg2) {
 		if (resource == null) return;
 		acceptor = arg1;
-		final var root = resource.getAllContents();
+		eGamlInstance = EGaml.getInstance();
+		final Iterator<EObject> root = EcoreUtil.getAllContents(resource, true);
 		while (root.hasNext()) { process(root.next()); }
 		done.clear();
 		highlightTasks(resource);
+		eGamlInstance = null;
 	}
 
 	/**
@@ -124,11 +127,6 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 	 */
 	void process(final EObject object, final EClass clazz) {
 		final var id = clazz.getClassifierID();
-		if ("envelope".equals(EGaml.getInstance().getKeyOf(object))) {
-
-			DEBUG.OUT("");
-
-		}
 		switch (id) {
 			case GamlPackage.PRAGMA:
 				setStyle(object, PRAGMA_ID, ((Pragma) object).getName(), false);
@@ -144,7 +142,7 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 					setStyle(object, ASSIGN_ID, 0);
 				} else {
 					setStyle(object, FACET_ID, 0);
-					if (key.startsWith("type")) {
+					if (key.startsWith(IKeyword.TYPE)) {
 						setStyle(TYPE_ID, NodeModelUtils.getNode(f.getExpr()));
 					} else if (f.getName() != null) { setStyle(object, VARDEF_ID, 1); }
 				}
@@ -157,10 +155,7 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 				break;
 			case GamlPackage.BINARY_OPERATOR:
 			case GamlPackage.FUNCTION:
-				setStyle(object, OPERATOR_ID, EGaml.getInstance().getKeyOf(object), true);
-				break;
-			case GamlPackage.ARGUMENT_PAIR:
-				setStyle(object, VARIABLE_ID, ((ArgumentPair) object).getOp(), false);
+				setStyle(object, OPERATOR_ID, eGamlInstance.getKeyOf(object), true);
 				break;
 			case GamlPackage.VARIABLE_REF:
 				setStyle(VARIABLE_ID, NodeModelUtils.getNode(object));
@@ -169,8 +164,8 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 				setStyle(object, UNIT_ID, 0);
 				break;
 			case GamlPackage.TYPE_REF:
-				final var st = EGaml.getInstance().getStatement(object);
-				if (st instanceof S_Definition && ((S_Definition) st).getTkey() == object) {
+				final var st = eGamlInstance.getStatement(object);
+				if (st instanceof S_Definition sd && sd.getTkey() == object) {
 					setStyle(KEYWORD_ID, NodeModelUtils.findActualNodeFor(object));
 				} else {
 					setStyle(TYPE_ID, NodeModelUtils.getNode(object));
@@ -202,11 +197,12 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 	 * @return the string
 	 */
 	private String findNameOf(final EObject o) {
-		if (o instanceof GamlDefinition) return ((GamlDefinition) o).getName();
-		if (o instanceof S_Display) return ((S_Display) o).getName();
-		if (o instanceof HeadlessExperiment) return ((HeadlessExperiment) o).getName();
-
-		return null;
+		return switch (o) {
+			case GamlDefinition gd -> gd.getName();
+			case S_Display sd -> sd.getName();
+			case StandaloneExperiment se -> se.getName();
+			case null, default -> null;
+		};
 	}
 
 	/**
@@ -223,24 +219,24 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 	private final boolean setStyle(final EObject obj, final String s, final int position) {
 		// position = -1 for all the node; 0 for the first leaf node, 1 for the
 		// second one, etc.
-		if (obj != null && s != null) {
-			INode n = NodeModelUtils.getNode(obj);
-			if (n == null) return false;
-			if (position > -1) {
-				var i = 0;
-				for (final ILeafNode node : n.getLeafNodes()) {
-					if (!node.isHidden()) {
-						if (position == i) {
-							n = node;
-							break;
-						}
-						i++;
+		if (obj == null || s == null) return false;
+
+		INode n = NodeModelUtils.getNode(obj);
+		if (n == null) return false;
+
+		if (position > -1) {
+			var i = 0;
+			for (final ILeafNode node : n.getLeafNodes()) {
+				if (!node.isHidden()) {
+					if (position == i) {
+						n = node;
+						break;
 					}
+					i++;
 				}
 			}
-			return setStyle(s, n);
 		}
-		return false;
+		return setStyle(s, n);
 	}
 
 	/**
@@ -253,7 +249,7 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 	 * @return true, if successful
 	 */
 	private final boolean setStyle(final String s, final INode n) {
-		if (!done.contains(n) && n != null) {
+		if (n != null && !done.contains(n)) {
 			done.add(n);
 			acceptor.addPosition(n.getOffset(), n.getLength(), s);
 			return true;
@@ -275,24 +271,23 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 	 * @return true, if successful
 	 */
 	private final boolean setStyle(final EObject obj, final String s, final String text, final boolean all) {
-		if (text == null) return false;
-		if (obj != null && s != null) {
-			boolean b = true;
-			INode n = NodeModelUtils.getNode(obj);
-			if (n == null) return false;
-			for (final ILeafNode node : n.getLeafNodes()) {
-				if (!node.isHidden()) {
-					final var sNode = StringUtils.toJavaString(NodeModelUtils.getTokenText(node));
-					if (equalsFacetOrString(text, sNode)) {
-						n = node;
-						b = setStyle(s, n);
-						if (!all) { break; }
-					}
+		if (text == null || obj == null || s == null) return false;
+
+		INode n = NodeModelUtils.getNode(obj);
+		if (n == null) return false;
+
+		boolean b = true;
+		for (final ILeafNode node : n.getLeafNodes()) {
+			if (!node.isHidden()) {
+				final var sNode = NodeModelUtils.getTokenText(node);
+				if (equalsFacetOrString(text, sNode)) {
+					n = node;
+					b = setStyle(s, n);
+					if (!all) { break; }
 				}
 			}
-			return b;
 		}
-		return false;
+		return b;
 	}
 
 	/**
@@ -307,16 +302,17 @@ public class GamlSemanticHighlightingCalculator implements ISemanticHighlighting
 	boolean equalsFacetOrString(final String text, final String s) {
 		if (s == null || text == null) return false;
 		if (s.equals(text)) return true;
+
 		final var length = s.length();
-		if (length == 0) return false;
+		if (length <= 1) return false;
+
 		final var last = s.charAt(length - 1);
 		switch (last) {
 			case ':':
-				return text.equals(s.substring(0, length - 1));
+				return s.regionMatches(0, text, 0, length - 1) && text.length() == length - 1;
 			case '\"':
 			case '\'':
-				return s.charAt(0) == last && length > 1 && text.equals(s.substring(1, length - 1));
-
+				return s.charAt(0) == last && s.regionMatches(1, text, 0, length - 2) && text.length() == length - 2;
 		}
 		return false;
 	}

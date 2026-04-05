@@ -1,8 +1,12 @@
 /***
 * Name: Mondrian City
-* Author: Arnaud Grignard, Tri Nguyen-Huu and Patrick Taillandier 
-* Description: An abstract mobilty Model represented in a Mondrian World. 
-* Tags: art, interaction, mobility
+* Author: Arnaud Grignard, Tri Nguyen-Huu, Patrick Taillandier
+* Description: An abstract mobility model represented in a Mondrian-inspired geometric world. The city is
+*   generated as a grid of rectangular blocks with primary color fills and bold outlines, evoking the style of
+*   Piet Mondrian's neo-plastic paintings. Agents move between locations using weighted mobility modes.
+*   By adjusting the weight parameters, users can observe how different mobility behaviors reshape the visual
+*   distribution of agents across the abstract urban landscape.
+* Tags: art, interaction, mobility, abstract, visualization, urban, mondrian
 ***/
 
 model Mondrian_City
@@ -77,13 +81,13 @@ global{
 			lines << line([{0, i*cell_h}, {environment_width,i*cell_h}]);
 		}
 		create road from: split_lines(lines) {
-			create road with: [shape:: line(reverse(shape.points))];
+			create road (shape: line(reverse(shape.points)));
 		}
-		do update_graphs;
+		do update_graphs();
 		block_size <- min([first(cell).shape.width,first(cell).shape.height]);
 	}
 	
-	action update_graphs {
+	action update_graphs() {
 		loop mode over: ["walk", "mobility1", "mobility2"] {
 			graph_per_mode[mode] <- directed(as_edge_graph(road where (mode in each.allowed_mobility)));
 		}
@@ -96,8 +100,8 @@ global{
 				has_mobility1 <- flip(weight_mobility1);
 				has_mobility2 <- flip(weight_mobility2);
 				
-				do choose_mobility;
-				do mobility;
+				do choose_mobility();
+				do mobility();
 			}
 		}
 		weight_mobility1_prev <- weight_mobility1;
@@ -107,7 +111,7 @@ global{
 	}
 		
 	reflex randomGridUpdate when:every(1000#cycle){
-		do randomGrid;
+		do randomGrid();
 	} 
 		
 	reflex compute_traffic_density{
@@ -130,7 +134,7 @@ global{
 		}		
 	}
 		
-	action manage_road{
+	action manage_road() {
 		road selected_road <- first(road overlapping (circle(sqrt(shape.area)/100.0) at_location #user_location));
 		if (selected_road != nil) {
 			bool with_mobility1 <- "mobility1" in selected_road.allowed_mobility;
@@ -156,7 +160,7 @@ global{
 			if (reverse_road != nil) {
 				reverse_road.allowed_mobility <-  selected_road.allowed_mobility;
 			}
-			do update_graphs;
+			do update_graphs();
 		}	
 	}
 	
@@ -179,7 +183,7 @@ global{
 		}
 	} 
 	
-   action randomGrid{
+   action randomGrid() {
    	int id;
    	loop i from: 0 to: 5 {
 		loop j from: 0 to: 5 {
@@ -194,7 +198,7 @@ global{
 			cell current_cell <- cell[j,i];
 			current_cell.is_active <- id<0?false:true;
 			if (id<=0){					
-				ask current_cell{ do erase_building;}
+				ask current_cell{ do erase_building();}
 			}
 		}
 	}
@@ -202,7 +206,7 @@ global{
 }
 
 
-species building {
+species building parallel: true {
 	string size <- "S" among: ["S", "M", "L"];
 	string type <- "residential" among: ["residential", "office"];
 	list<people> inhabitants;
@@ -213,7 +217,7 @@ species building {
 		the_cell.my_building <- self;
 		type <- the_type;
 		size <- the_size;
-		do define_color;
+		do define_color();
 		shape <- the_cell.shape;
 		if (type = "residential") {residentials << self;}
 		else if (type = "office") {
@@ -226,36 +230,36 @@ species building {
 	reflex populate when: (type = "residential"){
 		int pop <- int(population_level/100 * nb_people_per_size[size]);
 		if length(inhabitants) < pop{
-			create people number: 1 with: [location::any_location_in(bounds)] {
+			create people(location:any_location_in(bounds)) number: 1  {
 				origin <- myself;
 				origin.inhabitants << self;
 				
-				do reinit_destination;
+				do reinit_destination();
 			}
 		}
 		if length(inhabitants) > pop{
 			people tmp <- one_of(inhabitants);
 			inhabitants >- tmp;
-			ask tmp {do die;}
+			ask tmp {do die();}
 		}
 	}
 	
-	action remove {
+	action remove() {
 		if (type = "office") {
 			offices[] >- self;
 			ask people {
-				do reinit_destination;
+				do reinit_destination();
 			}
 		} else {
 			ask inhabitants {
-				do die;
+				do die();
 			}
 		}
 		cell(location).my_building <- nil;
-		do die;
+		do die();
 		
 	}
-	action define_color {
+	action define_color() {
 		color <- color_per_id[type+size];
 	}
 	aspect default {
@@ -272,14 +276,14 @@ species road {
 	init {
 	}
 	
-	int total_traffic{
+	int total_traffic() {
 		return sum(traffic_density.keys collect(sum(traffic_density[each])));
 	}
 	
 	
 	int total_traffic_per_mode(string m){
 		return sum(traffic_density[m]);
-	}
+	} 
 	
 	
 	rgb color_map(rgb c, float scale){
@@ -307,7 +311,7 @@ species road {
 	}
 }
 
-species people skills: [moving]{
+species people skills: [moving] parallel: true{
 
 	int heading_index <- 0;
 	string mobility_mode <- "walk"; 
@@ -322,7 +326,7 @@ species people skills: [moving]{
 	float max_dist_walk <- 1000.0;
 	float max_dist_mobility2 <- 3000.0;
 	float max_dist_mobility3 <- 5000.0;
-	action choose_mobility {
+	action choose_mobility() {
 		if (origin != nil and dest != nil) {
 			float dist <- manhattan_distance(origin.location, dest.location);
 			if (dist <= max_dist_walk ) {
@@ -350,29 +354,29 @@ species people skills: [moving]{
 						heading_index <- 1;
 					}
 	}
-	action reinit_destination {
+	action reinit_destination() {
 		dest <- empty(offices) ? nil : offices.keys[rnd_choice(offices.values)];
 		target <- nil;
 	}
 	
-	action mobility {
-		do unregister;
-		do goto target: target on: graph_per_mode[(mobility_mode = "mobility3") ? "mobility2" : mobility_mode] recompute_path: false ;
-		do register;
+	action mobility() {
+		do unregister();
+		do goto(target: target, on: graph_per_mode[(mobility_mode = "mobility3") ? "mobility2" : mobility_mode], recompute_path: false) ;
+		do register();
 	}
-	action update_target {
+	action update_target() {
 		if (to_destination) {target <- any_location_in(dest);}//centroid(dest);}
 		else {target <- any_location_in(origin);}//centroid(origin);}
-		do choose_mobility;
-		do mobility;
+		do choose_mobility();
+		do mobility();
 	}
 	
-	action register {
+	action register() {
 		if ((mobility_mode = "mobility1") and current_edge != nil) {
 			road(current_edge).nb_people <- road(current_edge).nb_people + 1;
 		}
 	}
-	action unregister {
+	action unregister() {
 		if ((mobility_mode = "mobility1") and current_edge != nil) {
 			road(current_edge).nb_people <- road(current_edge).nb_people - 1;
 		}
@@ -380,18 +384,18 @@ species people skills: [moving]{
 
 	reflex move when: dest != nil{
 		if (target = nil) {
-			do update_target;
+			do update_target();
 		}
-		do mobility;
+		do mobility();
 		if (target = location) {
 			target <- nil;
 			to_destination <- not to_destination;
-			do update_target;
+			do update_target();
 		}
 	}
 	
 	reflex wander when: dest = nil and origin != nil {
-		do wander bounds: origin.bounds;
+		do wander (bounds: origin.bounds);
 	}
 
 	
@@ -419,7 +423,7 @@ grid cell width: grid_width height: grid_height {
 		if (my_building != nil and (my_building.type = "residential") and (my_building.size = the_size)) {
 			return;
 		} else {
-			if (my_building != nil ) {ask my_building {do remove;}}
+			if (my_building != nil ) {ask my_building {do remove();}}
 			create building returns: bds{
 				do initialize(myself, "residential", the_size);
 			}
@@ -430,17 +434,17 @@ grid cell width: grid_width height: grid_height {
 		if (my_building != nil and (my_building.type = "office") and (my_building.size = the_size)) {
 			return;
 		} else {
-			if (my_building != nil) {ask my_building {do remove;}}
+			if (my_building != nil) {ask my_building {do remove();}}
 			create building returns: bds{
 				do initialize(myself, "office",the_size);
 			}
 			ask people {
-				do reinit_destination;
+				do reinit_destination();
 			}
 		}
 	}
-	action erase_building {
-		if (my_building != nil) {ask my_building {do remove;}}
+	action erase_building() {
+		if (my_building != nil) {ask my_building {do remove();}}
 	}
 	
 	aspect default{
@@ -449,7 +453,7 @@ grid cell width: grid_width height: grid_height {
 }
 
 experiment MondrianCity type: gui autorun: true{
-	float minimum_cycle_duration <- 0.05;
+	//float minimum_cycle_duration <- 0.05;
 	parameter "mobility1 level" var: weight_mobility1 min: 0.1 max: 1.0 step: 0.1 colors: [#gamablue] <-0.5;
 	parameter "mobility2 level" var: weight_mobility2 min: 0.1 max: 1.0 step: 0.1 colors: [#gamablue] <-0.5;
 	parameter "mobility3 level" var: weight_mobility3 min: 0.1 max: 1.0 step: 0.1 colors: [#gamablue] <-0.5;

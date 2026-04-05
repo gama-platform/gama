@@ -2,7 +2,7 @@
  *
  * SpeciesLayer.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -11,20 +11,20 @@ package gama.core.outputs.layers;
 
 import java.awt.geom.Rectangle2D;
 
-import gama.core.common.interfaces.IGraphics;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.agent.IMacroAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.runtime.ExecutionResult;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaListFactory;
-import gama.core.util.IList;
-import gama.gaml.species.ISpecies;
-import gama.gaml.statements.AspectStatement;
-import gama.gaml.statements.IExecutable;
-import gama.gaml.types.Types;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IMacroAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.IExecutable;
+import gama.api.runtime.scope.IExecutionResult;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.ui.displays.IGraphics;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayerStatement;
 import one.util.streamex.StreamEx;
 
 /**
@@ -69,7 +69,7 @@ public class SpeciesLayer extends AgentLayer {
 			final IPopulation<? extends IAgent> microPop = world.getMicroPopulation(species);
 			if (microPop != null) {
 				IExecutable aspect = getDefinition().getAspect();
-				if (aspect == null) { aspect = AspectStatement.DEFAULT_ASPECT; }
+				if (aspect == null) { aspect = DEFAULT_ASPECT; }
 				drawPopulation(scope, g, aspect, microPop);
 			}
 		}
@@ -97,7 +97,7 @@ public class SpeciesLayer extends AgentLayer {
 		StreamEx<? extends IAgent> stream = population.stream(scope);
 		// if (this.getData().getRefresh()) { stream = stream.parallel(); }
 		stream.nonNull().filter(a -> !a.dead()).forEach(a -> {
-			ExecutionResult result = null;
+			IExecutionResult result = null;
 			if (a == scope.getGui().getHighlightedAgent()) {
 				IExecutable hAspect = population.getSpecies().getAspect("highlighted");
 				if (hAspect == null) { hAspect = aspect; }
@@ -105,7 +105,7 @@ public class SpeciesLayer extends AgentLayer {
 			} else {
 				result = scope.execute(aspect, a, null);
 			}
-			if (result != ExecutionResult.FAILED) {
+			if (result != IExecutionResult.FAILED) {
 				if (result != null && result.getValue() instanceof Rectangle2D) {
 					final Rectangle2D r = (Rectangle2D) result.getValue();
 					shapes.put(a, r);
@@ -119,7 +119,7 @@ public class SpeciesLayer extends AgentLayer {
 							microPop = ((IMacroAgent) a).getMicroPopulation(ml.getSpecies());
 							if (microPop != null && microPop.size() > 0) {
 								IExecutable microAspect = ml.getAspect();
-								if (microAspect == null) { microAspect = AspectStatement.DEFAULT_ASPECT; }
+								if (microAspect == null) { microAspect = DEFAULT_ASPECT; }
 								drawPopulation(scope, g, microAspect, microPop);
 							}
 						}

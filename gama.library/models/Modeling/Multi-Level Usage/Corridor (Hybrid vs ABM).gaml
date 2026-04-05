@@ -1,10 +1,12 @@
 /**
-* Name: Corridor Multi-Level Architecture with Mathematics Model and Agent Based Model
-* Author: Ngoc Anh, Anh, Jean-daniel 
-* Description: This model shows how to use multi-level architecture. Two corridors are presented : one which can capture the pedestrians 
-* 	going through it and computing for them the time before releasing them at the end of the corridor, and an other doing nothing, letting 
-* 	the pedestrians moving by themselves in the corridor. 
-* Tags: multi_level, agent_movement
+* Name: Corridor - Hybrid vs ABM Multi-Level Architecture
+* Author: Ngoc Anh, Jean-Daniel Zucker
+* Description: Compares two modeling approaches for pedestrian corridor transit using multi-level architecture.
+*   One corridor captures entering pedestrians and computes their transit time mathematically (hybrid model):
+*   pedestrians are invisible while inside and are released at the exit after the computed travel time. The
+*   other corridor lets pedestrians navigate freely (pure ABM). Running both side by side illustrates the
+*   trade-off between computational efficiency (hybrid) and spatial accuracy (ABM) in pedestrian simulation.
+* Tags: multi_level, agent_movement, hybrid, ABM, corridor, pedestrian, capture, release
 */
 
 model pedestrian_corridor_Hybrid_vs_ABM
@@ -122,7 +124,7 @@ species corridor  {
 	
 	init 
 	{ 
-		create corridor_info_drawer number: 1 with: [target :: self];
+		create corridor_info_drawer number: 1 with: (target : self);
 	}
 	//Reflex to capture the pedestrians overlapping the corridor ie entering the corridor 
 	reflex aggregate when: capture_pedestrians 

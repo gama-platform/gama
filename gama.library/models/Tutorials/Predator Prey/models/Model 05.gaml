@@ -1,8 +1,11 @@
 /**
-* Name: Predator agents (parent species)
-* Author:
-* Description: 5th part of the tutorial : Predator Prey
-* Tags: inheritance
+* Name: Predator Prey Tutorial - Step 05 - Predator Agents (Inheritance)
+* Author: Gama Development Team
+* Description: Fifth step of the Predator-Prey tutorial. Introduces predator agents as a child species of
+*   a common parent 'generic_agent' species that both prey and predators inherit from. The parent defines
+*   shared attributes (energy, max speed) and actions (die, basic_move). This step demonstrates species
+*   inheritance and the 'parent' facet, allowing code reuse and polymorphism in GAML species hierarchies.
+* Tags: tutorial, prey, predator, inheritance, parent, species, reuse
 */
 model prey_predator
 
@@ -15,8 +18,8 @@ global {
 	float predator_max_energy <- 1.0;
 	float predator_energy_transfer <- 0.5;
 	float predator_energy_consum <- 0.02;
-	int nb_preys -> {length(prey)};
-	int nb_predators -> {length(predator)};
+	int nb_preys -> length(prey);
+	int nb_predators -> length(predator);
 
 	init {
 		create prey number: nb_preys_init;
@@ -47,10 +50,10 @@ species generic_species {
 	}
 
 	reflex die when: energy <= 0 {
-		do die;
+		do die();
 	}
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		return 0.0;
 	} 
 
@@ -65,7 +68,7 @@ species prey parent: generic_species {
 	float max_transfer <- prey_max_transfer;
 	float energy_consum <- prey_energy_consum;
 	
-	float energy_from_eat {
+	float energy_from_eat() {
 		float energy_transfer <- 0.0;
 		if(my_cell.food > 0) {
 			energy_transfer <- min([max_transfer, my_cell.food]);
@@ -81,11 +84,11 @@ species predator parent: generic_species {
 	float energy_transfer <- predator_energy_transfer;
 	float energy_consum <- predator_energy_consum;
 		
-	float energy_from_eat {
+	float energy_from_eat() {
 		list<prey> reachable_preys <- prey inside (my_cell);	
 		if(! empty(reachable_preys)) {
 			ask one_of (reachable_preys) {
-				do die;
+				do die();
 			}
 			return energy_transfer;
 		}

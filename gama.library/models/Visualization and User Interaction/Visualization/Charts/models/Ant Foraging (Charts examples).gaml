@@ -1,8 +1,13 @@
 /**
-* Name: Ant Foraging (Charts examples)
+* Name: Ant Foraging (Charts Examples)
 * Author: Philippe Caillou
-* Description: How ants search food and use pheromons to return to their nest once they find it.
-* Tags: gui, skill, chart, grid, diffusion
+* Description: The ant foraging model adapted to showcase the full range of GAMA chart types. The underlying
+*   simulation (ants finding food and depositing pheromones) is the same as in the Toy Models section, but
+*   this version adds multiple chart experiments demonstrating series, bar, pie, radar, heatmap, and
+*   distribution chart types applied to ant colony data (e.g., pheromone levels over time, number of ants
+*   in each state, food return rates). Use this model as a practical reference for choosing and configuring
+*   chart output in your own models.
+* Tags: gui, skill, chart, grid, diffusion, pheromone, ants, series, bar, pie, radar, heatmap
 */
 model ants
 
@@ -25,7 +30,7 @@ global {
 	geometry shape <- square(gridsize);
 	init{  
 		//Ant are placed randomly in the nest
-		create ant number: ants_number with: [location::any_location_in (ant_grid(center))] ;
+		create ant(location:any_location_in (ant_grid(center))) number: ants_number ;
 	}
 	
 	//Reflex to diffuse the road of pheromon on the grid
@@ -62,18 +67,18 @@ species ant skills: [moving] control: fsm {
       ant_grid(location).road <- ant_grid(location).road + 100.0;
    }
    //Action to pick food
-	action pick {
+	action pick() {
 		hasFood <- true ;
 		place.food <- place.food - 1 ;
 	}
 	//Action to drop food
-	action drop {
+	action drop() {
 		food_gathered <- food_gathered + 1 ;
 		hasFood <- false ;
 		heading <- heading - 180 ;
 	}
 	//Action to chose the best place according to the possible food in the neighbour cells
-	action choose_best_place type: ant_grid {
+	ant_grid choose_best_place () {
 		list<ant_grid> list_places <- place.neighbors ;
 		if (list_places count (each.food > 0)) > 0  {
 			return (list_places first_with (each.food > 0)) ;
@@ -86,24 +91,24 @@ species ant skills: [moving] control: fsm {
 	
 	//Initial state of the ant : wander until it finds food or find a road to follow
 	state wandering initial: true {
-		do wander amplitude:120.0 ;
+		do wander (amplitude:120.0) ;
 		transition to: carryingFood when: place.food > 0 {
-			do pick ;
+			do pick() ;
 		}
 		transition to: followingRoad when: place.road > 0.05 ;
 	}
 	//State to carry food to the nest once the food is found
 	state carryingFood {
-		do goto target: center ;
+		do goto (target: center) ;
 		transition to: wandering when: place.isNestLocation { 
-			do drop ;
+			do drop () ;
 		}
 	}
 	//State to follow a road 
 	state followingRoad {
 		location <- (choose_best_place()) as point ;
 		transition to: carryingFood when: place.food > 0 {
-			do pick ;
+			do pick() ;
 		}
 		transition to: wandering when: (place.road < 0.05) ;
 	}

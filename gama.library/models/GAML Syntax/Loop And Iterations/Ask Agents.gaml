@@ -1,9 +1,12 @@
 /***
-* Name: Ask (as a loop over a population) and self and myself
+* Name: Ask Agents
 * Author: Benoit Gaudou
-* Description: This model illustrates the use of the ask statement to iterate over a population of agents.
-* It compares it with the loop statement and introduces self and myself meta-variables.
-* Tags: ask, loop, self, myself
+* Description: Illustrates the use of the 'ask' statement in GAML to iterate over and interact with a population of agents.
+*   The 'ask' statement is a concise alternative to a 'loop over' when the intention is to execute actions within the
+*   context of each target agent. The model also introduces the 'self' and 'myself' meta-variables: 'self' refers to
+*   the agent currently executing, while 'myself' refers to the agent that initiated an 'ask' block — allowing the
+*   called agent to refer back to the calling agent. A comparison between 'loop' and 'ask' is provided.
+* Tags: ask, loop, self, myself, population, agent, context
 ***/
 
 model Asktoloopoveragents
@@ -25,7 +28,7 @@ global {
 		write "Introduction in an ask statement.";
 		ask dummy_species {
 			// we are in the context of a dummy_species agent, we can thus use its actions.
-			do introduce_myself;
+			do introduce_myself();
 		} 
 		
 		// Ask can be used with the whole species, but also a list of agents (or even a single agent).
@@ -35,14 +38,14 @@ global {
 			ask one_of(dummy_species - self) {
 				// To display the name of the agent that kills it, the current agent (self) should use myself to refer to its killer.
 				write "I, " + self.name + ", have been killed by " + myself.name ;
-				do die;
+				do die();
 			}
 		}
 	}
 }
 
 species dummy_species {
-	action introduce_myself {
+	action introduce_myself() {
 		write "Hello! I am " + name + " and my number is " + int(self);
 	}
 }

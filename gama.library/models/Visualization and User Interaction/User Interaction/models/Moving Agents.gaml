@@ -1,10 +1,12 @@
 /**
-* Name: MovingAgents
-* Author: drogoul
-* Description: Shows how to move agents using two event layers : 
-* 
-* Click to grab an group of agents, click again to drop them. Press the keys "r" to kill the agents in the selection, and "c" to duplicate them.
-* Tags: gui
+* Name: Moving Agents
+* Author: Alexis Drogoul
+* Description: Shows how to select, move, duplicate, and delete groups of agents interactively using event
+*   layers. Click once to grab a group of nearby agents (shown highlighted); click again to drop them at the
+*   new location. While carrying agents, press 'r' to kill all selected agents, or 'c' to create copies of
+*   them at the drop point. This model demonstrates multi-key event handling, spatial agent selection, and
+*   the combination of mouse and keyboard events for rich display interactivity.
+* Tags: gui, event, mouse, keyboard, interaction, display, select, move, duplicate
 */
 model MovingAgents
 
@@ -19,8 +21,7 @@ global
 		create being number: 100;
 	}
 
-	action kill 
-	{
+	action kill() {
 		ask moved_agents
 		{
 			do die;
@@ -29,14 +30,12 @@ global
 		moved_agents <- [];
 	}
 
-	action duplicate 
-	{
+	action duplicate() {
 		geometry available_space <- (zone at_location #user_location) - (union(moved_agents) + 10);
 		create being number: length(moved_agents) with: (location: any_location_in(available_space));
 	}
 
-	action click 
-	{
+	action click() {
 		if (empty(moved_agents))
 		{
 			moved_agents <- being inside (zone at_location #user_location);
@@ -58,8 +57,7 @@ global
 
 	}
 
-	action move 
-	{
+	action move() {
 		can_drop <- true;
 		list<being> other_agents <- (being inside (zone at_location #user_location)) - moved_agents;
 		geometry occupied <- geometry(other_agents);

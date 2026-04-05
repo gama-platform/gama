@@ -1,40 +1,12 @@
 /**
-* Name:  Simple Species MySql
+* Name: Simple Agents Tests in MySQL
 * Author: Truong Minh Thai
-* Description:  This model illustrates the use of the AgentDB species (instead of the SQLSKILL), and in particular following actions:
-* 
- *    - testConection
- * 
- *    - isConnected
- * 
- *    - close 
- * 
- *    - executeUpdate
- * 
- *    - insert
- * 
- *    - select
- * 
- *    - getParameter 
- * 
- * 
- *  This model does SQl query commands:
- * 
- * - Create table 
- * 
- * - Insert data
- * 
- * - Select data
- * 
- * - Delete data
- * 
- * - Drop table 
- * 
- * 
- *  NOTE: YOU SHOULD HAVE ALREADY CREATED YOUR DATABASE (testDB here) AND IMPORTED THE FILE (../includes/meteo_DB_dump.sql)
- *        IN ORDER THAT THE MODEL CAN RUN PROPERLY.
-* Tags: database
- */
+* Description: Demonstrates the use of the AgentDB species (an alternative to the SQLSKILL) for interacting
+*   with a MySQL database directly from a GAMA agent. Covered actions: testConnection, isConnected, close,
+*   executeUpdate, insert, select, getParameter. SQL operations shown: CREATE TABLE, INSERT, SELECT, DELETE,
+*   DROP TABLE. Requires a pre-existing MySQL database (testDB) with the meteo_DB_dump.sql schema imported.
+* Tags: database, SQL, MySQL, AgentDB, species, create, insert, select, delete, drop
+*/
 model simpleSQL_DBSpecies_MySQL
 
 global {

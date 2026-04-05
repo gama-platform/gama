@@ -3,15 +3,15 @@
  * GamlEditor.java, in gama.ui.editor, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gaml.compiler.ui.editor;
 
-import static gama.core.common.preferences.GamaPreferences.Modeling.EDITOR_COLLAPSE_BUTTONS;
-import static gama.core.common.preferences.GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU;
+import static gama.api.utils.prefs.GamaPreferences.Modeling.EDITOR_COLLAPSE_BUTTONS;
+import static gama.api.utils.prefs.GamaPreferences.Modeling.EDITOR_EXPERIMENT_MENU;
 import static gama.ui.shared.resources.IGamaIcons.MARKER_ERROR;
 import static gama.ui.shared.resources.IGamaIcons.SMALL_DROPDOWN;
 import static gaml.compiler.ui.editor.GamlEditorState.NO_EXP_DEFINED;
@@ -29,7 +29,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -42,16 +41,13 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.IAutoEditStrategy;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextHover;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.ITextViewerExtension;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.Region;
-import org.eclipse.jface.text.SurroundWithBracketsStrategy;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.codemining.ICodeMining;
 import org.eclipse.jface.text.codemining.ICodeMiningProvider;
@@ -85,6 +81,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -103,11 +100,12 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningPreferenceConstants;
 import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningProvider;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.eclipse.ui.texteditor.AnnotationPreference;
 import org.eclipse.ui.texteditor.DefaultMarkerAnnotationAccess;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
+import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.xtext.ui.XtextUIMessages;
 import org.eclipse.xtext.ui.editor.XtextEditor;
-import org.eclipse.xtext.ui.editor.XtextSourceViewerConfiguration;
 import org.eclipse.xtext.ui.editor.model.IXtextDocument;
 import org.eclipse.xtext.ui.editor.model.XtextDocument;
 import org.eclipse.xtext.ui.editor.quickfix.IssueResolutionProvider;
@@ -126,20 +124,20 @@ import org.eclipse.xtext.validation.Issue;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-import gama.annotations.precompiler.GamlProperties;
-import gama.core.common.GamlFileExtension;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.common.preferences.IPreferenceChangeListener.IPreferenceAfterChangeListener;
+import gama.annotations.constants.IKeyword;
+import gama.api.compilation.IModelsManager;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IModelDescription;
+import gama.api.compilation.validation.IValidationContext;
+import gama.api.constants.GamlFileExtension;
+import gama.api.utils.GamlProperties;
+import gama.api.utils.StringUtils;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.IPreferenceChangeListener.IPreferenceAfterChangeListener;
 import gama.dev.DEBUG;
 import gama.dev.FLAGS;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.ModelDescription;
-import gama.gaml.descriptions.ValidationContext;
-import gama.gaml.operators.Strings;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.FlatButton;
-import gama.ui.shared.interfaces.IModelRunner;
 import gama.ui.shared.menus.GamaMenu;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -147,15 +145,14 @@ import gama.ui.shared.resources.GamaFonts;
 import gama.ui.shared.resources.GamaIcon;
 import gama.ui.shared.resources.IGamaColors;
 import gama.ui.shared.resources.IGamaIcons;
-import gama.ui.shared.utils.CleanupHelper;
+import gama.ui.shared.utils.UICleanupTasks;
 import gama.ui.shared.utils.WorkbenchHelper;
 import gama.ui.shared.views.toolbar.GamaCommand;
 import gama.ui.shared.views.toolbar.GamaToolbar2;
 import gama.ui.shared.views.toolbar.GamaToolbarFactory;
 import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
 import gama.ui.shared.views.toolbar.Selector;
-import gaml.compiler.gaml.resource.GamlResourceServices;
-import gaml.compiler.gaml.validation.IGamlBuilderListener;
+import gaml.compiler.resource.GamlResourceServices;
 import gaml.compiler.ui.decorators.GamlAnnotationImageProvider;
 import gaml.compiler.ui.editor.toolbar.CreateExperimentSelectionListener;
 import gaml.compiler.ui.editor.toolbar.EditorSearchControls;
@@ -169,6 +166,7 @@ import gaml.compiler.ui.reference.OperatorsReferenceMenu;
 import gaml.compiler.ui.reference.TemplateReferenceMenu;
 import gaml.compiler.ui.templates.GamlEditTemplateDialogFactory;
 import gaml.compiler.ui.templates.GamlTemplateStore;
+import gaml.compiler.validation.IGamlBuilderListener;
 
 /**
  * The Class GamlEditor.
@@ -190,6 +188,15 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	/** The preference store. */
 	private static IPreferenceStore miningPreferencesStore;
+
+	/** The to remove. */
+	private final static Set<String> TO_REMOVE_FROM_MENUS = Set.of("revert", "save", "__PREFS__.ContextAction",
+			"QuickAssist", "Open W&ith", "Sho&w In	⌥⌘W", "group.open");
+
+	/** The Constant ANNOTATION_INFO_TYPES. */
+	// Standard ID for Info annotations
+	private final static Set<String> ANNOTATION_INFO_TYPES =
+			Set.of("org.eclipse.ui.workbench.texteditor.info", "org.eclipse.xtext.ui.editor.info");
 
 	/**
 	 * Gets the preferences.
@@ -230,6 +237,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/** The Constant BUTTON_HEIGHT. */
 	static final int BUTTON_HEIGHT = 20;
 
+	/** The Constant SCHEDULE_DELAY. */
+	public static final int SCHEDULE_DELAY = 0;
+
 	/** The button padding. How much space between each experiment button */
 	static {
 		final var store = EditorsUI.getPreferenceStore();
@@ -239,10 +249,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		BUTTON_IMAGES.put(IKeyword.BATCH, GamaIcon.named(IGamaIcons.BUTTON_BATCH).image());
 		BUTTON_IMAGES.put(IKeyword.RECORD, GamaIcon.named(IGamaIcons.BUTTON_BACK).image());
 		BUTTON_IMAGES.put("regular", GamaIcon.named(IGamaIcons.BUTTON_GUI).image());
-		MENU_IMAGES.put(IKeyword.BATCH, (ThemeHelper.isDark() ? IGamaIcons.BUTTON_BATCH : IGamaIcons.MENU_BATCH));
-		MENU_IMAGES.put(IKeyword.RECORD, (ThemeHelper.isDark() ? IGamaIcons.BUTTON_BACK : IGamaIcons.MENU_BACK));
-		MENU_IMAGES.put("regular", (ThemeHelper.isDark() ? IGamaIcons.BUTTON_GUI : IGamaIcons.MENU_GUI));
-
+		MENU_IMAGES.put(IKeyword.BATCH, ThemeHelper.isDark() ? IGamaIcons.BUTTON_BATCH : IGamaIcons.MENU_BATCH);
+		MENU_IMAGES.put(IKeyword.RECORD, ThemeHelper.isDark() ? IGamaIcons.BUTTON_BACK : IGamaIcons.MENU_BACK);
+		MENU_IMAGES.put("regular", ThemeHelper.isDark() ? IGamaIcons.BUTTON_GUI : IGamaIcons.MENU_GUI);
 		BUTTON_IMAGES.put("new", GamaIcon.named(IGamaIcons.ADD_EXPERIMENT).image());
 	}
 
@@ -271,8 +280,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/** The injector. */
 	@Inject Injector injector;
 
-	/** The runner. */
-	@Inject IModelRunner runner;
+	/** The modelsManager. */
+	@Inject IModelsManager modelsManager;
 
 	/** The template dialog factory. */
 	@Inject private GamlEditTemplateDialogFactory templateDialogFactory;
@@ -315,11 +324,12 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 	@Override
 	protected IAnnotationAccess createAnnotationAccess() {
+
 		return new DefaultMarkerAnnotationAccess() {
 
 			@Override
 			public int getLayer(final Annotation annotation) {
-				if (annotation.isMarkedDeleted()) { return IAnnotationAccessExtension.DEFAULT_LAYER; }
+				if (annotation.isMarkedDeleted()) return IAnnotationAccessExtension.DEFAULT_LAYER;
 				return super.getLayer(annotation);
 			}
 
@@ -336,7 +346,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 			@Override
 			public boolean isPaintable(final Annotation annotation) {
-				if (imageProvider.getManagedImage(annotation) != null) { return true; }
+				if (imageProvider.getManagedImage(annotation) != null) return true;
 				return super.isPaintable(annotation);
 			}
 
@@ -438,6 +448,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			folder.setMRUVisible(true);
 			folder.setUnselectedCloseVisible(true);
 			folder.setHighlightEnabled(true);
+			folder.setSimple(true);
 		}
 
 	}
@@ -491,6 +502,13 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 				}
 			}
 		});
+		AnnotationPreference ap =
+				getAnnotationPreferenceLookup().getAnnotationPreference("org.eclipse.ui.workbench.texteditor.info");
+		ap.setTextStyleValue(AnnotationPreference.STYLE_NONE);
+		ap.setTextPreferenceValue(false);
+		ap = getAnnotationPreferenceLookup().getAnnotationPreference("org.eclipse.xtext.ui.editor.info");
+		ap.setTextStyleValue(AnnotationPreference.STYLE_NONE);
+		ap.setTextPreferenceValue(false);
 	}
 
 	@Override
@@ -517,7 +535,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
 				final var issues = getDocument().readOnly(resource -> {
-					if (resource.isValidationDisabled()) { return Collections.emptyList(); }
+					if (resource.isValidationDisabled()) return Collections.emptyList();
 					return validator.validate(resource, getCheckMode(), null);
 				});
 				processor.processIssues((List<Issue>) issues, monitor);
@@ -525,14 +543,14 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			}
 
 		};
-		validate.schedule();
+		validate.schedule(GamlEditor.SCHEDULE_DELAY);
 
 	}
 
 	@Override
 	public boolean isOverviewRulerVisible() {
 		final var viewer = getInternalSourceViewer();
-		if (viewer == null) { return super.isOverviewRulerVisible(); }
+		if (viewer == null) return super.isOverviewRulerVisible();
 		return viewer.isOverviewVisible();
 	}
 
@@ -555,14 +573,20 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		if (!isRangeIndicatorEnabled()) { projectionViewer.doOperation(ProjectionViewer.TOGGLE); }
 	}
 
+	/** Timestamp of the last navigation-history mark, used to throttle {@link #markInNavigationHistory()} calls. */
+	private long lastNavigationHistoryMark = 0L;
+
 	@Override
 	protected void handleCursorPositionChanged() {
 		GamaSourceViewer v = getInternalSourceViewer();
-		if (getSelectionProvider() == null || v == null || v.getControl() == null || v.getControl().isDisposed()) {
+		if (getSelectionProvider() == null || v == null || v.getControl() == null || v.getControl().isDisposed())
 			return;
-		}
 		super.handleCursorPositionChanged();
-		this.markInNavigationHistory();
+		final long now = System.currentTimeMillis();
+		if (now - lastNavigationHistoryMark > 500) {
+			lastNavigationHistoryMark = now;
+			this.markInNavigationHistory();
+		}
 	}
 
 	/**
@@ -591,16 +615,16 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		DEBUG.OUT("Updating toolbar for " + this.getTitle());
 		if (forceState || !state.equals(newState)) {
 			WorkbenchHelper.runInUI("Editor refresh", 50, m -> {
-				if (toolbar == null || toolbar.isDisposed()) { return; }
+				if (toolbar == null || toolbar.isDisposed()) return;
 				toolbar.wipe(SWT.LEFT, 1);
 				boolean showExperiments =
 						!GamlFileExtension.isExperiment(getDocument().getAdapter(IFile.class).getName())
 								&& newState.showExperiments;
-				if (addExperiments == null || showExperiments != previousShowExperiments && addExperiments != null) {
+				if (addExperiments == null || showExperiments != previousShowExperiments) {
 					updateAddExperimentButton(showExperiments);
 				}
-				final GamaUIColor c = state.getColor();
-				String msg = state.getStatus();
+				final GamaUIColor c = newState.getColor();
+				String msg = newState.getStatus();
 
 				Selector listener = null;
 				String imageName = null;
@@ -615,22 +639,16 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 					listener = new RevalidateModelSelectionListener(GamlEditor.this);
 					imageName = MARKER_ERROR;
 				} else {
-					listener = new OpenExperimentSelectionListener(GamlEditor.this, newState, runner);
+					listener = new OpenExperimentSelectionListener(GamlEditor.this, newState, modelsManager);
 				}
 				if (msg != null) {
 					toolbar.button(c, msg, GamaIcon.named(imageName).image(), listener, BUTTON_HEIGHT, SWT.LEFT);
 				} else if (newState.showExperiments) {
-					if (EDITOR_EXPERIMENT_MENU.getValue()) {
+					if (EDITOR_EXPERIMENT_MENU.getValue()
+							|| EDITOR_COLLAPSE_BUTTONS.getValue() && buttonsOverflow(newState)) {
 						displayExperimentMenu(newState, listener);
-					} else if (newState.abbreviations.size() <= 1 || !EDITOR_COLLAPSE_BUTTONS.getValue()) {
-						displayExperimentButtons(newState, listener);
 					} else {
-						int width = computeWidth(newState);
-						if (width > toolbar.getSize().x - toolbar.getToolbar(SWT.RIGHT).getSize().x) {
-							displayExperimentMenu(newState, listener);
-						} else {
-							displayExperimentButtons(newState, listener);
-						}
+						displayExperimentButtons(newState, listener);
 					}
 				}
 				toolbar.requestLayout();
@@ -679,6 +697,21 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	/**
+	 * Returns true when the total pixel width of all experiment buttons exceeds the space currently available in the
+	 * left toolbar. If the toolbar has not been sized yet (available width unknown), returns false so that buttons are
+	 * shown optimistically and the next resize event will re-evaluate.
+	 *
+	 * @param newState
+	 *            the new state
+	 * @return true if the buttons would overflow the left toolbar
+	 */
+	private boolean buttonsOverflow(final GamlEditorState newState) {
+		final int available = toolbar.getAvailableLeftWidth();
+		if (available < 0) return false; // toolbar not yet laid out — show buttons
+		return computeWidth(newState) > available;
+	}
+
+	/**
 	 * Display experiment buttons.
 	 *
 	 * @param newState
@@ -689,7 +722,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	private void displayExperimentButtons(final GamlEditorState state, final Selector listener) {
 		var index = 0;
 		for (final String text : state.abbreviations) {
-			if (text == null) { return; }
+			if (text == null) return;
 			final var expType = state.types.get(index++);
 			final var type = IKeyword.BATCH.equals(expType) ? IKeyword.BATCH
 					: IKeyword.RECORD.equals(expType) ? IKeyword.RECORD : "regular";
@@ -718,28 +751,30 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 
 		b.setSelectionListener(new Selector() {
 
-			Menu menu;
+			Menu popupMenu;
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				if (menu == null) {
-					menu = new Menu(toolbar.getShell(), SWT.POP_UP);
+				if (popupMenu == null || popupMenu.isDisposed()) {
+					popupMenu = new Menu(toolbar.getShell(), SWT.POP_UP);
+					// Dispose the popup menu automatically when the button is disposed (toolbar wipe)
+					b.addDisposeListener(de -> { if (popupMenu != null && !popupMenu.isDisposed()) { popupMenu.dispose(); } });
 					fillMenu();
 				}
 				final Point point = toolbar.toDisplay(new Point(e.x, e.y + toolbar.getSize().y));
-				menu.setLocation(point.x, point.y);
-				menu.setVisible(true);
+				popupMenu.setLocation(point.x, point.y);
+				popupMenu.setVisible(true);
 			}
 
 			private void fillMenu() {
 				var index = 0;
 				for (final String text : state.abbreviations) {
-					if (text == null) { return; }
+					if (text == null) return;
 					final var expType = state.types.get(index++);
 					final String type = IKeyword.BATCH.equals(expType) ? IKeyword.BATCH
 							: IKeyword.RECORD.equals(expType) ? IKeyword.RECORD : "regular";
 					final String image = MENU_IMAGES.get(type);
-					GamaMenu.action(menu, text, listener, image).setData("exp", text);
+					GamaMenu.action(popupMenu, text, listener, image).setData("exp", text);
 				}
 			}
 		});
@@ -747,8 +782,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	@Override
-	public void validationEnded(final ModelDescription model, final Iterable<? extends IDescription> newExperiments,
-			final ValidationContext status) {
+	public void validationEnded(final IModelDescription model, final Iterable<? extends IDescription> newExperiments,
+			final IValidationContext status) {
 
 		getInternalSourceViewer().updateCodeMinings();
 
@@ -757,7 +792,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			GamlProperties meta = new GamlProperties();
 			model.collectMetaInformation(meta);
 			String newLine = requires + " " + meta.get(GamlProperties.PLUGINS);
-			getInternalSourceViewer();
 			IXtextDocument document = getDocument();
 			WorkbenchHelper.asyncRun(() -> {
 				int offset;
@@ -769,7 +803,8 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 							new ReplaceEdit(offset, length, newLine).apply(document);
 						}
 					} else {
-						new InsertEdit(0, Strings.LN + newLine + Strings.LN + Strings.LN).apply(getDocument());
+						new InsertEdit(0, StringUtils.LN + newLine + StringUtils.LN + StringUtils.LN)
+								.apply(getDocument());
 					}
 				} catch (BadLocationException e) {}
 			});
@@ -785,30 +820,6 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			updateToolbar(newState, false);
 			state = newState;
 		}
-	}
-
-	/**
-	 * The Class GamaSourceViewerConfiguration.
-	 */
-	public static class GamaSourceViewerConfiguration extends XtextSourceViewerConfiguration {
-
-		@Override
-		public ITextHover getTextHover(final ISourceViewer sourceViewer, final String contentType) {
-			return super.getTextHover(sourceViewer, contentType);
-		}
-
-		// See issue #391 : automatically surrounds the selected words with a
-		// pair of "brackets"
-		@Override
-		public IAutoEditStrategy[] getAutoEditStrategies(final ISourceViewer sourceViewer, final String contentType) {
-			IAutoEditStrategy[] strategies = super.getAutoEditStrategies(sourceViewer, contentType);
-			if (!GamaPreferences.Modeling.CORE_SURROUND_SELECTED.getValue()) { return strategies; }
-			for (IAutoEditStrategy strategy : strategies) {
-				if (strategy instanceof SurroundWithBracketsStrategy) { return strategies; }
-			}
-			return ArrayUtils.insert(0, strategies, new SurroundWithBracketsStrategy(sourceViewer));
-		}
-
 	}
 
 	/**
@@ -836,7 +847,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		@Override
 		public CompletableFuture<List<? extends ICodeMining>> provideCodeMinings(final ITextViewer viewer,
 				final IProgressMonitor monitor) {
-			if (!GamaPreferences.Modeling.EDITOR_MINING.getValue()) { return EMPTY; }
+			if (!GamaPreferences.Modeling.EDITOR_MINING.getValue()) return EMPTY;
 			return super.provideCodeMinings(viewer, monitor);
 		}
 
@@ -869,7 +880,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 * Before save.
 	 */
 	private void beforeSave() {
-		if (!GamaPreferences.Modeling.EDITOR_CLEAN_UP.getValue()) { return; }
+		if (!GamaPreferences.Modeling.EDITOR_CLEAN_UP.getValue()) return;
 		final SourceViewer sv = getInternalSourceViewer();
 		final var p = sv.getSelectedRange();
 		sv.setSelectedRange(0, sv.getDocument().getLength());
@@ -909,7 +920,7 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	public String getSelectedText() {
 		final var sel = (ITextSelection) getSelectionProvider().getSelection();
 		final var length = sel.getLength();
-		if (length == 0) { return ""; }
+		if (length == 0) return "";
 		final IDocument doc = getDocument();
 		try {
 			return doc.get(sel.getOffset(), length);
@@ -995,16 +1006,12 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	protected void handlePreferenceStoreChanged(final PropertyChangeEvent event) {
 		super.handlePreferenceStoreChanged(event);
 		if (PREFERENCE_COLOR_BACKGROUND.equals(event.getProperty())) {
-			// this.fSourceViewerDecorationSupport.updateOverviewDecorations();
-
-			this.getVerticalRuler().getControl()
-					.setBackground(GamaColors.get(GamaPreferences.Modeling.EDITOR_BACKGROUND_COLOR.getValue()).color());
-
+			final var bg = GamaColors.get(GamaPreferences.Modeling.EDITOR_BACKGROUND_COLOR.getValue()).color();
+			this.getVerticalRuler().getControl().setBackground(bg);
 			final Iterator e = ((CompositeRuler) getVerticalRuler()).getDecoratorIterator();
 			while (e.hasNext()) {
 				final var column = (IVerticalRulerColumn) e.next();
-				column.getControl().setBackground(
-						GamaColors.get(GamaPreferences.Modeling.EDITOR_BACKGROUND_COLOR.getValue()).color());
+				column.getControl().setBackground(bg);
 				column.redraw();
 			}
 		}
@@ -1144,23 +1151,19 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		}
 	}
 
-	/** The to remove. */
-	Set<String> toRemove = Set.of("revert", "save", "Preferences.ContextAction", "QuickAssist", "Open W&ith",
-			"Sho&w In	⌥⌘W", "group.open");
-
 	@Override
 	protected void editorContextMenuAboutToShow(final IMenuManager menu) {
 		super.editorContextMenuAboutToShow(menu);
 		for (IContributionItem item : menu.getItems()) {
 			if (item == null) { continue; }
 			if (item instanceof MenuManager mm) { DEBUG.OUT(" --> \"" + mm.getMenuText() + "\""); }
-			if (item instanceof MenuManager mmmm && toRemove.contains(mmmm.getMenuText())
-					|| item.getId() != null && toRemove.contains(item.getId())) {
+			if (item instanceof MenuManager mmmm && TO_REMOVE_FROM_MENUS.contains(mmmm.getMenuText())
+					|| item.getId() != null && TO_REMOVE_FROM_MENUS.contains(item.getId())) {
 				menu.remove(item);
 				continue;
 			}
-			DEBUG.OUT("Item " + item);
-			CleanupHelper.RearrangeMenus.changeIcon(menu, item, item.getId());
+			// DEBUG.OUT("Item " + item);
+			UICleanupTasks.RearrangeMenus.changeIcon(menu, item, item.getId());
 		}
 		menu.add(new Separator());
 		menu.add(new InternalMenuManager(parent -> new TemplateReferenceMenu().installSubMenuIn(parent)));
@@ -1199,6 +1202,47 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	 */
 	public void updateToolbar() {
 		updateToolbar(state, true);
+	}
+
+	/**
+	 * Configures the annotation decoration support for the source viewer in order to simplify the "info" markers:
+	 * remove the line below the text by default and their presence in the "overview" vertical ruler on the right
+	 */
+	@Override
+	protected void configureSourceViewerDecorationSupport(final SourceViewerDecorationSupport support) {
+		super.configureSourceViewerDecorationSupport(support);
+
+		for (String infoType : ANNOTATION_INFO_TYPES) {
+			// Create a preference object to define all properties at once
+			AnnotationPreference infoPref = new AnnotationPreference();
+			infoPref.setAnnotationType(infoType);
+
+			// 1. Color Preference (Value type: String RGB "r,g,b")
+			infoPref.setColorPreferenceKey("gama.info.color");
+			infoPref.setColorPreferenceValue(new RGB(0, 120, 215)); // Default value
+			// 2. Text Decoration (Value type: boolean)
+			// Controls if the annotation is painted in the text editor
+			infoPref.setTextPreferenceKey("gaml.info.text");
+			infoPref.setTextPreferenceValue(false); // We do not paint it by default
+
+			// 3. Visual Style (Value type: String)
+			// Valid values: "SQUIGGLES", "BOX", "DASHED_BOX", "UNDERLINE", "HIGHLIGHTER"
+			infoPref.setTextStylePreferenceKey("gaml.info.style");
+			infoPref.setTextStyleValue(AnnotationPreference.STYLE_UNDERLINE);
+
+			// 4. Overview Ruler (Value type: boolean)
+			// Right side bar visibility
+			infoPref.setOverviewRulerPreferenceKey("gaml.info.overview");
+			infoPref.setOverviewRulerPreferenceValue(false);
+
+			// 5. Vertical Ruler (Value type: boolean)
+			// Left side bar visibility (icons)
+			infoPref.setVerticalRulerPreferenceKey("gaml.info.vertical");
+			infoPref.setVerticalRulerPreferenceValue(true);
+
+			// Register this preference object into the support
+			support.setAnnotationPreference(infoPref);
+		}
 	}
 
 }

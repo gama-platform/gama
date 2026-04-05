@@ -1,11 +1,13 @@
 /**
-* Name:  Model using Batch mode
-* Author:  Patrick Taillandier
-* Description: A model showing how to use batch experiments to find the best combination of parameters to minimize the numbers of infected people 
-*      in a SIR infection model where agents infect others and become immune after a certain time and has a probability to die. The batch mode uses seven different methods: Hill climbing
-*      GA, PSO, Tabu Search, Reactive Tabu Search, Simulated Annealing, and Explicit exploration. The model proposes five experiments : one simple with a User Interface, one running 10 experiments and saving the data, and one 
-*      for each strategy. 
-* Tags: batch, algorithm, save_file
+* Name: Calibration
+* Author: Patrick Taillandier
+* Description: A comprehensive model showing how to use GAMA's batch experiment modes to calibrate and
+*   optimize a SIR epidemic model. The goal is to find the parameter combination that minimizes the number
+*   of infected agents. Seven optimization methods are demonstrated: Hill Climbing, Genetic Algorithm (GA),
+*   PSO (Particle Swarm Optimization), Tabu Search, Reactive Tabu Search, Simulated Annealing, and Explicit
+*   (exhaustive) exploration. Five experiments are provided: a GUI experiment, one that runs 10 replicates
+*   and saves data, and one dedicated experiment per optimization strategy.
+* Tags: batch, algorithm, calibration, optimization, SIR, hill_climbing, GA, PSO, tabu, simulated_annealing
 */
 
 

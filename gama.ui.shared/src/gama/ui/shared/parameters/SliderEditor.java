@@ -3,7 +3,7 @@
  * SliderEditor.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -20,12 +20,12 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 
-import gama.core.kernel.experiment.IParameter;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.gaml.types.Cast;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.color.IColor;
 import gama.dev.DEBUG;
-import gama.gaml.operators.Cast;
 import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.controls.SimpleSlider;
 import gama.ui.shared.interfaces.EditorListener;
@@ -185,7 +185,7 @@ public abstract class SliderEditor<T extends Comparable> extends AbstractEditor<
 
 	@Override
 	protected Control createCustomParameterControl(final Composite comp) throws GamaRuntimeException {
-		final List<GamaColor> colors = getParam().getColors(getScope());
+		final List<IColor> colors = getParam().getColors(getScope());
 		Color left = IGamaColors.OK.color();
 		Color backgroundColor = comp.getBackground();
 		Color right = ThemeHelper.isDark() ? GamaColors.get(backgroundColor).lighter()

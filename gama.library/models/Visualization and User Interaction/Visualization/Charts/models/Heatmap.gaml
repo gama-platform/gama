@@ -1,8 +1,12 @@
 /**
-* Name: Heatmap Examples
+* Name: Heatmap Chart Examples
 * Author: Philippe Caillou
-* Description: A demonstration of charts composed of heatmaps
-* Tags: gui, chart
+* Description: Demonstrates the heatmap chart type in GAMA, which renders a 2D matrix of values as a
+*   color-coded grid. Useful for visualizing correlation matrices, spatial density, confusion matrices, or
+*   any 2D tabular data where color encodes magnitude. The model generates synthetic 2D data arrays and
+*   displays them with various color scales and axis labels. Multiple experiments show different heatmap
+*   configurations available in GAMA's chart API.
+* Tags: gui, chart, heatmap, matrix, visualization, output, color, 2d
 */
 model heatmaps
 
@@ -24,7 +28,7 @@ global
 		do update_chart();
 	}
 
-	action update_chart
+	action update_chart()
 	{
 		myldata <- [];
 		mylldata <- [];

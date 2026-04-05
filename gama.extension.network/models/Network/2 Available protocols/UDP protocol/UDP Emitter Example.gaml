@@ -1,9 +1,11 @@
 /**
-* Name: UDP Emitter Example.gaml
-* Author: Benoit Gaudou & Nicolas Marilleau
-* Description: An UDP emitter that sends the coordinates of an agent toward an UDP server.
-* 				One server example (in Processing) is provided in the model library in the UDPServer folder.
-* Tags: Network, Socket, UDP
+* Name: UDP Emitter Example
+* Author: Benoit Gaudou, Nicolas Marilleau
+* Description: A UDP sender model that emits an agent's XY coordinates as a UDP datagram to a listening
+*   server. An example Processing sketch (UDPServer) is provided in the model library to act as the
+*   receiver. Demonstrates GAMA's UDP socket support — useful for streaming real-time agent data to
+*   external visualization or control applications.
+* Tags: network, UDP, socket, emitter, coordinates, protocol, communication, Processing
 */
 
 model SocketUDP_Emitter

@@ -1,8 +1,12 @@
 /**
-* Name: Syntax
+* Name: Elements of Syntax
 * Author: Alexis Drogoul
-* Description: An overview of the new syntactic constructs that have been introduced in GAMA 1.6
-* Tags: attribute, ternary, equation, action, container, list
+* Description: An overview of new syntactic constructs introduced in GAMA 1.6 and later. Covers advanced attribute
+*   syntax, the ternary conditional operator, equation declarations, typed and untyped actions, container literals,
+*   and list comprehensions. Also demonstrates that the global section can now support skills (such as 'moving')
+*   and control architectures (such as 'fsm'). This model is a broad reference for modelers who want to explore
+*   the full range of GAML syntactic features in one place.
+* Tags: attribute, ternary, equation, action, container, list, syntax, skill, fsm, global
 */
 
 @no_warning
@@ -44,9 +48,9 @@ global skills: [moving] control: fsm {
 
 	// Functions can be declared using the regular facet "->" / "function:" 
 	int b1 ->  100 + length(a1) ;
-	int b2 -> { 100 + length(a1) };
+	int b2 ->  100 + length(a1) ;
 	// ... or using a block (like a statement -- note the absence of semi-column at the end)
-	int b3 {
+	int b3() {
 		return 100 + length(a1);
 	}
 	state first_state initial: true {
@@ -58,7 +62,7 @@ global skills: [moving] control: fsm {
 	}
 	
 
-	/**
+	/** 
 	 * UNITS
 	 */
 // The usage of units is improved and they can be combined
@@ -75,25 +79,25 @@ global skills: [moving] control: fsm {
 	/**
 	  * ACTIONS
 	  */
-	// Actions can also be declared in different ways. Classic:
-	action dummy1 type: list of: int {
-		arg a type: int default: 100;
-		arg b type: float;
-		return [a, int(b)];
-	}
-	// Semi-classic (prefixed by the type)
-	list dummy2 of: int {
-		arg a type: int default: 100;
-		arg b type: float;
-		return [a, int(b)];
-	}
+//	// Actions can also be declared in different ways. Classic:
+//	action dummy1 type: list of: int {
+//		arg a type: int default: 100;
+//		arg b type: float;
+//		return [a, int(b)];
+//	}
+//	// Semi-classic (prefixed by the type)
+//	list dummy2 of: int {
+//		arg a type: int default: 100;
+//		arg b type: float;
+//		return [a, int(b)];
+//	}
 	//Compact
 	list<int> dummy1 (int a <- 100, float b) {
 		return [a, int(b)];
 	}
 
 	// An action that returns nothing can still be called "action"
-	action dummy_void {
+	action dummy_void() {
 		write "dummy_void";
 	}
 
@@ -107,11 +111,7 @@ global skills: [moving] control: fsm {
 		// is equivalent to the more compact one:
 		int t2 <- length(a1);
 
-		// Assigning a value to variables is also sporting a new syntax 
-		set t2 value: 100;
-		// ... can be replaced by 
-		set t2 <- 100;
-		// ... or even by
+		// ... and vars can be set directly 
 		t2 <- 100;
 
 		// Species can now act as direct containers of their agents..
@@ -198,10 +198,11 @@ global skills: [moving] control: fsm {
 	reflex calling_actions {
 	// IN IMPERATIVE MODE (i.e. in a statement)
 	// The classic way
-		do dummy1 with: [a::10, b::100.0];
+		//do dummy1 with: (a:10, b:100.0);
 
 		// Another by distributing the arguments
-		do dummy1 a: 10 b: 100.0;
+		do dummy1 (a: 10, b: 100.0);
+		self.dummy1(a:10,b:1000);
 
 		// The new alternative one 
 		do dummy1(a: 10, b: 100.0);
@@ -318,7 +319,7 @@ species species1 mirrors: species0 skills: [moving] {
 	point location update: target.location + { 10, 10 };
 	float speed1 update: self.compute_speed_using_an_action(); // No parameter as "max" is defaulted
 	float speed2 update: compute_speed_using_a_functional_attribute;
-	float compute_speed_using_a_functional_attribute {
+	float compute_speed_using_a_functional_attribute() {
 		return speed of target;
 	}
 	float compute_speed_using_an_action (int max <- 100) {

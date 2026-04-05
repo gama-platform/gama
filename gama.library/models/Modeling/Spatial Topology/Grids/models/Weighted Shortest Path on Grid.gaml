@@ -1,8 +1,12 @@
 /**
-* Name:  Computation of the shortest path on a Grid of Cells
-* Author:  Patrick Taillandier
-* Description: Model to represent how to compute the shortest path from a grid (with the 4 algorithms).
-* Tags: grid, obstacle, shortest_path
+* Name: Weighted Shortest Path on Grid
+* Author: Patrick Taillandier
+* Description: Demonstrates shortest-path computation on a grid where cells have different traversal costs
+*   (weights). Four algorithms are compared: BF, A*, Dijkstra, and JPS. The agent path minimizes total
+*   cumulative cost rather than the number of steps. Cells with higher weights (e.g., difficult terrain,
+*   water, buildings) are more expensive to cross. This model is the weighted counterpart to 'Shortest Path
+*   on Grid' and is the reference for realistic terrain-cost navigation in GAMA.
+* Tags: grid, obstacle, shortest_path, weighted, cost, terrain, astar, dijkstra, pathfinding
 */
 
 model Grid

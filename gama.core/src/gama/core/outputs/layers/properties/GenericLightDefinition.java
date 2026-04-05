@@ -1,16 +1,18 @@
 /*******************************************************************************************************
  *
- * GenericLightDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * GenericLightDefinition.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers.properties;
 
-import gama.core.util.GamaColor;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.ui.layers.ILightDefinition;
 
 /**
  * The Class AmbientLightDefinition.
@@ -21,10 +23,10 @@ public class GenericLightDefinition implements ILightDefinition {
 	final String name;
 
 	/** The id. */
-	final int id;
+	int id;
 
 	/** The intensity. */
-	final GamaColor intensity;
+	final IColor intensity;
 
 	/**
 	 * Instantiates a new generic light definition.
@@ -35,7 +37,7 @@ public class GenericLightDefinition implements ILightDefinition {
 	 *            the id.
 	 */
 	public GenericLightDefinition(final String name, final int id, final int intensity) {
-		this(name, id, GamaColor.get(intensity, intensity, intensity, 255));
+		this(name, id, GamaColorFactory.createWithRGBA(intensity, intensity, intensity, 255));
 	}
 
 	/**
@@ -48,7 +50,7 @@ public class GenericLightDefinition implements ILightDefinition {
 	 * @param intensity
 	 *            the intensity.
 	 */
-	public GenericLightDefinition(final String name, final int id, final GamaColor intensity) {
+	public GenericLightDefinition(final String name, final int id, final IColor intensity) {
 		this.name = name;
 		this.id = id;
 		this.intensity = intensity;
@@ -61,6 +63,9 @@ public class GenericLightDefinition implements ILightDefinition {
 	public int getId() { return id; }
 
 	@Override
-	public GamaColor getIntensity() { return intensity; }
+	public IColor getIntensity() { return intensity; }
+
+	@Override
+	public void setId(final int index) { id = index; }
 
 }

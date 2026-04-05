@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * SerialisationOperators.java, in gama.serialize, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * SerialisationOperators.java, in gama.extension.serialize, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,27 +13,25 @@ package gama.extension.serialize.gaml;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.util.StringUtils;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.json.Json;
-import gama.core.util.file.json.WriterConfig;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.GAMA;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.utils.StringUtils;
+import gama.api.utils.json.IJsonValue;
 import gama.dev.DEBUG;
 import gama.extension.serialize.binary.BinarySerialisation;
-import gama.gaml.compilation.GAML;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Strings;
 import gama.gaml.statements.save.GeoJSonSaver;
 
 /**
@@ -150,14 +148,16 @@ public class SerialisationOperators {
 	@test ("to_json(font('Helvetica')) = '{\"gaml_type\":\"font\",\"name\":\"Helvetica\",\"style\":0,\"size\":12}'")
 	@test ("to_json(point(20,10)) = '{\"gaml_type\":\"point\",\"x\":20.0,\"y\":10.0,\"z\":0.0}'")
 	@doc (
-			value = "Serializes any object/agent/simulation into a string, using the json format. A flag can be passed to enable/disable pretty printing (`false` by default).\n"
-					+ "The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A list is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the attribute `gaml_type`, "
-					+ "it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the `agent_reference` attribute, its value represents the reference to an agent. If any reference to an agent is found, the "
-					+ "json string returned will be an object with two attributes: `gama_object`, the object containing the references, and `reference_table` a dictionary mapping the references to the json description of the agents (their `species`, `name`, `index`, and list of attributes). "
-					+ "This choice allows to manage cross references between agents",
+			value = """
+					Serializes any object/agent/simulation into a string, using the json format. A flag can be passed to enable/disable pretty printing (`false` by default).
+					The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A list is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the attribute `gaml_type`, \
+					it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the `agent_reference` attribute, its value represents the reference to an agent. If any reference to an agent is found, the \
+					json string returned will be an object with two attributes: `gama_object`, the object containing the references, and `reference_table` a dictionary mapping the references to the json description of the agents (their `species`, `name`, `index`, and list of attributes). \
+					This choice allows to manage cross references between agents""",
 			see = { "serialize", "to_gaml" })
 	public static String toJson(final IScope scope, final Object obj, final boolean pretty) {
-		return Json.getNew().valueOf(obj).toString(pretty ? WriterConfig.PRETTY_PRINT : WriterConfig.MINIMAL);
+		IJsonValue jsonValue = GAMA.getJsonEncoder().valueOf(obj);
+		return pretty ? jsonValue.toPrettyPrint() : jsonValue.toCompactPrint();
 	}
 
 	/**
@@ -177,12 +177,14 @@ public class SerialisationOperators {
 			category = { IOperatorCategory.CASTING },
 			concept = { IConcept.SERIALIZE })
 	@doc (
-			value = "Serializes any object/agent/simulation into a string, using the json format and no pretty printing.\n"
-					+ "The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A `list` is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the \"gaml_type\" attribute, "
-					+ "it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the \"agent_reference\" attribute, its value represent the reference to an agent. If any reference to an agent is found, the "
-					+ "json string returned will be an object with two attributes: \"gama_object\", the object containing the references, and \"reference_table\" a dictionary mapping the references to the json description of the agents (their species, name, index, and list of attributes). "
-					+ "This choice allows to manage cross references between agents",
+			value = """
+					Serializes any object/agent/simulation into a string, using the json format and no pretty printing.
+					The format used by GAMA follows simple rules. `int`, `float`, `bool`, `string` values are outputted as they are. `nil` is outputted as `null`. A `list` is outputted as a json array. Any other object or agent is outputted as a json object. If this object possesses the "gaml_type" attribute, \
+					it is an instance of the corresponding type, and the members that follow contain the attributes and the values necessary to reconstruct it. If it has the "agent_reference" attribute, its value represent the reference to an agent. If any reference to an agent is found, the \
+					json string returned will be an object with two attributes: "gama_object", the object containing the references, and "reference_table" a dictionary mapping the references to the json description of the agents (their species, name, index, and list of attributes). \
+					This choice allows to manage cross references between agents""",
 			see = { "serialize", "to_gaml" })
+	@no_test
 	public static String toJson(final IScope scope, final Object obj) {
 		return toJson(scope, obj, false);
 	}
@@ -265,7 +267,7 @@ public class SerialisationOperators {
 			see = { "from_gaml", "from_binary" })
 	@no_test
 	public static Object fromJson(final IScope scope, final String s) {
-		return Json.getNew().parse(s).toGamlValue(scope);
+		return GAMA.getJsonEncoder().parse(s).toGamlValue(scope);
 	}
 
 	/**
@@ -295,7 +297,7 @@ public class SerialisationOperators {
 			return scope.evaluate(e, agent).getValue();
 		} catch (final GamaRuntimeException e) {
 			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Error in evaluating Gaml code : '" + gaml
-					+ "' in " + scope.getAgent() + Strings.LN + "Reason: " + e.getMessage(), scope), false);
+					+ "' in " + scope.getAgent() + StringUtils.LN + "Reason: " + e.getMessage(), scope), false);
 
 			return null;
 		}

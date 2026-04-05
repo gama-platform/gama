@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * CreateAgentsFromSerialisedStringDelegate.java, in gama.serialize, is part of the source code of the GAMA
- * modeling and simulation platform .
+ * CreateAgentsFromSerialisedStringDelegate.java, in gama.extension.serialize, is part of the source code of the GAMA
+ * modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -14,18 +14,17 @@ package gama.extension.serialize.gaml;
 import java.util.List;
 import java.util.Map;
 
-import gama.core.common.interfaces.ICreateDelegate;
-import gama.core.common.interfaces.ISerialisationConstants;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.population.IPopulation;
-import gama.core.runtime.IScope;
-import gama.core.util.IList;
+import gama.api.additions.delegates.ICreateDelegate;
+import gama.api.constants.ISerialisationConstants;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.Arguments;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.agent.IPopulation;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.list.IList;
 import gama.extension.serialize.binary.BinarySerialisation;
-import gama.gaml.statements.Arguments;
-import gama.gaml.statements.CreateStatement;
-import gama.gaml.statements.RemoteSequence;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Class CreateFromSavecSimulationDelegate.
@@ -45,7 +44,7 @@ public class CreateAgentsFromSerialisedStringDelegate implements ICreateDelegate
 
 	@Override
 	public IList<? extends IAgent> createAgents(final IScope scope, final IPopulation<? extends IAgent> pop,
-			final List<Map<String, Object>> inits, final CreateStatement statement, final RemoteSequence sequence) {
+			final List<Map<String, Object>> inits, final IStatement.Create statement, final IStatement sequence) {
 		IList<? extends IAgent> agents = pop.createAgents(scope, 1, inits, false, true, null);
 		IAgent agent = agents.get(0);
 		String path = (String) inits.get(0).get(SERIALISATION_STRING);
@@ -58,7 +57,7 @@ public class CreateAgentsFromSerialisedStringDelegate implements ICreateDelegate
 	/**
 	 * Method acceptSource()
 	 *
-	 * @see gama.core.common.interfaces.ICreateDelegate#acceptSource(IScope, java.lang.Object)
+	 * @see gama.api.additions.delegates.ICreateDelegate#acceptSource(IScope, java.lang.Object)
 	 */
 	@Override
 	public boolean acceptSource(final IScope scope, final Object source) {
@@ -66,12 +65,12 @@ public class CreateAgentsFromSerialisedStringDelegate implements ICreateDelegate
 	}
 
 	/**
-	 * @see gama.core.common.interfaces.ICreateDelegate#createFrom(gama.core.runtime.IScope, java.util.List, int,
+	 * @see gama.api.additions.delegates.ICreateDelegate#createFrom(gama.api.runtime.scope.IScope, java.util.List, int,
 	 *      java.lang.Object)
 	 */
 	@Override
 	public boolean createFrom(final IScope scope, final List<Map<String, Object>> inits, final Integer max,
-			final Object source, final Arguments init, final CreateStatement statement) {
+			final Object source, final Arguments init, final IStatement.Create statement) {
 		inits.add(Map.of(SERIALISATION_STRING, source));
 		return true;
 	}
@@ -79,7 +78,7 @@ public class CreateAgentsFromSerialisedStringDelegate implements ICreateDelegate
 	/**
 	 * Method fromFacetType()
 	 *
-	 * @see gama.core.common.interfaces.ICreateDelegate#fromFacetType()
+	 * @see gama.api.additions.delegates.ICreateDelegate#fromFacetType()
 	 */
 	@Override
 	public IType fromFacetType() {

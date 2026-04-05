@@ -1,33 +1,35 @@
 /*******************************************************************************************************
  *
- * ExperimentOutputManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation
- * platform .
+ * ExperimentOutputManager.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs;
 
-import static gama.core.common.interfaces.IKeyword.LAYOUT;
-import static gama.core.common.preferences.GamaPreferences.Displays.CORE_DISPLAY_LAYOUT;
-import static gama.core.common.preferences.GamaPreferences.Displays.LAYOUTS;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
+import static gama.annotations.constants.IKeyword.LAYOUT;
+import static gama.api.utils.prefs.GamaPreferences.Displays.CORE_DISPLAY_LAYOUT;
+import static gama.api.utils.prefs.GamaPreferences.Displays.LAYOUTS;
+
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.GAMA;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.gaml.GAML;
+import gama.api.gaml.symbols.Symbol;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IOutput;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.Symbol;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.factories.DescriptionFactory;
 
 /**
  * The Class OutputManager.
@@ -80,7 +82,7 @@ public class ExperimentOutputManager extends AbstractOutputManager {
 	 * @return the experiment output manager
 	 */
 	public static ExperimentOutputManager createEmpty() {
-		return new ExperimentOutputManager(DescriptionFactory.create(IKeyword.PERMANENT, (String[]) null));
+		return new ExperimentOutputManager(GAML.getDescriptionFactory().create(IKeyword.PERMANENT, (String[]) null));
 	}
 
 	/**
@@ -99,8 +101,9 @@ public class ExperimentOutputManager extends AbstractOutputManager {
 		final String definitionFacet = layout == null ? LAYOUT : IKeyword.VALUE;
 		final Object layoutObject =
 				layoutDefinition.getFacetValue(scope, definitionFacet, LAYOUTS.indexOf(CORE_DISPLAY_LAYOUT.getValue()));
-		super.init(scope);
-		scope.getGui().applyLayout(scope, layoutObject);
+		// Delegate to openAndApplyLayout so the GUI can freeze the shell, open all display views
+		// and run the layout algorithm in one atomic UI call — eliminating intermediate repaints.
+		scope.getGui().openAndApplyLayout(scope, () -> super.init(scope), layoutObject);
 		if (GamaPreferences.Runtime.CORE_MONITOR_PARAMETERS.getValue()) { GAMA.getGui().updateParameterView(scope); }
 		return true;
 	}
@@ -127,7 +130,7 @@ public class ExperimentOutputManager extends AbstractOutputManager {
 	}
 
 	@Override
-	public synchronized void dispose() {
+	public void dispose() {
 		GAMA.getGui().cleanAfterExperiment();
 		super.dispose();
 	}

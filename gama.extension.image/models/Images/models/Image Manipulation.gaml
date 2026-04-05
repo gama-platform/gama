@@ -1,8 +1,11 @@
 /**
-* Name: ImageManipulation
-* A model to demonstrate some tools to produce, use and save images 
-* Author: A. Drogoul
-* Tags: image
+* Name: Image Manipulation
+* Author: Alexis Drogoul
+* Description: Demonstrates the image processing operators available in GAMA. Operations shown: creating
+*   images procedurally (drawing pixels), applying filters (blur, sharpen, grayscale, invert), compositing
+*   two images together, cropping to a region of interest, resizing, and saving the result to a file.
+*   Also shows how to use images as dynamic textures on agents by updating them during the simulation.
+* Tags: image, manipulation, filter, blur, crop, resize, save, texture, visualization
 */
 model ImageManipulation
 
@@ -76,12 +79,12 @@ species support {
 
 experiment ImageManipulation type: gui {
 
-	action _init_ {
+	action _init_() {
 		image im <- copy_from_clipboard(image);
 		if im = nil {
 			im <- image("../includes/Kandinsky.jpeg");
 		}
-		create simulation with: [im1::im];
+		create simulation with: (im1:im);
 		
 	}
  

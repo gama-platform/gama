@@ -1,8 +1,11 @@
 /**
-* Name: prey predator
-* Author: HUYNH Quang Nghi
-* Description: This is a simple comodel serve to demonstrate the mixing behaviors of preyPredator with the Ants. Ants are the prey, fleeing from Predators, when they are not chasing, they try to do job of the ants.
-* Tags: comodel
+* Name: Prey Predator
+* Author: Huynh Quang Nghi
+* Description: A standalone predator-prey model serving as the base (legacy) model imported by the
+*   Co-PreyPredator comodeling examples. Prey and predator agents move randomly; predators eat prey when
+*   they are in the same location. This model is designed to be reused and extended via the comodeling
+*   framework and its associated adapter.
+* Tags: comodel, predator_prey, legacy, base_model
 */
 model prey_predator
 
@@ -108,7 +111,7 @@ species predator parent: generic_species
 	{
 		if (goal = nil)
 		{
-			let tmp <- (lstPrey where (!dead(each) and each.shape distance_to self.shape < perceipt_radius));
+			list<prey> tmp <- (lstPrey where (!dead(each) and each.shape distance_to self.shape < perceipt_radius));
 			if (length(tmp) > 0)
 			{
 				agent a <- first(tmp sort (each.shape distance_to self.shape));

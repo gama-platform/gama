@@ -10,29 +10,29 @@
  ********************************************************************************************************/
 package gama.extension.serialize.gaml;
 
-import static gama.annotations.precompiler.ISymbolKind.SEQUENCE_STATEMENT;
-import static gama.core.common.interfaces.IKeyword.FROM;
-import static gama.core.common.interfaces.IKeyword.RESTORE;
-import static gama.core.common.interfaces.IKeyword.TARGET;
+import static gama.annotations.constants.IKeyword.FROM;
+import static gama.annotations.constants.IKeyword.RESTORE;
+import static gama.annotations.constants.IKeyword.TARGET;
+import static gama.annotations.support.ISymbolKind.SEQUENCE_STATEMENT;
 
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.file.IGamaFile;
+import gama.annotations.doc;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.AbstractStatement;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.file.IGamaFile;
 import gama.extension.serialize.binary.BinarySerialisation;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
-import gama.gaml.statements.AbstractStatement;
-import gama.gaml.types.IType;
 
 /**
  * This command is used to restore agents from a file or a string in which they have been saved/serialized

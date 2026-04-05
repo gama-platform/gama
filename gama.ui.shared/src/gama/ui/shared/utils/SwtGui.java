@@ -2,7 +2,7 @@
  *
  * SwtGui.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -13,16 +13,23 @@ import static gama.ui.shared.utils.ViewsHelper.hideView;
 import static gama.ui.shared.utils.WorkbenchHelper.getClipboard;
 
 import java.awt.EventQueue;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.jface.window.Window;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
@@ -30,61 +37,67 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.commands.ICommandService;
 
-import gama.core.common.CompositeConsoleListener;
-import gama.core.common.interfaces.IConsoleListener;
-import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IGamaView.Console;
-import gama.core.common.interfaces.IGamaView.Error;
-import gama.core.common.interfaces.IGamaView.Parameters;
-import gama.core.common.interfaces.IGamaView.Test;
-import gama.core.common.interfaces.IGamaView.User;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.interfaces.IRuntimeExceptionHandler;
-import gama.core.common.interfaces.IStatusDisplayer;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.kernel.experiment.IExperimentPlan;
-import gama.core.kernel.experiment.IParameter;
-import gama.core.kernel.experiment.ITopLevelAgent;
-import gama.core.kernel.model.IModel;
-import gama.core.kernel.simulation.SimulationAgent;
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.metamodel.shape.IShape;
-import gama.core.outputs.IOutput;
+import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
+import gama.api.additions.registries.GamaAdditionRegistry;
+import gama.api.compilation.IModelsManager;
+import gama.api.compilation.descriptions.IActionDescription;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.IParameter;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
+import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.kernel.species.IExperimentSpecies;
+import gama.api.kernel.species.IModelSpecies;
+import gama.api.runtime.IRuntimeExceptionHandler;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.types.font.IFont;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.ui.IConsoleListener;
+import gama.api.ui.IDialogFactory;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IGamaView.Console;
+import gama.api.ui.IGamaView.Error;
+import gama.api.ui.IGamaView.Parameters;
+import gama.api.ui.IGamaView.Test;
+import gama.api.ui.IGamaView.User;
+import gama.api.ui.IGui;
+import gama.api.ui.IOutput;
+import gama.api.ui.IProgressIndicator;
+import gama.api.ui.IStatusControl;
+import gama.api.ui.IStatusDisplayer;
+import gama.api.ui.IStatusMessage;
+import gama.api.ui.displays.IDisplayCreator;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.server.CommandExecutor;
+import gama.api.utils.server.ISocketCommand;
+import gama.api.utils.tests.CompoundSummary;
 import gama.core.outputs.InspectDisplayOutput;
-import gama.core.outputs.LayeredDisplayOutput;
 import gama.core.outputs.display.AbstractDisplayGraphics;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaFont;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IList;
-import gama.core.util.IMap;
-import gama.core.util.file.IFileMetaDataProvider;
 import gama.dev.DEBUG;
-import gama.gaml.architecture.user.UserPanelStatement;
-import gama.gaml.descriptions.ActionDescription;
-import gama.gaml.statements.test.CompoundSummary;
-import gama.gaml.statements.test.TestExperimentSummary;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.application.workbench.SimulationPerspectiveDescriptor;
-import gama.ui.shared.dialogs.Messages;
+import gama.ui.application.workbench.ThemeHelper;
 import gama.ui.shared.interfaces.IDisplayLayoutManager;
-import gama.ui.shared.interfaces.IModelRunner;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.interfaces.ISpeedDisplayer;
-import gama.ui.shared.interfaces.IUserDialogFactory;
 import gama.ui.shared.parameters.EditorsDialog;
 import gama.ui.shared.parameters.GamaWizard;
 import gama.ui.shared.parameters.GamaWizardDialog;
 import gama.ui.shared.parameters.GamaWizardPage;
 import gama.ui.shared.resources.GamaColors;
+import gama.ui.shared.resources.GamaIcon;
+import gama.ui.shared.resources.IGamaIcons;
+import gama.workspace.console.CompositeConsoleListener;
+import gama.workspace.status.ProgressIndicator;
 
 /**
  * Written by drogoul Modified on 6 mai 2011
@@ -105,13 +118,23 @@ public class SwtGui implements IGui {
 	private IAgent highlightedAgent;
 
 	/** The mouse location in model. */
-	private GamaPoint mouseLocationInModel, mouseLocationInDisplay;
+	private IPoint mouseLocationInModel, mouseLocationInDisplay;
 
 	/** The parameters view. */
 	private final IGamaView.Parameters[] parametersView = new IGamaView.Parameters[1];
 
 	/** The console. */
 	IConsoleListener console;
+
+	/** The dialog factory. */
+	IDialogFactory dialogFactory;
+
+	/**
+	 * Holds the work submitted by {@link #arrangeExperimentViews} so it can be executed inside the same
+	 * {@code WorkbenchHelper.run()} syncExec as the display-view openings in {@link #openAndApplyLayout}. Set by
+	 * {@code arrangeExperimentViews} and drained (read-then-null) by {@code openAndApplyLayout}.
+	 */
+	private volatile Runnable pendingArrange;
 
 	static {
 		PreferencesHelper.initialize();
@@ -124,21 +147,11 @@ public class SwtGui implements IGui {
 	public SwtGui() {}
 
 	@Override
-	public boolean confirmClose(final IExperimentPlan exp) {
+	public boolean confirmClose(final IExperimentSpecies exp) {
 		if (exp == null || !GamaPreferences.Runtime.CORE_ASK_CLOSING.getValue()) return true;
 		PerspectiveHelper.switchToSimulationPerspective();
-		return Messages.modalQuestion("Close simulation confirmation", "Do you want to close experiment '"
+		return getDialogFactory().modalQuestion("Closing experiment", "Do you want to close experiment '"
 				+ exp.getName() + "' of model '" + exp.getModel().getName() + "' ?");
-	}
-
-	@Override
-	public void openMessageDialog(final IScope scope, final String msg) {
-		Messages.tell(msg);
-	}
-
-	@Override
-	public void openErrorDialog(final IScope scope, final String err) {
-		Messages.error(err);
 	}
 
 	@Override
@@ -164,11 +177,14 @@ public class SwtGui implements IGui {
 	@Override
 	public void displayErrors(final IScope scope, final List<GamaRuntimeException> exceptions, final boolean reset) {
 		if (exceptions == null) {
-			// DEBUG.OUT("Hiding errors view");
 			hideView(ERROR_VIEW_ID);
 		} else {
-			// DEBUG.OUT("Showing errors view with new exceptions");
-			final IGamaView.Error v = (Error) showView(scope, ERROR_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+			// Only refresh the view if it is already open — do NOT force it open here.
+			// The view is opened explicitly by displayLatestErrors() when there is a real
+			// error to show. This way the view is not shown during normal simulation runs
+			// (when it is closed) but stays open once the user or an error path has opened it.
+			final IGamaView.Error v =
+					(IGamaView.Error) ViewsHelper.findView(ERROR_VIEW_ID, null, false);
 			if (v != null) { v.displayErrors(reset); }
 		}
 	}
@@ -230,7 +246,7 @@ public class SwtGui implements IGui {
 			try {
 				final IWorkbenchPage page = WorkbenchHelper.getPage();
 				if (page != null) {
-					page.zoomOut();
+					// page.zoomOut();
 					final String second = secondaryId == null ? null
 							: secondaryId + "@@@" + String.valueOf(System.currentTimeMillis());
 					// The goal here is to address #2441 by randomizing the ids of views.
@@ -283,22 +299,27 @@ public class SwtGui implements IGui {
 	}
 
 	@Override
-	public final boolean openSimulationPerspective(final IModel model, final String experimentName) {
+	public boolean openSimulationPerspective(final IModelSpecies model, final String experimentName) {
+		if (model == null) return false;
 		return PerspectiveHelper.openSimulationPerspective(model, experimentName);
 	}
 
+	/**
+	 * Creates the display surface for.
+	 *
+	 * @param output
+	 *            the output
+	 * @param args
+	 *            the args
+	 * @return the i display surface
+	 */
 	@Override
-	public DisplayDescription getDisplayDescriptionFor(final String name) {
-		return DISPLAYS.get(name);
-	}
-
-	@Override
-	public IDisplaySurface createDisplaySurfaceFor(final LayeredDisplayOutput output, final Object... args) {
+	public IDisplaySurface createDisplaySurfaceFor(final IOutput.Display output, final Object uiComponent) {
 		final String keyword = output.getData().getDisplayType();
-		final DisplayDescription creator = DISPLAYS.get(keyword);
+		final IDisplayCreator creator = GamaAdditionRegistry.getDisplay(keyword);
 		if (creator == null)
 			throw GamaRuntimeException.error("Display " + keyword + " is not defined anywhere.", output.getScope());
-		IDisplaySurface surface = creator.create(output, args);
+		IDisplaySurface surface = creator.create(output, uiComponent);
 		surface.outputReloaded();
 		return surface;
 	}
@@ -313,7 +334,7 @@ public class SwtGui implements IGui {
 
 	@Override
 	public Map<String, Object> openUserInputDialog(final IScope scope, final String title,
-			final List<IParameter> parameters, final GamaFont font, final GamaColor color, final Boolean showTitle) {
+			final List<IParameter> parameters, final IFont font, final IColor color, final Boolean showTitle) {
 		final IMap<String, Object> result = GamaMapFactory.createUnordered();
 		for (final IParameter p : parameters) { result.put(p.getName(), p.getInitialValue(scope)); }
 		WorkbenchHelper.run(() -> {
@@ -325,11 +346,11 @@ public class SwtGui implements IGui {
 
 	@Override
 	public IMap<String, IMap<String, Object>> openWizard(final IScope scope, final String title,
-			final ActionDescription finish, final IList<IMap<String, Object>> pages) {
+			final IActionDescription finish, final IList<IMap<String, Object>> pages) {
 		final IMap<String, IMap<String, Object>> result = GamaMapFactory.create();
 		final IList<GamaWizardPage> wizardPages = GamaListFactory.create();
 		for (IMap<String, Object> l : pages) {
-			GamaFont f = (GamaFont) l.get(IKeyword.FONT);
+			// GamaFont f = (GamaFont) l.get(IKeyword.FONT);
 			String t = (String) l.get(IKeyword.TITLE);
 			String d = (String) l.get(IKeyword.DESCRIPTION);
 			@SuppressWarnings ("unchecked") List<IParameter> ps = (List<IParameter>) l.get(IKeyword.PARAMETERS);
@@ -347,14 +368,7 @@ public class SwtGui implements IGui {
 	}
 
 	@Override
-	public Boolean openUserInputDialogConfirm(final IScope scope, final String title, final String message) {
-		final List<Boolean> result = new ArrayList<>();
-		WorkbenchHelper.run(() -> { result.add(Messages.confirm(title, message)); });
-		return result.isEmpty() ? false : result.get(0);
-	}
-
-	@Override
-	public void openUserControlPanel(final IScope scope, final UserPanelStatement panel) {
+	public void openUserControlPanel(final IScope scope, final IStatement panel) {
 		WorkbenchHelper.run(() -> {
 			IGamaView.User part = (User) showView(scope, USER_CONTROL_VIEW_ID, null, IWorkbenchPage.VIEW_CREATE);
 			if (part != null) { part.initFor(scope, panel); }
@@ -372,8 +386,7 @@ public class SwtGui implements IGui {
 	public void closeDialogs(final IScope scope) {
 
 		WorkbenchHelper.run(() -> {
-			final IUserDialogFactory userDialogFactory = WorkbenchHelper.getService(IUserDialogFactory.class);
-			if (userDialogFactory != null) { userDialogFactory.closeUserDialog(); }
+			getDialogFactory().closeUserDialog();
 			hideView(USER_CONTROL_VIEW_ID);
 
 		});
@@ -391,21 +404,8 @@ public class SwtGui implements IGui {
 	 *
 	 * @return the model runner
 	 */
-	private IModelRunner getModelRunner() { return WorkbenchHelper.getService(IModelRunner.class); }
-
 	@Override
-	public void editModel(final Object eObject) {
-		final IModelRunner modelRunner = getModelRunner();
-		if (modelRunner == null) return;
-		modelRunner.editModel(eObject);
-	}
-
-	@Override
-	public List<TestExperimentSummary> runHeadlessTests(final Object model) {
-		final IModelRunner modelRunner = getModelRunner();
-		if (modelRunner == null) return null;
-		return modelRunner.runHeadlessTests(model);
-	}
+	public IModelsManager getModelsManager() { return WorkbenchHelper.getService(IModelsManager.class); }
 
 	/**
 	 * Update parameters.
@@ -415,8 +415,10 @@ public class SwtGui implements IGui {
 	 */
 	@Override
 	public void updateParameters(final boolean retrieveValues) {
-
-		WorkbenchHelper.run(() -> {
+		// Use asyncRun to avoid blocking the command thread with a syncExec during experiment launch.
+		// The parameters view update is purely cosmetic at launch time and does not need to complete
+		// before the simulation starts.
+		WorkbenchHelper.asyncRun(() -> {
 			boolean showIt = GAMA.getExperiment().hasParametersOrUserCommands()
 					&& !PerspectiveHelper.isModelingPerspective() && PerspectiveHelper.showParameters();
 			if (showIt) {
@@ -445,7 +447,7 @@ public class SwtGui implements IGui {
 	/**
 	 * Method setSelectedAgent()
 	 *
-	 * @see gama.core.common.interfaces.IGui#setSelectedAgent(gama.core.metamodel.agent.IAgent)
+	 * @see gama.api.ui.IGui#setSelectedAgent(gama.api.kernel.agent.IAgent)
 	 */
 	@Override
 	public void setSelectedAgent(final IAgent a) {
@@ -492,25 +494,25 @@ public class SwtGui implements IGui {
 	 * @date 14 août 2023
 	 */
 	@Override
-	public void arrangeExperimentViews(final IScope scope, final IExperimentPlan exp, final Boolean keepTabs,
+	public void arrangeExperimentViews(final IScope scope, final IExperimentSpecies exp, final Boolean keepTabs,
 			final Boolean keepToolbars, final Boolean showConsoles, final Boolean showParameters,
 			final Boolean showNavigator, final Boolean showControls, final Boolean keepTray,
-			final Supplier<GamaColor> color, final boolean showEditors) {
+			final Supplier<IColor> color, final boolean showEditors) {
 
 		WorkbenchHelper.setWorkbenchWindowTitle(exp.getName() + " - " + exp.getModel().getFilePath());
-		WorkbenchHelper.runInUI("Laying out experiment views", 0, m -> {
+		// Capture all view-arrangement work as a Runnable rather than scheduling it as a UIJob.
+		// openAndApplyLayout() will drain and execute this inside its single setRedraw(false/true)
+		// syncExec, so console, navigator, toolbar and display views all appear in one paint.
+		pendingArrange = () -> {
 			WorkbenchHelper.getWindow().updateActionBars();
-
 			// To solve issue #3697
 			ICommandService hs = WorkbenchHelper.getService(ICommandService.class);
 			hs.refreshElements("gama.ui.application.commands.SynchronizeExperiment", null);
-
 			WorkbenchHelper.getPage().setEditorAreaVisible(showEditors);
 			getConsole().toggleConsoleViews(exp.getAgent(), showConsoles == null || showConsoles);
 			if (showNavigator != null && !showNavigator) { hideView(IGui.NAVIGATOR_VIEW_ID); }
 			if (showControls != null) { WorkbenchHelper.getWindow().setCoolBarVisible(showControls); }
 			if (keepTray != null) { PerspectiveHelper.showBottomTray(WorkbenchHelper.getWindow(), keepTray); }
-
 			final SimulationPerspectiveDescriptor sd = PerspectiveHelper.getActiveSimulationPerspective();
 			if (sd != null) {
 				sd.showParameters(showParameters == null || showParameters);
@@ -520,20 +522,307 @@ public class SwtGui implements IGui {
 				sd.keepControls(showControls);
 				sd.keepTray(keepTray);
 				sd.setBackground(() -> {
-					GamaColor c = color.get();
+					IColor c = color.get();
 					return c == null ? null : GamaColors.toSwtColor(c);
 				});
 			}
+		};
+	}
+
+	/** The overlay Shell shown between perspective switch and display layout. */
+	private volatile Shell launchingOverlay;
+
+	/** The maximum number of lines shown in the overlay console log area. */
+	private static final int OVERLAY_CONSOLE_MAX_LINES = 3;
+
+	/**
+	 * The console listener that feeds messages into the launching overlay log area. Registered in
+	 * {@link #showLaunchingOverlay} and removed in {@link #hideLaunchingOverlay}.
+	 */
+	private volatile IConsoleListener launchingOverlayConsole;
+
+	/**
+	 * The real {@link IStatusControl} that was active before the launching overlay was shown. Saved in
+	 * {@link #showLaunchingOverlay} and restored in {@link #hideLaunchingOverlay}.
+	 */
+	private volatile IStatusControl savedStatusControl;
+
+	@Override
+	public void showLaunchingOverlay(final IModelSpecies model, final String perspectiveId) {
+		final Shell parent = WorkbenchHelper.getWindow() != null ? WorkbenchHelper.getWindow().getShell() : null;
+		if (parent == null || parent.isDisposed()) return;
+		// Extract model and experiment names from the perspective id:
+		// format is PERSPECTIVE_SIMULATION_FRAGMENT + ":" + modelName + ":" + experimentName
+		final String[] parts = perspectiveId == null ? new String[0] : perspectiveId.split(":", 3);
+		final String modelName = parts.length > 1 ? parts[1] : model != null ? model.getName() : "";
+		final String expName = parts.length > 2 ? parts[2] : "";
+
+		final Shell overlay = new Shell(parent, SWT.NO_TRIM | SWT.ON_TOP);
+		final Color bg = parent.getBackground();
+		final Color fg = parent.getForeground();
+		overlay.setBackground(bg);
+		overlay.setLayout(null);
+
+		// ── Cancel button ─────────────────────────────────────────────────────────
+		final org.eclipse.swt.widgets.ToolBar cancelBar =
+				new org.eclipse.swt.widgets.ToolBar(overlay, SWT.FLAT | SWT.NO_FOCUS);
+		cancelBar.setBackground(bg);
+		final org.eclipse.swt.widgets.ToolItem cancelItem =
+				new org.eclipse.swt.widgets.ToolItem(cancelBar, SWT.FLAT | SWT.PUSH);
+		final GamaIcon stopIcon = GamaIcon.named(IGamaIcons.EXPERIMENT_STOP);
+		cancelItem.setImage(stopIcon.image());
+		cancelItem.setDisabledImage(stopIcon.disabled());
+		cancelItem.setToolTipText("Cancel launch and return to the modelling perspective");
+		cancelItem.addSelectionListener(org.eclipse.swt.events.SelectionListener.widgetSelectedAdapter(e -> {
+			hideLaunchingOverlay();
+			new Thread(() -> GAMA.closeAllExperiments(true, false), "Cancel launch").start();
+		}));
+		cancelBar.pack();
+
+		// ── Rolling console-lines buffer (shared by canvas painter + listeners) ───
+		// Holds the last OVERLAY_CONSOLE_MAX_LINES non-blank text lines received
+		// either from status messages or from GAML write/print statements.
+		final java.util.ArrayDeque<String> consoleLines = new java.util.ArrayDeque<>(OVERLAY_CONSOLE_MAX_LINES + 1);
+
+		// Line height for the console area: point-size × 1.4, minimum 20 px.
+		final int lineHeight = Math.max(20, (int) (parent.getFont().getFontData()[0].getHeight() * 1.4));
+		final int consoleBottomMargin = 24;
+		final int consoleAreaHeight = lineHeight * OVERLAY_CONSOLE_MAX_LINES + 8 + consoleBottomMargin;
+
+		// ── Single canvas: title + subtitle + console lines ───────────────────────
+		// Drawing everything in one widget avoids any z-order / occlusion issues.
+		final Canvas canvas = new Canvas(overlay, SWT.NO_BACKGROUND | SWT.DOUBLE_BUFFERED);
+		canvas.addPaintListener(e -> {
+			final var b = canvas.getBounds();
+			e.gc.setBackground(bg);
+			e.gc.fillRectangle(0, 0, b.width, b.height);
+
+			// ── Title (20pt bold) ──
+			final var td =
+					new org.eclipse.swt.graphics.FontData(parent.getFont().getFontData()[0].getName(), 20, SWT.BOLD);
+			final var bigFont = new org.eclipse.swt.graphics.Font(e.display, td);
+			e.gc.setFont(bigFont);
+			e.gc.setForeground(fg);
+			final String title = "Launching experiment\u2026";
+			final var te = e.gc.textExtent(title);
+			final Object stored = canvas.getData("blockTop");
+			final int titleY = stored instanceof Integer bt ? bt : (b.height - te.y) / 2;
+			e.gc.drawText(title, (b.width - te.x) / 2, titleY, true);
+			bigFont.dispose();
+
+			// ── Subtitle (dimmed) ──
+			if (!modelName.isEmpty() || !expName.isEmpty()) {
+				e.gc.setFont(parent.getFont());
+				final String sub = modelName + (expName.isEmpty() ? "" : "  \u2192  " + expName);
+				final var se = e.gc.textExtent(sub);
+				final boolean dark = ThemeHelper.isDark();
+				final int dr = dark ? blend(bg.getRed(), 255, 45) : blend(bg.getRed(), 0, 45);
+				final int dg = dark ? blend(bg.getGreen(), 255, 45) : blend(bg.getGreen(), 0, 45);
+				final int db = dark ? blend(bg.getBlue(), 255, 45) : blend(bg.getBlue(), 0, 45);
+				final var dim = new Color(e.display, dr, dg, db);
+				e.gc.setForeground(dim);
+				e.gc.drawText(sub, (b.width - se.x) / 2, titleY + te.y + 4, true);
+				dim.dispose();
+			}
+
+			// ── Console log lines at the bottom (only when non-empty) ──
+			synchronized (consoleLines) {
+				if (!consoleLines.isEmpty()) {
+					final boolean dark = ThemeHelper.isDark();
+					final int dr = dark ? blend(bg.getRed(), 255, 55) : blend(bg.getRed(), 0, 55);
+					final int dg = dark ? blend(bg.getGreen(), 255, 55) : blend(bg.getGreen(), 0, 55);
+					final int db = dark ? blend(bg.getBlue(), 255, 55) : blend(bg.getBlue(), 0, 55);
+					final var dimColor = new Color(e.display, dr, dg, db);
+					e.gc.setFont(parent.getFont());
+					e.gc.setForeground(dimColor);
+					int y = b.height - consoleAreaHeight + 4;
+					for (final String line : consoleLines) {
+						final var ext = e.gc.textExtent(line);
+						e.gc.drawText(line, (b.width - ext.x) / 2, y, true);
+						y += lineHeight;
+					}
+					dimColor.dispose();
+				}
+			}
 		});
+
+		// Position and open
+		final Rectangle ca = parent.getClientArea();
+		final org.eclipse.swt.graphics.Point origin = parent.toDisplay(ca.x, ca.y);
+		overlay.setBounds(origin.x, origin.y, ca.width, ca.height);
+		positionOverlayChildren(overlay, cancelBar, canvas);
+		overlay.open();
+
+		// Resize tracking
+		final ControlListener[] ref = new ControlListener[1];
+		ref[0] = new ControlAdapter() {
+			@Override
+			public void controlResized(final ControlEvent e) {
+				if (overlay.isDisposed()) {
+					parent.removeControlListener(ref[0]);
+				} else {
+					final Rectangle ca2 = parent.getClientArea();
+					final org.eclipse.swt.graphics.Point o2 = parent.toDisplay(ca2.x, ca2.y);
+					overlay.setBounds(o2.x, o2.y, ca2.width, ca2.height);
+					positionOverlayChildren(overlay, cancelBar, canvas);
+				}
+			}
+		};
+		parent.addControlListener(ref[0]);
+		overlay.addDisposeListener(e -> parent.removeControlListener(ref[0]));
+		launchingOverlay = overlay;
+
+		// ── Helper: append a line to the buffer and schedule a canvas redraw ──────
+		// Called from both the console listener and the status control (below).
+		// updateWith() runs on the UI thread (UIJob), so canvas.redraw() is direct.
+		// The console listener may be called from any thread, so it uses asyncRun.
+		final Runnable redrawCanvas = () -> { if (!canvas.isDisposed()) { canvas.redraw(); } };
+
+		// ── Console listener: GAML write / print statements ───────────────────────
+		final IConsoleListener overlayConsoleListener = (msg, root, color) -> {
+			if (msg == null || msg.isBlank()) return;
+			final String firstLine = msg.lines().map(String::strip).filter(l -> !l.isBlank()).findFirst().orElse(null);
+			if (firstLine == null) return;
+			synchronized (consoleLines) {
+				consoleLines.addLast(firstLine);
+				if (consoleLines.size() > OVERLAY_CONSOLE_MAX_LINES) { consoleLines.pollFirst(); }
+			}
+			WorkbenchHelper.asyncRun(redrawCanvas);
+		};
+		launchingOverlayConsole = overlayConsoleListener;
+		getConsole().addConsoleListener(overlayConsoleListener);
+
+		// ── Status interceptor: informStatus / beginTask / setTaskCompletion ──────
+		// Installs a forwarding IStatusControl so every status update is shown in
+		// the overlay AND in the real status bar simultaneously. Restored on close.
+		final IStatusDisplayer statusDisplayer = getStatus();
+		if (statusDisplayer != null) {
+			final IStatusControl realControl = statusDisplayer.getStatusTarget();
+			savedStatusControl = realControl;
+			statusDisplayer.setStatusTarget(new IStatusControl() {
+				@Override
+				public boolean isDisposed() { return overlay.isDisposed(); }
+
+				@Override
+				public void updateWith(final IStatusMessage m) {
+					// Forward to the real status bar.
+					if (realControl != null && !realControl.isDisposed()) { realControl.updateWith(m); }
+					// Feed the overlay (skip EXPERIMENT-state messages — no useful text).
+					if (m == null || m.type() == IStatusMessage.StatusType.EXPERIMENT) return;
+					final String text = m.message();
+					if (text == null || text.isBlank()) return;
+					final String line = text.strip();
+					synchronized (consoleLines) {
+						if (!consoleLines.isEmpty() && consoleLines.peekLast().equals(line)) return;
+						consoleLines.addLast(line);
+						if (consoleLines.size() > OVERLAY_CONSOLE_MAX_LINES) { consoleLines.pollFirst(); }
+					}
+					// updateWith runs on the UI thread (UIJob) — call redraw directly.
+					redrawCanvas.run();
+				}
+			});
+		}
+	}
+
+	@Override
+	public void openErrorView() {
+		// Use asyncRun — this is called from RuntimeExceptionHandler which runs as an
+		// Eclipse background Job, not on the UI thread.
+		WorkbenchHelper.asyncRun(() -> showView(null, ERROR_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE));
+	}
+
+	@Override
+	public void displayLatestErrors() {
+		final IRuntimeExceptionHandler handler = getRuntimeExceptionHandler();
+		if (handler == null) return;
+		// First open (or bring to front) the ErrorView so the user sees it immediately.
+		// displayErrors() deliberately does NOT open it on its own; this is the only
+		// code path that should auto-open the view.
+		WorkbenchHelper.run(() -> {
+			final IGamaView.Error v = (IGamaView.Error) showView(null, ERROR_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+			if (v != null) { v.displayErrors(true); }
+		});
+		handler.displayLatestErrors();
+	}
+
+	@Override
+	public void hideLaunchingOverlay() {
+		// Non-SWT parts: restore the real status control and remove the console listener.
+		// These are thread-safe and must happen before the overlay shell is disposed so that
+		// subsequent status/error calls go to the real status bar, not the overlay interceptor.
+		final IStatusControl saved = savedStatusControl;
+		savedStatusControl = null;
+		if (saved != null) {
+			final IStatusDisplayer statusDisplayer = getStatus();
+			if (statusDisplayer != null) { statusDisplayer.setStatusTarget(saved); }
+		}
+		final IConsoleListener overlayConsole = launchingOverlayConsole;
+		launchingOverlayConsole = null;
+		if (overlayConsole != null) { getConsole().removeConsoleListener(overlayConsole); }
+		// SWT part: Shell.close() must run on the UI thread. Use asyncRun so this method is
+		// safe to call from the experiment command thread (as well as from the UI thread via
+		// cleanAfterExperiment → WorkbenchHelper.asyncRun(this::hideLaunchingOverlay)).
+		final Shell overlay = launchingOverlay;
+		launchingOverlay = null;
+		if (overlay != null) {
+			WorkbenchHelper.asyncRun(() -> { if (!overlay.isDisposed()) { overlay.close(); } });
+		}
+	}
+
+	/**
+	 * Lays out the overlay children so that the title + subtitle + cancel button form a single centred vertical block:
+	 *
+	 * <pre>
+	 *   Launching experiment…        (20pt bold, drawn by canvas)
+	 *   ModelName  →  ExperimentName (normal, dimmed, drawn by canvas)
+	 *   [■ stop icon]                (ToolItem, centred, 12px gap below subtitle)
+	 * </pre>
+	 *
+	 * The canvas fills the entire overlay so it can paint the background everywhere; the ToolBar is a transparent
+	 * overlay on top of it, positioned below the text.
+	 */
+	private static void positionOverlayChildren(final Shell overlay, final org.eclipse.swt.widgets.ToolBar cancelBar,
+			final Canvas canvas) {
+		final var sz = overlay.getSize();
+		// Canvas always fills the whole shell (paints background + text).
+		canvas.setBounds(0, 0, sz.x, sz.y);
+		final var bs = cancelBar.getSize(); // already packed
+
+		// Estimate the total block height so we can centre it vertically.
+		// Title at 20pt bold ≈ 28px, subtitle at system font ≈ 16px, gap = 4px between them,
+		// gap = 12px between subtitle and button. Use a rounded constant; actual pixel-perfect
+		// alignment is handled by the canvas PaintListener which has the real GC metrics.
+		final int titleH = 28;
+		final int subH = 16;
+		final int textToBtn = 12; // gap between bottom of subtitle and top of button
+		final int blockH = titleH + 4 + subH + textToBtn + bs.y;
+
+		final int blockTop = (sz.y - blockH) / 2;
+		// The title baseline in the canvas is at blockTop; subtitle is titleH+4 below that.
+		// The button starts titleH + 4 + subH + textToBtn below blockTop.
+		final int btnY = blockTop + titleH + 4 + subH + textToBtn;
+
+		cancelBar.setBounds((sz.x - bs.x) / 2, btnY, bs.x, bs.y);
+		cancelBar.moveAbove(canvas);
+
+		// Tell the canvas what vertical offset to use for the title so both widgets align.
+		// We piggy-back the value via the widget data map to avoid an extra field.
+		canvas.setData("blockTop", blockTop);
+		canvas.redraw();
+	}
+
+	/** Blends channel {@code a} toward {@code b} by {@code pct} percent. */
+	private static int blend(final int a, final int b, final int pct) {
+		return a + (b - a) * pct / 100;
 	}
 
 	/**
 	 * Method cleanAfterExperiment()
-	 *
-	 * @see gama.core.common.interfaces.IGui#cleanAfterExperiment(gama.core.kernel.experiment.IExperimentPlan)
 	 */
 	@Override
 	public void cleanAfterExperiment() {
+		pendingArrange = null;
+		WorkbenchHelper.asyncRun(this::hideLaunchingOverlay);
 		hideParameters();
 		final IGamaView m = (IGamaView) ViewsHelper.findView(MONITOR_VIEW_ID, null, false);
 		if (m != null) {
@@ -543,8 +832,10 @@ public class SwtGui implements IGui {
 		if (!GamaPreferences.Interface.CORE_CONSOLE_KEEP.getValue()) { getConsole().eraseConsole(true); }
 		final IGamaView icv = (IGamaView) ViewsHelper.findView(INTERACTIVE_CONSOLE_VIEW_ID, null, false);
 		if (icv != null) { icv.reset(); }
-		final IRuntimeExceptionHandler handler = getRuntimeExceptionHandler();
-		handler.stop();
+		// Do NOT call handler.stop() here. The handler auto-stops after remainingTime
+		// (5 s idle) via its own run() loop. Stopping it here races with
+		// displayLatestErrors() on the init-failure path and wipes cleanExceptions
+		// before the Errors view has been populated.
 	}
 
 	@Override
@@ -562,17 +853,10 @@ public class SwtGui implements IGui {
 		return WorkbenchHelper.getService(IRuntimeExceptionHandler.class);
 	}
 
-	@Override
-	public void runModel(final Object object, final String exp) {
-		final IModelRunner modelRunner = getModelRunner();
-		if (modelRunner == null) return;
-		modelRunner.runModel(object, exp);
-	}
-
 	/**
 	 * Method updateSpeedDisplay()
 	 *
-	 * @see gama.core.common.interfaces.IGui#updateSpeedDisplay(java.lang.Double)
+	 * @see gama.api.ui.IGui#updateSpeedDisplay(java.lang.Double)
 	 */
 	@Override
 	public void updateSpeedDisplay(final IScope scope, final Double minimumCycleDuration,
@@ -585,16 +869,6 @@ public class SwtGui implements IGui {
 			});
 
 		}
-	}
-
-	/**
-	 * Method getMetaDataProvider()
-	 *
-	 * @see gama.core.common.interfaces.IGui#getMetaDataProvider()
-	 */
-	@Override
-	public IFileMetaDataProvider getMetaDataProvider() {
-		return WorkbenchHelper.getService(IFileMetaDataProvider.class);
 	}
 
 	@Override
@@ -624,8 +898,10 @@ public class SwtGui implements IGui {
 	}
 
 	@Override
-	public void updateViewTitle(final IOutput out, final SimulationAgent agent) {
-		WorkbenchHelper.run(() -> {
+	public void updateViewTitle(final IOutput out, final ISimulationAgent agent) {
+		// Use asyncRun instead of run() to avoid blocking the command thread with a syncExec
+		// while the UI thread is busy processing UIJobs (display openers, layout).
+		WorkbenchHelper.asyncRun(() -> {
 			final IViewPart part = ViewsHelper.findView(out.getViewId(), out.isUnique() ? null : out.getName(), true);
 			if (part instanceof IGamaView) { ((IGamaView) part).changePartNameWithSimulation(agent); }
 		});
@@ -642,6 +918,31 @@ public class SwtGui implements IGui {
 			console.addConsoleListener(WorkbenchHelper.getService(IConsoleListener.class));
 		}
 		return console;
+	}
+
+	/**
+	 * Gets the progress indicator.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param taskName
+	 *            the task name
+	 * @return the progress indicator
+	 */
+	@Override
+	public IProgressIndicator getProgressIndicator(final IScope scope, final String taskName) {
+		return new ProgressIndicator(scope, taskName);
+	}
+
+	/**
+	 * Gets the dialog factory.
+	 *
+	 * @return the dialog factory
+	 */
+	@Override
+	public IDialogFactory getDialogFactory() {
+		if (dialogFactory == null) { dialogFactory = WorkbenchHelper.getService(IDialogFactory.class); }
+		return dialogFactory;
 	}
 
 	@Override
@@ -672,17 +973,62 @@ public class SwtGui implements IGui {
 		if (manager != null) { manager.applyLayout(layout); }
 	}
 
+	/**
+	 * Opens all display outputs and applies the layout in a single synchronous UI call under
+	 * {@code shell.setRedraw(false)}, eliminating every intermediate paint that would otherwise occur between
+	 * individual view-opener UIJobs.
+	 *
+	 * <p>
+	 * The command thread calls this method via a {@code syncExec}: the UI thread is frozen for the entire duration of
+	 * {@code openAll.run()} + layout application, so the user sees only the final state.
+	 * </p>
+	 *
+	 * @param scope
+	 *            the current scope
+	 * @param openAll
+	 *            runnable that calls {@link gama.core.outputs.AbstractOutput#open()} for every display output
+	 * @param layout
+	 *            the layout object forwarded to {@link IDisplayLayoutManager#applyLayout(Object)}
+	 */
 	@Override
-	public GamaPoint getMouseLocationInModel() { return mouseLocationInModel; }
+	public void openAndApplyLayout(final IScope scope, final Runnable openAll, final Object layout) {
+		final IDisplayLayoutManager manager = WorkbenchHelper.getService(IDisplayLayoutManager.class);
+		if (manager == null) {
+			// No layout manager (headless): fall back to simple sequential open + layout.
+			pendingArrange = null;
+			openAll.run();
+			applyLayout(scope, layout);
+			return;
+		}
+		// Run arrange + open + layout in one syncExec so no OS paint events occur between them.
+		// applyLayoutNow() → ArrangeDisplayViews.execute() wraps the E4 mutations in setRedraw(false/true).
+		final Runnable arrange = pendingArrange;
+		pendingArrange = null;
+		WorkbenchHelper.run(() -> {
+			if (arrange != null) { arrange.run(); }
+			openAll.run();
+			manager.applyLayoutNow(layout);
+			// Defer overlay close to AFTER this syncExec returns.
+			// Closing an ON_TOP Shell on macOS re-enters the Cocoa event loop synchronously,
+			// dispatching any queued OS events (including the synthetic ESC KeyDown that macOS
+			// injects when the fullscreen ON_TOP shell becomes visible). If we close the overlay
+			// here, that synthetic ESC fires while we are still inside the syncExec and calls
+			// toggleFullScreen() a second time — exiting fullscreen immediately after entering it.
+			WorkbenchHelper.asyncRun(this::hideLaunchingOverlay);
+		});
+	}
 
 	@Override
-	public GamaPoint getMouseLocationInDisplay() { return mouseLocationInDisplay; }
+	public IPoint getMouseLocationInModel() { return mouseLocationInModel; }
 
 	@Override
-	public void setMouseLocationInModel(final GamaPoint location) { mouseLocationInModel = location; }
+	public IPoint getMouseLocationInDisplay() { return mouseLocationInDisplay; }
 
 	@Override
-	public void setMouseLocationInDisplay(final GamaPoint location) { mouseLocationInDisplay = location; }
+	public void setMouseLocationInModel(final IPoint location) { mouseLocationInModel = location; }
+
+	@Override
+	public void setMouseLocationInDisplay(final IPoint location) { mouseLocationInDisplay = location; }
 
 	@Override
 	public void exit() {
@@ -709,5 +1055,8 @@ public class SwtGui implements IGui {
 	public void openFile(final URI uri) {
 		FileOpener.openFile(uri);
 	}
+
+	@Override
+	public Map<String, ISocketCommand> getServerCommands() { return CommandExecutor.getDefaultCommands(); }
 
 }

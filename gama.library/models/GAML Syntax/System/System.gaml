@@ -1,8 +1,12 @@
 /**
 * Name: System
-* Author: A. Drogoul
-* Description: Describes the syntax used to get different system properties. These can be used to ensure, for instance, that a minimum memory is available, or that a minimum version of GAMA is used to run a model
-* Tags: system, platform
+* Author: Alexis Drogoul
+* Description: Demonstrates how to access system-level properties of the GAMA platform through the built-in 'gama'
+*   pseudo-agent. Available properties include: the GAMA version string, the list of installed plugins, the current
+*   machine time (milliseconds since epoch), the current workspace path, and the available memory. These can be used
+*   to ensure minimum platform requirements are met (e.g., minimum GAMA version, minimum available memory) or to
+*   log diagnostic information about the execution environment.
+* Tags: system, platform, gama, version, plugin, memory, machine_time, workspace
 */
 model System
 

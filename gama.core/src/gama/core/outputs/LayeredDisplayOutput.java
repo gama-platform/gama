@@ -3,7 +3,7 @@
  * LayeredDisplayOutput.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,48 +17,49 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import com.google.common.collect.Iterables;
 
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.facet;
-import gama.annotations.precompiler.GamlAnnotations.facets;
-import gama.annotations.precompiler.GamlAnnotations.inside;
-import gama.annotations.precompiler.GamlAnnotations.symbol;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.GamlProperties;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.ISymbolKind;
-import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IGamaView.Display;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.facet;
+import gama.annotations.facets;
+import gama.annotations.inside;
+import gama.annotations.symbol;
+import gama.annotations.usage;
+import gama.annotations.constants.IKeyword;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.ISymbolKind;
+import gama.api.additions.registries.GamaAdditionRegistry;
+import gama.api.annotations.serializer;
+import gama.api.annotations.validator;
+import gama.api.compilation.descriptions.IDescription;
+import gama.api.compilation.descriptions.IDescriptionValidator;
+import gama.api.compilation.serialization.ISymbolSerializer;
+import gama.api.constants.IGamlIssue;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.GAML;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.expressions.IExpressionDescription;
+import gama.api.gaml.symbols.Facets;
+import gama.api.gaml.symbols.ISymbol;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IGui;
+import gama.api.ui.IOutput;
+import gama.api.ui.displays.IDisplayCreator;
+import gama.api.ui.displays.IDisplayData;
+import gama.api.ui.displays.IDisplaySurface;
+import gama.api.ui.displays.IGraphicsScope;
+import gama.api.ui.layers.ILayerStatement;
+import gama.api.utils.GamlProperties;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.outputs.LayeredDisplayOutput.DisplaySerializer;
 import gama.core.outputs.LayeredDisplayOutput.DisplayValidator;
 import gama.core.outputs.layers.AbstractLayerStatement;
-import gama.core.outputs.layers.ILayerStatement;
 import gama.core.outputs.layers.properties.CameraStatement;
 import gama.core.outputs.layers.properties.LightStatement;
 import gama.core.outputs.layers.properties.RotationStatement;
-import gama.core.runtime.IScope;
-import gama.core.runtime.IScope.IGraphicsScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
 import gama.dev.DEBUG;
-import gama.gaml.compilation.IDescriptionValidator;
-import gama.gaml.compilation.ISymbol;
-import gama.gaml.compilation.annotations.serializer;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.descriptions.ConstantExpressionDescription;
-import gama.gaml.descriptions.IDescription;
-import gama.gaml.descriptions.IExpressionDescription;
-import gama.gaml.descriptions.SymbolDescription;
-import gama.gaml.descriptions.SymbolSerializer;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.expressions.IExpressionFactory;
-import gama.gaml.interfaces.IGamlIssue;
-import gama.gaml.statements.Facets;
-import gama.gaml.types.IType;
 
 /**
  * The Class LayerDisplayOutput.
@@ -88,13 +89,18 @@ import gama.gaml.types.IType;
 						doc = @doc ("Allows to fill the background of the display and its toolbar with a specific color. Beware that this color, used in the UI, will not be affected by the light used in the display.")),
 				@facet (
 						name = IKeyword.NAME,
-						type = IType.LABEL,
+						type = IType.ID,
 						optional = false,
-						doc = @doc ("the identifier of the display")),
+						doc = @doc ("the identifier of the display, so that it can be referenced by other elements")),
+				@facet (
+						name = IKeyword.TITLE,
+						type = IType.STRING,
+						optional = true,
+						doc = @doc ("the title of the display, which will be shown in the UI. If not specified, the identifier of the display will be used")),
 				// WARNING VALIDER EN VERIFIANT LE TYPE DU DISPLAY
 				@facet (
 						name = IKeyword.TYPE,
-						type = IType.LABEL,
+						type = IType.ID,
 						optional = true,
 						doc = @doc ("Allows to use either Java2D (for planar models) or OpenGL (for 3D models) as the rendering subsystem")),
 				@facet (
@@ -128,13 +134,13 @@ import gama.gaml.types.IType;
 						name = "axes",
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("Allows to enable/disable the drawing of the world shape and the ordinate axes. Default can be configured in Preferences")),
+						doc = @doc ("Allows to enable/disable the drawing of the world shape and the ordinate axes. Default can be configured in __PREFS__")),
 				@facet (
 						name = IKeyword.ORTHOGRAPHIC_PROJECTION,
 						internal = true,
 						type = IType.BOOL,
 						optional = true,
-						doc = @doc ("Allows to enable/disable the orthographic projection. Default can be configured in Preferences")),
+						doc = @doc ("Allows to enable/disable the orthographic projection. Default can be configured in __PREFS__")),
 
 				/// LIGHT FACETS
 				@facet (
@@ -217,14 +223,14 @@ import gama.gaml.types.IType;
 								@example (
 										value = "}",
 										isExecutable = false) }) })
-public class LayeredDisplayOutput extends AbstractOutput {
+public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Display {
 
 	static {
 		DEBUG.OFF();
 	}
 
 	/** The layers. */
-	private final List<AbstractLayerStatement> layers;
+	private final List<ILayerStatement> layers;
 
 	/** The cameras. */
 	private final List<CameraStatement> cameras;
@@ -242,28 +248,28 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	private int index;
 
 	/** The data. */
-	private final LayeredDisplayData data = new LayeredDisplayData();
+	private final IDisplayData data = new LayeredDisplayData();
 
 	/**
 	 * The Class DisplaySerializer.
 	 */
-	public static class DisplaySerializer extends SymbolSerializer<SymbolDescription> {
+	public static class DisplaySerializer implements ISymbolSerializer {
 
 		/**
 		 * Method collectPluginsInFacetValue()
 		 *
-		 * @see gama.gaml.descriptions.SymbolSerializer#collectPluginsInFacetValue(gama.gaml.descriptions.SymbolDescription,
+		 * @see gama.api.compilation.serialization.SymbolSerializer#collectPluginsInFacetValue(gama.gaml.descriptions.SymbolDescription,
 		 *      java.lang.String, java.util.Set)
 		 */
 		@Override
-		protected void collectMetaInformationInFacetValue(final SymbolDescription desc, final String key,
+		public void collectMetaInformationInFacetValue(final IDescription desc, final String key,
 				final GamlProperties plugins) {
-			super.collectMetaInformationInFacetValue(desc, key, plugins);
+			ISymbolSerializer.super.collectMetaInformationInFacetValue(desc, key, plugins);
 			if (TYPE.equals(key)) {
 				final IExpressionDescription exp = desc.getFacet(TYPE);
 				if (exp.getExpression() != null) {
 					final String type = exp.getExpression().literalValue();
-					final DisplayDescription dd = gama.core.runtime.GAMA.getGui().getDisplayDescriptionFor(type);
+					final IDisplayCreator dd = gama.api.GAMA.getGui().getDisplayDescriptionFor(type);
 					if (dd != null) { plugins.put(GamlProperties.PLUGINS, dd.getDefiningPlugin()); }
 				}
 			}
@@ -279,12 +285,16 @@ public class LayeredDisplayOutput extends AbstractOutput {
 		/**
 		 * Method validate()
 		 *
-		 * @see gama.gaml.compilation.IDescriptionValidator#validate(gama.gaml.descriptions.IDescription)
+		 * @see gama.api.compilation.descriptions.IDescriptionValidator#validate(gama.api.compilation.descriptions.IDescription)
 		 */
 		@Override
 		public void validate(final IDescription d) {
 
 			handleInheritance(d);
+
+			IExpressionDescription name = d.getFacet(NAME);
+			IExpressionDescription title = d.getFacet(TITLE);
+			if (name != null && title == null) { d.setFacetExprDescription(TITLE, name.compileAsLabel()); }
 
 			final IExpressionDescription auto = d.getFacet(AUTOSAVE);
 			if (auto != null && auto.getExpression().isConst() && TRUE.equals(auto.getExpression().literalValue())) {
@@ -293,24 +303,26 @@ public class LayeredDisplayOutput extends AbstractOutput {
 			}
 			// Are we in OpenGL world ?
 			IExpressionDescription type = d.getFacet(TYPE);
-			final boolean isOpenGLDefault = !IKeyword._2D.equals(GamaPreferences.Displays.CORE_DISPLAY.getValue());
+			final boolean isOpenGLDefault = !GamaPreferences.Displays.CORE_DISPLAY.getValue();
 			if (type == null) {
-				type = ConstantExpressionDescription.create(isOpenGLDefault ? IKeyword._3D : IKeyword._2D);
+				type = GAML.getExpressionDescriptionFactory()
+						.createConstant(isOpenGLDefault ? IKeyword._3D : IKeyword._2D);
 				d.setFacetExprDescription(TYPE, type);
 			}
 			String cand = "";
 			// Addresses and fixes Issue 833.
 			final String s = type.getExpression().literalValue();
-			if (!IGui.DISPLAYS.containsKey(s) && !gama.core.runtime.GAMA.isInHeadLessMode()) {
+			if (!GamaAdditionRegistry.getDisplays().containsKey(s) && !gama.api.GAMA.isInHeadLessMode()) {
 				// In headless mode, all displays should be accepted
-				cand = IGui.DISPLAYS.keySet().stream().findFirst().get();
+				cand = GamaAdditionRegistry.getDisplays().keySet().stream().findFirst().get();
 
 				d.warning(
-						s + " is not a valid display type. Valid types are:" + IGui.DISPLAYS.keySet()
+						s + " is not a valid display type. Valid types are:"
+								+ GamaAdditionRegistry.getDisplays().keySet()
 								+ ". Gama will fallback to first valid type (" + cand + ")",
 						IGamlIssue.UNKNOWN_KEYWORD, TYPE);
 
-				d.setFacet(TYPE, ConstantExpressionDescription.create(cand));
+				d.setFacet(TYPE, GAML.getExpressionFactory().createConst(cand, Types.STRING));
 			}
 
 			// Addressing problems with charts in OpenGL
@@ -470,7 +482,7 @@ public class LayeredDisplayOutput extends AbstractOutput {
 			// If in headless mode, we need to get the 'image' surface
 			getData().setDisplayType(IKeyword.IMAGE);
 		} else if (getData().is3D()) return;
-		surface = scope.getGui().createDisplaySurfaceFor(this);
+		surface = scope.getGui().createDisplaySurfaceFor(this, null);
 	}
 
 	@Override
@@ -480,6 +492,29 @@ public class LayeredDisplayOutput extends AbstractOutput {
 		if (getData().is3D()) return IGui.GL_LAYER_VIEW_ID;
 		return IGui.LAYER_VIEW_ID;
 	}
+
+	/**
+	 * Returns {@code 2} ({@code IWorkbenchPage.VIEW_CREATE}) so that display views are created silently, without being
+	 * immediately activated or rendered.
+	 *
+	 * <p>
+	 * When an experiment has several displays they are all opened in sequence before
+	 * {@link gama.ui.experiment.commands.ArrangeDisplayViews} rearranges them into the requested sash layout.
+	 * Using {@code VIEW_ACTIVATE} (the default {@code 1}) causes E4 to show, activate and fully render each view
+	 * as soon as it is created, producing N intermediate layout passes (and the "split view appearing and immediately
+	 * disappearing" artefact the user perceives as a 1–2 s lag).
+	 * </p>
+	 * <p>
+	 * With {@code VIEW_CREATE} the part is constructed but kept invisible. The layout pass in
+	 * {@link gama.ui.experiment.commands.ArrangeDisplayViews#showDisplays} then calls
+	 * {@code EPartService.showPart(part, PartState.VISIBLE)} for all displays at once, after the sash hierarchy is
+	 * already in place, so only one final render happens.
+	 * </p>
+	 *
+	 * @return {@code 2} ({@code IWorkbenchPage.VIEW_CREATE})
+	 */
+	@Override
+	protected int viewOpenMode() { return 2; }
 
 	/**
 	 * Gets the surface.
@@ -515,6 +550,7 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	 * @param surface
 	 *            the new surface
 	 */
+	@Override
 	public void setSurface(final IDisplaySurface surface) {
 		this.surface = surface;
 		if (surface == null) { view = null; }
@@ -558,7 +594,8 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	 *
 	 * @return the layers
 	 */
-	public List<AbstractLayerStatement> getLayers() { return layers; }
+	@Override
+	public List<ILayerStatement> getLayers() { return layers; }
 
 	@Override
 	public void setPaused(final boolean paused) {
@@ -574,9 +611,8 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	 *
 	 * @return the data
 	 */
-	public LayeredDisplayData getData() {
-		return data; // .get();
-	}
+	@Override
+	public IDisplayData getData() { return data; }
 
 	/**
 	 * Gets the index.
@@ -596,7 +632,7 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	@Override
 	public boolean isAutoSave() {
 		final IExpression e = getFacet(IKeyword.AUTOSAVE);
-		if (e == null || e == IExpressionFactory.FALSE_EXPR) return false;
+		if (e == null || e == GAML.getExpressionFactory().getFalse()) return false;
 		return true;
 	}
 
@@ -617,7 +653,7 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	}
 
 	@Override
-	public IGamaView.Display getView() { return (Display) super.getView(); }
+	public IGamaView.Display getView() { return (IGamaView.Display) super.getView(); }
 
 	/**
 	 * Release view.
@@ -650,13 +686,10 @@ public class LayeredDisplayOutput extends AbstractOutput {
 	}
 
 	// @Override
-	// public void setRendered(final boolean b) { rendered = b; }
-	//
+	// public String getTitle() { return getLiteral(IKeyword.TITLE); }
+
 	// @Override
-	// public boolean isRendered() {
-	// if (view != null && !view.isVisible()) return true;
-	// if (!this.isRefreshable() || !this.isOpen() || this.isPaused()) return
-	// true;
-	// return rendered;
+	// public void setTitle(final String newTitle) {
+	// this.setFacet(IKeyword.TITLE, GAML.getExpressionDescriptionFactory().createConstant(newTitle));
 	// }
 }

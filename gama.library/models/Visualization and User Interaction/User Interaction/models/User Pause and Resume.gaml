@@ -1,8 +1,12 @@
 /***
-* Name: UserPauseandResume
-* Author: A. Drogoul
-* Description: Shows how to use the simulation actions 'pause' and 'resume' within a user interaction
-* Tags: simulation, pause, resume
+* Name: User Pause and Resume
+* Author: Alexis Drogoul
+* Description: Shows how to programmatically pause and resume a GAMA simulation from within the model using
+*   the 'pause' and 'resume' simulation actions. Two clickable image buttons (play/stop icons) are drawn in
+*   the display; clicking them triggers the corresponding pause or resume action. This pattern is useful for
+*   building simulations with user-controlled execution flow, where pausing is tied to a specific game state
+*   or user confirmation rather than just the toolbar button.
+* Tags: simulation, pause, resume, gui, interaction, display, button
 ***/
 model UserPauseandResume
 
@@ -11,7 +15,7 @@ global {
 	image_file play <- image_file("../images/play.png");
 	image_file stop <- image_file("../images/stop.png");
 
-	action toggle {
+	action toggle() {
 		if paused {
 			ask sign{
 				icon <- stop;

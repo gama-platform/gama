@@ -1,9 +1,12 @@
 /**
-* Name:  Movement on a Grid of Cells
-* Author:  Patrick Taillandier
-* Description: Model to represent how the agents move from one point to a target agent on a grid of cells with obstacles, following the shortest path and coloring 
-* 	in magenta the cells intersecting the path of an agent
-* Tags: grid, agent_movement, skill, obstacle, shortest_path
+* Name: Goto Grid with Weights
+* Author: Patrick Taillandier
+* Description: Shows how agents navigate a grid using weighted shortest-path algorithms. Grid cells can have
+*   obstacles (impassable) or varying movement costs. The agent moves from a start cell to a target cell using
+*   the 'goto' action with the grid as topology; cells on the computed path are colored magenta. Two shortest-
+*   path algorithms are compared: A* and Dijkstra. This is the weighted variant of the 'Goto Grid' model,
+*   useful for terrain-cost navigation (e.g., slow roads, difficult terrain).
+* Tags: grid, agent_movement, skill, obstacle, shortest_path, weighted, astar, dijkstra
 */
 
 model Grid

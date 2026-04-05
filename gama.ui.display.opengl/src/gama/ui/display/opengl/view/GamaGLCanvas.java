@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
  * GamaGLCanvas.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -40,7 +40,7 @@ import com.jogamp.opengl.GLException;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.GLRunnable;
 
-import gama.core.runtime.PlatformHelper;
+import gama.api.runtime.SystemInfo;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl.OpenGL;
 import gama.ui.display.opengl.camera.IMultiListener;
@@ -59,7 +59,6 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 
 	/** The canvas. */
 	final Control canvas;
-
 
 	/** The drawable. */
 	final GLWindow drawable;
@@ -118,7 +117,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 			@Override
 			public void controlResized(final ControlEvent e) {
 				/* Detached views have no title! */
-				if (PlatformHelper.isMac()) {
+				if (SystemInfo.isMac()) {
 					final var isDetached = parent.getShell().getText().length() == 0;
 					if (isDetached) {
 						if (!detached) {

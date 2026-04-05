@@ -1,8 +1,12 @@
 /**
-* Name: MapQuestImageImport
+* Name: MapQuest Image Import
 * Author: Alexis Drogoul
-* Description: Demonstrates how to load a (possibly dynamic) image from MapQuest https://developer.mapquest.com/documentation/samples/static-map/v5/map/ and how to refresh it
-* Tags: data_loading, displays, user_input, on_change
+* Description: Demonstrates how to load a static map image from the MapQuest Static Map API and use it as a
+*   background in a GAMA display. MapQuest (https://developer.mapquest.com/documentation/samples/static-map/v5/map/)
+*   provides configurable map tiles via a REST endpoint. A valid MapQuest API key is required. The model shows how
+*   to construct the API URL from a geographic center point and a zoom level, fetch the image, and refresh it when
+*   the user modifies parameters — illustrating the 'on_change' reactive pattern for dynamic map backgrounds.
+* Tags: data_loading, image, background, mapquest, map, web, api, display, on_change
 */
 model MapQuestImageImport
 
@@ -16,8 +20,7 @@ global {
 	int map_zoom <- 8 max: 20 min: 0;
 	point map_size <-{600,600};
 
-	action load_map
-	{ 
+	action load_map() { 
 		string zoom_request <- "zoom=" + map_zoom;
 		string center_request <- "locations=" + map_center;
 		string size_request <- "size=" + int(map_size.x) + "," + int(map_size.y) + "@2x";

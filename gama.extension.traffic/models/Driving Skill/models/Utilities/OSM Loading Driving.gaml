@@ -1,9 +1,12 @@
 /**
 * Name: OSM Loading Driving
 * Author: Patrick Taillandier
-* Description: Model to show how to import OSM Files, using them to create agents for a road network, and saving the different agents in shapefiles. 
-* The first goal of this model is to prepare data for the driving skill models.
-* Tags:  load_file, gis, shapefile, save_file, osm
+* Description: A utility model that converts an OpenStreetMap (OSM) file into the shapefiles required by
+*   the driving-skill models. Imports an OSM file, filters road features by type (motorway, primary,
+*   secondary, residential, etc.), creates road and intersection agents, and saves them as shapefiles.
+*   Run this model once to prepare data for any city before using the driving-skill simulation models.
+*   This is the standard data-preparation pipeline for GIS-based traffic simulation in GAMA.
+* Tags: driving_skill, load_file, GIS, shapefile, save_file, OSM, road_network, preprocessing, transport
 */
 
 
@@ -32,7 +35,7 @@ global{
 				if (length(geom.points) = 1 ) {
 					if ( highway_str != nil ) {
 						string crossing <- string(geom get ("crossing"));
-						create intersection with: [shape ::geom, type:: highway_str, crossing::crossing] {
+						create intersection with: (shape :geom, type: highway_str, crossing:crossing) {
 							nodes_map[location] <- self;
 						}
 					}
@@ -41,7 +44,7 @@ global{
 					float maxspeed_val <- float(geom get ("maxspeed"));
 					string lanes_str <- string(geom get ("lanes"));
 					int lanes_val <- empty(lanes_str) ? 1 : ((length(lanes_str) > 1) ? int(first(lanes_str)) : int(lanes_str));
-					create road with: [shape ::geom, type:: highway_str, oneway::oneway, maxspeed::maxspeed_val, lanes::lanes_val] {
+					create road with: (shape :geom, type: highway_str, oneway:oneway, maxspeed:maxspeed_val, lanes:lanes_val) {
 						if lanes < 1 {lanes <- 1;} //default value for the lanes attribute
 						if maxspeed = 0 {maxspeed <- 50.0;} //default value for the maxspeed attribute
 					}
@@ -53,13 +56,13 @@ global{
 		ask road {
 			point ptF <- first(shape.points);
 			if (not(ptF in nodes_map.keys)) {
-				create intersection with:[location::ptF] {
+				create intersection with:(location:ptF) {
 					nodes_map[location] <- self;
 				}	
 			}
 			point ptL <- last(shape.points);
 			if (not(ptL in nodes_map.keys)) {
-				create intersection with:[location::ptL] {
+				create intersection with:(location:ptL) {
 					nodes_map[location] <- self;
 				}
 			}

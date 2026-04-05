@@ -1,11 +1,12 @@
 /**
-* Name: SpatialGraph3d
+* Name: Graph From Bug (Mirror Graph)
 * Author: Arnaud Grignard
-* Description: From the reference model "bug.gaml" a spatial graph is created. 
-*  We create a species node that mirrors the species bug and then a spatial graph is creating 
-*  using as_distance_graph operator. The species node should then 
-*  define its own related_to method to decide wether or not a node is related to another one.
-* Tags: graph, mirror, 3d
+* Description: Builds a spatial proximity graph from bug agents with a custom node-level 'related_to' method.
+*   A mirror species (node) reflects the bugs as graph nodes. Unlike the simple distance graph, here the node
+*   species overrides the 'related_to' method to define its own relational logic — which nodes are connected
+*   to which. This gives full control over the graph structure beyond a simple distance threshold. The resulting
+*   graph is rendered in a dedicated 3D display, demonstrating multi-level agent analysis in GAMA.
+* Tags: graph, mirror, 3d, multi_level, spatial, network, related_to, custom
 */
 
 

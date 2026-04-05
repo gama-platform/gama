@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * ObjFileDrawer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation platform
- * .
+ * ObjFileDrawer.java, in gama.ui.display.opengl, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -17,8 +17,10 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL2ES3;
 import com.jogamp.opengl.util.texture.Texture;
 
-import gama.core.common.geometry.ICoordinates;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
+import gama.api.utils.geometry.ICoordinates;
 import gama.core.util.file.GamaObjFile;
 import gama.extension.image.GamaImageFile;
 import gama.ui.display.opengl.OpenGL;
@@ -50,9 +52,9 @@ public class ObjFileDrawer {
 			nextmat = Integer.parseInt(nextmatnamearray[1]);
 		}
 		Texture texture = null;
-		final GamaPoint tex = new GamaPoint();
-		final GamaPoint normal = new GamaPoint();
-		final GamaPoint vertex = new GamaPoint();
+		final IPoint tex = GamaPointFactory.create();
+		final IPoint normal = GamaPointFactory.create();
+		final IPoint vertex = GamaPointFactory.create();
 		for (int i = 0; i < file.faces.size(); i++) {
 			if (i == nextmat) {
 				if (texture != null) {
@@ -116,7 +118,7 @@ public class ObjFileDrawer {
 				final double[] ordinates = file.setOfVertex.get(tempfaces[w] - 1);
 				for (int k = 0; k < 3; k++) { arrayOfVertices[w * 3 + k] = ordinates[k]; }
 			}
-			final ICoordinates coords = ICoordinates.ofLength(tempfaces.length + 1);
+			final ICoordinates coords = GamaCoordinateSequenceFactory.ofLength(tempfaces.length + 1);
 			coords.setTo(arrayOfVertices);
 			coords.completeRing();
 
@@ -132,10 +134,10 @@ public class ObjFileDrawer {
 				if (hasTex) {
 					final double[] ordinates = file.setOfVertexTextures.get(texs[w] - 1);
 					tex.setLocation(ordinates[0], ordinates[1], ordinates[2]);
-					if (1d >= tex.y && -tex.y <= 0) {
-						tex.y = 1d - tex.y;
+					if (1d >= tex.getY() && -tex.getY() <= 0) {
+						tex.setY(1d - tex.getY());
 					} else {
-						tex.y = Math.abs(tex.y);
+						tex.setY(Math.abs(tex.getY()));
 					}
 				}
 				final double[] temp_coords = file.setOfVertex.get(tempfaces[w] - 1);

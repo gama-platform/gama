@@ -3,7 +3,7 @@
  * GamlHoverDocumentationProvider.java, in gama.ui.editor, is part of the source code of the GAMA modeling and
  * simulation platform (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -16,29 +16,28 @@ import org.eclipse.emf.ecore.EObject;
 
 import com.google.inject.Inject;
 
-import gama.core.common.interfaces.IDisplayCreator.DisplayDescription;
-import gama.core.common.interfaces.IDocManager;
-import gama.core.common.interfaces.IExperimentAgentCreator.ExperimentAgentDescription;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.util.FileUtils;
-import gama.core.runtime.GAMA;
-import gama.core.util.file.IGamaFileMetaData;
-import gama.gaml.compilation.GAML;
-import gama.gaml.compilation.kernel.GamaMetaModel;
-import gama.gaml.compilation.kernel.GamaSkillRegistry;
-import gama.gaml.descriptions.SkillDescription;
-import gama.gaml.descriptions.SymbolProto;
-import gama.gaml.expressions.units.UnitConstantExpression;
-import gama.gaml.factories.DescriptionFactory;
-import gama.gaml.interfaces.IGamlDescription;
-import gama.gaml.operators.Strings;
-import gama.gaml.statements.DoStatement;
-import gama.gaml.types.Types;
+import gama.annotations.constants.IKeyword;
+import gama.api.GAMA;
+import gama.api.additions.registries.ArtefactRegistry;
+import gama.api.additions.registries.GamaAdditionRegistry;
+import gama.api.additions.registries.GamaSkillRegistry;
+import gama.api.compilation.artefacts.IArtefact;
+import gama.api.compilation.descriptions.IExperimentDescription;
+import gama.api.compilation.descriptions.IGamlDescription;
+import gama.api.compilation.descriptions.ISkillDescription;
+import gama.api.compilation.documentation.GamlConstantDocumentation;
+import gama.api.compilation.documentation.IDocManager;
+import gama.api.compilation.documentation.IGamlDocumentation;
+import gama.api.gaml.GAML;
+import gama.api.gaml.types.Types;
+import gama.api.kernel.simulation.IExperimentAgentCreator.ExperimentAgentDescription;
+import gama.api.ui.displays.IDisplayCreator;
+import gama.api.utils.StringUtils;
+import gama.api.utils.files.FileUtils;
+import gama.api.utils.files.IGamaFileMetaData;
+import gaml.compiler.EGaml;
 import gaml.compiler.gaml.ActionRef;
-import gaml.compiler.gaml.ArgumentPair;
 import gaml.compiler.gaml.Array;
-import gaml.compiler.gaml.EGaml;
 import gaml.compiler.gaml.ExpressionList;
 import gaml.compiler.gaml.Facet;
 import gaml.compiler.gaml.Function;
@@ -56,9 +55,8 @@ import gaml.compiler.gaml.UnitFakeDefinition;
 import gaml.compiler.gaml.UnitName;
 import gaml.compiler.gaml.VarDefinition;
 import gaml.compiler.gaml.VariableRef;
-import gaml.compiler.gaml.speciesOrGridDisplayStatement;
-import gaml.compiler.gaml.resource.GamlResourceServices;
 import gaml.compiler.gaml.util.GamlSwitch;
+import gaml.compiler.resource.GamlResourceServices;
 import gaml.compiler.ui.editor.GamlHyperlinkDetector;
 
 /**
@@ -77,7 +75,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 	private final IDocManager documenter = GamlResourceServices.getResourceDocumenter();
 
 	/**
-	 * The Doc.
+	 * The IGamlDocumentation.
 	 *
 	 * @author Alexis Drogoul (alexis.drogoul@ird.fr)
 	 * @date 30 déc. 2023
@@ -92,7 +90,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		 * @date 30 déc. 2023
 		 */
 		@Override
-		public Doc getDocumentation() { return new ConstantDoc(doc); }
+		public IGamlDocumentation getDocumentation() { return new GamlConstantDocumentation(doc); }
 
 		/**
 		 * Gets the title.
@@ -153,26 +151,26 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 			IFile file;
 			if (FileUtils.isFileExistingInWorkspace(iu)) {
 				file = FileUtils.getWorkspaceFile(iu);
-				final IGamaFileMetaData data = GAMA.getGui().getMetaDataProvider().getMetaData(file, false, true);
+				final IGamaFileMetaData data = GAMA.getMetadataProvider().getMetaData(file, false, true);
 				if (data == null) {
 					final String ext = file.getFileExtension();
 					doc = "This " + ext + " file has no metadata associated with it";
 				} else {
 					String s = data.getDocumentation().toString();
-					if (s != null) { doc = s.replace(Strings.LN, "<br/>"); }
+					if (s != null) { doc = s.replace(StringUtils.LN, "<br/>"); }
 				}
 			} else { // absolute file
 				file = FileUtils.createLinkToExternalFile(string.getOp(), string.eResource().getURI());
 				if (file == null) {
 					doc = "This file is outside the workspace and cannot be found.";
 				} else {
-					final IGamaFileMetaData data = GAMA.getGui().getMetaDataProvider().getMetaData(file, false, true);
+					final IGamaFileMetaData data = GAMA.getMetadataProvider().getMetaData(file, false, true);
 					if (data == null) {
 						final String ext = file.getFileExtension();
 						doc = "This external " + ext + " file has no metadata associated with it";
 					} else {
 						String s = data.getDocumentation().toString();
-						if (s != null) { doc = s.replace(Strings.LN, "<br/>"); }
+						if (s != null) { doc = s.replace(StringUtils.LN, "<br/>"); }
 					}
 				}
 			}
@@ -192,7 +190,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		final Statement s = EGaml.getInstance().getSurroundingStatement(type);
 		String name = EGaml.getInstance().getKeyOf(type);
 		if (s instanceof S_Display) {
-			DisplayDescription dc = IGui.DISPLAYS.get(name);
+			IDisplayCreator dc = GamaAdditionRegistry.getDisplay(name);
 			if (dc != null) return dc;
 			return new IGamlDescription() {
 
@@ -200,15 +198,15 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				public String getTitle() { return "Unknown type of display " + name; }
 
 				@Override
-				public Doc getDocumentation() {
-					return new ConstantDoc(name
+				public IGamlDocumentation getDocumentation() {
+					return new GamlConstantDocumentation(name
 							+ " is not a registered display type. Please visit <a href=\"https://gama-platform.org/wiki/Displays\"> https://gama-platform.org/wiki/Displays</a> for more information.");
 				}
 			};
 		}
 		if (s instanceof S_Experiment) {
 			ExperimentAgentDescription ead =
-					(ExperimentAgentDescription) GamaMetaModel.INSTANCE.getExperimentCreator(name);
+					(ExperimentAgentDescription) IExperimentDescription.getExperimentCreator(name);
 			if (ead != null) return ead;
 			return new IGamlDescription() {
 
@@ -216,8 +214,8 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				public String getTitle() { return "Unknown type of experiment " + name; }
 
 				@Override
-				public Doc getDocumentation() {
-					return new ConstantDoc(name
+				public IGamlDocumentation getDocumentation() {
+					return new GamlConstantDocumentation(name
 							+ " is not a registered experiment type. Please visit <a=href=\"https://gama-platform.org/wiki/DefiningGUIExperiment#types-of-experiments\">https://gama-platform.org/wiki/DefiningGUIExperiment#types-of-experiments</a> for more information.");
 				}
 
@@ -229,8 +227,8 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 			public String getTitle() { return "Definition of the exploration method to use in this experiment "; }
 
 			@Override
-			public Doc getDocumentation() {
-				return new ConstantDoc(
+			public IGamlDocumentation getDocumentation() {
+				return new GamlConstantDocumentation(
 						"The facets that can be defined to specify the exploration are specific to each method. Please visit <a href=\"https://gama-platform.org/wiki/ExplorationMethods\">https://gama-platform.org/wiki/ExplorationMethods</a> for more information.");
 			}
 
@@ -241,8 +239,8 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 			public String getTitle() { return "The type (" + name + ") of charts to draw"; }
 
 			@Override
-			public Doc getDocumentation() {
-				return new ConstantDoc(
+			public IGamlDocumentation getDocumentation() {
+				return new GamlConstantDocumentation(
 						"Several types of charts are available (pie, series, histogram, xy...). Please visit <a href=\"https://gama-platform.org/wiki/DefiningCharts\">https://gama-platform.org/wiki/DefiningCharts </a> for more information.");
 			}
 
@@ -255,58 +253,56 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		// CASE do run_thread interval: 2#s;
 		if (facet.eContainer() instanceof S_Do sdo && sdo.getExpr() instanceof VariableRef vr) {
 			String key = EGaml.getInstance().getKeyOf(facet);
-			if (!DoStatement.DO_FACETS.contains(key)) {
-				String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(sdo.getExpr());
-				IGamlDescription action = documenter.getGamlDocumentation(vr);
-				String doc = action == null ? "" : action.getDocumentation().get(key).toString();
-				return new Result(title, doc);
-			}
+			// if (!ArtefactRegistry.getDoFacets().contains(key)) {
+			String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(sdo.getExpr());
+			IGamlDescription action = documenter.getGamlDocumentation(vr);
+			String doc = action == null ? "" : action.getDocumentation().get(key).toString();
+			return new Result(title, doc);
+			// }
 		}
 		String facetName = facet.getKey();
 		if (facetName.endsWith(":")) { facetName = facetName.substring(0, facetName.length() - 1); }
 		final EObject cont = facet.eContainer();
 		String key = EGaml.getInstance().getKeyOf(cont);
-		if (cont instanceof speciesOrGridDisplayStatement ds) {
+		if (cont instanceof Statement ds) {
 			String layerName = ds.getKey();
 			if (IKeyword.SPECIES.equals(layerName)) {
 				key = IKeyword.SPECIES_LAYER;
-			} else {
-				key = IKeyword.GRID_LAYER;
-			}
+			} else if (IKeyword.GRID.equals(layerName)) { key = IKeyword.GRID_LAYER; }
 		} else if (cont instanceof S_Definition sd && IKeyword.METHOD.equals(key)) { key = sd.getName(); }
-		final SymbolProto p = DescriptionFactory.getProto(key, null);
+		final IArtefact.Symbol p = ArtefactRegistry.getArtefact(key, null);
 		if (p != null) return p.getPossibleFacets().get(facetName);
 		return null;
 	}
 
-	@Override
-	public IGamlDescription caseArgumentPair(final ArgumentPair pair) {
-		if (pair.eContainer() instanceof ExpressionList el && el.eContainer() instanceof Array array
-				&& array.eContainer() instanceof Facet facet) {
-			// CASE do run_thread with: [interval::2#s];
-			if (facet.eContainer() instanceof S_Do sdo && sdo.getExpr() instanceof VariableRef vr) {
-				String key = pair.getOp();
-				if (!DoStatement.DO_FACETS.contains(key)) {
-					String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(vr);
-					IGamlDescription action = documenter.getGamlDocumentation(vr);
-					String doc = action == null ? "" : action.getDocumentation().get(key).toString();
-					return new Result(title, doc);
-				}
-			} else
-			// CASE create xxx with: [var::yyy]
-			if (facet.eContainer() instanceof Statement sdo && IKeyword.CREATE.equals(sdo.getKey())) {
-				String key = pair.getOp();
-				IGamlDescription species = documenter.getGamlDocumentation(sdo.getExpr());
-				if (species != null) {
-					String title = "Attribute " + key + " defined in " + species.getTitle();
-					String doc = species.getDocumentation().get(key).toString();
-					return new Result(title, doc);
-				}
-
-			}
-		}
-		return null;
-	}
+	// @Override
+	// public IGamlDescription caseArgumentPair(final ArgumentPair pair) {
+	// if (pair.eContainer() instanceof ExpressionList el && el.eContainer() instanceof Array array
+	// && array.eContainer() instanceof Facet facet) {
+	// // CASE do run_thread with: [interval::2#s];
+	// if (facet.eContainer() instanceof S_Do sdo && sdo.getExpr() instanceof VariableRef vr) {
+	// String key = pair.getOp();
+	// if (!DoStatement.DO_FACETS.contains(key)) {
+	// String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(vr);
+	// IGamlDescription action = documenter.getGamlDocumentation(vr);
+	// String doc = action == null ? "" : action.getDocumentation().get(key).toString();
+	// return new Result(title, doc);
+	// }
+	// } else
+	// // CASE create xxx with: [var::yyy]
+	// if (facet.eContainer() instanceof Statement sdo && IKeyword.CREATE.equals(sdo.getKey())) {
+	// String key = pair.getOp();
+	// IGamlDescription species = documenter.getGamlDocumentation(sdo.getExpr());
+	// if (species != null) {
+	// String title = "Attribute " + key + " defined in " + species.getTitle();
+	// String doc = species.getDocumentation().get(key).toString();
+	// return new Result(title, doc);
+	// }
+	//
+	// }
+	// }
+	// return null;
+	// }
 
 	@Override
 	public IGamlDescription caseVariableRef(final VariableRef var) {
@@ -315,17 +311,17 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				&& el.eContainer() instanceof Facet facet && facet.eContainer() instanceof S_Do sdo
 				&& sdo.getExpr() instanceof VariableRef v) {
 			String key = EGaml.getInstance().getKeyOf(pair);
-			if (!DoStatement.DO_FACETS.contains(key)) {
-				String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(sdo.getExpr());
-				IGamlDescription action = documenter.getGamlDocumentation(v);
-				String doc = action == null ? "" : action.getDocumentation().get(key).toString();
-				return new Result(title, doc);
-			}
+			// if (!ArtefactRegistry.getDoFacets().contains(key)) {
+			String title = "Argument " + key + " of action " + EGaml.getInstance().getNameOfRef(sdo.getExpr());
+			IGamlDescription action = documenter.getGamlDocumentation(v);
+			String doc = action == null ? "" : action.getDocumentation().get(key).toString();
+			return new Result(title, doc);
+			// }
 		}
 		// CASE do run_thread (interval: 2#s); unknown aa <- self.run_thread (interval: 2#s); aa <- run_thread
 		// (interval: 2#s);
 		if (var.eContainer() instanceof Parameter param && param.eContainer() instanceof ExpressionList el
-				&& el.eContainer() instanceof Function function && function.getLeft() instanceof ActionRef ar) {
+				&& el.eContainer() instanceof Function function && function.getLeft() instanceof ActionRef) {
 			final IGamlDescription description = documenter.getGamlDocumentation(function);
 			if (description != null) {
 				VarDefinition vd = var.getRef();
@@ -340,7 +336,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 				&& array.eContainer() instanceof Facet facet && facet.getKey().startsWith(IKeyword.SKILLS)) {
 			VarDefinition vd = var.getRef();
 			String name = vd.getName();
-			SkillDescription skill = GamaSkillRegistry.INSTANCE.get(name);
+			ISkillDescription skill = GamaSkillRegistry.INSTANCE.get(name);
 			if (skill != null) return skill;
 		}
 		// case of style: in chart
@@ -364,7 +360,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 	public IGamlDescription caseUnitName(final UnitName un) {
 		final UnitFakeDefinition fake = un.getRef();
 		if (fake != null) {
-			final UnitConstantExpression unit = GAML.UNITS.get(fake.getName());
+			final IGamlDescription unit = GAML.getUnit(fake.getName());
 			if (unit != null) return unit;
 		}
 		return null;
@@ -397,7 +393,7 @@ public class GamlHoverDocumentationProvider extends GamlSwitch<IGamlDescription>
 		String name = EGaml.getInstance().getKeyOf(type);
 		// Can happen with statements that "look like" var declarations and which are not treated specially in the
 		// grammar
-		if (DescriptionFactory.isStatementProto(name)) return DescriptionFactory.getStatementProto(name);
+		if (GAML.isAStatement(name)) return ArtefactRegistry.getStatementArtefact(name);
 		if (Types.hasType(name)) return Types.get(name);
 		return null;
 	}

@@ -39,9 +39,9 @@ import java.util.stream.IntStream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Triple;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.kernel.agent.IAgent;
+import gama.api.runtime.scope.IScope;
 import gama.extension.traffic.driving.RoadSkill;
 
 /**

@@ -5,7 +5,6 @@ on:
     inputs:
       RELEASE_VERSION: 
         required: true
-        default: 2024.03.0 
         type: string
       jdk_embedded_version:
         type: string

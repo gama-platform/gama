@@ -1,8 +1,11 @@
 /**
-* Name: Definition of people agents
-* Author:
-* Description: second part of the tutorial: Road Traffic
-* Tags: gis
+* Name: Road Traffic Tutorial - Step 02 - People Agents
+* Author: Gama Development Team
+* Description: Second step of the Road Traffic tutorial. Adds 'people' agents placed inside buildings at
+*   initialization. Each person is assigned a home building and a work building chosen at random. People
+*   are displayed with colored circles. This step introduces agent placement inside loaded GIS features
+*   and demonstrates how to assign attributes from the spatial context (building locations).
+* Tags: tutorial, gis, people, agent, building, placement, transport
 */
 
 model tutorial_gis_city_traffic
@@ -16,7 +19,7 @@ global {
 	int nb_people <- 100;
 	
 	init {
-		create building from: shape_file_buildings with: [type::string(read ("NATURE"))] {
+		create building(type:string(read ("NATURE"))) from: shape_file_buildings {
 			if type="Industrial" {
 				color <- #blue ;
 			}

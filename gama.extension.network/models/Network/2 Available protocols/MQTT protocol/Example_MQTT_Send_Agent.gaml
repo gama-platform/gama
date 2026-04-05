@@ -1,8 +1,11 @@
 /**
-* Name: MQTT__Send
-* Author: Nicolas Marilleau and Arnaud Grignard
-* Description: Two clients are communicated throught the MQTT protocol.
-* Tags: Network, MQTT
+* Name: MQTT Send Agent Example
+* Author: Nicolas Marilleau, Arnaud Grignard
+* Description: Like 'MQTT Send Example' but the 'network' skill is applied to the global species itself
+*   (rather than a dedicated agent), showing how to embed MQTT communication directly at model level.
+*   Demonstrates the 'global skills:[network]' pattern for simpler models that don't need separate
+*   communicator agents.
+* Tags: network, MQTT, send, skill, global, messaging, protocol, communication
 */
 
 model MQTT_SendAgent

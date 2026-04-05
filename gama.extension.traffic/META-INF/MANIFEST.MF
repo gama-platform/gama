@@ -5,9 +5,8 @@ Bundle-SymbolicName: gama.extension.traffic;singleton:=true
 Bundle-Version: 0.0.0.qualifier
 Require-Bundle: gama.core,
  gama.dependencies
-Import-Package: org.locationtech.jts.geom
 Export-Package: gama.extension.traffic.driving
 Bundle-ClassPath: .
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.extension.traffic

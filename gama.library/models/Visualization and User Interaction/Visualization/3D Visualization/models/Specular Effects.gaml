@@ -1,11 +1,13 @@
 /**
-* Name: Advanced 3D properties : specular light
+* Name: Specular Effects
 * Author: Julien Mazars
-* Description: Model presenting how to add materials to the objects, tunning the two properties of the material :
-* the damping factor (the larger this value is, the larger the reflection zone will be) and the reflectivity factor (between 
-* 0 and 1, the ratio of light that is reflected). Notice that in order to run this model, you need to have a graphical card 
-* and the facet "use_shader" activated in your display definition.
-* Tags: 3d, light
+* Description: Demonstrates specular (mirror-like) reflection on 3D surfaces in GAMA. A material is defined
+*   by two properties: the damping factor (controls the size of the specular highlight — larger values produce
+*   smaller, sharper reflections) and the reflectivity factor (0-1, the fraction of incoming light that is
+*   specularly reflected). The model shows spheres and boxes with varying material parameters under a directional
+*   light. Note: specular shading requires a GPU with shader support and the 'use_shader' facet enabled in
+*   the display definition.
+* Tags: 3d, light, specular, material, shader, reflection, visualization, display
 */
 model specular_light
 

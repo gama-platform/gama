@@ -10,14 +10,14 @@
  ********************************************************************************************************/
 package gama.ui.experiment.commands;
 
-import static gama.core.common.interfaces.IGui.INTERACTIVE_CONSOLE_VIEW_ID;
+import static gama.api.ui.IGui.INTERACTIVE_CONSOLE_VIEW_ID;
 import static org.eclipse.ui.IWorkbenchPage.VIEW_VISIBLE;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
-import gama.core.runtime.GAMA;
+import gama.api.GAMA;
 
 /**
  * The Class ShowInteractiveConsole.

@@ -1,8 +1,11 @@
 /**
-* Name: Moving cells with neighbors
+* Name: 3D Tutorial - Model 03 - Moving Cells with Neighbors
 * Author: Arnaud Grignard
-* Description: Third part of the tutorial : Tuto3D
-* Tags: 3d, light, grid, neighbors
+* Description: Third step of the 3D tutorial. Extends the moving cells model with neighbor detection: each
+*   cell changes color based on the number of neighboring cells within a given radius. Introduces the use of
+*   3D lighting in GAMA displays (ambient, diffuse, and specular lights) and demonstrates how neighbor-based
+*   interactions can produce emergent visual patterns in 3D.
+* Tags: 3d, light, grid, neighbors, tutorial, interaction, color
 */
 
 model Tuto3D
@@ -25,7 +28,7 @@ species cell skills: [moving3D] {
 	int offset;
 
 	reflex move {
-		do wander;
+		do wander();
 	}
 
 	reflex compute_neighbors {

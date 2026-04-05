@@ -1,9 +1,9 @@
 /*******************************************************************************************************
  *
- * CreateFromDatabaseDelegate.java, in gama.extension.database, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * CreateFromDatabaseDelegate.java, in gama.extension.database, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -15,18 +15,18 @@ import java.util.Map;
 
 import org.locationtech.jts.geom.Geometry;
 
-import gama.core.common.interfaces.ICreateDelegate;
-import gama.core.metamodel.shape.GamaShapeFactory;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IList;
+import gama.api.additions.delegates.ICreateDelegate;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.statements.IStatement;
+import gama.api.gaml.symbols.Arguments;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.GamaShapeFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
 import gama.extension.database.utils.sql.SqlConnection;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.statements.Arguments;
-import gama.gaml.statements.CreateStatement;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Class CreateFromDatabaseDelegate.
@@ -41,7 +41,7 @@ public class CreateFromDatabaseDelegate implements ICreateDelegate {
 	/**
 	 * Method acceptSource()
 	 *
-	 * @see gama.core.common.interfaces.ICreateDelegate#acceptSource(IScope, java.lang.Object)
+	 * @see gama.api.additions.delegates.ICreateDelegate#acceptSource(IScope, java.lang.Object)
 	 */
 	@Override
 	public boolean acceptSource(final IScope scope, final Object source) {
@@ -53,12 +53,12 @@ public class CreateFromDatabaseDelegate implements ICreateDelegate {
 	 *
 	 * @author thai.truongminh@gmail.com
 	 * @since 04-09-2012
-	 * @see gama.core.common.interfaces.ICreateDelegate#createFrom(gama.core.runtime.IScope, java.util.List, int,
+	 * @see gama.api.additions.delegates.ICreateDelegate#createFrom(gama.api.runtime.scope.IScope, java.util.List, int,
 	 *      java.lang.Object)
 	 */
 	@Override
 	public boolean createFrom(final IScope scope, final List<Map<String, Object>> inits, final Integer max,
-			final Object source, final Arguments init, final CreateStatement statement) {
+			final Object source, final Arguments init, final IStatement.Create statement) {
 		final IList<IList<Object>> input = (IList<IList<Object>>) source;
 		// get Column name
 		final IList<Object> colNames = input.get(0);
@@ -104,7 +104,7 @@ public class CreateFromDatabaseDelegate implements ICreateDelegate {
 			final IList<Object> colTypes, final IList<Object> colNames, final Arguments init)
 			throws GamaRuntimeException {
 		if (init == null) return;
-		init.forEachFacet((s, e) -> {
+		init.forEachArgument((s, e) -> {
 			final IExpression valueExpr = e.getExpression();
 			// get parameter
 			final String columnName = valueExpr.value(scope).toString().toUpperCase();
@@ -126,7 +126,7 @@ public class CreateFromDatabaseDelegate implements ICreateDelegate {
 	/**
 	 * Method fromFacetType()
 	 *
-	 * @see gama.core.common.interfaces.ICreateDelegate#fromFacetType()
+	 * @see gama.api.additions.delegates.ICreateDelegate#fromFacetType()
 	 */
 	@Override
 	public IType fromFacetType() {

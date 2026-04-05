@@ -12,7 +12,7 @@ experiment Adapter2 type: gui
 {
 	point centroid <- { 0, 100 };
  
-	action transform_environment
+	action transform_environment()
 	{
 		loop t over: list(prey)
 		{

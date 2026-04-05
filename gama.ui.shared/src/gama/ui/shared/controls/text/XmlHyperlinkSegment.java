@@ -3,7 +3,7 @@
  * XmlHyperlinkSegment.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -19,14 +19,14 @@ import org.eclipse.ui.forms.HyperlinkSettings;
 import org.eclipse.ui.internal.forms.widgets.IHyperlinkSegment;
 import org.eclipse.ui.internal.forms.widgets.SelectionData;
 
-import gama.core.util.GamaFont;
+import gama.api.types.font.IFont;
 import gama.ui.shared.resources.GamaFonts;
 
 /**
  * @version 1.0
  * @author
  */
-public class XmlHyperlinkSegment extends XmlTextSegment implements IHyperlinkSegment, IXmlFontUser {
+public class XmlHyperlinkSegment extends XmlTextSegment implements IHyperlinkSegment {
 
 	/** The href. */
 	private String href;
@@ -48,7 +48,7 @@ public class XmlHyperlinkSegment extends XmlTextSegment implements IHyperlinkSeg
 	 *            the font id
 	 */
 	public XmlHyperlinkSegment(final String text, final HyperlinkSettings settings, final boolean bold,
-			final boolean italic, final GamaFont font) {
+			final boolean italic, final IFont font) {
 		super(text, bold, italic, false, font);
 		this.settings = settings;
 	}

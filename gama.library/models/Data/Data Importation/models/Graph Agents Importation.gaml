@@ -1,8 +1,12 @@
 /**
-* Name: GraphAttributesImportation
-* Author: K. Johnson and B. Gaudou
-* Description:  Shows how to load graph files and import attributes. 
-* Tags: Graph, File
+* Name: Graph Agents Importation
+* Author: K. Johnson, Benoit Gaudou
+* Description: Shows how to load a graph file and import both its structure and the attributes stored on nodes
+*   and edges. GAMA supports loading graphs in GraphML format (and others) and mapping graph nodes and edges to
+*   dedicated agent species. The loaded graph attributes (stored in the file as XML properties) are read and
+*   attached to the corresponding agent attributes using the 'with' facet of the 'create' statement. This model
+*   demonstrates how to preserve rich graph metadata during import for use in subsequent analyses.
+* Tags: graph, file, graphml, import, load_file, attributes, nodes, edges
 */
 
 model GraphAttributesImportation
@@ -21,7 +25,7 @@ global {
 		do importation;
 	}
 	
-	action importation {	
+	action importation() {	
 		// Up to now, attributes importation are only available for graphml	datafiles.
 		switch type {
 			match "graphml" {
@@ -46,7 +50,7 @@ species edge_graph {
 	rgb my_color <- #green;
     map<string,string> attEdges;	
     
-    action init_agt {
+    action init_agt (){
     	name <- attEdges["name"]; 
     	prob <- float(attEdges["prob"]);		
     }
@@ -55,7 +59,7 @@ species edge_graph {
 species node_graph {
     map<string,string> att;
     
-    action init_agt {
+    action init_agt() {
     	location <- {att["xpoint"] as float,att["ypoint"] as float}; 		
     }
 }

@@ -1,18 +1,11 @@
 /**
-* Name: FIPA Propose
-* Author:
-* Description: This model demonstrates a usecase of the FIPA Propose interaction protocol. 
-* (Please see http://www.fipa.org/specs/fipa00036/SC00036H.html for the detail description of this protocol).
-* 
-* 
-* The Initiator agent begins the conversation/interaction protocol by sending a 'propose' 
-* message to the Participant agent with 'Go swimming?' as content.
-* 
-* On receiving the 'propose' message, the participant agent replies with an 'accept_proposal' message 
-* indicating that it agrees to go swimming.
-* 
-* After the Initiator agent reads the 'accept_proposal' message, the conversation ends.
-* Tags: fipa
+* Name: FIPA Propose (1) - Proposal Accepted
+* Author: Gama Development Team
+* Description: Demonstrates the FIPA Propose interaction protocol — accepted variant. The Initiator sends a
+*   'propose' message ('Go swimming?'). The Participant replies with 'accept_proposal', ending the conversation.
+*   See http://www.fipa.org/specs/fipa00036/SC00036H.html for the full protocol specification.
+*   Pair with FIPA Propose (2) which shows the rejected variant.
+* Tags: fipa, propose, accept_proposal, protocol, multi_agent, interaction
 */
 model fipa_propose_1
 

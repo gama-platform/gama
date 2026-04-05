@@ -3,7 +3,7 @@
  * GamaKeyBindings.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -21,8 +21,9 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
-import gama.core.runtime.GAMA;
-import gama.core.runtime.PlatformHelper;
+import gama.api.GAMA;
+import gama.api.runtime.SystemInfo;
+import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
 import gama.ui.application.workbench.PerspectiveHelper;
 import gama.ui.shared.utils.ViewsHelper;
@@ -42,7 +43,7 @@ public class GamaKeyBindings implements Listener {
 	}
 
 	/** The command. */
-	public static final int COMMAND = PlatformHelper.isMac() ? SWT.COMMAND : SWT.CTRL;
+	public static final int COMMAND = SystemInfo.isMac() ? SWT.COMMAND : SWT.CTRL;
 
 	/** The search string. */
 	public static final String SEARCH_STRING = format(COMMAND + SWT.SHIFT, 'H');
@@ -98,7 +99,7 @@ public class GamaKeyBindings implements Listener {
 			}
 			return;
 		}
-		if (event.stateMask == 0) { return; }
+		if (event.stateMask == 0) return;
 
 		switch (event.keyCode) {
 
@@ -175,7 +176,10 @@ public class GamaKeyBindings implements Listener {
 	 * Install.
 	 */
 	public static void install() {
-		WorkbenchHelper.run(() -> WorkbenchHelper.getDisplay().addFilter(SWT.KeyDown, BINDINGS));
+		DEBUG.TIMER_WITH_EXCEPTIONS(BANNER_CATEGORY.GUI, "Installing key bindings", "completed in", () -> {
+			WorkbenchHelper.getDisplay().addFilter(SWT.KeyDown, BINDINGS);
+		});
+
 	}
 
 	/**

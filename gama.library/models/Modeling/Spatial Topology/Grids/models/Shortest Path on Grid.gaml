@@ -1,8 +1,12 @@
 /**
-* Name:  Computation of the shortest path on a Grid of Cells
-* Author:  Patrick Taillandier
-* Description: Model to represent how to compute the shortest path from a grid (with the 4 algorithms).
-* Tags: grid, obstacle, shortest_path
+* Name: Shortest Path on Grid
+* Author: Patrick Taillandier
+* Description: Demonstrates the four shortest-path algorithms available for unweighted grid navigation in
+*   GAMA: BF (Breadth-First), A*, Dijkstra, and JPS (Jump Point Search). A source cell and a target cell
+*   are chosen, and the computed path is highlighted. The algorithm can be changed as a parameter to compare
+*   results and speed. This is the core reference for grid-based pathfinding without movement cost variation
+*   (use 'Weighted Shortest Path on Grid' when cells have different traversal costs).
+* Tags: grid, obstacle, shortest_path, astar, dijkstra, bfs, jps, pathfinding
 */
 
 model Grid

@@ -1,0 +1,523 @@
+/*******************************************************************************************************
+ *
+ * GamaExecutorService.java, in gama.api, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
+package gama.api.runtime;
+
+import static gama.api.utils.prefs.GamaPreferences.create;
+
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.ForkJoinPool.ForkJoinWorkerThreadFactory;
+import java.util.concurrent.ForkJoinTask;
+import java.util.concurrent.ForkJoinWorkerThread;
+import java.util.concurrent.TimeUnit;
+
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.GamaType;
+import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.species.ISpecies;
+import gama.api.runtime.scope.FlowStatus;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.geometry.IShape;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.utils.benchmark.StopWatch;
+import gama.api.utils.prefs.GamaPreferences;
+import gama.api.utils.prefs.Pref;
+
+/**
+ * Central service for managing concurrent execution of agents in GAMA simulations.
+ * 
+ * <p>
+ * GamaExecutorService provides a unified framework for parallel execution of agent-based operations using Java's
+ * Fork/Join framework. It manages thread pools, concurrency preferences, and provides utilities for executing agent
+ * steps and actions in parallel when beneficial.
+ * </p>
+ * 
+ * <p>
+ * Key features:
+ * </p>
+ * <ul>
+ * <li>Manages a custom {@link ForkJoinPool} optimized for agent-based simulations</li>
+ * <li>Provides configurable concurrency levels for species, grids, and simulations</li>
+ * <li>Implements threshold-based parallelism to avoid overhead on small populations</li>
+ * <li>Caches parallelism decisions for constant expressions to improve performance</li>
+ * <li>Handles out-of-memory errors gracefully with user notifications</li>
+ * <li>Supports both sequential and parallel execution strategies based on population size</li>
+ * </ul>
+ * 
+ * <p>
+ * Concurrency preferences control when parallel execution is enabled:
+ * </p>
+ * <ul>
+ * <li>{@link #CONCURRENCY_SPECIES}: Enable parallel execution for species populations</li>
+ * <li>{@link #CONCURRENCY_GRID}: Enable parallel execution for grid agents</li>
+ * <li>{@link #CONCURRENCY_SIMULATIONS}: Enable parallel execution of multiple simulations</li>
+ * <li>{@link #CONCURRENCY_THRESHOLD}: Minimum population size for parallel execution</li>
+ * <li>{@link #THREADS_NUMBER}: Maximum number of threads to use</li>
+ * </ul>
+ * 
+ * <p>
+ * Usage example:
+ * </p>
+ * 
+ * <pre>
+ * // Execute all agents in a population
+ * GamaExecutorService.step(scope, agentList, species);
+ * 
+ * // Execute a specific action on all agents
+ * GamaExecutorService.execute(scope, executable, agentArray, parallelExpression);
+ * 
+ * // Configure concurrency level
+ * GamaExecutorService.setConcurrencyLevel(8); // Use 8 threads
+ * </pre>
+ * 
+ * @see ParallelAgentRunner
+ * @see AgentSpliterator
+ * @see ForkJoinPool
+ */
+public abstract class GamaExecutorService {
+
+	/**
+	 * Custom exception handler for managing out-of-memory errors during simulation execution.
+	 * 
+	 * <p>
+	 * This handler intercepts {@link OutOfMemoryError} exceptions thrown by worker threads in the executor service. It
+	 * implements intelligent error handling with rate limiting to avoid overwhelming the user with repeated warnings.
+	 * </p>
+	 * 
+	 * <p>
+	 * Behavior:
+	 * </p>
+	 * <ul>
+	 * <li>Detects heap memory exhaustion and offers to close experiments</li>
+	 * <li>Rate-limits warnings to once per minute</li>
+	 * <li>Provides user-friendly error messages with links to troubleshooting documentation</li>
+	 * <li>Handles both heap and non-heap memory issues appropriately</li>
+	 * </ul>
+	 */
+	static class GamaMemoryExceptionHandler implements UncaughtExceptionHandler {
+
+		/** The last warning time stamp. */
+		long lastWarningTimeStamp = 0l;
+
+		@Override
+		public void uncaughtException(final Thread t, final Throwable e) {
+			if (e instanceof OutOfMemoryError) {
+				long currentTime = System.currentTimeMillis();
+				if (currentTime - lastWarningTimeStamp > 60000l) {
+					// 1 minute between warnings
+					lastWarningTimeStamp = currentTime;
+					String msg = e.getMessage();
+					msg = msg == null ? "" : msg.toLowerCase();
+					if (GamaPreferences.Runtime.CORE_MEMORY_ACTION.getValue() && GAMA.getExperiment() != null
+							&& msg.contains("heap")) {
+						GAMA.getGui().getDialogFactory().warning(
+								"GAMA is out of memory. Experiment will be closed now. Please consult: https://gama-platform.org/wiki/Troubleshooting#memory-problems");
+						GAMA.closeAllExperiments(true, true);
+					} else {
+						if (GAMA.getExperiment() != null && !msg.contains("heap")) {
+							GAMA.getGui().getDialogFactory().warning(
+									"GAMA cannot allocate more memory for displaying this experiment. The platform will exit now. Please try to quit other applications and relaunch it");
+						} else {
+							GAMA.getGui().getDialogFactory().warning(
+									"Your system is running out of memory. GAMA will exit now. Please try to quit other applications and relaunch it");
+						}
+						System.exit(0);
+					}
+				}
+			} else {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	/** The Constant EXCEPTION_HANDLER. */
+	public static final UncaughtExceptionHandler EXCEPTION_HANDLER = new GamaMemoryExceptionHandler();
+
+	/** The agent parallel executor. */
+	public static volatile ForkJoinPool AGENT_PARALLEL_EXECUTOR;
+
+	/**
+	 * Identity-based cache for constant-expression parallelism decisions.
+	 *
+	 * <p>
+	 * Keyed by {@code (System.identityHashCode(expr) as long) << 32 | caller.ordinal()} so that we avoid the
+	 * cost of {@link IExpression#serializeToGaml(boolean)} (which may involve string allocation and traversal)
+	 * on every call. Constant expressions are compiled once per model and their identity never changes, so
+	 * identity-hash-code is a stable, collision-rare key for a small number of species.
+	 * </p>
+	 */
+	private static final ConcurrentHashMap<Long, Integer> PARALLELISM_IDENTITY_CACHE = new ConcurrentHashMap<>();
+
+	/**
+	 * Per-thread reusable list of {@link ForkJoinTask} references used in {@link #doStep} case 1.
+	 *
+	 * <p>
+	 * Allocating a fresh {@code ArrayList} per species per cycle (case 1) is wasteful when populations are large.
+	 * Using a {@code ThreadLocal} means the list is allocated once per thread and reused across steps; the list is
+	 * cleared at the start of each use so its internal array is retained between cycles.
+	 * </p>
+	 */
+	private static final ThreadLocal<ArrayList<ForkJoinTask<?>>> TASK_LIST_CACHE =
+			ThreadLocal.withInitial(ArrayList::new);
+
+	/** The Constant CONCURRENCY_SIMULATIONS. */
+	public static final Pref<Boolean> CONCURRENCY_SIMULATIONS =
+			create("pref_parallel_simulations", "Allow experiments to run simulations in parallel", true, IType.BOOL,
+					true).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
+
+	/** The Constant CONCURRENCY_SIMULATIONS_ALL. */
+	public static final Pref<Boolean> CONCURRENCY_SIMULATIONS_ALL = create("pref_parallel_simulations_all",
+			"In batch, allow to run simulations with all available processors"
+					+ "[WARNING: disables reflexes and permanent displays of batch experiments]",
+			false, IType.BOOL, true).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
+
+	/** The Constant CONCURRENCY_GRID. */
+	public static final Pref<Boolean> CONCURRENCY_GRID = create("pref_parallel_grids",
+			"Allow grids to schedule their agents in parallel (prevents the reproducibility of simulations)", false,
+			IType.BOOL, true).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
+
+	/** The Constant CONCURRENCY_SPECIES. */
+	public static final Pref<Boolean> CONCURRENCY_SPECIES = create("pref_parallel_species",
+			"Make species schedule their agents in parallel (prevents the reproducibility of simulations)", false,
+			IType.BOOL, true).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
+
+	/** The Constant CONCURRENCY_THRESHOLD. */
+	public static final Pref<Integer> CONCURRENCY_THRESHOLD =
+			create("pref_parallel_threshold", "Size under which populations are executed sequentially", 20, IType.INT,
+					true).between(1, null).in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY);
+
+	/** The Constant THREADS_NUMBER. */
+	public static final Pref<Integer> THREADS_NUMBER =
+			create("pref_parallel_threads",
+					"Max. number of threads to use (available processors: " + Runtime.getRuntime().availableProcessors()
+							+ ")",
+					4, IType.INT, true).between(1, null)
+							.in(GamaPreferences.Runtime.NAME, GamaPreferences.Runtime.CONCURRENCY)
+							.onChange(newValue -> {
+								reset();
+								System.setProperty("java.util.concurrent.ForkJoinPool.common.parallelism",
+										String.valueOf(newValue));
+							});
+
+	/**
+	 * Reset.
+	 */
+	public static void reset() {
+		// Called by the activator to init the preferences and executor services
+		setConcurrencyLevel(THREADS_NUMBER.getValue());
+	}
+
+	/**
+	 * Sets the concurrency level.
+	 *
+	 * @param nb
+	 *            the new concurrency level
+	 */
+	public static void setConcurrencyLevel(final int nb) {
+		if (AGENT_PARALLEL_EXECUTOR != null) {
+			AGENT_PARALLEL_EXECUTOR.shutdown();
+			try {
+				// Wait for tasks to complete with timeout
+				if (!AGENT_PARALLEL_EXECUTOR.awaitTermination(5, TimeUnit.SECONDS)) {
+					AGENT_PARALLEL_EXECUTOR.shutdownNow();
+				}
+			} catch (InterruptedException e) {
+				AGENT_PARALLEL_EXECUTOR.shutdownNow();
+				Thread.currentThread().interrupt();
+			}
+		}
+
+		// Create custom thread factory for better thread management
+		final ForkJoinWorkerThreadFactory factory = pool -> {
+			final ForkJoinWorkerThread worker = ForkJoinPool.defaultForkJoinWorkerThreadFactory.newThread(pool);
+			worker.setName("GAMA-Agent-Worker-" + worker.getPoolIndex());
+			return worker;
+		};
+
+		// Use FIFO (asyncMode = false) for better throughput with RecursiveTask-based
+		// divide-and-conquer (ParallelAgentRunner). FIFO keeps forked subtasks closer in
+		// cache and reduces work-stealing distance compared to the previous LIFO async mode.
+		AGENT_PARALLEL_EXECUTOR = new ForkJoinPool(nb, factory, EXCEPTION_HANDLER, false);
+	}
+
+	/**
+	 * The Enum Caller.
+	 */
+	public enum Caller {
+
+		/** The species. */
+		SPECIES,
+		/** The grid. */
+		GRID,
+		/** The none. */
+		NONE,
+		/** The simulation. */
+		SIMULATION
+	}
+
+	/**
+	 * Returns the level of parallelism from the expression passed and the preferences
+	 *
+	 * @param concurrency
+	 *            The facet passed to the statement or species
+	 * @param forSpecies
+	 *            whether it is for species or not
+	 * @return 0 for no parallelism, 1 for complete parallelism (i.e. each agent on its own), n for parallelism with a
+	 *         threshold of n
+	 */
+	public static int getParallelism(final IScope scope, final IExpression concurrency, final Caller caller) {
+		if (concurrency != null && concurrency.isConst()) {
+			// Use the expression's object identity as cache key. Constant expressions are
+			// compiled once; using System.identityHashCode avoids the serializeToGaml()
+			// string allocation of the previous string-concatenation approach.
+			final long cacheKey =
+					((long) System.identityHashCode(concurrency) << 32) | (caller.ordinal() & 0xFFFFFFFFL);
+			return PARALLELISM_IDENTITY_CACHE.computeIfAbsent(cacheKey,
+					k -> computeParallelism(scope, concurrency, caller));
+		}
+		return computeParallelism(scope, concurrency, caller);
+	}
+
+	/**
+	 * Computes the parallelism level based on the expression and caller type. Extracted to support caching in
+	 * getParallelism.
+	 */
+	private static int computeParallelism(final IScope scope, final IExpression concurrency, final Caller caller) {
+		switch (GamaType.of(concurrency).id()) {
+			case IType.BOOL: {
+				Boolean c = (Boolean) concurrency.value(scope);
+				if (Boolean.FALSE.equals(c)) return 0;
+				if (caller == Caller.SIMULATION) return THREADS_NUMBER.getValue();
+				return CONCURRENCY_THRESHOLD.getValue();
+			}
+			case IType.INT:
+				return Math.abs((Integer) concurrency.value(scope));
+			default:
+				break;
+		}
+		return switch (caller) {
+			case SIMULATION -> CONCURRENCY_SIMULATIONS.getValue() ? THREADS_NUMBER.getValue() : 0;
+			case SPECIES -> CONCURRENCY_SPECIES.getValue() ? CONCURRENCY_THRESHOLD.getValue() : 0;
+			case GRID -> CONCURRENCY_GRID.getValue() ? CONCURRENCY_THRESHOLD.getValue() : 0;
+			default -> 0;
+		};
+	}
+
+	/**
+	 * Execute threaded.
+	 *
+	 * @param r
+	 *            the r
+	 */
+	public static void executeThreaded(final Runnable r) {
+		AGENT_PARALLEL_EXECUTOR.invoke(ForkJoinTask.adapt(r));
+	}
+
+	/**
+	 * Step.
+	 *
+	 * @param <A>
+	 *            the generic type
+	 * @param scope
+	 *            the scope
+	 * @param pop
+	 *            the pop
+	 * @param species
+	 *            the species
+	 * @return the boolean
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	public static <A extends IAgent> Boolean step(final IScope scope, final IList<A> pop, final ISpecies species)
+			throws GamaRuntimeException {
+		final IExpression schedule = species.getSchedule();
+		final IList<? extends IAgent> agents =
+				schedule == null ? pop : GamaListFactory.castToList(scope, schedule.value(scope));
+		final int threshold =
+				getParallelism(scope, species.getConcurrency(), species.isGrid() ? Caller.GRID : Caller.SPECIES);
+		return doStep(scope, agents.toArray(new IAgent[0]), threshold, species);
+	}
+
+	/**
+	 * Step.
+	 *
+	 * @param <A>
+	 *            the generic type
+	 * @param scope
+	 *            the scope
+	 * @param array
+	 *            the array
+	 * @param species
+	 *            the species
+	 * @return the boolean
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	public static <A extends IShape> Boolean step(final IScope scope, final A[] array, final ISpecies species)
+			throws GamaRuntimeException {
+		final IExpression schedule = species.getSchedule();
+		final IShape[] scheduledAgents;
+		if (schedule == null) {
+			scheduledAgents = array;
+		} else {
+			final List<IAgent> agents = GamaListFactory.castToList(scope, schedule.value(scope));
+			scheduledAgents = agents.toArray(new IAgent[0]);
+		}
+		final int threshold =
+				getParallelism(scope, species.getConcurrency(), species.isGrid() ? Caller.GRID : Caller.SPECIES);
+		return doStep(scope, scheduledAgents, threshold, species);
+	}
+
+	/**
+	 * Do step.
+	 *
+	 * @param <A>
+	 *            the generic type
+	 * @param scope
+	 *            the scope
+	 * @param array
+	 *            the array
+	 * @param threshold
+	 *            the threshold
+	 * @param species
+	 *            the species
+	 * @return the boolean
+	 */
+	private static <A extends IShape> Boolean doStep(final IScope scope, final A[] array, final int threshold,
+			final ISpecies species) {
+		try (final StopWatch w = GAMA.benchmark(scope, species)) {
+			int concurrency = threshold;
+			if (array.length <= threshold) { concurrency = 0; }
+			switch (concurrency) {
+				case 0:
+					for (final A aa : array) {
+						final IAgent agent = (IAgent) aa;
+						if (agent == null || agent.dead()) {
+							continue; // add this condition to avoid the activation
+							// of dead agents
+						}
+						if (!scope.step(agent).passed()) return false;
+					}
+					break;
+				case 1: {
+					// Each agent is submitted as a separate task; each task gets its own scope copy to
+					// avoid sharing mutable scope state across concurrent threads. All tasks are
+					// submitted to the pool and joined before returning so that the caller always sees
+					// completed results rather than fire-and-forget side effects.
+					// Reuse the per-thread task list to avoid allocating a new ArrayList every cycle.
+					final ArrayList<ForkJoinTask<?>> tasks = TASK_LIST_CACHE.get();
+					tasks.clear();
+					for (final A aa : array) {
+						final IAgent agent = (IAgent) aa;
+						if (agent == null || agent.dead()) { continue; }
+						final IScope agentScope = scope.copy(" - step - ");
+						tasks.add(AGENT_PARALLEL_EXECUTOR.submit(ForkJoinTask.adapt(() -> agentScope.step(agent))));
+					}
+					for (final ForkJoinTask<?> task : tasks) { task.join(); }
+					break;
+				}
+				default:
+					ParallelAgentRunner.step(scope, array, threshold);
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Execute.
+	 *
+	 * @param <A>
+	 *            the generic type
+	 * @param scope
+	 *            the scope
+	 * @param executable
+	 *            the executable
+	 * @param array
+	 *            the array
+	 * @param parallel
+	 *            the parallel
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	public static <A extends IShape> void execute(final IScope scope, final IExecutable executable, final A[] array,
+			final IExpression parallel) throws GamaRuntimeException {
+		int threshold = getParallelism(scope, parallel, Caller.NONE);
+		if (array.length <= threshold) { threshold = 0; }
+		switch (threshold) {
+			case 0:
+				for (final A agent : array) {
+					scope.execute(executable, (IAgent) agent, null);
+					if (scope.getAndClearBreakStatus() == FlowStatus.BREAK) { break; }
+				}
+				return;
+			// Break doesnt really make sense for parallel execution
+		case 1: {
+			// Each agent is submitted as a separate task; each task gets its own scope copy to
+			// avoid sharing mutable scope state across concurrent threads. All tasks are
+			// submitted to the pool and joined before returning.
+			// Reuse the per-thread task list to avoid allocating a new ArrayList every cycle.
+			final ArrayList<ForkJoinTask<?>> tasks = TASK_LIST_CACHE.get();
+			tasks.clear();
+			for (final A aa : array) {
+				final IAgent agent = (IAgent) aa;
+				final IScope agentScope = scope.copy(" - execute - ");
+				tasks.add(AGENT_PARALLEL_EXECUTOR
+						.submit(ForkJoinTask.adapt(() -> agentScope.execute(executable, agent, null))));
+			}
+			for (final ForkJoinTask<?> task : tasks) { task.join(); }
+			return;
+		}
+			default:
+				ParallelAgentRunner.execute(scope, executable, array, threshold);
+		}
+	}
+
+	/**
+	 * Execute.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param executable
+	 *            the executable
+	 * @param list
+	 *            the list
+	 * @param parallel
+	 *            the parallel
+	 * @throws GamaRuntimeException
+	 *             the gama runtime exception
+	 */
+	public static void execute(final IScope scope, final IExecutable executable, final List<? extends IAgent> list,
+			final IExpression parallel) throws GamaRuntimeException {
+		execute(scope, executable, list.toArray(new IAgent[0]), parallel);
+	}
+
+	/**
+	 * Should run all simulations in parallel.
+	 *
+	 * @param experiment
+	 *            the experiment
+	 * @return true, if successful
+	 */
+	public static boolean shouldRunAllSimulationsInParallel(final IExperimentAgent experiment) {
+		boolean pref = CONCURRENCY_SIMULATIONS_ALL.getValue();
+		return experiment == null ? pref : pref || experiment.isHeadless() && experiment.getSpecies().isBatch();
+	}
+
+}

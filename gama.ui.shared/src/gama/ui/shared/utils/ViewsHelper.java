@@ -1,8 +1,9 @@
 /*******************************************************************************************************
  *
- * ViewsHelper.java, in gama.ui.shared.shared, is part of the source code of the GAMA modeling and simulation platform .
+ * ViewsHelper.java, in gama.ui.shared, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -29,10 +30,10 @@ import org.eclipse.ui.IWorkbenchPart;
 
 import com.google.common.base.Objects;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IGamaView.Display.InnerComponent;
-import gama.core.common.interfaces.IGui;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IGamaView.Display.InnerComponent;
+import gama.api.ui.IGui;
+import gama.api.ui.displays.IDisplaySurface;
 import gama.dev.DEBUG;
 import one.util.streamex.StreamEx;
 
@@ -57,7 +58,7 @@ public class ViewsHelper {
 	 *            the temp message
 	 */
 	public static void requestUserAttention(final IGamaView part, final String tempMessage) {
-		if (isRequesting) { return; }
+		if (isRequesting) return;
 		// rate at which the title will change in milliseconds
 		final int rateOfChange = 200;
 		final int numberOfTimes = 2;
@@ -86,11 +87,11 @@ public class ViewsHelper {
 	 */
 	public static IGamaView.Display findDisplay(final String id) {
 		final IWorkbenchPage page = WorkbenchHelper.getPage();
-		if (page == null) { return null; }
+		if (page == null) return null;
 		final IViewReference ref = page.findViewReference(id);
-		if (ref == null) { return null; }
+		if (ref == null) return null;
 		final IViewPart view = ref.getView(false);
-		if (view instanceof IGamaView.Display) { return (IGamaView.Display) view; }
+		if (view instanceof IGamaView.Display) return (IGamaView.Display) view;
 		return null;
 	}
 
@@ -102,14 +103,11 @@ public class ViewsHelper {
 	 * @return true, if is display
 	 */
 	public static boolean isDisplay(final String id) {
-		if (!id.startsWith(IGui.GL_LAYER_VIEW_ID) && !id.startsWith(IGui.LAYER_VIEW_ID)) { return false; }
+		if (!id.startsWith(IGui.GL_LAYER_VIEW_ID) && !id.startsWith(IGui.LAYER_VIEW_ID)) return false;
 		final IWorkbenchPage page = WorkbenchHelper.getPage();
-		if (page == null) { return false; }
+		if (page == null) return false;
 		final IViewReference ref = page.findViewReference(id);
 		return ref != null;
-		// final IViewPart view = ref.getView(false);
-		// if (view instanceof IGamaView.Display) { return (IGamaView.Display) view; }
-		// return <
 	}
 
 	/**
@@ -125,9 +123,9 @@ public class ViewsHelper {
 	 */
 	public static IViewPart findView(final String id, final String second, final boolean restore) {
 		final IWorkbenchPage page = WorkbenchHelper.getPage();
-		if (page == null) { return null; }
+		if (page == null) return null;
 		final IViewReference ref = page.findViewReference(id, second);
-		if (ref == null) { return null; }
+		if (ref == null) return null;
 		return ref.getView(restore);
 	}
 
@@ -138,7 +136,7 @@ public class ViewsHelper {
 	 */
 	public static List<IGamaView.Display> getDisplayViews(final Predicate<IViewPart> p) {
 		final IWorkbenchPage page = WorkbenchHelper.getPage();
-		if (page == null) { return Collections.EMPTY_LIST; }
+		if (page == null) return Collections.EMPTY_LIST;
 		return StreamEx.of(page.getViewReferences()).map(r -> r.getView(false)).filter(p == null ? v -> true : p)
 				.select(IGamaView.Display.class).toList();
 	}
@@ -153,7 +151,7 @@ public class ViewsHelper {
 		// See if asyncRun would not be more appropriate ?
 		WorkbenchHelper.run(() -> {
 			final IWorkbenchPage activePage = getPage();
-			if (activePage == null) { return; }
+			if (activePage == null) return;
 			final IViewReference view = activePage.findViewReference(id);
 			if (view != null) {
 				IWorkbenchPart part = view.getPart(false);
@@ -181,9 +179,9 @@ public class ViewsHelper {
 	public static IDisplaySurface frontmostDisplaySurface() {
 		return WorkbenchHelper.run(() -> {
 			IGamaView.Display view = findFrontmostGamaViewUnderMouse();
-			if (view != null) { return view.getDisplaySurface(); }
+			if (view != null) return view.getDisplaySurface();
 			List<IDisplaySurface> surfaces = allDisplaySurfaces();
-			if (surfaces.size() == 0) { return null; }
+			if (surfaces.size() == 0) return null;
 			return surfaces.get(0);
 		});
 	}
@@ -195,9 +193,9 @@ public class ViewsHelper {
 	 *            the gama view part
 	 */
 	public static void hideView(final IViewPart part) {
-		if (part == null) { return; }
+		if (part == null) return;
 		final IWorkbenchPage activePage = getPage();
-		if (activePage == null) { return; }
+		if (activePage == null) return;
 		activePage.hideView(part);
 
 	}
@@ -211,7 +209,7 @@ public class ViewsHelper {
 		int m = WorkbenchHelper.run(WorkbenchHelper::getMonitorUnderCursor);
 		// DEBUG.OUT("First try with fullscreen on monitor " + m + " -- " + FULLSCREEN_VIEWS);
 		IGamaView.Display view = WorkbenchHelper.run(() -> FULLSCREEN_VIEWS.get(m));
-		if (view != null) { return view; }
+		if (view != null) return view;
 		Control c = WorkbenchHelper.run(() -> WorkbenchHelper.getDisplay().getCursorControl());
 		// DEBUG.OUT("Second try with control under mouse -- " + c);
 		if (c instanceof CTabFolder t) {
@@ -221,19 +219,19 @@ public class ViewsHelper {
 			CTabItem i = t.getSelection();
 			if (i != null) {
 				for (IDisplaySurface d : allDisplaySurfaces()) {
-					if (d.getOutput().getName().equals(i.getText())) { return d.getOutput().getView(); }
+					if (d.getOutput().getName().equals(i.getText())) return d.getOutput().getView();
 				}
 			}
 		}
 
-		if (c instanceof InnerComponent i) { return i.getView(); }
+		if (c instanceof InnerComponent i) return i.getView();
 		final IWorkbenchPage page = getPage();
-		if (page == null) { return null; }
+		if (page == null) return null;
 		final Point p = WorkbenchHelper.getDisplay().getCursorLocation();
 		final List<IGamaView.Display> displays =
 				WorkbenchHelper.run(() -> getDisplayViews(part -> page.isPartVisible(part)));
 		// DEBUG.OUT("Third try with view -- at coordinates " + p + " -- in " + new HashSet<>(displays));
-		for (IGamaView.Display v : displays) { if (v.containsPoint(p.x, p.y)) { return v; } }
+		for (IGamaView.Display v : displays) { if (v.containsPoint(p.x, p.y)) return v; }
 		// DEBUG.OUT("No view under mouse");
 		return null;
 	}
@@ -247,7 +245,7 @@ public class ViewsHelper {
 	public static boolean toggleFullScreenMode() {
 		// DEBUG.OUT("Trying to toggle full screen mode");
 		final IGamaView.Display part = WorkbenchHelper.run(ViewsHelper::findFrontmostGamaViewUnderMouse);
-		if (part != null && !part.isEscRedefined()) { return toggleFullScreenMode(part); }
+		if (part != null && !part.isEscRedefined()) return toggleFullScreenMode(part);
 		return false;
 	}
 
@@ -258,6 +256,8 @@ public class ViewsHelper {
 	 * @return true, if successful
 	 */
 	public static boolean toggleFullScreenMode(final IGamaView.Display part) {
+		// Suppress synthetic ESC events that macOS injects when a new ON_TOP shell becomes visible.
+		if (part.isFullScreen() && part.fullScreenEnteredRecently()) return false;
 		WorkbenchHelper.run(() -> part.toggleFullScreen());
 		return true;
 	}
@@ -303,10 +303,9 @@ public class ViewsHelper {
 	 *            the view
 	 */
 	public static void activate(final IWorkbenchPart view) {
-		if (view == null) { return; }
-		if (WorkbenchHelper.getActivePart() == view) { return; }
+		if (view == null || WorkbenchHelper.getActivePart() == view) return;
 		final IWorkbenchPage activePage = getPage();
-		if (activePage == null) { return; }
+		if (activePage == null) return;
 		activePage.activate(view);
 	}
 
@@ -317,9 +316,9 @@ public class ViewsHelper {
 	 *            the view
 	 */
 	public static void bringToFront(final IWorkbenchPart view) {
-		if (view == null) { return; }
+		if (view == null) return;
 		final IWorkbenchPage activePage = getPage();
-		if (activePage == null) { return; }
+		if (activePage == null) return;
 		activePage.bringToTop(view);
 	}
 

@@ -30,7 +30,7 @@ experiment "Adapter" type: gui
 	{
 		ask (Host where (each.state = 0))
 		{
-			do die;
+			do die();
 		}
 
 		create Host number: num
@@ -44,7 +44,7 @@ experiment "Adapter" type: gui
 	{		
 		ask (Host where (each.state = 1))
 		{
-			do die;
+			do die();
 		}
 
 		create Host number: num
@@ -58,7 +58,7 @@ experiment "Adapter" type: gui
 	{		
 		ask (Host where (each.state = 2))
 		{
-			do die;
+			do die();
 		}
 
 		create Host number: num

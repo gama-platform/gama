@@ -26,13 +26,13 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
 
-import gama.core.common.interfaces.IGamaView;
-import gama.core.common.interfaces.IGui;
-import gama.core.common.interfaces.IRuntimeExceptionHandler;
-import gama.core.common.interfaces.ItemList;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.runtime.GAMA;
-import gama.core.runtime.exceptions.GamaRuntimeException;
+import gama.api.GAMA;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.runtime.IRuntimeExceptionHandler;
+import gama.api.ui.IGamaView;
+import gama.api.ui.IGui;
+import gama.api.ui.IItemList;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.ui.shared.controls.ParameterExpandItem;
 import gama.ui.shared.resources.GamaColors;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -129,7 +129,7 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 
 			@Override
 			public void widgetSelected(final SelectionEvent e) {
-				GAMA.getGui().editModel(exception.getEditorContext());
+				GAMA.getGui().getModelsManager().editModel(exception.getEditorContext());
 			}
 
 			@Override
@@ -183,8 +183,8 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 		final StringBuilder sb = new StringBuilder(300);
 		final String a = obj.getAgentSummary();
 		if (a != null) { sb.append(a).append(" at "); }
-		sb.append("cycle ").append(obj.getCycle()).append(ItemList.SEPARATION_CODE)
-				.append(obj.isWarning() ? ItemList.WARNING_CODE : ItemList.ERROR_CODE).append(obj.getMessage());
+		sb.append("cycle ").append(obj.getCycle()).append(IItemList.SEPARATION_CODE)
+				.append(obj.isWarning() ? IItemList.WARNING_CODE : IItemList.ERROR_CODE).append(obj.getMessage());
 		return sb.toString();
 	}
 
@@ -228,13 +228,13 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 	/**
 	 * Method handleMenu()
 	 *
-	 * @see gama.core.common.interfaces.ItemList#handleMenu(java.lang.Object)
+	 * @see gama.api.ui.IItemList#handleMenu(java.lang.Object)
 	 */
 	@Override
 	public Map<String, Runnable> handleMenu(final GamaRuntimeException item, final int x, final int y) {
 		final Map<String, Runnable> result = new HashMap<>();
 		result.put("Copy error to clipboard", () -> { WorkbenchHelper.copy(item.getAllText()); });
-		result.put("Show in editor", () -> GAMA.getGui().editModel(item.getEditorContext()));
+		result.put("Show in editor", () -> GAMA.getGui().getModelsManager().editModel(item.getEditorContext()));
 		result.put("Report issue on GitHub", () -> this.reportError(item));
 		return result;
 	}
@@ -253,6 +253,26 @@ public class ErrorView extends ExpandableItemsView<GamaRuntimeException> impleme
 	@Override
 	protected boolean needsOutput() {
 		return false;
+	}
+
+	/**
+	 * The ErrorView must never be auto-closed by {@code closeSimulationViews()} — its content is relevant precisely
+	 * when there is no running simulation (e.g. after an init failure). Returning {@code false} also prevents
+	 * {@link gama.ui.shared.views.GamaViewPart#init} from closing it when no experiment is running.
+	 */
+	@Override
+	protected boolean shouldBeClosedWhenNoExperiments() {
+		return false;
+	}
+
+	/**
+	 * No-op: the ErrorView is intentionally never closed by the simulation lifecycle machinery. It can only be closed
+	 * manually by the user (its items are closable). Overrides {@link GamaViewPart#close} which would otherwise hide
+	 * this view every time {@code closeSimulationViews()} is called.
+	 */
+	@Override
+	public void close(final gama.api.runtime.scope.IScope scope) {
+		// deliberate no-op — see Javadoc above
 	}
 
 }

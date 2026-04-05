@@ -1,8 +1,11 @@
 /**
-* Name: SimplestSPARQLquery
-* Queries dbpedia and prints the raw result in the console
-* Author: baptiste lesquoy
-* Tags: 
+* Name: Simplest SPARQL Query
+* Author: Baptiste Lesquoy
+* Description: The minimal SPARQL query example in GAMA. Sends a simple SELECT query to the DBpedia SPARQL
+*   endpoint over HTTP and prints the raw result map to the console. Shows the basic 'sparql' action syntax
+*   with an endpoint URL and a query string. This is the entry point for all SPARQL/linked-data integration
+*   in GAMA — requires an internet connection.
+* Tags: database, SPARQL, linked_data, DBpedia, semantic_web, query
 */
 
 

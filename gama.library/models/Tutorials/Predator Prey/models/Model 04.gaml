@@ -1,8 +1,11 @@
 /**
-* Name: Use of Inspectors/monitors
-* Author:
-* Description: 4th part of the tutorial : Predator Prey
-* Tags: inspector, monitor
+* Name: Predator Prey Tutorial - Step 04 - Inspectors and Monitors
+* Author: Gama Development Team
+* Description: Fourth step of the Predator-Prey tutorial. Adds real-time monitoring tools: monitors display
+*   current population counts for prey, and an inspector lets the user examine individual agent attributes.
+*   These GAMA tools are essential for debugging and understanding simulation dynamics without halting the
+*   simulation. This step introduces the 'monitor' display layer and the agent inspector.
+* Tags: tutorial, prey, predator, inspector, monitor, debugging, output
 */
 model prey_predator
 
@@ -11,7 +14,7 @@ global {
 	float prey_max_energy <- 1.0;
 	float prey_max_transfer <- 0.1;
 	float prey_energy_consum <- 0.05;
-	int nb_preys -> {length (prey)};
+	int nb_preys -> length (prey);
 	
 	init {
 		create prey number: nb_preys_init;
@@ -44,7 +47,7 @@ species prey {
 	}
 
 	reflex die when: energy <= 0 {
-		do die;
+		do die();
 	}
 
 	aspect base {

@@ -1,9 +1,12 @@
 /***
 * Name: Iterators
 * Author: Benoit Gaudou
-* Description: The iterators are a way to make a computation by iterating over a container.
-* This model compare the use of iterators with the loop.
-* Tags: loop, iterator, max_of, where, with_max_of
+* Description: Introduces the iterator operators available in GAML as a more expressive and compact alternative to
+*   explicit loop statements. Iterators process a container element by element and return an aggregated result.
+*   Examples include: 'max_of' (finds the maximum of an expression over a container), 'with_max_of' (returns the
+*   element maximizing an expression), 'where' (filters a container), 'collect' (transforms a container),
+*   'sum_of', 'count', and others. The model compares iterator-based queries with equivalent loop-based solutions.
+* Tags: loop, iterator, max_of, where, collect, sum_of, filter, container, functional
 ***/
 
 model Iterators

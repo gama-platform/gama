@@ -1,8 +1,10 @@
 /**
-* Name: Basic model
+* Name: 3D Tutorial - Model 01 - Basic 3D Model
 * Author: Arnaud Grignard
-* Description: First part of the tutorial : Tuto3D
-* Tags:
+* Description: First step of the 3D tutorial. Introduces the basic setup of a 3D GAMA simulation: creating
+*   agents with random 3D positions, assigning them a simple sphere geometry, and displaying them in a 3D
+*   OpenGL environment. This model is the starting point for learning how to build 3D simulations in GAMA.
+* Tags: 3d, display, tutorial, opengl, cell, basic
 */
 
 model Tuto3D

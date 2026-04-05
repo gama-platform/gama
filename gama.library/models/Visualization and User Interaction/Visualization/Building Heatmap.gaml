@@ -1,9 +1,12 @@
 /**
-* Name: Heatmap
-* A model that demonstrates how to build a simple heatmap based on fields and how to display it WITHOUT CHANGING A LINE OF THE ORIGINAL MODEL IMPORTED. 
-* This heatmap records the number of people passed in each area of the city.
+* Name: Building Heatmap
 * Author: Alexis Drogoul
-* Tags: 
+* Description: Demonstrates how to overlay a heatmap on an existing model without modifying it, using GAMA's
+*   model import mechanism. The heatmap is built on a field that accumulates the number of people passing
+*   through each area of the city over time. The field is updated each step and displayed as a semi-transparent
+*   color gradient over the road network. This model shows the power of GAMA's import system: the entire
+*   Building Elevation model is reused unchanged, and only the heatmap visualization layer is added on top.
+* Tags: heatmap, field, visualization, import, display, people, traffic, building
 */
 model BuildingHeatmap
 
@@ -30,9 +33,9 @@ experiment "Show heatmap" type: gui {
 			camera 'default' location: {1318.6512,3.5713,945.6612} target: {431.7016,495.2155,0.0};
 			light #ambient intensity: 180;
 			light #default intensity: 180 direction: {0.5, 0.5, -1};
-			event #mouse_down {ask simulation {do resume;}}
+			event #mouse_down {ask simulation {do resume();}} 
 			species building aspect: base refresh: false;
-			species road aspect: base refresh: false;
+			species road aspect: base refresh: false; 
 			species people refresh: true;
 		}
 		display "Instant heatmap with palette" type: 3d axes: false background: #black  {

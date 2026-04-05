@@ -1,63 +1,64 @@
 /*******************************************************************************************************
  *
- * ConnectorMessage.java, in gama.network, is part of the source code of the
- * GAMA modeling and simulation platform .
+ * ConnectorMessage.java, in gama.extension.network, is part of the source code of the GAMA modeling and simulation
+ * platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
- * 
+ *
  ********************************************************************************************************/
 package gama.extension.network.common;
 
-import gama.core.messaging.GamaMessage;
-import gama.core.runtime.IScope;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.message.IMessage;
 
 /**
  * The Interface ConnectorMessage.
  */
 public interface ConnectorMessage {
-	
+
 	/**
 	 * Gets the sender.
 	 *
 	 * @return the sender
 	 */
-	public String getSender();
-	
+	String getSender();
+
 	/**
 	 * Gets the receiver.
 	 *
 	 * @return the receiver
 	 */
-	public String getReceiver();
-	
+	String getReceiver();
+
 	/**
 	 * Gets the plain contents.
 	 *
 	 * @return the plain contents
 	 */
-	public String getPlainContents();
-	
+	String getPlainContents();
+
 	/**
 	 * Checks if is plain message.
 	 *
 	 * @return true, if is plain message
 	 */
-	public boolean isPlainMessage();
-	
+	boolean isPlainMessage();
+
 	/**
 	 * Checks if is command message.
 	 *
 	 * @return true, if is command message
 	 */
-	public boolean isCommandMessage();
-	
+	boolean isCommandMessage();
+
 	/**
 	 * Gets the contents.
 	 *
-	 * @param scope the scope
+	 * @param scope
+	 *            the scope
 	 * @return the contents
 	 */
-	public GamaMessage getContents(IScope scope);
+	IMessage getContents(IScope scope);
 }

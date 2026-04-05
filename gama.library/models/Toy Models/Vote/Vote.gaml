@@ -1,8 +1,13 @@
 /**
-* Name: vote
-* Author: MAPS TEAM (Frederic Amblard, Thomas Louail, Romain Reulier, Paul Salze et Patrick Taillandier) 
-* Description: Modeling of an election
-* Tags: gui
+* Name: Vote
+* Author: Frederic Amblard, Thomas Louail, Romain Reulier, Paul Salze, Patrick Taillandier
+* Description: A model simulating an electoral process among a population of voter agents. Each voter has a
+*   political opinion represented as a continuous value, and is influenced by the opinions of their social
+*   neighbors. Candidates position themselves in the opinion space, and voters cast their ballot for the
+*   candidate closest to their own opinion. Multiple voting rounds can be simulated to observe how opinion
+*   dynamics and candidate positioning interact to produce electoral outcomes. The model illustrates opinion
+*   formation, spatial voting models, and collective decision-making.
+* Tags: gui, vote, election, opinion, social_influence, democracy, political_science
 */
  
 model vote
@@ -45,10 +50,10 @@ global {
 	init {
 		//Creation of the elector
 		create elector number: nb_electors;
-		do creation_candidates;
+		do creation_candidates();
 	}
 	//Action to create the candidates according to the distribution of candidates
-	action creation_candidates {
+	action creation_candidates() {
 		switch distribution_candidates { 
 			match "Polygon" {
 				list<point> liste_points <- list(nb_candidates points_at 50.0);
@@ -129,7 +134,7 @@ global {
 	reflex resultats_finaux when: time = 72 {
 		candidate elected <- active_candidates with_max_of (each.percentage_vote);
 		//Display a window telling who is the winner and halt the model
-		do tell msg: "The winner is " + elected.name; 
+		do tell (msg: "The winner is " + elected.name); 
 		do pause;
 	}
 	
@@ -211,7 +216,7 @@ species elector skills: [moving]{
 		draw pyramid(2) color: color ;
 	} 
 	//Action to define the candidate
-	action definition_candidate {
+	action definition_candidate() {
 		//The candidate chosen is the one closest to the elector in the attraction range
 		my_candidate <- active_candidates with_min_of (self distance_to each);
 		my_candidate <- (self distance_to my_candidate < threshold_attraction_candidates) ? my_candidate : nil;
@@ -221,12 +226,12 @@ species elector skills: [moving]{
 		}
 	}
 	//Action to move the elector
-	action moving {
+	action moving() { 
 		//Make the agent move closer to another elector, representing the influence of this one
 		if ( rnd(100) > (weight_candidates)) {
 			elector my_elector <- shuffle(elector) first_with ((self distance_to each) < threshold_attraction_electors);
 			if (my_elector != nil) {
-				do goto target:my_elector speed: distance_traveled;
+				do goto (target:my_elector, speed: distance_traveled);
 			} 
 		} else {
 			//Move the elector closer to one of the candidate to represent its repulsion or attraction
@@ -234,9 +239,9 @@ species elector skills: [moving]{
 			if (the_candidate != nil) {
 				float dist <- self distance_to the_candidate;
 				if dist < threshold_attraction_candidates {
-					do goto target: the_candidate speed: distance_traveled;
+					do goto (target: the_candidate, speed: distance_traveled);
 				} else if dist > threshold_repulsion_candidates {
-					do goto target: location + location - the_candidate.location speed: distance_traveled;
+					do goto (target: location + location - the_candidate.location, speed: distance_traveled);
 				}
 			}
 		}
@@ -271,7 +276,7 @@ species candidate skills:[moving]{
 		}
 	}
 	//Action to move the candidate according to its strategy
-	action moving {
+	action moving() {
 		switch strategy_candidates {
 			match "No strategy" {}
 			match "Search electors" {do strategy_1;}
@@ -290,41 +295,41 @@ species candidate skills:[moving]{
 		}
 	}
 	
-	action strategy_1 {
+	action strategy_1() {
 		//go closer to electors
 		elector my_elector <- shuffle(elector) first_with ((self distance_to each) < threshold_attraction_electors);
 		if (my_elector != nil) {
-			do goto target:my_elector speed: distance_traveled;
+			do goto (target:my_elector, speed: distance_traveled);
 		} 
 	}
 	
-	action strategy_2 {
+	action strategy_2() {
 		//go in opposite directions to other candidates
 		list<candidate> cands <- list(copy(candidate));
 		remove self from: cands;
 		candidate the_candidate <- one_of(cands) ;
 		if (the_candidate != nil) {
-			do goto target: (location + location - the_candidate.location) speed: distance_traveled;	
+			do goto (target: (location + location - the_candidate.location), speed: distance_traveled);	
 		}
 	}
 	
-	action strategy_3 {
+	action strategy_3() {
 		//go closer to a group of electors
 		Group_electors mon_Group  <- (Group_electors where ((self distance_to each) < threshold_attraction_electors)) with_max_of (each.effectif);
 		if (mon_Group != nil) {
-			do goto target:mon_Group speed: distance_traveled;
+			do goto (target:mon_Group, speed: distance_traveled);
 		} 
 	}
 	
-	action strategy_4 {
+	action strategy_4() {
 		//go toward the candidate with max of votes
 		candidate the_candidate <- candidate with_max_of (percentage_vote) ;
 		if (the_candidate != nil) {
-			do goto target:the_candidate speed: distance_traveled;	
+			do goto (target:the_candidate, speed: distance_traveled);	
 		}
 	}
 	
-}
+} 
 
 
 experiment vote type: gui {

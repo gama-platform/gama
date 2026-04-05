@@ -1,6 +1,12 @@
 /**
-* Name: Mainxp
+* Name: Evacuation Phuc Xa
 * Author: Patrick Taillandier
+* Description: A realistic evacuation model based on the Phuc Xa neighborhood in Hanoi, Vietnam. Agents (people)
+*   must evacuate from the neighborhood using real GIS data including buildings, roads, intersections, and
+*   designated evacuation points. People navigate the road network to reach the nearest evacuation point.
+*   The model uses a custom scheduling strategy that orders people by their proximity to obstacles, demonstrating
+*   realistic crowd behavior during a flood evacuation scenario in a dense urban environment.
+* Tags: evacuation, gis, shapefile, road_network, urban, Vietnam, flood, emergency, agent_movement
 */
 
 model Mainxp
@@ -38,7 +44,7 @@ global schedules: people_ordered{
 	float change_road_lane_perimeters <- 0 #m;
 				
 	
-	list<moving_agent> people -> {(pedestrian as list) + (car as list) + (motorbike as list) + (bicycle as list)};
+	list<moving_agent> people -> (pedestrian as list) + (car as list) + (motorbike as list) + (bicycle as list);
 	
 	string model_description_1 <- "This model is an agent-based simulation developed to analyze mass evacuation strategies\n in a densely populated district exposed to flood risks (Phúc Xá, Hanoi)";
 	string model_description_2 <- "It is built using the GAMA platform and the ESCAPE framework, and specifically accounts\n for mixed and non-normative traffic types (pedestrians, motorbikes, bicycles, cars), reflecting the Vietnamese context";
@@ -230,7 +236,7 @@ species moving_agent skills: [driving] schedules:[] {
 		do reset_properties;
 	}
 	
-	action reset_properties {
+	action reset_properties() {
 		 politeness_factor <- politeness_factor_init ;
 		 vehicle_length <- vehicle_length_init;
 		 proba_use_linked_road <- proba_use_linked_road_init;
@@ -242,7 +248,7 @@ species moving_agent skills: [driving] schedules:[] {
 		proba_respect_priorities <- proba_respect_priorities_init;
 	}
 	
-	action to_park {
+	action to_park() {
 		proba_use_linked_road <- 0.0;
 	}
 	
@@ -268,7 +274,7 @@ species moving_agent skills: [driving] schedules:[] {
 		road_network <- road_network with_weights weights;
 	
 	}
-	action initialize {
+	action initialize() {
 		location <- (home.location);
 	
 		intersection current_node <- home.closest_intersection;
@@ -380,7 +386,7 @@ species moving_agent skills: [driving] schedules:[] {
 		}
 	}
 	
-	point compute_position {
+	point compute_position() {
 		// Shifts the position of the vehicle perpendicularly to the road,
 		// in order to visualize different lanes
 		if (current_road != nil) {
@@ -509,7 +515,7 @@ species motorbike parent: moving_agent schedules:[]{
 
 experiment main type: gui {
 	float minimum_cycle_duration <- 0.01;
-	action _init_ {
+	action _init_ (){
 		create simulation with: (alpha:1.0, beta:1.0, coeff_change_path:0.01, tj_threshold:0.75);
 	}
 	output {

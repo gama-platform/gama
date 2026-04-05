@@ -1,8 +1,11 @@
 /***
-* Name: BDItutorial1
+* Name: BDI Tutorial - Step 1 - Skeleton Gold Miner
 * Author: Mathieu Bourgais
-* Description: The skeleton model of the Goldminer BDI tutorial.
-* Tags: species
+* Description: First step of the BDI Gold Miner tutorial. Sets up the model skeleton: a market, mine
+*   sites, and miner agents that move randomly without any BDI logic yet. Introduces the basic species
+*   structure (market, mine, miner) and the environment used throughout all five tutorial steps. This is
+*   the starting point before adding BDI plans, social links, emotions, and norms.
+* Tags: simple_bdi, tutorial, gold_miner, species, skeleton, architecture
 ***/
 
 model BDItutorial1

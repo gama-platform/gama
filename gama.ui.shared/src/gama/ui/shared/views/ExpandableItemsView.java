@@ -21,9 +21,9 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
-import gama.core.common.interfaces.ItemList;
-import gama.core.runtime.GAMA;
-import gama.core.util.GamaColor;
+import gama.api.GAMA;
+import gama.api.types.color.IColor;
+import gama.api.ui.IItemList;
 import gama.ui.shared.controls.ParameterExpandBar;
 import gama.ui.shared.controls.ParameterExpandItem;
 import gama.ui.shared.resources.GamaColors.GamaUIColor;
@@ -37,7 +37,7 @@ import gama.ui.shared.views.toolbar.IToolbarDecoratedView;
  *            the generic type
  */
 public abstract class ExpandableItemsView<T> extends GamaViewPart
-		implements ItemList<T>, IToolbarDecoratedView.Expandable {
+		implements IItemList<T>, IToolbarDecoratedView.Expandable {
 
 	/** The viewer. */
 	private ParameterExpandBar viewer;
@@ -268,7 +268,7 @@ public abstract class ExpandableItemsView<T> extends GamaViewPart
 	}
 
 	@Override
-	public GamaColor getItemDisplayColor(final T o) {
+	public IColor getItemDisplayColor(final T o) {
 		return null;
 	}
 

@@ -1,8 +1,12 @@
 /**
-* Name: generate_environment
+* Name: Download Spatial Data (OSM and Images)
 * Author: Patrick Taillandier
-* Description: Demonstrates how to import data from OSM, Bing and google map to generate geographical data. More precisely, the model allows from a shapefile giving the area of the study area to download all the OSM data on this area, to vectorize the buildings and the points of interest from google map data and to download a Bing satellite image of the area.
-* Tags: data_loading, OSM, Google Map, Bing, shapefile
+* Description: Demonstrates how to automatically download and prepare a complete geographic environment from online
+*   sources. Starting from a shapefile defining the study area, the model downloads: (1) all OpenStreetMap vector
+*   data within the bounding box (roads, buildings, points of interest, land use, etc.); (2) building outlines and
+*   points of interest vectorized from Google Map imagery; and (3) a Bing Maps satellite image of the area for
+*   use as a background layer. The downloaded data is saved locally and used to populate the simulation environment.
+* Tags: data_loading, OSM, openstreetmap, google_map, bing, shapefile, satellite, download, web, import, spatial
 */
 model download_spatial_data
 
@@ -262,7 +266,7 @@ global {
 				list<geometry> geom_markers <- generate_geoms(cells_type);
 							
 				//create the marker agents
-				create marker from: geom_markers with: [type::type];
+				create marker from: geom_markers with: (type:type);
 				float min_area <- marker mean_of each.shape.area;
 								
 				ask marker {	
@@ -426,7 +430,7 @@ species Boundary {
 }
 
 experiment downloadGISdata type: gui autorun: true{
-	action _init_ {
+	action _init_ (){
 		bool pref_gis <- gama.pref_gis_auto_crs ;
 		int crs <- gama.pref_gis_default_crs;
 	

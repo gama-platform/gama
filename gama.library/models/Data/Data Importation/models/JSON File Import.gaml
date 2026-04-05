@@ -1,8 +1,13 @@
 /**
-* Name: JSON File Loading
-* Author:  Arnaud Grignard
-* Description: Initialize a grid from a JSON FIle. 
-* Tags:  load_file, grid, json
+* Name: JSON File Import
+* Author: Arnaud Grignard
+* Description: Shows how to load a JSON file in GAMA and use its structured contents to initialize a grid.
+*   JSON (JavaScript Object Notation) is a widely used lightweight data format for hierarchical and nested data.
+*   GAMA reads JSON files via the 'json_file' operator, producing a map<string, unknown> that mirrors the JSON
+*   object hierarchy. Array values become lists, nested objects become nested maps. The model reads a CityIO
+*   JSON payload, extracts the grid data from it, and uses the cell type information to set the color and
+*   attributes of grid cells.
+* Tags: load_file, grid, json, data, import, map, hierarchical
 */
 
 model json_loading   

@@ -1,15 +1,16 @@
 /*******************************************************************************************************
  *
- * ChartJFreeChartOutputBoxAndWhiskerCategory.java, in gama.core, is part of the source code of the GAMA modeling
- * and simulation platform .
+ * ChartJFreeChartOutputBoxAndWhiskerCategory.java, in gama.core, is part of the source code of the GAMA modeling and
+ * simulation platform (v.2025-03).
  *
- * (c) 2007-2024 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, TLU, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
  ********************************************************************************************************/
 package gama.core.outputs.layers.charts;
 
+import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
 
@@ -25,7 +26,6 @@ import org.jfree.chart.entity.CategoryItemEntity;
 import org.jfree.chart.entity.ChartEntity;
 import org.jfree.chart.entity.PieSectionEntity;
 import org.jfree.chart.entity.XYItemEntity;
-import org.jfree.chart.labels.StandardCategoryItemLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.AbstractRenderer;
@@ -37,12 +37,13 @@ import org.jfree.data.statistics.BoxAndWhiskerItem;
 import org.jfree.data.statistics.DefaultBoxAndWhiskerCategoryDataset;
 import org.jfree.data.xy.XYDataset;
 
-import gama.core.common.interfaces.IDisplaySurface;
-import gama.core.common.interfaces.IKeyword;
-import gama.core.common.preferences.GamaPreferences;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.gaml.expressions.IExpression;
+import gama.annotations.constants.IKeyword;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.IColor;
+import gama.api.ui.displays.IChartDataSource;
+import gama.api.ui.displays.IDisplaySurface;
 
 /**
  * The Class ChartJFreeChartOutputHistogram.
@@ -64,19 +65,19 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 	 * @param flat
 	 *            the flat
 	 */
-//	public static void enableFlatLook(final boolean flat) {
-//		/*
-//		 * if (flat) { BoxAndWhiskerRenderer.setDefaultBarPainter(new StandardBarPainter());
-//		 * BoxAndWhiskerRenderer.setDefaultShadowsVisible(false); } else {
-//		 * BoxAndWhiskerRenderer.setDefaultBarPainter(new GradientBarPainter());
-//		 * BoxAndWhiskerRenderer.setDefaultShadowsVisible(true); }
-//		 */
-//	}
-//
-//	static {
-//		enableFlatLook(GamaPreferences.Displays.CHART_FLAT.getValue());
-//		GamaPreferences.Displays.CHART_FLAT.onChange(ChartJFreeChartOutputBoxAndWhiskerCategory::enableFlatLook);
-//	}
+	// public static void enableFlatLook(final boolean flat) {
+	// /*
+	// * if (flat) { BoxAndWhiskerRenderer.setDefaultBarPainter(new StandardBarPainter());
+	// * BoxAndWhiskerRenderer.setDefaultShadowsVisible(false); } else {
+	// * BoxAndWhiskerRenderer.setDefaultBarPainter(new GradientBarPainter());
+	// * BoxAndWhiskerRenderer.setDefaultShadowsVisible(true); }
+	// */
+	// }
+	//
+	// static {
+	// enableFlatLook(GamaPreferences.Displays.CHART_FLAT.getValue());
+	// GamaPreferences.Displays.CHART_FLAT.onChange(ChartJFreeChartOutputBoxAndWhiskerCategory::enableFlatLook);
+	// }
 
 	/**
 	 * Instantiates a new chart J free chart output box and whisker category.
@@ -113,13 +114,13 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 	}
 
 	@Override
-	public void setDefaultPropertiesFromType(final IScope scope, final ChartDataSource source, final int type_val) {
+	public void setDefaultPropertiesFromType(final IScope scope, final IChartDataSource source, final int type_val) {
 
 		source.setUseXErrValues(false);
-		source.setUseYErrValues(false);
+		source.setUseXErrValues(false);
 		source.setisBoxAndWhiskerData(true);
 		switch (type_val) {
-			case ChartDataSource.DATA_TYPE_LIST_DOUBLE_N, ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N, ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12, ChartDataSource.DATA_TYPE_LIST_POINT, ChartDataSource.DATA_TYPE_MATRIX_DOUBLE, ChartDataSource.DATA_TYPE_LIST_DOUBLE_3, ChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3: {
+			case IChartDataSource.DATA_TYPE_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_N, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_12, IChartDataSource.DATA_TYPE_LIST_POINT, IChartDataSource.DATA_TYPE_MATRIX_DOUBLE, IChartDataSource.DATA_TYPE_LIST_DOUBLE_3, IChartDataSource.DATA_TYPE_LIST_LIST_DOUBLE_3: {
 				source.setCumulative(scope, false);
 				source.setUseSize(scope, false);
 				break;
@@ -132,7 +133,6 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		}
 
 	}
-
 
 	@Override
 	protected AbstractRenderer createRenderer(final IScope scope, final String serieid) {
@@ -158,7 +158,7 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 			// DEBUG.LOG("pb!!!");
 		} else {
 			final int myrow = idPosition.get(serieid);
-			if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, myserie.getMycolor()); }
+			if (myserie.getMycolor() != null) { newr.setSeriesPaint(myrow, IColor.toAWTColor(myserie.getMycolor())); }
 
 		}
 
@@ -272,17 +272,18 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		resetDomainAxis(scope);
 
 		final CategoryAxis domainAxis = ((CategoryPlot) this.chart.getPlot()).getDomainAxis();
-
-		pp.setDomainGridlinePaint(axesColor);
-		pp.setRangeGridlinePaint(axesColor);
+		Color ac = axesColor == null ? null : IColor.toAWTColor(axesColor);
+		pp.setDomainGridlinePaint(ac);
+		pp.setRangeGridlinePaint(ac);
 		pp.setRangeCrosshairVisible(true);
 
-		pp.getRangeAxis().setAxisLinePaint(axesColor);
+		pp.getRangeAxis().setAxisLinePaint(ac);
 		pp.getRangeAxis().setLabelFont(getLabelFont());
 		pp.getRangeAxis().setTickLabelFont(getTickFont());
 		if (textColor != null) {
-			pp.getRangeAxis().setLabelPaint(textColor);
-			pp.getRangeAxis().setTickLabelPaint(textColor);
+			Color tc = IColor.toAWTColor(textColor);
+			pp.getRangeAxis().setLabelPaint(tc);
+			pp.getRangeAxis().setTickLabelPaint(tc);
 		}
 		if (getYTickUnit(scope) > 0) {
 			((NumberAxis) pp.getRangeAxis()).setTickUnit(new NumberTickUnit(getYTickUnit(scope)));
@@ -330,15 +331,16 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 			final SubCategoryAxis newAxis = new SubCategoryAxis(pp.getDomainAxis().getLabel());
 			pp.setDomainAxis(newAxis);
 		}
-
-		pp.getDomainAxis().setAxisLinePaint(axesColor);
+		Color ac = axesColor == null ? null : IColor.toAWTColor(axesColor);
+		pp.getDomainAxis().setAxisLinePaint(ac);
 		pp.getDomainAxis().setTickLabelFont(getTickFont());
 		pp.getDomainAxis().setLabelFont(getLabelFont());
 		if (textColor != null) {
-			pp.getDomainAxis().setLabelPaint(textColor);
-			pp.getDomainAxis().setTickLabelPaint(textColor);
+			Color tc = IColor.toAWTColor(textColor);
+			pp.getDomainAxis().setLabelPaint(tc);
+			pp.getDomainAxis().setTickLabelPaint(tc);
 			if (XAXIS.equals(this.series_label_position)) {
-				((SubCategoryAxis) pp.getDomainAxis()).setSubLabelPaint(textColor);
+				((SubCategoryAxis) pp.getDomainAxis()).setSubLabelPaint(tc);
 			}
 		}
 
@@ -405,18 +407,19 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 			// legend is useless, but I find it nice anyway... Could put back...
 		}
 		this.resetDomainAxis(scope);
-
-		pp.setDomainGridlinePaint(axesColor);
-		pp.setRangeGridlinePaint(axesColor);
+		Color ac = axesColor == null ? null : IColor.toAWTColor(axesColor);
+		pp.setDomainGridlinePaint(ac);
+		pp.setRangeGridlinePaint(ac);
 		if (!this.getXTickLineVisible(scope)) { pp.setDomainGridlinesVisible(false); }
 		if (!this.getYTickLineVisible(scope)) { pp.setRangeGridlinesVisible(false); }
 		pp.setRangeCrosshairVisible(true);
-		pp.getRangeAxis().setAxisLinePaint(axesColor);
+		pp.getRangeAxis().setAxisLinePaint(ac);
 		pp.getRangeAxis().setLabelFont(getLabelFont());
 		pp.getRangeAxis().setTickLabelFont(getTickFont());
 		if (textColor != null) {
-			pp.getRangeAxis().setLabelPaint(textColor);
-			pp.getRangeAxis().setTickLabelPaint(textColor);
+			Color tc = IColor.toAWTColor(textColor);
+			pp.getRangeAxis().setLabelPaint(tc);
+			pp.getRangeAxis().setTickLabelPaint(tc);
 		}
 		if (ytickunit > 0) { ((NumberAxis) pp.getRangeAxis()).setTickUnit(new NumberTickUnit(ytickunit)); }
 
@@ -428,10 +431,11 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 
 		if (xlabel != null && !xlabel.isEmpty()) { pp.getDomainAxis().setLabel(xlabel); }
 		if (textColor != null) {
-			pp.getDomainAxis().setLabelPaint(textColor);
-			pp.getDomainAxis().setTickLabelPaint(textColor);
+			Color tc = IColor.toAWTColor(textColor);
+			pp.getDomainAxis().setLabelPaint(tc);
+			pp.getDomainAxis().setTickLabelPaint(tc);
 			if (XAXIS.equals(this.series_label_position)) {
-				((SubCategoryAxis) pp.getDomainAxis()).setSubLabelPaint(textColor);
+				((SubCategoryAxis) pp.getDomainAxis()).setSubLabelPaint(tc);
 			}
 		}
 	}
@@ -454,38 +458,44 @@ public class ChartJFreeChartOutputBoxAndWhiskerCategory extends ChartJFreeChartO
 		final int y = yOnScreen - positionInPixels.y;
 		final ChartEntity entity = info.getEntityCollection().getEntity(x, y);
 		// getChart().handleClick(x, y, info);
-		if (entity instanceof XYItemEntity xyie) {
-			final XYDataset data = xyie.getDataset();
-			final int index = xyie.getItem();
-			final int series = xyie.getSeriesIndex();
-			final double xx = data.getXValue(series, index);
-			final double yy = data.getYValue(series, index);
-			final XYPlot plot = (XYPlot) getJFChart().getPlot();
-			final ValueAxis xAxis = plot.getDomainAxis(series);
-			final ValueAxis yAxis = plot.getRangeAxis(series);
-			final boolean xInt = xx % 1 == 0;
-			final boolean yInt = yy % 1 == 0;
-			String xTitle = xAxis.getLabel();
-			if (StringUtils.isBlank(xTitle)) { xTitle = "X"; }
-			String yTitle = yAxis.getLabel();
-			if (StringUtils.isBlank(yTitle)) { yTitle = "Y"; }
-			sb.append(xTitle).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-			sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
-		} else if (entity instanceof PieSectionEntity pie) {
-			final String title = pie.getSectionKey().toString();
-			final PieDataset data = pie.getDataset();
-			final int index = pie.getSectionIndex();
-			final double xx = data.getValue(index).doubleValue();
-			final boolean xInt = xx % 1 == 0;
-			sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
-		} else if (entity instanceof CategoryItemEntity cie) {
-			final Comparable<?> columnKey = cie.getColumnKey();
-			final String title = columnKey.toString();
-			final CategoryDataset data = cie.getDataset();
-			final Comparable<?> rowKey = cie.getRowKey();
-			final double xx = data.getValue(rowKey, columnKey).doubleValue();
-			final boolean xInt = xx % 1 == 0;
-			sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+		switch (entity) {
+			case XYItemEntity xyie -> {
+				final XYDataset data = xyie.getDataset();
+				final int index = xyie.getItem();
+				final int series = xyie.getSeriesIndex();
+				final double xx = data.getXValue(series, index);
+				final double yy = data.getYValue(series, index);
+				final XYPlot plot = (XYPlot) getJFChart().getPlot();
+				final ValueAxis xAxis = plot.getDomainAxis(series);
+				final ValueAxis yAxis = plot.getRangeAxis(series);
+				final boolean xInt = xx % 1 == 0;
+				final boolean yInt = yy % 1 == 0;
+				String xTitle = xAxis.getLabel();
+				if (StringUtils.isBlank(xTitle)) { xTitle = "X"; }
+				String yTitle = yAxis.getLabel();
+				if (StringUtils.isBlank(yTitle)) { yTitle = "Y"; }
+				sb.append(xTitle).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+				sb.append(" | ").append(yTitle).append(" ").append(yInt ? (int) yy : String.format("%.2f", yy));
+			}
+			case PieSectionEntity pie -> {
+				final String title = pie.getSectionKey().toString();
+				final PieDataset data = pie.getDataset();
+				final int index = pie.getSectionIndex();
+				final double xx = data.getValue(index).doubleValue();
+				final boolean xInt = xx % 1 == 0;
+				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+			}
+			case CategoryItemEntity cie -> {
+				final Comparable<?> columnKey = cie.getColumnKey();
+				final String title = columnKey.toString();
+				final CategoryDataset data = cie.getDataset();
+				final Comparable<?> rowKey = cie.getRowKey();
+				final double xx = data.getValue(rowKey, columnKey).doubleValue();
+				final boolean xInt = xx % 1 == 0;
+				sb.append(title).append(" ").append(xInt ? (int) xx : String.format("%.2f", xx));
+			}
+			case null, default -> {
+			}
 		}
 	}
 

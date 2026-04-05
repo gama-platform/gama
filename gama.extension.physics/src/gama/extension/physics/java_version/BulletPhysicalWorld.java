@@ -12,6 +12,9 @@ package gama.extension.physics.java_version;
 
 import javax.vecmath.Vector3f;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.bulletphysics.BulletGlobals;
 import com.bulletphysics.collision.broadphase.BroadphaseInterface;
 import com.bulletphysics.collision.broadphase.DbvtBroadphase;
@@ -26,8 +29,8 @@ import com.bulletphysics.dynamics.RigidBody;
 import com.bulletphysics.dynamics.constraintsolver.SequentialImpulseConstraintSolver;
 import com.google.common.collect.Multimap;
 
-import gama.core.metamodel.agent.IAgent;
-import gama.core.metamodel.shape.GamaPoint;
+import gama.api.kernel.agent.IAgent;
+import gama.api.types.geometry.IPoint;
 import gama.extension.physics.common.AbstractPhysicalWorld;
 import gama.extension.physics.common.IBody;
 import gama.extension.physics.common.IShapeConverter;
@@ -44,6 +47,12 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 
 	/** The dispatcher. */
 	private final CollisionDispatcher dispatcher = new CollisionDispatcher(config);
+
+	/**
+	 * Local list of all registered dynamic (non-static) body wrappers. Maintained alongside the physics world to avoid
+	 * iterating the full collision object array on every call to {@link #updatePositionsAndRotations()}.
+	 */
+	private final List<BulletBodyWrapper> dynamicBodies = new ArrayList<>();
 
 	/**
 	 * Instantiates a new bullet physical world.
@@ -81,12 +90,14 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 		BulletBodyWrapper body = new BulletBodyWrapper(agent, this);
 		getWorld().addRigidBody(body.getBody());
 		body.setCCD(simulation.getCCD(simulation.getScope()));
+		if (!body.isStatic) { dynamicBodies.add(body); }
 	}
 
 	@Override
 	public void unregisterAgent(final IAgent agent) {
 		BulletBodyWrapper b = (BulletBodyWrapper) agent.getAttribute(BODY);
 		getWorld().removeRigidBody(b.getBody());
+		dynamicBodies.remove(b);
 	}
 
 	@Override
@@ -118,16 +129,19 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 	@Override
 	public void setCCD(final boolean ccd) {
 		if (world != null) {
-			world.getCollisionObjectArray().forEach(b -> {
-				if (b.isStaticObject()) return;
+			var objects = world.getCollisionObjectArray();
+			int n = objects.size();
+			for (int i = 0; i < n; i++) {
+				var b = objects.getQuick(i);
+				if (b.isStaticObject()) continue;
 				Object o = b.getUserPointer();
 				if (o instanceof IBody) { ((IBody) o).setCCD(ccd); }
-			});
+			}
 		}
 	}
 
 	@Override
-	public void setGravity(final GamaPoint g) {
+	public void setGravity(final IPoint g) {
 		if (world != null) { world.setGravity(toVector(g)); }
 	}
 
@@ -137,16 +151,17 @@ public class BulletPhysicalWorld extends AbstractPhysicalWorld<DiscreteDynamicsW
 			world.destroy();
 			world = null;
 		}
+		dynamicBodies.clear();
 		BulletGlobals.cleanCurrentThread();
 	}
 
 	@Override
 	public void updatePositionsAndRotations() {
-		world.getCollisionObjectArray().forEach(b -> {
-			RigidBody rb = (RigidBody) b;
-			IBody bw = (IBody) rb.getUserPointer();
-			if (rb.isActive() && !rb.isStaticObject()) { bw.transferLocationAndRotationToAgent(); }
-		});
+		int n = dynamicBodies.size();
+		for (int i = 0; i < n; i++) {
+			BulletBodyWrapper bw = dynamicBodies.get(i);
+			if (bw.body.isActive()) { bw.transferLocationAndRotationToAgent(); }
+		}
 	}
 
 }

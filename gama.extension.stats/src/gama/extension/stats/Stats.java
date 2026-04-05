@@ -3,7 +3,7 @@
  * Stats.java, in gama.extension.stats, is part of the source code of the GAMA modeling and simulation platform
  * (v.2025-03).
  *
- * (c) 2007-2025 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
  *
  * Visit https://github.com/gama-platform/gama for license information and contacts.
  *
@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-import org.apache.commons.compress.utils.FileNameUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.Cluster;
 import org.apache.commons.math3.ml.clustering.DBSCANClusterer;
@@ -37,39 +37,41 @@ import cern.jet.math.Arithmetic;
 import cern.jet.stat.Descriptive;
 import cern.jet.stat.Gamma;
 import cern.jet.stat.Probability;
-import gama.annotations.precompiler.GamlAnnotations.doc;
-import gama.annotations.precompiler.GamlAnnotations.example;
-import gama.annotations.precompiler.GamlAnnotations.no_test;
-import gama.annotations.precompiler.GamlAnnotations.operator;
-import gama.annotations.precompiler.GamlAnnotations.test;
-import gama.annotations.precompiler.GamlAnnotations.usage;
-import gama.annotations.precompiler.IConcept;
-import gama.annotations.precompiler.IOperatorCategory;
-import gama.annotations.precompiler.ITypeProvider;
-import gama.core.common.util.FileUtils;
-import gama.core.common.util.StringUtils;
-import gama.core.kernel.batch.exploration.morris.Morris;
-import gama.core.kernel.batch.exploration.sobol.Sobol;
-import gama.core.kernel.batch.exploration.stochanalysis.Stochanalysis;
-import gama.core.metamodel.shape.GamaPoint;
-import gama.core.runtime.IScope;
-import gama.core.runtime.exceptions.GamaRuntimeException;
-import gama.core.util.Collector;
-import gama.core.util.GamaColor;
-import gama.core.util.GamaListFactory;
-import gama.core.util.GamaMapFactory;
-import gama.core.util.IContainer;
-import gama.core.util.IList;
-import gama.core.util.IMap;
+import gama.annotations.doc;
+import gama.annotations.example;
+import gama.annotations.no_test;
+import gama.annotations.operator;
+import gama.annotations.test;
+import gama.annotations.usage;
+import gama.annotations.support.IConcept;
+import gama.annotations.support.IOperatorCategory;
+import gama.annotations.support.ITypeProvider;
+import gama.api.annotations.validator;
+import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.expressions.IExpression;
+import gama.api.gaml.types.Cast;
+import gama.api.gaml.types.IType;
+import gama.api.gaml.types.Types;
+import gama.api.runtime.scope.IScope;
+import gama.api.types.color.GamaColorFactory;
+import gama.api.types.color.IColor;
+import gama.api.types.geometry.GamaPointFactory;
+import gama.api.types.geometry.IPoint;
+import gama.api.types.list.GamaListFactory;
+import gama.api.types.list.IList;
+import gama.api.types.map.GamaMapFactory;
+import gama.api.types.map.IMap;
+import gama.api.types.matrix.IMatrix;
+import gama.api.types.misc.IContainer;
+import gama.api.utils.StringUtils;
+import gama.api.utils.collections.Collector;
+import gama.api.utils.files.FileUtils;
+import gama.core.experiment.batch.exploration.Morris;
+import gama.core.experiment.batch.exploration.Sobol;
+import gama.core.experiment.batch.exploration.Stochanalysis;
 import gama.core.util.matrix.GamaField;
-import gama.core.util.matrix.GamaMatrix;
-import gama.gaml.compilation.annotations.validator;
-import gama.gaml.expressions.IExpression;
-import gama.gaml.operators.Cast;
 import gama.gaml.operators.Containers;
 import gama.gaml.operators.Containers.ComparableValidator;
-import gama.gaml.types.IType;
-import gama.gaml.types.Types;
 
 /**
  * Written by drogoul Modified on 15 janv. 2011
@@ -1616,13 +1618,13 @@ public class Stats {
 	public static Object opMax(final IScope scope, final IContainer l) {
 		if (l instanceof GamaField) return ((GamaField) l).getMinMax()[1];
 		Number maxNum = null;
-		GamaPoint maxPoint = null;
+		IPoint maxPoint = null;
 		for (final Object o : l.iterable(scope)) {
-			if (o instanceof GamaPoint && maxNum == null) {
-				if (maxPoint == null || ((GamaPoint) o).compareTo(maxPoint) > 0) { maxPoint = (GamaPoint) o; }
-			} else if (o instanceof Number && maxPoint == null
-					&& (maxNum == null || ((Number) o).doubleValue() > maxNum.doubleValue())) {
-				maxNum = (Number) o;
+			if (o instanceof IPoint ip && maxNum == null) {
+				if (maxPoint == null || ip.compareTo(maxPoint) > 0) { maxPoint = ip; }
+			} else if (o instanceof Number n && maxPoint == null
+					&& (maxNum == null || n.doubleValue() > maxNum.doubleValue())) {
+				maxNum = n;
 			} else {
 				final Double d = Cast.asFloat(scope, o);
 				if (maxNum == null || d > maxNum.doubleValue()) { maxNum = d; }
@@ -1701,25 +1703,26 @@ public class Stats {
 				final DataSet y = new DataSet();
 				final DataSet z = new DataSet();
 				for (final Object o : values.iterable(scope)) {
-					final GamaPoint p = (GamaPoint) o;
+					final IPoint p = (IPoint) o;
 					x.addValue(p.getX());
 					y.addValue(p.getY());
 					z.addValue(p.getZ());
 				}
-				if (x.getSize() == 0) return new GamaPoint(0, 0, 0);
-				return new GamaPoint(x.getMedian(), y.getMedian(), z.getMedian());
+				if (x.getSize() == 0) return GamaPointFactory.create(0, 0, 0);
+				return GamaPointFactory.create(x.getMedian(), y.getMedian(), z.getMedian());
 			case IType.COLOR:
 				final DataSet r = new DataSet();
 				final DataSet g = new DataSet();
 				final DataSet b = new DataSet();
 				for (final Object o : values.iterable(scope)) {
-					final GamaColor p = (GamaColor) o;
-					r.addValue(p.getRed());
-					g.addValue(p.getGreen());
-					b.addValue(p.getBlue());
+					final IColor p = (IColor) o;
+					r.addValue(p.red());
+					g.addValue(p.green());
+					b.addValue(p.blue());
 				}
-				if (r.getSize() == 0) return GamaColor.get(0, 0, 0, 0);
-				return GamaColor.get((int) r.getMedian(), (int) g.getMedian(), (int) b.getMedian(), 0);
+				if (r.getSize() == 0) return GamaColorFactory.createWithRGBA(0, 0, 0, 0);
+				return GamaColorFactory.createWithRGBA((int) r.getMedian(), (int) g.getMedian(), (int) b.getMedian(),
+						0);
 			default:
 				final DataSet d = new DataSet();
 				for (final Object o : values.iterable(scope)) { d.addValue(Cast.asFloat(scope, o)); }
@@ -1783,13 +1786,13 @@ public class Stats {
 	public static Object opMin(final IScope scope, final IContainer l) {
 		if (l instanceof GamaField) return ((GamaField) l).getMinMax()[0];
 		Number minNum = null;
-		GamaPoint minPoint = null;
+		IPoint minPoint = null;
 		for (final Object o : l.iterable(scope)) {
-			if (o instanceof GamaPoint && minNum == null) {
-				if (minPoint == null || ((GamaPoint) o).compareTo(minPoint) < 0) { minPoint = (GamaPoint) o; }
-			} else if (o instanceof Number && minPoint == null
-					&& (minNum == null || ((Number) o).doubleValue() < minNum.doubleValue())) {
-				minNum = (Number) o;
+			if (o instanceof IPoint ip && minNum == null) {
+				if (minPoint == null || ip.compareTo(minPoint) < 0) { minPoint = ip; }
+			} else if (o instanceof Number n && minPoint == null
+					&& (minNum == null || n.doubleValue() < minNum.doubleValue())) {
+				minNum = n;
 			} else {
 				final Double d = Cast.asFloat(scope, o);
 				if (minNum == null || d < minNum.doubleValue()) { minNum = d; }
@@ -2009,12 +2012,11 @@ public class Stats {
 		final DataSet x = new DataSet();
 		DataSet y = null, z = null;
 		for (final Object o : l.iterable(scope)) {
-			if (o instanceof GamaPoint) {
+			if (o instanceof final IPoint p) {
 				if (y == null) {
 					y = new DataSet();
 					z = new DataSet();
 				}
-				final GamaPoint p = (GamaPoint) o;
 				x.addValue(p.getX());
 				y.addValue(p.getY());
 				z.addValue(p.getZ());
@@ -2024,10 +2026,10 @@ public class Stats {
 		}
 		if (x.getSize() == 0) {
 			if (y == null) return 0.0;
-			return new GamaPoint(0, 0, 0);
+			return GamaPointFactory.create(0, 0, 0);
 		}
 		if (y == null) return x.getProduct();
-		return new GamaPoint(x.getProduct(), y.getProduct(), z.getProduct());
+		return GamaPointFactory.create(x.getProduct(), y.getProduct(), z.getProduct());
 	}
 
 	/**
@@ -2249,7 +2251,7 @@ public class Stats {
 					value = "build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0]]))",
 					isExecutable = false) })
 	@test ("build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0],[5.0,1.0,3.0,5.0],[3.0,4.0,5.0,1.0]])).parameters collect (each with_precision 5) = [0.5,2.5,0.0,-1.5]")
-	public static GamaRegression opRegression(final IScope scope, final GamaMatrix data) throws GamaRuntimeException {
+	public static GamaRegression opRegression(final IScope scope, final IMatrix data) throws GamaRuntimeException {
 		try {
 			return new GamaRegression(scope, data);
 		} catch (final Exception e) {
@@ -2333,7 +2335,7 @@ public class Stats {
 		Sobol sob = new Sobol(f, nb_parameters, scope);
 		sob.evaluate();
 		sob.saveResult(f_report);
-		return sob.buildReportString(FileNameUtils.getExtension(f_report.getPath()));
+		return sob.buildReportString(FilenameUtils.getExtension(f_report.getPath()));
 	}
 
 	/**
@@ -2365,7 +2367,7 @@ public class Stats {
 		final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
 		Morris momo = new Morris(f, nb_parameters, nb_levels, scope);
 		momo.evaluate();
-		return momo.buildReportString(FileNameUtils.getExtension(path));
+		return momo.buildReportString(FilenameUtils.getExtension(path));
 
 	}
 
