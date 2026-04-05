@@ -17,7 +17,7 @@ global {
 			do initialize(10,10);
 		}
 		ask child {
-			do add;
+			do add();
 		}
 	}
 }

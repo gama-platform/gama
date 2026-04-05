@@ -12,11 +12,11 @@ model MapUsageExamples
 
 global {
 	init {
-		do basic_usage;
-		do modification_examples;
-		do iteration_examples;
-		do advanced_usage;
-		do agent_usage;
+		do basic_usage();
+		do modification_examples();
+		do iteration_examples();
+		do advanced_usage();
+		do agent_usage();
 	}
 	
 	action basic_usage() {

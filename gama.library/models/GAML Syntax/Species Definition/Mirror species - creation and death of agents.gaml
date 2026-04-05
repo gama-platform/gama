@@ -32,7 +32,7 @@ global {
   	// Similarly when an agent A is killed, the corresponding mirror agent is killed 
   	// (this is done only at the end of the simulation step).
   	reflex update_population when: (length(A) >= nb_agent) and with_respawn {
-  		ask one_of(A) {do die;}
+  		ask one_of(A) {do die();}
   		create A;  		
   	}
 }
@@ -41,7 +41,7 @@ species A skills:[moving]{
 	float opinion <- rnd(1.0);
 	
     reflex move {
-        do wander;
+        do wander();
     }
 
     reflex opinion_influence {
