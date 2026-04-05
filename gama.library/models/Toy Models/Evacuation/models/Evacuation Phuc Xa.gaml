@@ -55,7 +55,7 @@ global schedules: people_ordered{
 	
 	init {
 		create intersection from: intersections_shape_file;
-		create building from: buildings_shape_file with: (num_car: int(get(("car"))),num_moto: int(get(("moto"))),num_bicycle: int(get(("bicycle"))),num_pedestrian: int(get(("pedest"))), urban_block_id:int(get("block")));
+		create building (num_car: int(get(("car"))),num_moto: int(get(("moto"))),num_bicycle: int(get(("bicycle"))),num_pedestrian: int(get(("pedest"))), urban_block_id:int(get("block")))  from: buildings_shape_file ;
 		create evacuation_point from: evacuation_shape_file {
 			closest_intersection <- intersection[inters];
 			closest_intersection.evacuation <- self;
@@ -102,16 +102,16 @@ global schedules: people_ordered{
 		
 		ask building {
 			if num_bicycle > 0 {
-				create bicycle number: num_bicycle with: (home:self);
+				create bicycle(home:self) number: num_bicycle ;
 			}
 			if num_car > 0 {
-				create car number: num_car with: (home:self);
+				create car(home:self) number: num_car ;
 			}
 			if num_moto > 0 {
-				create motorbike number: num_moto with: (home:self);
+				create motorbike(home:self) number: num_moto ;
 			}
 			if num_pedestrian > 0 {
-				create pedestrian number: num_pedestrian with: (home:self);
+				create pedestrian(home:self) number: num_pedestrian ;
 			}
 		}
 		
@@ -138,7 +138,7 @@ global schedules: people_ordered{
 	}
 	
 	reflex end_sim when:  empty(people) or  time > 15000{
-		do pause;
+		do pause();
 	}
 
 }
@@ -233,7 +233,7 @@ species moving_agent skills: [driving] schedules:[] {
 	
 	int zone_target;
 	init {
-		do reset_properties;
+		do reset_properties();
 	}
 	
 	action reset_properties() {
@@ -284,7 +284,7 @@ species moving_agent skills: [driving] schedules:[] {
 		color <-evac_pt.color;
 		target_node <- evac_pt.closest_intersection;
 		if current_node = target_node {
-			do die;
+			do die();
 		}
 		do compute_path_traffic_jam(current_node);
 	 		
@@ -311,7 +311,7 @@ species moving_agent skills: [driving] schedules:[] {
 		
 	if (species(self) != car) and (new_road.traffic_jam) and flip(coeff_change_path *  (self distance_to evac_pt)) and length(intersection(new_road.source_node).roads_out ) > 1 and (new_road.target_node != evac_pt.closest_intersection) {
 			if (current_road != nil) {
-				do unregister;
+				do unregister();
 				
 			}
 			do choose_evacuation_point(current_node);
@@ -330,24 +330,24 @@ species moving_agent skills: [driving] schedules:[] {
 	action arrived(evacuation_point evac) {
 		evac.nb_arrived[string(species(self))] <- evac.nb_arrived[string(species(self))] + 1;
 		if current_road != nil {
-			do unregister;
+			do unregister();
 			
 		}
-		do die;
+		do die();
 	}
 	
 	reflex time_to_leave when: not leave and  time > evacuation_time {
 		leave <- true;
 		leaving_date <- copy(current_date);
-		do initialize;
+		do initialize();
 	}
 	reflex move_to_target when:leave and (final_target != nil ) {
-		do drive;
+		do drive();
 		if parked {
 			if real_speed > 0.0 {
 				parked <- false;
 				time_stuck <- 0.0;
-				do reset_properties;
+				do reset_properties();
 			}
 		} else if time_before_parking > 0.0 {
 			if (real_speed = 0.0) and using_linked_road  and (moving_agent(leading_vehicle) != nil ) and not dead(leading_vehicle) and not moving_agent(leading_vehicle).using_linked_road and (moving_agent(leading_vehicle).vehicle_length_init >= vehicle_length_init){
@@ -357,7 +357,7 @@ species moving_agent skills: [driving] schedules:[] {
 			}
 			if (time_stuck > time_before_parking ) {
 				parked <- true;
-				do to_park;
+				do to_park();
 				do force_move(road(current_road).num_lanes - 1,max_acceleration,step);
 			}
 		}
@@ -515,9 +515,11 @@ species motorbike parent: moving_agent schedules:[]{
 
 experiment main type: gui {
 	float minimum_cycle_duration <- 0.01;
+	
 	action _init_ (){
-		create simulation with: (alpha:1.0, beta:1.0, coeff_change_path:0.01, tj_threshold:0.75);
+		create simulation(alpha:1.0, beta:1.0, coeff_change_path:0.01, tj_threshold:0.75);
 	}
+	
 	output {
 		layout  tabs:false editors: false consoles: false navigator: false;
 		display map type: opengl axes: false background: #black{
