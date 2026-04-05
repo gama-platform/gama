@@ -278,6 +278,7 @@ public class ModelFactory implements IModelFactory {
 		// hqnghi add micro-models
 		if (mm != null) {
 			// model.setMicroModels(mm);
+			mm.forEach((k, v) -> v.setAlias(k));
 			model.addChildren(mm.values());
 		}
 		// end-hqnghi
@@ -292,7 +293,16 @@ public class ModelFactory implements IModelFactory {
 		model.buildTypes();
 		// hqnghi build micro-models as types
 		if (mm != null) {
-			mm.forEach((k, v) -> model.getTypesManager().alias(v.getName(), k));
+			mm.forEach((k, v) -> {
+				model.getTypesManager().addSpeciesTypeAs(v, k);
+				v.visitAllSpecies(entry -> {
+					if (entry != v) {
+						model.getTypesManager().addSpeciesType(entry);
+						model.getTypesManager().alias(entry.getName(), k + "." + entry.getName());
+					}
+					return true;
+				});
+			});
 			// end-hqnghi
 		}
 

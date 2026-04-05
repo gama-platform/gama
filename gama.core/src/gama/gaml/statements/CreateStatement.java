@@ -380,8 +380,11 @@ public class CreateStatement extends AbstractStatementSequence implements IState
 			final String potentialSpeciesName = species.getDenotedType().getSpeciesName();
 			if (potentialSpeciesName != null) { s = scope.getModel().getSpecies(potentialSpeciesName); }
 		}
-		if (s == null) throw GamaRuntimeException.error("No population of " + species.serializeToGaml(false)
+		if (s == null) {
+			System.out.println("DEBUG ALL SPECIES: " + scope.getModel().getAllSpecies().keySet());
+			throw GamaRuntimeException.error("No population of " + species.serializeToGaml(false)
 				+ " is accessible in the context of " + executor + ".", scope);
+		}
 		IPopulation pop = executor.getPopulationFor(s);
 		// hqnghi population of micro-model's experiment is not exist, we
 		// must create the new one

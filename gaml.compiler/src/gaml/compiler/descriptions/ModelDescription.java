@@ -687,14 +687,30 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 
 	@Override
 	public boolean visitChildren(final DescriptionVisitor<IDescription> visitor) {
-		return super.visitChildren(visitor) && getClassesMap().forEachValue(visitor)
-				&& getOwnExperiments().forEachValue(visitor);
+		if (!super.visitChildren(visitor) || !getClassesMap().forEachValue(visitor)
+				|| !getOwnExperiments().forEachValue(visitor))
+			return false;
+		// hqnghi: visit micro-models so they get compiled into runtime species
+		if (microModels != null) {
+			for (final IModelDescription mm : microModels.values()) {
+				if (!visitor.process(mm)) return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
 	public boolean visitOwnChildren(final DescriptionVisitor<IDescription> visitor) {
-		return super.visitOwnChildren(visitor) && getClassesMap().forEachValue(visitor)
-				&& getOwnExperiments().forEachValue(visitor);
+		if (!super.visitOwnChildren(visitor) || !getClassesMap().forEachValue(visitor)
+				|| !getOwnExperiments().forEachValue(visitor))
+			return false;
+		// hqnghi: visit micro-models so they get compiled into runtime species
+		if (microModels != null) {
+			for (final IModelDescription mm : microModels.values()) {
+				if (!visitor.process(mm)) return false;
+			}
+		}
+		return true;
 	}
 
 	@Override

@@ -387,6 +387,27 @@ public class TypesManager implements ITypesManager {
 	}
 
 	/**
+	 * Registers a species description as a type with an explicit name.
+	 *
+	 * @param species
+	 *            the species description to register
+	 * @param expectedName
+	 *            the exact name to register it under
+	 * @return the created agent type
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public IType<? extends IAgent> addSpeciesTypeAs(final ISpeciesDescription species, final String expectedName) {
+		if (IKeyword.AGENT.equals(expectedName)) return get(IKeyword.AGENT);
+		if (!species.isBuiltIn() && types.containsKey(expectedName)) {
+			return this.get(expectedName);
+		}
+		GamaAgentType t = new GamaAgentType(this, species, expectedName, (Class) species.getJavaBase(), ++CURRENT_INDEX);
+		Types.addClassTypeCorrespondance(species.getJavaBase(), expectedName);
+		addType(t);
+		return t;
+	}
+
+	/**
 	 * Adds the class type.
 	 *
 	 * @param species
