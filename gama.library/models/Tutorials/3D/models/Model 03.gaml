@@ -28,7 +28,7 @@ species cell skills: [moving3D] {
 	int offset;
 
 	reflex move {
-		do wander;
+		do wander();
 	}
 
 	reflex compute_neighbors {

@@ -44,7 +44,7 @@ global {
 	}
 
 	reflex end_simulation when: infected_rate = 1.0 {
-		do pause;
+		do pause();
 	}
 }
 
@@ -54,7 +54,7 @@ species people skills: [moving] {
 	int staying_counter;
 
 	reflex move when: target != nil {
-		do goto target: target on: road_network;
+		do goto(target: target, on: road_network);
 		if (location = target) {
 			target <- any_location_in(one_of(building));
 			target <- nil;

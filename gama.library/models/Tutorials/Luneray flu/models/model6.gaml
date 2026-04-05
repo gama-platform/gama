@@ -57,7 +57,7 @@ species people skills:[moving]{
 	}
 		
 	reflex move when: target != nil{
-		do goto target:target on: road_network;
+		do goto(target:target, on: road_network);
 		if (location = target) {
 			target <- nil;
 		} 
