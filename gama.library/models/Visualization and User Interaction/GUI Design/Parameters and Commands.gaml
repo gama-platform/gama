@@ -121,9 +121,9 @@ experiment "Show Parameters" type: gui {
 	// parameter is modified.
 	parameter "Float (with on_change listener)" category:"Interactive" var: float_on_change {write ""+float_on_change;}
 	// A user_command adds a button to the interface in order to call an action or a set of statements when it is clicked.
-	user_command "Display parameter" category: "Interactive" color:#darkblue {ask world {do writing_parameters;}}
-	user_command "Light color for commands" category: "Interactive" color:#lightgray {ask world {do writing_parameters;}}
-	user_command "Default color for commands" category: "Interactive" {ask world {do writing_parameters;}}
+	user_command "Display parameter" category: "Interactive" color:#darkblue {ask world {do writing_parameters();}}
+	user_command "Light color for commands" category: "Interactive" color:#lightgray {ask world {do writing_parameters();}}
+	user_command "Default color for commands" category: "Interactive" {ask world {do writing_parameters();}}
 	text "Monitors can now be added to the parameters view (see Preferences>Interface)" category: "Monitors" color: #gray font: font("Helvetica",14, #bold);
 
 	

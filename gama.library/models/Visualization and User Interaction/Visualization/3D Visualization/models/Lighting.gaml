@@ -33,7 +33,7 @@ species GAMAGeometry2D {
 species lightMoving skills: [moving] {
 
 	reflex update {
-		do wander amplitude: 180.0;
+		do wander(amplitude: 180.0);
 	}
 
 }

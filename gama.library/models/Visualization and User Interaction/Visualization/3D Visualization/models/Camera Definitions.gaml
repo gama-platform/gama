@@ -21,7 +21,7 @@ global {
 species objects skills: [moving] {
 
 	reflex move {
-		do wander amplitude: 20.0 speed: 1.0;
+		do wander(amplitude: 20.0, speed: 1.0);
 	}
 
 	aspect default {
