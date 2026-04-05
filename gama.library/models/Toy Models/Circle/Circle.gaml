@@ -50,7 +50,7 @@ species cell skills: [moving] {
 	//Reflex to make the cell agent fo to the center, calling the derivated action move
 	reflex go_to_center {
 		heading <- (((self distance_to center) > radius_of_circle) ? self towards center : (self towards center) - 180);
-		do move speed: speed; 
+		do move (speed: speed); 
 	}
 	//Reflex to flee of the other cells agents, which will help to design the circle shape
 	reflex flee_others {
@@ -58,7 +58,7 @@ species cell skills: [moving] {
 		if close != nil {
 			heading <- (self towards close) - 180;
 			float dist <- self distance_to close;
-			do move speed: dist / repulsion_strength heading: heading;
+			do move (speed: dist / repulsion_strength, heading: heading);
 		}
 	}
 	

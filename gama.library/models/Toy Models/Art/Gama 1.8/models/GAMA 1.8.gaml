@@ -55,7 +55,7 @@ global control: fsm {
 
 	action one_step() {
 		ask runners {
-			do goto target: target speed: 2 * size / #s;
+			do goto (target: target, speed: 2 * size / #s);
 		}
 
 		runners <- runners select (each.location != each.target.location);
@@ -63,7 +63,7 @@ global control: fsm {
 
 	init {
 		ask (list(background) every 16) {
-			create runner with: (location: location);
+			create runner(location: location);
 		} }
 
 	state phase0 initial: true {
@@ -129,19 +129,19 @@ global control: fsm {
 		enter {
 			ask (runner) {
 				if (flip(0.2)) {
-					do die;
+					do die();
 				}
 
 			}
 
 			ask (runner select (each.color = yellow)) {
-				create people with: (location: location);
-				do die;
+				create people (location: location);
+				do die();
 			}
 
 			ask (runner select (each.color = orange)) {
-				create roads with: (location: location);
-				do die;
+				create roads(location: location);
+				do die();
 			}
 
 			ask runner {
@@ -152,7 +152,7 @@ global control: fsm {
 		}
 
 		ask runners {
-			do goto target: target speed: 2 * size / #s;
+			do goto (target: target, speed: 2 * size / #s);
 			if (location = target.location) {
 				my_shape <- target;
 			}
@@ -169,7 +169,7 @@ species roads skills: [moving] {
 	geometry my_shape <- cube(rnd(size, size * 2));
 
 	reflex go when: target != nil {
-		do goto target: target speed: 2 * size / #s;
+		do goto (target: target, speed: 2 * size / #s);
 		if (location = target.location) {
 			my_shape <- target + size / 8;
 		}
@@ -192,7 +192,7 @@ species people skills: [moving] {
 	rgb color;
 
 	reflex move when: target != nil {
-		do goto on: the_graph target: target speed: 2 * size / #s;
+		do goto (on: the_graph, target: target, speed: 2 * size / #s);
 		if (location = target.location) {
 			target <- one_of(road_file.contents);
 		}

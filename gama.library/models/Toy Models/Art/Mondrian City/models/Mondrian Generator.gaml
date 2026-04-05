@@ -25,11 +25,11 @@ global {
 	
 	
 	init {
-		do new_paint;
+		do new_paint();
 	}
 	
 	reflex repaint {
-		do new_paint;
+		do new_paint();
 	}
 	
 	// The action that first cleans the previous painting, then generates a new one. 
@@ -37,8 +37,8 @@ global {
 		float x_max <- world.shape.width;
 		float y_max <- world.shape.height;
 		
-		ask lines {do die;}
-		ask squares {do die;}		
+		ask lines {do die();}
+		ask squares {do die();}		
 		
 		create lines number: nb_lines {
 			float x <- rnd(x_max);
@@ -46,7 +46,7 @@ global {
 			horizontal <- false;
 			
 			if( !empty( (lines where !each.horizontal) overlapping self)) {
-				do die;
+				do die();
 			}		
 		}
 		
@@ -56,7 +56,7 @@ global {
 			horizontal <- true;		
 			
 			if( !empty( (lines where each.horizontal) overlapping self)) {
-				do die;
+				do die();
 			}				
 		}
 		
@@ -79,7 +79,7 @@ global {
 			
 			loop s over: over_squares {
 				if(s covers shape) {
-					do die;
+					do die();
 				}
 				shape <- shape - s;
 			}

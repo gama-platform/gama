@@ -42,7 +42,7 @@ global {
 	//Action to move the goal to the mouse location
 	action move_goal() {
 		ask first(boids_goal) {
-			do goto target: #user_location speed: 30.0;
+			do goto(target: #user_location, speed: 30.0);
 		}
 	}
 	
@@ -68,7 +68,7 @@ species boids_goal skills: [moving] {
 	
 	//If the mouse is not used, then the goal just wander
 	reflex wander {  
-		do  wander amplitude: 45.0 speed: 20.0;  
+		do  wander(amplitude: 45.0, speed: 20.0);  
 	}
 	
 	aspect default {
@@ -149,14 +149,14 @@ species boids skills: [moving] {
 			velocity <- {(rnd(4)) -2, (rnd(4)) - 2};
 		}
 		point old_location <- copy(location);
-		do goto target: location + velocity;
+		do goto (target: location + velocity);
 		velocity <- location - old_location;
 	}
 	
 	//Reflex to apply the movement by calling the do_move action
 	reflex movement {
-		do do_move;
-		do bounding;
+		do do_move();
+		do bounding();
 	}
 	
 	aspect image {
@@ -183,10 +183,10 @@ species obstacle skills: [moving] {
 		//Will make the agent go to a boid with a 50% probability
 		if flip(0.5)  
 		{ 
-			do goto target: one_of(boids);
+			do goto (target: one_of(boids));
 		} 
 		else{ 
-			do wander amplitude: 360.0;   
+			do wander (amplitude: 360.0);   
 		}
 	}
 	aspect default {
@@ -263,7 +263,7 @@ experiment "Interactive" type: gui autorun: true{
 			species boids_goal;
 			species obstacle;
 			//Event to call the action move_goal in global if the mouse move within the experiment
-			event #mouse_move {ask simulation {do move_goal;}}
+			event #mouse_move {ask simulation {do move_goal();}}
 		}
 
 	}

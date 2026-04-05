@@ -66,7 +66,7 @@ species seasons {
 	map<string, float> energy_map <- ["winter"::0.0, "spring"::0.3, "summer"::0.08, "autumn"::0];
 
 	init {
-		do change_color;
+		do change_color();
 	}
 
 	action change_color() {
@@ -79,7 +79,7 @@ species seasons {
 	}
 
 	reflex update {
-		do change_color;
+		do change_color();
 	}
 
 }
@@ -168,7 +168,7 @@ species burgeon parent: tree_part parallel: true{
 			self.creation_cycle <- cycle;
 		}
 
-		do die;
+		do die();
 	}
 
 }
@@ -368,7 +368,7 @@ species leaf parallel: true{
 		}
 
 		self.parent.children <- self.parent.children - self;
-		do die;
+		do die();
 	}
 
 }

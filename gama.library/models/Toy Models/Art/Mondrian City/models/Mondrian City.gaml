@@ -81,9 +81,9 @@ global{
 			lines << line([{0, i*cell_h}, {environment_width,i*cell_h}]);
 		}
 		create road from: split_lines(lines) {
-			create road with: (shape: line(reverse(shape.points)));
+			create road (shape: line(reverse(shape.points)));
 		}
-		do update_graphs;
+		do update_graphs();
 		block_size <- min([first(cell).shape.width,first(cell).shape.height]);
 	}
 	
@@ -100,8 +100,8 @@ global{
 				has_mobility1 <- flip(weight_mobility1);
 				has_mobility2 <- flip(weight_mobility2);
 				
-				do choose_mobility;
-				do mobility;
+				do choose_mobility();
+				do mobility();
 			}
 		}
 		weight_mobility1_prev <- weight_mobility1;
@@ -111,7 +111,7 @@ global{
 	}
 		
 	reflex randomGridUpdate when:every(1000#cycle){
-		do randomGrid;
+		do randomGrid();
 	} 
 		
 	reflex compute_traffic_density{
@@ -160,7 +160,7 @@ global{
 			if (reverse_road != nil) {
 				reverse_road.allowed_mobility <-  selected_road.allowed_mobility;
 			}
-			do update_graphs;
+			do update_graphs();
 		}	
 	}
 	
@@ -198,7 +198,7 @@ global{
 			cell current_cell <- cell[j,i];
 			current_cell.is_active <- id<0?false:true;
 			if (id<=0){					
-				ask current_cell{ do erase_building;}
+				ask current_cell{ do erase_building();}
 			}
 		}
 	}
@@ -217,7 +217,7 @@ species building parallel: true {
 		the_cell.my_building <- self;
 		type <- the_type;
 		size <- the_size;
-		do define_color;
+		do define_color();
 		shape <- the_cell.shape;
 		if (type = "residential") {residentials << self;}
 		else if (type = "office") {
@@ -230,17 +230,17 @@ species building parallel: true {
 	reflex populate when: (type = "residential"){
 		int pop <- int(population_level/100 * nb_people_per_size[size]);
 		if length(inhabitants) < pop{
-			create people number: 1 with: (location:any_location_in(bounds)) {
+			create people(location:any_location_in(bounds)) number: 1  {
 				origin <- myself;
 				origin.inhabitants << self;
 				
-				do reinit_destination;
+				do reinit_destination();
 			}
 		}
 		if length(inhabitants) > pop{
 			people tmp <- one_of(inhabitants);
 			inhabitants >- tmp;
-			ask tmp {do die;}
+			ask tmp {do die();}
 		}
 	}
 	
@@ -248,15 +248,15 @@ species building parallel: true {
 		if (type = "office") {
 			offices[] >- self;
 			ask people {
-				do reinit_destination;
+				do reinit_destination();
 			}
 		} else {
 			ask inhabitants {
-				do die;
+				do die();
 			}
 		}
 		cell(location).my_building <- nil;
-		do die;
+		do die();
 		
 	}
 	action define_color() {
@@ -360,15 +360,15 @@ species people skills: [moving] parallel: true{
 	}
 	
 	action mobility() {
-		do unregister;
-		do goto target: target on: graph_per_mode[(mobility_mode = "mobility3") ? "mobility2" : mobility_mode] recompute_path: false ;
-		do register;
+		do unregister();
+		do goto(target: target, on: graph_per_mode[(mobility_mode = "mobility3") ? "mobility2" : mobility_mode], recompute_path: false) ;
+		do register();
 	}
 	action update_target() {
 		if (to_destination) {target <- any_location_in(dest);}//centroid(dest);}
 		else {target <- any_location_in(origin);}//centroid(origin);}
-		do choose_mobility;
-		do mobility;
+		do choose_mobility();
+		do mobility();
 	}
 	
 	action register() {
@@ -384,18 +384,18 @@ species people skills: [moving] parallel: true{
 
 	reflex move when: dest != nil{
 		if (target = nil) {
-			do update_target;
+			do update_target();
 		}
-		do mobility;
+		do mobility();
 		if (target = location) {
 			target <- nil;
 			to_destination <- not to_destination;
-			do update_target;
+			do update_target();
 		}
 	}
 	
 	reflex wander when: dest = nil and origin != nil {
-		do wander bounds: origin.bounds;
+		do wander (bounds: origin.bounds);
 	}
 
 	
@@ -423,7 +423,7 @@ grid cell width: grid_width height: grid_height {
 		if (my_building != nil and (my_building.type = "residential") and (my_building.size = the_size)) {
 			return;
 		} else {
-			if (my_building != nil ) {ask my_building {do remove;}}
+			if (my_building != nil ) {ask my_building {do remove();}}
 			create building returns: bds{
 				do initialize(myself, "residential", the_size);
 			}
@@ -434,17 +434,17 @@ grid cell width: grid_width height: grid_height {
 		if (my_building != nil and (my_building.type = "office") and (my_building.size = the_size)) {
 			return;
 		} else {
-			if (my_building != nil) {ask my_building {do remove;}}
+			if (my_building != nil) {ask my_building {do remove();}}
 			create building returns: bds{
 				do initialize(myself, "office",the_size);
 			}
 			ask people {
-				do reinit_destination;
+				do reinit_destination();
 			}
 		}
 	}
 	action erase_building() {
-		if (my_building != nil) {ask my_building {do remove;}}
+		if (my_building != nil) {ask my_building {do remove();}}
 	}
 	
 	aspect default{

@@ -40,7 +40,7 @@ species ant skills: [moving] control: fsm parallel: true{
 
 	//Reflex to make the ant wander
 	reflex wandering {
-		do wander amplitude: 120.0;
+		do wander(amplitude: 120.0);
 	}
 	//Initial state that will change to full
 	state empty initial: true {

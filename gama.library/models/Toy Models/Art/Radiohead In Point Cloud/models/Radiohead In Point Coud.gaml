@@ -25,7 +25,7 @@ global{
   init {
     everything_in_its_right_place<-{min(column_at (idioteque , 0)),min(column_at (idioteque , 1)),min(column_at (idioteque , 2))};
 	loop i from: 1 to: idioteque.rows -1{
-	  create paranoid_android with:(the_numbers:idioteque[3,i]){		
+	  create paranoid_android (the_numbers:idioteque[3,i]){		
 	    location<-{-everything_in_its_right_place.x+idioteque[0,i],-everything_in_its_right_place.y+idioteque[1,i],(idioteque[2,i])-everything_in_its_right_place.z};	
       }	  
 	}

@@ -52,7 +52,7 @@ global {
 
 		Gama_shape_file <- shape_file("../includes/GamaVectorized.shp");
 		
-		create objects from:Gama_shape_file with:(type:string(get("type")), name:string(get("name")),level:int(get("level"))){
+		create objects(type:string(get("type")), name:string(get("name")),level:int(get("level"))) from:Gama_shape_file{
 		    origin <- myself.origin;
 		    color<-#white;
 		    if (name = "gamablue"){
@@ -114,7 +114,7 @@ global {
 			}
 			shift <- location - origin;
 			if level =0 {
-				do die;
+				do die();
 			}
 		}
 		
@@ -127,7 +127,7 @@ global {
 	}  
 	
 	reflex end_animation when: cycle  = 650{
-		do pause;
+		do pause();
 	}
 } 
 

@@ -72,7 +72,7 @@ global {
 	
 	// Stop the simulation when everyone is either saved :) or dead :(
 	reflex stop_simu when:inhabitant all_match (each.saved or each.drowned) {
-		do pause;
+		do pause();
 	}
 	
 }
@@ -228,7 +228,7 @@ species inhabitant skills:[moving] {
 	 * When alerted people will try to go to the choosen exit point
 	 */
 	reflex evacuate when:alerted and not(drowned or saved) {
-		do goto target:safety_point on: road_network move_weights:road_weights;
+		self.goto(target:safety_point, on: road_network, move_weights:road_weights);
 		if(current_edge != nil){
 			road the_current_road <- road(current_edge);  
 			the_current_road.users <- the_current_road.users + 1;
@@ -286,7 +286,7 @@ species road {
 	reflex flood_road {
 		if(hazard first_with (each covers self) != nil){
 			road_network >- self; 
-			do die;
+			self.die();
 		}
 	}
 	

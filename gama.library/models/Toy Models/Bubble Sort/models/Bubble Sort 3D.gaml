@@ -61,7 +61,7 @@ init {
 //Reflex to finish the execution of the model when nothing has changed during the cycle
 reflex end {
 	if (not change) {
-		do pause;	
+		do pause();	
 	} 
 	change <- false;
 	}

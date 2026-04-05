@@ -61,7 +61,7 @@ species boids_goal skills: [moving3D] {
 	//Reflex to make the goal agent wander in a certain amplitude and a certain speed, 
 	//Respecting the minimal and maximal z values
 	reflex wander { 
-		do  wander amplitude: 45.0 speed: 20.0; 
+		do  wander (amplitude: 45.0, speed: 20.0); 
 		if (location.z) < 0 {
 			location <- {location.x,location.y,0};
 		} else if (location.z) > z_max {
@@ -130,7 +130,7 @@ species boids skills: [moving3D] {
 			velocity <- {(rnd(4)) -2, (rnd(4)) - 2,  ((rnd(4)) - 2)} ; 
 		}
 		point old_location <- location;
-		do goto target: location + velocity;
+		do goto (target: location + velocity);
 		velocity <- location - old_location;
 	}
 	//Reflex to move the agent, calling both bounding and do_move action

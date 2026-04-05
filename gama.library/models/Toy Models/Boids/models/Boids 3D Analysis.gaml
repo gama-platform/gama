@@ -116,7 +116,7 @@ global torus: torus_environment {
 			loop one_key over: (potentialBoidsNeighboursMap.keys) {
 				list<boids> micro_agents <- potentialBoidsNeighboursMap at one_key;
 				if ((length(micro_agents)) > 1) {
-					create flock number: 1 with: (color:rgb([rnd(255), rnd(255), rnd(255)])) {
+					create flock(color:rgb([rnd(255), rnd(255), rnd(255)])) number: 1  {
 						capture micro_agents as: boids_delegation;
 					}
 
@@ -203,7 +203,7 @@ species flock {
 	//Reflexe to kill the flock if the boids agents contained is lower than 2
 	reflex dispose when: ((length(members)) < 2) {
 		release list<agent>(members);
-		do die;
+		do die();
 	}
 	//Reflex to merge the flocks too close from each other
 	reflex merge_nearby_flocks {
@@ -331,14 +331,14 @@ species boids skills: [moving] {
 		}
 
 		point old_location <- location;
-		do goto target: location + velocity;
+		do goto (target: location + velocity);
 		velocity <- location - old_location;
 	}
 
 	//Reflex to do the movement, calling both bounding and do_move actions
 	reflex movement {
-		do bounding;
-		do do_move;
+		do bounding();
+		do do_move();
 	}
 
 	aspect basic {
