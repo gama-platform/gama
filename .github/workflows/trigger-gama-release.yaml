@@ -12,7 +12,7 @@ on:
         description: "The tag of the release to publish (YYYY.MM.0)"
         type: string
         required: true
-        default: 2025.05.0
+        default: 2026.04.0
       jdk:
         description: "Choose a JDK version to embed inside GAMA release"
         type: string

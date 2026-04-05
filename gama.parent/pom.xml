@@ -35,6 +35,14 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		<repository>
+			<id>github-copilot</id>
+			<url>https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot</url>
+			<layout>p2</layout>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
 	</repositories>
 
 	<profiles>
@@ -183,7 +191,7 @@
 		<module>../gama.feature.extension.sound</module>
 		<module>../gama.feature.extension.stats</module>
 		<module>../gama.feature.extension.image</module>
-		<!-- <module>../gama.feature.copilot</module> -->
+		<module>../gama.feature.copilot</module>
 
 		<!-- Can be automatically published by uncommenting
 		However, it's prefered to keep it separated and executed
@@ -316,11 +324,6 @@
 						<filter>
 							<type>eclipse-plugin</type>
 							<id>org.eclipse.jdt.ui</id>
-							<removeAll />
-						</filter>
-						<filter>
-							<type>eclipse-plugin</type>
-							<id>org.eclipse.debug.ui</id>
 							<removeAll />
 						</filter>
 						<filter>
