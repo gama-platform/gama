@@ -48,11 +48,11 @@ global{
 		
 		if !with_viz{
 			loop test_t from: 0 to: 20{
-				do compute_err;
-				if (test_t = 5) {do add_infected;}
-				if (test_t = 15) {do remove_infected;}
-				ask SIR_model {do solveEquation;}
-				ask S {do solveEquation;}
+				do compute_err();
+				if (test_t = 5) {do add_infected();}
+				if (test_t = 15) {do remove_infected();}
+				ask SIR_model {do solveEquation();}
+				ask S {do solveEquation();}
 				write error;
 			}
 		}
@@ -72,7 +72,7 @@ global{
 	}
 	
 	reflex remove_infected when: (cycle = 15){
-		do remove_infected;
+		do remove_infected();
 	}
 	
 	action remove_infected() {
@@ -80,12 +80,12 @@ global{
 		if !dynamics_creation{
 			first(I).Isize <- 0.0;
 		} else {
-			ask I {do die;}
+			ask I {do die();}
 		}
 	}
 	
 	reflex compute_err when: with_viz{
-		do compute_err;
+		do compute_err();
 	}
 	
 	action compute_err (){
@@ -102,7 +102,7 @@ global{
 	
 	reflex endSim when:  (cycle >= final_cycle) {
 		write "Distance between the split system\nand the regular system: "+error;		
-		do pause;
+		do pause();
 	}		
 }
 
@@ -120,7 +120,7 @@ global{
 		}
 		
 		reflex solveEquation{
-			do solveEquation;
+			do solveEquation();
 		}
 		
 		action solveEquation(){
@@ -138,7 +138,7 @@ global{
 		}
 		
 		reflex solveEquation{
-			do solveEquation;
+			do solveEquation();
 		}
 		
 		action solveEquation(){
@@ -185,7 +185,7 @@ experiment normal type: gui {
 
 experiment dynamical_creation type: gui {
 	action _init_ (){
-		create SplitTest_model with: (dynamics_creation:true);
+		create SplitTest_model(dynamics_creation:true);
 	}
 	
 	output {
@@ -206,10 +206,10 @@ experiment dynamical_creation type: gui {
 
 experiment test type: test {
 	test "Equations" {
-		create SplitTest_model with: (with_viz:false);
+		create SplitTest_model(with_viz:false);
 		write "Distance between the static split system\nand the static regular system: "+error;
 		assert error = 0;
-		create SplitTest_model with: (with_viz:false, dynamics_creation:true);
+		create SplitTest_model(with_viz:false, dynamics_creation:true);
 		write "Distance between the dynamics split system\nand the dynamics regular system: "+error;
 		assert error = 0;
 	}	

@@ -53,14 +53,14 @@ global{
 		
 		if !with_viz{
 			loop test_t from: 0 to: 20{
-				ask EDO_model {do solveEquation;}
-				do compute_diff;
+				ask EDO_model {do solveEquation();}
+				do compute_diff();
 			}
 		}
 	}	
 	
 	reflex compute_diff when: with_viz{
-		do compute_diff;
+		do compute_diff();
 	}
 	
 	action compute_diff(){
@@ -71,7 +71,7 @@ global{
 	reflex endSim when:  (cycle >= final_cycle) {
 		write "Maximum difference between solutions (including Euler) after 20 cycles: " + diff1;
 		write "Maximum difference between solutions (excluding Euler) after 20 cycles: " + diff2;
-		do pause;
+		do pause();
 	}	
 	
 }
@@ -92,7 +92,7 @@ global{
 		}
 		
 		reflex solveEquation{
-			do solveEquation;
+			do solveEquation();
 		}
 				
 		action solveEquation(){
@@ -123,7 +123,7 @@ experiment consistency_test type: test {
 
 experiment with_visualization type: gui {
 	action _init_ (){
-		create consistencyTest_model with: (with_viz:true);
+		create consistencyTest_model(with_viz:true);
 	}
 	output {
 		display "Numerical solutions" refresh: every(1 #cycle)  type: 2d {
