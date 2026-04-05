@@ -53,7 +53,6 @@ import gama.api.utils.geometry.ICoordinates;
 import gama.dev.DEBUG;
 import gama.ui.display.opengl4.OpenGL;
 import gama.ui.display.opengl4.scene.ObjectDrawer;
-import gama.ui.shared.utils.DPIHelper;
 
 /**
  * The Class TextDrawer.
@@ -644,9 +643,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 		}
 		final IFont gamaFont = attributes.getFont();
 		if (gamaFont == null) return;
-		Font awtFont = gamaFont.getAwtFont();
-		final int scaledSize = DPIHelper.autoScaleUp(gl.getRenderer().getCanvas().getMonitor(), awtFont.getSize());
-		if (scaledSize != awtFont.getSize()) { awtFont = awtFont.deriveFont((float) scaledSize); }
+		final Font awtFont = gamaFont.getAwtFont();
 		final com.jogamp.graph.font.Font joglFont = getJoglFont(awtFont, overlay);
 		if (joglFont == null) {
 			if (!overlay) { drawLegacyPerspective(text, attributes); }
@@ -661,9 +658,8 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 		final IPoint p = attributes.getLocation();
 		final IPoint anchor = attributes.getAnchor();
 
-		// Font units → model units scale factor
-		final float scale = 1f / (float) DPIHelper.autoScaleUp(gl.getRenderer().getCanvas().getMonitor(),
-				gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits());
+		// Font units → model units scale factor: font size in points = font size in screen pixels
+		final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
 
 		// The graph library uses EM-unit font sizes: pixelSize is the target em-square height in model units
 		final float pixelSize = awtFont.getSize2D() * scale;
@@ -727,9 +723,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 	 */
 	private void drawExtruded(final String text, final IDrawingAttributes attributes) {
 		// Compute bounds from AWT (needed for side geometry and anchor positioning)
-		Font awtFont = attributes.getFont().getAwtFont();
-		final int scaledSize = DPIHelper.autoScaleUp(gl.getRenderer().getCanvas().getMonitor(), awtFont.getSize());
-		if (scaledSize != awtFont.getSize()) { awtFont = awtFont.deriveFont((float) scaledSize); }
+		final Font awtFont = attributes.getFont().getAwtFont();
 		final Shape shape = awtFont.createGlyphVector(FONT_CTX, text).getOutline();
 		final Rectangle2D bounds = shape.getBounds2D();
 
@@ -749,8 +743,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 		// Position everything
 		final IPoint p = attributes.getLocation();
 		final IPoint anchor = attributes.getAnchor();
-		final float scale = 1f / (float) DPIHelper.autoScaleUp(gl.getRenderer().getCanvas().getMonitor(),
-				gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits());
+		final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
 
 		IColor previous = null;
 		gl.pushMatrix();
@@ -804,9 +797,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 	 *            the drawing attributes
 	 */
 	private void drawLegacyPerspective(final String text, final IDrawingAttributes attributes) {
-		Font awtFont = attributes.getFont().getAwtFont();
-		final int scaledSize = DPIHelper.autoScaleUp(gl.getRenderer().getCanvas().getMonitor(), awtFont.getSize());
-		if (scaledSize != awtFont.getSize()) { awtFont = awtFont.deriveFont((float) scaledSize); }
+		final Font awtFont = attributes.getFont().getAwtFont();
 		final Shape shape = awtFont.createGlyphVector(FONT_CTX, text).getOutline();
 		final Rectangle2D bounds = shape.getBounds2D();
 		this.depth = attributes.getDepth();
@@ -837,8 +828,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 		try {
 			final IPoint anchor = attributes.getAnchor();
 			applyRotation(attributes, p);
-			final float scale = 1f / (float) DPIHelper.autoScaleUp(gl.getRenderer().getCanvas().getMonitor(),
-					gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits());
+			final float scale = 1f / (float) gl.getRenderer().getAbsoluteRatioBetweenPixelsAndModelsUnits();
 			gl.translateBy(p.getX() - width * scale * anchor.getX(), p.getY() + y * scale * anchor.getY(),
 					p.getZ() + gl.getCurrentZTranslation());
 			gl.scaleBy(scale, scale, scale);
@@ -1083,6 +1073,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 	 * Draws the outline (border) of each glyph contour as {@code GL_LINE_LOOP} primitives.
 	 */
 	public void drawBorder() {
+		if (sideQuadsBuffer == null || sideQuadsBuffer.limit() == 0) return;
 		drawBorderFallback();
 	}
 
@@ -1126,6 +1117,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 	 *            {@code true} for upward-facing (front) normal, {@code false} for downward (back)
 	 */
 	public void drawFaceFallback(final boolean up) {
+		if (faceVertexBuffer == null || faceVertexBuffer.limit() == 0) return;
 		gl.beginDrawing(GL_TRIANGLES);
 		gl.outputNormal(0, 0, up ? 1 : -1);
 		for (int i = 0; i < faceVertexBuffer.limit(); i += 3) {
@@ -1145,6 +1137,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 	 *            the {@link OpenGL} helper to draw into
 	 */
 	public void drawSideFallback(final OpenGL openGL) {
+		if (sideQuadsBuffer == null || sideQuadsBuffer.limit() == 0) return;
 		int i = -1;
 		while (i < currentIndex) {
 			final int begin = indices[++i];
@@ -1165,6 +1158,7 @@ public class TextDrawer extends ObjectDrawer<StringObject> {
 	 * contour.
 	 */
 	public void drawBorderFallback() {
+		if (sideQuadsBuffer == null || sideQuadsBuffer.limit() == 0) return;
 		final int stride = depth == 0 ? 3 : 6;
 		int i = -1;
 		while (i < currentIndex) {
