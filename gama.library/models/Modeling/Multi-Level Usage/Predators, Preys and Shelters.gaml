@@ -66,7 +66,7 @@ species prey skills: [moving] control: fsm {
 		enter {
 			color <- prey_color;
 		}
-		do wander speed: prey_speed; 
+		do wander(speed: prey_speed); 
 		
 		transition to: flee_predator when: !(empty (nearby_predators)); 
 	}
@@ -77,7 +77,7 @@ species prey skills: [moving] control: fsm {
 			color <- prey_flee_color;
 			nearest_shelter <- shelter closest_to self;
 		}
-		if !(empty (nearby_predators)) { do move heading: (self) towards (nearest_shelter) speed: prey_speed;}
+		if !(empty (nearby_predators)) { do move(heading: (self) towards (nearest_shelter), speed: prey_speed);}
 		
 		transition to: move_around when: (empty (nearby_predators));
 	}
@@ -89,7 +89,7 @@ species prey skills: [moving] control: fsm {
 			heading <- rnd (360.0) ;
 		}
 
-		do move speed:prey_invisible_speed heading: heading ;
+		do move(speed:prey_invisible_speed, heading: heading) ;
 		transition to: move_around when: ( (time - invisible_time) > prey_invisible_max_time );
 	}
 	
@@ -112,10 +112,10 @@ species predator skills: [moving] schedules: shuffle (list (predator)) {
 		return target_prey;
 	}
 	//Reflex to move randomly when no prey are perceived
-	reflex move_around when: (target_prey = nil) { do wander speed: predator_speed; }
+	reflex move_around when: (target_prey = nil) { do wander(speed: predator_speed); }
 	
 	//Reflex to make the predator chase a prey
-	reflex chase_prey when: (target_prey != nil) { do move heading: self towards target_prey speed: predator_speed;}
+	reflex chase_prey when: (target_prey != nil) { do move(heading: self towards target_prey, speed: predator_speed);}
 	
 	aspect default {
 		draw shape color: predator_color;
@@ -152,7 +152,7 @@ species shelter skills: [moving]  frequency: 2 {
 		int in_shelter_time <- int(time);
 		
 		state in_shelter {
-			do wander speed: shelter_speed;
+			do wander(speed: shelter_speed);
 		}
 		
 		aspect default {

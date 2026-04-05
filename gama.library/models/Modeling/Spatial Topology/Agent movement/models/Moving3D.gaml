@@ -90,13 +90,13 @@ species abstractAgent skills: [moving3D]{
 
 species movingAgent  parent:abstractAgent{ 
 	reflex move{
-	  do move;
+	  do move();
 	}		
 }
 
 species wanderAgent parent:abstractAgent{ 
 	reflex wander{
-	  do wander amplitude:90.0;
+	  do wander(amplitude:90.0);
 	}
 }
 
@@ -105,7 +105,7 @@ species gotoAgent parent:abstractAgent{
 	string gotoType;
 	reflex goto{
 		myTarget<-{rnd(envSize),rnd(envSize),rnd(envSize)};
-		do goto target:myTarget;	  
+		do goto(target:myTarget);	  
 	}
 }
 
@@ -113,7 +113,7 @@ species gotoAgentOnNetwork parent:abstractAgent{
 	point myTarget;
 	string gotoType;
 	reflex goto{
-	  	do goto target:myTarget on: mazeGraph;
+	  	do goto(target:myTarget, on: mazeGraph);
 	}		
 }
 

@@ -51,14 +51,14 @@ species people skills: [moving]{
 		if (target = nil ) {
 			if (perceived_area = nil) or (perceived_area.area < 2.0) {
 				//if the agent has no target and if the perceived area is empty (or too small), it moves randomly inside the free_space
-				do wander bounds: free_space;
+				do wander(bounds: free_space);
 			} else {
 				//otherwise, it computes a new target inside the perceived_area .
 				target <- any_location_in(perceived_area);
 			}
 		} else {
 			//if it has a target, it moves towards this target
-			do goto target: target;
+			do goto(target: target);
 			
 			//if it reaches its target, it sets it to nil (to choose a new target)
 			if (location = target)  {

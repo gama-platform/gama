@@ -38,12 +38,12 @@ global {
 			shape <-any_location_in(world);
 		}
 		selected_agent <- one_of (polygon_agent);
-		do apply_query;
+		do apply_query();
 	}
 	
 	action change_agent() {
 		selected_agent <- (polygon_agent + polyline_agent + point_agent) closest_to #user_location; 	
-		do apply_query;
+		do apply_query();
 	}
 	
 	action apply_query() {
@@ -121,13 +121,13 @@ species point_agent parent:agent_base {
 }
 
 experiment Spatialqueries type: gui {
-	parameter "Query" var: type_query on_change: {ask simulation{do apply_query;} do update_outputs();};
+	parameter "Query" var: type_query on_change: {ask simulation{do apply_query();} do update_outputs();};
 	output {
 		display map {
 			species polygon_agent;
 			species point_agent;
 			species polyline_agent;	
-			event #mouse_down  {ask simulation{do change_agent;}}
+			event #mouse_down  {ask simulation{do change_agent();}}
 		}
 	}
 }

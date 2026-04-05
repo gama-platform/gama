@@ -18,17 +18,17 @@ global {
 	init {
 		
 		//Create the agents
-		do create_dummy_agents;
+		do create_dummy_agents();
  
 
 		//Different actions to test the operators
-		do test_agents_at_distance;
-		do test_distance_to;
-		do test_neighbors_at;
-		do test_path_to;
-		do test_simple_clustering_by_distance;
-		do test_hierarchical_clustering;
-		do test_agent_closest_to; 	
+		do test_agents_at_distance();
+		do test_distance_to();
+		do test_neighbors_at();
+		do test_path_to();
+		do test_simple_clustering_by_distance();
+		do test_hierarchical_clustering();
+		do test_agent_closest_to(); 	
 	}  
 	
 	action test_agent_closest_to() {
@@ -141,16 +141,16 @@ global {
 		}
 	}
 	action create_dummy_agents() {
-		create dummy with: (location : {5,5});
-		create dummy with: (location : {8,9});
-		create dummy with: (location : {14,6});
-		create dummy with: (location : {35,55});
-		create dummy with: (location : {25,75});
-		create dummy with: (location : {56,80});
-		create dummy with: (location : {10,70});
-		create dummy with: (location : {80,8});
-		create dummy with: (location : {34,78});
-		create dummy with: (location : {67,32});
+		create dummy(location : {5,5});
+		create dummy(location : {8,9});
+		create dummy(location : {14,6});
+		create dummy(location : {35,55});
+		create dummy(location : {25,75});
+		create dummy(location : {56,80});
+		create dummy(location : {10,70});
+		create dummy(location : {80,8});
+		create dummy(location : {34,78});
+		create dummy(location : {67,32});
 		loop i from: 0 to: length(dummy) - 1 {
 			ask dummy[i] {id <- string(i);}
 		}

@@ -62,7 +62,7 @@ species myCircle skills:[moving]{
 	reflex myfollow{ 
 		//The operator follow make the agent move from the starting vertice of the starting edge of a path to the last vertice of the last edge of the path
 		// but following the edges of the concerned path
-	 	do follow path: path_following;	
+	 	do follow(path: path_following);	
 	 	if(cycle>200)
 	 	{
 	 		path_following<- path_to_follow3;	

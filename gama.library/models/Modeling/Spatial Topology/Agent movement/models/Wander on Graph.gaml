@@ -19,19 +19,19 @@ global {
 	map<road,float> proba_use_road;
 	
 	init {
-		create road with: (shape:line([{10,10}, {40,10}]));
-		create road with: (shape:line([{40,10}, {40,40}]));
-		create road with: (shape:line([{40,10}, {80,10}]));
-		create road with: (shape:line([{80,10}, {80,40}]));
-		create road with: (shape:line([{40,40}, {80,40}]));
-		create road with: (shape:line([{80,40}, {80,80}]));
-		create road with: (shape:line([{80,80}, {10,80}]));
-		create road with: (shape:line([{80,80}, {50,50}]));
-		create road with: (shape:line([{50,50}, {10,80}]));
-		create road with: (shape:line([{10,80}, {10,10}]));
+		create road(shape:line([{10,10}, {40,10}]));
+		create road(shape:line([{40,10}, {40,40}]));
+		create road(shape:line([{40,10}, {80,10}]));
+		create road(shape:line([{80,10}, {80,40}]));
+		create road(shape:line([{40,40}, {80,40}]));
+		create road(shape:line([{80,40}, {80,80}]));
+		create road(shape:line([{80,80}, {10,80}]));
+		create road(shape:line([{80,80}, {50,50}]));
+		create road(shape:line([{50,50}, {10,80}]));
+		create road(shape:line([{10,80}, {10,10}]));
 		
 		
-		create people number: 50 with: (location:any_location_in(one_of(road)));
+		create people(location:any_location_in(one_of(road))) number: 50;
 		
 		//directed graph build from the road agents
 		network <- directed(as_edge_graph(road));
@@ -58,7 +58,7 @@ species people skills: [moving]{
 	
 	reflex move {
 		// move randomly on the network, using proba_use_road to define the probability to choose a road.
-		do wander on: network proba_edges: proba_use_road ;
+		do wander(on: network, proba_edges: proba_use_road) ;
 	}
 }
 
