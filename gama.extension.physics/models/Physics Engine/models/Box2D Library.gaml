@@ -39,7 +39,7 @@ global parent: physical_world {
 		geometry box <- box(size+3, 3, 10);
 		create wall from: [box at_location ({size/2, 0}), box rotated_by 90 at_location ({0, size/2}), box at_location ({size/2, size}), box rotated_by 90 at_location ({size, size/2})];
 		list<point> starting_places <- [{5,5}, {5,size-5},{size-5,5}, {size-5,size-5}];
-		create ball from: starting_places collect (circle(4) at_location each) with: (mass:10, color:#cadetblue, speed:30) returns: balls;
+		create ball(mass:10, color:#cadetblue, speed:30) from: starting_places collect (circle(4) at_location each)returns: balls;
 		movers <-balls;
 		loop x from: 5 to: size-5 step: 10 {
 			loop y from: 5 to: size-5 step: 10 {
@@ -49,7 +49,7 @@ global parent: physical_world {
 					}
 				} 
 				float n <- rnd(1.0, 4.5);
-				create ball with: (shape:circle(n) at_location {x,y},mass:n, color:brewer_colors("Set3")[int(n)], speed:n*2) {
+				create ball(shape:circle(n) at_location {x,y},mass:n, color:brewer_colors("Set3")[int(n)], speed:n*2) {
 					initial_location <- location;
 				}
 			}
@@ -84,7 +84,7 @@ species ball skills: [dynamic_body, moving] {
 
 
 	reflex go_back when: every(10#cycle) and (abs(velocity.x) between(0.0,1.0)) and (abs(velocity.y) between(0.0,1.0)) {
-		do goto target: initial_location;
+		do goto(target: initial_location);
 	}
 
 }

@@ -23,7 +23,7 @@ experiment "1. Save Simulation" type: gui parent: Base {
 	
 	reflex store when: cycle = 5 {		
 		save simulation to: file_path ;
-		do die;	
+		do die();	
 	}	
 
 }

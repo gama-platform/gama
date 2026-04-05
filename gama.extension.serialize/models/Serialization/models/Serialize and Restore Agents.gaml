@@ -21,7 +21,7 @@ global {
 	
 	init {
 		create people number: number_of_people;
-		ask people {do create_family;}
+		ask people {do create_family();}
 	}
 	
 	/**
@@ -96,16 +96,16 @@ species people {
 experiment "Save, Restore, Create and Clone" {
 	category "Saving" color: #green;
 	text "These actions save all the people on disk or in memory, each in its own file/string, using the uncompressed json format" color: #green category: "Saving";
-	user_command "Save on disk" color: #green category: "Saving" { ask simulation { do save_people_on_disk;}}
-	user_command "Save in memory" color: #green category: "Saving" { ask simulation { do save_people_in_memory;}}
+	user_command "Save on disk" color: #green category: "Saving" { ask simulation { do save_people_on_disk();}}
+	user_command "Save in memory" color: #green category: "Saving" { ask simulation { do save_people_in_memory();}}
 	category "Restoring existing agents" color: #orange;
 	text "These actions ask people to 'restore' themselves using a random file/string, effectively replacing their attributes by the ones of the agent saved" color: #orange category: "Restoring existing agents";
-	user_command "Exchange from disk" color: #orange category: "Restoring existing agents" { ask simulation { do exchange_people_from_disk;}}
-	user_command "Exchange in memory" color: #orange category: "Restoring existing agents" { ask simulation { do exchange_people_from_memory;}}
+	user_command "Exchange from disk" color: #orange category: "Restoring existing agents" { ask simulation { do exchange_people_from_disk();}}
+	user_command "Exchange in memory" color: #orange category: "Restoring existing agents" { ask simulation { do exchange_people_from_memory();}}
 	category "Creating new agents" color: #red;
 	text "These actions create new people from the files/strings of the previously saved agents" color: #red category: "Creating new agents";
-	user_command "Create clones from disk" color: #red category: "Creating new agents" { ask simulation { do create_clones_from_disk;}}	
-	user_command "Create clones from memory" color: #red category: "Creating new agents" { ask simulation { do create_clones_from_memory;}}
+	user_command "Create clones from disk" color: #red category: "Creating new agents" { ask simulation { do create_clones_from_disk();}}	
+	user_command "Create clones from memory" color: #red category: "Creating new agents" { ask simulation { do create_clones_from_memory();}}
 
 	
 	output {
