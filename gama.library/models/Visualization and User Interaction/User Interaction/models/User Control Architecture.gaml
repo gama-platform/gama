@@ -40,7 +40,7 @@ species user control:user_only {
    user_panel "Basic Control" {
       user_command "Kill one cell" {
          ask (one_of(cell)){
-            do die;
+            do die();
          }
       }
       user_command "Create one cell" {
@@ -54,7 +54,7 @@ species user control:user_only {
       user_command "Kill cells" color: #red continue: true{
         user_input "Number" returns: number type: int <- 10;
         ask (number among cell){
-           do die;
+           do die();
         }
       }
       user_command "Create cells" color: #green {

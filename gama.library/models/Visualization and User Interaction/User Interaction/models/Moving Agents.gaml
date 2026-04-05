@@ -24,7 +24,7 @@ global
 	action kill() {
 		ask moved_agents
 		{
-			do die;
+			do die();
 		}
 
 		moved_agents <- [];
@@ -32,7 +32,7 @@ global
 
 	action duplicate() {
 		geometry available_space <- (zone at_location #user_location) - (union(moved_agents) + 10);
-		create being number: length(moved_agents) with: (location: any_location_in(available_space));
+		create being(location: any_location_in(available_space)) number: length(moved_agents) ;
 	}
 
 	action click() {
@@ -88,7 +88,7 @@ species being skills: [moving]
 	{
 		if (!(moved_agents contains self))
 		{
-			do wander amplitude: 30.0;
+			do wander(amplitude: 30.0);
 		}
 
 	}
@@ -133,10 +133,10 @@ experiment "Click and Move" type: gui
 			}
 
 			species being;
-			event #mouse_move {ask simulation {do move;}} 
-			event #mouse_up {ask simulation {do click;}} 
-			event 'r' {ask simulation {do kill;}} 
-			event 'c'{ask simulation {do duplicate;}} 
+			event #mouse_move {ask simulation {do move();}} 
+			event #mouse_up {ask simulation {do click();}} 
+			event 'r' {ask simulation {do kill();}} 
+			event 'c'{ask simulation {do duplicate();}} 
 
 
 		}
