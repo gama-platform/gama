@@ -25,7 +25,7 @@ global {
 			point poi_location_WGS84 <- {data[0,i],data[1,i]};
 			point poi_location_GAMA <- point(to_GAMA_CRS(poi_location_WGS84, "EPSG:4326"));
 			write "\nPOI location - WGS84: " + poi_location_WGS84 +"\nGAMA CRS: "+ poi_location_GAMA; 
-			create poi with: (location:poi_location_GAMA);
+			create poi(location:poi_location_GAMA);
 		}
 	}
 }

@@ -27,16 +27,16 @@ species player_stupidTeam parent:base_player {
 	
 	action defensive_behavior() {	
 		// very basic defensive behavior : run to the ball
-		do run_to_ball;
+		do run_to_ball();
 	}
 	
 	action offensive_behavior() {	
 		// very basic offensive behavior : run to the ennemy goal, or shoot the ball when close enough from the ennemy goal.
 		if ((possess_ball) and (distance_to_goal < 30)) {
-			do shoot;
+			do shoot();
 		}
 		else {
-			do run_to_ennemy_goal;
+			do run_to_ennemy_goal();
 		}
 	}
 	

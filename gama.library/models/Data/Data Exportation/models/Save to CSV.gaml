@@ -24,7 +24,7 @@ global {
 			save bug to: "../results/bug_agents.csv" format:"csv" rewrite: true;
 		}
 		//Pause the model as the data are saved
-		do pause;
+		do pause();
 	}
 }
 
@@ -42,7 +42,7 @@ species bug skills:[moving]{
 		}
 	} 	
 	reflex move {
-		do wander;
+		do wander();
 	}
 	
 	aspect default {

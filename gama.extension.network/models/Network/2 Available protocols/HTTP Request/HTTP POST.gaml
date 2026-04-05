@@ -21,7 +21,7 @@ global {
 	
 	init {
 		create NetworkingAgent number: 1 {
-		   do connect to: url protocol: "http" port: port raw: true;
+		   do connect(to: url, protocol: "http", port: port, raw: true);
 		}		
 	} 
 
@@ -32,10 +32,10 @@ species NetworkingAgent skills:[network] {
 	reflex send when:  cycle = 0 {
 		write "sending message ";
 		
-		do send to: "/test" contents: ["POST",to_json(["toto"::34,"titi"::world]), ["Content-Type"::"application/json"] ];
+		do send(to: "/test", contents: ["POST",to_json(["toto"::34,"titi"::world]), ["Content-Type"::"application/json"] ]);
 		
-// 		do send to: "/api/user/" contents: ["POST","raw-query-param", ["Content-Type"::"text/plain"] ];		
-//		do send to: "/api/user/" contents: ["DELETE"];
+// 		do send(to: "/api/user/", contents: ["POST","raw-query-param", ["Content-Type"::"text/plain"] ]);		
+//		do send(to: "/api/user/", contents: ["DELETE"]);
 	}
 
 	reflex get_message {

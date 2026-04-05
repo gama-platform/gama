@@ -17,13 +17,12 @@ global {
 	init {
 		//create iris agents from the CSV file (use of the header of the CSV file), the attributes of the agents are initialized from the CSV files: 
 		//we set the header facet to true to directly read the values corresponding to the right column. If the header was set to false, we could use the index of the columns to initialize the agent attributes
-		create iris from:csv_file( "../includes/iris.csv",true) with:
-			(sepal_length:float(get("sepallength")), 
-				sepal_width:float(get("sepalwidth")), 
-				petal_length:float(get("petallength")),
-				petal_width:float(get("petalwidth")), 
-				type:string(get("type"))
-			);	
+		create iris(sepal_length:float(get("sepallength")), 
+					sepal_width:float(get("sepalwidth")), 
+					petal_length:float(get("petallength")),
+					petal_width:float(get("petalwidth")), 
+					type:string(get("type")))
+			from:csv_file( "../includes/iris.csv",true) ;	
 	}
 }
 

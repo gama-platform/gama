@@ -36,7 +36,7 @@ global {
 		if(appkey = "KEY") {
 			map useless <- user_input_dialog("Please enter your MapBox access token as a value for the appkey variable in the code instead of \"KEY\".", []);			
 		} else {
-			do load_map;
+			do load_map();
 		}
 		
 		create building from: buildings_shape_file;

@@ -61,7 +61,7 @@ global torus: true {
 				location <- my_pavement.location;
 				type <- t;
 			} else {
-				do die;
+				do die();
 			}
 			heading <- 0.0;
 		}
@@ -119,10 +119,10 @@ species car skills: [moving] {
 		if(car_ahead != nil) {
 			do slow_down(car_ahead);
 		} else {
-			do speed_up;
+			do speed_up();
 		}
 		
-		do move heading: heading;
+		do move (heading: heading);
 	}
 
 	action slow_down(car car_ahead) {

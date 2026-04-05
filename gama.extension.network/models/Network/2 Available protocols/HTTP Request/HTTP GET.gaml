@@ -17,7 +17,7 @@ global {
 	
 	init {
 		create NetworkingAgent number: 1 {
-		   do connect to: url protocol: "http" port: port raw: true;
+		   do connect(to: url, protocol: "http", port: port, raw: true);
 		}		
 	} 
 
@@ -27,8 +27,8 @@ species NetworkingAgent skills:[network] {
 	
 	reflex send when:  cycle = 0 {
 		write "sending message ";		
-		do send to: "/search/authors.json?q=j%20k%20rowling" contents: ["GET"];
-	//	do send to: "/search/authors.json?q=j%20k%20rowling" contents: ["GET", ["Content-Type"::"application/json"]];		
+		do send(to: "/search/authors.json?q=j%20k%20rowling", contents: ["GET"]);
+	//	do send(to: "/search/authors.json?q=j%20k%20rowling", contents: ["GET", ["Content-Type"::"application/json"]]);		
 	}
 
 	reflex get_message {

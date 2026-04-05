@@ -16,7 +16,7 @@ model raster3
 global
 { 
 	//File for the ascii grid
-	file asc_grid <- grid_file("../includes/cantho_1999_v6.asc");
+	grid_file asc_grid <- grid_file("../includes/cantho_1999_v6.asc");
 	//Shapefile for the road
 	file road_shapefile <- shape_file("../includes/roads15_3.shp");
 	//Shapefile for the city
@@ -56,14 +56,14 @@ global
 		
 		//Each road has to compute its distance from the city center
 		ask roads {
-			do compute_cc_dist;
+			do compute_cc_dist();
 		}
 		//Compute the city distance for each plot
 		ask empty_plots {
-			do compute_distances;
+			do compute_distances();
 		}
 		//Normalization of the distance
-		do normalize_distances;
+		do normalize_distances();
 	}
 	//Action to normalize the distance
 	action normalize_distances() {
@@ -90,7 +90,7 @@ global
 		//Build on each empty plot having the highest constructability
 		ask ordered_plots
 		{
-			do build;
+			do build();
 		}
 	}	
 }
@@ -138,7 +138,7 @@ grid plot file: asc_grid use_individual_shapes: false use_regular_agents: false 
 		color <- plot_colors[1];
 	}
 	//Action to compute the constructability of the plot cell
-	float compute_constructability
+	float compute_constructability()
 	{
 		//Get all the neighbours plots
 		list<plot> voisins <- (self neighbors_at density_radius);

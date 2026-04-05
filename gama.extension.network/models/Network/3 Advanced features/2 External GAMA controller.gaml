@@ -28,7 +28,7 @@ experiment start {
 			write command(cmd);
 		}
 
-		do die;
+		do die();
 	}
 
 }

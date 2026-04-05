@@ -71,7 +71,7 @@ global {
 	//Initialization of the model
 	init {
 		//Initialization of the matrix
-		do InitInteractionMatrix;
+		do InitInteractionMatrix();
 		//If we want a spatial graph in that case we create a graph according to their distance, else we create a barabasi albert graph
 		if(spatialGraph){
 			create node_agent number:nbAgent;
@@ -95,7 +95,7 @@ global {
 			my_class <-i;
 			location <- {(cos (((my_class-1)/nbValuePerClass)*360)*50 +50),(sin (((my_class-1)/nbValuePerClass)*360)*50+50),0};
 			color <- hsb (i/nbValuePerClass,1.0,1.0);
-			do updatemyNodes;
+			do updatemyNodes();
 			i<-i+1;	
 		}
 		//We finally create the macroGraph
@@ -173,7 +173,7 @@ species macroNode{
 	 
 	//Update the nodes of the agents
 	reflex update{
-		do updatemyNodes;
+		do updatemyNodes();
 	}
 	//For each classes, find all the nodes with the same classes
 	action updatemyNodes(){
@@ -203,7 +203,7 @@ species macroNode{
 	action removeMicroNode(){
 		ask node_agent as list{
 			  if	(classVector[0] = myself.my_class) {
-			      do die;
+			      do die();
 			  }	 
          }
 	}
@@ -233,7 +233,7 @@ species macroEdge  {
 	action removeMicroEdge(){
 		ask edge_agent as list{
 			  if	((self.src.classVector[0] =  myself.src.my_class) and (self.dest.classVector[0] =  myself.dest.my_class)) {
-			      do die;
+			      do die();
 			  }	 
          }
 	}
@@ -248,7 +248,7 @@ species macroGraph {
 //Reflex to update the graph by killing all the previous edges first 
    reflex updateAllMacroEdge {	
 	 	ask macroEdge as list{
-	 		do die;
+	 		do die();
 	 	}
 	 	
 	 	loop h from:0 to: nbTypeOfClass-1{

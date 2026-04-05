@@ -29,12 +29,12 @@ global {
 	
 	init {
 		create river from: river_file;
-		do init_cells;
-		do init_water;
+		do init_cells();
+		do init_water();
    	  	//Initialization of the drain cells
 		drain_cells <- cell where (each.is_drain);
 		source_cells <- cell where(each.is_source);
-		ask cell {do update_color;}
+		ask cell {do update_color();}
 	}	
 	
    //Action to initialize the altitude value of the cell according to the dem file
@@ -65,14 +65,14 @@ global {
    reflex flowing {
       ask cell {already <- false;}
       ask (cell sort_by ((each.altitude + each.water_height))) {
-         do flow;
+         do flow();
       }
    }
    
    //Reflex to update the color of the cell
    reflex update_cell_color {
       ask cell {
-         do update_color;
+         do update_color();
       }
    }
    

@@ -21,7 +21,7 @@ global skills: [thread]{
 		if (create_agents) {
 			create thread_agent number: 2;
 		}
-		do run_thread interval: 2#s;
+		do run_thread(interval: 2#s);
 	}
 	  
   
@@ -36,7 +36,7 @@ species thread_agent skills: [thread] {
 	//create and start a new thread - the thread_action will be activated continuously at a fixed rate every 1#s by the 2 agents
 	
 	init {
-		do run_thread every: 1#s;
+		do run_thread(every: 1#s);
 	}
 	
 	//the action run in the thread
@@ -49,6 +49,6 @@ experiment "Run global thread" autorun: true;
 
 experiment "Run several threads" autorun: true {
 	action _init_() {
-		create simulation with: (create_agents: true);
+		create simulation(create_agents: true);
 	}
 } 

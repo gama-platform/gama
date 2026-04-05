@@ -52,7 +52,7 @@ species water skills: [moving] {
 	poi target ;
 
 	reflex move {
-		do goto target: target on: the_river speed: 100.0;
+		do goto (target: target, on: the_river, speed: 100.0);
 	}	
 	
 	aspect default {

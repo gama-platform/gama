@@ -56,9 +56,9 @@ grid patches file: grid_file("../images/DEM/Volcano DEM.asc") skills: [static_bo
 			grid_value <- max(0,grid_value - 0.01);
 			ask neighbors {
 				grid_value <- max(0,grid_value - 0.005);
-				do update_body;
+				do update_body();
 			}
-			do update_body;
+			do update_body();
 		}
 	}
 	
@@ -81,7 +81,7 @@ species lava skills: [dynamic_body] {
 
 	//When a lava agent falls from the edges of the world, it is removed from the simulation (and the physical world as well).		
 	reflex manage_location when: location.z < -20 {
-		do die;
+		do die();
 	}
 	
 	aspect default {

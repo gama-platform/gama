@@ -29,7 +29,7 @@ species Initiator skills: [fipa] {
 	
 	reflex send_request when: (time = 1) {
 		write 'send message';
-		do start_conversation to: [p] protocol: 'fipa-request' performative: 'request' contents: ['go sleeping'] ;
+		do start_conversation(to: [p], protocol: 'fipa-request', performative: 'request', contents: ['go sleeping']) ;
 	}
 	
 	reflex read_refuse_message when: !(empty(refuses)) {
@@ -50,7 +50,7 @@ species Participant skills: [fipa] {
 		
 		
 		write 'A GamaRuntimeException is raised to inform that the message\'s performative doesn\'t respect the \'request\' interaction protocol\' specification';
-		do inform message: (requests at 0) contents: ['I don\'t want'] ; // Attention: note that GAMA will raise an exception because an 'inform' message is not appropriate here.
+		do inform(message: (requests at 0), contents: ['I don\'t want']) ; // Attention: note that GAMA will raise an exception because an 'inform' message is not appropriate here.
 	}
 }
 

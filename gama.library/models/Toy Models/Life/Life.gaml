@@ -45,7 +45,7 @@ global torus: torus_environment {
 	reflex generation {
 		// The computation is made in parallel
 		ask life_cell parallel: parallel {
-			do evolve;
+			do evolve();
 		}
 	}
 	//Write the description of the model in the console

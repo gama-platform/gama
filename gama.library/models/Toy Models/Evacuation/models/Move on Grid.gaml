@@ -73,7 +73,7 @@ species people {
 	//Reflex to kill the agent once it is close enough to an evacuation point
 	reflex end when: location distance_to target_cell.location <= 2 * people_size {
 		current_cell.is_free <- true;
-		do die;
+		do die();
 	}
 	//Reflex to move the agent
 	reflex move {

@@ -27,16 +27,16 @@ global {
 		my_moving_people <- first(list_people_moving);
 		
 		// access_attribute the various ways to access to agents' attributes.
-		do access_attribute;
+		do access_attribute();
 		
 		// Agents have several built-in attributes
-		do built_in_attributes;
+		do built_in_attributes();
 
 		// Agents with a skill have even more attributes 		
-		do built_in_attributes_with_species;
+		do built_in_attributes_with_species();
 		
 		// Agents attirbutes can get attributes value from a shapefile 			
-		do attributes_from_data;
+		do attributes_from_data();
 	}
 	
 	// 
@@ -75,7 +75,7 @@ global {
 		// either explicity, using the with: facet
 		// or implicitely, when the attribute has the same name as the shapefile attribute.
 		// The shape of the agent is initialized from the geometry of the shapefile.
-		create building_from_shapefile from: buildings_simple0_shape_file with: (building_nature:string(read("NATURE")));
+		create building_from_shapefile(building_nature:string(read("NATURE"))) from: buildings_simple0_shape_file ;
 			
 		ask building_from_shapefile {
 			write sample(self.building_nature);

@@ -46,13 +46,13 @@ global {
 	//Initialization of the model
 	init {
 		//Write the description of the model 
-		do description;
+		do description();
 		//Initialization of the places
-		do initialize_places;
+		do initialize_places();
 		//Computation of the number of people according to the density of people
 		number_of_people <- int( length (all_places) * density_of_people);
 		//Initialization of the people
-		do initialize_people;
+		do initialize_people();
 	}
 	//Action to initialize places defined in the subclasses
 	action initialize_places() virtual: true;

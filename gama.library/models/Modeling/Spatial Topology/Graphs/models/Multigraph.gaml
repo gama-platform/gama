@@ -70,9 +70,9 @@ species people skills: [moving]{
 		if (location distance_to target < 5.0) {
 			target_people <- one_of(people - self);
 			target <- target_people.location;
-			do updateSize;
+			do updateSize();
 		}
-		do goto on:road_graph target:target speed:1 + rnd(2.0);
+		do goto(on:road_graph, target:target, speed:1 + rnd(2.0));
 	}
 	aspect default {
 		draw circle(size) color: #red;

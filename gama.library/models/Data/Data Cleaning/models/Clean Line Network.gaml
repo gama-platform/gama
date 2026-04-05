@@ -69,9 +69,9 @@ experiment clean_network type: gui {
 	parameter "Reduce to main connected components" var:reduce_to_main_connected_components;
 	
 	init {
-		create clean_road_network_model with:(clean_data:false); 
-		create clean_road_network_model with:(split_lines:false,reduce_to_main_connected_components:false); 
-		create clean_road_network_model with:(split_lines:true,reduce_to_main_connected_components:false); 
+		create clean_road_network_model(clean_data:false); 
+		create clean_road_network_model(split_lines:false,reduce_to_main_connected_components:false); 
+		create clean_road_network_model(split_lines:true,reduce_to_main_connected_components:false); 
 	}
 	output {
 		layout #split;

@@ -18,7 +18,7 @@ global {
 		write "3. Step on this server model";
 		
 		create Server {
-			do connect protocol: "tcp_server" port: 3001 with_name: name raw: true;
+			do connect(protocol: "tcp_server", port: 3001, with_name: name, raw: true);
 		}
 
 	}
@@ -33,7 +33,7 @@ species Server skills: [network] parallel: true {
 		loop while: has_more_message() {
 			message mm <- fetch_message();
 			write name + " received : " + mm.contents color: color;
-			do send to: mm.sender contents: ("I am Server Leader " + name + ", I give order to server_group");
+			do send(to: mm.sender, contents: ("I am Server Leader " + name + ", I give order to server_group"));
 		}
 
 	}

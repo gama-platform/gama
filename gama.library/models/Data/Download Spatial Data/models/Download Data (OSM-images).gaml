@@ -152,7 +152,7 @@ global {
 	 	if (use_google_map_data) {
 	 		//if the image already exists, just load this image and vectorize it
 			if (file_exists(googlemap_path)) {
-				do load_google_image;
+				do load_google_image();
 			} else {
 				//otherwise propose to download the image from google (WARNING: direct access to google map image without using the google api (and key) is recommended).
 				map input_values <- user_input_dialog("Do you want to download google maps to fill in the data? (warning: risk of being blocked by google!)",[enter("Download data",false), enter("Delay (in s) between two requests",5.0)]);
@@ -266,12 +266,12 @@ global {
 				list<geometry> geom_markers <- generate_geoms(cells_type);
 							
 				//create the marker agents
-				create marker from: geom_markers with: (type:type);
+				create marker(type:type) from: geom_markers ;
 				float min_area <- marker mean_of each.shape.area;
 								
 				ask marker {	
 					//keep only the marker that are not too small (to take into account only "complete" markers)
-					if (shape.area < (min_area * 0.5)) {do die;}
+					if (shape.area < (min_area * 0.5)) {do die();}
 					else {
 						color <- (type in google_map_type.keys) ? first(google_map_type[type]) : rnd_color(255);
 					}
@@ -325,7 +325,7 @@ global {
 			if (not empty(marker)) {
 				save marker format: "shp"   crs:"EPSG:3857" to: exporting_path + "google_map_markers.shp" attributes:["type"];
 			}
-			do pause;
+			do pause();
 		}
 		
 		 
@@ -378,7 +378,7 @@ global {
 	
 
    //action for vectorizing an existing google image
-	action load_google_image {
+	action load_google_image() {
 		image_file im <- image_file(googlemap_path);
 		ask cell_google {		
 			color <-rgb( (im) at {grid_x ,grid_y }) ;

@@ -19,7 +19,7 @@ global {
 	//At each step, one of the agents of test_species1 dies
 	reflex one_should_die {
 		ask one_of(test_species1){
-			do die;
+			do die();
 		}
 	}
 }

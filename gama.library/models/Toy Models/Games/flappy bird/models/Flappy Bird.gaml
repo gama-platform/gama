@@ -38,12 +38,12 @@ global {
 	
 	init {
 		
-		do reinit_model;
+		do reinit_model();
 	}
 	action reinit_model() {
 		
 		ask texts {
-			do die;
+			do die();
 		}
 		count<-0;
 		game_over <- false;
@@ -61,10 +61,10 @@ global {
 	action to_game_over() {
 		game_over <- true;
 		ask bird { 
-			do die;
+			do die();
 		}
 		ask tuyau {
-			do die;
+			do die();
 		}
 	}
 	reflex add_tuyau when:not game_over and every(9/5#s) {
@@ -93,10 +93,10 @@ species bird frequency: game_over ? 0 : 1{
 	}
 	
 	reflex collision when: circle(size,location) intersects union(tuyau collect each.fake_shape){
-		ask world {do to_game_over;}
+		ask world {do to_game_over();}
 	}
 	reflex border when: location.y > 2.0 - size or location.y < 0.2 + size {
-		ask world {do to_game_over;}
+		ask world {do to_game_over();}
 	} 
 	
 	aspect default {
@@ -209,7 +209,7 @@ experiment main {
 			event "r" {
 				if (game_over) {
 					ask world {
-						do reinit_model;
+						do reinit_model();
 					}
 				}
 				
@@ -218,7 +218,7 @@ experiment main {
 			event " " {
 				if not has_started {
 					ask simulation {
-						do resume;
+						do resume();
 						myself.has_started <- true;
 						}
 				

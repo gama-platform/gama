@@ -24,7 +24,7 @@ global {
 		int number <- int((shape_width / cell_dimension) ^2  / 2);
 		loop the_file over: number among(file_list) {
 			geometry ss <- geometry(the_file);
-			create emoji with: (ratio:ss.width / ss.height,shape:(geometry(the_file)),name:replace(replace(the_file.name,"emoji_",""),".svg",""), icon: image(the_file));
+			create emoji (ratio:ss.width / ss.height,shape:(geometry(the_file)),name:replace(replace(the_file.name,"emoji_",""),".svg",""), icon: image(the_file));
 		}
 	}
 	

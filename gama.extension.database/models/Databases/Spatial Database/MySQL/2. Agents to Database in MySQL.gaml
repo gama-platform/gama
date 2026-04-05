@@ -22,7 +22,7 @@ global {
 		write "This model will work only if the corresponding database is installed" color: #red;
 		write "The model \"Create Spatial Table in MySQL.gaml\" can be run previously to create the table.";
 		
-		create buildings from: buildingsShp with: (type:string(read ('NATURE')));
+		create buildings(type:string(read ('NATURE'))) from: buildingsShp;
 		create bounds from: boundsShp;
 		
 		create DB_Accessor number: 1  

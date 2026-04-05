@@ -55,7 +55,7 @@ species dummy skills:[moving] control:fsm {
 		/*
 		 * Code to be executed each step when the agent is in this state
 		 */
-		do wander; 
+		do wander(); 
 		matcher <- (dummy-self) first_with (each distance_to self < scope);
 		
 		scope <- scope + 1;
@@ -74,7 +74,7 @@ species dummy skills:[moving] control:fsm {
 	 */
 	state settle_down {
 		
-		do goto target: matcher;
+		do goto(target: matcher);
 		score <- score - 1;
 		
 		/*

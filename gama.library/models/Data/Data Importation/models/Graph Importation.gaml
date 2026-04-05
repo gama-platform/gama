@@ -19,10 +19,10 @@ global {
 	
 	graph g;
 	init {
-		do importation;
+		do importation();
 	}
 	reflex reimport {
-		do importation;
+		do importation();
 	}
 	action importation() {
 		

@@ -15,15 +15,15 @@ global torus: true{
 	field terrain <- field(300, 300);
 
 	init {
-		create increaser with: (location:location);
-		create decreaser with: (location:location);
+		create increaser(location:location);
+		create decreaser(location:location);
 	}
 
 	species increaser skills: [moving] {
 		geometry shape <- square(40);
 
 		reflex move {
-			do wander amplitude: 2.0;
+			do wander(amplitude: 2.0);
 			loop s over: terrain cells_in self {
 				terrain[geometry(s).location] <- terrain[geometry(s).location] + 1.0;
 			}
@@ -35,7 +35,7 @@ global torus: true{
 		geometry shape <- square(40);
 
 		reflex move {
-			do wander amplitude: 2.0;
+			do wander(amplitude: 2.0);
 			loop s over: terrain cells_in self {
 				terrain[geometry(s).location] <- terrain[geometry(s).location] - 1.0;
 			}

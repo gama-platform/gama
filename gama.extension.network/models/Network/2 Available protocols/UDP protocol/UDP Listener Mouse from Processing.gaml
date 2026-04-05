@@ -21,7 +21,7 @@ global {
 		write "Run the GAMA simulation, move the mouse on the gray small screen of Processing 3 and observe the move of the agent in GAMA" color: #red;
 		
 		create NetworkingAgent number: 1 {
-		   do connect to: url protocol: "udp_server" port: port ;
+		   do connect(to: url, protocol: "udp_server", port: port) ;
 		}		
 	} 
 }

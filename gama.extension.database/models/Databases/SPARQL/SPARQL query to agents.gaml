@@ -82,7 +82,7 @@ global {
 		}
 		
 		// Finally we layout the philosophers so they are following a chronological order
-		do layout_philosophers;
+		do layout_philosophers();
 	}
 
 	action layout_philosophers() {

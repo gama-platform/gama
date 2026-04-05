@@ -38,8 +38,7 @@ global {
 		write "";		
 		
 		create DB_accessor {
-			create buildings from: select(PARAMS, QUERY)
-							 with:( nature:"type", shape:"geom");
+			create buildings( nature:"type", shape:"geom") from: select(PARAMS, QUERY);
 		 }
 		 write "Buildings created: "+length(buildings) ;
 	}

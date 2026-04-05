@@ -39,7 +39,7 @@ global {
 			map_zoom <- int(answers["Zoom x"]);
 			map_size <- point(answers["Size"]);
 			
-			do load_map;			
+			do load_map();			
 		}
 	}
 
@@ -48,7 +48,7 @@ global {
 experiment Display
 {
 	parameter "Zoom" var: map_zoom  {
-		ask simulation  {do load_map;}
+		ask simulation  {do load_map();}
 		do update_outputs(true);
 	}
 

@@ -191,7 +191,7 @@ global {
 ╚══════════════════════════════════════════════════════════════════════════╝
         ";
 
-        do sync_matrix_from_vars;
+        do sync_matrix_from_vars();
         loop t from: 0 to: nb_types - 1 {
             create particle number: int(nb_particles / nb_types) {
                 ptype    <- t;
@@ -211,7 +211,7 @@ global {
      * Called automatically each cycle by the sync_matrix reflex,
      * allowing slider changes to take effect immediately during the simulation.
      */
-    action sync_matrix_from_vars {
+    action sync_matrix_from_vars() {
         attraction_matrix <- 0.0 as_matrix {nb_types, nb_types};
         attraction_matrix[0,0] <- A_0_0; attraction_matrix[0,1] <- A_0_1;
         attraction_matrix[0,2] <- A_0_2; attraction_matrix[0,3] <- A_0_3;
@@ -238,14 +238,14 @@ global {
     // Synchronises the internal matrix from the sliders each cycle.
     // Allows modifications to be seen immediately.
     reflex sync_matrix {
-        do sync_matrix_from_vars;
+        do sync_matrix_from_vars();
     }
 	
 	// Force and movement computation. "parallel" should be set to the
 	// maximum number of available CPU cores.
     reflex update_all {
-        ask particle parallel: true { do compute_force; }
-        ask particle parallel: true { do move; }
+        ask particle parallel: true { do compute_force(); }
+        ask particle parallel: true { do move(); }
     }
 }
 
@@ -259,7 +259,7 @@ species particle {
     // Local density computed each cycle (pass 1 of compute_force)
     float local_density;
 
-    action compute_force {
+    action compute_force() {
         force_acc     <- {0.0, 0.0};
         local_density <- 0.0;
         list<particle> neighbors <- particle at_distance max_radius;
@@ -330,7 +330,7 @@ species particle {
         }
     }
 
-    action move {
+    action move() {
         float new_vx <- velocity.x * friction + force_acc.x * force_scale * dt;
         float new_vy <- velocity.y * friction + force_acc.y * force_scale * dt;
         velocity <- {new_vx, new_vy};
@@ -424,7 +424,7 @@ experiment ParticleLife type: gui {
      * Called automatically each cycle by the sync_matrix reflex,
      * allowing slider changes to take effect immediately during the simulation.
      */
-    action sync_matrix_from_vars {
+    action sync_matrix_from_vars() {
         attraction_matrix <- 0.0 as_matrix {nb_types, nb_types};
         attraction_matrix[0,0] <- A_0_0; attraction_matrix[0,1] <- A_0_1;
         attraction_matrix[0,2] <- A_0_2; attraction_matrix[0,3] <- A_0_3;
@@ -447,13 +447,13 @@ experiment ParticleLife type: gui {
      * randomize_matrix - Assigns random values to all matrix cells.
      * Available in the GAMA "Actions" panel during the simulation.
      */
-    action randomize_matrix {
+    action randomize_matrix() {
         A_0_0<-rnd(-1.0,1.0); A_0_1<-rnd(-1.0,1.0); A_0_2<-rnd(-1.0,1.0); A_0_3<-rnd(-1.0,1.0); A_0_4<-rnd(-1.0,1.0);
         A_1_0<-rnd(-1.0,1.0); A_1_1<-rnd(-1.0,1.0); A_1_2<-rnd(-1.0,1.0); A_1_3<-rnd(-1.0,1.0); A_1_4<-rnd(-1.0,1.0);
         A_2_0<-rnd(-1.0,1.0); A_2_1<-rnd(-1.0,1.0); A_2_2<-rnd(-1.0,1.0); A_2_3<-rnd(-1.0,1.0); A_2_4<-rnd(-1.0,1.0);
         A_3_0<-rnd(-1.0,1.0); A_3_1<-rnd(-1.0,1.0); A_3_2<-rnd(-1.0,1.0); A_3_3<-rnd(-1.0,1.0); A_3_4<-rnd(-1.0,1.0);
         A_4_0<-rnd(-1.0,1.0); A_4_1<-rnd(-1.0,1.0); A_4_2<-rnd(-1.0,1.0); A_4_3<-rnd(-1.0,1.0); A_4_4<-rnd(-1.0,1.0);
-        do sync_matrix_from_vars;
+        do sync_matrix_from_vars();
         write "New random matrix applied.";
     }
 
@@ -462,13 +462,13 @@ experiment ParticleLife type: gui {
      * Produces characteristic spirals and rotating chains.
      * Red->Green->Blue->Yellow->Purple->Red
      */
-    action preset_chains {
+    action preset_chains() {
         A_0_0<- -0.3; A_0_1<-  0.9; A_0_2<-  0.0; A_0_3<-  0.0; A_0_4<-  0.0;
         A_1_0<-  0.0; A_1_1<- -0.3; A_1_2<-  0.9; A_1_3<-  0.0; A_1_4<-  0.0;
         A_2_0<-  0.0; A_2_1<-  0.0; A_2_2<- -0.3; A_2_3<-  0.9; A_2_4<-  0.0;
         A_3_0<-  0.0; A_3_1<-  0.0; A_3_2<-  0.0; A_3_3<- -0.3; A_3_4<-  0.9;
         A_4_0<-  0.9; A_4_1<-  0.0; A_4_2<-  0.0; A_4_3<-  0.0; A_4_4<- -0.3;
-        do sync_matrix_from_vars;
+        do sync_matrix_from_vars();
         write "Preset 'Chains' applied.";
     }
 
@@ -476,13 +476,13 @@ experiment ParticleLife type: gui {
      * preset_clusters - Each type attracts itself and repels the others.
      * Produces well-separated colour clusters.
      */
-    action preset_clusters {
+    action preset_clusters() {
         A_0_0<-  0.8; A_0_1<- -0.5; A_0_2<- -0.5; A_0_3<- -0.5; A_0_4<- -0.5;
         A_1_0<- -0.5; A_1_1<-  0.8; A_1_2<- -0.5; A_1_3<- -0.5; A_1_4<- -0.5;
         A_2_0<- -0.5; A_2_1<- -0.5; A_2_2<-  0.8; A_2_3<- -0.5; A_2_4<- -0.5;
         A_3_0<- -0.5; A_3_1<- -0.5; A_3_2<- -0.5; A_3_3<-  0.8; A_3_4<- -0.5;
         A_4_0<- -0.5; A_4_1<- -0.5; A_4_2<- -0.5; A_4_3<- -0.5; A_4_4<-  0.8;
-        do sync_matrix_from_vars;
+        do sync_matrix_from_vars();
         write "Preset 'Clusters' applied.";
     }
     

@@ -33,13 +33,13 @@ global {
 		create dummy_species number: 10;
 		
 		// A very convenient way to loop over all the elements of a container is to use the over: facet of the loop.
-		do loop_over;
+		do loop_over();
 		// To be more precise on the loop over a structure we can need to loop using an index value.
-		do loop_using_indices;
+		do loop_using_indices();
 		// Some specificities of the loop over maps.
-		do loop_map;
+		do loop_map();
 		// Some specificities of the loop over graphs.		
-		do loop_graph;
+		do loop_graph();
 	}
 	
 	action loop_over() {

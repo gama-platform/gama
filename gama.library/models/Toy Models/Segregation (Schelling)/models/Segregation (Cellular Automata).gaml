@@ -43,7 +43,7 @@ global torus: true{
 	//Reflex to migrate all the people agents
 	reflex migrate {
 		ask copy(all_people) {
-			do migrate;
+			do migrate();
 		}
 
 	}

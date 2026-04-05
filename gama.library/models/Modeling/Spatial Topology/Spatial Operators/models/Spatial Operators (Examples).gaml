@@ -33,7 +33,7 @@ global {
 	
 
 	reflex stop when: empty ( objects ) {
-		do pause;
+		do pause();
   	} 
 
 }
@@ -55,7 +55,7 @@ species objects topology: topology(shape_file_name_init) {
 	reflex move {
 		location <- location + { speed * ( 1 - rnd ( 2 ) ) , speed * ( 1 - rnd ( 2 ) ) };
 		if ( (shape.area > dying_size) or (shape intersects world.shape.contour)) {
-			do die; 
+			do die(); 
 		}
 			
 	}

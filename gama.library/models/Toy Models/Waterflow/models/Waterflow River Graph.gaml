@@ -39,15 +39,15 @@ global {
 		// Every 20 simulation steps, the source points provide water to the closest river.
 		if (every(10#cycles)) {
 			ask poi - outlet {
-				do give_water;
+				do give_water();
 			}	
 		//  For a visualisation purpose, the water flow is not executed when the sources provide water.
 		} else {		
 			ask river {
-				do water_flow;
+				do water_flow();
 			}
 			ask river {
-				do update_water_level;
+				do update_water_level();
 			}			
 		}
 	}

@@ -43,7 +43,7 @@ global parent: physical_world {
 	}
 
 	reflex when: every(500 #cycle) {
-		create ball with: (type:one_of(0, 1, 2, 3)) {
+		create ball(type:one_of(0, 1, 2, 3)) {
 			location <- {dimension * 3 / 2 + rnd(4) - 2, dimension + rnd(4) - 2, max_height + dimension + rnd(4) - 2};
 		}
 
@@ -76,7 +76,7 @@ species ball skills: [dynamic_body] {
 
 	//When a ball agent falls from the edges of the world, it is removed from the simulation (and the physical world as well).		
 	reflex manage_location when: location.z < -20 {
-		do die;
+		do die();
 	}
 
 	aspect default {
@@ -100,7 +100,7 @@ experiment Stairs type: gui {
 			species ball;
 			event #mouse_down {
 				ask ball {
-					do apply impulse: {rnd(2)-1, rnd(2)-1, 10};
+					do apply(impulse: {rnd(2)-1, rnd(2)-1, 10});
 				}
 			}
 		}
