@@ -22,18 +22,18 @@ global {
 		
 		create DB_accessor;
 		ask DB_accessor {
-			do executeUpdate params: PARAMS updateComm: "DROP TABLE IF EXISTS `result_DB`";
-			do executeUpdate params: PARAMS updateComm: "CREATE TABLE `result_DB` (
+			do executeUpdate(params: PARAMS, updateComm: "DROP TABLE IF EXISTS `result_DB`");
+			do executeUpdate(params: PARAMS, updateComm: "CREATE TABLE `result_DB` (
 										  `idPoint` varchar(16) CHARACTER SET utf8 COLLATE utf8_bin NOT NULL,
 										  `valRnd` float NOT NULL DEFAULT '0',
 										  `cycle` int(16) NOT NULL DEFAULT '0'
-										) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+										) ENGINE=InnoDB DEFAULT CHARSET=utf8;");
 		}
 
 		write first(DB_accessor).select (PARAMS, SQLquery_idPoint);
 
-		create idPoint from: first(DB_accessor).select(PARAMS, SQLquery_idPoint)
-		with: (name: "idPointgrille", RRmm:"RR", Tmin:"Tmin", Tmax:"Tmax", Rglot:"Rglot", ETPmm:"ETPmm");
+		create idPoint(name: "idPointgrille", RRmm:"RR", Tmin:"Tmin", Tmax:"Tmax", Rglot:"Rglot", ETPmm:"ETPmm") 
+				from: first(DB_accessor).select(PARAMS, SQLquery_idPoint);
 	}
 
 	reflex endSimu when: (cycle = 10) {
@@ -43,7 +43,7 @@ global {
 //		}
 //
 //		write "DROP the table = " + res_DB;
-		do pause; 
+		do pause(); 
 	}
 
 }
@@ -62,7 +62,11 @@ species idPoint {
 
 	reflex store_valRnd {		
 		ask (first(DB_accessor)) {
-			do executeUpdate params: PARAMS updateComm: "INSERT INTO " + res_DB + " VALUES(?, ?, ?);" values: [myself.name, myself.valRnd, cycle];
+			do executeUpdate(
+				params: PARAMS, 
+				updateComm: "INSERT INTO " + res_DB + " VALUES(?, ?, ?);", 
+				values: [myself.name, myself.valRnd, cycle]
+			);
 		}
 
 		write " " + self + " inserts value " + valRnd;
@@ -77,7 +81,7 @@ species DB_accessor skills: [SQLSKILL] {
 		if (!testConnection(PARAMS)) {
 			write "Connection impossible";
 			ask (world) {
-				do pause;
+				do pause();
 			}
 
 		} else {

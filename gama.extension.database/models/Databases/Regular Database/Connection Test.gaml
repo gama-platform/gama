@@ -35,9 +35,9 @@ global {
 		create AgentDB_SQLITE;
 		create AgentDB_POSTGRESQL;		
 		
-		ask AgentDB_MySQL {do die;}
-		ask AgentDB_SQLITE {do die;}
-		ask AgentDB_POSTGRESQL {do die;}
+		ask AgentDB_MySQL {do die();}
+		ask AgentDB_SQLITE {do die();}
+		ask AgentDB_POSTGRESQL {do die();}
 	}
 
 }

@@ -24,7 +24,7 @@ global {
 species Initiator skills: [fipa] {
 	reflex send_query_message when: (time = 1) {
 		write name + ' sends query message';
-		do start_conversation to: [p] protocol: 'fipa-query' performative: 'query' contents: ['your name?'] ;
+		do start_conversation(to: [p], protocol: 'fipa-query', performative: 'query', contents: ['your name?']) ;
 	}
 	
 	reflex read_inform_message when: !(empty(informs)) {
@@ -42,8 +42,8 @@ species Participant skills: [fipa] {
 		
 		write name + ' reads a query message with content : ' + string(queryFromInitiator.contents);
 		
-		do agree message: queryFromInitiator contents: ['OK, I will answer you'] ;		
-		do inform message: queryFromInitiator contents: [ 'My name is ' + name ] ;
+		do agree(message: queryFromInitiator, contents: ['OK, I will answer you']) ;		
+		do inform(message: queryFromInitiator, contents: [ 'My name is ' + name ]) ;
 	}
 }
 

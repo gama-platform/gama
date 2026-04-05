@@ -28,7 +28,7 @@ species Initiator skills: [fipa] {
 	
 	reflex send_request when: (time = 1) {
 		write 'send message';
-		do start_conversation to: [p] protocol: 'fipa-request' performative: 'request' contents: ['go sleeping'] ;
+		do start_conversation(to: [p], protocol: 'fipa-request', performative: 'request', contents: ['go sleeping']) ;
 	}
 	
 	reflex read_refuse_message when: !(empty(refuses)) {
@@ -46,7 +46,7 @@ species Participant skills: [fipa] {
 
 	reflex reply_messages when: (!empty(requests)) {
 		write name + ' sends a refuse message';
-		do refuse message: (requests at 0) contents: ['I don\'t want'] ;
+		do refuse(message: (requests at 0), contents: ['I don\'t want']) ;
 	}
 }
 
