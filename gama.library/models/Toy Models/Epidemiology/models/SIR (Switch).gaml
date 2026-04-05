@@ -78,7 +78,7 @@ global {
 		
 		//Ask to the model to initialize itself according to the value initialized
 		ask current_model {
-			do initialize;
+			do initialize();
 		}
 		
 		//Create the SIR maths with ODE to compare
@@ -127,11 +127,11 @@ species switch_model schedules: [] {
 				self.I <- current_model.I;
 				self.R <- current_model.R;
 				self.N <- current_model.N;
-				do initialize;
+				do initialize();
 			}
 
 			ask current_model {
-				do remove_model;
+				do remove_model();
 			}
 
 			current_model <- first(IBM_model);
@@ -147,11 +147,11 @@ species switch_model schedules: [] {
 				self.I <- current_model.I;
 				self.R <- current_model.R;
 				self.N <- current_model.N;
-				do initialize;
+				do initialize();
 			}
 
 			ask current_model {
-				do remove_model;
+				do remove_model();
 			}
 
 			current_model <- first(Math_model);
@@ -169,7 +169,7 @@ species SIR_model schedules: [] {
 	string model_type <- 'none';
 	
 	action remove_model() {
-		do die;
+		do die();
 	}
 
 	action initialize() ;
@@ -205,11 +205,11 @@ species IBM_model schedules: [] parent: SIR_model {
 			is_immune <- true;
 			color <- rgb(52,152,219);
 		}
-		do count;
+		do count();
 	}
 
 	reflex count {
-		do count;
+		do count();
 	}
 	//Action to update the different compartiments
 	action count() {
@@ -220,10 +220,10 @@ species IBM_model schedules: [] parent: SIR_model {
 	//Action to remove the model and kill all the agents it contains
 	action remove_model() {
 		ask Host {
-			do die;
+			do die();
 		}
 
-		do die;
+		do die();
 	}
 
 }
