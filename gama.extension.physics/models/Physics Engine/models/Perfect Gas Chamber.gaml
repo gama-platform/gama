@@ -90,7 +90,7 @@ experiment "Gas Chamber" type: gui {
 	// With this command, the user can destroy one of the walls at random
 	user_command "Open one wall" color: #red {
 		ask (one_of(wall)) {
-			do die;
+			do die();
 		}
 	}
 	output {

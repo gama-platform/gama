@@ -21,7 +21,7 @@ global {
 	init {
 		loop i from: 0 to: 18{
 			if (i != 10) {
-				create dummy with:(location:{i * 5 + 2 - rnd(4), i*5 + 2 - rnd(4), i*5 + 2 - rnd(4)});	
+				create dummy(location:{i * 5 + 2 - rnd(4), i*5 + 2 - rnd(4), i*5 + 2 - rnd(4)});	
 			}
 		}
 	}
