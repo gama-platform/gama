@@ -61,7 +61,7 @@ species people skills: [moving]
 	reflex default
 	{
 	//	heading <- heading + 30;
-		do wander amplitude: 100.0;
+		do wander(amplitude: 100.0);
 	}
 
 	// The default aspect will be used when no other aspect is invoked in displays

@@ -25,7 +25,7 @@ global {
 	init {
 		create building from: shapefile ;
 		bounds <- union(building);
-		create bug number: 5 with: (location: any_location_in(bounds));
+		create bug(location: any_location_in(bounds)) number: 5;
 	}
 	reflex add_objects_to_kml {
 		
@@ -46,12 +46,12 @@ global {
 		
 		// export the kml to a kmz/kml file
 		save kml_export to:"../results/result.kmz";
-		do pause;
+		do pause();
 	}
 }
 species bug skills: [moving]{
 	reflex move {
-		do wander speed: 10.0 bounds: bounds;
+		do wander(speed: 10.0, bounds: bounds);
 	}
 	aspect default {
 		draw file("../includes/full_ant.png") size: 10 ;

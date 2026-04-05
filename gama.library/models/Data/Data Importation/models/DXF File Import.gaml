@@ -21,7 +21,7 @@ global
 	init
 	{
 	//create house_element agents from the dxf file and initialized the layer attribute of the agents from the the file
-		create house_element from: house_file with: (layer:string(get("layer")));
+		create house_element(layer:string(get("layer"))) from: house_file;
 		
 		//define a random color for each layer
 		map<string,list<house_element>> layers <- house_element group_by each.layer;
