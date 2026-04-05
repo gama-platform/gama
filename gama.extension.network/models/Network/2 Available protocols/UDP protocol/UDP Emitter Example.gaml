@@ -23,7 +23,7 @@ global {
 		
 		
 		create NetworkingAgent number:1 {
-		   do connect to: url protocol: "udp_emitter" port: port ;
+		   do connect(to: url, protocol: "udp_emitter", port: port) ;
 		}		
 	} 
 }
@@ -36,7 +36,7 @@ species NetworkingAgent skills:[network] {
 
 	reflex send {
 		write "sending message ";
-		do send contents: "" + location.x + ";" + location.y;
+		do send(contents: "" + location.x + ";" + location.y);
 	}
 	
 	aspect default {

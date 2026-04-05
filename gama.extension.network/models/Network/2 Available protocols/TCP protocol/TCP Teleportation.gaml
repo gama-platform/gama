@@ -21,8 +21,8 @@ global {
 			myColor <- rnd_color(255);
 		}
 
-		create Buffer with: (zone:0);
-		create Buffer with: (zone:1);
+		create Buffer(zone:0);
+		create Buffer(zone:1);
 	}
 
 }
@@ -42,11 +42,11 @@ species Buffer skills: [network] {
 		}
 
 		if (simulation_id = 0) {
-			do connect to: "localhost" with_name: name protocol: "tcp_server" port: 3001;
-			do join_group with_name: "server_group";
+			do connect(to: "localhost", with_name: name, protocol: "tcp_server", port: 3001);
+			do join_group(with_name: "server_group");
 		} else {
-			do connect to: "localhost" with_name: name protocol: "tcp_client" port: 3001;
-			do join_group with_name: "buffer";
+			do connect(to: "localhost", with_name: name, protocol: "tcp_client", port: 3001);
+			do join_group(with_name: "buffer");
 			write "my name " + name + " " + next_agent;
 		}
 
@@ -58,9 +58,9 @@ species Buffer skills: [network] {
 			write "send agent";
 			map<string, unknown> msg <- map(["name"::ping.name, "mcolor"::ping.myColor, "location"::(ping.location - {self.location.x, 0})]);
 			string smsg <- serialize(msg);
-			do send to: next_agent contents: msg;
+			do send(to: next_agent, contents: msg);
 			ask ping {
-				do die;
+				do die();
 			}
 
 		} 
@@ -79,7 +79,7 @@ species Buffer skills: [network] {
 		loop while: has_more_message() {
 			message msg <- fetch_message();
 			map<string, unknown> details <- map(msg.contents);
-			create Pong with: (name: details["name"], myColor:details["mcolor"], location:details["location"]) {
+			create Pong(name: details["name"], myColor:details["mcolor"], location:details["location"]) {
 				write "received agent";
 				location <- {myself.location.x, location.y};
 				last_zone <- myself.zone;
@@ -118,7 +118,7 @@ experiment start {
 		simulation_id <- 0;
 		seed <- 1.0;
 		loop i from: 1 to: nb_simul - 1 {
-			create simulation with: (simulation_id:i, seed:1 + i, numberOfSimulation:nb_simul);
+			create simulation(simulation_id:i, seed:1 + i, numberOfSimulation:nb_simul);
 		}
 
 	}
