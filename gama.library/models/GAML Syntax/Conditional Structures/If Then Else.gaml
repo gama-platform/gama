@@ -19,17 +19,17 @@ global {
 	
 	init {
 		
-		do condional_hello_world;
+		do condional_hello_world();
 		
-		do bi_conditional_hello_world;
+		do bi_conditional_hello_world();
 		
-		do or_conditional_hello_world;
+		do or_conditional_hello_world();
 		
-		do if_then_hello_world_else_goodbye;
+		do if_then_hello_world_else_goodbye();
 		
-		do if_then_tic_elseif_then_tac_else_toc;
+		do if_then_tic_elseif_then_tac_else_toc();
 		
-		do tertiary_hello_world;
+		do tertiary_hello_world();
 		
 	}
 	

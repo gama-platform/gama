@@ -37,19 +37,19 @@ global {
 
 	action clean() {
 		ask regular_agent_node {
-			do die;
+			do die();
 		}
 
 		ask regular_agent_edge {
-			do die;
+			do die();
 		}
 
 		ask builtin_edge {
-			do die;
+			do die();
 		}
 
 		ask builtin_node {
-			do die;
+			do die();
 		}
 
 	}
@@ -60,7 +60,7 @@ global {
 	 */
 	action random (){
 		write "- random graph : Erdős-Rényi = generate_random_graph(nb_nodes,nb_edges,directed,node_species,edge_species)";
-		do clean;
+		do clean();
 		if no_species { g_graph <- as_spatial_graph(generate_random_graph(nb_nodes,nb_nodes*av_degree,directed_graph));}
 		else if node_species_only { g_graph <- as_spatial_graph(generate_random_graph(nb_nodes,nb_nodes*av_degree,directed_graph,regular_agent_node));}
 		else {
@@ -83,7 +83,7 @@ global {
 	 */
 	action scale_free (){
 		write "- Scale-free : Barabási–Albert = generate_barabasi_albert(node_species, edge_species, nb_nodes, new_edges, synchronize)";
-		do clean;
+		do clean();
 		int new_edges_addition_per_node_introduction <- 4 > init_nb_nodes ? init_nb_nodes : 4;
 		if no_species {g_graph <- as_spatial_graph(generate_barabasi_albert(init_nb_nodes,new_edges_addition_per_node_introduction,nb_nodes,directed_graph));}
 		else if node_species_only {g_graph <- as_spatial_graph(generate_barabasi_albert(init_nb_nodes,new_edges_addition_per_node_introduction,nb_nodes,directed_graph,regular_agent_node));}
@@ -106,7 +106,7 @@ global {
 	 */
 	action small_world (){
 		write "- Small-world : Watts-Strogatz = generate_watts_strogatz(node_species, edge_species, nb_nodes, rewire_proba, start_degree, synchronize)";
-		do clean;
+		do clean();
 		float rewirering_probability <- 0.1;
 		int fake_lattice_start_degree <- 4; // Even and more than 2
 		if no_species {g_graph <- as_spatial_graph(generate_watts_strogatz(nb_nodes,rewirering_probability,fake_lattice_start_degree,directed_graph));}
@@ -128,7 +128,7 @@ global {
 	 */
 	action complete (){
 		write "- Complete = generate_complete_graph(node_species, edge_species, nb_node)";
-		do clean;
+		do clean();
 		if no_species {g_graph <- as_spatial_graph(generate_complete_graph(nb_nodes,directed_graph));}
 		else if node_species_only {g_graph <- as_spatial_graph(generate_complete_graph(nb_nodes,directed_graph,regular_agent_node));}
 		else {
@@ -142,7 +142,7 @@ global {
 	}
 
 	action from_nodes (){
-		do clean;
+		do clean();
 		create regular_agent_node number: nb_nodes;
 		write "\tas_distance_graph(my_species, distance)";
 		float distance <- 20 #m;
@@ -153,16 +153,16 @@ global {
 	}
 
 	action from_polygons() {
-		do clean;
+		do clean();
 		// Create a set of lines (no need to create agent) to build network with
-		create regular_agent_node number: nb_nodes with: (shape:circle(rnd(5,20)) at_location any_location_in(world));
+		create regular_agent_node (shape:circle(rnd(5,20)) at_location any_location_in(world)) number: nb_nodes ;
 		write "\tas_intersection_graph(my_lines, tolerance)";
 		float tolerance <- 1.0;
 		g_graph <- as_intersection_graph(regular_agent_node, tolerance,regular_agent_edge);
 	}
 
 	action grid_graph (int k) {
-		do clean;
+		do clean();
 		write "With a grid with 4, 6 or 8 neighbors that correspond to a lattice of 4, 6 and 8 degree";
 		write "- Using 'grid_cells_to_graph(my_grid)'";
 		switch k {
@@ -264,15 +264,15 @@ global {
 		write "GRAPH LAYOUT\n";
 		switch the_layout {
 			match "Circle" {
-				do c_layout;
+				do c_layout();
 			}
 
 			match "Grid" {
-				do g_layout;
+				do g_layout();
 			}
 
 			match "Forced" {
-				do f_layout;
+				do f_layout();
 			}
 
 		}
@@ -369,35 +369,35 @@ experiment Graph type: gui {
 	text "You have to play the simulation model in order to build and play with network";
 	user_command "Accessing/modifying graphs" {
 		ask world {
-			do access_and_modify_edge_and_node;
+			do access_and_modify_edge_and_node();
 		}
 
 	}
 
 	user_command "Connectivity of node and edge" {
 		ask world {
-			do connectivity_of_node_and_edge;
+			do connectivity_of_node_and_edge();
 		}
 
 	}
 
 	user_command "Connectivity of graph" {
 		ask world {
-			do connectivity_of_graph;
+			do connectivity_of_graph();
 		}
 
 	}
 
 	user_command "Layout graph" {
 		ask world {
-			do layout_graph;
+			do layout_graph();
 		}
 
 	}
 
 	user_command "Path with graph" {
 		ask world {
-			do path_finding_graph;
+			do path_finding_graph();
 		}
 
 	}

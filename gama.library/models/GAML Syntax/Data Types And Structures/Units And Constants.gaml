@@ -14,19 +14,19 @@ model UnitsAndConstants
 global {
 	init {
 		// Constants related to errors
-		do constant_current_err;
+		do constant_current_err();
 		write "";
 		
 		// Mathematical classical constants
-		do constant_math;
+		do constant_math();
 		write "";
 		
 		// Classical unit constants
-		do length_surface_time_units;
+		do length_surface_time_units();
 		write "";
 		
 		// Time constants
-		do time_units;		
+		do time_units();		
 		
 		// The experiment allows to illustrate all the constant related to graphical aspects.
 	}
@@ -232,7 +232,7 @@ experiment exp {
 				draw line([#user_location + {0,1.0/#zoom ,0}, #user_location - {0,1.0/#zoom ,0}]) at:#user_location color: #red ;						
 			}
 			event #mouse_move {			
-				do update_outputs;		
+				do update_outputs();		
 			}	
 		}
 	}

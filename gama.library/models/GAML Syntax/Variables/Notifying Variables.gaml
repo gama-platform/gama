@@ -34,7 +34,7 @@ species a skills: [moving] {
 	};
 
 	reflex wandering {
-		do wander;
+		do wander();
 	}
 
 }

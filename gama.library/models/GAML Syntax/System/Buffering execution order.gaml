@@ -37,7 +37,7 @@ global {
 	}
 	
 	reflex end_sim when:cycle=4{
-		do die;
+		do die();
 	}
 	
 }
