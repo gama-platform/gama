@@ -119,6 +119,7 @@
       </content-type>
       <content-type
             default-charset="UTF-8"
+            describer="gama.workspace.metadata.GMLContentDescriber"
             file-extensions="gml,GML"
             id="gama.gml.file.type"
             name="GML File"

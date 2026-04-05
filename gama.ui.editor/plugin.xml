@@ -290,6 +290,19 @@
   </menuContribution>
 	</extension>
 
+	<!-- Content type declaration for gaml.compiler.Gaml.contenttype (mirrors plugin.xml_gen).
+	     This ensures that Eclipse content-type aware tools (including GitHub Copilot via LSP4E)
+	     can associate .gaml and .experiment files with the correct language. -->
+	<extension point="org.eclipse.core.contenttype.contentTypes">
+		<content-type
+			base-type="org.eclipse.core.runtime.text"
+			file-extensions="gaml,experiment"
+			id="gaml.compiler.Gaml.contenttype"
+			name="GAML"
+			priority="normal">
+		</content-type>
+	</extension>
+
 	<!-- adding resource factories -->
 	<extension
 		point="org.eclipse.emf.ecore.extension_parser">
