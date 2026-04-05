@@ -45,12 +45,12 @@ global
 		
 		ask (new_corridors at 0) 
 		{
-			do init_corridor( corridor_shape: corridor_shape_0, is_hybrid: false);
+			do init_corridor(corridor_shape: corridor_shape_0, is_hybrid: false);
 		}
 
 		ask (new_corridors at 1) 
 		{
-			do init_corridor (corridor_shape: corridor_shape_1, is_hybrid: true); 
+			do init_corridor(corridor_shape: corridor_shape_1, is_hybrid: true); 
 		}
 	}
 
@@ -61,12 +61,12 @@ global
 		
 		ask (new_pedestrians at 0) 
 		{
-			do init_location (loc: pedestrian_source_0);
+			do init_location(loc: pedestrian_source_0);
 		}
 		
 		ask (new_pedestrians at 1) 
 		{
-			do init_location (loc: pedestrian_source_1);
+			do init_location(loc: pedestrian_source_1);
 		}
 	}	
 }
@@ -90,7 +90,7 @@ species pedestrian skills: [moving] {
 	//Reflex to move the agent to its target location and make it die once it reached its target
 	reflex move_left 
 	{
-		do move (heading: (self) towards (target_location)); 
+		do move(heading: (self) towards (target_location)); 
 		
 		if ( (target_location.x - location.x) <= speed ) 
 		{
@@ -124,7 +124,7 @@ species corridor  {
 	
 	init 
 	{ 
-		create corridor_info_drawer (target : self);
+		create corridor_info_drawer(target : self);
 	}
 	//Reflex to capture the pedestrians overlapping the corridor ie entering the corridor 
 	reflex aggregate when: capture_pedestrians 

@@ -60,7 +60,7 @@ global {
 	}
 	
 	reflex stop_sim when: empty(people) {
-		do pause;
+		do pause();
 	}
 }
  
@@ -95,7 +95,7 @@ species people skills: [moving] control: simple_bdi{
 		focus id:"catastrophe" is_uncertain: true;
 		ask myself {
 			if(fearful){
-				do to_escape_mode;
+				do to_escape_mode();
 			}else{
 				color<-#green;
 			}
@@ -107,7 +107,7 @@ species people skills: [moving] control: simple_bdi{
 		focus id:"catastrophe";
 		ask myself{
 			if(not escape_mode){
-				do to_escape_mode;
+				do to_escape_mode();
 			}
 		}
 	}
@@ -139,7 +139,7 @@ species people skills: [moving] control: simple_bdi{
 		if (target = nil) {
 			target <- any_location_in(one_of(road));
 		} else {
-			do goto target: target on: road_network move_weights: current_weights recompute_path: false;
+			do goto (target: target, on: road_network, move_weights: current_weights, recompute_path: false);
 			if (target = location)  {
 				target <- nil;
 				noTarget<-true;
@@ -156,9 +156,9 @@ species people skills: [moving] control: simple_bdi{
 			noTarget <- false;
 		}
 		else  {
-			do goto target: target on: road_network move_weights: current_weights recompute_path: false;
+			do goto (target: target, on: road_network, move_weights: current_weights, recompute_path: false);
 			if (target = location)  {
-				do die;
+				do die();
 			}		
 		}
 	}	
@@ -171,9 +171,9 @@ species people skills: [moving] control: simple_bdi{
 			noTarget <- false;
 		}
 		else  {
-			do goto target: target on: road_network move_weights: current_weights recompute_path: false;
+			do goto (target: target, on: road_network, move_weights: current_weights, recompute_path: false);
 			if (target = location)  {
-				do die;
+				do die();
 			}		
 		}
 	}

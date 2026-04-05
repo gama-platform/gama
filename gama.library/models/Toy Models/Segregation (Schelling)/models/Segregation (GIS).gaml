@@ -29,7 +29,7 @@ global {
 	//Action to initialize people agents
 	action initialize_people() { 
 		//Create all the places with a surface given within the shapefile
-		create space from: shape_file_name with: (surface : float(read("AREA")));
+		create space (surface : float(read("AREA"))) from: shape_file_name;
 		all_places  <- shuffle(space);
 		//Compute the number of people to create considering the density of people
 		number_of_people <- int( density_of_people * sum (all_places collect (each.capacity))); 
@@ -63,14 +63,14 @@ species people parent: base {
 	action move_to_new_place() {  
 		current_building <- (shuffle(all_places) first_with (((each).capacity) > 0));
 		ask current_building {
-			do accept one_people: myself;   
+			do accept (one_people: myself);   
 		}
 	}
 	//Reflex to migrate to another place if the agent isn't happy
 	reflex migrate when: !is_happy {
 		if current_building != nil {
 			ask current_building { 
-				do remove_one one_people: myself;
+				do remove_one (one_people: myself);
 			}
 		} 
 		do move_to_new_place();

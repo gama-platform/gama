@@ -24,7 +24,7 @@ global {
 	
 	init {
 		//create the contour line agents from the shapefile, and init the elevation for each agent
-		create contour_line from: shape_file_cl with: (elevation: float(read("ELEVATION")));
+		create contour_line(elevation: float(read("ELEVATION"))) from: shape_file_cl;
 		
 		//triangulate the contour lines
 		list<geometry> triangles  <- triangulate (list(contour_line), tolerance);

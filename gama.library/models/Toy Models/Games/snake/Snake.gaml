@@ -19,13 +19,13 @@ global {
 	geometry shape <- square(environment_size);
 	snake the_snake;
 	init {
-		create wall with: (shape: rectangle(environment_size,1), location:{environment_size/2.0,environment_size-0.5});
-		create wall with: (shape: rectangle(environment_size,1), location:{environment_size/2.0,0.5});
-		create wall with: (shape: rectangle(1, 100.0), location:{0.5,environment_size/2.0});
-		create wall with: (shape: rectangle(1, 100.0), location:{environment_size -0.5,environment_size/2.0});
+		create wall  (shape: rectangle(environment_size,1), location:{environment_size/2.0,environment_size-0.5});
+		create wall (shape: rectangle(environment_size,1), location:{environment_size/2.0,0.5});
+		create wall  (shape: rectangle(1, 100.0), location:{0.5,environment_size/2.0});
+		create wall (shape: rectangle(1, 100.0), location:{environment_size -0.5,environment_size/2.0});
 		cells_not_wall <- cell where (not each.is_wall);
 
-		do init_game;		
+		do init_game();		
 		write "***** TO PLAY *****";
 		write "Up: 'e'/arrow up\nDown: 'd'/arrow down\nRight: 'f'/right arrow\nLeft: 's'/left arrow";
 		create HUD;
@@ -36,18 +36,18 @@ global {
 		game_is_running <- false;
 		
 		ask snake{
-			do die;
+			do die();
 		}
 		ask food {
-			do die;
+			do die();
 		}
 		
-		create snake with:(shape: square(1), location:location, headings: [0.0]) {
+		create snake (shape: square(1), location:location, headings: [0.0]) {
 			my_cell <- cell(location);
 			cells << my_cell;
 		}
 		the_snake <- first(snake);
-		create food with: (location:(one_of(free_cells()).location)) {
+		create food (location:(one_of(free_cells()).location)) {
 			ask cell(location) {
 				is_food <- true;
 			}
@@ -85,7 +85,7 @@ global {
 	}
 	action start_count_down() {
 		ask HUD{
-			do start_count_down;
+			do start_count_down();
 		}
 	}
 	list<cell> free_cells() {
@@ -143,31 +143,31 @@ species snake  {
 			match 0.0 {
 				my_cell <- cell[my_cell.grid_x +1, my_cell.grid_y];
 				if (my_cell.grid_x = (environment_size -1)) {
-					do end_of_game;
+					do end_of_game();
 				}
 				
 			}
 			match 180.0 {
 				my_cell <- cell[my_cell.grid_x -1, my_cell.grid_y];
 				if (my_cell.grid_x = 0) {
-					do end_of_game;
+					do end_of_game();
 				}
 			}
 			match -90.0 {
 				my_cell <- cell[my_cell.grid_x, my_cell.grid_y -1];
 				if (my_cell.grid_y = 0) {
-					do end_of_game;
+					do end_of_game();
 				}
 			}
 			match 90.0 {
 				my_cell <- cell[my_cell.grid_x, my_cell.grid_y +1];
 				if (my_cell.grid_y = (environment_size -1)) {
-					do end_of_game;
+					do end_of_game();
 				}
 			}
 		}
 		if my_cell in cells {
-			do end_of_game;
+			do end_of_game();
 		}
 		cells << my_cell;
 		if my_cell.is_food{
@@ -205,14 +205,14 @@ species HUD skills:[thread]{
 		count <- 5;
 		is_counting <- true;
 		
-		do run_thread interval:1#second;
+		do run_thread (interval:1#second);
 	}
 	
 	//counting down
 	action thread_action (){
 		count <- count - 1;
 		if count = 0 {
-			do end_thread;
+			do end_thread();
 			is_counting <- false;
 			ask world {
 				game_is_running <- true;
@@ -234,15 +234,15 @@ experiment snake_game type: gui autorun: true{
 			species snake;
 			species food;
 			species HUD;
-			event "e" {ask simulation { do move_up;}}
-			event #arrow_up {ask simulation { do move_up;}}
-			event "d" {ask simulation { do move_down;}}
-			event #arrow_down {ask simulation { do move_down;}}
-			event "f" {ask simulation { do move_right;}}
-			event #arrow_right {ask simulation { do move_right;}}
-			event "s" {ask simulation { do move_left;}}
-			event #arrow_left {ask simulation { do move_left;}}
-			event " " { ask simulation { do start_count_down;}}
+			event "e" {ask simulation { do move_up();}}
+			event #arrow_up {ask simulation { do move_up();}}
+			event "d" {ask simulation { do move_down();}}
+			event #arrow_down {ask simulation { do move_down();}}
+			event "f" {ask simulation { do move_right();}}
+			event #arrow_right {ask simulation { do move_right();}}
+			event "s" {ask simulation { do move_left();}}
+			event #arrow_left {ask simulation { do move_left();}}
+			event " " { ask simulation { do start_count_down();}}
 			
 		}
 	}

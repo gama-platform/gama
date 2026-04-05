@@ -45,12 +45,12 @@ species ball skills: [dynamic_body] {
 		if (other is ball) {
 			shape <- shape * 1.01;	
 			color <- rnd_color(255);		
-			do update_body;
+			do update_body();
 		}
 	} 
 
 	reflex manage_location when: location.z < -20 {
-		do die;
+		do die();
 	}
 
 	aspect default {
@@ -71,7 +71,7 @@ experiment Display type: gui {
 			event #mouse_down {
 				ball target <- ball with_min_of(each distance_to #user_location);
 				ask target {
-					do apply impulse: {rnd(10)-5,rnd(10)-5,50}; // vertical, with some random side moves
+					do apply(impulse: {rnd(10)-5,rnd(10)-5,50}); // vertical, with some random side moves
 				}
 			}
 		    species ball;			

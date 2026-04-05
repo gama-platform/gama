@@ -131,7 +131,7 @@ species Host  {
 			myPlace <- myself.myPlace ;
 			location <- myself.location ; 
 		}
-       	do die;
+       	do die();
     }
             
     aspect basic {

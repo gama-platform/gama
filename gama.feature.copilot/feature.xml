@@ -21,7 +21,7 @@
 
    <url>
       <update label="GAMA 0.0.0 Update Site" url="https://updates.gama-platform.org/0.0.0"/>
-      <discovery label="GitHub Copilot Update Site" url="https://download.eclipse.org/lsp4e/releases/latest/"/>
+      <discovery label="GitHub Copilot Update Site" url="https://azuredownloads-g3ahgwb5b8bkbxhd.b01.azurefd.net/github-copilot/"/>
    </url>
 
    <includes

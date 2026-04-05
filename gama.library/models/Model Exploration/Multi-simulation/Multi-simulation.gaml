@@ -27,7 +27,7 @@ global {
 species dummy skills: [moving]{
 	rgb color <- #green;
 	reflex move {
-		do wander speed: agent_speed;
+		do wander(speed: agent_speed);
 	}
 	aspect default {
 		draw circle(2) color: agent_color border: #black;
@@ -41,7 +41,7 @@ experiment main type: gui {
 	//we define a init block to create new simulations
 	init {
 		//we create a second simulation (the first simulation is always created by default) with the following parameters
-		create simulation with: (nb_agents: 5, agent_speed: 5.0, agent_color: #red);
+		create simulation(nb_agents: 5, agent_speed: 5.0, agent_color: #red);
 		
 	}
 	output {

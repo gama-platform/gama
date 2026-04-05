@@ -22,7 +22,7 @@ global {
 
 species A skills:[moving] {
     reflex update{
-        do wander;
+        do wander();
     }
     aspect base{
         draw circle(1) color: #white border: #black;

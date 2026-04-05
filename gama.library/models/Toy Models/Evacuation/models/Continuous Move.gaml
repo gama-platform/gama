@@ -68,7 +68,7 @@ species people skills:[moving]{
 	//Reflex to kill the agent when it has evacuated the area
 	reflex end when: location distance_to target_loc <= 2 * people_size{
 		write name + " is arrived";
-		do die;
+		do die();
 	}
 	//Reflex to compute the velocity of the agent considering the cohesion factor
 	reflex follow_goal  {
@@ -94,7 +94,7 @@ species people skills:[moving]{
 	//Reflex to move the agent considering its location, target and velocity
 	reflex move {
 		point old_location <- copy(location);
-		do goto target: location + velocity ;
+		do goto (target: location + velocity );
 		if not(self overlaps free_space ) {
 			location <- ((location closest_points_with free_space)[1]);
 		}

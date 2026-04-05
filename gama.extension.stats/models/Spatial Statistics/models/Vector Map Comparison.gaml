@@ -23,7 +23,7 @@ global {
 	geometry shape <- envelope(data);
 	 
 	init {
-		create areaclc from: data with: (init_cover:string(read("CODE_00")),obs_cover:string(read("CODE_06"))) ;
+		create areaclc(init_cover:string(read("CODE_00")),obs_cover:string(read("CODE_06"))) from: data ;
 		ask areaclc {
 			if (not (init_cover in categories)) {categories << init_cover; }
 			if (not (obs_cover in categories)) {categories << obs_cover;}

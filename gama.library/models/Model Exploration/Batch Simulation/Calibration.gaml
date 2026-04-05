@@ -43,13 +43,13 @@ species people skills:[moving] {
 	rgb color <- #green;
 	int cpt <- 0;
 	reflex basic_move {
-		do wander speed: speed_people;
+		do wander(speed: speed_people);
 	}
 
 	reflex die when: is_infected {
 		if flip(dying_proba) {
 			num_dead <- num_dead + 1;
-			do die;
+			do die();
 		}
 	}
 	reflex become_immune when: is_infected {

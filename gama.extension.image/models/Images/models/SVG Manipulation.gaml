@@ -26,7 +26,7 @@ global {
 		rgb color <- rnd_color(256);
 		
 		reflex {
-			do wander speed: 0.01 amplitude: 10.0;
+			do wander (speed: 0.01, amplitude: 10.0);
 		}
 		
 		

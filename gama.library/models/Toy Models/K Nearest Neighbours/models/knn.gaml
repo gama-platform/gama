@@ -81,7 +81,7 @@ experiment demo {
 	output {
 		display main type:2d{
 			species special_point aspect: base;
-			event #mouse_down {ask simulation {do createAgent;}} 
+			event #mouse_down {ask simulation {do createAgent();}} 
 		}
 	}
 }

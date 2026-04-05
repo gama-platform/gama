@@ -38,12 +38,12 @@ species intersection skills: [intersection_skill] {
 
 	action initialize() {
 		if (is_traffic_signal) {
-			do compute_crossing;
+			do compute_crossing();
 			stop << [];
 			if (flip(0.5)) {
-				do to_green;
+				do to_green();
 			} else {
-				do to_red;
+				do to_red();
 			}
 		}
 	}
@@ -87,9 +87,9 @@ species intersection skills: [intersection_skill] {
 		if (counter >= time_to_change) {
 			counter <- 0.0;
 			if is_green {
-				do to_red;
+				do to_red();
 			} else {
-				do to_green;
+				do to_green();
 			}
 		}
 	}

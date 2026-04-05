@@ -53,7 +53,7 @@ global {
 	
 	init {    
 		create road from: shape_file_in  {
-			create road with: (shape:line(reverse(shape.points)));
+			create road(shape:line(reverse(shape.points)));
 		}
 		the_graph <- directed(as_edge_graph(road));
 		

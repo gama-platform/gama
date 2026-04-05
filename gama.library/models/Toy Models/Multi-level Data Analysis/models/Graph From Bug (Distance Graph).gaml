@@ -25,7 +25,7 @@ global {
 	reflex updateGraph when:(cycle>0){
 		//Kill all the edge agent to create a new graph
 		ask edge_agent {
-			do die;
+			do die();
 		}
 		//Create a new graph using the distance to compute the edges
 		myGraph <- as_distance_graph(node_agent, distance, edge_agent);

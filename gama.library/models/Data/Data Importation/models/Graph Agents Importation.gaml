@@ -18,11 +18,11 @@ global {
 	graph<node_graph,edge_graph> g;
 	
 	init {
-		do importation;		
+		do importation();		
 	}
 	
 	reflex reimport {
-		do importation;
+		do importation();
 	}
 	
 	action importation() {	
@@ -35,10 +35,10 @@ global {
 		}
 			
 		ask node_graph {
-	   		do init_agt;
+	   		do init_agt();
 		}
 		ask edge_graph {
-			do init_agt;
+			do init_agt();
 		}
 		
 		write g;		

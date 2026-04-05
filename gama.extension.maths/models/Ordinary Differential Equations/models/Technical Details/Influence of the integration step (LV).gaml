@@ -12,8 +12,8 @@ model LVInfluenceoftheIntegrationstep
 
 global {
 	init {
-		create userLV with: (h:0.01,x:2.0,y:2.0);	
-		create userLV with: (h:1.0,x:2.0,y:2.0);									
+		create userLV(h:0.01,x:2.0,y:2.0);	
+		create userLV(h:1.0,x:2.0,y:2.0);									
 	}
 }
 

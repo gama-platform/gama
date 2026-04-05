@@ -69,7 +69,7 @@ global {
 		string s <- (to_json(sp[0]));
 		// ... then kill them ...
 		ask sp {
-			do die;
+			do die();
 		}
 		// ... and finally recreate them while asking to recreate an unknown value. 
 		unknown t <- from_json(s);

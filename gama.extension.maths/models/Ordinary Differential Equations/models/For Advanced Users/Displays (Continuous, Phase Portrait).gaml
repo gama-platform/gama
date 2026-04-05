@@ -14,7 +14,7 @@ model Displays
 
 global {	
 	init {
-		create LV_model with: (x:2.0, y:2.0);
+		create LV_model(x:2.0, y:2.0);
 	}
 }
 

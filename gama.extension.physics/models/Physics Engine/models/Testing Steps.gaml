@@ -75,7 +75,7 @@ species ball skills: [dynamic_body] {
 	}
 
 	reflex manage_location when: location.z < -20 {
-		do die;
+		do die();
 	}
 	
 	reflex remove when: cycle = 10 {
@@ -101,7 +101,7 @@ experiment "Test it !" type: gui {
 	user_command "  Reset balls" color: #darkgray {
 				ask simulations {
 					ask ball { 
-						do die;
+						do die();
 					}
 					create ball from: [sphere(5) at_location {50,50,5}, sphere(5) at_location {20,20,5}];
 				}
@@ -113,10 +113,10 @@ experiment "Test it !" type: gui {
  		gama.pref_append_simulation_name <- true;
 		gama.pref_experiment_expand_params <- true; 
 		bool native <- user_confirm("Native", "Compare using native library ? ");
-		create simulation with: (seed: 1.0, use_native : native, step:1/60);
-		create simulation with: (seed: 1.0, use_native : native, step:1/30);
-		create simulation with: (seed: 1.0, use_native : native, step:1/15);
-		create simulation with: (seed: 1.0, use_native : native, step:1/10);
+		create simulation(seed: 1.0, use_native : native, step:1/60);
+		create simulation(seed: 1.0, use_native : native, step:1/30);
+		create simulation(seed: 1.0, use_native : native, step:1/15);
+		create simulation(seed: 1.0, use_native : native, step:1/10);
 		gama.pref_experiment_expand_params <- prev0;
 		gama.pref_append_simulation_name <- prev1;
 	}
@@ -149,7 +149,7 @@ experiment "Test it !" type: gui {
 				ask simulations {
 					ask ball {
 						point direction <- (target - location) / 100;
-						do apply impulse: {ball_impulse.x * direction.x, ball_impulse.y * direction.y};
+						do apply(impulse: {ball_impulse.x * direction.x, ball_impulse.y * direction.y});
 						angular_velocity <- {rnd(10), rnd(10), rnd(10)};
 					}
 

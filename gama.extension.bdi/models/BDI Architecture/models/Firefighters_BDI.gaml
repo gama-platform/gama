@@ -27,7 +27,7 @@ global {
 	}
 	
 	reflex stop when: length(fireArea) = 0 {
-		do pause;
+		do pause();
 	}
 }
 
@@ -77,7 +77,7 @@ species firefighter skills: [moving] control: simple_bdi{
 	
 	//The plan to do when the intention is to patrol.
 	plan patrolling intention:patrol_desire{
-		do wander amplitude: 30.0 speed: 2.0;
+		do wander (amplitude: 30.0, speed: 2.0);
 	}
 	 
 	//The plan that is executed when the agent got the intention of extinguish a fire.
@@ -90,7 +90,7 @@ species firefighter skills: [moving] control: simple_bdi{
 					 waterValue <- waterValue - 1.0;
 					 current_fire.size <-  current_fire.size - 1;
 					 if ( current_fire.size <= 0) {
-						ask  current_fire {do die;}
+						ask  current_fire {do die();}
 						do remove_belief(get_current_intention().predicate);
 						do remove_intention(get_current_intention().predicate, true);
 						do add_desire(patrol_desire,1.0);

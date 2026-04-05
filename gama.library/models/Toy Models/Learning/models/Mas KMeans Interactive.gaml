@@ -68,11 +68,11 @@ global {
 		//write agents;
 		switch action_type {
 			match 0 {
-				create datapoints with:(location : the_location);
+				create datapoints (location : the_location);
 			}
 			
 			match 1 {
-				create centroids with:(location : the_location);
+				create centroids (location : the_location);
 				int K <- length(centroids);
 		  		loop i from:0 to: K-1 { ask centroids[i] { color_kmeans  <- hsb(i/K,1,1); }}
 		   }
@@ -92,7 +92,7 @@ global {
 								color_kmeans <- rgb(225,225,225) ;
 							}
 						}
-						do die;
+						do die();
 					}
 				}
 				
@@ -124,7 +124,7 @@ experiment SelectPoints2Cluster2D type: gui autorun: true{
 		layout horizontal([0.0::8000,1::2000]) tabs:true;
 		
 		display map type:2d {
-			event #mouse_down {ask simulation {do register_click;}}
+			event #mouse_down {ask simulation {do register_click();}}
 			species datapoints aspect: kmeans_aspect2D transparency:0.5;
 			species centroids aspect: kmeans_aspect2D;
 			graphics "Full target"
@@ -139,7 +139,7 @@ experiment SelectPoints2Cluster2D type: gui autorun: true{
 		//display the action buttons
 		display action_buton background:#white title:"Tools panel" type:2d	{
 			species button aspect:normal ;
-			event #mouse_down {ask simulation {do activate_act;}}   
+			event #mouse_down {ask simulation {do activate_act();}}   
 		}
 
 	}

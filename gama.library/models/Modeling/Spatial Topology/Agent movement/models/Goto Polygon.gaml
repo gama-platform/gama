@@ -85,7 +85,7 @@ species people skills: [moving] {
 	path my_path; 
 	
 	reflex goto {
-		do goto on:the_graph target:target speed:1.0;
+		do goto(on:the_graph, target:target, speed:1.0);
 	}
 	aspect default {
 		draw circle(3) color: #green;

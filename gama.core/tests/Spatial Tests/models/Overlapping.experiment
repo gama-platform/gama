@@ -8,7 +8,7 @@ model TestOverlapping
 global {
 	geometry shape <- envelope(square(100));
 	init {
-		create polygon_square with: (location:location)  ;	
+		create polygon_square(location:location)  ;	
 		list<cell> ovelapped_cell <-cell overlapping (first(polygon_square)) ;
 	}
 }

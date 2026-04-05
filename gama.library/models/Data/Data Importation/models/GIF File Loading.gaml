@@ -19,7 +19,7 @@ global {
 
 	species fish skills:[moving] {
 		reflex r {
-			do wander amplitude:2.0 speed: 0.1;
+			do wander(amplitude:2.0, speed: 0.1);
 		}
 		
 		aspect default {

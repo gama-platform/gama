@@ -15,7 +15,7 @@ global {
 	file geo_file <- geojson_file("../includes/countries.geojson");
 	geometry shape <- envelope(geo_file);
 	init {
-		create countries from: geo_file with: (name:read("name"));
+		create countries(name:read("name")) from: geo_file;
 	}
 } 
 

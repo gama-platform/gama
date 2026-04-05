@@ -28,7 +28,7 @@ global {
 	}
 	
 	reflex should_stop when: people count (each.state = 'I') = 0 {
-		do pause;
+		do pause();
 	}
 }
 
@@ -51,7 +51,7 @@ species people skills: [moving] control: fsm {
 	}
 	
 	reflex moving {
-		do wander amplitude: 30.0;
+		do wander (amplitude: 30.0);
 	}
 	
 }

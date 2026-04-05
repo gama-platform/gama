@@ -25,7 +25,7 @@ global {
 species Initiator skills: [fipa] {
 	reflex send_propose_message when: (time = 1) {
 		write name + ' sends a propose message';
-		do start_conversation to: [p] protocol: 'fipa-propose' performative: 'propose' contents: ['Go swimming?'] ;
+		do start_conversation(to: [p], protocol: 'fipa-propose', performative: 'propose', contents: ['Go swimming?']) ;
 	}
 	
 	reflex read_accept_proposals when: !(empty(accept_proposals)) {
@@ -40,7 +40,7 @@ species Participant skills: [fipa] {
 	reflex accept_proposal when: !(empty(proposes)) {
 		message proposalFromInitiator <- proposes at 0;
 		
-		do accept_proposal message: proposalFromInitiator contents: ['OK! It \'s hot today!'] ;
+		do accept_proposal(message: proposalFromInitiator, contents: ['OK! It \'s hot today!']) ;
 	}
 }
 
