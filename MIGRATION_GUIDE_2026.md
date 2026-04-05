@@ -1,253 +1,364 @@
-# GAMA Version 2026: Innovations and Comprehensive Migration Guide
+# GAMA 2026 — Migration Guide
 
-This document is divided into three major sections. **Part 0** offers a complete, summarized ChangeLog. **Part 1** details the profound innovations, technological leaps, and grammatical evolutions introduced in GAMA Version 2026 (branch `Upgrade-to-Eclipse-2025-12-and-JDK-25`). **Part 2** serves as an exhaustive, technical migration reference guide for developers and modelers transitioning from previous versions.
-
----
-
-# Part 0: Executive Summary & ChangeLog
-
-This high-level ChangeLog summarizes the entire scope of the GAMA Version 2026 update.
-
-### Core Technology & Architecture
-*   **JDK 25 & Eclipse 2025-12:** Platform entirely upgraded to the latest Java Development Kit (JDK 25) and Eclipse 2025-12 RCP.
-*   **Module Split (`gama.api`):** Creation of the `gama.api` module. Complete decoupling of public interfaces (`IAgent`, `IPoint`, `IList`) from implementation details (`gama.core`).
-*   **Factory Generalization:** Direct constructors (e.g., `new GamaList()`) are abolished in favor of Factory patterns (`GamaListFactory.create()`).
-*   **Decentralized Casting:** The monolithic `Cast` utility class is reduced; casting is delegated to individual type implementations (`Types.LIST.cast()`).
-*   **Population Refactoring:** Centralization of population logic into `AbstractPopulation`. API updates (`createAgentAt` renamed to `createAgentAtIndex`).
-*   **Agent Encapsulation:** `IAgent` extends `IDelegatingShape`. Modifying attributes via standard container methods is restricted in favor of proper variable evaluation.
-
-### Language Innovations (GAML)
-*   **Object-Oriented Constructs:** Introduction of the **`class`** and **`object`** concepts into the GAML language, bringing robust object-oriented paradigms to model building.
-*   **Faster Compilation:** The Xtext parser and AST (Abstract Syntax Tree) have been completely redesigned with formal syntactic elements, resulting in vastly faster compilation times.
-*   **Cleaner Syntax:**
-    *   Removal of Arrow Braces for functions: `int my_action -> { return self.something(); }` is now `int my_action -> self.something();`.
-    *   Argument Lists (`with:`): `[a::1]` replaced by `(a:1)`.
-    *   Keyword Deprecation: `diffuse var: heat` is now `diffuse heat`; `transition to: x` is now `transition x`.
-*   **Annotation Flattening:** Java Annotations used for GAML (`@operator`, `@action`, `@species`) are flattened into top-level interfaces in the `gama.annotations` package.
-
-### Engine, UI, and Graphics
-*   **OpenGL 4.1 Native Display Plugin:** Introduction of `gama.ui.display.opengl4`, the first display plugin completely based on the modern OpenGL 4.1 Core Profile architecture. It abandons legacy fixed-function pipelines in favor of Shaders, VAOs/VBOs, and the JOML library.
-*   **New Launching Overlay:** A redesigned and highly responsive launching overlay appears when preparing and starting experiments.
-*   **Enhanced Concurrency:** Massive improvements to concurrency support, both internally for the simulation engine and externally for parallel execution of GAML operations.
+> **Who is this for?** Plugin developers and contributors upgrading existing code to GAMA 2026.  
+> **What's covered?** Every breaking change in Java APIs, GAML syntax, and architecture — with before/after examples throughout.
 
 ---
 
-# Part 1: Innovations in GAMA and GAML (Version 2026)
+## Quick Navigation
 
-GAMA 2026 represents one of the most significant architectural overhauls in the history of the platform. More than just an incremental update, it is a foundational leap designed to secure GAMA’s future, enhance the modeler’s experience, and provide a robust, modern API for plugin developers.
+| Section | Topic |
+|---|---|
+| [Part 0](#part-0-changelog-at-a-glance) | Changelog at a glance |
+| [Part 1](#part-1-whats-new-and-why-it-matters) | What's new and why it matters |
+| [Part 2](#part-2-migration-reference) | Step-by-step migration reference |
 
-## 1. Technological Leap: JDK 25 and Concurrency
+---
 
-At its core, GAMA 2026 abandons legacy Java constraints by upgrading directly to **Java Development Kit (JDK) 25** and the **Eclipse 2025-12** Rich Client Platform.
+# Part 0: Changelog at a Glance
 
-### What this brings to the platform:
-*   **Pattern Matching & Modern Java:** Code readability is massively improved. The engine relies heavily on Pattern Matching for `instanceof` (e.g., `if (obj instanceof MyClass myVar) { ... }`), Records, and Switch Expressions, stripping away thousands of lines of boilerplate casting.
-*   **Much Better Concurrency Support:** The shift to modern Java has enabled the engine to implement vastly superior concurrency models. Internal threading mechanisms for the platform and the scheduler have been optimized. Furthermore, GAML parallel operations (e.g., parallel lists, parallel asks) now execute with significantly lower overhead and better thread pooling, leveraging JDK 25's advanced thread management.
+A high-level summary of every area that changed. Use this to quickly assess what affects your plugin.
 
-## 2. Introducing Object-Oriented GAML: `class` and `object`
+## Core Technology & Architecture
 
-For the first time, GAMA introduces native support for **`class`** and **`object`** structures directly within the GAML language.
+| Change | Impact |
+|---|---|
+| Upgraded to **JDK 25** and **Eclipse 2026-03** | Rebuild required; modern Java syntax now available |
+| New **`gama.api`** module | Public interfaces decoupled from `gama.core` implementation |
+| **Factory pattern** enforced for all core types | `new GamaList()`, `new GamaPoint()` etc. are gone |
+| **`Cast` utility class** reduced | Casting delegated to individual `IType` implementations |
+| **`AbstractPopulation`** centralises population logic | `createAgentAt` renamed to `createAgentAtIndex` |
+| **`IAgent`** now extends `IDelegatingShape` | Attribute mutation via containers is restricted |
 
-While GAMA has always been Agent-based (where species define agents with complex lifecycles, shapes, and locations in topologies), the introduction of `class` provides a lightweight, purely data-and-logic structure. Classes allow modelers to define complex, nested data structures and utility objects without incurring the overhead of a full simulation agent (no geometry, no automatic scheduling). This closes a major gap for developers writing complex, software-engineering-heavy models in GAML.
+## GAML Language
 
-## 3. The Language Evolution: A Cleaner, Faster GAML
+| Change | Impact |
+|---|---|
+| New **`class`** and **`object`** keywords | New OOP constructs available in models |
+| Rewritten Xtext parser & AST | Faster compilation; some syntax constructs changed |
+| Arrow braces removed | `-> { ... }` becomes `-> ...` |
+| `with:` argument list syntax changed | `[a::1]` becomes `(a:1)` |
+| `diffuse var:` and `transition to:` removed | Use `diffuse` and `transition` directly |
+| `image` layer renamed to `picture` | Update display blocks |
+| Displays/experiments need explicit `title:` | Identifier and UI label are now separate |
 
-The Xtext grammar definition (`Gaml.xtext`) has been entirely extracted from the compiler into its own dedicated plugin (`gaml.grammar`). This separation of concerns allowed for massive optimization of the parsing rules and code generators.
+## Engine, UI, and Graphics
 
-Furthermore, the GAML syntax has been refined to be more intuitive, concise, and aligned with modern programming aesthetics. Furthermore, the underlying Xtext compiler has been rewritten with a strict AST.
+| Change | Impact |
+|---|---|
+| New **OpenGL 4.1** display plugin (`gama.ui.display.opengl4`) | Modern shader-based rendering; legacy OpenGL 2 pipeline removed |
+| New **launching overlay** | Visual improvement only, no code changes needed |
+| Improved **concurrency** support | Internal threading improved; some scheduling APIs changed |
 
-*   **Faster Compilation:** The rigid formalization of the AST (`SyntacticAttributeElement`, `SyntacticClassElement`) and optimized parsing rules mean that large models compile and initialize significantly faster than in previous versions.
-*   **Streamlined Parameter Passing (`with:`):** The legacy syntax `with: [a::1, b::2]` is replaced by a cleaner, JSON-like syntax: **`with: (a:1, b:2)`**.
-*   **Flattening of Arrow Functions (`->`):** The parser now handles the arrow operator without requiring the outermost braces: **`action my_action -> do something;`**.
-*   **Removal of Redundant Keywords:**
-    *   `diffuse var: heat` is now simply **`diffuse heat`**.
-    *   `transition to: next_state` is now just **`transition next_state`**.
-*   **Separating Identifiers from Titles:** Displays and experiments enforce a clear separation between the programmatic identifier and the human-readable UI title: **`display My_Chart title: "My Chart"`**.
-*   **Contextual Clarity:** The display layer used for rendering images has been renamed from `image` to **`picture`**.
+---
 
-## 4. Graphics Revolution: The OpenGL 4.1 Display Plugin
+# Part 1: What's New and Why It Matters
 
-GAMA 2026 ships with a brand new, highly optimized display plugin: **`gama.ui.display.opengl4`**.
+## 1. JDK 25 & Eclipse 2025-12
 
-This is the first display plugin built from the ground up on the **OpenGL 4.1 Core Profile**. It completely abandons the legacy OpenGL 2 fixed-function pipeline (removing `glBegin`/`glEnd`, `glMatrixMode`, etc.).
-*   **Modern Rendering:** All rendering is now based exclusively on Shaders (loaded from `.vert` and `.frag` files), Vertex Array Objects (VAOs), and Vertex Buffer Objects (VBOs).
-*   **JOML Math Library:** The legacy matrix stack has been replaced by the high-performance Java OpenGL Math Library (JOML).
-*   **Performance:** This architecture ensures extremely high execution speed, massive polygon throughput, and significantly lower GPU memory usage compared to previous renderers.
+GAMA 2026 moves entirely to **Java 25** and **Eclipse 2025-12 RCP**. This unlocks modern language features that are now used throughout the engine:
 
-## 5. UI Improvements: The Launching Overlay
+- **Pattern matching for `instanceof`** — eliminates redundant casts:
+  ```java
+  // Old
+  if (obj instanceof MyClass) { MyClass myVar = (MyClass) obj; ... }
+  // New
+  if (obj instanceof MyClass myVar) { ... }
+  ```
+- **Records, sealed classes, switch expressions** — used internally for cleaner data modelling.
+- **Superior concurrency** — virtual threads and structured concurrency improve parallel simulation scheduling.
 
-The user experience during model execution has been smoothed out with the introduction of a **new launching overlay**. When an experiment is launched, a highly responsive UI overlay takes over to display compilation, agent initialization, and setup progress. This prevents UI lock-ups and provides clear feedback to the modeler before the simulation officially begins stepping.
+> **Action needed:** Recompile all plugins against JDK 25. No source changes are required solely for this upgrade, but you will benefit from updating your own code too.
 
-## 6. The Architectural Revolution: `gama.api` and Factories
+---
 
-GAMA 2026 introduces **`gama.api`**, an isolated module that serves as the definitive public contract for the platform.
+## 2. New OOP Constructs in GAML: `class` and `object`
 
-*   **True Encapsulation:** Implementation details are hidden in `gama.core`. Plugin developers rely solely on interfaces (`IPoint`, `IAgent`, `IList`).
-*   **The Factory Pattern Generalization:** Direct instantiation of core types (e.g., `new GamaList()`) is strictly prohibited. Everything is created via Factories (`GamaListFactory.create()`). This allows the GAMA kernel absolute control over memory allocation, object pooling, and optimization.
-*   **Reinventing `IAgent`:** The agent interface delegates geometry handling to specialized components (`IDelegatingShape`) and deprecates direct attribute mutation via containers in favor of robust GAML variable access.
-*   **Decentralizing `Cast`:** The monolithic `Cast` utility class has been broken down. Type casting is now handled intelligently by the target `IType` implementations.
+GAML now supports **`class`** (a lightweight, purely data-oriented structure with no lifecycle or spatial footprint) alongside the existing **`species`** (full agents with location, shape, and scheduling).
 
+**When to use which:**
 
-***
+| Construct | Use when… |
+|---|---|
+| `species` | Agents need a location, shape, or are scheduled |
+| `class` | You only need structured data (like a Java POJO) |
+| `object` | You need a single instance of a `class` |
 
-# Part 2: Comprehensive Migration Guide
+This is the first time GAML supports structured data types that are not agents — no migration is required unless you want to take advantage of this.
 
-This section provides an exhaustive reference of the API, architectural, and syntax changes.
+---
+
+## 3. Cleaner, Faster GAML Syntax
+
+The Xtext grammar (`Gaml.xtext`) has been extracted into its own dedicated plugin (`gaml.grammar`) and the AST has been formalised. The result is significantly faster model compilation.
+
+Several syntax shortcuts have also been cleaned up. See [Part 2, Section 1](#1-gaml-language-syntax-changes) for the full before/after reference.
+
+---
+
+## 4. New OpenGL 4.1 Display Plugin
+
+The new **`gama.ui.display.opengl4`** plugin is a ground-up rewrite of the rendering engine, built on the **OpenGL 4.1 Core Profile**:
+
+- All rendering now uses **shaders** (`.vert`/`.frag` files), **VAOs**, and **VBOs**.
+- The legacy OpenGL 2 fixed-function pipeline (`glBegin`/`glEnd`, `glMatrix*`) is gone.
+- The **JOML** library replaces the legacy matrix stack.
+- Result: higher frame rates, better polygon throughput, lower GPU memory usage.
+
+> **Action needed for display plugin authors:** Rendering code using the legacy OpenGL 2 API must be rewritten against the new shader-based pipeline.
+
+---
+
+## 5. New Architecture: the `gama.api` Module
+
+The single biggest architectural change is the introduction of **`gama.api`** — a dedicated module containing only public interfaces and contracts, with zero implementation code.
+
+**Before (GAMA 2025 and earlier):**
+- Public interfaces and their implementations lived side by side in `gama.core`.
+- Plugin developers ended up importing implementation classes directly.
+
+**After (GAMA 2026):**
+- `gama.api` contains only interfaces (`IAgent`, `IPoint`, `IList`, …).
+- `gama.core` contains the implementations.
+- Plugin developers **only depend on `gama.api`**.
+
+This makes the platform significantly more stable: implementation classes can change freely without breaking plugin code.
+
+See [Part 2, Section 5](#5-package-mapping-gamaapi-module) for the full import mapping.
+
+---
+
+# Part 2: Migration Reference
+
+Work through each section that applies to your plugin. Each section is self-contained.
+
+---
 
 ## 1. GAML Language Syntax Changes
 
-Existing `.gaml` models will need to be updated to comply with the new grammar.
+These changes affect `.gaml` model files. Most can be applied with a global find-and-replace.
 
-### 1.1 Flattening of Arrow (`->`) Braces
-The outermost curly braces surrounding the body of `->` (arrow) expressions are removed.
-*   **Before:** `action my_action -> { do something; };`
-*   **After:** `action my_action -> do something;`
+### 1.1 Arrow (`->`) expressions — braces removed
 
-### 1.2 Deprecation of `diffuse var:` and `transition to:`
-*   **Before:** `diffuse var: heat`
-*   **After:** `diffuse heat`
-*   **Before:** `transition to: idle`
-*   **After:** `transition idle`
+The outer curly braces around the body of `->` expressions are no longer valid.
 
-### 1.3 Renaming `image` to `picture` in Displays
-*   **Before:** `display my_disp { image "background.jpg"; }`
-*   **After:** `display my_disp { picture "background.jpg"; }`
+```gaml
+// Before
+action my_action -> { do something; };
 
-### 1.4 Explicit `title:` for Displays and Experiments
-*   **Before:** `display "3 Simulations"`
-*   **After:** `display _3_Simulations title: "3 Simulations"`
+// After
+action my_action -> do something;
+```
 
-### 1.5 Evolution of the `with:` argument list
-*   **Before:** `with: [agents::ag, values::[1,2,3]]`
-*   **After:** `with: (agents:ag, values:[1,2,3])`
+### 1.2 `diffuse var:` and `transition to:` — keyword removed
 
----
+The `var:` and `to:` facets were redundant and have been removed.
 
-## 2. Java Annotations Flattening (`gama.annotations`)
+```gaml
+// Before
+diffuse var: heat;
+transition to: idle;
 
-You must update your imports from `gama.annotations.precompiler.GamlAnnotations.*` to `gama.annotations.*` for all GAML annotations.
+// After
+diffuse heat;
+transition idle;
+```
 
-**Exhaustive list of migrated annotations:**
-`@action`, `@arg`, `@constant`, `@display`, `@doc`, `@example`, `@experiment`, `@facet`, `@facets`, `@file`, `@getter`, `@inside`, `@listener`, `@no_test`, `@operator`, `@setter`, `@skill`, `@species`, `@symbol`, `@test`, `@type`, `@usage`, `@variable`, `@vars`, `@factory`.
+### 1.3 `image` display layer → `picture`
 
-**Example:**
-*   **Before:** `@gama.annotations.precompiler.GamlAnnotations.operator(value = "my_operator")`
-*   **After:** `@gama.annotations.operator(value = "my_operator")`
+The `image` keyword inside `display` blocks has been renamed to `picture` to better reflect its purpose and avoid confusion with the `image` type.
 
-*Note: `IKeyword` has moved from `gama.core.common.interfaces.IKeyword` to `gama.annotations.constants.IKeyword`.*
+```gaml
+// Before
+display my_disp {
+    image "background.jpg";
+}
 
----
+// After
+display my_disp {
+    picture "background.jpg";
+}
+```
 
-## 3. Redesign of the `IAgent` Interface
+### 1.4 Display and experiment identifiers — explicit `title:` required
 
-*   **Location:** Moved from `gama.core.metamodel.agent.IAgent` to `gama.api.kernel.agent.IAgent`.
-*   **Inheritance:** No longer extends `IShape` and `IAttributed`. It now extends `IDelegatingShape`.
-*   **Container Interface:** Changed from `IContainer.Addressable<String, Object>` to `IContainer.ToGet<String, Object>`.
-*   **Geometry:** `getLocation()` now returns `IPoint` instead of `GamaPoint`. `getGeometry()` returns `IShape`.
-*   **Peers:** `getPeers()` returns a read-only list. The `setPeers()` default implementation is empty.
+Displays and experiments now enforce a strict separation between the **programmatic identifier** (used in code) and the **UI label** (shown to the user).
 
----
+```gaml
+// Before
+display "3 Simulations" { ... }
 
-## 4. Redesign of Populations (`AbstractPopulation`)
+// After
+display _3_Simulations title: "3 Simulations" { ... }
+```
 
-*   **Base Class:** Common logic centralized in `gama.core.metamodel.population.AbstractPopulation`.
-*   **API Updates (`IPopulation`):**
-    *   `IsLiving` nested predicate: **Removed**.
-    *   `createAgentAt(...)`: **Renamed** to `createAgentAtIndex(...)`.
-    *   `createOneAgent(...)`: **Added** as a default method.
-    *   `fireAgentsAdded`: No longer a default method.
+> **Rule of thumb:** The name immediately after `display` or `experiment` must now be a valid identifier (no spaces, no special characters). Use `title:` for the human-readable label.
 
----
+### 1.5 `with:` argument list syntax
 
-## 5. Exhaustive Package Mapping: The `gama.api` Module
+The map-literal syntax for argument passing has been replaced by a cleaner parenthesised syntax.
 
-**Action:** Update imports systematically from `gama.core.*` to `gama.api.*`.
+```gaml
+// Before
+do my_action with: [agents::ag, values::[1, 2, 3]];
 
-### 5.1 GAML Types (`gama.api.gaml.types.*`)
-*   `IType`, `ITyped`, `ITypesManager`, `Signature`
-*   `GamaActionType`, `GamaAgentType`, `GamaBoolType`, `GamaColorType`, `GamaContainerType`, `GamaDateType`, `GamaDirectoryType`, `GamaFieldType`, `GamaFileType`, `GamaFloatType`, `GamaFontType`, `GamaGenericAgentType`, `GamaGeometryType`, `GamaGraphType`, `GamaIntegerType`, `GamaListType`, `GamaMapType`, `GamaMatrixType`, `GamaMessageType`, `GamaMetaType`, `GamaNoType`, `GamaPairType`, `GamaPathType`, `GamaPointType`, `GamaSkillType`, `GamaSpeciesType`, `GamaStringType`, `GamaTopologyType`, `GamaType`.
+// After
+do my_action with: (agents: ag, values: [1, 2, 3]);
+```
 
-### 5.2 Java Data Structures (`gama.api.types.*`)
-*   **Colors:** `IColor`, `GamaColor`, `GamaColorFactory`
-*   **Dates:** `IDate`, `GamaDate`, `GamaDateInterval`, `GamaDateFactory`
-*   **Files:** `IGamaFile`, `GamaFile`, `GenericFile`
-*   **Fonts:** `IFont`, `GamaFont`, `GamaFontFactory`
-*   **Geometry:** `IShape`, `IPoint`, `IDelegatingShape`, `GamaPoint`, `GamaPointFactory`, `GamaShapeFactory`, `IShapeFactory`
-*   **Graphs:** `IGraph`, `IPath`, `GraphObject`, `GamaGraphFactory`, `GamaPathFactory`
-*   **Lists:** `IList`, `GamaList`, `GamaPairList`, `GamaListFactory`
-*   **Maps:** `IMap`, `GamaMap`, `GamaMapFactory`
-*   **Matrices:** `IMatrix`, `IField`, `GamaMatrixFactory`
-*   **Messages:** `IMessage`, `GamaMessageFactory`
-*   **Pairs:** `IPair`, `GamaPairFactory`
-*   **Topology:** `ITopology`, `AmorphousTopology`, `GamaTopologyFactory`
-
-### 5.3 Expressions and AST (`gama.api.gaml.*` & `gama.api.compilation.*`)
-*   `IExpression`, `IStatement`
-*   `IDescription`, `ISymbolDescriptionFactory`, `IExpressionFactory`, `ISyntacticFactory`
-
-### 5.4 UI and Displays (`gama.api.ui.*`)
-*   `IGui`, `IDialogFactory`, `IStatusDisplayer`, `IConsoleListener`
-*   `IDisplaySurface`, `IGraphics`, `IDisplayData`, `IChart`
-*   `ILayer`, `ICameraDefinition`, `IDrawingAttributes`
-
-### 5.5 Core Utilities (`gama.api.utils.*`)
-*   `FileUtils` (Centralized file management)
-*   `GamaPreferences` (Preference store)
-*   `StringUtils`, `JavaUtils`, `MathUtils`
-*   `CsvReader`, `CsvWriter`, `IJson`, `IJsonObject`
-*   `GamaRNG`, `RandomUtils`
+**Key differences:**
+- Outer `[...]` → `(...)`
+- Double-colon `::` → single colon `:`
 
 ---
 
-## 6. Generalization of Factories for Instantiation
+## 2. Java Annotations — Import Path Changed
 
-You must no longer use direct constructors (e.g., `new GamaList(...)`, `new GamaPoint(...)`).
+All GAML-related Java annotations have moved to **top-level** interfaces in `gama.annotations`. Update your imports accordingly.
 
-**Exhaustive Migration Examples:**
+```java
+// Before
+import gama.annotations.precompiler.GamlAnnotations.operator;
+import gama.annotations.precompiler.GamlAnnotations.skill;
 
-*   **Lists (`IList`)**
-    *   *Before:* `new GamaList<>()`
-    *   *After:* `GamaListFactory.create(Types.STRING)`
-*   **Maps (`IMap`)**
-    *   *Before:* `new GamaMap<>()`
-    *   *After:* `GamaMapFactory.create(Types.STRING, Types.INT)`
-*   **Points (`IPoint`)**
-    *   *Before:* `new GamaPoint(1.0, 2.0)`
-    *   *After:* `GamaPointFactory.create(1.0, 2.0)`
-*   **Geometries (`IShape`)**
-    *   *Before:* `GamaGeometryType.buildCircle(10, pt)`
-    *   *After:* `GamaShapeFactory.buildCircle(10, pt)`
-*   **Colors (`IColor`)**
-    *   *Before:* `new GamaColor(255, 0, 0)`
-    *   *After:* `GamaColorFactory.create(255, 0, 0)`
-*   **Graphs (`IGraph`)**
-    *   *Before:* `new GamaSpatialGraph(...)`
-    *   *After:* `GamaGraphFactory.createSpatialGraph(...)`
+// After
+import gama.annotations.operator;
+import gama.annotations.skill;
+```
+
+**Complete list of affected annotations:**
+
+`@action`, `@arg`, `@constant`, `@display`, `@doc`, `@example`, `@experiment`, `@facet`, `@facets`, `@file`, `@getter`, `@inside`, `@listener`, `@no_test`, `@operator`, `@setter`, `@skill`, `@species`, `@symbol`, `@test`, `@type`, `@usage`, `@variable`, `@vars`
+
+**Also note:** `IKeyword` has moved:
+
+```java
+// Before
+import gama.core.common.interfaces.IKeyword;
+
+// After
+import gama.annotations.constants.IKeyword;
+```
 
 ---
 
-## 7. Evolution of Casting Mechanisms (The `Cast` class)
+## 3. `IAgent` Interface Changes
 
-1.  **Moved to API:** Located at `gama.api.gaml.types.Cast`.
-2.  **Decreased Role:** Static cast methods specific to data structures have been removed.
-3.  **Delegation:** Type casting is now handled directly by the target `IType` implementations.
+`IAgent` has been redesigned and moved to the `gama.api` module.
 
-**Exhaustive Casting Migration Examples:**
+### What changed
 
-*   **Point (`IPoint`)**
-    *   *Before:* `Cast.asPoint(scope, obj)`
-    *   *After:* `Types.POINT.cast(scope, obj, null, false)`
-*   **List (`IList`)**
-    *   *Before:* `Cast.asList(scope, obj)`
-    *   *After:* `Types.LIST.cast(scope, obj, null, false)`
-*   **Map (`IMap`)**
-    *   *Before:* `Cast.asMap(scope, obj, copy)`
-    *   *After:* `Types.MAP.cast(scope, obj, null, copy)`
-*   **Geometry (`IShape`)**
-    *   *Before:* `Cast.asGeometry(scope, obj)`
-    *   *After:* `Types.GEOMETRY.cast(scope, obj, null, false)`
-*   **Matrix (`IMatrix`)**
-    *   *Before:* `Cast.asMatrix(scope, obj)`
-    *   *After:* `Types.MATRIX.cast(scope, obj, null, false)`
+| Aspect | Before | After |
+|---|---|---|
+| Package | `gama.core.metamodel.agent.IAgent` | `gama.api.kernel.agent.IAgent` |
+| Extends | `IShape`, `IAttributed` | `IDelegatingShape` |
+| Container type | `IContainer.Addressable<String, Object>` | `IContainer.ToGet<String, Object>` |
+| `getLocation()` return type | `GamaPoint` | `IPoint` |
+| `getGeometry()` return type | `GamaShape` | `IShape` |
+| `getPeers()` | Mutable list | Read-only list |
+| `setPeers()` | Concrete implementation | Empty default method |
 
-*Note: Primitive conversions like `asInt`, `asFloat`, `asString`, and `asAgent` remain in `gama.api.gaml.types.Cast`.*
+### Practical impact
+
+- **Do not mutate agent attributes through the container interface.** Use proper variable evaluation via `scope.evaluate(expression, agent)`.
+- **Geometry access is now interface-typed.** If you need a concrete `GamaPoint`, cast explicitly — but prefer working with `IPoint`.
+
+---
+
+## 4. Population API Changes (`AbstractPopulation`)
+
+### New base class
+
+All population implementations should now extend `gama.core.metamodel.population.AbstractPopulation`, which centralises common logic that was previously duplicated.
+
+### `IPopulation` API changes
+
+| Member | Change |
+|---|---|
+| `IsLiving` (nested predicate class) | **Removed** — inline the predicate in your own code |
+| `createAgentAt(...)` | **Renamed** to `createAgentAtIndex(...)` |
+| `createOneAgent(...)` | **Added** as a default method |
+| `fireAgentsAdded(...)` | No longer a default method — must be implemented explicitly |
+
+---
+
+## 5. Package Mapping: `gama.api` Module
+
+> **General rule:** Replace `gama.core` with `gama.api` in your import statements, then fix any remaining errors using the detail tables below.
+
+### 5.1 GAML Types → `gama.api.gaml.types.*`
+
+`IType`, `ITyped`, `ITypesManager`, `Signature`, `GamaActionType`, `GamaAgentType`, `GamaBoolType`, `GamaColorType`, `GamaContainerType`, `GamaDateType`, `GamaDirectoryType`, `GamaFieldType`, `GamaFileType`, `GamaFloatType`, `GamaFontType`, and all other `Gama*Type` classes.
+
+### 5.2 Java Data Structures → `gama.api.types.*`
+
+| Category | Interfaces & Classes |
+|---|---|
+| Colors | `IColor`, `GamaColor`, `GamaColorFactory` |
+| Dates | `IDate`, `GamaDate`, `GamaDateInterval`, `GamaDateFactory` |
+| Files | `IGamaFile`, `GamaFile`, `GenericFile` |
+| Fonts | `IFont`, `GamaFont`, `GamaFontFactory` |
+| Geometry | `IShape`, `IPoint`, `IDelegatingShape`, `GamaPoint`, `GamaPointFactory`, `GamaShapeFactory`, `IShapeFactory` |
+| Graphs | `IGraph`, `IPath`, `GraphObject`, `GamaGraphFactory`, `GamaPathFactory` |
+| Lists | `IList`, `GamaList`, `GamaPairList`, `GamaListFactory` |
+| Maps | `IMap`, `GamaMap`, `GamaMapFactory` |
+| Matrices | `IMatrix`, `IField`, `GamaMatrixFactory` |
+| Messages | `IMessage`, `GamaMessageFactory` |
+| Pairs | `IPair`, `GamaPairFactory` |
+| Topology | `ITopology`, `AmorphousTopology`, `GamaTopologyFactory` |
+
+### 5.3 Expressions and AST → `gama.api.gaml.*` & `gama.api.compilation.*`
+
+`IExpression`, `IStatement`, `IDescription`, `ISymbolDescriptionFactory`, `IExpressionFactory`, `ISyntacticFactory`
+
+### 5.4 UI and Displays → `gama.api.ui.*`
+
+`IGui`, `IDialogFactory`, `IStatusDisplayer`, `IConsoleListener`, `IDisplaySurface`, `IGraphics`, `IDisplayData`, `IChart`, `ILayer`, `ICameraDefinition`, `IDrawingAttributes`
+
+### 5.5 Core Utilities → `gama.api.utils.*`
+
+`FileUtils`, `GamaPreferences`, `StringUtils`, `JavaUtils`, `MathUtils`, `CsvReader`, `CsvWriter`, `IJson`, `IJsonObject`, `GamaRNG`, `RandomUtils`
+
+---
+
+## 6. Factory Pattern — Replace Direct Constructors
+
+Direct instantiation of core GAMA types is **no longer allowed**. You must use the provided factory classes.
+
+> **Why?** Factories enforce correct type metadata and scope-awareness that constructors cannot guarantee.
+
+| Type | Before | After |
+|---|---|---|
+| `IList` | `new GamaList<>()` | `GamaListFactory.create(Types.STRING)` |
+| `IMap` | `new GamaMap<>()` | `GamaMapFactory.create(Types.STRING, Types.INT)` |
+| `IPoint` | `new GamaPoint(1.0, 2.0)` | `GamaPointFactory.create(1.0, 2.0)` |
+| `IShape` (circle) | `GamaGeometryType.buildCircle(10, pt)` | `GamaShapeFactory.buildCircle(10, pt)` |
+| `IColor` | `new GamaColor(255, 0, 0)` | `GamaColorFactory.create(255, 0, 0)` |
+| `IGraph` | `new GamaSpatialGraph(...)` | `GamaGraphFactory.createSpatialGraph(...)` |
+
+**Note:** When creating typed collections, always provide the element type(s) using constants from the `Types` class (e.g. `Types.STRING`, `Types.INT`, `Types.AGENT`).
+
+---
+
+## 7. Casting — From `Cast` to `IType`
+
+The static `Cast` utility class has been significantly reduced. Type-specific casting methods have been removed and are now handled by the `IType` implementations directly.
+
+> **What remains in `Cast`:** Primitive conversions — `asInt`, `asFloat`, `asString`, `asAgent` — are still available at `gama.api.gaml.types.Cast`.
+
+| Type | Before | After |
+|---|---|---|
+| `IPoint` | `Cast.asPoint(scope, obj)` | `Types.POINT.cast(scope, obj, null, false)` |
+| `IList` | `Cast.asList(scope, obj)` | `Types.LIST.cast(scope, obj, null, false)` |
+| `IMap` | `Cast.asMap(scope, obj, copy)` | `Types.MAP.cast(scope, obj, null, copy)` |
+| `IShape` | `Cast.asGeometry(scope, obj)` | `Types.GEOMETRY.cast(scope, obj, null, false)` |
+| `IMatrix` | `Cast.asMatrix(scope, obj)` | `Types.MATRIX.cast(scope, obj, null, false)` |
+
+**Parameter guide for `IType.cast(scope, obj, param, copy)`:**
+
+| Parameter | Meaning |
+|---|---|
+| `scope` | The current execution scope |
+| `obj` | The object to cast |
+| `param` | An optional type parameter (usually `null`) |
+| `copy` | `true` to return a copy, `false` to allow returning the original |

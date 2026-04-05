@@ -21,7 +21,7 @@ global {
 species boat skills: [moving]{
 	point target <- any_location_in(world);
 	reflex move {
-		do goto target: target speed:0.5;
+		do goto(target: target, speed:0.5);
 		if (target = location) {
 			target <- any_location_in(world);
 		}	

@@ -25,7 +25,7 @@ global {
 species worm skills: [moving] {
 	
 	reflex wander {
-		do wander amplitude: 5.0 speed: 0.01;
+		do wander(amplitude: 5.0,speed: 0.01);
 	}
 	
 	reflex mark {

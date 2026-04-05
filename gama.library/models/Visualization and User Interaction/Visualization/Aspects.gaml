@@ -8,7 +8,7 @@
 *   code examples, making it the go-to reference for customizing agent appearance.
 * Tags: aspect, 3d, draw, transparency, focus, texture, link, image, text, visualization
 ***/
-***/
+
 model Aspects
 
 global {
@@ -19,37 +19,37 @@ global {
 	// 1. How to display agents using geometries ? text ? images ?
 	// 
 	// All the agents are displayed using a single circle and text comment (their aspect)
-		create people with: (location:{25, 25}, aspect_type:"Asp. default");
+		create people(location:{25, 25}, aspect_type:"Asp. default");
 		// The agent people(1) will be displayed using several geometries, that can be empty or not	
-		create people with: (location:{25, 75}, aspect_type:"Asp. simple");
+		create people(location:{25, 75}, aspect_type:"Asp. simple");
 		// The agent people(2) will be displayed using advanced features on text: a font, perspective ...				
-		create people with: (location:{25, 50}, aspect_type:"Asp. text");
+		create people(location:{25, 50}, aspect_type:"Asp. text");
 		// The agent people(3) will be displayed in a location that is not its own location 
 		//    (to illustrate that the way the agent is displayed can be totally different from its actual state).						
-		create people with: (location:{50, 25}, aspect_type:"Asp. centered");
+		create people(location:{50, 25}, aspect_type:"Asp. centered");
 		// The agent people(4) will be displayed in using a picture that is resize	
-		create people with: (location:{50, 12}, aspect_type:"Asp. img");
+		create people(location:{50, 12}, aspect_type:"Asp. img");
 
 		//
 		// 2. how to display them in 3D ? with texture ? taken into account the light ?
 		//
 		// The agent people(5) will be displayed with 3d  or isometric 2D geometries		
-		create people with: (location:{85, 50}, aspect_type:"Asp. 3D");
+		create people(location:{85, 50}, aspect_type:"Asp. 3D");
 		// The agent people(6) will be displayed using texture and material
-		create people with: (location:{50, 75}, aspect_type:"Asp. textured");
+		create people(location:{50, 75}, aspect_type:"Asp. textured");
 
 		//
 		// 3. how to display the link between 2 agents ?
 		//
 		// The agent people(7) is displayed to show its relation with another agent,
 		//    drawing a line between them and arrows at the beginning and the end of the line.		
-		create people with: (location:{75, 75}, aspect_type:"Asp. arrows");
+		create people (location:{75, 75}, aspect_type:"Asp. arrows");
 
 		//
 		// 4. how to deal with transparency in agents ?
 		//
 		// The agent people(8) is displayed using a square with transparency 
-		create people with: (location:{75, 25}, aspect_type:"Asp. cube");
+		create people(location:{75, 25}, aspect_type:"Asp. cube");
 		// Note that the transparency facet can only be defined in the display, not in the aspect.
 		// To display agents of a species with a transparency that is different for each agent,
 		//    GAMA provides the possibility to define a color with a transparency that can be different 
