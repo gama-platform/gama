@@ -15,10 +15,12 @@ JDK_MAJOR=$(echo $JDK_EMBEDDED_VERSION | cut -d '.' -f 1)
 echo "=== Download latest JDK"
 echo "Downloading from https://api.github.com/repos/adoptium/temurin$JDK_MAJOR-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION"
 
-wget -q $(curl https://api.github.com/repos/adoptium/temurin$JDK_MAJOR-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK${JDK_MAJOR}U-jdk_x64_linux.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_linux-21.tar.gz"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin$JDK_MAJOR-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK${JDK_MAJOR}U-jdk_x64_window.*.zip\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_win32-21.zip"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin$JDK_MAJOR-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK${JDK_MAJOR}U-jdk_x64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx-21.tar.gz"
-wget -q $(curl https://api.github.com/repos/adoptium/temurin$JDK_MAJOR-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION | grep "/OpenJDK${JDK_MAJOR}U-jdk_aarch64_mac.*.gz\"" | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx_aarch-21.tar.gz"
+RELEASE_JSON=$(curl -f https://api.github.com/repos/adoptium/temurin$JDK_MAJOR-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION)
+
+wget -q $(echo "$RELEASE_JSON" | grep "/OpenJDK${JDK_MAJOR}U-jdk_x64_linux.*.gz\""     | cut -d ':' -f 2,3 | tr -d \") -O "jdk_linux-21.tar.gz"
+wget -q $(echo "$RELEASE_JSON" | grep "/OpenJDK${JDK_MAJOR}U-jdk_x64_window.*.zip\""   | cut -d ':' -f 2,3 | tr -d \") -O "jdk_win32-21.zip"
+wget -q $(echo "$RELEASE_JSON" | grep "/OpenJDK${JDK_MAJOR}U-jdk_x64_mac.*.gz\""       | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx-21.tar.gz"
+wget -q $(echo "$RELEASE_JSON" | grep "/OpenJDK${JDK_MAJOR}U-jdk_aarch64_mac.*.gz\""   | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx_aarch-21.tar.gz"
 
 #
 #	Prepare downloaded JDK
@@ -34,7 +36,7 @@ for os in "linux" "macosx" "macosx_aarch" "win32"; do
 		unzip -q jdk_$os-21.zip -d jdk_$os
 	fi
 
-	mv jdk_$os/jdk-2* jdk_$os/jdk
+	mv jdk_$os/jdk-* jdk_$os/jdk
 done
 
 
@@ -97,7 +99,7 @@ for targetPlatform in "linux.gtk.x86_64" "win32.win32.x86_64" "macosx.cocoa.x86_
 	cd $RUNNER_TMP
 	sudo zip -9 -qyr "${archivePath}-${targetPlatform}_withJDK.zip" . && echo "Successfully compressed ${archivePath}-${targetPlatform}_withJDK.zip" || echo "Failed compressing ${archivePath}-${targetPlatform}_withJDK.zip"
 
-	cd $GITHUB_WORKSPACE && sudo rm -fr $RUNNER_TMP
+	cd $GITHUB_WORKSPACE && sudo rm -fr "${RUNNER_TMP:?}"
 
 done
 
