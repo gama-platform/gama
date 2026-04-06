@@ -396,6 +396,9 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 				if (headingComplete) {
 					String[] l = line.split(" ");
 					for (int i = 0; i < l.length; i++) {
+						if (l[i] == "") {
+							continue;
+						}
 						if (noDataD != null && noDataD.isNaN()) {
 							Double v = 0.0;
 							try {

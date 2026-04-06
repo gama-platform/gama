@@ -12,6 +12,7 @@ package gama.ui.application;
 
 import org.osgi.framework.BundleContext;
 
+import gama.api.runtime.SystemInfo;
 import gama.core.CoreActivator;
 import gama.dependencies.GamaBundleActivator;
 import gama.dev.DEBUG;
@@ -36,6 +37,10 @@ public class ApplicationActivator extends GamaBundleActivator {
 	 */
 	@Override
 	public void initialize(final BundleContext context) {
+        if (SystemInfo.isLinux() && System.getenv("WAYLAND_DISPLAY") != null) {
+        	System.out.println("> GAMA  : Linux Wayland detected, forcing XWayland rendering");
+            System.setProperty("org.eclipse.swt.internal.gtk.disableWayland", "true");
+        }
 		DEBUG.OUT("Activating the application plugin");
 		WorkspaceActivator.load();
 		CoreActivator.load();
