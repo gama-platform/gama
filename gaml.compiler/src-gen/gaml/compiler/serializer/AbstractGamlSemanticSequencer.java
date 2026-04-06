@@ -101,9 +101,10 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				sequence_Primary(context, (Array) semanticObject); 
 				return; 
 			case GamlPackage.BINARY_OPERATOR:
-				if (rule == grammarAccess.getAndRule()
-						|| action == grammarAccess.getAndAccess().getBinaryOperatorLeftAction_1_0()) {
-					sequence_Addition_And_Binary_Cast_Comparison_Multiplication(context, (BinaryOperator) semanticObject); 
+				if (rule == grammarAccess.getExpressionRule()
+						|| rule == grammarAccess.getBinaryOperatorRule()
+						|| rule == grammarAccess.getPairRule()) {
+					sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Or_Pair_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
 				else if (action == grammarAccess.getPairAccess().getBinaryOperatorLeftAction_1_0()
@@ -111,28 +112,27 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 						|| action == grammarAccess.getIfAccess().getIfLeftAction_1_0()
 						|| rule == grammarAccess.getOrRule()
 						|| action == grammarAccess.getOrAccess().getBinaryOperatorLeftAction_1_0()) {
-					sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Or(context, (BinaryOperator) semanticObject); 
+					sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Or_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
-				else if (rule == grammarAccess.getExpressionRule()
-						|| rule == grammarAccess.getBinaryOperatorRule()
-						|| rule == grammarAccess.getPairRule()) {
-					sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Or_Pair(context, (BinaryOperator) semanticObject); 
+				else if (rule == grammarAccess.getAndRule()
+						|| action == grammarAccess.getAndAccess().getBinaryOperatorLeftAction_1_0()) {
+					sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
 				else if (rule == grammarAccess.getCastRule()) {
-					sequence_Addition_Binary_Cast_Comparison_Multiplication(context, (BinaryOperator) semanticObject); 
+					sequence_Addition_Binary_Cast_Comparison_Multiplication_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
 				else if (action == grammarAccess.getCastAccess().getBinaryOperatorLeftAction_1_0_0()
 						|| rule == grammarAccess.getComparisonRule()) {
-					sequence_Addition_Binary_Comparison_Multiplication(context, (BinaryOperator) semanticObject); 
+					sequence_Addition_Binary_Comparison_Multiplication_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
 				else if (action == grammarAccess.getComparisonAccess().getBinaryOperatorLeftAction_1_0_0()
 						|| rule == grammarAccess.getAdditionRule()
 						|| action == grammarAccess.getAdditionAccess().getBinaryOperatorLeftAction_1_0_0()) {
-					sequence_Addition_Binary_Multiplication(context, (BinaryOperator) semanticObject); 
+					sequence_Addition_Binary_Multiplication_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
 				else if (rule == grammarAccess.getBinaryRule()
@@ -142,7 +142,12 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 				}
 				else if (rule == grammarAccess.getMultiplicationRule()
 						|| action == grammarAccess.getMultiplicationAccess().getBinaryOperatorLeftAction_1_0_0()) {
-					sequence_Binary_Multiplication(context, (BinaryOperator) semanticObject); 
+					sequence_Binary_Multiplication_Power(context, (BinaryOperator) semanticObject); 
+					return; 
+				}
+				else if (rule == grammarAccess.getPowerRule()
+						|| action == grammarAccess.getPowerAccess().getBinaryOperatorLeftAction_1_0_0()) {
+					sequence_Binary_Power(context, (BinaryOperator) semanticObject); 
 					return; 
 				}
 				else break;
@@ -386,6 +391,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Addition.BinaryOperator_1_0_0 returns Access
 	 *     Multiplication returns Access
 	 *     Multiplication.BinaryOperator_1_0_0 returns Access
+	 *     Power returns Access
+	 *     Power.BinaryOperator_1_0_0 returns Access
 	 *     Binary returns Access
 	 *     Binary.BinaryOperator_1_0_0 returns Access
 	 *     Unit returns Access
@@ -519,11 +526,14 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     And returns BinaryOperator
-	 *     And.BinaryOperator_1_0 returns BinaryOperator
+	 *     Expression returns BinaryOperator
+	 *     BinaryOperator returns BinaryOperator
+	 *     Pair returns BinaryOperator
 	 *
 	 * Constraint:
 	 *     (
+	 *         (left=Pair_BinaryOperator_1_0 op='::' right=If) | 
+	 *         (left=Or_BinaryOperator_1_0 op='or' right=And) | 
 	 *         (left=And_BinaryOperator_1_0 op='and' right=Cast) | 
 	 *         (left=Cast_BinaryOperator_1_0_0 op='as' (right=TypeRef | right=TypeRef)) | 
 	 *         (
@@ -539,12 +549,13 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *             right=Addition
 	 *         ) | 
 	 *         (left=Addition_BinaryOperator_1_0_0 (op='+' | op='-') right=Multiplication) | 
-	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/' | op='^') right=Binary) | 
+	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
+	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
 	 *         (left=Binary_BinaryOperator_1_0_0 op=Valid_ID right=Unit)
 	 *     )
 	 * </pre>
 	 */
-	protected void sequence_Addition_And_Binary_Cast_Comparison_Multiplication(ISerializationContext context, BinaryOperator semanticObject) {
+	protected void sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Or_Pair_Power(ISerializationContext context, BinaryOperator semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -576,12 +587,13 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *             right=Addition
 	 *         ) | 
 	 *         (left=Addition_BinaryOperator_1_0_0 (op='+' | op='-') right=Multiplication) | 
-	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/' | op='^') right=Binary) | 
+	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
+	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
 	 *         (left=Binary_BinaryOperator_1_0_0 op=Valid_ID right=Unit)
 	 *     )
 	 * </pre>
 	 */
-	protected void sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Or(ISerializationContext context, BinaryOperator semanticObject) {
+	protected void sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Or_Power(ISerializationContext context, BinaryOperator semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -589,14 +601,11 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	/**
 	 * <pre>
 	 * Contexts:
-	 *     Expression returns BinaryOperator
-	 *     BinaryOperator returns BinaryOperator
-	 *     Pair returns BinaryOperator
+	 *     And returns BinaryOperator
+	 *     And.BinaryOperator_1_0 returns BinaryOperator
 	 *
 	 * Constraint:
 	 *     (
-	 *         (left=Pair_BinaryOperator_1_0 op='::' right=If) | 
-	 *         (left=Or_BinaryOperator_1_0 op='or' right=And) | 
 	 *         (left=And_BinaryOperator_1_0 op='and' right=Cast) | 
 	 *         (left=Cast_BinaryOperator_1_0_0 op='as' (right=TypeRef | right=TypeRef)) | 
 	 *         (
@@ -612,12 +621,13 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *             right=Addition
 	 *         ) | 
 	 *         (left=Addition_BinaryOperator_1_0_0 (op='+' | op='-') right=Multiplication) | 
-	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/' | op='^') right=Binary) | 
+	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
+	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
 	 *         (left=Binary_BinaryOperator_1_0_0 op=Valid_ID right=Unit)
 	 *     )
 	 * </pre>
 	 */
-	protected void sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Or_Pair(ISerializationContext context, BinaryOperator semanticObject) {
+	protected void sequence_Addition_And_Binary_Cast_Comparison_Multiplication_Power(ISerializationContext context, BinaryOperator semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -643,12 +653,13 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *             right=Addition
 	 *         ) | 
 	 *         (left=Addition_BinaryOperator_1_0_0 (op='+' | op='-') right=Multiplication) | 
-	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/' | op='^') right=Binary) | 
+	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
+	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
 	 *         (left=Binary_BinaryOperator_1_0_0 op=Valid_ID right=Unit)
 	 *     )
 	 * </pre>
 	 */
-	protected void sequence_Addition_Binary_Cast_Comparison_Multiplication(ISerializationContext context, BinaryOperator semanticObject) {
+	protected void sequence_Addition_Binary_Cast_Comparison_Multiplication_Power(ISerializationContext context, BinaryOperator semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -674,12 +685,13 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *             right=Addition
 	 *         ) | 
 	 *         (left=Addition_BinaryOperator_1_0_0 (op='+' | op='-') right=Multiplication) | 
-	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/' | op='^') right=Binary) | 
+	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
+	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
 	 *         (left=Binary_BinaryOperator_1_0_0 op=Valid_ID right=Unit)
 	 *     )
 	 * </pre>
 	 */
-	protected void sequence_Addition_Binary_Comparison_Multiplication(ISerializationContext context, BinaryOperator semanticObject) {
+	protected void sequence_Addition_Binary_Comparison_Multiplication_Power(ISerializationContext context, BinaryOperator semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -694,12 +706,13 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 * Constraint:
 	 *     (
 	 *         (left=Addition_BinaryOperator_1_0_0 (op='+' | op='-') right=Multiplication) | 
-	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/' | op='^') right=Binary) | 
+	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
+	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
 	 *         (left=Binary_BinaryOperator_1_0_0 op=Valid_ID right=Unit)
 	 *     )
 	 * </pre>
 	 */
-	protected void sequence_Addition_Binary_Multiplication(ISerializationContext context, BinaryOperator semanticObject) {
+	protected void sequence_Addition_Binary_Multiplication_Power(ISerializationContext context, BinaryOperator semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -754,10 +767,29 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Multiplication.BinaryOperator_1_0_0 returns BinaryOperator
 	 *
 	 * Constraint:
-	 *     ((left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/' | op='^') right=Binary) | (left=Binary_BinaryOperator_1_0_0 op=Valid_ID right=Unit))
+	 *     (
+	 *         (left=Multiplication_BinaryOperator_1_0_0 (op='*' | op='/') right=Power) | 
+	 *         (left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | 
+	 *         (left=Binary_BinaryOperator_1_0_0 op=Valid_ID right=Unit)
+	 *     )
 	 * </pre>
 	 */
-	protected void sequence_Binary_Multiplication(ISerializationContext context, BinaryOperator semanticObject) {
+	protected void sequence_Binary_Multiplication_Power(ISerializationContext context, BinaryOperator semanticObject) {
+		genericSequencer.createSequence(context, semanticObject);
+	}
+	
+	
+	/**
+	 * <pre>
+	 * Contexts:
+	 *     Power returns BinaryOperator
+	 *     Power.BinaryOperator_1_0_0 returns BinaryOperator
+	 *
+	 * Constraint:
+	 *     ((left=Power_BinaryOperator_1_0_0 op='^' right=Binary) | (left=Binary_BinaryOperator_1_0_0 op=Valid_ID right=Unit))
+	 * </pre>
+	 */
+	protected void sequence_Binary_Power(ISerializationContext context, BinaryOperator semanticObject) {
 		genericSequencer.createSequence(context, semanticObject);
 	}
 	
@@ -892,6 +924,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Addition.BinaryOperator_1_0_0 returns ExpressionList
 	 *     Multiplication returns ExpressionList
 	 *     Multiplication.BinaryOperator_1_0_0 returns ExpressionList
+	 *     Power returns ExpressionList
+	 *     Power.BinaryOperator_1_0_0 returns ExpressionList
 	 *     Binary returns ExpressionList
 	 *     Binary.BinaryOperator_1_0_0 returns ExpressionList
 	 *     Unit returns ExpressionList
@@ -1069,6 +1103,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Addition.BinaryOperator_1_0_0 returns Function
 	 *     Multiplication returns Function
 	 *     Multiplication.BinaryOperator_1_0_0 returns Function
+	 *     Power returns Function
+	 *     Power.BinaryOperator_1_0_0 returns Function
 	 *     Binary returns Function
 	 *     Binary.BinaryOperator_1_0_0 returns Function
 	 *     Unit returns Function
@@ -1232,6 +1268,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Addition.BinaryOperator_1_0_0 returns Array
 	 *     Multiplication returns Array
 	 *     Multiplication.BinaryOperator_1_0_0 returns Array
+	 *     Power returns Array
+	 *     Power.BinaryOperator_1_0_0 returns Array
 	 *     Binary returns Array
 	 *     Binary.BinaryOperator_1_0_0 returns Array
 	 *     Unit returns Array
@@ -1271,6 +1309,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Addition.BinaryOperator_1_0_0 returns Point
 	 *     Multiplication returns Point
 	 *     Multiplication.BinaryOperator_1_0_0 returns Point
+	 *     Power returns Point
+	 *     Power.BinaryOperator_1_0_0 returns Point
 	 *     Binary returns Point
 	 *     Binary.BinaryOperator_1_0_0 returns Point
 	 *     Unit returns Point
@@ -1651,6 +1691,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Addition.BinaryOperator_1_0_0 returns StringLiteral
 	 *     Multiplication returns StringLiteral
 	 *     Multiplication.BinaryOperator_1_0_0 returns StringLiteral
+	 *     Power returns StringLiteral
+	 *     Power.BinaryOperator_1_0_0 returns StringLiteral
 	 *     Binary returns StringLiteral
 	 *     Binary.BinaryOperator_1_0_0 returns StringLiteral
 	 *     Unit returns StringLiteral
@@ -1698,6 +1740,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Addition.BinaryOperator_1_0_0 returns BooleanLiteral
 	 *     Multiplication returns BooleanLiteral
 	 *     Multiplication.BinaryOperator_1_0_0 returns BooleanLiteral
+	 *     Power returns BooleanLiteral
+	 *     Power.BinaryOperator_1_0_0 returns BooleanLiteral
 	 *     Binary returns BooleanLiteral
 	 *     Binary.BinaryOperator_1_0_0 returns BooleanLiteral
 	 *     Unit returns BooleanLiteral
@@ -1744,6 +1788,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Addition.BinaryOperator_1_0_0 returns DoubleLiteral
 	 *     Multiplication returns DoubleLiteral
 	 *     Multiplication.BinaryOperator_1_0_0 returns DoubleLiteral
+	 *     Power returns DoubleLiteral
+	 *     Power.BinaryOperator_1_0_0 returns DoubleLiteral
 	 *     Binary returns DoubleLiteral
 	 *     Binary.BinaryOperator_1_0_0 returns DoubleLiteral
 	 *     Unit returns DoubleLiteral
@@ -1790,6 +1836,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Addition.BinaryOperator_1_0_0 returns IntLiteral
 	 *     Multiplication returns IntLiteral
 	 *     Multiplication.BinaryOperator_1_0_0 returns IntLiteral
+	 *     Power returns IntLiteral
+	 *     Power.BinaryOperator_1_0_0 returns IntLiteral
 	 *     Binary returns IntLiteral
 	 *     Binary.BinaryOperator_1_0_0 returns IntLiteral
 	 *     Unit returns IntLiteral
@@ -1836,6 +1884,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Addition.BinaryOperator_1_0_0 returns ReservedLiteral
 	 *     Multiplication returns ReservedLiteral
 	 *     Multiplication.BinaryOperator_1_0_0 returns ReservedLiteral
+	 *     Power returns ReservedLiteral
+	 *     Power.BinaryOperator_1_0_0 returns ReservedLiteral
 	 *     Binary returns ReservedLiteral
 	 *     Binary.BinaryOperator_1_0_0 returns ReservedLiteral
 	 *     Unit returns ReservedLiteral
@@ -1933,6 +1983,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Addition.BinaryOperator_1_0_0 returns Unary
 	 *     Multiplication returns Unary
 	 *     Multiplication.BinaryOperator_1_0_0 returns Unary
+	 *     Power returns Unary
+	 *     Power.BinaryOperator_1_0_0 returns Unary
 	 *     Binary returns Unary
 	 *     Binary.BinaryOperator_1_0_0 returns Unary
 	 *     Unit returns Unary
@@ -2010,6 +2062,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Addition.BinaryOperator_1_0_0 returns Unit
 	 *     Multiplication returns Unit
 	 *     Multiplication.BinaryOperator_1_0_0 returns Unit
+	 *     Power returns Unit
+	 *     Power.BinaryOperator_1_0_0 returns Unit
 	 *     Binary returns Unit
 	 *     Binary.BinaryOperator_1_0_0 returns Unit
 	 *     Unit returns Unit
@@ -2078,6 +2132,8 @@ public abstract class AbstractGamlSemanticSequencer extends AbstractDelegatingSe
 	 *     Addition.BinaryOperator_1_0_0 returns VariableRef
 	 *     Multiplication returns VariableRef
 	 *     Multiplication.BinaryOperator_1_0_0 returns VariableRef
+	 *     Power returns VariableRef
+	 *     Power.BinaryOperator_1_0_0 returns VariableRef
 	 *     Binary returns VariableRef
 	 *     Binary.BinaryOperator_1_0_0 returns VariableRef
 	 *     Unit returns VariableRef

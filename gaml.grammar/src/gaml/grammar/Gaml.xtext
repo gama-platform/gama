@@ -325,7 +325,7 @@ Expression:
 	Pair;
 
 BinaryOperator returns Expression:
-	Or | And | Cast | Comparison | Addition | Multiplication | Binary | Pair | Unit;
+	Or | And | Cast | Comparison | Addition | Multiplication | Power | Binary | Pair | Unit;
 
 Pair returns Expression:
 	If ({BinaryOperator.left=current} op='::' right=If)?;
@@ -351,9 +351,13 @@ Comparison returns Expression:
 Addition returns Expression:
 	Multiplication (({BinaryOperator.left=current} op=('+' | '-')) right=Multiplication)*;
 
-// Example: a * b or a ^ 2
+// Example: a * b or a / b
 Multiplication returns Expression:
-	Binary (({BinaryOperator.left=current} op=('*' | '/' | '^')) right=Binary)*;
+	Power (({BinaryOperator.left=current} op=('*' | '/')) right=Power)*;
+
+// Example: a ^ 2 (higher priority than multiplication)
+Power returns Expression:
+	Binary (({BinaryOperator.left=current} op=('^')) right=Binary)*;
 
 // Custom operators. Example: a my_operator b
 Binary returns Expression:
