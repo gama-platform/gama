@@ -392,7 +392,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				}
 			}
 		}
-		if (info == null) { info = new CSVInfo(getFile(scope).getAbsolutePath(), 0, CSVSep); }
+		if (info == null) { info = new CSVInfo(getFile(scope), 0, CSVSep); }
 		if (hasHeader != null && hasHeader) {
 			if (!info.header) {
 				try (final CsvReader reader = new CsvReader(getPath(scope), info.delimiter)) {
