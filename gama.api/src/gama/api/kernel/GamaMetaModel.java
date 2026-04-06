@@ -311,7 +311,16 @@ public class GamaMetaModel {
 		INSTANCE.isInitialized = true;
 	}
 
-	private static void addBuiltInGlobalSchedulerSpecies(ISpeciesDescription agent, IModelDescription model) {
+	/**
+	 * Adds the built in global scheduler species.
+	 *
+	 * @param agent
+	 *            the agent
+	 * @param model
+	 *            the model
+	 */
+	private static void addBuiltInGlobalSchedulerSpecies(final ISpeciesDescription agent, final IModelDescription model) {
+		// This species is created as built-in,
 		ISpeciesDescription desc = INSTANCE.buildSpecies(new SpeciesRecord(INTERNAL_GLOBAL_SCHEDULER_SPECIES,
 				GamaBundleLoader.CURRENT_PLUGIN_NAME, IAgent.class, null, new String[0]), model, agent);
 		desc.setEnclosingDescription(model);
