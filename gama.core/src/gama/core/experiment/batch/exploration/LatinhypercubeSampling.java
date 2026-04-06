@@ -1,3 +1,13 @@
+/*******************************************************************************************************
+ *
+ * LatinhypercubeSampling.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.core.experiment.batch.exploration;
 
 import java.util.ArrayList;
@@ -14,19 +24,21 @@ import gama.api.runtime.scope.IScope;
 import gama.core.experiment.parameters.ParametersSet;
 
 /**
- * This class creates a Latin Hypercube Sampling. Optimized with the ESE (Enhanced Stochastic Evolutionary) algorithm
- * based on Jin et al. (2003).
+ * This class creates a Latin Hypercube Sampling. Optimized with a robust ESE-inspired algorithm (Jin et al. 2003)
+ * using a Maximin-distance penalty criterion.
  *
- * @author Paul-Saves
+ * @author drogoul
  */
 public class LatinhypercubeSampling extends SamplingUtils {
 
-	/** The default penalty factor for Phi_p criterion */
+	/** The default penalty factor for the Phi_p criterion (p=50) */
 	private static final int P = 50;
-	/** Precomputed exponent for J calculation */
+	/** Precomputed exponent for the distance penalty calculation (-p/2.0) */
 	private static final double EXPONENT = -P / 2.0;
-	/** Small epsilon to prevent numerical instability with d^-p */
+	/** Small epsilon to prevent numerical instability (NaN/Infinity) when points are extremely close */
 	private static final double EPS = 1e-12;
+	/** The initial temperature ratio relative to the objective value (0.5% acceptance threshold) */
+	private static final double INITIAL_TEMP_RATIO = 0.005;
 
 	/**
 	 * Building Latin Hypercube samples using ESE optimization.
@@ -68,24 +80,23 @@ public class LatinhypercubeSampling extends SamplingUtils {
 		int d = parameters.size();
 		if (d == 0 || n == 0) return new ArrayList<>();
 
-		// Initial design (centered LHS)
+		// Initial design (centered LHS: one point per interval per dimension)
 		double[][] matrix = generateCenteredLHS(n, d, r);
 
-		// Precompute squared distance matrix
+		// Precompute squared distance matrix for performance
 		double[][] distSq = computeDistanceMatrix(matrix, n, d);
 
 		double currentJ = calculateJ(distSq, n);
 		double bestJ = currentJ;
 		double[][] bestMatrix = copyMatrix(matrix);
 
-		// Initial temperature heuristic (based on Phi scale)
-		double currentPhi = Math.pow(currentJ, 1.0 / P);
-		double t = 0.01 * currentPhi;
+		// Initial temperature calibrated to the actual objective scale
+		double t = INITIAL_TEMP_RATIO * currentJ;
 
 		for (int o = 0; o < outerIter; o++) {
 			int acceptances = 0;
 			for (int i = 0; i < innerIter; i++) {
-				// Use cyclic column selection to ensure all dimensions are explored
+				// Cyclic column selection ensures all dimensions are explored uniformly
 				int col = i % d;
 				int row1 = r.nextInt(n);
 				int row2 = r.nextInt(n);
@@ -94,7 +105,7 @@ public class LatinhypercubeSampling extends SamplingUtils {
 				double v1 = matrix[row1][col];
 				double v2 = matrix[row2][col];
 
-				// Delta calculation for J
+				// Efficient delta calculation for the J penalty (sum of d^-p)
 				double oldContr = 0;
 				double newContr = 0;
 				for (int l = 0; l < n; l++) {
@@ -109,16 +120,13 @@ public class LatinhypercubeSampling extends SamplingUtils {
 				}
 
 				double newJ = currentJ - oldContr + newContr;
-				double newPhi = Math.pow(newJ, 1.0 / P);
 
-				// Metropolis criterion based on Phi scale for numerical stability
-				if (newJ < currentJ || r.nextDouble() < Math.exp((currentPhi - newPhi) / t)) {
-					// Accept move
+				// Metropolis criterion: Align acceptance scale with the objective scale (J)
+				if (newJ < currentJ || r.nextDouble() < Math.exp((currentJ - newJ) / t)) {
 					matrix[row1][col] = v2;
 					matrix[row2][col] = v1;
 					updateDistances(distSq, matrix, row1, row2, col, n);
 					currentJ = newJ;
-					currentPhi = newPhi;
 					acceptances++;
 					if (currentJ < bestJ) {
 						bestJ = currentJ;
@@ -127,7 +135,7 @@ public class LatinhypercubeSampling extends SamplingUtils {
 				}
 			}
 
-			// Adaptive Temperature Schedule (simplified ESE update)
+			// Adaptive Temperature Schedule: Balance exploration vs. exploitation
 			if (acceptances > 0.8 * innerIter) {
 				t *= 0.8;
 			} else if (acceptances < 0.1 * innerIter) {
