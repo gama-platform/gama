@@ -263,7 +263,10 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	/** The state. */
-	GamlEditorState state = new GamlEditorState(null, Collections.EMPTY_LIST);
+	// 'volatile' is required: this field is written by the reconciler background thread
+	// (in validationEnded()) and read by the UI thread (e.g. in the controlResized handler).
+	// Without volatile the JMM gives no visibility guarantee, leading to stale reads.
+	volatile GamlEditorState state = new GamlEditorState(null, Collections.EMPTY_LIST);
 
 	/** The toolbar. */
 	GamaToolbar2 toolbar;
@@ -525,26 +528,45 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	/**
-	 * Schedule validation job.
+	 * Schedules a one-shot validation job when the editor is first opened. The job validates the document once so that
+	 * error markers and the toolbar state are populated before the user makes any edit.
+	 *
+	 * <p>
+	 * <strong>Locking note:</strong> the original implementation wrapped the entire
+	 * {@code validator.validate()} call inside {@code getDocument().readOnly(…)}, holding the
+	 * XtextDocument read-lock for the full duration of GAML's semantic validation (which can take
+	 * hundreds of milliseconds for large models). While a read-lock is held, any pending
+	 * {@code modify()} call — including the reconciler's own re-parse triggered by the first
+	 * keystroke — must wait, and the REQUIRED_PLUGINS pragma auto-insert (dispatched via
+	 * {@code asyncRun} from {@link #validationEnded}) can also block when it tries to apply a
+	 * {@code ReplaceEdit}. Since {@link #SCHEDULE_DELAY} is 0, both this job and the
+	 * {@link GamlReconciler} fire immediately, racing over the same {@code ValidationContext}.
+	 * </p>
+	 *
+	 * <p>
+	 * The fix is to obtain the resource reference <em>outside</em> any document token and call
+	 * {@code validator.validate()} directly, without holding a read-lock. The validator already
+	 * takes its own snapshot of the resource when needed and is safe to call without an outer lock.
+	 * </p>
 	 */
 	private void scheduleValidationJob() {
-		// if (!isEditable()) return;
 		final IValidationIssueProcessor processor = new MarkerIssueProcessor(getResource(),
 				getInternalSourceViewer().getAnnotationModel(), markerCreator, markerTypeProvider);
 		final ValidationJob validate = new ValidationJob(validator, getDocument(), processor, CheckMode.FAST_ONLY) {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
-				final var issues = getDocument().readOnly(resource -> {
-					if (resource.isValidationDisabled()) return Collections.emptyList();
-					return validator.validate(resource, getCheckMode(), null);
-				});
+				// Retrieve the resource reference without holding the document read-lock.
+				// Calling validator.validate() under readOnly() would pin the lock for the entire
+				// GAML semantic validation, blocking the reconciler write-lock and causing races
+				// with the concurrent GamlReconciler that also fires at SCHEDULE_DELAY = 0.
+				final var resource = getDocument().readOnly(r -> r);
+				if (resource == null || resource.isValidationDisabled()) return Status.OK_STATUS;
+				final var issues = validator.validate(resource, getCheckMode(), null);
 				processor.processIssues((List<Issue>) issues, monitor);
 				return Status.OK_STATUS;
 			}
-
 		};
 		validate.schedule(GamlEditor.SCHEDULE_DELAY);
-
 	}
 
 	@Override
@@ -576,13 +598,34 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/** Timestamp of the last navigation-history mark, used to throttle {@link #markInNavigationHistory()} calls. */
 	private long lastNavigationHistoryMark = 0L;
 
+	/**
+	 * Timestamp of the last {@link #super#handleCursorPositionChanged()} dispatch. Used to throttle the super call
+	 * and avoid overwhelming the Xtext mark-occurrences and status-bar machinery during rapid cursor movement
+	 * (fast typing, or navigating through Find/Replace results). On Windows, the Eclipse Job scheduler and the
+	 * {@link org.eclipse.xtext.ui.editor.model.XtextDocument} read-lock acquisition are noticeably slower than on
+	 * other platforms; without throttling, a burst of mark-occurrences job cancel/reschedule cycles can freeze the
+	 * UI for hundreds of milliseconds.
+	 *
+	 * <p>
+	 * The super call is capped at once per 50 ms. This is imperceptible for status-bar updates and does not affect
+	 * correctness: the status bar is refreshed as soon as the cursor is idle for 50 ms.
+	 * </p>
+	 */
+	private long lastSuperCursorUpdate = 0L;
+
 	@Override
 	protected void handleCursorPositionChanged() {
 		GamaSourceViewer v = getInternalSourceViewer();
 		if (getSelectionProvider() == null || v == null || v.getControl() == null || v.getControl().isDisposed())
 			return;
-		super.handleCursorPositionChanged();
 		final long now = System.currentTimeMillis();
+		// Throttle the super call (mark-occurrences rescheduling + status-bar update) to at most
+		// once every 50 ms. This prevents job-scheduler overload during fast typing or rapid
+		// find-result navigation, which was the main source of Windows editor freezes.
+		if (now - lastSuperCursorUpdate > 50) {
+			lastSuperCursorUpdate = now;
+			super.handleCursorPositionChanged();
+		}
 		if (now - lastNavigationHistoryMark > 500) {
 			lastNavigationHistoryMark = now;
 			this.markInNavigationHistory();
@@ -617,9 +660,12 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			WorkbenchHelper.runInUI("Editor refresh", 50, m -> {
 				if (toolbar == null || toolbar.isDisposed()) return;
 				toolbar.wipe(SWT.LEFT, 1);
-				boolean showExperiments =
-						!GamlFileExtension.isExperiment(getDocument().getAdapter(IFile.class).getName())
-								&& newState.showExperiments;
+				// getDocument().getAdapter(IFile.class) can return null if the editor is being
+				// initialised or disposed; skip the update in that case to avoid a NullPointerException
+				// whose exception-handling overhead can cause a visible stutter on Windows.
+				final IFile editorFile = getDocument().getAdapter(IFile.class);
+				boolean showExperiments = editorFile != null
+						&& !GamlFileExtension.isExperiment(editorFile.getName()) && newState.showExperiments;
 				if (addExperiments == null || showExperiments != previousShowExperiments) {
 					updateAddExperimentButton(showExperiments);
 				}
@@ -785,7 +831,16 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	public void validationEnded(final IModelDescription model, final Iterable<? extends IDescription> newExperiments,
 			final IValidationContext status) {
 
-		getInternalSourceViewer().updateCodeMinings();
+		// updateCodeMinings() accesses SWT-backed objects and MUST be called on the UI thread.
+		// validationEnded() is invoked by the GamlReconciler background thread (via
+		// GamlResource.validate() → updateWith() → GamlResourceServices.updateState()), so we
+		// dispatch here. On Windows, cross-thread widget access falls back to Win32 SendMessage()
+		// which is synchronous – calling it directly from the background thread stalls that thread
+		// until the UI thread processes the message, producing the reported editor freezes.
+		WorkbenchHelper.asyncRun(() -> {
+			final GamaSourceViewer v = getInternalSourceViewer();
+			if (v != null && !v.getControl().isDisposed()) { v.updateCodeMinings(); }
+		});
 
 		if (GamaPreferences.Experimental.REQUIRED_PLUGINS.getValue() && model != null && !status.hasErrors()) {
 			String requires = "@" + IKeyword.PRAGMA_REQUIRES;
@@ -856,8 +911,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/**
 	 * Installs code mining providers, preserving any providers already registered via the Eclipse extension point
 	 * {@code org.eclipse.ui.workbench.texteditor.codeMiningProviders} (which includes third-party providers such as
-	 * GitHub Copilot). The GAML-specific {@link GamlCodeMiningProvider} is <em>added</em> on top of those providers
-	 * rather than replacing them.
+	 * GitHub Copilot). The GAML-specific {@link GamlCodeMiningProvider} <em>replaces</em> the default Eclipse
+	 * {@link AnnotationCodeMiningProvider} that {@code super.installCodeMiningProviders()} installs automatically for
+	 * all text editors, so that annotation code minings are not rendered twice.
 	 *
 	 * @see org.eclipse.ui.texteditor.AbstractTextEditor#installCodeMiningProviders()
 	 */
@@ -866,7 +922,12 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		// Let the framework install any providers registered via the extension point
 		// (e.g. GitHub Copilot's ICodeMiningProvider) before adding the GAML one.
 		super.installCodeMiningProviders();
-		getInternalSourceViewer().addCodeMiningProvider(new GamlCodeMiningProvider());
+		// Replace the default AnnotationCodeMiningProvider installed by super (which handles
+		// annotation-based code minings for all text editors) with the GAML-specific subclass.
+		// Using replaceAnnotationCodeMiningProvider() instead of addCodeMiningProvider() avoids
+		// having two AnnotationCodeMiningProvider instances active simultaneously, which would
+		// cause every annotation code mining to be rendered twice in the editor.
+		getInternalSourceViewer().replaceAnnotationCodeMiningProvider(new GamlCodeMiningProvider());
 	}
 
 	/**

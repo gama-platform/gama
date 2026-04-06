@@ -22,16 +22,16 @@ global
 	init
 	{	
 		//create experiment from micro-model Boids
-		create Boids."Adapter of Boids" with: (
+		create Boids.B_Adapter (
 			shape:square(width_and_height_of_environment), 
 			width_and_height_of_environment:width_and_height_of_environment, 
 			z_max:100,
 			number_of_agents:50
 		);
 		//create experiment form micro-model Procedural City
-		create City."Adapter" 
-		with:(
-			 number_of_building:Boids."Adapter of Boids"[0].simulation.number_of_agents*2,
+		create City.C_Adapter
+		(
+			 number_of_building:Boids.B_Adapter[0].simulation.number_of_agents*2,
 			width_and_height_of_environment:width_and_height_of_environment
 		);
 	}
@@ -41,11 +41,11 @@ global
  
 		
 		//loop over the population
-		loop theBoid over: (Boids."Adapter of Boids"[0]).get_boids()
+		loop theBoid over: (Boids.B_Adapter[0]).get_boids()
 		{
-			Building theBuilding <- Building((City."Adapter"[0]).get_building_at(theBoid)); 
+			Building theBuilding <- Building((City.C_Adapter[0]).get_building_at(theBoid)); 
 			if(theBuilding != nil){				
-				if (theBoid distance_to theBuilding < theBuilding.width)
+				if (geometry(theBoid) distance_to geometry(theBuilding) < theBuilding.width)
 				{
 					ask theBoid
 					{
@@ -57,11 +57,11 @@ global
 		
 		
 		//tell the Boids to step a cycle
-		ask (Boids."Adapter of Boids" collect each.simulation){ do _step_;}
+		ask (Boids.B_Adapter collect each.simulation){ do _step_();}
 		
 		//tell the City to step one per 100 cycle
 		if(cycle mod 100=0){			
-			ask (City."Adapter" collect each.simulation){ do _step_;}
+			ask (City.C_Adapter collect each.simulation){ do _step_();}
 		}
 	}
 
@@ -73,11 +73,11 @@ experiment main type: gui
 	{
 		display "Comodel Display" camera:#isometric type:3d background:rgb(10,40,55)
 		{
-			agents "Building" value: (City."Adapter" accumulate each.get_building()) aspect:textured;		
+			agents "Building" value: (City.C_Adapter accumulate each.get_building()) aspect:textured;		
 			
-			agents "boids_goal" value: (Boids."Adapter of Boids" accumulate each.get_boids_goal()) ;
+			agents "boids_goal" value: (Boids.B_Adapter accumulate each.get_boids_goal()) ;
 			
-			agents "boids" value: (Boids."Adapter of Boids" accumulate each.get_boids())  aspect: icon;
+			agents "boids" value: (Boids.B_Adapter accumulate each.get_boids())  aspect: icon;
 			
 		}
 

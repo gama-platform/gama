@@ -41,11 +41,11 @@ import gama.api.utils.geometry.GamaCoordinateSequenceFactory;
 import gama.api.utils.geometry.GamaEnvelopeFactory;
 import gama.api.utils.geometry.GeometryUtils;
 import gama.api.utils.geometry.ICoordinates;
+import gama.api.utils.geometry.ICoordinates.VertexVisitor;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.geometry.Rotation3D;
 import gama.api.utils.geometry.Scaling3D;
 import gama.api.utils.geometry.UnboundedCoordinateSequence;
-import gama.api.utils.geometry.ICoordinates.VertexVisitor;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.core.util.file.GamaGeometryFile;
@@ -1559,7 +1559,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		if (drawFPS || drawRotation || drawROI) { disableTextures(); }
 		drawFPS(drawFPS);
 		drawROI(drawROI);
-		drawRotation(drawRotation);
+		if (SHOULD_DRAW_ROTATION_SPHERE) { drawRotation(drawRotation); }
 		setDisplayLighting(previousDisplayLighting);
 		setDisplayWireframe(previousDisplayWireframe);
 		gl.glFinish();

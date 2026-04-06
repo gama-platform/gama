@@ -8,7 +8,7 @@ model city_adapter
 
 import "../../../../Visualization and User Interaction/Visualization/3D Visualization/models/Procedural City.gaml"
 
-experiment "Adapter" type:gui  {
+experiment C_Adapter type:gui  {
 	
 
 	

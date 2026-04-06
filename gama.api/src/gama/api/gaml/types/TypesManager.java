@@ -376,12 +376,37 @@ public class TypesManager implements ITypesManager {
 		final String name = species.getName();
 		if (IKeyword.AGENT.equals(name)) return get(IKeyword.AGENT);
 		if (!species.isBuiltIn() && containsType(name)) {
+			final IType<?> existingType = get(name);
+			if (existingType != null && existingType.getSpecies() == species) {
+				return (IType<? extends IAgent>) existingType; // It is already registered
+			}
 			species.error("Species " + name + " already declared. Species name must be unique",
 					IGamlIssue.DUPLICATE_NAME, species.getUnderlyingElement(), name);
 			return this.get(name);
 		}
 		GamaAgentType t = new GamaAgentType(this, species, ++CURRENT_INDEX);
 		Types.addClassTypeCorrespondance(species.getJavaBase(), name);
+		addType(t);
+		return t;
+	}
+
+	/**
+	 * Registers a species description as a type with an explicit name.
+	 *
+	 * @param species
+	 *            the species description to register
+	 * @param expectedName
+	 *            the exact name to register it under
+	 * @return the created agent type
+	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public IType<? extends IAgent> addSpeciesTypeAs(final ISpeciesDescription species, final String expectedName) {
+		if (IKeyword.AGENT.equals(expectedName)) return get(IKeyword.AGENT);
+		if (!species.isBuiltIn() && types.containsKey(expectedName)) {
+			return this.get(expectedName);
+		}
+		GamaAgentType t = new GamaAgentType(this, species, expectedName, (Class) species.getJavaBase(), ++CURRENT_INDEX);
+		Types.addClassTypeCorrespondance(species.getJavaBase(), expectedName);
 		addType(t);
 		return t;
 	}

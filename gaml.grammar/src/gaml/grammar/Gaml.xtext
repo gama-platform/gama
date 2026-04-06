@@ -325,7 +325,7 @@ Expression:
 	Pair;
 
 BinaryOperator returns Expression:
-	Or | And | Cast | Comparison | Addition | Multiplication | Binary | Pair | Unit;
+	Or | And | Cast | Comparison | Addition | Multiplication | Power | Binary | Pair | Unit;
 
 Pair returns Expression:
 	If ({BinaryOperator.left=current} op='::' right=If)?;
@@ -351,9 +351,13 @@ Comparison returns Expression:
 Addition returns Expression:
 	Multiplication (({BinaryOperator.left=current} op=('+' | '-')) right=Multiplication)*;
 
-// Example: a * b or a ^ 2
+// Example: a * b or a / b
 Multiplication returns Expression:
-	Binary (({BinaryOperator.left=current} op=('*' | '/' | '^')) right=Binary)*;
+	Power (({BinaryOperator.left=current} op=('*' | '/')) right=Power)*;
+
+// Example: a ^ 2 (higher priority than multiplication)
+Power returns Expression:
+	Binary (({BinaryOperator.left=current} op=('^')) right=Binary)*;
 
 // Custom operators. Example: a my_operator b
 Binary returns Expression:
@@ -528,7 +532,16 @@ terminal SL_COMMENT:
 	'//' !('\n' | '\r')* ('\r'? '\n')?;
 
 terminal WS:
-	(' ' | '\t' | '\r' | '\n')+;
+	(' ' | '\t' | '\r' | '\n'
+	| '\u00A0' // Non-breaking space (NBSP)
+	| '\u1680' // Ogham space mark
+	| '\u2000'..'\u200A' // En quad … Hair space (typographic spaces)
+	| '\u2028' // Line separator
+	| '\u2029' // Paragraph separator
+	| '\u202F' // Narrow no-break space
+	| '\u205F' // Medium mathematical space
+	| '\u3000' // Ideographic space (CJK)
+	)+;
 
 terminal ANY_OTHER:
 	.;

@@ -13,7 +13,6 @@ package gaml.compiler.factories;
 import static com.google.common.collect.Iterables.get;
 import static gama.annotations.constants.IKeyword.FREQUENCY;
 import static gama.annotations.constants.IKeyword.GLOBAL;
-import static gama.annotations.constants.IKeyword.NAME;
 import static gama.annotations.constants.IKeyword.PARENT;
 import static gama.annotations.constants.IKeyword.SCHEDULES;
 import static gama.api.compilation.IInternalFacets.ORIGIN;
@@ -277,7 +276,7 @@ public class ModelFactory implements IModelFactory {
 
 		// hqnghi add micro-models
 		if (mm != null) {
-			// model.setMicroModels(mm);
+			mm.forEach((k, v) -> v.setAlias(k));
 			model.addChildren(mm.values());
 		}
 		// end-hqnghi
@@ -288,11 +287,21 @@ public class ModelFactory implements IModelFactory {
 		// Parent the species and the experiments of the model (all are now
 		// known).
 		parentSpeciesAndExperiments(model, speciesNodes, classNodes, experimentNodes, tempSpeciesCache);
+
 		// Initialize the hierarchy of types
 		model.buildTypes();
 		// hqnghi build micro-models as types
 		if (mm != null) {
-			mm.forEach((k, v) -> model.getTypesManager().alias(v.getName(), k));
+			mm.forEach((k, v) -> {
+				model.getTypesManager().addSpeciesTypeAs(v, k);
+				v.visitAllSpecies(entry -> {
+					if (entry != v) {
+						model.getTypesManager().addSpeciesType(entry);
+						model.getTypesManager().alias(entry.getName(), k + "." + entry.getName());
+					}
+					return true;
+				});
+			});
 			// end-hqnghi
 		}
 
@@ -708,7 +717,8 @@ public class ModelFactory implements IModelFactory {
 	 */
 	private void createSchedulerSpecies(final IModelDescription model) {
 		final ISpeciesDescription sd = (ISpeciesDescription) GAML.getDescriptionFactory().create(IKeyword.SPECIES,
-				model, NAME, "_internal_global_scheduler");
+				model, IKeyword.NAME, GamaMetaModel.INTERNAL_GLOBAL_SCHEDULER_SPECIES);
+		// final ISpeciesDescription sd = model.getSpeciesDescription(GamaMetaModel.INTERNAL_GLOBAL_SCHEDULER_SPECIES);
 		sd.initializeMirrorsAndSubSpecies();
 		if (model.hasFacet(SCHEDULES)) {
 			// remove the warning as GAMA integrates a working workaround to use this facet at the global level
@@ -726,6 +736,7 @@ public class ModelFactory implements IModelFactory {
 			model.removeFacets(FREQUENCY);
 		}
 		model.addChild(sd);
+		model.getTypesManager().addSpeciesType(sd);
 	}
 
 	/**

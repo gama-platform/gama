@@ -38,8 +38,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.swt.IFocusService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import gama.api.runtime.SystemInfo;
 import gama.ui.shared.bindings.GamaKeyBindings;
@@ -51,46 +49,71 @@ import gaml.compiler.ui.editor.GamlEditor;
 /**
  * The class EditToolbarFindControls.
  *
+ * <p>
+ * Provides an incremental search bar embedded in the GAML editor toolbar. Characters typed into the bar trigger a
+ * debounced forward search (100 ms idle delay) so that the document read lock is not contended on every keystroke,
+ * which was the primary cause of editor freezes on Windows.
+ * </p>
+ *
  * @author drogoul
  * @since 5 déc. 2014
- *
  */
 public class EditorSearchControls {
 
-	/** The logger. */
-	Logger logger;
-
-	/** The Constant EMPTY. */
+	/**
+	 * Placeholder message shown inside the empty find control. Includes the keyboard shortcut so that users can
+	 * discover the feature without documentation.
+	 */
 	static final String EMPTY = "Find... (" + GamaKeyBindings.format(SWT.MOD1, 'G') + ")"; //$NON-NLS-1$
 
-	/** The find. */
+	/** The SWT {@link Text} widget that receives the search string. */
 	Text find;
 
-	/** The incremental offset. */
+	/**
+	 * Tracks the caret offset at which an incremental search session started. Reset to {@code -1} when a new search
+	 * session begins (focus gained) or when the field is cleared.
+	 */
 	int incrementalOffset = -1;
 
-	/** The editor. */
+	/** The host editor that owns this search control. */
 	final GamlEditor editor;
 
 	/**
-	 * Instantiates a new editor search controls.
+	 * Tracks the last text seen by {@link #modifyListener} so that the wrap direction can be determined correctly
+	 * (wrapping is only needed when the new text is not a prefix of the previous text, i.e., the user is typing forward
+	 * rather than deleting).
+	 */
+	private String lastModifyText = EMPTY;
+
+	/**
+	 * Holds the next debounced find {@link Runnable} that has been posted via {@link Display#timerExec}. Kept so that
+	 * it can be cancelled when a new character arrives before the delay expires, preventing stale searches and reducing
+	 * contention on the {@link org.eclipse.xtext.ui.editor.model.XtextDocument} read lock.
+	 */
+	private Runnable pendingFindRunnable = null;
+
+	/**
+	 * Instantiates a new EditorSearchControls and binds it to the given editor.
 	 *
 	 * @param editor
-	 *            the editor
+	 *            the GAML editor that owns this search control; must not be {@code null}
 	 */
 	public EditorSearchControls(final GamlEditor editor) {
 		this.editor = editor;
 	}
 
 	/**
-	 * Fill.
+	 * Creates and wires all SWT widgets that make up the search bar inside the given toolbar. On Windows an extra
+	 * {@link Composite} wrapper is added to work around a rendering quirk with the native {@link Text} widget inside a
+	 * {@link org.eclipse.swt.custom.CoolBar}. The method also registers the {@link #modifyListener} and the key
+	 * listener that handles ESC (return focus to editor) and ENTER (find next).
 	 *
 	 * @param toolbar
-	 *            the toolbar
-	 * @return the editor search controls
+	 *            the toolbar into which the search control is inserted; must not be {@code null} and must not be
+	 *            disposed
+	 * @return {@code this}, for fluent chaining
 	 */
 	public EditorSearchControls fill(final GamaToolbarSimple toolbar) {
-		logger = LoggerFactory.getLogger(EditorSearchControls.class);
 		Composite parent = toolbar;
 		Color c = parent.getBackground();
 		if (SystemInfo.isWindows()) {
@@ -137,7 +160,9 @@ public class EditorSearchControls {
 
 			@Override
 			public void keyPressed(final KeyEvent e) {
-				logger.info("Key pressed in find control: char=" + e.character + " code=" + e.keyCode);
+				// Use DEBUG level: INFO logging calls perform synchronous I/O on the UI thread
+				// on Windows (Logback file/console appenders), causing measurable freezes.
+				// logger.debug("Key pressed in find control: char=" + e.character + " code=" + e.keyCode);
 				if (e.character == SWT.ESC) { editor.setFocus(); }
 				if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) { findNext(); }
 			}
@@ -148,47 +173,67 @@ public class EditorSearchControls {
 	}
 
 	/**
-	 * Gets the find control.
+	 * Returns the underlying SWT {@link Text} widget used as the search input field.
 	 *
-	 * @return the find control
+	 * @return the find text widget; {@code null} if {@link #fill} has not been called yet
 	 */
 	public Text getFindControl() { return find; }
 
-	/** The modify listener. */
+	/**
+	 * Debounced {@link ModifyListener} attached to the find {@link Text} widget.
+	 *
+	 * <p>
+	 * Instead of calling {@link #find(boolean, boolean, boolean)} synchronously on every character, the listener posts
+	 * the search via {@link org.eclipse.swt.widgets.Display#timerExec(int, Runnable)} with a 100 ms delay. If another
+	 * character arrives before the timer fires, the pending runnable is cancelled and a new one is posted. This
+	 * coalesces rapid keystrokes into a single search call, drastically reducing contention on the
+	 * {@link org.eclipse.xtext.ui.editor.model.XtextDocument} read lock and preventing the UI freeze that Windows users
+	 * experienced when typing in the search field.
+	 * </p>
+	 */
 	private final ModifyListener modifyListener = new ModifyListener() {
-
-		private String lastText = EMPTY;
-
 		@Override
 		public void modifyText(final ModifyEvent e) {
-
-			boolean wrap = true;
 			final String text = find.getText();
-			if (lastText.startsWith(text)) { wrap = false; }
-			lastText = text;
-			if (EMPTY.equals(text) || "".equals(text)) {
+			// If the new text is NOT a prefix of the previous text (i.e., the user typed a new
+			// character rather than deleting one), start from the current position rather than
+			// wrapping around to the beginning of the document.
+			final boolean wrap = !lastModifyText.startsWith(text);
+			lastModifyText = text;
+
+			// Cancel any search that was previously scheduled but has not fired yet.
+			if (pendingFindRunnable != null && !find.isDisposed()) {
+				find.getDisplay().timerExec(-1, pendingFindRunnable);
+			}
+			pendingFindRunnable = null;
+
+			if (EMPTY.equals(text) || text.isEmpty()) {
 				adjustEnablement(false, null);
 				final ISelectionProvider selectionProvider = editor.getSelectionProvider();
 				if (selectionProvider != null) {
 					final ISelection selection = selectionProvider.getSelection();
-					if (selection instanceof TextSelection) {
-						final ITextSelection textSelection = (ITextSelection) selection;
+					if (selection instanceof ITextSelection textSelection) {
 						selectionProvider.setSelection(new TextSelection(textSelection.getOffset(), 0));
 					}
 				}
 			} else {
-				find(true, true, wrap);
+				final boolean doWrap = wrap;
+				pendingFindRunnable = () -> {
+					pendingFindRunnable = null;
+					if (!find.isDisposed() && !find.getText().isEmpty()) { find(true, true, doWrap); }
+				};
+				if (!find.isDisposed()) { find.getDisplay().timerExec(100, pendingFindRunnable); }
 			}
 		}
 	};
 
 	/**
-	 * Adjust enablement.
+	 * Updates the foreground colour of the search field to give visual feedback about the last search result.
 	 *
 	 * @param found
-	 *            the found
+	 *            {@code true} if the last search located at least one match (unused; retained for API symmetry)
 	 * @param color
-	 *            the color
+	 *            the colour to apply, or {@code null} to restore the default widget foreground
 	 */
 	void adjustEnablement(final boolean found, final Color color) {
 		if (color == null) {
@@ -199,66 +244,78 @@ public class EditorSearchControls {
 	}
 
 	/**
-	 * Find previous.
+	 * Triggers a backwards (upward) search for the current find-bar text, starting immediately before the current
+	 * selection. Wraps around to the end of the document when no match is found above.
 	 */
 	public void findPrevious() {
 		find(false);
 	}
 
 	/**
-	 * Find next.
+	 * Triggers a forward (downward) search for the current find-bar text, starting immediately after the current
+	 * selection. Wraps around to the beginning of the document when no match is found below.
 	 */
 	public void findNext() {
 		find(true);
 	}
 
 	/**
-	 * Find.
+	 * Initiates a non-incremental search in the given direction with wrap-around enabled.
 	 *
 	 * @param forward
-	 *            the forward
+	 *            {@code true} to search forward (downward); {@code false} to search backward (upward)
 	 */
 	private void find(final boolean forward) {
 		find(forward, false);
 	}
 
 	/**
-	 * Find.
+	 * Initiates a search in the given direction. When {@code incremental} is {@code true} the search starts from the
+	 * offset at which the current incremental session began rather than from the current caret position, allowing the
+	 * match to grow as more characters are typed. Wrap-around is always enabled.
 	 *
 	 * @param forward
-	 *            the forward
+	 *            {@code true} to search forward; {@code false} to search backward
 	 * @param incremental
-	 *            the incremental
+	 *            {@code true} for an incremental (type-ahead) search; {@code false} for a manual next/previous step
 	 */
 	private void find(final boolean forward, final boolean incremental) {
 		find(forward, incremental, true, false);
 	}
 
 	/**
-	 * Find.
+	 * Initiates a search in the given direction.
 	 *
 	 * @param forward
-	 *            the forward
+	 *            {@code true} to search forward; {@code false} to search backward
 	 * @param incremental
-	 *            the incremental
+	 *            {@code true} for an incremental (type-ahead) search
 	 * @param wrap
-	 *            the wrap
+	 *            {@code true} to wrap around to the other end of the document when no match is found
 	 */
 	void find(final boolean forward, final boolean incremental, final boolean wrap) {
 		find(forward, incremental, wrap, false);
 	}
 
 	/**
-	 * Find.
+	 * Core search implementation. Resolves the starting offset, delegates to the editor's {@link IFindReplaceTarget}
+	 * adapter and updates the UI colour to indicate success or failure. When {@code wrap} is {@code true} and no match
+	 * is found, the method calls itself recursively once with {@code wrapping=true} to restart from the opposite end of
+	 * the document.
+	 *
+	 * <p>
+	 * The {@link IFindReplaceTargetExtension} session is opened before the search and closed in a {@code finally} block
+	 * to ensure the underlying viewer always exits its find session, even if an exception is thrown.
+	 * </p>
 	 *
 	 * @param forward
-	 *            the forward
+	 *            {@code true} to search forward; {@code false} to search backward
 	 * @param incremental
-	 *            the incremental
+	 *            {@code true} for incremental (type-ahead) mode
 	 * @param wrap
-	 *            the wrap
+	 *            {@code true} to allow wrap-around after the first pass
 	 * @param wrapping
-	 *            the wrapping
+	 *            {@code true} when this call is itself the wrap-around retry (prevents infinite recursion)
 	 */
 	private void find(final boolean forward, final boolean incremental, final boolean wrap, final boolean wrapping) {
 
@@ -325,7 +382,9 @@ public class EditorSearchControls {
 	}
 
 	/**
-	 * @return the sourceView of the active textEditor
+	 * Returns the {@link ISourceViewer} of the host editor by adapting it as an {@link ITextOperationTarget}.
+	 *
+	 * @return the source viewer; may be {@code null} if the editor has not yet been fully initialised
 	 */
 	private ISourceViewer getSourceViewer() { return (ISourceViewer) editor.getAdapter(ITextOperationTarget.class); }
 }

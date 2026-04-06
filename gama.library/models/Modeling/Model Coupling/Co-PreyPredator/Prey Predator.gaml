@@ -160,5 +160,8 @@ experiment "Prey Predator Exp" type: gui
 		}
 
 	}
+}
 
+experiment comodel_exp_pp
+{
 }

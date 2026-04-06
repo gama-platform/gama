@@ -309,24 +309,7 @@ public class GamlSyntacticConverter {
 		final boolean isWronglyClassifiedInDefinitions = stm instanceof S_Definition && !GAML.isADeclaration(keyword);
 
 		ISyntacticElement elt = null;
-		// final String finalKeyword = keyword;
 		switch (stm) {
-			// case S_Species ss when "species_layer".equals(finalKeyword) -> {
-			// Concerns species layers within species layers.
-			// elt = FACTORY.create(keyword, stm, true);
-			// Create a VarDefinition with the species name, wrap it in a VariableRef,
-			// and assign it as the expression of the statement so that the species_layer
-			// facet resolution can find the referenced species by name. It is a very bad fix...
-			// final String speciesName = ss.getName();
-			// if (speciesName != null) {
-			// final VarDefinition varDef = EGaml.getFactory().createVarDefinition();
-			// varDef.setName(speciesName);
-			// final VariableRef varRef = EGaml.getFactory().createVariableRef();
-			// varRef.setRef(varDef);
-			// ss.setExpr(varRef);
-			// ss.setName(null);
-			// }
-			// }
 			case S_Callable call when upperContainsAttributes -> {
 				// If we define an action with this statement
 				final Expression t = call.getTkey();
@@ -363,6 +346,11 @@ public class GamlSyntacticConverter {
 			}
 			case null, default -> {
 				switch (keyword) {
+					case SET -> {
+						elt = FACTORY.create(keyword, stm, true);
+						elt.setFacet(IInternalFacets.GAML_ERROR, GAML.getExpressionDescriptionFactory().createConstant(
+								"`set` is not allowed anymore, please use the direct assignment syntax (i.e. `variable <- value`)"));
+					}
 					case IKeyword.CREATE -> {
 						elt = FACTORY.create(keyword, stm, true);
 						processCreate(stm, elt);
@@ -384,10 +372,10 @@ public class GamlSyntacticConverter {
 
 		// We apply some conversions to the facets expressed in the statement
 		convertFacets(stm, keyword, elt);
-		if (isWronglyClassifiedInStatements) {
-			// We mark the element with a GAML warning facet
-			// Will mark for instance: int my_action {...}
-			// This is a temporary feature to ease the transitioning towards the full functional syntax
+		// We mark the element with a GAML warning facet
+		// Will mark for instance: int my_action {...}
+		// This is a temporary feature to ease the transitioning towards the full functional syntax
+		if (isWronglyClassifiedInStatements && elt != null) {
 			elt.setFacet(IInternalFacets.GAML_WARNING,
 					GAML.getExpressionDescriptionFactory().createConstant("Action declaration is missing parentheses"));
 			String type = elt.getKeyword();

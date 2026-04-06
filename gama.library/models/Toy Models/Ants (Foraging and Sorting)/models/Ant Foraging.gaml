@@ -226,7 +226,7 @@ experiment "Classic" type: gui parent:base{
 		save simulation to: '../result/file.simulation' format: "json" ;}
 	
 	output {
-		display Ants antialias: false type: opengl4 {
+		display Ants antialias: false type: 3d axes: true {
 			light #ambient intensity: 127;
 			light #default intensity: 127;
 			picture terrain refresh: false;
@@ -284,6 +284,13 @@ experiment "3 Simulations" type: gui  parent:base{
 			species ant position: {0.05, 0.05} size: {0.9, 0.9} aspect: icon;
 		}
 	}
+}
+
+experiment comodel_exp_ant
+{
+	parameter 'Number:' var: ants_number <- 100 unit: 'ants' category: 'Environment and Population';
+	parameter 'Grid dimension:' var: gridsize <- 100 unit: '(number of rows and columns)' category: 'Environment and Population';
+	parameter 'Number of food depots:' var: number_of_food_places <- 5 min: 1 category: 'Environment and Population';
 }
 
 

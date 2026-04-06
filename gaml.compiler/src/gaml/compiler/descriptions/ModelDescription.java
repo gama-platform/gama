@@ -544,7 +544,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		} // no 'else' as models are also species, which should be added after.
 		if (child.isExperiment()) {
 			getExperimentsMap().put(child.getName(), (IExperimentDescription) child);
-		} else if (child.isClass()) {
+		} else if (child.isClass() && !child.isSpecies()) {
 			getClassesMap().put(child.getName(), (IClassDescription) child);
 		} else {
 			super.addChild(child);
@@ -625,6 +625,23 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	}
 
 	@Override
+	public ISpeciesDescription getMicroSpecies(final String name) {
+		ISpeciesDescription retVal = super.getMicroSpecies(name);
+		if (retVal == null && microModels != null) {
+			retVal = microModels.get(name);
+			if (retVal == null) {
+				for (final IModelDescription mm : microModels.values()) {
+					if (mm.getName().equals(name)) {
+						retVal = mm;
+						break;
+					}
+				}
+			}
+		}
+		return retVal;
+	}
+
+	@Override
 	public IType getTypeNamed(final String s) {
 		if (types == null) return Types.NO_TYPE;
 		return types.get(s);
@@ -686,15 +703,40 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	}
 
 	@Override
+	public boolean visitMicroSpecies(final DescriptionVisitor<ISpeciesDescription> visitor) {
+		if (!super.visitMicroSpecies(visitor)) return false;
+		if (microModels != null) {
+			for (final IModelDescription mm : microModels.values()) {
+				if (!visitor.process(mm)) return false;
+			}
+		}
+		return true;
+	}
+
+	@Override
 	public boolean visitChildren(final DescriptionVisitor<IDescription> visitor) {
-		return super.visitChildren(visitor) && getClassesMap().forEachValue(visitor)
-				&& getOwnExperiments().forEachValue(visitor);
+		if (!super.visitChildren(visitor) || !getClassesMap().forEachValue(visitor)
+				|| !getOwnExperiments().forEachValue(visitor))
+			return false;
+		if (microModels != null) {
+			for (final IModelDescription mm : microModels.values()) {
+				if (!visitor.process(mm)) return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
 	public boolean visitOwnChildren(final DescriptionVisitor<IDescription> visitor) {
-		return super.visitOwnChildren(visitor) && getClassesMap().forEachValue(visitor)
-				&& getOwnExperiments().forEachValue(visitor);
+		if (!super.visitOwnChildren(visitor) || !getClassesMap().forEachValue(visitor)
+				|| !getOwnExperiments().forEachValue(visitor))
+			return false;
+		if (microModels != null) {
+			for (final IModelDescription mm : microModels.values()) {
+				if (!visitor.process(mm)) return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
