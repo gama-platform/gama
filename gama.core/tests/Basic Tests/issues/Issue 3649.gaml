@@ -21,7 +21,7 @@ global {
 experiment 'Verify me in GUI' {
 	init {
 		ask simulations {
-			do die;
+			do die();
 		}
 	}
 }

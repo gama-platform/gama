@@ -13,6 +13,7 @@ package gama.workspace.metadata;
 import static gama.dev.DEBUG.TIMER_WITH_EXCEPTIONS;
 import static org.eclipse.core.runtime.Path.fromOSString;
 
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -34,38 +35,38 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ISaveContext;
 import org.eclipse.core.resources.ISaveParticipant;
 import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.QualifiedName;
+import org.eclipse.core.runtime.content.IContentDescriber;
 import org.eclipse.core.runtime.content.IContentType;
+import org.eclipse.core.runtime.content.IContentTypeManager;
 import org.eclipse.emf.common.util.URI;
 
 import gama.api.GAMA;
 import gama.api.constants.GamlFileExtension;
 import gama.api.ui.IStatusMessage;
-import gama.api.utils.files.AbstractFileMetaData;
 import gama.api.utils.files.CompressionUtils;
 import gama.api.utils.files.FileUtils;
 import gama.api.utils.files.IFileMetadataProvider;
 import gama.api.utils.files.IGamaFileMetaData;
-import gama.api.utils.files.IGamlFileInfo;
 import gama.dev.BANNER_CATEGORY;
 import gama.dev.DEBUG;
-import gama.workspace.manager.WorkspaceManager;
 
 /**
- * FileMetaDataProvider is responsible for managing metadata for files and projects in the GAMA workspace.
- * It provides caching mechanisms, serialization/deserialization of metadata, and efficient retrieval
- * of file information through both session properties (runtime) and persistent properties (disk storage).
- * 
- * <p>The provider supports various file types including shapefiles, GAML files, images, and generic files.
- * Metadata is compressed when stored to disk to save space and decompressed when loaded.</p>
- * 
- * <p>Key features:</p>
+ * FileMetaDataProvider is responsible for managing metadata for files and projects in the GAMA workspace. It provides
+ * caching mechanisms, serialization/deserialization of metadata, and efficient retrieval of file information through
+ * both session properties (runtime) and persistent properties (disk storage).
+ *
+ * <p>
+ * The provider supports various file types including shapefiles, GAML files, images, and generic files. Metadata is
+ * compressed when stored to disk to save space and decompressed when loaded.
+ * </p>
+ *
+ * <p>
+ * Key features:
+ * </p>
  * <ul>
  * <li>Asynchronous metadata processing using a thread pool executor</li>
  * <li>Two-level caching (session and persistent properties)</li>
@@ -73,7 +74,7 @@ import gama.workspace.manager.WorkspaceManager;
  * <li>Thread-safe operations with proper synchronization</li>
  * <li>Graceful degradation for corrupted or outdated metadata</li>
  * </ul>
- * 
+ *
  * @author drogoul
  * @since 11 févr. 2015
  * @version 2.0 - Improved thread safety and compression handling
@@ -95,7 +96,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	 *            the clazz
 	 */
 	@Override
-	public void registerMetadataClass(String contentType, Class<? extends IGamaFileMetaData> clazz) {
+	public void registerMetadataClass(final String contentType, final Class<? extends IGamaFileMetaData> clazz) {
 		Constructor<? extends IGamaFileMetaData> iFileConstructor;
 		try {
 			iFileConstructor = clazz.getDeclaredConstructor(IFile.class);
@@ -109,7 +110,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 				return null;
 			}
 		};
-		registerMetadataBuilder(contentType, builder); 
+		registerMetadataBuilder(contentType, builder);
 		Constructor<? extends IGamaFileMetaData> propertiesConstructor;
 		try {
 			propertiesConstructor = clazz.getDeclaredConstructor(String.class);
@@ -120,7 +121,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 			try {
 				return propertiesConstructor.newInstance(properties);
 			} catch (Exception e) {
-				return null; 
+				return null;
 			}
 		};
 		registerMetadataDecoder(contentType, retriever);
@@ -151,13 +152,12 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	}
 
 	/**
-	 * Tracks in-flight metadata computations. Maps an element to a {@link CompletableFuture} that will
-	 * complete with the computed {@link IGamaFileMetaData} (or {@code null} on failure). Using a
-	 * {@link ConcurrentHashMap} avoids both the spin-wait and the need for a separate lock: callers that
-	 * arrive while a computation is already running simply join the existing future.
+	 * Tracks in-flight metadata computations. Maps an element to a {@link CompletableFuture} that will complete with
+	 * the computed {@link IGamaFileMetaData} (or {@code null} on failure). Using a {@link ConcurrentHashMap} avoids
+	 * both the spin-wait and the need for a separate lock: callers that arrive while a computation is already running
+	 * simply join the existing future.
 	 */
-	private final ConcurrentHashMap<Object, CompletableFuture<IGamaFileMetaData>> inFlight =
-			new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<Object, CompletableFuture<IGamaFileMetaData>> inFlight = new ConcurrentHashMap<>();
 
 	/**
 	 * Adapt the specific object to the specified classes, supporting the IAdaptable interface as well.
@@ -219,15 +219,13 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	};
 
 	/** The executor. */
-	ExecutorService executor = Executors.newFixedThreadPool(
-		Math.max(1, Runtime.getRuntime().availableProcessors() / 2),
-		r -> {
-			Thread t = new Thread(r, "MetadataProvider-" + System.nanoTime());
-			t.setDaemon(true);
-			t.setPriority(Thread.NORM_PRIORITY - 1);
-			return t;
-		}
-	);
+	ExecutorService executor =
+			Executors.newFixedThreadPool(Math.max(1, Runtime.getRuntime().availableProcessors() / 2), r -> {
+				Thread t = new Thread(r, "MetadataProvider-" + System.nanoTime());
+				t.setDaemon(true);
+				t.setPriority(Thread.NORM_PRIORITY - 1);
+				return t;
+			});
 
 	/** The started. */
 	volatile boolean started;
@@ -237,21 +235,19 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	 */
 	private FileMetaDataProvider() {
 		registerMetadataDecoder("project", (Function<String, IGamaFileMetaData>) ProjectInfo::new);
-		registerMetadataBuilder(SHAPEFILE_SUPPORT_CT_ID, f -> this.createShapeFileSupportMetaData(f));
+		registerMetadataBuilder(SHAPEFILE_SUPPORT_CT_ID, this::createShapeFileSupportMetaData);
 		registerMetadataDecoder(SHAPEFILE_SUPPORT_CT_ID, GenericFileInfo::new);
 	}
 
 	/**
-	 * Shutdown the metadata provider and clean up resources.
-	 * This method should be called when the workspace is being closed.
+	 * Shutdown the metadata provider and clean up resources. This method should be called when the workspace is being
+	 * closed.
 	 */
 	public void shutdown() {
 		if (executor != null && !executor.isShutdown()) {
 			executor.shutdown();
 			try {
-				if (!executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) {
-					executor.shutdownNow();
-				}
+				if (!executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) { executor.shutdownNow(); }
 			} catch (InterruptedException e) {
 				executor.shutdownNow();
 				Thread.currentThread().interrupt();
@@ -266,8 +262,10 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	/**
 	 * Gets the meta data for a project.
 	 *
-	 * @param project the project
-	 * @param includeOutdated whether to include outdated metadata
+	 * @param project
+	 *            the project
+	 * @param includeOutdated
+	 *            whether to include outdated metadata
 	 * @return the metadata or null if not available
 	 */
 	private IGamaFileMetaData getMetaData(final IProject project, final boolean includeOutdated) {
@@ -285,10 +283,9 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	}
 
 	/**
-	 * Gets the meta data for a given element. Handles various types including files, URIs, and projects.
-	 * Uses a two-level cache (session and persistent properties) and a {@link ConcurrentHashMap} of
-	 * {@link CompletableFuture}s to deduplicate concurrent build requests for the same element without
-	 * blocking or spin-waiting.
+	 * Gets the meta data for a given element. Handles various types including files, URIs, and projects. Uses a
+	 * two-level cache (session and persistent properties) and a {@link ConcurrentHashMap} of {@link CompletableFuture}s
+	 * to deduplicate concurrent build requests for the same element without blocking or spin-waiting.
 	 *
 	 * @param element
 	 *            the element to get metadata for
@@ -333,10 +330,8 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 			if (cached != null) return cached;
 
 			// Slow path: compute (or join an already-running computation) via CompletableFuture.
-			if (immediately) {
-				// Run synchronously; no need to track in inFlight.
+			if (immediately) // Run synchronously; no need to track in inFlight.
 				return buildAndStore(ct, file, element);
-			}
 
 			// For async requests: use computeIfAbsent so that only the first caller submits
 			// the task; subsequent callers for the same element receive the same future.
@@ -365,8 +360,8 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	}
 
 	/**
-	 * Builds metadata for {@code file} using the registered builder for {@code contentType}, stores it,
-	 * and returns it. Falls back to a generic descriptor when no builder is registered.
+	 * Builds metadata for {@code file} using the registered builder for {@code contentType}, stores it, and returns it.
+	 * Falls back to a generic descriptor when no builder is registered.
 	 *
 	 * @param contentType
 	 *            the content-type identifier
@@ -400,26 +395,28 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	}
 
 	/**
-	 * Read metadata from either session properties (runtime) or persistent properties (startup).
-	 * Handles both compressed and uncompressed data formats for backward compatibility.
+	 * Read metadata from either session properties (runtime) or persistent properties (startup). Handles both
+	 * compressed and uncompressed data formats for backward compatibility.
 	 *
-	 * @param contentType the content type identifier for metadata decoding
-	 * @param file the resource file containing the metadata
-	 * @param includeOutdated whether to include outdated metadata in results
+	 * @param contentType
+	 *            the content type identifier for metadata decoding
+	 * @param file
+	 *            the resource file containing the metadata
+	 * @param includeOutdated
+	 *            whether to include outdated metadata in results
 	 * @return the decoded metadata or null if not available or invalid
 	 */
-	private IGamaFileMetaData readMetadata(String contentType, final IResource file, final boolean includeOutdated) {
-		if (file == null || !file.isAccessible() || contentType == null) {
-			return null;
-		}
-		
+	private IGamaFileMetaData readMetadata(final String contentType, final IResource file,
+			final boolean includeOutdated) {
+		if (file == null || !file.isAccessible() || contentType == null) return null;
+
 		IGamaFileMetaData result = null;
 		final long modificationStamp = file.getModificationStamp();
-		
+
 		try {
 			// First try to get from session properties (runtime cache)
 			String metadataString = (String) file.getSessionProperty(CACHE_KEY);
-			
+
 			// If not in session, try persistent properties (saved to disk)
 			if (metadataString == null) {
 				String persistentData = file.getPersistentProperty(CACHE_KEY);
@@ -436,7 +433,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 					}
 				}
 			}
-			
+
 			if (metadataString != null) {
 				final Function<String, IGamaFileMetaData> decoder = metadataDecoders.get(contentType);
 				if (decoder != null) {
@@ -445,12 +442,12 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 						if (result != null) {
 							final boolean hasFailed = result.hasFailed();
 							// Return null if metadata is outdated and we don't want outdated data
-							if (!hasFailed && !includeOutdated && result.getModificationStamp() != modificationStamp) {
+							if (!hasFailed && !includeOutdated && result.getModificationStamp() != modificationStamp)
 								return null;
-							}
 						}
 					} catch (final Exception e) {
-						DEBUG.ERR("Error decoding metadata " + metadataString + " : " + e.getClass().getSimpleName() + ":" + e.getMessage());
+						DEBUG.ERR("Error decoding metadata " + metadataString + " : " + e.getClass().getSimpleName()
+								+ ":" + e.getMessage());
 						if (e instanceof InvocationTargetException && e.getCause() != null) {
 							e.getCause().printStackTrace();
 						}
@@ -470,12 +467,15 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	}
 
 	/**
-	 * Stores metadata for the given resource. The metadata is stored in session properties
-	 * for immediate access and will be persisted to disk during workspace save operations.
+	 * Stores metadata for the given resource. The metadata is stored in session properties for immediate access and
+	 * will be persisted to disk during workspace save operations.
 	 *
-	 * @param file the resource to store metadata for
-	 * @param data the metadata to store, or null to clear existing metadata
-	 * @param immediately whether to store synchronously or asynchronously
+	 * @param file
+	 *            the resource to store metadata for
+	 * @param data
+	 *            the metadata to store, or null to clear existing metadata
+	 * @param immediately
+	 *            whether to store synchronously or asynchronously
 	 */
 	@Override
 	public void storeMetaData(final IResource file, final IGamaFileMetaData data, final boolean immediately) {
@@ -491,7 +491,7 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 					file.setSessionProperty(CACHE_KEY, data == null ? null : data.toPropertyString());
 					file.setSessionProperty(CHANGE_KEY, true);
 					if (data == null) {
-						//remove persistent property
+						// remove persistent property
 						file.setPersistentProperty(CACHE_KEY, null);
 					}
 				} catch (final Exception e) {
@@ -546,8 +546,22 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	 * @return the content type id
 	 */
 	public static String getContentTypeId(final IFile p) {
-		final IContentType ct = Platform.getContentTypeManager().findContentTypeFor(p.getFullPath().toOSString());
-		if (ct != null) return ct.getId();
+		IContentTypeManager man = Platform.getContentTypeManager();
+		final IContentType ct = man.findContentTypeFor(p.getFullPath().toOSString());
+		if (ct != null) {
+			if (GML_CT_ID.equals(ct.getId())) {
+				GMLContentDescriber describer = new GMLContentDescriber();
+				int result;
+
+				try {
+					result = describer.describe(p.getContents(), null);
+				} catch (IOException | CoreException e) {
+					result = IContentDescriber.INDETERMINATE;
+				}
+				if (result != IContentDescriber.VALID) return TEXT_CT_ID;
+			}
+			return ct.getId();
+		}
 		if (GamlFileExtension.isAny(p.getName())) return GAML_CT_ID;
 		final String ext = p.getFileExtension();
 		if ("shp".equals(ext)) return SHAPEFILE_CT_ID;
@@ -609,19 +623,18 @@ public class FileMetaDataProvider implements IFileMetadataProvider {
 	}
 
 	/**
-	 * Initialize the metadata provider by setting up workspace synchronization,
-	 * loading cached metadata from persistent properties, and registering save participants.
-	 * This method is thread-safe and idempotent.
+	 * Initialize the metadata provider by setting up workspace synchronization, loading cached metadata from persistent
+	 * properties, and registering save participants. This method is thread-safe and idempotent.
 	 */
 	private void startup() {
 		if (started) return;
 		synchronized (this) {
 			if (started) return; // Double-check pattern
-			
+
 			IWorkspace workspace = GAMA.getWorkspaceManager().getWorkspace();
 			workspace.getSynchronizer().add(CACHE_KEY);
 			started = true;
-			
+
 			DEBUG.TIMER(BANNER_CATEGORY.GAMA, "Retrieving workspace metadata", "completed in", () -> {
 				try {
 					workspace.getRoot().accept(resource -> {

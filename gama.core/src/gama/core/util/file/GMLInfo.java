@@ -9,9 +9,12 @@
  ********************************************************************************************************/
 package gama.core.util.file;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.resources.IFile;
 import org.geotools.api.feature.type.AttributeDescriptor;
@@ -22,6 +25,7 @@ import org.geotools.geometry.jts.ReferencedEnvelope;
 import org.geotools.referencing.CRS;
 import org.geotools.wfs.GML;
 import org.geotools.wfs.GML.Version;
+import org.xml.sax.SAXException;
 
 import gama.api.compilation.documentation.GamlRegularDocumentation;
 import gama.api.compilation.documentation.IGamlDocumentation;
@@ -59,55 +63,54 @@ public class GMLInfo extends AbstractFileMetaData {
 	public GMLInfo(final IFile file) {
 		super(file);
 		try (var is = file.getContents()) {
-			createFrom(is);
+			createFrom(file.getName(), is);
 		} catch (Exception e) {
 			DEBUG.ERR("Error reading GML metadata for " + file.getName() + ": " + e.getMessage());
 		}
 	}
 
 	/**
-	 * Instantiates a new GML info.
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 *             Instantiates a new GML info.
 	 *
 	 * @param modificationStamp
 	 *            the modification stamp
 	 * @param inputStream
 	 *            the input stream
 	 */
-	public void createFrom(final InputStream inputStream) {
+	public void createFrom(final String name, final InputStream inputStream)
+			throws IOException, SAXException, ParserConfigurationException {
 		ReferencedEnvelope env = new ReferencedEnvelope();
 		CoordinateReferenceSystem crs1 = null;
 		int number = 0;
 		if (inputStream != null) {
+			final GML gml = new GML(Version.GML3);
+			final SimpleFeatureCollection features = gml.decodeFeatureCollection(inputStream);
+
 			try {
-				final GML gml = new GML(Version.GML3);
-				final SimpleFeatureCollection features = gml.decodeFeatureCollection(inputStream);
-
-				try {
-					crs1 = features.getSchema().getCoordinateReferenceSystem();
-				} catch (final Exception e) {
-					DEBUG.ERR("Ignored exception in GMLInfo getCRS:" + e.getMessage());
-				}
-				env = features.getBounds();
-
-				try {
-					number = features.size();
-				} catch (final Exception e) {
-					DEBUG.ERR("Error in loading GML file: " + e.getMessage());
-				}
-
-				final java.util.List<AttributeDescriptor> att_list = features.getSchema().getAttributeDescriptors();
-				for (final AttributeDescriptor desc : att_list) {
-					String type;
-					if (desc.getType() instanceof GeometryType) {
-						type = "geometry";
-					} else {
-						type = Types.get(desc.getType().getBinding()).toString();
-					}
-					attributes.put(desc.getName().getLocalPart(), type);
-				}
+				crs1 = features.getSchema().getCoordinateReferenceSystem();
 			} catch (final Exception e) {
-				DEBUG.ERR("Error in reading metadata of GML file");
-				e.printStackTrace();
+				DEBUG.ERR("Ignored exception in GMLInfo getCRS:" + e.getMessage());
+			}
+			env = features.getBounds();
+
+			try {
+				number = features.size();
+			} catch (final Exception e) {
+				DEBUG.ERR("Error in loading GML file: " + e.getMessage());
+			}
+
+			final java.util.List<AttributeDescriptor> att_list = features.getSchema().getAttributeDescriptors();
+			for (final AttributeDescriptor desc : att_list) {
+				String type;
+				if (desc.getType() instanceof GeometryType) {
+					type = "geometry";
+				} else {
+					type = Types.get(desc.getType().getBinding()).toString();
+				}
+				attributes.put(desc.getName().getLocalPart(), type);
 			}
 		}
 		width = env.getWidth();

@@ -12,7 +12,7 @@ species Person skills:[network]
 	string myGroup;
 	init
 	{
-		do connect with_name:name force_network_use:true;
+		do connect(with_name:name, force_network_use:true);
 	}
 }
 
@@ -24,11 +24,11 @@ experiment "Tests for gama.extension.network" type: test skills:[network] {
 	{
 		if(!already_build)
 		{
-			create Person with:(name:"Travis", myGroup:"manager");
+			create Person(name:"Travis", myGroup:"manager");
 			
 			loop nm over:girls
 			{
-				create Person with:(name:nm, myGroup:group_spice);
+				create Person(name:nm, myGroup:group_spice);
 			}
 			already_build <- true;	
 		}
@@ -45,7 +45,7 @@ experiment "Tests for gama.extension.network" type: test skills:[network] {
 		bool test <- false;
 		try{ 
 			ask Person where(each.name = "Travis") {
-				do send to:"Victoria" contents:"Travis is the best tester of the World and of the Universe";
+				do send(to:"Victoria", contents:"Travis is the best tester of the World and of the Universe");
 				 test<-true;
 			}
 		} catch {
@@ -58,14 +58,14 @@ experiment "Tests for gama.extension.network" type: test skills:[network] {
 	test "Message receiving" {
 		bool test <- false;
 		ask Person where(each.name = "Travis") {
-				do send to:"Mel" contents:"Travis is the best tester of the World and of the Universe";
+				do send(to:"Mel", contents:"Travis is the best tester of the World and of the Universe");
 				 test<-true;
 			}
 		float mtime <- gama.machine_time;
 		loop while: ((mtime+1000) > gama.machine_time){ }
 		ask Person where(each.name = "Mel")
 		{
-			do fetch_message_from_network;
+			do fetch_message_from_network();
 			if(length(mailbox)>0) {test<-true;}
 				else {test<-false;}
 		}
@@ -76,13 +76,13 @@ experiment "Tests for gama.extension.network" type: test skills:[network] {
 	test "Message contents" {
 		bool test <- false;
 		ask Person where(each.name = "Travis") {
-				do send to:"Melanie" contents:"Travis is the best tester of the World and of the Universe";
+				do send(to:"Melanie", contents:"Travis is the best tester of the World and of the Universe");
 			}
 		float mtime <- gama.machine_time;
 		loop while: ((mtime+1000) > gama.machine_time){ }
 		ask Person where(each.name = "Melanie")
 		{
-			do fetch_message_from_network;
+			do fetch_message_from_network();
 			list<message> msg <- mailbox;
 			if(first(msg).contents = "Travis is the best tester of the World and of the Universe") {
 				
@@ -100,13 +100,13 @@ experiment "Tests for gama.extension.network" type: test skills:[network] {
 		bool a3;
 		bool a4;
 		ask Person where(each.name = "Travis") {
-				do send to:"Geri" contents:"Travis is the best tester of the World and of the Universe";
+				do send(to:"Geri", contents:"Travis is the best tester of the World and of the Universe");
 			}
 		float mtime <- gama.machine_time;
 		loop while: ((mtime+2000) > gama.machine_time){ }
 		ask Person where(each.name = "Geri")
 		{
-			do fetch_message_from_network;
+			do fetch_message_from_network();
 			a1 <- length(mailbox)=1;
 			a2 <- has_more_message();
 			a3 <- first(mailbox) = fetch_message();
@@ -128,13 +128,13 @@ experiment "Tests for gama.extension.network" type: test skills:[network] {
 		bool p3;
 		bool p4;
 		ask Person where(each.name = "Travis") {
-				do send to:"ALL" contents:"Travis is the best tester of the World and of the Universe";
+				do send(to:"ALL", contents:"Travis is the best tester of the World and of the Universe");
 			}
 		float mtime <- gama.machine_time;
 		loop while: ((mtime+2000) > gama.machine_time){ }
 		ask Person where(each.name = "Victoria")
 		{
-			do fetch_message_from_network;
+			do fetch_message_from_network();
 			a1 <- length(mailbox)=1;
 			a2 <- has_more_message();
 			a3 <- first(mailbox) = fetch_message();
@@ -159,7 +159,7 @@ experiment "Tests for gama.extension.network" type: test skills:[network] {
 		p3 <- (a1 and a2 and a3 and a4);
 		ask Person where(each.name = "Travis")
 		{
-			do fetch_message_from_network;
+			do fetch_message_from_network();
 			a1 <- length(mailbox)=1;
 			a2 <- has_more_message();
 			a3 <- first(mailbox) = fetch_message();
@@ -182,7 +182,7 @@ experiment "Tests for gama.extension.network" type: test skills:[network] {
 		
 		//travis send a message to Spice Girl group which contain nobody
 		ask Person where(each.name = "Travis") {
-				do send to:grp contents:"Travis is the best tester of the World and of the Universe";
+				do send(to:grp, contents:"Travis is the best tester of the World and of the Universe");
 		}
 		float mtime <- gama.machine_time;
 		loop while: ((mtime+2000) > gama.machine_time){ }
@@ -190,24 +190,24 @@ experiment "Tests for gama.extension.network" type: test skills:[network] {
 		//nobody receive the message
 		ask Person where(each.myGroup = grp)
 		{
-			do fetch_message_from_network;
+			do fetch_message_from_network();
 			p1 <- p1 and length(mailbox)=0;
 	
 		}
 		//create the Spice Girl group
 		ask Person where(each.myGroup = grp)
 		{
-			do join_group with_name:grp;
+			do join_group(with_name:grp);
 		}
 		//travis send message to Spice Girl
 		ask Person where(each.name = "Travis") {
-				do send to:grp contents:"Travis is the best tester of the World and of the Universe";
+				do send(to:grp, contents:"Travis is the best tester of the World and of the Universe");
 		}
 		
 		//check if Spice Girls recieve the message with a good quality
 		ask Person where(each.myGroup = grp)
 		{
-			do fetch_message_from_network;
+			do fetch_message_from_network();
 			a1 <- length(mailbox)=1;
 			a2 <- has_more_message();
 			a3 <- first(mailbox) = fetch_message();
@@ -219,7 +219,7 @@ experiment "Tests for gama.extension.network" type: test skills:[network] {
 		//but Travis don't receive the message
 		ask Person where(each.name = "Travis")
 		{
-			do fetch_message_from_network;
+			do fetch_message_from_network();
 			a1 <- length(mailbox)=0;
 			p1 <- p1 and (a1);
 		}
@@ -227,18 +227,18 @@ experiment "Tests for gama.extension.network" type: test skills:[network] {
 		//leave the spice girls group
 		ask Person where(each.myGroup = grp)
 		{
-			do leave_group with_name:grp;
+			do leave_group(with_name:grp);
 		}
 		
 		//Travis send again a message to spice girl group
 		ask Person where(each.name = "Travis") {
-				do send to:grp contents:"Travis is the best tester of the World and of the Universe";
+				do send(to:grp, contents:"Travis is the best tester of the World and of the Universe");
 		}
 		
 		//nobody receive the message because they leave the group
 		ask Person where(each.myGroup = grp)
 		{
-			do fetch_message_from_network;
+			do fetch_message_from_network();
 			p1 <- p1 and length(mailbox)=0;
 	
 		}

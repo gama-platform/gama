@@ -854,14 +854,40 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	/**
-	 * Do nothing (already installed normally)
+	 * Installs code mining providers, preserving any providers already registered via the Eclipse extension point
+	 * {@code org.eclipse.ui.workbench.texteditor.codeMiningProviders} (which includes third-party providers such as
+	 * GitHub Copilot). The GAML-specific {@link GamlCodeMiningProvider} is <em>added</em> on top of those providers
+	 * rather than replacing them.
 	 *
 	 * @see org.eclipse.ui.texteditor.AbstractTextEditor#installCodeMiningProviders()
 	 */
 	@Override
 	protected void installCodeMiningProviders() {
-		ICodeMiningProvider[] providers = { new GamlCodeMiningProvider() };
-		((GamaSourceViewer) getSourceViewer()).setCodeMiningProviders(providers);
+		// Let the framework install any providers registered via the extension point
+		// (e.g. GitHub Copilot's ICodeMiningProvider) before adding the GAML one.
+		super.installCodeMiningProviders();
+		getInternalSourceViewer().addCodeMiningProvider(new GamlCodeMiningProvider());
+	}
+
+	/**
+	 * Returns the adapter for the given class. Explicitly exposes {@link ISourceViewer} and {@link ITextViewer} so that
+	 * external tools such as GitHub Copilot can always obtain a reference to the underlying viewer, even when the editor
+	 * wraps its content in additional composites.
+	 *
+	 * @param <T>
+	 *            the target adapter type
+	 * @param adapter
+	 *            the class to adapt to; must not be {@code null}
+	 * @return the adapter, or {@code null} if no adapter is available
+	 */
+	@Override
+	public <T> T getAdapter(final Class<T> adapter) {
+		if (org.eclipse.jface.text.source.ISourceViewer.class == adapter
+				|| org.eclipse.jface.text.ITextViewer.class == adapter) {
+			GamaSourceViewer viewer = getInternalSourceViewer();
+			if (viewer != null) return adapter.cast(viewer);
+		}
+		return super.getAdapter(adapter);
 	}
 
 	@Override
