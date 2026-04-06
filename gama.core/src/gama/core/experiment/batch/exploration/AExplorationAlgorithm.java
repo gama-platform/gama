@@ -423,11 +423,12 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			int i = 0;
 			while ((line = br.readLine()) != null) {
 				tempArr = line.split(CSV_SEP);
-				for (String tempStr : tempArr) { if (i == 0) { list_name.add(tempStr); } }
 				if (i > 0) {
 					Map<String, Object> temp_map = new HashMap<>();
 					for (int y = 0; y < tempArr.length; y++) { temp_map.put(list_name.get(y), tempArr[y]); }
 					parameters.add(temp_map);
+				} else {
+					for (String tempStr : tempArr) { list_name.add(tempStr); }
 				}
 				i++;
 			}
