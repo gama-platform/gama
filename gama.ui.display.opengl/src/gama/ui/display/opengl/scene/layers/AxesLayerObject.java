@@ -51,7 +51,7 @@ public class AxesLayerObject extends StaticLayerObject.World {
 	public final static IPoint[] ANCHORS = { left_center, top_center, bottom_center };
 
 	/** The Constant ROTATIONS. */
-	public final static AxisAngle[] ROTATIONS = { new AxisAngle(PLUS_J, 90), new AxisAngle(MINUS_I, 90), null };
+	public final static AxisAngle[] ROTATIONS = { new AxisAngle(PLUS_J, -90), new AxisAngle(MINUS_I, -90), null };
 
 	/** The Constant NAME_REGISTRY. */
 	public final static IColor[] COLORS =
