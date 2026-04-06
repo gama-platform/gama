@@ -1,3 +1,13 @@
+/*******************************************************************************************************
+ *
+ * LatinhypercubeSampling.java, in gama.core, is part of the source code of the GAMA modeling and simulation platform
+ * (v.2025-03).
+ *
+ * (c) 2007-2026 UMI 209 UMMISCO IRD/SU & Partners (IRIT, MIAT, ESPACE-DEV, CTU)
+ *
+ * Visit https://github.com/gama-platform/gama for license information and contacts.
+ *
+ ********************************************************************************************************/
 package gama.core.experiment.batch.exploration;
 
 import java.util.ArrayList;
@@ -17,11 +27,16 @@ import gama.core.experiment.parameters.ParametersSet;
  * This class creates a Latin Hypercube Sampling. Optimized with the ESE (Enhanced Stochastic Evolutionary) algorithm
  * based on Jin et al. (2003).
  *
+ * @author drogoul
  */
 public class LatinhypercubeSampling extends SamplingUtils {
 
 	/** The default penalty factor for Phi_p criterion */
 	private static final int P = 50;
+	/** Precomputed exponent for J calculation */
+	private static final double EXPONENT = -P / 2.0;
+	/** Small epsilon to prevent numerical instability with d^-p */
+	private static final double EPS = 1e-12;
 
 	/**
 	 * Building Latin Hypercube samples using ESE optimization.
@@ -73,14 +88,15 @@ public class LatinhypercubeSampling extends SamplingUtils {
 		double bestJ = currentJ;
 		double[][] bestMatrix = copyMatrix(matrix);
 
-		// Initial temperature heuristic
+		// Initial temperature heuristic (based on Phi scale)
 		double currentPhi = Math.pow(currentJ, 1.0 / P);
 		double t = 0.01 * currentPhi;
 
 		for (int o = 0; o < outerIter; o++) {
 			int acceptances = 0;
 			for (int i = 0; i < innerIter; i++) {
-				int col = r.nextInt(d);
+				// Use cyclic column selection to ensure all dimensions are explored
+				int col = i % d;
 				int row1 = r.nextInt(n);
 				int row2 = r.nextInt(n);
 				while (row1 == row2) { row2 = r.nextInt(n); }
@@ -95,16 +111,17 @@ public class LatinhypercubeSampling extends SamplingUtils {
 					if (l == row1 || l == row2) continue;
 					double d1Old = distSq[row1][l];
 					double d2Old = distSq[row2][l];
-					oldContr += Math.pow(d1Old, -P / 2.0) + Math.pow(d2Old, -P / 2.0);
+					oldContr += Math.pow(d1Old + EPS, EXPONENT) + Math.pow(d2Old + EPS, EXPONENT);
 
 					double d1New = d1Old - Math.pow(v1 - matrix[l][col], 2) + Math.pow(v2 - matrix[l][col], 2);
 					double d2New = d2Old - Math.pow(v2 - matrix[l][col], 2) + Math.pow(v1 - matrix[l][col], 2);
-					newContr += Math.pow(d1New, -P / 2.0) + Math.pow(d2New, -P / 2.0);
+					newContr += Math.pow(d1New + EPS, EXPONENT) + Math.pow(d2New + EPS, EXPONENT);
 				}
 
 				double newJ = currentJ - oldContr + newContr;
 				double newPhi = Math.pow(newJ, 1.0 / P);
 
+				// Metropolis criterion based on Phi scale for numerical stability
 				if (newJ < currentJ || r.nextDouble() < Math.exp((currentPhi - newPhi) / t)) {
 					// Accept move
 					matrix[row1][col] = v2;
@@ -120,7 +137,7 @@ public class LatinhypercubeSampling extends SamplingUtils {
 				}
 			}
 
-			// Adaptive Temperature Schedule
+			// Adaptive Temperature Schedule (simplified ESE update)
 			if (acceptances > 0.8 * innerIter) {
 				t *= 0.8;
 			} else if (acceptances < 0.1 * innerIter) {
@@ -152,7 +169,7 @@ public class LatinhypercubeSampling extends SamplingUtils {
 	private static double calculateJ(final double[][] distSq, final int n) {
 		double sum = 0;
 		for (int i = 0; i < n; i++) {
-			for (int j = i + 1; j < n; j++) { sum += Math.pow(distSq[i][j], -P / 2.0); }
+			for (int j = i + 1; j < n; j++) { sum += Math.pow(distSq[i][j] + EPS, EXPONENT); }
 		}
 		return sum;
 	}
