@@ -9,7 +9,11 @@
  ********************************************************************************************************/
 package gama.core.util.file;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Arrays;
+
+import org.apache.commons.lang3.StringUtils;
 
 import gama.annotations.doc;
 import gama.annotations.example;
@@ -99,6 +103,183 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				}
 			}
 			if (isInt && isFloat) { isFloat = false; }
+		}
+
+	}
+
+	/**
+	 * The Class CSVInfo.
+	 */
+	public static class CSVInfo {
+
+		/** The cols. */
+		public int cols;
+
+		/** The rows. */
+		public int rows;
+
+		/** The header. */
+		public boolean header, atLeastOneNumber;
+
+		/** The delimiter. */
+		public Character delimiter;
+
+		/** The type. */
+		public IType type, firstLineType;
+
+		/** The headers. */
+		public String[] headers;
+
+		/**
+		 * Instantiates a new CSV info.
+		 *
+		 * @param fileName
+		 *            the file name
+		 * @param modificationStamp
+		 *            the modification stamp
+		 * @param CSVsep
+		 *            the CS vsep
+		 */
+		public CSVInfo(final String fileName, final long modificationStamp, final String CSVsep) {
+			try (CsvReader reader = new CsvReader(fileName)) {
+				process(reader, CSVsep);
+			} catch (FileNotFoundException e) {}
+		}
+
+		/**
+		 * Process.
+		 *
+		 * @param reader
+		 *            the reader
+		 * @param CSVsep
+		 *            the CS vsep
+		 */
+		public void process(final CsvReader reader, final String CSVsep) {
+			// By default now (see #3786)
+			// reader.setTextQualifier(AbstractCSVManipulator.getDefaultQualifier());
+			boolean firstLineHasNumber = false;
+			try {
+				// firstLine
+				final String s = reader.skipLine();
+				headers = processFirstLine(s, CSVsep);
+				firstLineHasNumber = atLeastOneNumber;
+				atLeastOneNumber = false;
+				reader.setDelimiter(delimiter);
+				// secondLine
+
+				if (!reader.readRecord()) {
+					// We only have one line
+					type = firstLineType;
+					rows = 1;
+				} else {
+					// We process the second line
+					type = processRecord(reader.getValues());
+				}
+				while (reader.readRecord()) { if (reader.columnsCount > cols) { cols = reader.columnsCount; } }
+			} catch (final IOException e) {}
+			if (!type.equals(firstLineType) || !firstLineHasNumber && atLeastOneNumber) {
+				header = true;
+				cols = headers.length;
+			}
+			rows = (int) reader.currentRecord + 1;
+			reader.close();
+		}
+
+		/**
+		 * Process first line.
+		 *
+		 * @param line
+		 *            the line
+		 * @param CSVsep
+		 *            the CS vsep
+		 * @return the string[]
+		 */
+		private String[] processFirstLine(final String line, final String CSVsep) {
+			if (CSVsep != null && !CSVsep.isEmpty()) {
+				delimiter = CSVsep.charAt(0);
+			} else {
+				String[] s = StringUtils.splitByWholeSeparatorPreserveAllTokens(line, ",");
+				if (s.length != 1 || s[0].indexOf(' ') == -1 && s[0].indexOf(';') == -1
+						&& s[0].indexOf(gama.api.utils.StringUtils.Letters.TAB) == -1) {
+					// We are likely dealing with a unicolum file
+					delimiter = gama.api.utils.StringUtils.Letters.COMMA;
+				} else {
+					// there should be another delimiter
+					s = StringUtils.splitByWholeSeparatorPreserveAllTokens(line, ";");
+					if (s.length == 1) {
+						// Try with tab
+						s = StringUtils.splitByWholeSeparatorPreserveAllTokens(line,
+								"" + gama.api.utils.StringUtils.Letters.TAB);
+						if (s.length == 1) {
+							s = StringUtils.splitByWholeSeparatorPreserveAllTokens(line,
+									"" + gama.api.utils.StringUtils.Letters.SPACE);
+							if (s.length == 1) {
+								delimiter = gama.api.utils.StringUtils.Letters.PIPE;
+							} else {
+								delimiter = gama.api.utils.StringUtils.Letters.SPACE;
+							}
+						} else {
+							delimiter = gama.api.utils.StringUtils.Letters.TAB;
+						}
+					} else {
+						delimiter = ';';
+					}
+				}
+			}
+			final String[] s2 = StringUtils.splitByWholeSeparatorPreserveAllTokens(line, delimiter.toString());
+			firstLineType = processRecord(s2);
+			return s2;
+		}
+
+		/**
+		 * Process record.
+		 *
+		 * @param values
+		 *            the values
+		 * @return the i type
+		 */
+		private IType processRecord(final String[] values) {
+			// Fix for #3294
+			if (values.length > cols) { cols = values.length; }
+			IType temp = null;
+			for (final String s : values) {
+				final StringAnalysis sa = new StringAnalysis(s);
+				atLeastOneNumber = sa.isFloat || sa.isInt || sa.isNumberSequence;
+				if (sa.isInt) {
+					if (temp == null) { temp = Types.INT; }
+				} else if (sa.isFloat) {
+					if (temp == null || temp == Types.INT) { temp = Types.FLOAT; }
+				} else {
+					temp = Types.NO_TYPE;
+				}
+			}
+			// in case nothing has been read (i.e. empty file)
+			if (temp == null) { temp = Types.NO_TYPE; }
+			return temp;
+		}
+
+		/**
+		 * Instantiates a new CSV info.
+		 *
+		 * @param propertyString
+		 *            the property string
+		 */
+		public CSVInfo(final String propertyString) {
+			final String[] segments =
+					StringUtils.splitByWholeSeparatorPreserveAllTokens(propertyString, IGamaFileMetaData.DELIMITER);
+			cols = Integer.parseInt(segments[1]);
+			rows = Integer.parseInt(segments[2]);
+			header = Boolean.parseBoolean(segments[3]);
+			delimiter = segments[4].charAt(0);
+			type = Types.get(segments[5]);
+			if (header) {
+				headers = StringUtils.splitByWholeSeparatorPreserveAllTokens(segments[6],
+						IGamaFileMetaData.SUB_DELIMITER);
+			} else {
+
+				headers = new String[cols];
+				Arrays.fill(headers, "");
+			}
 		}
 
 	}
@@ -392,7 +573,13 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				}
 			}
 		}
-		if (info == null) { info = new CSVInfo(getFile(scope).getAbsolutePath(), 0, CSVSep); }
+		if (info == null) {
+			info = new CSVInfo(getFile(scope).getAbsolutePath(), 0, CSVSep);
+			// if (p != null) {
+			// p.storeMetadata(getFile(), info);
+			// }
+
+		}
 		if (hasHeader != null && hasHeader) {
 			if (!info.header) {
 				try (final CsvReader reader = new CsvReader(getPath(scope), info.delimiter)) {
