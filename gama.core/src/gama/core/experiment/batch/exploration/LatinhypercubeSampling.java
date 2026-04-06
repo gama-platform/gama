@@ -1,127 +1,224 @@
 package gama.core.experiment.batch.exploration;
 
-/**
-*
-* @author Tom ROY
-*
-*/
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import gama.api.gaml.symbols.IParameter.Batch;
 import gama.api.runtime.scope.IScope;
 import gama.core.experiment.parameters.ParametersSet;
 
 /**
- * 
- * This class create a Latin Hypercube Sampling.
+ * This class creates a Latin Hypercube Sampling. Optimized with the ESE (Enhanced Stochastic Evolutionary) algorithm
+ * based on Jin et al. (2003).
  *
  */
-
 public class LatinhypercubeSampling extends SamplingUtils {
-	
-	//public LatinhypercubeSampling() { }
-	
-	private static double nextDouble(double min, double max,Random r) {
-        return min + r.nextDouble() * (max - min);
-    }
-	
-    private static int nextInt(int n,Random r) {
-        return r.nextInt(n);
-    }
 
-    private static <T extends Number> List<T> shuffle(List<T> array,Random r) {
-        for (int i = array.size() - 1; i >= 1; i--) {
-            int j = nextInt(i + 1,r);
-            if (i != j) {
-                T temp = array.get(i);
-                array.set(i,array.get(j));
-                array.set(j,temp);
-            }
-        }
-        return array;
-    }
+	/** The default penalty factor for Phi_p criterion */
+	private static final int P = 50;
 
-    /**
-     * Build a sample with values between 0 and 1
-     * @param N: number of samples. 
-     * @param names : Names of parameters
-     * @param r : Random object
-     * @return sample with values between 0 and 1
-     */
-    private static Map<String,List<Double>> generate(int N, List<String> names,Random r) {
-        Map<String,List<Double>> results= new LinkedHashMap<>();
-        for (String n : names) { results.put(n, new ArrayList<Double>()); }
-        
-        // For each dimensions
-        for (int d = 0; d < names.size(); d++) {
-            // Permuted intervals 
-            List<Integer> intervals = new ArrayList<>();
-            for (int i = 0; i < N; i++) {
-                intervals.add(i);
-            }
-            intervals = shuffle(intervals, r);
+	/**
+	 * Building Latin Hypercube samples using ESE optimization.
+	 *
+	 * @param n
+	 *            Number of samples
+	 * @param parameters
+	 *            List of parameters
+	 * @param r
+	 *            Random number generator
+	 * @param scope
+	 *            Execution scope
+	 * @return A list of parameter sets
+	 */
+	public static List<ParametersSet> latinHypercubeSamples(final int n, final List<Batch> parameters, final Random r,
+			final IScope scope) {
+		return latinHypercubeSamples(n, parameters, r, scope, 50, 100);
+	}
 
-            // Assigne un point aléatoire dans chaque intervalle
-            
-            for (int i = 0; i < N; i++) {
-                results.get(names.get(d)).add((intervals.get(i) + r.nextDouble()) / N);
-            }
-        }
+	/**
+	 * Building Latin Hypercube samples using ESE optimization with specific iterations.
+	 *
+	 * @param n
+	 *            Number of samples
+	 * @param parameters
+	 *            List of parameters
+	 * @param r
+	 *            Random number generator
+	 * @param scope
+	 *            Execution scope
+	 * @param outerIter
+	 *            Number of outer iterations
+	 * @param innerIter
+	 *            Number of inner iterations
+	 * @return A list of parameter sets
+	 */
+	public static List<ParametersSet> latinHypercubeSamples(final int n, final List<Batch> parameters, final Random r,
+			final IScope scope, final int outerIter, final int innerIter) {
+		int d = parameters.size();
+		if (d == 0 || n == 0) return new ArrayList<>();
 
-        return results;
-        
-        
-//        List<Double> temp=new ArrayList<>();
-//        double d = 1.0 / N;
-//        for (int i = 0; i < names.size(); i++) {
-//            for (int j = 0; j < N; j++) {
-//                temp.add(nextDouble(j * d, (j + 1) * d,r));
-//            }
-//            results.put(names.get(i),new ArrayList<>(shuffle(temp,r)));
-//        }
-//        return results;
-    }
+		// Initial design (centered LHS)
+		double[][] matrix = generateCenteredLHS(n, d, r);
 
-    /**
-     * Transform a Map of List into a List of map
-     * @param MapList
-     * @param names: Names of parameters
-     * @return List of map
-     */
-    private static List<Map<String,Double>>  transformMapListToListMap(Map<String,List<Double>> MapList,List<String> names){
-        List<Map<String,Double>> ListMap= new ArrayList<>();
-        for(int i=0;i<MapList.get(names.get(0)).size();i++){
-            Map<String,Double> tempMap=new LinkedHashMap<>();
-            for(int j=0;j<names.size();j++){
-                tempMap.put(names.get(j),MapList.get(names.get(j)).get(i));
-            }
-            ListMap.add(tempMap);
-        }
-        return ListMap;
-    }
+		// Precompute squared distance matrix
+		double[][] distSq = computeDistanceMatrix(matrix, n, d);
 
-    /**
-     * Building  Latin Hypercube samples of size N*Number of parameters
-     * @param N : Number of samples
-     * @param inputs : Inputs with shape: Map<String,Map<String,List<Object>>>
-     * Example: {Var1={Int,[0,10]},Var2={Double,[0,1]}
-     * @param r : a Random object
-     * @return
-     */
-    public static List<ParametersSet> latinHypercubeSamples(int N, List<Batch> parameters,Random r,IScope scope){
-        //TODO: This should probably be refactored with orthogonalsampling, uniformsamlpling, factorialuniformsampling and saltellisampling
-    	List<String> names = new ArrayList<>();
-        for(int i=0;i<parameters.size();i++) {
-        	names.add(parameters.get(i).getName());
-        }
-        Map<String,List<Double>> sampletempmap = generate(N,names,r);
-        List<Map<String,Double>> sampling = transformMapListToListMap(sampletempmap,names);    
-        return buildParametersSetfromSample(scope,parameters,sampling);
-        
-    }
-    
+		double currentJ = calculateJ(distSq, n);
+		double bestJ = currentJ;
+		double[][] bestMatrix = copyMatrix(matrix);
+
+		// Initial temperature heuristic
+		double currentPhi = Math.pow(currentJ, 1.0 / P);
+		double t = 0.01 * currentPhi;
+
+		for (int o = 0; o < outerIter; o++) {
+			int acceptances = 0;
+			for (int i = 0; i < innerIter; i++) {
+				int col = r.nextInt(d);
+				int row1 = r.nextInt(n);
+				int row2 = r.nextInt(n);
+				while (row1 == row2) { row2 = r.nextInt(n); }
+
+				double v1 = matrix[row1][col];
+				double v2 = matrix[row2][col];
+
+				// Delta calculation for J
+				double oldContr = 0;
+				double newContr = 0;
+				for (int l = 0; l < n; l++) {
+					if (l == row1 || l == row2) continue;
+					double d1Old = distSq[row1][l];
+					double d2Old = distSq[row2][l];
+					oldContr += Math.pow(d1Old, -P / 2.0) + Math.pow(d2Old, -P / 2.0);
+
+					double d1New = d1Old - Math.pow(v1 - matrix[l][col], 2) + Math.pow(v2 - matrix[l][col], 2);
+					double d2New = d2Old - Math.pow(v2 - matrix[l][col], 2) + Math.pow(v1 - matrix[l][col], 2);
+					newContr += Math.pow(d1New, -P / 2.0) + Math.pow(d2New, -P / 2.0);
+				}
+
+				double newJ = currentJ - oldContr + newContr;
+				double newPhi = Math.pow(newJ, 1.0 / P);
+
+				if (newJ < currentJ || r.nextDouble() < Math.exp((currentPhi - newPhi) / t)) {
+					// Accept move
+					matrix[row1][col] = v2;
+					matrix[row2][col] = v1;
+					updateDistances(distSq, matrix, row1, row2, col, n);
+					currentJ = newJ;
+					currentPhi = newPhi;
+					acceptances++;
+					if (currentJ < bestJ) {
+						bestJ = currentJ;
+						bestMatrix = copyMatrix(matrix);
+					}
+				}
+			}
+
+			// Adaptive Temperature Schedule
+			if (acceptances > 0.8 * innerIter) {
+				t *= 0.8;
+			} else if (acceptances < 0.1 * innerIter) {
+				t *= 1.2;
+			} else {
+				t *= 0.95;
+			}
+		}
+
+		return matrixToParameterSets(bestMatrix, parameters, scope);
+	}
+
+	/**
+	 * Generate a centered Latin Hypercube Sampling matrix.
+	 */
+	private static double[][] generateCenteredLHS(final int n, final int d, final Random r) {
+		double[][] matrix = new double[n][d];
+		List<Integer> list = IntStream.range(0, n).boxed().collect(Collectors.toList());
+		for (int j = 0; j < d; j++) {
+			Collections.shuffle(list, r);
+			for (int i = 0; i < n; i++) { matrix[i][j] = (list.get(i) + 0.5) / n; }
+		}
+		return matrix;
+	}
+
+	/**
+	 * Calculate the J criterion (sum of d^-p).
+	 */
+	private static double calculateJ(final double[][] distSq, final int n) {
+		double sum = 0;
+		for (int i = 0; i < n; i++) {
+			for (int j = i + 1; j < n; j++) { sum += Math.pow(distSq[i][j], -P / 2.0); }
+		}
+		return sum;
+	}
+
+	/**
+	 * Efficiently update the distance matrix after a swap in one column.
+	 */
+	private static void updateDistances(final double[][] distSq, final double[][] matrix, final int row1, final int row2,
+			final int col, final int n) {
+		double newVal1 = matrix[row1][col];
+		double newVal2 = matrix[row2][col];
+		for (int l = 0; l < n; l++) {
+			if (l == row1 || l == row2) continue;
+			double oldDist1 = distSq[row1][l];
+			double oldDist2 = distSq[row2][l];
+
+			double newDist1 = oldDist1 - Math.pow(newVal2 - matrix[l][col], 2) + Math.pow(newVal1 - matrix[l][col], 2);
+			double newDist2 = oldDist2 - Math.pow(newVal1 - matrix[l][col], 2) + Math.pow(newVal2 - matrix[l][col], 2);
+
+			distSq[row1][l] = distSq[l][row1] = newDist1;
+			distSq[row2][l] = distSq[l][row2] = newDist2;
+		}
+	}
+
+	/**
+	 * Compute the initial squared distance matrix.
+	 */
+	private static double[][] computeDistanceMatrix(final double[][] matrix, final int n, final int d) {
+		double[][] distSq = new double[n][n];
+		for (int i = 0; i < n; i++) {
+			for (int j = i + 1; j < n; j++) {
+				double d2 = 0;
+				for (int k = 0; k < d; k++) {
+					double diff = matrix[i][k] - matrix[j][k];
+					d2 += diff * diff;
+				}
+				distSq[i][j] = distSq[j][i] = d2;
+			}
+		}
+		return distSq;
+	}
+
+	/**
+	 * Copy a matrix.
+	 */
+	private static double[][] copyMatrix(final double[][] src) {
+		double[][] dest = new double[src.length][src[0].length];
+		for (int i = 0; i < src.length; i++) { System.arraycopy(src[i], 0, dest[i], 0, src[i].length); }
+		return dest;
+	}
+
+	/**
+	 * Convert the matrix to parameter sets.
+	 */
+	private static List<ParametersSet> matrixToParameterSets(final double[][] matrix, final List<Batch> parameters,
+			final IScope scope) {
+		int n = matrix.length;
+		int d = matrix[0].length;
+		List<String> names = parameters.stream().map(Batch::getName).collect(Collectors.toList());
+
+		List<Map<String, Double>> sampling = new ArrayList<>();
+		for (int i = 0; i < n; i++) {
+			Map<String, Double> map = new LinkedHashMap<>();
+			for (int j = 0; j < d; j++) { map.put(names.get(j), matrix[i][j]); }
+			sampling.add(map);
+		}
+		return buildParametersSetfromSample(scope, parameters, sampling);
+	}
 }
