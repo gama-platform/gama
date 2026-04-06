@@ -1,6 +1,4 @@
 #!/bin/bash
-set -e
-
 #
 #	Generate list of jars containings .so\|.dylib\|.jnilib to sign for MacOS release
 #	Can automatically parse 4 releases at once
