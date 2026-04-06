@@ -9,6 +9,7 @@
  ********************************************************************************************************/
 package gama.core.util.file;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Arrays;
@@ -263,8 +264,9 @@ public class CSVInfo extends AbstractFileMetaData {
 	 * @param i
 	 * @param cSVSep
 	 */
-	public CSVInfo(final String absolutePath, final int i, final String cSVSep) {
-
+	public CSVInfo(final File file, final int i, final String cSVSep) {
+		super(file);
+		this.delimiter = cSVSep == null || cSVSep.isEmpty() ? null : cSVSep.charAt(0);
 	}
 
 	/**

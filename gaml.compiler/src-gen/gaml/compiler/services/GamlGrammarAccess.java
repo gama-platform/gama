@@ -2239,15 +2239,16 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cComparisonParserRuleCall_3 = (RuleCall)cAlternatives.eContents().get(3);
 		private final RuleCall cAdditionParserRuleCall_4 = (RuleCall)cAlternatives.eContents().get(4);
 		private final RuleCall cMultiplicationParserRuleCall_5 = (RuleCall)cAlternatives.eContents().get(5);
-		private final RuleCall cBinaryParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
-		private final RuleCall cPairParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
-		private final RuleCall cUnitParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
+		private final RuleCall cPowerParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
+		private final RuleCall cBinaryParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
+		private final RuleCall cPairParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
+		private final RuleCall cUnitParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
 		
 		//BinaryOperator returns Expression:
-		//    Or | And | Cast | Comparison | Addition | Multiplication | Binary | Pair | Unit;
+		//    Or | And | Cast | Comparison | Addition | Multiplication | Power | Binary | Pair | Unit;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//Or | And | Cast | Comparison | Addition | Multiplication | Binary | Pair | Unit
+		//Or | And | Cast | Comparison | Addition | Multiplication | Power | Binary | Pair | Unit
 		public Alternatives getAlternatives() { return cAlternatives; }
 		
 		//Or
@@ -2268,14 +2269,17 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//Multiplication
 		public RuleCall getMultiplicationParserRuleCall_5() { return cMultiplicationParserRuleCall_5; }
 		
+		//Power
+		public RuleCall getPowerParserRuleCall_6() { return cPowerParserRuleCall_6; }
+		
 		//Binary
-		public RuleCall getBinaryParserRuleCall_6() { return cBinaryParserRuleCall_6; }
+		public RuleCall getBinaryParserRuleCall_7() { return cBinaryParserRuleCall_7; }
 		
 		//Pair
-		public RuleCall getPairParserRuleCall_7() { return cPairParserRuleCall_7; }
+		public RuleCall getPairParserRuleCall_8() { return cPairParserRuleCall_8; }
 		
 		//Unit
-		public RuleCall getUnitParserRuleCall_8() { return cUnitParserRuleCall_8; }
+		public RuleCall getUnitParserRuleCall_9() { return cUnitParserRuleCall_9; }
 	}
 	public class PairElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Pair");
@@ -2640,7 +2644,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	public class MultiplicationElements extends AbstractParserRuleElementFinder {
 		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Multiplication");
 		private final Group cGroup = (Group)rule.eContents().get(1);
-		private final RuleCall cBinaryParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final RuleCall cPowerParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
 		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
 		private final Group cGroup_1_0 = (Group)cGroup_1.eContents().get(0);
 		private final Action cBinaryOperatorLeftAction_1_0_0 = (Action)cGroup_1_0.eContents().get(0);
@@ -2648,34 +2652,33 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final Alternatives cOpAlternatives_1_0_1_0 = (Alternatives)cOpAssignment_1_0_1.eContents().get(0);
 		private final Keyword cOpAsteriskKeyword_1_0_1_0_0 = (Keyword)cOpAlternatives_1_0_1_0.eContents().get(0);
 		private final Keyword cOpSolidusKeyword_1_0_1_0_1 = (Keyword)cOpAlternatives_1_0_1_0.eContents().get(1);
-		private final Keyword cOpCircumflexAccentKeyword_1_0_1_0_2 = (Keyword)cOpAlternatives_1_0_1_0.eContents().get(2);
 		private final Assignment cRightAssignment_1_1 = (Assignment)cGroup_1.eContents().get(1);
-		private final RuleCall cRightBinaryParserRuleCall_1_1_0 = (RuleCall)cRightAssignment_1_1.eContents().get(0);
+		private final RuleCall cRightPowerParserRuleCall_1_1_0 = (RuleCall)cRightAssignment_1_1.eContents().get(0);
 		
-		//// Example: a * b or a ^ 2
+		//// Example: a * b or a / b
 		//Multiplication returns Expression:
-		//    Binary (({BinaryOperator.left=current} op=('*' | '/' | '^')) right=Binary)*;
+		//    Power (({BinaryOperator.left=current} op=('*' | '/')) right=Power)*;
 		@Override public ParserRule getRule() { return rule; }
 		
-		//Binary (({BinaryOperator.left=current} op=('*' | '/' | '^')) right=Binary)*
+		//Power (({BinaryOperator.left=current} op=('*' | '/')) right=Power)*
 		public Group getGroup() { return cGroup; }
 		
-		//Binary
-		public RuleCall getBinaryParserRuleCall_0() { return cBinaryParserRuleCall_0; }
+		//Power
+		public RuleCall getPowerParserRuleCall_0() { return cPowerParserRuleCall_0; }
 		
-		//(({BinaryOperator.left=current} op=('*' | '/' | '^')) right=Binary)*
+		//(({BinaryOperator.left=current} op=('*' | '/')) right=Power)*
 		public Group getGroup_1() { return cGroup_1; }
 		
-		//({BinaryOperator.left=current} op=('*' | '/' | '^'))
+		//({BinaryOperator.left=current} op=('*' | '/'))
 		public Group getGroup_1_0() { return cGroup_1_0; }
 		
 		//{BinaryOperator.left=current}
 		public Action getBinaryOperatorLeftAction_1_0_0() { return cBinaryOperatorLeftAction_1_0_0; }
 		
-		//op=('*' | '/' | '^')
+		//op=('*' | '/')
 		public Assignment getOpAssignment_1_0_1() { return cOpAssignment_1_0_1; }
 		
-		//('*' | '/' | '^')
+		//('*' | '/')
 		public Alternatives getOpAlternatives_1_0_1_0() { return cOpAlternatives_1_0_1_0; }
 		
 		//'*'
@@ -2684,8 +2687,49 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//'/'
 		public Keyword getOpSolidusKeyword_1_0_1_0_1() { return cOpSolidusKeyword_1_0_1_0_1; }
 		
-		//'^'
-		public Keyword getOpCircumflexAccentKeyword_1_0_1_0_2() { return cOpCircumflexAccentKeyword_1_0_1_0_2; }
+		//right=Power
+		public Assignment getRightAssignment_1_1() { return cRightAssignment_1_1; }
+		
+		//Power
+		public RuleCall getRightPowerParserRuleCall_1_1_0() { return cRightPowerParserRuleCall_1_1_0; }
+	}
+	public class PowerElements extends AbstractParserRuleElementFinder {
+		private final ParserRule rule = (ParserRule) GrammarUtil.findRuleForName(getGrammar(), "gaml.compiler.Gaml.Power");
+		private final Group cGroup = (Group)rule.eContents().get(1);
+		private final RuleCall cBinaryParserRuleCall_0 = (RuleCall)cGroup.eContents().get(0);
+		private final Group cGroup_1 = (Group)cGroup.eContents().get(1);
+		private final Group cGroup_1_0 = (Group)cGroup_1.eContents().get(0);
+		private final Action cBinaryOperatorLeftAction_1_0_0 = (Action)cGroup_1_0.eContents().get(0);
+		private final Assignment cOpAssignment_1_0_1 = (Assignment)cGroup_1_0.eContents().get(1);
+		private final Keyword cOpCircumflexAccentKeyword_1_0_1_0 = (Keyword)cOpAssignment_1_0_1.eContents().get(0);
+		private final Assignment cRightAssignment_1_1 = (Assignment)cGroup_1.eContents().get(1);
+		private final RuleCall cRightBinaryParserRuleCall_1_1_0 = (RuleCall)cRightAssignment_1_1.eContents().get(0);
+		
+		//// Example: a ^ 2 (higher priority than multiplication)
+		//Power returns Expression:
+		//    Binary (({BinaryOperator.left=current} op=('^')) right=Binary)*;
+		@Override public ParserRule getRule() { return rule; }
+		
+		//Binary (({BinaryOperator.left=current} op=('^')) right=Binary)*
+		public Group getGroup() { return cGroup; }
+		
+		//Binary
+		public RuleCall getBinaryParserRuleCall_0() { return cBinaryParserRuleCall_0; }
+		
+		//(({BinaryOperator.left=current} op=('^')) right=Binary)*
+		public Group getGroup_1() { return cGroup_1; }
+		
+		//({BinaryOperator.left=current} op=('^'))
+		public Group getGroup_1_0() { return cGroup_1_0; }
+		
+		//{BinaryOperator.left=current}
+		public Action getBinaryOperatorLeftAction_1_0_0() { return cBinaryOperatorLeftAction_1_0_0; }
+		
+		//op=('^')
+		public Assignment getOpAssignment_1_0_1() { return cOpAssignment_1_0_1; }
+		
+		//('^')
+		public Keyword getOpCircumflexAccentKeyword_1_0_1_0() { return cOpCircumflexAccentKeyword_1_0_1_0; }
 		
 		//right=Binary
 		public Assignment getRightAssignment_1_1() { return cRightAssignment_1_1; }
@@ -4029,6 +4073,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	private final ComparisonElements pComparison;
 	private final AdditionElements pAddition;
 	private final MultiplicationElements pMultiplication;
+	private final PowerElements pPower;
 	private final BinaryElements pBinary;
 	private final UnitElements pUnit;
 	private final UnaryElements pUnary;
@@ -4140,6 +4185,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		this.pComparison = new ComparisonElements();
 		this.pAddition = new AdditionElements();
 		this.pMultiplication = new MultiplicationElements();
+		this.pPower = new PowerElements();
 		this.pBinary = new BinaryElements();
 		this.pUnit = new UnitElements();
 		this.pUnary = new UnaryElements();
@@ -4918,7 +4964,7 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//BinaryOperator returns Expression:
-	//    Or | And | Cast | Comparison | Addition | Multiplication | Binary | Pair | Unit;
+	//    Or | And | Cast | Comparison | Addition | Multiplication | Power | Binary | Pair | Unit;
 	public BinaryOperatorElements getBinaryOperatorAccess() {
 		return pBinaryOperator;
 	}
@@ -5000,15 +5046,26 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		return getAdditionAccess().getRule();
 	}
 	
-	//// Example: a * b or a ^ 2
+	//// Example: a * b or a / b
 	//Multiplication returns Expression:
-	//    Binary (({BinaryOperator.left=current} op=('*' | '/' | '^')) right=Binary)*;
+	//    Power (({BinaryOperator.left=current} op=('*' | '/')) right=Power)*;
 	public MultiplicationElements getMultiplicationAccess() {
 		return pMultiplication;
 	}
 	
 	public ParserRule getMultiplicationRule() {
 		return getMultiplicationAccess().getRule();
+	}
+	
+	//// Example: a ^ 2 (higher priority than multiplication)
+	//Power returns Expression:
+	//    Binary (({BinaryOperator.left=current} op=('^')) right=Binary)*;
+	public PowerElements getPowerAccess() {
+		return pPower;
+	}
+	
+	public ParserRule getPowerRule() {
+		return getPowerAccess().getRule();
 	}
 	
 	//// Custom operators. Example: a my_operator b

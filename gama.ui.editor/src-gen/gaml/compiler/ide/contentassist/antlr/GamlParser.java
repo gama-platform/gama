@@ -154,6 +154,9 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getMultiplicationAccess().getGroup(), "rule__Multiplication__Group__0");
 			builder.put(grammarAccess.getMultiplicationAccess().getGroup_1(), "rule__Multiplication__Group_1__0");
 			builder.put(grammarAccess.getMultiplicationAccess().getGroup_1_0(), "rule__Multiplication__Group_1_0__0");
+			builder.put(grammarAccess.getPowerAccess().getGroup(), "rule__Power__Group__0");
+			builder.put(grammarAccess.getPowerAccess().getGroup_1(), "rule__Power__Group_1__0");
+			builder.put(grammarAccess.getPowerAccess().getGroup_1_0(), "rule__Power__Group_1_0__0");
 			builder.put(grammarAccess.getBinaryAccess().getGroup(), "rule__Binary__Group__0");
 			builder.put(grammarAccess.getBinaryAccess().getGroup_1(), "rule__Binary__Group_1__0");
 			builder.put(grammarAccess.getBinaryAccess().getGroup_1_0(), "rule__Binary__Group_1_0__0");
@@ -311,6 +314,8 @@ public class GamlParser extends AbstractContentAssistParser {
 			builder.put(grammarAccess.getAdditionAccess().getRightAssignment_1_1(), "rule__Addition__RightAssignment_1_1");
 			builder.put(grammarAccess.getMultiplicationAccess().getOpAssignment_1_0_1(), "rule__Multiplication__OpAssignment_1_0_1");
 			builder.put(grammarAccess.getMultiplicationAccess().getRightAssignment_1_1(), "rule__Multiplication__RightAssignment_1_1");
+			builder.put(grammarAccess.getPowerAccess().getOpAssignment_1_0_1(), "rule__Power__OpAssignment_1_0_1");
+			builder.put(grammarAccess.getPowerAccess().getRightAssignment_1_1(), "rule__Power__RightAssignment_1_1");
 			builder.put(grammarAccess.getBinaryAccess().getOpAssignment_1_0_1(), "rule__Binary__OpAssignment_1_0_1");
 			builder.put(grammarAccess.getBinaryAccess().getRightAssignment_1_1(), "rule__Binary__RightAssignment_1_1");
 			builder.put(grammarAccess.getUnitAccess().getOpAssignment_1_0_1(), "rule__Unit__OpAssignment_1_0_1");
