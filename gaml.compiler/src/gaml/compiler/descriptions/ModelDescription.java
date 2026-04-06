@@ -718,7 +718,6 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		if (!super.visitChildren(visitor) || !getClassesMap().forEachValue(visitor)
 				|| !getOwnExperiments().forEachValue(visitor))
 			return false;
-		// hqnghi: visit micro-models so they get compiled into runtime species
 		if (microModels != null) {
 			for (final IModelDescription mm : microModels.values()) {
 				if (!visitor.process(mm)) return false;
@@ -732,7 +731,6 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		if (!super.visitOwnChildren(visitor) || !getClassesMap().forEachValue(visitor)
 				|| !getOwnExperiments().forEachValue(visitor))
 			return false;
-		// hqnghi: visit micro-models so they get compiled into runtime species
 		if (microModels != null) {
 			for (final IModelDescription mm : microModels.values()) {
 				if (!visitor.process(mm)) return false;

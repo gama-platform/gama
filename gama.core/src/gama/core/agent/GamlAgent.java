@@ -325,7 +325,7 @@ public class GamlAgent extends MinimalAgent implements IMacroAgent {
 	@Override
 	public IPopulation<? extends IAgent> getPopulationFor(final ISpecies species) {
 		// hqnghi adjust to get population for species which come from main as
-		// well micro models
+		// well micro models — now at experiment level
 		final IModelDescription micro = species.getDescription().getModelDescription();
 		final IModelDescription main = this.getModel().getDescription();
 		IPopulation<? extends IAgent> microPopulation = null;
@@ -333,7 +333,11 @@ public class GamlAgent extends MinimalAgent implements IMacroAgent {
 			microPopulation = this.getMicroPopulation(species);
 			if (microPopulation == null && getHost() != null) { microPopulation = getHost().getPopulationFor(species); }
 		} else {
-			microPopulation = getSimulation().getExternMicroPopulationFor(micro.getAlias() + "." + species.getName());
+			// Lookup extern micro population from the experiment agent instead of the simulation
+			final IAgent experiment = getScope() != null ? getScope().getExperiment() : null;
+			if (experiment instanceof IMacroAgent ma) {
+				microPopulation = ma.getExternMicroPopulationFor(micro.getAlias() + "." + species.getName());
+			}
 		}
 		// end-hqnghi
 		return microPopulation;

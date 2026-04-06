@@ -277,7 +277,6 @@ public class ModelFactory implements IModelFactory {
 
 		// hqnghi add micro-models
 		if (mm != null) {
-			// model.setMicroModels(mm);
 			mm.forEach((k, v) -> v.setAlias(k));
 			model.addChildren(mm.values());
 		}
@@ -289,6 +288,7 @@ public class ModelFactory implements IModelFactory {
 		// Parent the species and the experiments of the model (all are now
 		// known).
 		parentSpeciesAndExperiments(model, speciesNodes, classNodes, experimentNodes, tempSpeciesCache);
+
 		// Initialize the hierarchy of types
 		model.buildTypes();
 		// hqnghi build micro-models as types

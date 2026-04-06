@@ -1,40 +1,30 @@
-# Continuity Ledger
+# Ledger Snapshot
 
-## Goal
-Fix "No population of Base is accessible in the context of Simulation 0" runtime error when using micro-model (co-model) species, and fix missing population variables like `plotWeather` in micro-models.
-
-## Constraints/Assumptions
-- Micro-models are imported via `import "..." as Ant;` in GAML
-- The runtime needs to see micro-model species in `GamlModelSpecies.getAllSpecies()` 
-- Changes must not break regular (non-comodel) simulations
-- Population variables (e.g., `list<plotWeather>`) for micro-species within micro-models must be correctly generated.
-
-## Key Decisions
-- Overrode `visitMicroSpecies` in `ModelDescription` to iterate over both regular micro-species and `microModels`. This allows `initializeMirrorsAndSubSpecies` to inject population variables for micro-species within the micro-models.
-- Overrode `getMicroSpecies(String)` in `ModelDescription` to check the `microModels` map. This fixes a `NullPointerException` during dependency validation, as the `VariableDescription` lookup for the synthetic population variable needs to fetch the micro-model.
-
-## State
-
-### Done
-- Traced full description → compilation → runtime chain
-- Fixed `ModelDescription.visitChildren()` and `visitOwnChildren()` to iterate over `microModels`
-- Added `v.setAlias(k)` before `model.addChildren()` in `ModelFactory.java`
-- Added `addSpeciesTypeAs()` to `ITypesManager` / `TypesManager` for type registration
-- Fixed `ModelDescription.visitMicroSpecies()` to include `microModels`
-- Fixed NPE by overriding `ModelDescription.getMicroSpecies(String)`
-- Built `gaml.compiler` and `gama.core` successfully
-
-### Now
-- Awaiting user test of the comodel attributes access.
-
-### Next
-- Remove debug logging from `GamlModelSpecies.setChildren()` and `CreateStatement.java`
-
-## Open Questions
-- None.
-
-## Working Set
-- `/Users/hqnghi/git/gama/gaml.compiler/src/gaml/compiler/descriptions/ModelDescription.java` (visitChildren, visitMicroSpecies, getMicroSpecies fixes)
-- `/Users/hqnghi/git/gama/gaml.compiler/src/gaml/compiler/factories/ModelFactory.java` (alias + type registration)
-- `/Users/hqnghi/git/gama/gama.api/src/gama/api/kernel/species/GamlModelSpecies.java` (debug logging)
-- `/Users/hqnghi/git/gama/gama.core/src/gama/gaml/statements/CreateStatement.java` (debug logging)
+- **Goal**: Move micro-model (co-model) population management from the simulation agent level to the experiment agent level.
+- **Constraints/Assumptions**: Compile-time description hierarchy remains unchanged (micro-models are still children of ModelDescription for species lookup). Only the RUNTIME population storage/lookup changes.
+- **Key decisions**: 
+    1. Reverted all compile-time restructuring (ModelDescription visitors, addChild, ExperimentDescription).
+    2. Made only 2 targeted runtime changes:
+       - `CreateStatement.findPopulation()`: stores extern micro populations on `scope.getExperiment()` instead of `executor` (simulation agent).
+       - `GamlAgent.getPopulationFor(ISpecies)`: looks up extern micro populations from `scope.getExperiment()` instead of `getSimulation()`.
+- **State**: 
+  - **Done**: 
+    - Reverted ModelDescription.addChild, visitMicroSpecies, visitChildren, visitOwnChildren, getMicroSpecies
+    - Reverted ModelFactory to original model.addChildren(mm.values())
+    - Reverted ExperimentDescription.visitMicroSpecies to return true
+    - Changed CreateStatement.findPopulation() runtime target to experiment agent
+    - Changed GamlAgent.getPopulationFor(ISpecies) runtime lookup to experiment agent
+    - Fixed corrupted GamlAgent.java with clean rewrite
+    - TypesManager idempotent addSpeciesType and VariableDescription null-safety still in place
+    - All 3 modules build successfully (gama.api, gaml.compiler, gama.core)
+  - **Now**: Awaiting user test
+  - **Next**: Verify runtime behavior, clean up debug logs if any remain
+- **Open questions**: None
+- **Working set**:
+    - `/Users/hqnghi/git/gama/gama.core/src/gama/core/agent/GamlAgent.java`
+    - `/Users/hqnghi/git/gama/gama.core/src/gama/gaml/statements/CreateStatement.java`
+    - `/Users/hqnghi/git/gama/gaml.compiler/src/gaml/compiler/descriptions/ModelDescription.java`
+    - `/Users/hqnghi/git/gama/gaml.compiler/src/gaml/compiler/factories/ModelFactory.java`
+    - `/Users/hqnghi/git/gama/gaml.compiler/src/gaml/compiler/descriptions/ExperimentDescription.java`
+    - `/Users/hqnghi/git/gama/gama.api/src/gama/api/gaml/types/TypesManager.java`
+    - `/Users/hqnghi/git/gama/gaml.compiler/src/gaml/compiler/descriptions/VariableDescription.java`
