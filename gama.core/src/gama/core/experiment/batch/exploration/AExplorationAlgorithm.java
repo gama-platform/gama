@@ -244,7 +244,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 						parameters, scope);
 			case IKeyword.LHS:
 				yield LatinhypercubeSampling.latinHypercubeSamples(sample_size, parameters,
-						scope.getRandom().getGenerator(), scope, 50, 100);
+						scope.getRandom().getGenerator(), scope);
 			case IKeyword.ORTHOGONAL:
 				yield OrthogonalSampling.orthogonalSamples(sample_size,
 						hasFacet(IExploration.ITERATIONS)

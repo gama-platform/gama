@@ -23,6 +23,10 @@ public class LatinhypercubeSampling extends SamplingUtils {
 
 	/** The default penalty factor for the Phi_p criterion (p=50) */
 	private static final int P = 50;
+	/** The default number of outer iterations */
+	private static final int DEFAULT_OUTER_ITERS = 50;
+	/** The default number of inner iterations */
+	private static final int DEFAULT_INNER_ITERS = 100;
 	/** Precomputed exponent for the distance penalty calculation (-p/2.0) */
 	private static final double EXPONENT = -P / 2.0;
 	/** Small epsilon to prevent numerical instability (NaN/Infinity) when points are extremely close */
@@ -45,7 +49,7 @@ public class LatinhypercubeSampling extends SamplingUtils {
 	 */
 	public static List<ParametersSet> latinHypercubeSamples(final int n, final List<Batch> parameters, final Random r,
 			final IScope scope) {
-		return latinHypercubeSamples(n, parameters, r, scope, 50, 100);
+		return latinHypercubeSamples(n, parameters, r, scope, DEFAULT_OUTER_ITERS, DEFAULT_INNER_ITERS);
 	}
 
 	/**
