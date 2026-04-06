@@ -1559,7 +1559,7 @@ public class OpenGL extends AbstractRendererHelper implements ITesselator {
 		if (drawFPS || drawRotation || drawROI) { disableTextures(); }
 		drawFPS(drawFPS);
 		drawROI(drawROI);
-		if (renderer.getData().isDrawEnv()) { drawRotation(drawRotation); }
+		if (SHOULD_DRAW_ROTATION_SPHERE) { drawRotation(drawRotation); }
 		setDisplayLighting(previousDisplayLighting);
 		setDisplayWireframe(previousDisplayWireframe);
 		gl.glFinish();
