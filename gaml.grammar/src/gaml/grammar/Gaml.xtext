@@ -104,10 +104,12 @@ S_Experiment:
 Statement:
 	// 1. Unambiguous statements (no overlap with Valid_ID).
 	S_Display | S_Return | S_Solve | S_If | S_Try | S_Do | S_Loop | S_Switch | S_Equations |
-	// 2. Keywords that could also be variables.
-	=> S_Species | => S_Reflex |
 	// 3. Assignments (e.g., status <- 5;). Checked before falling back to generic statements.
 	=> S_ActionCall | => S_Assignment |
+
+	// 2. Keywords that could also be variables.
+	=> S_Species | => S_Reflex |
+
 	// 4. Variable or type definitions (e.g., int my_var <- 5;). Starts with a TypeRef.
 	=> S_Callable |      // MUST come first! Checks if a '(' follows the name. Checks for typed methods OR keyword actions
 	=> S_Definition |  // If no '(', it falls back safely to a standard variable.

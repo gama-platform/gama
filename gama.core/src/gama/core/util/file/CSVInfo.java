@@ -11,7 +11,6 @@ package gama.core.util.file;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +31,7 @@ public class CSVInfo extends AbstractFileMetaData {
 	/**
 	 * The Class StringAnalysis.
 	 */
-	private static class StringAnalysis {
+	public static class StringAnalysis {
 
 		/** The is float. */
 		boolean isFloat = true;

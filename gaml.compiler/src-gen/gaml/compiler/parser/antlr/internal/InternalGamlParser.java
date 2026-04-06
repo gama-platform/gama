@@ -2762,7 +2762,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
 
     // $ANTLR start "ruleStatement"
-    // InternalGaml.g:964:1: ruleStatement returns [EObject current=null] : (this_S_Display_0= ruleS_Display | this_S_Return_1= ruleS_Return | this_S_Solve_2= ruleS_Solve | this_S_If_3= ruleS_If | this_S_Try_4= ruleS_Try | this_S_Do_5= ruleS_Do | this_S_Loop_6= ruleS_Loop | this_S_Switch_7= ruleS_Switch | this_S_Equations_8= ruleS_Equations | ( ( ruleS_Species )=>this_S_Species_9= ruleS_Species ) | ( ( ruleS_Reflex )=>this_S_Reflex_10= ruleS_Reflex ) | ( ( ruleS_ActionCall )=>this_S_ActionCall_11= ruleS_ActionCall ) | ( ( ruleS_Assignment )=>this_S_Assignment_12= ruleS_Assignment ) | ( ( ruleS_Callable )=>this_S_Callable_13= ruleS_Callable ) | ( ( ruleS_Definition )=>this_S_Definition_14= ruleS_Definition ) | this_S_Other_15= ruleS_Other ) ;
+    // InternalGaml.g:964:1: ruleStatement returns [EObject current=null] : (this_S_Display_0= ruleS_Display | this_S_Return_1= ruleS_Return | this_S_Solve_2= ruleS_Solve | this_S_If_3= ruleS_If | this_S_Try_4= ruleS_Try | this_S_Do_5= ruleS_Do | this_S_Loop_6= ruleS_Loop | this_S_Switch_7= ruleS_Switch | this_S_Equations_8= ruleS_Equations | ( ( ruleS_ActionCall )=>this_S_ActionCall_9= ruleS_ActionCall ) | ( ( ruleS_Assignment )=>this_S_Assignment_10= ruleS_Assignment ) | ( ( ruleS_Species )=>this_S_Species_11= ruleS_Species ) | ( ( ruleS_Reflex )=>this_S_Reflex_12= ruleS_Reflex ) | ( ( ruleS_Callable )=>this_S_Callable_13= ruleS_Callable ) | ( ( ruleS_Definition )=>this_S_Definition_14= ruleS_Definition ) | this_S_Other_15= ruleS_Other ) ;
     public final EObject ruleStatement() throws RecognitionException {
         EObject current = null;
 
@@ -2784,13 +2784,13 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
         EObject this_S_Equations_8 = null;
 
-        EObject this_S_Species_9 = null;
+        EObject this_S_ActionCall_9 = null;
 
-        EObject this_S_Reflex_10 = null;
+        EObject this_S_Assignment_10 = null;
 
-        EObject this_S_ActionCall_11 = null;
+        EObject this_S_Species_11 = null;
 
-        EObject this_S_Assignment_12 = null;
+        EObject this_S_Reflex_12 = null;
 
         EObject this_S_Callable_13 = null;
 
@@ -2803,10 +2803,10 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
         	enterRule();
 
         try {
-            // InternalGaml.g:970:2: ( (this_S_Display_0= ruleS_Display | this_S_Return_1= ruleS_Return | this_S_Solve_2= ruleS_Solve | this_S_If_3= ruleS_If | this_S_Try_4= ruleS_Try | this_S_Do_5= ruleS_Do | this_S_Loop_6= ruleS_Loop | this_S_Switch_7= ruleS_Switch | this_S_Equations_8= ruleS_Equations | ( ( ruleS_Species )=>this_S_Species_9= ruleS_Species ) | ( ( ruleS_Reflex )=>this_S_Reflex_10= ruleS_Reflex ) | ( ( ruleS_ActionCall )=>this_S_ActionCall_11= ruleS_ActionCall ) | ( ( ruleS_Assignment )=>this_S_Assignment_12= ruleS_Assignment ) | ( ( ruleS_Callable )=>this_S_Callable_13= ruleS_Callable ) | ( ( ruleS_Definition )=>this_S_Definition_14= ruleS_Definition ) | this_S_Other_15= ruleS_Other ) )
-            // InternalGaml.g:971:2: (this_S_Display_0= ruleS_Display | this_S_Return_1= ruleS_Return | this_S_Solve_2= ruleS_Solve | this_S_If_3= ruleS_If | this_S_Try_4= ruleS_Try | this_S_Do_5= ruleS_Do | this_S_Loop_6= ruleS_Loop | this_S_Switch_7= ruleS_Switch | this_S_Equations_8= ruleS_Equations | ( ( ruleS_Species )=>this_S_Species_9= ruleS_Species ) | ( ( ruleS_Reflex )=>this_S_Reflex_10= ruleS_Reflex ) | ( ( ruleS_ActionCall )=>this_S_ActionCall_11= ruleS_ActionCall ) | ( ( ruleS_Assignment )=>this_S_Assignment_12= ruleS_Assignment ) | ( ( ruleS_Callable )=>this_S_Callable_13= ruleS_Callable ) | ( ( ruleS_Definition )=>this_S_Definition_14= ruleS_Definition ) | this_S_Other_15= ruleS_Other )
+            // InternalGaml.g:970:2: ( (this_S_Display_0= ruleS_Display | this_S_Return_1= ruleS_Return | this_S_Solve_2= ruleS_Solve | this_S_If_3= ruleS_If | this_S_Try_4= ruleS_Try | this_S_Do_5= ruleS_Do | this_S_Loop_6= ruleS_Loop | this_S_Switch_7= ruleS_Switch | this_S_Equations_8= ruleS_Equations | ( ( ruleS_ActionCall )=>this_S_ActionCall_9= ruleS_ActionCall ) | ( ( ruleS_Assignment )=>this_S_Assignment_10= ruleS_Assignment ) | ( ( ruleS_Species )=>this_S_Species_11= ruleS_Species ) | ( ( ruleS_Reflex )=>this_S_Reflex_12= ruleS_Reflex ) | ( ( ruleS_Callable )=>this_S_Callable_13= ruleS_Callable ) | ( ( ruleS_Definition )=>this_S_Definition_14= ruleS_Definition ) | this_S_Other_15= ruleS_Other ) )
+            // InternalGaml.g:971:2: (this_S_Display_0= ruleS_Display | this_S_Return_1= ruleS_Return | this_S_Solve_2= ruleS_Solve | this_S_If_3= ruleS_If | this_S_Try_4= ruleS_Try | this_S_Do_5= ruleS_Do | this_S_Loop_6= ruleS_Loop | this_S_Switch_7= ruleS_Switch | this_S_Equations_8= ruleS_Equations | ( ( ruleS_ActionCall )=>this_S_ActionCall_9= ruleS_ActionCall ) | ( ( ruleS_Assignment )=>this_S_Assignment_10= ruleS_Assignment ) | ( ( ruleS_Species )=>this_S_Species_11= ruleS_Species ) | ( ( ruleS_Reflex )=>this_S_Reflex_12= ruleS_Reflex ) | ( ( ruleS_Callable )=>this_S_Callable_13= ruleS_Callable ) | ( ( ruleS_Definition )=>this_S_Definition_14= ruleS_Definition ) | this_S_Other_15= ruleS_Other )
             {
-            // InternalGaml.g:971:2: (this_S_Display_0= ruleS_Display | this_S_Return_1= ruleS_Return | this_S_Solve_2= ruleS_Solve | this_S_If_3= ruleS_If | this_S_Try_4= ruleS_Try | this_S_Do_5= ruleS_Do | this_S_Loop_6= ruleS_Loop | this_S_Switch_7= ruleS_Switch | this_S_Equations_8= ruleS_Equations | ( ( ruleS_Species )=>this_S_Species_9= ruleS_Species ) | ( ( ruleS_Reflex )=>this_S_Reflex_10= ruleS_Reflex ) | ( ( ruleS_ActionCall )=>this_S_ActionCall_11= ruleS_ActionCall ) | ( ( ruleS_Assignment )=>this_S_Assignment_12= ruleS_Assignment ) | ( ( ruleS_Callable )=>this_S_Callable_13= ruleS_Callable ) | ( ( ruleS_Definition )=>this_S_Definition_14= ruleS_Definition ) | this_S_Other_15= ruleS_Other )
+            // InternalGaml.g:971:2: (this_S_Display_0= ruleS_Display | this_S_Return_1= ruleS_Return | this_S_Solve_2= ruleS_Solve | this_S_If_3= ruleS_If | this_S_Try_4= ruleS_Try | this_S_Do_5= ruleS_Do | this_S_Loop_6= ruleS_Loop | this_S_Switch_7= ruleS_Switch | this_S_Equations_8= ruleS_Equations | ( ( ruleS_ActionCall )=>this_S_ActionCall_9= ruleS_ActionCall ) | ( ( ruleS_Assignment )=>this_S_Assignment_10= ruleS_Assignment ) | ( ( ruleS_Species )=>this_S_Species_11= ruleS_Species ) | ( ( ruleS_Reflex )=>this_S_Reflex_12= ruleS_Reflex ) | ( ( ruleS_Callable )=>this_S_Callable_13= ruleS_Callable ) | ( ( ruleS_Definition )=>this_S_Definition_14= ruleS_Definition ) | this_S_Other_15= ruleS_Other )
             int alt15=16;
             alt15 = dfa15.predict(input);
             switch (alt15) {
@@ -3009,24 +3009,24 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 10 :
-                    // InternalGaml.g:1053:3: ( ( ruleS_Species )=>this_S_Species_9= ruleS_Species )
+                    // InternalGaml.g:1053:3: ( ( ruleS_ActionCall )=>this_S_ActionCall_9= ruleS_ActionCall )
                     {
-                    // InternalGaml.g:1053:3: ( ( ruleS_Species )=>this_S_Species_9= ruleS_Species )
-                    // InternalGaml.g:1054:4: ( ruleS_Species )=>this_S_Species_9= ruleS_Species
+                    // InternalGaml.g:1053:3: ( ( ruleS_ActionCall )=>this_S_ActionCall_9= ruleS_ActionCall )
+                    // InternalGaml.g:1054:4: ( ruleS_ActionCall )=>this_S_ActionCall_9= ruleS_ActionCall
                     {
                     if ( state.backtracking==0 ) {
 
-                      				newCompositeNode(grammarAccess.getStatementAccess().getS_SpeciesParserRuleCall_9());
+                      				newCompositeNode(grammarAccess.getStatementAccess().getS_ActionCallParserRuleCall_9());
                       			
                     }
                     pushFollow(FOLLOW_2);
-                    this_S_Species_9=ruleS_Species();
+                    this_S_ActionCall_9=ruleS_ActionCall();
 
                     state._fsp--;
                     if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      				current = this_S_Species_9;
+                      				current = this_S_ActionCall_9;
                       				afterParserOrEnumRuleCall();
                       			
                     }
@@ -3037,24 +3037,24 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 11 :
-                    // InternalGaml.g:1065:3: ( ( ruleS_Reflex )=>this_S_Reflex_10= ruleS_Reflex )
+                    // InternalGaml.g:1065:3: ( ( ruleS_Assignment )=>this_S_Assignment_10= ruleS_Assignment )
                     {
-                    // InternalGaml.g:1065:3: ( ( ruleS_Reflex )=>this_S_Reflex_10= ruleS_Reflex )
-                    // InternalGaml.g:1066:4: ( ruleS_Reflex )=>this_S_Reflex_10= ruleS_Reflex
+                    // InternalGaml.g:1065:3: ( ( ruleS_Assignment )=>this_S_Assignment_10= ruleS_Assignment )
+                    // InternalGaml.g:1066:4: ( ruleS_Assignment )=>this_S_Assignment_10= ruleS_Assignment
                     {
                     if ( state.backtracking==0 ) {
 
-                      				newCompositeNode(grammarAccess.getStatementAccess().getS_ReflexParserRuleCall_10());
+                      				newCompositeNode(grammarAccess.getStatementAccess().getS_AssignmentParserRuleCall_10());
                       			
                     }
                     pushFollow(FOLLOW_2);
-                    this_S_Reflex_10=ruleS_Reflex();
+                    this_S_Assignment_10=ruleS_Assignment();
 
                     state._fsp--;
                     if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      				current = this_S_Reflex_10;
+                      				current = this_S_Assignment_10;
                       				afterParserOrEnumRuleCall();
                       			
                     }
@@ -3065,24 +3065,24 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 12 :
-                    // InternalGaml.g:1077:3: ( ( ruleS_ActionCall )=>this_S_ActionCall_11= ruleS_ActionCall )
+                    // InternalGaml.g:1077:3: ( ( ruleS_Species )=>this_S_Species_11= ruleS_Species )
                     {
-                    // InternalGaml.g:1077:3: ( ( ruleS_ActionCall )=>this_S_ActionCall_11= ruleS_ActionCall )
-                    // InternalGaml.g:1078:4: ( ruleS_ActionCall )=>this_S_ActionCall_11= ruleS_ActionCall
+                    // InternalGaml.g:1077:3: ( ( ruleS_Species )=>this_S_Species_11= ruleS_Species )
+                    // InternalGaml.g:1078:4: ( ruleS_Species )=>this_S_Species_11= ruleS_Species
                     {
                     if ( state.backtracking==0 ) {
 
-                      				newCompositeNode(grammarAccess.getStatementAccess().getS_ActionCallParserRuleCall_11());
+                      				newCompositeNode(grammarAccess.getStatementAccess().getS_SpeciesParserRuleCall_11());
                       			
                     }
                     pushFollow(FOLLOW_2);
-                    this_S_ActionCall_11=ruleS_ActionCall();
+                    this_S_Species_11=ruleS_Species();
 
                     state._fsp--;
                     if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      				current = this_S_ActionCall_11;
+                      				current = this_S_Species_11;
                       				afterParserOrEnumRuleCall();
                       			
                     }
@@ -3093,24 +3093,24 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                     }
                     break;
                 case 13 :
-                    // InternalGaml.g:1089:3: ( ( ruleS_Assignment )=>this_S_Assignment_12= ruleS_Assignment )
+                    // InternalGaml.g:1089:3: ( ( ruleS_Reflex )=>this_S_Reflex_12= ruleS_Reflex )
                     {
-                    // InternalGaml.g:1089:3: ( ( ruleS_Assignment )=>this_S_Assignment_12= ruleS_Assignment )
-                    // InternalGaml.g:1090:4: ( ruleS_Assignment )=>this_S_Assignment_12= ruleS_Assignment
+                    // InternalGaml.g:1089:3: ( ( ruleS_Reflex )=>this_S_Reflex_12= ruleS_Reflex )
+                    // InternalGaml.g:1090:4: ( ruleS_Reflex )=>this_S_Reflex_12= ruleS_Reflex
                     {
                     if ( state.backtracking==0 ) {
 
-                      				newCompositeNode(grammarAccess.getStatementAccess().getS_AssignmentParserRuleCall_12());
+                      				newCompositeNode(grammarAccess.getStatementAccess().getS_ReflexParserRuleCall_12());
                       			
                     }
                     pushFollow(FOLLOW_2);
-                    this_S_Assignment_12=ruleS_Assignment();
+                    this_S_Reflex_12=ruleS_Reflex();
 
                     state._fsp--;
                     if (state.failed) return current;
                     if ( state.backtracking==0 ) {
 
-                      				current = this_S_Assignment_12;
+                      				current = this_S_Reflex_12;
                       				afterParserOrEnumRuleCall();
                       			
                     }
@@ -19571,11 +19571,11 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
     // $ANTLR start synpred2_InternalGaml
     public final void synpred2_InternalGaml_fragment() throws RecognitionException {   
-        // InternalGaml.g:1054:4: ( ruleS_Species )
-        // InternalGaml.g:1054:5: ruleS_Species
+        // InternalGaml.g:1054:4: ( ruleS_ActionCall )
+        // InternalGaml.g:1054:5: ruleS_ActionCall
         {
         pushFollow(FOLLOW_2);
-        ruleS_Species();
+        ruleS_ActionCall();
 
         state._fsp--;
         if (state.failed) return ;
@@ -19586,11 +19586,11 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
     // $ANTLR start synpred3_InternalGaml
     public final void synpred3_InternalGaml_fragment() throws RecognitionException {   
-        // InternalGaml.g:1066:4: ( ruleS_Reflex )
-        // InternalGaml.g:1066:5: ruleS_Reflex
+        // InternalGaml.g:1066:4: ( ruleS_Assignment )
+        // InternalGaml.g:1066:5: ruleS_Assignment
         {
         pushFollow(FOLLOW_2);
-        ruleS_Reflex();
+        ruleS_Assignment();
 
         state._fsp--;
         if (state.failed) return ;
@@ -19601,11 +19601,11 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
     // $ANTLR start synpred4_InternalGaml
     public final void synpred4_InternalGaml_fragment() throws RecognitionException {   
-        // InternalGaml.g:1078:4: ( ruleS_ActionCall )
-        // InternalGaml.g:1078:5: ruleS_ActionCall
+        // InternalGaml.g:1078:4: ( ruleS_Species )
+        // InternalGaml.g:1078:5: ruleS_Species
         {
         pushFollow(FOLLOW_2);
-        ruleS_ActionCall();
+        ruleS_Species();
 
         state._fsp--;
         if (state.failed) return ;
@@ -19616,11 +19616,11 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
     // $ANTLR start synpred5_InternalGaml
     public final void synpred5_InternalGaml_fragment() throws RecognitionException {   
-        // InternalGaml.g:1090:4: ( ruleS_Assignment )
-        // InternalGaml.g:1090:5: ruleS_Assignment
+        // InternalGaml.g:1090:4: ( ruleS_Reflex )
+        // InternalGaml.g:1090:5: ruleS_Reflex
         {
         pushFollow(FOLLOW_2);
-        ruleS_Assignment();
+        ruleS_Reflex();
 
         state._fsp--;
         if (state.failed) return ;
@@ -20072,12 +20072,12 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
     protected DFA81 dfa81 = new DFA81(this);
     protected DFA90 dfa90 = new DFA90(this);
     static final String dfa_1s = "\75\uffff";
-    static final String dfa_2s = "\1\4\12\uffff\2\0\4\uffff\44\0\10\uffff";
-    static final String dfa_3s = "\1\156\12\uffff\2\0\4\uffff\44\0\10\uffff";
-    static final String dfa_4s = "\1\uffff\1\1\1\2\1\3\1\4\1\5\1\6\1\uffff\1\7\1\10\1\11\2\uffff\2\12\2\13\44\uffff\4\15\1\16\1\14\1\17\1\20";
-    static final String dfa_5s = "\1\0\12\uffff\1\1\1\2\4\uffff\1\3\1\4\1\5\1\6\1\7\1\10\1\11\1\12\1\13\1\14\1\15\1\16\1\17\1\20\1\21\1\22\1\23\1\24\1\25\1\26\1\27\1\30\1\31\1\32\1\33\1\34\1\35\1\36\1\37\1\40\1\41\1\42\1\43\1\44\1\45\1\46\10\uffff}>";
+    static final String dfa_2s = "\1\4\12\uffff\46\0\14\uffff";
+    static final String dfa_3s = "\1\156\12\uffff\46\0\14\uffff";
+    static final String dfa_4s = "\1\uffff\1\1\1\2\1\3\1\4\1\5\1\6\1\uffff\1\7\1\10\1\11\46\uffff\4\13\2\14\2\15\1\16\1\12\1\17\1\20";
+    static final String dfa_5s = "\1\0\12\uffff\1\1\1\2\1\3\1\4\1\5\1\6\1\7\1\10\1\11\1\12\1\13\1\14\1\15\1\16\1\17\1\20\1\21\1\22\1\23\1\24\1\25\1\26\1\27\1\30\1\31\1\32\1\33\1\34\1\35\1\36\1\37\1\40\1\41\1\42\1\43\1\44\1\45\1\46\14\uffff}>";
     static final String[] dfa_6s = {
-            "\1\22\1\61\1\23\1\24\1\25\1\26\13\uffff\1\63\4\uffff\2\6\1\uffff\1\10\1\4\1\uffff\1\5\1\uffff\1\11\4\uffff\1\55\1\2\1\62\1\uffff\1\71\1\17\1\20\1\12\1\64\2\uffff\1\3\1\1\1\27\1\30\1\31\1\32\1\33\1\34\1\35\1\36\1\37\1\40\1\41\1\42\1\43\1\44\1\45\1\46\1\47\1\50\1\51\1\52\1\53\1\54\1\56\1\57\1\13\1\14\1\15\1\16\1\21\1\60\26\uffff\1\66\3\uffff\1\65\1\67\1\70",
+            "\1\13\1\55\1\14\1\15\1\16\1\17\13\uffff\1\57\4\uffff\2\6\1\uffff\1\10\1\4\1\uffff\1\5\1\uffff\1\11\4\uffff\1\50\1\2\1\56\1\uffff\1\71\1\67\1\70\1\12\1\60\2\uffff\1\3\1\1\1\22\1\23\1\24\1\25\1\26\1\27\1\30\1\31\1\32\1\33\1\34\1\35\1\36\1\37\1\40\1\41\1\42\1\43\1\44\1\45\1\46\1\47\1\51\1\52\1\20\1\21\1\65\1\66\1\53\1\54\26\uffff\1\62\3\uffff\1\61\1\63\1\64",
             "",
             "",
             "",
@@ -20090,46 +20090,46 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             "",
             "\1\uffff",
             "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
+            "\1\uffff",
             "",
             "",
             "",
             "",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
-            "\1\uffff",
             "",
             "",
             "",
@@ -20161,7 +20161,7 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
             this.transition = dfa_6;
         }
         public String getDescription() {
-            return "971:2: (this_S_Display_0= ruleS_Display | this_S_Return_1= ruleS_Return | this_S_Solve_2= ruleS_Solve | this_S_If_3= ruleS_If | this_S_Try_4= ruleS_Try | this_S_Do_5= ruleS_Do | this_S_Loop_6= ruleS_Loop | this_S_Switch_7= ruleS_Switch | this_S_Equations_8= ruleS_Equations | ( ( ruleS_Species )=>this_S_Species_9= ruleS_Species ) | ( ( ruleS_Reflex )=>this_S_Reflex_10= ruleS_Reflex ) | ( ( ruleS_ActionCall )=>this_S_ActionCall_11= ruleS_ActionCall ) | ( ( ruleS_Assignment )=>this_S_Assignment_12= ruleS_Assignment ) | ( ( ruleS_Callable )=>this_S_Callable_13= ruleS_Callable ) | ( ( ruleS_Definition )=>this_S_Definition_14= ruleS_Definition ) | this_S_Other_15= ruleS_Other )";
+            return "971:2: (this_S_Display_0= ruleS_Display | this_S_Return_1= ruleS_Return | this_S_Solve_2= ruleS_Solve | this_S_If_3= ruleS_If | this_S_Try_4= ruleS_Try | this_S_Do_5= ruleS_Do | this_S_Loop_6= ruleS_Loop | this_S_Switch_7= ruleS_Switch | this_S_Equations_8= ruleS_Equations | ( ( ruleS_ActionCall )=>this_S_ActionCall_9= ruleS_ActionCall ) | ( ( ruleS_Assignment )=>this_S_Assignment_10= ruleS_Assignment ) | ( ( ruleS_Species )=>this_S_Species_11= ruleS_Species ) | ( ( ruleS_Reflex )=>this_S_Reflex_12= ruleS_Reflex ) | ( ( ruleS_Callable )=>this_S_Callable_13= ruleS_Callable ) | ( ( ruleS_Definition )=>this_S_Definition_14= ruleS_Definition ) | this_S_Other_15= ruleS_Other )";
         }
         public int specialStateTransition(int s, IntStream _input) throws NoViableAltException {
             TokenStream input = (TokenStream)_input;
@@ -20192,97 +20192,97 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
 
                         else if ( (LA15_0==46) ) {s = 10;}
 
-                        else if ( (LA15_0==76) ) {s = 11;}
+                        else if ( (LA15_0==RULE_STRING) ) {s = 11;}
 
-                        else if ( (LA15_0==77) ) {s = 12;}
+                        else if ( (LA15_0==RULE_INTEGER) ) {s = 12;}
 
-                        else if ( (LA15_0==78) && (synpred2_InternalGaml())) {s = 13;}
+                        else if ( (LA15_0==RULE_DOUBLE) ) {s = 13;}
 
-                        else if ( (LA15_0==79) && (synpred2_InternalGaml())) {s = 14;}
+                        else if ( (LA15_0==RULE_BOOLEAN) ) {s = 14;}
 
-                        else if ( (LA15_0==44) && (synpred3_InternalGaml())) {s = 15;}
+                        else if ( (LA15_0==RULE_KEYWORD) ) {s = 15;}
 
-                        else if ( (LA15_0==45) && (synpred3_InternalGaml())) {s = 16;}
+                        else if ( (LA15_0==76) ) {s = 16;}
 
-                        else if ( (LA15_0==80) ) {s = 17;}
+                        else if ( (LA15_0==77) ) {s = 17;}
 
-                        else if ( (LA15_0==RULE_STRING) ) {s = 18;}
+                        else if ( (LA15_0==52) ) {s = 18;}
 
-                        else if ( (LA15_0==RULE_INTEGER) ) {s = 19;}
+                        else if ( (LA15_0==53) ) {s = 19;}
 
-                        else if ( (LA15_0==RULE_DOUBLE) ) {s = 20;}
+                        else if ( (LA15_0==54) ) {s = 20;}
 
-                        else if ( (LA15_0==RULE_BOOLEAN) ) {s = 21;}
+                        else if ( (LA15_0==55) ) {s = 21;}
 
-                        else if ( (LA15_0==RULE_KEYWORD) ) {s = 22;}
+                        else if ( (LA15_0==56) ) {s = 22;}
 
-                        else if ( (LA15_0==52) ) {s = 23;}
+                        else if ( (LA15_0==57) ) {s = 23;}
 
-                        else if ( (LA15_0==53) ) {s = 24;}
+                        else if ( (LA15_0==58) ) {s = 24;}
 
-                        else if ( (LA15_0==54) ) {s = 25;}
+                        else if ( (LA15_0==59) ) {s = 25;}
 
-                        else if ( (LA15_0==55) ) {s = 26;}
+                        else if ( (LA15_0==60) ) {s = 26;}
 
-                        else if ( (LA15_0==56) ) {s = 27;}
+                        else if ( (LA15_0==61) ) {s = 27;}
 
-                        else if ( (LA15_0==57) ) {s = 28;}
+                        else if ( (LA15_0==62) ) {s = 28;}
 
-                        else if ( (LA15_0==58) ) {s = 29;}
+                        else if ( (LA15_0==63) ) {s = 29;}
 
-                        else if ( (LA15_0==59) ) {s = 30;}
+                        else if ( (LA15_0==64) ) {s = 30;}
 
-                        else if ( (LA15_0==60) ) {s = 31;}
+                        else if ( (LA15_0==65) ) {s = 31;}
 
-                        else if ( (LA15_0==61) ) {s = 32;}
+                        else if ( (LA15_0==66) ) {s = 32;}
 
-                        else if ( (LA15_0==62) ) {s = 33;}
+                        else if ( (LA15_0==67) ) {s = 33;}
 
-                        else if ( (LA15_0==63) ) {s = 34;}
+                        else if ( (LA15_0==68) ) {s = 34;}
 
-                        else if ( (LA15_0==64) ) {s = 35;}
+                        else if ( (LA15_0==69) ) {s = 35;}
 
-                        else if ( (LA15_0==65) ) {s = 36;}
+                        else if ( (LA15_0==70) ) {s = 36;}
 
-                        else if ( (LA15_0==66) ) {s = 37;}
+                        else if ( (LA15_0==71) ) {s = 37;}
 
-                        else if ( (LA15_0==67) ) {s = 38;}
+                        else if ( (LA15_0==72) ) {s = 38;}
 
-                        else if ( (LA15_0==68) ) {s = 39;}
+                        else if ( (LA15_0==73) ) {s = 39;}
 
-                        else if ( (LA15_0==69) ) {s = 40;}
+                        else if ( (LA15_0==39) ) {s = 40;}
 
-                        else if ( (LA15_0==70) ) {s = 41;}
+                        else if ( (LA15_0==74) ) {s = 41;}
 
-                        else if ( (LA15_0==71) ) {s = 42;}
+                        else if ( (LA15_0==75) ) {s = 42;}
 
-                        else if ( (LA15_0==72) ) {s = 43;}
+                        else if ( (LA15_0==80) ) {s = 43;}
 
-                        else if ( (LA15_0==73) ) {s = 44;}
+                        else if ( (LA15_0==81) ) {s = 44;}
 
-                        else if ( (LA15_0==39) ) {s = 45;}
+                        else if ( (LA15_0==RULE_ID) ) {s = 45;}
 
-                        else if ( (LA15_0==74) ) {s = 46;}
+                        else if ( (LA15_0==41) ) {s = 46;}
 
-                        else if ( (LA15_0==75) ) {s = 47;}
+                        else if ( (LA15_0==21) ) {s = 47;}
 
-                        else if ( (LA15_0==81) ) {s = 48;}
+                        else if ( (LA15_0==47) ) {s = 48;}
 
-                        else if ( (LA15_0==RULE_ID) ) {s = 49;}
+                        else if ( (LA15_0==108) && (synpred3_InternalGaml())) {s = 49;}
 
-                        else if ( (LA15_0==41) ) {s = 50;}
+                        else if ( (LA15_0==104) && (synpred3_InternalGaml())) {s = 50;}
 
-                        else if ( (LA15_0==21) ) {s = 51;}
+                        else if ( (LA15_0==109) && (synpred3_InternalGaml())) {s = 51;}
 
-                        else if ( (LA15_0==47) ) {s = 52;}
+                        else if ( (LA15_0==110) && (synpred3_InternalGaml())) {s = 52;}
 
-                        else if ( (LA15_0==108) && (synpred5_InternalGaml())) {s = 53;}
+                        else if ( (LA15_0==78) && (synpred4_InternalGaml())) {s = 53;}
 
-                        else if ( (LA15_0==104) && (synpred5_InternalGaml())) {s = 54;}
+                        else if ( (LA15_0==79) && (synpred4_InternalGaml())) {s = 54;}
 
-                        else if ( (LA15_0==109) && (synpred5_InternalGaml())) {s = 55;}
+                        else if ( (LA15_0==44) && (synpred5_InternalGaml())) {s = 55;}
 
-                        else if ( (LA15_0==110) && (synpred5_InternalGaml())) {s = 56;}
+                        else if ( (LA15_0==45) && (synpred5_InternalGaml())) {s = 56;}
 
                         else if ( (LA15_0==43) && (synpred6_InternalGaml())) {s = 57;}
 
@@ -20297,17 +20297,9 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         int index15_11 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred2_InternalGaml()) ) {s = 14;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred4_InternalGaml()) ) {s = 58;}
-
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
-
-                        else if ( (synpred6_InternalGaml()) ) {s = 57;}
-
-                        else if ( (synpred7_InternalGaml()) ) {s = 59;}
-
-                        else if ( (true) ) {s = 60;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                          
                         input.seek(index15_11);
@@ -20320,30 +20312,94 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         int index15_12 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred2_InternalGaml()) ) {s = 14;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred4_InternalGaml()) ) {s = 58;}
-
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
-
-                        else if ( (true) ) {s = 60;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                          
                         input.seek(index15_12);
                         if ( s>=0 ) return s;
                         break;
                     case 3 : 
+                        int LA15_13 = input.LA(1);
+
+                         
+                        int index15_13 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
+
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
+
+                         
+                        input.seek(index15_13);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 4 : 
+                        int LA15_14 = input.LA(1);
+
+                         
+                        int index15_14 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
+
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
+
+                         
+                        input.seek(index15_14);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 5 : 
+                        int LA15_15 = input.LA(1);
+
+                         
+                        int index15_15 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
+
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
+
+                         
+                        input.seek(index15_15);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 6 : 
+                        int LA15_16 = input.LA(1);
+
+                         
+                        int index15_16 = input.index();
+                        input.rewind();
+                        s = -1;
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
+
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
+
+                        else if ( (synpred4_InternalGaml()) ) {s = 54;}
+
+                        else if ( (synpred6_InternalGaml()) ) {s = 57;}
+
+                        else if ( (synpred7_InternalGaml()) ) {s = 59;}
+
+                        else if ( (true) ) {s = 60;}
+
+                         
+                        input.seek(index15_16);
+                        if ( s>=0 ) return s;
+                        break;
+                    case 7 : 
                         int LA15_17 = input.LA(1);
 
                          
                         int index15_17 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred3_InternalGaml()) ) {s = 16;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred4_InternalGaml()) ) {s = 54;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20351,91 +20407,101 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_17);
                         if ( s>=0 ) return s;
                         break;
-                    case 4 : 
+                    case 8 : 
                         int LA15_18 = input.LA(1);
 
                          
                         int index15_18 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
+
+                        else if ( (true) ) {s = 60;}
 
                          
                         input.seek(index15_18);
                         if ( s>=0 ) return s;
                         break;
-                    case 5 : 
+                    case 9 : 
                         int LA15_19 = input.LA(1);
 
                          
                         int index15_19 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
+
+                        else if ( (true) ) {s = 60;}
 
                          
                         input.seek(index15_19);
                         if ( s>=0 ) return s;
                         break;
-                    case 6 : 
+                    case 10 : 
                         int LA15_20 = input.LA(1);
 
                          
                         int index15_20 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
+
+                        else if ( (true) ) {s = 60;}
 
                          
                         input.seek(index15_20);
                         if ( s>=0 ) return s;
                         break;
-                    case 7 : 
+                    case 11 : 
                         int LA15_21 = input.LA(1);
 
                          
                         int index15_21 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
+
+                        else if ( (true) ) {s = 60;}
 
                          
                         input.seek(index15_21);
                         if ( s>=0 ) return s;
                         break;
-                    case 8 : 
+                    case 12 : 
                         int LA15_22 = input.LA(1);
 
                          
                         int index15_22 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
+
+                        else if ( (true) ) {s = 60;}
 
                          
                         input.seek(index15_22);
                         if ( s>=0 ) return s;
                         break;
-                    case 9 : 
+                    case 13 : 
                         int LA15_23 = input.LA(1);
 
                          
                         int index15_23 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20443,16 +20509,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_23);
                         if ( s>=0 ) return s;
                         break;
-                    case 10 : 
+                    case 14 : 
                         int LA15_24 = input.LA(1);
 
                          
                         int index15_24 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20460,16 +20526,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_24);
                         if ( s>=0 ) return s;
                         break;
-                    case 11 : 
+                    case 15 : 
                         int LA15_25 = input.LA(1);
 
                          
                         int index15_25 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20477,16 +20543,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_25);
                         if ( s>=0 ) return s;
                         break;
-                    case 12 : 
+                    case 16 : 
                         int LA15_26 = input.LA(1);
 
                          
                         int index15_26 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20494,16 +20560,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_26);
                         if ( s>=0 ) return s;
                         break;
-                    case 13 : 
+                    case 17 : 
                         int LA15_27 = input.LA(1);
 
                          
                         int index15_27 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20511,16 +20577,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_27);
                         if ( s>=0 ) return s;
                         break;
-                    case 14 : 
+                    case 18 : 
                         int LA15_28 = input.LA(1);
 
                          
                         int index15_28 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20528,16 +20594,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_28);
                         if ( s>=0 ) return s;
                         break;
-                    case 15 : 
+                    case 19 : 
                         int LA15_29 = input.LA(1);
 
                          
                         int index15_29 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20545,16 +20611,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_29);
                         if ( s>=0 ) return s;
                         break;
-                    case 16 : 
+                    case 20 : 
                         int LA15_30 = input.LA(1);
 
                          
                         int index15_30 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20562,16 +20628,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_30);
                         if ( s>=0 ) return s;
                         break;
-                    case 17 : 
+                    case 21 : 
                         int LA15_31 = input.LA(1);
 
                          
                         int index15_31 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20579,16 +20645,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_31);
                         if ( s>=0 ) return s;
                         break;
-                    case 18 : 
+                    case 22 : 
                         int LA15_32 = input.LA(1);
 
                          
                         int index15_32 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20596,16 +20662,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_32);
                         if ( s>=0 ) return s;
                         break;
-                    case 19 : 
+                    case 23 : 
                         int LA15_33 = input.LA(1);
 
                          
                         int index15_33 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20613,16 +20679,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_33);
                         if ( s>=0 ) return s;
                         break;
-                    case 20 : 
+                    case 24 : 
                         int LA15_34 = input.LA(1);
 
                          
                         int index15_34 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20630,16 +20696,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_34);
                         if ( s>=0 ) return s;
                         break;
-                    case 21 : 
+                    case 25 : 
                         int LA15_35 = input.LA(1);
 
                          
                         int index15_35 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20647,16 +20713,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_35);
                         if ( s>=0 ) return s;
                         break;
-                    case 22 : 
+                    case 26 : 
                         int LA15_36 = input.LA(1);
 
                          
                         int index15_36 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20664,16 +20730,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_36);
                         if ( s>=0 ) return s;
                         break;
-                    case 23 : 
+                    case 27 : 
                         int LA15_37 = input.LA(1);
 
                          
                         int index15_37 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20681,16 +20747,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_37);
                         if ( s>=0 ) return s;
                         break;
-                    case 24 : 
+                    case 28 : 
                         int LA15_38 = input.LA(1);
 
                          
                         int index15_38 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20698,16 +20764,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_38);
                         if ( s>=0 ) return s;
                         break;
-                    case 25 : 
+                    case 29 : 
                         int LA15_39 = input.LA(1);
 
                          
                         int index15_39 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20715,16 +20781,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_39);
                         if ( s>=0 ) return s;
                         break;
-                    case 26 : 
+                    case 30 : 
                         int LA15_40 = input.LA(1);
 
                          
                         int index15_40 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20732,16 +20798,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_40);
                         if ( s>=0 ) return s;
                         break;
-                    case 27 : 
+                    case 31 : 
                         int LA15_41 = input.LA(1);
 
                          
                         int index15_41 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20749,16 +20815,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_41);
                         if ( s>=0 ) return s;
                         break;
-                    case 28 : 
+                    case 32 : 
                         int LA15_42 = input.LA(1);
 
                          
                         int index15_42 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20766,14 +20832,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_42);
                         if ( s>=0 ) return s;
                         break;
-                    case 29 : 
+                    case 33 : 
                         int LA15_43 = input.LA(1);
 
                          
                         int index15_43 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
+
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (synpred5_InternalGaml()) ) {s = 56;}
 
@@ -20783,16 +20851,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_43);
                         if ( s>=0 ) return s;
                         break;
-                    case 30 : 
+                    case 34 : 
                         int LA15_44 = input.LA(1);
 
                          
                         int index15_44 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (true) ) {s = 60;}
 
@@ -20800,84 +20868,16 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         input.seek(index15_44);
                         if ( s>=0 ) return s;
                         break;
-                    case 31 : 
+                    case 35 : 
                         int LA15_45 = input.LA(1);
 
                          
                         int index15_45 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
-
-                        else if ( (true) ) {s = 60;}
-
-                         
-                        input.seek(index15_45);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 32 : 
-                        int LA15_46 = input.LA(1);
-
-                         
-                        int index15_46 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
-
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
-
-                        else if ( (true) ) {s = 60;}
-
-                         
-                        input.seek(index15_46);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 33 : 
-                        int LA15_47 = input.LA(1);
-
-                         
-                        int index15_47 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
-
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
-
-                        else if ( (true) ) {s = 60;}
-
-                         
-                        input.seek(index15_47);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 34 : 
-                        int LA15_48 = input.LA(1);
-
-                         
-                        int index15_48 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
-
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
-
-                        else if ( (true) ) {s = 60;}
-
-                         
-                        input.seek(index15_48);
-                        if ( s>=0 ) return s;
-                        break;
-                    case 35 : 
-                        int LA15_49 = input.LA(1);
-
-                         
-                        int index15_49 = input.index();
-                        input.rewind();
-                        s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
-
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                         else if ( (synpred6_InternalGaml()) ) {s = 57;}
 
@@ -20886,52 +20886,52 @@ public class InternalGamlParser extends AbstractInternalAntlrParser {
                         else if ( (true) ) {s = 60;}
 
                          
-                        input.seek(index15_49);
+                        input.seek(index15_45);
                         if ( s>=0 ) return s;
                         break;
                     case 36 : 
-                        int LA15_50 = input.LA(1);
+                        int LA15_46 = input.LA(1);
 
                          
-                        int index15_50 = input.index();
+                        int index15_46 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                          
-                        input.seek(index15_50);
+                        input.seek(index15_46);
                         if ( s>=0 ) return s;
                         break;
                     case 37 : 
-                        int LA15_51 = input.LA(1);
+                        int LA15_47 = input.LA(1);
 
                          
-                        int index15_51 = input.index();
+                        int index15_47 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                          
-                        input.seek(index15_51);
+                        input.seek(index15_47);
                         if ( s>=0 ) return s;
                         break;
                     case 38 : 
-                        int LA15_52 = input.LA(1);
+                        int LA15_48 = input.LA(1);
 
                          
-                        int index15_52 = input.index();
+                        int index15_48 = input.index();
                         input.rewind();
                         s = -1;
-                        if ( (synpred4_InternalGaml()) ) {s = 58;}
+                        if ( (synpred2_InternalGaml()) ) {s = 58;}
 
-                        else if ( (synpred5_InternalGaml()) ) {s = 56;}
+                        else if ( (synpred3_InternalGaml()) ) {s = 52;}
 
                          
-                        input.seek(index15_52);
+                        input.seek(index15_48);
                         if ( s>=0 ) return s;
                         break;
             }
