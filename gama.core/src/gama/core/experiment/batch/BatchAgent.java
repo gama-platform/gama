@@ -363,9 +363,8 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 		Iterator<Map<String, Object>> it = simsToRun.iterator();
 		while (it.hasNext()) { createSimulation(it.next(), simToParameter); }
 		while (pop.hasScheduledSimulations() && !dead) {
-			// We step all the simulations
-			pop.step(getScope());
 			for (final ISimulationAgent agent : new ArrayList<>(pop.getRunningSimulations())) {
+				agent.step();
 				ParametersSet ps = simToParameter.get(agent);
 				currentSolution = new ParametersSet(ps);
 
@@ -481,14 +480,10 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 				if (repeatIndex == getSeeds().length || dead) { break; }
 			}
 			while (pop.hasScheduledSimulations() && !dead) {
-				// We step all the simulations
-				pop.step(getScope());
-				// String cycles = "";
-				// We evaluate their stopCondition and unschedule the ones who
-				// return true
 				for (final ISimulationAgent sim : pop.toArray()) {
 					// cycles += " " + simulation.getClock().getCycle();
 					// test the condition first in case it is paused
+					sim.step();
 					final boolean stopConditionMet =
 							dead || Cast.asBool(sim.getScope(), sim.getScope().evaluate(stopCondition, sim).getValue());
 					final boolean mustStop = stopConditionMet || sim.dead();
