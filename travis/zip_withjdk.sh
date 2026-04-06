@@ -17,10 +17,23 @@ echo "Downloading from https://api.github.com/repos/adoptium/temurin$JDK_MAJOR-b
 
 RELEASE_JSON=$(curl -f https://api.github.com/repos/adoptium/temurin$JDK_MAJOR-binaries/releases/tags/jdk-$JDK_EMBEDDED_VERSION)
 
-wget -q $(echo "$RELEASE_JSON" | grep "/OpenJDK${JDK_MAJOR}U-jdk_x64_linux.*.gz\""     | cut -d ':' -f 2,3 | tr -d \") -O "jdk_linux-21.tar.gz"
-wget -q $(echo "$RELEASE_JSON" | grep "/OpenJDK${JDK_MAJOR}U-jdk_x64_window.*.zip\""   | cut -d ':' -f 2,3 | tr -d \") -O "jdk_win32-21.zip"
-wget -q $(echo "$RELEASE_JSON" | grep "/OpenJDK${JDK_MAJOR}U-jdk_x64_mac.*.gz\""       | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx-21.tar.gz"
-wget -q $(echo "$RELEASE_JSON" | grep "/OpenJDK${JDK_MAJOR}U-jdk_aarch64_mac.*.gz\""   | cut -d ':' -f 2,3 | tr -d \") -O "jdk_macosx_aarch-21.tar.gz"
+function download_and_verify() {
+    local pattern="$1"
+    local output="$2"
+    wget -q $(echo "$RELEASE_JSON" | grep "${pattern}\"" | cut -d ':' -f 2,3 | tr -d \") -O "$output"
+    local checksum_url=$(echo "$RELEASE_JSON" | grep "${pattern}.sha256.sum\"" | cut -d ':' -f 2,3 | tr -d \")
+    if [ -n "$checksum_url" ]; then
+        wget -q "$checksum_url" -O "$output.sha256"
+        echo "$(cat $output.sha256)  $output" | sha256sum -c -
+    else
+        echo "[W] No SHA-256 checksum found for $output — skipping verification"
+    fi
+}
+
+download_and_verify "/OpenJDK${JDK_MAJOR}U-jdk_x64_linux.*.gz"     "jdk_linux-21.tar.gz"
+download_and_verify "/OpenJDK${JDK_MAJOR}U-jdk_x64_window.*.zip"   "jdk_win32-21.zip"
+download_and_verify "/OpenJDK${JDK_MAJOR}U-jdk_x64_mac.*.gz"       "jdk_macosx-21.tar.gz"
+download_and_verify "/OpenJDK${JDK_MAJOR}U-jdk_aarch64_mac.*.gz"   "jdk_macosx_aarch-21.tar.gz"
 
 #
 #	Prepare downloaded JDK

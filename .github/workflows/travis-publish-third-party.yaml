@@ -11,7 +11,7 @@ on:
       IS_STABLE_RELEASE:
         required: true
         default: false
-        type: string
+        type: boolean
     secrets:
       BOT_TOKEN:
         required: true
@@ -110,22 +110,22 @@ jobs:
           echo "number=$(jq -r '.items[0].number' ${{ runner.temp }}/pr.json)" >> $GITHUB_OUTPUT
 
       - name: Mention developpers
-        uses: actions/github-script@v3
+        uses: actions/github-script@v7
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           script: |
-            let is_pre_release = "${{ !inputs.IS_STABLE_RELEASE }}"
+            const is_pre_release = ${{ !inputs.IS_STABLE_RELEASE }}
 
-            github.issues.createComment({
+            await github.rest.issues.createComment({
               issue_number: ${{ steps.get-pr.outputs.number }},
               owner: "microsoft",
               repo: "winget-pkgs",
               body: 'Poke :point_right: @${{ github.triggering_actor }} @lesquoyb @RoiArthurB'
             })
 
-            core.summary.
-              addHeading(
-                `Release ${{ inputs.tag }}${(is_pre_release)? "" : "-${{ steps.get-prev-release.outputs.new_version_counter }} alpha (with hash ${{needs.get-tag-info.outputs.commit_hash }})" } published to Winget 🚀`
+            await core.summary
+              .addHeading(
+                `Release ${{ inputs.tag }}${is_pre_release ? "-${{ steps.get-prev-release.outputs.new_version_counter }} alpha (with hash ${{needs.get-tag-info.outputs.commit_hash }})" : ""} published to Winget 🚀`
               )
               .addLink("Link to the Winget PR", "https://github.com/microsoft/winget-pkgs/pull/${{ steps.get-pr.outputs.number }}")
               .write()

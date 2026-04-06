@@ -26,9 +26,9 @@ public class SaltelliSampling extends SamplingUtils{
 	
 
 	
-	private static List<Map<String,Double>> transform_into_list(double[][] saltelli,List<String> names,int sample){
+	private static List<Map<String,Double>> transform_into_list(double[][] saltelli,List<String> names){
 		List<Map<String,Double>> tmpList= new ArrayList<>();
-		for(int i=0;i<sample;i++) {
+		for(int i=0;i<saltelli.length;i++) {
 			Map<String,Double> tmpMap=new LinkedHashMap<>();
 			for(int y=0;y<names.size();y++) {
 				tmpMap.put(names.get(y), saltelli[i][y]);
@@ -44,7 +44,7 @@ public class SaltelliSampling extends SamplingUtils{
         for(int i=0;i<parameters.size();i++) {
         	nameInputs.add(parameters.get(i).getName());
         }
-		List<Map<String,Double>>  Saltelli_sequence= transform_into_list(saltelli,nameInputs,sample);
+		List<Map<String,Double>>  Saltelli_sequence= transform_into_list(saltelli,nameInputs);
 		return Saltelli_sequence;
 	}
 	

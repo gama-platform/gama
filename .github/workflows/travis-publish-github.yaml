@@ -134,13 +134,13 @@ jobs:
           cat checksum.txt
 
       - name: Delete old release
-        uses: cb80/delrel@v0.16.0
+        uses: cb80/delrel@v0.19.0
         with:
           tag: ${{ inputs.RELEASE_VERSION }}
           token: ${{ secrets.BOT_TOKEN }}
       
       - name: Create/Update tag
-        uses: rickstaa/action-create-tag@v1.6.3
+        uses: rickstaa/action-create-tag@v1.7.2
         with:
           tag: ${{ inputs.RELEASE_VERSION }}
           force_push_tag: true
@@ -160,7 +160,6 @@ jobs:
           generate_release_notes: true
           files: ${{ runner.temp }}/files/*
           fail_on_unmatched_files: true
-          #token: ${{ secrets.BOT_TOKEN }}
 
       - name: Publish stable to Github
         uses: softprops/action-gh-release@v2
@@ -176,4 +175,3 @@ jobs:
           generate_release_notes: true
           files: ${{ runner.temp }}/files/*
           fail_on_unmatched_files: true
-          #token: ${{ secrets.BOT_TOKEN }}

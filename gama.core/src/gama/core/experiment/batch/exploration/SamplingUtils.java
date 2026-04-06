@@ -76,7 +76,8 @@ public abstract class SamplingUtils {
 			case IType.INT:
 				int intValue = Cast.asInt(scope, var.getMinValue(scope));
 				int maxIntValue = Cast.asInt(scope, var.getMaxValue(scope));
-				int sampleIValue = (int) Math.round(intValue + ValFromSampling * (maxIntValue - intValue));
+				int sampleIValue = intValue + (int) (ValFromSampling * (maxIntValue - intValue + 1));
+				if (sampleIValue > maxIntValue) sampleIValue = maxIntValue;
 				set.put(var.getName(), sampleIValue);
 				return set;
 			case IType.FLOAT:
@@ -102,13 +103,14 @@ public abstract class SamplingUtils {
 				set.put(var.getName(), GamaPointFactory.create(samplePXValue, samplePYValue, samplePZValue));
 				return set;
 			case IType.BOOL:
-				set.put(var.getName(), ValFromSampling > 0.5);
+				set.put(var.getName(), ValFromSampling >= 0.5);
 				return set;
 			case IType.STRING:
 				if (var.getAmongValue(scope).isEmpty()) throw GamaRuntimeException
 						.error("Trying to force a string variable in SAMPLING without among facets", scope);
 				int ms = var.getAmongValue(scope).size();
-				int sv = (int) Math.round(ValFromSampling * ms);
+				int sv = (int) (ValFromSampling * ms);
+				if (sv >= ms) sv = ms - 1;
 				set.put(var.getName(), var.getAmongValue(scope).get(sv));
 				return set;
 			default:
