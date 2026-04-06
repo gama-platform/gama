@@ -32,7 +32,7 @@ global
 		
 //		write Ant.Simple collect each.simulations as list;
 		//create the PreyPredator micro-model with the parameters and the number of the prey is equal with the size of ants population
-		create Organism.Simple with: (shape:square(100), preyinit:Ant.Base[0].simulation.ants_number, predatorinit:2)  
+		create Organism.Simple(shape:square(100), preyinit:Ant.Base[0].simulation.ants_number, predatorinit:2)  
 		{
 			// set the size of micro-model PreyPredator equal with the size of the grid of myAnt
 			shape <- square(100);
@@ -51,12 +51,12 @@ global
 		// ask myAnt do a step
 		ask (Ant.Base collect each.simulation)
 		{
-			do _step_;
+			do _step_();
 		}
 		// ask myPreyPredator do a step, too
 		ask (Organism.Simple collect each.simulation)
 		{
-			do _step_;
+			do _step_();
 		}
 
 		//check if a Prey is chased, set the position of that agent to the location of prey 
