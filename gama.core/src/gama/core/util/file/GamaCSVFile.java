@@ -55,6 +55,54 @@ import gama.core.util.matrix.GamaObjectMatrix;
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IFieldMatrixProvider {
 
+	/**
+	 * The Class StringAnalysis.
+	 */
+	private static class StringAnalysis {
+
+		/** The is float. */
+		boolean isFloat = true;
+
+		/** The is int. */
+		boolean isInt = true;
+
+		/** The is number sequence. */
+		boolean isNumberSequence = true;
+
+		/**
+		 * Instantiates a new string analysis.
+		 *
+		 * @param s
+		 *            the s
+		 */
+		StringAnalysis(final String s) {
+
+			for (final char c : s.toCharArray()) {
+				final boolean isDigit = Character.isDigit(c);
+				if (!isDigit) {
+					if (c == '.') {
+						isInt = false;
+					} else if (Character.isLetter(c)) {
+						isInt = false;
+						isFloat = false;
+						isNumberSequence = false;
+						break;
+					} else if (c == gama.api.utils.StringUtils.Letters.COMMA
+							|| c == gama.api.utils.StringUtils.Letters.SEMICOLUMN
+							|| c == gama.api.utils.StringUtils.Letters.PIPE
+							|| c == gama.api.utils.StringUtils.Letters.COLUMN
+							|| c == gama.api.utils.StringUtils.Letters.SLASH || Character.isWhitespace(c)
+							|| c == gama.api.utils.StringUtils.Letters.QUOTE) {
+						isInt = false;
+						isFloat = false;
+					}
+				}
+			}
+			if (isInt && isFloat) { isFloat = false; }
+		}
+
+	}
+
 	/** The csv separator. */
 	String csvSeparator = null;
 
