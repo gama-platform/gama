@@ -11,7 +11,7 @@ model boids_adapter
 import "../../../../Toy Models/Boids/models/Boids 3D Motion.gaml"
 
 
-experiment "Adapter of Boids" type:gui  {
+experiment B_Adapter title:"Adapter of Boids" type:gui  {
 	
 	list<boids_goal> get_boids_goal(){
 		return list(boids_goal);
