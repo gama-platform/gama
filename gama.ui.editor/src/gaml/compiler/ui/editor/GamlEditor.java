@@ -263,7 +263,10 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	/** The state. */
-	GamlEditorState state = new GamlEditorState(null, Collections.EMPTY_LIST);
+	// 'volatile' is required: this field is written by the reconciler background thread
+	// (in validationEnded()) and read by the UI thread (e.g. in the controlResized handler).
+	// Without volatile the JMM gives no visibility guarantee, leading to stale reads.
+	volatile GamlEditorState state = new GamlEditorState(null, Collections.EMPTY_LIST);
 
 	/** The toolbar. */
 	GamaToolbar2 toolbar;
@@ -525,26 +528,45 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	}
 
 	/**
-	 * Schedule validation job.
+	 * Schedules a one-shot validation job when the editor is first opened. The job validates the document once so that
+	 * error markers and the toolbar state are populated before the user makes any edit.
+	 *
+	 * <p>
+	 * <strong>Locking note:</strong> the original implementation wrapped the entire
+	 * {@code validator.validate()} call inside {@code getDocument().readOnly(…)}, holding the
+	 * XtextDocument read-lock for the full duration of GAML's semantic validation (which can take
+	 * hundreds of milliseconds for large models). While a read-lock is held, any pending
+	 * {@code modify()} call — including the reconciler's own re-parse triggered by the first
+	 * keystroke — must wait, and the REQUIRED_PLUGINS pragma auto-insert (dispatched via
+	 * {@code asyncRun} from {@link #validationEnded}) can also block when it tries to apply a
+	 * {@code ReplaceEdit}. Since {@link #SCHEDULE_DELAY} is 0, both this job and the
+	 * {@link GamlReconciler} fire immediately, racing over the same {@code ValidationContext}.
+	 * </p>
+	 *
+	 * <p>
+	 * The fix is to obtain the resource reference <em>outside</em> any document token and call
+	 * {@code validator.validate()} directly, without holding a read-lock. The validator already
+	 * takes its own snapshot of the resource when needed and is safe to call without an outer lock.
+	 * </p>
 	 */
 	private void scheduleValidationJob() {
-		// if (!isEditable()) return;
 		final IValidationIssueProcessor processor = new MarkerIssueProcessor(getResource(),
 				getInternalSourceViewer().getAnnotationModel(), markerCreator, markerTypeProvider);
 		final ValidationJob validate = new ValidationJob(validator, getDocument(), processor, CheckMode.FAST_ONLY) {
 			@Override
 			protected IStatus run(final IProgressMonitor monitor) {
-				final var issues = getDocument().readOnly(resource -> {
-					if (resource.isValidationDisabled()) return Collections.emptyList();
-					return validator.validate(resource, getCheckMode(), null);
-				});
+				// Retrieve the resource reference without holding the document read-lock.
+				// Calling validator.validate() under readOnly() would pin the lock for the entire
+				// GAML semantic validation, blocking the reconciler write-lock and causing races
+				// with the concurrent GamlReconciler that also fires at SCHEDULE_DELAY = 0.
+				final var resource = getDocument().readOnly(r -> r);
+				if (resource == null || resource.isValidationDisabled()) return Status.OK_STATUS;
+				final var issues = validator.validate(resource, getCheckMode(), null);
 				processor.processIssues((List<Issue>) issues, monitor);
 				return Status.OK_STATUS;
 			}
-
 		};
 		validate.schedule(GamlEditor.SCHEDULE_DELAY);
-
 	}
 
 	@Override
@@ -809,7 +831,16 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	public void validationEnded(final IModelDescription model, final Iterable<? extends IDescription> newExperiments,
 			final IValidationContext status) {
 
-		getInternalSourceViewer().updateCodeMinings();
+		// updateCodeMinings() accesses SWT-backed objects and MUST be called on the UI thread.
+		// validationEnded() is invoked by the GamlReconciler background thread (via
+		// GamlResource.validate() → updateWith() → GamlResourceServices.updateState()), so we
+		// dispatch here. On Windows, cross-thread widget access falls back to Win32 SendMessage()
+		// which is synchronous – calling it directly from the background thread stalls that thread
+		// until the UI thread processes the message, producing the reported editor freezes.
+		WorkbenchHelper.asyncRun(() -> {
+			final GamaSourceViewer v = getInternalSourceViewer();
+			if (v != null && !v.getControl().isDisposed()) { v.updateCodeMinings(); }
+		});
 
 		if (GamaPreferences.Experimental.REQUIRED_PLUGINS.getValue() && model != null && !status.hasErrors()) {
 			String requires = "@" + IKeyword.PRAGMA_REQUIRES;
