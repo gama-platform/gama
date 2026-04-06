@@ -17,6 +17,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +28,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.eclipse.osgi.internal.debug.Debug;
 
 import gama.annotations.inside;
 import gama.annotations.constants.IKeyword;
@@ -53,6 +58,7 @@ import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.FileUtils;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.experiment.ExperimentAgent;
 import gama.core.experiment.batch.BatchAgent;
 import gama.core.experiment.batch.optimization.GeneticAlgorithm;
@@ -63,6 +69,7 @@ import gama.core.experiment.batch.optimization.TabuSearch;
 import gama.core.experiment.batch.optimization.TabuSearchReactive;
 import gama.core.experiment.parameters.ParameterAdapter;
 import gama.core.experiment.parameters.ParametersSet;
+import gama.dev.DEBUG;
 import gama.gaml.operators.Containers;
 import one.util.streamex.IntStreamEx;
 import one.util.streamex.StreamEx;
@@ -90,10 +97,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	protected IExpression outputFilePath;
 
 	/** The sample size. */
-	protected int sample_size = 132;
-
-	/** The Constant CSV_SEP. */
-	public static final String CSV_SEP = ",";
+	protected int sample_size = -1;
 
 	@Override
 	public void initializeFor(final IScope scope, final IExperimentAgent.Batch agent) throws GamaRuntimeException {
@@ -149,21 +153,27 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			}
 		});
 
+
 		exp.add(new ParameterAdapter("Sampled points", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
+			long estimatedSamples = -1;
 			@Override
 			public Object value() {
-				return estimateSamples(agent);
+				if (estimatedSamples < 0) {
+					estimatedSamples = estimateSamples(agent);
+				}
+				return estimatedSamples;
 			}
 		});
 
 		exp.add(new ParameterAdapter("Simulation runs", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
+
+			long estimatedSamples = -1;
 			@Override
 			public Object value() {
-				int res = estimateSamples(agent);
-				final String methodName = IExploration.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
-				if (Arrays.asList(SOBOL, MORRIS, IExploration.BETAD).contains(methodName)) return res;
-				return res * (agent.getSpecies().hasFacet(IKeyword.REPEAT) ? Cast.asInt(agent.getScope(),
-						agent.getSpecies().getFacet(IKeyword.REPEAT).value(agent.getScope())) : 1);
+				if (estimatedSamples < 0) {
+					estimatedSamples = estimateSamples(agent);
+				}
+				return estimatedSamples;
 			}
 		});
 
@@ -297,7 +307,9 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 */
 	@SuppressWarnings ("rawtypes")
 	public List<ParametersSet> buildParameterSets(final IScope scope, final List<ParametersSet> sets, final int index) {
-		if (sets == null) throw GamaRuntimeException.error("Cannot build a sample with empty parameter set", scope);
+		if (sets == null) {
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Cannot build a sample with empty parameter set", scope), true);
+		}
 		final List<Batch> variables = currentExperiment.getParametersToExplore();
 		List<ParametersSet> sets2 = new ArrayList<>();
 		if (variables.isEmpty()) return sets2;
@@ -334,25 +346,29 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		final File parento = fo.getParentFile();
 		if (!parento.exists()) {
 			try {
-				if (!parento.mkdirs()) throw new Exception("Unknown reason");
+				if (!parento.mkdirs()) {
+					GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.create(new Exception("Unknown reason"), scope), true);
+				}
 			} catch (Exception e) {
-				throw GamaRuntimeException.error(
-						"Cannot create a folder at " + parento.toString() + " because: " + e.getMessage(), scope);
+				GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error(
+						"Cannot create a folder at " + parento.toString() + " because: " + e.getMessage(), scope), true);
 			}
 		}
 		if (fo.exists()) {
 			try {
-				if (!fo.delete()) throw new Exception("Unknown reason");
+				if (!fo.delete()) {
+					GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.create(new Exception("Unknown reason"), scope), true);
+				}
 			} catch (Exception e) {
-				throw GamaRuntimeException
-						.error("File " + fo.toString() + " cannot be deleted because: " + e.getMessage(), scope);
+				GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException
+						.error("File " + fo.toString() + " cannot be deleted because: " + e.getMessage(), scope), true);
 			}
 		}
 		try (FileWriter fw = new FileWriter(fo, StandardCharsets.UTF_8, false)) {
 			fw.write(buildSimulationCsv(results, scope));
 		} catch (Exception e) {
-			throw GamaRuntimeException.error("File " + fo.toString() + " cannot be found to save "
-					+ currentExperiment.getName() + " experiment results", scope);
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("File " + fo.toString() + " cannot be found to save "
+					+ currentExperiment.getName() + " experiment results", scope), true);
 		}
 	}
 
@@ -368,8 +384,10 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 */
 	private List<ParametersSet> buildParameterFromMap(final IScope scope) {
 		IExpression psexp = getFacet(IKeyword.WITH);
-		if (psexp.getGamlType().isAssignableFrom(Types.LIST)) throw GamaRuntimeException.error("You cannot use "
-				+ IKeyword.WITH + " facet without input a list of maps: got " + psexp.getDenotedType(), scope);
+		if (psexp.getGamlType().isAssignableFrom(Types.LIST)) {
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("You cannot use "
+					+ IKeyword.WITH + " facet without input a list of maps: got " + psexp.getDenotedType(), scope), true);
+		}
 		List<Map<IExpression, IExpression>> parameterSets = StreamEx.of(((IExpression.List) psexp).getElements())
 				.map(e -> ((IExpression.Map) e).getElements()).toList();
 		List<Map<String, Object>> paramSets = new ArrayList<>();
@@ -414,7 +432,6 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	private List<ParametersSet> buildParametersFromCSV(final IScope scope, final String path)
 			throws GamaRuntimeException {
 		List<Map<String, Object>> parameters = new ArrayList<>();
-
 		try (FileReader fr = new FileReader(new File(FileUtils.constructAbsoluteFilePath(scope, path, false)),
 				StandardCharsets.UTF_8); BufferedReader br = new BufferedReader(fr)) {
 			String line = " ";
@@ -422,7 +439,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			List<String> list_name = new ArrayList<>();
 			int i = 0;
 			while ((line = br.readLine()) != null) {
-				tempArr = line.split(CSV_SEP);
+				tempArr = line.split(GamaPreferences.External.CSV_SEPARATOR.getValue());
 				if (i > 0) {
 					Map<String, Object> temp_map = new HashMap<>();
 					for (int y = 0; y < tempArr.length; y++) { temp_map.put(list_name.get(y), tempArr[y]); }
@@ -433,9 +450,9 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 				i++;
 			}
 		} catch (FileNotFoundException nfe) {
-			throw GamaRuntimeException.error("CSV file not found: " + path, scope);
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("CSV file not found: " + path, scope), true);
 		} catch (IOException ioe) {
-			throw GamaRuntimeException.error("Error during the reading of the CSV file", scope);
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Error during the reading of the CSV file", scope), true);
 		}
 
 		return buildParametersSetList(scope, parameters);
@@ -450,14 +467,15 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 */
 	private String buildSimulationCsv(final IMap<ParametersSet, Map<String, List<Object>>> results,
 			final IScope scope) {
+		String separator = GamaPreferences.External.CSV_SEPARATOR.getValue();
 		StringBuilder sb = new StringBuilder();
 
 		List<String> outputs = getLitteralOutputs();
 		List<String> inputs = results.getKeys().anyValue(scope).getKeys();
 		// Write the header
-		sb.append(String.join(CSV_SEP, inputs));
-		sb.append(CSV_SEP);
-		sb.append(String.join(CSV_SEP, outputs));
+		sb.append(String.join(separator, inputs));
+		sb.append(separator);
+		sb.append(String.join(separator, outputs));
 
 		// Find results and append to global string
 		for (var entry : results.entrySet()) {
@@ -475,8 +493,8 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			// Swipe over the replication of each parameter sets, writing a line for each
 			for (int r = 0; r < nbr; r++) {
 				sb.append(StringUtils.LN);
-				sb.append(inputs.stream().map(i -> ps.get(i).toString()).collect(Collectors.joining(CSV_SEP)));
-				for (var entrySet : res.entrySet()) { sb.append(CSV_SEP).append(entrySet.getValue().get(r)); }
+				sb.append(inputs.stream().map(i -> ps.get(i).toString()).collect(Collectors.joining(separator)));
+				for (var entrySet : res.entrySet()) { sb.append(separator).append(entrySet.getValue().get(r)); }
 			}
 		}
 
@@ -492,7 +510,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 *            the agent
 	 * @return the int
 	 */
-	private int estimateSamples(final IExperimentAgent.Batch agent) {
+	private long estimateSamples(final IExperimentAgent.Batch agent) {
 		String method = IExploration.DEFAULT_SAMPLING;
 		if (hasFacet(IExploration.SAMPLING)) {
 			method = Cast.asString(agent.getScope(), getFacet(IExploration.SAMPLING).value(agent.getScope()));
@@ -510,7 +528,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		int N = hasFacet(IExploration.SAMPLE_SIZE)
 				? Cast.asInt(agent.getScope(), getFacet(IExploration.SAMPLE_SIZE).value(agent.getScope()))
 				: sample_size;
-		int res = switch (method) {
+		long res = switch (method) {
 			case MORRIS:
 				yield N * (K + 1);
 			case IKeyword.SALTELLI:
@@ -520,8 +538,24 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			case IExploration.FROM_LIST:
 				yield buildParameterFromMap(agent.getScope()).size();
 			case IExploration.FROM_FILE:
-				yield buildParametersFromCSV(agent.getScope(),
-						Cast.asString(agent.getScope(), getFacet(IKeyword.FROM).value(agent.getScope()))).size();
+				Stream<String> lines;
+				String filePath = "";
+				var scope = agent.getScope();
+				long count = 0;
+				try {
+					filePath = FileUtils.constructAbsoluteFilePath(scope, getFacetValue(scope, IKeyword.FROM).toString(), false);
+					lines = Files.lines(Paths.get(filePath));
+					count = lines.count();
+				} catch (FileNotFoundException nfe) {
+					GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("CSV file not found: '" + filePath +"'", scope), true);
+				} catch (IOException ioe) {
+					GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Error during the reading of the CSV file", scope), true);
+				} catch (Exception ex) {
+					GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.create(ex, scope), true);
+				}
+				yield count;
+				
+
 			default:
 				yield hasFacet(IExploration.SAMPLE_FACTORIAL) ? IntStreamEx
 						.of(getFactorial(agent.getScope(), agent.getParametersToExplore())).reduce(1, (a, b) -> a * b)
