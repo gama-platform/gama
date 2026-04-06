@@ -10,7 +10,6 @@
  ********************************************************************************************************/
 package gama.api.utils.files;
 
-import java.io.File;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -43,16 +42,6 @@ public abstract class AbstractFileMetaData implements IGamaFileMetaData {
 	 */
 	public AbstractFileMetaData(final IResource r) {
 		fileModificationStamp = r == null ? 0 : r.getModificationStamp();
-	}
-
-	/**
-	 * Instantiates a new abstract file meta data.
-	 *
-	 * @param f
-	 *            the f
-	 */
-	public AbstractFileMetaData(final File f) {
-		fileModificationStamp = f == null ? 0 : f.lastModified();
 	}
 
 	/**
