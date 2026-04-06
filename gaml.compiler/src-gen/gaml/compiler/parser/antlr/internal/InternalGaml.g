@@ -6707,6 +6707,6 @@ RULE_ML_COMMENT : '/*' ( options {greedy=false;} : . )*'*/';
 
 RULE_SL_COMMENT : '//' ~(('\n'|'\r'))* ('\r'? '\n')?;
 
-RULE_WS : (' '|'\t'|'\r'|'\n')+;
+RULE_WS : (' '|'\t'|'\r'|'\n'|'\u00A0'|'\u1680'|'\u2000'..'\u200A'|'\u2028'|'\u2029'|'\u202F'|'\u205F'|'\u3000')+;
 
 RULE_ANY_OTHER : .;

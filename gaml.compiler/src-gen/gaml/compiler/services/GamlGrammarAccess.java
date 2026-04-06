@@ -5419,7 +5419,16 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	}
 	
 	//terminal WS:
-	//    (' ' | '\t' | '\r' | '\n')+;
+	//    (' ' | '\t' | '\r' | '\n'
+	//    | '\u00A0' // Non-breaking space (NBSP)
+	//    | '\u1680' // Ogham space mark
+	//    | '\u2000'..'\u200A' // En quad … Hair space (typographic spaces)
+	//    | '\u2028' // Line separator
+	//    | '\u2029' // Paragraph separator
+	//    | '\u202F' // Narrow no-break space
+	//    | '\u205F' // Medium mathematical space
+	//    | '\u3000' // Ideographic space (CJK)
+	//    )+;
 	public TerminalRule getWSRule() {
 		return tWS;
 	}
