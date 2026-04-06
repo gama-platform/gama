@@ -15,6 +15,7 @@ import static gaml.compiler.resource.GamlResourceServices.properlyEncodedURI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -146,7 +147,7 @@ public class GamlResourceIndexer {
 			if (baseURI.equals(uri)) { continue; }
 			String label = entry.getValue();
 
-			if (!existingEdges.containsKey(uri)) {
+			if (!existingEdges.containsKey(uri) || !Objects.equals(existingEdges.get(uri), label)) {
 				// Validate URI before graph modification
 				if (!EcoreUtil2.isValidUri(r, uri)) return findImport(contents, baseURI, uri);
 
