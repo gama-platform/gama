@@ -90,6 +90,10 @@ import gama.api.utils.random.IRandom;
 				type = IType.MAP,
 				doc = @doc ("A parameters set of this experiment agent")),
 		@variable (
+				name = IExperimentAgent.IS_GUI,
+				type = IType.BOOL,
+				doc = @doc ("Get whether the experiment is a gui experiment or not")),
+		@variable (
 				name = IExperimentAgent.PROJECT_PATH,
 				type = IType.STRING,
 				constant = true,
@@ -109,6 +113,10 @@ public interface IExperimentAgent extends ITopLevelAgent {
 
 	/** The Constant MAXIMUM_CYCLE_DURATION. */
 	String MAXIMUM_CYCLE_DURATION = "maximum_cycle_duration";
+	
+	/** The Constant IS_GUI. */
+	String IS_GUI = "is_gui";
+	
 
 	/**
 	 * The Interface Batch.
@@ -226,6 +234,14 @@ public interface IExperimentAgent extends ITopLevelAgent {
 	 */
 	boolean isHeadless();
 
+	/**
+	 * Checks if is gui.
+	 *
+	 * @return true, if is gui
+	 */
+	@getter (value = IS_GUI)	
+	boolean isGUI();	
+	
 	/**
 	 * Returns the population factory of this type of experiment -- default is a DefaultPopulationFactory
 	 *
