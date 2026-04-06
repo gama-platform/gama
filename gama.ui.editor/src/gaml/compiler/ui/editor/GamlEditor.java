@@ -576,13 +576,34 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/** Timestamp of the last navigation-history mark, used to throttle {@link #markInNavigationHistory()} calls. */
 	private long lastNavigationHistoryMark = 0L;
 
+	/**
+	 * Timestamp of the last {@link #super#handleCursorPositionChanged()} dispatch. Used to throttle the super call
+	 * and avoid overwhelming the Xtext mark-occurrences and status-bar machinery during rapid cursor movement
+	 * (fast typing, or navigating through Find/Replace results). On Windows, the Eclipse Job scheduler and the
+	 * {@link org.eclipse.xtext.ui.editor.model.XtextDocument} read-lock acquisition are noticeably slower than on
+	 * other platforms; without throttling, a burst of mark-occurrences job cancel/reschedule cycles can freeze the
+	 * UI for hundreds of milliseconds.
+	 *
+	 * <p>
+	 * The super call is capped at once per 50 ms. This is imperceptible for status-bar updates and does not affect
+	 * correctness: the status bar is refreshed as soon as the cursor is idle for 50 ms.
+	 * </p>
+	 */
+	private long lastSuperCursorUpdate = 0L;
+
 	@Override
 	protected void handleCursorPositionChanged() {
 		GamaSourceViewer v = getInternalSourceViewer();
 		if (getSelectionProvider() == null || v == null || v.getControl() == null || v.getControl().isDisposed())
 			return;
-		super.handleCursorPositionChanged();
 		final long now = System.currentTimeMillis();
+		// Throttle the super call (mark-occurrences rescheduling + status-bar update) to at most
+		// once every 50 ms. This prevents job-scheduler overload during fast typing or rapid
+		// find-result navigation, which was the main source of Windows editor freezes.
+		if (now - lastSuperCursorUpdate > 50) {
+			lastSuperCursorUpdate = now;
+			super.handleCursorPositionChanged();
+		}
 		if (now - lastNavigationHistoryMark > 500) {
 			lastNavigationHistoryMark = now;
 			this.markInNavigationHistory();
@@ -617,9 +638,12 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 			WorkbenchHelper.runInUI("Editor refresh", 50, m -> {
 				if (toolbar == null || toolbar.isDisposed()) return;
 				toolbar.wipe(SWT.LEFT, 1);
-				boolean showExperiments =
-						!GamlFileExtension.isExperiment(getDocument().getAdapter(IFile.class).getName())
-								&& newState.showExperiments;
+				// getDocument().getAdapter(IFile.class) can return null if the editor is being
+				// initialised or disposed; skip the update in that case to avoid a NullPointerException
+				// whose exception-handling overhead can cause a visible stutter on Windows.
+				final IFile editorFile = getDocument().getAdapter(IFile.class);
+				boolean showExperiments = editorFile != null
+						&& !GamlFileExtension.isExperiment(editorFile.getName()) && newState.showExperiments;
 				if (addExperiments == null || showExperiments != previousShowExperiments) {
 					updateAddExperimentButton(showExperiments);
 				}
