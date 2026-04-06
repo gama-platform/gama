@@ -54,7 +54,7 @@ A high-level summary of every area that changed. Use this to quickly assess what
 
 # Part 1: What's New and Why It Matters
 
-## 1. JDK 25 & Eclipse 2025-12
+## 1. JDK 25 & Eclipse 2026-03
 
 GAMA 2026 moves entirely to **Java 25** and **Eclipse 2026-03 DSL**. This unlocks modern language features that are now used throughout the engine:
 
