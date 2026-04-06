@@ -1116,9 +1116,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 		// we suppose y is already negated
 		data.setCameraTarget(GamaPointFactory.create(centre.getX(), centre.getY(), centre.getZ()));
 		data.setZoomLevel(zoomLevel(), true);
-		/**
-		 * Draw rotation helper.
-		 */
 	}
 
 	/**
@@ -1126,12 +1123,6 @@ public class CameraHelper extends AbstractRendererHelper implements IMultiListen
 	 */
 	protected void drawRotationHelper() {
 		renderer.getOpenGLHelper().setRotationMode(ctrlPressed && !data.isCameraLocked());
-		/**
-		 * Sets the distance.
-		 *
-		 * @param distance
-		 *            the new distance
-		 */
 	}
 
 	/**

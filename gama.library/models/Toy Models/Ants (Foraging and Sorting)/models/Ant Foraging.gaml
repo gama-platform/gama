@@ -226,7 +226,7 @@ experiment "Classic" type: gui parent:base{
 		save simulation to: '../result/file.simulation' format: "json" ;}
 	
 	output {
-		display Ants antialias: false type: opengl4 {
+		display Ants antialias: false type: 3d axes: true {
 			light #ambient intensity: 127;
 			light #default intensity: 127;
 			picture terrain refresh: false;

@@ -32,7 +32,7 @@ global {
 	}	
 	
 	reflex stop_simulation when: ((nb_preys = 0) or (nb_predators = 0)) and !is_batch {
-		do pause;
+		do pause();
 	} 
 }
 
@@ -62,7 +62,7 @@ species generic_species {
 	}
 
 	reflex die when: energy <= 0 {
-		do die;
+		do die();
 	}
 
 	reflex reproduce when: (energy >= energy_reproduce) and (flip(proba_reproduce)) {
@@ -76,7 +76,7 @@ species generic_species {
 		energy <- energy / nb_offsprings;
 	}
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		return 0.0;
 	}
 
@@ -94,7 +94,7 @@ species prey parent: generic_species {
 	int nb_max_offsprings <- prey_nb_max_offsprings;
 	float energy_reproduce <- prey_energy_reproduce;
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		float energy_transfer <- 0.0;
 		if(my_cell.food > 0) {
 			energy_transfer <- min([max_transfer, my_cell.food]);
@@ -113,11 +113,11 @@ species predator parent: generic_species {
 	int nb_max_offsprings <- predator_nb_max_offsprings;
 	float energy_reproduce <- predator_energy_reproduce;
 
-	float energy_from_eat {
+	float energy_from_eat() {
 		list<prey> reachable_preys <- prey inside (my_cell);
 		if(! empty(reachable_preys)) {
 			ask one_of (reachable_preys) {
-				do die;
+				do die();
 			}
 			return energy_transfer;
 		}

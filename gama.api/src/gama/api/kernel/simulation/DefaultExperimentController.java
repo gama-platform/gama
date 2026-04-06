@@ -574,7 +574,12 @@ public class DefaultExperimentController extends AbstractExperimentController {
 		// Block if paused - wait for START or STEP command to release lock.
 		// If the execution thread is interrupted while waiting, return immediately
 		// so it can exit the while(experimentAlive) loop cleanly.
-		if (paused) { if (!lock.acquire()) return; }
+		if (paused) {
+			if (!lock.acquire()) return;
+			// dispose() sets experimentAlive = false BEFORE releasing the lock so that
+			// the execution thread can exit cleanly without executing one extra step.
+			if (!experimentAlive) return;
+		}
 
 		// Cache scope reference to avoid repeated volatile reads
 		final IScope currentScope = scope;
