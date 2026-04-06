@@ -158,7 +158,8 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 	/**
 	 * Gets the initial value.
 	 *
-	 * @return the initial value
+	 * @return the initial slider position (0–1) for the current minimum cycle duration, using
+	 *         {@link #positionFromValue(double)} so it is consistent with {@link #setInit(double, boolean)}
 	 */
 	protected static double getInitialValue() {
 		final IExperimentAgent a = GAMA.getExperiment() == null ? null : GAMA.getExperiment().getAgent();
@@ -169,19 +170,22 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 			maximum = a.getMaximumDuration() * 1000;
 		}
 		max = maximum;
-		// if (maximum > max) { max = maximum; }
 		return positionFromValue(value);
 	}
 
 	/*
-	 * Parameter in milliseconds
+	 * Parameter in milliseconds. Converts to a 0-1 slider position via positionFromValue() before
+	 * updating the slider, so the thumb correctly reflects the actual delay:
+	 *   0 ms (fastest) → position 1.0 → thumb at far right
+	 *   max ms (slowest) → position 0.0 → thumb at far left
 	 */
 	@Override
 	public void setInit(final double i, final boolean notify) {
 		if (i > max) { max = i; }
+		final double position = positionFromValue(i);
 		for (final SimpleSlider slider : sliders) {
 			if (slider == null || slider.isDisposed()) { continue; }
-			slider.updateSlider(i, notify);
+			slider.updateSlider(position, notify);
 		}
 	}
 
@@ -189,10 +193,10 @@ public class SimulationSpeedContributionItem extends WorkbenchWindowControlContr
 	public void setMaximum(Double i) {
 		if (i <= 0) { i = 1d; }
 		max = i;
-		for (final SimpleSlider slider : sliders) {
-			if (slider == null || slider.isDisposed()) { continue; }
-			slider.updateSlider(i, false);
-		}
+		// Do NOT call slider.updateSlider(i, false) here: `i` is in milliseconds, not a 0-1
+		// percentage, so passing it directly would always clamp to 1.0 and corrupt previousPosition.
+		// setInit() is always called right after this (from updateSpeedDisplay), so it will
+		// set the correct position.
 	}
 
 	/** The position listener. */
