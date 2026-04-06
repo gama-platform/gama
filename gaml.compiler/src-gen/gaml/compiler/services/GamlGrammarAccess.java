@@ -548,10 +548,10 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		private final RuleCall cS_LoopParserRuleCall_6 = (RuleCall)cAlternatives.eContents().get(6);
 		private final RuleCall cS_SwitchParserRuleCall_7 = (RuleCall)cAlternatives.eContents().get(7);
 		private final RuleCall cS_EquationsParserRuleCall_8 = (RuleCall)cAlternatives.eContents().get(8);
-		private final RuleCall cS_SpeciesParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
-		private final RuleCall cS_ReflexParserRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
-		private final RuleCall cS_ActionCallParserRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
-		private final RuleCall cS_AssignmentParserRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
+		private final RuleCall cS_ActionCallParserRuleCall_9 = (RuleCall)cAlternatives.eContents().get(9);
+		private final RuleCall cS_AssignmentParserRuleCall_10 = (RuleCall)cAlternatives.eContents().get(10);
+		private final RuleCall cS_SpeciesParserRuleCall_11 = (RuleCall)cAlternatives.eContents().get(11);
+		private final RuleCall cS_ReflexParserRuleCall_12 = (RuleCall)cAlternatives.eContents().get(12);
 		private final RuleCall cS_CallableParserRuleCall_13 = (RuleCall)cAlternatives.eContents().get(13);
 		private final RuleCall cS_DefinitionParserRuleCall_14 = (RuleCall)cAlternatives.eContents().get(14);
 		private final RuleCall cS_OtherParserRuleCall_15 = (RuleCall)cAlternatives.eContents().get(15);
@@ -569,10 +569,10 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//Statement:
 		//    // 1. Unambiguous statements (no overlap with Valid_ID).
 		//    S_Display | S_Return | S_Solve | S_If | S_Try | S_Do | S_Loop | S_Switch | S_Equations |
-		//    // 2. Keywords that could also be variables.
-		//    => S_Species | => S_Reflex |
 		//    // 3. Assignments (e.g., status <- 5;). Checked before falling back to generic statements.
 		//    => S_ActionCall | => S_Assignment |
+		//    // 2. Keywords that could also be variables.
+		//    => S_Species | => S_Reflex |
 		//    // 4. Variable or type definitions (e.g., int my_var <- 5;). Starts with a TypeRef.
 		//    => S_Callable |      // MUST come first! Checks if a '(' follows the name. Checks for typed methods OR keyword actions
 		//    => S_Definition |  // If no '(', it falls back safely to a standard variable.
@@ -582,10 +582,10 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		
 		//// 1. Unambiguous statements (no overlap with Valid_ID).
 		//S_Display | S_Return | S_Solve | S_If | S_Try | S_Do | S_Loop | S_Switch | S_Equations |
-		//// 2. Keywords that could also be variables.
-		//=> S_Species | => S_Reflex |
 		//// 3. Assignments (e.g., status <- 5;). Checked before falling back to generic statements.
 		//=> S_ActionCall | => S_Assignment |
+		//// 2. Keywords that could also be variables.
+		//=> S_Species | => S_Reflex |
 		//// 4. Variable or type definitions (e.g., int my_var <- 5;). Starts with a TypeRef.
 		//=> S_Callable |      // MUST come first! Checks if a '(' follows the name. Checks for typed methods OR keyword actions
 		//=> S_Definition |  // If no '(', it falls back safely to a standard variable.
@@ -621,19 +621,19 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 		//S_Equations
 		public RuleCall getS_EquationsParserRuleCall_8() { return cS_EquationsParserRuleCall_8; }
 		
-		//// 2. Keywords that could also be variables.
-		//=> S_Species
-		public RuleCall getS_SpeciesParserRuleCall_9() { return cS_SpeciesParserRuleCall_9; }
-		
-		//=> S_Reflex
-		public RuleCall getS_ReflexParserRuleCall_10() { return cS_ReflexParserRuleCall_10; }
-		
 		//// 3. Assignments (e.g., status <- 5;). Checked before falling back to generic statements.
 		//=> S_ActionCall
-		public RuleCall getS_ActionCallParserRuleCall_11() { return cS_ActionCallParserRuleCall_11; }
+		public RuleCall getS_ActionCallParserRuleCall_9() { return cS_ActionCallParserRuleCall_9; }
 		
 		//=> S_Assignment
-		public RuleCall getS_AssignmentParserRuleCall_12() { return cS_AssignmentParserRuleCall_12; }
+		public RuleCall getS_AssignmentParserRuleCall_10() { return cS_AssignmentParserRuleCall_10; }
+		
+		//// 2. Keywords that could also be variables.
+		//=> S_Species
+		public RuleCall getS_SpeciesParserRuleCall_11() { return cS_SpeciesParserRuleCall_11; }
+		
+		//=> S_Reflex
+		public RuleCall getS_ReflexParserRuleCall_12() { return cS_ReflexParserRuleCall_12; }
 		
 		//// 4. Variable or type definitions (e.g., int my_var <- 5;). Starts with a TypeRef.
 		//=> S_Callable
@@ -4444,10 +4444,10 @@ public class GamlGrammarAccess extends AbstractElementFinder.AbstractGrammarElem
 	//Statement:
 	//    // 1. Unambiguous statements (no overlap with Valid_ID).
 	//    S_Display | S_Return | S_Solve | S_If | S_Try | S_Do | S_Loop | S_Switch | S_Equations |
-	//    // 2. Keywords that could also be variables.
-	//    => S_Species | => S_Reflex |
 	//    // 3. Assignments (e.g., status <- 5;). Checked before falling back to generic statements.
 	//    => S_ActionCall | => S_Assignment |
+	//    // 2. Keywords that could also be variables.
+	//    => S_Species | => S_Reflex |
 	//    // 4. Variable or type definitions (e.g., int my_var <- 5;). Starts with a TypeRef.
 	//    => S_Callable |      // MUST come first! Checks if a '(' follows the name. Checks for typed methods OR keyword actions
 	//    => S_Definition |  // If no '(', it falls back safely to a standard variable.

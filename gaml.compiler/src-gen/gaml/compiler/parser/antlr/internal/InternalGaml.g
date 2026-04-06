@@ -1051,37 +1051,13 @@ ruleStatement returns [EObject current=null]
 		}
 		    |
 		(
-			(ruleS_Species)=>
-			{
-				newCompositeNode(grammarAccess.getStatementAccess().getS_SpeciesParserRuleCall_9());
-			}
-			this_S_Species_9=ruleS_Species
-			{
-				$current = $this_S_Species_9.current;
-				afterParserOrEnumRuleCall();
-			}
-		)
-		    |
-		(
-			(ruleS_Reflex)=>
-			{
-				newCompositeNode(grammarAccess.getStatementAccess().getS_ReflexParserRuleCall_10());
-			}
-			this_S_Reflex_10=ruleS_Reflex
-			{
-				$current = $this_S_Reflex_10.current;
-				afterParserOrEnumRuleCall();
-			}
-		)
-		    |
-		(
 			(ruleS_ActionCall)=>
 			{
-				newCompositeNode(grammarAccess.getStatementAccess().getS_ActionCallParserRuleCall_11());
+				newCompositeNode(grammarAccess.getStatementAccess().getS_ActionCallParserRuleCall_9());
 			}
-			this_S_ActionCall_11=ruleS_ActionCall
+			this_S_ActionCall_9=ruleS_ActionCall
 			{
-				$current = $this_S_ActionCall_11.current;
+				$current = $this_S_ActionCall_9.current;
 				afterParserOrEnumRuleCall();
 			}
 		)
@@ -1089,11 +1065,35 @@ ruleStatement returns [EObject current=null]
 		(
 			(ruleS_Assignment)=>
 			{
-				newCompositeNode(grammarAccess.getStatementAccess().getS_AssignmentParserRuleCall_12());
+				newCompositeNode(grammarAccess.getStatementAccess().getS_AssignmentParserRuleCall_10());
 			}
-			this_S_Assignment_12=ruleS_Assignment
+			this_S_Assignment_10=ruleS_Assignment
 			{
-				$current = $this_S_Assignment_12.current;
+				$current = $this_S_Assignment_10.current;
+				afterParserOrEnumRuleCall();
+			}
+		)
+		    |
+		(
+			(ruleS_Species)=>
+			{
+				newCompositeNode(grammarAccess.getStatementAccess().getS_SpeciesParserRuleCall_11());
+			}
+			this_S_Species_11=ruleS_Species
+			{
+				$current = $this_S_Species_11.current;
+				afterParserOrEnumRuleCall();
+			}
+		)
+		    |
+		(
+			(ruleS_Reflex)=>
+			{
+				newCompositeNode(grammarAccess.getStatementAccess().getS_ReflexParserRuleCall_12());
+			}
+			this_S_Reflex_12=ruleS_Reflex
+			{
+				$current = $this_S_Reflex_12.current;
 				afterParserOrEnumRuleCall();
 			}
 		)

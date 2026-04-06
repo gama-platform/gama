@@ -9,9 +9,9 @@
  ********************************************************************************************************/
 package gama.api.compilation.validation;
 
-import org.eclipse.emf.ecore.EObject;
+import java.util.Set;
 
-import com.google.common.collect.ImmutableSet;
+import org.eclipse.emf.ecore.EObject;
 
 import gama.annotations.constants.IKeyword;
 import gama.api.compilation.descriptions.IDescription;
@@ -369,8 +369,7 @@ public class Assert implements gama.annotations.constants.IKeyword {
 	 *
 	 * @see #nameIsValid
 	 */
-	public static ImmutableSet<String> RESERVED =
-			ImmutableSet.copyOf(new String[] { IKeyword.FALSE, IKeyword.TRUE, IKeyword.NULL, IKeyword.MYSELF });
+	public static Set<String> RESERVED = Set.of(IKeyword.FALSE, IKeyword.TRUE, IKeyword.NULL, IKeyword.MYSELF);
 
 	/**
 	 * Validates that a description's name is valid and not reserved or conflicting with type names.
