@@ -41,6 +41,7 @@ on:
         default: ""
       DONT_PUBLISH_P2:
         type: boolean
+        default: true
     secrets:
       GAMA_KEYSTORE_BASE64:
         required: false
