@@ -13,7 +13,6 @@ package gaml.compiler.factories;
 import static com.google.common.collect.Iterables.get;
 import static gama.annotations.constants.IKeyword.FREQUENCY;
 import static gama.annotations.constants.IKeyword.GLOBAL;
-import static gama.annotations.constants.IKeyword.NAME;
 import static gama.annotations.constants.IKeyword.PARENT;
 import static gama.annotations.constants.IKeyword.SCHEDULES;
 import static gama.api.compilation.IInternalFacets.ORIGIN;
@@ -708,7 +707,8 @@ public class ModelFactory implements IModelFactory {
 	 */
 	private void createSchedulerSpecies(final IModelDescription model) {
 		final ISpeciesDescription sd = (ISpeciesDescription) GAML.getDescriptionFactory().create(IKeyword.SPECIES,
-				model, NAME, "_internal_global_scheduler");
+				model, IKeyword.NAME, GamaMetaModel.INTERNAL_GLOBAL_SCHEDULER_SPECIES);
+		// final ISpeciesDescription sd = model.getSpeciesDescription(GamaMetaModel.INTERNAL_GLOBAL_SCHEDULER_SPECIES);
 		sd.initializeMirrorsAndSubSpecies();
 		if (model.hasFacet(SCHEDULES)) {
 			// remove the warning as GAMA integrates a working workaround to use this facet at the global level
@@ -726,6 +726,7 @@ public class ModelFactory implements IModelFactory {
 			model.removeFacets(FREQUENCY);
 		}
 		model.addChild(sd);
+		model.getTypesManager().addSpeciesType(sd);
 	}
 
 	/**

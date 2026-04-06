@@ -544,7 +544,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		} // no 'else' as models are also species, which should be added after.
 		if (child.isExperiment()) {
 			getExperimentsMap().put(child.getName(), (IExperimentDescription) child);
-		} else if (child.isClass()) {
+		} else if (child.isClass() && !child.isSpecies()) {
 			getClassesMap().put(child.getName(), (IClassDescription) child);
 		} else {
 			super.addChild(child);
