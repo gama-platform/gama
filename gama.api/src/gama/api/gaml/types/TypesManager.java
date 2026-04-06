@@ -376,6 +376,10 @@ public class TypesManager implements ITypesManager {
 		final String name = species.getName();
 		if (IKeyword.AGENT.equals(name)) return get(IKeyword.AGENT);
 		if (!species.isBuiltIn() && containsType(name)) {
+			final IType<?> existingType = get(name);
+			if (existingType != null && existingType.getSpecies() == species) {
+				return (IType<? extends IAgent>) existingType; // It is already registered
+			}
 			species.error("Species " + name + " already declared. Species name must be unique",
 					IGamlIssue.DUPLICATE_NAME, species.getUnderlyingElement(), name);
 			return this.get(name);

@@ -625,6 +625,23 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	}
 
 	@Override
+	public ISpeciesDescription getMicroSpecies(final String name) {
+		ISpeciesDescription retVal = super.getMicroSpecies(name);
+		if (retVal == null && microModels != null) {
+			retVal = microModels.get(name);
+			if (retVal == null) {
+				for (final IModelDescription mm : microModels.values()) {
+					if (mm.getName().equals(name)) {
+						retVal = mm;
+						break;
+					}
+				}
+			}
+		}
+		return retVal;
+	}
+
+	@Override
 	public IType getTypeNamed(final String s) {
 		if (types == null) return Types.NO_TYPE;
 		return types.get(s);
@@ -683,6 +700,17 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 			}
 		}
 		return desc;
+	}
+
+	@Override
+	public boolean visitMicroSpecies(final DescriptionVisitor<ISpeciesDescription> visitor) {
+		if (!super.visitMicroSpecies(visitor)) return false;
+		if (microModels != null) {
+			for (final IModelDescription mm : microModels.values()) {
+				if (!visitor.process(mm)) return false;
+			}
+		}
+		return true;
 	}
 
 	@Override

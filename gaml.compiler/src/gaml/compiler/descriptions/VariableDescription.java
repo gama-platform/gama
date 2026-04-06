@@ -281,7 +281,9 @@ public class VariableDescription extends SymbolDescription implements IVariableD
 			if (isSynthetic()) {
 				final ISpeciesDescription mySpecies = (ISpeciesDescription) getEnclosingDescription();
 				final ISpeciesDescription sd = mySpecies.getMicroSpecies(varName);
-				sd.collectUsedVarsOf(mySpecies, alreadyProcessed, result);
+				if (sd != null) {
+					sd.collectUsedVarsOf(mySpecies, alreadyProcessed, result);
+				}
 			}
 			if (!includingThis) { result.remove(this); }
 			if (!includingSpecies) { result.removeIf(IVariableDescription::isSynthetic); }
