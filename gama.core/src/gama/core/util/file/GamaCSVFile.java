@@ -38,6 +38,7 @@ import gama.api.utils.files.IFileMetadataProvider;
 import gama.api.utils.files.IGamaFileMetaData;
 import gama.api.utils.geometry.IEnvelope;
 import gama.api.utils.interfaces.IFieldMatrixProvider;
+import gama.core.util.file.CSVInfo.StringAnalysis;
 import gama.core.util.matrix.GamaFloatMatrix;
 import gama.core.util.matrix.GamaIntMatrix;
 import gama.core.util.matrix.GamaObjectMatrix;
@@ -58,54 +59,6 @@ import gama.core.util.matrix.GamaObjectMatrix;
 		doc = @doc ("A type of text file that contains comma-separated values"))
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IFieldMatrixProvider {
-
-	/**
-	 * The Class StringAnalysis.
-	 */
-	private static class StringAnalysis {
-
-		/** The is float. */
-		boolean isFloat = true;
-
-		/** The is int. */
-		boolean isInt = true;
-
-		/** The is number sequence. */
-		boolean isNumberSequence = true;
-
-		/**
-		 * Instantiates a new string analysis.
-		 *
-		 * @param s
-		 *            the s
-		 */
-		StringAnalysis(final String s) {
-
-			for (final char c : s.toCharArray()) {
-				final boolean isDigit = Character.isDigit(c);
-				if (!isDigit) {
-					if (c == '.') {
-						isInt = false;
-					} else if (Character.isLetter(c)) {
-						isInt = false;
-						isFloat = false;
-						isNumberSequence = false;
-						break;
-					} else if (c == gama.api.utils.StringUtils.Letters.COMMA
-							|| c == gama.api.utils.StringUtils.Letters.SEMICOLUMN
-							|| c == gama.api.utils.StringUtils.Letters.PIPE
-							|| c == gama.api.utils.StringUtils.Letters.COLUMN
-							|| c == gama.api.utils.StringUtils.Letters.SLASH || Character.isWhitespace(c)
-							|| c == gama.api.utils.StringUtils.Letters.QUOTE) {
-						isInt = false;
-						isFloat = false;
-					}
-				}
-			}
-			if (isInt && isFloat) { isFloat = false; }
-		}
-
-	}
 
 	/**
 	 * The Class CSVInfo.
@@ -573,13 +526,7 @@ public class GamaCSVFile extends GamaFile<IMatrix<Object>, Object> implements IF
 				}
 			}
 		}
-		if (info == null) {
-			info = new CSVInfo(getFile(scope).getAbsolutePath(), 0, CSVSep);
-			// if (p != null) {
-			// p.storeMetadata(getFile(), info);
-			// }
-
-		}
+		if (info == null) { info = new CSVInfo(getFile(scope).getAbsolutePath(), 0, CSVSep); }
 		if (hasHeader != null && hasHeader) {
 			if (!info.header) {
 				try (final CsvReader reader = new CsvReader(getPath(scope), info.delimiter)) {
