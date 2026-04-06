@@ -45,7 +45,7 @@ global
 		{
 			Building theBuilding <- Building((City."Adapter"[0]).get_building_at(theBoid)); 
 			if(theBuilding != nil){				
-				if (theBoid distance_to theBuilding < theBuilding.width)
+				if (geometry(theBoid) distance_to geometry(theBuilding) < theBuilding.width)
 				{
 					ask theBoid
 					{

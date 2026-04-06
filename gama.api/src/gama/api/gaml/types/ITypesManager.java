@@ -234,6 +234,26 @@ public interface ITypesManager extends IDisposable {
 	<Support> IType<Support> addRegularType(String name, IType<Support> typeInstance, String pluginName);
 
 	/**
+	 * Registers a species description as a type, allowing agents of that species to be referenced by type in GAML.
+	 *
+	 * @param species
+	 *            the species description to register
+	 * @return the registered type
+	 */
+	IType<? extends gama.api.kernel.agent.IAgent> addSpeciesType(ISpeciesDescription species);
+
+	/**
+	 * Registers a species description as a type with an explicit name.
+	 *
+	 * @param species
+	 *            the species description to register
+	 * @param expectedName
+	 *            the exact name to register it under
+	 * @return the created agent type
+	 */
+	IType<? extends gama.api.kernel.agent.IAgent> addSpeciesTypeAs(ISpeciesDescription species, String expectedName);
+
+	/**
 	 * Returns the set of all types registered in this manager (excluding parent types).
 	 *
 	 * <p>

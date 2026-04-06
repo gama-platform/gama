@@ -6,7 +6,7 @@
 *   behavior before coupling.
 * Tags: comodel, flies, random_movement, legacy, base_model
 */
-
+model F
 
 global
 {

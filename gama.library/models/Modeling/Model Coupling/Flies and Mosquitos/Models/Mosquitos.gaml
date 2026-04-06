@@ -6,7 +6,7 @@
 *   behavior before coupling.
 * Tags: comodel, mosquitos, random_movement, legacy, base_model
 */
-
+model M
 
 global
 {
