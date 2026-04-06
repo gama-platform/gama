@@ -17,40 +17,44 @@ versionToTag=$(echo $inputVersion | awk -F'.' -v month="$month" -v id="$id" '{$2
 # Set path
 path="$( dirname $( realpath "${BASH_SOURCE[0]}" ) )/.."
 
+# Read Tycho version from the annotations POM (single source of truth)
+TYCHO_VERSION=$(grep -m1 '<tycho.version>' "$path/gama.annotations/pom.xml" | sed 's/.*<tycho.version>\(.*\)<\/tycho.version>.*/\1/' | tr -d '[:space:]')
+TYCHO_VERSIONS_MOJO="org.eclipse.tycho:tycho-versions-plugin:${TYCHO_VERSION}:set-version"
+
 echo "[SNAPSHOT: $isSnapshot] Tagging GAMA packages release as $versionToTag"
 
 #
-#	Should I clean maven ?
+#	Build Maven/OSGi version strings
 #
+newVersion=$versionToTag
+if [ $isSnapshot = "true" ]; then
+	newVersion="$versionToTag-SNAPSHOT"
+fi
 
 cd $path/gama.annotations && mvn clean -B
 cd $path/gama.processor && mvn clean -B
 cd $path/gama.parent && mvn clean -B
 
 #
-#	UPDATING MAVEN
+#	UPDATING MAVEN & OSGi VERSIONS via Tycho
+#
+#	tycho-versions:set-version updates pom.xml (<version>), META-INF/MANIFEST.MF
+#	(Bundle-Version:), feature.xml (version=) and *.product (version=) in one pass.
+#	It handles both Maven (-SNAPSHOT) and OSGi (.qualifier) notations automatically.
 #
 
-echo "Update .qualifier"
-newVersion=$versionToTag
-if [ $isSnapshot = "true" ]; then
-	newVersion="$versionToTag.qualifier"
-fi
-find $path -type f -name "*.xml" -exec sed -i "s/$oldVersion.qualifier/$newVersion/g" {} \;
-find $path -type f -name "*.product" -exec sed -i "s/$oldVersion.qualifier/$newVersion/g" {} \;
-find $path -type f -name "*.product" -exec sed -i "s/$oldVersion.qualifier/$versionToTag/g" {} \;
-find $path -type f -name "MANIFEST.MF" -exec sed -i "s/$oldVersion.qualifier/$newVersion/g" {} \;
+echo "Update versions with Tycho (annotations)"
+cd $path/gama.annotations && mvn -B ${TYCHO_VERSIONS_MOJO} -DnewVersion="$newVersion"
 
-echo "Update -SNAPSHOT"
-newVersion=$versionToTag
-if [ $isSnapshot = "true" ]; then
-	newVersion="$versionToTag-SNAPSHOT"
-fi
-find $path -type f -name "*.xml" -exec sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" {} \;
+echo "Update versions with Tycho (processor)"
+cd $path/gama.processor && mvn -B ${TYCHO_VERSIONS_MOJO} -DnewVersion="$newVersion"
 
-echo "Finish updating meta-data from .product"
-find $path -type f -name "*.product" -exec sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" {} \;
+echo "Update versions with Tycho (reactor)"
+cd $path/gama.parent && mvn -B ${TYCHO_VERSIONS_MOJO} -DnewVersion="$newVersion"
 
+#
+#	Update sites url (feature descriptions — not covered by tycho-versions)
+#
 echo "Update sites url"
 find $path -type f -name "feature.xml" -exec sed -i "s/$oldVersion Update/$newVersion Update/g" {} \;
 
@@ -83,7 +87,6 @@ sed -i "s/$oldVersion/$newVersion/g" $path/gama.product/extraresources/Info.plis
 #
 #	EXTRA Forgotten
 #
-
 echo "Update extra individual files"
 
 sed -i "s/V$oldVersion-SNAPSHOT http/V$newVersion http/g" $path/gama.ui.application/plugin.xml
@@ -94,7 +97,6 @@ sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.annotations/src/gama/an
 #
 #	Meta-Data generator
 #
-
 echo "Set GAMA meta-data in config.ini"
 sed -i "s/gama.version\" value=\"SNAPSHOT/gama.version\" value=\"$newVersion/g" $path/gama.product/gama.product
 sed -i "s/gama.commit\" value=\"SNAPSHOT/gama.commit\" value=\"$(git rev-parse HEAD)/g" $path/gama.product/gama.product
@@ -105,6 +107,6 @@ sed -i "s/gama.jdk\" value=\"SNAPSHOT/gama.jdk\" value=\"$JDK_EMBEDDED_VERSION/g
 if [ $isSnapshot = "false" ]; then
 	echo "Update p2 repositories to gama stable"
 	sed -i "s/\/SNAPSHOT/\/$versionToTag/g" $path/gama.product/gama.product
-  
-	sed -i "s/\/gama_updates\/0.0.0/\/gama_updates\/$versionToTag/g" $path/gama.p2site/pom.xml
+
+	sed -i "s/\/gama_updates\/$oldVersion/\/gama_updates\/$versionToTag/g" $path/gama.p2site/pom.xml
 fi

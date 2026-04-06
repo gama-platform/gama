@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 #
 #	Generate list of jars containings .so\|.dylib\|.jnilib to sign for MacOS release
@@ -72,8 +73,8 @@ function unzipAndParse(){
 
 
 touch alreadySawJar.txt needToSign.txt currentAppJar.txt nestedJar.txt
-for gama in ./gama.application-macosx**zip; do
-	unzipAndParse $gama
+for gama in ./gama.application-macosx*zip; do
+	unzipAndParse "$gama"
 done
 
 # Remove duplicated lines
