@@ -37,7 +37,6 @@ import gama.api.GAMA;
 import gama.api.compilation.GamlCompilationError;
 import gama.api.compilation.IModelsManager;
 import gama.api.constants.GamlFileExtension;
-import gama.api.exceptions.GamaRuntimeException;
 import gama.api.kernel.species.IExperimentSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.utils.files.IFileMetadataProvider;
@@ -157,7 +156,7 @@ public class ModelsManager extends AbstractServiceFactory implements IModelsMana
 				IModelSpecies model = null;
 				try {
 					model = doc.readOnly(state -> GamlModelBuilder.getInstance().compile(state.getURI(), null));
-				} catch (final GamaRuntimeException ex) {
+				} catch (final Exception ex) {
 					GAMA.getGui().getDialogFactory().error(
 							"Experiment cannot be instantiated because of the following error: " + ex.getMessage());
 				}

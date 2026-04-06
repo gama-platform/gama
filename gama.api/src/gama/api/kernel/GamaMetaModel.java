@@ -33,6 +33,7 @@ import gama.api.compilation.descriptions.IExperimentDescription;
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
 import gama.api.gaml.GAML;
+import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.agent.IAgentConstructor;
 import gama.api.kernel.object.IClass;
 import gama.api.kernel.simulation.IExperimentAgent;
@@ -91,6 +92,11 @@ import gama.api.kernel.species.ISpecies;
  */
 @SuppressWarnings ({ "unchecked", "rawtypes" })
 public class GamaMetaModel {
+
+	/**
+	 *
+	 */
+	public static final String INTERNAL_GLOBAL_SCHEDULER_SPECIES = "__internal_global_scheduler__";
 
 	/** The Constant INSTANCE. */
 	private final static GamaMetaModel INSTANCE = new GamaMetaModel();
@@ -297,10 +303,19 @@ public class GamaMetaModel {
 			}
 		}
 
+		addBuiltInGlobalSchedulerSpecies(agent, model);
+
 		INSTANCE.tempSpecies.clear();
 		model.buildTypes();
 		model.initializeMirrorsAndSubSpecies();
 		INSTANCE.isInitialized = true;
+	}
+
+	private static void addBuiltInGlobalSchedulerSpecies(ISpeciesDescription agent, IModelDescription model) {
+		ISpeciesDescription desc = INSTANCE.buildSpecies(new SpeciesRecord(INTERNAL_GLOBAL_SCHEDULER_SPECIES,
+				GamaBundleLoader.CURRENT_PLUGIN_NAME, IAgent.class, null, new String[0]), model, agent);
+		desc.setEnclosingDescription(model);
+		desc.initializeMirrorsAndSubSpecies();
 	}
 
 	/**

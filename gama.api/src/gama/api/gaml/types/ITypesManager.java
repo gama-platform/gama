@@ -13,6 +13,7 @@ import java.util.Set;
 
 import gama.api.compilation.descriptions.IModelDescription;
 import gama.api.compilation.descriptions.ISpeciesDescription;
+import gama.api.kernel.agent.IAgent;
 import gama.api.utils.interfaces.IDisposable;
 
 /**
@@ -187,6 +188,15 @@ public interface ITypesManager extends IDisposable {
 	 *            the parent types manager
 	 */
 	void setParent(ITypesManager typesManager);
+
+	/**
+	 * Adds the species type.
+	 *
+	 * @param species
+	 *            the species
+	 * @return the i type<? extends I agent>
+	 */
+	IType<? extends IAgent> addSpeciesType(final ISpeciesDescription species);
 
 	/**
 	 * Registers a regular (non-species) type in this manager with metadata.

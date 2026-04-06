@@ -100,7 +100,6 @@ public class SpeciesFactory implements ISymbolDescriptionFactory.Species {
 	public ISpeciesDescription createBuiltInSpeciesDescription(final String name, final Class clazz,
 			final ISpeciesDescription superDesc, final ISpeciesDescription parent, final IAgentConstructor helper,
 			final Set<String> skills, final Facets userSkills, final String plugin) {
-		// ArtefactRegistry.addBuiltInSpeciesNameAsType(name);
 		return new SpeciesDescription(name, clazz, superDesc, parent, helper, skills, userSkills, plugin);
 	}
 
