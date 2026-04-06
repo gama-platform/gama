@@ -392,7 +392,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 			}
 			if (!dead) { informStatus(pop, sims.size()); }
 			// We then verify that the front scheduler has not been paused
-			while (getSpecies().getController().isPaused() && !dead) { THREADS.WAIT(100); }
+			while (getSpecies().getController().isPaused() && !dead) { THREADS.WAIT(10); }
 		}
 
 		// When the simulations are finished, we give a chance to the outputs of
@@ -480,7 +480,7 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 				if (repeatIndex == getSeeds().length || dead) { break; }
 			}
 			while (pop.hasScheduledSimulations() && !dead) {
-				for (final ISimulationAgent sim : pop.toArray()) {
+				for (final ISimulationAgent sim :  new ArrayList<>(pop.getRunningSimulations())) {
 					// cycles += " " + simulation.getClock().getCycle();
 					// test the condition first in case it is paused
 					sim.step();

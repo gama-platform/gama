@@ -25,7 +25,7 @@ import gama.api.utils.csv.AbstractCSVManipulator;
 import gama.api.utils.csv.CsvReader;
 import gama.api.utils.csv.CsvWriter;
 import gama.api.utils.files.IGamaFileMetaData;
-import gama.core.util.file.CSVInfo;
+import gama.core.util.file.GamaCSVFile.CSVInfo;
 import gama.dev.DEBUG;
 import gama.ui.shared.interfaces.IRefreshHandler;
 import gama.ui.shared.utils.WorkbenchHelper;

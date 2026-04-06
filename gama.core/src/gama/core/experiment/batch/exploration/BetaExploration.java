@@ -43,6 +43,7 @@ import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.utils.StringUtils;
 import gama.api.utils.files.FileUtils;
+import gama.api.utils.prefs.GamaPreferences;
 import gama.core.experiment.parameters.ParametersSet;
 
 /**
@@ -249,17 +250,17 @@ public class BetaExploration extends AExplorationAlgorithm {
 	 */
 	public String buildReportString(final Map<String, Map<Batch, Double>> res, final String extension) {
 		StringBuilder sb = new StringBuilder();
-
+		var separator = GamaPreferences.External.CSV_SEPARATOR.getValue();
 		if ("txt".equalsIgnoreCase(extension)) {
 
 			sb.append("BETA b Kuiper based estimator :").append(StringUtils.LN);
 			sb.append("##############################").append(StringUtils.LN);
-			sb.append("inputs" + AExplorationAlgorithm.CSV_SEP + String.join(AExplorationAlgorithm.CSV_SEP, outputs))
+			sb.append("inputs" + separator + String.join(separator, outputs))
 					.append(StringUtils.LN);
 			for (Batch param : parameters) {
 				sb.append(param.getName());
 				for (String output_name : outputs) {
-					sb.append(AExplorationAlgorithm.CSV_SEP).append(res.get(output_name).get(param));
+					sb.append(separator).append(res.get(output_name).get(param));
 				}
 				sb.append(StringUtils.LN);
 			}
@@ -267,15 +268,15 @@ public class BetaExploration extends AExplorationAlgorithm {
 		} else {
 
 			// Build header
-			sb.append("output").append(AExplorationAlgorithm.CSV_SEP);
-			sb.append("parameter").append(AExplorationAlgorithm.CSV_SEP);
+			sb.append("output").append(separator);
+			sb.append("parameter").append(separator);
 			sb.append("\u03B2").append(StringUtils.LN);
 
 			for (String output_name : outputs) {
 				for (Batch param : parameters) {
 					// The output & parameter
-					sb.append(output_name).append(AExplorationAlgorithm.CSV_SEP);
-					sb.append(param.getName()).append(AExplorationAlgorithm.CSV_SEP);
+					sb.append(output_name).append(separator);
+					sb.append(param.getName()).append(separator);
 					sb.append(res.get(output_name).get(param)).append(StringUtils.LN);
 				}
 			}

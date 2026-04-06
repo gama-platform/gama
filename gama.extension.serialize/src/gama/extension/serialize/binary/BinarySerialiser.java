@@ -23,6 +23,8 @@ import gama.api.gaml.types.GamaType;
 import gama.api.gaml.types.IType;
 import gama.api.kernel.agent.AgentReference;
 import gama.api.kernel.agent.IAgent;
+import gama.api.kernel.object.IClass;
+import gama.api.kernel.object.IObject;
 import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.serialization.ISerialisedPopulation;
 import gama.api.kernel.serialization.SerialisedAgent;
@@ -212,6 +214,31 @@ public class BinarySerialiser implements ISerialisationConstants {
 			}
 		});
 
+		register(conf, IObject.class, new FSTIndividualSerialiser<IObject>() {
+
+			@Override
+			protected boolean shouldRegister() {
+				return false;
+			}
+
+			@Override
+			public void serialise(final FSTObjectOutput out, final IObject o) throws Exception {
+
+				out.writeStringUTF(o.getSpeciesName());
+				out.writeObject(o.getAttributes(true));
+			}
+
+			@Override
+			public IObject deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+				String speciesName = in.readStringUTF();
+				Map<String, Object> attributes = (Map<String, Object>) in.readObject();
+				IClass clazz = scope.getModel().getClass(speciesName);
+				if (clazz != null) return clazz.createInstance(scope, attributes);
+				return null;
+			}
+
+		});
+
 		register(conf, IAgent.class, new FSTIndividualSerialiser<IAgent>() {
 
 			@Override
@@ -297,6 +324,21 @@ public class BinarySerialiser implements ISerialisationConstants {
 			public ISpecies deserialise(final IScope scope1, final FSTObjectInput in) throws Exception {
 				String name = in.readStringUTF();
 				return scope1.getModel().getSpecies(name);
+			}
+
+		});
+
+		register(conf, IClass.class, new FSTIndividualSerialiser<IClass>() {
+
+			@Override
+			public void serialise(final FSTObjectOutput out, final IClass o) throws Exception {
+				out.writeStringUTF(o.getName());
+			}
+
+			@Override
+			public IClass deserialise(final IScope scope1, final FSTObjectInput in) throws Exception {
+				String name = in.readStringUTF();
+				return scope1.getModel().getClass(name);
 			}
 
 		});
