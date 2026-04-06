@@ -238,7 +238,7 @@ public class FieldDiffuser {
 				new GridDiffusion(method_diffu, isGradient, matDiffu, theMask, minValue, avoidMask);
 		final DiffusionContext keyValue = new DiffusionContext(scope, varDiffu, pop);
 		if (diffusionsMap.containsKey(keyValue)) {
-			final List<GridDiffusion> listWithSameVar = diffusionsMap.get(keyValue);
+			final List<GridDiffusion> listWithSameVar = new ArrayList<>(diffusionsMap.get(keyValue));
 			// try to mix diffusions if possible
 			for (final GridDiffusion gridToAnalyze : listWithSameVar) {
 				if (gridToAnalyze != newGridDiff && gridToAnalyze.useConvolution == newGridDiff.useConvolution
