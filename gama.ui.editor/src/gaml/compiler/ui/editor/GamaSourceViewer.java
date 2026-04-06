@@ -18,6 +18,7 @@ import org.eclipse.jface.text.codemining.ICodeMiningProvider;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.internal.editors.text.codemining.annotation.AnnotationCodeMiningProvider;
 import org.eclipse.xtext.ui.editor.XtextSourceViewer;
 
 /**
@@ -118,6 +119,29 @@ public class GamaSourceViewer extends XtextSourceViewer {
 			managedProviders.add(provider);
 			super.setCodeMiningProviders(managedProviders.toArray(new ICodeMiningProvider[0]));
 		}
+	}
+
+	/**
+	 * Replaces all currently installed {@link AnnotationCodeMiningProvider} instances with the given {@code replacement}
+	 * provider, leaving all other providers (e.g. GitHub Copilot) untouched.
+	 *
+	 * <p>
+	 * This is the correct way to install the GAML-specific {@link AnnotationCodeMiningProvider} subclass: calling
+	 * {@code super.installCodeMiningProviders()} in {@link gaml.compiler.ui.editor.GamlEditor} already installs the
+	 * default Eclipse {@link AnnotationCodeMiningProvider} via the extension point. Simply appending the GAML one
+	 * with {@link #addCodeMiningProvider(ICodeMiningProvider)} would result in two annotation mining providers being
+	 * active simultaneously and code minings being rendered twice. This method removes any existing
+	 * {@link AnnotationCodeMiningProvider} instances before adding {@code replacement}.
+	 * </p>
+	 *
+	 * @param replacement
+	 *            the {@link AnnotationCodeMiningProvider} subclass to install; ignored if {@code null}
+	 */
+	public void replaceAnnotationCodeMiningProvider(final AnnotationCodeMiningProvider replacement) {
+		if (replacement == null) return;
+		managedProviders.removeIf(p -> p instanceof AnnotationCodeMiningProvider);
+		managedProviders.add(replacement);
+		super.setCodeMiningProviders(managedProviders.toArray(new ICodeMiningProvider[0]));
 	}
 
 	/**

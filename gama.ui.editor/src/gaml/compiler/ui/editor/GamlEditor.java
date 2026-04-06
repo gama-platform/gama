@@ -911,8 +911,9 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 	/**
 	 * Installs code mining providers, preserving any providers already registered via the Eclipse extension point
 	 * {@code org.eclipse.ui.workbench.texteditor.codeMiningProviders} (which includes third-party providers such as
-	 * GitHub Copilot). The GAML-specific {@link GamlCodeMiningProvider} is <em>added</em> on top of those providers
-	 * rather than replacing them.
+	 * GitHub Copilot). The GAML-specific {@link GamlCodeMiningProvider} <em>replaces</em> the default Eclipse
+	 * {@link AnnotationCodeMiningProvider} that {@code super.installCodeMiningProviders()} installs automatically for
+	 * all text editors, so that annotation code minings are not rendered twice.
 	 *
 	 * @see org.eclipse.ui.texteditor.AbstractTextEditor#installCodeMiningProviders()
 	 */
@@ -921,7 +922,12 @@ public class GamlEditor extends XtextEditor implements IGamlBuilderListener, ITo
 		// Let the framework install any providers registered via the extension point
 		// (e.g. GitHub Copilot's ICodeMiningProvider) before adding the GAML one.
 		super.installCodeMiningProviders();
-		getInternalSourceViewer().addCodeMiningProvider(new GamlCodeMiningProvider());
+		// Replace the default AnnotationCodeMiningProvider installed by super (which handles
+		// annotation-based code minings for all text editors) with the GAML-specific subclass.
+		// Using replaceAnnotationCodeMiningProvider() instead of addCodeMiningProvider() avoids
+		// having two AnnotationCodeMiningProvider instances active simultaneously, which would
+		// cause every annotation code mining to be rendered twice in the editor.
+		getInternalSourceViewer().replaceAnnotationCodeMiningProvider(new GamlCodeMiningProvider());
 	}
 
 	/**
