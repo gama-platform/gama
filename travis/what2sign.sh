@@ -67,13 +67,13 @@ function unzipAndParse(){
 	echo "Unzipping $1 ..."
 	unzip -q "$1"
 	parseApp "./Gama.app"
-	find . -maxdepth 1 -type d -exec rm -fr {} \;
+	find . -mindepth 1 -maxdepth 1 -type d -exec rm -fr {} \;
 	echo "xxx"
 }
 
 
 touch alreadySawJar.txt needToSign.txt currentAppJar.txt nestedJar.txt
-for gama in ./gama.application-macosx*zip; do
+for gama in ./gama.application-macosx*.zip; do
 	unzipAndParse "$gama"
 done
 
