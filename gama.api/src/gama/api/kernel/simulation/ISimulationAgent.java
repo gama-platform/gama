@@ -382,4 +382,22 @@ public interface ISimulationAgent extends ITopLevelAgent {
 	 */
 	Integer getUsage();
 
+	/**
+	 * Resume.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the object
+	 */
+	Object resume(final IScope scope);
+
+	/**
+	 * Pause.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @return the object
+	 */
+	Object pause(final IScope scope);
+
 }
