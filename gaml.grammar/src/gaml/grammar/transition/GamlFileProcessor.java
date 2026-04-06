@@ -148,6 +148,7 @@ public class GamlFileProcessor {
 		transformers.add(new FixWithPairs());
 		transformers.add(new FixArrowBraces());
 		transformers.add(new FixActionParentheses());
+		transformers.add(new FixSetStatement());
 	}
 
 	/**
