@@ -1304,4 +1304,9 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 	@Override
 	public IExpression getStopCondition() { return stopCondition; }
 
+	@Override
+	public boolean isGUI() {
+		return true;
+	}
+
 }

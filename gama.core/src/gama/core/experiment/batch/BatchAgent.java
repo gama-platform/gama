@@ -659,5 +659,10 @@ public class BatchAgent extends ExperimentAgent implements IExperimentAgent.Batc
 		// interrupted by the global scheduler)
 		if (getSimulation() != null) { getSimulation().getScope().setDisposeStatus(); }
 	}
+	
+	@Override
+	public boolean isGUI() {
+		return false;
+	}
 
 }
