@@ -109,7 +109,7 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 	protected final ILayerManager layerManager;
 
 	/** The i graphics. */
-	protected IGraphics iGraphics;
+	protected volatile IGraphics iGraphics;
 
 	/** The menu manager. */
 	protected DisplaySurfaceMenu menuManager;
@@ -273,6 +273,15 @@ public class Java2DDisplaySurface extends JPanel implements IDisplaySurface {
 		layerManager.outputChanged();
 		resizeImage(getWidth(), getHeight(), true);
 		if (zoomFit) { zoomFit(); }
+		// Reset the graphics context so that any AWT repaint requests already queued
+		// (from resizeImage / zoomFit above and from the partVisible UIJobs) are treated
+		// as no-ops by paintComponent(). Without this, EventQueue.invokeAndWait() in
+		// SwingControlWin.privateSetDimensions() blocks while N full layer-draws drain the
+		// AWT queue, making a relaunch with N displays N times slower than a first launch.
+		// iGraphics will be recreated by componentResized → zoomFit() → resizeImage()
+		// once the new layout has been applied and the surface gets its correct bounds.
+		iGraphics = null;
+		renderedOnce = false;
 		updateDisplay(true);
 	}
 
