@@ -29,6 +29,7 @@ import org.geotools.api.data.DataSourceException;
 import org.geotools.api.geometry.Position;
 import org.geotools.api.parameter.GeneralParameterValue;
 import org.geotools.api.referencing.FactoryException;
+import org.geotools.api.referencing.crs.CoordinateReferenceSystem;
 import org.geotools.api.referencing.crs.ProjectedCRS;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
@@ -507,13 +508,19 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			// Necessary to compute it here, because it needs to be passed to the Hints
 			final ICoordinateReferenceSystem crs = getExistingCRS(scope);
 			if (isTiff(scope)) {
+				System.out.println("CRS: " + crs);
+				CoordinateReferenceSystem geoToolsCrs = crs.getCRS();
+				System.out.println("new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, crs): " + new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, geoToolsCrs));
 				store = crs == null || crs.isNull() ? new GeoTiffReader(getFile(scope))
-						: new GeoTiffReader(getFile(scope), new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, crs));
+						: new GeoTiffReader(getFile(scope), new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, geoToolsCrs));
+			
 				noData = ((GeoTiffReader) store).getMetadata().getNoData();
 			} else if (crs == null || crs.isNull()) {
 				store = new ArcGridReader(fis);
 			} else {
-				store = new ArcGridReader(fis, new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, crs));
+				CoordinateReferenceSystem geoToolsCrs = crs.getCRS();
+				
+				store = new ArcGridReader(fis, new Hints(DEFAULT_COORDINATE_REFERENCE_SYSTEM, geoToolsCrs));
 			}
 			genv = store.getOriginalEnvelope();
 			final IEnvelope env = GamaEnvelopeFactory.of(genv.getMinimum(0), genv.getMaximum(0), genv.getMinimum(1),
@@ -522,6 +529,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 			numRows = store.getOriginalGridRange().getHigh(1) + 1;
 			numCols = store.getOriginalGridRange().getHigh(0) + 1;
 			coverage = store.read(null);
+		} catch (Exception e) {
+			System.out.println("On est ici: " + e);
 		} finally {
 			if (store != null) { store.dispose(); }
 			scope.getGui().getStatus().endTask("Opening file " + getName(scope), IStatusMessage.DOWNLOAD_ICON);
@@ -567,9 +576,8 @@ public class GamaGridFile extends GamaGisFile implements IFieldMatrixProvider {
 		try {
 			String task = "Reading file " + getName(scope);
 			scope.getGui().getStatus().beginTask(task, IStatusMessage.DOWNLOAD_ICON);
-
 			final IEnvelope envP = gis == null ? scope.getSimulation().getEnvelope() : gis.getProjectedEnvelope();
-			if (gis != null && !(gis.getInitialCRS(scope) instanceof ProjectedCRS)) {
+			if (gis != null && !(gis.getInitialCRS(scope).getCRS() instanceof ProjectedCRS)) {
 				GAMA.reportError(scope, GamaRuntimeException.warning("Try to project a grid -" + this.originalPath
 						+ "-  that is not projected. Projection of grids can lead to errors in the cell coordinates. ",
 						scope), false);
