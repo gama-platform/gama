@@ -529,14 +529,15 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 */
 	protected void writeMembers(final JsonWriter writer) throws IOException {
 		Set<Entry<String, JsonValue>> entrySet = members.entrySet();
+		boolean first = true;
 		for (Entry<String, JsonValue> entry : entrySet) {
+			if (!first) { writer.writeObjectSeparator(); }
+			first = false;
 			String name = entry.getKey();
 			JsonValue value = entry.getValue();
-			if (value instanceof JsonValue jv) {
-				writer.writeMemberName(name);
-				writer.writeMemberSeparator();
-				jv.write(writer);
-			}
+			writer.writeMemberName(name);
+			writer.writeMemberSeparator();
+			value.write(writer);
 		}
 	}
 

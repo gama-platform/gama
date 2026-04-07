@@ -68,8 +68,10 @@ public class JsonGamlObject extends JsonAbstractObject {
 		writer.writeMemberName(IJson.Labels.GAML_TYPE_LABEL);
 		writer.writeMemberSeparator();
 		writer.writeString(type);
-		writer.writeObjectSeparator();
-		super.writeMembers(writer);
+		if (!members.isEmpty()) {
+			writer.writeObjectSeparator();
+			super.writeMembers(writer);
+		}
 	}
 
 	@Override
