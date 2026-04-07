@@ -125,7 +125,7 @@ experiment road_traffic type: gui {
 	parameter "Latest hour to end work" var: max_work_end category: "People" min: 16 max: 23;
 	parameter "minimal speed" var: min_speed category: "People" min: 0.1 #km/#h max: 3.0 #km/#h;
 	parameter "maximal speed" var: max_speed category: "People" min: 3.0 #km/#h max: 10.0 #km/#h;
-	parameter "Value of destruction when a people agent takes a road" var: destroy category: "Road" ;
+	parameter "Value of destruction when a people agent takes a road" var: destroy category: "Road" min: 0.0 step:0.01 ;
 	
 	output {
 		display city_display type:3d {
