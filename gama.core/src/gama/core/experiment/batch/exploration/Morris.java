@@ -89,13 +89,16 @@ public final class Morris {
 	 */
 	public Morris(final int nblevels) {
 		this.nblevels = nblevels;
+		this.mu = new HashMap<>();
+		this.mu_star = new HashMap<>();
+		this.sigma = new HashMap<>();
 	}
 
 	/**
 	 * Instantiates a new morris with samples and levels.
 	 */
 	public Morris(final List<Map<String, Object>> samples, final int nblevels) {
-		this.nblevels = nblevels;
+		this(nblevels);
 		if (samples != null && !samples.isEmpty()) {
 			this.simulationSamples.addAll(samples);
 			this.parametersNames.addAll(samples.get(0).keySet());
