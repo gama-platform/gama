@@ -36,7 +36,24 @@ import gama.core.agent.GamlAgent;
 import gama.dev.DEBUG;
 
 /**
- * The Class AbstractGraphNodeAgent.
+ * A base agent class for nodes in a GAMA graph. Agents inheriting from this species are treated as graph nodes.
+ *
+ * <p>
+ * Subclasses should override the {@code related_to} action to define the relationship predicate used when building the
+ * graph from agent containers. This class is thread-safe for concurrent and parallel simulation setups: no shared
+ * mutable state is used during the evaluation of the {@code related_to} predicate.
+ * </p>
+ *
+ * <h3>Variables</h3>
+ * <ul>
+ * <li>{@code my_graph} ({@code graph}) – a reference to the graph that contains this agent.</li>
+ * </ul>
+ *
+ * <h3>Actions</h3>
+ * <ul>
+ * <li>{@code related_to(other: agent): bool} – virtual action that subclasses must override to declare whether this
+ * node is related to another agent. The default implementation always returns {@code false}.</li>
+ * </ul>
  */
 // FIXME: Add all the necessary variables (degree, neighbors, edges)
 @species (
@@ -50,24 +67,63 @@ import gama.dev.DEBUG;
 @doc ("A base species to use as a parent for species representing agents that are nodes of a graph")
 public class AbstractGraphNodeAgent extends GamlAgent implements IGraphAgent {
 
-	/** The Constant args. */
-	final static Arguments args = new Arguments();
-
 	/**
-	 * The Class NodeRelation.
+	 * A {@link VertexRelationship} implementation that delegates to the {@code related_to} action defined on
+	 * {@link AbstractGraphNodeAgent} instances.
+	 *
+	 * <p>
+	 * Thread safety: each call to {@link #related} creates its own {@link Arguments} instance so that concurrent
+	 * invocations from parallel simulation threads do not share mutable argument state. The cached {@link #action}
+	 * reference is declared {@code volatile} to guarantee safe publication across threads.
+	 * </p>
 	 */
 	public static class NodeRelation implements VertexRelationship<AbstractGraphNodeAgent> {
 
-		/** The action. */
-		IStatement.WithArgs action;
+		/**
+		 * Cached reference to the {@code related_to} action statement. Declared {@code volatile} so that the
+		 * first-write by one thread is immediately visible to all other threads without requiring synchronization on
+		 * the hot path.
+		 */
+		volatile IStatement.WithArgs action;
 
+		/**
+		 * Returns {@code true} when {@code p1} is related to {@code p2} according to the {@code related_to} action
+		 * defined on {@code p1}'s species.
+		 *
+		 * <p>
+		 * A fresh {@link Arguments} object is created on every call so that concurrent invocations from different
+		 * threads cannot interfere with each other's argument state.
+		 * </p>
+		 *
+		 * @param scope
+		 *            the current execution scope
+		 * @param p1
+		 *            the source node agent
+		 * @param p2
+		 *            the candidate neighbour node agent
+		 * @return {@code true} if {@code p1} declares itself related to {@code p2}
+		 */
 		@Override
 		public boolean related(final IScope scope, final AbstractGraphNodeAgent p1, final AbstractGraphNodeAgent p2) {
-			args.put("other", GAML.getExpressionDescriptionFactory().createConstant(p2));
-			final IExecutionResult result = scope.execute(getAction(p1), p1, args);
+			// A new Arguments instance is created per invocation to avoid shared mutable state
+			// between concurrent threads in parallel simulation setups.
+			final Arguments localArgs = new Arguments();
+			localArgs.put("other", GAML.getExpressionDescriptionFactory().createConstant(p2));
+			final IExecutionResult result = scope.execute(getAction(p1), p1, localArgs);
 			return Cast.asBool(scope, result.getValue());
 		}
 
+		/**
+		 * Returns {@code true} when {@code p1} and {@code p2} are the same object reference, i.e. the same agent.
+		 *
+		 * @param scope
+		 *            the current execution scope
+		 * @param p1
+		 *            the first node agent
+		 * @param p2
+		 *            the second node agent
+		 * @return {@code true} if {@code p1 == p2}
+		 */
 		@Override
 		public boolean equivalent(final IScope scope, final AbstractGraphNodeAgent p1,
 				final AbstractGraphNodeAgent p2) {
@@ -75,11 +131,12 @@ public class AbstractGraphNodeAgent extends GamlAgent implements IGraphAgent {
 		}
 
 		/**
-		 * Gets the action.
+		 * Lazily resolves and caches the {@code related_to} action from the given node agent's species. The field is
+		 * {@code volatile} so that the cached value is safely visible to all threads after the first write.
 		 *
 		 * @param a1
-		 *            the a 1
-		 * @return the action
+		 *            the node agent whose species defines the {@code related_to} action
+		 * @return the resolved {@link IStatement.WithArgs} for the {@code related_to} action
 		 */
 		IStatement.WithArgs getAction(final AbstractGraphNodeAgent a1) {
 			if (action == null) { action = a1.getAction(); }

@@ -58,6 +58,7 @@ import gama.core.topology.continuous.ContinuousTopology;
 import gama.core.topology.filter.In;
 import gama.core.topology.graph.GamaSpatialGraph;
 import gama.core.topology.graph.GraphTopology;
+import gama.core.util.graph.AbstractGraphEdgeAgent;
 import gama.core.util.graph.AbstractGraphNodeAgent;
 import gama.dev.DEBUG;
 
@@ -345,6 +346,15 @@ public class GamaPopulation<T extends IAgent> extends AbstractPopulation<T> {
 					"Impossible to assign a topology to " + species.getName() + " as it already defines one.", scope);
 		}
 		if (isGraph) {
+			// Both AbstractGraphNodeAgent and AbstractGraphEdgeAgent implement IGraphAgent,
+			// so isGraph() returns true for edge species as well as node species. However,
+			// only node species need a NodeRelation-based GamaSpatialGraph topology.
+			// Edge species registered as graph listeners would cause a ClassCastException
+			// when NodeRelation tries to cast edge agents to AbstractGraphNodeAgent.
+			if (AbstractGraphEdgeAgent.class.isAssignableFrom(species.getDescription().getJavaBase())) {
+				topology = new ContinuousTopology(scope, this.getHost());
+				return;
+			}
 			final IExpression spec = species.getFacet(EDGE_SPECIES);
 			final String edgeName = spec == null ? "base_edge" : spec.literalValue();
 			final ISpecies edgeSpecies = scope.getModel().getSpecies(edgeName);
