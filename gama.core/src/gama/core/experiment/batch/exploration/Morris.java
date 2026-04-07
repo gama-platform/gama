@@ -26,7 +26,6 @@ import java.util.Map;
 
 import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
-import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 
@@ -74,7 +73,7 @@ public final class Morris {
 	private IScope scope;
 
 	/** The outputs. */
-	private Map<String, List<Double>> outputs;
+	private Map<String, List<Double>> outputs = new LinkedHashMap<>();
 
 	/** The results: mu (mean) */
 	protected Map<String, Map<String, Double>> mu;
@@ -119,12 +118,22 @@ public final class Morris {
 		List<String> allKeys = new ArrayList<>(data.keySet());
 
 		for (int i = 0; i < allKeys.size(); i++) {
-			if (i < nbParams) { parametersNames.add(allKeys.get(i)); }
+			String name = allKeys.get(i);
+			if (i < nbParams) {
+				parametersNames.add(name);
+			} else {
+				outputs.put(name, new ArrayList<>());
+			}
 		}
 
 		for (int r = 0; r < nbRows; r++) {
 			Map<String, Object> row = new LinkedHashMap<>();
-			for (String name : allKeys) { row.put(name, data.get(name).get(r)); }
+			for (int i = 0; i < allKeys.size(); i++) {
+				String name = allKeys.get(i);
+				Double val = data.get(name).get(r);
+				row.put(name, val);
+				if (i >= nbParams) { outputs.get(name).add(val); }
+			}
 			simulationSamples.add(row);
 		}
 	}
@@ -139,7 +148,15 @@ public final class Morris {
 			String header = br.readLine();
 			if (header == null) return;
 			String[] cols = parseCsvLine(header);
-			for (int i = 0; i < nbParams; i++) { parametersNames.add(cols[i].trim()); }
+			
+			for (int i = 0; i < cols.length; i++) {
+				String name = cols[i].trim();
+				if (i < nbParams) {
+					parametersNames.add(name);
+				} else {
+					outputs.put(name, new ArrayList<>());
+				}
+			}
 
 			String line;
 			int rowIdx = 1;
@@ -152,12 +169,15 @@ public final class Morris {
 				}
 				Map<String, Object> row = new LinkedHashMap<>();
 				for (int i = 0; i < cols.length; i++) {
-					String val = vals[i].trim();
+					String name = cols[i].trim();
+					double val;
 					try {
-						row.put(cols[i].trim(), Double.parseDouble(val));
+						val = Double.parseDouble(vals[i].trim());
 					} catch (NumberFormatException e) {
-						throw new IOException("Invalid number '" + val + "' in column '" + cols[i] + "' at row " + rowIdx);
+						throw new IOException("Invalid number '" + vals[i] + "' in column '" + name + "' at row " + rowIdx);
 					}
+					row.put(name, val);
+					if (i >= nbParams) { outputs.get(name).add(val); }
 				}
 				simulationSamples.add(row);
 			}
@@ -255,9 +275,9 @@ public final class Morris {
 						GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[MORRIS] No parameters changed at index " + i1, scope), true);
 					}
 
-					// Strict Morris delta check (with tolerance for floating point noise)
+					// Strict Morris delta check
 					if (abs(abs(deltaX) - expectedDelta) > 1e-5) {
-						// Optional warning could be added here
+						// Custom warns could go here
 					}
 
 					double ee = (y.get(i2) - y.get(i1)) / deltaX;
@@ -265,7 +285,7 @@ public final class Morris {
 				}
 			}
 
-			// Compute Statistics using actual EE counts (n_ee) per parameter
+			// Compute Statistics
 			Map<String, Double> muMap = new LinkedHashMap<>();
 			Map<String, Double> muStarMap = new LinkedHashMap<>();
 			Map<String, Double> sigmaMap = new LinkedHashMap<>();
