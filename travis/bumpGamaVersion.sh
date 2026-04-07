@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e 
 
 # check if 2 param
 oldVersion="0.0.0"
@@ -91,8 +92,8 @@ echo "Update extra individual files"
 
 sed -i "s/V$oldVersion-SNAPSHOT http/V$newVersion http/g" $path/gama.ui.application/plugin.xml
 
-sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.core/src/gama/core/runtime/GAMA.java
-sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.annotations/src/gama/annotations/precompiler/doc/utils/Constants.java
+sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.api/src/gama/api/GAMA.java
+sed -i "s/$oldVersion-SNAPSHOT/$newVersion/g" $path/gama.documentation/src/gama/documentation/util/Constants.java
 
 #
 #	Meta-Data generator
@@ -110,3 +111,5 @@ if [ $isSnapshot = "false" ]; then
 
 	sed -i "s/\/gama_updates\/$oldVersion/\/gama_updates\/$versionToTag/g" $path/gama.p2site/pom.xml
 fi
+
+echo "All good, ready to compile :)"
