@@ -276,7 +276,7 @@ public class ModelFactory implements IModelFactory {
 
 		// hqnghi add micro-models
 		if (mm != null) {
-			mm.forEach((k, v) -> v.setAlias(k));
+			mm.forEach((k, v) -> v.setMicroAlias(k));
 			model.addChildren(mm.values());
 		}
 		// end-hqnghi

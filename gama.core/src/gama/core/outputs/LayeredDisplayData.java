@@ -532,10 +532,10 @@ public class LayeredDisplayData implements IDisplayData {
 		// hqnghi if layer come from micro-model
 		final IModelDescription micro = desc.getModelDescription();
 		final IModelDescription main = scope.getModel().getDescription();
-		final boolean fromMicroModel = main.getMicroModel(micro.getAlias()) != null;
+		final boolean fromMicroModel = main.getMicroModel(micro.getMicroAlias()) != null;
 		if (fromMicroModel) {
 			final ExperimentAgent exp = (ExperimentAgent) scope.getRoot()
-					.getExternMicroPopulationFor(micro.getAlias() + "." + desc.getOriginName()).getAgent(0);
+					.getExternMicroPopulationFor(micro.getMicroAlias() + "." + desc.getOriginName()).getAgent(0);
 			sim = exp.getSimulation();
 		}
 		// end-hqnghi

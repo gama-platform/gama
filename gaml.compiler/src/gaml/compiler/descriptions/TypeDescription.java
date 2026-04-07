@@ -354,7 +354,7 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 		if (!newVar.getOriginName().equals(existingVar.getOriginName())) return false;
 		// TODO must be reviewed carefully for the inheritance in comodel:
 		// a variable in a micro-model can be defined multiple times
-		return "".equals(newVar.getModelDescription().getAlias());
+		return "".equals(newVar.getModelDescription().getMicroAlias());
 	}
 
 	/**

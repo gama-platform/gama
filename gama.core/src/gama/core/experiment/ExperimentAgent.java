@@ -892,7 +892,7 @@ public class ExperimentAgent extends GamlAgent implements IExperimentAgent {
 		// Issue #3983
 		final IModelDescription micro = species.getDescription().getModelDescription();
 		final IModelDescription main = this.getModel().getDescription();
-		if (main.getMicroModel(micro.getAlias()) == null) return sim.getPopulationFor(species.getName());
+		if (main.getMicroModel(micro.getMicroAlias()) == null) return sim.getPopulationFor(species.getName());
 		return sim.getPopulationFor(species);
 	}
 

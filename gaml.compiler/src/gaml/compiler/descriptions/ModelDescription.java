@@ -144,7 +144,7 @@ import gama.api.utils.interfaces.ConsumerWithPruning;
  * </p>
  *
  * <pre>{@code
- * import "utilities.gaml" as utils;   // Import with alias
+ * import "utilities.gaml" as utils;   // Import with microAlias
  *
  * model MainModel {
  *   // Can reference species from utils
@@ -265,8 +265,11 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	// hqnghi new attribute manipulate micro-models
 	private IMap<String, IModelDescription> microModels;
 
-	/** The alias. */
-	private String alias = "";
+	/** The microAlias. */
+	private String microAlias = "";
+
+	/** The main model file path. */
+	private String mainModelFilePath;
 
 	/** The is starting date defined. */
 	// boolean isStartingDateDefined = false;
@@ -298,21 +301,36 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	}
 
 	/**
-	 * Sets the alias.
+	 * Sets the microAlias.
 	 *
 	 * @param as
-	 *            the new alias
+	 *            the new microAlias
 	 */
 	@Override
-	public void setAlias(final String as) { alias = as; }
+	public void setMicroAlias(final String as) { microAlias = as; }
 
 	/**
-	 * Gets the alias.
+	 * Gets the microAlias.
 	 *
-	 * @return the alias
+	 * @return the microAlias
 	 */
 	@Override
-	public String getAlias() { return alias; }
+	public String getMicroAlias() { return microAlias; }
+
+	/**
+	 * Gets the main model file path.
+	 *
+	 * @return the main model file path
+	 */
+	public String getMainModelFilePath() { return mainModelFilePath; }
+
+	/**
+	 * Sets the main model file path.
+	 *
+	 * @param path
+	 *            the new main model file path
+	 */
+	public void setMainModelFilePath(final String path) { mainModelFilePath = path; }
 
 	/**
 	 * Checks if is micro model.
@@ -320,7 +338,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	 * @return true, if is micro model
 	 */
 	@Override
-	public boolean isMicroModel() { return alias != null && !alias.isEmpty(); }
+	public boolean isMicroModel() { return microAlias != null && !microAlias.isEmpty(); }
 
 	// end-hqnghi
 
@@ -540,7 +558,8 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 		if (child.isModel()) {
 			child.getModelDescription().getTypesManager().setParent(getTypesManager());
 			if (microModels == null) { microModels = GamaMapFactory.create(); }
-			microModels.put(((ModelDescription) child).getAlias(), (ModelDescription) child);
+			microModels.put(((ModelDescription) child).getMicroAlias(), (ModelDescription) child);
+			((ModelDescription) child).setMainModelFilePath(getMainModelFilePath());
 		} // no 'else' as models are also species, which should be added after.
 		if (child.isExperiment()) {
 			getExperimentsMap().put(child.getName(), (IExperimentDescription) child);
@@ -706,9 +725,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 	public boolean visitMicroSpecies(final DescriptionVisitor<ISpeciesDescription> visitor) {
 		if (!super.visitMicroSpecies(visitor)) return false;
 		if (microModels != null) {
-			for (final IModelDescription mm : microModels.values()) {
-				if (!visitor.process(mm)) return false;
-			}
+			for (final IModelDescription mm : microModels.values()) { if (!visitor.process(mm)) return false; }
 		}
 		return true;
 	}
@@ -719,9 +736,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 				|| !getOwnExperiments().forEachValue(visitor))
 			return false;
 		if (microModels != null) {
-			for (final IModelDescription mm : microModels.values()) {
-				if (!visitor.process(mm)) return false;
-			}
+			for (final IModelDescription mm : microModels.values()) { if (!visitor.process(mm)) return false; }
 		}
 		return true;
 	}
@@ -732,9 +747,7 @@ public class ModelDescription extends SpeciesDescription implements IModelDescri
 				|| !getOwnExperiments().forEachValue(visitor))
 			return false;
 		if (microModels != null) {
-			for (final IModelDescription mm : microModels.values()) {
-				if (!visitor.process(mm)) return false;
-			}
+			for (final IModelDescription mm : microModels.values()) { if (!visitor.process(mm)) return false; }
 		}
 		return true;
 	}

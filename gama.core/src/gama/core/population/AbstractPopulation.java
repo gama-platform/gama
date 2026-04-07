@@ -304,9 +304,9 @@ public abstract class AbstractPopulation<T extends IAgent> implements IPopulatio
 
 	@Override
 	@SuppressWarnings ("unchecked")
-	public T getOrCreateAgent(final IScope scope, final Integer index) {
+	public T getOrCreateAgent(final IScope scope, final Integer index, final Map<String, Object> attributes) {
 		T agent = getAgent(index);
-		return agent == null ? (T) createAgentAtIndex(scope, index, Collections.EMPTY_MAP, false, true) : agent;
+		return agent == null ? (T) createAgentAtIndex(scope, index, attributes, false, true) : agent;
 	}
 
 	@Override

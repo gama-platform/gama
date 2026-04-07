@@ -102,7 +102,7 @@ public class ImportedResources {
 		for (final String aliasName : micromodels.keySet()) {
 			final IModelDescription mic = ModelFactory.getInstance().createModelDescription(project, model,
 					transform(micromodels.get(aliasName), GamlResource.TO_SYNTACTIC_CONTENTS), context, doc, null);
-			mic.setAlias(aliasName);
+			mic.setMicroAlias(aliasName);
 			result.put(aliasName, mic);
 		}
 		return result;

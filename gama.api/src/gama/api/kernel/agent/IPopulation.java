@@ -10,6 +10,7 @@
 package gama.api.kernel.agent;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -635,7 +636,22 @@ public interface IPopulation<T extends IAgent>
 	 * @return the or create agent
 	 * @date 6 août 2023
 	 */
-	T getOrCreateAgent(final IScope scope, final Integer index);
+	default T getOrCreateAgent(final IScope scope, final Integer index) {
+		return getOrCreateAgent(scope, index, Collections.emptyMap());
+	}
+
+	/**
+	 * Gets the or create agent.
+	 *
+	 * @param scope
+	 *            the scope
+	 * @param index
+	 *            the index
+	 * @param attributes
+	 *            the attributes
+	 * @return the or create agent
+	 */
+	T getOrCreateAgent(final IScope scope, final Integer index, Map<String, Object> attributes);
 
 	/**
 	 * Serialize to json.

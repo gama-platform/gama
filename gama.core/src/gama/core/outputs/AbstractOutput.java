@@ -210,7 +210,7 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 	@Override
 	public String getId() {
 		IDescription desc = this.getDescription();
-		final String cName = desc == null ? null : desc.getModelDescription().getAlias();
+		final String cName = desc == null ? null : desc.getModelDescription().getMicroAlias();
 		if (cName != null && !"".equals(cName) && !getName().contains("#"))
 			return isUnique() ? getViewId() : getViewId() + getName() + "#" + cName;
 		return isUnique() ? getViewId() : getViewId() + getName();
@@ -227,10 +227,10 @@ public abstract class AbstractOutput extends Symbol implements IOutput {
 		if (scope.getModel() != null) {
 			final IModelDescription micro = this.getDescription().getModelDescription();
 			final IModelDescription main = scope.getModel().getDescription();
-			final boolean fromMicroModel = main.getMicroModel(micro.getAlias()) != null;
+			final boolean fromMicroModel = main.getMicroModel(micro.getMicroAlias()) != null;
 			if (fromMicroModel) {
 				final IExperimentAgent exp = (IExperimentAgent) scope.getRoot()
-						.getExternMicroPopulationFor(micro.getAlias() + "." + this.getDescription().getOriginName())
+						.getExternMicroPopulationFor(micro.getMicroAlias() + "." + this.getDescription().getOriginName())
 						.getAgent(0);
 				this.outputScope = exp.getSimulation().getScope();
 			} else {

@@ -37,6 +37,8 @@ import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.object.IClass;
 import gama.api.kernel.serialization.ISerialisedAgent;
 import gama.api.kernel.serialization.SerialisedAgent;
+import gama.api.kernel.simulation.IExperimentAgent;
+import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.species.GamlSpecies;
 import gama.api.kernel.species.IModelSpecies;
 import gama.api.kernel.species.ISpecies;
@@ -522,11 +524,36 @@ public class MinimalAgent implements IAgent, Comparable<IAgent> {
 		if (pop == null) {
 			final IModelDescription micro = microSpecies.getDescription().getModelDescription();
 			final IModelDescription main = this.getModel().getDescription();
-			if (main.getMicroModel(micro.getAlias()) != null && getHost() != null) {
-				pop = getHost().getExternMicroPopulationFor(micro.getAlias() + "." + microSpecies.getName());
+			if (main.getMicroModel(micro.getMicroAlias()) != null && getHost() != null) {
+				pop = getHost().getExternMicroPopulationFor(micro.getMicroAlias() + "." + microSpecies.getName());
+				if (pop == null) { pop = macroModelToMicroSpecies(microSpecies, micro); }
 			}
 		}
+
 		return pop;
+	}
+
+	/**
+	 * @param microSpecies
+	 * @param micro
+	 * @return
+	 */
+	private IPopulation<? extends IAgent> macroModelToMicroSpecies(final ISpecies microSpecies,
+			final IModelDescription micro) {
+		for (String expName : micro.getExperimentNames()) {
+			var microExperimentPop = getHost().getMicroPopulation(micro.getMicroAlias() + "." + expName);
+			if (microExperimentPop != null) {
+				IScope scope = getScope();
+				IPopulation.Experiment microExpPopulation =
+						(IPopulation.Experiment) microExperimentPop.getPopulation(scope);
+				IExperimentAgent microExperimentAgent0 = microExpPopulation.firstValue(scope);
+				IPopulation.Simulation microSimulationPopulation0 = microExperimentAgent0.getSimulationPopulation();
+				ISimulationAgent microSimulationAgent0 = microSimulationPopulation0.firstValue(scope);
+				IPopulation<? extends IAgent> microPop = microSimulationAgent0.getMicroPopulation(microSpecies);
+				return microPop;
+			}
+		}
+		return null;
 	}
 
 	/**

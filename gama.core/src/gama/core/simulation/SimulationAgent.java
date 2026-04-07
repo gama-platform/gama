@@ -779,7 +779,7 @@ public class SimulationAgent extends GamlAgent implements ISimulationAgent {
 		outputs.forEach((oName, output) -> {
 			String keyName, newOutputName;
 			if (!scheduled) {
-				keyName = output.getTitle() + "#" + this.getSpecies().getDescription().getModelDescription().getAlias()
+				keyName = output.getTitle() + "#" + this.getSpecies().getDescription().getModelDescription().getMicroAlias()
 						+ "#" + this.getExperiment().getSpecies().getName() + "#" + this.getExperiment().getIndex();
 				newOutputName = keyName;
 			} else {

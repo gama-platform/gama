@@ -62,7 +62,7 @@ public class SpeciesConstantExpression extends ConstantExpression implements IEx
 		super(string, t);
 
 		origin = context.getModelDescription().getName();
-		alias = context.getModelDescription().getAlias();
+		alias = context.getModelDescription().getMicroAlias();
 		belongsToAMicroModel = alias != null && !alias.isEmpty();
 		// DEBUG.OUT("Creation of species constant expression " + string + " in context of " + origin + " with alias "
 		// + alias);

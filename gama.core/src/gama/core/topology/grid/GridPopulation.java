@@ -228,7 +228,7 @@ public class GridPopulation extends AbstractPopulation<IAgent> implements IPopul
 	}
 
 	@Override
-	public IAgent getOrCreateAgent(final IScope scope, final Integer index) {
+	public IAgent getOrCreateAgent(final IScope scope, final Integer index, final Map<String, Object> attributes) {
 		return getAgent(index);
 	}
 

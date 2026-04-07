@@ -24,6 +24,8 @@ import gama.api.kernel.agent.IMacroAgent;
 import gama.api.kernel.agent.IPopulation;
 import gama.api.kernel.simulation.ISimulationAgent;
 import gama.api.kernel.simulation.ITopLevelAgent;
+import gama.api.kernel.species.GamlModelSpecies;
+import gama.api.kernel.species.ISpecies;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.json.IJson;
 import gama.api.utils.json.IJsonObject;
@@ -417,9 +419,18 @@ public record SerialisedAgent(int index, String species, Map<String, Object> att
 	 */
 	public IAgent recreateIn(final IScope scope) {
 		IPopulation<?> p = scope.getSimulation().getPopulationFor(species);
-		if (p == null)
+		if (p == null) {
+			for (ISpecies auto : scope.getModel().getMicroSpecies()) {
+				if (auto instanceof GamlModelSpecies microModel
+						&& microModel.getMicroSpeciesNames().contains(species)) {
+					p = microModel.getAllSpecies().get(species).getPopulation(scope);
+				}
+			}
+
 			throw GamaRuntimeException.error("No population named" + species + " exist in this simulation", scope);
-		IAgent a = p.getOrCreateAgent(scope, index);
+		}
+
+		IAgent a = p.getOrCreateAgent(scope, index, this.attributes);
 		restoreAs(scope, a);
 		return a;
 	}

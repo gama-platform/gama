@@ -44,7 +44,7 @@ public interface IModelDescription extends ISpeciesDescription {
 	/**
 	 * @return
 	 */
-	String getAlias();
+	String getMicroAlias();
 
 	/**
 	 * Visit all species.
@@ -119,7 +119,7 @@ public interface IModelDescription extends ISpeciesDescription {
 	/**
 	 * @param aliasName
 	 */
-	void setAlias(String aliasName);
+	void setMicroAlias(String aliasName);
 
 	/**
 	 * Validate.
