@@ -155,9 +155,18 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 	public IExpression compile(final EObject s) {
 		// No error since null expressions come from previous (more focused) errors and not from the parser itself.
 		if (s == null) return null;
-		final IExpression expr = doSwitch(s.eClass().getClassifierID(), s);
-		if (expr != null && context.getContext() != null) { context.getDocumentationContext().document(s, expr); }
-		return expr;
+		try {
+			final IExpression expr = doSwitch(s.eClass().getClassifierID(), s);
+			if (expr != null && context.getContext() != null) { context.getDocumentationContext().document(s, expr); }
+			return expr;
+		} catch (final Exception e) {
+			if (context.getContext() != null) {
+				context.getContext().error(
+						"An internal error occurred while compiling expression: " + e.getMessage(),
+						IGamlIssue.GENERAL, s);
+			}
+			return null;
+		}
 	}
 
 	/**
