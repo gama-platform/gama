@@ -30,6 +30,7 @@ import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
+import gama.api.utils.geometry.GamaCoordinateSequence;
 import gama.api.utils.geometry.GamaGeometryFactory;
 import gama.api.utils.geometry.UniqueCoordinateSequence;
 import gama.extension.serialize.fst.FSTConfiguration;
@@ -166,6 +167,7 @@ public class BinarySerialiser implements ISerialisationConstants {
 		register(conf, IList.class, new IListSerialiser(this));
 		register(conf, CoordinateSequenceFactory.class, new CoordinateSequenceFactorySerialiser(this));
 		register(conf, UniqueCoordinateSequence.class, new UniqueCoordinateSequenceSerialiser(this));
+		register(conf, GamaCoordinateSequence.class, new GamaCoordinateSequenceSerialiser(this));
 		register(conf, IColor.class, new IColorSerialiser(this));
 	}
 
