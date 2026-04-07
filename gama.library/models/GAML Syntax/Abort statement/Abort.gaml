@@ -15,19 +15,22 @@ global {
 	init {
 		write "Simulation executes 'init' and creates one agent of species a";
 		create a;
-		write "Simulation kills itself";
+		write "This agent will ask the user to kill the simulation";
 	}
 
 	reflex {
-		write "Simulation does nothing";
+		write "We are in a reflex of the simulation at cycle " + cycle;
 	}
 
 	abort {
-		write "Simulation executes 'abort' and kills the agents of species a";
+
+		write "Simulation executes 'abort'.";
+
+		write "Simulation kills the agents of species a.";
 		ask a {
 			do die();
 		}
-
+		write "Now only the experiment is active.";
 	}
 
 }
@@ -39,7 +42,7 @@ species a {
 	}
 
 	reflex {
-		write "Neither does agent of species a";
+		write "We are in a reflex of agent a at cycle " + cycle;
 		if (user_confirm("Close simulation", "Should we close the simulation ?")) {
 			ask world {
 				do die();
