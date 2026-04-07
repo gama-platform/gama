@@ -873,6 +873,9 @@ public class LayeredDisplayData implements IDisplayData {
 	 */
 	@Override
 	public IPoint getCameraTarget() { return camera.getTarget(); }
+	
+	@Override
+	public IPoint getCameraOrientation() { return camera.getTarget().minus(camera.getLocation());}
 
 	/**
 	 * @param cameraLookPos

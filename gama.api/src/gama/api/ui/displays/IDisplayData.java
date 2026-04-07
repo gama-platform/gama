@@ -488,6 +488,8 @@ public interface IDisplayData {
 	 * @return the cameraLookPos
 	 */
 	IPoint getCameraTarget();
+	
+	IPoint getCameraOrientation();
 
 	/**
 	 * @param cameraLookPos
