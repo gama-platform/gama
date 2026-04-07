@@ -585,7 +585,6 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			case IType.DATE -> getDateParameterSwip(scope, var);
 			case IType.POINT -> getPointParameterSwip(scope, var);
 			case IType.BOOL -> Arrays.asList(true, false);
-			case IType.STRING -> var.getAmongValue(scope) != null ? var.getAmongValue(scope) : getDefaultParameterSwip(scope, var);
 			default -> getDefaultParameterSwip(scope, var);
 		};
 	}
@@ -739,6 +738,9 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 	 * @return the default parameter swip
 	 */
 	private List<Object> getDefaultParameterSwip(final IScope scope, final Batch var) {
+		
+		if (var.getAmongValue(scope) != null) { return var.getAmongValue(scope); }
+		
 		List<Object> res = new ArrayList<>();
 		double varValue = Cast.asFloat(scope, var.getMinValue(scope));
 		double maxVarValue = Cast.asFloat(scope, var.getMaxValue(scope));
