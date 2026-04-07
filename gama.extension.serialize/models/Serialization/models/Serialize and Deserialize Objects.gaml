@@ -24,8 +24,11 @@ global {
 			write "\nserializing " + o + " => " + s;
 			write "deserialized: " + deserialize(s);
 		}
+		
+		list objects2 <- deserialize(serialize(objects));
+		write objects2;
 	
-		assert objects = deserialize(serialize(objects));
+		assert objects = objects2;
 		write "\nserializing and deserializing a list containing all the objects returns a list strictly identical to the initial one";
 	}  
 }
