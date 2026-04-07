@@ -13,7 +13,7 @@ model path_and_follow
 global{
 	graph the_graph;
     init{
-    		//It is possible to define a road by defining its shape, being a line. The line need to be created by passing the location of the vertices
+       //It is possible to define a road by defining its shape, being a line. The line need to be created by passing the location of the vertices
        create road {
        		shape <- line([{0,50},{40,60}]);
        }
@@ -40,16 +40,13 @@ global{
       
        create myCircle {
        		location <- {0,0};
-       }
-      
+       }  
     }  
 }
 
 species myCircle skills:[moving]{
 	//The different ways to declare a path : declaring all the lines of the path using their vertices
-	//							  using a list of agents representing the lines of the path
-	//							  using the graph as a path
-	
+	//using a list of agents representing the lines of the path using the graph as a path
 	
  	path path_to_follow1 <- path([{0,0},{10,10},{0,20},{20,30},{20,40},{0,50}]);	
  	path path_to_follow2 <- path(list(road));	
@@ -84,21 +81,18 @@ species myCircle skills:[moving]{
 	  	loop seg over: path_following.edges {
 	  		draw seg color: color;
 	 	 }
-	  
 	} 
 }
 
 species road {
 	aspect base {
 	  draw shape color:#blue ;	
-	  
 	} 
 }
 
 species road_of_graph {
 	aspect base {
 	  draw shape color:#red ;	
-	  
 	} 
 }
 
