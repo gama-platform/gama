@@ -361,7 +361,7 @@ species obstacle skills: [moving] {
 	float speed <- 0.1;
 
 	aspect default {
-		draw triangle(20) color: rgb('yellow') depth: 5;
+		draw square(20) color: rgb('black') depth: 5;
 	}
 
 }
