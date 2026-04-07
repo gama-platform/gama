@@ -2329,7 +2329,8 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Return a string containing the Report of the sobol analysis for the corresponding data (path, map of columns or matrix) and save this report in a txt/csv file.")
-	@no_test
+	@test ("sobolAnalysis([\"p1\":: [0.1, 0.2, 0.3, 0.4], \"out\":: [1.0, 1.1, 1.2, 1.3]], \"temp_sob.txt\", 1) != \"\"")
+	@test ("sobolAnalysis(matrix([[0.1, 0.2, 0.3, 0.4], [1.0, 1.1, 1.2, 1.3]]), \"temp_sob_mat.txt\", 1) != \"\"")
 	public static String sobolAnalysis(final IScope scope, final Object data, final String report_path,
 			final int nb_parameters) {
 		final File f_report = new File(FileUtils.constructAbsoluteFilePath(scope, report_path, false));
@@ -2369,7 +2370,8 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Return a string containing the Report of the morris analysis for the corresponding data (path, map or matrix)")
-	@no_test
+	@test ("morrisAnalysis([\"p1\":: [0.1, 0.2, 0.3, 0.4, 0.5], \"out\":: [1.0, 1.1, 1.2, 1.3, 1.4]], 4, 1) != \"\"")
+	@test ("morrisAnalysis(matrix([[0.1, 0.2, 0.3, 0.4, 0.5], [1.0, 1.1, 1.2, 1.3, 1.4]]), 4, 1) != \"\"")
 	public static String morrisAnalysis(final IScope scope, final Object data, final int nb_levels,
 			final int nb_parameters) {
 		Morris momo;
@@ -2412,7 +2414,8 @@ public class Stats {
 			concept = { IConcept.STATISTIC })
 	@doc (
 			value = "Return the result of the stochasticity analysis for the corresponding data (path, map or matrix)")
-	@no_test
+	@test ("stochanalyse(2, 0.1, [\"p1\":: [0.1, 0.1], \"out\":: [1.0, 1.0]], 1) = \"1.0\"")
+	@test ("stochanalyse(2, 0.1, matrix([[0.1, 0.1], [1.0, 1.0]]), 1) = \"1.0\"")
 	public static String stochanalyse(final IScope scope, final int replicat, final double threshold, final Object data,
 			final int nb_parameters) {
 
