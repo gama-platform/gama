@@ -95,12 +95,14 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 			public void controlMoved(final ControlEvent e) {
 				DEBUG.OUT("Setting monitor for GLCanvas " + parent.getMonitor().toString());
 				GamaGLCanvas.this.setMonitor(parent.getMonitor());
+				GamaGLCanvas.this.fixSurfaceScaleOnWindows();
 			}
 
 			@Override
 			public void controlResized(final ControlEvent e) {
 				DEBUG.OUT("Setting monitor for GLCanvas " + parent.getMonitor().toString());
 				GamaGLCanvas.this.setMonitor(parent.getMonitor());
+				GamaGLCanvas.this.fixSurfaceScaleOnWindows();
 			}
 		});
 		this.name = name;
@@ -147,6 +149,24 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 	 *            the new monitor
 	 */
 	protected void setMonitor(final Monitor monitor) { this.monitor = monitor; }
+
+	/**
+	 * Corrects the NEWT window pixel scale on Windows when DPI zoom is not 100%. JOGL 2.6.0's
+	 * NewtCanvasSWT.updatePosSizeCheck() uses integer division to compute pixelScale (e.g. 500/400=1 at 125% zoom),
+	 * causing the embedded NEWT window to be sized and positioned incorrectly. Calling setSurfaceScale() with the true
+	 * fractional scale overrides the wrong value and triggers the correct Win32 SetWindowPos.
+	 */
+	private void fixSurfaceScaleOnWindows() {
+		if (!SystemInfo.isWindows() || monitor == null) return;
+		final int zoom = monitor.getZoom();
+		if (zoom == 100) return;
+		final float scale = zoom / 100f;
+		WorkbenchHelper.asyncRun(() -> {
+			if (drawable != null && drawable.isNativeValid()) {
+				drawable.setSurfaceScale(new float[] { scale, scale });
+			}
+		});
+	}
 
 	@Override
 	public Monitor getMonitor() { return monitor; }
@@ -362,6 +382,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 		w.setFullscreen(true);
 		w.setFullscreen(false);
 		setWindowVisible(true);
+		fixSurfaceScaleOnWindows();
 	}
 
 	/**
