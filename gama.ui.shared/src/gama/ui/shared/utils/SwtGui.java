@@ -563,7 +563,10 @@ public class SwtGui implements IGui {
 		final String modelName = parts.length > 1 ? parts[1] : model != null ? model.getName() : "";
 		final String expName = parts.length > 2 ? parts[2] : "";
 
-		final Shell overlay = new Shell(parent, SWT.NO_TRIM | SWT.ON_TOP);
+		// SWT.ON_TOP removed intentionally: a child shell already stays above its parent
+		// (the workbench window), so GAMA windows are still covered. Without SWT.ON_TOP
+		// the overlay no longer floats above other applications (IDE, debugger, etc.).
+		final Shell overlay = new Shell(parent, SWT.NO_TRIM);
 		final Color bg = parent.getBackground();
 		final Color fg = parent.getForeground();
 		overlay.setBackground(bg);

@@ -415,7 +415,8 @@ public interface IGui {
 	 * Shows a full-screen overlay covering the workbench shell between the simulation-perspective switch and the
 	 * moment when display views are fully laid out. The overlay displays a "Launching experiment…" message and a cancel
 	 * button so the user can abort the launch. The concrete UI implementation (SwtGui) builds an SWT child Shell
-	 * (SWT.ON_TOP) and uses the correct theme-aware icon for the cancel button.
+	 * (without SWT.ON_TOP so that the overlay stays above GAMA windows only and does not cover other applications)
+	 * and uses the correct theme-aware icon for the cancel button.
 	 *
 	 * @param model
 	 *            the model being launched (used to extract the model name for the subtitle)
