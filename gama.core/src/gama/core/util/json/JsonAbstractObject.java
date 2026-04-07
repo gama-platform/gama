@@ -582,7 +582,9 @@ public abstract class JsonAbstractObject extends JsonValue implements IJsonObjec
 	 * @date 4 nov. 2023
 	 */
 	protected IMap<String, ? extends Object> toMap(final IScope scope) {
-		return GamaMapFactory.wrap(members);
+		IMap<String, Object> result = GamaMapFactory.create();
+		members.forEach((name, value) -> result.put(name, value.toGamlValue(scope)));
+		return result;
 	}
 
 }
