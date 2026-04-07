@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -688,45 +687,6 @@ public class Stochanalysis {
 	}
 
 	/**
-	 * Stochasticity analysis from direct data.
-	 *
-	 * @param replicat
-	 *            the replicat
-	 * @param threshold
-	 *            the threshold
-	 * @param MySample
-	 *            the sample (list of maps of parameters)
-	 * @param Outputs
-	 *            the outputs (map of lists of doubles)
-	 * @param scope
-	 *            the scope
-	 * @return the string
-	 */
-	@SuppressWarnings ("unchecked")
-	public static String stochasticityAnalysis_From_Data(final int replicat, final double threshold,
-			final List<Map<String, Object>> MySample, final Map<String, List<Double>> Outputs, final IScope scope) {
-		double min_replicat = 1;
-		for (List<Double> val : Outputs.values()) {
-			Map<String, List<Double>> groupedSample = new HashMap<>();
-			for (int i = 0; i < MySample.size(); i++) {
-				String s = buildString(MySample.get(i));
-				groupedSample.computeIfAbsent(s, k -> new ArrayList<>()).add(val.get(i));
-			}
-			double tmp_replicat = 0;
-			for (String ps : groupedSample.keySet()) {
-				List<Double> outputForParams = groupedSample.get(ps);
-				List<Double> mean = computeMean(outputForParams, scope);
-				List<Double> std = computeSTD(mean, outputForParams, scope);
-				List<Double> cv = computeCV(std, mean);
-				tmp_replicat = tmp_replicat + findWithThreshold(cv, threshold);
-			}
-			min_replicat = tmp_replicat / groupedSample.size();
-		}
-		min_replicat = min_replicat / Outputs.size();
-		return Cast.asString(scope, min_replicat);
-	}
-
-	/**
 	 * Stochasticity analysis from CSV.
 	 *
 	 * @param replicat
@@ -748,6 +708,31 @@ public class Stochanalysis {
 		List<Object> STO_simu = readSimulation(path_to_data, id_output, scope);
 		List<Map<String, Object>> MySample = GamaListFactory.castToList(scope, STO_simu.get(0));
 		Map<String, List<Double>> Outputs = GamaMapFactory.castToMap(scope, STO_simu.get(1));
-		return stochasticityAnalysis_From_Data(replicat, threshold, MySample, Outputs, scope);
+		int min_replicat = 1;
+		for (List<Double> val : Outputs.values()) {
+			Map<String, List<Object>> sample = new HashedMap<>();
+			for (Map<String, Object> m : MySample) {
+				String s = buildString(m);
+				List<Object> tmp_l = sample.get(s);
+				if (tmp_l != null) {
+					tmp_l.add(val);
+					m.replace(s, tmp_l);
+				} else {
+					tmp_l = new ArrayList<>();
+					tmp_l.add(val);
+					m.put(s, tmp_l);
+				}
+			}
+			int tmp_replicat = 0;
+			for (String ps : sample.keySet()) {
+				List<Double> mean = computeMean(sample.get(ps), scope);
+				List<Double> std = computeSTD(mean, sample.get(ps), scope);
+				List<Double> cv = computeCV(std, mean);
+				tmp_replicat = tmp_replicat + findWithThreshold(cv, threshold);
+			}
+			min_replicat = tmp_replicat / sample.size();
+		}
+		min_replicat = min_replicat / Outputs.size();
+		return Cast.asString(scope, min_replicat);
 	}
 }
