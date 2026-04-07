@@ -100,8 +100,8 @@ public class OpenGLDisplayView extends LayeredDisplayView {
 	@Override
 	public void showCanvas() {
 		getGLCanvas().setVisible(true);
-		// Maybe only necessary on macOS ? Prevents JOGL views to move over Java2D views created before
-		if (SystemInfo.isMac()) { getGLCanvas().reparentWindow(); }
+		// Prevents JOGL views to move over Java2D views created before (needed on both macOS and Windows)
+		if (SystemInfo.isMac() || SystemInfo.isWindows()) { getGLCanvas().reparentWindow(); }
 	}
 
 	/**
