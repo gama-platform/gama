@@ -36,4 +36,6 @@ done
 
 echo "[I] Publishing p2 site public OVH server ============================"
 cd $( dirname $( realpath "${BASH_SOURCE[0]}" ) )/../gama.p2site
-mvn clean install --settings ../travis/settings.xml -DskipTests=true "$@"
+
+# Skipping jar signing as useless for the p2 repository and prone to errors
+mvn clean install --settings ../travis/settings.xml -DskipTests=true -Pp2Repo -Djarsigner.skip=true "$@"

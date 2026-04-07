@@ -153,8 +153,8 @@ jobs:
           if_key_exists: replace # replace / ignore / fail; optional (defaults to fail)
 
       - name: Deploy p2 GAMA's module
-        # Publish P2 only if *real* release (not GH only)
-        if: "${{ ! inputs.DONT_PUBLISH_P2 }}"
+        # Publish P2 everytime we generate a release (both alpha and stable)
+        if: "${{ inputs.get_all_archives_for_release }}"
         env:
           GAMA_SERVER_USERNAME: ${{ secrets.GAMA_SERVER_USERNAME }}
           GAMA_SERVER_PASSWORD: ${{ secrets.GAMA_SERVER_PASSWORD }}
