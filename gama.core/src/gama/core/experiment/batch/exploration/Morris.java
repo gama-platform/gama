@@ -35,7 +35,7 @@ import gama.api.utils.StringUtils;
  * mu: mean of the distribution (overall influence) mu_star: mean of the absolute values (ranking of importance) sigma:
  * standard deviation (interactions and non-linearities)
  *
- * @author tomroy
+ * @author Paul-Saves
  */
 public final class Morris {
 
