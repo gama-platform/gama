@@ -30,8 +30,6 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.osgi.internal.debug.Debug;
-
 import gama.annotations.inside;
 import gama.annotations.constants.IKeyword;
 import gama.annotations.support.ISymbolKind;
@@ -69,7 +67,6 @@ import gama.core.experiment.batch.optimization.TabuSearch;
 import gama.core.experiment.batch.optimization.TabuSearchReactive;
 import gama.core.experiment.parameters.ParameterAdapter;
 import gama.core.experiment.parameters.ParametersSet;
-import gama.dev.DEBUG;
 import gama.gaml.operators.Containers;
 import one.util.streamex.IntStreamEx;
 import one.util.streamex.StreamEx;
@@ -82,7 +79,7 @@ import one.util.streamex.StreamEx;
 public abstract class AExplorationAlgorithm extends Symbol implements IExploration {
 
 	/** The Constant CLASSES. */
-	@SuppressWarnings ("rawtypes") public static final List<Class<?>> CLASSES =
+	public static final List<Class<?>> CLASSES =
 			Arrays.asList(GeneticAlgorithm.class, SimulatedAnnealing.class, HillClimbing.class, TabuSearch.class,
 					TabuSearchReactive.class, Exploration.class, Swarm.class, SobolExploration.class,
 					MorrisExploration.class, StochanalysisExploration.class, BetaExploration.class);
@@ -129,8 +126,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 		exp.add(new ParameterAdapter("Exploration method", BatchAgent.EXPLORATION_EXPERIMENT, IType.STRING) {
 			@Override
 			public Object value() {
-				@SuppressWarnings ("rawtypes") final String methodName =
-						IExploration.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
+				final String methodName = IExploration.METHODS[CLASSES.indexOf(AExplorationAlgorithm.this.getClass())];
 				return methodName;
 			}
 
@@ -589,6 +585,7 @@ public abstract class AExplorationAlgorithm extends Symbol implements IExplorati
 			case IType.DATE -> getDateParameterSwip(scope, var);
 			case IType.POINT -> getPointParameterSwip(scope, var);
 			case IType.BOOL -> Arrays.asList(true, false);
+			case IType.STRING -> var.getAmongValue(scope) != null ? var.getAmongValue(scope) : getDefaultParameterSwip(scope, var);
 			default -> getDefaultParameterSwip(scope, var);
 		};
 	}
