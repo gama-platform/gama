@@ -15,7 +15,7 @@ model Moving3DModel
 
 global {
 	int number_of_agents min: 1 <- 250 step:10; 
-	int envSize <-100; //max:100;
+	int envSize max:100 <-100;
 	int mazeSize <-10;
 	int radius min: 1 <- 1 ;
 	int directionSize min: 1 <- 10 ;
@@ -23,7 +23,7 @@ global {
 	graph mazeGraph;
 	geometry shape <- cube(envSize);
 	bool trace <-false;
-	string agentAspect <- "sphere" among:["circle", "sphere","direction"];
+	string agentAspect <- "direction" among:["circle", "sphere","direction"];
 
 	init { 
 		
@@ -116,19 +116,15 @@ species gotoAgentOnNetwork parent:abstractAgent{
 	  	do goto(target:myTarget, on: mazeGraph);
 	}		
 }
-
-
     
 species cell schedules:[]{
-	
 	aspect myPoint{
 		draw sphere(0.01 * envSize/mazeSize) color:rgb(255,255,255,0.5) at:location ;
 	}
-	
 }
 
 species edge_agent schedules:[]{
-	aspect base2 {
+	aspect base {
 		draw shape color: rgb(255,255,255);
 	}
 }
@@ -140,24 +136,12 @@ experiment base virtual:true{
 	parameter var:mazeSize;
 	parameter 'Radius' var:radius;
 	parameter 'direction size'var:directionSize;
-	
-	
+	parameter "Trace" var:trace <- false;	
 	float minimum_cycle_duration <- 0.05#s;
-		
-	
 }
 
 experiment Moving  type: gui parent:base{
-	parameter "Trace" var:trace <- false;
 	parameter "Movement" var:movingType <- "move";
-	parameter "Agent Aspect" var:agentAspect <- "direction";
-	
-	init {
-		ask world.movingAgent{
-			location <- {envSize/2, envSize/2, envSize/2};
-		}
-	}
-	
 	output {	
 		display MovingAgent type:3d  background:rgb(10,40,55) {
 			camera 'default' location: {55.5312,184.9648,188.2995} target: {55.5312,18.3657,0.0};
@@ -167,9 +151,7 @@ experiment Moving  type: gui parent:base{
 }
 
 experiment Wandering  type: gui parent:base{
-	parameter "Trace" var:trace <- false;
 	parameter "Movement" var:movingType <- "wander";
-	parameter "Agent Aspect" var:agentAspect <- "direction";
 	output {	
 		display WanderingAgent type:3d  background:rgb(10,40,55) {
 			camera 'default' location: {55.5312,184.9648,188.2995} target: {55.5312,18.3657,0.0};
@@ -179,9 +161,7 @@ experiment Wandering  type: gui parent:base{
 }
 
 experiment Goto  type: gui parent:base{
-	parameter "Trace" var:trace <- false;
 	parameter "Movement" var:movingType <- "goto";
-	parameter "Agent Aspect" var:agentAspect <- "direction";
 	output {	
 		display GotoAgent type:3d  background:rgb(10,40,55) {
 			camera 'default' location: {55.5312,184.9648,188.2995} target: {55.5312,18.3657,0.0};
@@ -191,24 +171,20 @@ experiment Goto  type: gui parent:base{
 }
 
 experiment GotoOnNetwork  type: gui parent:base{
-	parameter "Trace" var:trace <- false;
 	parameter "Movement" var:movingType <- "gotoOnNetwork";
-	parameter "Agent Aspect" var:agentAspect <- "direction";
 	output {
 			
 		display GotoOnNetworkAgent type:3d background:rgb(10,40,55) {
 			camera 'default' location: {-149.2264,96.1645,136.3544} target: {115.5586,27.6864,0.0};
 			species gotoAgentOnNetwork trace:trace;
 			species cell aspect:myPoint;
-			species edge_agent aspect: base2 ;
+			species edge_agent aspect: base ;
 		}
 	}
 }
 
 experiment Complete  type: gui parent:base{
-	parameter "Trace" var:trace <- false;
 	parameter "Movement" var:movingType <- "complete";
-	parameter "Agent Aspect" var:agentAspect <- "direction";
 	output {
 			
 		display GotoOnNetworkAgent type:3d background:rgb(10,40,55) {
@@ -218,7 +194,7 @@ experiment Complete  type: gui parent:base{
 			species gotoAgent position:{envSize*2,0,0} trace:trace;
 			species gotoAgentOnNetwork position:{envSize*3,0,0} trace:trace;
 			species cell aspect:myPoint position:{envSize*3,0,0};
-			species edge_agent aspect: base2 position:{envSize*3,0,0};
+			species edge_agent aspect: base position:{envSize*3,0,0};
 		}
 	}
 }
