@@ -31,7 +31,7 @@ species Initiator skills: [fipa] {
 	reflex read_accept_proposals when: !(empty(accept_proposals)) {
 		write name + ' receives accept_proposal messages';
 		loop i over: accept_proposals {
-			write 'accept_proposal message with content: ' + string(i.contents);
+			write 'accept_proposal message with content: ' + i.contents;
 		}
 	}
 }
