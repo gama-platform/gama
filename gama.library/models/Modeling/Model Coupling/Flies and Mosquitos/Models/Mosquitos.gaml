@@ -27,7 +27,7 @@ species Mosquito skills: [moving]
 	reflex dolive
 	{	
 		write "I can bite";
-		do wander amplitude:rnd(30.0) speed:0.5;		
+		do wander (amplitude:rnd(30.0), speed:0.5);		
 	}
 
 	aspect default
