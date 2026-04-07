@@ -1,4 +1,4 @@
-`/**
+/**
 * Name: Event Layer
 * Author: Arnaud Grignard, Patrick Taillandier, Jean-Daniel Zucker
 * Description: Demonstrates how to use the 'event' display layer to trigger actions in response to user
@@ -23,7 +23,7 @@ global
 	//creation of the agents
 		create cell number: nbAgent
 		{
-			colour <- #darkgreen;
+			color <- #darkgreen;
 		}
        create dummy(dummyRadius : radius) number:1 returns: temp ;
        pointClicked <- first(temp);
@@ -38,7 +38,7 @@ global
 		list selected_agents <- cell overlapping (circle(radius) at_location #user_location);
 		ask selected_agents
 		{
-			colour <- colour = #lightgreen ? #darkgreen : #lightgreen;
+			color <- color = #lightgreen ? #darkgreen : #lightgreen;
 		}
 
 	}
