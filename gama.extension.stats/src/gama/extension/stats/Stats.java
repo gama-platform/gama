@@ -15,7 +15,10 @@ import static gama.gaml.operators.Containers.collect;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
 import org.apache.commons.io.FilenameUtils;
@@ -153,7 +156,7 @@ public class Stats {
 		}
 
 		/**
-		 * The arithemthic mean of an n-element set is the sum of all the elements divided by n. The arithmetic mean is
+		 * The arithmetic mean of an n-element set is the sum of all the elements divided by n. The arithmetic mean is
 		 * often referred to simply as the "mean" or "average" of a data set.
 		 *
 		 * @see #getGeometricMean()
@@ -2310,8 +2313,8 @@ public class Stats {
 	/**
 	 *
 	 * @param scope
-	 * @param path
-	 *            path of the input csv file
+	 * @param data
+	 *            data as a path (String), map of columns (IMap) or matrix (IMatrix)
 	 * @param report_path
 	 *            path to save the sobol_report.txt file
 	 * @param nb_parameters
@@ -2323,32 +2326,39 @@ public class Stats {
 			type = IType.STRING,
 			can_be_const = true,
 			category = { IOperatorCategory.STATISTICAL },
-			concept = { IConcept.STATISTIC },
-			expected_content_type = { IType.STRING, IType.INT })
+			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Return a string containing the Report of the sobol analysis for the corresponding .csv file and save this report in a txt/csv file.")
+			value = "Return a string containing the Report of the sobol analysis for the corresponding data (path, map of columns or matrix) and save this report in a txt/csv file.")
 	@no_test
-	public static String sobolAnalysis(final IScope scope, final String path, final String report_path,
+	public static String sobolAnalysis(final IScope scope, final Object data, final String report_path,
 			final int nb_parameters) {
-		final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
 		final File f_report = new File(FileUtils.constructAbsoluteFilePath(scope, report_path, false));
-		Sobol sob = new Sobol(f, nb_parameters, scope);
+		Sobol sob;
+		if (data instanceof String path) {
+			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
+			sob = new Sobol(f, nb_parameters, scope);
+		} else if (data instanceof IMap map) {
+			sob = new Sobol(map, nb_parameters, scope);
+		} else if (data instanceof IMatrix matrix) {
+			sob = new Sobol(matrixToMap(scope, matrix), nb_parameters, scope);
+		} else
+			throw GamaRuntimeException.error("sobolAnalysis expects a path (string), a map or a matrix", scope);
+
 		sob.evaluate();
 		sob.saveResult(f_report);
 		return sob.buildReportString(FilenameUtils.getExtension(f_report.getPath()));
 	}
 
 	/**
-	 * Add by Tom Return the morris analysis
 	 *
 	 * @param scope
-	 * @param path
-	 *            : path to csv file
+	 * @param data
+	 *            data as a path (String), map of columns (IMap) or matrix (IMatrix)
 	 * @param nb_levels
 	 *            : the number of level
-	 * @param id_firstOutput
-	 *            : the id of the first output
-	 * @return the result of a morris analysis based on data in a CSV file
+	 * @param nb_parameters
+	 *            : the number of parameter
+	 * @return the result of a morris analysis
 	 *
 	 */
 	@operator (
@@ -2356,19 +2366,27 @@ public class Stats {
 			type = IType.STRING,
 			can_be_const = true,
 			category = { IOperatorCategory.STATISTICAL },
-			concept = { IConcept.STATISTIC },
-			expected_content_type = { IType.STRING, IType.INT })
+			concept = { IConcept.STATISTIC })
 	@doc (
-			value = "Return a string containing the Report of the morris analysis for the corresponding CSV file")
+			value = "Return a string containing the Report of the morris analysis for the corresponding data (path, map or matrix)")
 	@no_test
-	public static String morrisAnalysis(final IScope scope, final String path, final int nb_levels,
+	public static String morrisAnalysis(final IScope scope, final Object data, final int nb_levels,
 			final int nb_parameters) {
+		Morris momo;
+		String ext = "csv";
+		if (data instanceof String path) {
+			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
+			momo = new Morris(f, nb_parameters, nb_levels, scope);
+			ext = FilenameUtils.getExtension(path);
+		} else if (data instanceof IMap map) {
+			momo = new Morris(map, nb_parameters, nb_levels, scope);
+		} else if (data instanceof IMatrix matrix) {
+			momo = new Morris(matrixToMap(scope, matrix), nb_parameters, nb_levels, scope);
+		} else
+			throw GamaRuntimeException.error("morrisAnalysis expects a path (string), a map or a matrix", scope);
 
-		final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
-		Morris momo = new Morris(f, nb_parameters, nb_levels, scope);
 		momo.evaluate();
-		return momo.buildReportString(FilenameUtils.getExtension(path));
-
+		return momo.buildReportString(ext);
 	}
 
 	/**
@@ -2378,20 +2396,79 @@ public class Stats {
 	 *            the replicat
 	 * @param threshold
 	 *            the threshold
-	 * @param path
-	 *            the path
-	 * @param id_firstOutput
-	 *            the id first output
+	 * @param data
+	 *            the data as a path (string), map of columns or matrix
+	 * @param nb_parameters
+	 *            the number of parameters (or index of first output for CSV)
 	 * @param scope
 	 *            the scope
 	 * @return the string
 	 */
-	public static String stochanalyse(final int replicat, final int threshold, final String path,
-			final int id_firstOutput, final IScope scope) {
-		String new_path = scope.getExperiment().getWorkingPath() + "/" + path;
-		// Stochanalysis sto = new Stochanalysis();
-		return Stochanalysis.stochasticityAnalysis_From_CSV(replicat, threshold, new_path, id_firstOutput, scope);
+	@operator (
+			value = "stochanalyse",
+			type = IType.STRING,
+			can_be_const = true,
+			category = { IOperatorCategory.STATISTICAL },
+			concept = { IConcept.STATISTIC })
+	@doc (
+			value = "Return the result of the stochasticity analysis for the corresponding data (path, map or matrix)")
+	@no_test
+	public static String stochanalyse(final IScope scope, final int replicat, final double threshold, final Object data,
+			final int nb_parameters) {
 
+		if (data instanceof String path) {
+			String new_path = scope.getExperiment().getWorkingPath() + "/" + path;
+			return Stochanalysis.stochasticityAnalysis_From_CSV(replicat, threshold, new_path, nb_parameters, scope);
+		}
+
+		IMap<String, IList<Double>> mapData;
+		if (data instanceof IMap m) {
+			mapData = m;
+		} else if (data instanceof IMatrix matrix) {
+			mapData = matrixToMap(scope, matrix);
+		} else
+			throw GamaRuntimeException.error("stochanalyse expects a path (string), a map or a matrix", scope);
+
+		int nbCols = mapData.size();
+		int nbRows = mapData.values().iterator().next().size();
+		List<String> listNames = new ArrayList<>(mapData.keySet());
+
+		List<Map<String, Object>> MySample = new ArrayList<>();
+		Map<String, List<Double>> Outputs = new LinkedHashMap<>();
+
+		for (int idx = 0; idx < nbCols; idx++) {
+			String name = listNames.get(idx);
+			if (idx >= nb_parameters) { Outputs.put(name, new ArrayList<>()); }
+		}
+
+		for (int row = 0; row < nbRows; row++) {
+			Map<String, Object> temp_map = new LinkedHashMap<>();
+			for (int idx = 0; idx < nbCols; idx++) {
+				String name = listNames.get(idx);
+				Double val = Cast.asFloat(scope, mapData.get(name).get(row));
+				if (idx < nb_parameters) {
+					temp_map.put(name, val);
+				} else {
+					Outputs.get(name).add(val);
+				}
+			}
+			MySample.add(temp_map);
+		}
+
+		return Stochanalysis.stochasticityAnalysis_From_Data(replicat, threshold, MySample, Outputs, scope);
+	}
+
+	/**
+	 * Helper to convert matrix to map of columns.
+	 */
+	private static IMap<String, IList<Double>> matrixToMap(final IScope scope, final IMatrix<Double> matrix) {
+		IMap<String, IList<Double>> map = GamaMapFactory.create();
+		for (int j = 0; j < matrix.getCols(scope); j++) {
+			IList<Double> col = GamaListFactory.create(Types.FLOAT);
+			for (int i = 0; i < matrix.getRows(scope); i++) { col.add(Cast.asFloat(scope, matrix.get(scope, j, i))); }
+			map.put("col" + j, col);
+		}
+		return map;
 	}
 
 	/**

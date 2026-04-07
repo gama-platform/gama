@@ -21,12 +21,14 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.moeaframework.util.sequence.Saltelli;
 
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 
@@ -97,6 +99,42 @@ public class Sobol {
 	}
 
 	/**
+	 * Build a sobol problem from a map of data (columns)
+	 *
+	 * @param data
+	 *            : map containing columns (parameters then outputs)
+	 * @param nb_parameters
+	 *            : number of parameters
+	 * @param scope
+	 */
+	public Sobol(final Map<String, ? extends List<?>> data, final int nb_parameters, final IScope scope) {
+		this.scope = scope;
+		this.parameters = new LinkedHashMap<>();
+		this.output_names = new ArrayList<>();
+		this.outputs = new HashMap<>();
+
+		int i = 0;
+		for (Entry<String, ? extends List<?>> entry : data.entrySet()) {
+			String name = entry.getKey();
+			List<Object> values = new ArrayList<>();
+			for (Object o : entry.getValue()) { values.add(Cast.asFloat(scope, o)); }
+
+			if (i < nb_parameters) {
+				this.parameters.put(name, values);
+			} else {
+				this.output_names.add(name);
+				this.outputs.put(name, values);
+			}
+			i++;
+		}
+
+		_sample = this.parameters.values().iterator().next().size();
+		if (_sample % (2 * nb_parameters + 2) != 0) throw new IllegalArgumentException(
+				"Number of sample in the data doesn't match the number of parameters");
+		sample = _sample / (2 * nb_parameters + 2);
+	}
+
+	/**
 	 * Build a sobol problem from a .csv file of format : <br>
 	 * |param_1, ..., param_P, output_1, ..., output_X <br>
 	 * |val_11, ..., val_1P, eval_11, ... , eval_1X <br>
@@ -104,12 +142,11 @@ public class Sobol {
 	 * | . <br>
 	 * |val_N1, ..., val_NP, eval_N1, ... , eval_NX <br>
 	 *
-	 * @param path
-	 *            : path to a .csv file
+	 * @param f
+	 *            : a .csv file
 	 * @param nb_parameters
 	 *            : number of parameters of the problem
-	 * @param output
-	 *            : name of the output columns in the .csv file
+	 * @param scope
 	 */
 	public Sobol(final File f, final int nb_parameters, final IScope scope) throws GamaRuntimeException {
 		this.scope = scope;

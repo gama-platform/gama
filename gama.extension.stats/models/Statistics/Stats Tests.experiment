@@ -1,0 +1,41 @@
+experiment "Tests for gama.extension.stats" type: test {
+
+	test "Operator mean_of" {
+		assert [1,2] mean_of (each * 10 ) = 15;
+		assert [1,2] mean_of (each * 10 ) = 15;
+		assert [1,2] mean_of (each * 10 ) = 15;
+	}
+
+	test "Operator predict" {
+		assert predict(build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0]])),[1,2,3,2] ) = 2.1818181818181817;
+	}
+
+	test "Operator rSquare" {
+		assert rSquare(build(matrix([[4.0,1.0,2.0,3.0],[4.0,2.0,3.0,4.0]]))) = 0.8363636363636364;
+	}
+
+	test "Operator product_of" {
+		assert [3,4] product_of (each *2) = 48;
+	}
+
+	test "Operator variance_of" {
+		assert [1,2,3,4,5,6] variance_of each with_precision 2 = 2.92;
+	}
+
+	test "Operator min_of" {
+		assert [1,2,4,3,5,7,6,8] min_of (each * 100 ) = 100;
+	}
+
+	test "Operator gini" {
+		assert (gini([1.0, 0.5, 2.0]) with_precision 4) = 0.2857;
+	}
+
+	test "Operator max_of" {
+		assert [1,2,4,3,5,7,6,8] max_of (each * 100 ) = 800;
+	}
+
+	test "Operator build" {
+		assert build(matrix([[1.0,2.0,3.0,4.0],[2.0,3.0,4.0,2.0],[5.0,1.0,3.0,5.0],[3.0,4.0,5.0,1.0]])).parameters collect (each with_precision 5) = [0.5,2.5,0.0,-1.5];
+	}
+
+}

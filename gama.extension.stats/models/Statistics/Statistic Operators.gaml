@@ -1,4 +1,4 @@
-/**
+	/**
 * Name: Statistic Operators
 * Author: Patrick Taillandier
 * Description: A reference model illustrating the univariate statistical operators available in GAMA.
