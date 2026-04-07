@@ -27,10 +27,9 @@ global
 	{
 		//create the Ants micro-model with the size of grid is 100 and the population have 500 ants.
 		create Ant.Base {//with: (gridsize:100,ants_number:500){
-			write self;
+			
 		}
 		
-//		write Ant.Simple collect each.simulations as list;
 		//create the PreyPredator micro-model with the parameters and the number of the prey is equal with the size of ants population
 		create Organism.Simple(shape:square(100), preyinit:Ant.Base[0].simulation.ants_number, predatorinit:2)  
 		{
@@ -38,7 +37,6 @@ global
 			shape <- square(100);
 		}
 
-		write  Organism.Simple as list;
 		// save the original population of the Ants and the Preys
 		theAnts <- Ant.Base accumulate each.get_ants();
 		thePreys <- list<prey>(Organism.Simple accumulate each.get_prey());
@@ -78,7 +76,7 @@ global
 			{
 				ask (theAnts at i)
 				{
-					do die;
+					do die();
 				}
 
 			}

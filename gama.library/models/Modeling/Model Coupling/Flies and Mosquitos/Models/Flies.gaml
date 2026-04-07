@@ -27,7 +27,7 @@ species Fly skills: [moving]
 	reflex dolive
 	{	
 		write "I can fly";
-		do wander amplitude:200.0;		
+		do wander (amplitude:200.0);		
 	}
 
 	aspect default

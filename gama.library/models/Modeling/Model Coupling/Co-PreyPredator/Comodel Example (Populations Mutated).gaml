@@ -21,7 +21,7 @@ global
     init
     {
         //instantiate three instant of micro-model PreyPredator
-        create Organism.Simple with: (shape:square(100), preyinit:10, predatorinit:1) number: 3;
+        create Organism.Simple (shape:square(100), preyinit:10, predatorinit:1) number: 3;
     
         //explicitly save the orginal population of predator and original population of prey of each micro-model
 
@@ -76,7 +76,7 @@ global
         // ask all simulation do their job
         ask (Organism.Simple collect each.simulation)
         {
-            do _step_;
+            do _step_();
         }
     }
 
@@ -95,7 +95,6 @@ experiment main type: gui
                 loop pr over:Organism.Simple accumulate each.simulation.lstPrey {
                     if(!dead(pr)){
 	                    string n <- "PR"+int(pr.host.host);	                    	
-	                    write n;
 	                    draw "PREY" at:pr.location+{1,1,1} color:#green;
                     }
                 }

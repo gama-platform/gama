@@ -37,11 +37,11 @@ species generic_species skills: [moving]
 	{
 		if (goal != nil)
 		{
-			do wander speed: speed;
-			do goto target: goal speed: speed;
+			do wander(speed: speed);
+			do goto (target: goal, speed: speed);
 		} else
 		{
-			do wander speed: speed;
+			do wander (speed: speed);
 		}
 
 	}
@@ -132,7 +132,7 @@ species predator parent: generic_species
 		{
 			ask lstPrey where (!dead(each) and each.location distance_to goal < 0.5)
 			{
-				do die;
+				do die();
 			}
 
 			goal <- nil;
