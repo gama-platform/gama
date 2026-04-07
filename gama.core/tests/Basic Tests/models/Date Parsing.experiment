@@ -1,0 +1,72 @@
+/**
+ * Name: Date Parsing with Patterns Test
+ * Test for date parsing regression fix in GAMA 2025-06
+ * Tests parsing dates with patterns containing colons and slashes
+ * Related to issue: Date parsing regression with colons in CSV time strings
+ * Author: GitHub Copilot
+ * Tags: date, parsing, csv
+ */
+
+model DateParsingTest
+
+global {
+	
+	init {
+		// Test 1: Parse time with colons (HH:mm:ss) - Main regression test
+		write "=== Test 1: Time with colons (regression) ===";
+		date time1 <- date(['07:39:59', 'HH:mm:ss']);
+		write "Parsed time1: " + time1;
+		assert time1.hour = 7 and time1.minute = 39 and time1.second = 59;
+		write "✓ Test 1 passed";
+		
+		// Test 2: Parse date with slashes (dd/MM/yyyy) - Main regression test
+		write "\n=== Test 2: Date with slashes (regression) ===";
+		date date1 <- date(['15/01/2025', 'dd/MM/yyyy']);
+		write "Parsed date1: " + date1;
+		assert date1.day = 15 and date1.month = 1 and date1.year = 2025;
+		write "✓ Test 2 passed";
+		
+		// Test 3: Parse datetime with colons and slashes
+		write "\n=== Test 3: DateTime with colons and slashes ===";
+		date datetime1 <- date(['15/01/2025 14:30:45', 'dd/MM/yyyy HH:mm:ss']);
+		write "Parsed datetime1: " + datetime1;
+		assert datetime1.day = 15 and datetime1.month = 1 and datetime1.year = 2025;
+		assert datetime1.hour = 14 and datetime1.minute = 30 and datetime1.second = 45;
+		write "✓ Test 3 passed";
+		
+		// Test 4: Parse with locale
+		write "\n=== Test 4: Date with locale ===";
+		date date2 <- date(['15/01/2025', 'dd/MM/yyyy', 'fr']);
+		write "Parsed date2 with French locale: " + date2;
+		assert date2.day = 15 and date2.month = 1 and date2.year = 2025;
+		write "✓ Test 4 passed";
+		
+		// Test 5: Traditional integer list format still works (backward compatibility)
+		write "\n=== Test 5: Integer list format (backward compatibility) ===";
+		date date3 <- date([2025, 1, 15, 10, 30, 0]);
+		write "Parsed date3 from integer list: " + date3;
+		assert date3.year = 2025 and date3.month = 1 and date3.day = 15;
+		assert date3.hour = 10 and date3.minute = 30 and date3.second = 0;
+		write "✓ Test 5 passed";
+		
+		// Test 6: Different time formats
+		write "\n=== Test 6: Different time formats ===";
+		date time2 <- date(['14:30', 'HH:mm']);
+		assert time2.hour = 14 and time2.minute = 30;
+		date time3 <- date(['03:45 PM', 'hh:mm a']);
+		assert time3.hour = 15 and time3.minute = 45;
+		write "✓ Test 6 passed";
+		
+		// Test 7: Different date formats  
+		write "\n=== Test 7: Different date formats ===";
+		date date4 <- date(['2025-01-15', 'yyyy-MM-dd']);
+		assert date4.year = 2025 and date4.month = 1 and date4.day = 15;
+		date date5 <- date(['15.01.2025', 'dd.MM.yyyy']);
+		assert date5.year = 2025 and date5.month = 1 and date5.day = 15;
+		write "✓ Test 7 passed";
+		
+		write "\n=== All tests passed! ===";
+	}
+}
+
+experiment DateParsingTest type: gui;
