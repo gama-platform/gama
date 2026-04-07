@@ -28,18 +28,27 @@ import org.eclipse.swt.widgets.Text;
 
 import gama.api.exceptions.GamaRuntimeException;
 import gama.api.gaml.GAML;
-import gama.api.types.list.GamaListFactory;
 import gama.api.types.list.IList;
 import gama.api.utils.StringUtils;
 
 /**
  * The ListParameterDialog supply a window to help user to modify the list in the visual way.
+ *
+ * <p>
+ * This dialog allows the user to add, remove, and reorder elements of a GAML list. Elements are displayed as their
+ * GAML string representations. When the dialog is confirmed, the edited list is reconstructed by evaluating a GAML
+ * expression. If evaluation fails (e.g. because an element has an invalid GAML syntax such as {@code D} instead of
+ * {@code "D"}), the original unmodified list is returned rather than an empty one.
+ * </p>
  */
 @SuppressWarnings ({ "rawtypes" })
 public class ListEditorDialog extends Dialog {
 
-	/** The data. */
+	/** The data. The string representation of each element of the list being edited. */
 	final ArrayList<String> data = new ArrayList<>();
+
+	/** The original list passed to the constructor. Used as a fallback when the edited list cannot be evaluated. */
+	final IList originalList;
 
 	/** The new element button. */
 	Button newElementButton = null;
@@ -69,6 +78,7 @@ public class ListEditorDialog extends Dialog {
 	protected ListEditorDialog(final Shell parentShell, final IList list, final String listname) {
 		super(parentShell);
 		this.listname = listname;
+		this.originalList = list;
 		for (final Object o : list) {
 			data.add(StringUtils.toGaml(o, false));
 		}
@@ -326,7 +336,7 @@ public class ListEditorDialog extends Dialog {
 		try {
 			return (IList) GAML.evaluateExpression(tmp.toString(), editor.getAgent());
 		} catch (final GamaRuntimeException e) {
-			return GamaListFactory.create();
+			return originalList;
 		}
 	}
 
