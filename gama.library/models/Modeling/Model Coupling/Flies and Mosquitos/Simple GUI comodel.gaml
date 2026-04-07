@@ -25,12 +25,12 @@ global
 		
 		//tell all experiments of micro_model_1 to do 1 step;
 		ask (Flies.Simple collect each.simulation){
-			do _step_;
+			do _step_();
 		}
 		
 		//tell the first experiment of micro_model_2 to do 1 step;
 		ask (Mosquitos.Generic collect each.simulation){
-			do _step_;
+			do _step_();
 		}
 	}
 }

@@ -29,31 +29,31 @@ global
 	//tell the first experiment of micro_model_1 do 1 step;
 		ask first(Flies.Simple).simulation
 		{
-			do _step_;
+			do _step_();
 		}
 
 		//tell all experiments of micro_model_1 do 1 step;
 		ask (Flies.Simple collect each.simulation)
 		{
-			do _step_;
+			do _step_();
 		}
 
 		//tell all experiments of micro_model_2 do 1 step;
 		ask (Mosquitos.Generic collect each.simulation)
 		{
-			do _step_;
+			do _step_();
 		}
 		
 		//ask  simulation of micro_model to kill all agents every 100 cycles and recreate them
 		if(cycle mod 100 = 0){			
 			ask  (Mosquitos.Generic collect each.simulation){
 				ask Mosquito{				
-					do die;
+					do die();
 				}
 			}
 			ask  (Mosquitos.Generic collect each.simulation){
 				seed<-float(rnd(100));
-				do _init_;
+				do _init_();
 			}
 		}
 	}
