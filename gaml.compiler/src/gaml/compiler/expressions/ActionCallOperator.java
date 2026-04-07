@@ -27,6 +27,7 @@ import gama.api.gaml.statements.IStatement;
 import gama.api.gaml.statements.IStatement.WithArgs;
 import gama.api.gaml.symbols.Arguments;
 import gama.api.gaml.types.IType;
+import gama.api.kernel.agent.IAgent;
 import gama.api.kernel.object.IClass;
 import gama.api.kernel.object.IObject;
 import gama.api.kernel.simulation.IExperimentAgent;
@@ -131,9 +132,9 @@ public class ActionCallOperator implements IOperator {
 	 *
 	 * <p>
 	 * For normal calls the runtime species/class of the target object is used, which gives correct polymorphic
-	 * dispatch. For {@code super} invocations the lookup class must be pinned to the <em>compile-time</em> parent
-	 * class encoded in the {@code SuperExpression}'s type, not derived from the actual runtime type. Using the runtime
-	 * type would always resolve to one level above the most-derived class, causing an infinite loop when the call chain
+	 * dispatch. For {@code super} invocations the lookup class must be pinned to the <em>compile-time</em> parent class
+	 * encoded in the {@code SuperExpression}'s type, not derived from the actual runtime type. Using the runtime type
+	 * would always resolve to one level above the most-derived class, causing an infinite loop when the call chain
 	 * spans more than two levels of inheritance (e.g. square → rectangle → shape).
 	 * </p>
 	 *
@@ -145,6 +146,7 @@ public class ActionCallOperator implements IOperator {
 	 */
 	private IClass getClass(final IScope scope, final IObject object) {
 		if (isSuperInvocation) {
+			boolean isAgent = object instanceof IAgent;
 			// The SuperExpression was typed at compile time with the parent species/class.
 			// We look up that exact class by name so that nested super.foo() calls correctly
 			// traverse the full inheritance chain instead of always going one level above the
@@ -157,10 +159,11 @@ public class ActionCallOperator implements IOperator {
 				GAMA.reportError(scope, error("Cannot determine the super-class for " + getName(), scope), false);
 				return null;
 			}
-			IClass superClass = scope.getModel().getClass(superClassName);
+			IClass superClass =
+					isAgent ? scope.getModel().getSpecies(superClassName) : scope.getModel().getClass(superClassName);
 			if (superClass == null) {
-				GAMA.reportError(scope,
-						error("Super-class '" + superClassName + "' not found for " + getName(), scope), false);
+				GAMA.reportError(scope, error("Parent " + (isAgent ? "species" : "class") + " '" + superClassName
+						+ "' not found for " + getName(), scope), false);
 				return null;
 			}
 			return superClass;

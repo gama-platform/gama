@@ -1,4 +1,4 @@
-/**
+`/**
 * Name: Event Layer
 * Author: Arnaud Grignard, Patrick Taillandier, Jean-Daniel Zucker
 * Description: Demonstrates how to use the 'event' display layer to trigger actions in response to user
@@ -35,7 +35,7 @@ global
 
 	//change the color of the agents
 		
-		list<cell> selected_agents <- cell overlapping (circle(10) at_location #user_location);
+		list selected_agents <- cell overlapping (circle(radius) at_location #user_location);
 		ask selected_agents
 		{
 			colour <- colour = #lightgreen ? #darkgreen : #lightgreen;
