@@ -64,19 +64,19 @@ species objects  {
 species triangle_obj  {
 	rgb color <- rgb(150 +rnd(100),150 + rnd(100),150 + rnd(100));
 	aspect default {
-		draw shape color: color ; 
+		draw shape color: color border:#black; 
 	}
 }
 
 species skeleton  {
 	aspect default {
-		draw shape + 0.2 color: #red ;
+		draw shape + 0.1 color: #red ;
 	}
 }
 	
 species goal {
 	aspect default {
-		draw circle(3) color:#red;
+		draw circle(2) color:#red border:#black;
 	}
 }
 
@@ -88,7 +88,7 @@ species people skills: [moving] {
 		do goto(on:the_graph, target:target, speed:1.0);
 	}
 	aspect default {
-		draw circle(3) color: #green;
+		draw circle(1) color: #green border:#black;
 	}
 }
 

@@ -76,7 +76,7 @@ species road  {
 	
 species goal {
 	aspect default {
-		draw circle(50) color: #red;
+		draw circle(25) color: #red border:#black;
 	}
 }
 	
@@ -85,7 +85,7 @@ species people skills: [moving] {
 	path my_path; 
 	
 	aspect default {
-		draw circle(50) color: #green;
+		draw circle(25) color: #green border:#black;
 	}
 	reflex movement {
 		do goto(on:the_graph, target:target, speed:1.0);
@@ -98,8 +98,9 @@ experiment goto_network type: gui {
 	parameter "Number of people" var: nb_people min: 1 max: 10000;
 	parameter "Computed all the shortest paths and save the results" var: save_shortest_paths;
 	parameter "Load the shortest paths from the file" var: load_shortest_paths;
+	float minimum_cycle_duration <- 0.01;
 	
-	output {
+	output {	
 		display objects_display {
 			species road aspect: default ;
 			species people aspect: default ;
