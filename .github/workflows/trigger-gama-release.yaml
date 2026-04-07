@@ -52,6 +52,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Set up JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: "temurin"
+          java-version: "25"
+          java-package: jdk
+
       - name: Prepare travis-script
         id: commit
         run: |
