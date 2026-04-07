@@ -150,8 +150,26 @@ public class GamaDateFactory {
 	 *            the container holding date information.
 	 * @return the corresponding {@link IDate} instance.
 	 */
-	public static IDate createFromContainer(final IScope scope, final IContainer<?, ?> c) {
-		return createFromTemporal(scope, computeFromList(scope, c.listValue(scope, Types.INT, false)));
+	public static IDate createFromContainer(final IScope scope, final IContainer<?, ?> container) {
+		// Check if this is a list with [dateString, pattern] or [dateString, pattern, locale]
+		final var list = container.listValue(scope, Types.NO_TYPE, false);
+		final int size = list.size();
+		if (size >= 2 && size <= 3) {
+			final Object first = list.get(0);
+			final Object second = list.get(1);
+			// If the second element is a string (pattern), treat as date parsing with pattern
+			if (second instanceof String pattern) {
+				final String dateStr = Cast.asString(scope, first);
+				if (size == 3) {
+					final String locale = Cast.asString(scope, list.get(2));
+					return createWith(scope, dateStr, pattern, locale);
+				}
+				return createWith(scope, dateStr, pattern);
+			}
+		}
+		// Otherwise, treat as [year, month, day, hour, minute, second]
+		// return new GamaDate(scope, container.listValue(scope, Types.INT, false));
+		return createFromTemporal(scope, computeFromList(scope, container.listValue(scope, Types.INT, false)));
 	}
 
 	/**

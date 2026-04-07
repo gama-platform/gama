@@ -95,31 +95,44 @@ public class CSVInfo extends AbstractFileMetaData {
 	public String[] headers;
 
 	/**
-	 * Instantiates a new CSV info.
+	 * Instantiates a new CSV info from an Eclipse workspace file. The modification stamp is taken from the IFile
+	 * resource and the CSV separator is auto-detected.
 	 *
 	 * @param file
-	 *            the file
-	 * @throws MalformedURLException
-	 *             the malformed URL exception
+	 *            the Eclipse workspace file to read
 	 */
 	public CSVInfo(final IFile file) {
 		super(file);
-		createFrom(file.getLocation().toOSString());
+		createFrom(file.getLocation().toOSString(), null);
 	}
 
 	/**
-	 * Instantiates a new CSV info.
+	 * Instantiates a new CSV info from a plain file-system path. This constructor is used by the model runtime (outside
+	 * of an Eclipse workspace context) and allows an explicit CSV separator to be specified.
 	 *
 	 * @param fileName
-	 *            the file name
+	 *            the absolute path of the CSV file to read
 	 * @param modificationStamp
-	 *            the modification stamp
+	 *            the modification stamp of the file (0 if unknown)
 	 * @param CSVsep
-	 *            the CS vsep
+	 *            the CSV field separator character, as a one-character string; may be {@code null} for auto-detection
 	 */
-	private void createFrom(final String fileName) {
+	public CSVInfo(final String fileName, final long modificationStamp, final String CSVsep) {
+		super(String.valueOf(modificationStamp));
+		createFrom(fileName, CSVsep);
+	}
+
+	/**
+	 * Creates the CSV metadata by reading the file at the given path with the given separator.
+	 *
+	 * @param fileName
+	 *            the absolute path of the CSV file to read
+	 * @param CSVsep
+	 *            the CSV field separator character, as a one-character string; may be {@code null} for auto-detection
+	 */
+	private void createFrom(final String fileName, final String CSVsep) {
 		try (CsvReader reader = new CsvReader(fileName)) {
-			process(reader, null);
+			process(reader, CSVsep);
 		} catch (FileNotFoundException e) {}
 	}
 

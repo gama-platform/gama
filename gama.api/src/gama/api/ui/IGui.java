@@ -433,9 +433,10 @@ public interface IGui {
 	default void displayLatestErrors() {}
 
 	/**
-	 * Opens (or brings to front) the Error view without flushing the exception handler queue. Used by
-	 * {@code RuntimeExceptionHandler.updateUI} to auto-open the view whenever there are errors to show, without
-	 * creating an infinite-recursion cycle with {@link #displayLatestErrors()}. The default implementation is a no-op.
+	 * Opens (or brings to front) the Error view without flushing the exception handler queue. Kept for
+	 * backward compatibility and external callers. The main error-display flow now goes through
+	 * {@link #displayErrors} which opens the view atomically on the UI thread when there are exceptions to
+	 * show. The default implementation is a no-op.
 	 */
 	default void openErrorView() {}
 

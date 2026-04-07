@@ -36,6 +36,7 @@ import gama.api.types.matrix.IMatrix;
 import gama.api.types.misc.IContainer;
 import gama.api.utils.interfaces.IImageProvider;
 import gama.api.utils.random.IRandom;
+import gama.gaml.operators.Comparison;
 import one.util.streamex.DoubleStreamEx;
 import one.util.streamex.StreamEx;
 
@@ -233,7 +234,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	public boolean _contains(final IScope scope, final Object o) {
 		if (o instanceof Double d) {
 			for (int i = 0; i < getMatrix().length; i++) {
-				if (IntervalSize.isZeroWidth(getMatrix()[i], d)) return true;
+				if (Comparison.equal(getMatrix()[i], d)) return true;
 			}
 		}
 		return false;
@@ -363,7 +364,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	 */
 	private boolean remove(final double o) {
 		for (int i = 0; i < getMatrix().length; i++) {
-			if (isZeroWidth(getMatrix()[i], o)) {
+			if (Comparison.equal(getMatrix()[i], o)) {
 				getMatrix()[i] = 0d;
 				return true;
 			}
@@ -395,7 +396,7 @@ public class GamaFloatMatrix extends GamaMatrix<Double> implements IImageProvide
 	private boolean removeAll(final double o) {
 		boolean removed = false;
 		for (int i = 0; i < getMatrix().length; i++) {
-			if (isZeroWidth(getMatrix()[i], o)) {
+			if (Comparison.equal(getMatrix()[i], o)) {
 				getMatrix()[i] = 0d;
 				removed = true;
 			}
