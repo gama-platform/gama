@@ -193,10 +193,7 @@
 		<module>../gama.feature.extension.image</module>
 		<module>../gama.feature.copilot</module>
 
-		<!-- Can be automatically published by uncommenting
-		However, it's prefered to keep it separated and executed
-		with the script travis/deploy-p2.sh
-		<module>../gama.p2site</module> -->
+		<module>../gama.p2site</module>
 
 		<module>../gama.product</module>
 		
