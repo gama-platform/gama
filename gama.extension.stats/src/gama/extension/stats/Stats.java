@@ -2339,7 +2339,7 @@ public class Stats {
 			final File f = new File(FileUtils.constructAbsoluteFilePath(scope, path, false));
 			sob = new Sobol(f, nb_parameters, scope);
 		} else if (data instanceof IMap map) {
-			sob = new Sobol(map, nb_parameters, scope);
+			sob = new Sobol(convertToDoubleMap(scope, map), nb_parameters, scope);
 		} else if (data instanceof IMatrix matrix) {
 			sob = new Sobol(matrixToMap(scope, matrix), nb_parameters, scope);
 		} else
@@ -2381,7 +2381,7 @@ public class Stats {
 			momo = new Morris(f, nb_parameters, nb_levels, scope);
 			ext = FilenameUtils.getExtension(path);
 		} else if (data instanceof IMap map) {
-			momo = new Morris(map, nb_parameters, nb_levels, scope);
+			momo = new Morris(convertToDoubleMap(scope, map), nb_parameters, nb_levels, scope);
 		} else if (data instanceof IMatrix matrix) {
 			momo = new Morris(matrixToMap(scope, matrix), nb_parameters, nb_levels, scope);
 		} else
@@ -2389,6 +2389,21 @@ public class Stats {
 
 		momo.evaluate();
 		return momo.buildReportString(ext);
+	}
+
+	/**
+	 * Helper to convert a GAML map to a rigid Map<String, List<Double>>.
+	 */
+	private static Map<String, List<Double>> convertToDoubleMap(final IScope scope, final IMap<?, ?> map) {
+		Map<String, List<Double>> result = new LinkedHashMap<>();
+		map.forEach((k, v) -> {
+			if (v instanceof List<?> list) {
+				List<Double> doubles = new ArrayList<>();
+				for (Object o : list) { doubles.add(Cast.asFloat(scope, o)); }
+				result.put(Cast.asString(scope, k), doubles);
+			}
+		});
+		return result;
 	}
 
 	/**

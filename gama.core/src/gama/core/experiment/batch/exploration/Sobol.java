@@ -107,17 +107,16 @@ public class Sobol {
 	 *            : number of parameters
 	 * @param scope
 	 */
-	public Sobol(final Map<String, ? extends List<?>> data, final int nb_parameters, final IScope scope) {
+	public Sobol(final Map<String, List<Double>> data, final int nb_parameters, final IScope scope) {
 		this.scope = scope;
 		this.parameters = new LinkedHashMap<>();
 		this.output_names = new ArrayList<>();
 		this.outputs = new HashMap<>();
 
 		int i = 0;
-		for (Entry<String, ? extends List<?>> entry : data.entrySet()) {
+		for (Entry<String, List<Double>> entry : data.entrySet()) {
 			String name = entry.getKey();
-			List<Object> values = new ArrayList<>();
-			for (Object o : entry.getValue()) { values.add(Cast.asFloat(scope, o)); }
+			List<Double> values = new ArrayList<>(entry.getValue());
 
 			if (i < nb_parameters) {
 				this.parameters.put(name, values);
