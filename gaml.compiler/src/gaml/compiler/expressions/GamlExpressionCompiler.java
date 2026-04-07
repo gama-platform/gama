@@ -141,6 +141,12 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 				return compile(s.toString(), ctx.getContext(), context);
 			}
 			return compile(expression, ctx);
+		} catch (final Exception e) {
+			if (parsingContext != null) {
+				parsingContext.error(
+						"An internal error occurred during expression compilation: " + e.getMessage());
+			}
+			return null;
 		}
 	}
 
@@ -158,16 +164,26 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 	@Override
 	public IExpression compile(final String expression, final IDescription parsingContext,
 			final IExecutionContext tempContext) {
-		// Check cache first for performance
-		IExpression result = CONSTANT_SYNTHETIC_EXPRESSIONS.getIfPresent(expression);
-		if (result != null) return result;
-		final EObject o = GamlSyntheticResourcesServices.getEObjectOf(expression, tempContext, parsingContext);
-		try (ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext)) {
-			result = compile(o, ctx);
+		try {
+			// Check cache first for performance
+			IExpression result = CONSTANT_SYNTHETIC_EXPRESSIONS.getIfPresent(expression);
+			if (result != null) return result;
+			final EObject o = GamlSyntheticResourcesServices.getEObjectOf(expression, tempContext, parsingContext);
+			try (ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext)) {
+				result = compile(o, ctx);
+			}
+			// Cache context-independent expressions - Guava handles eviction automatically
+			if (result != null && result.isContextIndependant()) {
+				CONSTANT_SYNTHETIC_EXPRESSIONS.put(expression, result);
+			}
+			return result;
+		} catch (final Exception e) {
+			if (parsingContext != null) {
+				parsingContext.error(
+						"An internal error occurred during string expression compilation: " + e.getMessage());
+			}
+			return null;
 		}
-		// Cache context-independent expressions - Guava handles eviction automatically
-		if (result != null && result.isContextIndependant()) { CONSTANT_SYNTHETIC_EXPRESSIONS.put(expression, result); }
-		return result;
 	}
 
 	/**
@@ -193,6 +209,11 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 			final boolean compileArgValues) {
 		try (final ExpressionCompilationContext ctx = new ExpressionCompilationContext(command)) {
 			return new ExpressionCompilationSwitch(ctx).parseArguments(action, o, command, compileArgValues);
+		} catch (final Exception e) {
+			if (command != null) {
+				command.error("An internal error occurred during argument compilation: " + e.getMessage());
+			}
+			return null;
 		}
 	}
 
@@ -212,6 +233,12 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 		if (owner instanceof Expression ownerExpr && field instanceof Expression fieldExpr) {
 			try (final ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext)) {
 				return new ExpressionCompilationSwitch(ctx).compileFieldAccess(ownerExpr, fieldExpr, null);
+			} catch (final Exception e) {
+				if (parsingContext != null) {
+					parsingContext.error(
+							"An internal error occurred during action call compilation: " + e.getMessage());
+				}
+				return null;
 			}
 		}
 		return null;
@@ -235,6 +262,12 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 		if (field instanceof Expression fieldExpr) {
 			try (final ExpressionCompilationContext ctx = new ExpressionCompilationContext(parsingContext)) {
 				return new ExpressionCompilationSwitch(ctx).compileFieldAccess(owner, fieldExpr, null);
+			} catch (final Exception e) {
+				if (parsingContext != null) {
+					parsingContext.error(
+							"An internal error occurred during action call compilation: " + e.getMessage());
+				}
+				return null;
 			}
 		}
 		return null;
@@ -277,6 +310,12 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 					parsingContext.getTypeContext();
 			if (species == null) return null;
 			return sw.compileActionCallFromFacets(nameExpr, target, facets, species);
+		} catch (final Exception e) {
+			if (parsingContext != null) {
+				parsingContext.error(
+						"An internal error occurred during action call compilation from facets: " + e.getMessage());
+			}
+			return null;
 		}
 	}
 }

@@ -28,8 +28,12 @@ import gama.api.types.color.IColor;
 import gama.api.types.font.IFont;
 import gama.api.types.geometry.IPoint;
 import gama.api.types.geometry.IShape;
+import gama.api.types.graph.IGraph;
 import gama.api.types.list.IList;
 import gama.api.types.map.IMap;
+import gama.core.topology.graph.GamaSpatialGraph;
+import gama.core.util.path.GamaSpatialPath;
+import gama.api.utils.geometry.GamaCoordinateSequence;
 import gama.api.utils.geometry.GamaGeometryFactory;
 import gama.api.utils.geometry.UniqueCoordinateSequence;
 import gama.extension.serialize.fst.FSTConfiguration;
@@ -164,8 +168,12 @@ public class BinarySerialiser implements ISerialisationConstants {
 		register(conf, IFont.class, new IFontSerialiser(this));
 		register(conf, IMap.class, new IMapSerialiser(this));
 		register(conf, IList.class, new IListSerialiser(this));
+		register(conf, GamaSpatialGraph.class, new GamaSpatialGraphSerialiser(this));
+		register(conf, GamaSpatialPath.class, new GamaSpatialPathSerialiser(this));
+		register(conf, IGraph.class, new IGraphSerialiser(this));
 		register(conf, CoordinateSequenceFactory.class, new CoordinateSequenceFactorySerialiser(this));
 		register(conf, UniqueCoordinateSequence.class, new UniqueCoordinateSequenceSerialiser(this));
+		register(conf, GamaCoordinateSequence.class, new GamaCoordinateSequenceSerialiser(this));
 		register(conf, IColor.class, new IColorSerialiser(this));
 	}
 
