@@ -51,6 +51,7 @@ import gama.api.utils.files.SaveOptions;
 import gama.api.utils.prefs.GamaPreferences;
 import gama.dev.DEBUG;
 import gama.gaml.statements.SaveStatement.SaveValidator;
+import gaml.compiler.expressions.ConstantExpression;
 
 /**
  * The Class SaveStatement.
@@ -259,19 +260,51 @@ public class SaveStatement extends AbstractStatementSequence {
 			}
 
 			// Starting from here we validate the attributes, other validations must be done before
-			if (att == null) return;
+			switch (att) {
+				case null -> {
+					return;
+				}
+				case IExpression.Map map -> {
+					if (map.getGamlType().getKeyType() != Types.STRING) {
+						desc.error(
+								"The type of the keys of the attributes map must be string. These will be used for naming the attributes in the file",
+								IGamlIssue.WRONG_TYPE, ATTRIBUTES);
+						return;
+					}
+					/** The t. */
+					final IType<?> t = dataType.getContentType();
+					/** The species. */
+					final ITypeDescription species = t.getSpecies();
+					if (species == null) {
+						desc.error("Attributes of geometries can only be specified with a list of attribute names",
+								IGamlIssue.UNKNOWN_FACET, ATTRIBUTES);
+					}
+				}
+				case IExpression.List list -> {
+					for (IExpression exp : list.getElements()) {
+						if (exp.getGamlType() != Types.STRING) {
+							desc.error("Elements of the attributes list must be strings", IGamlIssue.WRONG_TYPE,
+									ATTRIBUTES);
+							return;
+						}
+						if (!(exp instanceof ConstantExpression ce)) {
+							desc.warning("Elements of the attributes list should be constant expressions",
+									IGamlIssue.WRONG_TYPE, ATTRIBUTES);
+						} else {
+							String attribute = (String) ce.getConstValue();
+							final IType<?> t = dataType.getContentType();
+							/** The species. */
+							final ITypeDescription species = t.getSpecies();
+							if (species != null && !species.hasAttribute(attribute)) {
+								desc.error("Attribute " + attribute + " does not exist in " + species);
+								return;
+							}
+						}
 
-			final boolean isMap = att instanceof IExpression.Map;
-			if (!isMap && !att.getGamlType().isTranslatableInto(Types.LIST.of(Types.STRING))) {
-				desc.error("attributes must be expressed as a map<string, unknown> or as a list<string>",
-						IGamlIssue.WRONG_TYPE, ATTRIBUTES);
-				return;
-			}
-			if (isMap && att.getGamlType().getKeyType() != Types.STRING) {
-				desc.error(
-						"The type of the keys of the attributes map must be string. These will be used for naming the attributes in the file",
-						IGamlIssue.WRONG_TYPE, ATTRIBUTES);
-				return;
+					}
+				}
+				default -> {
+				}
 			}
 
 			if (ext != null && format == null && !"shp".equals(ext) && !"json".equals(ext) && !"geojson".equals(ext)
@@ -281,16 +314,6 @@ public class SaveStatement extends AbstractStatementSequence {
 						ATTRIBUTES);
 			}
 
-			/** The t. */
-			final IType<?> t = dataType.getContentType();
-
-			/** The species. */
-			final ITypeDescription species = t.getSpecies();
-
-			if (species == null && isMap) {
-				desc.error("Attributes of geometries can only be specified with a list of attribute names",
-						IGamlIssue.UNKNOWN_FACET, ATTRIBUTES);
-			}
 			// Error deactivated for fixing #2982.
 			// desc.error("Attributes can only be saved for agents", IGamlIssue.UNKNOWN_FACET,
 			// att == null ? WITH : ATTRIBUTES);

@@ -336,7 +336,7 @@ public abstract class AbstractShapeSaver extends AbstractSaver {
 				}
 			} else {
 				gis = scope.getSimulation().getProjectionFactory().getWorld();
-				if (gis == null || gis.getInitialCRS(scope) == null) {
+				if (gis == null || gis.getInitialCRS(scope) == null || gis.getInitialCRS(scope).isNull()) {
 					final boolean alreadyprojected = GamaPreferences.External.LIB_PROJECTED.getValue();
 					if (alreadyprojected) {
 						code = EPSG_LABEL + GamaPreferences.External.LIB_TARGET_CRS.getValue();
