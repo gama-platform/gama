@@ -110,6 +110,7 @@ species dummy skills:[moving] {
 }
 
 experiment clustering type: gui {
+	float minimum_cycle_duration<-0.01;
 	parameter "Number of clusters to split the data into" var: k category: "KMEANS";
 	parameter "Maximum radius of the neighborhood to be considered" var: eps category: "DBSCAN";
 	parameter "Minimum number of points needed for a cluster " var: minPoints category: "DBSCAN";

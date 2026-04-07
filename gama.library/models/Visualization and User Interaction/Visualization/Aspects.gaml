@@ -148,24 +148,6 @@ species people {
 
 }
 
-//experiment expe type: gui {
-//	output {
-//		display my_display {
-//			graphics "layer1" position: {0, 0} size: {0.5, 0.8} {
-//				draw shape color: #darkorange;
-//			}
-//
-//			graphics "layer2" position: {0.3, 0.1} size: {0.6, 0.2} {
-//				draw shape color: #cornflowerblue;
-//			}
-//
-//			graphics "layer3" position: {0.4, 0.2} size: {0.3, 0.8} {
-//				draw shape color: #gold;
-//			}
-//		}
-//	}
-//}
-
 experiment Aspects type: gui {
 	float minimum_cycle_duration <- 0.01;
 	output {
@@ -190,25 +172,25 @@ experiment Aspects type: gui {
 			species people;
 		}
 
-		//		display displ_2D type: 2d {
-		//			species people aspect: big_circle_with_transparency;
-		//			//		
-		//			agents "layer simple" value: [people(1)] aspect: simple;
-		//			agents "Text" value: [people(2)] aspect: simple_text;
-		//			agents "locate geom" value: [people(3)] aspect: locate_geometry;			
-		//			agents "image" value: [people(4)] aspect: image;
-		//			//
-		//			agents "3D" value: [people(5)] aspect: col3D;	
-		//			agents "Textured" value: [people(6)] aspect: textured;			
-		//			//
-		//			agents "Arrows" value: [people(7)] aspect: arrows;
-		//			//
-		//			agents "simple with transparency" value: [people(8)] aspect: big_square_for_transparency transparency: 0.5;					
-		//			//
-		//			// when no aspect: facet is specified, GAMA tries to use the aspect named default. 
-		//			// If no such an aspect exists, it draws the shape of the agent with a color defined in the preferences.				
-		//			species people;					
-		//		}		
+		display displ_2D type: 2d {
+			species people aspect: big_circle_with_transparency;
+			//		
+			agents "layer simple" value: [people(1)] aspect: simple;
+			agents "Text" value: [people(2)] aspect: simple_text;
+			agents "locate geom" value: [people(3)] aspect: locate_geometry;			
+			agents "image" value: [people(4)] aspect: icon;
+			//
+			agents "3D" value: [people(5)] aspect: col3D;	
+			agents "Textured" value: [people(6)] aspect: textured;			
+			//
+			agents "Arrows" value: [people(7)] aspect: arrows;
+			//
+			agents "simple with transparency" value: [people(8)] aspect: big_square_for_transparency transparency: 0.5;					
+			//
+			// when no aspect: facet is specified, GAMA tries to use the aspect named default. 
+			// If no such an aspect exists, it draws the shape of the agent with a color defined in the preferences.				
+			species people;					
+		}		
 	}
 
 }
