@@ -786,7 +786,8 @@ public abstract class TypeDescription extends SymbolDescription implements IType
 		final IType myType = myAction.getGamlType();
 		final IType parentType = parentAction.getGamlType();
 		if (!parentType.isAssignableFrom(myType) || myAction.isVoid() != parentAction.isVoid()) {
-			myAction.error("Return type (" + myType + ") differs from that (" + parentType
+			String parentTypeDesc = parentAction.isVoid() ? "no return type" : parentType.toString();
+			myAction.error("Return type (" + myType + ") differs from that (" + parentTypeDesc
 					+ ") of the implementation of  " + actionName + " in " + parentName);
 			return;
 		}

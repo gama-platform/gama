@@ -442,11 +442,11 @@ public class GamaPreferences {
 						IType.COLOR, true).in(NAME, SIMULATIONS).onChange(Interface::setPivot);
 
 		/**
-		 * Whether the console contents should be kept (not cleared) between successive experiments. When {@code false},
-		 * the console is wiped each time a new experiment starts.
+		 * Whether the console contents should be kept (not cleared) between successive experiments. {@code true} by
+		 * default. When {@code false}, the console is wiped each time a new experiment starts.
 		 */
 		public static final Pref<Boolean> CORE_CONSOLE_KEEP =
-				create("pref_console_keep", "Keep the console contents between experiments", false, IType.BOOL, true)
+				create("pref_keep_console", "Keep the console contents between experiments", true, IType.BOOL, true)
 						.in(NAME, CONSOLE).withLabels("Yes", "No");
 
 	}

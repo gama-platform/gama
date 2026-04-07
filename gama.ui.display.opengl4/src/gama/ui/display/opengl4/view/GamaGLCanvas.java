@@ -117,7 +117,7 @@ public class GamaGLCanvas extends Composite implements GLAutoDrawable, IDelegate
 			@Override
 			public void controlResized(final ControlEvent e) {
 				/* Detached views have no title! */
-				if (SystemInfo.isMac()) {
+				if (SystemInfo.isMac() || SystemInfo.isWindows()) {
 					final var isDetached = parent.getShell().getText().length() == 0;
 					if (isDetached) {
 						if (!detached) {

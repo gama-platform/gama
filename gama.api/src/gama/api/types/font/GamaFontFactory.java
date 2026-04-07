@@ -404,10 +404,6 @@ public class GamaFontFactory {
 	 * <li>{@code Font.BOLD | Font.ITALIC} / {@code #bold + #italic} ({@code 3}) - Bold and italic combined</li>
 	 * </ul>
 	 *
-	 * <p>
-	 * This method is also exposed as the primary GAML {@code font} operator with three arguments:
-	 * </p>
-	 *
 	 * <pre>
 	 * font bold_font   &lt;- font("Helvetica Neue", 12, #bold);
 	 * font mixed_font  &lt;- font("Arial", 14, #bold + #italic);
@@ -427,6 +423,29 @@ public class GamaFontFactory {
 	 * @see #cloneWithStyle(IFont, Integer)
 	 * @see java.awt.Font#Font(String, int, int)
 	 */
+	public static IFont createFont(final String name, final Integer style, final Integer size) {
+		return createFontFrom(new Font(name, style, size));
+	}
+
+	/**
+	 * GAML {@code font} operator with three arguments: {@code font(name, size, style)}.
+	 *
+	 * <p>
+	 * The GAML calling convention for the three-argument {@code font} operator is
+	 * {@code font(name, size, style)} — size is the second argument and style is the third. This method
+	 * wraps {@link #createFont(String, Integer, Integer)} with the arguments in the correct AWT order.
+	 * </p>
+	 *
+	 * @param name
+	 *            the font family or logical name; must not be {@code null}
+	 * @param size
+	 *            the desired point size; must be a positive integer
+	 * @param style
+	 *            the style bitfield; one of {@code 0} (plain), {@code 1} (bold), {@code 2} (italic),
+	 *            or {@code 3} (bold+italic)
+	 * @return a new {@link IFont} with the given name, size, and style
+	 * @see #createFont(String, Integer, Integer)
+	 */
 	@operator (
 			value = IKeyword.FONT,
 			category = { IOperatorCategory.CASTING },
@@ -440,8 +459,8 @@ public class GamaFontFactory {
 					equals = "a bold and italic face of the Helvetica Neue family",
 					test = false))
 	@no_test
-	public static IFont createFont(final String name, final Integer style, final Integer size) {
-		return createFontFrom(new Font(name, style, size));
+	public static IFont font(final String name, final Integer size, final Integer style) {
+		return createFont(name, style, size);
 	}
 
 }

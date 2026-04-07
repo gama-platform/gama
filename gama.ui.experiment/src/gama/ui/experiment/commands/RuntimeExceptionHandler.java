@@ -164,12 +164,8 @@ public class RuntimeExceptionHandler extends Job implements IRuntimeExceptionHan
 			// view stays open (showing nothing) if it was already visible.
 			cleanExceptions = new ArrayList<>();
 		}
-		if (!cleanExceptions.isEmpty()) {
-			// There are real errors: open the ErrorView if not already open, then refresh.
-			// We call showView+displayErrors directly (not displayLatestErrors()) to avoid
-			// infinite recursion, since displayLatestErrors() calls back into updateUI.
-			GAMA.getGui().openErrorView();
-		}
+		// displayErrors() opens the view if needed and refreshes it — all on the UI
+		// thread — so the previous separate openErrorView() call is no longer required.
 		GAMA.getGui().displayErrors(null, cleanExceptions, reset);
 	}
 
