@@ -237,6 +237,21 @@ public final class Morris {
 		// Theoretical Morris step size delta = p / (2*(p-1))
 		double expectedDelta = (double) nblevels / (2.0 * (nblevels - 1.0));
 
+		// Compute parameter ranges for normalization
+		Map<String, Double> mins = new HashMap<>();
+		Map<String, Double> maxs = new HashMap<>();
+		for (String name : parametersNames) {
+			double min = Double.POSITIVE_INFINITY;
+			double max = Double.NEGATIVE_INFINITY;
+			for (Map<String, Object> sample : simulationSamples) {
+				double v = toDouble(sample.get(name));
+				if (v < min) min = v;
+				if (v > max) max = v;
+			}
+			mins.put(name, min);
+			maxs.put(name, max);
+		}
+
 		MorrisResult results = new MorrisResult();
 
 		for (var entry : outputs.entrySet()) {
@@ -268,7 +283,8 @@ public final class Morris {
 								GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[MORRIS] Multiple parameters changed at index " + i1, scope), true);
 							}
 							changedParam = name;
-							deltaX = v2 - v1;
+							double range = maxs.get(name) - mins.get(name);
+							deltaX = range == 0 ? (v2 - v1) : (v2 - v1) / range;
 						}
 					}
 					if (changedParam == null) {
