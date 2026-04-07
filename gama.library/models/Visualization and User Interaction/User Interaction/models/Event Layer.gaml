@@ -13,14 +13,11 @@ model event_layer_model
 
 global
 {
-
-//number of agents to create
 	int nbAgent <- 200;
 	int radius <- 10;
 	dummy pointClicked;
 
 	init {
-	//creation of the agents
 		create cell number: nbAgent
 		{
 			color <- #darkgreen;
@@ -28,17 +25,12 @@ global
        create dummy(dummyRadius : radius) number:1 returns: temp ;
        pointClicked <- first(temp);
    }
-
-	//Action to change the color of the agents, according to the point to know which agents we're in intersection with the point
 	action change_color ()
 	{
-
-	//change the color of the agents
-		
 		list selected_agents <- cell overlapping (circle(radius) at_location #user_location);
 		ask selected_agents
 		{
-			color <- color = #lightgreen ? #darkgreen : #lightgreen;
+			self.color <- self.color = #lightgreen ? #darkgreen : #lightgreen;
 		}
 
 	}
@@ -60,15 +52,11 @@ global
 		pointClicked.visibleViewShape <- false;
 	}
 
-
-	//Action to change the shape of the agents, according to the point to know which agents we're in intersection with the point
 	action change_shape ()
 	{
 		list<cell> selected_agents <- cell overlapping (circle(radius) at_location #user_location);
 		ask selected_agents
 		{
-
-		//change the bool attribute is_square to change the shape in the display
 			is_square <- not (is_square);
 		}
 
@@ -76,10 +64,9 @@ global
 
 }
 
-//Species cells moving randomly
 species cell skills: [moving]
 {
-	rgb colour;
+	rgb color;
 	bool is_square <- false;
 	reflex mm
 	{
@@ -88,7 +75,7 @@ species cell skills: [moving]
 
 	aspect default
 	{
-		draw is_square ? square(2) : circle(1) color: colour;
+		draw is_square ? square(2) : circle(1) color: color;
 	}
 
 }
@@ -112,6 +99,7 @@ species dummy  {
 
 experiment Displays type: gui
 {
+	float minimum_cycle_duration <-0.01;
 	parameter "Radius of selection" var: radius ;	// The radius of the disk around the click 
 	output synchronized:true
 	{    
