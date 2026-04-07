@@ -33,8 +33,8 @@ import gaml.compiler.descriptions.BasicExpressionDescription;
  * tree resource or container, which means:
  * </p>
  * <ul>
- * <li>Cross-reference resolution and serialisation tools that navigate {@code eContainer()} or {@code eResource()}
- * will receive {@code null} in unexpected places.</li>
+ * <li>Cross-reference resolution and serialisation tools that navigate {@code eContainer()} or {@code eResource()} will
+ * receive {@code null} in unexpected places.</li>
  * <li>Storing the node as the {@code target} of an {@link gaml.compiler.descriptions.EcoreBasedExpressionDescription}
  * routes the compilation through the full EMF dispatch machinery ({@link gaml.compiler.gaml.util.GamlSwitch}) for what
  * is effectively a two-value flag.</li>
@@ -43,8 +43,8 @@ import gaml.compiler.descriptions.BasicExpressionDescription;
  * </ul>
  *
  * <p>
- * Instead, {@link #compile(IDescription)} replicates the {@code returnSelfOrSuper} logic directly in pure Java:
- * it obtains the type context from the compilation context, resolves the appropriate {@link IType}, and delegates to
+ * Instead, {@link #compile(IDescription)} replicates the {@code returnSelfOrSuper} logic directly in pure Java: it
+ * obtains the type context from the compilation context, resolves the appropriate {@link IType}, and delegates to
  * {@link GAML#getExpressionFactory()}.{@code createVar} — exactly what the EMF path ultimately did, but without the
  * intermediate detached {@link EObject}.
  * </p>
@@ -65,8 +65,8 @@ public class SelfOrSuperExpressionDescription extends BasicExpressionDescription
 	/**
 	 * {@code true} if this description represents the {@code self} keyword; {@code false} for {@code super}.
 	 * <p>
-	 * Used during {@link #compile(IDescription)} to select the correct keyword string and
-	 * {@link IVarExpression} scope constant.
+	 * Used during {@link #compile(IDescription)} to select the correct keyword string and {@link IVarExpression} scope
+	 * constant.
 	 * </p>
 	 */
 	private final boolean isSelf;
@@ -115,14 +115,25 @@ public class SelfOrSuperExpressionDescription extends BasicExpressionDescription
 		if (expression != null) return expression;
 		final ITypeDescription typeContext = context.getTypeContext();
 		if (typeContext == null) {
-			context.error("Unable to determine the type context of " + (isSelf ? "self" : "super"),
-					IGamlIssue.GENERAL, (EObject) null);
+			context.error("Unable to determine the type context of " + (isSelf ? "self" : "super"), IGamlIssue.GENERAL,
+					(EObject) null);
 			return null;
 		}
-		final IType<?> type = isSelf ? typeContext.getGamlType() : typeContext.getParent().getGamlType();
-		final String name = isSelf ? "self" : "super";
-		expression = GAML.getExpressionFactory().createVar(name, type, true,
-				isSelf ? IVarExpression.Category.SELF : IVarExpression.Category.SUPER, null);
+		if (isSelf) {
+			final IType<?> type = typeContext.getGamlType();
+			final String name = "self";
+			expression = GAML.getExpressionFactory().createVar(name, type, true, IVarExpression.Category.SELF, null);
+			return expression;
+		}
+		ITypeDescription superType = typeContext.getParent();
+		if (superType == null) {
+			context.error("Unable to determine the super type of " + typeContext.getName(), IGamlIssue.GENERAL,
+					(EObject) null);
+			return null;
+		}
+		final IType<?> type = superType.getGamlType();
+		final String name = "super";
+		expression = GAML.getExpressionFactory().createVar(name, type, true, IVarExpression.Category.SUPER, null);
 		return expression;
 	}
 
@@ -130,8 +141,8 @@ public class SelfOrSuperExpressionDescription extends BasicExpressionDescription
 	 * Returns {@code null} — there is no EMF parse-tree node backing this synthetic description.
 	 *
 	 * <p>
-	 * Call-sites that need an EMF anchor for error or hover markers should use the element of the enclosing
-	 * statement instead.
+	 * Call-sites that need an EMF anchor for error or hover markers should use the element of the enclosing statement
+	 * instead.
 	 * </p>
 	 *
 	 * @return {@code null}

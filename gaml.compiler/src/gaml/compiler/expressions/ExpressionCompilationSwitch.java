@@ -1163,12 +1163,14 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 		ITypeDescription species = context.getContext().getTypeContext();
 		if (species == null) return null;
 		final boolean isSuper = context.getContext() instanceof DoDescription st && st.isSuperInvocation();
-		IActionDescription action = isSuper ? species.getParent().getAction(op) : species.getAction(op);
+		IActionDescription action = isSuper ? species.getParent() == null ? null : species.getParent().getAction(op)
+				: species.getAction(op);
 		if (action == null) {
 			if (species instanceof ExperimentDescription && context.getContext().isIn(IKeyword.OUTPUT)) {
 				species = species.getModelDescription();
 			}
-			action = isSuper ? species.getParent().getAction(op) : species.getAction(op);
+			action = isSuper ? species.getParent() == null ? null : species.getParent().getAction(op)
+					: species.getAction(op);
 		}
 		if (action == null) return null;
 		final ExpressionList params = object.getRight();
@@ -1520,7 +1522,11 @@ public class ExpressionCompilationSwitch extends GamlSwitch<IExpression> {
 					object);
 			return null;
 		}
-		IType type = isSuper ? sd.getParent().getGamlType() : sd.getGamlType();
+		IType type = isSuper ? sd.getParent() == null ? null : sd.getParent().getGamlType() : sd.getGamlType();
+		if (type == null) {
+			context.getContext().error("Unable to determine the type of " + name, IGamlIssue.GENERAL, object);
+			return null;
+		}
 		return FACTORY.createVar(name, type, true,
 				isSuper ? IVarExpression.Category.SUPER : IVarExpression.Category.SELF, null);
 	}
