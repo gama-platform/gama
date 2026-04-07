@@ -19,14 +19,12 @@ global {
 	//Distance to know if a sphere is adjacent or not with an other
 	int distance min: 1 <- 100;
 	
-	
 	int degreeMax <- 1;
 	geometry shape <- cube(width_and_height_of_environment);
 	
 	
 	graph my_graph;
 	init {
-		
 		//creation of the node agent ie the spheres with a random location in the environment
 		create node_agent number: number_of_agents {
 			location <- { rnd(width_and_height_of_environment), rnd(width_and_height_of_environment), rnd(width_and_height_of_environment) };
@@ -59,14 +57,11 @@ species node_agent skills: [moving3D] {
 	int degree;
 	float radius;
 	rgb color ;
-	float speed <- 5.0;
+	float speed <- 1.0;
 	reflex move {
-		//make the agent move randomly
 		do wander();
-		//compute the degree of the agent
 		do compute_degree();
 	}
-	
 	
 	action compute_degree() {
 		degree <- my_graph = nil ? 0 : (my_graph) degree_of (self);
@@ -85,6 +80,7 @@ species node_agent skills: [moving3D] {
 }
 
 experiment Display type: gui {
+	float minimum_cycle_duration <- 0.01;
 	 
 	parameter 'Number of Agents' var:number_of_agents category: 'Initialization';
 	parameter 'Dimensions' var:width_and_height_of_environment category: 'Initialization';
@@ -101,26 +97,6 @@ experiment Display type: gui {
 						geometry edge_geom <- geometry(eg);
 						float val <- 255 * edge_geom.perimeter / distance; 
 						draw line(edge_geom.points, 0.5)  color: rgb(val,val,val);
-					}
-				}
-				
-			}
-		}
-	}
-}
-
-
-experiment SimpleDisplay type: gui {
-	output {
-		display WanderingSphere type: 3d { 
-			camera 'default' location: {-528.0266,911.2309,549.1574} target: {572.0892,-62.0693,0.0};			
-			species node_agent aspect: base;
-			graphics "edges" {
-				if (my_graph != nil) {
-					loop eg over: my_graph.edges {
-						geometry edge_geom <- geometry(eg);
-						float val <- 255 * edge_geom.perimeter / distance; 
-						draw line(edge_geom.points) color:#black;
 					}
 				}
 				

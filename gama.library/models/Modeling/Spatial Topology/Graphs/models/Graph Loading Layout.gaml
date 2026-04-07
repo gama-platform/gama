@@ -65,6 +65,7 @@ species node_agent {
 }
 
 experiment loadgraph type: gui {
+	float minimum_cycle_duration <- 0.5;
 	parameter "Max number of iterations" var:layout_time;
 	parameter "Force coefficient" category: "Force"var:coeff_force;
 	parameter "Decreasing coefficient of the temperature" category: "Force" var:cooling_coefficient; 

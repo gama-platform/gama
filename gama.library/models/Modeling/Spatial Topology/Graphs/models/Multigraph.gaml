@@ -75,7 +75,7 @@ species people skills: [moving]{
 		do goto(on:road_graph, target:target, speed:1 + rnd(2.0));
 	}
 	aspect default {
-		draw circle(size) color: #red;
+		draw circle(size) color: #blue;
 	}	
 }
 	
@@ -94,6 +94,7 @@ species road  {
 
 
 experiment multigraph type: gui {
+	float minimum_cycle_duration <- 0.05;
 	output {
 		display friendship type: 3d{
 			species road ;
