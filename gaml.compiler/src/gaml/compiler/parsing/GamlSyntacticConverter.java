@@ -301,13 +301,6 @@ public class GamlSyntacticConverter {
 	private final ISyntacticElement convStatement(final ISyntacticElement upper, final Statement stm) {
 		// We catch its keyword
 		String keyword = computeKeyword(upper, stm);
-
-		if (INIT.equals(keyword)) {
-
-			DEBUG.ERR("");
-
-		}
-
 		final IArtefact.Symbol upperArtefact = getStatementArtefact(upper.getKeyword());
 
 		final boolean upperContainsAttributes = upperArtefact != null && isDefiningAttributes(upperArtefact.getKind());
