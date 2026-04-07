@@ -179,13 +179,19 @@ public class SwtGui implements IGui {
 		if (exceptions == null) {
 			hideView(ERROR_VIEW_ID);
 		} else {
-			// Only refresh the view if it is already open — do NOT force it open here.
-			// The view is opened explicitly by displayLatestErrors() when there is a real
-			// error to show. This way the view is not shown during normal simulation runs
-			// (when it is closed) but stays open once the user or an error path has opened it.
-			final IGamaView.Error v =
-					(IGamaView.Error) ViewsHelper.findView(ERROR_VIEW_ID, null, false);
-			if (v != null) { v.displayErrors(reset); }
+			// Run on the UI thread to avoid race conditions. If there are real errors and the
+			// view is not yet open, open it first so that it is populated immediately. This
+			// replaces the previous openErrorView() + displayErrors() two-step in
+			// RuntimeExceptionHandler.updateUI() which suffered from a timing race: the view
+			// was opened asynchronously while displayErrors() ran immediately on the background
+			// thread, finding no view and therefore displaying nothing.
+			WorkbenchHelper.run(() -> {
+				IGamaView.Error v = (IGamaView.Error) ViewsHelper.findView(ERROR_VIEW_ID, null, false);
+				if (v == null && !exceptions.isEmpty()) {
+					v = (IGamaView.Error) showView(null, ERROR_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+				}
+				if (v != null) { v.displayErrors(reset); }
+			});
 		}
 	}
 
@@ -726,8 +732,9 @@ public class SwtGui implements IGui {
 
 	@Override
 	public void openErrorView() {
-		// Use asyncRun — this is called from RuntimeExceptionHandler which runs as an
-		// Eclipse background Job, not on the UI thread.
+		// Kept for backward compatibility / external callers. The main error-display
+		// flow now goes through displayErrors(), which opens the view atomically on the
+		// UI thread when there are exceptions to show.
 		WorkbenchHelper.asyncRun(() -> showView(null, ERROR_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE));
 	}
 
@@ -735,9 +742,10 @@ public class SwtGui implements IGui {
 	public void displayLatestErrors() {
 		final IRuntimeExceptionHandler handler = getRuntimeExceptionHandler();
 		if (handler == null) return;
-		// First open (or bring to front) the ErrorView so the user sees it immediately.
-		// displayErrors() deliberately does NOT open it on its own; this is the only
-		// code path that should auto-open the view.
+		// Open (or bring to front) the ErrorView so the user sees it immediately,
+		// then flush any pending exceptions from the handler's incoming queue into
+		// cleanExceptions via handler.displayLatestErrors() → updateUI() → displayErrors(),
+		// which will also refresh the view contents on the UI thread.
 		WorkbenchHelper.run(() -> {
 			final IGamaView.Error v = (IGamaView.Error) showView(null, ERROR_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
 			if (v != null) { v.displayErrors(true); }
