@@ -46,6 +46,7 @@ import gama.api.types.map.GamaMapFactory;
 import gama.api.types.map.IMap;
 import gama.api.utils.geometry.GamaGeometryFactory;
 import gama.api.utils.geometry.GeometryUtils;
+import gama.api.utils.geometry.UniqueCoordinateSequence;
 import gama.extension.serialize.fst.FSTBasicObjectSerializer;
 import gama.extension.serialize.fst.FSTClazzInfo;
 import gama.extension.serialize.fst.FSTClazzInfo.FSTFieldInfo;
@@ -512,6 +513,21 @@ public class BinarySerialiser implements ISerialisationConstants {
 			public CoordinateSequenceFactory deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
 				in.readStringUTF();
 				return GeometryUtils.getGeometryFactory().getCoordinateSequenceFactory();
+			}
+		});
+
+		register(conf, UniqueCoordinateSequence.class, new FSTIndividualSerialiser<UniqueCoordinateSequence>() {
+
+			@Override
+			public void serialise(final FSTObjectOutput out, final UniqueCoordinateSequence o) throws Exception {
+				out.writeDouble(o.getX(0));
+				out.writeDouble(o.getY(0));
+				out.writeDouble(o.getZ(0));
+			}
+
+			@Override
+			public UniqueCoordinateSequence deserialise(final IScope scope, final FSTObjectInput in) throws Exception {
+				return new UniqueCoordinateSequence(in.readDouble(), in.readDouble(), in.readDouble());
 			}
 		});
 	}
