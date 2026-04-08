@@ -1,0 +1,9 @@
+/**
+* Name: weathercomodel
+* This wizard creates a new experiment file. 
+* Author: lugrosjean
+* Tags: 
+*/
+
+experiment weathercomodel model:'Weather.gaml' type:gui {
+}

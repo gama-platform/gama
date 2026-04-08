@@ -11,7 +11,7 @@
 
 model coModel
 
-import "Weather.gaml" as weather
+import "weather_comodel.experiment" as weather
 
 
 global {
@@ -19,15 +19,15 @@ global {
 	weather weather_simu ;
 		
 	init {
-		create weather."Weather Co-Modeling" with: (grid_size:30,write_in_console_step:false);
-		weather_simu <- first(weather."Weather Co-Modeling").simulation; 
+		create weather.weathercomodel(grid_size:30,write_in_console_step:false);
+		weather_simu <- first(weather.weathercomodel).simulation; 
 	}
 
 	reflex simulate_micro_models
 	{
 		ask weather_simu
 		{
-			do _step_;
+			self._step_();
 		}
 	}
 }
