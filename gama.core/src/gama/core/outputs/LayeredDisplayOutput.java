@@ -226,7 +226,7 @@ import gama.dev.DEBUG;
 public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Display {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The layers. */
@@ -448,10 +448,15 @@ public class LayeredDisplayOutput extends AbstractOutput implements IOutput.Disp
 	public void update() throws GamaRuntimeException {
 
 		if (surface == null) return;
-		// DEBUG.OUT("Entering update of the output");
+		final long t0 = System.currentTimeMillis();
+		DEBUG.OUT("[LayeredDisplayOutput.update] START for " + getName()
+				+ " thread=" + Thread.currentThread().getName());
 		getData().update(getScope(), description.getFacets());
+		DEBUG.OUT("[LayeredDisplayOutput.update] after getData().update=" + (System.currentTimeMillis() - t0) + "ms");
 
 		super.update();
+		DEBUG.OUT("[LayeredDisplayOutput.update] END for " + getName()
+				+ " total=" + (System.currentTimeMillis() - t0) + "ms");
 		// See #3696
 		// if (!surface.shouldWaitToBecomeRendered()) { setRendered(true); }
 	}

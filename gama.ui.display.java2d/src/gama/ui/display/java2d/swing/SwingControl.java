@@ -39,7 +39,7 @@ import gama.ui.shared.utils.WorkbenchHelper;
 public abstract class SwingControl extends Composite {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/**
@@ -200,7 +200,9 @@ public abstract class SwingControl extends Composite {
 	 */
 	@Override
 	public final void setBounds(final int x, final int y, final int width, final int height) {
-		// DEBUG.OUT("-- SwingControl bounds set to " + x + " " + y + " | " + width + " " + height);
+		DEBUG.OUT("[SwingControl.setBounds] " + (surface != null ? surface.getName() : "null")
+				+ " x=" + x + " y=" + y + " w=" + width + " h=" + height
+				+ " thread=" + Thread.currentThread().getName());
 		populate();
 		// See Issue #3426
 		super.setBounds(x, y, width, height);

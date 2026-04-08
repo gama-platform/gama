@@ -54,7 +54,7 @@ public abstract class LayeredDisplayView extends GamaViewPart
 		implements IToolbarDecoratedView.Pausable, IToolbarDecoratedView.Zoomable, IGamaView.Display {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The is hi DPI. */
@@ -360,6 +360,10 @@ public abstract class LayeredDisplayView extends GamaViewPart
 	 */
 	@Override
 	public void update(final IOutput output) {
+		final long t0 = System.currentTimeMillis();
+		DEBUG.OUT("[LayeredDisplayView.update] START for " + getTitle()
+				+ " thread=" + Thread.currentThread().getName()
+				+ " isDisplayThread=" + WorkbenchHelper.isDisplayThread());
 		if (getDisplaySurface() != null && !getDisplaySurface().isDisposed()) {
 			try {
 				getDisplaySurface().updateDisplay(false, syncSemaphore);
@@ -379,10 +383,15 @@ public abstract class LayeredDisplayView extends GamaViewPart
 			// Should we put a time out in case ?
 			// syncSemaphore.tryAcquire(5, TimeUnit.SECONDS);
 			// If interrupted, return early: the interrupt flag is already restored by acquire().
+			DEBUG.OUT("[LayeredDisplayView.update] waiting on syncSemaphore for " + getTitle());
+			final long t1 = System.currentTimeMillis();
 			if (!syncSemaphore.acquire()) return;
+			DEBUG.OUT("[LayeredDisplayView.update] acquired syncSemaphore for " + getTitle()
+					+ " waited=" + (System.currentTimeMillis() - t1) + "ms");
 		}
 		// displaySemaphore.release();
 		updateSnapshot();
+		DEBUG.OUT("[LayeredDisplayView.update] END for " + getTitle() + " total=" + (System.currentTimeMillis() - t0) + "ms");
 
 	}
 

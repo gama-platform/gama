@@ -69,7 +69,7 @@ import gama.ui.shared.views.toolbar.Selector;
 public class LayeredDisplayDecorator implements DisplayDataListener, IExperimentStateListener {
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The key and mouse listener. */
@@ -234,11 +234,23 @@ public class LayeredDisplayDecorator implements DisplayDataListener, IExperiment
 		public void partVisible(final IWorkbenchPartReference partRef) {
 			if (ok(partRef)) {
 				WorkbenchHelper.runInUI("Unhide " + partRef.getTitle(), 0, m -> {
-					// DEBUG.OUT("Part Visible:" + partRef.getTitle());
+					final long t0 = System.currentTimeMillis();
+					DEBUG.OUT("[partVisible UIJob] START: Unhide " + partRef.getTitle()
+							+ " thread=" + Thread.currentThread().getName());
 					view.showCanvas();
 					IDisplaySurface s = view.getDisplaySurface();
-					if (s != null) { s.getOutput().update(); }
-					if (overlay != null) { overlay.display(); }
+					if (s != null) {
+						final long t1 = System.currentTimeMillis();
+						s.getOutput().update();
+						DEBUG.OUT("[partVisible UIJob] output.update() took " + (System.currentTimeMillis() - t1) + "ms");
+					}
+					if (overlay != null) {
+						final long t2 = System.currentTimeMillis();
+						overlay.display();
+						DEBUG.OUT("[partVisible UIJob] overlay.display() took " + (System.currentTimeMillis() - t2) + "ms");
+					}
+					DEBUG.OUT("[partVisible UIJob] END: Unhide " + partRef.getTitle()
+							+ " total=" + (System.currentTimeMillis() - t0) + "ms");
 				});
 			}
 		}

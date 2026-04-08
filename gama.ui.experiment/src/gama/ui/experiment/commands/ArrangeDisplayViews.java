@@ -72,7 +72,7 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	private static EModelService getModelService() { return WorkbenchHelper.getService(EModelService.class); }
 
 	static {
-		DEBUG.OFF();
+		DEBUG.ON();
 	}
 
 	/** The Constant LAYOUT_KEY. */
@@ -151,18 +151,21 @@ public class ArrangeDisplayViews extends AbstractHandler {
 	 *            the already-collected-and-indexed list of display placeholders, or {@code null} to trigger collection
 	 */
 	public static void execute(final GamaTree<String> tree, final List<MPlaceholder> preCollectedHolders) {
+		final long t0 = System.currentTimeMillis();
 		final var window = WorkbenchHelper.getWindow();
 		final var shell = window != null ? window.getShell() : null;
 		if (shell != null) { shell.setRedraw(false); }
 		try {
 			final List<MPlaceholder> holders =
 					preCollectedHolders != null ? preCollectedHolders : collectAndPrepareDisplayViews();
+			DEBUG.OUT("[ArrangeDisplayViews] " + holders.size() + " display(s) to arrange");
 			if (tree != null && tree.getRoot().hasChildren()) {
 				layoutDisplays(tree, holders);
 			} else {
 				final MPartStack displayStack = getDisplaysPlaceholder();
 				if (displayStack != null) { showDisplays(displayStack.getParent(), holders); }
 			}
+			DEBUG.OUT("[ArrangeDisplayViews] after show/layout in " + (System.currentTimeMillis() - t0) + "ms");
 			// Drain the asyncExec callbacks posted by the E4 renderer during showPart() so that
 			// widgets are in their final sash positions before setRedraw(true) fires the repaint.
 			// We post a sentinel asyncExec first, then readAndDispatch() until it fires — this
@@ -173,7 +176,10 @@ public class ArrangeDisplayViews extends AbstractHandler {
 			if (display != null) {
 				final boolean[] sentinel = { false };
 				display.asyncExec(() -> sentinel[0] = true);
-				while (!sentinel[0]) { display.readAndDispatch(); }
+				int iterations = 0;
+				while (!sentinel[0]) { display.readAndDispatch(); iterations++; }
+				DEBUG.OUT("[ArrangeDisplayViews] readAndDispatch loop: " + iterations
+						+ " iteration(s) in " + (System.currentTimeMillis() - t0) + "ms total");
 			}
 			// Force an immediate layout pass so that SWT computes all sash weights and sizes
 			// the display canvases to their final positions BEFORE setRedraw(true) triggers the
@@ -181,12 +187,15 @@ public class ArrangeDisplayViews extends AbstractHandler {
 			// render directly to the GL context) may display at the wrong size until the next
 			// layout event, producing the "fullscreen → resize" flash the user perceives.
 			if (shell != null) { shell.layout(true, true); }
+			DEBUG.OUT("[ArrangeDisplayViews] after shell.layout in " + (System.currentTimeMillis() - t0) + "ms");
 			decorateDisplays();
+			DEBUG.OUT("[ArrangeDisplayViews] after decorateDisplays in " + (System.currentTimeMillis() - t0) + "ms");
 		} catch (Exception e) {
 			DEBUG.ERR(e);
 		} finally {
 			if (shell != null) { shell.setRedraw(true); }
 		}
+		DEBUG.OUT("[ArrangeDisplayViews] TOTAL execute() time=" + (System.currentTimeMillis() - t0) + "ms");
 	}
 
 	/**
