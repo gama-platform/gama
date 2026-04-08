@@ -10,6 +10,7 @@
  ********************************************************************************************************/
 package gama.api.utils.tests;
 
+import gama.api.kernel.simulation.IExperimentAgent;
 import gama.api.utils.StringUtils;
 
 /**
@@ -18,7 +19,7 @@ import gama.api.utils.StringUtils;
  * @author drogoul
  *
  */
-public class TestExperimentSummary extends CompoundSummary<IndividualTestSummary, ITestAgent> {
+public class TestExperimentSummary extends CompoundSummary<IndividualTestSummary, IExperimentAgent.Test> {
 
 	/**
 	 * Instantiates a new test experiment summary.
@@ -26,7 +27,7 @@ public class TestExperimentSummary extends CompoundSummary<IndividualTestSummary
 	 * @param testAgent
 	 *            the test agent
 	 */
-	public TestExperimentSummary(final ITestAgent testAgent) {
+	public TestExperimentSummary(final IExperimentAgent.Test testAgent) {
 		super(testAgent);
 	}
 

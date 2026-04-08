@@ -421,11 +421,6 @@ public class GamlModelSpecies extends GamlSpecies implements IModelSpecies {
 				}
 			}
 		}
-		
-		System.out.println("DEBUG setChildren for " + getName() + ". Iterating through children.");
-		for (final ISymbol s : children) {
-			System.out.println("  CHILD: " + (s == null ? "null" : s.getName() + " class: " + s.getClass().getSimpleName()));
-		}
 
 		// Add the variables, etc. to the model
 		super.setChildren(children);
