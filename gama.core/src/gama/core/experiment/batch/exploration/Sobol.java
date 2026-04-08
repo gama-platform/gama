@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,19 +22,22 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.math3.exception.OutOfRangeException;
 import org.moeaframework.util.sequence.Saltelli;
 
+import gama.api.GAMA;
 import gama.api.exceptions.GamaRuntimeException;
+import gama.api.gaml.types.Cast;
 import gama.api.runtime.scope.IScope;
 import gama.api.utils.StringUtils;
 
 /**
  * The Class Sobol.
  */
-public class Sobol {
+public final class Sobol {
 
 	/** The list of Saltelli indices [0; 1] */
 	private double[][] saltelli;
@@ -74,14 +78,6 @@ public class Sobol {
 
 	/**
 	 * Build a Sobol element corresponding to the problem
-	 *
-	 * @param problem
-	 *            : A map with K the name of the parameter and V a list containing the max and min values of the param
-	 *            (or a list of possible values for categorical parameters)
-	 * @param output
-	 *            : The name of the output variable
-	 * @param sample
-	 *            : The number of sample
 	 */
 	public Sobol(final LinkedHashMap<String, List<Object>> problem, final List<String> output_names, final int sample,
 			final IScope scope) {
@@ -97,19 +93,36 @@ public class Sobol {
 	}
 
 	/**
-	 * Build a sobol problem from a .csv file of format : <br>
-	 * |param_1, ..., param_P, output_1, ..., output_X <br>
-	 * |val_11, ..., val_1P, eval_11, ... , eval_1X <br>
-	 * | . <br>
-	 * | . <br>
-	 * |val_N1, ..., val_NP, eval_N1, ... , eval_NX <br>
-	 *
-	 * @param path
-	 *            : path to a .csv file
-	 * @param nb_parameters
-	 *            : number of parameters of the problem
-	 * @param output
-	 *            : name of the output columns in the .csv file
+	 * Build a sobol problem from a map of data (columns)
+	 */
+	public Sobol(final Map<String, List<Double>> data, final int nb_parameters, final IScope scope) {
+		this.scope = scope;
+		this.parameters = new LinkedHashMap<>();
+		this.output_names = new ArrayList<>();
+		this.outputs = new HashMap<>();
+
+		int i = 0;
+		for (Entry<String, List<Double>> entry : data.entrySet()) {
+			String name = entry.getKey();
+			List<Object> values = new ArrayList<>(entry.getValue());
+
+			if (i < nb_parameters) {
+				this.parameters.put(name, values);
+			} else {
+				this.output_names.add(name);
+				this.outputs.put(name, values);
+			}
+			i++;
+		}
+
+		_sample = this.parameters.values().iterator().next().size();
+		if (_sample % (2 * nb_parameters + 2) != 0) throw new IllegalArgumentException(
+				"Number of sample in the data doesn't match the number of parameters");
+		sample = _sample / (2 * nb_parameters + 2);
+	}
+
+	/**
+	 * Build a sobol problem from a .csv file.
 	 */
 	public Sobol(final File f, final int nb_parameters, final IScope scope) throws GamaRuntimeException {
 		this.scope = scope;
@@ -117,44 +130,73 @@ public class Sobol {
 		this.output_names = new ArrayList<>();
 		this.outputs = new HashMap<>();
 
-		try (BufferedReader br = new BufferedReader(new FileReader(f))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(f, StandardCharsets.UTF_8))) {
 			String line = br.readLine();
+			if (line == null) return;
 
-			// parse first line
-			String columns_names[] = line.split(",");
-			// parameters names
-			for (int i = 0; i < nb_parameters; i++) { parameters.put(columns_names[i], new ArrayList<>()); }
-			// output variable
+			String columns_names[] = parseCsvLine(line);
+			for (int i = 0; i < nb_parameters; i++) { parameters.put(columns_names[i].trim(), new ArrayList<>()); }
 			for (int i = nb_parameters; i < columns_names.length; i++) {
-				output_names.add(columns_names[i]);
-				this.outputs.put(columns_names[i], new ArrayList<>());
+				output_names.add(columns_names[i].trim());
+				this.outputs.put(columns_names[i].trim(), new ArrayList<>());
 			}
 
-			// parse values and count the number of samples
 			this._sample = 0;
+			int rowIdx = 1;
 			while ((line = br.readLine()) != null) {
+				rowIdx++;
+				if (line.trim().isEmpty()) continue;
 				this._sample++;
-				String values[] = line.split(",");
+				String values[] = parseCsvLine(line);
+				if (values.length != columns_names.length) {
+					throw new IOException("Row " + rowIdx + " has " + values.length + " columns, expected " + columns_names.length);
+				}
 				for (int i = 0; i < nb_parameters; i++) {
-					this.parameters.get(columns_names[i]).add(Double.parseDouble(values[i]));
+					String val = values[i].trim();
+					try {
+						this.parameters.get(columns_names[i].trim()).add(Double.parseDouble(val));
+					} catch (NumberFormatException e) {
+						throw new IOException("Invalid number '" + val + "' at row " + rowIdx + ", column " + columns_names[i]);
+					}
 				}
 				for (int i = nb_parameters; i < columns_names.length; i++) {
-					this.outputs.get(columns_names[i]).add(Double.parseDouble(values[i]));
-
+					String val = values[i].trim();
+					try {
+						this.outputs.get(columns_names[i].trim()).add(Double.parseDouble(val));
+					} catch (NumberFormatException e) {
+						throw new IOException("Invalid number '" + val + "' at row " + rowIdx + ", column " + columns_names[i]);
+					}
 				}
 			}
 			if (_sample % (2 * nb_parameters + 2) != 0) throw new IllegalArgumentException(
 					"Number of sample in the file doesn't match the number of parameters");
 			sample = _sample / (2 * nb_parameters + 2);
 
-		} catch (IOException e) {
-			throw GamaRuntimeException.error("File " + f.toString() + " not found", scope);
-		} catch (OutOfRangeException e) {
-			throw GamaRuntimeException.error(
-					"The number of parameters provided doesn't match the number of parameters in the file", scope);
 		} catch (Exception e) {
-			throw GamaRuntimeException.error(e.toString(), scope);
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("[SOBOL] Load Error: " + e.getMessage(), scope), true);
 		}
+	}
+
+	/**
+	 * Simple robust CSV line parser handling quotes.
+	 */
+	private String[] parseCsvLine(String line) {
+		List<String> result = new ArrayList<>();
+		StringBuilder cur = new StringBuilder();
+		boolean inQuotes = false;
+		for (int i = 0; i < line.length(); i++) {
+			char c = line.charAt(i);
+			if (c == '\"') {
+				inQuotes = !inQuotes;
+			} else if (c == ',' && !inQuotes) {
+				result.add(cur.toString());
+				cur.setLength(0);
+			} else {
+				cur.append(c);
+			}
+		}
+		result.add(cur.toString());
+		return result.toArray(new String[0]);
 	}
 
 	/**
@@ -166,12 +208,7 @@ public class Sobol {
 	}
 
 	/**
-	 * Generate a sample using the provided .csv file containing a matrix of size N x P <br>
-	 * - N the number of _sample <br>
-	 * - P the number of parameters
-	 *
-	 * @param file
-	 *            : .csv file
+	 * Generate a sample using the provided .csv file.
 	 */
 	public void setSaltelliSamplingFromCsv(final File file) {
 		parseSaltelli(file);
@@ -179,36 +216,18 @@ public class Sobol {
 	}
 
 	/**
-	 * Save the Saltelli sample of this Sobol object in a .cvs file
-	 *
-	 * @param file
-	 *            : .csv file
+	 * Save the Saltelli sample.
 	 */
 	public void saveSaltelliSample(final File file) throws GamaRuntimeException {
 		try (FileWriter fw = new FileWriter(file, false)) {
 			fw.write(buildSaltelliReport());
 		} catch (IOException e) {
-			throw GamaRuntimeException.error("File " + file.toString() + " not found", scope);
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Failed to save Saltelli sample: " + e.getMessage(), scope), true);
 		}
 	}
 
-	/**
-	 * Return the parameters of the simulation and it's values
-	 *
-	 * @return A map with <br>
-	 *         - K the name of the parameter, <br>
-	 *         - V the list of values of this parameter
-	 */
 	public Map<String, List<Object>> getParametersValues() { return this.parameters; }
 
-	/**
-	 * Set the output of corresponding to each parameter set
-	 *
-	 * @param outputs
-	 *            : a map with : <br>
-	 *            - K the name of the output, <br>
-	 *            - V the list of outputs in the same order as parameters inputs
-	 */
 	public void setOutputs(final Map<String, List<Object>> outputs) {
 		for (String output : outputs.keySet()) {
 			if (outputs.get(output).size() != _sample) throw GamaRuntimeException.error(
@@ -220,47 +239,26 @@ public class Sobol {
 
 	/**
 	 * Evaluate the sobol indices
-	 *
-	 * @return A map of map with : <br>
-	 *         - K1 the output name, <br>
-	 *         - K2 the variable name, <br>
-	 *         - V list of first order index, first order confidence, second order index, second order confidence
 	 */
 	public Map<String, Map<String, List<Double>>> evaluate() {
 		if (outputs.isEmpty()) { System.err.println("no output porivded call setOutputs before calling evaluate"); }
 
-		// Output from the original parameters.
 		double[] A = new double[sample];
-
-		// Output from the resampled parameters.
 		double[] B = new double[sample];
-
-		// Output from the original samples where the j-th parameter is replaced by the corresponding resampled
-		// parameter.
 		double[][] C_A = new double[sample][this.parameters.size()];
-
-		// Commented out as not used
-		// Output from the resampled samples where the j-th parameter is replaced by the corresponding original
-		// parameter.
-		// double[][] C_B = new double[sample][this.parameters.size()];
 
 		for (String output : outputs.keySet()) {
 			Iterator<Object> it = outputs.get(output).iterator();
 			Map<String, List<Double>> sobolIndexes_output = new HashMap<>();
 
 			for (int i = 0; i < sample; i++) {
-				// TODO : does it has to be continuous output variables ? How to check for int for example ?
 				A[i] = Double.parseDouble(it.next().toString());
-
 				for (int j = 0; j < this.parameters.size(); j++) {
 					C_A[i][j] = Double.parseDouble(it.next().toString());
 				}
-
 				for (int j = 0; j < this.parameters.size(); j++) {
 					it.next();
-					// C_B[i][j] = Double.parseDouble(it.next().toString());
 				}
-
 				B[i] = Double.parseDouble(it.next().toString());
 			}
 
@@ -277,10 +275,8 @@ public class Sobol {
 					a2[i] = B[i];
 				}
 
-				// First order
 				sobolIndexes.add(computeFirstOrder(a0, a1, a2, sample));
 				sobolIndexes.add(computeFirstOrderConfidence(a0, a1, a2, sample, _resample));
-				// Total order
 				sobolIndexes.add(computeTotalOrder(a0, a1, a2, sample));
 				sobolIndexes.add(computeTotalOrderConfidence(a0, a1, a2, sample, _resample));
 
@@ -293,27 +289,14 @@ public class Sobol {
 		return sobol_analysis;
 	}
 
-	/**
-	 * Save the report of the Sobol analysis (sobol indexes) in a .csv file
-	 *
-	 * @param file
-	 *            : .csv file
-	 */
 	public void saveResult(final File file) throws GamaRuntimeException {
 		try (FileWriter fw = new FileWriter(file, false)) {
 			fw.write(this.buildReportString(FilenameUtils.getExtension(file.getPath())));
 		} catch (Exception e) {
-			throw GamaRuntimeException.error("File " + file.toString() + " not found", scope);
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Failed to save Sobol results: " + e.getMessage(), scope), true);
 		}
 	}
 
-	/*******************************************************/
-	/************************* UTILS *************************/
-	/*******************************************************/
-
-	/*
-	 * Compute the parameters values for each sample using the Saltelli indices matrix
-	 */
 	private void sample() {
 		for (int i = 0; i < _sample; i++) {
 			int j = 0;
@@ -324,11 +307,7 @@ public class Sobol {
 		}
 	}
 
-	/**
-	 * Build the string that contains the report of the Sobol analysis
-	 */
 	public String buildReportString(final String extension) {
-
 		StringBuilder sb = new StringBuilder();
 		char sep = ',';
 
@@ -352,34 +331,20 @@ public class Sobol {
 				}
 			}
 		} else {
-			sb.append("output").append(sep);
-			sb.append("parameter").append(sep);
-			sb.append("first order").append(sep);
-			sb.append("first order confidence").append(sep);
-			sb.append("Total order").append(sep);
-			sb.append("Total order confidence").append(StringUtils.LN);
+			sb.append("output,parameter,first order,first order confidence,Total order,Total order confidence").append(StringUtils.LN);
 			for (String output_name : sobol_analysis.keySet()) {
 				for (String param : sobol_analysis.get(output_name).keySet()) {
-					// The output & parameter
-					sb.append(output_name).append(sep);
-					sb.append(param);
+					sb.append(output_name).append(sep).append(param);
 					for (Double indices : sobol_analysis.get(output_name).get(param)) {
-						// The Sobol indices
 						sb.append(sep).append(indices);
 					}
 					sb.append(StringUtils.LN);
 				}
 			}
 		}
-
 		return sb.toString();
 	}
 
-	/**
-	 * Build the string that contains the Saltelli indices matrix
-	 *
-	 * @return the string
-	 */
 	private String buildSaltelliReport() {
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < this._sample; i++) {
@@ -392,77 +357,34 @@ public class Sobol {
 		return sb.toString();
 	}
 
-	/**
-	 * Read a .csv file which format is : _______________________________________ |val_11, val_12, ..., val_1D, | . | .
-	 * | . |val_N1, val_N2, ..., val_ND |______________________________________
-	 *
-	 * and return the corresponding saltelli sample.
-	 *
-	 * @param scope
-	 * @param File
-	 *            : .csv file
-	 * @return a saltelli matrix of size N x D * N the number of sample points * D the dimension of each sample point
-	 *         (number of parameters)
-	 */
 	private void parseSaltelli(final File file) throws GamaRuntimeException {
 		saltelli = new double[this._sample][parameters.size()];
-
-		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+		try (BufferedReader br = new BufferedReader(new FileReader(file, StandardCharsets.UTF_8))) {
 			String line;
-
-			// Parse rest of the file with values of the parameters
-			int sample = 0;
+			int sIdx = 0;
 			while ((line = br.readLine()) != null) {
 				String[] values = line.split(",");
-				for (int i = 0; i < values.length; i++) { saltelli[sample][i] = Double.parseDouble(values[i]); }
-				sample++;
+				for (int i = 0; i < values.length; i++) { saltelli[sIdx][i] = Double.parseDouble(values[i].trim()); }
+				sIdx++;
 			}
-
-			br.close();
-		} catch (IOException e) {
-			throw GamaRuntimeException.error("File " + file.toString() + "not found", scope);
-		} catch (IndexOutOfBoundsException e) {
-			throw GamaRuntimeException.error(
-					"Format of the provided saltelli file doesn't match to the number of sample or number of variable of the experiment",
-					scope);
 		} catch (Exception e) {
-			throw GamaRuntimeException.error(e.toString(), scope);
+			GAMA.reportAndThrowIfNeeded(scope, GamaRuntimeException.error("Failed to parse Saltelli file: " + e.getMessage(), scope), true);
 		}
 	}
 
-	/**
-	 * Roll the value of the parameter using the corresponding Saltelli indice
-	 *
-	 * @param param
-	 *            : the name of the parameter
-	 * @param saltelli
-	 *            : the value of the Saltelli indice
-	 * @param info
-	 *            : a list containing <br>
-	 *            - the min and max value for int / double <br>
-	 *            - true and false for boolean <br>
-	 *            - the possible values for discrete variables <br>
-	 */
 	private void roll(final String param, final Double saltelli, final List<Object> info) {
 		Object val = null;
-		// Double
 		if (info.stream().allMatch(Double.class::isInstance)) {
 			Double min = (Double) info.get(0);
 			Double max = (Double) info.get(1);
 			val = min + saltelli * (max - min);
-		}
-		// Intege
-		else if (info.stream().allMatch(Integer.class::isInstance)) {
+		} else if (info.stream().allMatch(Integer.class::isInstance)) {
 			int min = (int) info.get(0);
 			int max = (int) info.get(1);
 			val = (int) Math.floor(min + saltelli * (max - min));
-		}
-		// Boolean
-		else if (info.stream().allMatch(Boolean.class::isInstance)) {
+		} else if (info.stream().allMatch(Boolean.class::isInstance)) {
 			val = saltelli > 0.5;
-		}
-		// Discrete variable
-		else if (info.size() > 2) {
+		} else if (info.size() > 2) {
 			int n = (int) Math.floor(saltelli * info.size());
 			val = info.get(n);
 		} else
@@ -470,287 +392,74 @@ public class Sobol {
 		parameters.get(param).add(val);
 	}
 
-	// ------------------------------------------------------------------- //
-	// COPY PAST FROM MOEAFRAMEWORK //
-	// ------------------------------------------------------------------- //
-
-	/**
-	 * Returns the first-order confidence interval of the i-th parameter. The arguments to this method mirror the
-	 * arguments to {@link #computeFirstOrder}.
-	 *
-	 * @param a0
-	 *            the output from the first independent samples
-	 * @param a1
-	 *            the output from the samples produced by swapping the i-th parameter in the first independent samples
-	 *            with the i-th parameter from the second independent samples
-	 * @param a2
-	 *            the output from the second independent samples
-	 * @param nsample
-	 *            the number of samples
-	 * @param nresample
-	 *            the number of resamples used when calculating the confidence interval
-	 * @return the first-order confidence interval of the i-th parameter
-	 */
 	private double computeFirstOrderConfidence(final double[] a0, final double[] a1, final double[] a2,
 			final int nsample, final int nresample) {
 		double[] b0 = new double[nsample];
 		double[] b1 = new double[nsample];
 		double[] b2 = new double[nsample];
 		double[] s = new double[nresample];
-
 		for (int i = 0; i < nresample; i++) {
 			for (int j = 0; j < nsample; j++) {
 				int index = scope.getRandom().getGenerator().nextInt(nsample);
-
-				b0[j] = a0[index];
-				b1[j] = a1[index];
-				b2[j] = a2[index];
+				b0[j] = a0[index]; b1[j] = a1[index]; b2[j] = a2[index];
 			}
-
 			s[i] = computeFirstOrder(b0, b1, b2, nsample);
 		}
-
 		double ss = Arrays.stream(s).sum() / nresample;
 		double sss = 0.0;
-
 		for (int i = 0; i < nresample; i++) { sss += Math.pow(s[i] - ss, 2.0); }
-
 		return 1.96 * Math.sqrt(sss / (nresample - 1));
 	}
 
-	/**
-	 * Returns the first-order sensitivity of the i-th parameter. Note how the contents of the array {@code a1} specify
-	 * the parameter being analyzed.
-	 *
-	 * @param a0
-	 *            the output from the first independent samples
-	 * @param a1
-	 *            the output from the samples produced by swapping the i-th parameter in the first independent samples
-	 *            with the i-th parameter from the second independent samples
-	 * @param a2
-	 *            the output from the second independent samples
-	 * @param nsample
-	 *            the number of samples
-	 * @return the first-order sensitivity of the i-th parameter
-	 */
 	private double computeFirstOrder(final double[] a0, final double[] a1, final double[] a2, final int nsample) {
 		double c = 0.0;
 		for (int i = 0; i < nsample; i++) { c += a0[i]; }
 		c /= nsample;
-
-		double tmp1 = 0.0;
-		double tmp2 = 0.0;
-		double tmp3 = 0.0;
-		double EY2 = 0.0;
-
+		double tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0, EY2 = 0.0;
 		for (int i = 0; i < nsample; i++) {
 			EY2 += (a0[i] - c) * (a2[i] - c);
 			tmp1 += (a2[i] - c) * (a2[i] - c);
 			tmp2 += a2[i] - c;
 			tmp3 += (a1[i] - c) * (a2[i] - c);
 		}
-
 		EY2 /= nsample;
-
 		double V = tmp1 / (nsample - 1) - Math.pow(tmp2 / nsample, 2.0);
 		double U = tmp3 / (nsample - 1);
-
 		return (U - EY2) / V;
 	}
 
-	/**
-	 * Returns the total-order sensitivity of the i-th parameter. Note how the contents of the array {@code a1} specify
-	 * the parameter being analyzed.
-	 *
-	 * @param a0
-	 *            the output from the first independent samples
-	 * @param a1
-	 *            the output from the samples produced by swapping the i-th parameter in the first independent samples
-	 *            with the i-th parameter from the second independent samples
-	 * @param a2
-	 *            the output from the second independent samples
-	 * @param nsample
-	 *            the number of samples
-	 * @return the total-order sensitivity of the i-th parameter
-	 */
 	private double computeTotalOrder(final double[] a0, final double[] a1, final double[] a2, final int nsample) {
 		double c = 0.0;
-
 		for (int i = 0; i < nsample; i++) { c += a0[i]; }
-
 		c /= nsample;
-
-		double tmp1 = 0.0;
-		double tmp2 = 0.0;
-		double tmp3 = 0.0;
-
+		double tmp1 = 0.0, tmp2 = 0.0, tmp3 = 0.0;
 		for (int i = 0; i < nsample; i++) {
 			tmp1 += (a0[i] - c) * (a0[i] - c);
 			tmp2 += (a0[i] - c) * (a1[i] - c);
 			tmp3 += a0[i] - c;
 		}
-
 		double EY2 = Math.pow(tmp3 / nsample, 2.0);
 		double V = tmp1 / (nsample - 1) - EY2;
 		double U = tmp2 / (nsample - 1);
-
 		return 1.0 - (U - EY2) / V;
 	}
 
-	/**
-	 * Returns the total-order confidence interval of the i-th parameter. The arguments to this method mirror the
-	 * arguments to {@link #computeTotalOrder}.
-	 *
-	 * @param a0
-	 *            the output from the first independent samples
-	 * @param a1
-	 *            the output from the samples produced by swapping the i-th parameter in the first independent samples
-	 *            with the i-th parameter from the second independent samples
-	 * @param a2
-	 *            the output from the second independent samples
-	 * @param nsample
-	 *            the number of samples
-	 * @param nresample
-	 *            the number of resamples used when calculating the confidence interval
-	 * @return the total-order confidence interval of the i-th parameter
-	 */
 	private double computeTotalOrderConfidence(final double[] a0, final double[] a1, final double[] a2,
 			final int nsample, final int nresample) {
 		double[] b0 = new double[nsample];
 		double[] b1 = new double[nsample];
 		double[] b2 = new double[nsample];
 		double[] s = new double[nresample];
-
 		for (int i = 0; i < nresample; i++) {
 			for (int j = 0; j < nsample; j++) {
 				int index = scope.getRandom().getGenerator().nextInt(nsample);
-
-				b0[j] = a0[index];
-				b1[j] = a1[index];
-				b2[j] = a2[index];
+				b0[j] = a0[index]; b1[j] = a1[index]; b2[j] = a2[index];
 			}
-
 			s[i] = computeTotalOrder(b0, b1, b2, nsample);
 		}
-
 		double ss = Arrays.stream(s).sum() / nresample;
 		double sss = 0.0;
-
 		for (int i = 0; i < nresample; i++) { sss += Math.pow(s[i] - ss, 2.0); }
-
-		return 1.96 * Math.sqrt(sss / (nresample - 1));
-	}
-
-	/**
-	 * Returns the second-order sensitivity of the i-th and j-th parameters. Note how the contents of the arrays
-	 * {@code a1}, {@code a2}, and {@code a3} specify the two parameters being analyzed.
-	 *
-	 * @param a0
-	 *            the output from the first independent samples
-	 * @param a1
-	 *            the output from the samples produced by swapping the i-th parameter in the second independent samples
-	 *            with the i-th parameter from the first independent samples
-	 * @param a2
-	 *            the output from the samples produced by swapping the j-th parameter in the first independent samples
-	 *            with the j-th parameter from the second independent samples
-	 * @param a3
-	 *            the output from the samples produced by swapping the i-th parameter in the first independent samples
-	 *            with the i-th parameter from the second independent samples
-	 * @param a4
-	 *            the output from the second independent samples
-	 * @param nsample
-	 *            the number of samples
-	 * @param nresample
-	 *            the number of resamples used when calculating the confidence interval
-	 * @return the second-order sensitivity of the i-th and j-th parameters
-	 */
-	private double computeSecondOrder(final double[] a0, final double[] a1, final double[] a2, final double[] a3,
-			final double[] a4, final int nsample) {
-		double c = 0.0;
-
-		for (int i = 0; i < nsample; i++) { c += a0[i]; }
-
-		c /= nsample;
-
-		double EY = 0.0;
-		double EY2 = 0.0;
-		double tmp1 = 0.0;
-		double tmp2 = 0.0;
-		double tmp3 = 0.0;
-		double tmp4 = 0.0;
-		double tmp5 = 0.0;
-
-		for (int i = 0; i < nsample; i++) {
-			EY += (a0[i] - c) * (a4[i] - c);
-			EY2 += (a1[i] - c) * (a3[i] - c);
-			tmp1 += (a1[i] - c) * (a1[i] - c);
-			tmp2 += a1[i] - c;
-			tmp3 += (a1[i] - c) * (a2[i] - c);
-			tmp4 += (a2[i] - c) * (a4[i] - c);
-			tmp5 += (a3[i] - c) * (a4[i] - c);
-		}
-
-		EY /= nsample;
-		EY2 /= nsample;
-
-		double V = tmp1 / (nsample - 1) - Math.pow(tmp2 / nsample, 2.0);
-		double Vij = tmp3 / (nsample - 1) - EY2;
-		double Vi = tmp4 / (nsample - 1) - EY;
-		double Vj = tmp5 / (nsample - 1) - EY2;
-
-		return (Vij - Vi - Vj) / V;
-	}
-
-	/**
-	 * Returns the second-order confidence interval of the i-th and j-th parameters. The arguments to this method mirror
-	 * the arguments to {@link #computeSecondOrder}.
-	 *
-	 * @param a0
-	 *            the output from the first independent samples
-	 * @param a1
-	 *            the output from the samples produced by swapping the i-th parameter in the second independent samples
-	 *            with the i-th parameter from the first independent samples
-	 * @param a2
-	 *            the output from the samples produced by swapping the j-th parameter in the first independent samples
-	 *            with the j-th parameter from the second independent samples
-	 * @param a3
-	 *            the output from the samples produced by swapping the i-th parameter in the first independent samples
-	 *            with the i-th parameter from the second independent samples
-	 * @param a4
-	 *            the output from the second independent samples
-	 * @param nsample
-	 *            the number of samples
-	 * @return the second-order confidence interval of the i-th and j-th parameters
-	 */
-	@SuppressWarnings ("unused")
-	private double computeSecondOrderConfidence(final double[] a0, final double[] a1, final double[] a2,
-			final double[] a3, final double[] a4, final int nsample, final int nresample) {
-		double[] b0 = new double[nsample];
-		double[] b1 = new double[nsample];
-		double[] b2 = new double[nsample];
-		double[] b3 = new double[nsample];
-		double[] b4 = new double[nsample];
-		double[] s = new double[nresample];
-
-		for (int i = 0; i < nresample; i++) {
-			for (int j = 0; j < nsample; j++) {
-				int index = scope.getRandom().getGenerator().nextInt(nsample);
-
-				b0[j] = a0[index];
-				b1[j] = a1[index];
-				b2[j] = a2[index];
-				b3[j] = a3[index];
-				b4[j] = a4[index];
-			}
-
-			s[i] = computeSecondOrder(b0, b1, b2, b3, b4, nsample);
-		}
-
-		double ss = Arrays.stream(s).sum() / nresample;
-		double sss = 0.0;
-
-		for (int i = 0; i < nresample; i++) { sss += Math.pow(s[i] - ss, 2.0); }
-
 		return 1.96 * Math.sqrt(sss / (nresample - 1));
 	}
 }
