@@ -20,7 +20,8 @@ Export-Package:
  gama.headless.runtime,
  gama.headless.script,
  gama.headless.xml
-Import-Package: com.google.inject
+Import-Package: com.google.inject,
+ gama.workspace
 Bundle-ClassPath: .
 Bundle-RequiredExecutionEnvironment: JavaSE-25
 Automatic-Module-Name: gama.headless
