@@ -1,19 +1,19 @@
 model SIR_ABM_coupling
 
 import "SIR_ABM.gaml"
-experiment "Adapter" type: gui
+experiment "AdapterAbm" type: gui
 {
-	int get_num_S
+	int get_num_S()
 	{
 		return length(Host where (each.state = 0));
 	}
 
-	int get_num_I
+	int get_num_I()
 	{
 		return length(Host where (each.state = 1));
 	}
 
-	int get_num_R
+	int get_num_R()
 	{
 		return length(Host where (each.state = 2));
 	}
