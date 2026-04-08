@@ -135,12 +135,12 @@ public class GamlExpressionCompiler implements IExpressionCompiler<Expression> {
 				return s.getExpression();
 			}
 			// ctx.setCurrentExpressionDescription(s);
-			// It is an expression entered by the user at runtime (in a monitor, for instance)
+			// It is an expression entered by the user at runtime (in a monitor, for instance) or in a definition in
+			// GAMA
 			if (expression == null && s instanceof StringBasedExpressionDescription) {
 				IScope scope = GAMA.getRuntimeScope();
-				final IExecutionContext context =
-						GAMA.getExperiment() == null ? null : scope == null ? null : scope.getExecutionContext();
-				if (context != null) return compile(s.toString(), ctx.getContext(), context);
+				final IExecutionContext context = scope.getExecutionContext();
+				return compile(s.toString(), ctx.getContext(), context);
 			}
 			return compile(expression, ctx);
 		} catch (final Exception e) {

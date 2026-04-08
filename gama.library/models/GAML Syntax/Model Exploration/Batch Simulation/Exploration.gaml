@@ -13,7 +13,7 @@
 
 model Exploration
 
-import "../../Tutorials/Predator Prey/models/Model 13.gaml"
+import "../../../Tutorials/Predator Prey/models/Model 13.gaml"
 
 /*
  * Change a little bit the behavior of the world agent to fit exploration requirements
