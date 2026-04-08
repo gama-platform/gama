@@ -64,7 +64,7 @@ experiment Display type: gui autorun: true {
 			camera #default location: #from_right distance: 40 / factor target: {w, p.y, 0} dynamic: true;
 		}
 		display "Isometric" parent: shared {
-			camera #default location: #isometric target: {p.x, p.y, 0} dynamic: true;
+			camera #default location: #isometric distance: 40 / factor target: {p.x, p.y, 0} dynamic: true;
 		}
 
 
