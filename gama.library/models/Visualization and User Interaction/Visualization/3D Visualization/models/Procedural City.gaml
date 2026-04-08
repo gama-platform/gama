@@ -52,12 +52,11 @@ species Building{
 	}
 }
 
-experiment base virtual:true{
+
+experiment ProceduralCity  type: gui{
+	float minimum_cycle_duration <- 0.05;
 	parameter 'Number of Agents' var:number_of_building  category: 'Initialization';
 	parameter 'Dimensions' var:width_and_height_of_environment category: 'Initialization';
-}
-
-experiment DisplayTextured  type: gui parent:base{
 	init {
 		gama.pref_texture_orientation <- true;
 	}
@@ -69,22 +68,3 @@ experiment DisplayTextured  type: gui parent:base{
 		}
 	}
 }
-
-experiment DisplayWithDynamicDiffuseLight  type: gui parent:base{
-	float minimum_cycle_duration <- 0.05;
-	output {
-		display City type:3d background:rgb(10, 40, 55) axes:false{
-	  		camera 'default' location: {178.9256,868.4599,470.2417} target: {274.5961,228.3136,0.0};
-	  		light #ambient intensity: 0;
-	  		light #default 
-		  		type:#point 
-		  		intensity:hsb((time mod 255) / 255, 1.0, 0.5) 
-		  		location:{world.shape.width * 0.5 + world.shape.width * 1.5 * sin(time * 2),world.shape.width * 0.5,world.shape.width * cos(time * 2)} 
-		  		show:true 
-		  		dynamic:true
-		  		;
-			species Building aspect:base;									
-		}
-	}
-}
-
